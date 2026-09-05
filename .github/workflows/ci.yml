@@ -73,6 +73,42 @@ jobs:
             --startup-project apps/api/NacenTech.Api.csproj \
             --connection "$NACENTECH_PG"
 
+  frontend:
+    # Ba frontend React/Vite trong apps/. Mỗi app một lockfile riêng nên cài riêng; build là cổng chặn,
+    # test chỉ ở admin/portal (landing chưa có test file — vitest không có test là exit 1).
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [admin, portal, landing]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    env:
+      HUSKY: "0" # landing có `prepare: husky`; trong CI không cần hook
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        if: matrix.app != 'landing'
+        run: npm test
+
+      - name: Lint
+        if: matrix.app == 'landing'
+        run: npm run lint
+
   license-gate:
     # §26.8.4/D2-146: chặn build khi có license ngoài allowlist. Không có gate thì thư viện copyleft
     # sẽ bò vào qua một PR nào đó và chỉ bị phát hiện khi audit.
