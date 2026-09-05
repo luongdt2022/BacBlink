@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+docs/_logs/*
+!docs/_logs/README.md
+
+# Build output
+_dist/*
+!_dist/README.md
+dist/
+build/
+out/
+
+# Dependencies (uncomment when stack is chosen)
+# node_modules/
+# venv/
+# bin/
+# obj/
