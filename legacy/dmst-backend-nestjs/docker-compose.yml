@@ -1,0 +1,85 @@
+services:
+  backend_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "${PORT:-3013}:3013"
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      PORT: 3013
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ENABLE_DOCUMENTATION: ${ENABLE_DOCUMENTATION:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    networks:
+      - dmst_network
+
+  postgres:
+    # WARNING when upgrading an existing deployment: the previous image was
+    # postgres:16-alpine (musl) and this one is Debian-based (glibc). Their
+    # text collation orders differ, so reusing the old data volume in place can
+    # silently corrupt every B-tree index on a text column. Either pg_dump and
+    # restore into a fresh volume, or run REINDEX DATABASE immediately after
+    # the switch. Same PG major version, so the data directory itself is fine.
+    image: pgvector/pgvector:pg16
+    # A parallel HNSW build allocates maintenance_work_mem in POSIX shared
+    # memory; Docker's 64MB default kills the build on any real corpus.
+    shm_size: 2gb
+    environment:
+      POSTGRES_DB: ${DB_NAME:-dmst_poc}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5439}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-dmst_poc}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - dmst_network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - dmst_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  dmst_network:
+    driver: bridge
+    name: dmst_network

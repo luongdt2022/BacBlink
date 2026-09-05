@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\kernel\NacenTech.Kernel.csproj" />
+  </ItemGroup>
+</Project>

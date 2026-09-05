@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+.github
+.husky
+
+# Node
+node_modules
+npm-debug.log
+
+# Build output
+dist
+coverage
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# IDEs
+.vscode
+.idea
+
+# Runtime / Data
+uploads
+logs
+*.log
+*.seed
+*.pid

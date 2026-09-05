@@ -1,0 +1,24 @@
+<!-- Port từ `src/mail/templates/collaboration-request.hbs`; ba biến thể theo `type`. -->
+<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;color:#12365a">
+  {{#if (eq type "received")}}
+  <h2 style="color:#12365a">Bạn nhận được yêu cầu hợp tác mới</h2>
+  <p>Xin chào {{recipientName}},</p>
+  <p>Hồ sơ <strong>{{requesterIntakeTitle}}</strong> muốn hợp tác với hồ sơ <strong>{{targetIntakeTitle}}</strong> của bạn.</p>
+  {{/if}}
+  {{#if (eq type "accepted")}}
+  <h2 style="color:#12365a">Yêu cầu hợp tác đã được chấp nhận</h2>
+  <p>Xin chào {{recipientName}},</p>
+  <p>Yêu cầu hợp tác cho hồ sơ <strong>{{requesterIntakeTitle}}</strong> đã được <strong>{{targetIntakeTitle}}</strong> chấp nhận.</p>
+  {{/if}}
+  {{#if (eq type "rejected")}}
+  <h2 style="color:#12365a">Yêu cầu hợp tác đã bị từ chối</h2>
+  <p>Xin chào {{recipientName}},</p>
+  <p>Yêu cầu hợp tác cho hồ sơ <strong>{{requesterIntakeTitle}}</strong> đã bị <strong>{{targetIntakeTitle}}</strong> từ chối.</p>
+  {{/if}}
+  <p style="margin:28px 0">
+    <a href="{{requestUrl}}" style="background:#12365a;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
+      Xem chi tiết yêu cầu
+    </a>
+  </p>
+  <p style="font-size:13px;color:#52687a">{{companyName}}</p>
+</div>

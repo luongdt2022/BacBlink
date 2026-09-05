@@ -1,0 +1,31 @@
+name: Deploy dmst-user
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-user-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy dmst-user
+    runs-on: [self-hosted, user]
+
+    defaults:
+      run:
+        working-directory: /home/sotatek/projects/dmst/dmst-user
+
+    steps:
+      - name: Pull latest code
+        run: git pull origin main
+
+      - name: Build and deploy
+        run: docker compose --env-file .env up -d --build app
+
+      - name: Verify deployment
+        run: |
+          docker ps -f "name=dmst-user-role" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

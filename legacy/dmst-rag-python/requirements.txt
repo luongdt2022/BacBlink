@@ -1,0 +1,14 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+# FlagEmbedding must stay pinned alongside transformers. Left unpinned, pip
+# resolves 1.4.2, which passes `dtype=` to AutoModel.from_pretrained — a kwarg
+# transformers only accepts from 4.56 on (it was torch_dtype before). The image
+# then builds fine and crashes on startup with:
+#   TypeError: XLMRobertaModel.__init__() got an unexpected keyword argument 'dtype'
+FlagEmbedding==1.3.4
+sentence-transformers==3.2.1
+torch>=2.5.0
+transformers>=4.41.0,<4.46.0
+pydantic>=2.9.0
+pydantic-settings>=2.6.0
+python-dotenv>=1.0.0

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <UserSecretsId>nacentech-api</UserSecretsId>
+    <RootNamespace>NacenTech.Api</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <!-- Design-time only: cần cho `dotnet ef migrations` khi startup project là API. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\persistence\NacenTech.Persistence.csproj" />
+    <ProjectReference Include="..\..\packages\kernel\NacenTech.Kernel.csproj" />
+    <ProjectReference Include="..\..\packages\contracts\NacenTech.Contracts.csproj" />
+    <ProjectReference Include="..\..\packages\policy-engine\NacenTech.PolicyEngine.csproj" />
+    <ProjectReference Include="..\..\modules\identity\NacenTech.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\modules\policy\NacenTech.Modules.Policy.csproj" />
+    <ProjectReference Include="..\..\modules\demand\NacenTech.Modules.Demand.csproj" />
+    <ProjectReference Include="..\..\modules\technology\NacenTech.Modules.Technology.csproj" />
+    <ProjectReference Include="..\..\modules\dataroom\NacenTech.Modules.DataRoom.csproj" />
+    <ProjectReference Include="..\..\modules\matching\NacenTech.Modules.Matching.csproj" />
+    <ProjectReference Include="..\..\modules\communication\NacenTech.Modules.Communication.csproj" />
+    <ProjectReference Include="..\..\modules\content\NacenTech.Modules.Content.csproj" />
+    <ProjectReference Include="..\..\modules\case\NacenTech.Modules.Case.csproj" />
+    <ProjectReference Include="..\..\modules\brokerage\NacenTech.Modules.Brokerage.csproj" />
+    <ProjectReference Include="..\..\modules\audit\NacenTech.Modules.Audit.csproj" />
+    <ProjectReference Include="..\..\modules\integration\NacenTech.Modules.Integration.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="NacenTech.Tests.Contracts" />
+  </ItemGroup>
+</Project>

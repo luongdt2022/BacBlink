@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "dmst-embedding"
+version = "0.1.0"
+description = "BGE-M3 embedding service for DMST"
+authors = []
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.115.0"
+uvicorn = { extras = ["standard"], version = "^0.32.0" }
+FlagEmbedding = "^1.3.0"
+torch = "^2.5.0"
+pydantic = "^2.9.0"
+pydantic-settings = "^2.6.0"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.7.0"
+pytest = "^8.3.0"
+httpx = "^0.27.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

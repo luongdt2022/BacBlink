@@ -1,0 +1,26 @@
+{
+  "name": "search-bench",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A/B benchmark: Elasticsearch 8.17 vs PostgreSQL 16 + pgvector for DMST Vietnamese hybrid search",
+  "scripts": {
+    "up": "docker compose up -d",
+    "down": "docker compose down",
+    "nuke": "docker compose down -v",
+    "index": "tsx src/index-all.ts",
+    "bench": "tsx src/run.ts",
+    "all": "npm run index && npm run bench"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^8.17.0",
+    "esbuild": "^0.24.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,25 @@
+<Project>
+  <!--
+    Quy ước chung cho toàn solution (§26.3 kiến trúc V2.20):
+    - Production target net10.0, không dùng preview package.
+    - Nullable + implicit usings bật toàn cục.
+    - Warning về nullability/async là lỗi để không tích lũy nợ.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>CS8600;CS8602;CS8603;CS8604;CS8618;CS8625;CS4014</WarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    <Authors>NacenX</Authors>
+    <Company>NacenTech / NacenX</Company>
+    <Product>NacenTech V2</Product>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,14 @@
+<!-- Port từ `src/mail/templates/account-activation.hbs` của NacenTwin. -->
+<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;color:#12365a">
+  <h2 style="color:#12365a">Xác nhận tài khoản</h2>
+  <p>Xin chào {{firstName}},</p>
+  <p>Cảm ơn bạn đã đăng ký tài khoản. Vui lòng bấm nút bên dưới để kích hoạt tài khoản của bạn.</p>
+  <p style="margin:28px 0">
+    <a href="{{activationLink}}" style="background:#12365a;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block">
+      Kích hoạt tài khoản
+    </a>
+  </p>
+  <p style="font-size:13px;color:#52687a">Nếu nút trên không hoạt động, hãy sao chép đường dẫn sau vào trình duyệt:</p>
+  <p style="font-size:13px;word-break:break-all"><a href="{{activationLink}}">{{activationLink}}</a></p>
+  <p style="font-size:13px;color:#52687a">Liên kết kích hoạt có hiệu lực trong thời gian giới hạn. Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua thư.</p>
+</div>

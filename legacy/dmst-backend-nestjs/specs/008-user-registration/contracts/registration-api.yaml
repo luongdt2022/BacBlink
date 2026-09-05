@@ -1,0 +1,186 @@
+openapi: 3.0.3
+info:
+  title: User Registration API Contract
+  version: 1.0.1
+  description: Contract for user-site registration and account activation flows.
+servers:
+  - url: /api/v1/auth
+paths:
+  /register:
+    post:
+      summary: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created and pending activation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many registration attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /activate:
+    post:
+      summary: Activate account with one-time token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivateRequest'
+      responses:
+        '200':
+          description: Account activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageOnlyResponse'
+        '400':
+          description: Invalid or expired activation token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /resend-activation:
+    post:
+      summary: Resend account activation email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendActivationRequest'
+      responses:
+        '200':
+          description: Resend accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageOnlyResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many resend requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password, confirmPassword, firstName]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        confirmPassword:
+          type: string
+          minLength: 8
+        firstName:
+          type: string
+          maxLength: 100
+        lastName:
+          type: string
+          maxLength: 100
+    RegisterResponse:
+      type: object
+      required: [code, message, data]
+      properties:
+        code:
+          type: string
+          example: REGISTER_SUCCESS_PENDING_ACTIVATION
+        message:
+          type: string
+          example: Registration successful. Please check your email to activate your account.
+        data:
+          type: object
+          required: [user]
+          properties:
+            user:
+              $ref: '#/components/schemas/UserSummary'
+    MessageOnlyResponse:
+      type: object
+      required: [code, message, data]
+      properties:
+        code:
+          type: string
+          example: ACCOUNT_ACTIVATED_SUCCESS
+        message:
+          type: string
+        data:
+          type: object
+          nullable: true
+          example: null
+    UserSummary:
+      type: object
+      required: [id, email, role, isActive, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        role:
+          type: string
+          example: user
+        isActive:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+    ActivateRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    ResendActivationRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string

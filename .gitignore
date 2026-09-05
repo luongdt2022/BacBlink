@@ -1,31 +1,54 @@
-# OS
+# ---------- OS ----------
 .DS_Store
 Thumbs.db
 
-# Editors
+# ---------- Editors ----------
 .vscode/*
 !.vscode/extensions.json
 .idea/
+.vs/
+*.user
+*.suo
+*.swp
 
-# Env / secrets
+# ---------- Env / secrets ----------
 .env
 .env.*
 !.env.example
 
-# Logs
-*.log
-docs/_logs/*
-!docs/_logs/README.md
+# ---------- .NET ----------
+bin/
+obj/
+TestResults/
+artifacts/
 
-# Build output
-_dist/*
-!_dist/README.md
+# ---------- Node ----------
+node_modules/
 dist/
 build/
 out/
+.next/
+coverage/
+.cache/
 
-# Dependencies (uncomment when stack is chosen)
-# node_modules/
-# venv/
-# bin/
-# obj/
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# ---------- Logs ----------
+*.log
+logs/
+docs/_logs/*
+!docs/_logs/README.md
+
+# ---------- Dữ liệu chạy thật ----------
+/data/
+/storage/
+/tools/legacy-etl/out/
+
+# ---------- Xuất bản tài liệu ----------
+_dist/*
+!_dist/README.md

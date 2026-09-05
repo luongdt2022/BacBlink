@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\kernel\NacenTech.Kernel.csproj" />
+    <ProjectReference Include="..\contracts\NacenTech.Contracts.csproj" />
+    <ProjectReference Include="..\policy-engine\NacenTech.PolicyEngine.csproj" />
+    <ProjectReference Include="..\..\modules\identity\NacenTech.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\modules\policy\NacenTech.Modules.Policy.csproj" />
+    <ProjectReference Include="..\..\modules\demand\NacenTech.Modules.Demand.csproj" />
+    <ProjectReference Include="..\..\modules\technology\NacenTech.Modules.Technology.csproj" />
+    <ProjectReference Include="..\..\modules\dataroom\NacenTech.Modules.DataRoom.csproj" />
+    <ProjectReference Include="..\..\modules\matching\NacenTech.Modules.Matching.csproj" />
+    <ProjectReference Include="..\..\modules\communication\NacenTech.Modules.Communication.csproj" />
+    <ProjectReference Include="..\..\modules\content\NacenTech.Modules.Content.csproj" />
+    <ProjectReference Include="..\..\modules\case\NacenTech.Modules.Case.csproj" />
+    <ProjectReference Include="..\..\modules\brokerage\NacenTech.Modules.Brokerage.csproj" />
+    <ProjectReference Include="..\..\modules\audit\NacenTech.Modules.Audit.csproj" />
+    <ProjectReference Include="..\..\modules\integration\NacenTech.Modules.Integration.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,9 +1,9 @@
 # 03-uiux — Thiết kế UI/UX
 
-Wireframe, luồng người dùng (user flow), mockup, đặc tả tương tác UI/UX tổng thể.
+Wireframe, luồng người dùng, mockup, đặc tả tương tác, design system.
 
-Thư mục này gộp chung 2 phần thường được tách riêng:
-- **UX research** (persona, journey map, user research)
-- **UI design system** (component, design token)
+| Tài liệu | Nội dung |
+|---|---|
+| `260426_NACENTECH_So-tay-thuong-hieu.pdf` | Sổ tay thương hiệu NacenTech |
 
-Tách lại thành thư mục riêng khi lượng tài liệu đủ lớn để cần quản lý độc lập.
+Mô tả hành vi từng màn hình (người dùng thấy gì, làm được gì, điều gì xảy ra) nằm ở [`docs/02-requirements/san-pham-v2/`](../02-requirements/san-pham-v2/) — `admin/`, `portal/`, `landing/` cho màn hình đang có, `moi/` cho màn hình chưa xây.

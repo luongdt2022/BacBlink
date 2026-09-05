@@ -1,0 +1,48 @@
+,,,,,,,,,,,,,,,,,,,,
+,STT,Category,Câu hỏi,Câu trả lời,Note,,"Thiết bị đánh giá đặc trưng MEMS/NEMS: SCALA Platform
+Bộ máy tính + màn hình kèm theo.",Kính hiển vi soi nổi Olympus SZ61,"Thiết bị đo điện hóa đa năng AutoLAB
+Bộ máy tính + màn hình kèm theo.",Thiết bị đo kích thước hạt và thế Zeta Nano ZS + máy tính bộ kèm theo.,Thiết bị quang khắc: EVG610,Thiết bị ăn mòn khô và khắc sâu: Corial 210IL,Thiết bị quay phủ: Apogee Spin coater,Thiết bị gia nhiệt đế: HP 40A,Kính hiển vi soi kim loại phản xạ: Meji MT8530,Tủ hóa ướt: LFS_WB1500,Tủ hóa ướt với bể dung môi: LFS_SWB3000,,,
+,1,Bản chất thiết bị,"Mức độ sẵn sàng công nghệ (TRL) của thiết bị này là bao nhiêu, và hồ sơ kỹ thuật của nó đã được chuẩn hóa theo ISO/TRL để đăng tải thống nhất lên nền tảng chưa",,,,,,,,,,,,,,,,,"Máy quang khắc (photolithography machine) là thiết bị cốt lõi trong sản xuất chip bán dẫn, sử dụng ánh sáng (tia cực tím) để in các mẫu mạch điện tử siêu nhỏ lên tấm wafer silicon. Đây là công nghệ quyết định độ chính xác và mật độ linh kiện (nano mét) của vi mạch, đóng vai trò nền tảng cho AI, smartphone và ô tô điện"
+,2,,"Chức năng cốt lõi của thiết bị này là gì (ví dụ: máy quang khắc dùng để tạo vi mạch, tủ hóa ướt dùng để làm sạch bề mặt wafer) và nó đã được đóng gói công nghệ (tech packaging) thành các tài liệu, thông số dễ hiểu cho doanh nghiệp đọc chưa",,,,,,,,,,,,,,,,,"Chức năng: Chuyển đổi sơ đồ mạch từ mặt nạ (photomask) lên tấm bán dẫn phủ lớp cảm quang, tạo ra các lớp cấu trúc bên trong chip.
+
+Nguyên lý hoạt động: Ánh sáng được chiếu qua một mặt nạ có sơ đồ mạch, qua hệ thống thấu kính để thu nhỏ và hội tụ lên bề mặt wafer đã phủ hợp chất nhạy sáng."
+,3,,"Thiết bị này (ví dụ SCALA Platform hoặc AutoLAB) có đi kèm phần mềm phân tích độc quyền không, và kết quả đo đạc (output) có xuất ra được định dạng tương thích với chuẩn dữ liệu của hệ thống cơ sở dữ liệu (DB) quốc gia không",,,,,,,,,,,,,,,,,"EUV (Extreme Ultraviolet): Sử dụng tia siêu cực tím, là công nghệ hiện đại nhất (thế hệ mới như High-NA EUV) để sản xuất chip tiên tiến dưới 3nm.
+DUV (Deep Ultraviolet): Sử dụng bước sóng dài hơn, dùng cho các loại chip thế hệ cũ hoặc chip công suất lớn."
+,4,,"Thời gian trung bình để hoàn thành một chu trình đo lường/chế tạo trên thiết bị này là bao lâu, và nền tảng có cam kết rút ngắn thời gian cho người thuê so với việc họ tự mang đi nơi khác làm không",,,,,,,,,,,,,,,,,"Tầm quan trọng: Là điểm nghẽn kỹ thuật cao nhất trong chuỗi cung ứng bán dẫn, quyết định ưu thế công nghệ của các quốc gia.
+Nhà sản xuất chính: ASML (Hà Lan) thống lĩnh thị trường máy EUV, bên cạnh Nikon và Canon (Nhật Bản)"
+,5,"Vận hành, Hao mòn và Dịch vụ đi kèm","Khách hàng có thể tự mang mẫu đến tự bấm máy, hay bắt buộc nền tảng phải cung cấp chuyên gia lắp đặt, vận hành đi kèm để hướng dẫn và đảm bảo an toàn",,,,,,,,,,,,,,,,,"Hao mòn khi sử dụng:
+Nguồn sáng laser: Nguồn laser CO2 hoặc các hệ thống nguồn laser khác sẽ giảm công suất sau một thời gian dài hoạt động.
+Thấu kính và bộ phận quang học: Có thể bị bẩn hoặc giảm chất lượng, ảnh hưởng đến độ chính xác của việc in mạch.
+Bộ phận cơ khí: Các bộ phận cơ khí di chuyển, định vị tấm wafer cần được bảo dưỡng để giữ độ chính xác ở cấp độ nanomet.
+
+-> Hiệu năng hoạt động giảm, công suất sản xuất không còn như ban đầu, đòi hỏi chi phí bảo trì, sửa chữa hoặc thay thế cao"
+,6,,"Khi cung cấp thiết bị này dưới dạng hạ tầng kỹ thuật dùng chung, chi phí hao mòn vật tư (ví dụ: hóa chất ăn mòn khô, hóa chất tủ ướt, khí gas bảo vệ) cho mỗi giờ chạy máy được tính toán như thế nào",,,,,,,,,,,,,,,,,
+,7,,"Trong trường hợp khách hàng muốn tích hợp thiết bị này vào quy trình sản xuất riêng của họ, nền tảng có cung cấp dịch vụ đào tạo, nhân rộng để chuyển giao công nghệ không",,,,,,,,,,,,,,,,,
+,8,khách hàng / bài toán thực tế,"doanh nghiệp nào sẽ muốn sử dụng máy này: Các startup làm phần cứng, phòng lab đại học, hay bài toán từ địa phương/chiến lược quốc gia về phát triển công nghệ bán dẫn",,,,,,,,,,,,,,,,,
+,9,,"Khách hàng sử dụng thiết bị này chủ yếu để giải quyết bài toán kiểm định lỗi (QA/QC), hay để phục vụ thử nghiệm các ý tưởng đột phá (PoC) trước khi sản xuất hàng loạt",,,,,,,,,,,,,,,,,
+,10,,"Nếu chi phí thuê/mua thiết bị quá lớn, nền tảng có dịch vụ quản lý, điều phối nguồn vốn đối ứng và hoạt động đồng đầu tư từ các Quỹ để hỗ trợ doanh nghiệp chi trả không",,,,,,,,,,,,,,,,,
+,11,Cạnh tranh và Lợi thế,"So với việc doanh nghiệp tự mang mẫu thử sang các phòng lab nước ngoài hoặc các trung tâm kiểm định tư nhân, thiết bị của chúng ta trên nền tảng có điểm ưu việt gì về độ chính xác, tốc độ hay chi phí?",,,,,,,,,,,,,,,,,
+,12,," Khi đo đạc hoặc thử nghiệm mẫu vật bằng hệ thống máy này trên nền tảng, kết quả (output) có được Nhà nước công nhận tính pháp lý để khách hàng dùng đi xin giấy phép mà không cần xác minh lại từ đầu không",,,,,,,,,,,,,,,,,
+,13,,"Nếu thiết bị này (như Corial 210IL hay EVG610) là duy nhất tại Việt Nam, làm thế nào nền tảng nổi bật thông tin này để thu hút các nhà đầu tư nước ngoài (FDI) mang dự án (deal flow) đến phòng giao dịch (deal room)",,,,,,,,,,,,,,,,,
+,14,Mô hình Doanh thu và Giải quyết rủi ro,"Việc kinh doanh trên thiết bị này sẽ thu tiền theo mô hình nào: Phí sử dụng thuê bao định kỳ, hay thu tiền (phí giao dịch, hoa hồng) tính trên mỗi lần doanh nghiệp thuê máy thành công",,,,,,,,,,,,,,,,,
+,15,,"Nếu hai bên (phòng lab sở hữu máy và doanh nghiệp cần đo mẫu) tìm nhau qua nền tảng nhưng lại ra ngoài ký hợp đồng thuê máy trực tiếp để né phí, nền tảng sẽ dùng dịch vụ thẩm định chuyên sâu nào làm mỏ neo để ép họ ở lại",,,,,,,,,,,,,,,,,
+,16,,"Nếu một doanh nghiệp muốn mua lại toàn bộ công nghệ chế tạo ra thiết bị MEMS/NEMS này, nền tảng có cung cấp dịch vụ đánh giá, định giá công nghệ để xác định giá trị thương vụ không",,,,,,,,,,,,,,,,,
+,17,,"Việc phân bổ doanh thu từ việc cho thuê máy sẽ được chia sẻ thế nào: Ví dụ chuyên gia vận hành nhận 60-70%, phần còn lại chia cho phòng lab và chi phí tái đầu tư hệ thống nền tảng",,,,,,,,,,,,,,,,,
+,18,"Bảo mật, Sở hữu trí tuệ và Dữ liệu","Đặc thù của quang khắc và vi mạch là thông tin công nghệ lõi mang tính sống còn. Khi đưa lên nền tảng, thiết bị này có đáp ứng tiêu chuẩn khắt khe về bảo mật dữ liệu để khách hàng yên tâm đưa mẫu vật (tài sản trí tuệ) đến thử nghiệm không",,,,,,,,,,,,,,,,,
+,19,,Nền tảng có cung cấp dịch vụ tư vấn khai thác tài sản trí tuệ (IP) để đảm bảo rằng kết quả nghiên cứu sinh ra từ việc dùng chung các máy này được bảo hộ rõ ràng quyền sở hữu không,,,,,,,,,,,,,,,,,
+,20,,"Lịch sử các lần chạy máy thử nghiệm (PoC) của các thiết bị này có được ẩn danh và chuyển thành dữ liệu phục vụ cho báo cáo chuyên sâu, bảng điều khiển (Dashboard) thời gian thực và phân tích xu hướng công nghệ để Nhà nước hoạch định chính sách không",,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,tên nhà sản xuất,,,,,,,,,,,,,,,,,
+,,,đời máy ,,,,,,,,,,,,,,,,,
+,,,công suất ,,,,,,,,,,,,,,,,,
+,,,năm sản xuất ,,,,,,,,,,,,,,,,,
+,,,tính năng ,,,,,,,,,,,,,,,,,
+,,,địa điểm hiện tại của thiết vị ,,,,,,,,,,,,,,,,,
+,,,có sẳn sàng huy động không ,"tránh trường hộ cứ dăng lên, có người đặt mua/thuê mới đi thuê/làm thiết bị ",,,,,,,,,,,,,,,,
+,,,nguồn thiết bị ,,,,,,,,,,,,,,,,,
+,,,tài liệu vận hành,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,
+,,,tham khảo trên mua sắm công ,,,,,,,,,,,,,,,,,
