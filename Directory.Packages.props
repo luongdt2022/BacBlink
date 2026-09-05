@@ -3,25 +3,30 @@
     Central Package Management. Mọi package phải nằm trong allowlist license §26.8.2
     (MIT / Apache-2.0 / BSD / PostgreSQL License). Denylist §26.8.3: MediatR>=13, AutoMapper>=15,
     MassTransit v9, Hangfire Pro, FluentAssertions>=8, Duende, ABP — KHÔNG được thêm.
-    Version dùng range để restore lấy patch mới nhất trong cùng major (§26.3: cập nhật patch hằng tháng).
+    Version dùng range [sàn,trần) — NuGet resolve về **cận dưới**, không phải bản mới nhất. Vì vậy
+    §26.3 (cập nhật patch hằng tháng) là việc nâng SÀN ở file này, không tự xảy ra khi restore.
+    Sàn hiện tại đã vượt qua các advisory: GHSA-9j88 (MailKit), GHSA-g94r/q834/4625/mr8r (OpenTelemetry),
+    GHSA-v5pm (Microsoft.OpenApi, kéo qua AspNetCore.OpenApi), GHSA-q939 (SSH.NET, kéo qua Testcontainers).
+    Kiểm bằng `dotnet list package` với hai cờ `vulnerable` và `include-transitive`.
+    (Không viết cờ đầy đủ ở đây: hai dấu gạch nối liền nhau là ký tự cấm trong comment XML.)
   -->
   <ItemGroup>
     <!-- .NET / ASP.NET Core / EF Core — MIT -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[10.0.0,11.0.0)" />
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="[10.0.0,11.0.0)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[10.0.11,11.0.0)" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="[10.0.11,11.0.0)" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="[8.0.0,9.0.0)" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="[8.0.0,9.0.0)" />
 
@@ -31,15 +36,15 @@
 
     <!-- Security / mail — MIT -->
     <PackageVersion Include="BCrypt.Net-Next" Version="[4.0.3,5.0.0)" />
-    <PackageVersion Include="MailKit" Version="[4.14.0,5.0.0)" />
+    <PackageVersion Include="MailKit" Version="[4.17.0,5.0.0)" />
 
     <!-- Observability — Apache-2.0 -->
     <PackageVersion Include="Serilog.AspNetCore" Version="[9.0.0,10.0.0)" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="[6.0.0,7.0.0)" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="[1.13.1,2.0.0)" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="[1.12.0,2.0.0)" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="[1.12.0,2.0.0)" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="[1.13.1,2.0.0)" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="[1.18.0,2.0.0)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="[1.18.0,2.0.0)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="[1.18.0,2.0.0)" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="[1.18.0,2.0.0)" />
 
     <!-- API docs UI — MIT (spec do Microsoft.AspNetCore.OpenApi sinh) -->
     <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerUI" Version="[8.0.0,10.0.0)" />
@@ -50,6 +55,6 @@
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="[17.12.0,18.0.0)" />
     <PackageVersion Include="Shouldly" Version="[4.3.0,5.0.0)" />
     <PackageVersion Include="NetArchTest.Rules" Version="[1.3.2,2.0.0)" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="[4.0.0,5.0.0)" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="[4.14.0,5.0.0)" />
   </ItemGroup>
 </Project>

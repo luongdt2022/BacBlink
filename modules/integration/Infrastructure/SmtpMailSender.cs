@@ -35,7 +35,10 @@ public sealed class SmtpMailSender(IOptions<MailOptions> options, ILogger<SmtpMa
             : _options.UseStartTls ? SecureSocketOptions.StartTls
             : SecureSocketOptions.None;
         await client.ConnectAsync(_options.Host, _options.Port, secure, ct);
-        if (!string.IsNullOrEmpty(_options.User)) await client.AuthenticateAsync(_options.User, _options.Password, ct);
+        // MailKit 4.16+ khai `password` là non-nullable. `Mail:Password` vẫn có thể vắng trong cấu hình,
+        // nên đưa về chuỗi rỗng: máy chủ từ chối bằng lỗi AUTH đọc được, thay vì ArgumentNullException.
+        if (!string.IsNullOrEmpty(_options.User))
+            await client.AuthenticateAsync(_options.User, _options.Password ?? string.Empty, ct);
         await client.SendAsync(mime, ct);
         await client.DisconnectAsync(true, ct);
     }
