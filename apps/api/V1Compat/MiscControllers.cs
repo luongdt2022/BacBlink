@@ -19,7 +19,7 @@ public sealed class SearchDto
 }
 
 [Route("api/v1/search")]
-public sealed class SearchController(IMatchingService matching, IntakeFacade facade) : V1ControllerBase
+public sealed class SearchController(IMatchingService matching) : V1ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Search([FromBody] SearchDto dto, CancellationToken ct)
@@ -54,7 +54,7 @@ public sealed class SearchController(IMatchingService matching, IntakeFacade fac
 
 [Route("api/v1/files")]
 [Authorize]
-public sealed class FilesController(IDataRoomService dataRoom, IObjectStorage storage) : V1ControllerBase
+public sealed class FilesController(IDataRoomService dataRoom) : V1ControllerBase
 {
     /// <summary>Legacy `POST /files/upload` cho ảnh chèn vào nội dung. Ảnh gắn với người upload, mức PUBLIC.</summary>
     [HttpPost("upload")]
