@@ -6,7 +6,7 @@ using NacenTech.Modules.Policy.Application;
 namespace NacenTech.Api.V2;
 
 /// <summary>
-/// Đọc một ảnh chụp chính sách — đặc tả `docs-v2/api-v2/policy-va-taxonomy.md`.
+/// Đọc một ảnh chụp chính sách — đặc tả `docs/02-requirements/san-pham-v2/api-v2/policy-va-taxonomy.md`.
 ///
 /// **Không có endpoint tạo, và cố ý không nên có.** Việc chốt luật ở lại bên trong lệnh chuyển giai đoạn của hồ
 /// sơ vụ việc; một đường HTTP tạo ảnh chụp sẽ cho phép chốt luật ngoài luồng chuyển giai đoạn, và điều đó phá

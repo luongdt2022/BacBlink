@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-04 (đề xuất và chốt)
-- Liên quan: §22.1; sổ lỗi `docs-v2/bug-triage.md` B-06; đặc tả `docs-v2/api-v2/README.md`
+- Liên quan: §22.1; sổ lỗi `docs/02-requirements/san-pham-v2/bug-triage.md` B-06; đặc tả `docs/02-requirements/san-pham-v2/api-v2/README.md`
 
 ## Bối cảnh
 

@@ -3,7 +3,7 @@
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-05 (đội chốt bỏ Elasticsearch; đề xuất và cài đặt cùng ngày)
 - Liên quan: D2-26, D2-143, D2-146, §26.6 (đặc biệt §26.6.1, §26.6.2, §26.6.7) của `NACENTECH_ARCHITECTURE_V2.md`;
-  `docs-v2/api-v2/matching.md`; `docs-v2/moi/vong-ghep-cap.md`; sổ lỗi `docs-v2/bug-triage.md` B-27
+  `docs/02-requirements/san-pham-v2/api-v2/matching.md`; `docs/02-requirements/san-pham-v2/moi/vong-ghep-cap.md`; sổ lỗi `docs/02-requirements/san-pham-v2/bug-triage.md` B-27
 
 ## Bối cảnh
 
@@ -20,7 +20,7 @@ mã, `docker-compose.yml`, cấu hình và ba chỗ trong `docs-v2` vẫn trỏ 
 | Sự kiện | Đo ở đâu |
 |---|---|
 | `ISearchIndex` có đúng một cài đặt, là `ElasticsearchIndex` gọi HTTP thuần | `modules/matching/Infrastructure/`, `MatchingModule.cs:32` |
-| Elasticsearch **chưa từng dựng** ở môi trường phát triển này; mọi lượt đo ghép cặp đều chèn vòng thẳng vào PostgreSQL | `docs-v2/verification/anh-chup/ui-rounds.mjs`, B-27 |
+| Elasticsearch **chưa từng dựng** ở môi trường phát triển này; mọi lượt đo ghép cặp đều chèn vòng thẳng vào PostgreSQL | `docs/02-requirements/san-pham-v2/verification/anh-chup/ui-rounds.mjs`, B-27 |
 | Vector nhúng đã nằm trong PostgreSQL (`matching.content_chunks.embedding real[]`), Elasticsearch chỉ là bản chiếu | `ContentChunkConfiguration` |
 | Ảnh `pgvector/pgvector:pg16` đã có trên máy dựng (dùng cho `search-bench`) | `docker images` |
 | Baseline Elasticsearch trượt ca "cong nghe sinh hoc" ↔ "công nghệ sinh học" vì không có ascii-folding | §26.6.1 |
@@ -95,7 +95,7 @@ không có môi trường nào chạy. Bảo trì gấp đôi để bảo vệ m
    đã áp. Test: `Corrected_mode_ignores_legacy_scale_threshold_and_never_returns_drafts` — cùng ngưỡng 2.0, chế độ
    cũ rỗng (đúng luật thang cũ), chế độ đã sửa có kết quả.
 
-**Đo trên bản chạy với mô hình thật** (`docs-v2/verification/anh-chup/verify-b27.sh`, 9/9): sidecar BGE-M3 ở
+**Đo trên bản chạy với mô hình thật** (`docs/02-requirements/san-pham-v2/verification/anh-chup/verify-b27.sh`, 9/9): sidecar BGE-M3 ở
 8003, API chạy `CORRECTED_SCORING + UseSparse`; hai bản ghi cùng nội dung (một nháp của người khác, một đã xuất
 bản) vào bản chiếu sau 6 giây kèm cột sparse; `POST /api/v1/search` với ngưỡng mặc định 2.0 trả **đúng bản đã
 xuất bản, không có bản nháp** (B-27 đo được lần đầu); nhật ký ghi `postgres-16/pgvector-rrf3`, `min=0`; câu

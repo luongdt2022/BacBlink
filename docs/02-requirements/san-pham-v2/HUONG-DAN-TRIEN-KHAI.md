@@ -190,7 +190,7 @@ docker run -d --name nacentech-rag -p 8003:8000 -e MODEL_DEVICE=cpu -e MODEL_CAC
 ```
 
 Để có `/rerank` (cross-encoder), mount thư mục `app` của repo sidecar vào container (ảnh pinned chưa có route
-đó): thêm `-v "D:/Code/TakeOp/NacenTech/SourceCode/dmst-rag-master/dmst-rag-master/app:/app/app"`. Lần gọi
+đó): thêm `-v "{đường dẫn tuyệt đối tới repo}/legacy/dmst-rag-python/app:/app/app"`. Lần gọi
 `/rerank` đầu tải `BAAI/bge-reranker-v2-m3` (~2,2 GB) vào cùng volume; sau đó nạp trong vài giây.
 
 Cấu hình đích của API: `Matching__ScoringMode=CORRECTED_SCORING Matching__UseSparse=true Matching__UseRerank=true`. Ngưỡng điểm theo chế

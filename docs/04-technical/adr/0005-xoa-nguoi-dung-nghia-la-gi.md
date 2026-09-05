@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-04 (đề xuất), 2026-09-05 (chốt)
-- Liên quan: §26.1.8, D2-150; sổ lỗi `docs-v2/bug-triage.md` B-02, B-25, B-26, B-39
+- Liên quan: §26.1.8, D2-150; sổ lỗi `docs/02-requirements/san-pham-v2/bug-triage.md` B-02, B-25, B-26, B-39
 
 ## Bối cảnh
 

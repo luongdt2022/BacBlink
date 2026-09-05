@@ -43,13 +43,13 @@ TypeScript (NestJS backend), TypeScript + React 18 (frontend): Follow standard c
 
 ## Mô tả sản phẩm và sổ lỗi
 
-Hành vi của cổng người dùng được mô tả đầy đủ ở `../../../docs-v2/`. **Đọc trước khi sửa bất cứ thứ gì:**
+Hành vi của cổng người dùng được mô tả đầy đủ ở `../../docs/02-requirements/san-pham-v2/`. **Đọc trước khi sửa bất cứ thứ gì:**
 
-- [`docs-v2/BAN-GIAO.md`](../../../docs-v2/BAN-GIAO.md) — xây gì, theo thứ tự nào
-- [`docs-v2/HUONG-DAN-TRIEN-KHAI.md`](../../../docs-v2/HUONG-DAN-TRIEN-KHAI.md) — mã đặt ở đâu, client v2, năm cái bẫy đã đo
-- [`docs-v2/portal/`](../../../docs-v2/portal/) — 9 tài liệu mô tả từng khu vực
-- [`docs-v2/bug-triage.md`](../../../docs-v2/bug-triage.md) — 34 mục lỗi. Sửa cái nào thì cập nhật dòng đó **cùng PR**.
-- [`docs-v2/verification/portal-va-landing.md`](../../../docs-v2/verification/portal-va-landing.md) — 332 mục nghiệm thu
+- [`san-pham-v2/BAN-GIAO.md`](../../docs/02-requirements/san-pham-v2/BAN-GIAO.md) — xây gì, theo thứ tự nào
+- [`san-pham-v2/HUONG-DAN-TRIEN-KHAI.md`](../../docs/02-requirements/san-pham-v2/HUONG-DAN-TRIEN-KHAI.md) — mã đặt ở đâu, client v2, năm cái bẫy đã đo
+- [`san-pham-v2/portal/`](../../docs/02-requirements/san-pham-v2/portal/) — 9 tài liệu mô tả từng khu vực
+- [`san-pham-v2/bug-triage.md`](../../docs/02-requirements/san-pham-v2/bug-triage.md) — 34 mục lỗi. Sửa cái nào thì cập nhật dòng đó **cùng PR**.
+- [`san-pham-v2/verification/portal-va-landing.md`](../../docs/02-requirements/san-pham-v2/verification/portal-va-landing.md) — 332 mục nghiệm thu
 
 Lỗi mức cao đang mở ở repo này: không có nhánh xử lý 401 (B-12), `/contact` báo gửi thành công cho tin nhắn bị vứt (B-15). Năm khu vực là vỏ không backend; bốn trong năm đã được gỡ khỏi định tuyến có chủ đích — đừng mở lại khi chưa có API.
 

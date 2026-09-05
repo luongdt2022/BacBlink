@@ -10,7 +10,7 @@ using NacenTech.PolicyEngine;
 namespace NacenTech.Api.V2;
 
 /// <summary>
-/// Vòng ghép cặp và ứng viên của một subject — đặc tả `docs-v2/api-v2/matching.md`.
+/// Vòng ghép cặp và ứng viên của một subject — đặc tả `docs/02-requirements/san-pham-v2/api-v2/matching.md`.
 ///
 /// Phần đọc từ sprint 1; hai lệnh ghi (`POST .../match-rounds`, `POST .../index-jobs`) mở 2026-09-05 sau khi ADR-0004
 /// chốt quy tắc khoá chống lặp — `IdempotencyMiddleware` đòi `Idempotency-Key` trên cả hai. `GET .../match-rounds` (liệt kê các vòng đã tính) từng **không có phương thức nào ở tầng dịch vụ** —

@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-04 (đề xuất và chốt)
-- Liên quan: MOD-02, D2-148; `docs-v2/HUONG-DAN-TRIEN-KHAI.md` mục "Phía backend"; sổ lỗi `docs-v2/bug-triage.md` B-01, B-03
+- Liên quan: MOD-02, D2-148; `docs/02-requirements/san-pham-v2/HUONG-DAN-TRIEN-KHAI.md` mục "Phía backend"; sổ lỗi `docs/02-requirements/san-pham-v2/bug-triage.md` B-01, B-03
 
 ## Bối cảnh
 
@@ -94,5 +94,5 @@ Kèm theo, ba quy tắc để lựa chọn này không mục ruỗng:
    kiểm thì chỉ là lời khuyên.
 2. Một test hợp đồng đếm đường dẫn theo tiền tố trong `openapi/v2.json` và khẳng định **không đường `/api/v1`
    nào lọt vào tài liệu v2**. Đây là phép đo đã phát hiện B-01; nó phải thành test chứ không phải thao tác tay.
-3. Với mỗi nhóm endpoint mới: các dòng nghiệm thu tương ứng trong `docs-v2/verification/api-v2-va-moi.md`
+3. Với mỗi nhóm endpoint mới: các dòng nghiệm thu tương ứng trong `docs/02-requirements/san-pham-v2/verification/api-v2-va-moi.md`
    chuyển từ `chưa có endpoint` sang kết quả đo thật.

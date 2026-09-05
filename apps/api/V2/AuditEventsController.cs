@@ -6,7 +6,7 @@ using NacenTech.Modules.Audit.Application;
 namespace NacenTech.Api.V2;
 
 /// <summary>
-/// Tra cứu nhật ký kiểm toán — đặc tả `docs-v2/api-v2/audit.md`.
+/// Tra cứu nhật ký kiểm toán — đặc tả `docs/02-requirements/san-pham-v2/api-v2/audit.md`.
 ///
 /// Nhật ký là **chỉ ghi thêm**: không có endpoint tạo, sửa hay xoá, và điều đó không phải quy ước tự nguyện mà
 /// là hình dạng của tầng dưới. Việc cắt dấu vết thiết bị hết hạn **cố ý không có đường HTTP** — nó là nghĩa vụ

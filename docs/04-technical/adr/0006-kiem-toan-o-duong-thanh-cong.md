@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-04 (đề xuất), 2026-09-05 (chốt và cài đặt)
-- Liên quan: ADR-0001, §21.4, §23.2, §16.2; sổ lỗi `docs-v2/bug-triage.md` B-29, B-30, B-43
+- Liên quan: ADR-0001, §21.4, §23.2, §16.2; sổ lỗi `docs/02-requirements/san-pham-v2/bug-triage.md` B-29, B-30, B-43
 
 ## Bối cảnh
 

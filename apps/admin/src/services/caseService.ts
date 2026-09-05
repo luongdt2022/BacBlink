@@ -2,8 +2,8 @@ import { apiClientV2, normalizeError } from '@/lib/api/client'
 import type { Operation } from '@/lib/api/client'
 
 /**
- * Hồ sơ vụ việc — `/api/v2/cases`. Đặc tả `docs-v2/api-v2/case-va-quyet-dinh.md`, màn hình
- * `docs-v2/moi/console-ho-so-vu-viec.md`.
+ * Hồ sơ vụ việc — `/api/v2/cases`. Đặc tả `docs/02-requirements/san-pham-v2/api-v2/case-va-quyet-dinh.md`, màn hình
+ * `docs/02-requirements/san-pham-v2/moi/console-ho-so-vu-viec.md`.
  *
  * Ma trận chuyển và luật chọn loại quyết định được **chép lại** ở đây từ `TransitionMatrix` và
  * `Decisions.RequiredForStage` phía máy chủ. Đó là dữ liệu cố định, không đổi theo hồ sơ, và giao diện cần nó

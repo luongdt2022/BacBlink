@@ -2,4 +2,4 @@
 
 Đọc [`README.md`](README.md), rồi [`goal.md`](goal.md). Bảng phủ trong `README.md` là danh sách việc.
 
-Không sửa gì trong `../SourceCode/` — đó là tài liệu tham chiếu chỉ đọc.
+Mã nguồn nằm ở root repo (`apps/`, `modules/`, `packages/`, `tests/`); tài liệu này mô tả hành vi, không chép mã vào đây.

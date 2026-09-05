@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-04 (đề xuất), 2026-09-04 (chốt và cài đặt)
-- Liên quan: §7.5, MOD-01, MOD-05; sổ lỗi `docs-v2/bug-triage.md` B-32 và B-31
+- Liên quan: §7.5, MOD-01, MOD-05; sổ lỗi `docs/02-requirements/san-pham-v2/bug-triage.md` B-32 và B-31
 
 ## Bối cảnh
 
@@ -97,4 +97,4 @@ Quyết định 3 cũng đã tự chứng minh: khi quy ước bị tắt, thôn
 đợt rà. Bộ test: **44 → 51**, tất cả xanh.
 
 Hệ quả đã được xử lý cùng lần sửa, đúng như mục **Hệ quả** cảnh báo: B-31 không bao giờ có cơ hội nổ. Xem
-`docs-v2/bug-triage.md` B-31, và mục nghiệm thu `LP-06` đã chạy sau bản vá và trước khi phát hành.
+`docs/02-requirements/san-pham-v2/bug-triage.md` B-31, và mục nghiệm thu `LP-06` đã chạy sau bản vá và trước khi phát hành.

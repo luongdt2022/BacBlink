@@ -6,7 +6,7 @@ using NacenTech.Modules.Case.Application;
 namespace NacenTech.Api.V2;
 
 /// <summary>
-/// Hồ sơ vụ việc — phần **đọc**. Đặc tả `docs-v2/api-v2/case-va-quyet-dinh.md`.
+/// Hồ sơ vụ việc — phần **đọc**. Đặc tả `docs/02-requirements/san-pham-v2/api-v2/case-va-quyet-dinh.md`.
 ///
 /// Ba lệnh ghi của nhóm này (`POST /cases`, `POST /cases/{id}/transition`, `POST /cases/{id}/holds`) chưa nằm ở
 /// đây, và không phải vì thiếu thời gian: chuyển giai đoạn **bắt buộc mang một loại quyết định**, mà bộ bốn
@@ -122,7 +122,7 @@ public sealed class CasesController(ICaseService cases) : V2ControllerBase
     /// Chuyển giai đoạn. Đường dẫn riêng thay vì `PATCH` trường giai đoạn, vì đây là **một hành động, không
     /// phải một phép gán**: nó cần lý do, mã lý do và diễn giải, và nó sinh một bản ghi quyết định.
     ///
-    /// Tám luật chặn lệnh này, và thứ tự của chúng có nghĩa — xem `docs-v2/api-v2/case-va-quyet-dinh.md`.
+    /// Tám luật chặn lệnh này, và thứ tự của chúng có nghĩa — xem `docs/02-requirements/san-pham-v2/api-v2/case-va-quyet-dinh.md`.
     /// Hai luật đáng nhớ nhất: lệch phiên bản trả **409** và **không tạo bản ghi quyết định nào**; sai loại
     /// quyết định trả **422** kèm mã nói rõ loại nào được đòi (ADR-0008).
     /// </summary>

@@ -29,10 +29,10 @@ tests/
 
 ## Mô tả sản phẩm và sổ lỗi
 
-Hành vi của trang giới thiệu được mô tả ở [`docs-v2/landing/trang-chu-va-cau-chuyen.md`](../../../docs-v2/landing/trang-chu-va-cau-chuyen.md).
+Hành vi của trang giới thiệu được mô tả ở [`san-pham-v2/landing/trang-chu-va-cau-chuyen.md`](../../docs/02-requirements/san-pham-v2/landing/trang-chu-va-cau-chuyen.md).
 
-- [`docs-v2/bug-triage.md`](../../../docs-v2/bug-triage.md) — 34 mục lỗi. Sửa cái nào thì cập nhật dòng đó **cùng PR**.
-- [`docs-v2/verification/portal-va-landing.md`](../../../docs-v2/verification/portal-va-landing.md) — mục `LANDING-*`
+- [`san-pham-v2/bug-triage.md`](../../docs/02-requirements/san-pham-v2/bug-triage.md) — 34 mục lỗi. Sửa cái nào thì cập nhật dòng đó **cùng PR**.
+- [`san-pham-v2/verification/portal-va-landing.md`](../../docs/02-requirements/san-pham-v2/verification/portal-va-landing.md) — mục `LANDING-*`
 
 Lỗi đang mở ở repo này: năm nút kêu gọi trỏ về hệ NacenTwin cũ (B-21), trang có thể trắng khi tác giả câu chuyện không tra được (B-22), thông tin liên hệ lệch với cổng người dùng (B-23).
 

@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-04 (đề xuất), 2026-09-05 (chốt và cài đặt)
-- Liên quan: §16.1, §16.2, §30.1; sổ lỗi `docs-v2/bug-triage.md` B-28
+- Liên quan: §16.1, §16.2, §30.1; sổ lỗi `docs/02-requirements/san-pham-v2/bug-triage.md` B-28
 
 ## Bối cảnh
 
@@ -94,8 +94,8 @@ một ADR mới, không phải hoàn lại ADR này.
   `ToLegacyLevel`, để có **một** ánh xạ và kiểm được từ bộ test bảng quyết định. Bảng quyết định không đổi:
   nó đã đúng với ba mức từ đầu, chỉ có kiểu dữ liệu là thừa.
 - **Không cần migration.** Cột là chuỗi, không hàng nào mang giá trị bị bỏ.
-- Đặc tả [`docs-v2/api-v2/dataroom-va-cap-quyen.md`](../../../docs-v2/api-v2/dataroom-va-cap-quyen.md), màn hình
-  [`docs-v2/moi/phong-du-lieu-va-cap-quyen.md`](../../../docs-v2/moi/phong-du-lieu-va-cap-quyen.md), bảng
+- Đặc tả [`docs/02-requirements/san-pham-v2/api-v2/dataroom-va-cap-quyen.md`](../../02-requirements/san-pham-v2/api-v2/dataroom-va-cap-quyen.md), màn hình
+  [`docs/02-requirements/san-pham-v2/moi/phong-du-lieu-va-cap-quyen.md`](../../02-requirements/san-pham-v2/moi/phong-du-lieu-va-cap-quyen.md), bảng
   thuật ngữ và `goal.md` cập nhật từ bốn mức sang ba. Mục nghiệm thu `DROOM-01` — "tài liệu `Internal` không
   còn hiện cho mọi người" — được thoả bằng cách **không còn tài liệu `Internal` nào có thể tồn tại**.
 

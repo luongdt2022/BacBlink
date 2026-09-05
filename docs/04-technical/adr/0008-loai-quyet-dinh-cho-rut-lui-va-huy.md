@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED
 - Ngày: 2026-09-04 (đề xuất và chốt)
-- Liên quan: §7.2, §7.4, §7.5, CASE-08; đặc tả `docs-v2/api-v2/case-va-quyet-dinh.md`
+- Liên quan: §7.2, §7.4, §7.5, CASE-08; đặc tả `docs/02-requirements/san-pham-v2/api-v2/case-va-quyet-dinh.md`
 
 ## Bối cảnh
 
@@ -103,10 +103,10 @@ Cái giá của A, nói rõ để không ai ngạc nhiên sau: bộ giá trị �
 ## Hệ quả
 
 - `Decisions` thêm hai hằng số; `Transition` thêm hai luật và hai mã từ chối mới.
-- Bảng ma trận trong [`docs-v2/nen-tang/mo-hinh-du-lieu.md`](../../../docs-v2/nen-tang/mo-hinh-du-lieu.md#ma-trận-chuyển)
+- Bảng ma trận trong [`docs/02-requirements/san-pham-v2/nen-tang/mo-hinh-du-lieu.md`](../../02-requirements/san-pham-v2/nen-tang/mo-hinh-du-lieu.md#ma-trận-chuyển)
   không đổi — ma trận nói về giai đoạn, không về loại quyết định.
-- Đặc tả [`docs-v2/api-v2/case-va-quyet-dinh.md`](../../../docs-v2/api-v2/case-va-quyet-dinh.md) và màn hình
-  [`docs-v2/moi/console-ho-so-vu-viec.md`](../../../docs-v2/moi/console-ho-so-vu-viec.md) phải cập nhật bảng
+- Đặc tả [`docs/02-requirements/san-pham-v2/api-v2/case-va-quyet-dinh.md`](../../02-requirements/san-pham-v2/api-v2/case-va-quyet-dinh.md) và màn hình
+  [`docs/02-requirements/san-pham-v2/moi/console-ho-so-vu-viec.md`](../../02-requirements/san-pham-v2/moi/console-ho-so-vu-viec.md) phải cập nhật bảng
   "loại chuyển → quyết định bắt buộc", và console bớt được một chỗ khó xử: nhãn nút giờ khớp với thứ được ghi.
 - Tổng số chuỗi cần dịch ở giao diện tăng từ 32 lên 34.
 - Bộ test bất biến phải phủ hai ô mới: `WITHDRAWN` và `CANCELLED` với loại quyết định sai phải bị từ chối.

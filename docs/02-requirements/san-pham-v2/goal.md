@@ -6,23 +6,23 @@ Việc của bạn là viết mọi tài liệu trong cấu trúc của README c
 
 ## Nguồn đúng
 
-Bốn thư mục mã nguồn nằm ở `d:\Code\TakeOp\NacenTech\SourceCode\`:
+Mã nguồn nằm ngay trong repo này (root = solution .NET):
 
 | Thư mục | Là gì |
 |---|---|
-| `nacentech` | Backend ASP.NET Core .NET 10, đã thay NacenTwin/NestJS **một lần**, không chạy song song |
-| `dmst-admin-main/dmst-admin-main` | Bảng quản trị (React + Vite + Tailwind + shadcn/ui) |
-| `dmst-user-main/dmst-user-main` | Cổng người dùng |
-| `dmst-landing-page-main/dmst-landing-page-main` | Trang giới thiệu công khai |
+| `apps/api`, `apps/worker`, `modules/`, `packages/` | Backend ASP.NET Core .NET 10, đã thay NacenTwin/NestJS **một lần**, không chạy song song |
+| `apps/admin` | Bảng quản trị (React + Vite + Tailwind + shadcn/ui) |
+| `apps/portal` | Cổng người dùng |
+| `apps/landing` | Trang giới thiệu công khai |
 
-Không thư mục nào là git repo. Mô tả cấu hình mặc định, không tuỳ biến gì. `dmst-rag-master` và `search-bench` nằm ngoài phạm vi.
+Mô tả cấu hình mặc định, không tuỳ biến gì. `legacy/dmst-rag-python` và `tools/search-bench` nằm ngoài phạm vi.
 
 Với mỗi tài liệu, đọc theo thứ tự này trước khi viết:
 
-1. `nacentech/modules/{module}/Application/Contracts.cs` — interface service của module. **Chú thích XML trong đó là nguồn dày nhất**: nó nói rõ điều kiện từ chối, mã lỗi, và chỗ nào cố ý khác NestJS.
-2. `nacentech/modules/{module}/Application/*Service.cs` — thứ tự thao tác và sự kiện phát ra.
-3. `nacentech/apps/api/V1Compat/` — facade. **Đây là thứ frontend gọi được hôm nay.** Nếu một năng lực ở tầng service không xuất hiện ở đây, nó không có đường tới người dùng, và tài liệu phải nói rõ điều đó.
-4. `nacentech/tests/invariants/` và `nacentech/tests/authorization/` — gần với đặc tả chạy được của trường hợp biên.
+1. `modules/{module}/Application/Contracts.cs` — interface service của module. **Chú thích XML trong đó là nguồn dày nhất**: nó nói rõ điều kiện từ chối, mã lỗi, và chỗ nào cố ý khác NestJS.
+2. `modules/{module}/Application/*Service.cs` — thứ tự thao tác và sự kiện phát ra.
+3. `apps/api/V1Compat/` — facade. **Đây là thứ frontend gọi được hôm nay.** Nếu một năng lực ở tầng service không xuất hiện ở đây, nó không có đường tới người dùng, và tài liệu phải nói rõ điều đó.
+4. `tests/invariants/` và `tests/authorization/` — gần với đặc tả chạy được của trường hợp biên.
 5. UI: `src/features/{khu vực}/` của repo frontend tương ứng; `src/services/` (admin) hoặc `src/features/*/api/` (cổng) cho lời gọi API thật.
 6. Mặc định và ngưỡng: `modules/identity/Application/Contracts.cs` (`AuthOptions`), `modules/matching/Application/Contracts.cs` (`MatchingOptions`), `packages/kernel/Application/Paged.cs`.
 

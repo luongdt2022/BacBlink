@@ -20,7 +20,7 @@ React + Vite SPA for the DMST marketplace — the user-facing interface for subm
 ### Prerequisites
 
 - Node.js 22+
-- Backend API running (see [dmst-backend](../dmst-backend))
+- Backend API running — `apps/api` (.NET), see [root README](../../README.md#chạy-nhanh)
 
 ### Setup
 

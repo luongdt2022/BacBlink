@@ -1,6 +1,6 @@
 # Quy ước mã nguồn NacenTech V2 (.NET 10)
 
-Tài liệu gốc: `../../NACENTECH_ARCHITECTURE_V2.md` (V2.20). Mọi quy ước dưới đây là hệ quả trực tiếp của §9.1, §9.2 (MOD-01…05), §23.2, §26.3, §26.7, D2-147.
+Tài liệu gốc: [`NACENTECH_ARCHITECTURE_V2.md`](./NACENTECH_ARCHITECTURE_V2.md) (V2.20). Mọi quy ước dưới đây là hệ quả trực tiếp của §9.1, §9.2 (MOD-01…05), §23.2, §26.3, §26.7, D2-147.
 
 ## 1. Cấu trúc
 
