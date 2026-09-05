@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16-alpine
+        # ADR-0010: chỉ mục tìm kiếm cần extension `vector` — cùng ảnh với docker-compose.yml.
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_DB: nacentech_test
           POSTGRES_USER: postgres
