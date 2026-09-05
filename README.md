@@ -138,6 +138,13 @@ Không đặt `NACENTECH_TEST_PG` thì integration test tự khởi PostgreSQL b
 
 Phase 1 chỉ mở phần lõi. Chưa có trong mã: evaluation/deal/execution/outcome, finance/program/billing, expert network, professional services, adoption, evidence passport, partner network, government fabric, `CapabilityProfileVersion`, crypto-shredding, Object Lock. Đó là `SCALE_AFTER_EVIDENCE`/`DEFERRED_OPTION` theo §9.4.2 — có trong kiến trúc đích, không nằm trong release này.
 
+## Phát hành
+
+`.github/workflows/release.yml` build và đẩy ba ảnh lên GHCR khi push thẻ `v*` hoặc chạy tay:
+`ghcr.io/nacentwin/nacentwin/{api,worker,legacy-etl}`. Cả ba dùng chung `Dockerfile` ở root, chọn bằng `--build-arg APP`.
+
+Workflow dừng ở chỗ **có ảnh gắn thẻ**, không deploy — hạ tầng đích chưa chốt. Danh sách còn thiếu để lên production ở [`docs/06-deployment/README.md`](./docs/06-deployment/README.md#còn-thiếu-để-lên-được-production).
+
 ## Ghi chú
 
 - **Không commit secret thật.** Các file `.env` của ba frontend và backend cũ đã **không** được đưa vào repo; chỉ có `.env.example`. Metadata key ghi ở [`docs/04-technical/keys.md`](./docs/04-technical/keys.md).
