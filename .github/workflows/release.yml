@@ -1,0 +1,78 @@
+# Đóng gói và đẩy ảnh backend lên GitHub Container Registry.
+# KHÔNG deploy lên máy chủ nào: hạ tầng đích chưa chốt (§26 cần S3 + Object Lock, KMS, secret ngoài file).
+# Workflow này dừng ở chỗ có ảnh gắn thẻ, kiểm được — bước đưa ảnh lên môi trường là việc riêng.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Thẻ gán cho ảnh (mặc định: sha ngắn)"
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: apps/api
+            assembly: NacenTech.Api
+            name: api
+          - app: apps/worker
+            assembly: NacenTech.Worker
+            name: worker
+          - app: tools/legacy-etl
+            assembly: NacenTech.Tools.LegacyEtl
+            name: legacy-etl
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+            type=sha,format=short
+
+      - name: Build và push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: |
+            APP=${{ matrix.app }}
+            ASSEMBLY=${{ matrix.assembly }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max
+
+      - name: Ảnh chạy được
+        # Ảnh không có shell của người dùng thường; kiểm tối thiểu là assembly khởi động được.
+        if: matrix.name != 'legacy-etl'
+        run: |
+          IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          docker run --rm -e ASPNETCORE_HTTP_PORTS=8080 --entrypoint dotnet "$IMAGE" --info
