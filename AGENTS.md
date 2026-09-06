@@ -13,7 +13,7 @@ Repo này là **backend ASP.NET Core .NET 10** (root = solution `NacenTech.slnx`
 - **`legacy/` chỉ đọc.** Không build, không sửa, không deploy. Backend NestJS đã bị thay **một lần**; muốn biết hành vi nào giữ/đổi thì đọc README, không đọc mã cũ.
 - **Nguồn đúng cho hành vi** là `docs/02-requirements/san-pham-v2/`; **nguồn đúng cho schema API** là OpenAPI sinh tự động khi API chạy. Mã không phải nguồn đúng cho hành vi.
 - **Quyết định kiến trúc** ghi ở `docs/04-technical/adr/` — thêm ADR mới theo số kế tiếp, không sửa ADR đã `ACCEPTED`.
-- **Kiểm thử là cổng chặn**: `dotnet test` cả 5 project trong `tests/` phải xanh trước khi nhận PR; CI ở `.github/workflows/ci.yml` là điều kiện merge.
+- **Kiểm thử là cổng chặn**: `dotnet test` cả 5 project trong `tests/` phải xanh trước khi nhận PR. CI **đang tạm tắt chạy tự động** (2026-09-06) — `.github/workflows/ci.yml` chỉ còn `workflow_dispatch`, nên không còn ai chạy test thay bạn. Chạy tay tại máy, hoặc bấm chạy workflow từ tab Actions trước khi merge.
 - Frontend: mỗi app có `AGENTS.md` riêng trong `apps/<tên>/`, đọc nó trước khi sửa app đó.
 
 ## Lệnh hay dùng

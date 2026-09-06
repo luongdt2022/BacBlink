@@ -1,11 +1,21 @@
 # CI cho .NET 10. Khác với NacenTwin (workflow chỉ `git pull` + `docker compose build`),
 # ở đây build/test/license gate là điều kiện chặn — §26.3 và §26.8.4.
+#
+# TẠM TẮT chạy tự động từ 2026-09-06 theo yêu cầu của chủ sản phẩm. Workflow **không bị xoá** và nội dung
+# job giữ nguyên; chỉ trigger bị thu về `workflow_dispatch`, nên nó vẫn bấm chạy tay được từ tab Actions.
+#
+# Bật lại: bỏ chú thích hai dòng `push`/`pull_request` bên dưới. Không cần sửa gì khác.
+#
+# Trong lúc tắt, cổng chặn duy nhất là chạy tay tại máy — `dotnet test` cả 5 project trong `tests/`, cộng
+# `npm run lint && npm test && npx tsc --noEmit` ở từng frontend. Điều này có nghĩa là một PR có thể được
+# merge mà chưa ai chạy test; đó là hệ quả của việc tắt, không phải một thay đổi về tiêu chuẩn chất lượng.
 name: ci
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
 
 env:
   DOTNET_NOLOGO: "true"
