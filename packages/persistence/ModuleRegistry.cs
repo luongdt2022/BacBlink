@@ -22,5 +22,6 @@ public static class ModuleRegistry
         new Modules.Brokerage.BrokerageModule(),
         new Modules.Audit.AuditModule(),
         new Modules.Integration.IntegrationModule(),
+        new Modules.Entitlement.EntitlementModule(),
     ];
 }

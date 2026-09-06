@@ -111,6 +111,17 @@ public sealed class CommercializationCase : AggregateRoot
             throw new UnprocessableException("Transition tiến phải là APPROVE hoặc WAIVE", "FORWARD_DECISION_REQUIRED");
         }
 
+        // ADR-0013: "đã bàn giao cho quy trình có thẩm quyền" mà không nói được bàn giao cho quy trình nào thì
+        // là một lời khai không kiểm chứng được — và nó nằm vĩnh viễn trong dữ liệu chỉ-ghi-thêm. Tham chiếu là
+        // bắt buộc, và nó phải là điều kiện của aggregate chứ không phải của biểu mẫu: ETL, job và mọi cửa API
+        // khác đều đi qua đây.
+        if (decision == CaseDecisions.HandoverToAuthority && string.IsNullOrWhiteSpace(mandateRef))
+        {
+            throw new UnprocessableException(
+                "Bàn giao phải kèm mandateRef trỏ tới quy trình nhận bàn giao",
+                "HANDOVER_REFERENCE_REQUIRED");
+        }
+
         // CASE-01: qualified case phải có lead broker (và problem owner, demand version — đã có từ Create).
         if (toStage == Stages.Qualification && LeadBrokerPersonId is null)
             throw new UnprocessableException("CASE-01: cần lead broker trước QUALIFICATION", "CASE_01_LEAD_BROKER_REQUIRED");

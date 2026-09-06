@@ -115,6 +115,18 @@ public sealed class SubjectMatchingController(
         return Ok(Paged(await matching.ListRoundCandidatesAsync(roundId, PageRequest.Of(page, limit), ct)));
     }
 
+    /// <summary>
+    /// Ứng viên **bị loại** của một vòng, kèm lý do — vế thứ hai của nguyên tắc 11, trước đây không có ở đâu cả.
+    /// Xếp theo điểm giảm dần: người trượt sát ngưỡng nhất đứng đầu, vì đó là chỗ quyết định dễ sai nhất.
+    /// Cùng luật quyền đọc với ứng viên được chọn — một vòng chỉ tồn tại vì subject của nó tồn tại.
+    /// </summary>
+    [HttpGet("/api/v2/match-rounds/{roundId:guid}/exclusions")]
+    public async Task<IActionResult> RoundExclusions(Guid roundId, [FromQuery] int? page, [FromQuery] int? limit, CancellationToken ct)
+    {
+        await RequireReadableRoundAsync(roundId, ct);
+        return Ok(Paged(await matching.ListRoundExclusionsAsync(roundId, PageRequest.Of(page, limit), ct)));
+    }
+
     private async Task<MatchRoundDto> RequireReadableRoundAsync(Guid roundId, CancellationToken ct)
     {
         var round = await matching.GetRoundAsync(roundId, ct) ?? throw new NotFoundException($"Match round {roundId} not found");

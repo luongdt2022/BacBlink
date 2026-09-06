@@ -17,7 +17,7 @@ namespace NacenTech.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pgcrypto");
@@ -26,7 +26,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Audit.Domain.AuditEvent", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -119,7 +118,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Brokerage.Domain.Assignment", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -183,7 +181,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Brokerage.Domain.BrokerProfile", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -232,7 +229,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Case.Domain.CaseHold", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -274,7 +270,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Case.Domain.CaseParty", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -312,7 +307,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Case.Domain.CommercializationCase", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -411,7 +405,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Case.Domain.DecisionRecord", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -491,7 +484,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Communication.Domain.CaseInvitation", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -572,7 +564,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Communication.Domain.Notification", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -614,7 +605,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Content.Domain.Story", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -681,7 +671,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.DataRoom.Domain.AccessGrant", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -752,7 +741,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.DataRoom.Domain.Document", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -825,7 +813,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.DataRoom.Domain.DocumentVersion", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -886,7 +873,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Demand.Domain.DemandBrief", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -967,7 +953,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Demand.Domain.DemandBriefVersion", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1007,10 +992,180 @@ namespace NacenTech.Persistence.Migrations
                     b.ToTable("demand_brief_versions", "demand");
                 });
 
+            modelBuilder.Entity("NacenTech.Modules.Entitlement.Domain.Entitlement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AgreementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("agreement_id");
+
+                    b.Property<string>("CapabilityCode")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("capability_code");
+
+                    b.Property<int>("Consumed")
+                        .HasColumnType("integer")
+                        .HasColumnName("consumed");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("QuotaLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("quota_limit");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_entitlements");
+
+                    b.HasIndex("AgreementId", "CapabilityCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_entitlements_agreement_id_capability_code");
+
+                    b.ToTable("entitlements", "entitlement");
+                });
+
+            modelBuilder.Entity("NacenTech.Modules.Entitlement.Domain.ManagedServiceAgreement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("InvoiceReference")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("invoice_reference");
+
+                    b.Property<Guid>("PayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payer_id");
+
+                    b.Property<string>("PayerKind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("payer_kind");
+
+                    b.Property<DateTimeOffset>("PeriodEnd")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("period_end");
+
+                    b.Property<DateTimeOffset>("PeriodStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("period_start");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("reference");
+
+                    b.Property<string>("ServiceLine")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("service_line");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_managed_service_agreements");
+
+                    b.HasIndex("Reference")
+                        .IsUnique()
+                        .HasDatabaseName("ix_managed_service_agreements_reference");
+
+                    b.HasIndex("PayerKind", "PayerId", "Status", "PeriodEnd")
+                        .HasDatabaseName("ix_managed_service_agreements_payer_kind_payer_id_status_perio~");
+
+                    b.ToTable("managed_service_agreements", "entitlement");
+                });
+
+            modelBuilder.Entity("NacenTech.Modules.Entitlement.Domain.UsageRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorRef")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_ref");
+
+                    b.Property<Guid?>("AgreementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("agreement_id");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("CapabilityCode")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("capability_code");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("outcome");
+
+                    b.Property<Guid>("PayerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("payer_id");
+
+                    b.Property<string>("PayerKind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("payer_kind");
+
+                    b.HasKey("Id")
+                        .HasName("pk_usage_records");
+
+                    b.HasIndex("Outcome", "CapabilityCode", "OccurredAt")
+                        .HasDatabaseName("ix_usage_records_outcome_capability_code_occurred_at");
+
+                    b.HasIndex("PayerKind", "PayerId", "OccurredAt")
+                        .HasDatabaseName("ix_usage_records_payer_kind_payer_id_occurred_at");
+
+                    b.ToTable("usage_records", "entitlement");
+                });
+
             modelBuilder.Entity("NacenTech.Modules.Identity.Domain.ActivationToken", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1055,7 +1210,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Identity.Domain.PasswordResetToken", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1100,7 +1254,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Identity.Domain.Person", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1196,10 +1349,172 @@ namespace NacenTech.Persistence.Migrations
                     b.ToTable("persons", "identity");
                 });
 
+            modelBuilder.Entity("NacenTech.Modules.Integration.Domain.DemandSignal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("BudgetAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("budget_amount");
+
+                    b.Property<string>("BudgetCurrency")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("budget_currency");
+
+                    b.Property<string>("BuyerName")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("buyer_name");
+
+                    b.Property<Guid?>("ConvertedDemandBriefId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("converted_demand_brief_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<Guid?>("DecidedByActorRef")
+                        .HasColumnType("uuid")
+                        .HasColumnName("decided_by_actor_ref");
+
+                    b.Property<string>("DecisionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("decision_reason");
+
+                    b.Property<DateTimeOffset?>("ObservedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("observed_at");
+
+                    b.PrimitiveCollection<Guid[]>("SectorIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("sector_ids");
+
+                    b.Property<string>("SignalClass")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("signal_class");
+
+                    b.Property<Guid>("SourceRecordId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("source_record_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_demand_signals");
+
+                    b.HasIndex("SourceRecordId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_demand_signals_source_record_id");
+
+                    b.HasIndex("Status", "SignalClass", "ObservedAt")
+                        .HasDatabaseName("ix_demand_signals_status_signal_class_observed_at");
+
+                    b.ToTable("demand_signals", "integration");
+                });
+
+            modelBuilder.Entity("NacenTech.Modules.Integration.Domain.SourceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AuthorityLevel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("authority_level");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("content_hash");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("external_id");
+
+                    b.Property<DateTimeOffset>("FetchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fetched_at");
+
+                    b.Property<string>("License")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("license");
+
+                    b.Property<string>("PayloadJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("payload_json");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("SourceUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("source_url");
+
+                    b.HasKey("Id")
+                        .HasName("pk_source_records");
+
+                    b.HasIndex("Source", "ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_source_records_source_external_id");
+
+                    b.ToTable("source_records", "integration");
+                });
+
             modelBuilder.Entity("NacenTech.Modules.Matching.Domain.ContentChunk", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1250,7 +1565,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Matching.Domain.MatchCandidate", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1290,6 +1604,11 @@ namespace NacenTech.Persistence.Migrations
                         .HasColumnType("character varying(120)")
                         .HasColumnName("reason");
 
+                    b.PrimitiveCollection<string[]>("ReasonCodes")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("reason_codes");
+
                     b.Property<Guid>("RoundId")
                         .HasColumnType("uuid")
                         .HasColumnName("round_id");
@@ -1310,10 +1629,60 @@ namespace NacenTech.Persistence.Migrations
                     b.ToTable("match_candidates", "matching");
                 });
 
+            modelBuilder.Entity("NacenTech.Modules.Matching.Domain.MatchExclusion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CandidateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("candidate_id");
+
+                    b.Property<string>("CandidateKind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("candidate_kind");
+
+                    b.Property<DateTimeOffset>("ComputedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("computed_at");
+
+                    b.Property<string>("Detail")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("detail");
+
+                    b.Property<double?>("RawScore")
+                        .HasColumnType("double precision")
+                        .HasColumnName("raw_score");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("reason_code");
+
+                    b.Property<Guid>("RoundId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("round_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_match_exclusions");
+
+                    b.HasIndex("CandidateKind", "CandidateId")
+                        .HasDatabaseName("ix_match_exclusions_candidate_kind_candidate_id");
+
+                    b.HasIndex("RoundId", "ReasonCode")
+                        .HasDatabaseName("ix_match_exclusions_round_id_reason_code");
+
+                    b.ToTable("match_exclusions", "matching");
+                });
+
             modelBuilder.Entity("NacenTech.Modules.Matching.Domain.MatchRound", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1382,10 +1751,73 @@ namespace NacenTech.Persistence.Migrations
                     b.ToTable("match_rounds", "matching");
                 });
 
+            modelBuilder.Entity("NacenTech.Modules.Matching.Domain.SearchFeedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("ActorRef")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_ref");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("Grade")
+                        .HasColumnType("integer")
+                        .HasColumnName("grade");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("note");
+
+                    b.Property<Guid>("QueryLogId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("query_log_id");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("integer")
+                        .HasColumnName("rank");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.Property<string>("SubjectKind")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("subject_kind");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_search_feedback");
+
+                    b.HasIndex("Kind", "CreatedAt")
+                        .HasDatabaseName("ix_search_feedback_kind_created_at");
+
+                    b.HasIndex("QueryLogId", "SubjectKind", "SubjectId", "Kind", "ActorRef")
+                        .IsUnique()
+                        .HasDatabaseName("ix_search_feedback_query_log_id_subject_kind_subject_id_kind_a~");
+
+                    b.ToTable("search_feedback", "matching");
+                });
+
             modelBuilder.Entity("NacenTech.Modules.Matching.Domain.SearchQueryLog", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1415,6 +1847,11 @@ namespace NacenTech.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("query_text");
+
+                    b.PrimitiveCollection<double[]>("ResultScores")
+                        .IsRequired()
+                        .HasColumnType("double precision[]")
+                        .HasColumnName("result_scores");
 
                     b.PrimitiveCollection<Guid[]>("ResultSubjectIds")
                         .IsRequired()
@@ -1453,7 +1890,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Policy.Domain.PolicySnapshot", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1531,7 +1967,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Policy.Domain.TaxonomyTerm", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1579,7 +2014,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Technology.Domain.TechnologyAsset", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1666,7 +2100,6 @@ namespace NacenTech.Persistence.Migrations
             modelBuilder.Entity("NacenTech.Modules.Technology.Domain.TechnologyPackageVersion", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -2463,6 +2896,75 @@ namespace NacenTech.Persistence.Migrations
                         .HasConstraintName("fk_demand_brief_versions_demand_briefs_demand_brief_id");
                 });
 
+            modelBuilder.Entity("NacenTech.Modules.Entitlement.Domain.Entitlement", b =>
+                {
+                    b.HasOne("NacenTech.Modules.Entitlement.Domain.ManagedServiceAgreement", null)
+                        .WithMany("Entitlements")
+                        .HasForeignKey("AgreementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_entitlements_managed_service_agreements_agreement_id");
+                });
+
+            modelBuilder.Entity("NacenTech.Modules.Entitlement.Domain.ManagedServiceAgreement", b =>
+                {
+                    b.OwnsOne("NacenTech.Kernel.Domain.LegacyRef", "Legacy", b1 =>
+                        {
+                            b1.Property<Guid>("ManagedServiceAgreementId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<Guid>("BatchId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("legacy_batch_id");
+
+                            b1.Property<string>("LegacyId")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("legacy_id");
+
+                            b1.Property<string>("MappingVersion")
+                                .IsRequired()
+                                .HasMaxLength(30)
+                                .HasColumnType("character varying(30)")
+                                .HasColumnName("legacy_mapping_version");
+
+                            b1.Property<DateTimeOffset>("MigratedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("legacy_migrated_at");
+
+                            b1.Property<string>("SourceHash")
+                                .IsRequired()
+                                .HasMaxLength(64)
+                                .HasColumnType("character varying(64)")
+                                .HasColumnName("legacy_source_hash");
+
+                            b1.Property<string>("SourceSystem")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("legacy_source_system");
+
+                            b1.Property<string>("SourceTable")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("character varying(80)")
+                                .HasColumnName("legacy_source_table");
+
+                            b1.HasKey("ManagedServiceAgreementId")
+                                .HasName("pk_managed_service_agreements");
+
+                            b1.ToTable("managed_service_agreements", "entitlement");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ManagedServiceAgreementId")
+                                .HasConstraintName("fk_managed_service_agreements_managed_service_agreements_id");
+                        });
+
+                    b.Navigation("Legacy");
+                });
+
             modelBuilder.Entity("NacenTech.Modules.Identity.Domain.Person", b =>
                 {
                     b.OwnsOne("NacenTech.Kernel.Domain.LegacyRef", "Legacy", b1 =>
@@ -2522,6 +3024,65 @@ namespace NacenTech.Persistence.Migrations
                     b.Navigation("Legacy");
                 });
 
+            modelBuilder.Entity("NacenTech.Modules.Integration.Domain.DemandSignal", b =>
+                {
+                    b.OwnsOne("NacenTech.Kernel.Domain.LegacyRef", "Legacy", b1 =>
+                        {
+                            b1.Property<Guid>("DemandSignalId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<Guid>("BatchId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("legacy_batch_id");
+
+                            b1.Property<string>("LegacyId")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("legacy_id");
+
+                            b1.Property<string>("MappingVersion")
+                                .IsRequired()
+                                .HasMaxLength(30)
+                                .HasColumnType("character varying(30)")
+                                .HasColumnName("legacy_mapping_version");
+
+                            b1.Property<DateTimeOffset>("MigratedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("legacy_migrated_at");
+
+                            b1.Property<string>("SourceHash")
+                                .IsRequired()
+                                .HasMaxLength(64)
+                                .HasColumnType("character varying(64)")
+                                .HasColumnName("legacy_source_hash");
+
+                            b1.Property<string>("SourceSystem")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("legacy_source_system");
+
+                            b1.Property<string>("SourceTable")
+                                .IsRequired()
+                                .HasMaxLength(80)
+                                .HasColumnType("character varying(80)")
+                                .HasColumnName("legacy_source_table");
+
+                            b1.HasKey("DemandSignalId")
+                                .HasName("pk_demand_signals");
+
+                            b1.ToTable("demand_signals", "integration");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DemandSignalId")
+                                .HasConstraintName("fk_demand_signals_demand_signals_id");
+                        });
+
+                    b.Navigation("Legacy");
+                });
+
             modelBuilder.Entity("NacenTech.Modules.Matching.Domain.MatchCandidate", b =>
                 {
                     b.HasOne("NacenTech.Modules.Matching.Domain.MatchRound", null)
@@ -2530,6 +3091,16 @@ namespace NacenTech.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_match_candidates_match_rounds_round_id");
+                });
+
+            modelBuilder.Entity("NacenTech.Modules.Matching.Domain.MatchExclusion", b =>
+                {
+                    b.HasOne("NacenTech.Modules.Matching.Domain.MatchRound", null)
+                        .WithMany("Exclusions")
+                        .HasForeignKey("RoundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_match_exclusions_match_rounds_round_id");
                 });
 
             modelBuilder.Entity("NacenTech.Modules.Matching.Domain.MatchRound", b =>
@@ -2797,9 +3368,16 @@ namespace NacenTech.Persistence.Migrations
                     b.Navigation("Versions");
                 });
 
+            modelBuilder.Entity("NacenTech.Modules.Entitlement.Domain.ManagedServiceAgreement", b =>
+                {
+                    b.Navigation("Entitlements");
+                });
+
             modelBuilder.Entity("NacenTech.Modules.Matching.Domain.MatchRound", b =>
                 {
                     b.Navigation("Candidates");
+
+                    b.Navigation("Exclusions");
                 });
 
             modelBuilder.Entity("NacenTech.Modules.Technology.Domain.TechnologyAsset", b =>

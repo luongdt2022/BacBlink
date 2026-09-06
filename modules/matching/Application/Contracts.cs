@@ -87,7 +87,20 @@ public sealed record SearchHitDto(
     IReadOnlyList<Guid> SectorIds,
     IReadOnlyList<string> SectorNames);
 
-public sealed record SearchResultDto(IReadOnlyList<SearchHitDto> Hits, int Total, long TookMs);
+/// <summary>
+/// `QueryLogId` là định danh của lần tìm kiếm này trong `search_query_logs`. Nó trả về cho client để nhãn phản hồi
+/// gắn được vào **đúng lần hỏi** — không có nó thì "kết quả này liên quan" không biết thuộc truy vấn nào, và
+/// golden set §26.6.5 không dựng được. Facade v1 không đưa trường này ra ngoài (hình dạng JSON v1 đóng băng).
+/// </summary>
+public sealed record SearchResultDto(IReadOnlyList<SearchHitDto> Hits, int Total, long TookMs, Guid QueryLogId);
+
+/// <summary>
+/// Một nhãn cho một kết quả. `Rank` do máy chủ tự tra từ vị trí trong log đã ghi, không nhận từ client — client
+/// gửi rank là mở đường cho dữ liệu đo bị bịa mà không ai phát hiện.
+/// </summary>
+public sealed record SearchFeedbackCommand(SubjectRef Subject, string Kind, int? Grade, string? Note);
+
+public sealed record SearchFeedbackDto(Guid Id, Guid QueryLogId, SubjectRef Subject, int Rank, string Kind, int? Grade, string? Note, DateTimeOffset CreatedAt);
 
 /// <summary>
 /// Bốn thông tin phải lộ ra (công cụ, mô hình nhúng, chế độ chấm điểm, số ứng viên) cộng hai thứ trang so sánh
@@ -99,6 +112,11 @@ public sealed record MatchRoundDto(Guid Id, SubjectRef Subject, string SearchEng
 /// <summary>Bộ lọc danh sách vòng. Không lọc theo điểm — điểm của hai chế độ không cùng đơn vị.</summary>
 public sealed record MatchRoundFilter(string? ScoringMode, string? SearchEngineVersion);
 
+/// <summary>
+/// `Reason` là nhãn thuật toán, giống nhau cho cả vòng. `ReasonCodes` là lý do của **riêng ứng viên này** —
+/// nguyên tắc 11. Vòng nhập từ hệ cũ có mảng rỗng vì hệ cũ không ghi lý do; rỗng nghĩa là *không biết*,
+/// không phải *không có lý do nào*.
+/// </summary>
 public sealed record MatchCandidateDto(
     Guid Id,
     Guid RoundId,
@@ -109,8 +127,19 @@ public sealed record MatchCandidateDto(
     int ChunkIndex,
     int Rank,
     string? Reason,
+    IReadOnlyList<string> ReasonCodes,
     DateTimeOffset ComputedAt,
     DateTimeOffset UpdatedAt);
+
+/// <summary>Ứng viên đã được thu hồi nhưng bị loại, kèm lý do — vế thứ hai của nguyên tắc 11.</summary>
+public sealed record MatchExclusionDto(
+    Guid Id,
+    Guid RoundId,
+    SubjectRef Candidate,
+    double? RawScore,
+    string ReasonCode,
+    string? Detail,
+    DateTimeOffset ComputedAt);
 
 public interface IMatchingService
 {
@@ -130,8 +159,21 @@ public interface IMatchingService
     /// <summary>Ứng viên của **một vòng cụ thể**, theo hạng tăng dần — không phải của vòng đang dùng.</summary>
     Task<PagedResult<MatchCandidateDto>> ListRoundCandidatesAsync(Guid roundId, PageRequest page, CancellationToken ct);
 
+    /// <summary>
+    /// Ứng viên bị loại của một vòng. Đây là nửa mà broker cần để giải trình: danh sách trả về nói ai được chọn,
+    /// đường này nói ai **không** và vì sao. Không có nó thì việc rà lại một shortlist là làm lại từ đầu bằng tay.
+    /// </summary>
+    Task<PagedResult<MatchExclusionDto>> ListRoundExclusionsAsync(Guid roundId, PageRequest page, CancellationToken ct);
+
     /// <summary>Hybrid search; ghi `search_query_log` (§26.6.4).</summary>
     Task<SearchResultDto> SearchAsync(SearchQuery query, Guid? actorPersonId, CancellationToken ct);
+
+    /// <summary>
+    /// Gắn nhãn cho một kết quả của một lần tìm kiếm (§26.6.5). Ném <c>NotFoundException</c> khi không có log đó,
+    /// <c>UnprocessableException</c> khi subject không nằm trong kết quả đã trả về của lần đó — nhãn cho một thứ
+    /// chưa từng hiện ra không phải dữ liệu đo, nó là dữ liệu sai.
+    /// </summary>
+    Task<SearchFeedbackDto> RecordSearchFeedbackAsync(Guid queryLogId, SearchFeedbackCommand command, Guid? actorPersonId, CancellationToken ct);
 
     Task RequestChunkEmbedAsync(SubjectRef subject, CancellationToken ct);
     Task RequestComputeMatchesAsync(SubjectRef subject, CancellationToken ct);

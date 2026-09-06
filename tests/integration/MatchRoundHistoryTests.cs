@@ -23,7 +23,9 @@ public sealed class MatchRoundHistoryTests(PostgresFixture fixture)
 
     private static MatchRound Round(SubjectRef subject, string engine, string mode, DateTimeOffset at, params (Guid Id, double Score)[] hits)
         => MatchRound.Complete(subject, engine, "bge-m3", mode, "câu hỏi thử",
-            hits.Select(h => (new SubjectRef(SubjectKinds.TechnologyAsset, h.Id), h.Score, $"đoạn {h.Id:N}"[..12], 0, "test")), at);
+            hits.Select(h => (new SubjectRef(SubjectKinds.TechnologyAsset, h.Id), h.Score, $"đoạn {h.Id:N}"[..12], 0, "test",
+                (IReadOnlyList<string>)[MatchReasonCodes.SemanticMatch])),
+            [], at);
 
     [Fact]
     public async Task Lists_rounds_newest_first_and_filters_by_mode_and_engine()

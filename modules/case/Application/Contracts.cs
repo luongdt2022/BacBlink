@@ -26,17 +26,30 @@ public static class Stages
     public const string Withdrawn = "WITHDRAWN";
     public const string Cancelled = "CANCELLED";
 
+    /// <summary>
+    /// ADR-0013 — hồ sơ kết thúc **thành công** bằng việc chuyển quyết định sang một quy trình có thẩm quyền
+    /// bên ngoài, không phải bằng việc NacenTwin tự thực hiện. Với người trả tiền dùng vốn nhà nước, việc chọn
+    /// nhà cung cấp bắt buộc chạy trên Hệ thống mạng đấu thầu quốc gia (Điều 50 Luật Đấu thầu 2023); NacenTwin
+    /// làm phần thượng nguồn rồi dừng lại.
+    ///
+    /// Đây **không** phải `CLOSED`: `CLOSED` nghĩa là đã đi hết vòng đời tại đây. Và không phải `WITHDRAWN`
+    /// hay `CANCELLED`: cả hai nghĩa là hỏng. Trước ADR-0013 chỉ có ba lối ra đó, nên một hồ sơ bàn giao thành
+    /// công bị ghi như bỏ dở — sai sự thật trong dữ liệu chỉ-ghi-thêm, và làm hụt tỷ lệ chuyển đổi của toàn bộ
+    /// dòng khu vực công.
+    /// </summary>
+    public const string HandedOver = "HANDED_OVER";
+
     public static readonly IReadOnlyList<string> All =
     [
         Discovery, Qualification, Matching, DueDiligence, DealDesign, Execution, OutcomeVerification,
-        CommercializationMonitoring, Closed, Rejected, Withdrawn, Cancelled,
+        CommercializationMonitoring, Closed, HandedOver, Rejected, Withdrawn, Cancelled,
     ];
 
-    public static readonly IReadOnlySet<string> Terminal = new HashSet<string> { Closed, Rejected, Withdrawn, Cancelled };
+    public static readonly IReadOnlySet<string> Terminal = new HashSet<string> { Closed, HandedOver, Rejected, Withdrawn, Cancelled };
 }
 
 /// <summary>
-/// Loại quyết định ghi vào `DecisionRecord`. **Sáu** loại, một loại cho mỗi giai đoạn kết thúc (ADR-0008).
+/// Loại quyết định ghi vào `DecisionRecord`. **Bảy** loại, một loại cho mỗi giai đoạn kết thúc (ADR-0008, ADR-0013).
 ///
 /// `Withdraw` và `Cancel` được thêm vì bốn loại cũ không phủ `WITHDRAWN` và `CANCELLED`: hai giai đoạn đó là
 /// chuyển tiến và không phải `REJECTED`, nên chúng rơi vào luật "bước tiến" và **bắt buộc mang `APPROVE` hoặc
@@ -55,8 +68,15 @@ public static class Decisions
     /// <summary>Dừng sau khi đã có thiết kế thương vụ hoặc đang thi công, thường do điều kiện bên ngoài. Đích `CANCELLED`.</summary>
     public const string Cancel = "CANCEL";
 
+    /// <summary>
+    /// ADR-0013: quyết định chuyển sang một quy trình có thẩm quyền bên ngoài. Đích `HANDED_OVER`. **Bắt buộc**
+    /// kèm `mandateRef` — tham chiếu tới quy trình nhận bàn giao. Không có tham chiếu thì "đã bàn giao" là một
+    /// lời khai không kiểm chứng được, và nó sẽ nằm vĩnh viễn trong dữ liệu chỉ-ghi-thêm.
+    /// </summary>
+    public const string HandoverToAuthority = "HANDOVER_TO_AUTHORITY";
+
     public static readonly IReadOnlySet<string> All =
-        new HashSet<string> { Approve, Reject, ReturnForRework, Waive, Withdraw, Cancel };
+        new HashSet<string> { Approve, Reject, ReturnForRework, Waive, Withdraw, Cancel, HandoverToAuthority };
 
     /// <summary>
     /// Giai đoạn kết thúc nào đòi loại quyết định nào. Bốn luật cùng một hình dạng — *đích này đòi loại kia* —
@@ -68,6 +88,7 @@ public static class Decisions
             [Stages.Rejected] = Reject,
             [Stages.Withdrawn] = Withdraw,
             [Stages.Cancelled] = Cancel,
+            [Stages.HandedOver] = HandoverToAuthority,
         };
 }
 
@@ -163,17 +184,31 @@ public interface ICaseService
 /// <summary>Ma trận transition §7.4 — dữ liệu thuần để test phủ toàn bộ ô hợp lệ và ô bị cấm.</summary>
 public static class TransitionMatrix
 {
+    /// <summary>
+    /// ADR-0013 thêm bốn cạnh tới `HANDED_OVER`, và chỉ bốn. Chúng là những giai đoạn mà việc **chọn bên cung
+    /// ứng** thật sự đang diễn ra hoặc vừa xong, tức là đúng chỗ NacenTwin phải dừng lại khi người trả tiền
+    /// dùng vốn nhà nước:
+    ///
+    /// - `MATCHING`, `DUE_DILIGENCE`, `DEAL_DESIGN` — đã có danh sách ứng viên, và bước tiếp theo là chọn;
+    /// - `OUTCOME_VERIFICATION` — PoC đã chạy và đã được xác minh; quyết định mua ở quy mô thật là một quy
+    ///   trình riêng (GIF-08: cam kết venture-client công không phải đơn hàng).
+    ///
+    /// Không thêm từ `DISCOVERY`/`QUALIFICATION`: chưa tìm giải pháp nào thì không có gì để bàn giao —
+    /// `WITHDRAWN` mới là lối ra đúng. Không thêm từ `COMMERCIALIZATION_MONITORING`: chuyển giao đã xong,
+    /// bàn giao ở đó không có nghĩa.
+    /// </summary>
     private static readonly Dictionary<string, HashSet<string>> Allowed = new()
     {
         [Stages.Discovery] = [Stages.Qualification, Stages.Rejected, Stages.Withdrawn],
         [Stages.Qualification] = [Stages.Matching, Stages.Discovery, Stages.Rejected, Stages.Withdrawn],
-        [Stages.Matching] = [Stages.DueDiligence, Stages.Qualification, Stages.Rejected, Stages.Withdrawn],
-        [Stages.DueDiligence] = [Stages.DealDesign, Stages.Matching, Stages.Rejected, Stages.Withdrawn],
-        [Stages.DealDesign] = [Stages.Execution, Stages.DueDiligence, Stages.Withdrawn, Stages.Cancelled],
+        [Stages.Matching] = [Stages.DueDiligence, Stages.Qualification, Stages.Rejected, Stages.Withdrawn, Stages.HandedOver],
+        [Stages.DueDiligence] = [Stages.DealDesign, Stages.Matching, Stages.Rejected, Stages.Withdrawn, Stages.HandedOver],
+        [Stages.DealDesign] = [Stages.Execution, Stages.DueDiligence, Stages.Withdrawn, Stages.Cancelled, Stages.HandedOver],
         [Stages.Execution] = [Stages.OutcomeVerification, Stages.Cancelled],
-        [Stages.OutcomeVerification] = [Stages.CommercializationMonitoring, Stages.Execution, Stages.Closed],
+        [Stages.OutcomeVerification] = [Stages.CommercializationMonitoring, Stages.Execution, Stages.Closed, Stages.HandedOver],
         [Stages.CommercializationMonitoring] = [Stages.Closed],
         [Stages.Closed] = [],
+        [Stages.HandedOver] = [],
         [Stages.Rejected] = [],
         [Stages.Withdrawn] = [],
         [Stages.Cancelled] = [],

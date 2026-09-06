@@ -699,6 +699,17 @@ Cụm lớn nhất theo số lượng vẫn là tám mục quanh việc di trú 
 - **Nêu bởi:** [nen-tang/dieu-huong-va-url.md](nen-tang/dieu-huong-va-url.md#tương-tác-với-hệ-thống-khác)
 - **Trạng thái:** **Đã sửa** 2026-09-04. `ProtectedRoute` kiểm luôn vai trò trong tài khoản đã tải; vai trò đó đến từ `/admin/auth/me`, endpoint **có** gọi `RequireAdmin()`, nên nó là thứ máy chủ đã công nhận chứ không phải thứ trình duyệt tự khai. Người không phải quản trị viên bị đẩy về trang đăng nhập kèm lý do riêng, và trang đó nói rõ "không có quyền truy cập bảng quản trị" thay vì để họ tưởng mình gõ sai mật khẩu.
 
+### B-47: Bộ test tích hợp về tìm kiếm chỉ xanh trên cơ sở dữ liệu sạch
+
+- **Người dùng gặp ở đâu:** Không gặp. Đây là lỗi của bộ kiểm thử, nhưng nó che được lỗi thật.
+- **Xảy ra gì / lẽ ra là gì:** Chạy `dotnet test tests/integration` **lần thứ hai trên cùng một cơ sở dữ liệu** làm đỏ `MatchingPipelineTests.Rerank_reorders_top_candidates_and_changes_the_engine_label` và `PostgresSearchIndexTests.Corrected_mode_hard_filters_before_recall_and_legacy_mode_does_not`. Lần đầu 62/62 xanh.
+- **Tái hiện:** `NACENTECH_TEST_PG="…;Database=<db mới>;…" dotnet test tests/integration/NacenTech.Tests.Integration.csproj` hai lần liên tiếp. Lần 1: 62/62. Lần 2: 60/62.
+- **Vì sao (từ mã):** Các bài này khẳng định trên top-K của bản chiếu `matching.search_chunks`, mà bản chiếu dùng chung cho cả bộ test và **không được dọn giữa các lần chạy**. Tài liệu của lần chạy trước vẫn nằm trong chỉ mục và chen vào top-K. Mặc định của repo là Testcontainers — mỗi lần một container mới — nên CI không bao giờ thấy; chỉ người đặt `NACENTECH_TEST_PG` trỏ vào PostgreSQL cục bộ mới gặp.
+- **Mức:** `trung bình` — không hại người dùng, nhưng một bộ test chỉ xanh ở một điều kiện cụ thể sẽ dạy người ta bỏ qua màu đỏ, và đó là lúc lỗi thật lọt qua.
+- **Cần quyết:** `sửa`. Hai hướng: bài test tự dọn thứ mình nạp vào chỉ mục, hoặc fixture cắt sạch bản chiếu trước mỗi lần chạy.
+- **Nêu bởi:** Đo 2026-09-06 khi thêm `SearchFeedbackTests` (ADR-0011/0012). Đã kiểm chứng là lỗi **có sẵn**: loại hẳn hai lớp test mới ra khỏi bộ lọc thì lần chạy thứ hai vẫn đỏ đúng hai bài đó.
+- **Trạng thái:** **Đã sửa** 2026-09-06. Làm cả hai hướng, vì chúng giải quyết hai chuyện khác nhau: `SearchFeedbackTests` gọi `RemoveSubjectAsync` sau khi đã ghi log nên không để lại dư lượng (bài test tự dọn thứ mình tạo ra), và `PostgresFixture.InitializeAsync` `TRUNCATE matching.search_chunks, matching.content_chunks` ở **đầu** lần chạy (lần chạy trước có thể đã bị ngắt giữa chừng, nên hứa dọn sau là không đủ). Chỉ cắt bản chiếu tìm kiếm, **không** `TRUNCATE` toàn lược đồ: xoá sạch mọi thứ sẽ che mất đúng loại lỗi mà cơ sở dữ liệu tồn tại lâu ngày mới lộ — khoá duy nhất bị đụng, dữ liệu cũ làm sai phép đếm — và những bài test đó nên phải chịu được dữ liệu cũ. Đo: ba lần chạy liên tiếp trên cùng một cơ sở dữ liệu, 71/71 cả ba lần.
+
 ## Nộp lên kho mã nguồn
 
 Chưa nộp mục nào thành issue. Bốn thư mục mã nguồn không phải git repo (`git rev-parse` fail ở cả bốn, đo 2026-09-04), nên chưa có kho nào để nộp. Khi có, việc nộp là một bước riêng và cần xác nhận kho đích cùng định dạng trước.

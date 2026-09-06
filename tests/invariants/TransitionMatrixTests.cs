@@ -16,13 +16,14 @@ public sealed class TransitionMatrixTests
     {
         [Stages.Discovery] = [Stages.Qualification, Stages.Rejected, Stages.Withdrawn],
         [Stages.Qualification] = [Stages.Matching, Stages.Discovery, Stages.Rejected, Stages.Withdrawn],
-        [Stages.Matching] = [Stages.DueDiligence, Stages.Qualification, Stages.Rejected, Stages.Withdrawn],
-        [Stages.DueDiligence] = [Stages.DealDesign, Stages.Matching, Stages.Rejected, Stages.Withdrawn],
-        [Stages.DealDesign] = [Stages.Execution, Stages.DueDiligence, Stages.Withdrawn, Stages.Cancelled],
+        [Stages.Matching] = [Stages.DueDiligence, Stages.Qualification, Stages.Rejected, Stages.Withdrawn, Stages.HandedOver],
+        [Stages.DueDiligence] = [Stages.DealDesign, Stages.Matching, Stages.Rejected, Stages.Withdrawn, Stages.HandedOver],
+        [Stages.DealDesign] = [Stages.Execution, Stages.DueDiligence, Stages.Withdrawn, Stages.Cancelled, Stages.HandedOver],
         [Stages.Execution] = [Stages.OutcomeVerification, Stages.Cancelled],
-        [Stages.OutcomeVerification] = [Stages.CommercializationMonitoring, Stages.Execution, Stages.Closed],
+        [Stages.OutcomeVerification] = [Stages.CommercializationMonitoring, Stages.Execution, Stages.Closed, Stages.HandedOver],
         [Stages.CommercializationMonitoring] = [Stages.Closed],
         [Stages.Closed] = [],
+        [Stages.HandedOver] = [],
         [Stages.Rejected] = [],
         [Stages.Withdrawn] = [],
         [Stages.Cancelled] = [],
@@ -146,6 +147,63 @@ public sealed class TransitionMatrixTests
         var ex = Should.Throw<UnprocessableException>(() =>
             @case.Transition(Stages.Rejected, Decisions.Approve, [], "loại", Guid.NewGuid(), null, DateTimeOffset.UtcNow));
         ex.Code.ShouldBe("REJECT_DECISION_REQUIRED");
+    }
+
+    // ─── ADR-0013: bàn giao sang quy trình có thẩm quyền ─────────────────────────────────────
+
+    /// <summary>
+    /// Bàn giao là lối ra **thành công** và phải nói được bàn giao cho quy trình nào. Không có tham chiếu thì
+    /// đó là một lời khai không kiểm chứng được nằm vĩnh viễn trong dữ liệu chỉ-ghi-thêm.
+    /// </summary>
+    [Fact]
+    public void Handover_requires_an_external_reference()
+    {
+        var @case = AtMatching();
+
+        var ex = Should.Throw<UnprocessableException>(() =>
+            @case.Transition(Stages.HandedOver, Decisions.HandoverToAuthority, [], "chuyển sang mua sắm", Guid.NewGuid(), null, DateTimeOffset.UtcNow));
+        ex.Code.ShouldBe("HANDOVER_REFERENCE_REQUIRED");
+
+        Should.Throw<UnprocessableException>(() =>
+            @case.Transition(Stages.HandedOver, Decisions.HandoverToAuthority, [], "chuyển sang mua sắm", Guid.NewGuid(), "   ", DateTimeOffset.UtcNow))
+            .Code.ShouldBe("HANDOVER_REFERENCE_REQUIRED");
+
+        var record = @case.Transition(Stages.HandedOver, Decisions.HandoverToAuthority, ["PUBLIC_PROCUREMENT_ROUTE"],
+            "bên mua dùng vốn nhà nước; chọn nhà thầu chạy ở quy trình chính thức", Guid.NewGuid(), "HTMDTQG/IB-2026-0001", DateTimeOffset.UtcNow);
+
+        @case.Stage.ShouldBe(Stages.HandedOver);
+        record.MandateRef.ShouldBe("HTMDTQG/IB-2026-0001");
+        record.Decision.ShouldBe(Decisions.HandoverToAuthority);
+    }
+
+    /// <summary>
+    /// Đích `HANDED_OVER` chỉ nhận đúng loại quyết định của nó — cùng luật với `REJECTED`/`WITHDRAWN`/`CANCELLED`
+    /// (ADR-0008). Nếu `APPROVE` lọt được vào đây thì bàn giao và hoàn tất trông giống nhau trong dòng thời gian,
+    /// tức là đúng vấn đề mà ADR-0013 sinh ra để sửa.
+    /// </summary>
+    [Fact]
+    public void Handed_over_rejects_a_generic_forward_decision()
+    {
+        var @case = AtMatching();
+        var ex = Should.Throw<UnprocessableException>(() =>
+            @case.Transition(Stages.HandedOver, Decisions.Approve, [], "xong", Guid.NewGuid(), "HTMDTQG/IB-2026-0002", DateTimeOffset.UtcNow));
+        ex.Code.ShouldBe("HANDOVER_TO_AUTHORITY_DECISION_REQUIRED");
+    }
+
+    /// <summary>Bàn giao không mở được từ giai đoạn chưa tìm giải pháp nào — ở đó `WITHDRAWN` mới là lối ra đúng.</summary>
+    [Theory]
+    [InlineData(Stages.Discovery)]
+    [InlineData(Stages.Qualification)]
+    public void Handover_is_not_reachable_before_a_solution_search(string from)
+        => TransitionMatrix.IsAllowed(from, Stages.HandedOver).ShouldBeFalse();
+
+    private static CommercializationCase AtMatching()
+    {
+        var @case = NewCase(withBroker: true);
+        var actor = Guid.NewGuid();
+        @case.Transition(Stages.Qualification, Decisions.Approve, [], "đủ điều kiện", actor, null, DateTimeOffset.UtcNow);
+        @case.Transition(Stages.Matching, Decisions.Approve, [], "bắt đầu ghép cặp", actor, null, DateTimeOffset.UtcNow);
+        return @case;
     }
 
     [Fact]

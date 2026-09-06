@@ -29,6 +29,23 @@ public static class Actions
     public const string SearchQuery = "search.query";
     public const string MatchRoundRead = "match_round.read";
 
+    /// <summary>§26.6.5: gắn nhãn liên quan cho kết quả tìm kiếm. Người dùng đã đăng nhập gắn được nhãn ngầm
+    /// và nhãn chấm cho lần tìm kiếm của chính họ; đây là nguồn duy nhất của golden set.</summary>
+    public const string SearchFeedback = "search.feedback";
+
+    // tín hiệu nhu cầu từ nguồn ngoài (ADR-0011)
+    /// <summary>Nạp tín hiệu từ adapter. Chỉ tiến trình hệ thống và quản trị viên — đây là cửa dữ liệu vào.</summary>
+    public const string SignalIngest = "signal.ingest";
+
+    public const string SignalRead = "signal.read";
+
+    /// <summary>Chuyển tín hiệu thành nhu cầu thật hoặc loại nó. Hành động của người có mandate (D2-87).</summary>
+    public const string SignalTriage = "signal.triage";
+
+    // quyền lợi thương mại (§20, bất biến 99/182)
+    public const string AgreementManage = "agreement.manage";
+    public const string AgreementRead = "agreement.read";
+
     // communication
     public const string InvitationCreate = "invitation.create";
     public const string InvitationRespond = "invitation.respond";

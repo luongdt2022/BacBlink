@@ -37,6 +37,7 @@
     <ProjectReference Include="..\..\modules\brokerage\NacenTech.Modules.Brokerage.csproj" />
     <ProjectReference Include="..\..\modules\audit\NacenTech.Modules.Audit.csproj" />
     <ProjectReference Include="..\..\modules\integration\NacenTech.Modules.Integration.csproj" />
+    <ProjectReference Include="..\..\modules\entitlement\NacenTech.Modules.Entitlement.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="NacenTech.Tests.Contracts" />

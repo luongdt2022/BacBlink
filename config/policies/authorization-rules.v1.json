@@ -29,9 +29,18 @@
     { "ruleId": "USER_SELF", "priority": 400, "action": "person.read_self|person.update_self|notification.manage_self", "platformRole": "USER|ADMIN", "effect": "Permit" },
     { "ruleId": "USER_CREATE", "priority": 401, "action": "subject.create|story.create|invitation.create", "platformRole": "USER|ADMIN", "effect": "Permit" },
     { "ruleId": "USER_SEARCH", "priority": 402, "action": "search.query|match_round.read|ai.invoke", "platformRole": "USER|ADMIN", "effect": "Permit" },
+    { "ruleId": "USER_SEARCH_FEEDBACK", "priority": 403, "action": "search.feedback", "platformRole": "USER|ADMIN", "effect": "Permit", "description": "§26.6.5: nhãn liên quan cho golden set; chỉ người đã đăng nhập, nhãn gắn với người chấm" },
 
     // ---- Operator/admin (platform role ADMIN) — không mở tài liệu mật của người khác (đã DENY ở trên) ----
     { "ruleId": "ADMIN_MANAGE", "priority": 500, "action": "person.admin_manage|subject.read_any|subject.update|subject.delete|subject.publish|subject.beautify|subject.compute_matches|document.write|document.delete|invitation.read_any|notification.read_any|story.moderate|taxonomy.manage|stats.read|access_grant.issue", "platformRole": "ADMIN", "effect": "Permit" },
+
+    // ---- Tín hiệu nhu cầu từ nguồn ngoài (ADR-0011) ----
+    // Không có luật nào cho platformRole USER: tín hiệu chưa qualified, chưa có owner xác nhận, và nguồn của nó
+    // đi kèm điều khoản license. Mở cho người dùng cuối trước khi đóng cổng pháp lý là đúng thứ ADR-0011 chặn.
+    { "ruleId": "ADMIN_SIGNAL", "priority": 450, "action": "signal.ingest|signal.read|signal.triage", "platformRole": "ADMIN", "effect": "Permit" },
+
+    // ---- Quyền lợi thương mại (§20). Chỉ ADMIN: hợp đồng và quota là dữ liệu thương mại, không phải dữ liệu người dùng.
+    { "ruleId": "ADMIN_AGREEMENT", "priority": 451, "action": "agreement.manage|agreement.read", "platformRole": "ADMIN", "effect": "Permit" },
 
     // ---- Case (Phase 1 concierge) ----
     { "ruleId": "CASE_BROKER", "priority": 600, "action": "case.read|case.transition", "caseRole": "LEAD_BROKER|CO_BROKER", "effect": "Permit" },

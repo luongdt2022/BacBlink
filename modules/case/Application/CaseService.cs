@@ -13,7 +13,8 @@ public sealed class CaseService(
     IAuthorizationGate gate,
     IAuditWriter audit,
     IClock clock,
-    IPolicySnapshotResolver policy) : ICaseService
+    IPolicySnapshotResolver policy,
+    IEntitlementGate entitlements) : ICaseService
 {
     /// <summary>
     /// ADR-0006, câu 1: hành động ghi thành công để lại dòng `SUCCESS`, ghi **sau** `CommitAsync`. Nếu commit
@@ -30,6 +31,18 @@ public sealed class CaseService(
         var code = await NextCaseCodeAsync(ct);
         var @case = CommercializationCase.Create(code, command, clock.UtcNow);
         db.Add(@case);
+
+        // Bất biến 99: gói vận hành ghi **quota case**. Đây là chỗ duy nhất quota đó bị tiêu thụ, nên đây là chỗ
+        // duy nhất đo được nó. Đo theo **chủ bài toán**, không theo người bấm nút: ở Phase 1 concierge người tạo
+        // hồ sơ thường là môi giới, và tính vào quota của môi giới thì con số vô nghĩa.
+        //
+        // Cùng giao dịch với việc tạo hồ sơ (MOD-03) — nếu tách ra thì sẽ có những hồ sơ tồn tại mà không lần nào
+        // được đếm, và đó là loại sai lệch không phát hiện được về sau.
+        var decision = await entitlements.CheckAndMeterAsync(
+            PayerRef.Person(command.ProblemOwnerPersonId), PlatformCapabilities.CaseIntake, 1, ct);
+        if (!decision.Allowed)
+            throw new UnprocessableException($"Không mở được hồ sơ mới: {decision.Reason}", "ENTITLEMENT_EXHAUSTED");
+
         await uow.CommitAsync(ct);
         Succeeded(Actions.CaseCreate, @case, $"caseCode={@case.CaseCode}; track={@case.Track}");
         return ToDto(@case);

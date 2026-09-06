@@ -42,6 +42,25 @@ public sealed class PostgresFixture : IAsyncLifetime
         using var scope = provider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
         await db.Database.MigrateAsync();
+        await ResetSearchProjectionAsync(db);
+    }
+
+    /// <summary>
+    /// B-47: chỉ mục tìm kiếm là bản chiếu **dùng chung cho cả bộ test**, và nhiều bài khẳng định trên top-K của
+    /// nó. Container mới mỗi lần chạy nên CI không bao giờ thấy vấn đề; người đặt `NACENTECH_TEST_PG` trỏ vào
+    /// PostgreSQL cục bộ thì lần chạy thứ hai đỏ, vì tài liệu của lần chạy trước vẫn nằm trong chỉ mục và chen
+    /// vào top-K.
+    ///
+    /// Dọn ở **đầu** lần chạy chứ không ở cuối: lần chạy trước có thể đã bị ngắt giữa chừng, và một bộ test chỉ
+    /// sạch khi nó tự dọn trước khi làm chứ không khi nó hứa dọn sau.
+    ///
+    /// Chỉ dọn bản chiếu tìm kiếm và các đoạn sinh ra nó — không `TRUNCATE` toàn bộ lược đồ. Xoá sạch mọi thứ sẽ
+    /// che mất đúng loại lỗi mà một cơ sở dữ liệu tồn tại lâu ngày mới lộ ra: khoá duy nhất bị đụng, dữ liệu cũ
+    /// làm sai phép đếm. Những bài test đó **nên** phải chịu được dữ liệu cũ, và chúng đã được viết như vậy.
+    /// </summary>
+    private static async Task ResetSearchProjectionAsync(NacenTechDbContext db)
+    {
+        await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE matching.search_chunks, matching.content_chunks");
     }
 
     public async Task DisposeAsync()

@@ -19,5 +19,6 @@ public sealed class CaseModule : IModule
     {
         services.AddScoped<ICaseService, CaseService>();
         services.AddScoped<ISubjectSummaryProvider, CaseSubjectProvider>();
+        services.AddScoped<IDeliveryTrackRecordProvider, DeliveryTrackRecordProvider>();
     }
 }
