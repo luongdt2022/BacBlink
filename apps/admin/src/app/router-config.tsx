@@ -29,6 +29,7 @@ import { AuditLogPage } from "@/features/audit";
 import { CasesPage, CaseDetailPage } from "@/features/cases";
 import { PolicySnapshotPage } from "@/features/policy";
 import { MatchRoundsPage, RoundDetailPage, CompareRoundsPage } from "@/features/matching";
+import { SignalsPage } from "@/features/signals";
 
 export const router = createBrowserRouter([
   {
@@ -141,6 +142,10 @@ export const router = createBrowserRouter([
       {
         path: "policy-snapshots/:id",
         element: <PolicySnapshotPage />,
+      },
+      {
+        path: "demand-signals",
+        element: <SignalsPage />,
       },
       {
         path: "match-rounds",

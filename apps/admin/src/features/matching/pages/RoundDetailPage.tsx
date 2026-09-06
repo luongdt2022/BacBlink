@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react'
 import { getErrorMessage, normalizeError } from '@/lib/api/client'
-import { SUBJECT_KIND_PATHS, formatRawScore, getRound, isImportedRound, listRoundCandidates } from '@/services/matchRoundService'
-import type { CandidatePage, MatchRound } from '@/services/matchRoundService'
+import { SUBJECT_KIND_PATHS, formatRawScore, getRound, isImportedRound, listRoundCandidates, listRoundExclusions } from '@/services/matchRoundService'
+import type { CandidatePage, ExclusionPage, MatchRound } from '@/services/matchRoundService'
 import { ImportedBanner, RoundMeta } from '../components/RoundMeta'
+import { ExclusionsTable, ReasonCodes } from '../components/Reasons'
 
 const KIND_TO_PATH: Record<string, string> = {
   DEMAND_BRIEF: 'demand-briefs',
@@ -20,6 +21,7 @@ export function RoundDetailPage() {
   const { roundId = '' } = useParams<{ roundId: string }>()
   const [round, setRound] = useState<MatchRound | null>(null)
   const [candidates, setCandidates] = useState<CandidatePage | null>(null)
+  const [exclusions, setExclusions] = useState<ExclusionPage | null>(null)
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<'loading' | 'ready' | 'not-found' | 'error'>('loading')
   const [error, setError] = useState<string | null>(null)
@@ -30,10 +32,17 @@ export function RoundDetailPage() {
     setStatus('loading')
     ;(async () => {
       try {
-        const [r, c] = await Promise.all([getRound(roundId), listRoundCandidates(roundId, page, 20)])
+        const [r, c, x] = await Promise.all([
+          getRound(roundId),
+          listRoundCandidates(roundId, page, 20),
+          // Danh sách loại không phân trang cùng danh sách chọn: nó là bối cảnh của cả vòng, không phải trang
+          // thứ n của cái gì. Trần của máy chủ là 100 và số ứng viên bị loại trong một vòng luôn nhỏ hơn thế.
+          listRoundExclusions(roundId, 1, 100),
+        ])
         if (cancelled) return
         setRound(r)
         setCandidates(c)
+        setExclusions(x)
         setStatus('ready')
       } catch (err) {
         if (cancelled) return
@@ -80,8 +89,22 @@ export function RoundDetailPage() {
         {round.queryText ? <p className="mt-1 whitespace-pre-wrap text-gray-800">{round.queryText}</p> : <p className="mt-1 text-gray-600">Vòng này không có câu truy vấn — không dựng lại được nó đã hỏi gì.</p>}
       </section>
 
+      {/*
+        Hai câu khác nhau, và phân biệt được chúng là lý do bảng loại tồn tại: *không tìm thấy gì* nghĩa là
+        không thu hồi được ứng viên nào; *tìm thấy rồi loại hết* nghĩa là hệ thống đã xem qua một loạt bản ghi
+        và bỏ hết. Trước 2026-09-06 người dùng chỉ thấy câu thứ nhất cho cả hai trường hợp.
+      */}
       {candidates && candidates.data.length === 0 && (
-        <p className="p-4 rounded-lg border border-dashed border-gray-300 text-sm text-gray-700"><strong>Đã tính và không tìm thấy ứng viên nào.</strong></p>
+        <p className="p-4 rounded-lg border border-dashed border-gray-300 text-sm text-gray-700">
+          {exclusions && exclusions.data.length > 0 ? (
+            <>
+              <strong>Đã tìm thấy {exclusions.total} ứng viên và loại hết.</strong> Bảng bên dưới nói vì sao từng
+              bản ghi bị loại — đây không phải {'“'}không có gì phù hợp{'”'}.
+            </>
+          ) : (
+            <strong>Đã tính và không tìm thấy ứng viên nào.</strong>
+          )}
+        </p>
       )}
 
       {candidates && candidates.data.length > 0 && (
@@ -106,7 +129,7 @@ export function RoundDetailPage() {
                       <td className="px-3 py-2 font-medium">{c.rank}</td>
                       <td className="px-3 py-2"><span className="text-xs text-gray-500">{c.candidate.kind}</span><br /><span className="font-mono text-xs">{c.candidate.id}</span></td>
                       <td className="px-3 py-2 font-mono">{formatRawScore(c.rawScore, round.scoringMode)}</td>
-                      <td className="px-3 py-2 font-mono text-xs">{c.reason ?? '—'}</td>
+                      <td className="px-3 py-2"><ReasonCodes codes={c.reasonCodes} algorithm={c.reason} /></td>
                       <td className="px-3 py-2">{c.chunkIndex}</td>
                       <td className="px-3 py-2">
                         <button type="button" onClick={() => setExpanded({ ...expanded, [c.id]: !open })} aria-expanded={open} className="inline-flex items-center gap-1 text-xs text-gray-700 hover:underline">
@@ -131,6 +154,19 @@ export function RoundDetailPage() {
               <button disabled={page >= candidates.totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1.5 border border-gray-300 rounded text-sm disabled:opacity-50">Sau</button>
             </nav>
           )}
+        </section>
+      )}
+
+      {exclusions && (
+        <section aria-label="Ứng viên bị loại" className="space-y-2">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Đã loại ({exclusions.total})</h2>
+            <p className="text-sm text-gray-600">
+              Ai <strong>không</strong> vào danh sách, và vì sao. Xếp theo điểm giảm dần: người trượt sát ngưỡng
+              nhất đứng đầu, vì đó là chỗ quyết định dễ sai nhất.
+            </p>
+          </div>
+          <ExclusionsTable exclusions={exclusions.data} scoringMode={round.scoringMode} />
         </section>
       )}
     </div>

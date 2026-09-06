@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
-import { Users, FileCheck2, LogOut, LayoutDashboard, FileText, Lightbulb, Tag, ChevronUp, KeyRound, BookOpen, ScrollText, Briefcase, Shuffle } from "lucide-react";
+import { Users, FileCheck2, LogOut, LayoutDashboard, FileText, Lightbulb, Tag, ChevronUp, KeyRound, BookOpen, ScrollText, Briefcase, Shuffle, Radar } from "lucide-react";
 import { useAuth } from "@/features/auth";
 
 const menuItems = [
@@ -33,6 +33,13 @@ const menuItems = [
     label: "Hồ sơ vụ việc",
     icon: Briefcase,
     path: "/cases",
+  },
+  {
+    // Đứng TRƯỚC "Vòng ghép cặp" vì nó là đầu phễu: tín hiệu tới trước, ghép cặp tới sau.
+    id: "demand-signals",
+    label: "Tín hiệu nhu cầu",
+    icon: Radar,
+    path: "/demand-signals",
   },
   {
     id: "match-rounds",

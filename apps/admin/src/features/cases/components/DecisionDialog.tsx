@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import {
+  DECISIONS_REQUIRING_MANDATE_REF,
   DECISION_LABELS,
   STAGE_LABELS,
   decisionOptionsFor,
@@ -63,7 +64,14 @@ export function DecisionDialog({ fromStage, toStage, version, onSubmit, onClose,
     rationaleRef.current?.focus()
   }, [])
 
-  const canSubmit = rationale.trim().length > 0 && !submitting && failure?.kind !== 'forbidden'
+  // ADR-0013: bàn giao đòi tham chiếu tới quy trình nhận. Máy chủ chặn bằng `HANDOVER_REFERENCE_REQUIRED`;
+  // chặn ở đây để người dùng không soạn xong diễn giải rồi mới bị trả về.
+  const mandateRequired = DECISIONS_REQUIRING_MANDATE_REF.has(decision)
+  const canSubmit =
+    rationale.trim().length > 0 &&
+    (!mandateRequired || mandateRef.trim().length > 0) &&
+    !submitting &&
+    failure?.kind !== 'forbidden'
 
   const submit = async () => {
     if (!canSubmit) return
@@ -185,8 +193,24 @@ export function DecisionDialog({ fromStage, toStage, version, onSubmit, onClose,
             <input id="d-reasons" value={reasonCodes} onChange={(e) => setReasonCodes(e.target.value)} placeholder="Cách nhau bằng dấu phẩy" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono" />
           </div>
           <div>
-            <label htmlFor="d-mandate" className="block text-sm font-medium text-gray-700 mb-1">Tham chiếu uỷ quyền</label>
-            <input id="d-mandate" value={mandateRef} onChange={(e) => setMandateRef(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono" />
+            <label htmlFor="d-mandate" className="block text-sm font-medium text-gray-700 mb-1">
+              Tham chiếu uỷ quyền{mandateRequired && <span className="text-red-600" aria-hidden="true"> *</span>}
+            </label>
+            <input
+              id="d-mandate"
+              value={mandateRef}
+              onChange={(e) => setMandateRef(e.target.value)}
+              required={mandateRequired}
+              aria-describedby={mandateRequired ? 'd-mandate-hint' : undefined}
+              placeholder={mandateRequired ? 'Ví dụ: HTMDTQG/IB-2026-0001' : undefined}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono"
+            />
+            {mandateRequired && (
+              <p id="d-mandate-hint" className="mt-1 text-xs text-gray-600">
+                Bắt buộc: bàn giao phải nói được bàn giao cho quy trình nào. Không có tham chiếu thì dòng thời
+                gian chỉ còn một lời khai không kiểm chứng được.
+              </p>
+            )}
           </div>
         </div>
 

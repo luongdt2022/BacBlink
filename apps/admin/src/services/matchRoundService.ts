@@ -40,10 +40,53 @@ export interface MatchCandidate {
   matchedChunk: string
   chunkIndex: number
   rank: number
+  /** Nhãn thuật toán — **giống nhau cho cả vòng**, nên nó chưa bao giờ là một lý do theo nghĩa nguyên tắc 11. */
   reason: string | null
+  /** Lý do của riêng ứng viên này. Rỗng ở vòng nhập từ hệ cũ: hệ cũ không ghi lý do, và rỗng nghĩa là *không biết*. */
+  reasonCodes: string[]
   computedAt: string
   updatedAt: string
 }
+
+/**
+ * Ứng viên đã được thu hồi nhưng bị loại — vế thứ hai của nguyên tắc 11, trước 2026-09-06 không tồn tại ở đâu.
+ * Không có nó thì câu "vì sao không phải công ty B" chỉ trả lời được bằng cách dựng lại shortlist bằng tay.
+ */
+export interface MatchExclusion {
+  id: string
+  roundId: string
+  candidate: SubjectRef
+  /** `null` khi ứng viên bị loại **trước** bước chấm điểm. */
+  rawScore: number | null
+  reasonCode: string
+  detail: string | null
+  computedAt: string
+}
+
+export type ExclusionPage = Page<MatchExclusion>
+
+export const REASON_CODE_LABELS: Record<string, string> = {
+  SEMANTIC_MATCH: 'Khớp ngữ nghĩa',
+  SECTOR_OVERLAP: 'Trùng lĩnh vực',
+  RERANKED_TOP: 'Trụ lại sau xếp lại',
+  PROVEN_DELIVERY: 'Đã từng giao hàng',
+  VERIFIED_OUTCOME: 'Có outcome đã xác minh',
+  NO_DELIVERY_HISTORY: 'Chưa có lịch sử giao hàng',
+}
+
+export const EXCLUSION_CODE_LABELS: Record<string, string> = {
+  BELOW_THRESHOLD: 'Dưới ngưỡng điểm',
+  BEYOND_LIMIT: 'Vượt số lượng tối đa',
+  OWNER_EXCLUDED: 'Cùng chủ sở hữu',
+  NOT_PUBLISHED: 'Chưa xuất bản',
+  UNRESOLVABLE: 'Không phân giải được nội dung',
+}
+
+/**
+ * `NO_DELIVERY_HISTORY` **không phải điểm trừ** — bên mới luôn bắt đầu ở đó, và nguyên tắc 5 cấm biến việc
+ * thiếu bằng chứng thành tín hiệu tiêu cực. Giao diện vì thế tô nó trung tính, không tô đỏ.
+ */
+export const NEUTRAL_REASON_CODES: ReadonlySet<string> = new Set(['NO_DELIVERY_HISTORY'])
 
 export interface Page<T> {
   data: T[]
@@ -225,5 +268,14 @@ export async function getRound(roundId: string): Promise<MatchRound> {
 /** Trang so sánh cần **toàn bộ** ứng viên của một vòng; trần phân trang của máy chủ là 100. */
 export async function listRoundCandidates(roundId: string, page = 1, limit = 100): Promise<CandidatePage> {
   const { data } = await apiClientV2.get<CandidatePage>(`/match-rounds/${roundId}/candidates`, { params: { page, limit } })
+  return data
+}
+
+/**
+ * Ứng viên **bị loại** của một vòng, máy chủ xếp theo điểm giảm dần — người trượt sát ngưỡng nhất đứng đầu,
+ * vì đó là chỗ quyết định dễ sai nhất. Giao diện giữ nguyên thứ tự đó, không sắp lại.
+ */
+export async function listRoundExclusions(roundId: string, page = 1, limit = 100): Promise<ExclusionPage> {
+  const { data } = await apiClientV2.get<ExclusionPage>(`/match-rounds/${roundId}/exclusions`, { params: { page, limit } })
   return data
 }

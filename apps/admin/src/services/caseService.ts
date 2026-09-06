@@ -22,13 +22,20 @@ export const MAIN_STAGES = [
   'CLOSED',
 ] as const
 
-export const TERMINAL_OUTLETS = ['REJECTED', 'WITHDRAWN', 'CANCELLED'] as const
+export const TERMINAL_OUTLETS = ['HANDED_OVER', 'REJECTED', 'WITHDRAWN', 'CANCELLED'] as const
 
 export const STAGES = [...MAIN_STAGES, ...TERMINAL_OUTLETS] as const
 
 export type CaseStage = (typeof STAGES)[number]
 
-export const TERMINAL_STAGES: ReadonlySet<CaseStage> = new Set<CaseStage>(['CLOSED', 'REJECTED', 'WITHDRAWN', 'CANCELLED'])
+export const TERMINAL_STAGES: ReadonlySet<CaseStage> = new Set<CaseStage>(['CLOSED', 'HANDED_OVER', 'REJECTED', 'WITHDRAWN', 'CANCELLED'])
+
+/**
+ * ADR-0013: `HANDED_OVER` là lối ra **thành công**, không phải một biến thể của bỏ cuộc. Giao diện phải tô nó
+ * khác `REJECTED`/`WITHDRAWN`/`CANCELLED` — nếu tô cùng màu đỏ thì người dùng đọc dòng thời gian sẽ hiểu ngược,
+ * và đó đúng là thứ ADR-0013 sinh ra để sửa.
+ */
+export const SUCCESSFUL_TERMINAL_STAGES: ReadonlySet<CaseStage> = new Set<CaseStage>(['CLOSED', 'HANDED_OVER'])
 
 export const STAGE_LABELS: Record<string, string> = {
   DISCOVERY: 'Khám phá',
@@ -40,6 +47,7 @@ export const STAGE_LABELS: Record<string, string> = {
   OUTCOME_VERIFICATION: 'Xác minh kết quả',
   COMMERCIALIZATION_MONITORING: 'Theo dõi thương mại hoá',
   CLOSED: 'Đã đóng',
+  HANDED_OVER: 'Đã bàn giao',
   REJECTED: 'Bị từ chối',
   WITHDRAWN: 'Đã rút lui',
   CANCELLED: 'Đã huỷ',
@@ -51,7 +59,7 @@ export const TRACK_LABELS: Record<string, string> = {
   SHARED_INFRASTRUCTURE: 'Hạ tầng dùng chung',
 }
 
-export type Decision = 'APPROVE' | 'REJECT' | 'RETURN_FOR_REWORK' | 'WAIVE' | 'WITHDRAW' | 'CANCEL'
+export type Decision = 'APPROVE' | 'REJECT' | 'RETURN_FOR_REWORK' | 'WAIVE' | 'WITHDRAW' | 'CANCEL' | 'HANDOVER_TO_AUTHORITY'
 
 export const DECISION_LABELS: Record<string, string> = {
   APPROVE: 'Chấp thuận',
@@ -60,7 +68,15 @@ export const DECISION_LABELS: Record<string, string> = {
   WAIVE: 'Miễn điều kiện',
   WITHDRAW: 'Rút lui',
   CANCEL: 'Huỷ',
+  HANDOVER_TO_AUTHORITY: 'Bàn giao cho quy trình có thẩm quyền',
 }
+
+/**
+ * Loại quyết định **bắt buộc** kèm tham chiếu (`mandateRef`). Máy chủ chặn bằng `HANDOVER_REFERENCE_REQUIRED`;
+ * giao diện chặn trước để người dùng không phải gửi rồi mới biết. Hai lớp, cùng một luật — lớp giao diện là
+ * tiện lợi, lớp máy chủ là bảo đảm.
+ */
+export const DECISIONS_REQUIRING_MANDATE_REF: ReadonlySet<Decision> = new Set<Decision>(['HANDOVER_TO_AUTHORITY'])
 
 export const ROLE_LABELS: Record<string, string> = {
   PROBLEM_OWNER: 'Chủ bài toán',
@@ -76,23 +92,25 @@ export const ROLE_LABELS: Record<string, string> = {
 const TRANSITIONS: Record<CaseStage, readonly CaseStage[]> = {
   DISCOVERY: ['QUALIFICATION', 'REJECTED', 'WITHDRAWN'],
   QUALIFICATION: ['MATCHING', 'DISCOVERY', 'REJECTED', 'WITHDRAWN'],
-  MATCHING: ['DUE_DILIGENCE', 'QUALIFICATION', 'REJECTED', 'WITHDRAWN'],
-  DUE_DILIGENCE: ['DEAL_DESIGN', 'MATCHING', 'REJECTED', 'WITHDRAWN'],
-  DEAL_DESIGN: ['EXECUTION', 'DUE_DILIGENCE', 'WITHDRAWN', 'CANCELLED'],
+  MATCHING: ['DUE_DILIGENCE', 'QUALIFICATION', 'REJECTED', 'WITHDRAWN', 'HANDED_OVER'],
+  DUE_DILIGENCE: ['DEAL_DESIGN', 'MATCHING', 'REJECTED', 'WITHDRAWN', 'HANDED_OVER'],
+  DEAL_DESIGN: ['EXECUTION', 'DUE_DILIGENCE', 'WITHDRAWN', 'CANCELLED', 'HANDED_OVER'],
   EXECUTION: ['OUTCOME_VERIFICATION', 'CANCELLED'],
-  OUTCOME_VERIFICATION: ['COMMERCIALIZATION_MONITORING', 'EXECUTION', 'CLOSED'],
+  OUTCOME_VERIFICATION: ['COMMERCIALIZATION_MONITORING', 'EXECUTION', 'CLOSED', 'HANDED_OVER'],
   COMMERCIALIZATION_MONITORING: ['CLOSED'],
   CLOSED: [],
+  HANDED_OVER: [],
   REJECTED: [],
   WITHDRAWN: [],
   CANCELLED: [],
 }
 
-/** Giai đoạn kết thúc nào đòi loại quyết định nào — chép từ `Decisions.RequiredForStage` (ADR-0008). */
+/** Giai đoạn kết thúc nào đòi loại quyết định nào — chép từ `Decisions.RequiredForStage` (ADR-0008, ADR-0013). */
 const REQUIRED_DECISION: Partial<Record<CaseStage, Decision>> = {
   REJECTED: 'REJECT',
   WITHDRAWN: 'WITHDRAW',
   CANCELLED: 'CANCEL',
+  HANDED_OVER: 'HANDOVER_TO_AUTHORITY',
 }
 
 export function isTerminal(stage: string): boolean {
@@ -128,6 +146,8 @@ export function transitionVerb(from: string, to: string): string {
     case 'WITHDRAWN': return 'Rút lui'
     case 'CANCELLED': return 'Huỷ'
     case 'CLOSED': return 'Đóng hồ sơ'
+    // Không phải "Đóng": bàn giao là kết thúc thành công và việc đi tiếp ở nơi khác, nên chữ phải nói ra chỗ đi.
+    case 'HANDED_OVER': return 'Bàn giao ra ngoài'
     default:
       return isBackward(from, to) ? `Trả về ${STAGE_LABELS[to] ?? to}` : `Chuyển sang ${STAGE_LABELS[to] ?? to}`
   }

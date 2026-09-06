@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  DECISIONS_REQUIRING_MANDATE_REF,
+  DECISION_LABELS,
   MAIN_STAGES,
   STAGES,
+  STAGE_LABELS,
+  SUCCESSFUL_TERMINAL_STAGES,
   classifyWriteError,
   decisionOptionsFor,
   isBackward,
@@ -20,8 +24,8 @@ describe('ma trận chuyển (chép từ TransitionMatrix)', () => {
     expect(reachableStages('EXECUTION')).toEqual(['OUTCOME_VERIFICATION', 'CANCELLED'])
   })
 
-  it('bốn giai đoạn kết thúc không đi đâu được', () => {
-    for (const s of ['CLOSED', 'REJECTED', 'WITHDRAWN', 'CANCELLED']) {
+  it('năm giai đoạn kết thúc không đi đâu được', () => {
+    for (const s of ['CLOSED', 'HANDED_OVER', 'REJECTED', 'WITHDRAWN', 'CANCELLED']) {
       expect(reachableStages(s)).toEqual([])
       expect(isTerminal(s)).toBe(true)
     }
@@ -58,6 +62,53 @@ describe('chọn sẵn loại quyết định (ADR-0008)', () => {
 
   it('CLOSED là bước tiến thường: chấp thuận hoặc miễn', () => {
     expect(decisionOptionsFor('COMMERCIALIZATION_MONITORING', 'CLOSED')).toEqual(['APPROVE', 'WAIVE'])
+  })
+})
+
+/**
+ * ADR-0013. Với người trả tiền dùng vốn nhà nước, việc chọn nhà thầu bắt buộc chạy trên Hệ thống mạng đấu thầu
+ * quốc gia (Điều 50 Luật Đấu thầu 2023), nên NacenTwin dừng ở phần thượng nguồn. Trước ADR-0013 không có lối ra
+ * thành công nào trước khi thi công: bàn giao phải ghi thành `WITHDRAWN`/`CANCELLED`, tức là ghi sai sự thật.
+ */
+describe('bàn giao ra quy trình có thẩm quyền (ADR-0013)', () => {
+  it('tới được từ bốn giai đoạn có chọn bên cung ứng, và chỉ bốn', () => {
+    for (const from of ['MATCHING', 'DUE_DILIGENCE', 'DEAL_DESIGN', 'OUTCOME_VERIFICATION']) {
+      expect(reachableStages(from)).toContain('HANDED_OVER')
+    }
+    // Chưa tìm giải pháp nào thì không có gì để bàn giao — ở đó `WITHDRAWN` mới là lối ra đúng.
+    for (const from of ['DISCOVERY', 'QUALIFICATION', 'EXECUTION', 'COMMERCIALIZATION_MONITORING']) {
+      expect(reachableStages(from)).not.toContain('HANDED_OVER')
+    }
+  })
+
+  it('đòi đúng loại quyết định của nó, không nhận chấp thuận chung chung', () => {
+    expect(decisionOptionsFor('MATCHING', 'HANDED_OVER')).toEqual(['HANDOVER_TO_AUTHORITY'])
+    expect(decisionOptionsFor('OUTCOME_VERIFICATION', 'HANDED_OVER')).toEqual(['HANDOVER_TO_AUTHORITY'])
+  })
+
+  it('là kết thúc thành công, không phải biến thể của bỏ cuộc', () => {
+    expect(SUCCESSFUL_TERMINAL_STAGES.has('HANDED_OVER')).toBe(true)
+    expect(SUCCESSFUL_TERMINAL_STAGES.has('CLOSED')).toBe(true)
+    for (const s of ['REJECTED', 'WITHDRAWN', 'CANCELLED'] as const) {
+      expect(SUCCESSFUL_TERMINAL_STAGES.has(s)).toBe(false)
+    }
+  })
+
+  it('là loại quyết định duy nhất đòi tham chiếu', () => {
+    expect(DECISIONS_REQUIRING_MANDATE_REF.has('HANDOVER_TO_AUTHORITY')).toBe(true)
+    expect(DECISIONS_REQUIRING_MANDATE_REF.size).toBe(1)
+  })
+
+  it('chữ trên nút nói ra chỗ đi, không nói "đóng"', () => {
+    expect(transitionVerb('MATCHING', 'HANDED_OVER')).toBe('Bàn giao ra ngoài')
+    expect(transitionVerb('COMMERCIALIZATION_MONITORING', 'CLOSED')).toBe('Đóng hồ sơ')
+  })
+
+  it('mọi giai đoạn kết thúc đều có nhãn tiếng Việt', () => {
+    for (const s of ['CLOSED', 'HANDED_OVER', 'REJECTED', 'WITHDRAWN', 'CANCELLED']) {
+      expect(STAGE_LABELS[s]).toBeTruthy()
+    }
+    expect(DECISION_LABELS.HANDOVER_TO_AUTHORITY).toBeTruthy()
   })
 })
 
