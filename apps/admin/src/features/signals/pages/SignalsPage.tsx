@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { AlertTriangle, ExternalLink } from 'lucide-react'
-import { getErrorMessage } from '@/lib/api/client'
 import {
   HIGH_VALUE_SIGNAL_CLASS,
   SIGNAL_CLASS_LABELS,
@@ -9,6 +8,8 @@ import {
 } from '@/services/signalService'
 import type { DemandSignal } from '@/services/signalService'
 import { useSignalsList } from '../hooks/useSignalsList'
+import { SignalActionDialog } from '../components/SignalActionDialog'
+import type { SignalAction } from '../components/SignalActionDialog'
 
 /**
  * Bàn tín hiệu nhu cầu (ADR-0011).
@@ -23,44 +24,15 @@ import { useSignalsList } from '../hooks/useSignalsList'
  */
 export function SignalsPage() {
   const list = useSignalsList()
-  const [acting, setActing] = useState<string | null>(null)
-  const [actionError, setActionError] = useState<string | null>(null)
+  const [pending, setPending] = useState<{ signal: DemandSignal; action: SignalAction } | null>(null)
 
-  async function onReject(signal: DemandSignal) {
-    const reason = window.prompt(
-      'Vì sao loại tín hiệu này?\n\nLý do là bắt buộc: tín hiệu bị loại vẫn được giữ lại và nó là dữ liệu để đo nguồn nào đáng tiền.',
-    )
-    if (reason === null) return
-    if (reason.trim().length === 0) {
-      setActionError('Lý do không được để trống.')
-      return
-    }
-    setActing(signal.id)
-    setActionError(null)
-    try {
-      await list.reject(signal, reason.trim())
-    } catch (err) {
-      setActionError(getErrorMessage(err))
-    } finally {
-      setActing(null)
-    }
-  }
-
-  async function onMarkConverted(signal: DemandSignal) {
-    const briefId = window.prompt(
-      'Định danh đề bài đã tạo từ tín hiệu này.\n\nĐường này KHÔNG tạo đề bài — hãy tạo trước ở màn hình đề bài, rồi dán định danh vào đây để giữ được nguồn gốc.',
-    )
-    if (briefId === null) return
-    if (briefId.trim().length === 0) return
-    setActing(signal.id)
-    setActionError(null)
-    try {
-      await list.markConverted(signal, briefId.trim())
-    } catch (err) {
-      setActionError(getErrorMessage(err))
-    } finally {
-      setActing(null)
-    }
+  // Hộp thoại tự giữ lỗi và nội dung đang gõ; trang chỉ đóng nó khi lệnh **đã** thành công. Nếu đóng trước thì
+  // người dùng mất phần đã viết đúng lúc cần sửa nó nhất.
+  const confirmAction = async (value: string) => {
+    if (!pending) return
+    if (pending.action === 'reject') await list.reject(pending.signal, value)
+    else await list.markConverted(pending.signal, value)
+    setPending(null)
   }
 
   return (
@@ -103,9 +75,6 @@ export function SignalsPage() {
         <span className="text-sm text-gray-600 pb-1.5">{list.total} tín hiệu</span>
       </div>
 
-      {actionError && (
-        <p role="alert" className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{actionError}</p>
-      )}
       {list.error && (
         <p role="alert" className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{list.error}</p>
       )}
@@ -177,17 +146,15 @@ export function SignalsPage() {
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          disabled={acting === s.id}
-                          onClick={() => void onMarkConverted(s)}
-                          className="px-2 py-1 border border-gray-300 rounded text-xs disabled:opacity-50"
+                          onClick={() => setPending({ signal: s, action: 'convert' })}
+                          className="px-2 py-1 border border-gray-300 rounded text-xs"
                         >
                           Đã thành đề bài
                         </button>
                         <button
                           type="button"
-                          disabled={acting === s.id}
-                          onClick={() => void onReject(s)}
-                          className="px-2 py-1 border border-gray-300 rounded text-xs disabled:opacity-50"
+                          onClick={() => setPending({ signal: s, action: 'reject' })}
+                          className="px-2 py-1 border border-gray-300 rounded text-xs"
                         >
                           Loại
                         </button>
@@ -219,6 +186,15 @@ export function SignalsPage() {
             Sau
           </button>
         </nav>
+      )}
+
+      {pending && (
+        <SignalActionDialog
+          signal={pending.signal}
+          action={pending.action}
+          onConfirm={confirmAction}
+          onClose={() => setPending(null)}
+        />
       )}
     </div>
   )

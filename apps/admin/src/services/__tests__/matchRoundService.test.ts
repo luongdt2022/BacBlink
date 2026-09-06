@@ -29,6 +29,9 @@ const cand = (id: string, rank: number, rawScore: number, matchedChunk = 'đoạ
   chunkIndex: 0,
   rank,
   reason: null,
+  // Bộ này kiểm luật so sánh hai vòng, không kiểm phần giải trình — mảng rỗng đúng nghĩa "vòng này không ghi
+  // lý do", đúng như vòng nhập từ hệ cũ.
+  reasonCodes: [],
   computedAt: '2026-09-05T00:00:00Z',
   updatedAt: '2026-09-05T00:00:00Z',
 })
