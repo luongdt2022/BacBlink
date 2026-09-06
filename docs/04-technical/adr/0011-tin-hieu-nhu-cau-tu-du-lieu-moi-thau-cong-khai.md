@@ -2,7 +2,7 @@
 
 - Trạng thái: ACCEPTED_WITH_LEGAL_GATE — mã được viết, kích hoạt bị chặn tới khi đóng cổng pháp lý ở mục "Cổng chặn kích hoạt"
 - Ngày: 2026-09-06
-- Quyết định bởi: chủ sản phẩm; cần Architecture Council phê chuẩn phần sửa §10.2 và §34
+- Quyết định bởi: chủ sản phẩm. Đã cuốn vào baseline **V2.21** ngày 2026-09-06 (bảng §1.3, `SourceRecord` §10.2)
 - Liên quan: §1.1 (demand-first), §3 nguyên tắc 1/6/13, §10.2 `SourceRecord`, §11 qualification, §19.6 Government Innovation Fabric,
   bất biến 102 (§32), D2-87; `docs/07-references/mo-hinh-dauthau-net.md` mục 5; ADR-0012
 

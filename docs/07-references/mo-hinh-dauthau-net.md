@@ -106,7 +106,8 @@ Ghi lại để Architecture Council xem xét; tài liệu này không đề xu�
 - Không đề xuất bán thuê bao cho phía cung ứng ở NacenTech. Hướng này đã được loại và tài liệu không mở lại.
 - Không đề xuất mở discovery công khai hay đưa `Government Innovation Fabric` lên sớm. Mục 5 nêu điều kiện cần, không nêu khuyến nghị.
 - Không thay đổi thứ tự ưu tiên nào. Gate H0 §20.5.9 và kết luận "khả thi thấp nếu success fee là nguồn chính trong 24 tháng đầu" ([dòng 141](../04-technical/NACENTECH_ARCHITECTURE_V2.md#L141)) vẫn là ràng buộc chi phối lộ trình.
-- Không đề nghị sửa §34. Thêm dòng này vào bảng §34.11 phải qua Architecture Council.
+- Không đề nghị đưa mô hình này vào bảng §34.11 như một pattern để áp dụng. V2.21 chỉ trỏ về tài liệu này từ
+  §34.16 để ghi nhận register còn thiếu một lớp mô hình; `decision` vẫn là `LESSON_ONLY`.
 
 ## 9. Nguồn
 

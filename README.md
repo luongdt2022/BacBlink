@@ -2,7 +2,7 @@
 
 Nền tảng NacenTech ĐMST. Code chính là **backend ASP.NET Core (.NET 10)** tại `apps/api` + `apps/worker`, cùng ba frontend đang được chuyển sang. Backend này thay thế NacenTwin/NestJS **một lần** theo D2-17r — không có giai đoạn hai stack chạy song song; bản NestJS cũ nằm ở `legacy/` chỉ để tra cứu.
 
-Kiến trúc đích: [`docs/04-technical/NACENTECH_ARCHITECTURE_V2.md`](./docs/04-technical/NACENTECH_ARCHITECTURE_V2.md) (V2.20).
+Kiến trúc đích: [`docs/04-technical/NACENTECH_ARCHITECTURE_V2.md`](./docs/04-technical/NACENTECH_ARCHITECTURE_V2.md) (V2.21).
 
 ## Chạy nhanh
 

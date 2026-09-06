@@ -4,9 +4,9 @@ Kiến trúc hệ thống, Architecture Decision Records (ADR), đặc tả API,
 
 | Tài liệu | Nội dung |
 |---|---|
-| [`NACENTECH_ARCHITECTURE_V2.md`](./NACENTECH_ARCHITECTURE_V2.md) | Kiến trúc đích V2.20 — nguồn đúng cho thiết kế hệ thống |
+| [`NACENTECH_ARCHITECTURE_V2.md`](./NACENTECH_ARCHITECTURE_V2.md) | Kiến trúc đích V2.21 — nguồn đúng cho thiết kế hệ thống |
 | [`NACENTECH_KIEN_TRUC_HE_THONG_CHUAN.md`](./NACENTECH_KIEN_TRUC_HE_THONG_CHUAN.md) | Tài liệu kiến trúc chuẩn (bản biên soạn để phát hành) |
-| [`adr/`](./adr/) | 13 ADR — quyết định kiến trúc đã chốt. ADR-0011 và ADR-0012 **đổi baseline V2.20** và đang chờ Council phê chuẩn; ADR-0013 thêm giai đoạn kết thúc `HANDED_OVER` vào ma trận §7.4 |
+| [`adr/`](./adr/) | 13 ADR — quyết định kiến trúc đã chốt. ADR-0011, ADR-0012 và ADR-0013 đã được cuốn vào baseline ở V2.21 |
 | [`CONVENTIONS.md`](./CONVENTIONS.md) | Quy ước viết mã backend .NET |
 | [`keys.md`](./keys.md) | Registry key/secret — **chỉ metadata**, không bao giờ chứa giá trị thật |
 

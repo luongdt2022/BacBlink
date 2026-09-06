@@ -1,8 +1,8 @@
 # ADR-0012: Bề mặt kết nối có thu phí cho công nghệ và mời thầu
 
-- Trạng thái: ACCEPTED_WITH_LEGAL_AND_COUNCIL_GATE — **ADR này đổi baseline V2.20**; mã được viết, mở bán bị chặn tới khi đóng cổng ở mục "Cổng chặn mở bán"
+- Trạng thái: ACCEPTED_WITH_LEGAL_GATE — mã được viết, mở bán bị chặn tới khi đóng cổng ở mục "Cổng chặn mở bán"
 - Ngày: 2026-09-06
-- Quyết định bởi: chủ sản phẩm. Cần Product Council và Architecture Council phê chuẩn phần sửa §1, §34.16, §34.18.2 và D2-35
+- Quyết định bởi: chủ sản phẩm. Đã cuốn vào baseline **V2.21** ngày 2026-09-06: §1, bảng §1.3, §34.16, §34.18.2 và D2-35r
 - Liên quan: §1 (dòng 58), §3 nguyên tắc 13/19, §9.4.1, §20.5.4, §20.5.9, §20.7, §34.16, §34.18.2, bất biến 56, D2-35;
   ADR-0011; `docs/02-requirements/san-pham-v2/portal/cho-giao-dich.md`; sổ lỗi B-15
 
@@ -122,9 +122,10 @@ phải vì kém hấp dẫn mà vì vượt thẩm quyền của ADR.
 
 ## Hệ quả
 
-- **Baseline đổi.** §1 dòng 58, §34.16 dòng 5813, §34.18.2 dòng 5930 và D2-35 hiện mâu thuẫn với quyết định này. Chúng
-  phải được sửa để ghi nhận: NacenTech có bề mặt kết nối tự phục vụ **có thu phí hiện diện**, đứng cạnh lõi case-led, và
-  không thay lõi đó. Việc sửa thuộc Architecture Council; ADR này không tự sửa tài liệu baseline.
+- **Baseline đã đổi** — thực hiện 2026-09-06, tài liệu lên **V2.21**. §1 nay ghi nhận bề mặt kết nối đứng cạnh lõi
+  case-led; §1.3 có ba dòng trạng thái mới; §34.16 giữ nguyên kết luận "marketplace không **thay** được hệ thống
+  thương mại hóa" và trỏ về §1 để nói rõ bề mặt mới đứng cạnh chứ không thay; §34.18.2 giữ nguyên điểm 3–4/10 và
+  ghi quyết định đè lên nó kèm phép tính độ lớn; D2-35 thành D2-35r.
 - **Cảnh báo kinh tế giữ nguyên hiệu lực.** §34.18.2 chấm loại sản phẩm này 3–4/10 vì dễ bị AI/search hàng hóa hóa, và
   §24.8 dòng 3025 chấm mức chống hàng hóa hóa chỉ 3/10 nếu mô hình triển khai thành sàn hồ sơ/công cụ matching. Quyết định
   này đè lên cảnh báo đó chứ không bác bỏ nó. Vì vậy:

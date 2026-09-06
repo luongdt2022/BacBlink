@@ -1,8 +1,8 @@
 # Kiến trúc hệ thống NacenTech V2 — Hạ tầng giao dịch và thương mại hóa công nghệ
 
 > Trạng thái: Architecture baseline — approved for implementation planning  
-> Phiên bản: 2.20  
-> Ngày: 2026-09-03  
+> Phiên bản: 2.21  
+> Ngày: 2026-09-06  
 > Định hướng: demand-first, broker-led, finance-linked, outcome-based  
 > Backend chốt: ASP.NET Core trên .NET 10 LTS, modular monolith  
 > Chiến lược chuyển đổi: thay thế backend NestJS bằng .NET **một lần**, có diễn tập; dữ liệu chuyển bằng ETL một chiều có đối soát; NestJS đóng băng từ tuần 0 rồi ngừng hẳn sau cutover; không có cửa sổ hai stack cùng ghi  
@@ -55,7 +55,9 @@
 
 ## 1. Kết luận kiến trúc
 
-NacenTech V2 không được thiết kế như một catalog hoặc sàn tự phục vụ. Lõi public-purpose của nó là **case-management platform cho toàn bộ vòng đời thương mại hóa công nghệ**; NacenX có thêm managed talent/expert service liền kề nhưng không được làm sai ranh giới này.
+Lõi public-purpose của NacenTech V2 là **case-management platform cho toàn bộ vòng đời thương mại hóa công nghệ**, không phải một catalog. NacenX có thêm managed talent/expert service liền kề nhưng không được làm sai ranh giới này.
+
+Từ 2.21 có một **bề mặt kết nối tự phục vụ đứng cạnh lõi đó** (ADR-0012): nội dung phân loại `PUBLIC` hiển thị công khai, và NacenX được thu phí cho **sự hiện diện và công cụ** trên bề mặt ấy. Ba thứ không bán được và không cấu hình được: thứ hạng, quyền đọc confidential demand, và đấu giá giá công (bất biến 56, nguyên tắc 19, non-goal §2.3). Bề mặt này là kênh vào của case chứ không phải đường vòng qua case — bày tỏ quan tâm tạo `CaseInvitation` hoặc `DemandSignal`, không tạo case đã qualified, không tạo độc quyền, không tạo cam kết.
 
 Đơn vị trung tâm của thương mại hóa là `CommercializationCase`, bắt đầu từ một nhu cầu đã được xác định và kết thúc bằng outcome được xác minh. Công nghệ, chuyên gia, lab, vốn, hợp đồng và dữ liệu đều tham gia phục vụ case; chúng không phải các marketplace độc lập ghép lại. Chỉ nhu cầu tuyển dụng/fractional/squad không gắn giao dịch công nghệ mới dùng `TalentServiceMandate` thương mại riêng của NacenX (§13.10).
 
@@ -113,6 +115,9 @@ NacenTech/NacenX không cạnh tranh với AI bằng khả năng viết, tìm ki
 | Mô hình cấu hình và mở rộng capability | `DECIDED_WITH_SCHEMA_AND_ACTIVATION_GATE` | §9.4; code cứng bất biến, cấu hình hóa policy/catalog/profile, mở rộng bằng module/adapter; cấm tenant fork và workflow tùy ý |
 | Partner Network và International Gateway | `DECIDED` | §10.6, §22.2, §27 và §34; mô hình liên bang, quốc tế là overlay chứ không phải transaction track thứ tư |
 | Phân vai NacenTech–NacenX | `DECIDED_LOGICAL_BOUNDARY` | NacenTech là public principal; NacenX là private operator/SPV. Hợp đồng, data role, IP/license và exit package là `OPEN_GATE` |
+| Bề mặt kết nối tự phục vụ có thu phí | `DECIDED_WITH_LEGAL_AND_ECONOMIC_GATE` | ADR-0012; thu phí cho hiện diện và công cụ, cấm bán thứ hạng/quyền đọc confidential demand/đấu giá giá công. Kinh tế của nó bị §34.18.2 chấm 3–4/10 và chịu quy tắc đóng-hoặc-định-giá-lại sau 12 tháng |
+| Nguồn tín hiệu nhu cầu từ dữ liệu công khai | `DECIDED_WITH_LEGAL_GATE` | ADR-0011; `SourceRecord` bắt buộc license + authority level, ba mức đối tượng hiển thị. Mức `INTERNAL_ONLY` dùng được ngay; hai mức hiển thị chờ hợp đồng license và xác nhận pháp chế |
+| Lối ra bàn giao sang quy trình có thẩm quyền | `DECIDED` | ADR-0013; §7.4 có thêm giai đoạn kết thúc `HANDED_OVER`. Không phải lựa chọn sản phẩm — Điều 50 Luật Đấu thầu 2023 buộc việc chọn nhà thầu chạy trên Hệ thống mạng đấu thầu quốc gia |
 | Đa tiền tệ và tỷ giá | `DECIDED` | §10.9; VND là ledger currency, tỷ giá đóng băng theo sự kiện |
 | Ranh giới cam kết xóa dữ liệu | `DECIDED` | §16.6; bảo đảm kỹ thuật dừng ở biên platform, ngoài biên là nghĩa vụ hợp đồng |
 | Pháp lý, operating entity, finance/escrow | `OPEN_GATE` | Chưa được coi là production-ready nếu thiếu legal memo/đối tác |
@@ -120,7 +125,7 @@ NacenTech/NacenX không cạnh tranh với AI bằng khả năng viết, tìm ki
 | NFR và định biên cho phạm vi liên bang | `TO_BE_REFINED` | §25.1 và §29.3 nêu đề xuất; con số cuối do Product Council và DevOps chốt |
 | Detailed design từng module | `TO_BE_REFINED` | Chốt bằng ADR, API contract, threat model và acceptance test |
 
-Vì vậy V2.20 là **kiến trúc chuẩn để bắt đầu implementation planning**, không phải tuyên bố rằng toàn bộ hệ thống hiện tại đã production-ready, đã miễn nhiễm trước AI hoặc đã có quyền liên thông mọi cơ quan.
+Vì vậy V2.21 là **kiến trúc chuẩn để bắt đầu implementation planning**, không phải tuyên bố rằng toàn bộ hệ thống hiện tại đã production-ready, đã miễn nhiễm trước AI hoặc đã có quyền liên thông mọi cơ quan.
 
 Thay đổi 2.1 → 2.2 đóng các lỗ hổng thiết kế sẽ không retrofit được rẻ nếu để lại: ranh giới transaction, cơ chế policy snapshot, ma trận stage transition, đường rò tài liệu qua attachment, mâu thuẫn WORM/quyền xóa, mô hình tiền tệ và scheduler dài hạn.
 
@@ -157,6 +162,14 @@ Thay đổi 2.16 → 2.17 bổ sung **Government Innovation Fabric** để khai 
 Thay đổi 2.17 → 2.18 đưa **Bảo đảm chuyển đổi số và đổi mới sáng tạo** thành ngành dọc thương mại có kiểm soát: chẩn đoán năng lực, roadmap, thẩm định phương án/nhà cung cấp, PoC có baseline, fractional CDTO, PMO/adoption và đo giá trị 6/12 tháng. Ngành dọc tái sử dụng `ProfessionalServiceMandate`, `CommercializationCase`, `TalentServiceMandate` và `ManagedServiceAgreement`, không tạo track hay marketplace mới. Vai trò tư vấn, triển khai và thẩm định độc lập bị tách bằng conflict gate; AI chuẩn bị bằng chứng và phương án nhưng không chọn nhà thầu, nghiệm thu hoặc tuyên bố dự án hiệu quả.
 
 Thay đổi 2.18 → 2.19 chốt **kiến trúc cấu hình mở rộng có kiểm soát**: `CapabilityProfileVersion` phân capability thành `CORE_NOW`, `PILOT_ON_DEMAND`, `SCALE_AFTER_EVIDENCE` và `DEFERRED_OPTION`; policy/catalog/form/checklist/SLA được version hóa, còn bất biến authority/security/transaction/audit vẫn nằm trong code và test. Mỗi ngành, chương trình hoặc node dùng cùng core, không fork source/database; integration đi qua adapter có fallback thủ công. Cấu hình mới phải qua schema, dry-run, approval, effective date, rollback và activation gate, không biến hệ thống thành workflow engine tùy ý.
+
+Thay đổi 2.20 → 2.21 mở **bề mặt kết nối tự phục vụ có thu phí** (ADR-0012) và **lối ra bàn giao sang quy trình có thẩm quyền** (ADR-0013), cộng nguồn tín hiệu nhu cầu từ dữ liệu công khai có license (ADR-0011).
+
+Phiên bản này đóng một mâu thuẫn đã treo giữa hai tầng tài liệu: `01-vision` mô tả một marketplace với "8 dịch vụ kết nối cung cầu", sản phẩm đang chạy có khu vực gắn nhãn "Sàn giao dịch" đọc dữ liệu thật, còn §1 của baseline thì bác bỏ định vị đó. 2.21 chọn: **có bề mặt, nhưng bán công cụ chứ không bán thứ hạng.** Ba ranh giới không đổi được bằng cấu hình hay ADR vì chúng gắn với mandate công: không bán thứ hạng, không bán quyền đọc confidential demand, không đấu giá giá công.
+
+`HANDED_OVER` sửa một lỗi ghi sai sự thật chứ không mở tính năng: với người trả tiền dùng vốn nhà nước, việc chọn nhà thầu bắt buộc chạy trên Hệ thống mạng đấu thầu quốc gia (Điều 50 Luật Đấu thầu 2023), nên NacenTwin dừng ở phần thượng nguồn. Ma trận cũ không có lối ra thành công nào trước `EXECUTION`, nên một hồ sơ bàn giao thành công phải ghi thành `WITHDRAWN`/`CANCELLED` — và hệ quả đo lường là KPI `lawful purchase/adoption conversion` tại §28 không tính được. Ranh giới ở non-goal §2.3 và D2-135 hóa ra không phải kiến trúc tự đặt ra cho cẩn thận; nó là luật.
+
+Điều **không** đổi ở 2.21: kết luận §34.16 rằng không marketplace tự phục vụ nào thay được hệ thống thương mại hóa; điểm 3–4/10 của §34.18.2 và 3/10 của §24.8; và toàn bộ bất biến §32. Bề mặt mới đứng cạnh lõi case-led, không thay nó.
 
 Thay đổi 2.19 → 2.20 đổi **chiến lược chuyển đổi backend từ strangler sang thay thế một lần** (D2-17r, §30.2). Lý do: NestJS hiện tại nhỏ (14 entity, 95 route, không có test), mô hình dữ liệu và phân quyền của nó khác kiến trúc đích về nguyên tắc chứ không phải về chi tiết, và Phase 0 là vận hành thủ công nên không có tính năng mới nào cần NestJS trong hai tháng đầu. Chạy hai stack song song vì vậy chỉ tạo chi phí gateway, token bridging và dual-ownership mà không mua được gì. Điều được giữ nguyên: mọi quy tắc dữ liệu §30.1/§30.3, nguyên tắc "một biến mỗi bước" cho search (§26.6.7), Python RAG và Elasticsearch không đổi tại cutover, `CapabilityProfileVersion` vẫn quyết định phạm vi. Điều được thêm: facade `/api/v1` trong .NET có sunset (D2-148), chính sách rollback (D2-149), chuyển password hash (D2-150), runbook cutover có đối soát và diễn tập. Đây là quyết định đi ngược khuyến nghị "cuốn chiếu" rút từ benchmark NPfIT tại §34; nó chấp nhận được vì phạm vi cắt là một backend nhỏ đã đóng băng, không phải một chương trình quốc gia thay đồng loạt.
 
@@ -603,18 +616,25 @@ Transition không có trong bảng bị application service từ chối, không 
 |---|---|---|
 | `DISCOVERY` | `QUALIFICATION`, `REJECTED`, `WITHDRAWN` | |
 | `QUALIFICATION` | `MATCHING`, `DISCOVERY`, `REJECTED`, `WITHDRAWN` | Về `DISCOVERY` là rework, giữ demand version |
-| `MATCHING` | `DUE_DILIGENCE`, `QUALIFICATION`, `REJECTED`, `WITHDRAWN` | |
-| `DUE_DILIGENCE` | `DEAL_DESIGN`, `MATCHING`, `REJECTED`, `WITHDRAWN` | Về `MATCHING` mở `MatchRound` mới, không sửa round cũ |
-| `DEAL_DESIGN` | `EXECUTION`, `DUE_DILIGENCE`, `WITHDRAWN`, `CANCELLED` | `WITHDRAWN` chỉ khi chưa có agreement hiệu lực |
+| `MATCHING` | `DUE_DILIGENCE`, `QUALIFICATION`, `REJECTED`, `WITHDRAWN`, `HANDED_OVER` | |
+| `DUE_DILIGENCE` | `DEAL_DESIGN`, `MATCHING`, `REJECTED`, `WITHDRAWN`, `HANDED_OVER` | Về `MATCHING` mở `MatchRound` mới, không sửa round cũ |
+| `DEAL_DESIGN` | `EXECUTION`, `DUE_DILIGENCE`, `WITHDRAWN`, `CANCELLED`, `HANDED_OVER` | `WITHDRAWN` chỉ khi chưa có agreement hiệu lực |
 | `EXECUTION` | `OUTCOME_VERIFICATION`, `CANCELLED` | Không quay lại `DEAL_DESIGN`; thay đổi term dùng amendment |
-| `OUTCOME_VERIFICATION` | `COMMERCIALIZATION_MONITORING`, `EXECUTION`, `CLOSED` | Về `EXECUTION` chỉ khi verification kết luận `INCONCLUSIVE` và có rework plan |
+| `OUTCOME_VERIFICATION` | `COMMERCIALIZATION_MONITORING`, `EXECUTION`, `CLOSED`, `HANDED_OVER` | Về `EXECUTION` chỉ khi verification kết luận `INCONCLUSIVE` và có rework plan |
 | `COMMERCIALIZATION_MONITORING` | `CLOSED` | |
-| `CLOSED`, `REJECTED`, `WITHDRAWN`, `CANCELLED` | — | Terminal |
+| `CLOSED`, `HANDED_OVER`, `REJECTED`, `WITHDRAWN`, `CANCELLED` | — | Terminal |
 
 Quy tắc kèm theo:
 
 - `REJECTED` chỉ hợp lệ trước `DEAL_DESIGN`. Sau đó dùng `WITHDRAWN` hoặc `CANCELLED`.
 - `WITHDRAWN` chỉ hợp lệ khi chưa có agreement hiệu lực; sau đó bắt buộc `CANCELLED` kèm settlement nghĩa vụ.
+- `HANDED_OVER` (2.21, ADR-0013) là giai đoạn kết thúc **thành công**: quyết định chuyển sang một quy trình có
+  thẩm quyền bên ngoài, không phải NacenTwin tự thực hiện. Đòi `decision = HANDOVER_TO_AUTHORITY` **và**
+  `mandateRef` trỏ tới quy trình nhận — không có tham chiếu thì "đã bàn giao" là lời khai không kiểm chứng được
+  nằm vĩnh viễn trong dữ liệu chỉ-ghi-thêm. Bốn cạnh vào nó đúng bằng những giai đoạn có việc chọn bên cung ứng
+  đang diễn ra hoặc vừa xong; không mở từ `DISCOVERY`/`QUALIFICATION` (chưa có gì để bàn giao — dùng `WITHDRAWN`)
+  và không mở từ `COMMERCIALIZATION_MONITORING` (chuyển giao đã xong). `HANDED_OVER` **không** phải bằng chứng đã
+  trúng thầu hoặc đã mua: kết quả của quy trình bên ngoài thuộc hệ thống của cơ quan nhận (D2-135).
 - Transition lùi luôn tạo `DecisionRecord` với `decision = RETURN_FOR_REWORK` và không xóa artifact của stage sau.
 - Case mang `CaseHold` đang mở không transition được, kể cả transition hợp lệ theo bảng.
 
@@ -4827,7 +4847,7 @@ Không có giai đoạn nào hai stack cùng phục vụ request ghi. Không đ�
 
 ### 30.5 Defer/replace
 
-| Ý tưởng/phạm vi cũ | Quyết định V2.20 |
+| Ý tưởng/phạm vi cũ | Quyết định V2.21 |
 |---|---|
 | Escrow là trung tâm | Defer; agreement, milestone, invoice/payment reference trước; escrow chỉ qua partner và legal gate |
 | Một engagement cho mọi dịch vụ | Thay bằng case chung + ba track sub-workflow |
@@ -4880,7 +4900,7 @@ Không có giai đoạn nào hai stack cùng phục vụ request ghi. Không đ�
 | D2-32 | International corridor đầu tiên | Chọn theo qualified demand + local adopter + legal feasibility, không theo uy tín/MoU đơn thuần | Product Council — `OPEN_GATE` |
 | D2-33 | Recoverable grant/royalty quay vòng | Chỉ bật sau legal/accounting/budget authority memo | Governance/Finance — `OPEN_GATE` |
 | D2-34 | Cross-border compliance | Rule tạo flag/hold; legal authority mới được clear | Legal/Security — `DECIDED` |
-| D2-35 | Private commercialization model | Venture-client + managed scouting + paid pilot; không xây marketplace tự phục vụ | Product/Operations — `DECIDED` |
+| D2-35r | Private commercialization model | Venture-client + managed scouting + paid pilot là lõi. **2.21 (ADR-0012):** có bề mặt kết nối tự phục vụ đứng cạnh, thu phí cho hiện diện và công cụ; cấm bán thứ hạng, quyền đọc confidential demand và đấu giá giá công | Product/Operations — `DECIDED` |
 | D2-36 | Commercial revenue | Retainer/milestone/success fee có cap và disclosure; cấm pay-to-rank/accredit | Governance/Finance — `DECIDED` |
 | D2-37 | Public/private ledger | `ProgramLedger` dưới governance NacenTech/sponsor; `CommercialServiceLedger` của NacenX; dùng chung case/evidence nhưng không trợ cấp chéo | Finance/Architecture — `DECIDED` |
 | D2-38 | Venture build/equity/royalty finance | Adapter qua finance partner/SPV riêng; NacenTech và NacenX operator không ôm balance-sheet risk ở baseline | Governance/Legal — `OPEN_GATE` |
@@ -5810,7 +5830,9 @@ Không sao chép:
 
 ### 34.16 Kết luận benchmark
 
-Không mô hình công hay tư nào chứng minh một marketplace tự phục vụ có thể thay thế hệ thống thương mại hóa. Mẫu số chung của các mô hình có bằng chứng tốt là:
+Không mô hình công hay tư nào chứng minh một marketplace tự phục vụ có thể **thay thế** hệ thống thương mại hóa. Kết luận này giữ nguyên ở 2.21 và nó là lý do bề mặt kết nối tại §1 đứng **cạnh** lõi case-led chứ không thay lõi đó; `docs/07-references/mo-hinh-dauthau-net.md` bổ sung một lớp mô hình mà register này còn thiếu — tổng hợp dữ liệu công khai rồi bán thuê bao cảnh báo — và xếp nó `LESSON_ONLY` vì nó sống bằng một dòng dữ liệu công khai mà NacenTech không có.
+
+Mẫu số chung của các mô hình có bằng chứng tốt là:
 
 ```text
 qualified demand
@@ -5927,9 +5949,11 @@ Khoảng trống có thể bán không nằm ở “tuyên truyền chuyển đ�
 | Fractional CDTO/managed squad | 8/10 | khá–cao | legal/SOW/capacity gated |
 | AI/data governance readiness | 8/10 | khá; nhu cầu tăng nhưng method phải rõ | mở như vertical package sau pilot |
 | Chương trình cụm/ngành/địa phương | 7.5–8/10 | tốt nếu có contract/SLA; sales cycle dài | Phase 3–4A sau private pilot |
-| Directory/sàn giải pháp mở | 3–4/10 | thấp, dễ bị AI/search hàng hóa hóa | không đầu tư ở baseline |
+| Directory/sàn giải pháp mở | 3–4/10 | thấp, dễ bị AI/search hàng hóa hóa | **2.21:** xây như bề mặt thu hút khách, không như dòng doanh thu — ADR-0012 |
 
 Điểm là architecture judgement tại 2026-09-02, không phải xác suất thành công hoặc forecast doanh thu. Gói có điểm cao vẫn thất bại nếu thiếu payer, expert đủ năng lực, quyền dữ liệu, conflict control hoặc đội delivery.
+
+**2.21 — vì sao dòng cuối vẫn được xây dù chấm 3–4/10.** Quyết định ở ADR-0012 **đè lên** cảnh báo này chứ không bác bỏ nó, và phép tính độ lớn là lý do: kịch bản B của §20.5.9 cần khoảng 10 tỷ recurring/năm; ở mức contribution 2–4 triệu/năm mỗi listing sau chi phí kiểm duyệt thì cần 2.500–5.000 listing trả phí, so với ~20 deal đóng hoặc ~167 desk chuyên gia cho cùng số đó. Kết luận rơi ra từ số học chứ không từ nguyên tắc: **bề mặt kết nối là kênh thu hút khách, không phải mô hình kinh doanh.** Vì vậy nó chịu hai ràng buộc — quy tắc đóng-hoặc-định-giá-lại sau 12 tháng của §20.5.4, và doanh thu listing **không được dùng để nới** gate H0 §20.5.9 trước khi đo được tỷ lệ gia hạn thật. Cảnh báo hàng hóa hóa tại §24.8 (3/10 nếu triển khai thành sàn hồ sơ/công cụ matching) cũng giữ nguyên hiệu lực: nó là lý do phần case-led phải luôn đứng cạnh bề mặt này trong mọi cách trình bày sản phẩm.
 
 #### 34.18.3 Mô hình vận hành khuyến nghị
 
