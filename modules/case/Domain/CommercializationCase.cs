@@ -1,5 +1,6 @@
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Case.Application;
+using NacenTech.PolicyEngine;
 
 // `Decisions` (hằng số) trùng tên với navigation `Decisions` của aggregate — dùng alias cho rõ.
 using CaseDecisions = NacenTech.Modules.Case.Application.Decisions;
@@ -30,6 +31,7 @@ public sealed class CommercializationCase : AggregateRoot
         DemandBriefVersionNo = demandBriefVersionNo;
         ConfidentialityLevel = confidentialityLevel;
         BudgetPathStatus = BudgetPathStatuses.Unknown;
+        FundingInstrument = FundingInstruments.Undetermined;
     }
 
     public string CaseCode { get; private set; } = string.Empty;
@@ -42,7 +44,29 @@ public sealed class CommercializationCase : AggregateRoot
     public int DemandBriefVersionNo { get; private set; }
     public Guid? PolicySnapshotId { get; private set; }
     public string ConfidentialityLevel { get; private set; } = "CONFIDENTIAL";
+
+    /// <summary>
+    /// *Ai trả tiền.* Khác <see cref="FundingInstrument"/> (*dưới công cụ pháp lý nào*) — B-48 ghi lại việc trường
+    /// này hiện chưa có đường ghi nào; ADR-0014 tách hai câu hỏi ra chứ không sửa trường này.
+    /// </summary>
     public string BudgetPathStatus { get; private set; } = BudgetPathStatuses.Unknown;
+
+    /// <summary>ADR-0014: công cụ pháp lý mà tiền của hồ sơ đi vào. Xem <see cref="FundingInstruments"/>.</summary>
+    public string FundingInstrument { get; private set; } = FundingInstruments.Undetermined;
+
+    /// <summary>Tham chiếu văn bản thật cho công cụ đã khai. Bắt buộc với mọi công cụ trừ `PRIVATE`.</summary>
+    public string? LegalFormRef { get; private set; }
+
+    /// <summary>
+    /// Kết luận đã **đóng băng** cùng ảnh chụp chính sách: hồ sơ này có được thực thi ngay trên nền tảng không.
+    /// `null` = chưa chốt, và chưa chốt nghĩa là **không được** — default DENY, không phải "cho qua vì chưa biết".
+    ///
+    /// Đây là bản sao dẫn xuất của thứ đã nằm trong ảnh chụp. Nó tồn tại để aggregate tự đủ: `Transition` chạy
+    /// cho cả ETL và job, những đường không có ảnh chụp để tra. Không lệch được vì hai giá trị ghi trong cùng
+    /// <see cref="FreezeFundingPath"/>, ảnh chụp bất biến, và supersede ảnh chụp đã đòi `DecisionRecord` riêng.
+    /// </summary>
+    public bool? ExecutionInPlatformPermitted { get; private set; }
+
     public DateTimeOffset? TargetDecisionAt { get; private set; }
 
     public IReadOnlyList<CaseParty> Parties => _parties;
@@ -58,6 +82,8 @@ public sealed class CommercializationCase : AggregateRoot
 
         var @case = new CommercializationCase(caseCode, command.Track, command.Title, command.ProblemOwnerPersonId,
             command.DemandBriefId, command.DemandBriefVersionNo, command.ConfidentialityLevel);
+        if (command.FundingInstrument is { } instrument)
+            @case.DeclareFundingPath(instrument, command.LegalFormRef);
         @case._parties.Add(new CaseParty(@case.Id, command.ProblemOwnerPersonId, CaseRoles.ProblemOwner, now));
         if (command.LeadBrokerPersonId is { } broker)
         {
@@ -67,12 +93,59 @@ public sealed class CommercializationCase : AggregateRoot
         return @case;
     }
 
-    /// <summary>CASE-14: snapshot bất biến; đổi phải qua DecisionRecord riêng, không ghi đè ở đây.</summary>
-    public void SetPolicySnapshot(Guid snapshotId)
+    /// <summary>
+    /// ADR-0014: khai công cụ tài chính và tham chiếu văn bản. Chỉ khai được **trước khi chốt** ảnh chụp chính
+    /// sách — sau đó kết luận đường thực thi đã đóng băng, và đổi công cụ mà không đổi kết luận sẽ tạo ra một hồ
+    /// sơ nói một đằng chạy một nẻo. Đổi công cụ giữa vòng đời là câu hỏi còn mở của ADR, không phải lỗ hổng.
+    /// </summary>
+    public void DeclareFundingPath(string instrument, string? legalFormRef)
+    {
+        if (!FundingInstruments.All.Contains(instrument))
+            throw new ValidationException($"fundingInstrument không hợp lệ: {instrument}");
+        if (PolicySnapshotId is not null)
+            throw new InvalidOperationException("ADR-0014: đường tài chính đã đóng băng cùng ảnh chụp chính sách");
+
+        var trimmed = string.IsNullOrWhiteSpace(legalFormRef) ? null : legalFormRef.Trim();
+        if (FundingInstruments.RequiresLegalFormRef(instrument) && trimmed is null)
+            throw new ValidationException($"Công cụ {instrument} phải kèm legalFormRef trỏ tới văn bản áp dụng");
+
+        FundingInstrument = instrument;
+        LegalFormRef = trimmed;
+        Touch();
+    }
+
+    /// <summary>
+    /// Cổng `BUDGET_PATH` mà ảnh chụp chính sách đã khai từ đầu (§9.3) nhưng chưa bao giờ có gì để đọc — B-48.
+    ///
+    /// Tách khỏi <see cref="Transition"/> vì tầng dịch vụ phải hỏi được **trước** khi chốt ảnh chụp: lệnh chốt
+    /// tự commit, nên một hồ sơ trượt cổng này sau đó sẽ để lại một ảnh chụp mồ côi. Một cài đặt, hai chỗ gọi —
+    /// không phải hai phép kiểm chép tay rồi lệch nhau.
+    /// </summary>
+    public void EnsureFundingPathDeclared()
+    {
+        // Hỏi "có phải một công cụ đã khai không", **không** hỏi "có khác UNDETERMINED không". Hai câu chỉ trùng
+        // nhau khi mọi giá trị trong cơ sở dữ liệu đều nằm trong từ vựng — và một cột thêm bằng migration với
+        // giá trị mặc định sai sẽ phá đúng giả định đó, im lặng, cho toàn bộ hồ sơ cũ.
+        if (FundingInstrument == FundingInstruments.Undetermined || !FundingInstruments.All.Contains(FundingInstrument))
+            throw new UnprocessableException(
+                "Hồ sơ phải khai công cụ tài chính trước khi vào QUALIFICATION", "FUNDING_INSTRUMENT_REQUIRED");
+
+        if (FundingInstruments.RequiresLegalFormRef(FundingInstrument) && string.IsNullOrWhiteSpace(LegalFormRef))
+            throw new UnprocessableException(
+                $"Công cụ {FundingInstrument} phải kèm legalFormRef trỏ tới văn bản áp dụng", "FUNDING_INSTRUMENT_REQUIRED");
+    }
+
+    /// <summary>
+    /// CASE-14: snapshot bất biến; đổi phải qua DecisionRecord riêng, không ghi đè ở đây. ADR-0014 gắn thêm kết
+    /// luận đường thực thi vào **cùng một phương thức** — hai giá trị không tách được, nên không có đường nào
+    /// chốt ảnh chụp mà quên chốt kết luận.
+    /// </summary>
+    public void FreezeFundingPath(Guid snapshotId, bool executionInPlatformPermitted)
     {
         if (PolicySnapshotId is not null)
             throw new InvalidOperationException("CASE-14: policySnapshotId đã được gán và là bất biến");
         PolicySnapshotId = snapshotId;
+        ExecutionInPlatformPermitted = executionInPlatformPermitted;
         Touch();
     }
 
@@ -125,6 +198,19 @@ public sealed class CommercializationCase : AggregateRoot
         // CASE-01: qualified case phải có lead broker (và problem owner, demand version — đã có từ Create).
         if (toStage == Stages.Qualification && LeadBrokerPersonId is null)
             throw new UnprocessableException("CASE-01: cần lead broker trước QUALIFICATION", "CASE_01_LEAD_BROKER_REQUIRED");
+
+        // ADR-0014: cổng `BUDGET_PATH` mà ảnh chụp chính sách đã khai từ đầu, nay có thứ để đọc. Phải trả lời
+        // được **tại đây** vì kết luận đường thực thi đóng băng ngay ở bước này và bất biến về sau.
+        if (toStage == Stages.Qualification) EnsureFundingPathDeclared();
+
+        // ADR-0014: `EXECUTION` chỉ là đích hợp pháp khi công cụ tài chính cho phép chọn bên cung ứng và thực
+        // thi ngay trên nền tảng. Bị chặn ở đây **không** nghĩa là hồ sơ hỏng: với vốn mua sắm công thì đây đúng
+        // là chỗ hồ sơ phải rời nền tảng, và lối ra thành công của nó là `HANDED_OVER` (ADR-0013) — nên thông
+        // điệp phải nói tên lối ra đó, không chỉ từ chối.
+        if (toStage == Stages.Execution && ExecutionInPlatformPermitted != true)
+            throw new UnprocessableException(
+                $"Công cụ tài chính {FundingInstrument} không cho phép thực thi trên nền tảng; lối ra đúng là {Stages.HandedOver}",
+                "EXECUTION_PATH_NOT_LAWFUL");
 
         var record = new DecisionRecord(Id, Stage, toStage, decision, reasonCodes, rationale, decidedByActorRef, mandateRef, PolicySnapshotId, now);
         _decisions.Add(record);

@@ -17,6 +17,8 @@ public sealed class CommercializationCaseConfiguration : IEntityTypeConfiguratio
         b.Property(x => x.Title).HasMaxLength(255).IsRequired();
         b.Property(x => x.ConfidentialityLevel).HasMaxLength(30).IsRequired();
         b.Property(x => x.BudgetPathStatus).HasMaxLength(30).IsRequired();
+        b.Property(x => x.FundingInstrument).HasMaxLength(40).IsRequired();
+        b.Property(x => x.LegalFormRef).HasMaxLength(200);
         b.Ignore(x => x.HasOpenHold);
         b.HasIndex(x => x.Stage);
         b.HasIndex(x => x.LeadBrokerPersonId);

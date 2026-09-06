@@ -26,10 +26,22 @@ public interface IPersonDirectory
     Task<IReadOnlyDictionary<Guid, PersonBrief>> GetManyAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct);
 }
 
-/// <summary>policy module: resolve PolicySnapshot bất biến cho case tại QUALIFICATION (§9.3). Trả snapshot id.</summary>
+/// <summary>
+/// Kết quả chốt chính sách cho một hồ sơ: định danh ảnh chụp, và **kết luận đường thực thi đã tra tại thời điểm
+/// chốt** (ADR-0014). Hai giá trị đi cùng nhau vì chúng phải được ghi cùng nhau — một hồ sơ có ảnh chụp mà không
+/// có kết luận là một hồ sơ mà cổng `EXECUTION` không đọc được gì.
+/// </summary>
+public sealed record FundingPathResolution(Guid SnapshotId, bool ExecutionInPlatformPermitted);
+
+/// <summary>policy module: resolve PolicySnapshot bất biến cho case tại QUALIFICATION (§9.3).</summary>
 public interface IPolicySnapshotResolver
 {
-    Task<Guid> ResolveForCaseAsync(Guid caseId, string track, CancellationToken ct);
+    /// <summary>
+    /// ADR-0014: `fundingInstrument` đi vào tài liệu ảnh chụp và quyết định kết luận trả về. Truyền công cụ chứ
+    /// không truyền kết luận đã tra sẵn — tra luật là việc của module policy, và ảnh chụp phải ghi lại **căn cứ**
+    /// đã dùng chứ không chỉ kết quả.
+    /// </summary>
+    Task<FundingPathResolution> ResolveForCaseAsync(Guid caseId, string track, string fundingInstrument, CancellationToken ct);
 }
 
 /// <summary>

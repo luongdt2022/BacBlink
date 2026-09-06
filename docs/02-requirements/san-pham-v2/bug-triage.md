@@ -10,7 +10,7 @@ Danh sách tồn tại để đội sản phẩm quyết từng mục: sửa, gh
 
 ## Tóm tắt
 
-Bốn mươi ba mục sau khi gộp: **15 mức cao, 18 mức trung bình, 10 mức thấp**. Mười hai mục cao đầu tiên chia làm bốn cụm; mục thứ mười ba ([B-35](#b-35-danh-sách-intake-ẩn-danh-trả-bản-nháp-của-mọi-người)) tìm ra trong lúc đo lại bản vá sprint 0 và thuộc cụm hai.
+Bốn mươi tám mục sau khi gộp: **15 mức cao, 19 mức trung bình, 14 mức thấp**. Mười hai mục cao đầu tiên chia làm bốn cụm; mục thứ mười ba ([B-35](#b-35-danh-sách-intake-ẩn-danh-trả-bản-nháp-của-mọi-người)) tìm ra trong lúc đo lại bản vá sprint 0 và thuộc cụm hai.
 
 **Năm mục đã sửa trong sprint 0** (2026-09-04): [B-32](#b-32-mọi-sửa-đổi-tạo-phiên-bản-nội-dung-mới-đều-thất-bại-với-409) + [B-31](#b-31-sửa-một-đề-bài-mà-không-gửi-kèm-nội-dung-mật-sẽ-xoá-sạch-nội-dung-mật-đó) (cùng một lần sửa, đúng ràng buộc thứ tự), [B-19](#b-19-apiv1publicstories-trả-email-và-số-điện-thoại-của-tác-giả-cho-người-chưa-đăng-nhập), [B-20](#b-20-đọc-một-bản-ghi-theo-định-danh-không-kiểm-quyền), [B-27](#b-27-tìm-kiếm-trả-cả-bản-nháp-của-người-khác). Bốn trong năm đã **đo lại trên bản chạy** sau khi sửa; B-27 sửa xong nhưng vẫn chưa đo được vì thiếu sidecar nhúng ở cổng 8003. Bộ test đi từ **44 lên 51**, tất cả xanh, và bảy bài mới gồm ba bài *sửa-rồi-đọc-lại* chạm PostgreSQL thật — thứ mà 44 bài cũ không có bài nào làm.
 
@@ -82,6 +82,8 @@ Cụm lớn nhất theo số lượng vẫn là tám mục quanh việc di trú 
 | B-46 | Vòng mới nhất báo 0 ứng viên dù có 10 | thấp | backend | sửa — đã làm |
 | B-33 | Bốn danh sách cho phép lấy 1000 dòng một lần | thấp | backend | quyết định sản phẩm |
 | B-34 | Phụ thuộc có khuyến cáo bảo mật mức cao | thấp | backend | sửa |
+| B-47 | Bộ test tích hợp về tìm kiếm chỉ xanh trên cơ sở dữ liệu sạch | thấp | backend | **đã sửa** |
+| B-48 | `budgetPathStatus` không có đường ghi, nên cổng `BUDGET_PATH` không có gì để đọc | trung bình | backend | **đã sửa một phần** (ADR-0014) |
 
 ## Cao
 
@@ -496,6 +498,18 @@ Cụm lớn nhất theo số lượng vẫn là tám mục quanh việc di trú 
 - **Cần quyết:** `sửa` — nhưng sửa **tài liệu** trước, và ngay. Sửa mã là một việc riêng thuộc sprint 6, cần quyết định sản phẩm về việc ai được nâng mức và điều kiện nào cho phép nâng. Trong lúc chưa quyết, nên cân nhắc bỏ `TRANSACTION_READY` khỏi bộ hằng số: một giá trị liệt kê không đường nào tạo ra được thì cùng loại với vấn đề mà [B-28](#b-28-tài-liệu-mức-internal-hiện-cho-mọi-người-kể-cả-khách-chưa-đăng-nhập) mô tả ở `Internal`, và cửa sổ rẻ nhất để đổi bộ giá trị là lúc chưa có dữ liệu nào mang nó.
 - **Nêu bởi:** phát hiện ngày 2026-09-04 khi kiểm kê năng lực để lập kế hoạch sprint 3–6; không tài liệu nào trước đó nêu.
 - **Trạng thái:** Xác nhận 2026-09-04 bằng grep toàn bộ solution. Con số đúng là **6 năng lực chờ cửa + 1 năng lực chờ xây từ đầu**, không phải 7 năng lực chờ cửa.
+
+### B-48: `budgetPathStatus` không có đường ghi, nên cổng `BUDGET_PATH` đã khai trong ảnh chụp chính sách không có gì để đọc
+
+- **Người dùng gặp ở đâu:** Chưa gặp. Người đọc hồ sơ vụ việc qua API gặp — dưới dạng một trường luôn nói `UNKNOWN`.
+- **Xảy ra gì / lẽ ra là gì:** `BudgetPathStatuses` khai sáu giá trị (`UNKNOWN`, `OWNER_FUNDED`, `SPONSOR_FUNDED`, `FINANCE_REQUIRED`, `MIXED`, `CONFIRMED`). Aggregate gán `UNKNOWN` ở hàm dựng và **không có phương thức nào đổi được giá trị** — không ở domain, không ở `ICaseService`, không ở đâu. Năm giá trị còn lại được khai rồi không đường nào tạo ra được. Trường vẫn nằm trong `CaseDto` và đi ra `GET /api/v2/cases` cùng `GET /api/v2/cases/{id}`, nên mọi hồ sơ trả `"budgetPathStatus": "UNKNOWN"` vĩnh viễn.
+- **Hệ quả nặng hơn một trường chết:** `PolicySnapshotService.BuildDocument` khai cổng `BUDGET_PATH` cho giai đoạn `QUALIFICATION` và **đóng băng nó vào ảnh chụp chính sách của từng hồ sơ**, có hash JCS, hiển thị được trên màn hình ảnh chụp. Cổng đó không có gì để đọc — và `Transition` cũng không đọc ảnh chụp ở đâu cả. Một luật đã ghi, đã ký bằng hash, và không tồn tại lúc chạy.
+- **Tái hiện:** `grep -rn "BudgetPathStatus" --include=*.cs modules packages apps tools` — năm kết quả: hàm dựng, khai báo thuộc tính, từ vựng, cột EF, ánh xạ DTO. Không kết quả nào là phép gán khác `UNKNOWN`. Rồi `grep -rn "OwnerFunded\|SponsorFunded\|FinanceRequired"` — chỉ trúng đúng dòng khai hằng số.
+- **Vì sao (từ mã):** `modules/case/Domain/CommercializationCase.cs:32` và `:45`; `modules/case/Application/Contracts.cs:106`; `modules/policy/Application/PolicySnapshotService.cs:52`. Bảng quản trị đã khai kiểu cho trường (`apps/admin/src/services/caseService.ts:184`) nhưng **chưa màn hình nào hiển thị nó**, nên hôm nay chưa ai đọc nhầm — đó là may, không phải thiết kế.
+- **Mức:** `trung bình` — cùng hình dạng với [B-36](#b-36-cổng-chất-lượng-được-liệt-kê-là-đã-có-tầng-dịch-vụ-nhưng-không-có-mã-nào-nâng-được-mức) và cùng lý do. Không hỏng gì đang chạy vì chưa có hồ sơ sản xuất nào; nhưng một cổng được khai mà không thi hành tạo cảm giác an toàn sai, đúng loại rủi ro mà [B-40](#b-40-if-match-và-etag-được-quảng-cáo-nhưng-máy-chủ-không-đọc-không-phát) mô tả với `If-Match`: bên đọc tin rằng mình được bảo vệ bởi một thứ không chạy.
+- **Cần quyết:** `sửa`, nhưng phải quyết trước **trường này trả lời câu hỏi nào**. [ADR-0014](../../04-technical/adr/0014-cong-cu-tai-chinh-quyet-dinh-loi-ra-hop-phap.md) (`ACCEPTED`, cài đặt 2026-09-06) tách hai câu hỏi đã bị gộp: *ai trả tiền* (thuộc trường này) và *dưới công cụ pháp lý nào* (thuộc `FundingInstrument` mới). Nếu ADR-0014 được nhận, trường này còn nghĩa riêng và cần một đường ghi thật; nếu không, cân nhắc gỡ hẳn. Cửa sổ rẻ nhất để đổi bộ giá trị là lúc chưa dữ liệu nào mang nó — đúng lập luận đã dùng cho mức `Internal` ở [B-28](#b-28-tài-liệu-mức-internal-hiện-cho-mọi-người-kể-cả-khách-chưa-đăng-nhập).
+- **Nêu bởi:** phát hiện 2026-09-06 khi rà đường đi từ đề bài tới outcome để viết ADR-0014; không tài liệu nào trước đó nêu.
+- **Trạng thái:** Xác nhận 2026-09-06 bằng grep toàn bộ solution trên `main` tại `cc32d8d`; build sạch, 168/168 test xanh. **Chưa sửa, và nửa nặng hơn đã đóng.** ADR-0014 cài đặt cùng ngày lấp phần *cổng không có gì để đọc*: cổng `BUDGET_PATH` nay đọc `FundingInstrument` — một trường có đường ghi, có từ vựng, có test. Phần còn lại của mục này hẹp hơn hẳn: `BudgetPathStatus` vẫn không có setter, vẫn vĩnh viễn `UNKNOWN`, và vẫn đi ra `GET /api/v2/cases`. Nó cần một đường ghi cho câu hỏi *ai trả tiền*, hoặc bị gỡ.
 
 ### B-29: Tài liệu bị loại khỏi danh sách không sinh dòng kiểm toán từ chối
 

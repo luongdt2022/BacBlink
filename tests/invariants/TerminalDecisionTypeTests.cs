@@ -22,7 +22,8 @@ public sealed class TerminalDecisionTypeTests
 {
     private static CommercializationCase NewCase() => CommercializationCase.Create(
         "NT-2026-000042",
-        new CreateCaseCommand(Tracks.ChallengePilot, "Case thử nghiệm", Guid.NewGuid(), Guid.NewGuid(), 1, "CONFIDENTIAL", Guid.NewGuid()),
+        new CreateCaseCommand(Tracks.ChallengePilot, "Case thử nghiệm", Guid.NewGuid(), Guid.NewGuid(), 1, "CONFIDENTIAL",
+            Guid.NewGuid(), NacenTech.PolicyEngine.FundingInstruments.Private),
         DateTimeOffset.UtcNow);
 
     private static DecisionRecord Go(CommercializationCase c, string toStage, string decision) =>

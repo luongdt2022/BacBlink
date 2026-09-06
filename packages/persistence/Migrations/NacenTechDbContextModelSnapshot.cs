@@ -340,9 +340,24 @@ namespace NacenTech.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("demand_brief_version_no");
 
+                    b.Property<bool?>("ExecutionInPlatformPermitted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("execution_in_platform_permitted");
+
+                    b.Property<string>("FundingInstrument")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("funding_instrument");
+
                     b.Property<Guid?>("LeadBrokerPersonId")
                         .HasColumnType("uuid")
                         .HasColumnName("lead_broker_person_id");
+
+                    b.Property<string>("LegalFormRef")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("legal_form_ref");
 
                     b.Property<Guid?>("PolicySnapshotId")
                         .HasColumnType("uuid")

@@ -25,7 +25,11 @@ public sealed record PolicySnapshotDto(Guid Id, Guid CaseId, DateTimeOffset Reso
 
 public interface IPolicySnapshotService
 {
-    /// <summary>Resolve rule mà case chạm tới theo track; lưu inline JSONB + hash JCS. Idempotent theo caseId khi chưa supersede.</summary>
-    Task<PolicySnapshotDto> ResolveForCaseAsync(Guid caseId, string track, CancellationToken ct);
+    /// <summary>
+    /// Resolve rule mà case chạm tới theo track; lưu inline JSONB + hash JCS. Idempotent theo caseId khi chưa
+    /// supersede. ADR-0014: `fundingInstrument` là **bắt buộc** — không có giá trị mặc định, vì một ảnh chụp
+    /// đóng băng nhầm `UNDETERMINED` sẽ khoá `EXECUTION` của hồ sơ đó vĩnh viễn mà không ai thấy vì sao.
+    /// </summary>
+    Task<PolicySnapshotDto> ResolveForCaseAsync(Guid caseId, string track, string fundingInstrument, CancellationToken ct);
     Task<PolicySnapshotDto?> FindAsync(Guid snapshotId, CancellationToken ct);
 }

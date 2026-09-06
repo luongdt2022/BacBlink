@@ -352,7 +352,8 @@ public sealed class SignalAndEntitlementTests(PostgresFixture fixture)
             var cases = scope.ServiceProvider.GetRequiredService<NacenTech.Modules.Case.Application.ICaseService>();
             await cases.CreateAsync(new NacenTech.Modules.Case.Application.CreateCaseCommand(
                 NacenTech.Modules.Case.Application.Tracks.ChallengePilot, "Hồ sơ đo quota",
-                problemOwner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null), Ct);
+                problemOwner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null,
+                NacenTech.PolicyEngine.FundingInstruments.Private), Ct);
         }
 
         using (var scope = provider.CreateScope())

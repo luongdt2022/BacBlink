@@ -51,6 +51,11 @@ public static class PersistenceServiceCollectionExtensions
         services.AddSingleton(_ => new DecisionTable(RuleSetLoader.FromFile(ResolvePath(rulesPath))));
         services.AddScoped<IAuthorizationGate, DefaultAuthorizationGate>();
 
+        // ADR-0014: tập luật công cụ tài chính, cùng khuôn versioned. Nạp ở tầng khởi động chứ không lười — một
+        // dòng thiếu `legalBasisRef` phải làm hỏng lúc khởi động, không phải lúc hồ sơ đầu tiên vào QUALIFICATION.
+        var fundingPath = configuration["Funding:PolicySetPath"] ?? "config/policies/funding-instruments.v1.json";
+        services.AddSingleton(FundingPolicyLoader.FromFile(ResolvePath(fundingPath)));
+
         var assemblies = ModuleRegistry.All.Select(m => m.Assembly).Append(typeof(Contracts.Canonical.CanonicalJson).Assembly).ToList();
         services.AddSingleton(new TypeCatalog(assemblies));
 

@@ -88,8 +88,13 @@ public sealed class CaseService(
 
         if (command.ToStage == Stages.Qualification && @case.PolicySnapshotId is null)
         {
-            var snapshotId = await policy.ResolveForCaseAsync(@case.Id, @case.Track, ct);
-            @case.SetPolicySnapshot(snapshotId);
+            // ADR-0014, mục Hệ quả: `ResolveForCaseAsync` **tự commit**, nên nếu để `Transition` là chỗ đầu tiên
+            // hỏi về công cụ tài chính thì mọi hồ sơ trượt cổng đó sẽ để lại một ảnh chụp đã chốt cho một giai
+            // đoạn chưa bao giờ tới. Hỏi trước ở đây; `Transition` vẫn hỏi lại vì nó là chỗ ETL và job đi qua.
+            @case.EnsureFundingPathDeclared();
+
+            var resolution = await policy.ResolveForCaseAsync(@case.Id, @case.Track, @case.FundingInstrument, ct);
+            @case.FreezeFundingPath(resolution.SnapshotId, resolution.ExecutionInPlatformPermitted);
         }
 
         var from = @case.Stage;
@@ -109,6 +114,22 @@ public sealed class CaseService(
         @case.AssignLeadBroker(brokerPersonId, clock.UtcNow);
         await uow.CommitAsync(ct);
         Succeeded(Actions.CaseAssignBroker, @case, $"broker={brokerPersonId}");
+        return ToDto(@case);
+    }
+
+    /// <summary>
+    /// ADR-0014. Dùng cùng cửa phân quyền với việc gán môi giới: khai công cụ tài chính là một thao tác điều
+    /// phối hồ sơ, không phải một quyết định chuyển giai đoạn. Aggregate từ chối nếu ảnh chụp đã chốt.
+    /// </summary>
+    public async Task<CaseDto> DeclareFundingPathAsync(Guid id, string instrument, string? legalFormRef, int expectedVersion, CancellationToken ct)
+    {
+        var @case = await LoadAsync(id, ct);
+        gate.Require(new AuthorizationRequest(Actions.CaseAssignBroker, actor.PlatformRole), "CommercializationCase", id);
+        if (expectedVersion != @case.Version)
+            throw new ConcurrencyException($"Case version mismatch; stage hiện tại {@case.Stage}", @case.Version);
+        @case.DeclareFundingPath(instrument, legalFormRef);
+        await uow.CommitAsync(ct);
+        Succeeded(Actions.CaseAssignBroker, @case, $"fundingInstrument={instrument}; legalFormRef={legalFormRef}");
         return ToDto(@case);
     }
 
@@ -186,7 +207,8 @@ public sealed class CaseService(
 
     internal static CaseDto ToDto(CommercializationCase c) => new(
         c.Id, c.CaseCode, c.Track, c.Stage, c.Title, c.ProblemOwnerPersonId, c.LeadBrokerPersonId, c.DemandBriefId,
-        c.DemandBriefVersionNo, c.PolicySnapshotId, c.ConfidentialityLevel, c.BudgetPathStatus, c.TargetDecisionAt,
+        c.DemandBriefVersionNo, c.PolicySnapshotId, c.ConfidentialityLevel, c.BudgetPathStatus,
+        c.FundingInstrument, c.LegalFormRef, c.ExecutionInPlatformPermitted, c.TargetDecisionAt,
         c.HasOpenHold, c.Version, c.CreatedAt, c.UpdatedAt,
         c.Parties.Select(p => new CasePartyDto(p.PersonId, p.Role, p.Since, p.Until)).ToList(),
         c.Holds.OrderBy(h => h.OpenedAt)

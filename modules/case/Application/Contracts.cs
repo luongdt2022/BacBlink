@@ -126,6 +126,11 @@ public sealed record CaseDto(
     Guid? PolicySnapshotId,
     string ConfidentialityLevel,
     string BudgetPathStatus,
+    /// <summary>ADR-0014. Xem `FundingInstruments`.</summary>
+    string FundingInstrument,
+    string? LegalFormRef,
+    /// <summary>`null` = chưa chốt ảnh chụp chính sách. Chưa chốt nghĩa là `EXECUTION` chưa mở.</summary>
+    bool? ExecutionInPlatformPermitted,
     DateTimeOffset? TargetDecisionAt,
     bool HasOpenHold,
     int Version,
@@ -158,7 +163,12 @@ public sealed record DecisionRecordDto(
     DateTimeOffset DecidedAt,
     Guid? SupersedesId);
 
-public sealed record CreateCaseCommand(string Track, string Title, Guid ProblemOwnerPersonId, Guid DemandBriefId, int DemandBriefVersionNo, string ConfidentialityLevel, Guid? LeadBrokerPersonId);
+/// <summary>
+/// ADR-0014: `FundingInstrument` để `null` nghĩa là **chưa khai** — hồ sơ tạo được nhưng không vào được
+/// `QUALIFICATION` cho tới khi khai. Đó là chủ đích: người mở hồ sơ ở bước tiếp nhận thường chưa biết tiền đến
+/// từ đâu, và bắt khai lúc tạo sẽ đẻ ra những giá trị đoán mò nằm vĩnh viễn trong ảnh chụp chính sách.
+/// </summary>
+public sealed record CreateCaseCommand(string Track, string Title, Guid ProblemOwnerPersonId, Guid DemandBriefId, int DemandBriefVersionNo, string ConfidentialityLevel, Guid? LeadBrokerPersonId, string? FundingInstrument = null, string? LegalFormRef = null);
 
 public sealed record TransitionCommand(string ToStage, string Decision, IReadOnlyList<string> ReasonCodes, string Rationale, string? MandateRef, int ExpectedVersion);
 
@@ -176,6 +186,12 @@ public interface ICaseService
     Task<CaseDto> TransitionAsync(Guid id, TransitionCommand command, CancellationToken ct);
 
     Task<CaseDto> AssignLeadBrokerAsync(Guid id, Guid brokerPersonId, int expectedVersion, CancellationToken ct);
+
+    /// <summary>
+    /// ADR-0014: khai hoặc sửa công cụ tài chính, **chỉ trước khi** ảnh chụp chính sách được chốt. Không có
+    /// đường này thì mọi hồ sơ tạo trước ADR-0014 sẽ kẹt vĩnh viễn ở `DISCOVERY`.
+    /// </summary>
+    Task<CaseDto> DeclareFundingPathAsync(Guid id, string instrument, string? legalFormRef, int expectedVersion, CancellationToken ct);
     Task<IReadOnlyList<DecisionRecordDto>> TimelineAsync(Guid id, CancellationToken ct);
     Task<CaseDto> OpenHoldAsync(Guid id, string reason, CancellationToken ct);
     Task<CaseDto> ReleaseHoldAsync(Guid id, Guid holdId, string rationale, CancellationToken ct);

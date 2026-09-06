@@ -40,6 +40,18 @@ public sealed class OpenHoldDto
     public string Reason { get; set; } = string.Empty;
 }
 
+/// <summary>ADR-0014: thân của lệnh khai công cụ tài chính.</summary>
+public sealed class DeclareFundingPathDto
+{
+    /// <summary>Một giá trị của `FundingInstruments`; `UNDETERMINED` khai lại được nhưng vẫn chặn ở QUALIFICATION.</summary>
+    public string FundingInstrument { get; set; } = string.Empty;
+
+    /// <summary>Tham chiếu văn bản áp dụng. Bắt buộc với mọi công cụ trừ `PRIVATE`.</summary>
+    public string? LegalFormRef { get; set; }
+
+    public int? ExpectedVersion { get; set; }
+}
+
 public sealed class ReleaseHoldDto
 {
     public string Rationale { get; set; } = string.Empty;
@@ -55,6 +67,14 @@ public sealed class CreateCaseDto
     public int DemandBriefVersionNo { get; set; }
     public string ConfidentialityLevel { get; set; } = string.Empty;
     public Guid? LeadBrokerPersonId { get; set; }
+
+    /// <summary>
+    /// ADR-0014. Để trống được: người tiếp nhận thường chưa biết tiền đến từ đâu, và bắt khai lúc tạo sẽ đẻ ra
+    /// giá trị đoán mò nằm vĩnh viễn trong ảnh chụp chính sách. Khai sau bằng `POST /cases/{id}/funding-path`.
+    /// </summary>
+    public string? FundingInstrument { get; set; }
+
+    public string? LegalFormRef { get; set; }
 }
 
 [Route("api/v2/cases")]
@@ -73,7 +93,8 @@ public sealed class CasesController(ICaseService cases) : V2ControllerBase
     {
         var created = await cases.CreateAsync(new CreateCaseCommand(
             dto.Track, dto.Title, dto.ProblemOwnerPersonId, dto.DemandBriefId,
-            dto.DemandBriefVersionNo, dto.ConfidentialityLevel, dto.LeadBrokerPersonId), ct);
+            dto.DemandBriefVersionNo, dto.ConfidentialityLevel, dto.LeadBrokerPersonId,
+            dto.FundingInstrument, dto.LegalFormRef), ct);
 
         SetETag(created.Version);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
@@ -143,6 +164,21 @@ public sealed class CasesController(ICaseService cases) : V2ControllerBase
     {
         var version = RequireExpectedVersion(dto.ExpectedVersion);
         var updated = await cases.AssignLeadBrokerAsync(id, dto.BrokerPersonId, version, ct);
+
+        SetETag(updated.Version);
+        return Ok(updated);
+    }
+
+    /// <summary>
+    /// ADR-0014: khai công cụ tài chính và văn bản áp dụng. Chỉ chạy được **trước khi** hồ sơ vào
+    /// `QUALIFICATION` — sau đó kết luận đường thực thi đã đóng băng cùng ảnh chụp chính sách và lệnh này trả
+    /// 409 với câu nói rõ vì sao. Không có đường này thì hồ sơ tạo trước ADR-0014 kẹt vĩnh viễn ở `DISCOVERY`.
+    /// </summary>
+    [HttpPost("{id:guid}/funding-path")]
+    public async Task<IActionResult> DeclareFundingPath(Guid id, [FromBody] DeclareFundingPathDto dto, CancellationToken ct)
+    {
+        var version = RequireExpectedVersion(dto.ExpectedVersion);
+        var updated = await cases.DeclareFundingPathAsync(id, dto.FundingInstrument, dto.LegalFormRef, version, ct);
 
         SetETag(updated.Version);
         return Ok(updated);

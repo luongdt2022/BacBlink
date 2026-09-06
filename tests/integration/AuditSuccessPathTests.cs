@@ -51,7 +51,8 @@ public sealed class AuditSuccessPathTests(PostgresFixture fixture)
         {
             var cases = scope.ServiceProvider.GetRequiredService<ICaseService>();
             var created = await cases.CreateAsync(new CreateCaseCommand(
-                Tracks.ChallengePilot, "Hồ sơ đo kiểm toán", owner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null), Ct);
+                Tracks.ChallengePilot, "Hồ sơ đo kiểm toán", owner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null,
+                FundingInstruments.Private), Ct);
             caseId = created.Id;
             await cases.AssignLeadBrokerAsync(caseId, broker, created.Version, Ct);
         }
@@ -94,7 +95,8 @@ public sealed class AuditSuccessPathTests(PostgresFixture fixture)
         {
             var cases = scope.ServiceProvider.GetRequiredService<ICaseService>();
             var created = await cases.CreateAsync(new CreateCaseCommand(
-                Tracks.ChallengePilot, "Hồ sơ lệnh hỏng", owner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null), Ct);
+                Tracks.ChallengePilot, "Hồ sơ lệnh hỏng", owner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null,
+                FundingInstruments.Private), Ct);
             caseId = created.Id;
             await cases.AssignLeadBrokerAsync(caseId, broker, created.Version, Ct);
         }

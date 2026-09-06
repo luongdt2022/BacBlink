@@ -1,6 +1,7 @@
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Case.Application;
 using NacenTech.Modules.Case.Domain;
+using NacenTech.PolicyEngine;
 using Shouldly;
 using Xunit;
 
@@ -136,8 +137,8 @@ public sealed class TransitionMatrixTests
     public void Policy_snapshot_is_immutable()
     {
         var @case = NewCase(withBroker: true);
-        @case.SetPolicySnapshot(Guid.NewGuid());
-        Should.Throw<InvalidOperationException>(() => @case.SetPolicySnapshot(Guid.NewGuid()));
+        @case.FreezeFundingPath(Guid.NewGuid(), executionInPlatformPermitted: true);
+        Should.Throw<InvalidOperationException>(() => @case.FreezeFundingPath(Guid.NewGuid(), executionInPlatformPermitted: true));
     }
 
     [Fact]
@@ -214,9 +215,14 @@ public sealed class TransitionMatrixTests
             @case.Transition(Stages.Qualification, Decisions.Approve, [], "  ", Guid.NewGuid(), null, DateTimeOffset.UtcNow));
     }
 
+    /// <summary>
+    /// ADR-0014: hồ sơ mẫu khai `PRIVATE` vì mọi bài trong lớp này nói về **ma trận**, và một hồ sơ chưa khai
+    /// công cụ tài chính sẽ dừng ở cổng `FUNDING_INSTRUMENT_REQUIRED` trước khi chạm được ma trận. Cổng đó có
+    /// bài riêng ở <see cref="FundingPathTests"/>.
+    /// </summary>
     private static CommercializationCase NewCase(bool withBroker) => CommercializationCase.Create(
         "NT-2026-000001",
         new CreateCaseCommand(Tracks.ChallengePilot, "Case thử nghiệm", Guid.NewGuid(), Guid.NewGuid(), 1, "CONFIDENTIAL",
-            withBroker ? Guid.NewGuid() : null),
+            withBroker ? Guid.NewGuid() : null, FundingInstruments.Private),
         DateTimeOffset.UtcNow);
 }

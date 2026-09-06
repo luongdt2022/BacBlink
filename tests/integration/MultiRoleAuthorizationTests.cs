@@ -5,6 +5,7 @@ using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Audit.Domain;
 using NacenTech.Modules.Case.Application;
 using NacenTech.Persistence;
+using NacenTech.PolicyEngine;
 using NacenTech.TestKit;
 using Shouldly;
 using Xunit;
@@ -36,7 +37,8 @@ public sealed class MultiRoleAuthorizationTests(PostgresFixture fixture)
         var cases = scope.ServiceProvider.GetRequiredService<ICaseService>();
 
         var created = await cases.CreateAsync(new CreateCaseCommand(
-            Tracks.ChallengePilot, "Một người hai vai", person, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null), Ct);
+            Tracks.ChallengePilot, "Một người hai vai", person, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null,
+            FundingInstruments.Private), Ct);
         var assigned = await cases.AssignLeadBrokerAsync(created.Id, person, created.Version, Ct);
 
         // Trước bản vá: 403 DEFAULT_DENY, vì RoleOf trả PROBLEM_OWNER (chèn trước) và bỏ qua LEAD_BROKER.
@@ -64,7 +66,8 @@ public sealed class MultiRoleAuthorizationTests(PostgresFixture fixture)
         {
             var cases = scope.ServiceProvider.GetRequiredService<ICaseService>();
             var created = await cases.CreateAsync(new CreateCaseCommand(
-                Tracks.ChallengePilot, "Chỉ chủ bài toán", owner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null), Ct);
+                Tracks.ChallengePilot, "Chỉ chủ bài toán", owner, Guid.CreateVersion7(), 1, "CONFIDENTIAL", null,
+                FundingInstruments.Private), Ct);
             caseId = created.Id;
             await cases.AssignLeadBrokerAsync(caseId, broker, created.Version, Ct);
         }
