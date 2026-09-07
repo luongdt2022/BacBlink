@@ -2,7 +2,7 @@
 
 Danh sách gộp các khiếm khuyết và bất nhất mà các tài liệu tính năng nêu ra trong mục "Câu hỏi mở và kiểm chứng" và trong thân bài, cộng với những gì lộ ra khi thao tác trên bản chạy thật.
 
-Mười bảy mục mang dòng **Trạng thái**. Trong đó **bảy mục được xác nhận bằng đo trên bản chạy** ngày 2026-09-04 — có bản ghi thật, có phản hồi HTTP thật, và với [B-32](#b-32-mọi-sửa-đổi-tạo-phiên-bản-nội-dung-mới-đều-thất-bại-với-409) là cả câu lệnh SQL chụp từ nhật ký PostgreSQL. Số còn lại xác nhận bằng đọc mã ở cả hai phía. Dòng Trạng thái luôn nói rõ đó là đo hay đọc.
+Bốn mươi chín trong năm mươi hai mục mang dòng **Trạng thái**. Trong đó **bảy mục được xác nhận bằng đo trên bản chạy** ngày 2026-09-04 — có bản ghi thật, có phản hồi HTTP thật, và với [B-32](#b-32-mọi-sửa-đổi-tạo-phiên-bản-nội-dung-mới-đều-thất-bại-với-409) là cả câu lệnh SQL chụp từ nhật ký PostgreSQL. Số còn lại xác nhận bằng đọc mã ở cả hai phía. Dòng Trạng thái luôn nói rõ đó là đo hay đọc.
 
 Đây là **sổ lỗi duy nhất**. Snapshot BMAD và các tài liệu tính năng chỉ trỏ mã lỗi ở đây; không tài liệu nào được chép lại danh sách này thành bản thứ hai.
 
@@ -10,7 +10,9 @@ Danh sách tồn tại để đội sản phẩm quyết từng mục: sửa, gh
 
 ## Tóm tắt
 
-Bốn mươi tám mục sau khi gộp: **15 mức cao, 19 mức trung bình, 14 mức thấp**. Mười hai mục cao đầu tiên chia làm bốn cụm; mục thứ mười ba ([B-35](#b-35-danh-sách-intake-ẩn-danh-trả-bản-nháp-của-mọi-người)) tìm ra trong lúc đo lại bản vá sprint 0 và thuộc cụm hai.
+Năm mươi hai mục sau khi gộp: **15 mức cao, 23 mức trung bình, 14 mức thấp**. Mười hai mục cao đầu tiên chia làm bốn cụm; mục thứ mười ba ([B-35](#b-35-danh-sách-intake-ẩn-danh-trả-bản-nháp-của-mọi-người)) tìm ra trong lúc đo lại bản vá sprint 0 và thuộc cụm hai.
+
+**Bốn mục cuối (B-49…B-52) tìm ra ngày 2026-09-07 theo một đường khác với mọi mục trước đó**: đối chiếu mã với [`../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md`](../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md) — một lượt đánh giá do người ngoài thực hiện bằng cách bấm qua cổng người dùng, không đọc mã và không đọc bộ tài liệu này. Ba trong bốn mục là chỗ **người ngoài nhìn vào và kết luận sai về năng lực hệ thống**: một trần cứng bị đọc thành số giả lập (B-49), một cột điểm không đơn vị bị đòi đổi thành phần trăm (B-50), một thang đo được hứa trong mọi bản giới thiệu và được thu bằng một ô nhập ở bảng quản trị, mà backend không biết tới (B-52). Mục thứ tư (B-51) là khoảng trống cấu trúc mà lượt đánh giá đó chạm đúng vào.
 
 **Năm mục đã sửa trong sprint 0** (2026-09-04): [B-32](#b-32-mọi-sửa-đổi-tạo-phiên-bản-nội-dung-mới-đều-thất-bại-với-409) + [B-31](#b-31-sửa-một-đề-bài-mà-không-gửi-kèm-nội-dung-mật-sẽ-xoá-sạch-nội-dung-mật-đó) (cùng một lần sửa, đúng ràng buộc thứ tự), [B-19](#b-19-apiv1publicstories-trả-email-và-số-điện-thoại-của-tác-giả-cho-người-chưa-đăng-nhập), [B-20](#b-20-đọc-một-bản-ghi-theo-định-danh-không-kiểm-quyền), [B-27](#b-27-tìm-kiếm-trả-cả-bản-nháp-của-người-khác). Bốn trong năm đã **đo lại trên bản chạy** sau khi sửa; B-27 sửa xong nhưng vẫn chưa đo được vì thiếu sidecar nhúng ở cổng 8003. Bộ test đi từ **44 lên 51**, tất cả xanh, và bảy bài mới gồm ba bài *sửa-rồi-đọc-lại* chạm PostgreSQL thật — thứ mà 44 bài cũ không có bài nào làm.
 
@@ -84,6 +86,10 @@ Cụm lớn nhất theo số lượng vẫn là tám mục quanh việc di trú 
 | B-34 | Phụ thuộc có khuyến cáo bảo mật mức cao | thấp | backend | sửa |
 | B-47 | Bộ test tích hợp về tìm kiếm chỉ xanh trên cơ sở dữ liệu sạch | thấp | backend | **đã sửa** |
 | B-48 | `budgetPathStatus` không có đường ghi, nên cổng `BUDGET_PATH` không có gì để đọc | trung bình | backend | **đã sửa một phần** (ADR-0014) |
+| B-49 | Cổng chỉ hiện năm ứng viên đầu, dù vòng có mười và đường phân trang đã tồn tại | trung bình | cổng người dùng | sửa |
+| B-50 | Điểm ghép cặp hiện một chữ số thập phân cho ba thang khác nhau | trung bình | cổng người dùng | quyết định sản phẩm |
+| B-51 | Không có thực thể tổ chức, tên đơn vị là chuỗi tự do và không có KYB | trung bình | backend + tài liệu | quyết định sản phẩm — có thể cần ADR |
+| B-52 | TRL không tồn tại ở backend, trong khi bảng quản trị đã có ô nhập TRL | trung bình | backend + admin + tài liệu | quyết định sản phẩm |
 
 ## Cao
 
@@ -569,6 +575,54 @@ Cụm lớn nhất theo số lượng vẫn là tám mục quanh việc di trú 
 - **Trạng thái:** **Đã sửa** 2026-09-04. Kiểu `Story.author` nay cho phép `null`; hai chỗ đọc `story.author.firstName` chuyển sang một hàm chịu được `null`; và mỗi thẻ câu chuyện được bọc trong một `ErrorBoundary` riêng, nên một thẻ hỏng chỉ mất một thẻ.
   **Phát hiện kèm theo, và nó đổi cách đọc mọi lỗi kiểu ở repo này:** `tsconfig.json` của trang giới thiệu đặt `"strict": false`, nên `strictNullChecks` tắt. Sửa kiểu ở đó **không** khiến trình biên dịch bắt được gì — đó chính là lý do lỗi này tồn tại được, và là lý do bản vá phải sửa thẳng chỗ đọc dữ liệu chứ không chỉ sửa khai báo. Một lượt bật `strict` cho repo này là việc riêng, đáng làm, và sẽ lộ ra thêm.
 - **Trạng thái trước khi sửa:** Nửa phía máy chủ xác nhận 2026-09-04 bằng đọc mã; nửa phía trang giới thiệu chưa dựng để đo.
+
+### B-49: Cổng chỉ hiện năm ứng viên đầu, dù vòng có mười và đường phân trang đã tồn tại
+
+- **Người dùng gặp ở đâu:** Cổng người dùng, tab *Nhu cầu phù hợp* / *Giải pháp phù hợp* của một bản ghi đã công bố, và thẻ **Matching Hub** ở cột phải — ô đếm dừng ở "5 kết quả" trên mọi bản ghi.
+- **Xảy ra gì / lẽ ra là gì:** Phản hồi chi tiết nhét sẵn **năm** ứng viên điểm cao nhất của vòng gần nhất. Một vòng ghép cặp chứa tới **mười**. Máy chủ có đường riêng trả danh sách ứng viên phân trang (`GET /api/v1/my/intakes/{id}/matches`, có `page` và `limit`), nhưng cổng **không gọi nó ở bất kỳ đâu** — nó chỉ đọc mảng `matches` đi kèm phản hồi chi tiết. Năm ứng viên còn lại tồn tại trong cơ sở dữ liệu và không có đường nào tới người dùng; giao diện cũng không nói rằng danh sách đã bị cắt.
+- **Tái hiện:** Tính một vòng có từ sáu ứng viên trở lên, mở trang chi tiết bản ghi → đếm được 5 thẻ. Gọi thẳng `GET /api/v1/my/intakes/{id}/matches?limit=10` với cùng token → nhiều hơn 5.
+- **Vì sao (từ mã):** `apps/api/V1Compat/IntakeFacade.cs:179` — `matching.TopCandidatesAsync(view.Subject, 5, ct)`, số 5 viết cứng trong đường dựng phản hồi chi tiết. Đường phân trang có ở `apps/api/V1Compat/IntakesControllers.cs:243`, `:279` và `:447`. Phía cổng: `apps/portal/src/features/intakes/pages/IntakeDetailPage.tsx:182` đọc `intake.matches`; `apps/portal/src/features/intakes/api/intake.ts` không có lời gọi nào tới `/matches` (chỉ `compute-matches`, dòng 275); `MatchesSection.tsx:117` đếm chính mảng đó.
+- **Mức:** `trung bình` — không mất dữ liệu, nhưng một nửa kết quả của mỗi vòng không tới được người dùng, và cách cắt này vô hình với họ.
+- **Ghi chú kèm theo:** con số 5 đứng yên trên mọi bản ghi đã khiến một lượt đánh giá từ ngoài kết luận rằng Matching Hub là **số giả lập** — [`../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md`](../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md) mục 1.3. Nhìn từ ngoài, một trần cứng và một số bịa trông giống hệt nhau. Ghép cặp là năng lực được đầu tư nhiều nhất của hệ thống, và nó đang bị đọc thành mockup vì một hằng số.
+- **Cần quyết:** `sửa`. Cổng gọi đường phân trang đã có cho tab ghép cặp. Nếu năm là con số cố ý cho phản hồi chi tiết — để giảm số lời gọi — thì giữ nguyên ở đó, nhưng tab phải lấy danh sách đầy đủ từ đường riêng, và thẻ Matching Hub phải nói con số nào là tổng, con số nào là đang hiện.
+- **Nêu bởi:** [portal/ket-qua-ghep-cap.md](portal/ket-qua-ghep-cap.md#trường-hợp-biên) — mục lỗi này chính là dòng "(chưa cấp mã lỗi)" ở đó. Câu hỏi mở cùng tệp cũng hỏi vì sao cổng lấy ứng viên từ phản hồi chi tiết thay vì gọi đường phân trang; mã không có chú thích nào trả lời.
+- **Trạng thái:** Xác nhận 2026-09-07 bằng đọc mã ở cả hai phía. Chưa sửa.
+
+### B-50: Điểm ghép cặp hiện một chữ số thập phân cho ba thang khác nhau
+
+- **Người dùng gặp ở đâu:** Cổng người dùng, mỗi thẻ ứng viên trong tab ghép cặp: một biểu tượng tia chớp và một con số. Không nhãn, không đơn vị, không trần.
+- **Xảy ra gì / lẽ ra là gì:** Thẻ in `match.score.toFixed(1)`. Con số đó đến từ **ba thang không quy đổi được cho nhau**, tuỳ cấu hình máy chủ: chế độ cũ cộng điểm cosine với điểm từ khoá (thường 1–10); chế độ đã sửa không bật rerank trả điểm RRF — tổng các `1/(60+hạng)`, **tối đa ≈ 0,05** với ba kênh; chế độ đã sửa có rerank trả điểm cross-encoder trong khoảng 0–1. Ở nhánh giữa, làm tròn một chữ số thập phân cho ra **`0.0` trên mọi thẻ**. Người dùng không chọn được chế độ và giao diện không nói chế độ nào đang chạy.
+- **Tái hiện:** Chạy với `Matching:ScoringMode = CORRECTED_SCORING` và `Matching:UseRerank = false`, tính một vòng có ứng viên, mở tab ghép cặp → mọi thẻ hiện `0.0`. Bật rerank, tính lại → cùng những ứng viên đó hiện số khác hẳn.
+- **Vì sao (từ mã):** `apps/portal/src/features/intakes/components/MatchCard.tsx:108`. Thang điểm: `modules/matching/Application/MatchingService.cs:164-171` — chú thích ngay tại đó nói "điểm cuối là điểm reranker (0–1)"; trần RRF ở `modules/matching/Application/Contracts.cs:24`.
+- **Mức:** `trung bình` — ở chế độ đích không bật rerank, cột điểm không mang thông tin nào; và khi không có nhãn, người đọc mặc định hiểu con số là phần trăm hoặc thang mười, tức là hiểu sai theo hướng có lợi cho hệ thống.
+- **Cần quyết:** `quyết định sản phẩm`. Ba hướng: hiện thứ hạng thay cho điểm; chuẩn hoá về một thang có nhãn; hoặc giữ điểm thô nhưng nói ra thang và chế độ. Cùng gốc với [B-45](#b-45-ngưỡng-điểm-ghép-cặp-đặt-theo-thang-cũ-loại-mọi-kết-quả-ở-chế-độ-đã-sửa) — hai thang bị đối xử như một; B-45 đã sửa ở phía ngưỡng, phía hiển thị thì chưa.
+- **Nêu bởi:** [portal/ket-qua-ghep-cap.md](portal/ket-qua-ghep-cap.md#trường-hợp-biên) và mục khả năng truy cập cùng tệp ("Điểm số không có nhãn nào giải thích đơn vị"). Lượt đánh giá ngoài trong [`../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md`](../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md) đòi "điểm số % tương thích" chính vì đọc con số này mà không có gì giải thích nó.
+- **Trạng thái:** Xác nhận 2026-09-07 bằng đọc mã. Giá trị `0.0` là **suy ra từ hai hằng số**, chưa đo trên bản chạy — cần một vòng thật ở chế độ đã sửa, rerank tắt, để khẳng định.
+
+### B-51: Không có thực thể tổ chức, tên đơn vị là chuỗi tự do và không có KYB
+
+- **Người dùng gặp ở đâu:** Mọi chỗ hiện tên đơn vị — hồ sơ người dùng, thẻ công nghệ, luồng nộp giải pháp ở chợ giao dịch. Không chỗ nào tên đó được xác thực, và hai người cùng một viện không được nối vào cùng một đơn vị.
+- **Xảy ra gì / lẽ ra là gì:** `Person` mang một trường `OrganizationName` kiểu chuỗi nullable, do người dùng tự gõ và tự sửa bất cứ lúc nào. Không có aggregate tổ chức, không có mã số thuế, không có quan hệ thành viên, không có trạng thái xác thực. Tài liệu kiến trúc khai module `identity` gồm "User, **organization**, KYC/KYB reference, membership" — ba phần sau chưa bao giờ có mã.
+- **Tái hiện:** `grep -rin "KYB\|KYC\|TaxCode\|tax_code" modules/` → **0 kết quả**. `modules/identity/Domain/` chỉ có đúng một tệp, `Person.cs`.
+- **Vì sao (từ mã):** `modules/identity/Domain/Person.cs:38` khai `OrganizationName`; `:92` `UpdateProfile` nhận thẳng chuỗi mới và gán, không kiểm gì. Chỗ khai năng lực chưa xây: `docs/04-technical/NACENTECH_ARCHITECTURE_V2.md:774`.
+- **Mức:** `trung bình` — cùng hình dạng với [B-36](#b-36-cổng-chất-lượng-được-liệt-kê-là-đã-có-tầng-dịch-vụ-nhưng-không-có-mã-nào-nâng-được-mức) và [B-48](#b-48-budgetpathstatus-không-có-đường-ghi-nên-cổng-budget_path-đã-khai-trong-ảnh-chụp-chính-sách-không-có-gì-để-đọc): một thứ đã khai trong tài liệu kiến trúc, chưa bao giờ có mã, và chưa hỏng gì đang chạy vì chưa có dữ liệu thật. Nó chặn nhiều hơn cả hai.
+- **Ghi chú kèm theo:** đây là **gốc** của phần "tên doanh nghiệp viết cứng" trong [B-15](#b-15-marketplace-và-contact-đang-chạy-với-dữ-liệu-bịa). `apps/portal/src/app/router/routes.tsx:112` và `:583` phải chọn giữa hai tên tổ chức có thật bằng một phép so chuỗi vì **không có dữ liệu tổ chức nào để đọc**; sửa B-15 mà không có thực thể tổ chức chỉ đổi được chỗ bịa. Nặng hơn: [ADR-0012](../../04-technical/adr/0012-be-mat-ket-noi-co-thu-phi.md) định thu phí cho *sự hiện diện của tổ chức* trên bề mặt kết nối, trong khi tổ chức hôm nay là một chuỗi ai gõ gì cũng được.
+- **Cần quyết:** `quyết định sản phẩm`, nhiều khả năng cần một ADR: tổ chức là aggregate riêng hay thuộc `identity`; quan hệ người–tổ chức có mấy vai; và KYB là tham chiếu tới nguồn ngoài có lineage (nguyên tắc 6, source authority — cùng luật mà [ADR-0011](../../04-technical/adr/0011-tin-hieu-nhu-cau-tu-du-lieu-moi-thau-cong-khai.md) phải tuân) hay dữ liệu tự khai kèm trạng thái xác thực.
+- **Nêu bởi:** Phát hiện 2026-09-07 khi đối chiếu [`../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md`](../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md) (Gói 5 đề xuất xác thực pháp nhân qua mã số thuế) với mã đang có.
+- **Trạng thái:** Xác nhận 2026-09-07 bằng đọc mã và grep toàn `modules/`. Chưa sửa.
+
+### B-52: TRL không tồn tại ở backend, trong khi bảng quản trị đã có ô nhập TRL
+
+- **Người dùng gặp ở đâu:** Bảng quản trị, `/implementations`, biểu mẫu tạo hồ sơ triển khai — có ô **"TRL tại thời điểm triển khai"**. Quản trị viên điền vào đó hôm nay, và giá trị ấy không đi tới đâu cả.
+- **Xảy ra gì / lẽ ra là gì:** `grep -rn "TRL" modules/` → **0 kết quả**: backend không có khái niệm TRL ở bất kỳ đâu. Nhưng bảng quản trị **có**: trường `trlAtImplementation` trong kiểu dữ liệu, một ô nhập trong biểu mẫu tạo, và chuỗi `'TRL 7'` viết cứng trong dữ liệu mẫu của trang chi tiết. Toàn bộ khu vực triển khai không có backend, nên ô đó không lưu đi đâu — nó thuộc nhóm "biểu mẫu vẽ ra những khái niệm không có ở backend" mà [`admin/trien-khai.md`](admin/trien-khai.md#trường-hợp-biên) đã nêu và `TKHAI-39` đã có dòng nghiệm thu.
+- **Ngoài mã**, TRL còn ở `docs/01-vision/de-xuat-nen-tang.md`, `docs/01-vision/SotaTek_PROPOSAL_DMST.md` và bảy chỗ trong `NACENTECH_ARCHITECTURE_V2.md` — `:981` khai `TechnologyPackageVersion` mang "TRL evidence", `:1971` khai điều kiện khớp "TRL tối thiểu nếu demand yêu cầu". Mô hình thật chỉ có `QualityLevels` bốn mức: `UNREVIEWED`, `SELF_DECLARED`, `REVIEWED`, `TRANSACTION_READY`.
+- **Điểm dễ đọc nhầm:** `QualityLevel` **không phải** TRL đổi tên. Nó đo *mức đã được thẩm định tới đâu*; TRL đo *công nghệ chín tới đâu*. Hai trục vuông góc: một nguyên mẫu phòng thí nghiệm TRL 3 vẫn có thể là `REVIEWED`. Nghĩa là mô hình dữ liệu hiện **không có trục độ chín** nào cả, chứ không phải có mà gọi tên khác.
+- **Tái hiện:** `grep -rn "TRL" modules/` → rỗng. `grep -rn "trl" apps/admin/src/` → ba tệp trong khu vực triển khai.
+- **Vì sao (từ mã):** `apps/admin/src/features/implementations/types.ts:27`; `pages/CreateImplementationPage.tsx:46` và `:79`; `pages/ImplementationDetailPage.tsx:39` (`'TRL 7'` viết cứng). Phía backend: `modules/technology/Application/Contracts.cs:23-29` (`QualityLevels`) và `:7` — chú thích nói rõ mặc định `UNREVIEWED`, chỉ đổi qua rights/quality gate. Cổng chất lượng ấy lại chính là [B-36](#b-36-cổng-chất-lượng-được-liệt-kê-là-đã-có-tầng-dịch-vụ-nhưng-không-có-mã-nào-nâng-được-mức) — không mã nào nâng được mức. Nên trục duy nhất đang có cũng đang đứng yên.
+- **Mức:** `trung bình` — cùng loại với [B-43](#b-43-từ-vựng-kết-quả-kiểm-toán-lệch-giữa-cửa-phân-quyền-đặc-tả-và-endpoint): từ vựng lệch giữa các tầng. Ở đây độ lệch có ba tầng chứ không phải hai — tài liệu đối ngoại hứa TRL, giao diện quản trị thu TRL, backend không biết TRL là gì — nên nó lộ ra trước mặt người ngoài trước khi lộ ra với đội.
+- **Cần quyết:** `quyết định sản phẩm`. Hai hướng, không hướng nào là mặc định: thêm trục độ chín vào `TechnologyPackageVersion` với luật ai được đặt và ai được nâng (khi đó nó thừa hưởng nguyên bài toán của B-36); hoặc thôi dùng từ TRL trong tài liệu đối ngoại và nói rõ hệ thống đo mức thẩm định chứ không đo độ chín. **Quyết định này gộp được vào quyết định phạm vi của khu vực triển khai** mà [`admin/trien-khai.md`](admin/trien-khai.md#câu-hỏi-mở-và-kiểm-chứng) đã đòi — ba lựa chọn ở đó (ẩn khu vực / gắn nhãn nguyên mẫu / xây backend) là cùng một câu hỏi đặt ở phạm vi rộng hơn.
+- **Nêu bởi:** Phát hiện 2026-09-07 khi đối chiếu [`../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md`](../../07-references/NACENTECH_FEATURE_LIST_VA_DANH_GIA.md) — tài liệu này đề xuất TRL 1-9 ở tám trong mười hai màn hình — với mã đang có. Nửa phía bảng quản trị đã được [`admin/trien-khai.md`](admin/trien-khai.md#trường-hợp-biên) nêu từ trước; mục này nối nó với phía backend.
+- **Trạng thái:** Xác nhận 2026-09-07 bằng grep `modules/` và `apps/admin/src/`, đọc `Contracts.cs` của module technology và ba tệp của khu vực triển khai. Chưa sửa.
 
 ## Thấp
 
