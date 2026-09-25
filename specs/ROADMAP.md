@@ -1,7 +1,7 @@
 # Master Roadmap & Epic Registry: Hệ Thống Phần Mềm Nacentwin (NacenTech)
 
 > **Mục đích**: Là nguồn thông tin duy nhất (Single Source of Truth) quản lý toàn bộ vòng đời, tiến độ và liên kết tài liệu của tất cả các Epics trong dự án.  
-> **Cơ chế liên kết**: Ánh xạ chuẩn 1:1 với các Tasks Thiết Kế Cơ Sở (Basic Design) tại `../../Specification/02_BASIC_DESIGN/`.  
+> **Cơ chế liên kết**: Ánh xạ chuẩn 1:1 với các Tasks Thiết Kế Cơ Sở (Basic Design) tại [Specification (GitHub)](https://github.com/NacenTwin/NacenTwin-Docs) hoặc local `../../Specification/02_BASIC_DESIGN/`.  
 > **Hiến pháp áp dụng**: `.specify/memory/constitution.md`  
 > **Ma trận truy vết**: `specs/TRACEABILITY.md`
 
