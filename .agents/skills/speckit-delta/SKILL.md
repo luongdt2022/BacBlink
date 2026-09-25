@@ -1,10 +1,11 @@
 ---
 name: "speckit-delta"
-description: "Quy trình điều phối cập nhật & nâng cấp (Delta / Change Request) cho một Epic đã hoàn thành: từ phân tích tác động (Impact Analysis), bổ sung spec, cập nhật plan non-destructive, phân rã task mới, thi công migration/code, kiểm thử hồi quy đến nghiệm thu hội tụ."
-compatibility: "Requires spec-kit project structure with .specify/ directory"
+description: "Quy trình điều phối cập nhật & nâng cấp (Delta / Change Request) cho một Task/Epic trong hệ sinh thái NacenTech: từ Impact Analysis, bổ sung spec, cập nhật plan non-destructive, phân rã task mới [BE]/[FE], EF Core migration, kiểm thử hồi quy đến nghiệm thu hội tụ."
+compatibility: "Requires spec-kit project structure with .specify/ directory and .NET backend"
 metadata:
-  author: "github-spec-kit"
-  source: "custom/speckit-delta"
+  author: "NacenTwin Architecture Team"
+  source: "custom/speckit-delta-nacentech"
+  version: "2.1.0"
 ---
 
 ## User Input
@@ -14,58 +15,65 @@ $ARGUMENTS
 ```
 
 Tham số đầu vào bao gồm:
-1. **Epic cần cập nhật**: Tên hoặc mã Epic (ví dụ: `Epic E1`, `002-database-persistence`).
-2. **Nội dung thay đổi / Tài liệu mới**: Mô tả yêu cầu sửa đổi, tài liệu bổ sung, hoặc đường dẫn ảnh/file đính kèm (ví dụ: `Bổ sung các trường từ ảnh biểu mẫu KT a1.jpg và a2.jpg`, `Thêm tính năng hủy đơn hoàn tiền tự động`).
+1. **Task cần cập nhật**: Mã Task chuẩn 1:1 (ví dụ: `TASK-00`, `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`, `TASK-06`).
+2. **Nội dung thay đổi / Yêu cầu mới**: Mô tả yêu cầu sửa đổi, tài liệu bổ sung từ PO/Basic Design, hoặc yêu cầu kỹ thuật phát sinh (ví dụ: `Bổ sung 3D Scoped RBAC với 10 roles và ScopeType/ScopeId`, `Thêm 15 tiêu chí lọc ngành viễn thông`).
 
 Nếu người dùng chưa cung cấp đủ thông tin, hãy hỏi người dùng:
-1. Cần cập nhật cho Epic nào?
-2. Tài liệu hoặc yêu cầu cụ thể cần bổ sung/sửa đổi là gì?
+1. Cần cập nhật Delta cho Task nào trong danh mục từ `TASK-00` đến `TASK-07`?
+2. Chi tiết yêu cầu thay đổi nghiệp vụ hoặc kỹ thuật cần bổ sung là gì?
 
 ---
 
-## Triết Lý Vận Hành Của Spec Kit Delta (Core Principles)
+## Triết Lý Vận Hành Của Spec Kit Delta NacenTech (Core Principles)
 
-Khác với việc xây dựng một Epic mới từ con số 0, việc **sửa đổi/bổ sung một Epic đã hoàn thiện** đòi hỏi sự chặt chẽ tối đa để không làm gãy hệ thống đang chạy:
+Khác với việc xây dựng một Task mới từ con số 0, việc **sửa đổi/bổ sung một Task đang thi công hoặc đã hoàn thiện** đòi hỏi sự chặt chẽ tối đa để không làm gãy hệ thống đang chạy:
 
-1. **Bất Biến Lịch Sử & Non-destructive**:
-   - **Tuyệt đối KHÔNG** xóa đè hay sửa đổi các file migration cơ sở dữ liệu cũ đã chạy.
-   - Chỉ tạo migration tiếp theo (v2, v3...) với tên mô tả chính xác mục tiêu thay đổi (ví dụ: `add_kt_membership_fields`).
-2. **Tương Thích Ngược (Backward Compatibility)**:
-   - Tất cả các trường dữ liệu mới bổ sung vào bảng đã có dữ liệu bắt buộc phải là `Nullable` (dấu `?`) hoặc có giá trị mặc định (`@default`).
-   - Tuyệt đối không xóa cột hoặc thay đổi kiểu dữ liệu gây mất mát dữ liệu cũ (data loss) nếu không có kế hoạch chuyển đổi tường minh.
-3. **Bảo Toàn Danh Sách Công Việc Cũ (Append-only Tasks)**:
-   - Giữ nguyên vẹn toàn bộ các task cũ đã đánh dấu `[x]` (từ `T001` đến `T0xx`).
-   - Phân rã phần việc mới thành một Phase bổ sung ở cuối file `tasks.md` (ví dụ: `Phase N: Schema Delta v2 (T0xx - T0yy)`).
+1. **Bất Biến Lịch Sử & Non-destructive Migration**:
+   - **Tuyệt đối KHÔNG** sửa đè hoặc xóa các file EF Core / SQL migration cũ đã áp dụng vào CSDL PostgreSQL.
+   - Luôn tạo file migration mới với tên mô tả rõ ràng (ví dụ: `Add3DScopedRbacToPersons`).
+2. **Tương Thích Ngược Tuyệt Đối (Backward Compatibility)**:
+   - Các cột mới bổ sung vào bảng đã có dữ liệu bắt buộc phải là `Nullable` (dấu `?`) hoặc có giá trị mặc định (`DEFAULT`).
+   - Tuyệt đối không xóa cột hoặc đổi kiểu dữ liệu gây mất dữ liệu (data loss) nếu không có kế hoạch chuyển đổi tường minh.
+3. **Bảo Toàn Danh Sách Việc Cũ (Append-only Tasks)**:
+   - Giữ nguyên vẹn toàn bộ các task cũ đã đánh dấu `[x]` hoặc `[ ]`.
+   - Phân rã phần việc mới thành một Giai đoạn bổ sung ở cuối file `tasks.md` (ví dụ: `## Giai đoạn N: Delta v2 — [Tên Nội Dung]`).
 4. **Không Gây Hồi Quy (Zero Regression)**:
-   - 100% test suites cũ của hệ thống phải tiếp tục pass.
+   - 100% test suites cũ của Backend (`dotnet test`) và Frontend phải tiếp tục pass.
    - Bổ sung test suites mới kiểm chứng chuyên biệt cho các trường/tính năng vừa nâng cấp.
-5. **Điểm Dừng Tương Tác (Interactive Checkpoints)**:
-   - Dừng lại hỏi ý kiến người dùng khi phát hiện mâu thuẫn giữa tài liệu mới và kiến trúc cũ, hoặc khi có quyết định đánh đổi về dữ liệu.
+5. **Đồng Bộ Hai Chiều Với Basic Design (Bidirectional Sync)**:
+   - Nếu Delta xuất phát từ PO/Khách hàng: Cập nhật `Specification/02_BASIC_DESIGN/` $\rightarrow$ kéo sang `SourceCode/specs/`.
+   - Nếu Delta xuất phát từ giải pháp kỹ thuật (như 3D Scoped RBAC): Ghi nhận rõ ràng để cập nhật tài liệu kiến trúc.
 
 ---
 
-## Quy Trình 6 Giai Đoạn Nâng Cấp Delta Chi Tiết
+## Quy Trình Nâng Cấp Delta 5 Giai Đoạn Chi Tiết
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       SPECKIT DELTA PIPELINE                                │
-└─────────────────────────────────────────────────────────────────────────────┘
-  [1] Impact Analysis ──> Đánh giá phạm vi ảnh hưởng & Viết Spec Delta vào spec.md
-          │
-          ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        NACENTECH SPECKIT DELTA PIPELINE                                │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+  [1] Impact Analysis ──> Đánh giá bề mặt tác động & Viết Spec Delta vào spec.md
+           │
+           ▼
   [1.1] Clarify Check ──> 🛑 CHECKPOINT 1: DỪNG LẠI HỎI nếu mâu thuẫn/thiếu dữ kiện
-          │               (Nếu yêu cầu rõ ràng -> Tự động đi tiếp)
-          ▼
-  [2] Plan Delta      ──> Cập nhật plan.md & data-model.md (Chiến lược Non-destructive)
-          │               🛑 CHECKPOINT 2: DỪNG LẠI HỎI nếu có Breaking Change
-          ▼
-  [3] Tasks Delta     ──> Append Phase mới vào cuối tasks.md (Tự động đánh số nối tiếp)
-          │
-          ▼
-  [4] Implement Delta ──> Viết migration v2/code mới, cập nhật types, viết test delta
-          │               🛑 CHECKPOINT 3: DỪNG LẠI HỎI nếu gặp lỗi môi trường
-          ▼
-  [5] Converge Delta  ──> Kiểm thử hồi quy 100%, đối soát DB/Code, cập nhật tài liệu
+           │               (Nếu yêu cầu rõ ràng -> Tự động đi tiếp)
+           ▼
+  [2] Plan Delta      ──> Cập nhật plan.md & schema CSDL (Chiến lược Non-destructive EF Core)
+           │               🛑 CHECKPOINT 2: DỪNG LẠI HỎI nếu có Breaking Change
+           ▼
+  [2.1] speckit-uiux  ──> (Nếu Delta có đổi UI) Wireframe HTML mapping, 5 trạng thái UX
+           │
+           ▼
+  [3] Tasks Delta     ──> Append Phase mới vào cuối tasks.md (Gắn tag [BE], [FE], [INT])
+           │
+           ▼
+  [3.1] speckit-analyze──> Rà soát chéo ma trận phủ Delta (Coverage Matrix 100%)
+           │
+           ▼
+  [4] Implement Delta ──> Viết EF Core migration/code mới, cập nhật types, viết test delta
+           │               🛑 CHECKPOINT 3: DỪNG LẠI HỎI nếu gặp lỗi môi trường/DB lock
+           ▼
+  [5] Converge Delta  ──> Kiểm thử hồi quy 100%, đối soát DB/Code, cập nhật ROADMAP & TRACEABILITY
                            🛑 CHECKPOINT 4: Báo cáo nghiệm thu hoàn tất Delta
 ```
 
@@ -73,43 +81,44 @@ Khác với việc xây dựng một Epic mới từ con số 0, việc **sửa 
 
 ### Giai Đoạn 1: Đánh Giá Tác Động & Viết Spec Delta (`spec.md`)
 
-1. **Xác định Epic mục tiêu**:
-   - Định vị thư mục feature tương ứng trong `specs/` (ví dụ: `specs/002-database-persistence`).
-   - Đọc kỹ `spec.md`, `plan.md`, `tasks.md` và mã nguồn hiện tại của Epic đó để nắm chắc hiện trạng.
+1. **Xác định Task mục tiêu**:
+   - Định vị thư mục Task tương ứng trong `specs/` (ví dụ: `specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON` hoặc `specs/TASK-04_...`).
+   - Đọc kỹ `spec.md`, `plan.md`, `tasks.md` và mã nguồn hiện tại của Task đó trong `backend/` và `frontend/`.
 2. **Phân tích bề mặt tác động (Impact Surface Analysis)**:
-   - **Database Layer**: Bảng nào bị thêm/sửa cột? Enums nào cần mở rộng? Quan hệ khóa ngoại nào thay đổi?
-   - **Domain / Services**: Logic nghiệp vụ hoặc state machine nào cần rẽ nhánh mới?
-   - **API / Contracts**: Request/Response DTOs nào cần nhận thêm trường?
-   - **UI/UX Layer**: Màn hình nào bị thêm/sửa input? Bố cục trên Desktop & Mobile? Có từ điển đa ngôn ngữ (VN/KR/EN) và `<FormField>` E0.2 chưa?
-   - **Security & Privacy**: Có trường dữ liệu nhạy cảm nào mới cần mã hóa AES-256 không?
-   - **Backward Compatibility**: Dữ liệu hiện có có bị ảnh hưởng không?
-3. **Cập nhật `spec.md`**:
+   - **Database Layer (PostgreSQL)**: Bảng nào bị thêm/sửa cột? Enums/Constraints nào cần mở rộng? Khóa ngoại tới Master Data có đổi không?
+   - **Domain & Application**: UseCases nào bị ảnh hưởng? Logic validate `BR-XX-*` nào cần rẽ nhánh mới?
+   - **3D Scoped RBAC**: Có thay đổi quyền hạn của 10 PlatformRoles hay 4 ScopeTypes không?
+   - **API / Contracts**: Request/Response DTOs nào cần nhận thêm trường? Mã lỗi mới?
+   - **UI/UX Layer**: Màn hình nào bị thêm/sửa input? Có ảnh hưởng 5 trạng thái UX không?
+   - **Backward Compatibility**: Dữ liệu hiện có trong CSDL PostgreSQL có bị ảnh hưởng không?
+3. **Cập nhật `spec.md` (Append-only)**:
    - Giữ nguyên toàn bộ nội dung của các User Stories cũ.
-   - Viết mục mới vào cuối file `spec.md` của Epic đó:
+   - Thêm mục mới vào cuối file `spec.md`:
      ```markdown
      ## Spec Delta v2: [Tên Nội Dung Bổ Sung/Thay Đổi]
-     - Bối cảnh & Lý do thay đổi (Căn cứ biểu mẫu/yêu cầu mới).
-     - Danh sách các trường/yêu cầu chức năng mới (FR-NEW-###).
-     - Ràng buộc & Tiêu chuẩn chấp thuận (Acceptance Criteria).
+     - **Bối cảnh & Căn cứ thay đổi**: [Lý do phát sinh từ Basic Design hoặc Kỹ thuật].
+     - **Yêu cầu chức năng mới**: [FR-NEW-###].
+     - **Quy tắc nghiệp vụ bổ sung**: [BR-NEW-###].
+     - **Tiêu chuẩn chấp thuận (Acceptance Criteria)**: [Given-When-Then].
      ```
 4. **Cập nhật Master Roadmap (`specs/ROADMAP.md`)**:
-   - Chuyển trạng thái Epic trong Bảng 1 của `specs/ROADMAP.md` sang `🔄 Nâng cấp Delta (In Progress)`.
-   - Ghi nhận yêu cầu thay đổi (Impact Analysis / Delta Request) vào Bảng 3 (Lịch sử thay đổi).
+   - Chuyển trạng thái Task trong Bảng Master Registry sang `🔄 Nâng cấp Delta (In Progress)`.
+   - Ghi nhận yêu cầu thay đổi (Impact Analysis / Delta Request) vào Bảng Lịch sử thay đổi (Mục 4 của Roadmap).
 
 ---
 
 ### Giai Đoạn 1.1: Làm Rõ Điểm Mơ Hồ (Clarify Check) — 🛑 CHECKPOINT 1
 
 1. **Rà soát tính nhất quán**:
-   - Tài liệu mới có xung đột với tài liệu cũ (như PA1 hay Hiến pháp) không?
-   - Có trường dữ liệu nào chưa rõ định dạng, độ dài, hoặc quy tắc bắt buộc (required/optional) không?
+   - Yêu cầu mới có xung đột với Basic Design nguồn (`Specification/02_BASIC_DESIGN/`) hay Hiến pháp (`.specify/memory/constitution.md`) không?
+   - Có trường dữ liệu nào chưa rõ kiểu dữ liệu C# / PostgreSQL, hoặc chưa rõ điều kiện bắt buộc (Nullable/Required)?
 2. **Ra quyết định rẽ nhánh**:
    - **NẾU CÓ ĐIỂM MƠ HỒ HOẶC MÂU THUẪN**:
      - **DỪNG LẠI NGAY LẬP TỨC (STOP)**.
-     - Nêu rõ điểm xung đột hoặc thiếu dữ kiện, đưa ra tối đa 3-5 câu hỏi kèm phương án giải quyết đề xuất cho người dùng chọn.
-     - Sau khi người dùng trả lời, ghi nhận câu trả lời vào `spec.md` và tự động kích hoạt **Giai đoạn 2**.
-   - **NẾU TÀI LIỆU VÀ YÊU CẦU ĐÃ ĐỦ RÕ RÀNG**:
-     - Thông báo ngắn gọn: *"Đã phân tích xong phạm vi tác động của Delta. Yêu cầu rõ ràng, tự động chuyển tiếp sang Giai đoạn 2: Cập nhật Kế hoạch Kỹ thuật."*
+     - Trình bày tối đa 3 câu hỏi kèm phương án giải quyết đề xuất cho người dùng chọn.
+     - Sau khi người dùng trả lời, ghi nhận vào `spec.md` và tự động chuyển sang **Giai đoạn 2**.
+   - **NẾU ĐÃ ĐỦ RÕ RÀNG 100%**:
+     - Thông báo: *"Đã phân tích xong phạm vi tác động của Delta. Yêu cầu rõ ràng, tự động chuyển tiếp sang Giai đoạn 2: Cập nhật Kế hoạch Kỹ thuật."*
      - Tự động tiếp tục sang **Giai đoạn 2**.
 
 ---
@@ -117,80 +126,77 @@ Khác với việc xây dựng một Epic mới từ con số 0, việc **sửa 
 ### Giai Đoạn 2: Cập Nhật Kế Hoạch Kỹ Thuật (Plan Delta) — 🛑 CHECKPOINT 2
 
 1. **Cập nhật `plan.md`**:
-   - Thêm Phase mới vào Implementation Steps trong `plan.md` mô tả chiến lược thực hiện Delta (ví dụ: `Phase 5: KT Membership Schema Delta (Migration v2)`).
-   - Nêu rõ tên file migration mới sẽ sinh (ví dụ: `add_kt_membership_fields`).
-2. **Cập nhật `data-model.md` & `contracts/`**:
-   - Bổ sung định nghĩa các trường mới, kiểu dữ liệu, enum mới và chú thích nghiệp vụ vào `data-model.md`.
-   - Cập nhật các schemas xác thực DTOs trong `contracts/`.
-3. **Ra quyết định rẽ nhánh**:
-   - **NẾU PHÁT HIỆN BREAKING CHANGE LỚN** (ví dụ: bắt buộc phải migrate dữ liệu phức tạp hoặc đổi logic thanh toán):
-     - **DỪNG LẠI HỎI Ý KIẾN NGƯỜI DÙNG** về chiến lược migration trước khi thực thi.
-   - **NẾU THAY ĐỔI AN TOÀN & NON-DESTRUCTIVE**:
-     - Tự động chuyển tiếp sang **Giai đoạn 3**.
+   - Thêm Section `## Plan Delta vX: [Tên Nội Dung]` vào cuối file `plan.md`.
+   - Nêu rõ:
+     - **Database Schema Delta**: Câu lệnh SQL / Migration EF Core non-destructive (ví dụ: `scope_type VARCHAR(20) DEFAULT 'GLOBAL'`).
+     - **Domain & Contract Delta**: Interface `ICurrentActor`, DTOs mở rộng.
+     - **API & Policy Delta**: Quy tắc phân quyền mới trong `authorization-rules.v1.json`.
+2. **Ra quyết định rẽ nhánh**:
+   - **NẾU PHÁT HIỆN BREAKING CHANGE LỚN**: **DỪNG LẠI HỎI Ý KIẾN NGƯỜI DÙNG** về chiến lược migration trước khi thực thi.
+   - **NẾU THAY ĐỔI AN TOÀN & NON-DESTRUCTIVE**: Tự động chuyển tiếp sang **Giai đoạn 2.1 (nếu có đổi UI)** hoặc **Giai đoạn 3 (nếu thuần backend)**.
 
 ---
 
-### Giai Đoạn 3: Phân Rã Danh Sách Việc Delta (`tasks.md`)
+### Giai Đoạn 2.1: Thiết Kế UI/UX Delta (`speckit-uiux`) — (Áp Dụng Cho Delta Có Đổi Giao Diện)
+
+1. **Kiểm tra tác động UI của Delta**:
+   - Nếu Delta thuần backend (DB, Auth, Migration): Tự động bỏ qua và chuyển sang **Giai đoạn 3**.
+   - Nếu Delta có bổ sung trường, sửa form hoặc thêm widget:
+2. **Khảo sát Bố cục & Component**:
+   - Đảm bảo các input/button mới không làm vỡ layout Desktop (1440px) và Mobile (390px).
+   - Ánh xạ component: `<FormField>`, `<TRLBadge>`, `<SectorTag>`, `<LoadingButton>`.
+   - Đảm bảo đầy đủ 5 trạng thái UX qua `<Async>`.
+
+---
+
+### Giai Đoạn 3 & 3.1: Phân Rã Việc Delta & Rà Soát Phủ (`tasks.md` & `speckit-analyze`)
 
 1. **Quy tắc Append-only cho `tasks.md`**:
-   - Tìm mã task lớn nhất hiện tại (ví dụ `T027`).
-   - Thêm một Section mới vào cuối `tasks.md`:
-     ```markdown
-     ---
-
-     ## Phase N: [Tên Delta / Migration v2] (Schema Delta)
-
-     **Purpose**: [Mục tiêu nâng cấp, tuân thủ nguyên tắc Non-destructive & Backward-compatible].
-
-     - [ ] T028 [US...-v2] Thêm enum và trường mới vào prisma/schema.prisma...
-     - [ ] T029 [US...-v2] Cập nhật models và repositories...
-     - [ ] T030 [US...-v2] Sinh file migration v2 và cập nhật TypeScript types...
-     - [ ] T031 [US...-v2] Viết unit/integration test kiểm chứng các trường mới...
-     - [ ] T032 [US...-v2] Chạy kiểm thử hồi quy toàn diện (typecheck và test suites)...
-     ```
+   - Tìm mã task lớn nhất hiện tại (ví dụ `T-00.16`).
+   - Thêm một Giai đoạn mới vào cuối `tasks.md` (ví dụ `## Giai đoạn 6: Delta v2 — [Tên Delta]` từ `T-00.17` trở đi).
+   - Gắn tag rõ ràng: `[KERNEL]`, `[IDENTITY]`, `[PERSISTENCE]`, `[API]`, `[FE]`, `[TEST]`.
 2. **Rà soát ma trận phủ**:
-   - Đảm bảo 100% các trường/logic mới nêu trong Spec Delta đều có task tương ứng.
+   - 100% yêu cầu chức năng mới trong Spec Delta đều có task tương ứng.
+   - 100% thay đổi schema và code đều có Unit/Integration Test kiểm chứng.
 
 ---
 
 ### Giai Đoạn 4: Thi Công Thực Tế Delta (`Implement Delta`) — 🛑 CHECKPOINT 3
 
-1. **Thực thi theo các task vừa phân rã**:
-   - Sửa schema (ví dụ: `prisma/schema.prisma`).
-   - Chạy lệnh migration vật lý:
-     ```bash
-     pnpm prisma migrate dev --name <tên_migration_mới>
-     ```
-   - Sinh lại Client types (`pnpm prisma generate`).
-   - Cập nhật Repositories, Domain Services hoặc Controllers liên quan.
-   - Viết test case mới trong Vitest (`*.spec.ts`) để kiểm thử trọn vẹn dữ liệu và luồng nghiệp vụ của phần Delta.
-2. **Kiểm tra hồi quy liên tục**:
-   - `pnpm typecheck` (`tsc --noEmit`): Bắt buộc 0 lỗi.
-   - `pnpm test`: Bắt buộc 100% tests (cả cũ và mới) đều pass.
-3. **Cập nhật tiến độ**: Đánh dấu `[x]` vào từng task hoàn thành trong `tasks.md`.
-4. **Xử lý Blocker**:
-   - Nếu gặp lỗi xung đột migration hoặc lỗi DB lock -> **DỪNG LẠI TRAO ĐỔI VỚI NGƯỜI DÙNG**.
+1. **Thực thi trong đúng Submodule tương ứng**:
+   - Khi làm task Backend: Thao tác tại `SourceCode/backend/`.
+     - Cập nhật Domain Entity và EF Core Configurations.
+     - Tạo và chạy migration:
+       ```bash
+       dotnet ef migrations add <TênMigrationDelta> --project modules/<TênModule>
+       dotnet ef database update
+       ```
+     - Cập nhật Handler, DTOs, Policy authorization rules.
+     - Viết Unit / Integration Test mới kiểm chứng dữ liệu và quyền hạn Delta.
+   - Khi làm task Frontend: Thao tác tại `SourceCode/frontend/`.
+     - Bổ sung trường input, update UI component, xử lý state.
+2. **Kiểm tra hồi quy liên tục (Regression Test)**:
+   - Backend: `dotnet build` và `dotnet test` (bắt buộc 100% test cũ và mới đều pass).
+   - Frontend: Build sạch 0 lỗi.
+3. **Cập nhật tiến độ**: Tự động đánh dấu `[x]` vào từng task hoàn thành trong `tasks.md`.
+4. **Xử lý Blocker**: Nếu gặp lỗi xung đột migration hoặc deadlock DB, **DỪNG LẠI TRAO ĐỔI VỚI NGƯỜI DÙNG**.
 
 ---
 
 ### Giai Đoạn 5: Đánh Giá Hội Tụ & Nghiệm Thu Delta (`Converge Delta`) — 🛑 CHECKPOINT 4
 
 1. **Kiểm tra độ hội tụ thực tế**:
-   - Query trực tiếp database thật hoặc inspect mã nguồn để đối soát từng trường mới đã xuất hiện trong bảng chưa.
-   - Xác nhận cơ sở dữ liệu đã đồng bộ 100% với Spec Delta.
-2. **Cập nhật tài liệu trực quan**:
-   - Cập nhật sơ đồ Mermaid ERD và các bảng mô tả kiến trúc (ví dụ: `Kien_Truc_CSDL_SIM_KT_M4U.html` hoặc artifact markdown).
-3. **Cập nhật Master Roadmap (`specs/ROADMAP.md`)**:
-   - Cập nhật trạng thái Epic trong Bảng 1 thành `✅ 100% Hoàn thành (Delta vX)`.
-   - Cập nhật số lượng tasks tổng và ghi nhận kết quả kiểm thử mới nhất.
-   - Bổ sung chi tiết kết quả nghiệm thu Delta vào Bảng 3 (Lịch sử thay đổi / Changelog).
-4. **Đóng gói & Visual QA**:
-   - Chạy `pnpm build` xác nhận ứng dụng Next.js biên dịch tối ưu không lỗi.
-   - **Visual QA (nếu Delta có đổi UI)**: Chạy Playwright chụp ảnh giao diện mới (Desktop & Mobile) lưu vào `docs/screenshots/<epic>/` để xác nhận không vỡ layout form sau khi bổ sung trường.
-5. **Báo Cáo Nghiệm Thu Hoàn Tất Delta**:
-   - Xuất bảng tóm tắt:
-     - Danh sách các trường/tính năng mới đã bổ sung.
-     - Tên migration mới đã áp dụng vào DB thật.
-     - Số lượng test cases mới đã bổ sung và kết quả hồi quy (100% passed).
-     - Ảnh chụp Visual QA kiểm chứng giao diện thực tế.
-     - Link mở báo cáo trực quan và link tới `specs/ROADMAP.md` cho người dùng.
+   - Xác nhận CSDL PostgreSQL container thật đã có các cột/bảng mới và dữ liệu cũ không bị lỗi.
+   - 100% test suites của dự án pass (Zero Regression).
+2. **Cập nhật Ma trận Truy vết & Roadmap**:
+   - Bổ sung các mã `REQ-NEW-*`, `BR-NEW-*`, file triển khai và test mới vào [`specs/TRACEABILITY.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/specs/TRACEABILITY.md).
+   - Đổi trạng thái Task trong [`specs/ROADMAP.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/specs/ROADMAP.md) sang `✅ Hoàn thành (Delta vX)`.
+   - Ghi nhận chi tiết kết quả vào Lịch sử thay đổi (Mục 4 của Roadmap).
+3. **Hướng dẫn Commit Đa Tầng Submodules**:
+   - Hướng dẫn commit code Backend vào `NacenTwin.git`.
+   - Hướng dẫn commit code Frontend vào `NacenTwinFE.git`.
+   - Tự động commit cập nhật spec và con trỏ submodule tại `Specification.git`.
+4. **Báo Cáo Nghiệm Thu Hoàn Tất Delta**:
+   - Báo cáo danh sách các trường/tính năng mới đã bổ sung.
+   - Báo cáo số lượng test cases mới và kết quả kiểm thử hồi quy 100% pass.
+   - Sẵn sàng kích hoạt bước tiếp theo.
