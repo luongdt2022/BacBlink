@@ -13,14 +13,17 @@
 
 ---
 
-## 2. KIẾN TRÚC VẬN HÀNH 2 TẦNG (TWO-TIER ARCHITECTURE)
+## 2. KIẾN TRÚC VẬN HÀNH 2 TẦNG & MÔ HÌNH UMBRELLA WORKSPACE (TWO-TIER ARCHITECTURE)
 
 - **Tầng 1 (Root Workspace)**: Quản trị nghiệp vụ, tài liệu khảo sát gốc (`Specification/`), Hiến pháp nghiệp vụ (`BA Agent/constitution.md`) và SRS 7 mục đã được duyệt (`Specification/SRS/`).
-- **Tầng 2 (`SourceCode/` - Git Repo)**: Quản trị kỹ thuật, phát triển phần mềm theo chuẩn Spec Kit Framework:
+- **Tầng 2 (`SourceCode/` - Umbrella Git Repo)**: Quản trị kỹ thuật, đóng vai trò Architecture & Coordination Hub theo chuẩn Spec Kit Framework:
   - Hiến pháp kỹ thuật: `.specify/memory/constitution.md`.
   - Master Roadmap điều phối Epics: `specs/ROADMAP.md`.
   - Ma trận truy vết 2 chiều: `specs/TRACEABILITY.md`.
   - Bộ 3 tài liệu cho mỗi Epic: `specs/<epic-id>/` (`spec.md`, `plan.md`, `tasks.md`).
+  - **Submodule Backend (`backend/`)**: Trỏ đến repository mã nguồn .NET Core `https://github.com/NacenTwin/NacenTwin`. Mọi task `[BE]` được thực thi tại thư mục này.
+  - **Submodule Frontend (`frontend/`)**: Trỏ đến repository mã nguồn UI. Mọi task `[FE]` được thực thi tại thư mục này.
+  - Mọi Spec/Plan/Tasks chỉ commit tại repo cha `SourceCode/`, không làm ô nhiễm lịch sử commit của `backend/` hay `frontend/`.
 
 ---
 
