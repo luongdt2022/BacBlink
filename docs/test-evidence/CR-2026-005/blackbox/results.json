@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-07T15:36:31.070049+00:00",
+  "timestamp_utc": "2026-10-07T15:38:07.270891+00:00",
   "api": "http://localhost:5092",
   "web": "http://localhost:3092",
   "source": "Approved 50-case QC-BLUEPRINT-DELTA-V12.md; real HTTP/browser; no mocks",
@@ -14,8 +14,8 @@
     {
       "id": "TC-C1-02",
       "description": "Nhập từ khóa tiếng Việt có dấu",
-      "status": "FAIL",
-      "evidence": "page.waitForResponse: Timeout 30000ms exceeded while waiting for event \"response\""
+      "status": "PASS",
+      "evidence": "Real Vietnamese public name submitted unchanged and corresponding public expert returned."
     },
     {
       "id": "TC-C1-03",
@@ -38,8 +38,8 @@
     {
       "id": "TC-C1-06",
       "description": "Chọn tỉnh từ danh sách địa bàn",
-      "status": "FAIL",
-      "evidence": "Province projection exposes extra keys"
+      "status": "PASS",
+      "evidence": "Real public province projection verified: 34 entries; only code/name/region keys."
     },
     {
       "id": "TC-C1-07",
@@ -62,14 +62,14 @@
     {
       "id": "TC-C1-10",
       "description": "Xóa toàn bộ tiêu chí",
-      "status": "FAIL",
-      "evidence": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/experts\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3092/experts\", waiting until \"networkidle\"\u001b[22m\n"
+      "status": "PASS",
+      "evidence": "Rendered keyword/sector/province reset to actual default values."
     },
     {
       "id": "TC-C1-11",
       "description": "Dùng bàn phím focus và thao tác filter/CTA",
-      "status": "FAIL",
-      "evidence": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/experts\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3092/experts\", waiting until \"networkidle\"\u001b[22m\n"
+      "status": "BLOCKED",
+      "evidence": "Keyboard search-to-action focus verified; visual focus and complete filter/CTA keyboard walkthrough still required."
     },
     {
       "id": "TC-C1-12",
@@ -104,8 +104,8 @@
     {
       "id": "TC-C2-05",
       "description": "Tạo truy vấn không có kết quả",
-      "status": "FAIL",
-      "evidence": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/experts\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3092/experts\", waiting until \"networkidle\"\u001b[22m\n"
+      "status": "PASS",
+      "evidence": "Real no-match search shows empty state and recovery control."
     },
     {
       "id": "TC-C2-06",
@@ -212,8 +212,8 @@
     {
       "id": "TC-C3-09",
       "description": "Tạo ngành admin qua UI",
-      "status": "BLOCKED",
-      "evidence": "Needs approved real admin account and approved taxonomy creation data plus reload verification."
+      "status": "FAIL",
+      "evidence": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('LVQC1791387475035', { exact: true }) to be visible\u001b[22m\n"
     },
     {
       "id": "TC-C3-10",
@@ -260,8 +260,8 @@
     {
       "id": "TC-C4-01",
       "description": "Khách ẩn danh: vào menu/alias → tìm theo từ khóa → mở hồ sơ công khai",
-      "status": "FAIL",
-      "evidence": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/chuyen-gia\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3092/chuyen-gia\", waiting until \"networkidle\"\u001b[22m\n"
+      "status": "BLOCKED",
+      "evidence": "Alias-to-real-public-profile navigation succeeded; full menu/Vietnamese-search/PII journey remains incomplete."
     },
     {
       "id": "TC-C4-02",
@@ -307,8 +307,8 @@
     }
   ],
   "counts": {
-    "PASS": 7,
-    "FAIL": 7,
-    "BLOCKED": 36
+    "PASS": 11,
+    "FAIL": 2,
+    "BLOCKED": 37
   }
 }

@@ -1,31 +1,31 @@
 # Delta v12 real-service black-box evidence
 
-UTC: 2026-10-07T15:36:31.070049+00:00
+UTC: 2026-10-07T15:38:07.270891+00:00
 API: http://localhost:5092; Web: http://localhost:3092
 
-PASS 7 / FAIL 7 / BLOCKED 36 — Gate 4 remains OPEN.
+PASS 11 / FAIL 2 / BLOCKED 37 — Gate 4 remains OPEN.
 
 No mock response/interception or business-data write was used. Screenshots are observations; responsive visual sign-off requires manual review.
 
 | Case | Result | Evidence / missing prerequisite |
 |---|---|---|
 | TC-C1-01 | PASS | Real public default directory responds successfully. |
-| TC-C1-02 | FAIL | page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response" |
+| TC-C1-02 | PASS | Real Vietnamese public name submitted unchanged and corresponding public expert returned. |
 | TC-C1-03 | PASS | Real public API empty search returned zero records. |
 | TC-C1-04 | PASS | Real active taxonomy code/name contract observed. |
 | TC-C1-05 | PASS | Unknown active-sector code returned zero results without 500. |
-| TC-C1-06 | FAIL | Province projection exposes extra keys |
+| TC-C1-06 | PASS | Real public province projection verified: 34 entries; only code/name/region keys. |
 | TC-C1-07 | BLOCKED | Need >1 page of approved real experts plus observable UI pagination state. |
 | TC-C1-08 | BLOCKED | Need approved experts in both consultation states and full UI interaction. |
 | TC-C1-09 | BLOCKED | Need browser chip removal interaction and comparison of actual results. |
-| TC-C1-10 | FAIL | page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/experts Call log: [2m  - navigating to "http://localhost:3092/experts", waiting until "networkidle"[22m  |
-| TC-C1-11 | FAIL | page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/experts Call log: [2m  - navigating to "http://localhost:3092/experts", waiting until "networkidle"[22m  |
+| TC-C1-10 | PASS | Rendered keyword/sector/province reset to actual default values. |
+| TC-C1-11 | BLOCKED | Keyboard search-to-action focus verified; visual focus and complete filter/CTA keyboard walkthrough still required. |
 | TC-C1-12 | PASS | Real public API projection has no forbidden PII keys; 2 records observed. |
 | TC-C2-01 | BLOCKED | Real screenshot captured; no horizontal overflow. Manual density/overlap/clipping review required. |
 | TC-C2-02 | BLOCKED | Real screenshot captured; no horizontal overflow. Manual density/overlap/clipping review required. |
 | TC-C2-03 | BLOCKED | Needs real service delayed loading observation; no mock/interception permitted. |
 | TC-C2-04 | BLOCKED | Needs browser grid/count-to-live-response comparison. |
-| TC-C2-05 | FAIL | page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/experts Call log: [2m  - navigating to "http://localhost:3092/experts", waiting until "networkidle"[22m  |
+| TC-C2-05 | PASS | Real no-match search shows empty state and recovery control. |
 | TC-C2-06 | BLOCKED | Needs controlled real taxonomy outage/recovery authorization and UI retry. |
 | TC-C2-07 | BLOCKED | Needs real browser rapid-filter observation, no route mocks. |
 | TC-C2-08 | BLOCKED | Needs real mobile drawer and chip interactions. |
@@ -43,7 +43,7 @@ No mock response/interception or business-data write was used. Screenshots are o
 | TC-C3-06 | BLOCKED | Needs authorized controlled real API outage and browser recovery, no mocks. |
 | TC-C3-07 | BLOCKED | Needs approved live requester data and permission to create actual consultation request. |
 | TC-C3-08 | BLOCKED | Needs approved requester input and UI validation/service refusal; no fake responses. |
-| TC-C3-09 | BLOCKED | Needs approved real admin account and approved taxonomy creation data plus reload verification. |
+| TC-C3-09 | FAIL | locator.waitFor: Timeout 10000ms exceeded. Call log: [2m  - waiting for getByText('LVQC1791387475035', { exact: true }) to be visible[22m  |
 | TC-C3-10 | BLOCKED | Needs approved real taxonomy rename, cross-surface reload and restore plan. |
 | TC-C3-11 | BLOCKED | Needs approved safe taxonomy deactivation and preserved historical profile evidence. |
 | TC-C3-12 | BLOCKED | Needs safe actual empty taxonomy/outage; production data must not be cleared for a test. |
@@ -51,7 +51,7 @@ No mock response/interception or business-data write was used. Screenshots are o
 | TC-C3-14 | BLOCKED | Needs approved actual rename/deactivate and matrix replay. |
 | TC-C3-15 | BLOCKED | Needs real scoped admin account and approved target officer; cannot fabricate assignment. |
 | TC-C3-16 | BLOCKED | Needs real expert account, approved CV/profile data and actual submit evidence. |
-| TC-C4-01 | FAIL | page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3092/chuyen-gia Call log: [2m  - navigating to "http://localhost:3092/chuyen-gia", waiting until "networkidle"[22m  |
+| TC-C4-01 | BLOCKED | Alias-to-real-public-profile navigation succeeded; full menu/Vietnamese-search/PII journey remains incomplete. |
 | TC-C4-02 | BLOCKED | Needs real enterprise role account, province/sector dataset and multi-page journey. |
 | TC-C4-03 | BLOCKED | Needs approved real enterprise consultation submission input and recipient expert. |
 | TC-C4-04 | BLOCKED | Needs completed browser mobile drawer/chip/profile journey. |
