@@ -179,7 +179,7 @@ public sealed class OrganizationUnitController(IOrganizationTreeService orgServi
     {
         var provinces = KeyProvinces34
             .Select(x => (dynamic)x)
-            .Select(x => new { code = (string)x.Code, name = (string)x.Name, regionCode = (string)x.RegionCode })
+            .Select(x => new { code = (string)x.Code, name = (string)x.Name, region = (string)x.RegionCode })
             .ToList();
         return Ok(new { success = true, data = provinces });
     }
