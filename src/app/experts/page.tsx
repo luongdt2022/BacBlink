@@ -238,9 +238,9 @@ export default function ExpertsDirectoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* 1. HERO SEARCH BANNER */}
-      <section className="workspace-banner text-white py-7 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section className="workspace-banner text-white py-5 sm:py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
           <nav className="flex items-center gap-2 text-caption text-brand-100 mb-4 font-medium">
             <Link href="/" className="hover:text-white">Trang chủ</Link>
@@ -254,10 +254,10 @@ export default function ExpertsDirectoryPage() {
               Mạng lưới Nhà khoa học & Chuyên gia Đổi mới Sáng tạo
             </div>
             <h1 className="font-extrabold tracking-tight text-white leading-tight type-page-title">
-              Danh Bạ Chuyên Gia Khoa Học & Công Nghệ
+              Tìm chuyên gia KH&CN
             </h1>
-            <p className="mt-2 text-caption text-brand-100 leading-relaxed max-w-2xl">
-              Tìm chuyên gia theo năng lực, lĩnh vực KH&CN đã chuẩn hóa và địa bàn thẩm định để giải quyết bài toán kỹ thuật.
+            <p className="mt-2 text-body text-brand-100 leading-relaxed max-w-2xl">
+              Tra cứu năng lực, lĩnh vực và địa bàn thẩm định.
             </p>
 
             {/* Big Search Bar */}
@@ -321,7 +321,7 @@ export default function ExpertsDirectoryPage() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="text-caption font-semibold text-slate-500 hover:text-brand-700 dark:text-slate-400 dark:hover:text-white"
+                className="focus-ring min-h-11 shrink-0 whitespace-nowrap text-caption font-semibold text-slate-500 hover:text-brand-700 dark:text-slate-400 dark:hover:text-white"
               >
                 Đặt lại
               </button>
@@ -384,7 +384,7 @@ export default function ExpertsDirectoryPage() {
                         onChange={() => { setCurrentPage(1); setSelectedSector(sec.code); }}
                         className="text-brand-700 focus:ring-brand-500"
                       />
-                      <span className="truncate">{sec.name}</span>
+                      <span className="min-w-0 whitespace-normal">{sec.name}</span>
                     </label>
                   ))}
                 </div>
@@ -449,7 +449,7 @@ export default function ExpertsDirectoryPage() {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" data-testid="expert-loading-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start" data-testid="expert-loading-grid">
                 {[1, 2, 3, 4, 5, 6].map((idx) => (
                   <div key={idx} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs animate-pulse space-y-4 dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex items-center gap-3">
@@ -497,13 +497,13 @@ export default function ExpertsDirectoryPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" data-testid="expert-card-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start" data-testid="expert-card-grid">
                 {directoryData.items.map((expert) => {
                   const badge = getRankBadge(expert.academicRank, expert.degree);
                   return (
                     <div
                       key={expert.expertCode}
-                      className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs hover:border-brand-300 transition-colors flex flex-col justify-between group dark:bg-slate-900 dark:border-slate-800"
+                      className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs hover:border-brand-300 transition-colors flex flex-col group dark:bg-slate-900 dark:border-slate-800"
                     >
                       <div>
                         <div className="flex items-start gap-3.5">
@@ -529,10 +529,10 @@ export default function ExpertsDirectoryPage() {
                                 <ShieldCheck className="w-3 h-3" /> Đã xác thực
                               </span>
                             </div>
-                            <h3 className="text-body font-extrabold text-slate-900 mt-1 group-hover:text-brand-700 transition truncate dark:text-white dark:group-hover:text-brand-200">
+                            <h3 className="text-body font-extrabold text-slate-900 mt-1 group-hover:text-brand-700 transition break-words dark:text-white dark:group-hover:text-brand-200">
                               <Link href={`/experts/${expert.expertCode}`}>{expert.fullName}</Link>
                             </h3>
-                            <p className="text-caption text-slate-500 truncate mt-0.5 dark:text-slate-400" title={expert.organizationName}>
+                            <p className="text-caption text-slate-500 break-words mt-0.5 dark:text-slate-400" title={expert.organizationName}>
                               {expert.organizationName}
                             </p>
                           </div>
@@ -584,7 +584,7 @@ export default function ExpertsDirectoryPage() {
                       <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 dark:border-slate-800">
                         <Link
                           href={`/experts/${expert.expertCode}`}
-                          className="flex-1 py-2 text-center text-caption font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl transition dark:bg-brand-950/60 dark:text-brand-200 dark:hover:bg-brand-900/60"
+                          className="flex-1 min-h-11 flex items-center justify-center py-2 text-center text-caption font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl transition dark:bg-brand-950/60 dark:text-brand-200 dark:hover:bg-brand-900/60"
                         >
                           Xem hồ sơ chi tiết
                         </Link>

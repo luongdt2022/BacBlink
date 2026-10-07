@@ -193,7 +193,7 @@ const {chromium}=require(process.env.DELTA_PLAYWRIGHT_MODULE || '/Users/luongdt/
  const fs=require('fs'); const credPath=process.env.DELTA_CREDENTIALS_FILE||'/private/tmp/nacen-qc-delta-credentials.json';
  if(fs.existsSync(credPath)){
    const creds=JSON.parse(fs.readFileSync(credPath,'utf8'));
-   if(!String(creds.database).includes('_qc_delta_'))throw Error('Mutation guard: credentials must target isolated QC clone');
+   if(!String(creds.database).includes('_qc_delta_') || new URL(api).port!==new URL(creds.api).port)throw Error('Mutation guard: credentials and API must target isolated QC clone');
    const context=await browser.newContext();const admin=await context.newPage();
    await admin.goto(base+'/login',{waitUntil:'networkidle'});await admin.locator('input[type=email]').fill(creds.email);await admin.locator('input[type=password]').fill(creds.password);await admin.getByRole('button',{name:/Đăng nhập vào Hệ Thống/i}).click();
    try{await admin.waitForURL('**/admin**',{timeout:10000})}catch(e){throw Error('Real admin UI login failed; no mutation performed')}
