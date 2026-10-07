@@ -28,6 +28,7 @@ public static class ErrorHandling
         NotFoundException => (404, "Not Found"),
         ConflictException => (409, "Conflict"),
         ConcurrencyException => (409, "Conflict"),
+        RecordAlreadyModifiedException => (409, "Conflict"),
         UnprocessableException => (422, "Unprocessable Entity"),
         RateLimitedException => (429, "Too Many Requests"),
         BadHttpRequestException b => (b.StatusCode, "Bad Request"),

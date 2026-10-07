@@ -23,5 +23,6 @@ public static class ModuleRegistry
         new Modules.Audit.AuditModule(),
         new Modules.Integration.IntegrationModule(),
         new Modules.Entitlement.EntitlementModule(),
+        new Modules.Enterprise.EnterpriseModule(),
     ];
 }

@@ -30,6 +30,7 @@ public static class AuthCodes
 {
     public const string PasswordChangedSuccess = "PASSWORD_CHANGED_SUCCESS";
     public const string RegisterSuccessPendingActivation = "REGISTER_SUCCESS_PENDING_ACTIVATION";
+    public const string RegisterSuccess = "REGISTER_SUCCESS";
     public const string AccountActivatedSuccess = "ACCOUNT_ACTIVATED_SUCCESS";
     public const string ActivationEmailResent = "ACTIVATION_EMAIL_RESENT";
     public const string InvalidCredentials = "INVALID_CREDENTIALS";
@@ -58,7 +59,9 @@ public sealed record PersonDto(
     string PlatformRole,
     bool IsActive,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    string ScopeType = ScopeTypes.Global,
+    string? ScopeId = null);
 
 public sealed record PersonPreferencesDto(Guid Id, Guid PersonId, bool MatchingAuto, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
 
@@ -72,14 +75,23 @@ public sealed record AdminCreatePersonCommand(string Email, string? Password, st
 
 public sealed record AdminUpdatePersonCommand(string? FirstName, string? LastName, string? Phone, string? Organization, bool? IsActive);
 
+public sealed record ProvisionPersonCommand(
+    string Email, string Password, string FirstName, string? LastName, string? Phone, string? Organization,
+    string PlatformRole, string ScopeType, string? ScopeId, bool IsActive = true);
+
+public sealed record AssignRoleScopeCommand(string PlatformRole, string ScopeType, string? ScopeId);
+
 public sealed record ResendActivationOutcome(bool AlreadyActive);
 
 public interface IAuthenticationService
 {
-    /// <summary>requiredRole: "USER" hoặc "ADMIN" (portal user vs admin login). Sai role → INVALID_CREDENTIALS như legacy.</summary>
-    Task<AuthResult> LoginAsync(string email, string password, string requiredRole, CancellationToken ct);
+    /// <summary>
+    /// Đăng nhập portal khi requiredRole là null; giữ role thật trong JWT. Admin login truyền ADMIN
+    /// để tách bề mặt quản trị khỏi portal người dùng.
+    /// </summary>
+    Task<AuthResult> LoginAsync(string email, string password, string? requiredRole, CancellationToken ct);
 
-    /// <summary>Tạo person inactive + activation token + event PersonRegistered. Rate limit theo ip:email.</summary>
+    /// <summary>Tạo PUBLIC_USER active ngay; rate limit theo ip:email. Activation endpoint chỉ giữ cho account legacy.</summary>
     Task<PersonDto> RegisterAsync(RegisterCommand command, string requesterIp, CancellationToken ct);
 
     Task ActivateAsync(string token, CancellationToken ct);
@@ -107,6 +119,8 @@ public interface IPersonService
 
     // Operator/admin
     Task<PersonDto> AdminCreateAsync(AdminCreatePersonCommand command, CancellationToken ct);
+    Task<PersonDto> ProvisionAsync(ProvisionPersonCommand command, CancellationToken ct);
+    Task<PersonDto> AssignRoleAndScopeAsync(Guid id, AssignRoleScopeCommand command, CancellationToken ct);
     Task<PagedResult<PersonDto>> AdminListAsync(PageRequest page, string? search, string status, CancellationToken ct);
     Task<PersonDto> AdminUpdateAsync(Guid id, AdminUpdatePersonCommand command, CancellationToken ct);
     Task AdminResetPasswordAsync(Guid id, string newPassword, CancellationToken ct);
@@ -131,3 +145,96 @@ public interface ITokenIssuer
 {
     string Issue(PersonDto person);
 }
+
+// ─── TASK-07: Governance, Approval & Org Unit Contracts ──────────────────────────────────────────
+
+public sealed record ApprovalRequestDto(
+    Guid Id,
+    Guid UserId,
+    string RequestType,
+    string ScopeType,
+    string? ScopeId,
+    string PayloadJson,
+    string Status,
+    int Version,
+    Guid? AssignedOfficerId,
+    Guid? ReviewedById,
+    string? ReviewNote,
+    DateTimeOffset SlaDeadlineUtc,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    PersonDto? User = null);
+
+public sealed record SubmitApprovalRequestCommand(
+    Guid UserId,
+    string RequestType,
+    string ScopeType,
+    string? ScopeId,
+    string PayloadJson,
+    DateTimeOffset? SlaDeadlineUtc = null);
+
+public sealed record ReviewApprovalRequestCommand(
+    string Action,
+    int ExpectedVersion,
+    string? ReviewNote = null);
+
+public sealed record ApprovalListFilter(
+    string? RequestType = null,
+    string? Status = null,
+    string? ScopeType = null,
+    string? ScopeId = null,
+    int Page = 1,
+    int PageSize = 20);
+
+public sealed record OrganizationUnitDto(
+    Guid Id,
+    string Code,
+    string Name,
+    string UnitType,
+    Guid? ParentId,
+    string? ProvinceId,
+    string Status,
+    DateTimeOffset CreatedAtUtc);
+
+public sealed record CreateOrganizationUnitCommand(
+    string Code,
+    string Name,
+    string UnitType,
+    Guid? ParentId = null,
+    string? ProvinceId = null);
+
+public sealed record ProvisionProvinceAdminCommand(
+    string Email,
+    string Password,
+    string FirstName,
+    string? LastName,
+    string? Phone,
+    string ProvinceId);
+
+public sealed record ApprovalAuditLogDto(
+    Guid Id,
+    Guid ActorId,
+    string ActorRole,
+    string Action,
+    string TargetEntity,
+    string TargetId,
+    string IpAddress,
+    string? DetailsJson,
+    DateTimeOffset CreatedAtUtc);
+
+public interface IApprovalService
+{
+    Task<PagedResult<ApprovalRequestDto>> GetApprovalsAsync(ApprovalListFilter filter, ICurrentActor actor, CancellationToken ct);
+    Task<ApprovalRequestDto> GetByIdAsync(Guid id, ICurrentActor actor, CancellationToken ct);
+    Task<ApprovalRequestDto> SubmitRequestAsync(SubmitApprovalRequestCommand cmd, CancellationToken ct);
+    Task<ApprovalRequestDto> ReviewRequestAsync(Guid id, ReviewApprovalRequestCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
+    Task<IReadOnlyList<ApprovalAuditLogDto>> GetAuditLogsAsync(string targetEntity, string targetId, CancellationToken ct);
+}
+
+public interface IOrganizationTreeService
+{
+    Task<IReadOnlyList<OrganizationUnitDto>> GetOrgTreeAsync(CancellationToken ct);
+    Task<OrganizationUnitDto> CreateUnitAsync(CreateOrganizationUnitCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
+    Task<PersonDto> ProvisionProvinceLeaderAsync(ProvisionProvinceAdminCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
+}
+

@@ -41,6 +41,14 @@ services:
       Api__RunWorkersInProcess: "false"
       Api__MigrateOnStartup: "true"
       Mail__DryRun: ${MAIL_DRY_RUN:-true}
+      Mail__Host: ${MAIL_HOST:-smtp.gmail.com}
+      Mail__Port: ${MAIL_PORT:-587}
+      Mail__UseStartTls: ${MAIL_USE_STARTTLS:-true}
+      Mail__UseSsl: ${MAIL_USE_SSL:-false}
+      Mail__User: ${MAIL_USER:-}
+      Mail__Password: ${MAIL_PASSWORD:-}
+      Mail__From: ${MAIL_FROM:-}
+      Mail__FromName: ${MAIL_FROM_NAME:-NacenTech}
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,6 +70,14 @@ services:
       ObjectStorage__PublicBaseUrl: ${API_PUBLIC_URL:-http://localhost:5000}
       Matching__EmbeddingBaseUrl: ${RAG_URL:-http://host.docker.internal:8003}
       Mail__DryRun: ${MAIL_DRY_RUN:-true}
+      Mail__Host: ${MAIL_HOST:-smtp.gmail.com}
+      Mail__Port: ${MAIL_PORT:-587}
+      Mail__UseStartTls: ${MAIL_USE_STARTTLS:-true}
+      Mail__UseSsl: ${MAIL_USE_SSL:-false}
+      Mail__User: ${MAIL_USER:-}
+      Mail__Password: ${MAIL_PASSWORD:-}
+      Mail__From: ${MAIL_FROM:-}
+      Mail__FromName: ${MAIL_FROM_NAME:-NacenTech}
     depends_on:
       postgres:
         condition: service_healthy

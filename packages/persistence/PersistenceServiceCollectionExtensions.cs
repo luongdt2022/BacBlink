@@ -29,6 +29,7 @@ public static class PersistenceServiceCollectionExtensions
                 npg.EnableRetryOnFailure(3);
             });
             o.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
+            o.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
         }
 
         // optionsLifetime singleton để factory (singleton) và DbContext (scoped) dùng chung một options bất biến.

@@ -32,6 +32,26 @@ public sealed class HttpCurrentActor(IHttpContextAccessor accessor) : ICurrentAc
         }
     }
 
+    public string ScopeType
+    {
+        get
+        {
+            if (!IsAuthenticated) return ScopeTypes.Global;
+            var scope = Ctx?.User.FindFirstValue("scope_type");
+            return string.IsNullOrEmpty(scope) ? ScopeTypes.Global : scope.ToUpperInvariant();
+        }
+    }
+
+    public string? ScopeId
+    {
+        get
+        {
+            if (!IsAuthenticated) return null;
+            var id = Ctx?.User.FindFirstValue("scope_id");
+            return string.IsNullOrWhiteSpace(id) ? null : id;
+        }
+    }
+
     public string? IpAddress => Ctx is null ? null : ClientIp.Resolve(Ctx);
 
     public string? UserAgent => Ctx?.Request.Headers.UserAgent.ToString();

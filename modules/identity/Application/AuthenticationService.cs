@@ -21,12 +21,12 @@ public sealed class AuthenticationService(
 {
     private readonly AuthOptions _options = options.Value;
 
-    public async Task<AuthResult> LoginAsync(string email, string password, string requiredRole, CancellationToken ct)
+    public async Task<AuthResult> LoginAsync(string email, string password, string? requiredRole, CancellationToken ct)
     {
         var normalized = Person.Normalize(email);
 
         // Legacy chỉ rate-limit login của portal người dùng, không limit admin login.
-        if (requiredRole == PlatformRoles.User)
+        if (requiredRole is null)
         {
             rateLimiter.Assert($"login:{normalized}", _options.LoginRateLimitMax, TimeSpan.FromSeconds(_options.LoginRateLimitWindowSeconds),
                 AuthCodes.LoginRateLimited, "Too many login attempts. Please try again later.");
@@ -45,7 +45,10 @@ public sealed class AuthenticationService(
                 AuthCodes.AccountNotActivated);
         }
 
-        if (person.PlatformRole != requiredRole) throw Invalid();
+        if (requiredRole is not null &&
+            !(requiredRole == PlatformRoles.Admin
+                ? PlatformRoles.IsAdministrative(person.PlatformRole)
+                : person.PlatformRole == requiredRole)) throw Invalid();
 
         if (needsRehash)
         {
@@ -71,11 +74,9 @@ public sealed class AuthenticationService(
             throw new ConflictException("Email is already in use", AuthCodes.EmailAlreadyInUse);
 
         var person = Person.Register(normalized, hasher.Hash(command.Password), hasher.CurrentAlgorithm,
-            command.FirstName, command.LastName, command.Phone, command.Organization, isActive: false);
+            command.FirstName, command.LastName, command.Phone, command.Organization, isActive: true,
+            PlatformRoles.PublicUser, ScopeTypes.Global);
         db.Add(person);
-
-        var token = await IssueActivationTokenAsync(person.Id, ct);
-        person.RaiseRegistered(token.Token);
 
         await uow.CommitAsync(ct);
         return PersonMapper.ToDto(person);

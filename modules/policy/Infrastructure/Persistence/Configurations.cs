@@ -12,8 +12,12 @@ public sealed class TaxonomyTermConfiguration : IEntityTypeConfiguration<Taxonom
         b.HasKey(x => x.Id);
         b.Property(x => x.Kind).HasMaxLength(30).IsRequired();
         b.Property(x => x.Name).HasMaxLength(255).IsRequired();
+        b.Property(x => x.Code).HasMaxLength(50);
+        b.Property(x => x.MetadataJson).HasColumnName("metadata").HasColumnType("jsonb").HasDefaultValue("{}");
         b.HasIndex(x => new { x.Kind, x.Name });
         b.HasIndex(x => new { x.Kind, x.IsActive });
+        b.HasIndex(x => new { x.Kind, x.Code }).IsUnique().HasFilter("code IS NOT NULL");
+        b.HasIndex(x => x.Code);
     }
 }
 

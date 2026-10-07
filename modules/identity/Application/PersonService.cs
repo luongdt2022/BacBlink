@@ -12,7 +12,8 @@ public sealed class PersonService(
     ICurrentActor actor,
     IAuthorizationGate gate,
     IPasswordHasher hasher,
-    IClock clock) : IPersonService
+    IClock clock,
+    IAuditWriter audit) : IPersonService
 {
     public async Task<PersonDto> GetAsync(Guid id, CancellationToken ct)
     {
@@ -80,9 +81,40 @@ public sealed class PersonService(
             throw new ConflictException("Email already in use", AuthCodes.EmailAlreadyInUse);
 
         var person = Person.Register(normalized, hasher.Hash(command.Password), hasher.CurrentAlgorithm,
-            command.FirstName, command.LastName, command.Phone, command.Organization, command.IsActive ?? true);
+            command.FirstName, command.LastName, command.Phone, command.Organization, command.IsActive ?? true,
+            PlatformRoles.PublicUser, ScopeTypes.Global);
         db.Add(person);
         await uow.CommitAsync(ct);
+        return PersonMapper.ToDto(person);
+    }
+
+    public async Task<PersonDto> ProvisionAsync(ProvisionPersonCommand command, CancellationToken ct)
+    {
+        RequireProvision(null);
+        ValidateRoleScope(command.PlatformRole, command.ScopeType, command.ScopeId);
+        if (string.IsNullOrWhiteSpace(command.Password)) throw new ValidationException("password is required");
+
+        var normalized = Person.Normalize(command.Email);
+        if (await db.Set<Person>().AnyAsync(p => p.Email == normalized, ct))
+            throw new ConflictException("Email already in use", AuthCodes.EmailAlreadyInUse);
+
+        var person = Person.Register(normalized, hasher.Hash(command.Password), hasher.CurrentAlgorithm,
+            command.FirstName, command.LastName, command.Phone, command.Organization, command.IsActive,
+            command.PlatformRole, command.ScopeType, NormalizeScopeId(command.ScopeType, command.ScopeId));
+        db.Add(person);
+        await uow.CommitAsync(ct);
+        AuditSuccess(person, "provisioned");
+        return PersonMapper.ToDto(person);
+    }
+
+    public async Task<PersonDto> AssignRoleAndScopeAsync(Guid id, AssignRoleScopeCommand command, CancellationToken ct)
+    {
+        RequireProvision(id);
+        ValidateRoleScope(command.PlatformRole, command.ScopeType, command.ScopeId);
+        var person = await LoadAsync(id, ct);
+        person.AssignRoleAndScope(command.PlatformRole, command.ScopeType, NormalizeScopeId(command.ScopeType, command.ScopeId));
+        await uow.CommitAsync(ct);
+        AuditSuccess(person, "role_scope_assigned");
         return PersonMapper.ToDto(person);
     }
 
@@ -151,4 +183,21 @@ public sealed class PersonService(
 
     private void RequireAdmin(Guid? id)
         => gate.Require(new AuthorizationRequest(Actions.PersonAdminManage, actor.PlatformRole), "Person", id);
+
+    private void RequireProvision(Guid? id)
+        => gate.Require(new AuthorizationRequest(Actions.PersonProvisionRole, actor.PlatformRole), "Person", id);
+
+    private static void ValidateRoleScope(string role, string scopeType, string? scopeId)
+    {
+        if (!ScopeTypes.IsValidForRole(role, scopeType, scopeId))
+            throw new ValidationException("platformRole, scopeType and scopeId are not a valid canonical role/scope assignment");
+    }
+
+    private static string? NormalizeScopeId(string scopeType, string? scopeId)
+        => scopeType == ScopeTypes.Global ? null : scopeId?.Trim();
+
+    private void AuditSuccess(Person person, string operation)
+        => audit.Append(new AuditEntry(actor.PersonId, actor.PlatformRole, Actions.PersonProvisionRole, "Person", person.Id,
+            person.Version, null, AuditOutcomes.Success, null, actor.CorrelationId, actor.IpAddress, actor.UserAgent,
+            $"operation={operation};role={person.PlatformRole};scopeType={person.ScopeType};scopeId={person.ScopeId ?? ""}"));
 }

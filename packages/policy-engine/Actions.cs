@@ -7,6 +7,7 @@ public static class Actions
     public const string PersonReadSelf = "person.read_self";
     public const string PersonUpdateSelf = "person.update_self";
     public const string PersonAdminManage = "person.admin_manage";
+    public const string PersonProvisionRole = "person.provision_role";
 
     // demand / technology (subject)
     public const string SubjectCreate = "subject.create";

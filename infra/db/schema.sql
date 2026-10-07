@@ -1,4 +1,4 @@
-﻿DO $EF$
+DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM pg_namespace WHERE nspname = 'platform') THEN
         CREATE SCHEMA platform;
@@ -636,6 +636,8 @@ BEGIN
         id uuid NOT NULL,
         kind character varying(30) NOT NULL,
         name character varying(255) NOT NULL,
+        code character varying(50),
+        metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
         is_active boolean NOT NULL,
         version integer NOT NULL,
         created_at timestamp with time zone NOT NULL,
@@ -1176,6 +1178,8 @@ DO $EF$
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM platform.__ef_migrations_history WHERE "MigrationId" = '20260903153427_InitialCreate') THEN
     CREATE INDEX ix_taxonomy_terms_kind_name ON policy.taxonomy_terms (kind, name);
+    CREATE UNIQUE INDEX uq_taxonomy_terms_kind_code ON policy.taxonomy_terms (kind, code) WHERE code IS NOT NULL;
+    CREATE INDEX ix_taxonomy_terms_code ON policy.taxonomy_terms (code);
     END IF;
 END $EF$;
 

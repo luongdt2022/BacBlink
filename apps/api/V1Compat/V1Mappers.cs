@@ -71,6 +71,17 @@ public sealed class V1Mappers(IPersonService persons, ITaxonomyService taxonomy)
         createdAt = p.CreatedAt,
     };
 
+    /// <summary>Contract dùng bởi Web Portal mới: giữ nguyên role/scope thực từ JWT, không dùng legacy RoleV1.</summary>
+    public static object AuthSessionUser(PersonDto p) => new
+    {
+        id = p.Id,
+        email = p.Email,
+        fullName = string.Join(" ", new[] { p.LastName, p.FirstName }.Where(x => !string.IsNullOrWhiteSpace(x))),
+        role = p.PlatformRole,
+        scopeType = p.ScopeType,
+        scopeId = p.ScopeId,
+    };
+
     public static object Settings(PersonPreferencesDto s) => new
     {
         id = s.Id,
@@ -80,7 +91,7 @@ public sealed class V1Mappers(IPersonService persons, ITaxonomyService taxonomy)
         updatedAt = s.UpdatedAt,
     };
 
-    public static object Term(TaxonomyTermDto t) => new { id = t.Id, name = t.Name, isActive = t.IsActive };
+    public static object Term(TaxonomyTermDto t) => new { id = t.Id, code = t.Code, name = t.Name, isActive = t.IsActive };
 
     public static object Notification(NotificationDto n) => new
     {

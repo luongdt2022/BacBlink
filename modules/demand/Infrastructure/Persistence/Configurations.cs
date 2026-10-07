@@ -33,3 +33,17 @@ public sealed class DemandBriefVersionConfiguration : IEntityTypeConfiguration<D
         b.HasIndex(x => new { x.DemandBriefId, x.VersionNo }).IsUnique();
     }
 }
+
+public sealed class SurveySubmissionConfiguration : IEntityTypeConfiguration<SurveySubmission>
+{
+    public void Configure(EntityTypeBuilder<SurveySubmission> b)
+    {
+        b.ToTable("survey_submissions", DemandModule.SchemaName);
+        b.HasKey(x => x.Id);
+        
+        b.Property(x => x.NeedItems).HasColumnType("jsonb");
+        b.Property(x => x.Bottlenecks).HasColumnType("jsonb");
+        
+        b.HasIndex(x => new { x.EnterpriseId, x.Year }).IsUnique();
+    }
+}

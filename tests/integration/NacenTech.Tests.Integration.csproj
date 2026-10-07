@@ -12,11 +12,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\packages\test-kit\NacenTech.TestKit.csproj" />
     <ProjectReference Include="..\..\modules\identity\NacenTech.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\modules\brokerage\NacenTech.Modules.Brokerage.csproj" />
     <ProjectReference Include="..\..\modules\demand\NacenTech.Modules.Demand.csproj" />
     <ProjectReference Include="..\..\modules\technology\NacenTech.Modules.Technology.csproj" />
     <ProjectReference Include="..\..\modules\dataroom\NacenTech.Modules.DataRoom.csproj" />
     <ProjectReference Include="..\..\modules\communication\NacenTech.Modules.Communication.csproj" />
     <ProjectReference Include="..\..\modules\audit\NacenTech.Modules.Audit.csproj" />
+    <ProjectReference Include="..\..\modules\policy\NacenTech.Modules.Policy.csproj" />
+    <ProjectReference Include="..\..\apps\api\NacenTech.Api.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\config\policies\authorization-rules.v1.json" Link="config\policies\authorization-rules.v1.json" CopyToOutputDirectory="PreserveNewest" />

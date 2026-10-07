@@ -60,7 +60,9 @@ Bộ này có hai loại, khác nhau ở chân trang và ở thì của động 
 
 **Xác thực**
 
-- Vai trò nền tảng: `ANONYMOUS`, `USER`, `ADMIN`, `SYSTEM`.
+> **Identity/RBAC đã được thay thế (29/09/2026):** không dùng danh sách role legacy ở mục này cho thiết kế mới. Nguồn chốt: [`../../../../specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/spec.md`](../../../../specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/spec.md) và Basic Design `TASK-07`.
+
+- Vai trò nền tảng legacy: `ANONYMOUS`, `USER`, `ADMIN`, `SYSTEM`. Mô hình hiện hành là 10 role/4 tầng có 3D scope; `GUEST` là anonymous persona, không phải role lưu trong DB/JWT.
 - Token sống 24 giờ (`AccessTokenMinutes = 1440`). Token kích hoạt và token đặt lại mật khẩu sống 60 phút.
 - Giới hạn tần suất: đăng ký 5 lần / 300 giây; gửi lại thư kích hoạt 3 lần / 600 giây; đăng nhập 10 lần / 300 giây. Đếm theo cặp `ip:email`.
 - Đăng nhập sai vai trò trả `INVALID_CREDENTIALS`, **không** trả 403. Đây là hành vi legacy được giữ có chủ đích.

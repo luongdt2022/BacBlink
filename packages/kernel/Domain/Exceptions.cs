@@ -19,6 +19,9 @@ public sealed class UnauthorizedException(string message, string code = "UNAUTHO
 
 public sealed class ConflictException(string message, string code = "CONFLICT") : DomainException(code, message);
 
+public sealed class RecordAlreadyModifiedException(string message = "Dữ liệu đã được cập nhật bởi một phiên làm việc khác. Vui lòng tải lại trang.") 
+    : DomainException("ERR_RECORD_ALREADY_MODIFIED", message);
+
 public sealed class UnprocessableException(string message, string code = "UNPROCESSABLE") : DomainException(code, message);
 
 public sealed class RateLimitedException(string message, string code = "RATE_LIMITED") : DomainException(code, message);

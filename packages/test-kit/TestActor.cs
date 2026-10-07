@@ -10,6 +10,8 @@ public sealed class TestActor : ICurrentActor
     public Guid? PersonId { get; set; }
     public string? Email { get; set; }
     public string PlatformRole { get; set; } = PlatformRoles.Anonymous;
+    public string ScopeType { get; set; } = ScopeTypes.Global;
+    public string? ScopeId { get; set; }
     public string? IpAddress { get; set; } = "127.0.0.1";
     public string? UserAgent { get; set; } = "test";
     public string CorrelationId { get; set; } = Guid.NewGuid().ToString("N");
@@ -21,6 +23,8 @@ public sealed class TestActor : ICurrentActor
         PersonId = personId;
         Email = email;
         PlatformRole = PlatformRoles.User;
+        ScopeType = ScopeTypes.Global;
+        ScopeId = null;
         return this;
     }
 
@@ -28,6 +32,8 @@ public sealed class TestActor : ICurrentActor
     {
         PersonId = personId;
         PlatformRole = PlatformRoles.Admin;
+        ScopeType = ScopeTypes.Global;
+        ScopeId = null;
         return this;
     }
 

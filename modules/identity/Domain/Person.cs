@@ -13,7 +13,7 @@ public sealed class Person : AggregateRoot
 {
     private Person() { }
 
-    private Person(string email, string passwordHash, string algorithm, string? firstName, string? lastName, string? phone, string? organization, string platformRole, bool isActive)
+    private Person(string email, string passwordHash, string algorithm, string? firstName, string? lastName, string? phone, string? organization, string platformRole, bool isActive, string scopeType = ScopeTypes.Global, string? scopeId = null)
     {
         Email = email;
         PasswordHash = passwordHash;
@@ -23,6 +23,8 @@ public sealed class Person : AggregateRoot
         Phone = phone;
         OrganizationName = organization;
         PlatformRole = platformRole;
+        ScopeType = string.IsNullOrWhiteSpace(scopeType) ? ScopeTypes.Global : scopeType;
+        ScopeId = scopeId;
         IsActive = isActive;
         PreferencesUpdatedAt = CreatedAt;
     }
@@ -36,13 +38,15 @@ public sealed class Person : AggregateRoot
     public string? LastName { get; private set; }
     public string? Phone { get; private set; }
     public string? OrganizationName { get; private set; }
-    public string PlatformRole { get; private set; } = PlatformRoles.User;
+    public string PlatformRole { get; private set; } = PlatformRoles.PublicUser;
+    public string ScopeType { get; private set; } = ScopeTypes.Global;
+    public string? ScopeId { get; private set; }
     public bool IsActive { get; private set; }
     public bool MatchingAuto { get; private set; }
     public DateTimeOffset PreferencesUpdatedAt { get; private set; }
 
-    public static Person Register(string email, string passwordHash, string algorithm, string? firstName, string? lastName, string? phone, string? organization, bool isActive)
-        => new(Normalize(email), passwordHash, algorithm, firstName, lastName, phone, organization, PlatformRoles.User, isActive);
+    public static Person Register(string email, string passwordHash, string algorithm, string? firstName, string? lastName, string? phone, string? organization, bool isActive, string platformRole = PlatformRoles.PublicUser, string scopeType = ScopeTypes.Global, string? scopeId = null)
+        => new(Normalize(email), passwordHash, algorithm, firstName, lastName, phone, organization, platformRole, isActive, scopeType, scopeId);
 
     public static string Normalize(string email) => email.Trim().ToLowerInvariant();
 
@@ -104,6 +108,14 @@ public sealed class Person : AggregateRoot
         Touch();
     }
 
+    public void AssignRoleAndScope(string platformRole, string scopeType, string? scopeId)
+    {
+        PlatformRole = platformRole;
+        ScopeType = string.IsNullOrWhiteSpace(scopeType) ? ScopeTypes.Global : scopeType;
+        ScopeId = scopeId;
+        Touch();
+    }
+
     public void SetMatchingAuto(bool value, DateTimeOffset now)
     {
         MatchingAuto = value;
@@ -113,7 +125,8 @@ public sealed class Person : AggregateRoot
 
     public void ApplyImport(
         string email, string bcryptHash, string? previousBcryptHash, string? firstName, string? lastName,
-        string? phone, string? organization, string platformRole, bool isActive, bool matchingAuto)
+        string? phone, string? organization, string platformRole, bool isActive, bool matchingAuto,
+        string scopeType = ScopeTypes.Global, string? scopeId = null)
     {
         Email = Normalize(email);
         PasswordHash = bcryptHash;
@@ -125,6 +138,8 @@ public sealed class Person : AggregateRoot
         Phone = phone;
         OrganizationName = organization;
         PlatformRole = platformRole;
+        ScopeType = string.IsNullOrWhiteSpace(scopeType) ? ScopeTypes.Global : scopeType;
+        ScopeId = scopeId;
         IsActive = isActive;
         MatchingAuto = matchingAuto;
     }

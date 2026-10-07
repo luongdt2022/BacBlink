@@ -35,6 +35,8 @@ public sealed class JwtTokenIssuer : ITokenIssuer
                 new Claim("sub", person.Id.ToString()),
                 new Claim("email", person.Email),
                 new Claim("role", person.PlatformRole),
+                new Claim("scope_type", person.ScopeType),
+                new Claim("scope_id", person.ScopeId ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString("N")),
             ],
             notBefore: now,

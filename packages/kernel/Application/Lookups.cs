@@ -17,7 +17,7 @@ public interface IMatchingPreferenceProvider
     Task<bool> AutoMatchingEnabledAsync(Guid personId, CancellationToken ct);
 }
 
-public sealed record PersonBrief(Guid Id, string Email, string? FirstName, string? LastName, string? Phone, string? Organization, string PlatformRole, bool IsActive, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
+public sealed record PersonBrief(Guid Id, string Email, string? FirstName, string? LastName, string? Phone, string? Organization, string PlatformRole, bool IsActive, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string ScopeType = ScopeTypes.Global, string? ScopeId = null);
 
 /// <summary>identity module: thông tin hiển thị người dùng cho module khác (không PII ngoài email/tên đã có consent nội bộ).</summary>
 public interface IPersonDirectory

@@ -60,7 +60,9 @@ Nguyên tắc đặt tên: ưu tiên chữ tiếng Việt mà giao diện đang 
 
 ## Vai trò và quyền
 
-**Vai trò nền tảng.** Một trong `ANONYMOUS`, `USER`, `ADMIN`, `SYSTEM`. Nằm trong claim `role` của token. `SYSTEM` chỉ dùng cho worker và ETL, không có người thật đứng sau.
+> **Đã thay thế cho Identity/RBAC (29/09/2026):** mô hình trong mục này là legacy. Nguồn chốt là [`../../../../specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/spec.md`](../../../../specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/spec.md) và Basic Design `TASK-07`: 10 role / 4 tầng / scope `GLOBAL | PROVINCE | SECTOR | ORG_UNIT`.
+
+**Vai trò nền tảng.** Mô tả bốn giá trị `ANONYMOUS`, `USER`, `ADMIN`, `SYSTEM` dưới đây chỉ dùng để đọc dữ liệu/tài liệu tương thích cũ. Mô hình hiện hành lưu 10 role hạt nhân: `SUPER_ADMIN`, `OPERATOR_ADMIN`, `PROVINCIAL_ADMIN`, `SECTOR_ADMIN`, `CLUSTER_ADMIN`, `SELLER`, `BUYER`, `INNOVATION_ENTITY`, `VERIFIED_EXPERT`, `PUBLIC_USER`; JWT phải mang role và scope. `GUEST` là persona anonymous, không lưu như role. `SYSTEM` vẫn chỉ dùng cho worker/ETL.
 
 **Vai trò trong hồ sơ.** Khác vai trò nền tảng. Một người có thể là `PROBLEM_OWNER`, `LEAD_BROKER`, `CO_BROKER`, `PROVIDER`, `EVALUATOR`, `VERIFIER` hoặc `SPONSOR` **trong một hồ sơ vụ việc cụ thể**, và vai trò đó không đi theo họ sang hồ sơ khác. Quyền đọc tài liệu mật đến từ *cấp quyền đọc*, không đến từ token.
 

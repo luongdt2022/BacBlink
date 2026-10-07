@@ -15,17 +15,19 @@ public sealed class TaxonomyService(DbContext db, IUnitOfWork uow, ICurrentActor
     {
         var q = Terms.AsNoTracking().Where(t => t.Kind == kind);
         if (activeOnly) q = q.Where(t => t.IsActive);
-        return await q.OrderBy(t => t.Name).Select(t => new TaxonomyTermDto(t.Id, t.Kind, t.Name, t.IsActive)).ToListAsync(ct);
+        return await q.OrderBy(t => t.Code != null ? t.Code : t.Name)
+            .Select(t => new TaxonomyTermDto(t.Id, t.Kind, t.Name, t.IsActive, t.Code, t.MetadataJson)).ToListAsync(ct);
     }
 
     public async Task<TaxonomyTermDto?> FindAsync(Guid id, CancellationToken ct)
-        => await Terms.AsNoTracking().Where(t => t.Id == id).Select(t => new TaxonomyTermDto(t.Id, t.Kind, t.Name, t.IsActive)).FirstOrDefaultAsync(ct);
+        => await Terms.AsNoTracking().Where(t => t.Id == id)
+            .Select(t => new TaxonomyTermDto(t.Id, t.Kind, t.Name, t.IsActive, t.Code, t.MetadataJson)).FirstOrDefaultAsync(ct);
 
     public async Task<IReadOnlyDictionary<Guid, TaxonomyTermDto>> GetManyAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct)
     {
         if (ids.Count == 0) return new Dictionary<Guid, TaxonomyTermDto>();
         var list = await Terms.AsNoTracking().Where(t => ids.Contains(t.Id))
-            .Select(t => new TaxonomyTermDto(t.Id, t.Kind, t.Name, t.IsActive)).ToListAsync(ct);
+            .Select(t => new TaxonomyTermDto(t.Id, t.Kind, t.Name, t.IsActive, t.Code, t.MetadataJson)).ToListAsync(ct);
         return list.ToDictionary(t => t.Id);
     }
 
@@ -37,13 +39,16 @@ public sealed class TaxonomyService(DbContext db, IUnitOfWork uow, ICurrentActor
     }
 
     public async Task<TaxonomyTermDto> CreateAsync(string kind, string name, CancellationToken ct)
+        => await CreateAsync(kind, name, null, null, ct);
+
+    public async Task<TaxonomyTermDto> CreateAsync(string kind, string name, string? code, string? metadataJson, CancellationToken ct)
     {
         Guard(kind, name);
         gate.Require(new AuthorizationRequest(Actions.TaxonomyManage, actor.PlatformRole), "TaxonomyTerm", null);
-        var term = new TaxonomyTerm(kind, name.Trim());
+        var term = new TaxonomyTerm(kind, name.Trim(), code?.Trim(), metadataJson);
         db.Add(term);
         await uow.CommitAsync(ct);
-        return new TaxonomyTermDto(term.Id, term.Kind, term.Name, term.IsActive);
+        return new TaxonomyTermDto(term.Id, term.Kind, term.Name, term.IsActive, term.Code, term.MetadataJson);
     }
 
     public async Task<TaxonomyTermDto> RenameAsync(Guid id, string name, CancellationToken ct)
@@ -53,7 +58,7 @@ public sealed class TaxonomyService(DbContext db, IUnitOfWork uow, ICurrentActor
         gate.Require(new AuthorizationRequest(Actions.TaxonomyManage, actor.PlatformRole), "TaxonomyTerm", id);
         term.Rename(name.Trim());
         await uow.CommitAsync(ct);
-        return new TaxonomyTermDto(term.Id, term.Kind, term.Name, term.IsActive);
+        return new TaxonomyTermDto(term.Id, term.Kind, term.Name, term.IsActive, term.Code, term.MetadataJson);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct)

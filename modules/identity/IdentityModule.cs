@@ -25,5 +25,8 @@ public sealed class IdentityModule : IModule
         services.AddScoped<IPersonDirectory, PersonDirectory>();
         services.AddScoped<IMatchingPreferenceProvider, PersonDirectory>();
         services.AddScoped<IIdentityImporter, IdentityImporter>();
+        services.AddScoped<IApprovalService, ApprovalService>();
+        services.AddScoped<IOrganizationTreeService, OrganizationTreeService>();
     }
+
 }

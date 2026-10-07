@@ -781,3 +781,9 @@ Cụm lớn nhất theo số lượng vẫn là tám mục quanh việc di trú 
 ## Nộp lên kho mã nguồn
 
 Chưa nộp mục nào thành issue. Bốn thư mục mã nguồn không phải git repo (`git rev-parse` fail ở cả bốn, đo 2026-09-04), nên chưa có kho nào để nộp. Khi có, việc nộp là một bước riêng và cần xác nhận kho đích cùng định dạng trước.
+
+## CR-2026-005 — Delta v12 approval synchronization (07/10/2026)
+
+- Phát hiện: quyết định governance EXPERT chỉ cấp role, chưa cập nhật ExpertProfile; default scope/role có thể cho truy cập hàng đợi không hợp lệ.
+- Sửa: kernel approval synchronizer stages Brokerage profile transition cùng Identity role/audit trong một UnitOfWork commit; matching Id/PersonId bắt buộc; deny reviewer role/scope không hợp lệ, CLUSTER_ADMIN không final approve.
+- Verification: đang chờ build/test thực; chưa đóng Gate 4.

@@ -7,7 +7,7 @@ public static class TaxonomyKinds
     public const string Category = "CATEGORY";
 }
 
-public sealed record TaxonomyTermDto(Guid Id, string Kind, string Name, bool IsActive);
+public sealed record TaxonomyTermDto(Guid Id, string Kind, string Name, bool IsActive, string? Code = null, string? MetadataJson = null);
 
 public interface ITaxonomyService
 {
@@ -15,6 +15,7 @@ public interface ITaxonomyService
     Task<TaxonomyTermDto?> FindAsync(Guid id, CancellationToken ct);
     Task<IReadOnlyDictionary<Guid, TaxonomyTermDto>> GetManyAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct);
     Task<TaxonomyTermDto> CreateAsync(string kind, string name, CancellationToken ct);
+    Task<TaxonomyTermDto> CreateAsync(string kind, string name, string? code, string? metadataJson, CancellationToken ct);
     Task<TaxonomyTermDto> RenameAsync(Guid id, string name, CancellationToken ct);
     /// <summary>Xóa = deactivate (append-only spirit); term đã gắn vào subject vẫn resolve được tên.</summary>
     Task DeleteAsync(Guid id, CancellationToken ct);

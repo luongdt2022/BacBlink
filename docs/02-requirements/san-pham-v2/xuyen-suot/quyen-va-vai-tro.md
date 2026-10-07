@@ -1,5 +1,7 @@
 # Quyền và vai trò
 
+> **Trạng thái tài liệu:** phần mô tả `ANONYMOUS | USER | ADMIN | SYSTEM` trong tài liệu legacy này đã bị thay thế cho Identity/RBAC bởi [TASK-00 — 10 role / 4 tầng / 3D scope](../../../../specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/spec.md) và Basic Design `TASK-07`. Chỉ dùng các đoạn legacy để đối chiếu tương thích; không dùng chúng làm tiêu chí mới cho API, DB, đăng ký, đăng nhập hay test.
+
 ## Tóm tắt
 
 Ai thấy gì trong NacenTech ĐMST được quyết bởi ba thứ chồng lên nhau, và chúng độc lập với nhau: **vai trò nền tảng** nằm trong token, **vai trò trong một hồ sơ vụ việc cụ thể** nằm trong bản ghi hồ sơ, và **cấp quyền đọc** là một phiếu riêng cho tài liệu mật. Một người có thể là `ADMIN` mà vẫn không đọc được một tệp mật; một người `USER` bình thường có thể chuyển giai đoạn một hồ sơ nếu họ là môi giới chính của hồ sơ đó.

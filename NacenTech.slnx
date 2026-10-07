@@ -12,6 +12,8 @@
   </Folder>
   <Folder Name="/modules/">
     <Project Path="modules/identity/NacenTech.Modules.Identity.csproj" />
+    <Project Path="modules/assessment/NacenTech.Modules.Assessment/NacenTech.Modules.Assessment.csproj" />
+
     <Project Path="modules/policy/NacenTech.Modules.Policy.csproj" />
     <Project Path="modules/demand/NacenTech.Modules.Demand.csproj" />
     <Project Path="modules/technology/NacenTech.Modules.Technology.csproj" />

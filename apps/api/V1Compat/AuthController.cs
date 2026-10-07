@@ -67,8 +67,8 @@ public sealed class AuthController(IAuthenticationService auth, IPersonService p
             Infrastructure.ClientIp.Resolve(HttpContext), ct);
         return StatusCode(201, new
         {
-            code = AuthCodes.RegisterSuccessPendingActivation,
-            message = "Registration successful. Please check your email to activate your account.",
+            code = AuthCodes.RegisterSuccess,
+            message = "Registration successful. You can sign in now.",
             data = new { user = V1Mappers.SanitizedUser(person) },
         });
     }
@@ -97,8 +97,8 @@ public sealed class AuthController(IAuthenticationService auth, IPersonService p
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto, CancellationToken ct)
     {
-        var result = await auth.LoginAsync(dto.Email.Trim(), dto.Password, Kernel.Application.PlatformRoles.User, ct);
-        return Ok(new { accessToken = result.AccessToken, user = V1Mappers.SanitizedUser(result.Person) });
+        var result = await auth.LoginAsync(dto.Email.Trim(), dto.Password, requiredRole: null, ct);
+        return Ok(new { accessToken = result.AccessToken, user = V1Mappers.AuthSessionUser(result.Person) });
     }
 
     [HttpGet("me")]
@@ -137,7 +137,7 @@ public sealed class AdminAuthController(IAuthenticationService auth, IPersonServ
     public async Task<IActionResult> Login([FromBody] LoginDto dto, CancellationToken ct)
     {
         var result = await auth.LoginAsync(dto.Email.Trim(), dto.Password, Kernel.Application.PlatformRoles.Admin, ct);
-        return Ok(new { accessToken = result.AccessToken, user = V1Mappers.SanitizedUser(result.Person) });
+        return Ok(new { accessToken = result.AccessToken, user = V1Mappers.AuthSessionUser(result.Person) });
     }
 
     [HttpGet("me")]

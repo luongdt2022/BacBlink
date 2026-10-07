@@ -1,5 +1,7 @@
 # Kiểm chứng bằng tay
 
+> **Identity/RBAC supersession (29/09/2026):** các hướng dẫn kiểm thử trong bộ legacy này nói chỉ có `USER`/`ADMIN` không còn là tiêu chí nghiệm thu hiện hành. Dùng `SourceCode/specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON` (T-00.41–44) và Basic Design `TASK-07` cho ma trận 10 role/4 tầng, provision scope và E2E đăng ký/provision → đăng nhập.
+
 Các tài liệu tính năng được viết từ mã nguồn và từ test. Thư mục này là quy trình đối chiếu chúng với sản phẩm đang chạy, mỗi lần một tuyên bố quan sát được.
 
 ## Có gì ở đây

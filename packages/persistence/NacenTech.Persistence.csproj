@@ -27,5 +27,6 @@
     <ProjectReference Include="..\..\modules\audit\NacenTech.Modules.Audit.csproj" />
     <ProjectReference Include="..\..\modules\integration\NacenTech.Modules.Integration.csproj" />
     <ProjectReference Include="..\..\modules\entitlement\NacenTech.Modules.Entitlement.csproj" />
+    <ProjectReference Include="..\..\modules\enterprise\NacenTech.Modules.Enterprise\NacenTech.Modules.Enterprise.csproj" />
   </ItemGroup>
 </Project>

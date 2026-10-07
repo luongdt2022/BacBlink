@@ -17,5 +17,7 @@ public sealed class BrokerageModule : IModule
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IBrokerService, BrokerService>();
+        services.AddScoped<IExpertService, ExpertService>();
+        services.AddScoped<IExpertApprovalSynchronizer, ExpertApprovalSynchronizer>();
     }
 }

@@ -11,6 +11,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\packages\test-kit\NacenTech.TestKit.csproj" />
     <ProjectReference Include="..\..\modules\case\NacenTech.Modules.Case.csproj" />
+    <ProjectReference Include="..\..\modules\brokerage\NacenTech.Modules.Brokerage.csproj" />
+    <ProjectReference Include="..\..\modules\identity\NacenTech.Modules.Identity.csproj" />
     <ProjectReference Include="..\..\packages\contracts\NacenTech.Contracts.csproj" />
+    <ProjectReference Include="..\..\modules\policy\NacenTech.Modules.Policy.csproj" />
+    <ProjectReference Include="..\..\modules\assessment\NacenTech.Modules.Assessment\NacenTech.Modules.Assessment.csproj" />
+
   </ItemGroup>
 </Project>

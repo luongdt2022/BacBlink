@@ -8,6 +8,7 @@ using NacenTech.Api.Infrastructure;
 using NacenTech.Api.V1Compat;
 using NacenTech.Kernel.Application;
 using NacenTech.Modules.Identity.Application;
+using NacenTech.Modules.Brokerage.Application;
 using NacenTech.Persistence;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -28,6 +29,7 @@ builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection(CorsOpt
 builder.Services.AddNacenTechPlatform(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
+builder.Services.AddScoped<IExpertProvinceScopeLookup, ExpertProvinceScopeLookup>();
 if (builder.Configuration.GetValue<bool>("Api:RunWorkersInProcess")) builder.Services.AddNacenTechWorkers();
 
 // Auth: JwtBearer validate token do identity module phát hành. Legacy JWT (NestJS) vô hiệu vì khác key (D2-150).
@@ -76,6 +78,8 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
         "http://localhost:5173", "http://127.0.0.1:5173",
         "http://localhost:5174", "http://127.0.0.1:5174",
         "http://localhost:5175", "http://127.0.0.1:5175",
+        "http://localhost:3000", "http://127.0.0.1:3000",
+        "https://h5.zdn.vn", "https://mini.zalo.me",
     ];
     p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithExposedHeaders("Deprecation", "Sunset", "Link", "ETag");
 }));
@@ -138,6 +142,13 @@ if (app.Configuration.GetValue<bool>("Api:MigrateOnStartup"))
 {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<NacenTechDbContext>().Database.MigrateAsync();
+}
+
+// Fixture local E2E: chỉ bật rõ ràng trong Development, không nằm trong migration/production seed.
+if (app.Environment.IsDevelopment() && app.Configuration.GetValue<bool>("Demo:SeedExpert"))
+{
+    using var scope = app.Services.CreateScope();
+    await DevelopmentExpertFixture.SeedAsync(scope.ServiceProvider, app.Configuration, app.Environment);
 }
 
 app.Run();
