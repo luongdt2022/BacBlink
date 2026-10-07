@@ -49,5 +49,6 @@ Mỗi khi nhận lệnh từ người dùng trong `SourceCode/`, kích hoạt c�
 ## 4. NGUYÊN TẮC BẤT BIẾN KHI VIẾT CODE & TEST TẠI SOURCECODE
 
 1. **Chuẩn mã định danh**: Luôn giữ nguyên mã định danh từ SRS: `REQ-` (Chức năng), `BR-` (Quy tắc), `DB-` (Bảng dữ liệu), `API-` (Dịch vụ), `NFR-` (Phi chức năng).
-2. **Không commit mã chưa test**: Mọi task đánh dấu `[x]` phải có test tương ứng (unit test hoặc integration test) chạy pass 100%.
-3. **Traceability khép kín**: Trước khi đóng Epic, đối soát với `specs/TRACEABILITY.md` để đảm bảo không bỏ sót bất kỳ yêu cầu nào từ SRS gốc.
+2. **Kỷ luật Task DoD**: CẤM đánh dấu `[x]` vào `tasks.md` khi chưa tự rà soát qua 3 giai đoạn (Pre-task, In-progress, DoD với Unit Test 100% `BR-*`).
+3. **Kỷ luật Pull Request (Gate 3 & Gate 4)**: Mọi PR phải dùng template `.github/pull_request_template.md` (6 trục kiểm soát). CẤM merge khi chưa có phê duyệt từ **TechLead/SA (Gate 3 qua `pr-review-guard`)** và **QC (Gate 4)**.
+4. **Traceability khép kín**: Trước khi đóng Epic, đối soát với `specs/TRACEABILITY.md` để đảm bảo không bỏ sót bất kỳ yêu cầu nào từ SRS gốc.

@@ -1,0 +1,114 @@
+import { cleanup, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import HomePage from "@/app/page";
+import AdminDashboardPage from "@/app/admin/page";
+import AdminGovPage from "@/app/gov/page";
+import LoginPage from "@/app/(auth)/login/page";
+import { AdminNav } from "@/components/admin/admin-nav";
+import { readdirSync, readFileSync } from "node:fs";
+import { resolve, join } from "node:path";
+
+vi.mock("@/components/common/toast", () => ({
+  useToast: () => ({ info: vi.fn(), success: vi.fn(), error: vi.fn() }),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => "/admin",
+}));
+
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    getUser: () => ({ id: "1", name: "Admin Test", email: "admin@nacentech.local", role: "SUPER_ADMIN" }),
+    onSessionChange: vi.fn(),
+  },
+}));
+
+function getAllUiSourceFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const file = join(dir, entry.name);
+    return entry.isDirectory()
+      ? getAllUiSourceFiles(file)
+      : file.endsWith(".tsx") && !file.endsWith(".test.tsx")
+      ? [file]
+      : [];
+  });
+}
+
+describe("Cross-Surface Sectors Integrity & 4-Tier Verification (TC-IT-STANDARD-04)", () => {
+  beforeEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("Screen 1: Home Page (/) displays exactly 10 Core Sectors with 109 Matrix Pairs", () => {
+    render(<HomePage />);
+
+    // Section title & metrics
+    expect(screen.getByText("10 Lĩnh Vực Trọng Điểm Chuẩn Hóa")).toBeInTheDocument();
+    expect(screen.getByText("109 Cặp Ma Trận")).toBeInTheDocument();
+    expect(screen.queryByText(/18 Ngành Trọng Điểm/i)).not.toBeInTheDocument();
+
+    // Verify presence of all 10 verified LV sector labels
+    expect(screen.getByText("Nông nghiệp (LV01)")).toBeInTheDocument();
+    expect(screen.getByText("Chế biến thực phẩm (LV05)")).toBeInTheDocument();
+    expect(screen.getByText("Cơ khí – chế tạo (LV07)")).toBeInTheDocument();
+    expect(screen.getByText("Điện – tự động hóa (LV08)")).toBeInTheDocument();
+    expect(screen.getByText("Nước & môi trường (LV11)")).toBeInTheDocument();
+    expect(screen.getByText("Xây dựng – hạ tầng (LV12)")).toBeInTheDocument();
+    expect(screen.getByText("Logistics & kho bãi (LV14)")).toBeInTheDocument();
+    expect(screen.getByText("Du lịch & khách sạn (LV15)")).toBeInTheDocument();
+    expect(screen.getByText("CNTT & viễn thông (LV16)")).toBeInTheDocument();
+    expect(screen.getByText("KH&CN – ĐMST (LV17)")).toBeInTheDocument();
+  });
+
+  it("Screen 2: Admin Dashboard (/admin) stat card displays 10 Lĩnh Vực TT17 - 10 Ban", () => {
+    render(<AdminDashboardPage />);
+
+    expect(screen.getByText("10 Lĩnh Vực Trọng Điểm TT17")).toBeInTheDocument();
+    expect(screen.getByText("10 Ban")).toBeInTheDocument();
+    expect(screen.queryByText(/18 Ngành Trọng Điểm TT17/i)).not.toBeInTheDocument();
+  });
+
+  it("Screen 3: Admin Nav Component displays 10 Lĩnh Vực badge", () => {
+    render(<AdminNav />);
+
+    expect(screen.getByText("Danh Mục Lĩnh Vực & TT17")).toBeInTheDocument();
+    expect(screen.getByText("10 Lĩnh Vực")).toBeInTheDocument();
+    expect(screen.queryByText("18 Ngành")).not.toBeInTheDocument();
+  });
+
+  it("Screen 4: Gov Queue Page (/gov) displays Ban Điều Phối 10 Lĩnh Vực TT17", () => {
+    render(<AdminGovPage />);
+
+    expect(
+      screen.getByText(/Thẩm định hồ sơ theo cơ chế 3D Scoped RBAC dành cho 63 Sở KH&CN và Ban Điều Phối 10 Lĩnh Vực TT17/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Ban Điều Phối 18 Ngành/i)).not.toBeInTheDocument();
+  });
+
+  it("Screen 5: Login Page (/login) displays 10 lĩnh vực công nghệ trọng điểm", () => {
+    render(<LoginPage />);
+
+    expect(
+      screen.getByText(/Liên thông mạng lưới 63 Sở KH&CN và 10 lĩnh vực công nghệ trọng điểm/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/18 ngành kỹ thuật/i)).not.toBeInTheDocument();
+  });
+
+  it("Global Codebase Sweep: Zero occurrences of obsolete SEC- codes across all frontend UI files", () => {
+    const srcDir = resolve("src");
+    const files = getAllUiSourceFiles(srcDir);
+
+    const violations: { file: string; match: string }[] = [];
+    for (const f of files) {
+      const content = readFileSync(f, "utf8");
+      const match = content.match(/\bSEC-(?:[0-9]{2}|FOOD|MECH|AGRI|TEXTILE|CHEM|BIO|MED)\b/);
+      if (match) {
+        violations.push({ file: f, match: match[0] });
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+});

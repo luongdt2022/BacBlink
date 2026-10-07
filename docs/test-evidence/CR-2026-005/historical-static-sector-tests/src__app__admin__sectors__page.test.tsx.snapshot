@@ -1,0 +1,120 @@
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import AdminSectorsPage from "./page";
+
+vi.mock("@/components/admin/admin-nav", () => ({
+  AdminNav: () => <nav data-testid="admin-nav">AdminNav</nav>,
+}));
+
+describe("AdminSectorsPage (TASK-06 Master Data 10 Lĩnh Vực & TT17)", () => {
+  beforeEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("renders 10 Core Sectors tab by default with verified LV codes", async () => {
+    render(<AdminSectorsPage />);
+
+    expect(screen.getByText("Quản Trị Danh Mục Ngành & Ma Trận TT17")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /10 Lĩnh Vực Trọng Điểm/i })).toBeInTheDocument();
+
+    // Verify presence of core LV codes
+    expect(screen.getByText("LV01")).toBeInTheDocument();
+    expect(screen.getByText("Nông nghiệp")).toBeInTheDocument();
+    expect(screen.getByText("LV05")).toBeInTheDocument();
+    expect(screen.getByText("Chế biến thực phẩm – đồ uống")).toBeInTheDocument();
+    expect(screen.getByText("LV07")).toBeInTheDocument();
+    expect(screen.getByText("Cơ khí – chế tạo – công nghiệp hỗ trợ")).toBeInTheDocument();
+    expect(screen.getByText("LV08")).toBeInTheDocument();
+    expect(screen.getByText("LV11")).toBeInTheDocument();
+    expect(screen.getByText("LV12")).toBeInTheDocument();
+    expect(screen.getByText("LV14")).toBeInTheDocument();
+    expect(screen.getByText("LV15")).toBeInTheDocument();
+    expect(screen.getByText("LV16")).toBeInTheDocument();
+    expect(screen.getByText("LV17")).toBeInTheDocument();
+
+    // Verify obsolete SEC- codes are NOT present
+    expect(screen.queryByText("SEC-01")).not.toBeInTheDocument();
+    expect(screen.queryByText("SEC-FOOD")).not.toBeInTheDocument();
+    expect(screen.queryByText("SEC-MECH")).not.toBeInTheDocument();
+  });
+
+  it("filters sectors by search keyword", () => {
+    render(<AdminSectorsPage />);
+
+    const searchInput = screen.getByPlaceholderText(/Tìm theo tên lĩnh vực, mã LV.../i);
+    fireEvent.change(searchInput, { target: { value: "Cơ khí" } });
+
+    expect(screen.getByText("Cơ khí – chế tạo – công nghiệp hỗ trợ")).toBeInTheDocument();
+    expect(screen.queryByText("Nông nghiệp")).not.toBeInTheDocument();
+    expect(screen.queryByText("Chế biến thực phẩm – đồ uống")).not.toBeInTheDocument();
+  });
+
+  it("switches to TT17 tab and displays 10 Group C manufacturing industries", () => {
+    render(<AdminSectorsPage />);
+
+    const tt17Tab = screen.getByRole("button", { name: /10 Phân Ngành TT17/i });
+    fireEvent.click(tt17Tab);
+
+    expect(screen.getByText("Bảng Chuẩn Hóa Nhóm C Công Nghiệp Chế Biến Chế Tạo")).toBeInTheDocument();
+    expect(screen.getByText("C.10")).toBeInTheDocument();
+    expect(screen.getByText("C.11")).toBeInTheDocument();
+    expect(screen.getByText("C.26")).toBeInTheDocument();
+    expect(screen.getByText("C.32")).toBeInTheDocument();
+  });
+
+  it("switches to Matrix tab and displays 109 LV-CN compatibility pairs", () => {
+    render(<AdminSectorsPage />);
+
+    const matrixTab = screen.getByRole("button", { name: /Ma Trận 109 Cặp LV-CN/i });
+    fireEvent.click(matrixTab);
+
+    expect(screen.getByText("Ma Trận Tương Thích Lĩnh Vực - Công Nghệ (109 Cặp)")).toBeInTheDocument();
+
+    // Check filter select options include core LV items
+    const select = screen.getByRole("combobox");
+    expect(select).toBeInTheDocument();
+  });
+
+  it("switches to Exhibitions tab and displays 15 international expos", () => {
+    render(<AdminSectorsPage />);
+
+    const expoTab = screen.getByRole("button", { name: /15 Triển Lãm Quốc Tế/i });
+    fireEvent.click(expoTab);
+
+    expect(screen.getByText("Danh Mục 15 Triển Lãm Quốc Tế Chuyên Ngành")).toBeInTheDocument();
+    expect(screen.getByText("Triển lãm Viễn thông, CNTT & Truyền thông (Vietnam Telecomp)")).toBeInTheDocument();
+    expect(screen.getByText("Triển lãm Quốc tế Logistics Việt Nam (VILOG)")).toBeInTheDocument();
+  });
+
+  it("validates modal form: rejects codes not starting with LV and accepts valid LV code", () => {
+    const alertMock = vi.spyOn(window, "alert").mockImplementation(() => {});
+    render(<AdminSectorsPage />);
+
+    // Open modal via button
+    const addBtn = screen.getByRole("button", { name: /Thêm Lĩnh Vực Mới/i });
+    fireEvent.click(addBtn);
+
+    expect(screen.getByRole("heading", { name: "Thêm Lĩnh Vực Mới" })).toBeInTheDocument();
+
+    const codeInput = screen.getByPlaceholderText(/VD: LV19, LV20.../i);
+    const nameInput = screen.getByPlaceholderText(/VD: Năng Lượng Tái Tạo & Pin Lưu Trữ/i);
+    const submitBtn = screen.getByRole("button", { name: /Lưu Lĩnh Vực/i });
+
+    // Negative test: Try SEC- prefix
+    fireEvent.change(codeInput, { target: { value: "SEC-99" } });
+    fireEvent.change(nameInput, { target: { value: "Lĩnh Vực Thử Nghiệm" } });
+    fireEvent.click(submitBtn);
+
+    expect(alertMock).toHaveBeenCalledWith(expect.stringContaining("Mã lĩnh vực phải bắt đầu bằng tiền tố 'LV'"));
+
+    // Positive test: Submit with LV19
+    fireEvent.change(codeInput, { target: { value: "LV19" } });
+    fireEvent.change(nameInput, { target: { value: "Năng Lượng Tái Tạo & Pin Lưu Trữ" } });
+    fireEvent.click(submitBtn);
+
+    // Modal closes and new sector appears in table
+    expect(screen.getByText("LV19")).toBeInTheDocument();
+    expect(screen.getByText("Năng Lượng Tái Tạo & Pin Lưu Trữ")).toBeInTheDocument();
+  });
+});
