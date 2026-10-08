@@ -52,7 +52,7 @@
 | Directory API/service | `backend/apps/api/V1Compat/ExpertController.cs`; `backend/modules/brokerage/Application/{Contracts,ExpertService}.cs` | Search API hiện có | Sector/accepting filter và province scope behavior |
 | Public province projection | `backend/apps/api/V1Compat/GovernanceControllers.cs` | Projection công khai vừa bổ sung | Chỉ trả code/name/region; kiểm tra không lộ dữ liệu nội bộ |
 | Master data SECTOR | `GET /api/v1/sectors`; taxonomy DB `policy.taxonomy_terms` | Migration trước đó seed baseline 10 LV; DB runtime chưa đo | UI đếm active response thật; so sánh count DB/API khi môi trường khả dụng |
-| Expert profile/scope DB | `expert_profiles`, Identity `Person` scope | Schema và hồ sơ có sẵn | Không yêu cầu migration mới; lọc province theo scope thật |
+| Expert profile/scope DB | `expert_profiles`, Identity `Person` scope | Schema và hồ sơ có sẵn | [Superseded Oct8] Lọc province theo scope thật; thêm migration additive specialized_keywords để bảo toàn Tags độc lập ngành |
 | Consultation request | `POST /api/v1/public/experts/{expertCode}/consultation-requests` | Endpoint đã tồn tại | Tái sử dụng; success chỉ sau accepted response |
 | Owner/admin/Zalo projections | Owner workspace, admin review, Zalo Mini App | Cần đối soát nguồn ngành trong mọi projection | Đồng bộ nơi tiêu thụ ngành theo scope PO; ghi evidence cho cả kênh không có selector/count ngành |
 
@@ -60,7 +60,7 @@
 
 | Hạng mục | Có/Không | Chi tiết |
 | :--- | :---: | :--- |
-| Đổi lược đồ CSDL | Không | Tái sử dụng taxonomy và Person scope hiện có; không thêm migration |
+| Đổi lược đồ CSDL | Có, additive | Taxonomy/Person scope giữ cấu trúc; specialized_keywords text[] mới bảo toàn Tags theo v12, mặc định mảng rỗng, không biến keywords thành ngành |
 | Đổi hợp đồng API phá vỡ tương thích | Không | Thêm query tùy chọn/projection công khai tối thiểu; giữ query cũ và consultation endpoint cũ |
 | Đổi luồng giao diện | Có | Compact filters/cards, retry, query/pagination consistency, consultation modal |
 | Ảnh hưởng dữ liệu hiện có | Đọc/ghi theo quyền hiện hữu | Directory chỉ đọc; quản trị ngành và nâng hạng chuyên gia dùng API thật, validation taxonomy active |
@@ -92,7 +92,7 @@ Count/ngành có thể lệch DB; filter hiển thị nhưng không lọc thật
 | # | Phương án | Ưu | Nhược | Kết luận |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | Giữ danh mục/filter/UI Delta v10 | Không tốn công | Không bảo đảm nguồn active hiện hành và filter behavior | Không chọn |
-| 2 | Nạp master data thật, lọc theo scope thật, compact UI | Nhất quán nguồn, đúng quyết định PO, không thêm schema | Cần xác minh môi trường thật và nhiều lớp test | Chọn |
+| 2 | Nạp master data thật, lọc theo scope thật, compact UI | Nhất quán nguồn, đúng quyết định PO; schema keywords additive đã cập nhật Oct8 | Cần xác minh môi trường thật và nhiều lớp test | Chọn |
 
 ## 4. Quyết định
 
@@ -122,3 +122,17 @@ Count/ngành có thể lệch DB; filter hiển thị nhưng không lọc thật
 Scope mở rộng bao gồm mọi nơi thể hiện hoặc nhận ngành trên Web và API. Danh mục taxonomy là nguồn sự thật duy nhất; các mã/tên legacy trong hồ sơ cũ chỉ được resolve qua taxonomy. Seed migration hiện hữu tiếp tục tạo dữ liệu nền DB, không được dùng thay thế API/runtime.
 
 **Gate hiện tại:** triển khai Delta đang mở. Các checkbox thực thi và QC chưa đóng. Phân ngành TT17/category đã chuyển endpoint sang taxonomy `CATEGORY`; quan hệ tương thích lĩnh vực-công nghệ vẫn là bộ dữ liệu cấu hình riêng, nhưng tên lĩnh vực phải resolve từ taxonomy và mọi mã không còn tồn tại phải không xuất hiện như một ngành đang hoạt động.
+
+### Delta13 handoff closure matrix — 2026-10-08
+
+| Surface | Existing gap | Required closure | Evidence |
+| --- | --- | --- | --- |
+| Expert domain/DB | PlaintextMagicLinkToken;72h but not consumed | Signed token/hash-only in samecolumn; claimoriginaldraft | DeveloperrealDBpending |
+| ExpertAPI/service | draftGET404; submitcreatesunrelatedprofile | SafeGETdraftDTO; atomicclaim+approval | Contracts+DBpending |
+| Zaloquickintake | hardcodedhost/AIclaim | ConfiguredMagicURL andhonestDRAFTresponse | Regressionpending |
+| Webupgrade | GETfails; noDraftToken submit | Preserveselectedruntimeindustry andtokenonsubmit | FEpending |
+| Security | unknown/usedtokensnothandled | Uniform401; no-store;purposeHMAC;limiter | RBACpending |
+
+### Oct8 cross-surface completion dependencies
+
+Keyword separation requires migration20261008090000_AddExpertSpecializedKeywords (one newtext[] column, no sectorrecords changed). Runtime active sector selectors and historical labels remain database-driven. Draft handoff T113/T109–111 closes actual Zalo→Web industry propagation; T108 remains ZaloSDK task, T112 keywords. FE officialsubmit passes draftToken/specializedKeywords, normalizeddegree and preserves historicalindustryselection pending userchoiceactive sector. Final compiler/black-box evidence required before checking these tasks.

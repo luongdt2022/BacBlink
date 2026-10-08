@@ -430,3 +430,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 - **BR-EXP-AI-002**: CV parsing reads active taxonomy before AI; return 503 when taxonomy is unavailable/empty and 502 for an AI sector outside the active list.
 
 This scope supersedes v11 owner/admin/Zalo exclusions for sector data consumption. Specialized keywords remain separate from sectors.
+
+## 13. Delta v13 — close real draft handoff gap
+
+Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-signed HMAC token with onlySHA256 hash stored in existing DB column; legacy plaintext tokens are rejected. GET does notconsume; authenticated officialsubmit claims originalprofile and clears hash/expiry in samehosttransaction as approval enqueue. Runtimeindustrycode survives handoff, historical inactivecode requires active user selection before submission. No fabricatedAIprogress/prefill is reported. ConfiguredfrontendURL replaces hardcodedhost. Minimal handoff completion does not imply completion of CV ingestion/ZNS pipeline.

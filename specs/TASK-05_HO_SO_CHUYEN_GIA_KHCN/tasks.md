@@ -204,3 +204,10 @@
 - [ ] T107 [DELTA-09] [INT][TRACE] Chạy backend/frontend build, unit/contracts, PostgreSQL integration, Playwright E2E/visual và traceability; ghi evidence, không tick nếu môi trường không khả dụng.
 
 - [ ] T108 [DELTA-10][ZALO][REQ-MD-SECTOR-001][API-EXP-INTAKE-002] Remove SECTORS_18 and default 01; load active sectors via API, show loading/error/empty/retry, validate before submit; compile and cross-channel QC.
+
+- [ ] T113 [DELTA-13][BE] Implement signed72h hash-only draft token lookup with safeDTO and configuredfrontendURL; rejectexpired/tampered/legacytokens.
+- [ ] T109 [DELTA-13][BE] Claimoriginaldraft and consume onlyon successfulofficialsubmission atomicallywithapproval enqueue; preserveevidence andownerauthorization.
+- [ ] T110 [DELTA-13][FE] SendoptionalDraftToken duringofficialsubmission andpreserveruntimeindustryselection; honesterror/partialprefill.
+- [ ] T111 [DELTA-13][TEST] VerifyrealDB lookup/expiry/tampering/one-timeclaim/validationrollback plushandoffUI.
+
+- [ ] T112 [DELTA-12][BE][DB][API][TEST] Lưu SpecializedKeywords độc lập ExpertiseSectors; optional additive contract, text[] migration, draft/owner/admin/public roundtrip và kiểm chứng thực.

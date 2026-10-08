@@ -74,3 +74,20 @@ Quick-intake consumes active SECTOR taxonomy through GET /api/v1/sectors. Remove
 ### Runtime taxonomy admin CRUD and validation
 
 GET master-data/sectors includes the persisted term id, code/name/status and stored metadata. Create returns the persisted DTO, not an echo of request flags. Rename uses existing PATCH /api/v1/admin/sectors/{id} (name only); deactivate uses existing DELETE and retains history. New expert upgrade/quick-intake sector codes must exist in the active taxonomy. Approval audit access requires the same actor scope as the approval itself.
+
+
+### Canonical central-admin facade guard
+
+Legacy RequireAdmin must accept ADMIN, SUPER_ADMIN and OPERATOR_ADMIN only when actor scope is GLOBAL with no scope id. This matches the existing ADMIN_MANAGE policy; it does not grant province/sector actors global CRUD. Cross-surface regression covers all inheriting V1 admin controllers. QC observed real signed SuperAdmin create failing 403 before this correction.
+
+## Delta v13 — persisted Zalo draft handoff (2026-10-08)
+
+US06/BR-EXP-009/015/017 and REQ-EXP-INT-003 require a real GET `/api/v1/experts/draft?token=...` projection and official submission of the original draft, preserving its active industry code. Token format is cryptographically random nonce + expiry + HMAC-SHA256 signature with purpose-separated key derived from configured Auth:SigningKey. TTL exactly72h from IClock; database magic_link_token column stores SHA256 hash only. Existing unsigned/raw stored tokens are invalid. GET does not consume; expired/tampered/unknown/consumed returns401 ERR_MAGIC_LINK_EXPIRED without disclosing existence. Response no-store and noPII beyond intake-owner fields; no CCCD/document storage paths/token/hash returned. Web reads persisted fields only; no AI completion claims when pipeline absent. Magic URL uses configured Auth:FrontendUrl.
+
+Authenticated POST upgrade-request accepts optional draftToken. Host opens a transaction covering profile+approval commits; lock draft by hash before claim; preserve draftId/evidence, validate submission and consume hash/TTL atomically only on successful official submission. Errors roll back claim and preserve token. Profile owner checks prohibit relinking another user's draft. New draft status DRAFT; existing schema retained. Rate limiter protects anonymous draft reads. Developer realDB cases cover hash persistence, expiry/tampering/reuse, originalId claim and validation failure without consumption. Full ingestion/ZNS remains independently unimplemented and cannot be signed off as completed.
+
+### Delta v12 — không mất từ khóa chuyên sâu
+
+Grounding: TASK-05 spec v12 quy định specialized keywords tách khỏi ngành; Tags/CV hiện hữu không được gửi vào ExpertiseSectors. Contract thêm optional `specializedKeywords` (string array), lưu riêng `brokerage.expert_profiles.specialized_keywords` PostgreSQL text[]; backfill rỗng, không suy đoán từ sector data lịch sử. Domain trim/bỏ rỗng/deduplicate, không diễn giải từ khóa thành mã taxonomy. Owner/draft/admin/public projection giữ mảng riêng; search có thể tìm từ khóa chuyên môn đã công khai cùng các trường hiện hữu. Migration additive duy nhất cột này; không đổi sector schema.
+
+Filename-only legacy POST `/experts/ai-cv-scan` returns501 `{success:false,code:"AI_CV_SCAN_UNAVAILABLE"}`. It cannot deriveCVfieldsfromfilename and no longer returns fabricated names/industries. Actual WebCVparser continues to submit filecontentto its configuredAIprovider. DraftGET sets Referrer-Policy:no-referrer.

@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-10-07T15:38:07.270891+00:00",
+  "timestamp_utc": "2026-10-08T01:58:49.119051+00:00",
   "api": "http://localhost:5092",
   "web": "http://localhost:3092",
   "source": "Approved 50-case QC-BLUEPRINT-DELTA-V12.md; real HTTP/browser; no mocks",
@@ -44,20 +44,20 @@
     {
       "id": "TC-C1-07",
       "description": "Đổi trang sau khi đang lọc",
-      "status": "BLOCKED",
-      "evidence": "Need >1 page of approved real experts plus observable UI pagination state."
+      "status": "PASS",
+      "evidence": "Actual public API page1/page2 with pageSize1 retained same Vietnamese query; distinct matching experts returned. UI multi-page dataset remains a separate prerequisite."
     },
     {
       "id": "TC-C1-08",
       "description": "Chọn bộ lọc trạng thái tư vấn",
       "status": "BLOCKED",
-      "evidence": "Need approved experts in both consultation states and full UI interaction."
+      "evidence": "Real accessible consultation checkbox sends documented true filter successfully; positive/exclusion response semantics need observable consultation-state detail."
     },
     {
       "id": "TC-C1-09",
       "description": "Xóa một chip tiêu chí",
-      "status": "BLOCKED",
-      "evidence": "Need browser chip removal interaction and comparison of actual results."
+      "status": "PASS",
+      "evidence": "Actual sector chip removal resets only sector and updates real unfiltered query."
     },
     {
       "id": "TC-C1-10",
@@ -80,14 +80,14 @@
     {
       "id": "TC-C2-01",
       "description": "Tải `/experts` ở 1440×900",
-      "status": "BLOCKED",
-      "evidence": "Real screenshot captured; no horizontal overflow. Manual density/overlap/clipping review required."
+      "status": "PASS",
+      "evidence": "Actual1440x900 screenshot visually reviewed: full names/options wrap, no overlap/clipping/horizontal overflow, compact cards and nowrapreset. Fresh real screenshot recaptured with no horizontal overflow."
     },
     {
       "id": "TC-C2-02",
       "description": "Tải `/experts` ở 390×844",
-      "status": "BLOCKED",
-      "evidence": "Real screenshot captured; no horizontal overflow. Manual density/overlap/clipping review required."
+      "status": "PASS",
+      "evidence": "Actual390x844 screenshot reviewed: compactheading, readable search/filter/cardCTA, no horizontal overflow/overlap. Fresh real screenshot recaptured with no horizontal overflow."
     },
     {
       "id": "TC-C2-03",
@@ -98,8 +98,8 @@
     {
       "id": "TC-C2-04",
       "description": "Đợi tải thành công",
-      "status": "BLOCKED",
-      "evidence": "Needs browser grid/count-to-live-response comparison."
+      "status": "PASS",
+      "evidence": "Actual rendered total and distinct profile-card destinations equal live public API record count."
     },
     {
       "id": "TC-C2-05",
@@ -110,32 +110,32 @@
     {
       "id": "TC-C2-06",
       "description": "Làm danh mục lỗi rồi thử lại",
-      "status": "BLOCKED",
-      "evidence": "Needs controlled real taxonomy outage/recovery authorization and UI retry."
+      "status": "PASS",
+      "evidence": "Actual browsernetworkblockoftaxonomy request yields errorwithoutfallback; unblocking realrequest andUIretry restores currentoptions."
     },
     {
       "id": "TC-C2-07",
       "description": "Đổi nhanh 2 bộ lọc liên tiếp",
-      "status": "BLOCKED",
-      "evidence": "Needs real browser rapid-filter observation, no route mocks."
+      "status": "PASS",
+      "evidence": "Actualrapidtwo-sector selection rendersonlylatest realAPI result and currentcriterion."
     },
     {
       "id": "TC-C2-08",
       "description": "Mở/đóng bộ lọc mobile và gỡ chip",
-      "status": "BLOCKED",
-      "evidence": "Needs real mobile drawer and chip interactions."
+      "status": "PASS",
+      "evidence": "Actual mobile drawer closes with selection retained, chip removes sector, reopened drawer stays consistent."
     },
     {
       "id": "TC-C2-09",
       "description": "Nhấn xem hồ sơ từ card",
-      "status": "BLOCKED",
-      "evidence": "Needs real card navigation and public profile evidence."
+      "status": "PASS",
+      "evidence": "Actual selected public card destination matches rendered expert code route."
     },
     {
       "id": "TC-C2-10",
       "description": "Mở alias `/chuyen-gia`",
-      "status": "BLOCKED",
-      "evidence": "Alias loads real directory; remaining filter usability needs full interaction."
+      "status": "PASS",
+      "evidence": "Actual alias shows directory and active taxonomy radio selection works."
     },
     {
       "id": "TC-C2-11",
@@ -146,8 +146,8 @@
     {
       "id": "TC-C2-12",
       "description": "Login/admin copy khi count chưa tải",
-      "status": "BLOCKED",
-      "evidence": "Browser prerequisite missing/unavailable: No module named 'playwright'"
+      "status": "FAIL",
+      "evidence": "Unaudited fixedsectorcount incommoncopy /admin"
     },
     {
       "id": "TC-C2-13",
@@ -159,13 +159,13 @@
       "id": "TC-C2-14",
       "description": "Profile detail với sector code active/retired",
       "status": "BLOCKED",
-      "evidence": "Needs approved historical retired-sector profile plus active-sector profile."
+      "evidence": "Requires historical retired-sector profile plus active-sector profile."
     },
     {
       "id": "TC-C3-01",
       "description": "Nạp ngành → đối chiếu danh sách và số lượng với response API active",
-      "status": "FAIL",
-      "evidence": "Directory option count differs from active API"
+      "status": "PASS",
+      "evidence": "Directory active code/name options and count match liveAPI and independent SQL evidence 2026-10-07T15:40:47.049641+00:00"
     },
     {
       "id": "TC-C3-02",
@@ -177,13 +177,13 @@
       "id": "TC-C3-03",
       "description": "Chọn tỉnh → tìm",
       "status": "BLOCKED",
-      "evidence": "Need approved public experts with proven province scopes for match/exclusion."
+      "evidence": "Requires public experts with proven province scopes for match/exclusion."
     },
     {
       "id": "TC-C3-04",
       "description": "Kết hợp từ khóa + ngành + tỉnh + sẵn sàng tư vấn",
       "status": "BLOCKED",
-      "evidence": "Need approved real expert matching all four filters and UI end-to-end query evidence."
+      "evidence": "Requires real expert matching all four filters and UI end-to-end query evidence."
     },
     {
       "id": "TC-C3-05",
@@ -194,38 +194,38 @@
     {
       "id": "TC-C3-06",
       "description": "API danh mục/lần tìm lỗi → retry",
-      "status": "BLOCKED",
-      "evidence": "Needs authorized controlled real API outage and browser recovery, no mocks."
+      "status": "PASS",
+      "evidence": "ActualCDPoffline produces networkerror; restoringrealnetwork/retry preserveschosencriterion and reloads service."
     },
     {
       "id": "TC-C3-07",
       "description": "Gửi yêu cầu kết nối với dữ liệu hợp lệ",
-      "status": "BLOCKED",
-      "evidence": "Needs approved live requester data and permission to create actual consultation request."
+      "status": "PASS",
+      "evidence": "Actual requester form creates real isolated-clone consultation; HTTP202/success drives NacenTech reception copy."
     },
     {
       "id": "TC-C3-08",
       "description": "Gửi yêu cầu thiếu/sai thông tin hoặc dịch vụ từ chối",
-      "status": "BLOCKED",
-      "evidence": "Needs approved requester input and UI validation/service refusal; no fake responses."
+      "status": "PASS",
+      "evidence": "Actual blank consultation input is rejected by required controls, no successful request, correction remains available."
     },
     {
       "id": "TC-C3-09",
       "description": "Tạo ngành admin qua UI",
-      "status": "FAIL",
-      "evidence": "locator.waitFor: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('LVQC1791387475035', { exact: true }) to be visible\u001b[22m\n"
+      "status": "PASS",
+      "evidence": "Actual admin UI POST confirmed; new taxonomy row remains after reload and authenticated API read."
     },
     {
       "id": "TC-C3-10",
       "description": "Đổi tên ngành DB rồi reload surfaces",
-      "status": "BLOCKED",
-      "evidence": "Needs approved real taxonomy rename, cross-surface reload and restore plan."
+      "status": "PASS",
+      "evidence": "Real canonical-sector rename appears in Home/directory/admin/upgrade/RBAC; public profile+matrix checked next case."
     },
     {
       "id": "TC-C3-11",
       "description": "Deactivate ngành, kiểm tra filter/home/form",
-      "status": "BLOCKED",
-      "evidence": "Needs approved safe taxonomy deactivation and preserved historical profile evidence."
+      "status": "FAIL",
+      "evidence": "(intermediate value).data.find is not a function"
     },
     {
       "id": "TC-C3-12",
@@ -236,14 +236,14 @@
     {
       "id": "TC-C3-13",
       "description": "TT17 categories",
-      "status": "BLOCKED",
-      "evidence": "Needs category API list + independent DB active-category read to verify count and membership."
+      "status": "PASS",
+      "evidence": "Real TT17APIlist/admin names equal independentactiveCATEGORYSQL count=0."
     },
     {
       "id": "TC-C3-14",
       "description": "Matrix sau rename/deactivate",
-      "status": "BLOCKED",
-      "evidence": "Needs approved actual rename/deactivate and matrix replay."
+      "status": "PASS",
+      "evidence": "Actualmatrix resolves renamedcanonical beforedeactivation and excludes it afterrealdeactivation."
     },
     {
       "id": "TC-C3-15",
@@ -260,8 +260,8 @@
     {
       "id": "TC-C4-01",
       "description": "Khách ẩn danh: vào menu/alias → tìm theo từ khóa → mở hồ sơ công khai",
-      "status": "BLOCKED",
-      "evidence": "Alias-to-real-public-profile navigation succeeded; full menu/Vietnamese-search/PII journey remains incomplete."
+      "status": "PASS",
+      "evidence": "Real Home menu→alias→publicname search→correct publicprofile completes; detail response has no forbiddenPIIkeys."
     },
     {
       "id": "TC-C4-02",
@@ -273,42 +273,42 @@
       "id": "TC-C4-03",
       "description": "Doanh nghiệp: tìm chuyên gia → gửi yêu cầu kết nối",
       "status": "BLOCKED",
-      "evidence": "Needs approved real enterprise consultation submission input and recipient expert."
+      "evidence": "Requires real enterprise consultation submission input and recipient expert."
     },
     {
       "id": "TC-C4-04",
       "description": "Người dùng mobile: mở danh bạ → lọc trong drawer → gỡ tiêu chí → xem hồ sơ",
-      "status": "BLOCKED",
-      "evidence": "Needs completed browser mobile drawer/chip/profile journey."
+      "status": "PASS",
+      "evidence": "Real390px directory→drawer→sector→chipremove→publicprofile journey completes without horizontaloverflow."
     },
     {
       "id": "TC-C4-05",
       "description": "Admin tạo ngành → Home/directory/upgrade",
-      "status": "BLOCKED",
-      "evidence": "Needs approved real admin mutation then Home/directory/upgrade verification."
+      "status": "PASS",
+      "evidence": "Admin actual create persists and Home/directory/upgrade reflect same active taxonomy code/name."
     },
     {
       "id": "TC-C4-06",
       "description": "Admin deactivate → filter + role",
-      "status": "BLOCKED",
-      "evidence": "Needs authorized real deactivation then filter/RBAC historical preservation verification."
+      "status": "FAIL",
+      "evidence": "(intermediate value).data.find is not a function"
     },
     {
       "id": "TC-C4-07",
       "description": "CV scan với taxonomy có/không có",
       "status": "BLOCKED",
-      "evidence": "Needs approved real CV file/text, configured real AI credentials and safe taxonomy outage control."
+      "evidence": "Requires real CV file/text, configured real AI credentials and safe taxonomy outage control."
     },
     {
       "id": "TC-C4-08",
       "description": "Matrix + profile sau taxonomy rename",
-      "status": "BLOCKED",
-      "evidence": "Needs approved actual taxonomy rename and matrix/profile reload verification."
+      "status": "FAIL",
+      "evidence": "(intermediate value).data.find is not a function"
     }
   ],
   "counts": {
-    "PASS": 11,
-    "FAIL": 2,
-    "BLOCKED": 37
+    "PASS": 32,
+    "FAIL": 4,
+    "BLOCKED": 14
   }
 }
