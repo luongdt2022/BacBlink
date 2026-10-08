@@ -14,6 +14,7 @@ import {
   Clock,
   AlertTriangle,
   Building,
+  Users,
 } from "lucide-react";
 
 export default function GovLayout({ children }: { children: React.ReactNode }) {
@@ -64,6 +65,35 @@ export default function GovLayout({ children }: { children: React.ReactNode }) {
                 <span>Maker-Checker 2 cấp</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Gov Sub-Navigation Bar */}
+        <div className="border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 sm:px-8">
+          <div className="page-container flex items-center gap-2 px-0 py-2">
+            <Link
+              href="/gov"
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                pathname === "/gov" || pathname === "/gov/approvals"
+                  ? "bg-brand-50 text-brand-700 font-semibold dark:bg-brand-950/60 dark:text-brand-300"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <FileCheck2 className="w-4 h-4" />
+              <span>Hàng đợi kiểm duyệt hồ sơ</span>
+            </Link>
+
+            <Link
+              href="/gov/settings/staff"
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                pathname.startsWith("/gov/settings/staff")
+                  ? "bg-brand-50 text-brand-700 font-semibold dark:bg-brand-950/60 dark:text-brand-300"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Cán bộ & Chuyên viên Sở</span>
+            </Link>
           </div>
         </div>
 
