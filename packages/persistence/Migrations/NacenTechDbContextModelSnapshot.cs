@@ -686,6 +686,11 @@ namespace NacenTech.Persistence.Migrations
                         .HasColumnType("text[]")
                         .HasColumnName("expertise_sectors");
 
+                    b.PrimitiveCollection<string[]>("SpecializedKeywords")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("specialized_keywords");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
@@ -31,13 +32,14 @@ public sealed class QuickExpertIntakeFormDto
 }
 
 [Route("api/v1/experts")]
-public sealed class ExpertController(IExpertService experts, IApprovalService approvals, IAuditWriter audit, ITaxonomyService taxonomy) : V1ControllerBase
+public sealed class ExpertController(IExpertService experts, IApprovalService approvals, IAuditWriter audit, ITaxonomyService taxonomy, DbContext db) : V1ControllerBase
 {
     [HttpPost("upgrade-request")]
     [Authorize]
     public async Task<IActionResult> SubmitUpgrade([FromBody] SubmitExpertUpgradeRequest request, CancellationToken ct)
     {
         await ValidateSectorsAsync(request.ExpertiseSectors ?? [], ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var result = await experts.SubmitUpgradeAsync(PersonId, request, ct);
 
         // Phân cấp Cấp 2: Tự động đưa hồ sơ vào hàng đợi thẩm định phân cấp của Sở/TW (Basic Design v2.6 & FR-ADM-007)
@@ -52,7 +54,21 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
                 System.Text.Json.JsonSerializer.Serialize(result)),
             ct);
 
+        await transaction.CommitAsync(ct);
         return StatusCode(201, Ok200(result));
+    }
+
+    [HttpGet("draft")]
+    [AllowAnonymous]
+    [EnableRateLimiting("expert-draft")]
+    public async Task<IActionResult> GetDraft([FromQuery] string? token, CancellationToken ct)
+    {
+        Response.Headers.CacheControl = "no-store";
+        Response.Headers.Pragma = "no-cache";
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+        var draft = await experts.GetDraftAsync(token ?? string.Empty, ct);
+        var sector = (await taxonomy.ListAsync(TaxonomyKinds.Sector, false, ct)).FirstOrDefault(item => item.Code == draft.SectorCode);
+        return Ok(Ok200(draft with { SectorName = sector?.Name, SectorIsActive = sector?.IsActive }));
     }
 
     [HttpGet("my-profile")]
@@ -119,11 +135,9 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
 
     [HttpPost("ai-cv-scan")]
     [Authorize]
-    public async Task<IActionResult> SimulateAiScan([FromBody] AiScanRequestDto dto, CancellationToken ct)
-    {
-        var result = await experts.SimulateAiCvScanAsync(dto.FileName, ct);
-        return Ok(Ok200(result));
-    }
+    public IActionResult SimulateAiScan([FromBody] AiScanRequestDto dto)
+        => StatusCode(501, new { success = false, code = "AI_CV_SCAN_UNAVAILABLE",
+            message = "Cần nội dung tệp CV để phân tích. Dịch vụ này chưa hỗ trợ phân tích từ tên tệp." });
 
     [HttpPost("/api/v1/public/experts/quick-intake")]
     [AllowAnonymous]

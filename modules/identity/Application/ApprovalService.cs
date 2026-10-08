@@ -176,7 +176,7 @@ public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock,
             "approval_requests",
             request.Id.ToString(),
             ipAddress,
-            $"{{\"action\":\"{normalizedAction}\",\"note\":\"{cmd.ReviewNote}\",\"version\":{request.Version}}}");
+            System.Text.Json.JsonSerializer.Serialize(new { action = normalizedAction, note = cmd.ReviewNote, version = request.Version }));
 
         db.Set<ApprovalAuditLog>().Add(audit);
 

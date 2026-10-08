@@ -34,7 +34,8 @@ public sealed class ExpertProfile : AggregateRoot
         bool isProjectLeader,
         bool isMainContributor,
         DateTimeOffset pdpdConsentAtUtc,
-        bool legalOath = true)
+        bool legalOath = true,
+        IReadOnlyList<string>? specializedKeywords = null)
     {
         if (string.IsNullOrWhiteSpace(fullName)) throw new ValidationException("Họ và tên không được để trống.");
         if (string.IsNullOrWhiteSpace(degree)) throw new ValidationException("Học vị cao nhất là bắt buộc.");
@@ -57,6 +58,7 @@ public sealed class ExpertProfile : AggregateRoot
         ResearchTitle = researchTitle?.Trim();
         PositionTitle = positionTitle?.Trim();
         ExpertiseSectors = expertiseSectors.ToArray();
+        SpecializedKeywords = (specializedKeywords ?? []).Where(keyword => !string.IsNullOrWhiteSpace(keyword)).Select(keyword => keyword.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         TrainingHistoryJson = trainingHistoryJson;
         EmploymentHistoryJson = employmentHistoryJson;
         PublicationsJson = publicationsJson;
@@ -91,6 +93,7 @@ public sealed class ExpertProfile : AggregateRoot
     public string? ResearchTitle { get; private set; }
     public string? PositionTitle { get; private set; }
     public string[] ExpertiseSectors { get; private set; } = [];
+    public string[] SpecializedKeywords { get; private set; } = [];
     public string[] MasteredTechCodes { get; private set; } = [];
     public string? TrainingHistoryJson { get; private set; }
     public string? EmploymentHistoryJson { get; private set; }
@@ -103,6 +106,7 @@ public sealed class ExpertProfile : AggregateRoot
     public bool LegalOath { get; private set; }
     public string Status { get; private set; } = ExpertStatuses.PendingReview;
     public string DraftSource { get; private set; } = "PORTAL";
+    /// <summary>SHA256 hash of signed bearer token; never the raw token. Legacy rawvalues are invalid.</summary>
     public string? MagicLinkToken { get; private set; }
     public DateTimeOffset? MagicLinkExpiresAtUtc { get; private set; }
     public string? ReviewerNote { get; private set; }
@@ -142,10 +146,31 @@ public sealed class ExpertProfile : AggregateRoot
             CvFileUrl = cvFileUrl,
             PdpdConsentAtUtc = pdpdConsentAtUtc,
             DraftSource = "ZALO_MINI_APP",
-            Status = ExpertStatuses.PendingReview,
-            MagicLinkToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)),
-            MagicLinkExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(72)
+            Status = ExpertStatuses.Draft
         };
+    }
+
+    public void IssueDraftLink(string hash, DateTimeOffset expiresAt)
+    {
+        if (PersonId is not null || DraftSource != "ZALO_MINI_APP") throw new ValidationException("Chỉ hồ sơ sơ bộ được tạo liên kết.");
+        MagicLinkToken = hash; MagicLinkExpiresAtUtc = expiresAt; Touch();
+    }
+
+    public void CompleteDraft(Guid personId, ExpertProfile validatedSubmission)
+    {
+        LinkToPerson(personId);
+        FullName = validatedSubmission.FullName; BirthYear = validatedSubmission.BirthYear; Gender = validatedSubmission.Gender;
+        AcademicRank = validatedSubmission.AcademicRank; AcademicRankYear = validatedSubmission.AcademicRankYear;
+        Degree = validatedSubmission.Degree; DegreeYear = validatedSubmission.DegreeYear;
+        OrganizationName = validatedSubmission.OrganizationName; OrganizationAddress = validatedSubmission.OrganizationAddress;
+        ResearchTitle = validatedSubmission.ResearchTitle; PositionTitle = validatedSubmission.PositionTitle;
+        SpecializedKeywords = validatedSubmission.SpecializedKeywords;
+        ExpertiseSectors = validatedSubmission.ExpertiseSectors; TrainingHistoryJson = validatedSubmission.TrainingHistoryJson;
+        EmploymentHistoryJson = validatedSubmission.EmploymentHistoryJson; PublicationsJson = validatedSubmission.PublicationsJson;
+        ConsultingSummary = validatedSubmission.ConsultingSummary; IsProjectLeader = validatedSubmission.IsProjectLeader;
+        IsMainContributor = validatedSubmission.IsMainContributor; PdpdConsentAtUtc = validatedSubmission.PdpdConsentAtUtc;
+        LegalOath = validatedSubmission.LegalOath; Status = ExpertStatuses.PendingReview;
+        MagicLinkToken = null; MagicLinkExpiresAtUtc = null; Touch();
     }
 
     public void Approve(string? note = null)

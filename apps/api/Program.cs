@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -29,7 +31,6 @@ builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection(CorsOpt
 builder.Services.AddNacenTechPlatform(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
-builder.Services.AddScoped<IExpertProvinceScopeLookup, ExpertProvinceScopeLookup>();
 if (builder.Configuration.GetValue<bool>("Api:RunWorkersInProcess")) builder.Services.AddNacenTechWorkers();
 
 // Auth: JwtBearer validate token do identity module phát hành. Legacy JWT (NestJS) vô hiệu vì khác key (D2-150).
@@ -104,6 +105,12 @@ builder.Services.AddControllers(o =>
 builder.Services.AddOpenApi("v1", o => o.ShouldInclude = d => d.RelativePath?.StartsWith("api/v2", StringComparison.Ordinal) != true);
 builder.Services.AddOpenApi("v2", o => o.ShouldInclude = d => d.RelativePath?.StartsWith("api/v2", StringComparison.Ordinal) == true);
 builder.Services.AddProblemDetails();
+builder.Services.AddRateLimiter(options => {
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("expert-draft", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
+});
 builder.Services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = 12 * 1024 * 1024);
 builder.Services.AddScoped<V1Mappers>();
 builder.Services.AddScoped<IntakeFacade>();
@@ -118,6 +125,7 @@ app.UseCors();
 app.UseMiddleware<V1SunsetMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseMiddleware<IdempotencyMiddleware>();
 
 app.MapOpenApi("/openapi/{documentName}.json");

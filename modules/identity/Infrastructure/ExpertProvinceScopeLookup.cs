@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using NacenTech.Kernel.Application;
-using NacenTech.Modules.Brokerage.Application;
 using NacenTech.Modules.Identity.Domain;
 
-namespace NacenTech.Api.Infrastructure;
+namespace NacenTech.Modules.Identity.Infrastructure;
 
-/// <summary>API composition adapter that exposes verified Identity province scopes to the Brokerage use case.</summary>
+/// <summary>Identity adapter that exposes verified Identity province scopes to the Brokerage use case.</summary>
 public sealed class ExpertProvinceScopeLookup(DbContext db) : IExpertProvinceScopeLookup
 {
     public async Task<IReadOnlyCollection<Guid>> GetPersonIdsInProvinceAsync(string provinceCode, CancellationToken ct)

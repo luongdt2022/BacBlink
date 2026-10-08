@@ -21,7 +21,9 @@ public abstract class V1ControllerBase : ControllerBase
     /// <summary>Legacy AdminAuthGuard: 403 "Admin access required".</summary>
     protected void RequireAdmin()
     {
-        if (Actor.PlatformRole != PlatformRoles.Admin) throw new ForbiddenException("Admin access required");
+        if (Actor.PlatformRole is not PlatformRoles.Admin and not PlatformRoles.SuperAdmin and not PlatformRoles.OperatorAdmin ||
+            Actor.ScopeType != ScopeTypes.Global || !string.IsNullOrWhiteSpace(Actor.ScopeId))
+            throw new ForbiddenException("Admin access required");
     }
 
     protected static object Ok200(object data) => new { success = true, data };

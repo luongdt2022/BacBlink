@@ -787,3 +787,12 @@ Chưa nộp mục nào thành issue. Bốn thư mục mã nguồn không phải 
 - Phát hiện: quyết định governance EXPERT chỉ cấp role, chưa cập nhật ExpertProfile; default scope/role có thể cho truy cập hàng đợi không hợp lệ.
 - Sửa: kernel approval synchronizer stages Brokerage profile transition cùng Identity role/audit trong một UnitOfWork commit; matching Id/PersonId bắt buộc; deny reviewer role/scope không hợp lệ, CLUSTER_ADMIN không final approve.
 - Verification: đang chờ build/test thực; chưa đóng Gate 4.
+
+
+## B-DELTA-2026-005-MIGRATION — Enterprise migration repeats existing schema
+
+**Evidence:** isolated fresh PostgreSQL migration failed42P07at `dataroom.access_grants`. The concurrent `20261007074723_CreateEnterpriseSchema` scaffold included53previously createdtables and their indexes, plus4new enterprise tables. Its Down would delete preexistingtables.
+
+**Approved correction:** preserve only4enterprise CreateTable operations and3indexes plus enterprise EnsureSchema; Down removes only enterprise tables dependent-first. Preserve existing migrations, target-model designer and snapshot. No production/schema repair performed.
+
+**Status:** correction authorized; verification pending on isolatedcontainers.

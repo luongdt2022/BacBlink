@@ -38,6 +38,7 @@ public interface IBrokerService
 
 public static class ExpertStatuses
 {
+    public const string Draft = "DRAFT";
     public const string PendingReview = "PENDING_REVIEW";
     public const string Approved = "APPROVED";
     public const string ChangesRequested = "CHANGES_REQUESTED";
@@ -80,7 +81,9 @@ public sealed record SubmitExpertUpgradeRequest(
     bool PdpdConsent,
     bool LegalOath = false,
     string? ScopeType = null,
-    string? ScopeId = null);
+    string? ScopeId = null,
+    string? DraftToken = null,
+    IReadOnlyList<string>? SpecializedKeywords = null);
 
 public sealed record ExpertProfileDto(
     Guid Id,
@@ -106,7 +109,8 @@ public sealed record ExpertProfileDto(
     string Status,
     string? ReviewerNote,
     DateTimeOffset CreatedAtUtc,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    IReadOnlyList<string>? SpecializedKeywords = null);
 
 public sealed record AiCvScanResultDto(
     string ExtractedFullName,
@@ -126,6 +130,10 @@ public sealed record QuickExpertIntakeRequest(
     IReadOnlyList<string>? MasteredTechCodes,
     string? CvFileName,
     bool PdpdConsent);
+
+public sealed record ExpertDraftDto(Guid Id, string FullName, string? Phone, string? Email, string Degree,
+    string Organization, string? SectorCode, IReadOnlyList<string> MasteredTechCodes, string Status,
+    string? TrainingHistoryJson, string? EmploymentHistoryJson, string? PublicationsJson, string? SectorName = null, bool? SectorIsActive = null, IReadOnlyList<string>? SpecializedKeywords = null);
 
 public sealed record QuickExpertIntakeResponse(
     bool Success,
@@ -157,7 +165,8 @@ public sealed record ExpertPublicDetailDto(
     IReadOnlyList<ExpertAchievementDto> ResearchProjects,
     IReadOnlyList<ExpertAchievementDto> Publications,
     IReadOnlyList<ExpertAchievementDto> PracticalProjects,
-    IReadOnlyList<ExpertAchievementDto> Awards);
+    IReadOnlyList<ExpertAchievementDto> Awards,
+    IReadOnlyList<string>? SpecializedKeywords = null);
 
 public sealed record ExpertPrivateDetailDto(
     ExpertPublicDetailDto PublicProfile,
@@ -188,7 +197,8 @@ public sealed record ExpertPublicCardDto(
     int PatentCount,
     int ProjectCount,
     bool IsVerified,
-    bool IsAcceptingConsultation);
+    bool IsAcceptingConsultation,
+    IReadOnlyList<string>? SpecializedKeywords = null);
 
 public sealed record ExpertPublicDirectoryDto(
     IReadOnlyList<ExpertPublicCardDto> Items,
@@ -201,7 +211,7 @@ public interface IExpertService
 {
     Task<ExpertProfileDto> SubmitUpgradeAsync(Guid personId, SubmitExpertUpgradeRequest request, CancellationToken ct);
     Task<ExpertProfileDto?> GetMyProfileAsync(Guid personId, CancellationToken ct);
-    Task<AiCvScanResultDto> SimulateAiCvScanAsync(string fileName, CancellationToken ct);
+    Task<ExpertDraftDto> GetDraftAsync(string token, CancellationToken ct);
     Task<QuickExpertIntakeResponse> SubmitQuickIntakeAsync(QuickExpertIntakeRequest request, CancellationToken ct);
     Task<ExpertPublicDetailDto?> GetPublicDetailAsync(string expertCode, CancellationToken ct);
     Task<ExpertPublicDirectoryDto> GetPublicDirectoryAsync(string? q, string? degree, string? sectorCode, string? provinceCode, bool? acceptingConsultation, int page, int pageSize, CancellationToken ct);
@@ -212,9 +222,3 @@ public interface IExpertService
     Task<ExpertDocumentContent?> OpenAdminDocumentAsync(string expertCode, Guid documentId, CancellationToken ct);
 }
 
-/// <summary>Cross-module lookup for authoritative province scopes; keeps Identity entities out of Brokerage.</summary>
-public interface IExpertProvinceScopeLookup
-{
-    Task<IReadOnlyCollection<Guid>> GetPersonIdsInProvinceAsync(string provinceCode, CancellationToken ct);
-    Task<IReadOnlyDictionary<Guid, string>> GetProvinceScopesAsync(IReadOnlyCollection<Guid> personIds, CancellationToken ct);
-}

@@ -23,6 +23,7 @@ public sealed class IdentityModule : IModule
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenIssuer, JwtTokenIssuer>();
         services.AddScoped<IPersonDirectory, PersonDirectory>();
+        services.AddScoped<IExpertProvinceScopeLookup, ExpertProvinceScopeLookup>();
         services.AddScoped<IMatchingPreferenceProvider, PersonDirectory>();
         services.AddScoped<IIdentityImporter, IdentityImporter>();
         services.AddScoped<IApprovalService, ApprovalService>();

@@ -50,6 +50,7 @@ public sealed class ExpertProfileConfiguration : IEntityTypeConfiguration<Expert
         b.Property(x => x.ResearchTitle).HasMaxLength(100);
         b.Property(x => x.PositionTitle).HasMaxLength(100);
         b.Property(x => x.ExpertiseSectors).HasColumnType("text[]").IsRequired();
+        b.Property(x => x.SpecializedKeywords).HasColumnType("text[]").IsRequired();
         b.Property(x => x.MasteredTechCodes).HasColumnType("text[]").IsRequired();
         b.Property(x => x.TrainingHistoryJson).HasColumnType("jsonb");
         b.Property(x => x.EmploymentHistoryJson).HasColumnType("jsonb");

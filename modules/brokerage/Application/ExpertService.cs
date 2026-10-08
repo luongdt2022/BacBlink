@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Brokerage.Domain;
 
 namespace NacenTech.Modules.Brokerage.Application;
 
-public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, IObjectStorage storage, IExpertProvinceScopeLookup provinceScopes) : IExpertService
+public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, IObjectStorage storage, IExpertProvinceScopeLookup provinceScopes, IOptions<ExpertDraftOptions> draftOptions) : IExpertService
 {
     public async Task<ExpertProfileDto> SubmitUpgradeAsync(Guid personId, SubmitExpertUpgradeRequest request, CancellationToken ct)
     {
@@ -14,6 +15,15 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         if (!request.LegalOath)
             throw new ValidationException("Bắt buộc cam kết tính chính xác của hồ sơ.");
 
+        ExpertProfile? draft = null;
+        if (!string.IsNullOrWhiteSpace(request.DraftToken))
+        {
+            var hash = new ExpertDraftTokens(draftOptions.Value).ValidateAndHash(request.DraftToken, clock.UtcNow);
+            // Host transaction keeps this row lock through profile and approval commits.
+            draft = await db.Set<ExpertProfile>().FromSqlInterpolated($"SELECT * FROM brokerage.expert_profiles WHERE magic_link_token = {hash} FOR UPDATE").FirstOrDefaultAsync(ct);
+            ValidateDraft(draft);
+            if (draft!.PersonId is not null && draft.PersonId != personId) throw ExpertDraftTokens.Invalid();
+        }
         var existing = await db.Set<ExpertProfile>().FirstOrDefaultAsync(p => p.PersonId == personId, ct);
         if (existing is not null)
         {
@@ -50,31 +60,40 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             isProjectLeader: request.IsProjectLeader,
             isMainContributor: request.IsMainContributor,
             pdpdConsentAtUtc: clock.UtcNow,
-            legalOath: request.LegalOath);
+            legalOath: request.LegalOath,
+            specializedKeywords: request.SpecializedKeywords);
 
-        db.Add(profile);
+        if (draft is not null)
+        {
+            draft.CompleteDraft(personId, profile);
+            profile = draft;
+        }
+        else db.Add(profile);
         await uow.CommitAsync(ct);
 
         return ToDto(profile);
+    }
+
+    public async Task<ExpertDraftDto> GetDraftAsync(string token, CancellationToken ct)
+    {
+        var hash = new ExpertDraftTokens(draftOptions.Value).ValidateAndHash(token, clock.UtcNow);
+        var draft = await db.Set<ExpertProfile>().AsNoTracking().FirstOrDefaultAsync(profile => profile.MagicLinkToken == hash, ct);
+        ValidateDraft(draft);
+        return new ExpertDraftDto(draft!.Id, draft.FullName, draft.Phone, draft.Email, draft.Degree,
+            draft.OrganizationName, draft.ExpertiseSectors.FirstOrDefault(), draft.MasteredTechCodes, draft.Status,
+            draft.TrainingHistoryJson, draft.EmploymentHistoryJson, draft.PublicationsJson, SpecializedKeywords: draft.SpecializedKeywords);
+    }
+
+    private void ValidateDraft(ExpertProfile? draft)
+    {
+        if (draft is null || draft.MagicLinkExpiresAtUtc is null || draft.MagicLinkExpiresAtUtc <= clock.UtcNow ||
+            draft.PersonId is not null || draft.DraftSource != "ZALO_MINI_APP") throw ExpertDraftTokens.Invalid();
     }
 
     public async Task<ExpertProfileDto?> GetMyProfileAsync(Guid personId, CancellationToken ct)
     {
         var profile = await db.Set<ExpertProfile>().AsNoTracking().FirstOrDefaultAsync(p => p.PersonId == personId, ct);
         return profile is null ? null : ToDto(profile);
-    }
-
-    public Task<AiCvScanResultDto> SimulateAiCvScanAsync(string fileName, CancellationToken ct)
-    {
-        var result = new AiCvScanResultDto(
-            ExtractedFullName: "TS. Nguyễn Văn A",
-            ExtractedDegree: "DOCTOR",
-            ExtractedOrg: "Viện Hàn Lâm Khoa Học & Công Nghệ Việt Nam",
-            ExtractedSectors: ["Công nghệ thông tin & Chuyển đổi số", "Cơ khí chế tạo & Tự động hóa"],
-            TrainingSummary: "2000-2005: ĐHBK Hà Nội (Kỹ sư CNTT); 2011-2016: ĐH Quốc gia Grenoble (Tiến sĩ Khoa học Máy tính)",
-            WorkSummary: "Trưởng phòng Hệ thống thông minh, hơn 15 năm nghiên cứu IoT và Computer Vision công nghiệp");
-
-        return Task.FromResult(result);
     }
 
     public async Task<QuickExpertIntakeResponse> SubmitQuickIntakeAsync(QuickExpertIntakeRequest request, CancellationToken ct)
@@ -90,18 +109,24 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             cvFileUrl: request.CvFileName,
             pdpdConsentAtUtc: clock.UtcNow);
 
+        if (!request.PdpdConsent) throw new ValidationException("Bắt buộc đồng ý cam kết PDPD.");
+        var link = new ExpertDraftTokens(draftOptions.Value).Issue(clock.UtcNow);
+        profile.IssueDraftLink(link.Hash, link.ExpiresAt);
+        if (!Uri.TryCreate(draftOptions.Value.FrontendUrl, UriKind.Absolute, out var frontend) ||
+            (frontend.Scheme != Uri.UriSchemeHttps && !(frontend.IsLoopback && frontend.Scheme == Uri.UriSchemeHttp)))
+            throw new InvalidOperationException("Auth:FrontendUrl phải là HTTPS hoặc localhost HTTP.");
         db.Add(profile);
         await uow.CommitAsync(ct);
 
-        var magicLinkUrl = $"https://nacentwin.vn/profile/upgrade/expert?draftToken={profile.MagicLinkToken}";
+        var magicLinkUrl = new Uri(frontend, "/profile/upgrade/expert?draftToken=" + Uri.EscapeDataString(link.Token)).AbsoluteUri;
 
         return new QuickExpertIntakeResponse(
             Success: true,
             TrackingId: $"DRAFT-EXP-{profile.Id.ToString()[..8].ToUpperInvariant()}",
             Status: profile.Status,
-            Message: "Đã tiếp nhận hồ sơ sơ bộ thành công. Hệ thống AI đang bóc tách nội dung CV.",
+            Message: "Đã lưu hồ sơ sơ bộ. Mở liên kết để rà soát và bổ sung hồ sơ trên Web Portal.",
             MagicLinkUrl: magicLinkUrl,
-            EstimatedSeconds: 30);
+            EstimatedSeconds: 0);
     }
 
     public async Task<ExpertPublicDetailDto?> GetPublicDetailAsync(string expertCode, CancellationToken ct)
@@ -134,7 +159,8 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
                 p.FullName.ToLower().Contains(keyword) ||
                 p.OrganizationName.ToLower().Contains(keyword) ||
                 (p.ConsultingSummary != null && p.ConsultingSummary.ToLower().Contains(keyword)) ||
-                p.MasteredTechCodes.Any(code => code.ToLower().Contains(keyword)));
+                p.MasteredTechCodes.Any(code => code.ToLower().Contains(keyword)) ||
+                p.SpecializedKeywords.Any(tag => tag.ToLower().Contains(keyword)));
         }
 
         if (!string.IsNullOrWhiteSpace(degree))
@@ -209,7 +235,8 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             PatentCount: patCounts.GetValueOrDefault(p.Id, 0),
             ProjectCount: projCounts.GetValueOrDefault(p.Id, 0),
             IsVerified: p.Status == ExpertStatuses.Approved,
-            IsAcceptingConsultation: p.IsAcceptingConsultation
+            IsAcceptingConsultation: p.IsAcceptingConsultation,
+            SpecializedKeywords: p.SpecializedKeywords
         )).ToList();
 
         return new ExpertPublicDirectoryDto(items, totalCount, page, pageSize, totalPages);
@@ -278,7 +305,7 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
 
         return new ExpertPublicDetailDto(p.ExpertCode, p.FullName, p.AcademicRank, p.Degree, p.BirthYear, p.Gender,
             p.OrganizationName, p.PositionTitle, p.PublicBio, p.ExpertiseSectors, p.MasteredTechCodes,
-            p.Status == ExpertStatuses.Approved, p.IsAcceptingConsultation, training, employment, patents, projects, publications, practical, awards);
+            p.Status == ExpertStatuses.Approved, p.IsAcceptingConsultation, training, employment, patents, projects, publications, practical, awards, p.SpecializedKeywords);
     }
 
     private async Task<ExpertPrivateDetailDto> ToPrivateDetailAsync(ExpertProfile p, CancellationToken ct)
@@ -315,5 +342,6 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             Status: p.Status,
             ReviewerNote: p.ReviewerNote,
             CreatedAtUtc: p.CreatedAt,
-            UpdatedAtUtc: p.UpdatedAt);
+            UpdatedAtUtc: p.UpdatedAt,
+            SpecializedKeywords: p.SpecializedKeywords);
 }
