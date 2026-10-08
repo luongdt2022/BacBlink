@@ -140,7 +140,7 @@ export default function AdminSectorsPage() {
       if (result.success !== true || !created || typeof created.code !== "string" || typeof created.name !== "string") {
         throw new Error("Máy chủ chưa xác nhận lưu lĩnh vực. Vui lòng tải lại danh mục trước khi thử lại.");
       }
-      setSectors((current) => [{ code: created.code, name: created.name, tt17Code: created.tt17Code ?? "", description: created.description ?? "", filterRuleCount: created.filterRuleCount ?? 0, isActive: created.isActive !== false }, ...current.filter((sector) => sector.code !== created.code)]);
+      setSectors((current) => [{ id: created.id, code: created.code, name: created.name, tt17Code: created.tt17Code ?? "", description: created.description ?? "", filterRuleCount: created.filterRuleCount ?? 0, isActive: created.isActive !== false }, ...current.filter((sector) => sector.code !== created.code)]);
       setIsModalOpen(false);
       setToastMessage(`Đã lưu lĩnh vực [${created.code}] ${created.name}`);
       setTimeout(() => setToastMessage(null), 4000);

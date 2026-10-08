@@ -37,7 +37,7 @@ export function AdminNav() {
       href: "/admin/sectors",
       label: "Danh Mục Lĩnh Vực & TT17",
       icon: Layers,
-      badge: "Danh mục DB",
+      badge: "Danh mục ngành",
     },
   ];
 

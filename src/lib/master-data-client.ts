@@ -38,3 +38,8 @@ export async function getPublicExpertFilterOptions() {
 export async function getActiveSectors(): Promise<SectorOption[]> {
   return getOptions("/api/v1/sectors");
 }
+
+/** Historical profiles retain their sector labels even after a sector is deactivated. */
+export async function getSectorLabels(): Promise<SectorOption[]> {
+  return getOptions("/api/v1/master-data/sectors?activeOnly=false");
+}

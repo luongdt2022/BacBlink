@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -93,6 +93,9 @@ export default function ExpertsDirectoryPage() {
   const [modalSending, setModalSending] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
 
+  const directoryRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => directoryRequest.current?.abort(), []);
+
   const fetchDirectory = async (
     overrideQ?: string,
     overrideDegree?: string,
@@ -100,6 +103,9 @@ export default function ExpertsDirectoryPage() {
     overrideProvince?: string,
     overridePage?: number
   ) => {
+    directoryRequest.current?.abort();
+    const request = new AbortController();
+    directoryRequest.current = request;
     setLoading(true);
     setError(null);
     try {
@@ -118,21 +124,23 @@ export default function ExpertsDirectoryPage() {
       params.set("page", pageVal.toString());
       params.set("pageSize", "9");
 
-      const res = await fetch(`${API_BASE}/api/v1/public/experts?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/api/v1/public/experts?${params.toString()}`, { signal: request.signal });
       if (!res.ok) {
         throw new Error(`Lỗi tải danh bạ chuyên gia (${res.status})`);
       }
       const json = await res.json();
+      if (request.signal.aborted) return;
       if (json.success && json.data) {
         setDirectoryData(json.data);
       } else {
         throw new Error(json.message || "Dữ liệu không hợp lệ");
       }
     } catch (err: any) {
+      if (request.signal.aborted) return;
       console.error(err);
       setError(err.message || "Không thể kết nối đến máy chủ.");
     } finally {
-      setLoading(false);
+      if (!request.signal.aborted) setLoading(false);
     }
   };
 
@@ -448,6 +456,20 @@ export default function ExpertsDirectoryPage() {
               <span className="text-caption text-slate-500 dark:text-slate-400">Ưu tiên học hàm, sau đó cập nhật gần nhất</span>
             </div>
 
+            <div className="flex flex-wrap gap-2 mb-3" aria-label="Tiêu chí đang chọn">
+              {[
+                { key: "q", value: searchTerm, label: searchTerm, clear: () => setSearchTerm("") },
+                { key: "degree", value: selectedDegree, label: DEGREE_OPTIONS.find(x => x.value === selectedDegree)?.label || selectedDegree, clear: () => setSelectedDegree("") },
+                { key: "sector", value: selectedSector, label: sectorOptions.find(x => x.code === selectedSector)?.name || selectedSector, clear: () => setSelectedSector("") },
+                { key: "province", value: selectedProvince, label: provinceOptions.find(x => x.code === selectedProvince)?.name || selectedProvince, clear: () => setSelectedProvince("") },
+                { key: "consultation", value: acceptingConsultation ? "yes" : "", label: "Nhận tư vấn", clear: () => setAcceptingConsultation(false) },
+              ].filter(x => x.value).map(x => (
+                <button key={x.key} type="button" aria-label={`Bỏ tiêu chí ${x.label}`} onClick={() => { x.clear(); setCurrentPage(1); }} className="min-h-11 px-3 inline-flex items-center gap-2 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption">
+                  {x.label}<span aria-hidden="true">×</span>
+                </button>
+              ))}
+            </div>
+
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start" data-testid="expert-loading-grid">
                 {[1, 2, 3, 4, 5, 6].map((idx) => (
@@ -540,7 +562,7 @@ export default function ExpertsDirectoryPage() {
 
                         <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800">
                           <div className="text-caption font-semibold text-slate-500 uppercase tracking-wider mb-1.5 dark:text-slate-400">
-                            Lĩnh vực TT17 chính:
+                            Ngành chuyên môn:
                           </div>
                           <span className="inline-block px-2.5 py-1 rounded-lg text-caption font-bold bg-brand-50 text-brand-800 border border-brand-200 dark:bg-brand-950/70 dark:text-brand-200 dark:border-brand-800">
                             {sectorOptions.find((s) => s.code === expert.primarySectorCode)?.name ||

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { authClient, UserContext } from "@/lib/auth-client";
 import Link from "next/link";
+import { getActiveSectors } from "@/lib/master-data-client";
 import {
   ShieldAlert,
   Users,
@@ -18,15 +19,20 @@ import {
 
 export default function AdminDashboard() {
   const [user, setUser] = useState<UserContext | null>(null);
+  const [sectorCount, setSectorCount] = useState<number | null>(null);
+  const [sectorError, setSectorError] = useState(false);
 
   useEffect(() => {
     setUser(authClient.getUser());
+    let disposed = false;
+    getActiveSectors().then((rows) => { if (!disposed) setSectorCount(rows.length); }).catch(() => { if (!disposed) setSectorError(true); });
+    return () => { disposed = true; };
   }, []);
 
   const systemMetrics = [
     { title: "Tổng Tài Khoản Đang Hoạt Động", value: "18,420", sub: "Toàn quốc", icon: Users, color: "text-brand-700 dark:text-brand-200" },
     { title: "Sở KH&CN Đã Kết Nối", value: "63 / 63", sub: "100% Tỉnh/Thành", icon: Network, color: "text-nacen-green-700 dark:text-nacen-green-200" },
-    { title: "Danh Mục Lĩnh Vực TT17", value: "Từ cơ sở dữ liệu", sub: "Taxonomy hiện hành", icon: Database, color: "text-brand-700 dark:text-brand-200" },
+    { title: "Danh Mục Lĩnh Vực TT17", value: sectorCount === null ? (sectorError ? "Không tải được" : "Đang tải...") : String(sectorCount), sub: "Lĩnh vực đang hoạt động", icon: Database, color: "text-brand-700 dark:text-brand-200" },
     { title: "Nhật Ký Kiểm Toán (Audit)", value: "142,890", sub: "Lưu vết bất biến", icon: History, color: "text-brand-700 dark:text-brand-200" },
   ];
 

@@ -56,7 +56,7 @@ describe("ExpertsDirectoryPage Component (/experts)", () => {
 
     render(<ExpertsDirectoryPage />);
 
-    expect(screen.getByText("Danh Bạ Chuyên Gia Khoa Học & Công Nghệ")).toBeDefined();
+    expect(screen.getByText("Tìm chuyên gia KH&CN")).toBeDefined();
     expect(screen.getByPlaceholderText(/Tìm theo họ tên chuyên gia/i)).toBeDefined();
 
     await waitFor(() => {

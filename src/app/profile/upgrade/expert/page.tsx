@@ -130,21 +130,21 @@ function ExpertUpgradeForm() {
   const [primaryDomain, setPrimaryDomain] = useState("");
   const [sectorOptions, setSectorOptions] = useState<SectorOption[]>([]);
   const [sectorLoadError, setSectorLoadError] = useState(false);
-  const [specializedKeywords, setSpecializedKeywords] = useState<string[]>([
-    "Trí tuệ nhân tạo (AI)",
-    "Học máy (Machine Learning)",
-  ]);
+  const [sectorLoading, setSectorLoading] = useState(true);
+  const [specializedKeywords, setSpecializedKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
   const [yearsOfExperience, setYearsOfExperience] = useState(5);
   const [bioSummary, setBioSummary] = useState("");
   const [aiParsing, setAiParsing] = useState(false);
 
-  useEffect(() => {
-    getActiveSectors().then((items) => {
-      setSectorOptions(items);
-
-    }).catch(() => setSectorLoadError(true));
-  }, []);
+  const loadSectors = async () => {
+    setSectorLoading(true);
+    setSectorLoadError(false);
+    try { setSectorOptions(await getActiveSectors()); }
+    catch { setSectorLoadError(true); }
+    finally { setSectorLoading(false); }
+  };
+  useEffect(() => { void loadSectors(); }, []);
 
   // CV Upload & AI Parse states
   const [cvFile, setCvFile] = useState<{ name: string; size: string; rawFile?: File } | null>(null);
@@ -156,14 +156,7 @@ function ExpertUpgradeForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Step 3: Scientific Portfolio & Undertaking
-  const [publications, setPublications] = useState<Publication[]>([
-    {
-      title: "Ứng dụng AI trong thẩm định công nghệ vật liệu mới",
-      year: 2024,
-      journalOrConference: "Tạp chí KH&CN Việt Nam",
-      doiOrUrl: "https://doi.org/10.1234/example",
-    },
-  ]);
+  const [publications, setPublications] = useState<Publication[]>([]);
   const [newPubTitle, setNewPubTitle] = useState("");
   const [newPubYear, setNewPubYear] = useState(2025);
   const [newPubJournal, setNewPubJournal] = useState("");
@@ -239,9 +232,13 @@ function ExpertUpgradeForm() {
           if (data.fullName) setFullName(data.fullName);
           if (data.phone) setPhone(data.phone);
           if (data.email) setEmail(data.email);
-          if (data.academicDegree || data.degree) setAcademicDegree(data.academicDegree || data.degree);
+          if (data.academicDegree || data.degree) {
+            const degree = data.academicDegree || data.degree;
+            setAcademicDegree(({ DOCTOR: "TS", MASTER: "ThS", ENGINEER_BACHELOR: "KySu" } as Record<string, string>)[degree] || degree);
+          }
           if (data.primaryInstitution || data.organization) setPrimaryInstitution(data.primaryInstitution || data.organization);
           if (data.primaryDomain || data.sectorCode) setPrimaryDomain(data.primaryDomain || data.sectorCode);
+          if (Array.isArray(data.specializedKeywords)) setSpecializedKeywords(data.specializedKeywords);
           setIsDraftPrefilled(true);
           return;
         }
@@ -408,7 +405,7 @@ function ExpertUpgradeForm() {
         else if (deg.includes("PGS")) setAcademicDegree("PGS");
         else if (deg.includes("TS") || deg.includes("TIẾN SĨ")) setAcademicDegree("TS");
         else if (deg.includes("THS") || deg.includes("THẠC SĨ")) setAcademicDegree("ThS");
-        else if (deg.includes("KS") || deg.includes("KỸ SƯ")) setAcademicDegree("KS");
+        else if (deg.includes("KS") || deg.includes("KỸ SƯ")) setAcademicDegree("KySu");
         else setAcademicDegree("Cử nhân");
       }
       if (d.primaryInstitution) setPrimaryInstitution(d.primaryInstitution);
@@ -486,6 +483,8 @@ function ExpertUpgradeForm() {
       researchTitle: professionalTitle.trim() || null,
       positionTitle: null,
       expertiseSectors: [primaryDomain],
+      specializedKeywords,
+      draftToken: draftToken || null,
       trainingHistoryJson: null,
       employmentHistoryJson: null,
       publicationsJson: JSON.stringify(publications),
@@ -1104,7 +1103,7 @@ function ExpertUpgradeForm() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                           <div className="text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed">
                             <strong className="font-bold">Trích xuất thành công{scanModelUsed ? ` (${scanModelUsed})` : ""}!</strong>{" "}
-                            Đã tự động đối soát và điền trước các thông tin Định danh, Học hàm/Học vị, Cơ quan viện nghiên cứu, Lĩnh vực TT17, Số năm kinh nghiệm, Từ khóa thế mạnh và Danh mục công bố vào hồ sơ. Vui lòng rà soát lại thông tin trước khi tiếp tục.
+                            Đã tự động đối soát và điền trước các thông tin Định danh, Học hàm/Học vị, Cơ quan viện nghiên cứu, Ngành chuyên môn, Số năm kinh nghiệm, Từ khóa thế mạnh và Danh mục công bố vào hồ sơ. Vui lòng rà soát lại thông tin trước khi tiếp tục.
                           </div>
                         </div>
                       )}
@@ -1117,13 +1116,17 @@ function ExpertUpgradeForm() {
                     <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Lĩnh vực Trụ cột Công nghệ *</label>
                     <select
                       value={primaryDomain}
+                      disabled={sectorLoading || sectorLoadError || sectorOptions.length === 0}
                       onChange={(e) => setPrimaryDomain(e.target.value)}
                       className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none bg-white font-medium form-control dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
                     >
                       <option value="">Chọn lĩnh vực từ danh mục hiện hành</option>
                       {sectorOptions.map((sector) => <option key={sector.code} value={sector.code}>{sector.name}</option>)}
                     </select>
-                    {sectorLoadError && <p role="alert" className="mt-1 text-sm text-red-700">Không tải được danh mục ngành; hãy thử tải lại trang.</p>}
+                    {!sectorLoading && !sectorLoadError && primaryDomain && !sectorOptions.some(x => x.code === primaryDomain) && <p role="alert" className="mt-1 text-caption text-amber-800">Ngành trong hồ sơ sơ bộ không còn trong danh mục hiện hành. Vui lòng chọn ngành đang hoạt động trước khi nộp.</p>}
+                    {sectorLoading && <p role="status" className="mt-1 text-caption text-slate-600">Đang tải danh mục ngành…</p>}
+                    {sectorLoadError && <div role="alert" className="mt-1 text-caption text-red-700">Không tải được danh mục ngành. <button type="button" onClick={() => void loadSectors()} className="min-h-11 underline font-semibold">Thử lại</button></div>}
+                    {!sectorLoading && !sectorLoadError && sectorOptions.length === 0 && <p role="status" className="mt-1 text-caption text-slate-600">Chưa có ngành đang hoạt động. Vui lòng thử lại sau.</p>}
                   </div>
 
                   <div>

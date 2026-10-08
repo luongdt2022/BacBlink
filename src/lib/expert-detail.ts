@@ -7,7 +7,7 @@ export type Achievement = { type: string; title: string; meta?: string | null; d
 export type ExpertPublicDetail = {
   expertCode: string; fullName: string; academicRank: string; degree: string; birthYear: number; gender: string;
   organizationName: string; positionTitle?: string | null; publicBio?: string | null;
-  expertiseSectors: string[]; masteredTechCodes: string[]; isVerified: boolean; isAcceptingConsultation: boolean;
+  expertiseSectors: string[]; specializedKeywords?: string[]; masteredTechCodes: string[]; isVerified: boolean; isAcceptingConsultation: boolean;
   training: Timeline[]; employment: Timeline[]; patents: Achievement[]; researchProjects: Achievement[];
   publications: Achievement[]; practicalProjects: Achievement[]; awards: Achievement[];
 };
