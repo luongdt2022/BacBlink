@@ -214,6 +214,12 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
             return BadRequest(new { success = false, error = "Mã ngành chuẩn phải bắt đầu bằng tiền tố 'LV' (Ví dụ: LV01, LV05...)." });
         }
 
+        var existingSectors = await taxonomy.ListAsync(TaxonomyKinds.Sector, false, ct);
+        if (existingSectors.Any(s => string.Equals(s.Code, normalizedCode, StringComparison.OrdinalIgnoreCase)))
+        {
+            return Conflict(new { success = false, error = $"Mã lĩnh vực '{normalizedCode}' đã tồn tại trong hệ thống. Không thể tạo trùng lặp." });
+        }
+
         var metaJson = System.Text.Json.JsonSerializer.Serialize(new { tt17Code = dto.Tt17Code, description = dto.Description });
         var created = await taxonomy.CreateAsync(TaxonomyKinds.Sector, dto.Name, normalizedCode, metaJson, ct);
 
@@ -268,16 +274,39 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
     {
         RequireAdmin();
 
+        if (dto.RatingStars < 1 || dto.RatingStars > 5)
+        {
+            return BadRequest(new { success = false, error = "Mức độ tương thích (RatingStars) phải từ 1 đến 5 sao." });
+        }
+
+        if (dto.Weight < 0.1 || dto.Weight > 1.0)
+        {
+            return BadRequest(new { success = false, error = "Trọng số thuật toán (Weight) phải nằm trong khoảng từ 0.1 đến 1.0." });
+        }
+
+        var normalizedFieldCode = dto.FieldCode?.Trim().ToUpperInvariant() ?? string.Empty;
+        var normalizedTechCode = dto.TechCode?.Trim().ToUpperInvariant() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(normalizedFieldCode) || !normalizedFieldCode.StartsWith("LV"))
+        {
+            return BadRequest(new { success = false, error = "Mã lĩnh vực (FieldCode) không hợp lệ (phải bắt đầu bằng tiền tố 'LV')." });
+        }
+
+        if (string.IsNullOrWhiteSpace(normalizedTechCode) || !normalizedTechCode.StartsWith("CN"))
+        {
+            return BadRequest(new { success = false, error = "Mã nhóm công nghệ (TechCode) không hợp lệ (phải bắt đầu bằng tiền tố 'CN')." });
+        }
+
         var existing = StaticMatrix.FirstOrDefault(m =>
-            string.Equals(m.FieldCode, dto.FieldCode, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(m.TechCode, dto.TechCode, StringComparison.OrdinalIgnoreCase));
+            string.Equals(m.FieldCode, normalizedFieldCode, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(m.TechCode, normalizedTechCode, StringComparison.OrdinalIgnoreCase));
 
         if (existing is null)
         {
             var newPair = new MatrixPairDto
             {
-                FieldCode = dto.FieldCode.Trim().ToUpperInvariant(),
-                TechCode = dto.TechCode.Trim().ToUpperInvariant(),
+                FieldCode = normalizedFieldCode,
+                TechCode = normalizedTechCode,
                 RatingStars = dto.RatingStars,
                 Weight = dto.Weight
             };
