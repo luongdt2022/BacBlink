@@ -94,11 +94,11 @@ export default function PublicMatrixExplorerPage() {
 
   const filteredPairs = matrixPairs.filter((p) => {
     const matchSector = selectedFieldCode ? p.fieldCode === selectedFieldCode : true;
-    const matchSearch = searchQuery
-      ? p.techName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.techCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.fieldName.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
+    const q = (searchQuery || "").trim().toLowerCase();
+    const matchSearch = !q ||
+      (p.techName || "").toLowerCase().includes(q) ||
+      (p.techCode || "").toLowerCase().includes(q) ||
+      (p.fieldName || "").toLowerCase().includes(q);
     return matchSector && matchSearch;
   });
 
@@ -294,13 +294,13 @@ export default function PublicMatrixExplorerPage() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-0.5 text-amber-500">
-                          {Array.from({ length: pair.ratingStars }).map((_, i) => (
+                          {Array.from({ length: Math.max(0, Math.min(5, Math.floor(pair.ratingStars || 0))) }).map((_, i) => (
                             <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                           ))}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700">
-                        {pair.weight.toFixed(1)}
+                        {typeof pair.weight === "number" && !isNaN(pair.weight) ? pair.weight.toFixed(1) : "0.0"}
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span className="font-semibold px-2 py-0.5 rounded bg-teal-50 text-teal-700 border border-teal-200 text-xs">

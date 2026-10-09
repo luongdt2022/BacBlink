@@ -446,6 +446,116 @@ def run_task06_blackbox():
         except Exception as e:
             record("TC-C4-05", "Nút điều hướng sang Chế Độ Quản Trị từ /matrix", "FAIL", str(e))
 
+        # -----------------------------------------------------
+        # TẦNG 5: SĂN LỖI BIÊN, NGOẠI LỆ & DỮ LIỆU DỊ THƯỜNG (ADVERSARIAL EDGE CASES)
+        # -----------------------------------------------------
+        print("\n--- [TẦNG SĂN LỖI BIÊN & BƠM DỮ LIỆU DỊ THƯỜNG (ADVERSARIAL HUNTING)] ---")
+
+        # TC-EDGE-01: Chặn Trọng Số Ngoài Biên (Weight < 0.1 hoặc > 1.0)
+        try:
+            page.goto(f"{BASE_URL}/admin/sectors?tab=matrix", wait_until="networkidle")
+            time.sleep(0.5)
+
+            # Mở modal sửa trọng số dòng đầu tiên
+            edit_btn = page.locator("button:has-text('Sửa')").first
+            edit_btn.click()
+            time.sleep(0.3)
+
+            weight_input = page.locator("input[step='0.1']")
+            weight_input.fill("1.8")  # Cố tình vượt ngưỡng max 1.0
+            time.sleep(0.2)
+
+            save_pair_btn = page.locator("button:has-text('Lưu Trọng Số')")
+            save_pair_btn.click()
+            time.sleep(0.3)
+
+            # Kiểm tra alert lỗi biên
+            error_box = page.locator("p[role='alert']")
+            if error_box.is_visible() and ("0.1" in error_box.inner_text() or "1.0" in error_box.inner_text()):
+                record("TC-EDGE-01", "Chặn Trọng Số Ngoài Biên (Weight = 1.8)", "PASS", f"Form chặn thành công: {error_box.inner_text()}")
+            else:
+                record("TC-EDGE-01", "Chặn Trọng Số Ngoài Biên (Weight = 1.8)", "FAIL", "Hệ thống không chặn giá trị trọng số 1.8")
+
+            # Đóng modal
+            page.locator("button:has-text('Hủy Bỏ')").click()
+            time.sleep(0.3)
+        except Exception as e:
+            record("TC-EDGE-01", "Chặn Trọng Số Ngoài Biên (Weight = 1.8)", "FAIL", str(e))
+
+        # TC-EDGE-02: Chặn Trùng Lặp Mã Lĩnh Vực Đã Tồn Tại (Duplicate Code LV01)
+        try:
+            page.goto(f"{BASE_URL}/admin/sectors?tab=sectors", wait_until="networkidle")
+            time.sleep(0.4)
+
+            page.locator("button:has-text('Thêm Lĩnh Vực Mới')").click()
+            time.sleep(0.3)
+
+            page.locator("input[placeholder*='VD: LV19']").fill("LV01")  # LV01 đã tồn tại trong fixture
+            page.locator("input[placeholder*='VD: Năng Lượng']").fill("Nông nghiệp trùng lặp test")
+            time.sleep(0.2)
+
+            page.locator("button:has-text('Lưu Lĩnh Vực')").click()
+            time.sleep(0.3)
+
+            dup_error = page.locator("p[role='alert']")
+            if dup_error.is_visible() and "đã tồn tại" in dup_error.inner_text():
+                record("TC-EDGE-02", "Chặn Trùng Lặp Mã Lĩnh Vực (LV01 trùng mã)", "PASS", f"Chặn trùng lặp thành công: {dup_error.inner_text()}")
+            else:
+                record("TC-EDGE-02", "Chặn Trùng Lặp Mã Lĩnh Vực (LV01 trùng mã)", "FAIL", "Không phát hiện chặn mã trùng lặp LV01")
+
+            page.locator("button:has-text('Hủy Bỏ')").click()
+            time.sleep(0.3)
+        except Exception as e:
+            record("TC-EDGE-02", "Chặn Trùng Lặp Mã Lĩnh Vực (LV01 trùng mã)", "FAIL", str(e))
+
+        # TC-EDGE-03: Bơm Payload Dị Thường / Ký Tự Đặc Biệt Vào Ô Tìm Kiếm (/matrix)
+        try:
+            page.goto(f"{BASE_URL}/matrix", wait_until="networkidle")
+            time.sleep(0.4)
+
+            public_search = page.locator("input[placeholder*='Tìm theo tên công nghệ']")
+            chaos_payload = "<script>alert('xss')</script> ' OR 1=1-- #$%^&*"
+            public_search.fill(chaos_payload)
+            time.sleep(0.4)
+
+            # Kiểm tra xem trang có bị văng lỗi React hoặc màn hình trắng không
+            has_error = page.locator("text='Application error'").is_visible() or page.locator("text='RangeError'").is_visible()
+            if not has_error:
+                record("TC-EDGE-03", "Bơm Payload Dị Thường / SQLi / XSS vào Tìm Kiếm", "PASS", "Trang xử lý an toàn tuyệt đối, không crash React")
+            else:
+                record("TC-EDGE-03", "Bơm Payload Dị Thường / SQLi / XSS vào Tìm Kiếm", "FAIL", "Trang bị văng lỗi khi tìm kiếm ký tự đặc biệt")
+
+            public_search.fill("")
+            time.sleep(0.2)
+        except Exception as e:
+            record("TC-EDGE-03", "Bơm Payload Dị Thường / SQLi / XSS vào Tìm Kiếm", "FAIL", str(e))
+
+        # TC-EDGE-04: Thử Nghiệm Tần Suất Cao (Rapid Toggle Stress Test)
+        try:
+            page.goto(f"{BASE_URL}/admin/sectors?tab=matrix", wait_until="networkidle")
+            time.sleep(0.3)
+
+            btn_grid = page.locator("button:has-text('🗺️ Lưới 2D Heatmap')")
+            btn_table = page.locator("button:has-text('📋 Danh Sách')")
+
+            # Click qua lại liên tục 4 lần
+            for _ in range(4):
+                btn_grid.click()
+                time.sleep(0.1)
+                btn_table.click()
+                time.sleep(0.1)
+
+            btn_grid.click()
+            time.sleep(0.3)
+
+            table_visible = page.locator("table:has(th:has-text('Nhóm CN'))").is_visible()
+            if table_visible:
+                record("TC-EDGE-04", "Stress Test Chuyển Đổi Nhanh Giữa 2 Chế Độ Xem (Toggle Stress)", "PASS", "Lưới 2D Heatmap vẫn render ổn định sau 4 lần chuyển nhanh")
+            else:
+                record("TC-EDGE-04", "Stress Test Chuyển Đổi Nhanh Giữa 2 Chế Độ Xem (Toggle Stress)", "FAIL", "Lưới 2D Heatmap bị vỡ sau khi click nhanh")
+        except Exception as e:
+            record("TC-EDGE-04", "Stress Test Chuyển Đổi Nhanh Giữa 2 Chế Độ Xem (Toggle Stress)", "FAIL", str(e))
+
         browser.close()
 
     print("\n=======================================================")

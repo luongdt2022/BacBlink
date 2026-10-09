@@ -146,7 +146,12 @@ export default function AdminSectorsPage() {
     e.preventDefault();
     const normalizedCode = formCode.trim().toUpperCase();
     if (!normalizedCode.startsWith("LV")) {
-      alert("Mã lĩnh vực phải bắt đầu bằng tiền tố 'LV' (VD: LV19, LV20...)!");
+      setSaveError("Mã lĩnh vực phải bắt đầu bằng tiền tố 'LV' (VD: LV19, LV20...)!");
+      return;
+    }
+
+    if (!editingSector && sectors.some((s) => s.code?.toUpperCase() === normalizedCode)) {
+      setSaveError(`Mã lĩnh vực '${normalizedCode}' đã tồn tại trong danh mục! Không thể tạo trùng lặp.`);
       return;
     }
 
@@ -159,10 +164,12 @@ export default function AdminSectorsPage() {
         headers: { ...authClient.getAuthHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify(editingSector ? { name: formName.trim() } : { code: normalizedCode, name: formName.trim(), tt17Code: formTt17, description: formDesc.trim(), isActive: true }),
       });
-      if (!response.ok) throw new Error("Không lưu được lĩnh vực. Vui lòng thử lại.");
       const result = await response.json();
+      if (!response.ok || result.success !== true) {
+        throw new Error(result.error || result.message || "Không lưu được lĩnh vực. Vui lòng thử lại.");
+      }
       const created = editingSector ? { ...editingSector, ...result.data } : result.data;
-      if (result.success !== true || !created || typeof created.code !== "string" || typeof created.name !== "string") {
+      if (!created || typeof created.code !== "string" || typeof created.name !== "string") {
         throw new Error("Máy chủ chưa xác nhận lưu lĩnh vực. Vui lòng tải lại danh mục trước khi thử lại.");
       }
       setSectors((current) => [{ id: created.id, code: created.code, name: created.name, tt17Code: created.tt17Code ?? "", description: created.description ?? "", filterRuleCount: created.filterRuleCount ?? 0, isActive: created.isActive !== false }, ...current.filter((sector) => sector.code !== created.code)]);
@@ -183,6 +190,17 @@ export default function AdminSectorsPage() {
   const handleSavePairSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPair || isPairSaving) return;
+
+    if (pairRatingStars < 1 || pairRatingStars > 5) {
+      setPairSaveError("Mức độ tương thích phải nằm trong khoảng từ 1 đến 5 sao.");
+      return;
+    }
+
+    if (isNaN(pairWeight) || pairWeight < 0.1 || pairWeight > 1.0) {
+      setPairSaveError("Trọng số thuật toán (Weight) phải nằm trong khoảng từ 0.1 đến 1.0.");
+      return;
+    }
+
     setIsPairSaving(true);
     setPairSaveError("");
     try {
@@ -196,9 +214,10 @@ export default function AdminSectorsPage() {
           weight: pairWeight
         })
       });
-      if (!response.ok) throw new Error("Không cập nhật được trọng số ma trận.");
       const result = await response.json();
-      if (result.success !== true) throw new Error(result.message || "Lỗi lưu trọng số.");
+      if (!response.ok || result.success !== true) {
+        throw new Error(result.error || result.message || "Không cập nhật được trọng số ma trận.");
+      }
 
       setMatrixPairs((current) => {
         const existingIdx = current.findIndex(
@@ -547,12 +566,14 @@ export default function AdminSectorsPage() {
                         <td className="py-3 px-4 text-gray-800">{m.techName}</td>
                         <td className="py-3 px-4 text-center">
                           <div className="flex items-center justify-center gap-0.5 text-amber-500">
-                            {Array.from({ length: m.ratingStars }).map((_, i) => (
+                            {Array.from({ length: Math.max(0, Math.min(5, Math.floor(m.ratingStars || 0))) }).map((_, i) => (
                               <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                             ))}
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-gray-800">{m.weight.toFixed(1)}</td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-gray-800">
+                          {typeof m.weight === "number" && !isNaN(m.weight) ? m.weight.toFixed(1) : "0.0"}
+                        </td>
                         <td className="py-3 px-4 text-center">
                           <button
                             type="button"
@@ -642,7 +663,9 @@ export default function AdminSectorsPage() {
                                     }`}
                                     title={pair ? `[${sector.code} - ${t.code}] ${pair.ratingStars} sao (${pair.weight}) - Click để sửa` : `Chưa ghép cặp [${sector.code} - ${t.code}] - Click để gán`}
                                   >
-                                    {pair ? `${"★".repeat(pair.ratingStars)} ${pair.weight.toFixed(1)}` : "—"}
+                                    {pair
+                                      ? `${"★".repeat(Math.max(0, Math.min(5, Math.floor(pair.ratingStars || 0))))} ${(typeof pair.weight === "number" && !isNaN(pair.weight) ? pair.weight : 0).toFixed(1)}`
+                                      : "—"}
                                   </td>
                                 );
                               })}
