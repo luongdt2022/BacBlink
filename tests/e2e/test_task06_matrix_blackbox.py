@@ -216,8 +216,10 @@ def run_task06_blackbox():
             page.locator("button:has-text('Lưu Lĩnh Vực')").click()
             time.sleep(0.5)
 
-            if any("LV" in msg for msg in alert_caught):
-                record("TC-C1-01", "Chặn tiền tố không hợp lệ (Bắt buộc LV*)", "PASS", "Alert xuất hiện cảnh báo mã phải bắt đầu bằng LV")
+            error_el = page.locator("p[role='alert']")
+            has_error = (error_el.is_visible() and "LV" in error_el.inner_text()) or any("LV" in msg for msg in alert_caught)
+            if has_error:
+                record("TC-C1-01", "Chặn tiền tố không hợp lệ (Bắt buộc LV*)", "PASS", "Cảnh báo xuất hiện yêu cầu mã phải bắt đầu bằng LV")
             else:
                 record("TC-C1-01", "Chặn tiền tố không hợp lệ (Bắt buộc LV*)", "FAIL", "Không thấy cảnh báo khi nhập tiền tố sai")
 
@@ -453,11 +455,15 @@ def run_task06_blackbox():
 
         # TC-EDGE-01: Chặn Trọng Số Ngoài Biên (Weight < 0.1 hoặc > 1.0)
         try:
-            page.goto(f"{BASE_URL}/admin/sectors?tab=matrix", wait_until="networkidle")
-            time.sleep(0.5)
+            page.goto(f"{BASE_URL}/admin/sectors", wait_until="networkidle")
+            time.sleep(0.4)
+
+            # Chuyển sang Tab Ma Trận
+            page.locator("div.border-b button").filter(has_text="Ma Trận").first.click()
+            time.sleep(0.4)
 
             # Mở modal sửa trọng số dòng đầu tiên
-            edit_btn = page.locator("button:has-text('Sửa')").first
+            edit_btn = page.locator("button:has-text('✏️ Sửa Trọng Số')").first
             edit_btn.click()
             time.sleep(0.3)
 
@@ -532,8 +538,12 @@ def run_task06_blackbox():
 
         # TC-EDGE-04: Thử Nghiệm Tần Suất Cao (Rapid Toggle Stress Test)
         try:
-            page.goto(f"{BASE_URL}/admin/sectors?tab=matrix", wait_until="networkidle")
+            page.goto(f"{BASE_URL}/admin/sectors", wait_until="networkidle")
             time.sleep(0.3)
+
+            # Chuyển sang Tab Ma Trận
+            page.locator("div.border-b button").filter(has_text="Ma Trận").first.click()
+            time.sleep(0.4)
 
             btn_grid = page.locator("button:has-text('🗺️ Lưới 2D Heatmap')")
             btn_table = page.locator("button:has-text('📋 Danh Sách')")
