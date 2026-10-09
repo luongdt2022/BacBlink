@@ -13,9 +13,9 @@
 | :---: | :---: | :--- | :--- | :---: | :---: | :---: | :--- |
 | **`TASK-00`** | **Foundation** | Khung Dự Án, Kiến Trúc & Common Kernel | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | *Hạ tầng kỹ thuật* | ✅ **Delta v6 hoàn tất** | Nền tảng + identity lifecycle + session UX | Contract v2, public `PUBLIC_USER`, provision/assignment có audit, menu tài khoản và logout Web Portal đã hội tụ (T-00.41–48). |
 | **`TASK-01`** | **Domain** | Tổng Quan Hệ Thống & Kiến Trúc Home | [`specs/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/) | [`TASK-01`](../../Specification/02_BASIC_DESIGN/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME) | ⚪ **Dự Kiến** | 0% | SiteMap, Menu điều hướng, Portal Landing, Chatbot AI định hướng kết nối cung cầu |
-| **`TASK-02`** | **Domain** | Hồ Sơ Chủ Thể & Doanh Nghiệp ĐMST | [`specs/TASK-02_HO_SO_CHU_THE_VA_DN_DMST`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) | [`TASK-02`](../../Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST) | 🔵 **Đang thi công** | 5% | 10 nhóm trường (225 fields), định danh pháp lý MST, hồ sơ năng lực KH&CN, văn bằng SHTT |
+| **`TASK-02`** | **Domain** | Hồ Sơ Chủ Thể & Doanh Nghiệp ĐMST | [`specs/TASK-02_HO_SO_CHU_THE_VA_DN_DMST`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) | [`TASK-02`](../../Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST) | 🟢 **Sẵn sàng nghiệm thu (Ready for Gate 5)** | 95% (22/23 Tasks) | 10 nhóm trường (225 fields), định danh MST, bảo vệ dữ liệu PDPD (NĐ 13/2023), kho 304 DN thật, trọn bộ 5 màn hình Next.js 15, Invariants test 100/100 Green, bàn giao QC bộ test 4 tầng. |
 | **`TASK-03`** | **Domain** | Hồ Sơ Tìm Mua / Nhu Cầu (Buyer) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | [`TASK-03`](../../Specification/02_BASIC_DESIGN/TASK-03_HO_SO_TIM_MUA_BUYER) | 🔵 **Đang thi công** | 0% | Phiếu khảo sát nhu cầu đổi mới công nghệ DNNVV, đăng ký tham quan triển lãm |
-| **`TASK-04`** | **Domain** | Hồ Sơ Chào Bán (Seller) & Bộ Lọc 18 Ngành | [`specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`](./TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/) | [`TASK-04`](../../Specification/02_BASIC_DESIGN/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC) | ⚪ **Dự Kiến** | 0% | **Domain Lõi**: Hồ sơ 4 lớp, Engine lọc 1,479 quy tắc, thang đo TRL 1-9 khi chuyển giao |
+| **`TASK-04`** | **Domain** | Hồ Sơ Chào Bán (Seller) & Bộ Lọc 18 Ngành | [`specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`](./TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/) | [`TASK-04`](../../Specification/02_BASIC_DESIGN/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC) | ✅ **Hoàn thành (Gate 4 Pass)** | 100% (16/16 Tasks) | **Domain Lõi**: Hoàn thành 4 màn hình Wireframe (Workspace Seller, Form Wizard, Danh sách 18 ngành tab chính `/chao-ban-cong-nghe`, Chi tiết hồ sơ). Bộ Tứ SHTT (TRL 1-9, Bằng sáng chế, Hình thức chuyển giao, Đơn vị R&D). Backend API v1/v2, xUnit BR-SELLER-* 16/16 pass, E2E Black-box Playwright pass 100%. |
 | **`TASK-05`** | **Domain** | Hồ Sơ Chuyên Gia KH&CN & AI Scan LLKH | [`specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`](./TASK-05_HO_SO_CHUYEN_GIA_KHCN/) | [`TASK-05`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN) | ✅ **Delta v12 hoàn tất (Gate 4/5 Pass)** | 100% (T001–T113) | Đồng bộ triệt để taxonomy động từ DB (10 mã LV TT17), phân trang/lọc đa tiêu chí, địa bàn theo scope, form consultation tích hợp API, fix dứt điểm 4 lỗi test black-box (TC-C2-12, TC-C3-11, TC-C4-06, TC-C4-08), 95/95 invariants pass, dataset fixture 14 chuyên gia đã sẵn sàng. |
 | **`TASK-06`** | **Domain** | Danh Mục Ngành TT17 & Ma Trận LV-CN | [`specs/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN`](./TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/) | [`TASK-06`](../../Specification/02_BASIC_DESIGN/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN) | 🔄 **Delta v12 đang hội tụ; v2 đã nghiệm thu lịch sử** | T019–T023 chưa nghiệm thu | **Master Data & AI Invariant**: Đã đồng bộ triệt để 10 Lĩnh vực chuẩn `LV` từ file Excel (`LV01, LV05, LV07, LV08, LV11, LV12, LV14, LV15, LV16, LV17`), triệt tiêu 100% mã `SEC-*` tự chế, nâng cấp CSDL `policy.taxonomy_terms` (`code`, `metadata`), Scoped RBAC và giao diện Web Admin. |
 | **`TASK-07`** | **Domain** | Phân Quyền & Năng Lực Quản Trị Admin | [`specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`](./TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/) | [`TASK-07`](../../Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN) | ✅ **Delta v4 hoàn tất** | 100% | 10 Roles 3D Scoped RBAC, Phân cấp Duyệt Chuyên gia Cấp 2 cho Lãnh đạo Sở KH&CN, Cổng Tác Nghiệp Cấp 2 `/gov`, Action `REVOKE_EXPERT` Hậu kiểm Trung ương theo BR-ADM-007 (T001–T031). |
@@ -55,6 +55,43 @@ Giai đoạn 4: TASK-01 (Tổng quan & Giao diện Trang chủ Portal kết nố
 
 | Thời Gian | Epic Bị Tác Động | Loại Thay Đổi | Mô Tả Chi Tiết Thay Đổi | Người / Công Cụ |
 | :--- | :--- | :--- | :--- | :--- |
+| **2026-10-09** | **`TASK-02`** | **Triển Khai Hoàn Tất & Bàn Giao QC (95%)** | Hoàn thành trọn vẹn 4 giai đoạn: (1) Chuẩn hóa Spec Kit 10 nhóm trường (225 fields); (2) Backend Clean Architecture .NET Core API v1 (EnterpriseController, EfEnterpriseRepository, PDPD Masking, Invariants Tests 100/100 Green); (3) Frontend Next.js 15 trọn bộ 5 màn hình (`/enterprises`, `/enterprises/[taxCode]`, `/portal/enterprise/profile`, `/admin/enterprises/dashboard`, `/gov/approvals/enterprises`) tối ưu hóa build 0 lỗi; (4) Bàn giao QC kịch bản kiểm thử 4 tầng & Playwright black-box (`test_task02_enterprises_blackbox.py`). | PO/PM (`nacen-po-pm`) |
+
+---
+
+## 2. QUY ƯỚC ĐẶT TÊN & BỘ 3 TÀI LIỆU BẮT BUỘC
+
+1. **Quy tắc đặt tên thư mục Detail Design**:
+   - `specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON` (Khung dự án & thư viện dùng chung).
+   - `specs/TASK-XX_<TEN_GIONG_BASIC_DESIGN>` (Khớp tên 1:1 với thư mục tại `../../Specification/02_BASIC_DESIGN/`).
+2. **Bộ 3 tài liệu bắt buộc trong mỗi Epic**:
+   - `spec.md`: Đặc tả yêu cầu kỹ thuật, trích dẫn trực tiếp nguồn từ Basic Design, User Stories, `REQ-*`, `BR-*`.
+   - `plan.md`: Thiết kế chi tiết: API Contracts (Contract-First), DB Schema, Backend Architecture, Frontend UI/UX (5 UX States).
+   - `tasks.md`: Phân rã đầu việc có tag `[BE]`, `[FE]`, `[INT]` kèm lệnh test kiểm chứng.
+
+---
+
+## 3. THỨ TỰ TRIỂN KHAI TỐI ƯU (RECOMMENDED EXECUTION SEQUENCE)
+
+```text
+Giai đoạn 0: TASK-00 (Foundation & Common Kernel)
+   ↓
+Giai đoạn 1: TASK-06 (Master Data Danh mục ngành & Ma trận - Khóa ngoại bắt buộc)
+   ↓
+Giai đoạn 2: TASK-07 (Phân quyền & Kiểm duyệt Admin)
+   ↓
+Giai đoạn 3: TASK-02 (Hồ sơ DN ĐMST) → TASK-04 (Hồ sơ Seller & Bộ Lọc) → TASK-03 (Buyer) → TASK-05 (Chuyên gia)
+   ↓
+Giai đoạn 4: TASK-01 (Tổng quan & Giao diện Trang chủ Portal kết nối toàn hệ thống)
+```
+
+---
+
+## 4. LỊCH SỬ THAY ĐỔI ROADMAP
+
+| Thời Gian | Epic Bị Tác Động | Loại Thay Đổi | Mô Tả Chi Tiết Thay Đổi | Người / Công Cụ |
+| :--- | :--- | :--- | :--- | :--- |
+| **2026-10-09** | **`TASK-04`** | **Nghiệm Thu Toàn Trình (Gate 4 Pass 100%)** | Triển khai thành công toàn diện: (1) `spec.md`, `plan.md`, `tasks.md` chuẩn Spec Kit; (2) Backend Clean Architecture .NET API v1/v2 cho công nghệ chào bán; (3) C# xUnit `BR-SELLER-01` $\rightarrow$ `05` 16/16 tests pass; (4) Frontend 4 màn hình Wireframe (Workspace Seller `/portal/seller/technologies`, Form Wizard `/portal/seller/technologies/create`, Tab chính `/chao-ban-cong-nghe`, Chi tiết `/chao-ban-cong-nghe/[id]`) chuẩn 5 UX states; (5) Playwright E2E Black-box 4 tầng đạt 100% Pass. Đóng Epic xuất xưởng. | Autopilot (`speckit-autopilot` / `nacen-dev` / `nacen-qc`) |
 | **2026-10-09** | **TASK-05** | **Hoàn thành Delta v11 & Delta v12 (CR-2026-005) — Nghiệm thu Gate 4 & Gate 5 Sign-off** | Sửa dứt điểm 4 điểm nghẽn test black-box (TC-C2-12 regex collision, TC-C3-11/C4-06/C4-08 unwrap ExpertPublicDirectoryDto), tạo dataset fixture idempotent 14 chuyên gia (`seed_delta_v12_e2e_dataset.sql`), 95/95 Invariants pass 100%, đánh dấu hoàn tất 26/26 task Phase 16 & 17 (T088–T113). Đóng Epic xuất xưởng. | PO/PM (`nacen-po-pm`) |
 | **2026-10-07** | **TASK-05** | **CR-2026-005 — Delta v11 đang hội tụ** | Hội tụ `/experts`: ngành lấy số record SECTOR active từ DB (baseline migration hiện seed 10 mã LV), sửa nguồn/lọc địa bàn, kết nối modal với API tiếp nhận hiện hữu, tinh gọn giao diện và giữ 5 UX states. Phát hiện query legacy `query` vs client `q`, thêm task T098. Đang triển khai; nghiệm thu còn chờ Gate 4. | PO/PM + `wf-delta` |
 | **2026-10-06** | **TASK-05** | **Hoàn thành Delta v10: Danh bạ Tìm kiếm & Lọc Chuyên gia Công Khai (`/experts` & `/chuyen-gia`)** | Triển khai thành công toàn diện: (1) Basic Design v2.7 & Wireframe HTML `wireframe_danh_ba_chuyen_gia.html`; (2) Spec Delta v10 & Plan Delta v10; (3) Backend API `GET /api/v1/public/experts` với phân trang & lọc đa tiêu chí; (4) Frontend `/experts` (Grid thẻ, Bộ lọc 4 trục TT17/Học vị/34 Tỉnh thành, Modal kết nối, 5 UX states); (5) Route alias `/chuyen-gia` redirect `/experts`; (6) Quality Gate: 83/83 Invariants pass, 89/89 Vitest pass, Next.js 15 build static prerender 0 lỗi. | PO/PM Autopilot (`speckit-autopilot`) |
