@@ -897,7 +897,7 @@ export default function AdminSectorsPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleSavePairSubmit} className="space-y-4 text-xs">
+              <form noValidate onSubmit={handleSavePairSubmit} className="space-y-4 text-xs">
                 {pairSaveError && (
                   <p role="alert" className="text-status-danger">{pairSaveError}</p>
                 )}

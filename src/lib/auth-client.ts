@@ -142,3 +142,10 @@ export const authClient = {
     };
   },
 };
+
+export function getStoredSession(): { accessToken?: string; token?: string; user?: UserContext | null } | null {
+  const token = authClient.getToken();
+  const user = authClient.getUser();
+  if (!token && !user) return null;
+  return { accessToken: token ?? undefined, token: token ?? undefined, user };
+}
