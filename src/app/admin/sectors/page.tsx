@@ -31,6 +31,16 @@ interface SectorItem {
 
 interface MatrixPair { fieldCode: string; fieldName: string; techCode: string; techName: string; ratingStars: number; weight: number; }
 
+interface TaxonomyTreeNode {
+  id: string;
+  code: string;
+  name: string;
+  level: number;
+  category: string;
+  childCount: number;
+  children: TaxonomyTreeNode[];
+}
+
 const EXHIBITIONS = [
   { id: 1, name: "Triển lãm Viễn thông, CNTT & Truyền thông (Vietnam Telecomp)", focus: "Viễn thông, CNTT, Phần mềm", location: "Hà Nội & TP.HCM", frequency: "Thường niên 2026" },
   { id: 2, name: "Triển lãm Công nghiệp In ấn & Bao bì tại Hà Nội (HanoiPrintPack)", focus: "In ấn, Đóng gói bao bì", location: "Hà Nội", frequency: "2026" },
@@ -50,20 +60,31 @@ const EXHIBITIONS = [
 ];
 
 export default function AdminSectorsPage() {
-  const [activeTab, setActiveTab] = useState<"sectors" | "tt17" | "matrix" | "exhibitions">("sectors");
+  const [activeTab, setActiveTab] = useState<"sectors" | "tt17" | "matrix" | "tree" | "exhibitions">("sectors");
+  const [matrixView, setMatrixView] = useState<"table" | "grid">("table");
   const [sectors, setSectors] = useState<SectorItem[]>([]);
   const [sectorsLoading, setSectorsLoading] = useState(true);
   const [sectorsError, setSectorsError] = useState("");
   const [tt17Error, setTt17Error] = useState("");
   const [matrixError, setMatrixError] = useState("");
+  const [treeError, setTreeError] = useState("");
   const [tt17Loading, setTt17Loading] = useState(true);
   const [matrixLoading, setMatrixLoading] = useState(true);
+  const [treeLoading, setTreeLoading] = useState(true);
   const [loadVersion, setLoadVersion] = useState(0);
   const [tt17Subsectors, setTt17Subsectors] = useState<Array<{code:string;name:string; electricityNorm?:string; profitMargin?:number | null; valueAddedRatio?:number | null; investmentRateBillionVnd?:number | null}>>([]);
   const [matrixPairs, setMatrixPairs] = useState<MatrixPair[]>([]);
+  const [taxonomyTree, setTaxonomyTree] = useState<TaxonomyTreeNode[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedField, setSelectedField] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Matrix pair editing modal
+  const [editingPair, setEditingPair] = useState<MatrixPair | null>(null);
+  const [pairRatingStars, setPairRatingStars] = useState(5);
+  const [pairWeight, setPairWeight] = useState(1.0);
+  const [isPairSaving, setIsPairSaving] = useState(false);
+  const [pairSaveError, setPairSaveError] = useState("");
 
   // Sector form
   const [formCode, setFormCode] = useState("");
@@ -85,8 +106,8 @@ export default function AdminSectorsPage() {
       if (payload.success !== true || !Array.isArray(payload.data)) throw new Error("Dữ liệu danh mục không hợp lệ.");
       return payload.data;
     };
-    setSectorsLoading(true); setTt17Loading(true); setMatrixLoading(true);
-    setSectorsError(""); setTt17Error(""); setMatrixError("");
+    setSectorsLoading(true); setTt17Loading(true); setMatrixLoading(true); setTreeLoading(true);
+    setSectorsError(""); setTt17Error(""); setMatrixError(""); setTreeError("");
     readRows("/api/v1/master-data/sectors?activeOnly=false", true)
       .then((rows) => {
         if (cancelled) return;
@@ -102,6 +123,10 @@ export default function AdminSectorsPage() {
       .then((rows) => { if (!cancelled) setMatrixPairs(rows); })
       .catch(() => { if (!cancelled) setMatrixError("Không tải được ma trận ngành-công nghệ."); })
       .finally(() => { if (!cancelled) setMatrixLoading(false); });
+    readRows("/api/v1/master-data/taxonomy-tree")
+      .then((rows) => { if (!cancelled) setTaxonomyTree(rows); })
+      .catch(() => { if (!cancelled) setTreeError("Không tải được cây phân cấp taxonomy."); })
+      .finally(() => { if (!cancelled) setTreeLoading(false); });
     return () => { cancelled = true; };
   }, [loadVersion]);
 
@@ -152,6 +177,48 @@ export default function AdminSectorsPage() {
       setSaveError(error instanceof Error ? error.message : "Không kết nối được máy chủ. Vui lòng thử lại.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSavePairSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPair || isPairSaving) return;
+    setIsPairSaving(true);
+    setPairSaveError("");
+    try {
+      const response = await fetch(`${API_BASE}/api/v1/master-data/matrix`, {
+        method: "PUT",
+        headers: { ...authClient.getAuthHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fieldCode: editingPair.fieldCode,
+          techCode: editingPair.techCode,
+          ratingStars: pairRatingStars,
+          weight: pairWeight
+        })
+      });
+      if (!response.ok) throw new Error("Không cập nhật được trọng số ma trận.");
+      const result = await response.json();
+      if (result.success !== true) throw new Error(result.message || "Lỗi lưu trọng số.");
+
+      setMatrixPairs((current) => {
+        const existingIdx = current.findIndex(
+          (p) => p.fieldCode === editingPair.fieldCode && p.techCode === editingPair.techCode
+        );
+        if (existingIdx >= 0) {
+          const next = [...current];
+          next[existingIdx] = { ...next[existingIdx], ratingStars: pairRatingStars, weight: pairWeight };
+          return next;
+        } else {
+          return [...current, { ...editingPair, ratingStars: pairRatingStars, weight: pairWeight }];
+        }
+      });
+      setToastMessage(`Đã cập nhật trọng số [${editingPair.fieldCode} - ${editingPair.techCode}] thành ${pairRatingStars} sao (${pairWeight.toFixed(1)})`);
+      setTimeout(() => setToastMessage(null), 4000);
+      setEditingPair(null);
+    } catch (err: any) {
+      setPairSaveError(err instanceof Error ? err.message : "Không kết nối được máy chủ.");
+    } finally {
+      setIsPairSaving(false);
     }
   };
 
@@ -261,6 +328,16 @@ export default function AdminSectorsPage() {
             }`}
           >
             <span>🔗 Ma Trận LV-CN</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("tree")}
+            className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 whitespace-nowrap transition-all ${
+              activeTab === "tree"
+                ? "border-emerald-600 text-emerald-700"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <span>🌳 Cây Taxonomy 3 Tầng</span>
           </button>
           <button
             onClick={() => setActiveTab("exhibitions")}
@@ -398,61 +475,270 @@ export default function AdminSectorsPage() {
                 <p className="text-xs text-gray-500 mt-1">Dữ liệu gốc làm trọng số cho AI Matching Engine ghép cặp Cung - Cầu</p>
               </div>
 
-              <select
-                value={selectedField}
-                onChange={(e) => setSelectedField(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="">Tất cả Lĩnh Vực</option>
-                {sectors.filter((sector) => sector.isActive).map((sector) => <option key={sector.code} value={sector.code}>{sector.code} - {sector.name}</option>)}
-              </select>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setMatrixView("table")}
+                    className={`px-3 py-1.5 rounded-md font-semibold transition ${
+                      matrixView === "table" ? "bg-white text-emerald-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    📋 Danh Sách
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMatrixView("grid")}
+                    className={`px-3 py-1.5 rounded-md font-semibold transition ${
+                      matrixView === "grid" ? "bg-white text-emerald-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    🗺️ Lưới 2D Heatmap
+                  </button>
+                </div>
+
+                {matrixView === "table" && (
+                  <select
+                    value={selectedField}
+                    onChange={(e) => setSelectedField(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value="">Tất cả Lĩnh Vực</option>
+                    {sectors.filter((sector) => sector.isActive).map((sector) => (
+                      <option key={sector.code} value={sector.code}>{sector.code} - {sector.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
-                    <th className="py-3 px-4">Mã LV</th>
-                    <th className="py-3 px-4">Lĩnh Vực Ứng Dụng</th>
-                    <th className="py-3 px-4">Mã CN</th>
-                    <th className="py-3 px-4">Nhóm Công Nghệ</th>
-                    <th className="py-3 px-4 text-center">Mức Phù Hợp</th>
-                    <th className="py-3 px-4 text-right">Trọng Số</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {matrixError ? <tr><td colSpan={6} className="p-4 text-status-danger" role="alert">{matrixError}</td></tr> : matrixLoading ? <tr><td colSpan={6} className="p-4">Đang tải ma trận…</td></tr> : filteredMatrix.map((m, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-4">
-                        <code className="text-xs bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded font-mono font-bold">
-                          {m.fieldCode}
-                        </code>
-                      </td>
-                      <td className="py-3 px-4 font-medium text-gray-900">{sectors.find((sector) => sector.code === m.fieldCode)?.name ?? m.fieldCode}</td>
-                      <td className="py-3 px-4">
-                        <code className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-mono font-bold">
-                          {m.techCode}
-                        </code>
-                      </td>
-                      <td className="py-3 px-4 text-gray-800">{m.techName}</td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-0.5 text-amber-500">
-                          {Array.from({ length: m.ratingStars }).map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-gray-800">{m.weight.toFixed(1)}</td>
+            {matrixView === "table" ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
+                      <th className="py-3 px-4">Mã LV</th>
+                      <th className="py-3 px-4">Lĩnh Vực Ứng Dụng</th>
+                      <th className="py-3 px-4">Mã CN</th>
+                      <th className="py-3 px-4">Nhóm Công Nghệ</th>
+                      <th className="py-3 px-4 text-center">Mức Phù Hợp</th>
+                      <th className="py-3 px-4 text-right">Trọng Số</th>
+                      <th className="py-3 px-4 text-center">Thao Tác</th>
                     </tr>
-                  ))}
-                  {!matrixError && !matrixLoading && filteredMatrix.length === 0 && <tr><td colSpan={6} className="p-4 text-gray-500">Không có quan hệ ngành-công nghệ phù hợp.</td></tr>}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {matrixError ? (
+                      <tr><td colSpan={7} className="p-4 text-status-danger" role="alert">{matrixError}</td></tr>
+                    ) : matrixLoading ? (
+                      <tr><td colSpan={7} className="p-4">Đang tải ma trận…</td></tr>
+                    ) : filteredMatrix.map((m, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-4">
+                          <code className="text-xs bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded font-mono font-bold">
+                            {m.fieldCode}
+                          </code>
+                        </td>
+                        <td className="py-3 px-4 font-medium text-gray-900">{sectors.find((sector) => sector.code === m.fieldCode)?.name ?? m.fieldCode}</td>
+                        <td className="py-3 px-4">
+                          <code className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-mono font-bold">
+                            {m.techCode}
+                          </code>
+                        </td>
+                        <td className="py-3 px-4 text-gray-800">{m.techName}</td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex items-center justify-center gap-0.5 text-amber-500">
+                            {Array.from({ length: m.ratingStars }).map((_, i) => (
+                              <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-gray-800">{m.weight.toFixed(1)}</td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPair(m);
+                              setPairRatingStars(m.ratingStars);
+                              setPairWeight(m.weight);
+                              setPairSaveError("");
+                            }}
+                            className="px-2.5 py-1 text-xs font-semibold rounded-md border border-gray-300 hover:bg-gray-100 text-gray-700 transition"
+                          >
+                            Sửa Trọng Số
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {!matrixError && !matrixLoading && filteredMatrix.length === 0 && (
+                      <tr><td colSpan={7} className="p-4 text-gray-500">Không có quan hệ ngành-công nghệ phù hợp.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500">
+                  💡 Nhấp chuột vào bất kỳ ô giao điểm nào để điều chỉnh trọng số (1–5 sao) hoặc kích hoạt cặp quan hệ mới.
+                </p>
+                <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                  {(() => {
+                    const distinctTechs: { code: string; name: string }[] = [];
+                    const seen = new Set<string>();
+                    for (const p of matrixPairs) {
+                      if (!seen.has(p.techCode)) {
+                        seen.add(p.techCode);
+                        distinctTechs.push({ code: p.techCode, name: p.techName });
+                      }
+                    }
+                    distinctTechs.sort((a, b) => a.code.localeCompare(b.code));
+                    const activeSectors = sectors.filter(s => s.isActive);
+
+                    return (
+                      <table className="w-full text-xs text-center border-collapse">
+                        <thead>
+                          <tr className="bg-gray-100 border-b border-gray-200 text-gray-700 font-semibold">
+                            <th className="py-2.5 px-3 text-left sticky left-0 bg-gray-100 z-10 min-w-[180px]">
+                              Lĩnh Vực \ Nhóm CN
+                            </th>
+                            {distinctTechs.slice(0, 15).map((t) => (
+                              <th key={t.code} className="py-2.5 px-2 font-mono whitespace-nowrap min-w-[90px]" title={t.name}>
+                                {t.code}
+                                <div className="text-xs text-gray-400 font-normal truncate max-w-[80px]">{t.name}</div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {activeSectors.map((sector) => (
+                            <tr key={sector.code} className="hover:bg-gray-50/70">
+                              <td className="py-2 px-3 text-left font-semibold text-gray-900 sticky left-0 bg-white hover:bg-gray-50 z-10 border-r border-gray-100">
+                                <span className="font-mono text-cyan-800 bg-cyan-50 px-1.5 py-0.5 rounded text-xs mr-1.5">{sector.code}</span>
+                                <span className="truncate">{sector.name}</span>
+                              </td>
+                              {distinctTechs.slice(0, 15).map((t) => {
+                                const pair = matrixPairs.find(p => p.fieldCode === sector.code && p.techCode === t.code);
+                                return (
+                                  <td
+                                    key={t.code}
+                                    onClick={() => {
+                                      setEditingPair({
+                                        fieldCode: sector.code,
+                                        fieldName: sector.name,
+                                        techCode: t.code,
+                                        techName: t.name,
+                                        ratingStars: pair?.ratingStars ?? 5,
+                                        weight: pair?.weight ?? 1.0
+                                      });
+                                      setPairRatingStars(pair?.ratingStars ?? 5);
+                                      setPairWeight(pair?.weight ?? 1.0);
+                                      setPairSaveError("");
+                                    }}
+                                    className={`py-2 px-1 text-center cursor-pointer transition ${
+                                      pair
+                                        ? pair.ratingStars >= 5
+                                          ? "bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-100"
+                                          : "bg-amber-50 text-amber-800 font-bold hover:bg-amber-100"
+                                        : "text-gray-300 hover:bg-gray-100"
+                                    }`}
+                                    title={pair ? `[${sector.code} - ${t.code}] ${pair.ratingStars} sao (${pair.weight}) - Click để sửa` : `Chưa ghép cặp [${sector.code} - ${t.code}] - Click để gán`}
+                                  >
+                                    {pair ? `${"★".repeat(pair.ratingStars)} ${pair.weight.toFixed(1)}` : "—"}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* TAB 4: EXHIBITIONS */}
+        {/* TAB 4: TAXONOMY TREE */}
+        {activeTab === "tree" && (
+          <div className="bg-white border border-gray-200 rounded-xl shadow-xs p-6">
+            <div className="flex flex-col sm:flex-row gap-3 mb-6 justify-between items-start sm:items-center">
+              <div>
+                <h3 className="font-bold text-gray-900 text-base">Cây Phân Cấp Taxonomy Công Nghệ 3 Tầng</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Mô hình phân cấp 3 tầng liên thông: Tầng 1 (Lĩnh vực LV) &rarr; Tầng 2 (Nhóm công nghệ CN) &rarr; Tầng 3 (Công nghệ cụ thể NC).
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                {taxonomyTree.length} Lĩnh vực gốc
+              </span>
+            </div>
+
+            {treeError ? (
+              <div role="alert" className="p-4 text-status-danger">{treeError}</div>
+            ) : treeLoading ? (
+              <div className="p-4 text-gray-500 text-sm">Đang tải cây taxonomy…</div>
+            ) : taxonomyTree.length === 0 ? (
+              <div className="p-4 text-gray-500 text-sm">Chưa có dữ liệu cây taxonomy.</div>
+            ) : (
+              <div className="space-y-4">
+                {taxonomyTree.map((rootNode) => (
+                  <div key={rootNode.code} className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-cyan-100 text-cyan-800">
+                          {rootNode.code}
+                        </span>
+                        <h4 className="font-bold text-gray-900 text-sm">{rootNode.name}</h4>
+                      </div>
+                      <span className="text-xs text-gray-500 font-medium">
+                        {rootNode.children?.length ?? 0} nhóm công nghệ
+                      </span>
+                    </div>
+
+                    {rootNode.children && rootNode.children.length > 0 && (
+                      <div className="mt-3 ml-4 pl-4 border-l-2 border-gray-200 space-y-3">
+                        {rootNode.children.map((techGroup) => (
+                          <div key={techGroup.code} className="bg-white p-3 rounded-lg border border-gray-100 shadow-2xs">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                                  {techGroup.code}
+                                </span>
+                                <span className="text-xs font-semibold text-gray-800">{techGroup.name}</span>
+                              </div>
+                              <span className="text-xs text-gray-400">
+                                {techGroup.children?.length ?? 0} giải pháp
+                              </span>
+                            </div>
+
+                            {techGroup.children && techGroup.children.length > 0 && (
+                              <div className="mt-2 ml-4 space-y-1">
+                                {techGroup.children.map((techItem) => (
+                                  <div key={techItem.code} className="text-xs text-gray-600 flex items-center justify-between py-0.5">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-gray-400">└─</span>
+                                      <span className="font-mono text-gray-500">[{techItem.code}]</span>
+                                      <span>{techItem.name}</span>
+                                    </div>
+                                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">
+                                      TRL 7-8
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 5: EXHIBITIONS */}
         {activeTab === "exhibitions" && (
           <div className="bg-white border border-gray-200 rounded-xl shadow-xs p-6">
             <div className="mb-4">
@@ -566,6 +852,80 @@ export default function AdminSectorsPage() {
                   </AppButton>
                   <AppButton variant="primary" type="submit" disabled={isSaving}>
                     {isSaving ? "Đang lưu…" : "Lưu Lĩnh Vực"}
+                  </AppButton>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Chỉnh Sửa Trọng Số Cặp LV-CN */}
+        {editingPair && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-150">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                <h3 className="font-bold text-gray-900 text-base">Điều Chỉnh Trọng Số Ma Trận</h3>
+                <button
+                  type="button"
+                  onClick={() => setEditingPair(null)}
+                  className="text-gray-400 hover:text-gray-600 p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSavePairSubmit} className="space-y-4 text-xs">
+                {pairSaveError && (
+                  <p role="alert" className="text-status-danger">{pairSaveError}</p>
+                )}
+
+                <div className="bg-gray-50 p-3 rounded-lg space-y-1">
+                  <div>Lĩnh vực: <strong className="text-gray-900 font-mono">[{editingPair.fieldCode}]</strong> {editingPair.fieldName || sectors.find(s => s.code === editingPair.fieldCode)?.name}</div>
+                  <div>Công nghệ: <strong className="text-gray-900 font-mono">[{editingPair.techCode}]</strong> {editingPair.techName}</div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 uppercase mb-1">
+                    Mức Độ Tương Thích (1 - 5 Sao):
+                  </label>
+                  <select
+                    value={pairRatingStars}
+                    onChange={(e) => {
+                      const stars = Number(e.target.value);
+                      setPairRatingStars(stars);
+                      setPairWeight(Number((stars / 5).toFixed(1)));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    <option value={5}>★★★★★ (5 Sao - Rất phù hợp / Trọng tâm)</option>
+                    <option value={4}>★★★★☆ (4 Sao - Phù hợp cao)</option>
+                    <option value={3}>★★★☆☆ (3 Sao - Phù hợp trung bình)</option>
+                    <option value={2}>★★☆☆☆ (2 Sao - Phù hợp thấp)</option>
+                    <option value={1}>★☆☆☆☆ (1 Sao - Ít tương thích)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 uppercase mb-1">
+                    Trọng Số Thuật Toán Matching (0.1 - 1.0):
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    max="1.0"
+                    value={pairWeight}
+                    onChange={(e) => setPairWeight(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                  <AppButton variant="outline" type="button" onClick={() => setEditingPair(null)}>
+                    Hủy Bỏ
+                  </AppButton>
+                  <AppButton variant="primary" type="submit" disabled={isPairSaving}>
+                    {isPairSaving ? "Đang lưu…" : "Lưu Trọng Số"}
                   </AppButton>
                 </div>
               </form>

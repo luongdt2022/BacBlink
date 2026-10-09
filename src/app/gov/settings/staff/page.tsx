@@ -200,7 +200,7 @@ export default function GovStaffSettingsPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+              <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-bold text-brand-800 dark:bg-brand-950 dark:text-brand-300">
                 Tầng 2: Địa Phương
               </span>
               <span className="text-xs font-semibold text-slate-500">Quy chế Maker - Checker Cấp 2</span>
@@ -230,9 +230,9 @@ export default function GovStaffSettingsPage() {
           <div>
             <div className="text-xs font-semibold text-slate-500">Tổng Số Chuyên Viên</div>
             <div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">{staffList.length}</div>
-            <div className="text-[11px] text-slate-400">Thuộc Sở {currentProvinceName}</div>
+            <div className="text-xs text-slate-400">Thuộc Sở {currentProvinceName}</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center dark:bg-blue-950 dark:text-blue-300">
+          <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center dark:bg-brand-950 dark:text-brand-300">
             <Users className="w-5 h-5" />
           </div>
         </div>
@@ -243,7 +243,7 @@ export default function GovStaffSettingsPage() {
             <div className="mt-1 text-2xl font-black text-emerald-600">
               {staffList.filter(s => s.status === "ACTIVE").length}
             </div>
-            <div className="text-[11px] text-emerald-700">Có quyền sơ kiểm Maker</div>
+            <div className="text-xs text-emerald-700">Có quyền sơ kiểm Maker</div>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center dark:bg-emerald-950 dark:text-emerald-300">
             <CheckCircle2 className="w-5 h-5" />
@@ -254,9 +254,9 @@ export default function GovStaffSettingsPage() {
           <div>
             <div className="text-xs font-semibold text-slate-500">Phân Quyền Vai Trò</div>
             <div className="mt-1 text-lg font-black text-slate-900 dark:text-white">CLUSTER_ADMIN</div>
-            <div className="text-[11px] text-slate-400">Sơ kiểm cấp 1 & yêu cầu bổ sung</div>
+            <div className="text-xs text-slate-400">Sơ kiểm cấp 1 & yêu cầu bổ sung</div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center dark:bg-purple-950 dark:text-purple-300">
+          <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center dark:bg-teal-950 dark:text-teal-300">
             <ShieldCheck className="w-5 h-5" />
           </div>
         </div>
@@ -303,15 +303,15 @@ export default function GovStaffSettingsPage() {
                       </div>
                       <div>
                         <div>{member.fullName}</div>
-                        <div className="text-[10px] text-slate-400 font-normal">Ngày bổ nhiệm: {member.assignedAt}</div>
+                        <div className="text-xs text-slate-400 font-normal">Ngày bổ nhiệm: {member.assignedAt}</div>
                       </div>
                     </td>
-                    <td className="p-3.5 font-mono text-[11px] text-brand-700 dark:text-brand-300 font-semibold">
+                    <td className="p-3.5 font-mono text-xs text-brand-700 dark:text-brand-300 font-semibold">
                       {member.email}
                     </td>
                     <td className="p-3.5">{member.department}</td>
                     <td className="p-3.5">
-                      <span className="rounded-md bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                      <span className="rounded-md bg-teal-100 px-2 py-0.5 text-xs font-bold text-teal-800 dark:bg-teal-950 dark:text-teal-300">
                         {member.role}
                       </span>
                     </td>
@@ -319,7 +319,7 @@ export default function GovStaffSettingsPage() {
                       {member.tasksReviewedCount} hồ sơ
                     </td>
                     <td className="p-3.5">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
                         member.status === "ACTIVE"
                           ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
                           : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
@@ -331,7 +331,7 @@ export default function GovStaffSettingsPage() {
                     <td className="p-3.5 text-right space-x-2">
                       <button
                         onClick={() => toggleStaffStatus(member.id)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold transition ${
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition ${
                           member.status === "ACTIVE"
                             ? "bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950 dark:text-rose-300"
                             : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-300"
@@ -359,7 +359,7 @@ export default function GovStaffSettingsPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 dark:text-white">Thêm Chuyên Viên Thẩm Định Cấp 2</h3>
-                  <p className="text-[11px] text-slate-500">Phân quyền Sơ kiểm hồ sơ chuyên gia thuộc Sở {currentProvinceName}</p>
+                  <p className="text-xs text-slate-500">Phân quyền Sơ kiểm hồ sơ chuyên gia thuộc Sở {currentProvinceName}</p>
                 </div>
               </div>
               <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-700 p-1">
@@ -399,7 +399,7 @@ export default function GovStaffSettingsPage() {
                   placeholder={`tri.hm@skhcn.${currentScopeId.toLowerCase()}.gov.vn`}
                   className="w-full rounded-lg border border-slate-200 p-2.5 text-xs font-mono text-slate-900 outline-none focus:border-brand-600 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Hệ thống sẽ gửi Magic Link kích hoạt tài khoản vào email này.</p>
+                <p className="text-xs text-slate-400 mt-1">Hệ thống sẽ gửi Magic Link kích hoạt tài khoản vào email này.</p>
               </div>
 
               <div>
@@ -418,7 +418,7 @@ export default function GovStaffSettingsPage() {
                 </select>
               </div>
 
-              <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3 dark:border-blue-900/40 dark:bg-blue-950/40 space-y-1.5">
+              <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-3 dark:border-brand-900/40 dark:bg-brand-950/40 space-y-1.5">
                 <div className="flex items-center justify-between text-slate-800 dark:text-slate-200 font-bold">
                   <span>Vai trò kỹ thuật:</span>
                   <span className="font-mono text-brand-700 dark:text-brand-300">CLUSTER_ADMIN</span>
@@ -427,7 +427,7 @@ export default function GovStaffSettingsPage() {
                   <span>Phạm vi quản lý (ScopeId):</span>
                   <span className="font-mono text-emerald-700 dark:text-emerald-300">{currentScopeId} ({currentProvinceName})</span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Chuyên viên chỉ có quyền sơ kiểm (Maker Check) hồ sơ trong địa bàn {currentProvinceName}, không thể ký duyệt cấp 2.
                 </p>
               </div>

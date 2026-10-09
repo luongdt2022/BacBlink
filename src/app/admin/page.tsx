@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   const systemMetrics = [
     { title: "Tổng Tài Khoản Đang Hoạt Động", value: "18,420", sub: "Toàn quốc", icon: Users, color: "text-brand-700 dark:text-brand-200" },
     { title: "Sở KH&CN Đã Kết Nối", value: "63 / 63", sub: "100% Tỉnh/Thành", icon: Network, color: "text-nacen-green-700 dark:text-nacen-green-200" },
-    { title: "Danh Mục Lĩnh Vực TT17", value: sectorCount === null ? (sectorError ? "Không tải được" : "Đang tải...") : String(sectorCount), sub: "Lĩnh vực đang hoạt động", icon: Database, color: "text-brand-700 dark:text-brand-200" },
+    { title: "Danh Mục Lĩnh Vực TT17", value: sectorCount === null ? (sectorError ? "Không tải được" : "Đang tải...") : String(sectorCount), sub: "Mã chuyên môn đang kích hoạt", icon: Database, color: "text-brand-700 dark:text-brand-200" },
     { title: "Nhật Ký Kiểm Toán (Audit)", value: "142,890", sub: "Lưu vết bất biến", icon: History, color: "text-brand-700 dark:text-brand-200" },
   ];
 
