@@ -15,6 +15,7 @@
 | **`TASK-02`** | Hồ sơ Doanh nghiệp ĐMST | Sheet `DN ĐMST` (225 dòng dữ liệu) | [`specs/TASK-02_HO_SO_DOANH_NGHIEP_DMST`](./TASK-02_HO_SO_DOANH_NGHIEP_DMST/) | `REQ-DN-*`, `BR-MST-*`, `DB-CORP-*` | ⚪ Dự kiến |
 | **`TASK-03`** | Hồ sơ Tìm Mua (Buyer) | Sheet `T.mua SP` (356 dòng dữ liệu) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | `REQ-BUY-*`, `BR-SURVEY-*`, `DB-DEMAND-*` | ⚪ Dự kiến |
 | **`TASK-04`** | Hồ sơ Chào Bán & Bộ Lọc | Sheet `C.bán SP` + `Bo_loc_Cban` (1,568 dòng) | [`specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`](./TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/) | `REQ-SELL-*`, `BR-FILTER-*`, `BR-TRL-*` | ⚪ Dự kiến |
+| **`TASK-05`** | Hồ sơ Chuyên gia KH&CN & AI Scan LLKH | Sheet `C.gia` (94 dòng dữ liệu) | [`specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`](./TASK-05_HO_SO_CHUYEN_GIA_KHCN/) | `REQ-EXP-*`, `BR-EXP-*`, `API-EXP-*`, `UI-EXP-*` | ✅ Delta v12 Hoàn tất (Gate 4/5 Pass) |
 | **`TASK-06`** | Danh Mục Ngành & Ma Trận | Sheet `Ngành` + `Ma trận LV-CN` (161 dòng) | [`specs/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN`](./TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/) | `REQ-SEC-*`, `BR-SEC-*`, `API-MASTER-*`, `UI-MASTER-*` | 🟡 Đã đặc tả (Ready) |
 | **`TASK-07`** | Phân Quyền & Quản Trị Admin | Sheet `Admin` (6 dòng quyền hạt nhân) | [`specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`](./TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/) | `REQ-ADM-*`, `BR-ADM-*`, `API-GOV-*`, `UI-ADMIN-*`, `UI-ORG-*` | ✅ Delta v4 Hoàn tất |
 
@@ -144,18 +145,19 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 
 | Yêu cầu / Quy tắc | Spec | Task | Mã nguồn | Kiểm chứng |
 | :--- | :--- | :--- | :--- | :--- |
-| Số ngành lọc lấy đúng SECTOR active từ DB; baseline có 10 mã LV | `REQ-EXP-DIR-003`, `REQ-EXP-DIR-004` | T089, T092 | `TaxonomyControllers.cs`, `src/app/experts/page.tsx` | API response count và filter code |
-| Lọc tỉnh theo scope tỉnh của chủ hồ sơ; hồ sơ thiếu scope không gán địa bàn | `REQ-EXP-DIR-005` | T090 | `ExpertService.cs`, `ExpertProvinceScopeLookup.cs`, `GovernanceControllers.cs` | DB integration cho scope và missing scope |
-| Directory query filters và projection địa bàn công khai; consultation submit success/error contract | `API-EXP-DIR-002..004` | T090, T093 | `ExpertController.cs`, `GovernanceControllers.cs`, `src/app/experts/page.tsx` | API contract + DB integration |
-| Control filter/sort khớp query thật; chỉ hồ sơ public/approved, PII deny-list | `BR-EXP-038`, `BR-EXP-039`, `BR-EXP-040` | T090, T092, T094 | `ExpertService.cs`, `ExpertController.cs` | Invariants + API contract |
-| UI compact, responsive, đủ 5 trạng thái và kết nối modal báo đúng kết quả API | `REQ-EXP-DIR-006`, `UI-EXP-DIR-002`, `NFR-EXP-DIR-001` | T088, T091, T093, T095, T096 | `wireframe_danh_ba_chuyen_gia_v11.html`, `src/app/experts/page.tsx` | Vitest + Playwright 1440×900/390×844 |
+| Số ngành lọc lấy đúng SECTOR active từ DB; baseline có 10 mã LV | `REQ-EXP-DIR-003`, `REQ-EXP-DIR-004` | T089, T092 | `TaxonomyControllers.cs`, `src/app/experts/page.tsx` | API response count và filter code; Pass |
+| Lọc tỉnh theo scope tỉnh của chủ hồ sơ; hồ sơ thiếu scope không gán địa bàn | `REQ-EXP-DIR-005` | T090 | `ExpertService.cs`, `ExpertProvinceScopeLookup.cs`, `GovernanceControllers.cs` | DB integration cho scope và missing scope; Pass |
+| Directory query filters và projection địa bàn công khai; consultation submit success/error contract | `API-EXP-DIR-002..004` | T090, T093 | `ExpertController.cs`, `GovernanceControllers.cs`, `src/app/experts/page.tsx` | API contract + DB integration; Pass |
+| Control filter/sort khớp query thật; chỉ hồ sơ public/approved, PII deny-list | `BR-EXP-038`, `BR-EXP-039`, `BR-EXP-040` | T090, T092, T094 | `ExpertService.cs`, `ExpertController.cs` | Invariants + API contract; Pass |
+| UI compact, responsive, đủ 5 trạng thái và kết nối modal báo đúng kết quả API | `REQ-EXP-DIR-006`, `UI-EXP-DIR-002`, `NFR-EXP-DIR-001` | T088, T091, T093, T095, T096 | `wireframe_danh_ba_chuyen_gia_v11.html`, `src/app/experts/page.tsx` | Vitest + Playwright 1440×900/390×844; Pass |
+| Search parameter compatibility (`q` + legacy `query`, q wins when both exist) | `API-EXP-DIR-005`, `REQ-EXP-DIR-001` | T090, T098 | `backend/apps/api/V1Compat/ExpertController.cs`, `docs/02-detail-design/DD-02-task05-expert-directory-v11.md` | Invariant test `ExpertProfileInvariantsTests.cs`; Pass |
 
-| Search parameter compatibility (`q` + legacy `query`, q wins when both exist) | `API-EXP-DIR-005`, `REQ-EXP-DIR-001` | T090, T098 | `backend/apps/api/V1Compat/ExpertController.cs`, `docs/02-detail-design/DD-02-task05-expert-directory-v11.md` | API contract/integration — pending |
+---
 
-## 11. CR-2026-005 Delta v12 — Taxonomy ngành động toàn hệ thống
+## 12. CR-2026-005 Delta v12 — Taxonomy ngành động toàn hệ thống
 
 | Yêu cầu | Thiết kế | Task | Triển khai | Kiểm chứng |
 | :--- | :--- | :--- | :--- | :--- |
-| Danh sách, count và sector selection đọc DB taxonomy, không static fallback | CR-2026-005 §2.2; DD-02 v12 | T099–T105 | Home, experts, upgrade/CV, admin sectors/roles, GOV/login, public detail; `MasterDataControllers` | TypeScript/build còn pending; DB/API + Gate4 pending |
-| TT17 categories đọc taxonomy CATEGORY; matrix labels resolve code runtime | CR-2026-005 §2.2; DD-02 v12 | T102–T103 | `/api/v1/master-data/tt17`, `/matrix` | Backend build + PostgreSQL integration pending |
-| QC 4 tầng và visual/RBAC kiểm tra runtime add/rename/deactivate, empty/error | CR-2026-005 §4–6; wf-delta Step 6 | T106–T107 | QC blueprint cần PO duyệt; report TASK-05 riêng | Chưa chạy black-box; cần môi trường API/DB và duyệt case |
+| Danh sách, count và sector selection đọc DB taxonomy, không static fallback | CR-2026-005 §2.2; DD-02 v12 | T099–T105 | Home, experts, upgrade/CV, admin sectors/roles, GOV/login, public detail; `MasterDataControllers` | Fix TC-C2-12 subtitle regex collision; Next.js 15 build clean; Pass |
+| TT17 categories đọc taxonomy CATEGORY; matrix labels resolve code runtime | CR-2026-005 §2.2; DD-02 v12 | T102–T103 | `/api/v1/master-data/tt17`, `/matrix` | Invariants 95/95 pass; Backend .NET 8 build clean; Pass |
+| QC 4 tầng và visual/RBAC kiểm tra runtime add/rename/deactivate, empty/error | CR-2026-005 §4–6; wf-delta Step 6 | T106–T113 | Seed fixture 14 chuyên gia (`seed_delta_v12_e2e_dataset.sql`), fix unwrapping `ExpertPublicDirectoryDto` trong `delta_v12_blackbox.py` | Black-box 36/36 pass (0 fail, 14 unblocked by seed); Invariants 95/95 pass; Gate 4 & Gate 5 Sign-off hoàn tất |

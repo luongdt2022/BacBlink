@@ -175,17 +175,17 @@
 
 ## Phase 16: Delta v11 — Hội tụ taxonomy, địa bàn và trải nghiệm danh bạ
 
-- [ ] T088 [DELTA-01][BD][UIUX] Cập nhật Basic Design 2.3 và wireframe danh bạ theo quyết định PO: ngành lấy động từ SECTOR active, UI compact; cập nhật wireframe library.
-- [ ] T089 [DELTA-02][API][DATA] Dùng endpoint `GET /api/v1/sectors` làm nguồn taxonomy; xác minh count active trong DB (seed hiện có 10 `LV`), không hardcode danh sách trong view.
-- [ ] T090 [DELTA-03][BE][API] Hoàn thiện lọc danh bạ theo `sectorCode` và `provinceCode` thực từ scope tỉnh của chủ hồ sơ; không gán địa bàn mặc định khi thiếu scope; hỗ trợ `q` và alias `query`.
-- [ ] T091 [DELTA-04][FE][UI] Tinh gọn Hero, filter desktop/mobile, filter chips, card chuyên gia, pagination và query state; loại bỏ controls không có hành vi thật.
-- [ ] T092 [DELTA-05][FE][API] Dùng shared Master Data client cho taxonomy/province API; retry/error state, reset/clear đúng pagination và giữ bộ lọc khi retry.
-- [ ] T093 [DELTA-06][FE][API] Nối modal với `POST /api/v1/public/experts/{expertCode}/consultation-requests`; giữ lỗi/retry và copy đúng người nhận là NacenTech/admin.
-- [ ] T094 [DELTA-07][TEST][BE] Kiểm chứng dynamic taxonomy, sector/province filtering, chỉ approved/public, phân trang, alias `query` và deny-list PII.
-- [ ] T095 [DELTA-08][TEST][FE] Kiểm chứng desktop/mobile states, bộ lọc kết hợp, clear/reset, retry, pagination và không hiển thị success giả cho CTA kết nối.
-- [ ] T096 [DELTA-09][QC][E2E] Chạy API contract + PostgreSQL integration + Playwright visual/E2E cho `/experts` và alias `/chuyen-gia`; chụp 1440×900 và 390×844.
-- [ ] T097 [DELTA-10][DOC][TRACE] Cập nhật TRACEABILITY, ROADMAP và lịch sử thay đổi sau khi Gate 4 pass; chỉ khi đó đánh dấu Delta v11 hoàn tất.
-- [ ] T098 [DELTA-11][BE][API][TEST] Khớp tham số từ khóa legacy `query` và client `q` trên public directory; khi cùng gửi cả hai thì `q` ưu tiên.
+- [x] T088 [DELTA-01][BD][UIUX] Cập nhật Basic Design 2.3 và wireframe danh bạ theo quyết định PO: ngành lấy động từ SECTOR active, UI compact; cập nhật wireframe library.
+- [x] T089 [DELTA-02][API][DATA] Dùng endpoint `GET /api/v1/sectors` làm nguồn taxonomy; xác minh count active trong DB (seed hiện có 10 `LV`), không hardcode danh sách trong view.
+- [x] T090 [DELTA-03][BE][API] Hoàn thiện lọc danh bạ theo `sectorCode` và `provinceCode` thực từ scope tỉnh của chủ hồ sơ; không gán địa bàn mặc định khi thiếu scope; hỗ trợ `q` và alias `query`.
+- [x] T091 [DELTA-04][FE][UI] Tinh gọn Hero, filter desktop/mobile, filter chips, card chuyên gia, pagination và query state; loại bỏ controls không có hành vi thật.
+- [x] T092 [DELTA-05][FE][API] Dùng shared Master Data client cho taxonomy/province API; retry/error state, reset/clear đúng pagination và giữ bộ lọc khi retry.
+- [x] T093 [DELTA-06][FE][API] Nối modal với `POST /api/v1/public/experts/{expertCode}/consultation-requests`; giữ lỗi/retry và copy đúng người nhận là NacenTech/admin.
+- [x] T094 [DELTA-07][TEST][BE] Kiểm chứng dynamic taxonomy, sector/province filtering, chỉ approved/public, phân trang, alias `query` và deny-list PII.
+- [x] T095 [DELTA-08][TEST][FE] Kiểm chứng desktop/mobile states, bộ lọc kết hợp, clear/reset, retry, pagination và không hiển thị success giả cho CTA kết nối.
+- [x] T096 [DELTA-09][QC][E2E] Chạy API contract + PostgreSQL integration + Playwright visual/E2E cho `/experts` và alias `/chuyen-gia`; chụp 1440×900 và 390×844.
+- [x] T097 [DELTA-10][DOC][TRACE] Cập nhật TRACEABILITY, ROADMAP và lịch sử thay đổi sau khi Gate 4 pass; chỉ khi đó đánh dấu Delta v11 hoàn tất.
+- [x] T098 [DELTA-11][BE][API][TEST] Khớp tham số từ khóa legacy `query` và client `q` trên public directory; khi cùng gửi cả hai thì `q` ưu tiên.
   - *Kiểm chứng*: API contract/integration chứng minh `q` và `query` cho cùng tập kết quả tương đương; xung đột hai tham số chọn `q`; các query filter khác giữ nguyên.
 
 
@@ -193,21 +193,21 @@
 
 ## Phase 17: Delta v12 — Đồng bộ taxonomy ngành động toàn hệ thống [CR-2026-005]
 
-- [ ] T099 [FE][TASK-00][REQ-MD-SECTOR-001] Tạo shared active-sector master-data client và dùng tại Home; count/list/link filter lấy từ DB.
-- [ ] T100 [FE][TASK-05][REQ-EXP-DB-005] Nâng hạng chuyên gia dùng sector code active; bỏ default/các lựa chọn ngành tĩnh.
-- [ ] T101 [FE][AI][API][TASK-05] CV parser nạp danh mục sector tại runtime, prompt nhận code/name động và trả lỗi nếu API/taxonomy trống.
-- [ ] T102 [FE][BE][TASK-06] Admin taxonomy bỏ seed fallback/local-only create, dùng DB API; count, filter options và category list động.
-- [ ] T103 [DELTA-05] [BE][API][TASK-06] Xóa CoreSectors fallback; `/master-data/tt17` lấy category active từ taxonomy; matrix sector labels resolve runtime.
-- [ ] T104 [FE][TASK-07] Admin role sector scope chọn từ taxonomy active; thay nhãn/count tĩnh ở admin nav/dashboard/login/GOV.
-- [ ] T105 [FE][TASK-05] Public expert detail resolve sector codes thành names từ master data và giữ keywords riêng biệt.
-- [ ] T106 [DELTA-08] [TEST][EC] Cập nhật chiến lược/case cho toàn bộ bề mặt: DB/API taxonomy, empty/error behavior, runtime add/deactivate/rename, forms/projections, cross-surface visual + RBAC.
-- [ ] T107 [DELTA-09] [INT][TRACE] Chạy backend/frontend build, unit/contracts, PostgreSQL integration, Playwright E2E/visual và traceability; ghi evidence, không tick nếu môi trường không khả dụng.
+- [x] T099 [FE][TASK-00][REQ-MD-SECTOR-001] Tạo shared active-sector master-data client và dùng tại Home; count/list/link filter lấy từ DB.
+- [x] T100 [FE][TASK-05][REQ-EXP-DB-005] Nâng hạng chuyên gia dùng sector code active; bỏ default/các lựa chọn ngành tĩnh.
+- [x] T101 [FE][AI][API][TASK-05] CV parser nạp danh mục sector tại runtime, prompt nhận code/name động và trả lỗi nếu API/taxonomy trống.
+- [x] T102 [FE][BE][TASK-06] Admin taxonomy bỏ seed fallback/local-only create, dùng DB API; count, filter options và category list động.
+- [x] T103 [DELTA-05] [BE][API][TASK-06] Xóa CoreSectors fallback; `/master-data/tt17` lấy category active từ taxonomy; matrix sector labels resolve runtime.
+- [x] T104 [FE][TASK-07] Admin role sector scope chọn từ taxonomy active; thay nhãn/count tĩnh ở admin nav/dashboard/login/GOV.
+- [x] T105 [FE][TASK-05] Public expert detail resolve sector codes thành names từ master data và giữ keywords riêng biệt.
+- [x] T106 [DELTA-08] [TEST][EC] Cập nhật chiến lược/case cho toàn bộ bề mặt: DB/API taxonomy, empty/error behavior, runtime add/deactivate/rename, forms/projections, cross-surface visual + RBAC.
+- [x] T107 [DELTA-09] [INT][TRACE] Chạy backend/frontend build, unit/contracts, PostgreSQL integration, Playwright E2E/visual và traceability; ghi evidence, không tick nếu môi trường không khả dụng.
 
-- [ ] T108 [DELTA-10][ZALO][REQ-MD-SECTOR-001][API-EXP-INTAKE-002] Remove SECTORS_18 and default 01; load active sectors via API, show loading/error/empty/retry, validate before submit; compile and cross-channel QC.
+- [x] T108 [DELTA-10][ZALO][REQ-MD-SECTOR-001][API-EXP-INTAKE-002] Remove SECTORS_18 and default 01; load active sectors via API, show loading/error/empty/retry, validate before submit; compile and cross-channel QC.
 
-- [ ] T113 [DELTA-13][BE] Implement signed72h hash-only draft token lookup with safeDTO and configuredfrontendURL; rejectexpired/tampered/legacytokens.
-- [ ] T109 [DELTA-13][BE] Claimoriginaldraft and consume onlyon successfulofficialsubmission atomicallywithapproval enqueue; preserveevidence andownerauthorization.
-- [ ] T110 [DELTA-13][FE] SendoptionalDraftToken duringofficialsubmission andpreserveruntimeindustryselection; honesterror/partialprefill.
-- [ ] T111 [DELTA-13][TEST] VerifyrealDB lookup/expiry/tampering/one-timeclaim/validationrollback plushandoffUI.
+- [x] T113 [DELTA-13][BE] Implement signed72h hash-only draft token lookup with safeDTO and configuredfrontendURL; rejectexpired/tampered/legacytokens.
+- [x] T109 [DELTA-13][BE] Claimoriginaldraft and consume onlyon successfulofficialsubmission atomicallywithapproval enqueue; preserveevidence andownerauthorization.
+- [x] T110 [DELTA-13][FE] SendoptionalDraftToken duringofficialsubmission andpreserveruntimeindustryselection; honesterror/partialprefill.
+- [x] T111 [DELTA-13][TEST] VerifyrealDB lookup/expiry/tampering/one-timeclaim/validationrollback plushandoffUI.
 
-- [ ] T112 [DELTA-12][BE][DB][API][TEST] Lưu SpecializedKeywords độc lập ExpertiseSectors; optional additive contract, text[] migration, draft/owner/admin/public roundtrip và kiểm chứng thực.
+- [x] T112 [DELTA-12][BE][DB][API][TEST] Lưu SpecializedKeywords độc lập ExpertiseSectors; optional additive contract, text[] migration, draft/owner/admin/public roundtrip và kiểm chứng thực.
