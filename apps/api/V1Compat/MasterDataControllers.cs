@@ -47,6 +47,22 @@ public sealed class MatrixPairDto
     public double Weight { get; set; }
 }
 
+public sealed class UpdateMatrixPairDto
+{
+    [Required] public string FieldCode { get; set; } = string.Empty;
+    [Required] public string TechCode { get; set; } = string.Empty;
+    [Range(1, 5)] public int RatingStars { get; set; } = 5;
+    [Range(0.1, 1.0)] public double Weight { get; set; } = 1.0;
+}
+
+public sealed class TaxonomyTreeNodeDto
+{
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Level { get; set; } = string.Empty;
+    public List<TaxonomyTreeNodeDto> Children { get; set; } = new();
+}
+
 public sealed class ExhibitionDto
 {
     public int Id { get; set; }
@@ -244,5 +260,64 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
     public IActionResult GetExhibitions()
     {
         return Ok(new { success = true, data = StaticExhibitions, total = StaticExhibitions.Count });
+    }
+
+    [HttpPut("matrix")]
+    [Authorize]
+    public IActionResult UpdateMatrixPair([FromBody] UpdateMatrixPairDto dto)
+    {
+        RequireAdmin();
+
+        var existing = StaticMatrix.FirstOrDefault(m =>
+            string.Equals(m.FieldCode, dto.FieldCode, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(m.TechCode, dto.TechCode, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is null)
+        {
+            var newPair = new MatrixPairDto
+            {
+                FieldCode = dto.FieldCode.Trim().ToUpperInvariant(),
+                TechCode = dto.TechCode.Trim().ToUpperInvariant(),
+                RatingStars = dto.RatingStars,
+                Weight = dto.Weight
+            };
+            StaticMatrix.Add(newPair);
+            return StatusCode(201, new { success = true, data = newPair, message = "Đã tạo mới cặp quan hệ ma trận thành công." });
+        }
+
+        existing.RatingStars = dto.RatingStars;
+        existing.Weight = dto.Weight;
+        return Ok(new { success = true, data = existing, message = "Đã cập nhật trọng số cặp quan hệ ma trận thành công." });
+    }
+
+    [HttpGet("taxonomy-tree")]
+    public async Task<IActionResult> GetTaxonomyTree(CancellationToken ct = default)
+    {
+        var sectors = await taxonomy.ListAsync(TaxonomyKinds.Sector, true, ct);
+        var tree = sectors.Where(s => !string.IsNullOrEmpty(s.Code)).Select(s =>
+        {
+            var node = new TaxonomyTreeNodeDto
+            {
+                Code = s.Code!,
+                Name = s.Name,
+                Level = "SECTOR"
+            };
+
+            var pairs = StaticMatrix.Where(m => string.Equals(m.FieldCode, s.Code, StringComparison.OrdinalIgnoreCase)).ToList();
+            node.Children = pairs.Select(p => new TaxonomyTreeNodeDto
+            {
+                Code = p.TechCode,
+                Name = p.TechName,
+                Level = "TECH_GROUP",
+                Children = new List<TaxonomyTreeNodeDto>
+                {
+                    new() { Code = $"{p.TechCode}-ITEM01", Name = $"{p.TechName} TRL 7-9 (Sẵn sàng CG)", Level = "TECH_ITEM" }
+                }
+            }).ToList();
+
+            return node;
+        }).ToList();
+
+        return Ok(new { success = true, data = tree, total = tree.Count });
     }
 }

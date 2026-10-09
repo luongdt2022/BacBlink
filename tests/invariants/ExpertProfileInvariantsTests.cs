@@ -254,5 +254,58 @@ public sealed class ExpertProfileInvariantsTests
         json.ShouldNotContain("password");
         card.IsVerified.ShouldBeTrue();
     }
+
+    [Fact]
+    public void Public_directory_dto_supports_multi_page_pagination_and_proven_filters()
+    {
+        var items = new List<ExpertPublicCardDto>();
+        for (var i = 1; i <= 14; i++)
+        {
+            var province = i <= 4 ? "HN" : (i <= 8 ? "HCM" : (i <= 10 ? "HP" : (i <= 12 ? "DN" : "CT")));
+            items.Add(new ExpertPublicCardDto(
+                ExpertCode: $"CG-NACEN-E2E{i:D4}",
+                FullName: $"Chuyên Gia Mẫu {i}",
+                AcademicRank: i % 2 == 0 ? "PGS" : "NONE",
+                Degree: "DOCTOR",
+                OrganizationName: $"Viện Nghiên cứu số {i}",
+                PositionTitle: "Chuyên viên",
+                PrimarySectorCode: "LV05",
+                PrimarySectorName: "Công nghệ thông tin",
+                ExpertiseSectors: ["LV05"],
+                MasteredTechCodes: ["CN01"],
+                ProvinceCode: province,
+                ProvinceName: province,
+                PublicationCount: i * 2,
+                PatentCount: i,
+                ProjectCount: i,
+                IsVerified: true,
+                IsAcceptingConsultation: i % 3 != 0)); // 10 accepting = true, 4 accepting = false
+        }
+
+        var pageSize = 9;
+        var totalCount = items.Count;
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        var page1 = new ExpertPublicDirectoryDto(items.Take(pageSize).ToList(), totalCount, 1, pageSize, totalPages);
+        var page2 = new ExpertPublicDirectoryDto(items.Skip(pageSize).Take(pageSize).ToList(), totalCount, 2, pageSize, totalPages);
+
+        page1.Items.Count.ShouldBe(9);
+        page1.TotalPages.ShouldBe(2);
+        page2.Items.Count.ShouldBe(5);
+        page2.TotalPages.ShouldBe(2);
+
+        // Kiểm tra bộ lọc sẵn sàng tư vấn
+        var acceptingCount = items.Count(x => x.IsAcceptingConsultation);
+        acceptingCount.ShouldBe(10);
+        var nonAcceptingCount = items.Count(x => !x.IsAcceptingConsultation);
+        nonAcceptingCount.ShouldBe(4);
+
+        // Kiểm tra phân bổ đa địa bàn 5 tỉnh
+        items.Count(x => x.ProvinceCode == "HN").ShouldBe(4);
+        items.Count(x => x.ProvinceCode == "HCM").ShouldBe(4);
+        items.Count(x => x.ProvinceCode == "HP").ShouldBe(2);
+        items.Count(x => x.ProvinceCode == "DN").ShouldBe(2);
+        items.Count(x => x.ProvinceCode == "CT").ShouldBe(2);
+    }
 }
 
