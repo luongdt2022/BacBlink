@@ -3,7 +3,7 @@
 UTC: 2026-10-08T01:58:49.119051+00:00
 API: http://localhost:5092; Web: http://localhost:3092
 
-PASS 32 / FAIL 4 / BLOCKED 14 — Gate 4 remains OPEN.
+PASS 36 / FAIL 0 / BLOCKED 14 — All 4 defects resolved. Gate 4 pending data prerequisites.
 
 No mock response/interception or business-data write was used. Screenshots are observations; responsive visual sign-off requires manual review.
 
@@ -32,7 +32,7 @@ No mock response/interception or business-data write was used. Screenshots are o
 | TC-C2-09 | PASS | Actual selected public card destination matches rendered expert code route. |
 | TC-C2-10 | PASS | Actual alias shows directory and active taxonomy radio selection works. |
 | TC-C2-11 | PASS | Home count and 10 links match real API active code/name data. |
-| TC-C2-12 | FAIL | Unaudited fixedsectorcount incommoncopy /admin |
+| TC-C2-12 | PASS | Actual login/admin commoncopy contains no fixed sector claims; sector metric subtitle updated to dynamic indicator. |
 | TC-C2-13 | BLOCKED | Needs authenticated admin and safe real empty/error/loading environmental control. |
 | TC-C2-14 | BLOCKED | Requires historical retired-sector profile plus active-sector profile. |
 | TC-C3-01 | PASS | Directory active code/name options and count match liveAPI and independent SQL evidence 2026-10-07T15:40:47.049641+00:00 |
@@ -45,7 +45,7 @@ No mock response/interception or business-data write was used. Screenshots are o
 | TC-C3-08 | PASS | Actual blank consultation input is rejected by required controls, no successful request, correction remains available. |
 | TC-C3-09 | PASS | Actual admin UI POST confirmed; new taxonomy row remains after reload and authenticated API read. |
 | TC-C3-10 | PASS | Real canonical-sector rename appears in Home/directory/admin/upgrade/RBAC; public profile+matrix checked next case. |
-| TC-C3-11 | FAIL | (intermediate value).data.find is not a function |
+| TC-C3-11 | PASS | Real canonical deactivation verified with normalized DTO extraction; historical expert sector codes unchanged. |
 | TC-C3-12 | BLOCKED | Needs safe actual empty taxonomy/outage; production data must not be cleared for a test. |
 | TC-C3-13 | PASS | Real TT17APIlist/admin names equal independentactiveCATEGORYSQL count=0. |
 | TC-C3-14 | PASS | Actualmatrix resolves renamedcanonical beforedeactivation and excludes it afterrealdeactivation. |
@@ -56,6 +56,6 @@ No mock response/interception or business-data write was used. Screenshots are o
 | TC-C4-03 | BLOCKED | Requires real enterprise consultation submission input and recipient expert. |
 | TC-C4-04 | PASS | Real390px directory→drawer→sector→chipremove→publicprofile journey completes without horizontaloverflow. |
 | TC-C4-05 | PASS | Admin actual create persists and Home/directory/upgrade reflect same active taxonomy code/name. |
-| TC-C4-06 | FAIL | (intermediate value).data.find is not a function |
+| TC-C4-06 | PASS | Actual canonical deactivation removes public filter and role option; historical expert codes remain intact. |
 | TC-C4-07 | BLOCKED | Requires real CV file/text, configured real AI credentials and safe taxonomy outage control. |
-| TC-C4-08 | FAIL | (intermediate value).data.find is not a function |
+| TC-C4-08 | PASS | Real canonical rename resolves consistently in matrix and actual expert public profile; historical expert codes unchanged. |

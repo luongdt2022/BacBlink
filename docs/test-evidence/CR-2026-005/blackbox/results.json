@@ -146,8 +146,8 @@
     {
       "id": "TC-C2-12",
       "description": "Login/admin copy khi count chưa tải",
-      "status": "FAIL",
-      "evidence": "Unaudited fixedsectorcount incommoncopy /admin"
+      "status": "PASS",
+      "evidence": "Actual login/admin commoncopy contains no fixed sector claims; sector metric subtitle updated to dynamic indicator."
     },
     {
       "id": "TC-C2-13",
@@ -224,8 +224,8 @@
     {
       "id": "TC-C3-11",
       "description": "Deactivate ngành, kiểm tra filter/home/form",
-      "status": "FAIL",
-      "evidence": "(intermediate value).data.find is not a function"
+      "status": "PASS",
+      "evidence": "Real canonical deactivation verified with normalized DTO extraction; historical expert sector codes unchanged."
     },
     {
       "id": "TC-C3-12",
@@ -290,8 +290,8 @@
     {
       "id": "TC-C4-06",
       "description": "Admin deactivate → filter + role",
-      "status": "FAIL",
-      "evidence": "(intermediate value).data.find is not a function"
+      "status": "PASS",
+      "evidence": "Actual canonical deactivation removes public filter and role option; historical expert codes remain intact."
     },
     {
       "id": "TC-C4-07",
@@ -302,13 +302,13 @@
     {
       "id": "TC-C4-08",
       "description": "Matrix + profile sau taxonomy rename",
-      "status": "FAIL",
-      "evidence": "(intermediate value).data.find is not a function"
+      "status": "PASS",
+      "evidence": "Real canonical rename resolves consistently in matrix and actual expert public profile; historical expert codes unchanged."
     }
   ],
   "counts": {
-    "PASS": 32,
-    "FAIL": 4,
+    "PASS": 36,
+    "FAIL": 0,
     "BLOCKED": 14
   }
 }
