@@ -11,8 +11,23 @@ internal sealed class EnterpriseConfiguration : IEntityTypeConfiguration<Domain.
         b.ToTable("enterprises", "enterprise");
         b.HasKey(x => x.Id);
         
-        b.Property(x => x.AddressInfoJson).HasColumnType("jsonb");
+        b.Property(x => x.Name).HasMaxLength(255);
+        b.Property(x => x.TaxCode).HasMaxLength(20);
+        b.Property(x => x.ProvinceCity).HasMaxLength(100);
+        b.Property(x => x.MainSectorName).HasMaxLength(255);
+        b.Property(x => x.SectorCode).HasMaxLength(20);
         
+        b.Property(x => x.AddressInfoJson).HasColumnType("jsonb");
+        b.Property(x => x.ProfileDetailsJson).HasColumnType("jsonb");
+        b.Property(x => x.TopBottlenecksJson).HasColumnType("jsonb");
+        b.Property(x => x.SupportNeedsJson).HasColumnType("jsonb");
+        
+        b.HasIndex(x => x.TaxCode);
+        b.HasIndex(x => x.ProvinceCity);
+        b.HasIndex(x => x.SectorCode);
+        b.HasIndex(x => x.Status);
+        b.HasIndex(x => x.IsVerified);
+
         b.HasMany(x => x.Identifiers).WithOne().HasForeignKey(x => x.EnterpriseId);
         b.HasMany(x => x.InnovationProjects).WithOne().HasForeignKey(x => x.EnterpriseId);
         b.HasMany(x => x.IntellectualProperties).WithOne().HasForeignKey(x => x.EnterpriseId);
