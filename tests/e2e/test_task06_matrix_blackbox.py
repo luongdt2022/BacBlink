@@ -463,7 +463,7 @@ def run_task06_blackbox():
             time.sleep(0.4)
 
             # Mở modal sửa trọng số dòng đầu tiên
-            edit_btn = page.locator("button:has-text('✏️ Sửa Trọng Số')").first
+            edit_btn = page.locator("button:has-text('Sửa Trọng Số')").first
             edit_btn.click()
             time.sleep(0.3)
 
