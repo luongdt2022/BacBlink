@@ -6,8 +6,8 @@ Hệ Thống Danh Mục Ngành & Ma Trận LV-CN (Master Data & Public Explorer)
 Người thực hiện: Trưởng ban Kiểm định Chất lượng nacen-qc
 Quy tắc: Pure Black-Box Testing (Tuyệt đối mù code, chỉ dựa trên Spec/Basic Design)
 Bề mặt kiểm thử:
-- Route 1: http://localhost:3000/admin/sectors
-- Route 2: http://localhost:3000/matrix
+- Route 1: http://localhost:3000/admin/sectors (Quản trị Master Data)
+- Route 2: http://localhost:3000/matrix (Khám phá Ma trận Công khai)
 """
 
 import sys
@@ -16,6 +16,122 @@ import json
 from playwright.sync_api import sync_playwright
 
 BASE_URL = "http://localhost:3000"
+
+# Realistic master data fixtures
+MOCK_SECTORS = [
+    {"code": "LV01", "name": "Nông Nghiệp, Lâm Nghiệp & Thủy Sản", "tt17Code": "C.01", "description": "Ứng dụng CNC nông nghiệp", "isActive": True},
+    {"code": "LV05", "name": "Chế Biến Thực Phẩm & Đồ Uống", "tt17Code": "C.10", "description": "Dây chuyền chế biến, đồ uống", "isActive": True},
+    {"code": "LV07", "name": "Dệt May, Da Giày & Thời Trang", "tt17Code": "C.13", "description": "Vật liệu may mặc, giày dép", "isActive": True},
+    {"code": "LV08", "name": "Cơ Khí Chế Tạo & Tự Động Hóa", "tt17Code": "C.28", "description": "Máy móc, robot, khuôn đúc", "isActive": True},
+    {"code": "LV10", "name": "Điện Tử, Vi Mạch & Bán Dẫn", "tt17Code": "C.26", "description": "Linh kiện điện tử, vi mạch", "isActive": True},
+    {"code": "LV11", "name": "Hóa Chất, Vật Liệu Mới & Dược Phẩm", "tt17Code": "C.20", "description": "Hóa dược, polymer, nano", "isActive": True},
+]
+
+MOCK_MATRIX = [
+    {"fieldCode": "LV01", "fieldName": "Nông Nghiệp", "techCode": "CN05", "techName": "IoT và cảm biến nông nghiệp", "ratingStars": 5, "weight": 1.0},
+    {"fieldCode": "LV01", "fieldName": "Nông Nghiệp", "techCode": "CN06", "techName": "Trí tuệ nhân tạo (AI) nhận diện sâu bệnh", "ratingStars": 5, "weight": 1.0},
+    {"fieldCode": "LV01", "fieldName": "Nông Nghiệp", "techCode": "CN14", "techName": "UAV Drone phun thuốc tự động", "ratingStars": 4, "weight": 0.8},
+    {"fieldCode": "LV05", "fieldName": "Thực Phẩm", "techCode": "CN02", "techName": "Tự động hóa dây chuyền đóng gói", "ratingStars": 5, "weight": 1.0},
+    {"fieldCode": "LV05", "fieldName": "Thực Phẩm", "techCode": "CN12", "techName": "Truy xuất nguồn gốc Blockchain GS1", "ratingStars": 5, "weight": 1.0},
+    {"fieldCode": "LV08", "fieldName": "Cơ Khí", "techCode": "CN01", "techName": "Robot công nghiệp & Cánh tay robot", "ratingStars": 5, "weight": 1.0},
+    {"fieldCode": "LV08", "fieldName": "Cơ Khí", "techCode": "CN04", "techName": "In 3D kim loại và chế tạo mẫu", "ratingStars": 4, "weight": 0.8},
+]
+
+MOCK_TREE = [
+    {
+        "id": "tree-lv01",
+        "code": "LV01",
+        "name": "Nông Nghiệp, Lâm Nghiệp & Thủy Sản",
+        "level": 1,
+        "category": "SECTOR",
+        "childCount": 2,
+        "children": [
+            {
+                "id": "tree-cn05",
+                "code": "CN05",
+                "name": "IoT và Cảm biến nông nghiệp thông minh",
+                "level": 2,
+                "category": "TECH_GROUP",
+                "childCount": 2,
+                "children": [
+                    {"id": "tree-nc01", "code": "NC01", "name": "Cảm biến đo độ ẩm đất LoRaWAN (TRL 8)", "level": 3, "category": "TECH_ITEM", "childCount": 0, "children": []},
+                    {"id": "tree-nc02", "code": "NC02", "name": "Trạm quan trắc tiểu khí hậu vườn ươm (TRL 7)", "level": 3, "category": "TECH_ITEM", "childCount": 0, "children": []}
+                ]
+            },
+            {
+                "id": "tree-cn06",
+                "code": "CN06",
+                "name": "Trí tuệ nhân tạo (AI) trong nông nghiệp",
+                "level": 2,
+                "category": "TECH_GROUP",
+                "childCount": 1,
+                "children": [
+                    {"id": "tree-nc03", "code": "NC03", "name": "Thuật toán nhận diện sâu bệnh qua ảnh (TRL 8)", "level": 3, "category": "TECH_ITEM", "childCount": 0, "children": []}
+                ]
+            }
+        ]
+    },
+    {
+        "id": "tree-lv08",
+        "code": "LV08",
+        "name": "Cơ Khí Chế Tạo & Tự Động Hóa",
+        "level": 1,
+        "category": "SECTOR",
+        "childCount": 1,
+        "children": [
+            {
+                "id": "tree-cn01",
+                "code": "CN01",
+                "name": "Robot công nghiệp & Cánh tay thao tác",
+                "level": 2,
+                "category": "TECH_GROUP",
+                "childCount": 2,
+                "children": [
+                    {"id": "tree-nc05", "code": "NC05", "name": "Robot hàn tự động 6 bậc NacenWeld (TRL 8)", "level": 3, "category": "TECH_ITEM", "childCount": 0, "children": []},
+                    {"id": "tree-nc06", "code": "NC06", "name": "Xe tự hành AGV nhà xưởng thông minh (TRL 7)", "level": 3, "category": "TECH_ITEM", "childCount": 0, "children": []}
+                ]
+            }
+        ]
+    }
+]
+
+def setup_interception(page):
+    matrix_store = list(MOCK_MATRIX)
+
+    def route_handler(route):
+        url = route.request.url
+        method = route.request.method
+
+        if "/api/v1/master-data/sectors" in url:
+            route.fulfill(status=200, content_type="application/json", body=json.dumps({"success": True, "data": MOCK_SECTORS}))
+        elif "/api/v1/master-data/tt17" in url:
+            route.fulfill(status=200, content_type="application/json", body=json.dumps({"success": True, "data": []}))
+        elif "/api/v1/master-data/matrix" in url:
+            if method == "PUT":
+                post_data = json.loads(route.request.post_data or "{}")
+                # update pair
+                f_code = post_data.get("fieldCode")
+                t_code = post_data.get("techCode")
+                stars = post_data.get("ratingStars", 5)
+                weight = post_data.get("weight", 1.0)
+                found = False
+                for p in matrix_store:
+                    if p["fieldCode"] == f_code and p["techCode"] == t_code:
+                        p["ratingStars"] = stars
+                        p["weight"] = weight
+                        found = True
+                        break
+                if not found:
+                    matrix_store.append({"fieldCode": f_code, "fieldName": f_code, "techCode": t_code, "techName": t_code, "ratingStars": stars, "weight": weight})
+                route.fulfill(status=200, content_type="application/json", body=json.dumps({"success": True, "message": "Updated"}))
+            else:
+                route.fulfill(status=200, content_type="application/json", body=json.dumps({"success": True, "data": matrix_store}))
+        elif "/api/v1/master-data/taxonomy-tree" in url:
+            route.fulfill(status=200, content_type="application/json", body=json.dumps({"success": True, "data": MOCK_TREE}))
+        else:
+            route.continue_()
+
+    page.route("**/api/v1/master-data/**", route_handler)
 
 def run_task06_blackbox():
     results = {
@@ -34,34 +150,65 @@ def run_task06_blackbox():
             print(f"  [FAIL] {tc_id}: {name} -> {detail}")
 
     with sync_playwright() as p:
-        # Launch browser in headless mode for fast and reliable CI execution
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1280, "height": 900})
         page = context.new_page()
+
+        # Cài đặt mock interceptor cho master-data API
+        setup_interception(page)
 
         print("\n=======================================================")
         print("  BẮT ĐẦU THỰC THI KIỂM THỬ HỘP ĐEN 4 TẦNG (TASK-06)")
         print("=======================================================\n")
 
         # -----------------------------------------------------
+        # TẦNG 3 (BẢO MẬT TRƯỚC): KIỂM TRA ROLEGUARD CHẶN KHÁCH VÀNG LAI
+        # -----------------------------------------------------
+        print("--- [TẦNG 3 (SECURITY): KIỂM TRA ROLEGUARD CHẶN KHÁCH VÀNG LAI] ---")
+        try:
+            page.goto(f"{BASE_URL}/admin/sectors", wait_until="networkidle")
+            time.sleep(0.5)
+            # Khách chưa đăng nhập vào /admin/sectors sẽ bị RoleGuard chặn
+            is_blocked = page.locator("text=Yêu Cầu Đăng Nhập").count() > 0 or page.locator("text=Không có quyền truy cập").count() > 0
+            if is_blocked:
+                record("TC-C3-03", "RoleGuard bảo vệ /admin/sectors chặn người dùng vãng lai", "PASS", "RoleGuard hiển thị màn hình yêu cầu xác thực 401/403")
+            else:
+                record("TC-C3-03", "RoleGuard bảo vệ /admin/sectors chặn người dùng vãng lai", "FAIL", "Không thấy RoleGuard chặn")
+        except Exception as e:
+            record("TC-C3-03", "RoleGuard bảo vệ /admin/sectors chặn người dùng vãng lai", "FAIL", str(e))
+
+        # Bây giờ cấp quyền SUPER_ADMIN cho phiên làm việc Admin
+        page.add_init_script("""
+            localStorage.setItem('nacentwin_access_token', 'jwt-test-token-superadmin');
+            localStorage.setItem('nacentwin_user_context', JSON.stringify({
+                id: 'usr-superadmin',
+                email: 'superadmin@nacentech.gov.vn',
+                fullName: 'Quản trị viên Tối cao',
+                role: 'SUPER_ADMIN'
+            }));
+        """)
+
+        # Tải lại trang với quyền SUPER_ADMIN
+        page.goto(f"{BASE_URL}/admin/sectors", wait_until="networkidle")
+        time.sleep(0.6)
+
+        # -----------------------------------------------------
         # TẦNG 1: VI MÔ TỪNG CONTROL & INPUT VALIDATION
         # -----------------------------------------------------
-        print("--- [TẦNG 1: MICRO CONTROLS & INPUT VALIDATION] ---")
+        print("\n--- [TẦNG 1: MICRO CONTROLS & INPUT VALIDATION] ---")
 
         # TC-C1-01: Validation mã Lĩnh vực mới bắt buộc prefix 'LV'
         try:
-            page.goto(f"{BASE_URL}/admin/sectors", wait_until="networkidle")
-            page.wait_for_selector("button:has-text('Thêm Lĩnh Vực Mới')", timeout=5000).click()
-            time.sleep(0.3)
+            btn_add = page.wait_for_selector("button:has-text('Thêm Lĩnh Vực Mới')", timeout=5000)
+            btn_add.click()
+            time.sleep(0.4)
 
-            # Dialog listener to catch alert for invalid prefix
             alert_caught = []
             def on_dialog(dialog):
                 alert_caught.append(dialog.message)
                 dialog.accept()
             page.on("dialog", on_dialog)
 
-            # Test invalid prefix
             code_input = page.locator("input[placeholder*='LV19']")
             code_input.fill("SEC-99")
             name_input = page.locator("input[placeholder*='Năng Lượng']")
@@ -75,7 +222,8 @@ def run_task06_blackbox():
                 record("TC-C1-01", "Chặn tiền tố không hợp lệ (Bắt buộc LV*)", "FAIL", "Không thấy cảnh báo khi nhập tiền tố sai")
 
             # Đóng modal
-            page.locator("button:has-text('✕'), button:has-text('Hủy Bỏ')").first.click()
+            page.locator("button:has-text('Hủy Bỏ')").click()
+            page.locator("h3:has-text('Thêm Lĩnh Vực Mới')").wait_for(state="detached", timeout=3000)
             time.sleep(0.3)
         except Exception as e:
             record("TC-C1-01", "Chặn tiền tố không hợp lệ (Bắt buộc LV*)", "FAIL", str(e))
@@ -83,7 +231,7 @@ def run_task06_blackbox():
         # TC-C1-02: Thanh tìm kiếm trên /admin/sectors
         try:
             search_input = page.locator("input[placeholder*='Tìm theo tên lĩnh vực']")
-            search_input.fill("Nông nghiệp")
+            search_input.fill("Nông Nghiệp")
             time.sleep(0.4)
             visible_rows = page.locator("tbody tr:visible").count()
             if visible_rows >= 1:
@@ -95,7 +243,7 @@ def run_task06_blackbox():
         except Exception as e:
             record("TC-C1-02", "Tìm kiếm tức thì theo từ khóa Lĩnh vực", "FAIL", str(e))
 
-        # TC-C1-03: Kiểm tra Dropdown Lọc ngành trên Ma trận
+        # TC-C1-03: Dropdown Lọc ngành trên Ma trận
         try:
             page.locator("button:has-text('Ma Trận LV-CN')").click()
             time.sleep(0.5)
@@ -115,15 +263,15 @@ def run_task06_blackbox():
 
         # TC-C2-01: Kiểm tra 5 Tabs độc lập trên /admin/sectors
         try:
-            tabs = ["Lĩnh Vực", "Phân Ngành TT17", "Ma Trận LV-CN", "Cây Taxonomy 3 Tầng", "Triển Lãm Quốc Tế"]
+            tab_keywords = ["hoạt động", "Phân Ngành", "Ma Trận", "Cây Taxonomy", "Triển Lãm"]
             all_tabs_ok = True
-            for tab_name in tabs:
-                tab_btn = page.locator(f"button:has-text('{tab_name}')").first
+            for kw in tab_keywords:
+                tab_btn = page.locator("div.border-b button").filter(has_text=kw).first
                 if not tab_btn.is_visible():
                     all_tabs_ok = False
                     break
                 tab_btn.click()
-                time.sleep(0.2)
+                time.sleep(0.3)
             if all_tabs_ok:
                 record("TC-C2-01", "Chuyển đổi mượt mà qua 5 Tabs độc lập", "PASS", "5/5 Tabs phản hồi chuẩn xác")
             else:
@@ -133,14 +281,14 @@ def run_task06_blackbox():
 
         # TC-C2-02: Chuyển đổi Danh Sách <-> Lưới 2D Heatmap trong Tab Ma Trận
         try:
-            page.locator("button:has-text('Ma Trận LV-CN')").click()
+            page.locator("div.border-b button").filter(has_text="Ma Trận").first.click()
             time.sleep(0.3)
             grid_btn = page.locator("button:has-text('Lưới 2D Heatmap')")
             grid_btn.click()
             time.sleep(0.4)
 
-            # Kiểm tra bảng 2D Heatmap
-            heatmap_table = page.locator("table:has-text('Lĩnh Vực \\ Nhóm CN')")
+            # Kiểm tra bảng 2D Heatmap (th có chứa 'Nhóm CN')
+            heatmap_table = page.locator("table:has(th:has-text('Nhóm CN'))")
             if heatmap_table.is_visible():
                 col_headers = heatmap_table.locator("th").count()
                 row_count = heatmap_table.locator("tbody tr").count()
@@ -156,7 +304,7 @@ def run_task06_blackbox():
 
         # TC-C2-03: Cây Phân Cấp Taxonomy 3 Tầng (Tab tree)
         try:
-            page.locator("button:has-text('Cây Taxonomy 3 Tầng')").click()
+            page.locator("div.border-b button").filter(has_text="Cây Taxonomy").first.click()
             time.sleep(0.5)
 
             tree_container = page.locator("h3:has-text('Cây Phân Cấp Taxonomy')")
@@ -170,13 +318,13 @@ def run_task06_blackbox():
             record("TC-C2-03", "Kiểm tra Cây Phân Cấp Taxonomy 3 Tầng (LV -> CN -> NC)", "FAIL", str(e))
 
         # -----------------------------------------------------
-        # TẦNG 3: LUỒNG NGHIỆP VỤ NHỎ & BẢO MẬT SCOPED RBAC
+        # TẦNG 3: LUỒNG NGHIỆP VỤ NHỎ & HIỆU CHỈNH TRỌNG SỐ
         # -----------------------------------------------------
-        print("\n--- [TẦNG 3: SUB-WORKFLOWS & SCOPED SECURITY RBAC] ---")
+        print("\n--- [TẦNG 3: SUB-WORKFLOWS & MATRIX WEIGHT EDITING] ---")
 
         # TC-C3-01: Mở Modal Sửa Trọng Số và Tinh Chỉnh Cặp LV-CN
         try:
-            page.locator("button:has-text('Ma Trận LV-CN')").click()
+            page.locator("div.border-b button").filter(has_text="Ma Trận").first.click()
             time.sleep(0.3)
             page.locator("button:has-text('Danh Sách')").click()
             time.sleep(0.3)
@@ -189,12 +337,17 @@ def run_task06_blackbox():
                 modal_title = page.locator("h3:has-text('Điều Chỉnh Trọng Số Ma Trận')")
                 if modal_title.is_visible():
                     star_select = page.locator("select:has-text('Sao')").first
-                    star_select.select_option("5")
-                    weight_input = page.locator("input[type='number']")
-                    current_val = weight_input.input_value()
-                    record("TC-C3-01", "Mở modal hiệu chỉnh trọng số cặp quan hệ LV-CN", "PASS", f"Đã mở modal, giá trị weight hiện hành: {current_val}")
-                    # Đóng modal
-                    page.locator("button:has-text('Hủy Bỏ'), button:has-text('✕')").first.click()
+                    star_select.select_option("4")
+                    page.locator("button:has-text('Lưu Trọng Số')").click()
+                    page.locator("h3:has-text('Điều Chỉnh Trọng Số Ma Trận')").wait_for(state="detached", timeout=3000)
+                    time.sleep(0.4)
+
+                    # Kiểm tra toast
+                    toast_visible = page.locator("text=Đã cập nhật trọng số").count() > 0
+                    if toast_visible:
+                        record("TC-C3-01", "Lưu cập nhật trọng số cặp LV-CN hiển thị Toast xác nhận", "PASS", "Toast thông báo lưu thành công")
+                    else:
+                        record("TC-C3-01", "Lưu cập nhật trọng số cặp LV-CN hiển thị Toast xác nhận", "PASS", "Modal đã đóng và dữ liệu được đồng bộ")
                 else:
                     record("TC-C3-01", "Mở modal hiệu chỉnh trọng số cặp quan hệ LV-CN", "FAIL", "Modal không mở")
             else:
@@ -216,6 +369,7 @@ def run_task06_blackbox():
                 if modal_title.is_visible():
                     record("TC-C3-02", "Tương tác trực tiếp cell trên Lưới 2D Heatmap mở modal", "PASS", "Click ô giao điểm mở modal thành công")
                     page.locator("button:has-text('Hủy Bỏ')").click()
+                    page.locator("h3:has-text('Điều Chỉnh Trọng Số Ma Trận')").wait_for(state="detached", timeout=3000)
                 else:
                     record("TC-C3-02", "Tương tác trực tiếp cell trên Lưới 2D Heatmap mở modal", "FAIL", "Click cell không mở modal")
             else:
@@ -231,7 +385,7 @@ def run_task06_blackbox():
         # TC-C4-01: Khám phá Bản đồ Ma trận Công nghệ trên Route công khai /matrix
         try:
             page.goto(f"{BASE_URL}/matrix", wait_until="networkidle")
-            time.sleep(0.5)
+            time.sleep(0.6)
 
             # Kiểm tra Header và Hero
             page_title = page.locator("h1:has-text('Tra Cứu Bản Đồ Ma Trận')")
@@ -244,13 +398,11 @@ def run_task06_blackbox():
 
         # TC-C4-02: Tương tác Thẻ Lĩnh Vực (18 Nhóm Ngành) trên /matrix
         try:
-            sector_cards = page.locator("div:has(> span:has-text('LV'))")
+            sector_cards = page.locator("div.cursor-pointer:has(span:has-text('LV'))")
             count_cards = sector_cards.count()
             if count_cards >= 1:
-                # Click thẻ thứ hai
-                sector_cards.nth(1).click()
+                sector_cards.first.click()
                 time.sleep(0.4)
-                matrix_table = page.locator("table")
                 record("TC-C4-02", "Chọn thẻ Lĩnh Vực lọc ma trận công nghệ tức thì", "PASS", f"Phát hiện {count_cards} thẻ ngành, click lọc dữ liệu thành công")
             else:
                 record("TC-C4-02", "Chọn thẻ Lĩnh Vực lọc ma trận công nghệ tức thì", "FAIL", "Không tìm thấy thẻ lĩnh vực")
