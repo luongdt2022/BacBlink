@@ -11,19 +11,19 @@ public class Tt17AssessmentInvariantsTests
     public void Constructor_ShouldInitializeCorrectly_InDraftState()
     {
         var enterpriseId = Guid.NewGuid();
-        var assessment = new Tt17Assessment(enterpriseId, 2026, "Province");
+        var assessment = new Tt17Assessment(enterpriseId, "Công ty ABC", "0101234567", 2026, "HN", "C.10");
 
         assessment.EnterpriseId.ShouldBe(enterpriseId);
         assessment.AssessmentYear.ShouldBe(2026);
-        assessment.ScopeType.ShouldBe("Province");
+        assessment.ScopeId.ShouldBe("HN");
         assessment.Status.ShouldBe("DRAFT");
     }
 
     [Fact]
     public void Submit_ShouldChangeStatus_ToSubmitted()
     {
-        var assessment = new Tt17Assessment(Guid.NewGuid(), 2026, "Province");
-        assessment.Submit();
+        var assessment = new Tt17Assessment(Guid.NewGuid(), "Công ty ABC", "0101234567", 2026, "HN", "C.10");
+        assessment.Submit("{\"total\": 75.5}");
 
         assessment.Status.ShouldBe("SUBMITTED");
     }
@@ -31,11 +31,11 @@ public class Tt17AssessmentInvariantsTests
     [Fact]
     public void Submit_WhenAlreadySubmitted_ShouldThrowException()
     {
-        var assessment = new Tt17Assessment(Guid.NewGuid(), 2026, "Province");
-        assessment.Submit();
+        var assessment = new Tt17Assessment(Guid.NewGuid(), "Công ty ABC", "0101234567", 2026, "HN", "C.10");
+        assessment.Submit("{\"total\": 75.5}");
 
-        Should.Throw<InvalidOperationException>(() => assessment.Submit())
-            .Message.ShouldBe("Chỉ có thể nộp từ trạng thái nháp.");
+        Should.Throw<InvalidOperationException>(() => assessment.Submit("{\"total\": 75.5}"))
+            .Message.ShouldBe("Chỉ có thể nộp hồ sơ từ trạng thái Nháp hoặc Cần bổ sung.");
     }
     
     [Theory]
@@ -43,7 +43,6 @@ public class Tt17AssessmentInvariantsTests
     [InlineData(3000)]
     public void Constructor_WhenYearIsInvalid_ShouldThrowException(int invalidYear)
     {
-        // BUG: Dev didn't write validation, so this will fail the test!
-        Should.Throw<ArgumentOutOfRangeException>(() => new Tt17Assessment(Guid.NewGuid(), invalidYear, "Province"));
+        Should.Throw<ArgumentOutOfRangeException>(() => new Tt17Assessment(Guid.NewGuid(), "Công ty ABC", "0101234567", invalidYear, "HN", "C.10"));
     }
 }

@@ -11,7 +11,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\kernel\NacenTech.Kernel.csproj" />
-    <ProjectReference Include="..\..\..\packages\persistence\NacenTech.Persistence.csproj" />
     <ProjectReference Include="..\..\..\packages\contracts\NacenTech.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>
 </Project>

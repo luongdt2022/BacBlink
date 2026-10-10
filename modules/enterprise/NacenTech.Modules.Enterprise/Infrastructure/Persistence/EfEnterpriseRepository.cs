@@ -42,16 +42,16 @@ public class EfEnterpriseRepository : IEnterpriseRepository
             .FirstOrDefaultAsync(x => x.TaxCode == taxCode, ct);
     }
 
-    public async Task AddAsync(Domain.Enterprise enterprise, CancellationToken ct = default)
+    public Task AddAsync(Domain.Enterprise enterprise, CancellationToken ct = default)
     {
         _db.Set<Domain.Enterprise>().Add(enterprise);
-        await _db.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(Domain.Enterprise enterprise, CancellationToken ct = default)
+    public Task UpdateAsync(Domain.Enterprise enterprise, CancellationToken ct = default)
     {
         _db.Set<Domain.Enterprise>().Update(enterprise);
-        await _db.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
     public async Task<(IReadOnlyList<Domain.Enterprise> Items, int TotalCount)> SearchAsync(EnterpriseSearchQuery query, CancellationToken ct = default)

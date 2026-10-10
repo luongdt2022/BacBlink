@@ -2,28 +2,25 @@ using System;
 using Xunit;
 using NacenTech.Modules.Assessment;
 using NacenTech.Modules.Assessment.Application;
-using System.Collections.Generic;
 
 namespace NacenTech.Modules.Assessment.Tests;
 
 public class Tt17AssessmentTests
 {
     [Fact]
-    public void Engine_ShouldCalculateCorrectScore()
+    public void Engine_ShouldCalculateCorrectScore_Basic()
     {
-        var assessment = new Tt17Assessment(Guid.NewGuid(), 2026, "TEST");
-        assessment.UpdateDraft(
-            new List<MachineryItem>(), 
-            new List<EquipmentItem>(), 
-            new List<MaterialItem>(), 
-            new List<EvaluationCriterion> { 
-                new EvaluationCriterion { Code = "A", Score = 10 },
-                new EvaluationCriterion { Code = "B", Score = 15 }
-            });
-        
-        var service = new Tt17ScoringService();
-        var score = service.CalculateScore(assessment);
-        
-        Assert.Equal(25, score);
+        var survey = new Tt17SurveyDataDto
+        {
+            ModernEquipmentRatio = 60.0,
+            DepreciationCoefficient = 0.4,
+            DigitalMaturityLevel = 3
+        };
+
+        var engine = new Tt17ScoringEngine();
+        var result = engine.Calculate(survey);
+
+        Assert.True(result.ScoreT > 0);
+        Assert.True(result.TotalScore > 0);
     }
 }

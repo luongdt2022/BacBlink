@@ -1,17 +1,19 @@
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NacenTech.Kernel.Application;
 using NacenTech.Modules.Technology.Application;
+using NacenTech.Modules.Technology.Domain;
+using NacenTech.Persistence;
 
 namespace NacenTech.Api.V2;
 
 [ApiController]
 [Route("api/v2/technologies")]
-[Route("api/v1/technologies")]
-public sealed class TechnologyOffersController : ControllerBase
+public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWork uow) : V2ControllerBase
 {
-    // In-memory store cho Demo & Autopilot test, có khởi tạo dữ liệu mẫu 18 ngành chuẩn
+    // In-memory cache & fallback store, có khởi tạo dữ liệu mẫu 18 ngành chuẩn
     private static readonly ConcurrentDictionary<Guid, SellerOfferDto> OffersStore = new(SeedInitialOffers());
 
     private static IEnumerable<KeyValuePair<Guid, SellerOfferDto>> SeedInitialOffers()
@@ -269,7 +271,7 @@ public sealed class TechnologyOffersController : ControllerBase
     [HttpPost("/api/v1/portal/seller/technologies")]
     [HttpPost("/api/v2/portal/seller/technologies")]
     [AllowAnonymous]
-    public IActionResult CreateSellerOffer([FromBody] CreateSellerOfferDto dto)
+    public async Task<IActionResult> CreateSellerOffer([FromBody] CreateSellerOfferDto dto, CancellationToken ct = default)
     {
         var validation = SellerOfferRulesValidator.Validate(dto);
         if (!validation.IsValid)
@@ -307,17 +309,107 @@ public sealed class TechnologyOffersController : ControllerBase
             TransferMethod: dto.TransferMethod,
             CommercialStatus: dto.CommercialStatus,
             ContactPointRole: dto.ContactPointRole,
-            Status: "APPROVED", // Auto-approved for demo testing
+            Status: "PENDING", // Khởi tạo chờ Sở KH&CN thẩm định theo BR-SELLER-05
             SuccessfulConnections: 0,
             RatingScore: 5.0m,
             ReviewCount: 0,
             CreatedAt: DateTimeOffset.UtcNow,
-            PublishedAt: DateTimeOffset.UtcNow
+            PublishedAt: null, // Chưa xuất bản khi chưa duyệt
+            ManagingAuthorityId: dto.ManagingAuthorityId ?? "VN-HN",
+            ManagingAuthorityName: dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
+            ScopeType: dto.ScopeType ?? "PROVINCE",
+            ScopeId: dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN"
         );
+
+        // Lưu thực thể lâu dài vào CSDL PostgreSQL
+        var entity = new SellerTechnologyOffer(
+            id,
+            offerCode,
+            dto.OfferType.ToUpperInvariant(),
+            dto.HasTechTransfer,
+            dto.Title,
+            dto.Summary,
+            dto.ProblemSolved,
+            dto.SectorCode.ToUpperInvariant(),
+            MapSectorName(dto.SectorCode),
+            dto.PricingType.ToUpperInvariant(),
+            dto.PriceAmount,
+            dto.PriceMin,
+            dto.PriceMax,
+            dto.Currency ?? "VND",
+            dto.Unit,
+            dto.DeveloperOrigin,
+            dto.TrlLevel,
+            dto.IpStatus,
+            dto.IpRegistrationNumber,
+            dto.TransferMethod,
+            dto.CommercialStatus,
+            dto.ContactPointRole,
+            "PENDING",
+            dto.ManagingAuthorityId ?? "VN-HN",
+            dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
+            dto.ScopeType ?? "PROVINCE",
+            dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
+            dto.LegalConsent
+        );
+
+        db.Set<SellerTechnologyOffer>().Add(entity);
+        await uow.CommitAsync(ct);
 
         OffersStore[id] = newOffer;
 
         return CreatedAtAction(nameof(GetOfferById), new { id }, new { success = true, data = newOffer });
+    }
+
+    [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/review")]
+    [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/review")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ReviewOffer(Guid id, [FromBody] ReviewOfferDto dto, CancellationToken ct = default)
+    {
+        if (!OffersStore.TryGetValue(id, out var offer))
+        {
+            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ." });
+        }
+
+        var action = dto.Action?.Trim().ToUpperInvariant() ?? string.Empty;
+        SellerOfferDto updated;
+        if (action == "APPROVE")
+        {
+            updated = offer with
+            {
+                Status = "APPROVED",
+                PublishedAt = DateTimeOffset.UtcNow
+            };
+        }
+        else if (action == "REJECT")
+        {
+            updated = offer with
+            {
+                Status = "REJECTED"
+            };
+        }
+        else if (action == "REQUEST_CHANGES")
+        {
+            updated = offer with
+            {
+                Status = "CHANGES_REQUESTED"
+            };
+        }
+        else
+        {
+            return BadRequest(new { success = false, message = $"Hành động '{dto.Action}' không hợp lệ. Chấp nhận: APPROVE, REJECT, REQUEST_CHANGES." });
+        }
+
+        // Cập nhật CSDL PostgreSQL
+        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (entity != null)
+        {
+            entity.Review(action, dto.ReviewNote);
+            await uow.CommitAsync(ct);
+        }
+
+        OffersStore[id] = updated;
+        return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updated });
     }
 
     private static string MapSectorName(string code) => code.ToUpperInvariant() switch

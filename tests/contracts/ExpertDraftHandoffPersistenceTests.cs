@@ -100,13 +100,15 @@ public sealed class ExpertDraftHandoffPersistenceTests(PostgresFixture fixture)
     [InlineData(true)]
     public async Task Host_transaction_commits_claim_with_queue_or_rolls_back_both(bool failQueue)
     {
-        var personId = Guid.NewGuid();
+        var person = Person.Register($"draft-owner-{Guid.NewGuid():N}@example.test", "test-hash", PasswordHashAlgorithms.Pbkdf2V3, "Owner", "Test", null, null, true);
+        var personId = person.Id;
         await using var provider = fixture.BuildProvider(new TestActor().AsUser(personId), new TestClock());
         string token; Guid draftId;
         var code = "LV" + Guid.NewGuid().ToString("N")[..10].ToUpperInvariant();
         using (var scope = provider.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<DbContext>();
+            db.Set<Person>().Add(person);
             db.Set<TaxonomyTerm>().Add(new TaxonomyTerm("SECTOR", "Ngành bàn giao thực", code));
             await scope.ServiceProvider.GetRequiredService<IUnitOfWork>().CommitAsync(Ct);
             var service = scope.ServiceProvider.GetRequiredService<IExpertService>();

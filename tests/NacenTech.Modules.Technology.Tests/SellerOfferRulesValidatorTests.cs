@@ -181,4 +181,23 @@ public class SellerOfferRulesValidatorTests
 
         Assert.True(result.IsValid);
     }
+
+    [Fact]
+    public void BR_SELLER_05_WithoutLegalConsent_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with { LegalConsent = false };
+        var result = SellerOfferRulesValidator.Validate(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(dto.LegalConsent)));
+    }
+
+    [Fact]
+    public void BR_SELLER_05_WithLegalConsent_ShouldPass()
+    {
+        var dto = CreateValidBaseDto() with { LegalConsent = true };
+        var result = SellerOfferRulesValidator.Validate(dto);
+
+        Assert.True(result.IsValid);
+    }
 }

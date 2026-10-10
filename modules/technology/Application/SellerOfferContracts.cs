@@ -73,7 +73,12 @@ public sealed record CreateSellerOfferDto(
     string? IpRegistrationNumber,
     string? TransferMethod,
     string? CommercialStatus,
-    string? ContactPointRole
+    string? ContactPointRole,
+    string? ManagingAuthorityId = "VN-HN",
+    string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
+    string? ScopeType = "PROVINCE",
+    string? ScopeId = "VN-HN",
+    bool LegalConsent = true
 );
 
 public sealed record SellerOfferDto(
@@ -104,7 +109,16 @@ public sealed record SellerOfferDto(
     decimal RatingScore,
     int ReviewCount,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? PublishedAt
+    DateTimeOffset? PublishedAt,
+    string? ManagingAuthorityId = "VN-HN",
+    string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
+    string? ScopeType = "PROVINCE",
+    string? ScopeId = "VN-HN"
+);
+
+public sealed record ReviewOfferDto(
+    string Action,
+    string? ReviewNote = null
 );
 
 public sealed class CreateSellerOfferValidationResult
@@ -191,6 +205,12 @@ public static class SellerOfferRulesValidator
 
             if (string.IsNullOrWhiteSpace(dto.CommercialStatus) || !CommercializationStatuses.All.Contains(dto.CommercialStatus.ToUpperInvariant()))
                 result.AddError(nameof(dto.CommercialStatus), "Khi có chuyển giao công nghệ, bắt buộc chọn Trạng thái thương mại hóa hợp lệ.");
+        }
+
+        // BR-SELLER-05: Cam kết pháp lý & Cơ quan quản lý
+        if (!dto.LegalConsent)
+        {
+            result.AddError(nameof(dto.LegalConsent), "Doanh nghiệp bắt buộc cam kết trách nhiệm pháp lý trước khi nộp hồ sơ thẩm định.");
         }
 
         return result;

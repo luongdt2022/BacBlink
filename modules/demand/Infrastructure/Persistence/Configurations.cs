@@ -47,3 +47,56 @@ public sealed class SurveySubmissionConfiguration : IEntityTypeConfiguration<Sur
         b.HasIndex(x => new { x.EnterpriseId, x.Year }).IsUnique();
     }
 }
+
+public sealed class DemandSurveyConfiguration : IEntityTypeConfiguration<DemandSurvey>
+{
+    public void Configure(EntityTypeBuilder<DemandSurvey> b)
+    {
+        b.ToTable("demand_surveys", DemandModule.SchemaName);
+        b.HasKey(x => x.Id);
+        b.Property(x => x.SurveyCode).HasMaxLength(50).IsRequired();
+        b.Property(x => x.SurveyType).HasMaxLength(20).IsRequired();
+        b.Property(x => x.CompanyName).HasMaxLength(255).IsRequired();
+        b.Property(x => x.TaxCode).HasMaxLength(30);
+        b.Property(x => x.ContactName).HasMaxLength(150).IsRequired();
+        b.Property(x => x.ContactPhone).HasMaxLength(50).IsRequired();
+        b.Property(x => x.ContactEmail).HasMaxLength(150).IsRequired();
+        b.Property(x => x.BusinessType).HasMaxLength(50);
+        b.Property(x => x.EnterpriseSize).HasMaxLength(50);
+        b.Property(x => x.EmployeeScale).HasMaxLength(50);
+        b.Property(x => x.RevenueRange3y).HasMaxLength(50);
+        b.Property(x => x.TopBottlenecks).HasColumnType("text[]");
+        b.Property(x => x.Status).HasMaxLength(30).IsRequired();
+
+        b.HasIndex(x => x.SurveyCode).IsUnique();
+        b.HasIndex(x => x.TaxCode);
+        b.HasIndex(x => x.Status);
+        b.HasMany(x => x.Items).WithOne().HasForeignKey(i => i.SurveyId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public sealed class DemandItemConfiguration : IEntityTypeConfiguration<DemandItem>
+{
+    public void Configure(EntityTypeBuilder<DemandItem> b)
+    {
+        b.ToTable("demand_items", DemandModule.SchemaName);
+        b.HasKey(x => x.Id);
+        b.Property(x => x.ItemCode).HasMaxLength(50).IsRequired();
+        b.Property(x => x.StageName).HasMaxLength(255).IsRequired();
+        b.Property(x => x.TechnicalProblem).IsRequired();
+        b.Property(x => x.ExpectedGoal).IsRequired();
+        b.Property(x => x.SectorCode).HasMaxLength(20).IsRequired();
+        b.Property(x => x.TechGroupCode).HasMaxLength(20).IsRequired();
+        b.Property(x => x.DemandTypeCode).HasMaxLength(20).IsRequired();
+        b.Property(x => x.BudgetRange).HasMaxLength(50).IsRequired();
+        b.Property(x => x.TniClassification).HasMaxLength(30).IsRequired();
+        b.Property(x => x.Status).HasMaxLength(30).IsRequired();
+
+        b.HasIndex(x => x.ItemCode).IsUnique();
+        b.HasIndex(x => x.SurveyId);
+        b.HasIndex(x => x.SectorCode);
+        b.HasIndex(x => x.Status);
+        b.HasIndex(x => x.IsPublicListed);
+    }
+}
+

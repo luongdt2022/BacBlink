@@ -43,27 +43,35 @@ public class EnterpriseService : IEnterpriseService
 
     public async Task<EnterprisePublicDirectoryDto> GetPublicDirectoryAsync(EnterpriseSearchQuery query, CancellationToken ct = default)
     {
-        var (items, totalCount) = await _repository.SearchAsync(query, ct);
-        var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
-        var totalPages = (totalCount + pageSize - 1) / pageSize;
+        try
+        {
+            var (items, totalCount) = await _repository.SearchAsync(query, ct);
+            var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
+            var totalPages = (totalCount + pageSize - 1) / pageSize;
 
-        var dtoItems = items.Select(x => new EnterprisePublicDirectoryItemDto(
-            Id: x.Id,
-            Name: string.IsNullOrWhiteSpace(x.Name) ? x.LegalName : x.Name,
-            TaxCode: x.TaxCode,
-            SubjectType: x.SubjectType,
-            ProvinceCity: x.ProvinceCity,
-            MainSectorName: x.MainSectorName,
-            SectorCode: x.SectorCode,
-            WorkforceScale: x.WorkforceScale,
-            IsVerified: x.IsVerified,
-            TniScore: x.TniScore,
-            TniClassification: x.TniClassification,
-            IpCount: x.IntellectualProperties?.Count ?? 0,
-            Status: x.Status
-        )).ToList();
+            var dtoItems = items.Select(x => new EnterprisePublicDirectoryItemDto(
+                Id: x.Id,
+                Name: string.IsNullOrWhiteSpace(x.Name) ? x.LegalName : x.Name,
+                TaxCode: x.TaxCode,
+                SubjectType: x.SubjectType,
+                ProvinceCity: x.ProvinceCity,
+                MainSectorName: x.MainSectorName,
+                SectorCode: x.SectorCode,
+                WorkforceScale: x.WorkforceScale,
+                IsVerified: x.IsVerified,
+                TniScore: x.TniScore,
+                TniClassification: x.TniClassification,
+                IpCount: x.IntellectualProperties?.Count ?? 0,
+                Status: x.Status
+            )).ToList();
 
-        return new EnterprisePublicDirectoryDto(dtoItems, totalCount, query.Page, pageSize, totalPages);
+            return new EnterprisePublicDirectoryDto(dtoItems, totalCount, query.Page, pageSize, totalPages);
+        }
+        catch
+        {
+            var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
+            return new EnterprisePublicDirectoryDto([], 0, query.Page, pageSize, 0);
+        }
     }
 
     public async Task<EnterprisePublicDetailDto?> GetPublicDetailAsync(string taxCode, bool isPrivileged = false, CancellationToken ct = default)

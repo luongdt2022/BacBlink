@@ -1,17 +1,15 @@
 using System;
-using System.Linq;
+using System.Text.Json;
 
 namespace NacenTech.Modules.Assessment.Application;
 
 public class Tt17ScoringService
 {
-    public double CalculateScore(Tt17Assessment assessment)
+    private readonly Tt17ScoringEngine _engine = new();
+
+    public Tt17ScoreResultDto CalculateScore(Tt17Assessment assessment)
     {
-        double score = 0;
-        if (assessment.Criteria != null)
-        {
-            score = assessment.Criteria.Sum(c => c.Score);
-        }
-        return score;
+        var survey = JsonSerializer.Deserialize<Tt17SurveyDataDto>(assessment.SurveyDataJson) ?? new();
+        return _engine.Calculate(survey);
     }
 }

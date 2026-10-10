@@ -10,8 +10,9 @@ public static class ApprovalRequestTypes
     public const string Expert = "EXPERT";
     public const string Demand = "DEMAND";
     public const string Institution = "INSTITUTION";
+    public const string TechnologyOffer = "TECHNOLOGY_OFFER";
 
-    public static readonly HashSet<string> All = [Account, Shop, Expert, Demand, Institution];
+    public static readonly HashSet<string> All = [Account, Shop, Expert, Demand, Institution, TechnologyOffer];
 }
 
 public static class ApprovalStatuses

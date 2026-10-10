@@ -39,22 +39,28 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
     public async Task<IActionResult> SubmitUpgrade([FromBody] SubmitExpertUpgradeRequest request, CancellationToken ct)
     {
         await ValidateSectorsAsync(request.ExpertiseSectors ?? [], ct);
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var result = await experts.SubmitUpgradeAsync(PersonId, request, ct);
+        var strategy = db.Database.CreateExecutionStrategy();
+        var result = await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            var res = await experts.SubmitUpgradeAsync(PersonId, request, ct);
 
-        // Phân cấp Cấp 2: Tự động đưa hồ sơ vào hàng đợi thẩm định phân cấp của Sở/TW (Basic Design v2.6 & FR-ADM-007)
-        var scopeType = string.IsNullOrWhiteSpace(request.ScopeType) ? ScopeTypes.Province : request.ScopeType.Trim().ToUpperInvariant();
-        var scopeId = string.IsNullOrWhiteSpace(request.ScopeId) ? "HP" : request.ScopeId.Trim();
-        await approvals.SubmitRequestAsync(
-            new SubmitApprovalRequestCommand(
-                PersonId,
-                ApprovalRequestTypes.Expert,
-                scopeType,
-                scopeId,
-                System.Text.Json.JsonSerializer.Serialize(result)),
-            ct);
+            // Phân cấp Cấp 2: Tự động đưa hồ sơ vào hàng đợi thẩm định phân cấp của Sở/TW (Basic Design v2.6 & FR-ADM-007)
+            var scopeType = string.IsNullOrWhiteSpace(request.ScopeType) ? ScopeTypes.Province : request.ScopeType.Trim().ToUpperInvariant();
+            var scopeId = string.IsNullOrWhiteSpace(request.ScopeId) ? "HP" : request.ScopeId.Trim();
+            await approvals.SubmitRequestAsync(
+                new SubmitApprovalRequestCommand(
+                    PersonId,
+                    ApprovalRequestTypes.Expert,
+                    scopeType,
+                    scopeId,
+                    System.Text.Json.JsonSerializer.Serialize(res)),
+                ct);
 
-        await transaction.CommitAsync(ct);
+            await transaction.CommitAsync(ct);
+            return res;
+        });
+
         return StatusCode(201, Ok200(result));
     }
 

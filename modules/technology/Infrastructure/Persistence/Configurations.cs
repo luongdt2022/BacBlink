@@ -34,3 +34,30 @@ public sealed class TechnologyPackageVersionConfiguration : IEntityTypeConfigura
         b.HasIndex(x => new { x.TechnologyAssetId, x.VersionNo }).IsUnique();
     }
 }
+
+public sealed class SellerTechnologyOfferConfiguration : IEntityTypeConfiguration<SellerTechnologyOffer>
+{
+    public void Configure(EntityTypeBuilder<SellerTechnologyOffer> b)
+    {
+        b.ToTable("seller_technology_offers", TechnologyModule.SchemaName);
+        b.HasKey(x => x.Id);
+        b.Property(x => x.OfferCode).HasMaxLength(50).IsRequired();
+        b.Property(x => x.OfferType).HasMaxLength(30).IsRequired();
+        b.Property(x => x.Title).HasMaxLength(255).IsRequired();
+        b.Property(x => x.Summary).IsRequired();
+        b.Property(x => x.ProblemSolved).IsRequired();
+        b.Property(x => x.SectorCode).HasMaxLength(20).IsRequired();
+        b.Property(x => x.SectorName).HasMaxLength(150).IsRequired();
+        b.Property(x => x.PricingType).HasMaxLength(30).IsRequired();
+        b.Property(x => x.Currency).HasMaxLength(10).IsRequired();
+        b.Property(x => x.Status).HasMaxLength(30).IsRequired();
+        b.Property(x => x.ManagingAuthorityId).HasMaxLength(50);
+        b.Property(x => x.ScopeType).HasMaxLength(30);
+        b.Property(x => x.ScopeId).HasMaxLength(50);
+
+        b.HasIndex(x => x.OfferCode).IsUnique();
+        b.HasIndex(x => x.SectorCode);
+        b.HasIndex(x => x.Status);
+        b.HasIndex(x => x.ManagingAuthorityId);
+    }
+}

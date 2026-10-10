@@ -11,7 +11,7 @@ namespace NacenTech.Api.V1Compat;
 
 [ApiController]
 [Route("api/v1/enterprises")]
-public sealed class EnterpriseController(IEnterpriseService enterpriseService, IAuditWriter audit) : V1ControllerBase
+public sealed class EnterpriseController(IEnterpriseService enterpriseService, IUnitOfWork uow, IAuditWriter audit) : V1ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
@@ -75,6 +75,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
                 Name = Actor.Email ?? "Doanh nghiệp mới",
                 ContactEmail = Actor.Email
             }, ct);
+            await uow.CommitAsync(ct);
             return Ok(Ok200(empty));
         }
 
@@ -86,6 +87,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
     public async Task<IActionResult> UpdateProfile([FromBody] UpsertEnterpriseProfileRequest request, CancellationToken ct = default)
     {
         var updated = await enterpriseService.UpsertProfileAsync(PersonId, request, ct);
+        await uow.CommitAsync(ct);
         audit.Append(new AuditEntry(
             PersonId, Actor.PlatformRole, "ENTERPRISE_PROFILE_UPDATE", "Enterprise", PersonId,
             null, "Owner update 10 groups", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, updated.TaxCode
@@ -99,6 +101,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
     public async Task<IActionResult> SubmitVerification(CancellationToken ct = default)
     {
         await enterpriseService.SubmitVerificationAsync(PersonId, ct);
+        await uow.CommitAsync(ct);
         audit.Append(new AuditEntry(
             PersonId, Actor.PlatformRole, "ENTERPRISE_SUBMIT_VERIFICATION", "Enterprise", PersonId,
             null, "Submit verification to Provincial Gov", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, null
@@ -121,6 +124,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
     {
         var scopeId = Actor.ScopeType == ScopeTypes.Province ? Actor.ScopeId : null;
         await enterpriseService.ApproveEnterpriseAsync(id, Actor.Email ?? "Cán bộ thẩm định", scopeId, ct);
+        await uow.CommitAsync(ct);
 
         audit.Append(new AuditEntry(
             PersonId, Actor.PlatformRole, "ENTERPRISE_APPROVE", "Enterprise", id,
@@ -136,6 +140,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
     {
         var scopeId = Actor.ScopeType == ScopeTypes.Province ? Actor.ScopeId : null;
         await enterpriseService.RejectEnterpriseAsync(id, req.Notes ?? "Yêu cầu bổ sung thông tin hồ sơ", scopeId, ct);
+        await uow.CommitAsync(ct);
 
         audit.Append(new AuditEntry(
             PersonId, Actor.PlatformRole, "ENTERPRISE_REJECT", "Enterprise", id,
