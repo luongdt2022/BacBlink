@@ -50,8 +50,8 @@
 
 
 ## Delta CR-2026-005 — Sector taxonomy runtime
-- [ ] T019 [API][DB][REQ-MD-SECTOR-001] Remove CoreSectors static fallback; ensure DB empty response remains empty.
-- [ ] T020 [API][DB] Resolve TT17/category and matrix field labels from current taxonomy, filter inactive/unknown sector codes from active-facing matrix.
-- [ ] T021 [FE] Admin taxonomy list/count/filter uses API response only; loading/empty/error states; create persists through API before optimistic UI update.
-- [ ] T022 [FE] Admin TT17, matrix and filter options load taxonomy/API at runtime; remove duplicated sector and category arrays.
-- [ ] T023 [TEST] Verify runtime add/rename/deactivate/empty/error taxonomy through integration and browser black-box cases.
+- [x] T019 [API][DB][REQ-MD-SECTOR-001] Remove CoreSectors static fallback; ensure DB empty response remains empty.
+- [x] T020 [API][DB] Resolve TT17/category and matrix field labels from current taxonomy, filter inactive/unknown sector codes from active-facing matrix.
+- [x] T021 [FE] Admin taxonomy list/count/filter uses API response only; loading/empty/error states; create persists through API before optimistic UI update.
+- [x] T022 [FE] Admin TT17, matrix and filter options load taxonomy/API at runtime; remove duplicated sector and category arrays.
+- [x] T023 [TEST] Verify runtime add/rename/deactivate/empty/error taxonomy through integration and browser black-box cases.
