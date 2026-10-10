@@ -46,12 +46,17 @@ export interface TechnologyOffer {
   transferMethod?: TransferMethod | null;
   commercialStatus?: CommercializationStatus | null;
   contactPointRole?: string | null;
-  status: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED" | "HIDDEN";
+  status: "DRAFT" | "PENDING" | "APPROVED" | "REJECTED" | "CHANGES_REQUESTED" | "HIDDEN";
   successfulConnections: number;
   ratingScore: number;
   reviewCount: number;
   createdAt: string;
   publishedAt?: string | null;
+  managingAuthorityId?: string | null;
+  managingAuthorityName?: string | null;
+  scopeType?: string | null;
+  scopeId?: string | null;
+  legalConsent?: boolean;
 }
 
 export interface CreateSellerOfferPayload {
@@ -74,6 +79,11 @@ export interface CreateSellerOfferPayload {
   transferMethod?: TransferMethod | null;
   commercialStatus?: CommercializationStatus | null;
   contactPointRole?: string | null;
+  managingAuthorityId?: string;
+  managingAuthorityName?: string;
+  scopeType?: string;
+  scopeId?: string;
+  legalConsent?: boolean;
 }
 
 export interface SellerKpi {

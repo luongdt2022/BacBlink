@@ -160,6 +160,14 @@ export function Navbar() {
                         <Link href="/settings" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
                           Cài đặt tài khoản
                         </Link>
+                        <Link href="/assessments/tt17" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
+                          Đánh giá công nghệ (TT17)
+                        </Link>
+                        {authClient.hasRole(["PROVINCIAL_ADMIN", "PROVINCE_OFFICER", "PROVINCE_LEADER", "ADMIN", "SUPER_ADMIN"]) && (
+                          <Link href="/gov/assessments/tt17" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center px-3 text-label font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-slate-800">
+                            Thẩm định TT17 (Sở KH&CN)
+                          </Link>
+                        )}
                         <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setLogoutModalOpen(true); }} className="focus-ring flex min-h-11 w-full items-center gap-2 px-3 text-left text-label font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300">
                           <LogOut className="size-4" aria-hidden="true" />
                           {t("logout")}

@@ -1,6 +1,6 @@
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import ExpertsDirectoryPage from "./page";
 
 // Mock global fetch
@@ -49,6 +49,11 @@ const setupFetch = (directory = mockExpertsData) => {
 describe("ExpertsDirectoryPage Component (/experts)", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
   });
 
   it("renders the directory with hero banner and search form", async () => {
@@ -111,5 +116,19 @@ describe("ExpertsDirectoryPage Component (/experts)", () => {
       expect.stringContaining("/api/v1/public/experts/CG-NACEN-TEST01/consultation-requests"),
       expect.objectContaining({ method: "POST" }),
     );
+  });
+
+  it("renders the featured experts spotlight rail and uniform grid", async () => {
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+    });
+
+    expect(screen.getByTestId("featured-experts-rail")).toBeDefined();
+    expect(screen.getByText("Chuyên gia Tiêu biểu & Nổi bật")).toBeDefined();
+    expect(screen.getByTestId("expert-card-grid")).toBeDefined();
   });
 });

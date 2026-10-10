@@ -266,9 +266,36 @@ export default function SellerTechnologiesPage() {
                     </td>
 
                     <td className="py-3.5 px-3">
-                      <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                        Đang hiển thị
-                      </span>
+                      <div className="space-y-1">
+                        {item.status === "APPROVED" && (
+                          <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 inline-block">
+                            Đang niêm yết
+                          </span>
+                        )}
+                        {item.status === "PENDING" && (
+                          <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200 inline-block">
+                            Chờ Sở KH&CN duyệt
+                          </span>
+                        )}
+                        {item.status === "REJECTED" && (
+                          <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 inline-block">
+                            Từ chối duyệt
+                          </span>
+                        )}
+                        {item.status === "CHANGES_REQUESTED" && (
+                          <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 inline-block">
+                            Cần bổ sung
+                          </span>
+                        )}
+                        {item.status === "DRAFT" && (
+                          <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 inline-block">
+                            Bản nháp
+                          </span>
+                        )}
+                        <span className="text-xs text-slate-500 font-medium block truncate max-w-[160px]">
+                          {item.managingAuthorityName || "Sở KH&CN TP. Hà Nội"}
+                        </span>
+                      </div>
                     </td>
 
                     <td className="py-3.5 px-3 text-right">

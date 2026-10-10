@@ -64,7 +64,12 @@ def run_layer3_integration_tests():
         "ipRegistrationNumber": "VN-1-0029988",
         "transferMethod": "EXCLUSIVE_LICENSE",
         "commercialStatus": "COMMERCIALLY_READY",
-        "contactPointRole": "Bộ Phận Chuyển Giao Công Nghệ"
+        "contactPointRole": "Bộ Phận Chuyển Giao Công Nghệ",
+        "managingAuthorityId": "SO-KHCN-HN",
+        "managingAuthorityName": "Sở KH&CN Hà Nội",
+        "scopeType": "PROVINCE",
+        "scopeId": "HN",
+        "legalConsent": True
     }
 
     req = urllib.request.Request(
@@ -78,7 +83,28 @@ def run_layer3_integration_tests():
 
     assert status_code in (200, 201), f"Expected 200/201, got {status_code}"
     created_id = res_data["data"]["id"]
-    print(f"  ✅ PASS: Tạo mới thành công Offer ID: {created_id}")
+    offer_status = res_data["data"]["status"]
+    assert offer_status == "PENDING", f"Expected PENDING for commercial compliance, got {offer_status}"
+    print(f"  ✅ PASS: Tạo mới thành công Offer ID: {created_id} (Trạng thái: PENDING chờ Sở KH&CN duyệt)")
+
+    # Kiểm tra thẩm định cấp cơ sở: Gọi API Review APPROVE
+    review_url = f"{BASE_API_URL}/api/v1/portal/seller/technologies/{created_id}/review"
+    review_payload = {
+        "action": "APPROVE",
+        "reviewNote": "Sở KH&CN thẩm định hồ sơ công nghệ hợp lệ theo quy chế thương mại."
+    }
+    req_rev = urllib.request.Request(
+        review_url,
+        data=json.dumps(review_payload).encode("utf-8"),
+        headers={"Content-Type": "application/json", "User-Agent": "NacenTech-QC"}
+    )
+    with urllib.request.urlopen(req_rev, timeout=5) as response_rev:
+        rev_code = response_rev.getcode()
+        rev_data = json.loads(response_rev.read().decode())
+    
+    assert rev_code == 200, f"Expected 200 on review, got {rev_code}"
+    assert rev_data["data"]["status"] == "APPROVED", f"Expected APPROVED, got {rev_data['data']['status']}"
+    print(f"  ✅ PASS: Sở KH&CN thẩm định thành công: Offer chuyển sang trạng thái APPROVED.")
 
     # Truy vấn lại bằng ID
     detail_url = f"{BASE_API_URL}/api/v1/technologies/{created_id}"
@@ -88,7 +114,8 @@ def run_layer3_integration_tests():
     
     assert detail_data["data"]["title"] == payload["title"]
     assert detail_data["data"]["trlLevel"] == 8
-    print(f"  ✅ PASS: Truy vấn chi tiết xác nhận khớp 100% dữ liệu Bộ Tứ SHTT.")
+    assert detail_data["data"]["status"] == "APPROVED"
+    print(f"  ✅ PASS: Truy vấn chi tiết xác nhận khớp 100% dữ liệu Bộ Tứ SHTT và thẩm định Sở KH&CN.")
 
 def run_layer4_playwright_e2e_tests():
     print("\n----------------------------------------------------------------------")
@@ -220,13 +247,20 @@ def run_layer4_playwright_e2e_tests():
         page.locator("textarea[placeholder*='Tóm tắt tính năng']").first.fill("Hệ thống robot tự hành nhận diện độ chín quả với thị giác máy tính.")
         page.locator("textarea[placeholder*='Tiết kiệm bao nhiêu %']").first.fill("Rút ngắn 70% nhân công thu hoạch mùa vụ.")
 
+        # 3. Check Cam kết pháp lý và chọn cơ quan quản lý (BR-SELLER-05)
+        legal_cb = page.locator("input[type='checkbox']").first
+        if legal_cb.is_visible():
+            legal_cb.check()
+            time.sleep(0.3)
+            print("  ✓ Đã tích chọn Cam kết pháp lý và chịu trách nhiệm trước pháp luật.")
+
         # Submit form
         page.locator("button:has-text('Xác Nhận Đăng Hồ Sơ Chào Bán')").first.click()
         time.sleep(1.5)
 
         success_banner = page.locator("text=Đăng Hồ Sơ Chào Bán Thành Công").first
         assert success_banner.is_visible(), "Banner đăng thành công không xuất hiện"
-        print("  ✅ PASS: Màn 2 Form Wizard đăng mới công nghệ thành công.")
+        print("  ✅ PASS: Màn 2 Form Wizard đăng mới công nghệ thành công với trạng thái PENDING chờ Sở KH&CN.")
 
         browser.close()
 

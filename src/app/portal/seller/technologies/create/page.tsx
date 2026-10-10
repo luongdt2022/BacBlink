@@ -15,7 +15,11 @@ import {
   HelpCircle,
   Sparkles,
 } from "lucide-react";
-import { createSellerOffer, SECTORS_18_CATALOG } from "@/services/api/technology-offer";
+import {
+  createSellerOffer,
+  SECTORS_18_CATALOG,
+  PROVINCIAL_AUTHORITIES_CATALOG,
+} from "@/services/api/technology-offer";
 import {
   OfferType,
   IntellectualPropertyStatus,
@@ -50,6 +54,13 @@ export default function TaoHoSoChaoBanPage() {
     useState<CommercializationStatus>("COMMERCIALLY_READY");
   const [contactPointRole, setContactPointRole] = useState("Phòng Chuyển Giao Công Nghệ");
 
+  // Cơ Quan Quản Lý & Cam Kết Pháp Lý (Commercial Grade Governance - Delta CR-2026-006)
+  const [managingAuthorityId, setManagingAuthorityId] = useState("VN-HN");
+  const [managingAuthorityName, setManagingAuthorityName] = useState(
+    "Sở Khoa học và Công nghệ TP. Hà Nội"
+  );
+  const [legalConsent, setLegalConsent] = useState(true);
+
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -78,6 +89,11 @@ export default function TaoHoSoChaoBanPage() {
         newErrors.developerOrigin = "Bắt buộc khai báo đơn vị nghiên cứu phát triển.";
       if (!trlLevel || trlLevel < 1 || trlLevel > 9)
         newErrors.trlLevel = "Mức TRL phải từ 1 đến 9.";
+    }
+
+    if (!legalConsent) {
+      newErrors.legalConsent =
+        "Doanh nghiệp bắt buộc cam kết trách nhiệm pháp lý trước khi nộp hồ sơ thẩm định.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -109,6 +125,11 @@ export default function TaoHoSoChaoBanPage() {
       transferMethod: hasTechTransfer ? transferMethod : null,
       commercialStatus: hasTechTransfer ? commercialStatus : null,
       contactPointRole: hasTechTransfer ? contactPointRole : null,
+      managingAuthorityId,
+      managingAuthorityName,
+      scopeType: "PROVINCE",
+      scopeId: managingAuthorityId,
+      legalConsent,
     });
 
     setIsSubmitting(false);
@@ -455,6 +476,73 @@ export default function TaoHoSoChaoBanPage() {
                     </div>
                   </>
                 )}
+              </div>
+            </div>
+
+            {/* SECTION 4: CƠ QUAN QUẢN LÝ TIẾP NHẬN THẨM ĐỊNH (COMMERCIAL GRADE GOVERNANCE) */}
+            <div className="bg-white rounded-2xl border-2 border-slate-300 p-6 shadow-sm space-y-4 bg-gradient-to-br from-white to-slate-50">
+              <div className="flex items-start justify-between border-b pb-3">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-emerald-600" />
+                    4. Cơ Quan Quản Lý Nhà Nước Tiếp Nhận Thẩm Định
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Hồ sơ sau khi gửi sẽ chuyển về Cổng Tác Nghiệp Cấp 2 (/gov) của Sở KH&CN để thẩm định văn bằng SHTT & mức TRL trước khi niêm yết công khai.
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-xs font-extrabold rounded-full">
+                  Phân Cấp Cấp 2
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Sở KH&CN tiếp nhận thẩm định: *
+                  </label>
+                  <select
+                    value={managingAuthorityId}
+                    onChange={(e) => {
+                      const selected = PROVINCIAL_AUTHORITIES_CATALOG.find(
+                        (a) => a.id === e.target.value
+                      );
+                      setManagingAuthorityId(e.target.value);
+                      if (selected) setManagingAuthorityName(selected.name);
+                    }}
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:border-emerald-600"
+                  >
+                    {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
+                      <option key={auth.id} value={auth.id}>
+                        {auth.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Hệ thống đề xuất theo địa bàn đặt trụ sở chính của Doanh nghiệp.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Cam kết pháp lý & Quyền sở hữu trí tuệ: *
+                  </label>
+                  <div className="flex items-start gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <input
+                      type="checkbox"
+                      id="legal-consent-check"
+                      checked={legalConsent}
+                      onChange={(e) => setLegalConsent(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded text-navy"
+                    />
+                    <label htmlFor="legal-consent-check" className="text-slate-600 leading-relaxed cursor-pointer">
+                      Doanh nghiệp cam kết chịu trách nhiệm hoàn toàn trước pháp luật về tính xác thực của văn bằng SHTT, giải pháp công nghệ và sẵn sàng tiếp nhận thẩm định của Sở KH&CN.
+                    </label>
+                  </div>
+                  {errors.legalConsent && (
+                    <p className="text-rose-600 text-xs mt-1 font-bold">{errors.legalConsent}</p>
+                  )}
+                </div>
               </div>
             </div>
 

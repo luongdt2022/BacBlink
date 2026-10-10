@@ -402,7 +402,17 @@ export default function ChiTietChaoBanPage() {
               </button>
             </div>
 
-            {/* Thông tin hỗ trợ sàn */}
+            {/* Thông tin hỗ trợ sàn & Cơ quan quản lý */}
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-1 text-center">
+              <p className="text-xs font-bold text-slate-800 flex items-center justify-center gap-1">
+                <Building2 className="w-3.5 h-3.5 text-emerald-600" /> Cơ Quan Quản Lý Thẩm Định
+              </p>
+              <p className="text-xs font-extrabold text-slate-900">
+                {offer.managingAuthorityName || "Sở Khoa học và Công nghệ TP. Hà Nội"}
+              </p>
+              <p className="text-xs text-slate-500">Đã kiểm định văn bằng SHTT & mức TRL</p>
+            </div>
+
             <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-1 text-center">
               <p className="text-xs font-bold text-slate-700">Đầu Mối Hỗ Trợ Giao Dịch</p>
               <p className="text-xs font-extrabold text-emerald-800">Hotline Sàn: 1900 6868</p>

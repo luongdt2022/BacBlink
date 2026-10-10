@@ -19,16 +19,6 @@ const modules = {
     description: "Nền tảng đổi mới sáng tạo và kết nối cung cầu công nghệ của Viện Đổi Mới Sáng Tạo Quốc Gia.",
     icon: BookOpen,
   },
-  "chao-ban-cong-nghe": {
-    title: "Chào bán sản phẩm / công nghệ",
-    description: "Tra cứu sản phẩm, thiết bị và công nghệ chuyển giao theo ngành, mức độ sẵn sàng công nghệ (TRL).",
-    icon: Layers,
-  },
-  "nhu-cau-cong-nghe": {
-    title: "Nhu cầu công nghệ",
-    description: "Khám phá nhu cầu tìm mua công nghệ, thiết bị và dịch vụ hỗ trợ từ doanh nghiệp.",
-    icon: ShoppingCart,
-  },
   "doanh-nghiep-dmst": {
     title: "Doanh nghiệp đổi mới sáng tạo",
     description: "Không gian hồ sơ doanh nghiệp ĐMST, phân tích theo vùng/ngành và kết nối hệ sinh thái.",

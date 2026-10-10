@@ -65,6 +65,7 @@ export default function ExpertsDirectoryPage() {
   const [selectedProvince, setSelectedProvince] = useState<string>("");
   const [acceptingConsultation, setAcceptingConsultation] = useState(false);
   const [sectorOptions, setSectorOptions] = useState<MasterDataOption[]>([]);
+  const [sectorSearch, setSectorSearch] = useState<string>("");
   const [provinceOptions, setProvinceOptions] = useState<MasterDataOption[]>([]);
   const [filterDataLoaded, setFilterDataLoaded] = useState(false);
   const [filterDataError, setFilterDataError] = useState<string | null>(null);
@@ -187,6 +188,7 @@ export default function ExpertsDirectoryPage() {
     setSelectedDegree("");
     setSelectedSector("");
     setSelectedProvince("");
+    setSectorSearch("");
     setAcceptingConsultation(false);
     setCurrentPage(1);
     setMobileFiltersOpen(false);
@@ -247,50 +249,50 @@ export default function ExpertsDirectoryPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* 1. HERO SEARCH BANNER */}
-      <section className="workspace-banner text-white py-5 sm:py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* 1. COMPACT HERO SEARCH BANNER */}
+      <section className="workspace-banner text-white py-4 sm:py-5 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
-          <nav className="flex items-center gap-2 text-caption text-brand-100 mb-4 font-medium">
+          <nav className="flex items-center gap-2 text-caption text-brand-100 mb-2.5 font-medium">
             <Link href="/" className="hover:text-white">Trang chủ</Link>
             <ChevronRight className="w-3.5 h-3.5 text-brand-200" />
             <span className="text-white font-semibold">Danh bạ Chuyên gia KH&CN</span>
           </nav>
 
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-brand-100 text-caption font-semibold mb-3">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-brand-100 text-caption font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
               Mạng lưới Nhà khoa học & Chuyên gia Đổi mới Sáng tạo
             </div>
             <h1 className="font-extrabold tracking-tight text-white leading-tight type-page-title">
               Tìm chuyên gia KH&CN
             </h1>
-            <p className="mt-2 text-body text-brand-100 leading-relaxed max-w-2xl">
+            <p className="mt-1 text-caption sm:text-body text-brand-100 leading-relaxed max-w-2xl">
               Tra cứu năng lực, lĩnh vực và địa bàn thẩm định.
             </p>
 
-            {/* Big Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="mt-4 bg-white p-1.5 rounded-xl shadow-lg flex flex-col sm:flex-row gap-1.5 max-w-3xl">
+            {/* Compact Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="mt-3 bg-white p-1 rounded-xl shadow-md flex flex-col sm:flex-row gap-1 max-w-3xl">
               <div className="relative flex-1">
-                <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Tìm theo họ tên chuyên gia, đơn vị công tác, từ khóa nghiên cứu..."
-                  className="w-full pl-11 pr-4 py-2.5 text-body text-slate-800 placeholder-slate-400 bg-transparent rounded-lg focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2 text-caption sm:text-body text-slate-800 placeholder-slate-400 bg-transparent rounded-lg focus:outline-none"
                 />
               </div>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-brand-700 hover:bg-brand-800 text-white text-label font-bold rounded-lg flex items-center justify-center gap-2 transition"
+                className="px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white text-caption font-bold rounded-lg flex items-center justify-center gap-1.5 transition"
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-3.5 h-3.5" />
                 Tìm kiếm
               </button>
             </form>
 
             {/* Quick chips */}
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 text-caption text-brand-100">
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-caption text-brand-100">
               <span className="font-medium text-brand-200">Xu hướng:</span>
               {["#Trí tuệ nhân tạo", "#Vật liệu nano", "#Năng lượng tái tạo", "#Cơ khí chính xác"].map((tag) => (
                 <button
@@ -302,7 +304,7 @@ export default function ExpertsDirectoryPage() {
                     setCurrentPage(1);
                     fetchDirectory(term, selectedDegree, selectedSector, selectedProvince, 1);
                   }}
-                  className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition text-caption"
+                  className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition text-caption"
                 >
                   {tag}
                 </button>
@@ -311,6 +313,65 @@ export default function ExpertsDirectoryPage() {
           </div>
         </div>
       </section>
+
+      {/* 1.5 SPOTLIGHT: CHUYÊN GIA TIÊU BIỂU / NỔI BẬT */}
+      {directoryData.items.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1 w-full" data-testid="featured-experts-rail">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <h2 className="text-caption font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Chuyên gia Tiêu biểu & Nổi bật
+              </h2>
+              <span className="px-2 py-0.5 rounded-full text-caption font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+                Mạng lưới đề xuất
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {directoryData.items.slice(0, 3).map((feat) => {
+              const featBadge = getRankBadge(feat.academicRank, feat.degree);
+              return (
+                <div
+                  key={`spotlight-${feat.expertCode}`}
+                  className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-brand-600 p-3 shadow-2xs hover:shadow-sm transition-shadow flex items-center gap-3 dark:bg-slate-900 dark:border-slate-800 dark:border-l-brand-500"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-brand-50 text-brand-800 font-extrabold text-caption flex items-center justify-center shrink-0 dark:bg-brand-950/80 dark:text-brand-200">
+                    {getInitials(feat.fullName)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className={`px-1.5 py-0.2 rounded text-xs font-bold border ${featBadge.cls}`}>
+                        {featBadge.label}
+                      </span>
+                      {feat.isVerified && (
+                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-0.5 dark:text-emerald-400">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" /> Xác thực
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-caption font-bold text-slate-900 truncate mt-0.5 dark:text-white">
+                      <Link href={`/experts/${feat.expertCode}`} className="hover:text-brand-700 dark:hover:text-brand-300">
+                        {feat.fullName.replace(/^(GS\.|PGS\.|TS\.|ThS\.|KS\.)+\s*/gi, "").trim() || feat.fullName}
+                      </Link>
+                    </h3>
+                    <p className="text-xs text-slate-500 truncate dark:text-slate-400" title={feat.organizationName}>
+                      {feat.organizationName ? `Đơn vị: ${feat.organizationName}` : ""}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/experts/${feat.expertCode}`}
+                    className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-brand-700 hover:bg-brand-50 transition dark:hover:bg-slate-800 dark:hover:text-brand-300"
+                    title="Xem chi tiết"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* 2. MAIN LAYOUT (SIDEBAR FILTER + CARDS GRID) */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full flex-1">
@@ -372,6 +433,18 @@ export default function ExpertsDirectoryPage() {
                 <label className="block text-caption font-bold uppercase tracking-wider text-slate-500 mb-2.5 dark:text-slate-400">
                   Lĩnh vực chuyên môn{filterDataLoaded ? ` (${sectorOptions.length})` : ""}
                 </label>
+                {sectorOptions.length > 3 && (
+                  <div className="relative mb-2">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={sectorSearch}
+                      onChange={(e) => setSectorSearch(e.target.value)}
+                      placeholder="Lọc nhanh ngành..."
+                      className="w-full pl-8 pr-2 py-1 text-caption rounded-lg border border-slate-200 bg-slate-50 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                    />
+                  </div>
+                )}
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   <label className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
                     <input
@@ -383,18 +456,20 @@ export default function ExpertsDirectoryPage() {
                     />
                     <span>Tất cả ngành nghề</span>
                   </label>
-                  {sectorOptions.map((sec) => (
-                    <label key={sec.code} className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
-                      <input
-                        type="radio"
-                        name="sector"
-                        checked={selectedSector === sec.code}
-                        onChange={() => { setCurrentPage(1); setSelectedSector(sec.code); }}
-                        className="text-brand-700 focus:ring-brand-500"
-                      />
-                      <span className="min-w-0 whitespace-normal">{sec.name}</span>
-                    </label>
-                  ))}
+                  {sectorOptions
+                    .filter((sec) => sec.name.toLowerCase().includes(sectorSearch.toLowerCase().trim()))
+                    .map((sec) => (
+                      <label key={sec.code} className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
+                        <input
+                          type="radio"
+                          name="sector"
+                          checked={selectedSector === sec.code}
+                          onChange={() => { setCurrentPage(1); setSelectedSector(sec.code); }}
+                          className="text-brand-700 focus:ring-brand-500"
+                        />
+                        <span className="min-w-0 whitespace-normal">{sec.name}</span>
+                      </label>
+                    ))}
                 </div>
               </div>
 
@@ -519,26 +594,26 @@ export default function ExpertsDirectoryPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start" data-testid="expert-card-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" data-testid="expert-card-grid">
                 {directoryData.items.map((expert) => {
                   const badge = getRankBadge(expert.academicRank, expert.degree);
                   return (
                     <div
                       key={expert.expertCode}
-                      className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs hover:border-brand-300 transition-colors flex flex-col group dark:bg-slate-900 dark:border-slate-800"
+                      className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs hover:border-brand-300 hover:shadow-md transition-all flex flex-col h-full group dark:bg-slate-900 dark:border-slate-800"
                     >
-                      <div>
-                        <div className="flex items-start gap-3.5">
+                      <div className="flex-1 flex flex-col">
+                        <div className="flex items-start gap-3">
                           <div className="relative shrink-0">
                             <div className="w-11 h-11 rounded-xl bg-brand-700 flex items-center justify-center text-white font-extrabold text-body">
                               {getInitials(expert.fullName)}
                             </div>
                             {expert.isVerified && (
                               <span
-                                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-white"
+                                className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-white"
                                 title="Đã xác thực"
                               >
-                                <Check className="w-3 h-3 stroke-[3]" />
+                                <Check className="w-2.5 h-2.5 stroke-[3]" />
                               </span>
                             )}
                           </div>
@@ -551,37 +626,46 @@ export default function ExpertsDirectoryPage() {
                                 <ShieldCheck className="w-3 h-3" /> Đã xác thực
                               </span>
                             </div>
-                            <h3 className="text-body font-extrabold text-slate-900 mt-1 group-hover:text-brand-700 transition break-words dark:text-white dark:group-hover:text-brand-200">
+                            <h3 className="text-body font-extrabold text-slate-900 mt-1 line-clamp-2 min-h-[44px] flex items-center group-hover:text-brand-700 transition break-words dark:text-white dark:group-hover:text-brand-200">
                               <Link href={`/experts/${expert.expertCode}`}>{expert.fullName}</Link>
                             </h3>
-                            <p className="text-caption text-slate-500 break-words mt-0.5 dark:text-slate-400" title={expert.organizationName}>
+                            <p className="text-caption text-slate-500 truncate mt-0.5 dark:text-slate-400" title={expert.organizationName}>
                               {expert.organizationName}
                             </p>
                           </div>
                         </div>
 
-                        <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800">
-                          <div className="text-caption font-semibold text-slate-500 uppercase tracking-wider mb-1.5 dark:text-slate-400">
+                        <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                          <div className="text-caption font-semibold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">
                             Ngành chuyên môn:
                           </div>
-                          <span className="inline-block px-2.5 py-1 rounded-lg text-caption font-bold bg-brand-50 text-brand-800 border border-brand-200 dark:bg-brand-950/70 dark:text-brand-200 dark:border-brand-800">
+                          <span className="inline-block px-2.5 py-1 rounded-lg text-caption font-bold bg-brand-50 text-brand-800 border border-brand-200 max-w-full truncate dark:bg-brand-950/70 dark:text-brand-200 dark:border-brand-800">
                             {sectorOptions.find((s) => s.code === expert.primarySectorCode)?.name ||
                               expert.primarySectorName ||
                               "Công nghệ chủ chốt"}
                           </span>
 
-                          {expert.masteredTechCodes && expert.masteredTechCodes.length > 0 && (
-                            <div className="mt-2.5 flex flex-wrap gap-1.5">
-                              {expert.masteredTechCodes.slice(0, 3).map((code) => (
-                                <span key={code} className="px-2 py-0.5 rounded text-caption bg-slate-100 text-slate-600 font-mono dark:bg-slate-800 dark:text-slate-300">
-                                  {code}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                          <div className="mt-2 flex items-center gap-1.5 h-6">
+                            {expert.masteredTechCodes && expert.masteredTechCodes.length > 0 ? (
+                              <>
+                                {expert.masteredTechCodes.slice(0, 2).map((code) => (
+                                  <span key={code} className="px-2 py-0.5 rounded text-caption bg-slate-100 text-slate-600 font-mono truncate max-w-[120px] dark:bg-slate-800 dark:text-slate-300">
+                                    {code}
+                                  </span>
+                                ))}
+                                {expert.masteredTechCodes.length > 2 && (
+                                  <span className="text-caption text-slate-500 font-semibold">
+                                    +{expert.masteredTechCodes.length - 2}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-caption text-slate-400 italic">Đang cập nhật mã CN</span>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="mt-4 grid grid-cols-3 gap-2 py-2 px-3 bg-slate-50 rounded-xl text-center dark:bg-slate-800/60">
+                        <div className="mt-3 grid grid-cols-3 gap-2 py-2 px-3 bg-slate-50 rounded-xl text-center dark:bg-slate-800/60">
                           <div>
                             <div className="text-caption font-extrabold text-slate-800 font-mono dark:text-slate-200">
                               {expert.publicationCount > 0 ? `${expert.publicationCount}+` : "0"}
@@ -603,7 +687,7 @@ export default function ExpertsDirectoryPage() {
                         </div>
                       </div>
 
-                      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 dark:border-slate-800">
+                      <div className="mt-auto pt-3 border-t border-slate-100 flex items-center gap-2 dark:border-slate-800">
                         <Link
                           href={`/experts/${expert.expertCode}`}
                           className="flex-1 min-h-11 flex items-center justify-center py-2 text-center text-caption font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl transition dark:bg-brand-950/60 dark:text-brand-200 dark:hover:bg-brand-900/60"

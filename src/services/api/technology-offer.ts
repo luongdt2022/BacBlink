@@ -310,14 +310,67 @@ export async function createSellerOffer(
       transferMethod: payload.transferMethod,
       commercialStatus: payload.commercialStatus,
       contactPointRole: payload.contactPointRole,
-      status: "APPROVED",
+      status: "PENDING", // Khởi tạo chờ Sở KH&CN thẩm định theo BR-SELLER-05
       successfulConnections: 0,
       ratingScore: 5.0,
       reviewCount: 0,
       createdAt: new Date().toISOString(),
-      publishedAt: new Date().toISOString(),
+      publishedAt: null,
+      managingAuthorityId: payload.managingAuthorityId || "VN-HN",
+      managingAuthorityName: payload.managingAuthorityName || "Sở Khoa học và Công nghệ TP. Hà Nội",
+      scopeType: payload.scopeType || "PROVINCE",
+      scopeId: payload.scopeId || payload.managingAuthorityId || "VN-HN",
+      legalConsent: payload.legalConsent ?? true,
     };
     MOCK_OFFERS_DATABASE.unshift(newOffer);
     return { success: true, data: newOffer };
   }
+}
+
+export const PROVINCIAL_AUTHORITIES_CATALOG = [
+  { id: "VN-HN", name: "Sở Khoa học và Công nghệ TP. Hà Nội" },
+  { id: "VN-SG", name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh" },
+  { id: "VN-DN", name: "Sở Khoa học và Công nghệ TP. Đà Nẵng" },
+  { id: "VN-HP", name: "Sở Khoa học và Công nghệ TP. Hải Phòng" },
+  { id: "VN-CT", name: "Sở Khoa học và Công nghệ TP. Cần Thơ" },
+  { id: "VN-BD", name: "Sở Khoa học và Công nghệ tỉnh Bình Dương" },
+  { id: "VN-DNA", name: "Sở Khoa học và Công nghệ tỉnh Đồng Nai" },
+  { id: "VN-BN", name: "Sở Khoa học và Công nghệ tỉnh Bắc Ninh" },
+  { id: "VN-QN", name: "Sở Khoa học và Công nghệ tỉnh Quảng Ninh" },
+  { id: "VN-KH", name: "Sở Khoa học và Công nghệ tỉnh Khánh Hòa" },
+  { id: "VN-LD", name: "Sở Khoa học và Công nghệ tỉnh Lâm Đồng" },
+  { id: "VN-TG", name: "Sở Khoa học và Công nghệ tỉnh Tiền Giang" },
+  { id: "VN-63", name: "Các Sở KH&CN tỉnh/thành phố khác..." },
+];
+
+export async function reviewOffer(
+  id: string,
+  action: "APPROVE" | "REJECT" | "REQUEST_CHANGES",
+  reviewNote?: string
+): Promise<{ success: boolean; message?: string; data?: TechnologyOffer }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/portal/seller/technologies/${id}/review`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, reviewNote }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return { success: true, data: json.data };
+    }
+  } catch {
+    // fallback in-memory
+  }
+
+  const target = MOCK_OFFERS_DATABASE.find((x) => x.id === id);
+  if (target) {
+    if (action === "APPROVE") {
+      target.status = "APPROVED";
+      target.publishedAt = new Date().toISOString();
+    } else if (action === "REJECT") {
+      target.status = "REJECTED";
+    }
+    return { success: true, data: target };
+  }
+  return { success: false, message: "Không tìm thấy hồ sơ." };
 }

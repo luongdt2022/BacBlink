@@ -27,11 +27,13 @@ import {
   Building,
 } from "lucide-react";
 
+import { reviewOffer } from "@/services/api/technology-offer";
+
 export interface GovApprovalItem {
   id: string;
   submitterName: string;
   submitterEmail: string;
-  type: "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "FACILITY";
+  type: "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "FACILITY" | "TECHNOLOGY_OFFER";
   titleOrOrg: string;
   scopeType: string;
   scopeId: string;
@@ -86,6 +88,7 @@ export default function GovDashboard() {
     const scopeId = u?.scopeId || "HP";
 
     try {
+      let mapped: GovApprovalItem[] = [];
       const res = await fetch(`/api/v1/approvals?scopeType=PROVINCE&scopeId=${scopeId}`, {
         headers: authClient.getAuthHeaders(),
       });
@@ -93,7 +96,7 @@ export default function GovDashboard() {
         const json = await res.json();
         const dataList = json.data?.items || json.data || json;
         if (Array.isArray(dataList)) {
-          const mapped: GovApprovalItem[] = dataList.map((x: any) => ({
+          mapped = dataList.map((x: any) => ({
             id: x.id,
             submitterName: x.user?.fullName || "Chuyên gia địa phương",
             submitterEmail: x.user?.email || "chuyengia@haiphong.gov.vn",
@@ -109,16 +112,45 @@ export default function GovDashboard() {
             summary: x.payloadJson ? JSON.parse(x.payloadJson).consultingSummary : "",
             version: x.version || 1,
           }));
-          setItems(mapped);
-          setUxState(mapped.length === 0 ? "empty" : "success");
-          return;
         }
       }
+
+      // Nạp hồ sơ công nghệ chào bán cần thẩm định Cấp 2 của Sở KH&CN
+      try {
+        const techRes = await fetch(`/api/v1/portal/seller/technologies?status=PENDING`);
+        if (techRes.ok) {
+          const techJson = await techRes.json();
+          const techList = techJson.data || [];
+          const techMapped: GovApprovalItem[] = techList
+            .filter((t: any) => t.status === "PENDING")
+            .map((t: any) => ({
+              id: t.id,
+              submitterName: t.developerOrigin || "Doanh nghiệp KH&CN",
+              submitterEmail: "seller@nacentwin.gov.vn",
+              type: "TECHNOLOGY_OFFER" as const,
+              titleOrOrg: t.title,
+              scopeType: t.scopeType || "PROVINCE",
+              scopeId: t.scopeId || scopeId,
+              provinceName: t.managingAuthorityName || PROVINCE_MAP[t.scopeId] || "Hà Nội",
+              sector: t.sectorCode || "",
+              submittedAt: new Date(t.createdAt).toLocaleDateString("vi-VN"),
+              status: "PENDING_APPROVAL",
+              summary: `${t.summary}\n\n[Bài toán]: ${t.problemSolved}\n[TRL]: ${t.trlLevel || "Chưa rõ"}/9 | [SHTT]: ${t.ipStatus || "Chưa bảo hộ"} | [Số văn bằng]: ${t.ipRegistrationNumber || "N/A"}`,
+              cvOrDocName: t.ipRegistrationNumber ? `Văn bằng SHTT: ${t.ipRegistrationNumber}` : undefined,
+              version: 1,
+            }));
+          mapped = [...mapped, ...techMapped];
+        }
+      } catch {
+        // Silent fallback
+      }
+
+      setItems(mapped);
+      setUxState(mapped.length === 0 ? "empty" : "success");
     } catch {
+      setItems([]);
       setUxState("error");
     }
-    setItems([]);
-    setUxState("error");
   };
 
   useEffect(() => {
@@ -130,7 +162,12 @@ export default function GovDashboard() {
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      const matchTab = activeTab === "ALL" ? true : item.type === activeTab;
+      const matchTab =
+        activeTab === "ALL"
+          ? true
+          : activeTab === "SHOP"
+          ? item.type === "SHOP" || (item.type as string) === "TECHNOLOGY_OFFER"
+          : item.type === activeTab;
       const matchSearch =
         item.submitterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.titleOrOrg.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -143,7 +180,7 @@ export default function GovDashboard() {
     return {
       all: items.length,
       expert: items.filter((x) => x.type === "EXPERT").length,
-      shop: items.filter((x) => x.type === "SHOP").length,
+      shop: items.filter((x) => x.type === "SHOP" || (x.type as string) === "TECHNOLOGY_OFFER").length,
       demand: items.filter((x) => x.type === "DEMAND").length,
       account: items.filter((x) => x.type === "ACCOUNT").length,
     };
@@ -163,30 +200,38 @@ export default function GovDashboard() {
     setReviewError("");
 
     try {
-      const res = await fetch(`/api/v1/approvals/${selectedItem.id}/review`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...authClient.getAuthHeaders(),
-        },
-        body: JSON.stringify({
-          action: reviewAction,
-          expectedVersion: selectedItem.version,
-          reviewNote: reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ hợp lệ, Lãnh đạo Sở KH&CN phê duyệt cấp cơ sở." : ""),
-        }),
-      });
+      if (selectedItem.type === "TECHNOLOGY_OFFER") {
+        await reviewOffer(
+          selectedItem.id,
+          reviewAction,
+          reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ công nghệ hợp lệ, Sở KH&CN phê duyệt cấp cơ sở." : "Cần bổ sung hồ sơ.")
+        );
+      } else {
+        const res = await fetch(`/api/v1/approvals/${selectedItem.id}/review`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...authClient.getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            action: reviewAction,
+            expectedVersion: selectedItem.version,
+            reviewNote: reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ hợp lệ, Lãnh đạo Sở KH&CN phê duyệt cấp cơ sở." : ""),
+          }),
+        });
 
-      if (res.status === 409) {
-        showToast("Xung đột (409 Conflict): Hồ sơ đã được cán bộ khác xử lý trước đó. Đang tải lại...", "error");
-        await loadApprovals();
-        setSelectedItem(null);
-        setReviewAction(null);
-        return;
-      }
+        if (res.status === 409) {
+          showToast("Xung đột (409 Conflict): Hồ sơ đã được cán bộ khác xử lý trước đó. Đang tải lại...", "error");
+          await loadApprovals();
+          setSelectedItem(null);
+          setReviewAction(null);
+          return;
+        }
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Không thể xử lý yêu cầu.");
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || "Không thể xử lý yêu cầu.");
+        }
       }
     } catch (e: any) {
       // In offline / mock mode fallback simulation

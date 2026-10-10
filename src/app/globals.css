@@ -76,14 +76,32 @@
 @layer components {
   .form-control {
     min-width: 0;
-    min-height: 2.75rem;
+    height: 2.625rem;
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
     border: 1px solid var(--color-border-default);
     border-radius: var(--radius-control);
     background-color: white;
     color: var(--color-text-primary);
-    font-size: var(--text-body);
-    line-height: var(--text-body--line-height);
-    transition: border-color 0.2s, background-color 0.2s;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  select.form-control {
+    height: 2.625rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0.875rem;
+    padding-right: 2rem;
+    cursor: pointer;
+  }
+  textarea.form-control {
+    height: auto;
+    min-height: 5.5rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
   }
   .form-control:hover:not(:disabled) { border-color: var(--color-brand-500); }
   .form-control:focus-visible {
