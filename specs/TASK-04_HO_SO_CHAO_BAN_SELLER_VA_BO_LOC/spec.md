@@ -3,7 +3,7 @@
 
 > **Mã Epic**: `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`  
 > **Căn cứ**: Quyết định PO `PO-DEC-20261008-01` & `PO-DEC-20261008-04`, Basic Design `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/README.md`  
-> **Trạng thái**: 🟢 Approved (Đã phê duyệt và chuyển sang triển khai)  
+> **Trạng thái**: ✅ **Shipped (2026-10-10)** — Quality Gate 5 Final Accepted  
 > **Độ ưu tiên**: P1 (Core Business Capability - Trọng tâm Sàn Giao Dịch Công Nghệ)
 
 ---
@@ -42,6 +42,7 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
 | **REQ-04-004** | Danh sách & Bộ lọc 18 ngành công khai | Trang chủ tab `/chao-ban-cong-nghe` hỗ trợ tìm kiếm từ khóa, bộ lọc phân loại (Tất cả, Thiết bị thương mại, Công nghệ chuyển giao SHTT), lọc theo 18 ngành kinh tế TT17, lọc TRL và Tình trạng SHTT. | P1 |
 | **REQ-04-005** | Chi tiết hồ sơ chào bán công nghệ | Trang `/chao-ban-cong-nghe/[id]` hiển thị trực quan thông số kỹ thuật, huy hiệu mức TRL, chứng nhận SHTT (IP Trust Badge), thông tin đơn vị nghiên cứu/sở hữu, nút Gửi yêu cầu chuyển giao và Yêu cầu DataRoom. | P1 |
 | **REQ-04-006** | Hỗ trợ 5 UX States | Mọi màn hình đáp ứng đầy đủ 5 trạng thái UX qua chuẩn `<Async>`: Loading, Empty, Error, Success, Partial. | P1 |
+| **REQ-04-007** | Chọn Cơ quan quản lý & Phân cấp thẩm định Cấp 2 | Form đăng ký bắt buộc chọn Sở KH&CN tiếp nhận thẩm định (`managing_authority_id`, `scope_id` 63 tỉnh/thành) và tích chọn cam kết pháp lý. Hệ thống tự động tạo phiếu duyệt `ApprovalRequest` đẩy về Cổng Tác Nghiệp Cấp 2 `/gov`. | P1 |
 
 ---
 
@@ -62,9 +63,15 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
   - `pricing_type` thuộc tập: `FIXED` (Giá cố định), `RANGE` (Khoảng giá), `CONTACT` (Thỏa thuận / Liên hệ báo giá).
   - Nếu `FIXED`: `price_amount > 0`.
   - Nếu `RANGE`: `price_min > 0`, `price_max >= price_min`.
-- **`BR-SELLER-05`**: **Quy tắc hiển thị và xuất bản (Publication Gate)**:
-  - Chỉ các hồ sơ có trạng thái `APPROVED` mới xuất hiện trên trang niêm yết công khai `/chao-ban-cong-nghe`.
-  - Hồ sơ ở trạng thái `DRAFT`, `PENDING`, `REJECTED`, `HIDDEN` chỉ hiển thị trong Workspace của Seller sở hữu hoặc màn hình kiểm duyệt của Admin.
+- **`BR-SELLER-05`**: **Quy tắc xuất bản & Cổng kiểm duyệt 2 Cấp (Multi-Level Governance & Publication Gate)**:
+  - Khi Seller gửi hồ sơ: Hồ sơ khởi tạo với trạng thái **`PENDING` (Chờ thẩm định)**. Hệ thống tạo liên kết `ApprovalRequest (Type = TECHNOLOGY_OFFER, ScopeType = PROVINCE, ScopeId = scope_id)`.
+  - Nghiêm cấm Auto-approve trong môi trường Production thương mại.
+  - Cán bộ/Lãnh đạo Sở KH&CN phụ trách địa bàn (Roles `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) tại Cổng Tác Nghiệp Cấp 2 (`/gov/approvals`) thực hiện thẩm định:
+    * `APPROVE`: Hồ sơ chuyển sang `APPROVED`, cập nhật `published_at`, chính thức niêm yết trên sàn công khai `/chao-ban-cong-nghe`.
+    * `REJECT`: Hồ sơ chuyển sang `REJECTED`, ghi nhận lý do thẩm định của Sở, gửi thông báo cho Seller.
+    * `REQUEST_CHANGES`: Hồ sơ chuyển sang `CHANGES_REQUESTED` để Seller cập nhật và nộp lại.
+- **`BR-SELLER-06`**: **Quyền Hậu Kiểm & Thu Hồi Trung Ương (Super Admin Oversight - BR-ADM-007)**:
+  - Chỉ Quản trị viên Tối cao (`SUPER_ADMIN` / `OPERATOR_ADMIN`) mới có thẩm quyền can thiệp thu hồi (`REVOKE`) một hồ sơ công nghệ đã được Sở KH&CN duyệt, nếu phát hiện tranh chấp văn bằng SHTT hoặc vi phạm quy chế sàn. Yêu cầu nhập `ReviewNote` tối thiểu 10 ký tự lưu vào `ApprovalAuditLog`.
 
 ---
 

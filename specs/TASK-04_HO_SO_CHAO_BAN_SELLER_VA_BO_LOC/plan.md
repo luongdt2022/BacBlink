@@ -97,3 +97,40 @@
    - Kịch bản 2: Bấm vào một sản phẩm để vào `http://localhost:3000/chao-ban-cong-nghe/[id]`, kiểm tra badge TRL và thông số SHTT.
    - Kịch bản 3: Vào `http://localhost:3000/portal/seller/technologies`, kiểm tra KPI và bảng danh sách.
    - Kịch bản 4: Vào `http://localhost:3000/portal/seller/technologies/create`, thử validate lỗi khi bật chuyển giao mà bỏ trống TRL/SHTT, sau đó điền hợp lệ và submit thành công.
+
+---
+
+## 5. KIẾN TRÚC DELTA CR-2026-006: THẨM ĐỊNH CẤP SỞ KH&CN & GOVERNANCE APPROVAL
+
+### 5.1. Mở Rộng Hợp Đồng API & DTO
+- **Request `CreateSellerOfferDto`** bổ sung:
+  - `managingAuthorityId` (string, e.g. `"VN-HN"`): Mã Sở KH&CN tiếp nhận thẩm định.
+  - `managingAuthorityName` (string): Tên Sở KH&CN (e.g. `"Sở Khoa học và Công nghệ TP. Hà Nội"`).
+  - `scopeType` (string = `"PROVINCE"`).
+  - `scopeId` (string = `managingAuthorityId`).
+  - `legalConsent` (boolean, bắt buộc `true`).
+- **Response `SellerOfferDto`** bổ sung:
+  - `managingAuthorityName`, `scopeType`, `scopeId`.
+  - `status`: Khởi tạo mặc định `PENDING` (không còn auto-approved).
+  - `approvalRequestId` (UUID): Liên kết với bản ghi `approval_requests`.
+
+### 5.2. Luồng Xử Lý Backend & Side-Effects
+1. Khi Seller gửi hồ sơ:
+   - Lưu vào kho với trạng thái `PENDING`.
+   - Gọi `IApprovalService.SubmitRequestAsync` với:
+     * `RequestType = "TECHNOLOGY_OFFER"`
+     * `ScopeType = ScopeTypes.Province`
+     * `ScopeId = dto.ScopeId`
+     * `PayloadJson` chứa tóm tắt hồ sơ công nghệ, TRL, SHTT và `OfferId`.
+2. Khi Cán bộ/Lãnh đạo Sở KH&CN tại Cổng Tác Nghiệp Cấp 2 (`/gov/approvals`) review:
+   - Thẩm định tính pháp lý của hồ sơ, văn bằng SHTT.
+   - Khi hành động là `APPROVE`:
+     * Chuyển trạng thái Offer từ `PENDING` sang `APPROVED`.
+     * Cập nhật `PublishedAt = UtcNow`.
+     * Lúc này Offer mới xuất hiện trên sàn `/chao-ban-cong-nghe`.
+   - Khi hành động là `REJECT`:
+     * Chuyển trạng thái Offer sang `REJECTED`, ghi nhận `ReviewNote`.
+   - Khi hành động là `REQUEST_CHANGES`:
+     * Chuyển trạng thái sang `CHANGES_REQUESTED`.
+3. Khi Quản trị viên Trung ương hậu kiểm:
+   - Action `REVOKE` theo `BR-ADM-007` thu hồi quyền niêm yết, chuyển Offer sang `REVOKED`.

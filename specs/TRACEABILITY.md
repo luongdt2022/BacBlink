@@ -12,7 +12,7 @@
 | :---: | :--- | :--- | :--- | :--- | :---: |
 | **`TASK-00`** | Platform Foundation & Common | Hiến pháp kỹ thuật, Clean Architecture | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | `ARCH-*`, `DB-INIT-*`, `API-BASE-*`, `FR-COMM-*`, `FR-RBAC-*` | 🟡 Foundation shipped; vòng đời account 10 role mở |
 | **`TASK-01`** | Tổng quan & Kiến trúc Home | Sheet `HOME1` + `Giới thiệu` (60 dòng) | [`specs/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/) | `REQ-HOME-*`, `UI-LANDING-*`, `AI-BOT-*` | ⚪ Dự kiến |
-| **`TASK-02`** | Hồ sơ Doanh nghiệp ĐMST | Sheet `DN ĐMST` (225 dòng dữ liệu) | [`specs/TASK-02_HO_SO_DOANH_NGHIEP_DMST`](./TASK-02_HO_SO_DOANH_NGHIEP_DMST/) | `REQ-DN-*`, `BR-MST-*`, `DB-CORP-*` | ⚪ Dự kiến |
+| **`TASK-02`** | Hồ sơ Doanh nghiệp ĐMST & 304 DN Thật | Sheet `DN ĐMST` (225 dòng dữ liệu) + 304 DN thật | [`specs/TASK-02_HO_SO_CHU_THE_VA_DN_DMST`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) | `REQ-02-*`, `BR-02-*`, `DB-ENT-*`, `API-ENT-*`, `UI-ENT-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-03`** | Hồ sơ Tìm Mua (Buyer) | Sheet `T.mua SP` (356 dòng dữ liệu) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | `REQ-BUY-*`, `BR-SURVEY-*`, `DB-DEMAND-*` | ⚪ Dự kiến |
 | **`TASK-04`** | Hồ sơ Chào Bán & Bộ Lọc | Sheet `C.bán SP` + `Bo_loc_Cban` (1,568 dòng) | [`specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`](./TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/) | `REQ-04-*`, `BR-SELLER-*`, `API-04-*`, `UI-04-*` | ✅ Hoàn tất (Gate 4 Pass) |
 | **`TASK-05`** | Hồ sơ Chuyên gia KH&CN & AI Scan LLKH | Sheet `C.gia` (94 dòng dữ liệu) | [`specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`](./TASK-05_HO_SO_CHUYEN_GIA_KHCN/) | `REQ-EXP-*`, `BR-EXP-*`, `API-EXP-*`, `UI-EXP-*` | ✅ Delta v12 Hoàn tất (Gate 4/5 Pass) |
@@ -161,3 +161,16 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | Danh sách, count và sector selection đọc DB taxonomy, không static fallback | CR-2026-005 §2.2; DD-02 v12 | T099–T105 | Home, experts, upgrade/CV, admin sectors/roles, GOV/login, public detail; `MasterDataControllers` | Fix TC-C2-12 subtitle regex collision; Next.js 15 build clean; Pass |
 | TT17 categories đọc taxonomy CATEGORY; matrix labels resolve code runtime | CR-2026-005 §2.2; DD-02 v12 | T102–T103 | `/api/v1/master-data/tt17`, `/matrix` | Invariants 95/95 pass; Backend .NET 8 build clean; Pass |
 | QC 4 tầng và visual/RBAC kiểm tra runtime add/rename/deactivate, empty/error | CR-2026-005 §4–6; wf-delta Step 6 | T106–T113 | Seed fixture 14 chuyên gia (`seed_delta_v12_e2e_dataset.sql`), fix unwrapping `ExpertPublicDirectoryDto` trong `delta_v12_blackbox.py` | Black-box 36/36 pass (0 fail, 14 unblocked by seed); Invariants 95/95 pass; Gate 4 & Gate 5 Sign-off hoàn tất |
+
+---
+
+## 13. TASK-02: Traceability Hồ Sơ Chủ Thể & 304 Doanh Nghiệp ĐMST (Shipped)
+
+| Yêu Cầu / Quy Tắc | Detail Design (`spec.md` / `plan.md`) | Task | Mã Nguồn Triển Khai | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| Định danh MST duy nhất, Seed 304 DN thật | `REQ-02-001..002`, `BR-02-001` | T-02.01–T-02.04 | `Enterprise.cs`, `seed_304_dn_real_data.sql` | DB Integration 304/304 DN nạp thành công; Pass |
+| PDPD Data Masking doanh thu, SĐT công khai | `REQ-02-003`, `BR-02-002` | T-02.07 | `EnterpriseInvariants.cs`, `EnterpriseController.cs` | Invariant test `EnterpriseInvariantsTests.cs`, Contract test trả `[BẢO MẬT]`; Pass |
+| Kê khai 10 nhóm trường, nộp Maker-Checker | `REQ-02-004..009`, `BR-02-003` | T-02.08–T-02.09 | `EnterpriseInvariants.cs`, `/portal/enterprise/profile` | Invariant check `ValidateSubmissionReadiness`; Pass |
+| Dashboard 304 DN, phân tích TNI, rào cản | `REQ-02-011` | T-02.10, T-02.18 | `EnterpriseController.cs`, `/admin/enterprises/dashboard` | API Stats trả đúng 304 records, phân bổ 34 tỉnh/ngành; Pass |
+| Cổng Thẩm định cấp Sở, 3D Scoped RBAC | `REQ-02-012`, `BR-02-005` | T-02.11, T-02.19 | `EnterpriseController.cs`, `/gov/approvals/enterprises` | Invariant scope check, Playwright E2E UI cấp Sở; Pass |
+| Danh bạ 5 màn hình Next.js 15, 5 UX States | `REQ-02-010`, `UI-02-001..005` | T-02.14–T-02.19 | `src/app/enterprises/`, `src/services/enterpriseApi.ts` | Vitest + Playwright Black-box test `test_task02_enterprises_blackbox.py` Pass 100% |

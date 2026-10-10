@@ -1,18 +1,154 @@
-# TASK-03 Kế Hoạch Kỹ Thuật (plan.md)
+# Kế Hoạch Kỹ Thuật (plan.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
-## 1. Hợp đồng API (Contract-First)
-- `GET /api/v1/surveys/task-03/{id}`: Trả về chi tiết phiếu khảo sát kèm mảng các điểm nghẽn và nhu cầu.
-- `PUT /api/v1/surveys/task-03/{id}`: Lưu/Cập nhật phiếu khảo sát.
-- `POST /api/v1/surveys/task-03/{id}/submit`: Đóng băng bản nộp (Snapshot năm).
-- `POST /api/v1/surveys/task-03/{id}/convert`: Duyệt phiếu và chuyển các "Need Items" thành các Demand Briefs (Vé nhu cầu) trên hệ thống.
+> **Mã phân hệ**: `TASK-03_HO_SO_TIM_MUA_BUYER`  
+> **Kiến trúc**: .NET Core 8+ Clean Architecture / Modular Monolith & Next.js 15 App Router  
+> **Cơ sở dữ liệu**: PostgreSQL 16+ / EF Core (Npgsql)  
+> **Tiêu chuẩn kiểm thử**: QC Black-Box 4 Tầng (Invariants, Contract, DB Integration, Playwright E2E)
 
-## 2. Thiết kế Backend (Clean Architecture)
-- **Domain**: `SurveySubmission` Aggregate Root thuộc `NacenTech.Modules.Demand`. Liên kết với bảng Master `Enterprises`.
-- **Database (ADR-0013)**: 
-  - Áp dụng cơ chế **Snapshot Năm** (Yearly Snapshot), không dùng Full Revisioning.
-  - Sử dụng **Hybrid JSONB** lưu trữ các danh sách động: `need_items` (bài toán công nghệ), `bottlenecks` (điểm nghẽn) để tối ưu schema.
-- **Application**: Lệnh `ConvertSurveyToDemandBriefsCommand` xử lý logic sinh Demand Brief.
+---
 
-## 3. Thiết kế Frontend (UI/UX)
-- Giao diện nhập liệu khảo sát ngắn gọn, focus vào UX Mobile/Tablet.
-- Màn hình Admin cho cán bộ thao tác Check/Uncheck các dòng nhu cầu để duyệt thành bài toán (Demand Brief).
+## 1. THIẾT KẾ HỢP ĐỒNG API (CONTRACT-FIRST DTOs & ENDPOINTS)
+
+### 1.1. Danh mục Endpoints chuẩn RESTful:
+| Method | Endpoint URL | Mục Đích Nghiệp Vụ | Phân Quyền (3D RBAC) | Màn Hình / Luồng |
+| :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/v1/demands/surveys` | Nộp phiếu khảo sát sâu DNNVV (7 phần) | `PUBLIC_USER` / `BUYER` | `SC-03-01` / `WF-01` |
+| `GET` | `/api/v1/demands/surveys/{id}` | Lấy chi tiết phiếu khảo sát | `BUYER` (Owner) / `GOV` | `SC-03-01` / `WF-01` |
+| `POST` | `/api/v1/demands/items` | Tạo bài toán nhu cầu nhanh (Quick Demand Ticket) | `BUYER_REPRESENTATIVE` | `SC-03-03` / `WF-02` |
+| `GET` | `/api/v1/buyer/demands` | Lấy danh sách bài toán của Bên Mua | `BUYER_REPRESENTATIVE` | `SC-03-02` / `WF-02` |
+| `GET` | `/api/v1/public/demands` | Danh sách bài toán công khai (PDPD Masking) | `PUBLIC_USER` (Tất cả) | `SC-03-04` / `WF-04` |
+| `GET` | `/api/v1/public/demands/{id}` | Chi tiết bài toán công khai (PDPD Masking) | `PUBLIC_USER` (Tất cả) | `SC-03-04` / `WF-04` |
+| `GET` | `/api/v1/gov/demands` | Danh sách hồ sơ khảo sát & bài toán chờ duyệt | `PROVINCIAL_ADMIN` / `SUPER_ADMIN` | `SC-03-05` / `WF-03` |
+| `POST` | `/api/v1/gov/demands/{id}/verify` | Phê duyệt bài toán niêm yết lên sàn | `PROVINCIAL_ADMIN` / `SUPER_ADMIN` | `SC-03-05` / `WF-03` |
+| `POST` | `/api/v1/gov/demands/{id}/assign-expert` | Chỉ định chuyên gia tư vấn 1-1 (SLA 24h) | `PROVINCIAL_ADMIN` / `SUPER_ADMIN` | `SC-03-05` / `WF-03` |
+| `POST` | `/api/v1/trien-lam/dang-ky` | Đăng ký tham quan hội chợ & gửi nhu cầu | `PUBLIC_USER` | `SC-03-06` / `WF-05` |
+
+### 1.2. Hợp đồng DTOs cốt lõi:
+```csharp
+// DTO Tạo Nhu Cầu Nhanh
+public sealed record CreateDemandItemDto(
+    string StageName,
+    string TechnicalProblem,
+    string? DesiredSolution,
+    bool NeedConsulting,
+    string ExpectedGoal,
+    string? ApplicationScale,
+    string SectorCode,      // LV01 - LV18
+    string TechGroupCode,   // CN01 - CN48
+    string DemandTypeCode,  // NC01 - NC25
+    string BudgetRange,     // 7 khoảng chuẩn hóa
+    int UrgencyScore,       // K: 1 - 5
+    int ImpactScore,        // L: 1 - 5
+    int InvestmentCapacity, // N: 1 - 5
+    int AdoptionReadiness   // O: 1 - 5
+);
+
+// DTO Bài Toán Công Khai (PDPD Protected)
+public sealed record PublicDemandItemDto(
+    Guid Id,
+    string ItemCode,
+    string StageName,
+    string TechnicalProblem,
+    string? DesiredSolution,
+    bool NeedConsulting,
+    string ExpectedGoal,
+    string SectorCode,
+    string TechGroupCode,
+    string DemandTypeCode,
+    string BudgetRange,
+    int TniScore,
+    string TniClassification,
+    string ProvinceName,
+    DateTimeOffset CreatedAt
+);
+```
+
+---
+
+## 2. THIẾT KẾ CƠ SỞ DỮ LIỆU (POSTGRESQL SCHEMA)
+
+### 2.1. Bảng `demand_surveys`:
+- Lưu trữ hồ sơ khảo sát tổng thể (7 phần).
+- Khóa ngoại `organization_id` (Nullable, liên kết Master DN ĐMST `TASK-02`).
+- Hybrid JSONB cho `tech_status_overview` (Hiện trạng công nghệ) và `text[] top_bottlenecks` (Tối đa 5 điểm nghẽn).
+- Các trường định danh liên hệ `contact_phone`, `contact_email` được mã hóa hoặc kiểm soát quyền truy cập chặt chẽ.
+
+### 2.2. Bảng `demand_items`:
+- Là thực thể quản trị các bài toán kỹ thuật (Demand Tickets) được bóc tách từ phiếu khảo sát hoặc tạo trực tiếp.
+- Khóa ngoại liên kết `survey_id` (nếu bắt nguồn từ khảo sát sâu).
+- Lưu trữ trực tiếp 4 tham số định lượng: `urgency_score`, `impact_score`, `investment_capacity`, `adoption_readiness`.
+- Lưu trữ chỉ số tính toán: `tni_score` (0–100), `tni_classification` (`VERY_HIGH`, `HIGH`, `MEDIUM`, `LOW`).
+- Cột trạng thái: `status` (`DRAFT`, `PENDING`, `VERIFIED`, `CONNECTED`, `CLOSED`), `is_public_listed` (Boolean).
+
+---
+
+## 3. THIẾT KẾ BACKEND CLEAN ARCHITECTURE (`NacenTech.Modules.Demand`)
+
+```text
+SourceCode/backend/modules/demand/
+├── Domain/
+│   ├── DemandSurvey.cs             # Aggregate Root khảo sát sâu 7 phần
+│   ├── DemandItem.cs               # Entity bài toán kỹ thuật (Demand Ticket)
+│   ├── Services/
+│   │   └── TniCalculationEngine.cs # SSOT Thuật toán tính TNI (BR-TNI-01 -> 04)
+│   ├── ValueObjects/
+│   │   └── TniResult.cs            # Value Object (Score & Classification)
+│   └── Enums/
+│       ├── TniClassification.cs    # VeryHigh, High, Medium, Low
+│       └── DemandItemStatus.cs     # Pending, Verified, Connected, Closed
+├── Application/
+│   ├── Commands/
+│   │   ├── SubmitDeepSurveyCommand.cs
+│   │   └── CreateQuickDemandItemCommand.cs
+│   ├── Queries/
+│   │   ├── GetBuyerDemandsQuery.cs
+│   │   └── GetPublicDemandsQuery.cs
+│   └── Validators/
+│       └── CreateDemandItemValidator.cs
+├── Infrastructure/
+│   └── Persistence/
+│       ├── DemandDbContext.cs
+│       └── Configurations/
+└── Presentation/
+    └── DemandEndpoints.cs          # Minimal API hoặc Controller RESTful
+```
+
+---
+
+## 4. THIẾT KẾ FRONTEND (NEXT.JS 15 APP ROUTER)
+
+### 4.1. Cấu trúc Routing & Components:
+1. `src/app/khao-sat-nhu-cau/page.tsx`: Màn hình 1 — Phiếu khảo sát sâu 7 phần kèm `TniRealtimeCalculator.tsx`.
+2. `src/app/portal/buyer/demands/page.tsx`: Màn hình 2 — Bàn làm việc Buyer Workspace quản trị bài toán.
+3. `src/components/demand/QuickDemandModal.tsx`: Màn hình 3 — Modal popup tạo nhanh bài toán kỹ thuật.
+4. `src/app/nhu-cau-cong-nghe/page.tsx` & `[id]/page.tsx`: Màn hình 4 — Sàn công khai khám phá bài toán (PDPD Masking).
+5. `src/app/gov/demands/page.tsx`: Màn hình 5 — Cổng cán bộ Sở KH&CN thẩm định & phân luồng bài toán.
+6. `src/app/trien-lam/dang-ky-tham-quan/page.tsx`: Màn hình 6 — Form đăng ký tham quan hội chợ triển lãm.
+
+### 4.2. Chuẩn hóa 5 UX States:
+Mọi màn hình và bảng danh sách đều được bọc qua `<Async>` component chuẩn:
+- `Loading`: Skeleton shimmer nạp dữ liệu.
+- `Empty`: Hiển thị thông báo thân thiện kèm nút Call-to-Action.
+- `Error`: Hiển thị lỗi RFC 7807 kèm nút Thử lại.
+- `Success`: Hiển thị dữ liệu hoàn chỉnh.
+- `Submitting`: Nút bấm chuyển trạng thái spinner chống double-click.
+
+---
+
+## 5. KẾ HOẠCH KIỂM ĐỊNH QC BLACK-BOX 4 TẦNG (QUALITY GATE 4)
+
+1. **Tầng 1 — Invariants & Unit Tests (`NacenTech.Modules.Demand.Tests`)**:
+   - `BR-TNI-01`: Kiểm chứng công thức toán học với các bộ giá trị chuẩn.
+   - `BR-TNI-02`: Kiểm chứng 4 ngưỡng xếp loại màu sắc.
+   - `BR-TNI-03`: Kiểm chứng Client không thể ghi đè `TniScore`.
+   - `BR-TNI-04`: Kiểm chứng chặn dải biên ($< 1$ hoặc $> 5$ bị ném ngoại lệ).
+2. **Tầng 2 — API Contract Tests**:
+   - Xác thực schema DTOs giữa Backend và Frontend, không để lệch kiểu dữ liệu hoặc phá vỡ hợp đồng.
+3. **Tầng 3 — Database Integration Tests**:
+   - Kiểm tra lưu trữ toàn vẹn vào PostgreSQL, khóa ngoại `organizations`, không làm ảnh hưởng bảng Master DN `TASK-02`.
+4. **Tầng 4 — Playwright E2E Black-box Tests (`test_task03_buyer_demands_blackbox.py`)**:
+   - Kịch bản TC-01: Điền phiếu khảo sát sâu 7 phần, kéo thanh trượt TNI, nộp phiếu thành công.
+   - Kịch bản TC-02: Đăng nhập Buyer Workspace, mở modal tạo nhanh bài toán, danh sách hiển thị đúng bài toán mới.
+   - Kịch bản TC-03: Cán bộ Sở đăng nhập `/gov/demands`, duyệt bài toán và chỉ định chuyên gia khi $TNI \ge 80$.
+   - Kịch bản TC-04: Khách vãng lai xem sàn công khai `/nhu-cau-cong-nghe`, xác minh 100% PII (SĐT, Email, Ngân sách) đã được ẩn giấu.
+   - Kịch bản TC-05: Khách tham quan điền form tại `/trien-lam/dang-ky-tham-quan` ghi nhận dữ liệu hội chợ.

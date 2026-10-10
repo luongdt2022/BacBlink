@@ -29,3 +29,28 @@
 - [x] T-04.14 [QC] **Tầng 3 (Integration Test)**: Kiểm tra luồng tích hợp ghi và đọc dữ liệu công nghệ (Pass).
 - [x] T-04.15 [QC] **Tầng 4 (Playwright E2E Visual QA)**: Chạy kịch bản Black-box E2E tự động duyệt qua 4 màn hình trên `http://localhost:3000` (Pass).
 - [x] T-04.16 [INT] Cập nhật `specs/ROADMAP.md` và `specs/TRACEABILITY.md` đồng bộ trạng thái Epic.
+
+---
+
+### Phase 5: Hợp Đồng & Backend Governance Thẩm Định Cấp Sở [BE][CONTRACT]
+- [x] T-04.17 [CONTRACT] Mở rộng `CreateSellerOfferDto` và `SellerOfferDto` bổ sung `managingAuthorityId`, `managingAuthorityName`, `scopeType`, `scopeId`, `legalConsent`.
+- [x] T-04.18 [BE] Cập nhật `TechnologyOffersController.cs`: bỏ auto-approve `Status = "APPROVED"`, gán `Status = "PENDING"`, tích hợp gọi `IApprovalService.SubmitRequestAsync` tạo `ApprovalRequest (Type = TECHNOLOGY_OFFER)`.
+- [x] T-04.19 [BE] Bổ sung side-effect trong `ApprovalService.cs` & `TechnologyOffersController.cs`: khi duyệt `APPROVE` hồ sơ `TECHNOLOGY_OFFER` thì cập nhật trạng thái Offer thành `APPROVED` và `publishedAt = UtcNow`; khi `REJECT` thì chuyển thành `REJECTED`.
+- [x] T-04.20 [BE] Bổ sung logic `REVOKE` hậu kiểm Trung ương theo `BR-SELLER-06` cho Super Admin (`POST /api/v1/portal/seller/technologies/{id}/review`).
+
+---
+
+### Phase 6: Giao Diện Frontend Form Wizard & Workspace Seller [FE]
+- [x] T-04.21 [FE] Form Wizard `create/page.tsx`: bổ sung chọn Sở KH&CN tiếp nhận thẩm định (`managingAuthorityId`, `scopeId`) từ danh mục 63 tỉnh/thành và checkbox cam kết pháp lý.
+- [x] T-04.22 [FE] Workspace `portal/seller/technologies/page.tsx`: hiển thị tên Sở KH&CN phụ trách thẩm định, huy hiệu `Chờ Sở KH&CN duyệt (PENDING)` thay vì auto-approve, và hiển thị lý do từ chối nếu có.
+
+---
+
+### Phase 7: Cổng Tác Nghiệp Cấp 2 `/gov` & Admin Governance [FE]
+- [x] T-04.23 [FE] Cổng `/gov`: hiển thị danh sách hồ sơ công nghệ cần duyệt theo ScopeId địa bàn tỉnh của Cán bộ Sở, xem chi tiết TRL, SHTT và thực hiện ký duyệt (Approve / Reject / Request changes).
+
+---
+
+### Phase 8: Kiểm Thử Toàn Diện & Quality Gate Delta [QC]
+- [x] T-04.24 [TEST] Cập nhật Unit test xUnit `SellerOfferRulesValidatorTests.cs` kiểm tra trường Cơ quan quản lý và cam kết pháp lý (18/18 tests pass).
+- [x] T-04.25 [TEST] Cập nhật kịch bản Playwright E2E: kiểm thử luồng Doanh nghiệp đăng bán -> hồ sơ chờ duyệt tại Sở KH&CN -> Cán bộ Sở duyệt -> sản phẩm chính thức xuất hiện trên Sàn `/chao-ban-cong-nghe`.

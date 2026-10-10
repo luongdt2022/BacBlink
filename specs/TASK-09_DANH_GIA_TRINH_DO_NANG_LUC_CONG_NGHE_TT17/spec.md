@@ -1,24 +1,94 @@
-# TASK-09: Đánh Giá Trình Độ Năng Lực Công Nghệ TT17
+# Đặc Tả Yêu Cầu Kỹ Thuật (Feature Specification)
+# TASK-09: ĐÁNH GIÁ TRÌNH ĐỘ & NĂNG LỰC CÔNG NGHỆ SẢN XUẤT (TT17)
 
-## 1. Overview
-Hệ thống số hóa toàn bộ quy trình khảo sát và đánh giá năng lực công nghệ doanh nghiệp sản xuất theo Thông tư 17/2019/TT-BKHCN. Chuyển đổi từ phiếu giấy sang luồng nhập liệu Form Wizard 5 bước (T-E-O-R-I), lưu trữ bất biến (immutable revisions) và tự động tính toán 26 tiêu chí.
+> **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
+> **Căn cứ pháp lý**: [Thông tư 17/2019/TT-BKHCN](https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm) của Bộ Khoa học và Công nghệ  
+> **Phạm vi áp dụng**: Doanh nghiệp ngành công nghiệp chế biến, chế tạo (mã ngành C.10 – C.32 theo VSIC)  
+> **Trạng thái**: 🟡 In-Progress (Đang thực hiện Spec Kit & Phát triển)  
+> **Độ ưu tiên**: P1 (Trọng tâm Đánh giá Năng lực Doanh nghiệp Sản xuất)
 
-## 2. User Scenarios
-- **US-01**: Là người đại diện doanh nghiệp, tôi muốn nhập liệu Phụ lục I qua giao diện Wizard từng bước để tránh bị ngợp bởi lượng câu hỏi quá lớn.
-- **US-02**: Là chuyên gia đánh giá, tôi muốn hệ thống tự động tính toán sơ bộ điểm của 26 tiêu chí (dựa trên chuỗi số liệu 3 năm) để tôi có cơ sở đối chiếu minh chứng nhanh hơn.
-- **US-03**: Là cán bộ Sở KH&CN, tôi muốn mỗi lần nộp phiếu phải là một bản chụp (snapshot) bất biến để đảm bảo tính pháp lý khi giải trình thanh tra.
+---
 
-## 3. Functional Requirements
-- **REQ-09-001**: Hệ thống cung cấp Form Wizard 5 nhóm (T-E-O-R-I) cho Phụ lục I.
-- **REQ-09-002**: Cơ chế lưu nháp (Auto-save) an toàn không gây khóa DB, hỗ trợ lưu các mảng dữ liệu lặp (danh sách thiết bị, công nghệ số).
-- **REQ-09-003**: Tính năng Real-time Calculator hiển thị kết quả dự kiến (Điểm tổng, Phân loại, Radar Chart) trước khi Submit.
-- **REQ-09-004**: Đóng gói toàn bộ phiếu thành Snapshot (Revision bất biến) khi nhấn Submit.
+## 1. TỔNG QUAN & MỤC TIÊU NGHIỆP VỤ (EXECUTIVE SUMMARY)
 
-## 4. Business Rules
-- **BR-09-001 (Chuỗi 3 năm)**: Các chỉ tiêu tài chính ($G_{sp}, G_{dt}, M, M_{tt}$) bắt buộc nhập đủ số liệu chính xác cho 3 năm liền kề trước năm đánh giá.
-- **BR-09-002 (Kế thừa dữ liệu)**: Chỉ được prefill dữ liệu từ TASK-03 nếu trùng khớp về định nghĩa, kỳ báo cáo, đơn vị đo lường và pháp nhân.
-- **BR-09-003 (Phân loại kết quả)**: Tổng điểm hệ số 100 quy ra 4 mức: Lạc hậu (<35), Trung bình (35-75), Khá (75-90), Tiên tiến (>90).
+### 1.1. Bối Cảnh
+Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ và năng lực công nghệ sản xuất thông qua hệ thống **26 tiêu chí** phân thành **5 nhóm T-E-O-R-I** (Thang 100 điểm). Phân hệ `TASK-09` số hóa toàn trình từ việc doanh nghiệp kê khai trực tuyến, tự động tính điểm, tính hệ số đồng bộ $T_{ĐB}$, vẽ biểu đồ mạng nhện (Radar Chart), chuẩn đoán điểm nghẽn công nghệ và liên thông sang phân hệ tìm mua giải pháp (`TASK-03`).
 
-## 5. Success Criteria
-- **SC-01**: Tốc độ load form nháp dưới 1 giây (nhờ cấu trúc DB Hybrid).
-- **SC-02**: 100% các bản nộp không bị thay đổi lịch sử khi thông tin định danh Master Doanh nghiệp bị đổi tên/MST.
+### 1.2. Mục Tiêu Nghiệp Vụ
+1. **Số hóa Phụ lục I**: Cung cấp Form Wizard 6 bước tương ứng với Mục A $\rightarrow$ Mục E của Thông tư 17, hỗ trợ chuỗi số liệu tài chính 3 năm và danh mục thiết bị động.
+2. **Realtime Calculator Engine**: Tính toán tức thời điểm số 26 tiêu chí, tổng điểm $\tau$ và hệ số đồng bộ $T_{ĐB}$ ngay khi người dùng nhập liệu.
+3. **Phân cấp 4 Mức Trình Độ Công Nghệ (Điều 9)**:
+   - **Lạc hậu**: $\tau < 35$ và $T_{ĐB} < 0,30$.
+   - **Trung bình**: $35 \le \tau < 60$ và $T_{ĐB} \ge 0,30$.
+   - **Trung bình tiên tiến**: $60 \le \tau < 75$ và $T_{ĐB} \ge 0,50$.
+   - **Tiên tiến**: $\tau \ge 75$ và $T_{ĐB} \ge 0,65$.
+   - *Lệch pha (Không thỏa mãn đồng thời)*: Trạng thái *"Cần thẩm định chuyên gia"*.
+4. **Lưu trữ Bất Biến (Yearly Snapshot)**: Mỗi lần nộp hồ sơ đánh giá đóng gói thành một bản chụp bất biến theo năm (`ADR-0013`) phục vụ thanh tra và lưu vết.
+5. **Cổng Thẩm Định Cấp 2 (`/gov`)**: Lãnh đạo Sở KH&CN và Hội đồng chuyên gia thẩm định minh chứng và phê duyệt Báo cáo chính thức (Phụ lục IV).
+
+---
+
+## 2. TÁC NHÂN & MA TRẬN PHÂN QUYỀN (ACTORS & 3D SCOPED RBAC)
+
+| Tác Nhân | Vai Trò Hệ Thống | Phạm Vi Quyền Hạn | Hành Động Cho Phép |
+| :--- | :--- | :---: | :--- |
+| **Doanh Nghiệp Sản Xuất** | `ENTERPRISE` / `PUBLIC_USER` | `OWNER` | Tạo mới, Lưu nháp (Draft), Xem Realtime Score, Nộp hồ sơ (Submit Snapshot), Xem báo cáo Phụ lục IV của DN mình. |
+| **Chuyên Gia Đánh Giá** | `VERIFIED_EXPERT` | `SECTOR` / `PROVINCE` | Xem hồ sơ được phân công, đối soát minh chứng, chấm điểm phản biện độc lập, gửi nhận xét. |
+| **Cán Bộ Sở KH&CN** | `PROVINCIAL_ADMIN` / `CLUSTER_ADMIN` | `PROVINCE` | Quản lý hàng đợi hồ sơ địa bàn, yêu cầu doanh nghiệp giải trình, ký duyệt cấp chứng nhận Phụ lục IV. |
+| **Quản Trị Viên Trung Ương** | `SUPER_ADMIN` / `OPERATOR_ADMIN` | `GLOBAL` | Toàn quyền kiểm tra, cấu hình tham số ngành, thanh tra và thu hồi chứng nhận vi phạm. |
+
+---
+
+## 3. DANH SÁCH YÊU CẦU CHỨC NĂNG (FUNCTIONAL REQUIREMENTS)
+
+- **`REQ-09-001` (Dashboard Lịch Sử Kỳ Đánh Giá)**: Hiển thị danh sách các kỳ đánh giá theo năm (2024, 2025, 2026), kết quả xếp loại, radar chart mini và trạng thái hồ sơ.
+- **`REQ-09-002` (Form Wizard Kê Khai Phụ Lục I)**: Thiết kế 6 bước nhập liệu chia 2 cột:
+  - *Bước 1 (Mục A)*: Thông tin DN, năm đánh giá, tổng nguồn vốn, lao động $M$, mã ngành chế biến chế tạo C.10 $\rightarrow$ C.32.
+  - *Bước 2 (Mục B - Nhóm T)*: Hiện trạng công nghệ & thiết bị (TC01–TC07, tối đa 30 điểm). Danh mục máy móc động, khấu hao $K_{kh}$, tỷ lệ tự động hóa.
+  - *Bước 3 (Mục C - Nhóm E)*: Hiệu quả khai thác (TC08–TC12, tối đa 20 điểm). Chuỗi số liệu 3 năm ($G_{sp}, G_{dt}, M_{tt}$), tiêu hao năng lượng.
+  - *Bước 4 (Mục D - Nhóm O)*: Năng lực tổ chức & quản lý (TC13–TC17, tối đa 19 điểm). ISO, ERP/MES, chuyển đổi số.
+  - *Bước 5 (Mục Đ - Nhóm R)*: Nghiên cứu & phát triển (TC18–TC22, tối đa 17 điểm). Kinh phí R&D, nhân lực $M_{r\&d}$, phòng thí nghiệm.
+  - *Bước 6 (Mục E - Nhóm I)*: Đổi mới sáng tạo (TC23–TC26, tối đa 14 điểm). Bằng SHTT, sản phẩm mới, liên kết Viện/Trường.
+- **`REQ-09-003` (Sticky Realtime Calculator)**: Sidebar bên phải tự động tính toán điểm 26 tiêu chí, tổng điểm $\tau$, hệ số $T_{ĐB}$ và cập nhật Radar Chart ngay khi người dùng nhập dữ liệu.
+- **`REQ-09-004` (Lưu Nháp Tự Động - Auto-Save Draft)**: Cơ chế debounce 500ms lưu dữ liệu an toàn vào CSDL PostgreSQL qua cấu trúc Hybrid JSONB.
+- **`REQ-09-005` (Báo Cáo Phân Tích & Chuẩn Đoán Điểm Nghẽn)**:
+  - Trình bày phiếu chấm điểm Phụ lục II.
+  - Biểu đồ mạng nhện Radar Chart so sánh điểm DN với chuẩn trung bình ngành.
+  - Tự động bóc tách các tiêu chí yếu nhất (dưới 40% điểm) thành danh sách "Điểm Nghẽn Công Nghệ".
+  - Nút bấm liên thông: *"Đẩy điểm nghẽn sang Sàn Nhu Cầu Tìm Mua Công Nghệ (TASK-03)"*.
+- **`REQ-09-006` (Cổng Thẩm Định Cấp 2 Của Sở KH&CN)**:
+  - Hàng đợi hồ sơ đánh giá của tỉnh/thành (`/gov/assessments/tt17`).
+  - Giao diện đối soát số liệu tự khai vs minh chứng đính kèm.
+  - Điều chỉnh điểm có lưu vết Audit Trail và phê duyệt ban hành Báo cáo chính thức Phụ lục IV.
+
+---
+
+## 4. QUY TẮC NGHIỆP VỤ BẤT BIẾN (BUSINESS RULES)
+
+- **`BR-09-001 (Ràng buộc chuỗi 3 năm)`**: Các chỉ tiêu tài chính và sản xuất ($G_{sp}, G_{dt}, M_{tt}$) bắt buộc phải nhập đủ số liệu dương ($\ge 0$) cho 3 năm liền kề trước năm đánh giá.
+- **`BR-09-002 (Phân nhánh quy mô TC20)`**: Tiêu chí TC20 (Kinh phí R&D) bắt buộc phân nhánh theo Tổng nguồn vốn BCTC và Tổng số lao động $M$ theo quy định Thông tư 17.
+- **`BR-09-003 (Công thức hệ số đồng bộ)`**:
+  $$T_{ĐB} = \left(\frac{T}{30}\right)^{0,30} \times \left(\frac{E}{20}\right)^{0,20} \times \left(\frac{O}{19}\right)^{0,19} \times \left(\frac{R}{17}\right)^{0,17} \times \left(\frac{I}{14}\right)^{0,14}$$
+  Nếu bất kỳ nhóm điểm nào bằng 0, hệ số đồng bộ $T_{ĐB} = 0$.
+- **`BR-09-004 (Xếp loại kép có điều kiện)`**: Chỉ xếp loại khi thỏa mãn đồng thời cả 2 điều kiện $\tau$ và $T_{ĐB}$. Trường hợp lệch pha phải gán nhãn *"Cần thẩm định chuyên gia"*.
+- **`BR-09-005 (Tính bất biến của Snapshot)`**: Khi hồ sơ chuyển sang trạng thái `SUBMITTED`, toàn bộ dữ liệu khảo sát và điểm số được đóng băng thành bản chụp cố định của năm đánh giá, không bị ảnh hưởng nếu thông tin pháp nhân thay đổi.
+- **`BR-09-006 (Cô lập dữ liệu địa bàn)`**: Cán bộ Sở KH&CN chỉ được thẩm định hồ sơ của doanh nghiệp có cơ sở sản xuất trên địa bàn tỉnh mình (`ScopeId`). Mọi truy cập chéo địa bàn bị chặn HTTP 403 Forbidden.
+
+---
+
+## 5. YÊU CẦU DỮ LIỆU & SCHEMA CSDL (HYBRID JSONB ADR-0013)
+
+Bảng dữ liệu: `assessment.tt17_evaluations`
+- `id`: UUID (Primary Key)
+- `enterprise_id`: UUID (Khóa ngoại tham chiếu `enterprise.profiles`)
+- `assessment_year`: INT (Năm đánh giá, ví dụ: 2026)
+- `status`: VARCHAR(30) (`DRAFT`, `SUBMITTED`, `IN_REVIEW`, `CHANGES_REQUESTED`, `APPROVED`)
+- `scope_type`: VARCHAR(20) (`PROVINCE`)
+- `scope_id`: VARCHAR(10) (Mã tỉnh/thành: `HN`, `HP`, `HCM`...)
+- `survey_data_json`: JSONB (Lưu trữ toàn bộ thông tin kê khai Phụ lục I: danh mục máy móc thiết bị, chuỗi tài chính 3 năm, chứng chỉ ISO, dữ liệu R&D)
+- `scores_json`: JSONB (Chi tiết điểm 26 tiêu chí, điểm 5 nhóm T-E-O-R-I, tổng điểm $\tau$, hệ số $T_{ĐB}$, xếp loại)
+- `reviewer_id`: UUID (Nullable - Cán bộ thẩm định)
+- `review_notes`: TEXT (Nhận xét của Hội đồng thẩm định)
+- `audit_trail_json`: JSONB (Lịch sử điều chỉnh điểm)
+- `created_at`, `updated_at`, `submitted_at`, `approved_at`: TIMESTAMPTZ
+- **Unique Constraint**: `(enterprise_id, assessment_year)` — Mỗi doanh nghiệp chỉ có 1 bản đánh giá chính thức cho mỗi năm.

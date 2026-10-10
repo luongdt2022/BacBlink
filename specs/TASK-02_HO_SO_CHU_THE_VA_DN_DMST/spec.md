@@ -1,6 +1,7 @@
 # Đặc Tả Yêu Cầu Kỹ Thuật (spec.md) — TASK-02: Hồ Sơ Chủ Thể & 304 Doanh Nghiệp ĐMST
 
 > **Mã phân hệ**: `TASK-02`  
+> **Trạng thái**: `Shipped 2026-10-09` (Quality Gate 4 & 5 Pass)  
 > **Ánh xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/)  
 > **Căn cứ pháp lý & Dữ liệu gốc (SSOT)**: 
 > 1. Sheet `DN ĐMST` (225 dòng dữ liệu, 10 nhóm trường) trong `Nacentwin_20260924_bo_loc_da_sua.xlsx`.

@@ -35,4 +35,4 @@
 - [x] **T-02.20** `[INT]` Kiểm tra tích hợp End-to-End: Nạp CSDL 304 DN -> API tra cứu -> Frontend render danh bạ trơn tru.
 - [x] **T-02.21** `[TEST]` Chạy bộ kiểm thử tự động Vitest cho các UI components của doanh nghiệp.
 - [x] **T-02.22** `[QC]` Bàn giao QC thực thi kịch bản kiểm thử 4 tầng: Unit Test, API Contract Test, DB Integration Test, Playwright Black-box Test.
-- [ ] **T-02.23** `[GATE]` Nghiệm thu Definition of Done (DoD), đồng bộ `ROADMAP.md` và `TRACEABILITY.md`, xuất xưởng qua Gate 5.
+- [x] **T-02.23** `[GATE]` Nghiệm thu Definition of Done (DoD), đồng bộ `ROADMAP.md` và `TRACEABILITY.md`, xuất xưởng qua Gate 5.
