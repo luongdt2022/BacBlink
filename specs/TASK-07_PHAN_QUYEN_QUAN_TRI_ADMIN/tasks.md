@@ -78,7 +78,7 @@
 
 
 ## Delta CR-2026-005 — Dynamic sector scopes
-- [ ] T032 [FE][RBAC] SECTOR scope assignment selects from active taxonomy; no free-text sector code hint/list.
+- [x] T032 [FE][RBAC] SECTOR scope assignment selects from active taxonomy; no free-text sector code hint/list.
 - [ ] T033 [FE] Resolve sector labels in role/review/GOV projections from current master data and remove fixed sector counts.
 - [ ] T034 [TEST] Verify active/inactive/unknown sector scope behavior and role assignment at API/DB/E2E boundaries.
 
