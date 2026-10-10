@@ -105,4 +105,4 @@
 
 ## Delta CR-2026-005 — Common/Home taxonomy sync
 - [x] T-00.49 [FE][REQ-MD-SECTOR-001] Home uses active sector taxonomy for dynamic sector cards/count and opens directory with selected sector code.
-- [ ] T-00.50 [FE][INT] Remove static industry-count copy from login/common admin surfaces; render DB count only where runtime-loaded, otherwise count-free copy.
+- [x] T-00.50 [FE][INT] Remove static industry-count copy from login/common admin surfaces; render DB count only where runtime-loaded, otherwise count-free copy.
