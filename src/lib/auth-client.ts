@@ -69,7 +69,7 @@ export function getRedirectPathByRole(role?: string | null): string {
     return "/admin";
   }
 
-  // Tầng 1: Cổng Thẩm định Nhà nước & 63 Sở Tỉnh
+  // Tầng 1: Cổng Thẩm định Nhà nước & 34 Sở Tỉnh trọng điểm
   if (
     upper === "PROVINCIAL_ADMIN" ||
     upper === "SECTOR_ADMIN" ||

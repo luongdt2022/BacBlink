@@ -96,7 +96,7 @@ export default function AdminDashboard() {
             Trung Tâm Điều Hành & Giám Sát Cấp Cao (Cổng Admin)
           </h1>
           <p className="text-body text-slate-500 dark:text-slate-400 mt-1">
-            Quyền hạn tối cao: Quản trị 10 Roles, Cây tổ chức 63 Sở KH&CN, và Nhật ký kiểm toán Nghị định 85/2016.
+            Quyền hạn tối cao: Quản trị 10 Roles, Cây tổ chức 34 Sở KH&CN trọng điểm, và Nhật ký kiểm toán Nghị định 85/2016.
           </p>
         </div>
 

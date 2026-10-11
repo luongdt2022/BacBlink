@@ -298,7 +298,7 @@ export default function GovDashboard() {
             </span>
           </h1>
           <p className="text-body text-slate-500 dark:text-slate-400 mt-1">
-            Thẩm định hồ sơ theo cơ chế 3D Scoped RBAC dành cho 63 Sở KH&CN và Ban Điều Phối Lĩnh Vực TT17.
+            Thẩm định hồ sơ theo cơ chế 3D Scoped RBAC dành cho 34 Sở KH&CN tỉnh thành trọng điểm và Ban Điều Phối Lĩnh Vực TT17.
           </p>
         </div>
 
