@@ -42,7 +42,7 @@ public sealed class PortalOverviewService(DbContext db, IMemoryCache cache) : IP
             totalDemands,
             totalEnterprises,
             totalExperts,
-            63,
+            34,
             DateTimeOffset.UtcNow
         );
 

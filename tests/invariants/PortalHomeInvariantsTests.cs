@@ -72,14 +72,14 @@ public sealed class PortalHomeInvariantsTests
     }
 
     [Fact]
-    public void PortalOverviewStatsDto_guarantees_structure_and_63_provinces()
+    public void PortalOverviewStatsDto_guarantees_structure_and_34_provinces()
     {
         var stats = new PortalOverviewStatsDto(
             120,
             85,
             304,
             94,
-            63,
+            34,
             DateTimeOffset.UtcNow
         );
 
@@ -87,6 +87,6 @@ public sealed class PortalHomeInvariantsTests
         stats.TotalDemands.ShouldBe(85);
         stats.TotalEnterprises.ShouldBe(304);
         stats.TotalExperts.ShouldBe(94);
-        stats.TotalProvinces.ShouldBe(63);
+        stats.TotalProvinces.ShouldBe(34);
     }
 }

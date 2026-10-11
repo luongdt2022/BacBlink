@@ -10,6 +10,7 @@ using NacenTech.Persistence;
 namespace NacenTech.Api.V2;
 
 [ApiController]
+[Route("api/v1/technologies")]
 [Route("api/v2/technologies")]
 public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWork uow) : V2ControllerBase
 {
@@ -285,7 +286,8 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         }
 
         var id = Guid.NewGuid();
-        var offerCode = $"OFF-{DateTime.UtcNow:yyyyMMdd}-{OffersStore.Count + 1:D5}";
+        var totalDbOffers = await db.Set<SellerTechnologyOffer>().CountAsync(ct);
+        var offerCode = $"OFF-{DateTime.UtcNow:yyyyMMdd}-{(totalDbOffers + 1):D5}-{Guid.NewGuid().ToString("N")[..4].ToUpperInvariant()}";
         var newOffer = new SellerOfferDto(
             Id: id,
             OfferCode: offerCode,

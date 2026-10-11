@@ -69,6 +69,17 @@ public class Tt17Assessment : AggregateRoot
         Touch();
     }
 
+    public void ReopenForSubmission(string surveyDataJson, string scoresJson)
+    {
+        SurveyDataJson = string.IsNullOrWhiteSpace(surveyDataJson) ? "{}" : surveyDataJson;
+        ScoresJson = string.IsNullOrWhiteSpace(scoresJson) ? "{}" : scoresJson;
+        Status = "SUBMITTED";
+        SubmittedAtUtc = DateTimeOffset.UtcNow;
+        ApprovedAtUtc = null;
+        ReviewNotes = null;
+        Touch();
+    }
+
     public void Review(string action, Guid reviewerId, string? notes, string? adjustedScoresJson)
     {
         if (Status is not "SUBMITTED" and not "IN_REVIEW")

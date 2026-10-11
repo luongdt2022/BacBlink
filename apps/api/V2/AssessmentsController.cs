@@ -256,10 +256,9 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
             entity.Submit(scoresJson);
             db.Set<Tt17Assessment>().Add(entity);
         }
-        else if (entity.Status is "DRAFT" or "CHANGES_REQUESTED")
+        else
         {
-            entity.UpdateDraft(surveyJson, scoresJson);
-            entity.Submit(scoresJson);
+            entity.ReopenForSubmission(surveyJson, scoresJson);
         }
         await uow.CommitAsync(ct);
 

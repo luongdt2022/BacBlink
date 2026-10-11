@@ -244,6 +244,33 @@ public sealed class PortalAiAssistantService(
         else if (norm.Contains("han lam"))
             searchKeyword = "Hàn lâm";
 
+        // Nếu chưa khớp lĩnh vực chung, bóc tách tên hoặc từ khóa riêng (ví dụ: "tìm cho tôi chuyên gia Minh An" -> "Minh An")
+        if (searchKeyword == null)
+        {
+            var cleaned = prompt;
+            string[] prefixesToRemove = [
+                "tìm cho tôi một chuyên gia", "tìm cho tôi 1 chuyên gia", "tìm cho tôi chuyên gia",
+                "tìm cho toi một chuyên gia", "tìm cho toi 1 chuyên gia", "tìm cho toi chuyên gia",
+                "tìm cho em chuyên gia", "tìm giúp tôi chuyên gia", "tìm kiếm chuyên gia",
+                "cho tôi chuyên gia", "cho toi chuyen gia", "tìm chuyên gia", "tim chuyen gia",
+                "chuyên gia", "chuyen gia", "nha khoa hoc", "nhà khoa học", "bác sĩ", "bac si",
+                "thầy", "thay", "giáo sư", "tiến sĩ", "ts", "pgs", "gs", "tìm", "tim"
+            ];
+            foreach (var prefix in prefixesToRemove.OrderByDescending(p => p.Length))
+            {
+                var idx = cleaned.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+                if (idx >= 0)
+                {
+                    cleaned = cleaned.Remove(idx, prefix.Length);
+                }
+            }
+            cleaned = cleaned.Trim();
+            if (cleaned.Length >= 2)
+            {
+                searchKeyword = cleaned;
+            }
+        }
+
         var dir = await expertService.GetPublicDirectoryAsync(searchKeyword, null, null, null, null, 1, 3, ct);
         if (dir.Items.Count == 0 && searchKeyword != null)
         {
