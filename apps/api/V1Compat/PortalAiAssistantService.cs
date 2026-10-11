@@ -45,6 +45,9 @@ public sealed class PortalAiAssistantService(
         // 2. TRUY XUẤT CSDL CHUYÊN GIA (EXPERT RETRIEVAL)
         if (norm.Contains("chuyen gia") || norm.Contains("nha khoa hoc") || norm.Contains("giao su") ||
             norm.Contains("tien si") || norm.Contains("expert") || norm.Contains("tu van 1-1") ||
+            norm.Contains("bac si") || norm.Contains("thay ") || norm.Contains("co ") ||
+            norm.Contains("ten ") ||
+            (norm.StartsWith("tim ") && !norm.Contains("cong nghe") && !norm.Contains("mua") && !norm.Contains("su kien") && !norm.Contains("hoi cho") && !norm.Contains("gia")) ||
             (norm.Contains("tim") && (norm.Contains("it") || norm.Contains("ai") || norm.Contains("cntt") || norm.Contains("ky su"))))
         {
             return await HandleExpertQueryAsync(prompt, norm, ct);
@@ -227,65 +230,163 @@ public sealed class PortalAiAssistantService(
 
     private async Task<AiQuickAssistResponseDto> HandleExpertQueryAsync(string prompt, string norm, CancellationToken ct)
     {
-        // Trích xuất từ khóa tìm kiếm chuyên gia
-        string? searchKeyword = null;
-        if (norm.Contains(" it") || norm.Contains("cntt") || norm.Contains("thong tin") || norm.Contains("phan mem"))
-            searchKeyword = "IT";
-        else if (norm.Contains(" ai") || norm.Contains("tri tue nhan tao") || norm.Contains("thi giac"))
-            searchKeyword = "AI";
-        else if (norm.Contains("robot") || norm.Contains("tu dong hoa"))
-            searchKeyword = "ROBOTICS";
-        else if (norm.Contains("nong nghiep") || norm.Contains("thuc pham") || norm.Contains("sinh hoc"))
-            searchKeyword = "Nông nghiệp";
-        else if (norm.Contains("vat lieu") || norm.Contains("nano"))
-            searchKeyword = "Vật liệu";
-        else if (norm.Contains("bach khoa"))
-            searchKeyword = "Bách Khoa";
-        else if (norm.Contains("han lam"))
-            searchKeyword = "Hàn lâm";
+        // 1. Trích xuất tên riêng hoặc từ khóa chuyên gia cụ thể
+        var cleaned = prompt;
+        string[] prefixesToRemove = [
+            "tìm cho tôi một chuyên gia có tên là", "tìm cho tôi 1 chuyên gia có tên là",
+            "tìm cho tôi một chuyên gia tên là", "tìm cho tôi 1 chuyên gia tên là",
+            "tìm cho tôi một chuyên gia tên", "tìm cho tôi 1 chuyên gia tên",
+            "tìm cho tôi một chuyên gia", "tìm cho tôi 1 chuyên gia", "tìm cho tôi chuyên gia",
+            "tìm cho toi một chuyên gia", "tìm cho toi 1 chuyên gia", "tìm cho toi chuyên gia",
+            "tìm giúp tôi chuyên gia tên là", "tìm giúp tôi chuyên gia tên", "tìm giúp tôi chuyên gia",
+            "tìm giúp em chuyên gia tên là", "tìm giúp em chuyên gia tên", "tìm giúp em chuyên gia",
+            "tìm kiếm chuyên gia tên là", "tìm kiếm chuyên gia tên", "tìm kiếm chuyên gia",
+            "tìm chuyên gia có tên là", "tìm chuyên gia có tên", "tìm chuyên gia tên là", "tìm chuyên gia tên",
+            "tim chuyen gia co ten la", "tim chuyen gia co ten", "tim chuyen gia ten la", "tim chuyen gia ten",
+            "tìm chuyên gia nào", "tim chuyen gia nao",
+            "tìm chuyên gia", "tim chuyen gia",
+            "cho tôi chuyên gia tên là", "cho tôi chuyên gia tên", "cho tôi chuyên gia",
+            "cho toi chuyen gia ten la", "cho toi chuyen gia ten", "cho toi chuyen gia",
+            "có chuyên gia nào tên là", "có chuyên gia nào tên", "có chuyên gia nào",
+            "co chuyen gia nao ten la", "co chuyen gia nao ten", "co chuyen gia nao",
+            "chuyên gia nào tên là", "chuyên gia nào tên", "chuyên gia nào",
+            "chuyen gia nao ten la", "chuyen gia nao ten", "chuyen gia nao",
+            "ai có tên là", "ai có tên", "ai tên là", "ai tên", "ai ten la", "ai ten",
+            "nhà khoa học có tên là", "nhà khoa học có tên", "nhà khoa học tên là", "nhà khoa học tên",
+            "nhà khoa học", "nha khoa hoc",
+            "chuyên gia", "chuyen gia",
+            "giáo sư", "giao su", "gs.ts.", "gs.ts", "gs",
+            "phó giáo sư", "pho giao su", "pgs.ts.", "pgs.ts", "pgs",
+            "tiến sĩ", "tien si", "ts.", "ts",
+            "thạc sĩ", "thac si", "th.s",
+            "bác sĩ", "bac si", "bs",
+            "thầy giáo", "thay giao", "thầy", "thay",
+            "cô giáo", "co giao", "cô", "co",
+            "anh", "chị", "chi", "ông", "ong", "bà", "ba",
+            "có tên là", "co ten la", "có tên", "co ten",
+            "tên là", "ten la", "tên", "ten", "họ tên", "ho ten",
+            "về lĩnh vực", "lĩnh vực", "linh vuc",
+            "ngành", "nganh", "chuyên ngành",
+            "tìm kiếm", "tim kiem",
+            "tìm", "tim"
+        ];
 
-        // Nếu chưa khớp lĩnh vực chung, bóc tách tên hoặc từ khóa riêng (ví dụ: "tìm cho tôi chuyên gia Minh An" -> "Minh An")
+        foreach (var prefix in prefixesToRemove.OrderByDescending(p => p.Length))
+        {
+            var idx = cleaned.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+            {
+                cleaned = cleaned.Remove(idx, prefix.Length);
+            }
+        }
+        cleaned = cleaned.Trim();
+
+        string? searchKeyword = null;
+        if (cleaned.Length >= 2)
+        {
+            searchKeyword = cleaned;
+        }
+
+        // Nếu không trích xuất được tên cụ thể, kiểm tra lĩnh vực công nghệ chung
         if (searchKeyword == null)
         {
-            var cleaned = prompt;
-            string[] prefixesToRemove = [
-                "tìm cho tôi một chuyên gia", "tìm cho tôi 1 chuyên gia", "tìm cho tôi chuyên gia",
-                "tìm cho toi một chuyên gia", "tìm cho toi 1 chuyên gia", "tìm cho toi chuyên gia",
-                "tìm cho em chuyên gia", "tìm giúp tôi chuyên gia", "tìm kiếm chuyên gia",
-                "cho tôi chuyên gia", "cho toi chuyen gia", "tìm chuyên gia", "tim chuyen gia",
-                "chuyên gia", "chuyen gia", "nha khoa hoc", "nhà khoa học", "bác sĩ", "bac si",
-                "thầy", "thay", "giáo sư", "tiến sĩ", "ts", "pgs", "gs", "tìm", "tim"
-            ];
-            foreach (var prefix in prefixesToRemove.OrderByDescending(p => p.Length))
-            {
-                var idx = cleaned.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
-                if (idx >= 0)
-                {
-                    cleaned = cleaned.Remove(idx, prefix.Length);
-                }
-            }
-            cleaned = cleaned.Trim();
-            if (cleaned.Length >= 2)
-            {
-                searchKeyword = cleaned;
-            }
+            if (norm.Contains(" it") || norm.Contains("cntt") || norm.Contains("thong tin") || norm.Contains("phan mem"))
+                searchKeyword = "IT";
+            else if (norm.Contains(" ai") || norm.Contains("tri tue nhan tao") || norm.Contains("thi giac"))
+                searchKeyword = "AI";
+            else if (norm.Contains("robot") || norm.Contains("tu dong hoa"))
+                searchKeyword = "ROBOTICS";
+            else if (norm.Contains("nong nghiep") || norm.Contains("thuc pham") || norm.Contains("sinh hoc"))
+                searchKeyword = "Nông nghiệp";
+            else if (norm.Contains("vat lieu") || norm.Contains("nano"))
+                searchKeyword = "Vật liệu";
+            else if (norm.Contains("bach khoa"))
+                searchKeyword = "Bách Khoa";
+            else if (norm.Contains("han lam"))
+                searchKeyword = "Hàn lâm";
         }
 
-        var dir = await expertService.GetPublicDirectoryAsync(searchKeyword, null, null, null, null, 1, 3, ct);
-        if (dir.Items.Count == 0 && searchKeyword != null)
+        // 2. Tìm kiếm CSDL Chuyên gia (So khớp chính xác CSDL & so khớp không dấu / đa từ)
+        List<ExpertPublicCardDto> matchedExperts = [];
+
+        if (!string.IsNullOrWhiteSpace(searchKeyword))
         {
-            // Fallback lấy toàn bộ chuyên gia công khai nếu từ khóa hẹp không có kết quả
-            dir = await expertService.GetPublicDirectoryAsync(null, null, null, null, null, 1, 3, ct);
+            // B1: Tìm kiếm trực tiếp qua PostgreSQL (Accent-sensitive)
+            var direct = await expertService.GetPublicDirectoryAsync(searchKeyword, null, null, null, null, 1, 10, ct);
+            if (direct.Items.Count > 0)
+            {
+                matchedExperts = [.. direct.Items];
+            }
+            else
+            {
+                // B2: So khớp không dấu / đa từ (Accent-Insensitive / Token Matching)
+                var allPublic = await expertService.GetPublicDirectoryAsync(null, null, null, null, null, 1, 50, ct);
+                var normTarget = Normalize(searchKeyword);
+                var tokens = normTarget.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                matchedExperts = allPublic.Items.Where(exp =>
+                {
+                    var normName = Normalize(exp.FullName);
+                    var normOrg = Normalize(exp.OrganizationName);
+                    var normTitle = Normalize(exp.PositionTitle ?? "");
+                    var normSectors = Normalize(string.Join(" ", exp.ExpertiseSectors));
+
+                    // Khớp trọn vẹn cụm từ
+                    if (normName.Contains(normTarget) || normOrg.Contains(normTarget) ||
+                        normTitle.Contains(normTarget) || normSectors.Contains(normTarget) ||
+                        (exp.MasteredTechCodes != null && exp.MasteredTechCodes.Any(c => Normalize(c).Contains(normTarget))) ||
+                        (exp.SpecializedKeywords != null && exp.SpecializedKeywords.Any(k => Normalize(k).Contains(normTarget))))
+                    {
+                        return true;
+                    }
+
+                    // Khớp toàn bộ các từ khóa lẻ (ví dụ: gõ "Thu Hà" khớp với "Đỗ Thị Thu Hà")
+                    if (tokens.Length >= 2 && tokens.All(t => normName.Contains(t)))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }).ToList();
+            }
+        }
+        else
+        {
+            // Người dùng chỉ hỏi chung chung không nêu tên/ngành -> Lấy top chuyên gia tiêu biểu
+            var defaultDir = await expertService.GetPublicDirectoryAsync(null, null, null, null, null, 1, 3, ct);
+            matchedExperts = [.. defaultDir.Items];
         }
 
-        if (dir.Items.Count > 0)
+        // 3. Xử lý trường hợp KHÔNG TÌM THẤY (Tuyệt đối không lấy người khác làm giả danh)
+        if (matchedExperts.Count == 0 && !string.IsNullOrWhiteSpace(searchKeyword))
+        {
+            return new AiQuickAssistResponseDto(
+                $"Rất tiếc, tôi đã tra cứu CSDL Sàn NacenTwin nhưng không tìm thấy Chuyên gia KH&CN nào khớp với từ khóa/tên: \"{searchKeyword}\".\n\n" +
+                "Bạn có thể kiểm tra lại chính tả hoặc xem danh bạ hơn 90+ Chuyên gia KH&CN đã được Bộ KH&CN thẩm định tại liên kết bên dưới:",
+                "EXPERT_MATCH",
+                "/experts",
+                [
+                    new("Xem toàn bộ danh bạ Chuyên gia", "Tra cứu chuyên gia theo lĩnh vực & học hàm", "/experts", "CHUYÊN GIA")
+                ]
+            );
+        }
+
+        // 4. Định dạng kết quả trả về
+        if (matchedExperts.Count > 0)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Tôi đã truy xuất CSDL Sàn NacenTwin và tìm thấy {dir.Items.Count} Chuyên gia KH&CN phù hợp nhất với yêu cầu của bạn:\n");
+            if (!string.IsNullOrWhiteSpace(searchKeyword))
+            {
+                sb.AppendLine($"Tôi đã truy xuất CSDL Sàn NacenTwin và tìm thấy {matchedExperts.Count} Chuyên gia KH&CN phù hợp với từ khóa \"{searchKeyword}\":\n");
+            }
+            else
+            {
+                sb.AppendLine($"Dưới đây là {matchedExperts.Count} Chuyên gia KH&CN tiêu biểu sẵn sàng nhận tư vấn 1-1 trên Sàn NacenTwin:\n");
+            }
 
             var suggestions = new List<AiSuggestionItemDto>();
             int idx = 1;
-            foreach (var exp in dir.Items)
+            foreach (var exp in matchedExperts.Take(3))
             {
                 var rankStr = exp.AcademicRank switch
                 {
@@ -327,7 +428,7 @@ public sealed class PortalAiAssistantService(
             return new AiQuickAssistResponseDto(
                 sb.ToString().Trim(),
                 "EXPERT_MATCH",
-                dir.Items.Count == 1 ? $"/experts/{dir.Items[0].ExpertCode}" : "/experts",
+                matchedExperts.Count == 1 ? $"/experts/{matchedExperts[0].ExpertCode}" : "/experts",
                 suggestions
             );
         }
