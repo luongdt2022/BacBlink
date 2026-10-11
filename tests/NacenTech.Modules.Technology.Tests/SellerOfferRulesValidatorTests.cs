@@ -200,4 +200,106 @@ public class SellerOfferRulesValidatorTests
 
         Assert.True(result.IsValid);
     }
+
+    [Fact]
+    public void BR_SELLER_ValidateUpdate_ValidDto_ShouldPass()
+    {
+        var updateDto = new UpdateSellerOfferDto(
+            OfferType: "DEVICE",
+            HasTechTransfer: true,
+            Title: "Robot hàn laser 6 trục cải tiến",
+            Summary: "Tóm tắt giải pháp",
+            ProblemSolved: "Bài toán giải quyết",
+            SectorCode: "MECH",
+            PricingType: "FIXED",
+            PriceAmount: 2500000000,
+            PriceMin: null,
+            PriceMax: null,
+            Currency: "VND",
+            Unit: "hệ thống",
+            DeveloperOrigin: "Đại học Bách Khoa",
+            TrlLevel: 8,
+            IpStatus: "PATENT_GRANTED",
+            IpRegistrationNumber: "VN-1-001234",
+            TransferMethod: "EXCLUSIVE_LICENSE",
+            CommercialStatus: "COMMERCIALLY_READY",
+            ContactPointRole: "Phòng QLKH"
+        );
+
+        var result = SellerOfferRulesValidator.ValidateUpdate(updateDto);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void BR_SELLER_07_WhenCoreIpOrTrlChanges_EntityShouldResetToPending()
+    {
+        var offer = new NacenTech.Modules.Technology.Domain.SellerTechnologyOffer(
+            id: Guid.NewGuid(),
+            offerCode: "OFF-20261011-00001",
+            offerType: "DEVICE",
+            hasTechTransfer: true,
+            title: "Thiết bị ban đầu",
+            summary: "Tóm tắt",
+            problemSolved: "Bài toán",
+            sectorCode: "MECH",
+            sectorName: "Cơ khí",
+            pricingType: "FIXED",
+            priceAmount: 1000000000,
+            priceMin: null,
+            priceMax: null,
+            currency: "VND",
+            unit: "bộ",
+            developerOrigin: "Viện Hàn Lâm",
+            trlLevel: 7,
+            ipStatus: "UTILITY_MODEL",
+            ipRegistrationNumber: "VN-2-001",
+            transferMethod: "NON_EXCLUSIVE_LICENSE",
+            commercialStatus: "PILOT_TESTING",
+            contactPointRole: "Ban KH",
+            status: "APPROVED",
+            managingAuthorityId: "VN-HN",
+            managingAuthorityName: "Sở KH&CN Hà Nội",
+            scopeType: "PROVINCE",
+            scopeId: "VN-HN",
+            legalConsent: true,
+            publishedAt: DateTimeOffset.UtcNow
+        );
+
+        Assert.Equal("APPROVED", offer.Status);
+        Assert.NotNull(offer.PublishedAt);
+
+        // Update with changed TRL from 7 to 8
+        offer.Update(
+            offerType: "DEVICE",
+            hasTechTransfer: true,
+            title: "Thiết bị ban đầu (cập nhật)",
+            summary: "Tóm tắt",
+            problemSolved: "Bài toán",
+            sectorCode: "MECH",
+            sectorName: "Cơ khí",
+            pricingType: "FIXED",
+            priceAmount: 1200000000,
+            priceMin: null,
+            priceMax: null,
+            currency: "VND",
+            unit: "bộ",
+            developerOrigin: "Viện Hàn Lâm",
+            trlLevel: 8, // CHANGED from 7 to 8
+            ipStatus: "UTILITY_MODEL",
+            ipRegistrationNumber: "VN-2-001",
+            transferMethod: "NON_EXCLUSIVE_LICENSE",
+            commercialStatus: "PILOT_TESTING",
+            contactPointRole: "Ban KH",
+            managingAuthorityId: "VN-HN",
+            managingAuthorityName: "Sở KH&CN Hà Nội",
+            scopeType: "PROVINCE",
+            scopeId: "VN-HN"
+        );
+
+        // BR-SELLER-07 asserts status must be PENDING and PublishedAt null
+        Assert.Equal("PENDING", offer.Status);
+        Assert.Null(offer.PublishedAt);
+    }
 }

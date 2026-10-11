@@ -412,6 +412,172 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updated });
     }
 
+    [HttpPut("/api/v1/portal/seller/technologies/{id:guid}")]
+    [HttpPut("/api/v2/portal/seller/technologies/{id:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateSellerOffer(Guid id, [FromBody] UpdateSellerOfferDto dto, CancellationToken ct = default)
+    {
+        if (!OffersStore.TryGetValue(id, out var existing))
+        {
+            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ." });
+        }
+
+        var validation = SellerOfferRulesValidator.ValidateUpdate(dto);
+        if (!validation.IsValid)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Dữ liệu cập nhật hồ sơ không hợp lệ theo quy tắc BR-SELLER.",
+                errors = validation.Errors
+            });
+        }
+
+        // BR-SELLER-07: Quy tắc kiểm soát vòng đời & Tự động chuyển PENDING nếu sửa TRL hoặc SHTT
+        bool needsReaudit = existing.HasTechTransfer && dto.HasTechTransfer && (
+            existing.TrlLevel != dto.TrlLevel ||
+            !string.Equals(existing.IpStatus, dto.IpStatus, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(existing.IpRegistrationNumber, dto.IpRegistrationNumber, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(existing.TransferMethod, dto.TransferMethod, StringComparison.OrdinalIgnoreCase)
+        );
+
+        var newStatus = needsReaudit ? "PENDING" : existing.Status;
+        var newPublishedAt = needsReaudit ? null : existing.PublishedAt;
+
+        var updated = existing with
+        {
+            OfferType = dto.OfferType.ToUpperInvariant(),
+            HasTechTransfer = dto.HasTechTransfer,
+            Title = dto.Title,
+            Summary = dto.Summary,
+            ProblemSolved = dto.ProblemSolved,
+            SectorCode = dto.SectorCode.ToUpperInvariant(),
+            SectorName = MapSectorName(dto.SectorCode),
+            PricingType = dto.PricingType.ToUpperInvariant(),
+            PriceAmount = dto.PriceAmount,
+            PriceMin = dto.PriceMin,
+            PriceMax = dto.PriceMax,
+            Currency = dto.Currency ?? "VND",
+            Unit = dto.Unit,
+            DeveloperOrigin = dto.DeveloperOrigin,
+            TrlLevel = dto.TrlLevel,
+            IpStatus = dto.IpStatus,
+            IpRegistrationNumber = dto.IpRegistrationNumber,
+            TransferMethod = dto.TransferMethod,
+            CommercialStatus = dto.CommercialStatus,
+            ContactPointRole = dto.ContactPointRole,
+            Status = newStatus,
+            PublishedAt = newPublishedAt,
+            ManagingAuthorityId = dto.ManagingAuthorityId ?? existing.ManagingAuthorityId,
+            ManagingAuthorityName = dto.ManagingAuthorityName ?? existing.ManagingAuthorityName,
+            ScopeType = dto.ScopeType ?? existing.ScopeType,
+            ScopeId = dto.ScopeId ?? existing.ScopeId
+        };
+
+        // Cập nhật CSDL PostgreSQL
+        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (entity != null)
+        {
+            entity.Update(
+                dto.OfferType.ToUpperInvariant(),
+                dto.HasTechTransfer,
+                dto.Title,
+                dto.Summary,
+                dto.ProblemSolved,
+                dto.SectorCode.ToUpperInvariant(),
+                MapSectorName(dto.SectorCode),
+                dto.PricingType.ToUpperInvariant(),
+                dto.PriceAmount,
+                dto.PriceMin,
+                dto.PriceMax,
+                dto.Currency ?? "VND",
+                dto.Unit,
+                dto.DeveloperOrigin,
+                dto.TrlLevel,
+                dto.IpStatus,
+                dto.IpRegistrationNumber,
+                dto.TransferMethod,
+                dto.CommercialStatus,
+                dto.ContactPointRole,
+                dto.ManagingAuthorityId ?? existing.ManagingAuthorityId,
+                dto.ManagingAuthorityName ?? existing.ManagingAuthorityName,
+                dto.ScopeType ?? existing.ScopeType,
+                dto.ScopeId ?? existing.ScopeId
+            );
+            await uow.CommitAsync(ct);
+        }
+
+        OffersStore[id] = updated;
+
+        var message = needsReaudit
+            ? "Cập nhật hồ sơ thành công! Lưu ý: Do bạn đã thay đổi Cấp độ TRL / Tình trạng SHTT / Phương thức chuyển giao, hồ sơ tự động chuyển về trạng thái CHỜ THẨM ĐỊNH (PENDING) bởi Sở KH&CN theo quy tắc BR-SELLER-07."
+            : "Cập nhật thông tin công nghệ chào bán thành công.";
+
+        return Ok(new
+        {
+            success = true,
+            needsReaudit,
+            message,
+            data = updated
+        });
+    }
+
+    [HttpDelete("/api/v1/portal/seller/technologies/{id:guid}")]
+    [HttpDelete("/api/v2/portal/seller/technologies/{id:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DeleteSellerOffer(Guid id, CancellationToken ct = default)
+    {
+        if (!OffersStore.TryRemove(id, out var _))
+        {
+            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ để xóa." });
+        }
+
+        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (entity != null)
+        {
+            db.Set<SellerTechnologyOffer>().Remove(entity);
+            await uow.CommitAsync(ct);
+        }
+
+        return Ok(new { success = true, message = "Đã xóa hồ sơ công nghệ thành công khỏi kho lưu trữ." });
+    }
+
+    [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/toggle-publish")]
+    [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/toggle-publish")]
+    [AllowAnonymous]
+    public async Task<IActionResult> TogglePublish(Guid id, [FromQuery] bool? publish, CancellationToken ct = default)
+    {
+        if (!OffersStore.TryGetValue(id, out var offer))
+        {
+            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ." });
+        }
+
+        bool shouldPublish = publish ?? (offer.Status != "APPROVED");
+        var updated = offer with
+        {
+            Status = shouldPublish ? "APPROVED" : "HIDDEN",
+            PublishedAt = shouldPublish ? DateTimeOffset.UtcNow : null
+        };
+
+        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (entity != null)
+        {
+            if (shouldPublish)
+                entity.Review("APPROVE");
+            else
+                entity.Review("REQUEST_CHANGES", "Tạm ẩn bởi Bên bán");
+            await uow.CommitAsync(ct);
+        }
+
+        OffersStore[id] = updated;
+        return Ok(new
+        {
+            success = true,
+            message = shouldPublish ? "Đã công khai công nghệ lên sàn giao dịch." : "Đã tạm ẩn công nghệ khỏi sàn giao dịch.",
+            data = updated
+        });
+    }
+
     private static string MapSectorName(string code) => code.ToUpperInvariant() switch
     {
         "FOOD" => "Công nghệ chế biến nông sản - thực phẩm",

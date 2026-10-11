@@ -116,6 +116,8 @@ builder.Services.AddScoped<V1Mappers>();
 builder.Services.AddScoped<IntakeFacade>();
 builder.Services.AddScoped<StatsReadModel>();
 builder.Services.AddScoped<BeautifyService>();
+builder.Services.AddScoped<NacenTech.Modules.Content.Application.IPortalOverviewService, PortalOverviewService>();
+builder.Services.AddScoped<NacenTech.Modules.Content.Application.IAiAssistantService, PortalAiAssistantService>();
 
 var app = builder.Build();
 

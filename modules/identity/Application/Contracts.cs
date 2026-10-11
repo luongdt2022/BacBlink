@@ -203,6 +203,10 @@ public sealed record CreateOrganizationUnitCommand(
     Guid? ParentId = null,
     string? ProvinceId = null);
 
+public sealed record UpdateOrganizationUnitCommand(
+    string Name,
+    string? ProvinceId = null);
+
 public sealed record ProvisionProvinceAdminCommand(
     string Email,
     string Password,
@@ -235,6 +239,8 @@ public interface IOrganizationTreeService
 {
     Task<IReadOnlyList<OrganizationUnitDto>> GetOrgTreeAsync(CancellationToken ct);
     Task<OrganizationUnitDto> CreateUnitAsync(CreateOrganizationUnitCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
+    Task<OrganizationUnitDto> UpdateUnitAsync(Guid id, UpdateOrganizationUnitCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
+    Task DeactivateUnitAsync(Guid id, ICurrentActor actor, string ipAddress, CancellationToken ct);
     Task<PersonDto> ProvisionProvinceLeaderAsync(ProvisionProvinceAdminCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
 }
 

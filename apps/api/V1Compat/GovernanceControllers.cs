@@ -192,6 +192,22 @@ public sealed class OrganizationUnitController(IOrganizationTreeService orgServi
         return Ok(Ok200(unit));
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateOrganizationUnitCommand cmd, CancellationToken ct)
+    {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+        var unit = await orgService.UpdateUnitAsync(id, cmd, Actor, ip, ct);
+        return Ok(Ok200(unit));
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Deactivate([FromRoute] Guid id, CancellationToken ct)
+    {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+        await orgService.DeactivateUnitAsync(id, Actor, ip, ct);
+        return Ok(Ok200(new { success = true, message = "Đã vô hiệu hóa đơn vị thành công." }));
+    }
+
     [HttpPost("provision-leader")]
     public async Task<IActionResult> ProvisionLeader([FromBody] ProvisionProvinceAdminCommand cmd, CancellationToken ct)
     {
@@ -201,10 +217,13 @@ public sealed class OrganizationUnitController(IOrganizationTreeService orgServi
     }
 }
 
+
 public sealed class AssignRoleDto
 {
     [Required] public string Email { get; set; } = string.Empty;
     [Required] public string Role { get; set; } = string.Empty;
+    public string? FullName { get; set; }
+    public string? Department { get; set; }
     public string? ScopeType { get; set; }
     public string? ScopeId { get; set; }
 }
@@ -255,16 +274,27 @@ public sealed class RoleController(Microsoft.EntityFrameworkCore.DbContext db, I
     [HttpGet("officers")]
     public async Task<IActionResult> GetOfficers(CancellationToken ct)
     {
-        if (Actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin)
-            || Actor.ScopeType != ScopeTypes.Global || !string.IsNullOrWhiteSpace(Actor.ScopeId))
+        var isGlobalAdmin = Actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin
+            && Actor.ScopeType == ScopeTypes.Global && string.IsNullOrWhiteSpace(Actor.ScopeId);
+        var isProvincialAdmin = Actor.PlatformRole == PlatformRoles.ProvincialAdmin;
+
+        if (!isGlobalAdmin && !isProvincialAdmin)
             return Forbid();
 
         var adminRoles = new[] { PlatformRoles.SuperAdmin, PlatformRoles.OperatorAdmin, PlatformRoles.Admin,
             PlatformRoles.ProvincialAdmin, PlatformRoles.ClusterAdmin, PlatformRoles.SectorAdmin };
-        var people = await db.Set<Person>().AsNoTracking().Where(person => adminRoles.Contains(person.PlatformRole))
+        
+        var query = db.Set<Person>().AsNoTracking().Where(person => adminRoles.Contains(person.PlatformRole));
+        if (isProvincialAdmin)
+        {
+            var provinceCode = Actor.ScopeId;
+            query = query.Where(person => person.ScopeType == ScopeTypes.Province && person.ScopeId == provinceCode);
+        }
+
+        var people = await query
             .OrderBy(person => person.Email)
             .Select(person => new { person.Id, person.FirstName, person.LastName, person.Email,
-                person.PlatformRole, person.ScopeType, person.ScopeId }).ToListAsync(ct);
+                person.PlatformRole, person.ScopeType, person.ScopeId, person.IsActive, person.OrganizationName }).ToListAsync(ct);
         var ids = people.Select(person => person.Id.ToString()).ToArray();
         var audits = await db.Set<ApprovalAuditLog>().AsNoTracking()
             .Where(audit => audit.Action == "ASSIGN_ROLE" && ids.Contains(audit.TargetId))
@@ -272,8 +302,14 @@ public sealed class RoleController(Microsoft.EntityFrameworkCore.DbContext db, I
         var assignedDates = audits.GroupBy(audit => audit.TargetId)
             .ToDictionary(group => group.Key, group => group.Max(audit => audit.CreatedAtUtc));
         return Ok(new { success = true, data = people.Select(person => new {
-            id = person.Id, name = string.Join(" ", new[] { person.FirstName, person.LastName }.Where(value => !string.IsNullOrWhiteSpace(value))),
-            email = person.Email, role = person.PlatformRole, scopeType = person.ScopeType, scopeId = person.ScopeId,
+            id = person.Id,
+            name = string.Join(" ", new[] { person.FirstName, person.LastName }.Where(value => !string.IsNullOrWhiteSpace(value))),
+            email = person.Email,
+            role = person.PlatformRole,
+            scopeType = person.ScopeType,
+            scopeId = person.ScopeId,
+            department = person.OrganizationName,
+            status = person.IsActive ? "ACTIVE" : "INACTIVE",
             assignedAt = assignedDates.TryGetValue(person.Id.ToString(), out var assignedAt) ? (DateTimeOffset?)assignedAt : null
         }) });
     }
@@ -281,10 +317,26 @@ public sealed class RoleController(Microsoft.EntityFrameworkCore.DbContext db, I
     [HttpPost("assign")]
     public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto dto, CancellationToken ct)
     {
-        if (Actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin)
-            || Actor.ScopeType != ScopeTypes.Global || !string.IsNullOrWhiteSpace(Actor.ScopeId))
+        var isGlobalAdmin = Actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin
+            && Actor.ScopeType == ScopeTypes.Global && string.IsNullOrWhiteSpace(Actor.ScopeId);
+        var isProvincialAdmin = Actor.PlatformRole == PlatformRoles.ProvincialAdmin;
+
+        if (!isGlobalAdmin && !isProvincialAdmin)
         {
             return Forbid();
+        }
+
+        var scopeType = string.IsNullOrWhiteSpace(dto.ScopeType) ? ScopeTypes.Global : dto.ScopeType.Trim().ToUpperInvariant();
+        var scopeId = string.IsNullOrWhiteSpace(dto.ScopeId) ? null : dto.ScopeId.Trim().ToUpperInvariant();
+
+        if (isProvincialAdmin)
+        {
+            scopeType = ScopeTypes.Province;
+            scopeId = Actor.ScopeId;
+            if (dto.Role != PlatformRoles.ClusterAdmin)
+            {
+                return Forbid();
+            }
         }
 
         var normalizedEmail = Person.Normalize(dto.Email);
@@ -293,23 +345,52 @@ public sealed class RoleController(Microsoft.EntityFrameworkCore.DbContext db, I
 
         if (person == null)
         {
-            return NotFound(new { success = false, error = $"Không tìm thấy tài khoản với email '{dto.Email}'." });
+            var defaultHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"));
+            var fullName = dto.FullName?.Trim();
+            string? firstName = fullName;
+            string? lastName = null;
+            if (!string.IsNullOrWhiteSpace(fullName))
+            {
+                var parts = fullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                {
+                    firstName = parts[0];
+                    lastName = parts[1];
+                }
+            }
+
+            person = Person.Register(
+                normalizedEmail,
+                defaultHash,
+                PasswordHashAlgorithms.Bcrypt,
+                firstName,
+                lastName,
+                null,
+                dto.Department ?? (isProvincialAdmin ? $"Sở Khoa học và Công nghệ {Actor.ScopeId}" : null),
+                true,
+                dto.Role,
+                scopeType,
+                scopeId);
+            db.Set<Person>().Add(person);
         }
-
-        var oldRole = person.PlatformRole;
-        var scopeType = string.IsNullOrWhiteSpace(dto.ScopeType) ? ScopeTypes.Global : dto.ScopeType.Trim().ToUpperInvariant();
-        var scopeId = string.IsNullOrWhiteSpace(dto.ScopeId) ? null : dto.ScopeId.Trim().ToUpperInvariant();
-
-        if (scopeType == ScopeTypes.Global) scopeId = null;
-        if (!ScopeTypes.IsValidForRole(dto.Role, scopeType, scopeId))
-            return BadRequest(new { success = false, error = "Vai trò và phạm vi phân quyền không hợp lệ." });
-        if (scopeType == ScopeTypes.Sector)
+        else
         {
-            var activeSectors = await taxonomy.ListAsync("SECTOR", true, ct);
-            if (!activeSectors.Any(sector => string.Equals(sector.Code, scopeId, StringComparison.Ordinal)))
-                return BadRequest(new { success = false, error = "Ngành không tồn tại hoặc đã ngừng hoạt động." });
+            var oldRole = person.PlatformRole;
+            if (scopeType == ScopeTypes.Global) scopeId = null;
+            if (!ScopeTypes.IsValidForRole(dto.Role, scopeType, scopeId))
+                return BadRequest(new { success = false, error = "Vai trò và phạm vi phân quyền không hợp lệ." });
+            if (scopeType == ScopeTypes.Sector)
+            {
+                var activeSectors = await taxonomy.ListAsync("SECTOR", true, ct);
+                if (!activeSectors.Any(sector => string.Equals(sector.Code, scopeId, StringComparison.Ordinal)))
+                    return BadRequest(new { success = false, error = "Ngành không tồn tại hoặc đã ngừng hoạt động." });
+            }
+            person.AssignRoleAndScope(dto.Role, scopeType, scopeId);
+            if (!string.IsNullOrWhiteSpace(dto.Department))
+            {
+                person.UpdateProfile(person.FirstName, person.LastName, person.Phone, dto.Department);
+            }
         }
-        person.AssignRoleAndScope(dto.Role, scopeType, scopeId);
 
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
         var audit = new ApprovalAuditLog(
@@ -319,7 +400,7 @@ public sealed class RoleController(Microsoft.EntityFrameworkCore.DbContext db, I
             "persons",
             person.Id.ToString(),
             ip,
-            $"{{\"email\":\"{normalizedEmail}\",\"oldRole\":\"{oldRole}\",\"newRole\":\"{dto.Role}\",\"scopeType\":\"{scopeType}\",\"scopeId\":\"{scopeId}\"}}");
+            $"{{\"email\":\"{normalizedEmail}\",\"newRole\":\"{dto.Role}\",\"scopeType\":\"{scopeType}\",\"scopeId\":\"{scopeId}\"}}");
 
         db.Set<ApprovalAuditLog>().Add(audit);
         await uow.CommitAsync(ct);
@@ -333,5 +414,27 @@ public sealed class RoleController(Microsoft.EntityFrameworkCore.DbContext db, I
             scopeType = person.ScopeType,
             scopeId = person.ScopeId
         });
+    }
+
+    [HttpPost("officers/{id:guid}/toggle-status")]
+    public async Task<IActionResult> ToggleOfficerStatus(Guid id, CancellationToken ct)
+    {
+        var isGlobalAdmin = Actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin
+            && Actor.ScopeType == ScopeTypes.Global && string.IsNullOrWhiteSpace(Actor.ScopeId);
+        var isProvincialAdmin = Actor.PlatformRole == PlatformRoles.ProvincialAdmin;
+
+        if (!isGlobalAdmin && !isProvincialAdmin)
+            return Forbid();
+
+        var person = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+            db.Set<Person>(), x => x.Id == id, ct);
+        if (person == null) return NotFound();
+
+        if (isProvincialAdmin && (person.ScopeType != ScopeTypes.Province || person.ScopeId != Actor.ScopeId))
+            return Forbid();
+
+        person.SetActive(!person.IsActive);
+        await uow.CommitAsync(ct);
+        return Ok(new { success = true, isActive = person.IsActive });
     }
 }

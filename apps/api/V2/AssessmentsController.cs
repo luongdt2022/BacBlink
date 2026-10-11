@@ -10,10 +10,14 @@ using Microsoft.AspNetCore.Mvc;
 using NacenTech.Kernel.Application;
 using NacenTech.Modules.Assessment.Application;
 
+using Microsoft.EntityFrameworkCore;
+using NacenTech.Modules.Assessment;
+using NacenTech.Persistence;
+
 namespace NacenTech.Api.V2;
 
 [ApiController]
-public sealed class AssessmentsController : V2ControllerBase
+public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow) : V2ControllerBase
 {
     private static readonly Tt17ScoringEngine ScoringEngine = new();
     private static readonly ConcurrentDictionary<Guid, Tt17AssessmentDto> AssessmentsStore = new(SeedInitialAssessments());
@@ -169,7 +173,7 @@ public sealed class AssessmentsController : V2ControllerBase
     [AllowAnonymous]
     [HttpPut("api/v1/assessments/tt17/draft")]
     [HttpPut("api/v2/assessments/tt17/draft")]
-    public IActionResult SaveAssessmentDraft([FromBody] SaveAssessmentDraftDto payload)
+    public async Task<IActionResult> SaveAssessmentDraft([FromBody] SaveAssessmentDraftDto payload, CancellationToken ct = default)
     {
         var existing = AssessmentsStore.Values
             .FirstOrDefault(x => x.AssessmentYear == payload.AssessmentYear)
@@ -190,6 +194,25 @@ public sealed class AssessmentsController : V2ControllerBase
         existing.Status = "DRAFT";
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
+        var surveyJson = JsonSerializer.Serialize(existing.SurveyData);
+        var scoresJson = JsonSerializer.Serialize(existing.ScoreResult);
+
+        var entity = await db.Set<Tt17Assessment>()
+            .FirstOrDefaultAsync(x => x.EnterpriseId == existing.EnterpriseId && x.AssessmentYear == existing.AssessmentYear, ct);
+
+        if (entity == null)
+        {
+            entity = new Tt17Assessment(existing.EnterpriseId, existing.EnterpriseName, existing.TaxCode, existing.AssessmentYear, existing.ScopeId, existing.IndustryCode);
+            entity.UpdateDraft(surveyJson, scoresJson);
+            db.Set<Tt17Assessment>().Add(entity);
+        }
+        else
+        {
+            entity.UpdateDraft(surveyJson, scoresJson);
+        }
+        await uow.CommitAsync(ct);
+
+        existing.Id = entity.Id;
         AssessmentsStore[existing.Id] = existing;
 
         return Ok(new { success = true, data = existing, message = "Lưu nháp thành công." });
@@ -198,7 +221,7 @@ public sealed class AssessmentsController : V2ControllerBase
     [AllowAnonymous]
     [HttpPost("api/v1/assessments/tt17/submit")]
     [HttpPost("api/v2/assessments/tt17/submit")]
-    public IActionResult SubmitAssessment([FromBody] SaveAssessmentDraftDto payload)
+    public async Task<IActionResult> SubmitAssessment([FromBody] SaveAssessmentDraftDto payload, CancellationToken ct = default)
     {
         var existing = AssessmentsStore.Values
             .FirstOrDefault(x => x.AssessmentYear == payload.AssessmentYear)
@@ -220,6 +243,27 @@ public sealed class AssessmentsController : V2ControllerBase
         existing.SubmittedAt = DateTimeOffset.UtcNow;
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
+        var surveyJson = JsonSerializer.Serialize(existing.SurveyData);
+        var scoresJson = JsonSerializer.Serialize(existing.ScoreResult);
+
+        var entity = await db.Set<Tt17Assessment>()
+            .FirstOrDefaultAsync(x => x.EnterpriseId == existing.EnterpriseId && x.AssessmentYear == existing.AssessmentYear, ct);
+
+        if (entity == null)
+        {
+            entity = new Tt17Assessment(existing.EnterpriseId, existing.EnterpriseName, existing.TaxCode, existing.AssessmentYear, existing.ScopeId, existing.IndustryCode);
+            entity.UpdateDraft(surveyJson, scoresJson);
+            entity.Submit(scoresJson);
+            db.Set<Tt17Assessment>().Add(entity);
+        }
+        else if (entity.Status is "DRAFT" or "CHANGES_REQUESTED")
+        {
+            entity.UpdateDraft(surveyJson, scoresJson);
+            entity.Submit(scoresJson);
+        }
+        await uow.CommitAsync(ct);
+
+        existing.Id = entity.Id;
         AssessmentsStore[existing.Id] = existing;
 
         return Ok(new { success = true, data = existing, message = "Nộp hồ sơ thành công. Hồ sơ đã chuyển đến Sở KH&CN tiếp nhận." });
@@ -249,34 +293,44 @@ public sealed class AssessmentsController : V2ControllerBase
     [AllowAnonymous]
     [HttpPost("api/v1/gov/assessments/tt17/{id}/review")]
     [HttpPost("api/v2/gov/assessments/tt17/{id}/review")]
-    public IActionResult ReviewAssessment(Guid id, [FromBody] ReviewAssessmentDto payload)
+    public async Task<IActionResult> ReviewAssessment(Guid id, [FromBody] ReviewAssessmentDto payload, CancellationToken ct = default)
     {
-        if (!AssessmentsStore.TryGetValue(id, out var existing))
+        var entity = await db.Set<Tt17Assessment>().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (!AssessmentsStore.TryGetValue(id, out var existing) && entity == null)
         {
             return NotFound(new { success = false, message = "Không tìm thấy hồ sơ thẩm định." });
         }
 
         var action = payload.Action.Trim().ToUpperInvariant();
-        existing.ReviewNotes = payload.ReviewNotes;
-        existing.UpdatedAt = DateTimeOffset.UtcNow;
-
-        switch (action)
+        if (existing != null)
         {
-            case "APPROVE":
-                existing.Status = "APPROVED";
-                existing.ApprovedAt = DateTimeOffset.UtcNow;
-                break;
-            case "REJECT":
-                existing.Status = "REJECTED";
-                break;
-            case "REQUEST_CHANGES":
-                existing.Status = "CHANGES_REQUESTED";
-                break;
-            default:
-                return BadRequest(new { success = false, message = "Hành động thẩm định không hợp lệ." });
+            existing.ReviewNotes = payload.ReviewNotes;
+            existing.UpdatedAt = DateTimeOffset.UtcNow;
+
+            switch (action)
+            {
+                case "APPROVE":
+                    existing.Status = "APPROVED";
+                    existing.ApprovedAt = DateTimeOffset.UtcNow;
+                    break;
+                case "REJECT":
+                    existing.Status = "REJECTED";
+                    break;
+                case "REQUEST_CHANGES":
+                    existing.Status = "CHANGES_REQUESTED";
+                    break;
+                default:
+                    return BadRequest(new { success = false, message = "Hành động thẩm định không hợp lệ." });
+            }
+            AssessmentsStore[id] = existing;
         }
 
-        AssessmentsStore[id] = existing;
-        return Ok(new { success = true, data = existing, message = $"Thẩm định hồ sơ thành công: {existing.Status}" });
+        if (entity != null)
+        {
+            entity.Review(action, Guid.Parse("00000000-0000-0000-0000-000000000002"), payload.ReviewNotes, null);
+            await uow.CommitAsync(ct);
+        }
+
+        return Ok(new { success = true, data = existing, message = $"Thẩm định hồ sơ thành công: {action}" });
     }
 }

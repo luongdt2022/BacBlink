@@ -18,6 +18,8 @@ public sealed class ContentModule : IModule
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IStoryService, StoryService>();
+        services.AddScoped<ITechmartEventService, TechmartEventService>();
+        services.AddScoped<IAiAssistantService, AiAssistantService>();
         services.AddScoped<IContentImporter, Infrastructure.ContentImporter>();
     }
 }

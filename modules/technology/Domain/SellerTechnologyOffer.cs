@@ -128,4 +128,73 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         }
         Touch();
     }
+
+    public void Update(
+        string offerType,
+        bool hasTechTransfer,
+        string title,
+        string summary,
+        string problemSolved,
+        string sectorCode,
+        string sectorName,
+        string pricingType,
+        decimal? priceAmount,
+        decimal? priceMin,
+        decimal? priceMax,
+        string currency,
+        string? unit,
+        string? developerOrigin,
+        int? trlLevel,
+        string? ipStatus,
+        string? ipRegistrationNumber,
+        string? transferMethod,
+        string? commercialStatus,
+        string? contactPointRole,
+        string? managingAuthorityId,
+        string? managingAuthorityName,
+        string? scopeType,
+        string? scopeId)
+    {
+        // BR-SELLER-07: Nếu hasTechTransfer và có sự thay đổi các trường cốt lõi (TRL, IP, TransferMethod)
+        // Hệ thống tự động chuyển về PENDING để Sở KH&CN thẩm định lại trước khi tái xuất bản
+        bool coreIpChanged = HasTechTransfer && hasTechTransfer && (
+            TrlLevel != trlLevel ||
+            !string.Equals(IpStatus, ipStatus, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(IpRegistrationNumber, ipRegistrationNumber, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(TransferMethod, transferMethod, StringComparison.OrdinalIgnoreCase)
+        );
+
+        OfferType = offerType;
+        HasTechTransfer = hasTechTransfer;
+        Title = title;
+        Summary = summary;
+        ProblemSolved = problemSolved;
+        SectorCode = sectorCode;
+        SectorName = sectorName;
+        PricingType = pricingType;
+        PriceAmount = priceAmount;
+        PriceMin = priceMin;
+        PriceMax = priceMax;
+        Currency = currency;
+        Unit = unit;
+        DeveloperOrigin = developerOrigin;
+        TrlLevel = trlLevel;
+        IpStatus = ipStatus;
+        IpRegistrationNumber = ipRegistrationNumber;
+        TransferMethod = transferMethod;
+        CommercialStatus = commercialStatus;
+        ContactPointRole = contactPointRole;
+        ManagingAuthorityId = managingAuthorityId;
+        ManagingAuthorityName = managingAuthorityName;
+        ScopeType = scopeType;
+        ScopeId = scopeId;
+
+        if (coreIpChanged)
+        {
+            Status = "PENDING";
+            PublishedAt = null;
+        }
+
+        Touch();
+    }
 }

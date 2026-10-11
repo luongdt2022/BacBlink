@@ -100,6 +100,45 @@ public sealed class GovernanceApprovalInvariantsTests
     }
 
     [Fact]
+    public void Organization_unit_update_modifies_name_and_province()
+    {
+        var unit = new OrganizationUnit(
+            "so-khcn-hp",
+            "Sở Khoa học và Công nghệ Hải Phòng",
+            OrganizationUnitTypes.Provincial,
+            parentId: null,
+            provinceId: "HP");
+
+        unit.Update("Sở KH&CN TP. Hải Phòng (Cập nhật)", "HP");
+        unit.Name.ShouldBe("Sở KH&CN TP. Hải Phòng (Cập nhật)");
+        unit.ProvinceId.ShouldBe("HP");
+
+        Should.Throw<ValidationException>(() =>
+        {
+            unit.Update("   ", "HP");
+        });
+    }
+
+    [Fact]
+    public void Organization_unit_creation_requires_valid_code_name_and_type()
+    {
+        Should.Throw<ValidationException>(() =>
+        {
+            new OrganizationUnit("", "Tên hợp lệ", OrganizationUnitTypes.National);
+        });
+
+        Should.Throw<ValidationException>(() =>
+        {
+            new OrganizationUnit("CODE", "", OrganizationUnitTypes.National);
+        });
+
+        Should.Throw<ValidationException>(() =>
+        {
+            new OrganizationUnit("CODE", "Tên", "INVALID_TYPE");
+        });
+    }
+
+    [Fact]
     public void Approval_audit_log_captures_immutable_record()
     {
         var actorId = Guid.NewGuid();

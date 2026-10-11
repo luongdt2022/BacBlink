@@ -81,6 +81,32 @@ public sealed record CreateSellerOfferDto(
     bool LegalConsent = true
 );
 
+public sealed record UpdateSellerOfferDto(
+    string OfferType,
+    bool HasTechTransfer,
+    string Title,
+    string Summary,
+    string ProblemSolved,
+    string SectorCode,
+    string PricingType,
+    decimal? PriceAmount,
+    decimal? PriceMin,
+    decimal? PriceMax,
+    string Currency,
+    string? Unit,
+    string? DeveloperOrigin,
+    int? TrlLevel,
+    string? IpStatus,
+    string? IpRegistrationNumber,
+    string? TransferMethod,
+    string? CommercialStatus,
+    string? ContactPointRole,
+    string? ManagingAuthorityId = "VN-HN",
+    string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
+    string? ScopeType = "PROVINCE",
+    string? ScopeId = "VN-HN"
+);
+
 public sealed record SellerOfferDto(
     Guid Id,
     string OfferCode,
@@ -214,5 +240,35 @@ public static class SellerOfferRulesValidator
         }
 
         return result;
+    }
+
+    public static CreateSellerOfferValidationResult ValidateUpdate(UpdateSellerOfferDto dto)
+    {
+        return Validate(new CreateSellerOfferDto(
+            dto.OfferType,
+            dto.HasTechTransfer,
+            dto.Title,
+            dto.Summary,
+            dto.ProblemSolved,
+            dto.SectorCode,
+            dto.PricingType,
+            dto.PriceAmount,
+            dto.PriceMin,
+            dto.PriceMax,
+            dto.Currency,
+            dto.Unit,
+            dto.DeveloperOrigin,
+            dto.TrlLevel,
+            dto.IpStatus,
+            dto.IpRegistrationNumber,
+            dto.TransferMethod,
+            dto.CommercialStatus,
+            dto.ContactPointRole,
+            dto.ManagingAuthorityId,
+            dto.ManagingAuthorityName,
+            dto.ScopeType,
+            dto.ScopeId,
+            LegalConsent: true
+        ));
     }
 }

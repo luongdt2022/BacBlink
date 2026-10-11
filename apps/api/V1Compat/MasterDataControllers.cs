@@ -240,7 +240,35 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
     public async Task<IActionResult> GetTt17Subsectors(CancellationToken ct)
     {
         var terms = await taxonomy.ListAsync(TaxonomyKinds.Category, true, ct);
-        var list = terms.Where(t => t.Code?.StartsWith("C.", StringComparison.Ordinal) == true).Select(t => new Tt17SubsectorDto { Code = t.Code!, Name = t.Name }).ToList();
+        var list = terms.Where(t => t.Code?.StartsWith("C.", StringComparison.Ordinal) == true).Select(t =>
+        {
+            string norm = string.Empty;
+            double? profit = null;
+            double? va = null;
+            int? invest = null;
+            try
+            {
+                if (!string.IsNullOrEmpty(t.MetadataJson))
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(t.MetadataJson);
+                    if (doc.RootElement.TryGetProperty("electricityNorm", out var p1)) norm = p1.GetString() ?? string.Empty;
+                    if (doc.RootElement.TryGetProperty("profitMargin", out var p2)) profit = p2.GetDouble();
+                    if (doc.RootElement.TryGetProperty("valueAddedRatio", out var p3)) va = p3.GetDouble();
+                    if (doc.RootElement.TryGetProperty("investmentRateBillionVnd", out var p4)) invest = p4.GetInt32();
+                }
+            }
+            catch { }
+
+            return new Tt17SubsectorDto
+            {
+                Code = t.Code!,
+                Name = t.Name,
+                ElectricityNorm = norm,
+                ProfitMargin = profit,
+                ValueAddedRatio = va,
+                InvestmentRateBillionVnd = invest
+            };
+        }).ToList();
         return Ok(new { success = true, data = list, total = list.Count });
     }
 
