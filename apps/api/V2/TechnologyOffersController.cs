@@ -146,9 +146,44 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         return items.Select(x => new KeyValuePair<Guid, SellerOfferDto>(x.Id, x));
     }
 
+    private static SellerOfferDto ToDto(SellerTechnologyOffer x) => new(
+        Id: x.Id,
+        OfferCode: x.OfferCode,
+        OfferType: x.OfferType,
+        HasTechTransfer: x.HasTechTransfer,
+        Title: x.Title,
+        Summary: x.Summary,
+        ProblemSolved: x.ProblemSolved,
+        SectorCode: x.SectorCode,
+        SectorName: x.SectorName,
+        PricingType: x.PricingType,
+        PriceAmount: x.PriceAmount,
+        PriceMin: x.PriceMin,
+        PriceMax: x.PriceMax,
+        Currency: x.Currency,
+        Unit: x.Unit,
+        DeveloperOrigin: x.DeveloperOrigin,
+        TrlLevel: x.TrlLevel,
+        IpStatus: x.IpStatus,
+        IpRegistrationNumber: x.IpRegistrationNumber,
+        TransferMethod: x.TransferMethod,
+        CommercialStatus: x.CommercialStatus,
+        ContactPointRole: x.ContactPointRole,
+        Status: x.Status,
+        SuccessfulConnections: x.SuccessfulConnections,
+        RatingScore: x.RatingScore,
+        ReviewCount: x.ReviewCount,
+        CreatedAt: x.CreatedAt,
+        PublishedAt: x.PublishedAt,
+        ManagingAuthorityId: x.ManagingAuthorityId,
+        ManagingAuthorityName: x.ManagingAuthorityName,
+        ScopeType: x.ScopeType,
+        ScopeId: x.ScopeId
+    );
+
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult GetOffers(
+    public async Task<IActionResult> GetOffers(
         [FromQuery] string? search,
         [FromQuery] string? sectorCode,
         [FromQuery] string? offerType,
@@ -156,8 +191,66 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         [FromQuery] int? minTrl,
         [FromQuery] string? ipStatus,
         [FromQuery] int page = 1,
-        [FromQuery] int limit = 12)
+        [FromQuery] int limit = 12,
+        CancellationToken ct = default)
     {
+        var dbQuery = db.Set<SellerTechnologyOffer>().AsNoTracking().Where(x => x.Status == "APPROVED");
+
+        if (await dbQuery.AnyAsync(ct))
+        {
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.Title.ToLower().Contains(s)
+                                      || x.Summary.ToLower().Contains(s)
+                                      || (x.DeveloperOrigin != null && x.DeveloperOrigin.ToLower().Contains(s)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(sectorCode) && sectorCode != "ALL")
+            {
+                var sCode = sectorCode.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.SectorCode.ToLower() == sCode);
+            }
+
+            if (!string.IsNullOrWhiteSpace(offerType) && offerType != "ALL")
+            {
+                var oType = offerType.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.OfferType.ToLower() == oType);
+            }
+
+            if (hasTechTransfer.HasValue)
+            {
+                dbQuery = dbQuery.Where(x => x.HasTechTransfer == hasTechTransfer.Value);
+            }
+
+            if (minTrl.HasValue)
+            {
+                dbQuery = dbQuery.Where(x => x.TrlLevel >= minTrl.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(ipStatus) && ipStatus != "ALL")
+            {
+                var ip = ipStatus.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.IpStatus != null && x.IpStatus.ToLower() == ip);
+            }
+
+            var total = await dbQuery.CountAsync(ct);
+            var entities = await dbQuery.OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
+                                        .Skip((page - 1) * limit)
+                                        .Take(limit)
+                                        .ToListAsync(ct);
+
+            return Ok(new
+            {
+                success = true,
+                total,
+                page,
+                limit,
+                totalPages = (int)Math.Ceiling(total / (double)limit),
+                data = entities.Select(ToDto).ToList()
+            });
+        }
+
         var query = OffersStore.Values.Where(x => x.Status == "APPROVED");
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -193,27 +286,33 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             query = query.Where(x => x.IpStatus != null && x.IpStatus.Equals(ipStatus, StringComparison.OrdinalIgnoreCase));
         }
 
-        var total = query.Count();
-        var data = query.OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
-                        .Skip((page - 1) * limit)
-                        .Take(limit)
-                        .ToList();
+        var totalFallback = query.Count();
+        var dataFallback = query.OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
+                                .Skip((page - 1) * limit)
+                                .Take(limit)
+                                .ToList();
 
         return Ok(new
         {
             success = true,
-            total,
+            total = totalFallback,
             page,
             limit,
-            totalPages = (int)Math.Ceiling(total / (double)limit),
-            data
+            totalPages = (int)Math.Ceiling(totalFallback / (double)limit),
+            data = dataFallback
         });
     }
 
     [HttpGet("{id:guid}")]
     [AllowAnonymous]
-    public IActionResult GetOfferById(Guid id)
+    public async Task<IActionResult> GetOfferById(Guid id, CancellationToken ct = default)
     {
+        var entity = await db.Set<SellerTechnologyOffer>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (entity != null)
+        {
+            return Ok(new { success = true, data = ToDto(entity) });
+        }
+
         if (OffersStore.TryGetValue(id, out var offer))
         {
             return Ok(new { success = true, data = offer });
@@ -225,12 +324,54 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
     [HttpGet("/api/v1/portal/seller/technologies")]
     [HttpGet("/api/v2/portal/seller/technologies")]
     [AllowAnonymous] // Cho phép trải nghiệm nhanh trên portal
-    public IActionResult GetSellerOffers(
+    public async Task<IActionResult> GetSellerOffers(
         [FromQuery] string? search,
         [FromQuery] string? status,
         [FromQuery] int page = 1,
-        [FromQuery] int limit = 10)
+        [FromQuery] int limit = 10,
+        CancellationToken ct = default)
     {
+        var dbQuery = db.Set<SellerTechnologyOffer>().AsNoTracking();
+        if (await dbQuery.AnyAsync(ct))
+        {
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.Title.ToLower().Contains(s) || x.OfferCode.ToLower().Contains(s));
+            }
+
+            if (!string.IsNullOrWhiteSpace(status) && status != "ALL")
+            {
+                var st = status.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.Status.ToLower() == st);
+            }
+
+            var total = await dbQuery.CountAsync(ct);
+            var entities = await dbQuery.OrderByDescending(x => x.CreatedAt)
+                                        .Skip((page - 1) * limit)
+                                        .Take(limit)
+                                        .ToListAsync(ct);
+
+            var all = await db.Set<SellerTechnologyOffer>().AsNoTracking().ToListAsync(ct);
+            var kpi = new
+            {
+                totalOffers = all.Count,
+                publishedOffers = all.Count(x => x.Status == "APPROVED"),
+                pendingOffers = all.Count(x => x.Status == "PENDING"),
+                successfulConnections = all.Sum(x => x.SuccessfulConnections)
+            };
+
+            return Ok(new
+            {
+                success = true,
+                kpi,
+                total,
+                page,
+                limit,
+                data = entities.Select(ToDto).ToList()
+            });
+        }
+
         var query = OffersStore.Values.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -244,13 +385,13 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             query = query.Where(x => x.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
         }
 
-        var total = query.Count();
-        var data = query.OrderByDescending(x => x.CreatedAt)
-                        .Skip((page - 1) * limit)
-                        .Take(limit)
-                        .ToList();
+        var totalFallback = query.Count();
+        var dataFallback = query.OrderByDescending(x => x.CreatedAt)
+                                .Skip((page - 1) * limit)
+                                .Take(limit)
+                                .ToList();
 
-        var kpi = new
+        var kpiFallback = new
         {
             totalOffers = OffersStore.Count,
             publishedOffers = OffersStore.Values.Count(x => x.Status == "APPROVED"),
@@ -261,11 +402,11 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         return Ok(new
         {
             success = true,
-            kpi,
-            total,
+            kpi = kpiFallback,
+            total = totalFallback,
             page,
             limit,
-            data
+            data = dataFallback
         });
     }
 
@@ -582,6 +723,16 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
     private static string MapSectorName(string code) => code.ToUpperInvariant() switch
     {
+        "LV01" => "Nông nghiệp",
+        "LV05" => "Chế biến thực phẩm – đồ uống",
+        "LV07" => "Cơ khí – chế tạo – công nghiệp hỗ trợ",
+        "LV08" => "Điện – điện tử – tự động hóa",
+        "LV11" => "Nước – môi trường – chất thải",
+        "LV12" => "Xây dựng – vật liệu – hạ tầng",
+        "LV14" => "Logistics – vận tải – kho bãi",
+        "LV15" => "Du lịch – khách sạn – nhà hàng",
+        "LV16" => "CNTT – viễn thông – chuyển đổi số",
+        "LV17" => "Khoa học – công nghệ – đổi mới sáng tạo",
         "FOOD" => "Công nghệ chế biến nông sản - thực phẩm",
         "MECH" => "Cơ khí chế tạo & Tự động hóa",
         "IT" => "Công nghệ thông tin, Viễn thông & IoT",
