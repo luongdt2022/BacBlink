@@ -56,6 +56,7 @@
 - **`REQ-02-010` [Danh bạ & Tra cứu Công khai]**: Cung cấp giao diện tra cứu `/enterprises` với bộ lọc 5 chiều (Địa bàn 63 tỉnh, 10 ngành TT17, loại hình, quy mô, xếp hạng ĐMST/TNI), phân trang Server-side.
 - **`REQ-02-011` [Dashboard Phân tích 304 DN]**: Cung cấp biểu đồ trực quan phân tích 304 DN theo địa bàn, ngành nghề, dải doanh thu, mức độ chuyển đổi số và top rào cản công nghệ.
 - **`REQ-02-012` [Thẩm định Maker-Checker & Audit Log]**: Cán bộ Sở KH&CN thẩm định hồ sơ, cấp Verified Badge hoặc yêu cầu bổ sung. Mọi thay đổi dữ liệu tự động ghi Before/After vào `system_audit_logs`.
+- **`REQ-02-013` [Bàn làm việc Edit Profile & Route Alias Danh bạ]**: Cung cấp route chuyên biệt `/portal/enterprise/profile/edit` phục vụ Bàn làm việc Tự quản trị & Chỉnh sửa hồ sơ 10 nhóm trường theo `wireframe_chinh_sua_ho_so_dn.html`, đồng thời mở route alias `/doanh-nghiep-dmst` kết nối trực tiếp vào Danh bạ 304 DN theo `wireframe_danh_ba_dn_dmst.html`.
 
 ---
 

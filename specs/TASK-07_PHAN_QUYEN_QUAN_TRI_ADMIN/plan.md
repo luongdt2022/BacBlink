@@ -149,5 +149,36 @@ CREATE INDEX idx_audit_actor ON approval_audit_logs(actor_id, created_at_utc);
    - Review Modal chi tiết thông tin hồ sơ chuyên gia, nút [Phê duyệt cấp tỉnh] (`APPROVE`) và [Từ chối] (`REJECT`, validate $\ge 10$ ký tự).
 3. **Trung Ương Hậu Kiểm (`/admin/approvals`)**:
    - Bổ sung bộ lọc hồ sơ theo Tỉnh/Địa bàn cho Super Admin.
-   - Thêm nút [Thu hồi quyền chuyên gia] trên các hồ sơ đã được cấp tỉnh duyệt (`Status = APPROVED`), mở modal nhập lý do thu hồi vi phạm theo `BR-ADM-007`.
 
+
+---
+
+## 6. Plan Delta v5: Vận Hành Cây Hành Chính 3 Cấp Online & Full CRUD (CR-2026-006)
+
+### 6.1. Backend Architecture & Contracts Delta
+1. **Mở rộng `Contracts.cs`**:
+   - Bổ sung record `UpdateOrganizationUnitCommand(string Name, string? ProvinceId)`.
+   - Bổ sung vào interface `IOrganizationTreeService`:
+     - `Task<OrganizationUnitDto> UpdateUnitAsync(Guid id, UpdateOrganizationUnitCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);`
+     - `Task DeactivateUnitAsync(Guid id, ICurrentActor actor, string ipAddress, CancellationToken ct);`
+2. **Triển khai `OrganizationTreeService.cs`**:
+   - `UpdateUnitAsync`: Kiểm tra quyền quản trị (`SuperAdmin`, `OperatorAdmin`, `Admin`), tìm đơn vị theo `id`, gọi `unit.Update(cmd.Name, cmd.ProvinceId)`, ghi `ApprovalAuditLog` (`UPDATE_ORG_UNIT`), gọi `uow.CommitAsync`.
+   - `DeactivateUnitAsync`:
+     - Kiểm tra quyền quản trị (`SuperAdmin`, `OperatorAdmin`, `Admin`).
+     - Tìm đơn vị theo `id`.
+     - **Cưỡng chế quy tắc `BR-TREE-003`**: Kiểm tra trong CSDL xem có node con nào có `ParentId == id && Status == OrganizationUnitStatuses.Active`. Nếu có, ném `ConflictException("Không thể vô hiệu hóa đơn vị khi còn cơ sở con trực thuộc đang hoạt động. Vui lòng vô hiệu hóa các cơ sở con trước.")`.
+     - Chuyển `unit.Deactivate()`, ghi `ApprovalAuditLog` (`DEACTIVATE_ORG_UNIT`), gọi `uow.CommitAsync`.
+   - **Tự động Seed dữ liệu gốc (Auto-Seed Baseline)**: Trong `GetOrgTreeAsync`: Nếu bảng `identity.organization_units` rỗng (`Count == 0`), tự động nạp node gốc Trung ương (`NACENTECH-CENTRAL`) và các Sở Tỉnh mẫu (Hà Nội, TP.HCM, Hải Phòng, Đà Nẵng, Bắc Ninh) cùng Viện nghiên cứu cơ sở để người dùng có ngay cây thực tế khi truy cập lần đầu.
+3. **Mở rộng `OrganizationUnitController` (`GovernanceControllers.cs`)**:
+   - `PUT /api/v1/governance/org-units/{id:guid}`: Nhận `UpdateOrganizationUnitCommand`, gọi `UpdateUnitAsync`, trả về `200 OK`.
+   - `DELETE /api/v1/governance/org-units/{id:guid}`: Gọi `DeactivateUnitAsync`, trả về `200 OK` (soft delete / vô hiệu hóa). Trả về `409 Conflict` nếu vi phạm `BR-TREE-003`.
+
+### 6.2. Frontend UI/UX Surface Delta
+1. **Loại bỏ Mock Tĩnh**: Xóa bỏ hoàn toàn mảng `INITIAL_ORG_TREE` trong `SourceCode/frontend/src/app/admin/org-tree/page.tsx`.
+2. **Tích hợp API Thực Tế**:
+   - Tải danh sách cây tổ chức từ `GET /api/v1/governance/org-units/tree`.
+   - Hiển thị theo chuẩn 5 trạng thái UX qua `<Async>` (Loading Skeleton, Empty State khi chưa có dữ liệu, Error State kèm nút Thử lại, Success State hiển thị cây 3 tầng phân cấp).
+3. **Thao Tác CRUD Trực Quan**:
+   - **Thêm đơn vị (POST)**: Modal thêm đơn vị hỗ trợ chọn cấp bậc (Sở Tỉnh Cấp 2 hoặc Cơ sở Cấp 3) và chọn đơn vị cha (`ParentId`).
+   - **Sửa đơn vị (PUT)**: Nút "Chỉnh sửa" mở modal cho phép sửa Tên đơn vị và Mã tỉnh liên kết.
+   - **Vô hiệu hóa / Xóa (DELETE)**: Nút "Vô hiệu hóa" mở modal xác nhận cảnh báo an toàn. Nếu backend trả về 409 Conflict (`BR-TREE-003`), hiển thị banner cảnh báo đỏ rõ ràng.

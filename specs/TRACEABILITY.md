@@ -11,7 +11,7 @@
 | Mã Task BD | Tên Phân Hệ | Tài Liệu Nguồn Gốc (Excel / Basic Design) | Thư Mục Detail Design (Spec Kit) | Phạm Vi Mã Định Danh | Trạng Thái Kỹ Thuật |
 | :---: | :--- | :--- | :--- | :--- | :---: |
 | **`TASK-00`** | Platform Foundation & Common | Hiến pháp kỹ thuật, Clean Architecture | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | `ARCH-*`, `DB-INIT-*`, `API-BASE-*`, `FR-COMM-*`, `FR-RBAC-*` | 🟡 Foundation shipped; vòng đời account 10 role mở |
-| **`TASK-01`** | Tổng quan & Kiến trúc Home | Sheet `HOME1` + `Giới thiệu` (60 dòng) | [`specs/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/) | `REQ-HOME-*`, `UI-LANDING-*`, `AI-BOT-*` | ⚪ Dự kiến |
+| **`TASK-01`** | Tổng quan & Kiến trúc Home | Sheet `HOME1` + `Giới thiệu` (60 dòng) | [`specs/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/) | `REQ-HOME-*`, `BR-HOME-*`, `API-PORTAL-*`, `UI-LANDING-*`, `UI-TECHMART-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-02`** | Hồ sơ Doanh nghiệp ĐMST & 304 DN Thật | Sheet `DN ĐMST` (225 dòng dữ liệu) + 304 DN thật | [`specs/TASK-02_HO_SO_CHU_THE_VA_DN_DMST`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) | `REQ-02-*`, `BR-02-*`, `DB-ENT-*`, `API-ENT-*`, `UI-ENT-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-03`** | Hồ sơ Tìm Mua (Buyer) | Sheet `T.mua SP` (356 dòng dữ liệu) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | `REQ-BUY-*`, `BR-SURVEY-*`, `DB-DEMAND-*` | ⚪ Dự kiến |
 | **`TASK-04`** | Hồ sơ Chào Bán & Bộ Lọc | Sheet `C.bán SP` + `Bo_loc_Cban` (1,568 dòng) | [`specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`](./TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/) | `REQ-04-*`, `BR-SELLER-*`, `API-04-*`, `UI-04-*` | ✅ Hoàn tất (Gate 4 Pass) |

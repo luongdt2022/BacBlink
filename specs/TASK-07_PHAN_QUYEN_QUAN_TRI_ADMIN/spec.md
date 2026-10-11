@@ -151,4 +151,25 @@ Phân hệ quản trị tập trung và phân cấp (Hierarchical Admin & Govern
   - *AC-DELTA-02*: Cán bộ Sở bấm [Phê duyệt hồ sơ], hệ thống chuyển trạng thái sang `APPROVED`, kích hoạt cấp vai trò `VERIFIED_EXPERT` với `ScopeType = "PROVINCE"`, `ScopeId = "HP"` cho tài khoản.
   - *AC-DELTA-03*: `SUPER_ADMIN` đăng nhập vào `/admin/approvals`, xem được hồ sơ đã duyệt của các Sở tỉnh, có nút [Thu hồi quyền chuyên gia]. Khi bấm và nhập lý do $\ge 10$ ký tự, hệ thống ghi vết `ApprovalAuditLog` hành động `REVOKE_EXPERT` và hạ cấp role của người dùng về `PUBLIC_USER`.
 
+---
+
+## 7. Spec Delta v5: Vận Hành Cây Hành Chính 3 Cấp Online & Full CRUD (CR-2026-006)
+
+- **Căn cứ nâng cấp**: Yêu cầu PO đưa Cây thư mục hành chính 3 cấp (Trung ương $\rightarrow$ Sở Tỉnh $\rightarrow$ Cơ sở) vận hành thực tế 100% với CSDL PostgreSQL thật, loại bỏ hoàn toàn mock data tĩnh và hỗ trợ đầy đủ các thao tác Thêm, Sửa, Vô hiệu hóa/Xóa.
+- **Yêu cầu chức năng mới**:
+  - `FR-ADM-010 (Online Tree Data Query)`: Màn hình `/admin/org-tree` gọi API `GET /api/v1/governance/org-units` và `/34-provinces` từ PostgreSQL thật thay thế mảng tĩnh `INITIAL_ORG_TREE`.
+  - `FR-ADM-011 (Thêm Đơn Vị Cấp 2/3)`: `POST /api/v1/governance/org-units` cho phép SuperAdmin tạo đơn vị mới với đầy đủ mã (`code` UK), tên (`name`), phân cấp (`unitType`), đơn vị cha (`parentId`), và tỉnh thành (`provinceId`).
+  - `FR-ADM-012 (Chỉnh Sửa Thông Tin Đơn Vị)`: `PUT /api/v1/governance/org-units/{id}` cho phép cập nhật tên đơn vị, thông tin người phụ trách (`leaderName`, `leaderEmail`), và thứ tự hiển thị.
+  - `FR-ADM-013 (Vô Hiệu Hóa / Xóa Có Ràng Buộc)`: `DELETE /api/v1/governance/org-units/{id}` thực hiện chuyển trạng thái sang `INACTIVE` (Soft-delete). Bắt buộc chặn xóa với lỗi `400 BadRequest` (`ERR_CANNOT_DELETE_PARENT_WITH_ACTIVE_CHILDREN`) nếu đơn vị còn chứa bất kỳ đơn vị con nào đang `ACTIVE`.
+  - `FR-ADM-014 (Web UI Full CRUD & 5 UX States)`: Giao diện web `/admin/org-tree` cung cấp modal Thêm cơ sở con, modal Sửa đơn vị, modal Xóa kèm thông báo kiểm tra ràng buộc dữ liệu, và hiển thị trạng thái `<Async>`.
+- **Quy tắc nghiệp vụ**:
+  - `BR-TREE-001`: Mã `code` duy nhất toàn hệ thống (Case-insensitive).
+  - `BR-TREE-002`: Phân cấp 3 tầng chuẩn (`NATIONAL` -> `PROVINCIAL` -> `INSTITUTION`).
+  - `BR-TREE-003`: Chặn vô hiệu hóa / xóa đơn vị nếu còn đơn vị con trực thuộc đang hoạt động.
+- **Tiêu chuẩn chấp thuận (Acceptance Criteria)**:
+  - *AC-TREE-01*: Gọi `GET /api/v1/governance/org-units` trả về danh sách đơn vị từ PostgreSQL thật với `status = "ACTIVE"`.
+  - *AC-TREE-02*: Tạo mới một đơn vị cơ sở `INST-TEST` trực thuộc Sở Hà Nội thành công, dữ liệu được ghi vào PostgreSQL và xuất hiện ngay trên cây.
+  - *AC-TREE-03*: Cập nhật thông tin đơn vị qua `PUT` thành công, lưu vết `ApprovalAuditLog`.
+  - *AC-TREE-04*: Cố tình xóa Sở Hà Nội (`SO-KHCN-HN`) khi còn các đơn vị con (`DH-BACHKHOA-HN`, `VIEN-NACENTECH`), hệ thống trả về mã lỗi `400` với thông điệp chặn vi phạm `BR-TREE-003`. Xóa một cơ sở không có con thành công chuyển trạng thái sang `INACTIVE`.
+
 

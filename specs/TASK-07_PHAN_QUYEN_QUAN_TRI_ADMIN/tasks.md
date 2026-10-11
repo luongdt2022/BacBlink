@@ -83,3 +83,12 @@
 - [x] T034 [TEST] Verify active/inactive/unknown sector scope behavior and role assignment at API/DB/E2E boundaries.
 
 - [x] T035 [DELTA-12] Đồng bộ quyết định EXPERT qua Kernel port với ExpertProfile, role và audit trong một commit; chặn scope/role không hợp lệ, kiểm chứng hồi quy.
+
+---
+
+## Delta CR-2026-006 — Vận Hành Cây Hành Chính 3 Cấp Online & Full CRUD
+- [x] T036 [BE] Thêm `UpdateOrganizationUnitCommand`, `UpdateUnitAsync` và `DeactivateUnitAsync` vào `Contracts.cs` & `OrganizationTreeService.cs`; cưỡng chế kiểm tra ràng buộc `BR-TREE-003` (chặn vô hiệu hóa khi còn cơ sở con đang ACTIVE).
+- [x] T037 [BE] Tự động nạp dữ liệu gốc (Auto-Seed Baseline) trong `GetOrgTreeAsync` khi DB chưa có node, hỗ trợ hiển thị ngay cây 3 cấp và endpoint `PUT`, `DELETE` trong `OrganizationUnitController`.
+- [x] T038 [FE] Xây dựng module API client và Refactor `src/app/admin/org-tree/page.tsx`: Loại bỏ 100% mock tĩnh `INITIAL_ORG_TREE`, kết nối trực tiếp API online `GET /api/v1/governance/org-units/tree`, chuẩn hóa 5 trạng thái UX qua `<Async>`.
+- [x] T039 [FE] Tích hợp bộ công cụ CRUD trên giao diện: Modal Thêm đơn vị (POST), Modal Chỉnh sửa đơn vị (PUT), Modal Vô hiệu hóa đơn vị (DELETE) kèm xử lý lỗi vi phạm `BR-TREE-003` (409 Conflict) và toast phản hồi.
+- [x] T040 [TEST] Bổ sung Unit Invariant Test cho `OrganizationUnit` & `BR-TREE-003`, kiểm tra biên dịch .NET & Next.js frontend, đảm bảo 100% kiểm thử hồi quy pass.

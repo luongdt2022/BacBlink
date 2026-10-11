@@ -36,3 +36,11 @@
 - [x] **T-02.21** `[TEST]` Chạy bộ kiểm thử tự động Vitest cho các UI components của doanh nghiệp.
 - [x] **T-02.22** `[QC]` Bàn giao QC thực thi kịch bản kiểm thử 4 tầng: Unit Test, API Contract Test, DB Integration Test, Playwright Black-box Test.
 - [x] **T-02.23** `[GATE]` Nghiệm thu Definition of Done (DoD), đồng bộ `ROADMAP.md` và `TRACEABILITY.md`, xuất xưởng qua Gate 5.
+
+---
+
+### Phase 5: Hoàn Thiện Đồng Bộ Danh Bạ & Trang Edit Profile (Phương Án 2 PO Approved) [FE][INT]
+- [x] **T-02.24** `[FE]` Tạo route chuyên biệt `/portal/enterprise/profile/edit` phục vụ Bàn làm việc Tự quản trị & Chỉnh sửa hồ sơ theo `wireframe_chinh_sua_ho_so_dn.html`.
+- [x] **T-02.25** `[FE]` Tạo route alias `/doanh-nghiep-dmst` đồng bộ hiển thị Danh bạ tra cứu quốc gia 304 Doanh nghiệp ĐMST theo `wireframe_danh_ba_dn_dmst.html`.
+- [x] **T-02.26** `[FE]` Cập nhật module router tại `/[module]` tự động điều hướng slug `doanh-nghiep-dmst` sang `/enterprises` thay vì hiển thị trang tĩnh giữ chỗ.
+- [x] **T-02.27** `[INT]` Xác thực kiểm thử build Next.js 15 và đối soát đồng bộ dữ liệu hồ sơ Doanh nghiệp với backend REST API V1.

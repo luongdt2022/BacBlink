@@ -43,6 +43,8 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
 | **REQ-04-005** | Chi tiết hồ sơ chào bán công nghệ | Trang `/chao-ban-cong-nghe/[id]` hiển thị trực quan thông số kỹ thuật, huy hiệu mức TRL, chứng nhận SHTT (IP Trust Badge), thông tin đơn vị nghiên cứu/sở hữu, nút Gửi yêu cầu chuyển giao và Yêu cầu DataRoom. | P1 |
 | **REQ-04-006** | Hỗ trợ 5 UX States | Mọi màn hình đáp ứng đầy đủ 5 trạng thái UX qua chuẩn `<Async>`: Loading, Empty, Error, Success, Partial. | P1 |
 | **REQ-04-007** | Chọn Cơ quan quản lý & Phân cấp thẩm định Cấp 2 | Form đăng ký bắt buộc chọn Sở KH&CN tiếp nhận thẩm định (`managing_authority_id`, `scope_id` 63 tỉnh/thành) và tích chọn cam kết pháp lý. Hệ thống tự động tạo phiếu duyệt `ApprovalRequest` đẩy về Cổng Tác Nghiệp Cấp 2 `/gov`. | P1 |
+| **REQ-04-008** | Chỉnh sửa hồ sơ chào bán Seller (`[id]/edit`) | Màn hình `/portal/seller/technologies/[id]/edit` theo wireframe chuẩn, cho phép Seller chỉnh sửa thông tin công nghệ, Bộ tứ SHTT, điều kiện giá, tạm ẩn/mở lại niêm yết hoặc xóa hồ sơ. | P1 |
+| **REQ-04-009** | Quick Demand Modal (1 phút) kết nối 2 chiều | Modal tại `/chao-ban-cong-nghe/[id]` cho phép Bên mua nhập nhanh nhu cầu công nghệ (tiêu đề bài toán, ngân sách, tiến độ, hình thức hợp tác) để tạo liên kết tự động với hồ sơ chào bán. | P1 |
 
 ---
 
@@ -72,6 +74,12 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
     * `REQUEST_CHANGES`: Hồ sơ chuyển sang `CHANGES_REQUESTED` để Seller cập nhật và nộp lại.
 - **`BR-SELLER-06`**: **Quyền Hậu Kiểm & Thu Hồi Trung Ương (Super Admin Oversight - BR-ADM-007)**:
   - Chỉ Quản trị viên Tối cao (`SUPER_ADMIN` / `OPERATOR_ADMIN`) mới có thẩm quyền can thiệp thu hồi (`REVOKE`) một hồ sơ công nghệ đã được Sở KH&CN duyệt, nếu phát hiện tranh chấp văn bằng SHTT hoặc vi phạm quy chế sàn. Yêu cầu nhập `ReviewNote` tối thiểu 10 ký tự lưu vào `ApprovalAuditLog`.
+- **`BR-SELLER-07`**: **Kiểm Soát Vòng Đời & Tự Động Tái Thẩm Định (Life-Cycle Re-Audit Trigger)**:
+  - Khi cập nhật hồ sơ chào bán (`PUT`), nếu công nghệ có chuyển giao (`has_tech_transfer = true`) và có sự thay đổi giữa giá trị cũ và mới của: `trl_level`, `ip_status`, `ip_registration_number`, hoặc `transfer_method`:
+    1. Hệ thống tự động chuyển trạng thái hồ sơ về `PENDING` (Chờ thẩm định lại).
+    2. Reset `published_at = null` (tạm ẩn khỏi Sàn giao dịch công khai cho đến khi được duyệt lại).
+    3. Cập nhật lý do thay đổi và gửi thông báo cảnh báo rõ ràng cho Seller trong response API.
+    4. Các chỉnh sửa về mô tả tóm tắt, văn phong hoặc khoảng giá thông thường được cập nhật ngay mà không kích hoạt tái thẩm định.
 
 ---
 

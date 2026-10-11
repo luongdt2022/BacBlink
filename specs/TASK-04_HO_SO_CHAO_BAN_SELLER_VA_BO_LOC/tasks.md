@@ -54,3 +54,14 @@
 ### Phase 8: Kiểm Thử Toàn Diện & Quality Gate Delta [QC]
 - [x] T-04.24 [TEST] Cập nhật Unit test xUnit `SellerOfferRulesValidatorTests.cs` kiểm tra trường Cơ quan quản lý và cam kết pháp lý (18/18 tests pass).
 - [x] T-04.25 [TEST] Cập nhật kịch bản Playwright E2E: kiểm thử luồng Doanh nghiệp đăng bán -> hồ sơ chờ duyệt tại Sở KH&CN -> Cán bộ Sở duyệt -> sản phẩm chính thức xuất hiện trên Sàn `/chao-ban-cong-nghe`.
+
+---
+
+### Phase 9: Hoàn Thiện CRUD & Quick Demand Modal (Phương Án 2 PO Approved) [BE][FE][TEST]
+- [x] T-04.26 [BE] Bổ sung `UpdateSellerOfferDto` và quy tắc `ValidateUpdate` trong `SellerOfferContracts.cs`.
+- [x] T-04.27 [BE] Bổ sung endpoints `PUT /api/v1/portal/seller/technologies/{id}`, `DELETE /api/v1/portal/seller/technologies/{id}`, `POST .../toggle-publish` vào `TechnologyOffersController.cs`.
+- [x] T-04.28 [BE] Thực thi quy tắc `BR-SELLER-07`: Tự động chuyển `Status = PENDING` và `PublishedAt = null` khi sửa TRL hoặc SHTT đối với công nghệ có chuyển giao.
+- [x] T-04.29 [FE] Xây dựng trang Chỉnh sửa hồ sơ công nghệ `/portal/seller/technologies/[id]/edit` bám sát `wireframe_chinh_sua_ho_so_chao_ban.html`.
+- [x] T-04.30 [FE] Liên kết nút Chỉnh sửa tại Workspace Seller `/portal/seller/technologies` sang trang edit.
+- [x] T-04.31 [FE] Nâng cấp modal liên hệ tại `/chao-ban-cong-nghe/[id]` thành Quick Demand Modal (1 phút) giải quyết bài toán Cờ 2.
+- [x] T-04.32 [TEST] Viết bổ sung Unit test xUnit kiểm chứng `ValidateUpdate` và `BR-SELLER-07` đạt 100% Pass (20/20 tests).
