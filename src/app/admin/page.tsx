@@ -66,8 +66,8 @@ export default function AdminDashboard() {
     },
     {
       title: "Sở KH&CN Kết Nối",
-      value: loading ? "Đang tải..." : provincesCount > 0 ? `${provincesCount} / 63` : "0 / 63",
-      sub: provincesCount > 0 ? `${Math.round((provincesCount / 63) * 100)}% Tỉnh/Thành` : "Chưa kết nối",
+      value: loading ? "Đang tải..." : provincesCount > 0 ? `${provincesCount} / 34` : "0 / 34",
+      sub: provincesCount > 0 ? `${Math.round((provincesCount / 34) * 100)}% Tỉnh/Thành Trọng Điểm` : "Chưa kết nối",
       icon: Network,
       color: "text-nacen-green-700 dark:text-nacen-green-200"
     },

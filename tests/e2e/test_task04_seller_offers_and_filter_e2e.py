@@ -126,13 +126,15 @@ def run_layer4_playwright_e2e_tests():
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
         page = context.new_page()
+        page.on("console", lambda msg: print(f"    [BROWSER {msg.type}] {msg.text}"))
+        page.on("pageerror", lambda err: print(f"    [BROWSER ERROR] {err}"))
 
         # -------------------------------------------------------------
         # MÀN 3: Tab Chính Web (/chao-ban-cong-nghe)
         # -------------------------------------------------------------
         print("▶ [MÀN 3] Kiểm tra trang Tab Chính Danh Sách & Bộ Lọc 18 Ngành (/chao-ban-cong-nghe)...")
-        page.goto(f"{BASE_WEB_URL}/chao-ban-cong-nghe", wait_until="networkidle")
-        time.sleep(1)
+        page.goto(f"{BASE_WEB_URL}/chao-ban-cong-nghe", wait_until="domcontentloaded")
+        time.sleep(1.5)
 
         # Kiểm tra tiêu đề trang
         heading = page.locator("h1").first.inner_text()
@@ -140,7 +142,7 @@ def run_layer4_playwright_e2e_tests():
         print(f"  ✓ Tiêu đề chính xác: '{heading}'")
 
         # Kiểm tra bộ lọc 18 ngành xuất hiện
-        sector_btn = page.locator("button:has-text('Công nghệ chế biến nông sản')").first
+        sector_btn = page.locator("button:has-text('Nông nghiệp & Chế biến nông sản')").first
         assert sector_btn.is_visible(), "Nút lọc ngành chế biến nông sản không hiển thị"
         sector_btn.click()
         time.sleep(0.5)
@@ -161,8 +163,9 @@ def run_layer4_playwright_e2e_tests():
         # MÀN 4: Chi Tiết Hồ Sơ Chào Bán (/chao-ban-cong-nghe/[id])
         # -------------------------------------------------------------
         print("\n▶ [MÀN 4] Kiểm tra trang Chi Tiết Hồ Sơ Chào Bán (/chao-ban-cong-nghe/11111111-1111-1111-1111-111111111111)...")
-        page.goto(f"{BASE_WEB_URL}/chao-ban-cong-nghe/11111111-1111-1111-1111-111111111111", wait_until="networkidle")
-        time.sleep(1)
+        page.goto(f"{BASE_WEB_URL}/chao-ban-cong-nghe/11111111-1111-1111-1111-111111111111", wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
+        time.sleep(0.5)
 
         detail_title = page.locator("h1").first.inner_text()
         assert "sấy thăng hoa" in detail_title.lower(), f"Detail title mismatch: {detail_title}"
@@ -184,20 +187,20 @@ def run_layer4_playwright_e2e_tests():
         connect_btn = page.locator("button:has-text('Gửi Yêu Cầu Chuyển Giao')").first
         connect_btn.click()
         time.sleep(0.5)
-        assert page.locator("text=Gửi Yêu Cầu Kết Nối Với Đơn Vị Chào Bán").first.is_visible()
+        assert page.locator("text=Tạo Nhanh Nhu Cầu & Kết Nối Chuyển Giao").first.is_visible()
         print("  ✓ Modal Gửi Yêu Cầu Kết Nối mở thành công.")
 
         # Điền dữ liệu vào modal
-        page.locator("input[placeholder*='Công ty CP']").first.fill("Tập Đoàn Chế Biến Thực Phẩm VinTech")
-        page.locator("input[placeholder*='Nguyễn Văn']").first.fill("Trần Quốc Bảo")
+        page.locator("input[placeholder*='Nông Sản Sạch']").first.fill("Tập Đoàn Chế Biến Thực Phẩm VinTech")
+        page.locator("input[placeholder*='Nguyễn Văn A']").first.fill("Trần Quốc Bảo")
         page.locator("input[placeholder*='0912']").first.fill("0988776655")
-        page.locator("textarea[placeholder*='Nêu rõ nhu cầu']").first.fill("Đề xuất li-xăng công nghệ sấy chân không cho nhà máy.")
+        page.locator("textarea").first.fill("Đề xuất li-xăng công nghệ sấy chân không cho nhà máy.")
 
         # Submit modal
-        page.locator("button:has-text('Xác nhận gửi yêu cầu')").first.click()
+        page.locator("button:has-text('Tạo Nhu Cầu & Gửi Yêu Cầu Kết Nối')").first.click()
         time.sleep(0.5)
-        assert page.locator("text=Yêu cầu đã được gửi thành công").first.is_visible()
-        page.locator("button:has-text('Đóng')").first.click()
+        assert page.locator("text=Đã Tạo Nhu Cầu & Gửi Đề Xuất Kết Nối Thành Công!").first.is_visible()
+        page.locator("button:has-text('Hoàn tất & Đóng')").first.click()
         print("  ✅ PASS: Màn 4 tương tác đầy đủ các tabs và gửi yêu cầu kết nối thành công.")
 
         # -------------------------------------------------------------
@@ -217,8 +220,8 @@ def run_layer4_playwright_e2e_tests():
         }""")
         time.sleep(0.5)
 
-        page.goto(f"{BASE_WEB_URL}/portal/seller/technologies", wait_until="networkidle")
-        time.sleep(1)
+        page.goto(f"{BASE_WEB_URL}/portal/seller/technologies", wait_until="domcontentloaded")
+        time.sleep(1.5)
 
         kpi_text = page.locator("text=Tổng số giải pháp").first
         assert kpi_text.is_visible(), "Khối KPI tổng số giải pháp không hiển thị"
@@ -232,8 +235,8 @@ def run_layer4_playwright_e2e_tests():
         # MÀN 2: Form Wizard Đăng Chào Bán Mới (/portal/seller/technologies/create)
         # -------------------------------------------------------------
         print("\n▶ [MÀN 2] Kiểm tra Form Wizard Đăng Bán Công Nghệ (/portal/seller/technologies/create)...")
-        page.goto(f"{BASE_WEB_URL}/portal/seller/technologies/create", wait_until="networkidle")
-        time.sleep(1)
+        page.goto(f"{BASE_WEB_URL}/portal/seller/technologies/create", wait_until="domcontentloaded")
+        time.sleep(1.5)
 
         # 1. Thử submit rỗng để kích hoạt validation
         page.locator("button:has-text('Xác Nhận Đăng Hồ Sơ Chào Bán')").first.click()
@@ -246,17 +249,26 @@ def run_layer4_playwright_e2e_tests():
         page.locator("input[placeholder*='Hệ thống sấy thăng hoa']").first.fill("Robot Hái Trái Cây Thông Minh AI Vision TRL 8")
         page.locator("textarea[placeholder*='Tóm tắt tính năng']").first.fill("Hệ thống robot tự hành nhận diện độ chín quả với thị giác máy tính.")
         page.locator("textarea[placeholder*='Tiết kiệm bao nhiêu %']").first.fill("Rút ngắn 70% nhân công thu hoạch mùa vụ.")
+        page.locator("input[placeholder*='Viện Hàn lâm KH&CN']").first.fill("Viện Cơ điện Nông nghiệp và Công nghệ sau thu hoạch")
+        
+        # Điền khoảng giá
+        price_min_input = page.locator("input[placeholder*='800000000']").first
+        if price_min_input.is_visible():
+            price_min_input.fill("500000000")
+        price_max_input = page.locator("input[placeholder*='1500000000']").first
+        if price_max_input.is_visible():
+            price_max_input.fill("900000000")
 
         # 3. Check Cam kết pháp lý và chọn cơ quan quản lý (BR-SELLER-05)
-        legal_cb = page.locator("input[type='checkbox']").first
+        legal_cb = page.locator("#legal-consent-check").first
         if legal_cb.is_visible():
             legal_cb.check()
             time.sleep(0.3)
-            print("  ✓ Đã tích chọn Cam kết pháp lý và chịu trách nhiệm trước pháp luật.")
+            print("  ✓ Đã tích chọn Cam kết pháp lý (#legal-consent-check).")
 
         # Submit form
         page.locator("button:has-text('Xác Nhận Đăng Hồ Sơ Chào Bán')").first.click()
-        time.sleep(1.5)
+        page.wait_for_selector("text=Đăng Hồ Sơ Chào Bán Thành Công", timeout=15000)
 
         success_banner = page.locator("text=Đăng Hồ Sơ Chào Bán Thành Công").first
         assert success_banner.is_visible(), "Banner đăng thành công không xuất hiện"

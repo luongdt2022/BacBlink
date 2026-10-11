@@ -107,8 +107,9 @@ export default function ChaoBanCongNghePage() {
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 flex flex-col">
       {/* HERO BANNER SECTION */}
-      <section className="bg-gradient-to-r from-brand-900 via-brand-800 to-teal-900 text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-brand-700 shadow-md">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
+        <div className="relative max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-xs font-semibold backdrop-blur-sm border border-white/20">
               <Sparkles className="w-3.5 h-3.5 text-teal-300" />
@@ -204,14 +205,14 @@ export default function ChaoBanCongNghePage() {
 
       {/* MAIN CONTENT BODY */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* SIDEBAR BỘ LỌC ĐA TẦNG 18 NGÀNH */}
+        {/* SIDEBAR BỘ LỌC ĐA TẦNG 10 LĨNH VỰC */}
         <aside className="lg:col-span-1 space-y-6">
-          {/* Lọc 18 ngành */}
+          {/* Lọc 10 Lĩnh vực TT17 */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
                 <Filter className="w-4 h-4 text-emerald-600" />
-                18 Ngành Kinh Tế (TT17)
+                10 Lĩnh Vực Trọng Điểm (TT17)
               </h3>
               {selectedSector !== "ALL" && (
                 <button

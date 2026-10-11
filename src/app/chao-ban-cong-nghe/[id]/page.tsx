@@ -249,7 +249,7 @@ export default function ChiTietChaoBanPage() {
                     : "border-transparent text-slate-500 hover:text-slate-900"
                 }`}
               >
-                Thông Số Kỹ Thuật (18 Ngành)
+                Thông Số Kỹ Thuật (10 Lĩnh Vực TT17)
               </button>
               <button
                 onClick={() => setActiveTab("dataroom")}

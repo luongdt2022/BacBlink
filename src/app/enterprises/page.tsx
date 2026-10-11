@@ -41,7 +41,7 @@ const SECTORS_TT17 = [
 ];
 
 const PROVINCES = [
-  { code: "", label: "Toàn quốc (63 Tỉnh/Thành)" },
+  { code: "", label: "Toàn quốc (34 Tỉnh/Thành Trọng Điểm)" },
   { code: "Hà Nội", label: "Hà Nội" },
   { code: "Hồ Chí Minh", label: "TP. Hồ Chí Minh" },
   { code: "Hải Phòng", label: "Hải Phòng" },
@@ -131,8 +131,9 @@ export default function EnterprisesDirectoryPage() {
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 pb-20">
       {/* Hero Header */}
-      <section className="bg-gradient-to-r from-brand-900 via-brand-900 to-slate-900 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
+        <div className="relative max-w-7xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-200 border border-brand-400/30 text-xs font-semibold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5 text-brand-300" />
             CSDL Quốc Gia 304 Doanh Nghiệp ĐMST & Đổi Mới Công Nghệ

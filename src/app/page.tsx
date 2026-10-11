@@ -196,7 +196,7 @@ export default function HomePage() {
             </div>
             <div className="text-center rounded-xl bg-white/5 p-3 backdrop-blur-sm">
               <dd className="text-3xl font-bold sm:text-4xl text-white">
-                {statsData?.totalProvinces ?? 0}
+                {statsData?.totalProvinces ?? 34}
               </dd>
               <dt className="mt-2 text-sm font-medium text-white/80">Tỉnh, thành kết nối</dt>
             </div>

@@ -31,10 +31,12 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    ".next-build-delta/types/**/*.ts",
     ".next-qc-delta/types/**/*.ts",
     ".next/types/**/*.ts",
+    "/tmp/nacentwin-next-build/types/**/*.ts",
     "next-env.d.ts",
-    ".next-build-delta/types/**/*.ts"
+    ".next-prod/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

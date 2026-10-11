@@ -137,8 +137,9 @@ export default function PublicMatrixExplorerPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-10 px-4">
-        <div className="max-w-7xl mx-auto space-y-4">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-10 px-4 border-b border-brand-800 shadow-md">
+        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
+        <div className="relative max-w-7xl mx-auto space-y-4">
           <div className="max-w-3xl space-y-2">
             <span className="bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full inline-block">
               Cổng Tri Thức & Định Hướng Đổi Mới Sáng Tạo

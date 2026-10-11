@@ -75,6 +75,17 @@ def run_tier2_contract_tests():
         print("  ✅ PASS: Contract đáp ứng chuẩn PDPD (Không rò rỉ SĐT, Email cá nhân).")
 
 
+import subprocess
+
+def query_db(sql: str) -> str:
+    """Truy vấn trực tiếp CSDL PostgreSQL container để đối soát Black-Box không qua mock"""
+    cmd = ["docker", "exec", "nacentech-postgres-1", "psql", "-U", "postgres", "-d", "nacentech", "-t", "-A", "-c", sql]
+    try:
+        out = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("utf-8").strip()
+        return out
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Lỗi truy vấn CSDL: {e.output.decode('utf-8')}")
+
 # ==============================================================================
 # TẦNG 3: KIỂM THỬ TÍCH HỢP DỮ LIỆU CSDL (DATABASE INTEGRATION)
 # ==============================================================================
@@ -117,17 +128,11 @@ def run_tier3_integration_tests():
     assert res_body["tniClassification"] == "VeryHigh"
     print(f"  ✅ PASS: Backend tự động tính TNI: {res_body['tniScore']} (VeryHigh), ItemCode: {res_body['itemCode']}")
 
-
-import subprocess
-
-def query_db(sql: str) -> str:
-    """Truy vấn trực tiếp CSDL PostgreSQL container để đối soát Black-Box không qua mock"""
-    cmd = ["docker", "exec", "nacentech-postgres-1", "psql", "-U", "postgres", "-d", "nacentech", "-t", "-A", "-c", sql]
-    try:
-        out = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("utf-8").strip()
-        return out
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Lỗi truy vấn CSDL: {e.output.decode('utf-8')}")
+    # CLEANUP TEARDOWN: Xóa bản ghi test sau khi kiểm thử để không làm ô nhiễm CSDL môi trường chạy
+    item_id = res_body.get("itemId")
+    if item_id:
+        query_db(f"DELETE FROM demand.demand_items WHERE id = '{item_id}'")
+        print("  ✓ Teardown: Đã tự động dọn dẹp bản ghi kiểm thử khỏi CSDL.")
 
 # ==============================================================================
 # TẦNG 4: PLAYWRIGHT E2E BLACK-BOX TRÊN TRÌNH DUYỆT THẬT (6 MÀN HÌNH, 5 LUỒNG)

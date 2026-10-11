@@ -362,7 +362,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
                 <span className="w-6 h-6 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-black">
                   1
                 </span>
-                <span>Thông Tin Nhận Diện Công Nghệ & Phân Loại 18 Ngành</span>
+                <span>Thông Tin Nhận Diện Công Nghệ & Phân Loại 10 Lĩnh Vực TT17</span>
               </h3>
               <span className="text-xs text-slate-400">
                 Các trường có dấu <span className="text-red-500">*</span> là bắt buộc
@@ -400,7 +400,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Nhóm Ngành Công Nghiệp (18 Ngành TT17): <span className="text-red-500">*</span>
+                  Nhóm Lĩnh Vực Công Nghệ (10 Lĩnh Vực TT17): <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={sectorCode}

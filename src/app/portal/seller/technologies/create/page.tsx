@@ -209,7 +209,7 @@ export default function TaoHoSoChaoBanPage() {
 
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">
-                    Lĩnh vực kinh tế (18 ngành TT17):
+                    Lĩnh vực công nghệ trọng điểm (10 Lĩnh vực TT17):
                   </label>
                   <select
                     value={sectorCode}

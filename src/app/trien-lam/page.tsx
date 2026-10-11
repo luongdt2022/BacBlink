@@ -210,8 +210,9 @@ export default function TechmartEventsPage() {
       </div>
 
       {/* HERO BANNER */}
-      <section className="bg-gradient-to-r from-slate-900 via-brand-950 to-slate-950 text-white py-8 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-8 px-4 sm:px-6 border-b border-brand-800 shadow-md">
+        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
+        <div className="relative max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-200 text-xs font-bold mb-3 border border-brand-400/30">
               <Sparkles className="size-3.5" />

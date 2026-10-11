@@ -7,17 +7,19 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
 
-// Danh mục 18 ngành theo Thông tư 17/2019/TT-BKHCN
+// Danh mục 10 Lĩnh vực công nghệ trọng điểm chuẩn hóa theo Thông tư 17/2019/TT-BKHCN
 export const SECTORS_18_CATALOG: SectorItem[] = [
-  { code: "ALL", name: "Tất cả 18 ngành", count: 0 },
-  { code: "FOOD", name: "Công nghệ chế biến nông sản - thực phẩm", count: 0 },
-  { code: "MECH", name: "Cơ khí chế tạo & Tự động hóa", count: 0 },
-  { code: "IT", name: "Công nghệ thông tin, Viễn thông & IoT", count: 0 },
-  { code: "ENV", name: "Công nghệ môi trường & Kinh tế tuần hoàn", count: 0 },
-  { code: "BIO", name: "Công nghệ sinh học & Dược liệu", count: 0 },
-  { code: "ENERGY", name: "Năng lượng mới & Năng lượng tái tạo", count: 0 },
-  { code: "CHEM", name: "Hóa chất, Phân bón & Vật liệu mới", count: 0 },
-  { code: "HEALTH", name: "Y tế, Dược phẩm & Thiết bị y tế", count: 0 },
+  { code: "ALL", name: "Tất cả 10 lĩnh vực", count: 0 },
+  { code: "LV01", name: "Nông nghiệp & Chế biến nông sản", count: 0 },
+  { code: "LV05", name: "Y tế & Dược phẩm", count: 0 },
+  { code: "LV07", name: "Cơ khí, Chế tạo máy & Tự động hóa", count: 0 },
+  { code: "LV08", name: "Điện tử, Viễn thông & CNTT", count: 0 },
+  { code: "LV11", name: "Năng lượng mới & Tái tạo", count: 0 },
+  { code: "LV12", name: "Vật liệu mới & Nanotech", count: 0 },
+  { code: "LV14", name: "Hóa chất & Công nghệ sinh học", count: 0 },
+  { code: "LV15", name: "Môi trường & Xử lý rác thải", count: 0 },
+  { code: "LV16", name: "Xây dựng & Giao thông", count: 0 },
+  { code: "LV17", name: "Dịch vụ KH&CN & Khác", count: 0 },
 ];
 
 export async function fetchPublicOffers(params?: {
@@ -158,7 +160,7 @@ export const PROVINCIAL_AUTHORITIES_CATALOG = [
   { id: "VN-KH", name: "Sở Khoa học và Công nghệ tỉnh Khánh Hòa" },
   { id: "VN-LD", name: "Sở Khoa học và Công nghệ tỉnh Lâm Đồng" },
   { id: "VN-TG", name: "Sở Khoa học và Công nghệ tỉnh Tiền Giang" },
-  { id: "VN-63", name: "Các Sở KH&CN tỉnh/thành phố khác..." },
+  { id: "VN-34", name: "Các Sở KH&CN khác thuộc 34 tỉnh thành trọng điểm..." },
 ];
 
 export async function reviewOffer(

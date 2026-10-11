@@ -87,7 +87,8 @@ export default function PublicDemandsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
       {/* HERO BANNER SECTION (Theo chuẩn NacenTwin) */}
-      <section className="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-900 text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-brand-700 shadow-md">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-cyan-300 text-xs font-semibold backdrop-blur-sm border border-white/20">

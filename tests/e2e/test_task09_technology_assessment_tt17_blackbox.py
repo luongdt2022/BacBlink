@@ -339,7 +339,7 @@ def run_tier4_playwright_e2e():
 
         page.wait_for_selector("text=Cổng Quản Lý Nhà Nước", timeout=10000)
         assert page.is_visible("text=Thẩm Định Hồ Sơ Đánh Giá Công Nghệ"), "Màn 4 thiếu tiêu đề thẩm định"
-        assert page.is_visible("text=Địa bàn quản lý:"), "Màn 4 thiếu bộ lọc địa bàn tỉnh/thành"
+        assert page.is_visible("text=Địa bàn:"), "Màn 4 thiếu bộ lọc địa bàn tỉnh/thành"
         assert page.is_visible("text=Tổng hồ sơ địa bàn"), "Màn 4 thiếu thẻ thống kê hồ sơ"
 
         # Thử mở modal thẩm định

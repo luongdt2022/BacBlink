@@ -105,8 +105,9 @@ export default function GovDemandsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
       {/* GOV CONSOLE SUB-HEADER */}
-      <section className="bg-slate-900 text-white border-b border-slate-800 py-6 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <section className="relative overflow-hidden bg-brand-700 text-white border-b border-brand-800 py-6 px-4 sm:px-6 shadow-md">
+        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
+        <div className="relative max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-brand-600 flex items-center justify-center font-extrabold text-xl text-white shadow-md">
               Sở

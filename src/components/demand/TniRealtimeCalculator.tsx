@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Flame } from 'lucide-react';
+import { Flame, Sparkles, TrendingUp, ShieldAlert, Cpu } from 'lucide-react';
 
 export interface TniValues {
   urgency: number;   // K: 1-5 (35%)
@@ -54,6 +54,37 @@ export function getTniClassification(score: number): {
   };
 }
 
+const DIMENSION_DESCRIPTIONS = {
+  urgency: [
+    'Thăm dò ý tưởng, chưa ảnh hưởng sản xuất',
+    'Nâng cấp định kỳ theo kế hoạch năm',
+    'Giảm hiệu suất dây chuyền, có thể khắc phục tạm thời',
+    'Sự cố dừng dây chuyền, khẩn cấp cần xử lý ngay',
+    'Đình trệ toàn bộ nhà máy, rủi ro đứt gãy cung ứng'
+  ],
+  impact: [
+    'Tác động không đáng kể đến chi phí vận hành',
+    'Ảnh hưởng nhỏ lẻ (< 5% doanh thu hàng năm)',
+    'Ảnh hưởng 5% - 20% doanh thu hoặc chi phí',
+    'Ảnh hưởng > 20% doanh thu toàn năm',
+    'Tác động sống còn đến sự tồn tại của doanh nghiệp'
+  ],
+  investment: [
+    'Chưa bố trí ngân sách, trông chờ tài trợ 100%',
+    'Ngân sách hạn hẹp (< 100 triệu VNĐ)',
+    'Có thể cân đối kinh phí (100 – 500 triệu VNĐ)',
+    'Đã bố trí sẵn quỹ R&D / Vay ưu đãi (500 triệu – 2 tỷ VNĐ)',
+    'Nguồn lực dồi dào, cam kết giải ngân tức thì (> 2 tỷ VNĐ)'
+  ],
+  readiness: [
+    'Chưa có nhân sự kỹ thuật tiếp nhận',
+    'Cần chuyển giao và đào tạo toàn diện từ đầu',
+    'Có kỹ sư vận hành cơ bản nhưng thiếu kinh nghiệm chuyên sâu',
+    'Đội ngũ kỹ sư sẵn sàng làm chủ công nghệ ngay',
+    'Bộ phận R&D chuyên trách, sẵn sàng cải tiến & mở rộng'
+  ]
+};
+
 export default function TniRealtimeCalculator({ values, onChange, compact = false }: TniRealtimeCalculatorProps) {
   const score = calculateTni(values.urgency, values.impact, values.investment, values.readiness);
   const classification = getTniClassification(score);
@@ -65,137 +96,185 @@ export default function TniRealtimeCalculator({ values, onChange, compact = fals
     });
   };
 
+  const dimensions: Array<{
+    key: keyof TniValues;
+    code: string;
+    title: string;
+    weight: string;
+    value: number;
+    descriptions: string[];
+  }> = [
+    {
+      key: 'urgency',
+      code: 'K',
+      title: 'Tính Cấp Thiết',
+      weight: '35%',
+      value: values.urgency,
+      descriptions: DIMENSION_DESCRIPTIONS.urgency
+    },
+    {
+      key: 'impact',
+      code: 'L',
+      title: 'Mức Độ Tác Động',
+      weight: '30%',
+      value: values.impact,
+      descriptions: DIMENSION_DESCRIPTIONS.impact
+    },
+    {
+      key: 'investment',
+      code: 'N',
+      title: 'Khả Năng Đầu Tư',
+      weight: '20%',
+      value: values.investment,
+      descriptions: DIMENSION_DESCRIPTIONS.investment
+    },
+    {
+      key: 'readiness',
+      code: 'O',
+      title: 'Sẵn Sàng Chuyển Giao',
+      weight: '15%',
+      value: values.readiness,
+      descriptions: DIMENSION_DESCRIPTIONS.readiness
+    }
+  ];
+
   return (
-    <div className="bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4">
-      {/* Header & Live Score Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div>
-          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            CHỈ SỐ NHU CẦU ĐỔI MỚI CÔNG NGHỆ
-          </span>
-          <h4 className="text-base font-extrabold text-text-primary dark:text-white flex items-center gap-2">
-            Technology Need Index (TNI)
-          </h4>
-          <p className="text-xs text-text-secondary dark:text-slate-400 mt-0.5">
-            Công thức chuẩn: <code className="font-mono text-brand-700 dark:text-cyan-400">TNI = ROUND((35%K + 30%L + 20%N + 15%O)/5)</code>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="text-3xl font-extrabold text-text-primary dark:text-white leading-none">
-              {score}
-              <span className="text-xs font-normal text-slate-400">/100</span>
+    <div className="bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4">
+      {/* Live Score Display Card */}
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold text-brand-700 dark:text-cyan-400 uppercase tracking-wider bg-brand-50 dark:bg-brand-950/70 px-2 py-0.5 rounded-md border border-brand-200/60 dark:border-cyan-800/50">
+                CHỈ SỐ ĐỔI MỚI
+              </span>
+              <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                Chuẩn hóa 0–100
+              </span>
             </div>
-            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 mt-1 rounded-full text-xs font-extrabold border ${classification.badgeClass}`}>
-              <Flame className="w-3 h-3" /> {classification.label}
-            </span>
+            <h4 className="text-base font-extrabold text-slate-900 dark:text-white mt-1 flex items-center gap-1.5">
+              <span>Technology Need Index</span>
+              <span className="text-brand-700 dark:text-cyan-400 font-mono">(TNI)</span>
+            </h4>
           </div>
+
+          <div className="flex items-center gap-3 self-start sm:self-center">
+            <div className="text-right">
+              <div className="flex items-baseline justify-end gap-1">
+                <span className="text-3xl sm:text-4xl font-extrabold font-mono text-slate-900 dark:text-white tracking-tight leading-none">
+                  {score}
+                </span>
+                <span className="text-xs font-semibold text-slate-400">/100</span>
+              </div>
+              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 mt-1 rounded-full text-xs font-bold border ${classification.badgeClass}`}>
+                <Flame className="w-3 h-3" /> {classification.label}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Progress Bar */}
+        <div className="space-y-1">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden p-0.5">
+            <div
+              className={`h-full transition-all duration-300 rounded-full ${
+                score >= 80
+                  ? 'bg-gradient-to-r from-rose-500 to-rose-600'
+                  : score >= 65
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600'
+                  : score >= 50
+                  ? 'bg-gradient-to-r from-yellow-500 to-yellow-600'
+                  : 'bg-gradient-to-r from-slate-400 to-slate-500'
+              }`}
+              style={{ width: `${Math.min(100, Math.max(5, score))}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-slate-400 font-mono">
+            <span>0</span>
+            <span>50 (Trung bình)</span>
+            <span>65 (Cao)</span>
+            <span>80 (Rất cao)</span>
+            <span>100</span>
+          </div>
+        </div>
+
+        {/* Formula */}
+        <p className="text-xs text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/80 font-mono">
+          Công thức: <code className="text-brand-700 dark:text-cyan-400 font-bold">TNI = ROUND((35%K + 30%L + 20%N + 15%O)/5)</code>
+        </p>
+      </div>
+
+      {/* Matching Policy Box */}
+      <div className="text-xs bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/70 dark:border-brand-900 text-brand-900 dark:text-brand-200 p-3.5 rounded-xl flex items-start gap-2.5">
+        <TrendingUp className="w-4 h-4 text-brand-700 dark:text-cyan-400 shrink-0 mt-0.5" />
+        <div className="space-y-0.5">
+          <span className="font-bold block">Chính sách xử lý tự động:</span>
+          <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+            {classification.policy}
+          </p>
         </div>
       </div>
 
-      <div className="text-xs bg-brand-50/70 dark:bg-brand-950/50 border border-brand-100 dark:border-brand-900 text-brand-900 dark:text-brand-200 p-3 rounded-xl flex items-start gap-2">
-        <span className="font-bold shrink-0">Chính sách xử lý:</span>
-        <span>{classification.policy}</span>
-      </div>
+      {/* 4 Dimension Slider Cards */}
+      <div className={`grid ${compact ? 'grid-cols-1 gap-3' : 'grid-cols-1 sm:grid-cols-2 gap-3.5'}`}>
+        {dimensions.map((dim) => {
+          const currentDesc = dim.descriptions[dim.value - 1] || '';
+          return (
+            <div
+              key={dim.key}
+              className="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 space-y-2 transition-all hover:border-brand-300 dark:hover:border-slate-700 shadow-2xs"
+            >
+              <div className="flex justify-between items-center text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                  <span className="w-5 h-5 rounded-md bg-slate-100 dark:bg-slate-800 text-brand-700 dark:text-cyan-400 font-mono text-xs flex items-center justify-center font-bold">
+                    {dim.code}
+                  </span>
+                  <span>{dim.title}</span>
+                  <span className="text-xs text-slate-400 font-normal">({dim.weight})</span>
+                </div>
+                <span className="font-mono font-extrabold text-xs px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-cyan-400 border border-brand-200/60 dark:border-cyan-800/50">
+                  {dim.value}/5
+                </span>
+              </div>
 
-      {/* 4 Dimension Controls */}
-      <div className={`grid ${compact ? 'grid-cols-1 gap-3' : 'grid-cols-1 md:grid-cols-2 gap-4'}`}>
-        {/* K: Tính cấp thiết (35%) */}
-        <div className="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-700 dark:text-slate-300">
-              K. Tính Cấp Thiết (Trọng số 35%)
-            </span>
-            <span className="font-mono font-extrabold text-brand-700 dark:text-cyan-400">
-              Mức {values.urgency}/5
-            </span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={5}
-            step={1}
-            value={values.urgency}
-            onChange={(e) => handleSliderChange('urgency', parseInt(e.target.value))}
-            className="w-full accent-brand-700 cursor-pointer"
-          />
-          <p className="text-xs text-slate-400">
-            {values.urgency >= 4 ? 'Sự cố dừng dây chuyền, khẩn cấp' : 'Nâng cấp định kỳ'}
-          </p>
-        </div>
+              {/* Slider Controls */}
+              <div className="space-y-1">
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  step={1}
+                  value={dim.value}
+                  onChange={(e) => handleSliderChange(dim.key, parseInt(e.target.value))}
+                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-700 dark:accent-cyan-400"
+                />
 
-        {/* L: Tác động doanh thu/chi phí (30%) */}
-        <div className="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-700 dark:text-slate-300">
-              L. Mức Độ Tác Động (Trọng số 30%)
-            </span>
-            <span className="font-mono font-extrabold text-brand-700 dark:text-cyan-400">
-              Mức {values.impact}/5
-            </span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={5}
-            step={1}
-            value={values.impact}
-            onChange={(e) => handleSliderChange('impact', parseInt(e.target.value))}
-            className="w-full accent-brand-700 cursor-pointer"
-          />
-          <p className="text-xs text-slate-400">
-            {values.impact >= 4 ? 'Ảnh hưởng > 20% doanh thu toàn năm' : 'Tác động nhỏ lẻ'}
-          </p>
-        </div>
+                {/* Quick Step Buttons for precision desktop clicking */}
+                <div className="flex justify-between gap-1 pt-1">
+                  {[1, 2, 3, 4, 5].map((lvl) => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => handleSliderChange(dim.key, lvl)}
+                      className={`flex-1 py-1 text-xs font-mono font-bold rounded transition-colors ${
+                        dim.value === lvl
+                          ? 'bg-brand-700 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {lvl}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        {/* N: Năng lực tài chính đầu tư (20%) */}
-        <div className="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-700 dark:text-slate-300">
-              N. Khả Năng Đầu Tư (Trọng số 20%)
-            </span>
-            <span className="font-mono font-extrabold text-brand-700 dark:text-cyan-400">
-              Mức {values.investment}/5
-            </span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={5}
-            step={1}
-            value={values.investment}
-            onChange={(e) => handleSliderChange('investment', parseInt(e.target.value))}
-            className="w-full accent-brand-700 cursor-pointer"
-          />
-          <p className="text-xs text-slate-400">
-            {values.investment >= 4 ? 'Đã bố trí sẵn quỹ R&D / Vay ưu đãi' : 'Ngân sách hạn hẹp'}
-          </p>
-        </div>
-
-        {/* O: Mức độ sẵn sàng tiếp nhận (15%) */}
-        <div className="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1.5">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-bold text-slate-700 dark:text-slate-300">
-              O. Sẵn Sàng Chuyển Giao (Trọng số 15%)
-            </span>
-            <span className="font-mono font-extrabold text-brand-700 dark:text-cyan-400">
-              Mức {values.readiness}/5
-            </span>
-          </div>
-          <input
-            type="range"
-            min={1}
-            max={5}
-            step={1}
-            value={values.readiness}
-            onChange={(e) => handleSliderChange('readiness', parseInt(e.target.value))}
-            className="w-full accent-brand-700 cursor-pointer"
-          />
-          <p className="text-xs text-slate-400">
-            {values.readiness >= 4 ? 'Đội ngũ kỹ sư sẵn sàng làm chủ CN' : 'Cần đào tạo từ đầu'}
-          </p>
-        </div>
+              {/* Context Description */}
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight pt-0.5 line-clamp-2">
+                {currentDesc}
+              </p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

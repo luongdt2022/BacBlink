@@ -102,7 +102,7 @@ export default function MatchingRadarPage() {
             Radar Ghép Nối Cung–Cầu & Điểm Tương Thích
           </h1>
           <p className="text-caption text-text-muted mt-1 max-w-2xl">
-            Hệ thống định lượng tương thích tự động dựa trên ma trận 18 ngành (TT 17/2019), độ sẵn sàng TRL, chỉ số cấp thiết TNI và xác thực Sở hữu trí tuệ.
+            Hệ thống định lượng tương thích tự động dựa trên ma trận 10 lĩnh vực trọng điểm (TT 17/2019), độ sẵn sàng TRL, chỉ số cấp thiết TNI và xác thực Sở hữu trí tuệ.
           </p>
         </div>
 
