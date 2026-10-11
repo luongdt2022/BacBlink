@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
   Filter,
@@ -22,6 +23,7 @@ import {
   SECTORS_18_CATALOG,
 } from "@/services/api/technology-offer";
 import { TechnologyOffer } from "@/types/technology-offer";
+import { getTechnologyImage } from "@/lib/technology-media";
 
 export default function ChaoBanCongNghePage() {
   const [offers, setOffers] = useState<TechnologyOffer[]>([]);
@@ -389,75 +391,97 @@ export default function ChaoBanCongNghePage() {
           {/* STATE 4: SUCCESS (CARDS GRID) */}
           {!isLoading && !hasError && offers.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {offers.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4 border-t-4 border-t-emerald-600"
-                >
-                  <div className="space-y-3">
-                    {/* Top Badges */}
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                        {offer.offerCode}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {offer.hasTechTransfer && offer.trlLevel && (
-                          <span
-                            className={`text-xs px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${getTrlBadgeColor(
-                              offer.trlLevel
-                            )}`}
-                          >
-                            <Award className="w-3 h-3" />
-                            TRL {offer.trlLevel}/9
+              {offers.map((offer) => {
+                const coverImage = getTechnologyImage(offer.sectorCode, offer.title);
+                return (
+                  <div
+                    key={offer.id}
+                    className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between border-t-4 border-t-emerald-600"
+                  >
+                    <div>
+                      {/* Media Thumbnail Container */}
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+                        <Image
+                          src={coverImage}
+                          alt={offer.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+
+                        {/* Top Overlay Badges */}
+                        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                          <span className="mono text-xs font-bold text-slate-800 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md shadow-sm">
+                            {offer.offerCode}
                           </span>
-                        )}
-                        <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">
-                          {offer.offerType === "SOLUTION"
-                            ? "Giải pháp"
-                            : offer.offerType === "DEVICE"
-                            ? "Thiết bị"
-                            : "Sản phẩm"}
-                        </span>
-                      </div>
-                    </div>
+                          <span className="text-xs bg-slate-900/85 backdrop-blur-md text-white px-2.5 py-1 rounded-md font-bold shadow-sm">
+                            {offer.offerType === "SOLUTION"
+                              ? "Giải pháp"
+                              : offer.offerType === "DEVICE"
+                              ? "Thiết bị"
+                              : "Sản phẩm"}
+                          </span>
+                        </div>
 
-                    {/* Title */}
-                    <Link
-                      href={`/chao-ban-cong-nghe/${offer.id}`}
-                      className="text-base font-extrabold text-slate-900 hover:text-emerald-600 transition block leading-snug line-clamp-2"
-                    >
-                      {offer.title}
-                    </Link>
-
-                    {/* Summary */}
-                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
-                      {offer.summary}
-                    </p>
-
-                    {/* SHTT Info Badge */}
-                    {offer.hasTechTransfer && (
-                      <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-2.5 space-y-1">
-                        <div className="flex items-center gap-1.5 text-emerald-800 text-xs font-bold">
-                          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                          <span>{getIpStatusLabel(offer.ipStatus)}</span>
-                          {offer.ipRegistrationNumber && (
-                            <span className="mono text-xs bg-white px-1.5 py-0.5 rounded border border-emerald-200">
-                              {offer.ipRegistrationNumber}
+                        {/* Bottom Overlay Badges */}
+                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-white bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/20 line-clamp-1 max-w-[60%]">
+                            {offer.sectorName}
+                          </span>
+                          {offer.hasTechTransfer && offer.trlLevel && (
+                            <span
+                              className={`text-xs px-2.5 py-1 rounded-md border shadow-sm flex items-center gap-1 ${getTrlBadgeColor(
+                                offer.trlLevel
+                              )}`}
+                            >
+                              <Award className="w-3.5 h-3.5" />
+                              TRL {offer.trlLevel}/9
                             </span>
                           )}
                         </div>
-                        {offer.developerOrigin && (
-                          <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                            <Building2 className="w-3 h-3 text-slate-400" />
-                            <span className="truncate">{offer.developerOrigin}</span>
+                      </div>
+
+                      {/* Card Content Body */}
+                      <div className="p-6 space-y-3">
+                        {/* Title */}
+                        <Link
+                          href={`/chao-ban-cong-nghe/${offer.id}`}
+                          className="text-base font-extrabold text-slate-900 hover:text-emerald-600 transition block leading-snug line-clamp-2"
+                        >
+                          {offer.title}
+                        </Link>
+
+                        {/* Summary */}
+                        <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                          {offer.summary}
+                        </p>
+
+                        {/* SHTT Info Badge */}
+                        {offer.hasTechTransfer && (
+                          <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-2.5 space-y-1">
+                            <div className="flex items-center gap-1.5 text-emerald-800 text-xs font-bold">
+                              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span className="truncate">{getIpStatusLabel(offer.ipStatus)}</span>
+                              {offer.ipRegistrationNumber && (
+                                <span className="mono text-xs bg-white px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">
+                                  {offer.ipRegistrationNumber}
+                                </span>
+                              )}
+                            </div>
+                            {offer.developerOrigin && (
+                              <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                                <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="truncate">{offer.developerOrigin}</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Card Footer: Pricing & Action */}
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
+                    {/* Card Footer: Pricing & Action */}
+                    <div className="px-6 pb-6 pt-3 border-t border-slate-100 flex items-center justify-between gap-4">
                     <div>
                       <p className="text-xs text-slate-400 font-medium">Hình thức thương mại</p>
                       <p className="text-xs font-extrabold text-slate-900">
@@ -484,8 +508,9 @@ export default function ChaoBanCongNghePage() {
                     </Link>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+          </div>
           )}
         </section>
       </main>

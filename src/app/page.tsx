@@ -11,6 +11,8 @@ import { portalClient, PortalOverviewStats } from "@/lib/portal-client";
 import { fetchPublicOffers } from "@/services/api/technology-offer";
 import { Async, AsyncState } from "@/components/ui/async";
 
+import { getTechnologyImage } from "@/lib/technology-media";
+
 type Listing = { title: string; field: string; owner: string; location: string; trl: string; image: string };
 
 
@@ -69,7 +71,7 @@ export default function HomePage() {
               owner: o.developerOrigin || "Chủ sở hữu công nghệ",
               location: o.managingAuthorityName || "Toàn quốc",
               trl: o.trlLevel ? `TRL ${o.trlLevel}` : "Đang hoàn thiện",
-              image: "/tech-ai-vision.png",
+              image: getTechnologyImage(o.sectorCode, o.title),
             }));
             setOffers(mapped);
           }
@@ -89,7 +91,7 @@ export default function HomePage() {
                 owner: d.province || "Doanh nghiệp",
                 location: d.province || "Toàn quốc",
                 trl: d.budgetRange ? `Ngân sách: ${d.budgetRange}` : "Thương lượng",
-                image: "/tech-solar.png",
+                image: getTechnologyImage(d.sectorCode, d.technicalProblem || d.stageName),
               }));
               setDemands(mapped);
             }

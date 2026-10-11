@@ -117,6 +117,13 @@ def run_layer3_integration_tests():
     assert detail_data["data"]["status"] == "APPROVED"
     print(f"  ✅ PASS: Truy vấn chi tiết xác nhận khớp 100% dữ liệu Bộ Tứ SHTT và thẩm định Sở KH&CN.")
 
+    # Teardown: Xóa bản ghi test để bảo toàn dữ liệu thật CSDL
+    del_url = f"{BASE_API_URL}/api/v1/portal/seller/technologies/{created_id}"
+    req_del = urllib.request.Request(del_url, method="DELETE", headers={"User-Agent": "NacenTech-QC"})
+    with urllib.request.urlopen(req_del, timeout=5) as response_del:
+        assert response_del.getcode() == 200
+    print(f"  🧹 TEARDOWN: Đã dọn dẹp Offer test {created_id} khỏi CSDL để không ô nhiễm dữ liệu thật.")
+
 def run_layer4_playwright_e2e_tests():
     print("\n----------------------------------------------------------------------")
     print("🎭 TẦNG 4: PLAYWRIGHT E2E BLACK-BOX TRÊN 4 MÀN HÌNH WEB")
@@ -273,6 +280,14 @@ def run_layer4_playwright_e2e_tests():
         success_banner = page.locator("text=Đăng Hồ Sơ Chào Bán Thành Công").first
         assert success_banner.is_visible(), "Banner đăng thành công không xuất hiện"
         print("  ✅ PASS: Màn 2 Form Wizard đăng mới công nghệ thành công với trạng thái PENDING chờ Sở KH&CN.")
+
+        # Teardown Màn 2: Xóa offer vừa đăng thử nghiệm khỏi DB
+        import subprocess
+        subprocess.run([
+            "docker", "exec", "nacentech-postgres-1", "psql", "-U", "postgres", "-d", "nacentech",
+            "-c", "DELETE FROM technology.seller_technology_offers WHERE summary LIKE '%robot tự hành nhận diện độ chín quả%';"
+        ], capture_output=True)
+        print("  🧹 TEARDOWN: Đã dọn dẹp Offer test Màn 2 khỏi CSDL để không ô nhiễm dữ liệu thật.")
 
         browser.close()
 
