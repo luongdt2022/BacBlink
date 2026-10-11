@@ -38,7 +38,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       totalDemands: 89,
       totalEnterprises: 310,
       totalExperts: 96,
-      totalProvinces: 63,
+      totalProvinces: 34,
       updatedAt: "2026-10-11T12:00:00Z",
     };
 
@@ -53,7 +53,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
     const stats = await portalClient.getStats();
     expect(stats.totalOffers).toBe(125);
     expect(stats.totalDemands).toBe(89);
-    expect(stats.totalProvinces).toBe(63);
+    expect(stats.totalProvinces).toBe(34);
     expect(stats.totalEnterprises).toBe(310);
   });
 
@@ -124,7 +124,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
             totalDemands: 90,
             totalEnterprises: 320,
             totalExperts: 100,
-            totalProvinces: 63,
+            totalProvinces: 34,
             updatedAt: "2026-10-11T00:00:00Z",
           },
         }),

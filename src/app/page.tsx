@@ -113,7 +113,11 @@ export default function HomePage() {
     portalClient.getStats()
       .then((data) => {
         if (!cancelled) {
-          setStatsData(data);
+          const normalized = {
+            ...data,
+            totalProvinces: (!data.totalProvinces || data.totalProvinces === 63) ? 34 : data.totalProvinces,
+          };
+          setStatsData(normalized);
           setStatsState("success");
         }
       })
@@ -143,8 +147,6 @@ export default function HomePage() {
     setCurrentUser(authClient.getUser());
   }, []);
 
-  const isPublicUser = currentUser && ["PUBLIC_USER", "USER", "GUEST"].includes(currentUser.role?.toUpperCase() ?? "");
-
   const handleOpenAi = (promptText?: string) => {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("nacen:open-ai-assistant", { detail: { prompt: promptText } }));
@@ -152,7 +154,7 @@ export default function HomePage() {
   };
 
   return <div className="w-full bg-white dark:bg-slate-950">
-    <section className="relative overflow-hidden bg-brand-700 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8 lg:py-24"><div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" /><div className="relative mx-auto max-w-7xl"><div className="mx-auto max-w-4xl text-center"><span className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold text-white">Sàn giao dịch công nghệ Quốc gia</span><h1 className="mt-6 type-hero">Kết nối cung – cầu công nghệ,{" "}<br className="hidden sm:block" />thúc đẩy đổi mới sáng tạo</h1><p className="mx-auto mt-5 max-w-2xl text-body sm:text-body-lg text-white/80">Nền tảng do Viện Đổi Mới Sáng Tạo Quốc Gia vận hành, giúp doanh nghiệp, nhà khoa học và nhà đầu tư tìm kiếm, chuyển giao và ứng dụng công nghệ một cách nhanh chóng, minh bạch.</p><form className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row" onSubmit={submit}><div className="relative flex-1"><Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm công nghệ, lĩnh vực, đơn vị chuyển giao..." className="focus-ring h-12 w-full rounded-xl border-0 bg-white py-3 pl-11 pr-4 text-base text-text-primary shadow-lg placeholder:text-slate-400" /></div><button type="submit" className="focus-ring h-12 rounded-xl bg-nacen-green-500 px-6 text-sm font-bold text-white transition hover:bg-nacen-green-600">Tìm kiếm</button></form><div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/chao-ban-cong-nghe" className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-brand-700 transition hover:bg-brand-50">Chào bán công nghệ <ArrowRight className="size-4" /></Link><Link href="/nhu-cau-cong-nghe" className="focus-ring inline-flex min-h-11 items-center rounded-xl border border-white/30 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10">Đăng nhu cầu đặt hàng</Link><Link href="/trien-lam" className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-300 shadow-md">Sàn Sự Kiện Techmart <Sparkles className="size-4" /></Link>{isPublicUser && (<Link href="/profile/upgrade/expert" className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal-400 px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-teal-300 shadow-md">Đăng ký Chuyên gia KH&CN <ArrowRight className="size-4" /></Link>)}</div></div>
+    <section className="relative overflow-hidden bg-brand-700 px-4 py-16 text-white sm:px-6 sm:py-20 lg:px-8 lg:py-24"><div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" /><div className="relative mx-auto max-w-7xl"><div className="mx-auto max-w-4xl text-center"><span className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold text-white">Sàn giao dịch công nghệ Quốc gia</span><h1 className="mt-6 type-hero">Kết nối cung – cầu công nghệ,{" "}<br className="hidden sm:block" />thúc đẩy đổi mới sáng tạo</h1><p className="mx-auto mt-5 max-w-2xl text-body sm:text-body-lg text-white/80">Nền tảng do Viện Đổi Mới Sáng Tạo Quốc Gia vận hành, giúp doanh nghiệp, nhà khoa học và nhà đầu tư tìm kiếm, chuyển giao và ứng dụng công nghệ một cách nhanh chóng, minh bạch.</p><form className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row" onSubmit={submit}><div className="relative flex-1"><Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm công nghệ, lĩnh vực, đơn vị chuyển giao..." className="focus-ring h-12 w-full rounded-xl border-0 bg-white py-3 pl-11 pr-4 text-base text-text-primary shadow-lg placeholder:text-slate-400" /></div><button type="submit" className="focus-ring h-12 rounded-xl bg-nacen-green-500 px-6 text-sm font-bold text-white transition hover:bg-nacen-green-600">Tìm kiếm</button></form><div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-white/80"><span className="text-white/60">Gợi ý tìm kiếm:</span>{["AI thị giác máy", "Năng lượng xanh", "Tự động hóa", "Vật liệu Nano"].map((kw) => (<button key={kw} type="button" onClick={() => { setQuery(kw); toast.info(`Đang tra cứu từ khóa "${kw}"`, "Gợi ý tìm kiếm"); }} className="rounded-full bg-white/10 px-2.5 py-1 text-white/90 hover:bg-white/20 transition backdrop-blur-sm">{kw}</button>))}<span className="hidden sm:inline text-white/30">|</span><Link href="/trien-lam" className="inline-flex items-center gap-1 font-semibold text-amber-300 hover:text-amber-200 transition ml-1"><Sparkles className="size-3.5" /> Sàn Sự Kiện Techmart</Link></div></div>
 
       {/* Khối Thống kê thời gian thực có chuẩn 5 UX States */}
       <div className="mx-auto mt-14 max-w-4xl">
@@ -196,7 +198,7 @@ export default function HomePage() {
             </div>
             <div className="text-center rounded-xl bg-white/5 p-3 backdrop-blur-sm">
               <dd className="text-3xl font-bold sm:text-4xl text-white">
-                {statsData?.totalProvinces ?? 34}
+                {(!statsData?.totalProvinces || statsData.totalProvinces === 63) ? 34 : statsData.totalProvinces}
               </dd>
               <dt className="mt-2 text-sm font-medium text-white/80">Tỉnh, thành kết nối</dt>
             </div>
