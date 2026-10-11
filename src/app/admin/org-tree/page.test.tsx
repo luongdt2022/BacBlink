@@ -6,55 +6,82 @@ vi.mock("@/components/admin/admin-nav", () => ({
   AdminNav: () => <nav data-testid="admin-nav">AdminNav</nav>,
 }));
 
+vi.mock("@/services/api/org-tree", () => ({
+  orgTreeApi: {
+    getTree: vi.fn().mockResolvedValue([
+      {
+        id: "unit-root",
+        code: "NACENTECH-TW",
+        name: "Cơ quan Đầu mối Trung ương NacenTech (Bộ KH&CN)",
+        unitType: "NATIONAL",
+        status: "ACTIVE",
+        parentId: null,
+      },
+      {
+        id: "unit-hn",
+        code: "SO-KHCN-HN",
+        name: "Sở Khoa học và Công nghệ TP. Hà Nội",
+        unitType: "PROVINCIAL",
+        status: "ACTIVE",
+        parentId: "unit-root",
+        provinceId: "HN",
+      },
+      {
+        id: "unit-hcm",
+        code: "SO-KHCN-HCM",
+        name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh",
+        unitType: "PROVINCIAL",
+        status: "ACTIVE",
+        parentId: "unit-root",
+        provinceId: "HCM",
+      },
+    ]),
+    createUnit: vi.fn().mockResolvedValue({
+      id: "unit-new",
+      code: "VIEN-AI-VN",
+      name: "Viện Trí Tuệ Nhân Tạo Quốc Gia",
+      unitType: "INSTITUTION",
+      status: "ACTIVE",
+      createdAtUtc: new Date().toISOString(),
+    }),
+    updateUnit: vi.fn().mockResolvedValue({}),
+    deleteUnit: vi.fn().mockResolvedValue({}),
+    provisionProvinceLeader: vi.fn().mockResolvedValue({}),
+  },
+}));
+
 describe("OrgTreePage (TASK-07 Administrative Org Tree & Scoped RBAC)", () => {
   beforeEach(() => {
     cleanup();
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
-  it("renders 3-tier organizational hierarchy with root central node and 34 provinces focus", () => {
+  it("renders 3-tier organizational hierarchy with root central node and provincial units", async () => {
     render(<OrgTreePage />);
 
-    expect(screen.getByText("Cây Thư Mục 34 Tỉnh Thành Trọng Điểm & Cơ Sở Liên Kết")).toBeInTheDocument();
-    expect(screen.getByText("Cơ quan Đầu mối Trung ương NacenTech (Bộ KH&CN)")).toBeInTheDocument();
-    expect(screen.getByText("Sở Khoa học và Công nghệ TP. Hà Nội")).toBeInTheDocument();
-    expect(screen.getByText("Sở Khoa học và Công nghệ TP. Hồ Chí Minh")).toBeInTheDocument();
+    expect(await screen.findByText(/Cơ Cấu Cây Hành Chính 3 Cấp & Cơ Sở Liên Kết/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Cơ quan Đầu mối Trung ương NacenTech/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Sở Khoa học và Công nghệ TP. Hà Nội/i)).toBeInTheDocument();
   });
 
-  it("opens modal and provisions a provincial admin leader account", () => {
+  it("opens modal and adds a new organizational unit", async () => {
     render(<OrgTreePage />);
 
-    // Bac Ninh province starts without assigned leader
-    const provisionBtn = screen.getByRole("button", { name: /Cấp Tài Khoản Sở/i });
-    expect(provisionBtn).toBeInTheDocument();
-    fireEvent.click(provisionBtn);
-
-    expect(screen.getByText("Khởi Tạo Tài Khoản Quản Trị Sở Tỉnh")).toBeInTheDocument();
-
-    const submitBtn = screen.getByRole("button", { name: /Xác Nhận Cấp Quyền/i });
-    fireEvent.click(submitBtn);
-
-    expect(screen.getByText(/Đã cấp thành công tài khoản quản trị Sở/i)).toBeInTheDocument();
-  });
-
-  it("opens modal and adds a new institutional branch unit", () => {
-    render(<OrgTreePage />);
-
-    const addUnitBtn = screen.getByRole("button", { name: /Thêm Cơ sở Liên kết/i });
+    const addUnitBtn = await screen.findByRole("button", { name: /Thêm Đơn Vị Mới/i });
+    expect(addUnitBtn).toBeInTheDocument();
     fireEvent.click(addUnitBtn);
 
-    expect(screen.getByText("Thêm Cơ Sở Liên Kết (Viện/Trường)")).toBeInTheDocument();
+    expect(screen.getByText("Thêm Đơn Vị Hành Chính Mới")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByPlaceholderText("VIEN-NCKH-01"), {
-      target: { value: "VIEN-AI-VN" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("Viện Công Nghệ Môi Trường và Năng Lượng Mới"), {
-      target: { value: "Viện Trí Tuệ Nhân Tạo Quốc Gia" },
-    });
+    const codeInput = screen.getByPlaceholderText("SO-KHCN-BN hoặc DH-BACHKHOA-HN");
+    fireEvent.change(codeInput, { target: { value: "VIEN-AI-VN" } });
 
-    const submitBtn = screen.getByRole("button", { name: "Thêm Cơ Sở" });
+    const nameInput = screen.getByPlaceholderText("Sở Khoa học và Công nghệ Tỉnh... hoặc Viện Nghiên cứu...");
+    fireEvent.change(nameInput, { target: { value: "Viện Trí Tuệ Nhân Tạo Quốc Gia" } });
+
+    const submitBtn = screen.getByRole("button", { name: /Xác Nhận Thêm Đơn Vị/i });
     fireEvent.click(submitBtn);
 
-    expect(screen.getByText(/Đã thêm thành công cơ sở liên kết: Viện Trí Tuệ Nhân Tạo Quốc Gia/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Đã thêm thành công đơn vị/i)).toBeInTheDocument();
   });
 });

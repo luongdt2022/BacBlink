@@ -73,59 +73,45 @@ export default function GovStaffSettingsPage() {
     loadStaff(u);
   }, []);
 
-  const loadStaff = (currentUser?: UserContext | null) => {
+  const loadStaff = async (currentUser?: UserContext | null) => {
     setUxState("loading");
     const u = currentUser || user || authClient.getUser();
     const scope = u?.scopeId || "HN";
     const provName = PROVINCE_MAP[scope] || scope;
 
-    setTimeout(() => {
-      // Mock initial staff members for this province
-      const initialStaff: GovStaffMember[] = [
-        {
-          id: "staff-01",
-          fullName: "Nguyễn Văn Hùng",
-          email: `hung.nv@skhcn.${scope.toLowerCase()}.gov.vn`,
-          role: "CLUSTER_ADMIN",
-          department: "Phòng Quản lý Công nghệ & Đổi mới sáng tạo",
-          scopeId: scope,
-          provinceName: provName,
-          status: "ACTIVE",
-          assignedAt: "15/01/2026",
-          tasksReviewedCount: 38
-        },
-        {
-          id: "staff-02",
-          fullName: "Lê Thị Phương Mai",
-          email: `mai.ltp@skhcn.${scope.toLowerCase()}.gov.vn`,
-          role: "CLUSTER_ADMIN",
-          department: "Phòng Quản lý Tiêu chuẩn & SHTT",
-          scopeId: scope,
-          provinceName: provName,
-          status: "ACTIVE",
-          assignedAt: "02/02/2026",
-          tasksReviewedCount: 24
-        },
-        {
-          id: "staff-03",
-          fullName: "Trần Quốc Đạt",
-          email: `dat.tq@skhcn.${scope.toLowerCase()}.gov.vn`,
-          role: "CLUSTER_ADMIN",
-          department: "Trung tâm ĐMST & Khởi nghiệp Địa phương",
-          scopeId: scope,
-          provinceName: provName,
-          status: "ACTIVE",
-          assignedAt: "10/03/2026",
-          tasksReviewedCount: 15
-        }
-      ];
+    try {
+      const token = authClient.getToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      setStaffList(initialStaff);
-      setUxState("success");
-    }, 400);
+      const res = await fetch("/api/v1/governance/roles/officers", { headers });
+      if (res.ok) {
+        const json = await res.json();
+        const list: GovStaffMember[] = (json.data || []).map((p: any) => ({
+          id: p.id,
+          fullName: p.name || p.email,
+          email: p.email,
+          role: p.role,
+          department: p.department || "Sở Khoa học và Công nghệ " + (PROVINCE_MAP[p.scopeId] || p.scopeId || provName),
+          scopeId: p.scopeId || scope,
+          provinceName: PROVINCE_MAP[p.scopeId] || p.scopeId || provName,
+          status: p.status || "ACTIVE",
+          assignedAt: p.assignedAt ? new Date(p.assignedAt).toLocaleDateString("vi-VN") : "Mới bổ nhiệm",
+          tasksReviewedCount: 0,
+        }));
+        setStaffList(list);
+        setUxState(list.length === 0 ? "empty" : "success");
+      } else {
+        setStaffList([]);
+        setUxState("empty");
+      }
+    } catch {
+      setStaffList([]);
+      setUxState("empty");
+    }
   };
 
-  const handleCreateStaff = (e: React.FormEvent) => {
+  const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
 
@@ -139,40 +125,70 @@ export default function GovStaffSettingsPage() {
     }
 
     setProcessing(true);
-    setTimeout(() => {
-      const newMember: GovStaffMember = {
-        id: `staff-${Date.now()}`,
-        fullName: newStaffName.trim(),
-        email: newStaffEmail.trim(),
-        role: "CLUSTER_ADMIN",
-        department: newStaffDept,
-        scopeId: currentScopeId,
-        provinceName: currentProvinceName,
-        status: "ACTIVE",
-        assignedAt: new Date().toLocaleDateString("vi-VN"),
-        tasksReviewedCount: 0
-      };
+    try {
+      const token = authClient.getToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      setStaffList(prev => [newMember, ...prev]);
+      const res = await fetch("/api/v1/governance/roles/assign", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          email: newStaffEmail.trim(),
+          role: "CLUSTER_ADMIN",
+          fullName: newStaffName.trim(),
+          department: newStaffDept,
+          scopeType: "PROVINCE",
+          scopeId: currentScopeId,
+        }),
+      });
+
+      if (res.ok) {
+        showToast(`Đã bổ nhiệm thành công chuyên viên sơ kiểm: ${newStaffName.trim()}`);
+        setShowAddModal(false);
+        setNewStaffName("");
+        setNewStaffEmail("");
+        await loadStaff();
+      } else {
+        const errJson = await res.json().catch(() => null);
+        setFormError(errJson?.error || "Không thể bổ nhiệm chuyên viên. Vui lòng kiểm tra lại quyền.");
+      }
+    } catch {
+      setFormError("Lỗi kết nối khi gửi yêu cầu bổ nhiệm.");
+    } finally {
       setProcessing(false);
-      setShowAddModal(false);
-      setNewStaffName("");
-      setNewStaffEmail("");
-      showToast(`Đã bổ nhiệm thành công chuyên viên sơ kiểm: ${newMember.fullName}`);
-    }, 500);
+    }
   };
 
-  const toggleStaffStatus = (id: string) => {
-    setStaffList(prev =>
-      prev.map(item => {
-        if (item.id === id) {
-          const nextStatus = item.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-          showToast(`Đã cập nhật trạng thái chuyên viên: ${nextStatus === "ACTIVE" ? "Đang hoạt động" : "Tạm dừng"}`);
-          return { ...item, status: nextStatus };
-        }
-        return item;
-      })
-    );
+  const toggleStaffStatus = async (id: string) => {
+    try {
+      const token = authClient.getToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(`/api/v1/governance/roles/officers/${id}/toggle-status`, {
+        method: "POST",
+        headers,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setStaffList(prev =>
+          prev.map(item => {
+            if (item.id === id) {
+              const nextStatus = data.isActive ? "ACTIVE" : "INACTIVE";
+              showToast(`Đã cập nhật trạng thái chuyên viên: ${nextStatus === "ACTIVE" ? "Đang hoạt động" : "Tạm dừng"}`);
+              return { ...item, status: nextStatus };
+            }
+            return item;
+          })
+        );
+      } else {
+        showToast("Không thể cập nhật trạng thái chuyên viên.", "error");
+      }
+    } catch {
+      showToast("Lỗi kết nối khi cập nhật trạng thái chuyên viên.", "error");
+    }
   };
 
   const filteredStaff = staffList.filter(s =>
@@ -280,7 +296,17 @@ export default function GovStaffSettingsPage() {
           </span>
         </div>
 
-        <Async state={uxState} onRetry={() => loadStaff()}>
+        <Async
+          state={uxState}
+          onRetry={() => loadStaff()}
+          emptyContent={
+            <div className="p-8 text-center bg-white rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 space-y-3">
+              <Users className="w-10 h-10 text-slate-400 mx-auto" />
+              <h4 className="font-bold text-slate-800 dark:text-slate-100">Chưa có cán bộ nào</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Chưa có cán bộ nào được phân công cho Sở KH&CN {currentProvinceName}.</p>
+            </div>
+          }
+        >
           <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700">
@@ -384,7 +410,7 @@ export default function GovStaffSettingsPage() {
                   value={newStaffName}
                   onChange={e => setNewStaffName(e.target.value)}
                   placeholder="Ví dụ: Hoàng Minh Trí"
-                  className="w-full rounded-lg border border-slate-200 p-2.5 text-xs text-slate-900 outline-none focus:border-brand-600 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  className="form-control w-full text-sm"
                 />
               </div>
 
@@ -397,7 +423,7 @@ export default function GovStaffSettingsPage() {
                   value={newStaffEmail}
                   onChange={e => setNewStaffEmail(e.target.value)}
                   placeholder={`tri.hm@skhcn.${currentScopeId.toLowerCase()}.gov.vn`}
-                  className="w-full rounded-lg border border-slate-200 p-2.5 text-xs font-mono text-slate-900 outline-none focus:border-brand-600 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  className="form-control w-full text-sm font-mono"
                 />
                 <p className="text-xs text-slate-400 mt-1">Hệ thống sẽ gửi Magic Link kích hoạt tài khoản vào email này.</p>
               </div>
@@ -409,7 +435,7 @@ export default function GovStaffSettingsPage() {
                 <select
                   value={newStaffDept}
                   onChange={e => setNewStaffDept(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 p-2.5 text-xs text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  className="form-control w-full text-sm"
                 >
                   <option value="Phòng Quản lý Công nghệ & Thị trường">Phòng Quản lý Công nghệ & Thị trường</option>
                   <option value="Phòng Quản lý Khoa học & Đổi mới sáng tạo">Phòng Quản lý Khoa học & Đổi mới sáng tạo</option>
@@ -436,14 +462,14 @@ export default function GovStaffSettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  className="h-11 px-5 rounded-control border border-slate-200 bg-white font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 text-sm transition"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
                   disabled={processing}
-                  className="px-4 py-2 rounded-lg bg-brand-700 font-bold text-white hover:bg-brand-800 disabled:opacity-50"
+                  className="h-11 px-5 rounded-control bg-brand-700 font-bold text-white hover:bg-brand-800 disabled:opacity-50 text-sm transition"
                 >
                   {processing ? "Đang xử lý..." : "Xác Nhận Bổ Nhiệm"}
                 </button>

@@ -40,26 +40,26 @@ export default function TaoHoSoChaoBanPage() {
   const [sectorCode, setSectorCode] = useState("FOOD");
   const [pricingType, setPricingType] = useState<PricingType>("RANGE");
   const [priceAmount, setPriceAmount] = useState<number | undefined>(undefined);
-  const [priceMin, setPriceMin] = useState<number | undefined>(800000000);
-  const [priceMax, setPriceMax] = useState<number | undefined>(1500000000);
-  const [unit, setUnit] = useState("dây chuyền");
+  const [priceMin, setPriceMin] = useState<number | undefined>(undefined);
+  const [priceMax, setPriceMax] = useState<number | undefined>(undefined);
+  const [unit, setUnit] = useState("");
 
   // Bộ Tứ SHTT
-  const [developerOrigin, setDeveloperOrigin] = useState("Viện Nghiên Cứu Ứng Dụng Công Nghệ");
-  const [trlLevel, setTrlLevel] = useState<number>(8);
-  const [ipStatus, setIpStatus] = useState<IntellectualPropertyStatus>("PATENT_GRANTED");
-  const [ipRegistrationNumber, setIpRegistrationNumber] = useState("VN-1-0028491");
-  const [transferMethod, setTransferMethod] = useState<TransferMethod>("EXCLUSIVE_LICENSE");
+  const [developerOrigin, setDeveloperOrigin] = useState("");
+  const [trlLevel, setTrlLevel] = useState<number>(5);
+  const [ipStatus, setIpStatus] = useState<IntellectualPropertyStatus>("NONE");
+  const [ipRegistrationNumber, setIpRegistrationNumber] = useState("");
+  const [transferMethod, setTransferMethod] = useState<TransferMethod>("NON_EXCLUSIVE_LICENSE");
   const [commercialStatus, setCommercialStatus] =
-    useState<CommercializationStatus>("COMMERCIALLY_READY");
-  const [contactPointRole, setContactPointRole] = useState("Phòng Chuyển Giao Công Nghệ");
+    useState<CommercializationStatus>("PILOT_TESTING");
+  const [contactPointRole, setContactPointRole] = useState("");
 
   // Cơ Quan Quản Lý & Cam Kết Pháp Lý (Commercial Grade Governance - Delta CR-2026-006)
   const [managingAuthorityId, setManagingAuthorityId] = useState("VN-HN");
   const [managingAuthorityName, setManagingAuthorityName] = useState(
     "Sở Khoa học và Công nghệ TP. Hà Nội"
   );
-  const [legalConsent, setLegalConsent] = useState(true);
+  const [legalConsent, setLegalConsent] = useState(false);
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -199,7 +199,7 @@ export default function TaoHoSoChaoBanPage() {
                   <select
                     value={offerType}
                     onChange={(e) => setOfferType(e.target.value as OfferType)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    className="form-control w-full font-medium"
                   >
                     <option value="SOLUTION">Giải pháp công nghệ / Quy trình</option>
                     <option value="DEVICE">Máy móc / Thiết bị công nghiệp</option>
@@ -214,7 +214,7 @@ export default function TaoHoSoChaoBanPage() {
                   <select
                     value={sectorCode}
                     onChange={(e) => setSectorCode(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    className="form-control w-full font-medium"
                   >
                     {SECTORS_18_CATALOG.filter((s) => s.code !== "ALL").map((s) => (
                       <option key={s.code} value={s.code}>
@@ -234,7 +234,7 @@ export default function TaoHoSoChaoBanPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="VD: Hệ thống sấy thăng hoa chân không tích hợp AI tối ưu năng lượng"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  className="form-control w-full font-medium"
                 />
                 {errors.title && <p className="text-rose-600 text-xs mt-1">{errors.title}</p>}
               </div>
@@ -246,7 +246,7 @@ export default function TaoHoSoChaoBanPage() {
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   placeholder="Tóm tắt tính năng, thông số kỹ thuật cốt lõi..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  className="form-control w-full font-medium"
                 />
                 {errors.summary && (
                   <p className="text-rose-600 text-xs mt-1">{errors.summary}</p>
@@ -262,7 +262,7 @@ export default function TaoHoSoChaoBanPage() {
                   value={problemSolved}
                   onChange={(e) => setProblemSolved(e.target.value)}
                   placeholder="Tiết kiệm bao nhiêu % chi phí, giải quyết vấn đề gì của nhà máy..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                  className="form-control w-full font-medium"
                 />
                 {errors.problemSolved && (
                   <p className="text-rose-600 text-xs mt-1">{errors.problemSolved}</p>
@@ -308,7 +308,7 @@ export default function TaoHoSoChaoBanPage() {
                         value={developerOrigin}
                         onChange={(e) => setDeveloperOrigin(e.target.value)}
                         placeholder="VD: Viện Hàn lâm KH&CN Việt Nam"
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                        className="form-control w-full font-medium"
                       />
                       {errors.developerOrigin && (
                         <p className="text-rose-600 text-xs mt-1">{errors.developerOrigin}</p>
@@ -322,7 +322,7 @@ export default function TaoHoSoChaoBanPage() {
                       <select
                         value={trlLevel}
                         onChange={(e) => setTrlLevel(Number(e.target.value))}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-emerald-800"
+                        className="form-control w-full font-bold text-emerald-800 dark:text-emerald-400"
                       >
                         <option value={9}>TRL 9 - Hoàn thiện thương mại quy mô công nghiệp</option>
                         <option value={8}>TRL 8 - Hệ thống hoàn chỉnh & đạt kiểm định</option>
@@ -343,7 +343,7 @@ export default function TaoHoSoChaoBanPage() {
                         onChange={(e) =>
                           setIpStatus(e.target.value as IntellectualPropertyStatus)
                         }
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                        className="form-control w-full font-medium"
                       >
                         <option value="PATENT_GRANTED">Bằng Độc Quyền Sáng Chế</option>
                         <option value="UTILITY_MODEL">Bằng Giải Pháp Hữu Ích</option>
@@ -362,7 +362,7 @@ export default function TaoHoSoChaoBanPage() {
                         value={ipRegistrationNumber}
                         onChange={(e) => setIpRegistrationNumber(e.target.value)}
                         placeholder="VD: VN-1-0028491"
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium mono"
+                        className="form-control w-full font-medium font-mono"
                       />
                     </div>
 
@@ -373,7 +373,7 @@ export default function TaoHoSoChaoBanPage() {
                       <select
                         value={transferMethod}
                         onChange={(e) => setTransferMethod(e.target.value as TransferMethod)}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                        className="form-control w-full font-medium"
                       >
                         <option value="EXCLUSIVE_LICENSE">Li-xăng độc quyền</option>
                         <option value="NON_EXCLUSIVE_LICENSE">Li-xăng không độc quyền</option>
@@ -392,7 +392,7 @@ export default function TaoHoSoChaoBanPage() {
                         onChange={(e) =>
                           setCommercialStatus(e.target.value as CommercializationStatus)
                         }
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                        className="form-control w-full font-medium"
                       >
                         <option value="COMMERCIALLY_READY">Sẵn sàng thương mại hóa quy mô lớn</option>
                         <option value="PILOT_TESTING">Vận hành thử nghiệm hiện trường</option>
@@ -422,7 +422,7 @@ export default function TaoHoSoChaoBanPage() {
                   <select
                     value={pricingType}
                     onChange={(e) => setPricingType(e.target.value as PricingType)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    className="form-control w-full font-medium"
                   >
                     <option value="RANGE">Khoảng giá từ - đến</option>
                     <option value="FIXED">Giá cố định cụ thể</option>
@@ -438,7 +438,7 @@ export default function TaoHoSoChaoBanPage() {
                       value={priceAmount || ""}
                       onChange={(e) => setPriceAmount(Number(e.target.value))}
                       placeholder="VD: 500000000"
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                      className="form-control w-full font-medium"
                     />
                     {errors.priceAmount && (
                       <p className="text-rose-600 text-xs mt-1">{errors.priceAmount}</p>
@@ -455,7 +455,7 @@ export default function TaoHoSoChaoBanPage() {
                         value={priceMin || ""}
                         onChange={(e) => setPriceMin(Number(e.target.value))}
                         placeholder="VD: 800000000"
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                        className="form-control w-full font-medium"
                       />
                       {errors.priceMin && (
                         <p className="text-rose-600 text-xs mt-1">{errors.priceMin}</p>
@@ -468,7 +468,7 @@ export default function TaoHoSoChaoBanPage() {
                         value={priceMax || ""}
                         onChange={(e) => setPriceMax(Number(e.target.value))}
                         placeholder="VD: 1500000000"
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                        className="form-control w-full font-medium"
                       />
                       {errors.priceMax && (
                         <p className="text-rose-600 text-xs mt-1">{errors.priceMax}</p>
@@ -510,7 +510,7 @@ export default function TaoHoSoChaoBanPage() {
                       setManagingAuthorityId(e.target.value);
                       if (selected) setManagingAuthorityName(selected.name);
                     }}
-                    className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-medium outline-none focus:border-emerald-600"
+                    className="form-control w-full font-medium"
                   >
                     {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
                       <option key={auth.id} value={auth.id}>

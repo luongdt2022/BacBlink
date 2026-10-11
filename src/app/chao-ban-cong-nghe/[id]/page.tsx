@@ -425,14 +425,19 @@ export default function ChiTietChaoBanPage() {
       {/* MODAL GỬI KẾT NỐI */}
       {showConnectModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-sm font-extrabold text-slate-900">
-                Gửi Yêu Cầu Kết Nối Với Đơn Vị Chào Bán
-              </h3>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900">
+                  Tạo Nhanh Nhu Cầu & Kết Nối Chuyển Giao (Quick Demand)
+                </h3>
+                <p className="text-caption text-slate-500 font-medium mt-0.5">
+                  Đăng ký bài toán công nghệ trong 1 phút để liên kết trực tiếp với Bên bán
+                </p>
+              </div>
               <button
                 onClick={() => setShowConnectModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 rounded-lg hover:bg-slate-100"
               >
                 ✕
               </button>
@@ -440,20 +445,24 @@ export default function ChiTietChaoBanPage() {
 
             {connectSuccess ? (
               <div className="py-6 text-center space-y-3">
-                <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
-                <h4 className="text-sm font-bold text-slate-900">Yêu cầu đã được gửi thành công!</h4>
-                <p className="text-xs text-slate-500">
-                  Đơn vị chủ quản sẽ liên hệ lại với bạn trong vòng 24 - 48 giờ làm việc.
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-7 h-7" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-900">Đã Tạo Nhu Cầu & Gửi Đề Xuất Kết Nối Thành Công!</h4>
+                <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+                  Hệ thống đã tự động ghi nhận nhu cầu công nghệ liên kết với hồ sơ <b>{offer.offerCode}</b>. Đơn vị chủ quản ({offer.managingAuthorityName || "Sở KH&CN"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.
                 </p>
-                <button
-                  onClick={() => {
-                    setShowConnectModal(false);
-                    setConnectSuccess(false);
-                  }}
-                  className="bg-emerald-600 text-white px-5 py-2 rounded-xl text-xs font-bold"
-                >
-                  Đóng
-                </button>
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setShowConnectModal(false);
+                      setConnectSuccess(false);
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition"
+                  >
+                    Hoàn tất & Đóng
+                  </button>
+                </div>
               </div>
             ) : (
               <form
@@ -461,58 +470,131 @@ export default function ChiTietChaoBanPage() {
                   e.preventDefault();
                   setConnectSuccess(true);
                 }}
-                className="space-y-3 text-xs"
+                className="space-y-3.5 text-xs max-h-[75vh] overflow-y-auto pr-1"
               >
+                <div className="bg-brand-50 border border-brand-200 rounded-xl p-2.5 text-caption text-brand-900 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-brand-600 shrink-0" />
+                  <span>Kết nối trực tiếp tới: <b>{offer.title}</b> ({offer.offerCode})</span>
+                </div>
+
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Doanh nghiệp / Tổ chức của bạn:</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Tiêu đề bài toán / Yêu cầu công nghệ: <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="VD: Công ty CP Công Nghệ Xanh"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    defaultValue={`Nhu cầu ứng dụng / chuyển giao: ${offer.title}`}
+                    placeholder="VD: Cần chuyển giao dây chuyền sấy thăng hoa cho nhà máy chế biến nông sản"
+                    className="form-control w-full"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Người liên hệ:</label>
+                    <label className="font-bold text-slate-700 block mb-1">Doanh nghiệp / Tổ chức của bạn: <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       required
-                      placeholder="Nguyễn Văn A"
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                      placeholder="VD: Công ty CP Nông Sản Sạch"
+                      className="form-control w-full"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Số điện thoại:</label>
+                    <label className="font-bold text-slate-700 block mb-1">Người liên hệ: <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="VD: Nguyễn Văn A"
+                      className="form-control w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Số điện thoại liên hệ: <span className="text-red-500">*</span></label>
                     <input
                       type="tel"
                       required
                       placeholder="0912 345 678"
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                      className="form-control w-full font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Email công vụ:</label>
+                    <input
+                      type="email"
+                      placeholder="contact@doanhnghiep.vn"
+                      className="form-control w-full"
                     />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Ngân sách dự kiến:</label>
+                    <select
+                      defaultValue="500M_1B"
+                      className="form-control w-full font-medium"
+                    >
+                      <option value="UNDER_500M">Dưới 500 triệu VNĐ</option>
+                      <option value="500M_1B">500 triệu - 1 tỷ VNĐ</option>
+                      <option value="1B_3B">1 tỷ - 3 tỷ VNĐ</option>
+                      <option value="OVER_3B">Trên 3 tỷ VNĐ</option>
+                      <option value="CONTACT">Thỏa thuận trực tiếp</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Tiến độ triển khai mong muốn:</label>
+                    <select
+                      defaultValue="1_3M"
+                      className="form-control w-full font-medium"
+                    >
+                      <option value="IMMEDIATE">Triển khai ngay (dưới 1 tháng)</option>
+                      <option value="1_3M">Trong vòng 1 - 3 tháng</option>
+                      <option value="3_6M">Trong vòng 3 - 6 tháng</option>
+                      <option value="RESEARCH">Khảo sát tiền khả thi</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Nội dung đề xuất hợp tác:</label>
+                  <label className="font-bold text-slate-700 block mb-1">Hình thức hợp tác mong muốn:</label>
+                  <select
+                    defaultValue="TRANSFER"
+                    className="form-control w-full font-medium"
+                  >
+                    <option value="TRANSFER">Chuyển giao quyền sở hữu công nghệ trọn gói</option>
+                    <option value="LICENSE">Mua li-xăng bản quyền có thời hạn</option>
+                    <option value="DEVICE">Mua thiết bị máy móc hoàn chỉnh</option>
+                    <option value="JOINT_RD">Hợp tác R&D điều chỉnh theo đặc thù nhà máy</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Chi tiết bài toán & Yêu cầu kỹ thuật riêng:</label>
                   <textarea
                     rows={3}
-                    placeholder="Nêu rõ nhu cầu chuyển giao, li-xăng hoặc mua thiết bị..."
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    placeholder="Mô tả công suất mong muốn, điều kiện nhà xưởng hiện có, quy chuẩn sản phẩm đầu ra..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   ></textarea>
                 </div>
-                <div className="pt-2 flex justify-end gap-2">
+
+                <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => setShowConnectModal(false)}
-                    className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-bold"
+                    className="h-11 px-5 rounded-xl text-slate-600 hover:bg-slate-100 font-bold transition text-sm"
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl font-bold"
+                    className="h-11 bg-nacen-green-600 hover:bg-nacen-green-700 text-white px-6 rounded-xl font-bold shadow-sm transition flex items-center gap-1.5 text-sm"
                   >
-                    Xác nhận gửi yêu cầu
+                    <Sparkles className="w-4 h-4" />
+                    <span>Tạo Nhu Cầu & Gửi Yêu Cầu Kết Nối</span>
                   </button>
                 </div>
               </form>

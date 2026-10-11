@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { authClient, UserContext } from "@/lib/auth-client";
 import Link from "next/link";
 import { getActiveSectors } from "@/lib/master-data-client";
+import { portalClient, PortalOverviewStats } from "@/lib/portal-client";
 import {
   ShieldAlert,
   Users,
@@ -20,20 +21,70 @@ import {
 export default function AdminDashboard() {
   const [user, setUser] = useState<UserContext | null>(null);
   const [sectorCount, setSectorCount] = useState<number | null>(null);
-  const [sectorError, setSectorError] = useState(false);
+  const [stats, setStats] = useState<PortalOverviewStats | null>(null);
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setUser(authClient.getUser());
     let disposed = false;
-    getActiveSectors().then((rows) => { if (!disposed) setSectorCount(rows.length); }).catch(() => { if (!disposed) setSectorError(true); });
+
+    Promise.allSettled([
+      getActiveSectors().then((rows) => { if (!disposed) setSectorCount(rows.length); }),
+      portalClient.getStats().then((data) => { if (!disposed) setStats(data); }),
+      (async () => {
+        try {
+          const token = authClient.getToken();
+          const headers: Record<string, string> = { "Content-Type": "application/json" };
+          if (token) headers["Authorization"] = `Bearer ${token}`;
+          const res = await fetch("/api/v1/governance/approvals?status=PENDING_APPROVAL", { headers });
+          if (res.ok) {
+            const json = await res.json();
+            if (!disposed) setPendingApprovalsCount(json.total ?? json.data?.length ?? 0);
+          }
+        } catch {
+          // Silent fallback to 0
+        }
+      })()
+    ]).finally(() => {
+      if (!disposed) setLoading(false);
+    });
+
     return () => { disposed = true; };
   }, []);
 
+  const totalUsersCount = stats ? (stats.totalEnterprises + stats.totalExperts) : 0;
+  const provincesCount = stats?.totalProvinces ?? 0;
+
   const systemMetrics = [
-    { title: "Tổng Tài Khoản Đang Hoạt Động", value: "18,420", sub: "Toàn quốc", icon: Users, color: "text-brand-700 dark:text-brand-200" },
-    { title: "Sở KH&CN Đã Kết Nối", value: "63 / 63", sub: "100% Tỉnh/Thành", icon: Network, color: "text-nacen-green-700 dark:text-nacen-green-200" },
-    { title: "Danh Mục Lĩnh Vực TT17", value: sectorCount === null ? (sectorError ? "Không tải được" : "Đang tải...") : String(sectorCount), sub: "Mã chuyên môn đang kích hoạt", icon: Database, color: "text-brand-700 dark:text-brand-200" },
-    { title: "Nhật Ký Kiểm Toán (Audit)", value: "142,890", sub: "Lưu vết bất biến", icon: History, color: "text-brand-700 dark:text-brand-200" },
+    {
+      title: "Tổng Doanh Nghiệp & Chuyên Gia",
+      value: loading ? "Đang tải..." : totalUsersCount > 0 ? totalUsersCount.toLocaleString("vi-VN") : "0",
+      sub: totalUsersCount > 0 ? "Đã đăng ký tài khoản" : "Chưa có dữ liệu",
+      icon: Users,
+      color: "text-brand-700 dark:text-brand-200"
+    },
+    {
+      title: "Sở KH&CN Kết Nối",
+      value: loading ? "Đang tải..." : provincesCount > 0 ? `${provincesCount} / 63` : "0 / 63",
+      sub: provincesCount > 0 ? `${Math.round((provincesCount / 63) * 100)}% Tỉnh/Thành` : "Chưa kết nối",
+      icon: Network,
+      color: "text-nacen-green-700 dark:text-nacen-green-200"
+    },
+    {
+      title: "Danh Mục Lĩnh Vực TT17",
+      value: sectorCount === null ? (loading ? "Đang tải..." : "0") : String(sectorCount),
+      sub: sectorCount && sectorCount > 0 ? "Mã chuyên môn đang kích hoạt" : "Chưa có danh mục",
+      icon: Database,
+      color: "text-brand-700 dark:text-brand-200"
+    },
+    {
+      title: "Hàng Đợi Thẩm Định",
+      value: loading ? "Đang tải..." : String(pendingApprovalsCount),
+      sub: pendingApprovalsCount > 0 ? "Hồ sơ cần xử lý" : "Không có hồ sơ chờ",
+      icon: History,
+      color: "text-brand-700 dark:text-brand-200"
+    },
   ];
 
   return (
@@ -64,14 +115,20 @@ export default function AdminDashboard() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-slate-900 dark:text-white text-card-title">
-                Hàng Đợi Phê Duyệt & Thẩm Định Hồ Sơ (TASK-07)
+                Hàng Đợi Phê Duyệt & Thẩm Định Hồ Sơ
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200">
-                2 hồ sơ chờ xét duyệt
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                pendingApprovalsCount > 0
+                  ? "bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200"
+                  : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              }`}>
+                {pendingApprovalsCount > 0 ? `${pendingApprovalsCount} hồ sơ chờ xét duyệt` : "Không có hồ sơ chờ"}
               </span>
             </div>
             <p className="text-body text-slate-600 dark:text-slate-300 mt-0.5">
-              Bao gồm hồ sơ nâng hạng Chuyên gia KH&CN của <strong>Đặng Tiến Lượng</strong> và Gian hàng công nghệ mới gửi.
+              {pendingApprovalsCount > 0
+                ? "Bao gồm các hồ sơ nâng hạng Chuyên gia KH&CN và Gian hàng công nghệ mới gửi cần xét duyệt."
+                : "Tất cả hồ sơ đăng ký và chào bán công nghệ đã được xử lý xong."}
             </p>
           </div>
         </div>

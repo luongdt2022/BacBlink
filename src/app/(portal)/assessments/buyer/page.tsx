@@ -1,36 +1,35 @@
 "use client";
-import React, { useState } from 'react';
+
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 
 export default function BuyerWizardPage() {
-  const [data, setData] = useState({ nhu_cau: '', nganh_nghe: '' });
+  const router = useRouter();
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert("Lưu Nhu Cầu Tìm Mua: " + JSON.stringify(data));
-  };
+  useEffect(() => {
+    router.replace("/portal/buyer/demands");
+  }, [router]);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Hồ sơ Nhu cầu Tìm mua (Buyer)</h1>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="bg-white p-4 shadow rounded text-black">
-          <input 
-            value={data.nhu_cau} 
-            onChange={(e) => setData({...data, nhu_cau: e.target.value})} 
-            placeholder="Nhu cầu công nghệ..." 
-            className="border p-2 mr-2 w-full mb-2 text-black" 
-          />
-          <input 
-            value={data.nganh_nghe} 
-            onChange={(e) => setData({...data, nganh_nghe: e.target.value})} 
-            placeholder="Ngành nghề..." 
-            className="border p-2 w-full text-black" 
-          />
-        </div>
-        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
-          Lưu Hồ Sơ
-        </button>
-      </form>
+    <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center space-y-4">
+      <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center">
+        <ShoppingBag className="w-6 h-6" />
+      </div>
+      <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+        Đang chuyển hướng đến Không Gian Nhu Cầu Bên Mua...
+      </h1>
+      <p className="text-sm text-slate-500 max-w-md">
+        Hồ sơ bài toán công nghệ và nhu cầu đổi mới sáng tạo được quản lý tập trung tại Cổng Doanh Nghiệp (Buyer Portal).
+      </p>
+      <Link
+        href="/portal/buyer/demands"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-brand-700 text-white rounded-lg font-semibold hover:bg-brand-800 transition"
+      >
+        <span>Đến Không Gian Nhu Cầu</span>
+        <ArrowRight className="w-4 h-4" />
+      </Link>
     </div>
   );
 }

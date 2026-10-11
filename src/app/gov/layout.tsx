@@ -96,6 +96,18 @@ export default function GovLayout({ children }: { children: React.ReactNode }) {
             </Link>
 
             <Link
+              href="/gov/opportunities"
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                pathname.startsWith("/gov/opportunities")
+                  ? "bg-brand-50 text-brand-700 font-semibold dark:bg-brand-950/60 dark:text-brand-300"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>Giám sát Cung–Cầu & SLA</span>
+            </Link>
+
+            <Link
               href="/gov/settings/staff"
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
                 pathname.startsWith("/gov/settings/staff")

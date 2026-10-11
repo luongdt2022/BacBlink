@@ -6,7 +6,7 @@ import { I18nProvider } from "@/components/common/i18n-provider";
 import { ToastProvider } from "@/components/common/toast";
 import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
-import { PlatformSwitcher } from "@/components/common/platform-switcher";
+import { AIAssistantWidget } from "@/components/home/AIAssistantWidget";
 
 const beVietnamPro = localFont({
   src: [
@@ -36,10 +36,11 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
             <ToastProvider>
-              <PlatformSwitcher />
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />
+              {/* Trợ lý ảo AI NacentTwin nổi toàn hệ thống trên tất cả các màn hình */}
+              <AIAssistantWidget />
             </ToastProvider>
           </I18nProvider>
         </ThemeProvider>

@@ -110,99 +110,59 @@ export interface Tt17Assessment {
 }
 
 export const INITIAL_SURVEY_DATA: Tt17SurveyData = {
-  totalCapital: 50000000000,
-  totalWorkforce: 150,
-  companyAddress: "Số 125 Đường Giải Phóng, Hà Nội",
-  companyPhone: "024 3869 1234",
-  companyEmail: "info@congnghesanxuat.vn",
-  companyType: "Công ty Cổ phần",
+  totalCapital: 0,
+  totalWorkforce: 0,
+  companyAddress: "",
+  companyPhone: "",
+  companyEmail: "",
+  companyType: "",
 
-  machineries: [
-    {
-      name: "Trung tâm gia công phay CNC 5 trục",
-      originCountry: "Nhật Bản",
-      manufactureYear: 2021,
-      startUsageYear: 2022,
-      originalCost: 3500000000,
-      currentBookValue: 2600000000,
-      isAutomated: true,
-      isAdvancedCountry: true,
-    },
-    {
-      name: "Máy cắt laser sợi quang 6000W",
-      originCountry: "Đức",
-      manufactureYear: 2022,
-      startUsageYear: 2023,
-      originalCost: 2800000000,
-      currentBookValue: 2300000000,
-      isAutomated: true,
-      isAdvancedCountry: true,
-    },
-  ],
-  depreciationCoefficient: 0.35,
-  modernEquipmentRatio: 65,
-  advancedCountryEquipmentRatio: 55,
-  automationRatio: 60,
-  averageEquipmentAge: 4.5,
-  lineSynchronizationLevel: 4,
-  materialConsumptionRatio: 98,
+  machineries: [],
+  depreciationCoefficient: 0,
+  modernEquipmentRatio: 0,
+  advancedCountryEquipmentRatio: 0,
+  automationRatio: 0,
+  averageEquipmentAge: 0,
+  lineSynchronizationLevel: 1,
+  materialConsumptionRatio: 100,
 
-  financialSeries: [
-    { year: 2023, industrialOutputValue: 65000000000, netRevenue: 62000000000, directWorkersCount: 110 },
-    { year: 2024, industrialOutputValue: 78000000000, netRevenue: 74000000000, directWorkersCount: 120 },
-    { year: 2025, industrialOutputValue: 92000000000, netRevenue: 88000000000, directWorkersCount: 130 },
-  ],
-  defectProductRatio: 1.5,
-  capacityUtilizationRatio: 82,
-  exportRevenueRatio: 40,
-  energySavingRatio: 7.5,
+  financialSeries: [],
+  defectProductRatio: 0,
+  capacityUtilizationRatio: 0,
+  exportRevenueRatio: 0,
+  energySavingRatio: 0,
 
-  isoCertifications: ["ISO 9001:2015", "ISO 14001:2015"],
-  softwareApplications: ["ERP SAP", "MES Production"],
-  productivityTools: ["5S", "Kaizen"],
-  digitalMaturityLevel: 4,
-  environmentalCompliant: true,
+  isoCertifications: [],
+  softwareApplications: [],
+  productivityTools: [],
+  digitalMaturityLevel: 1,
+  environmentalCompliant: false,
 
-  rdWorkforceCount: 8,
-  hasLabOrTestingFacility: true,
-  rdExpenseRatio: 1.8,
-  rdProjectsCount: 2,
-  technologyMasteryLevel: 4,
+  rdWorkforceCount: 0,
+  hasLabOrTestingFacility: false,
+  rdExpenseRatio: 0,
+  rdProjectsCount: 0,
+  technologyMasteryLevel: 1,
 
-  grantedPatentsCount: 1,
-  registeredIpCount: 2,
-  newProductRevenueRatio: 25,
-  academyPartnershipCount: 2,
-  hasInternalInnovationPolicy: true,
+  grantedPatentsCount: 0,
+  registeredIpCount: 0,
+  newProductRevenueRatio: 0,
+  academyPartnershipCount: 0,
+  hasInternalInnovationPolicy: false,
 };
 
-export async function getCurrentAssessment(year?: number): Promise<Tt17Assessment> {
+export async function getCurrentAssessment(year?: number): Promise<Tt17Assessment | null> {
   const url = year ? `/api/v1/assessments/tt17/current?year=${year}` : "/api/v1/assessments/tt17/current";
   try {
     const res = await fetch(url, { headers: authClient.getAuthHeaders() });
     if (res.ok) {
       const json = await res.json();
-      return json.data;
+      return json.data || null;
     }
-  } catch {}
-  return {
-    id: "99999999-9999-9999-9999-999999999991",
-    enterpriseId: "00000000-0000-0000-0000-000000000001",
-    enterpriseName: "Công ty CP Chế tạo Cơ khí Chính xác Hải Phòng",
-    taxCode: "0200188999",
-    assessmentYear: year || 2025,
-    status: "APPROVED",
-    scopeType: "PROVINCE",
-    scopeId: "HP",
-    industryCode: "C.28",
-    surveyData: INITIAL_SURVEY_DATA,
-    scoreResult: calculateLocalScore(INITIAL_SURVEY_DATA),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    submittedAt: new Date().toISOString(),
-    approvedAt: new Date().toISOString(),
-    reviewNotes: "Hồ sơ BCTC 3 năm và chứng chỉ ISO hợp lệ. Đã thẩm định và cấp chứng nhận Phụ lục IV.",
-  };
+  } catch (err) {
+    console.error("Lỗi khi tải hồ sơ đánh giá:", err);
+  }
+  return null;
 }
 
 export async function getAssessmentHistory(): Promise<Tt17Assessment[]> {
@@ -212,8 +172,10 @@ export async function getAssessmentHistory(): Promise<Tt17Assessment[]> {
       const json = await res.json();
       return json.data || [];
     }
-  } catch {}
-  return [await getCurrentAssessment(2025)];
+  } catch (err) {
+    console.error("Lỗi khi tải lịch sử đánh giá:", err);
+  }
+  return [];
 }
 
 export async function getAssessmentById(id: string): Promise<Tt17Assessment | null> {
@@ -221,10 +183,12 @@ export async function getAssessmentById(id: string): Promise<Tt17Assessment | nu
     const res = await fetch(`/api/v1/assessments/tt17/${id}`, { headers: authClient.getAuthHeaders() });
     if (res.ok) {
       const json = await res.json();
-      return json.data;
+      return json.data || null;
     }
-  } catch {}
-  return getCurrentAssessment(2025);
+  } catch (err) {
+    console.error("Lỗi khi tải chi tiết hồ sơ đánh giá:", err);
+  }
+  return null;
 }
 
 export async function saveAssessmentDraft(payload: {
@@ -233,32 +197,17 @@ export async function saveAssessmentDraft(payload: {
   scopeId: string;
   surveyData: Tt17SurveyData;
 }): Promise<Tt17Assessment> {
-  try {
-    const res = await fetch("/api/v1/assessments/tt17/draft", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data;
-    }
-  } catch {}
-  return {
-    id: "draft-" + Date.now(),
-    enterpriseId: "00000000-0000-0000-0000-000000000001",
-    enterpriseName: "Doanh nghiệp Sản xuất",
-    taxCode: "0100000000",
-    assessmentYear: payload.assessmentYear,
-    status: "DRAFT",
-    scopeType: "PROVINCE",
-    scopeId: payload.scopeId,
-    industryCode: payload.industryCode,
-    surveyData: payload.surveyData,
-    scoreResult: calculateLocalScore(payload.surveyData),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+  const res = await fetch("/api/v1/assessments/tt17/draft", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Không thể lưu nháp hồ sơ đánh giá.");
+  }
+  const json = await res.json();
+  return json.data;
 }
 
 export async function submitAssessment(payload: {
@@ -267,33 +216,17 @@ export async function submitAssessment(payload: {
   scopeId: string;
   surveyData: Tt17SurveyData;
 }): Promise<Tt17Assessment> {
-  try {
-    const res = await fetch("/api/v1/assessments/tt17/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data;
-    }
-  } catch {}
-  return {
-    id: "sub-" + Date.now(),
-    enterpriseId: "00000000-0000-0000-0000-000000000001",
-    enterpriseName: "Doanh nghiệp Sản xuất",
-    taxCode: "0100000000",
-    assessmentYear: payload.assessmentYear,
-    status: "SUBMITTED",
-    scopeType: "PROVINCE",
-    scopeId: payload.scopeId,
-    industryCode: payload.industryCode,
-    surveyData: payload.surveyData,
-    scoreResult: calculateLocalScore(payload.surveyData),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    submittedAt: new Date().toISOString(),
-  };
+  const res = await fetch("/api/v1/assessments/tt17/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Không thể nộp hồ sơ đánh giá.");
+  }
+  const json = await res.json();
+  return json.data;
 }
 
 export async function getGovAssessmentQueue(scopeId?: string, status?: string): Promise<Tt17Assessment[]> {
@@ -306,26 +239,24 @@ export async function getGovAssessmentQueue(scopeId?: string, status?: string): 
       const json = await res.json();
       return json.data || [];
     }
-  } catch {}
-  return [await getCurrentAssessment(2025)];
+  } catch (err) {
+    console.error("Lỗi khi tải hàng đợi đánh giá:", err);
+  }
+  return [];
 }
 
 export async function reviewAssessment(id: string, action: "APPROVE" | "REJECT" | "REQUEST_CHANGES", reviewNotes?: string): Promise<Tt17Assessment> {
-  try {
-    const res = await fetch(`/api/v1/gov/assessments/tt17/${id}/review`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
-      body: JSON.stringify({ action, reviewNotes }),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data;
-    }
-  } catch {}
-  const cur = await getCurrentAssessment(2025);
-  cur.status = action === "APPROVE" ? "APPROVED" : action === "REJECT" ? "REJECTED" : "CHANGES_REQUESTED";
-  cur.reviewNotes = reviewNotes;
-  return cur;
+  const res = await fetch(`/api/v1/gov/assessments/tt17/${id}/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
+    body: JSON.stringify({ action, reviewNotes }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Không thể xử lý phê duyệt hồ sơ.");
+  }
+  const json = await res.json();
+  return json.data;
 }
 
 // Client-side instant calculator simulation

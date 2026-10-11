@@ -219,7 +219,7 @@ export default function AssessmentWizardPage() {
                     type="number"
                     value={assessmentYear}
                     onChange={(e) => setAssessmentYear(parseInt(e.target.value) || 2026)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    className="form-control w-full text-sm font-semibold"
                   />
                 </div>
 
@@ -230,7 +230,7 @@ export default function AssessmentWizardPage() {
                   <select
                     value={industryCode}
                     onChange={(e) => setIndustryCode(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    className="form-control w-full text-sm font-medium"
                   >
                     <option value="C.10">C.10 - Sản xuất chế biến thực phẩm</option>
                     <option value="C.20">C.20 - Sản xuất hoá chất và sản phẩm hoá chất</option>

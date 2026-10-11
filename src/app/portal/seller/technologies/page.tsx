@@ -160,20 +160,20 @@ export default function SellerTechnologiesPage() {
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Tìm kiếm công nghệ..."
-                  className="text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
+                  className="form-control w-full pl-9 pr-3 text-sm"
                 />
               </div>
 
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700 focus:outline-none"
+                className="form-control text-sm font-medium"
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="APPROVED">Đang hiển thị</option>
@@ -183,10 +183,10 @@ export default function SellerTechnologiesPage() {
 
               <button
                 onClick={loadData}
-                className="p-2 text-slate-500 hover:text-slate-800 bg-slate-50 border border-slate-200 rounded-xl"
+                className="h-11 w-11 flex items-center justify-center text-slate-500 hover:text-slate-800 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-control shrink-0"
                 title="Tải lại"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
               </button>
             </div>
           </div>
@@ -307,12 +307,13 @@ export default function SellerTechnologiesPage() {
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
-                        <button
+                        <Link
+                          href={`/portal/seller/technologies/${item.id}/edit`}
                           className="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition"
                           title="Chỉnh sửa"
                         >
                           <Edit className="w-4 h-4" />
-                        </button>
+                        </Link>
                       </div>
                     </td>
                   </tr>

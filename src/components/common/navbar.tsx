@@ -70,7 +70,7 @@ export function Navbar() {
     { href: "/chao-ban-cong-nghe", label: t("technology_offers") },
     { href: "/nhu-cau-cong-nghe", label: t("technology_demands") },
     { href: "/doanh-nghiep-dmst", label: t("innovative_enterprises") },
-    { href: "/elearning", label: "eLearning" },
+    { href: "/trien-lam", label: "Sự kiện Techmart" },
     { href: "/chuyen-gia", label: t("experts") },
     { href: "/dich-vu-khac", label: t("services") },
   ];

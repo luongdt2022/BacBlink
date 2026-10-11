@@ -307,7 +307,7 @@ export default function EnterpriseOwnerProfilePage() {
                     <select
                       value={formData.subjectType || "DN ĐMST"}
                       onChange={(e) => setFormData({ ...formData, subjectType: e.target.value })}
-                      className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800 bg-white"
+                      className="form-control w-full"
                     >
                       <option value="DN ĐMST">Doanh nghiệp Đổi mới sáng tạo (DN ĐMST)</option>
                       <option value="DN Khoa học công nghệ">Doanh nghiệp KH&CN (DN KH&CN)</option>
@@ -425,7 +425,7 @@ export default function EnterpriseOwnerProfilePage() {
                     <select
                       value={formData.ownershipType || "Tư nhân"}
                       onChange={(e) => setFormData({ ...formData, ownershipType: e.target.value })}
-                      className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800 bg-white"
+                      className="form-control w-full"
                     >
                       <option value="Tư nhân">Doanh nghiệp 100% vốn tư nhân trong nước</option>
                       <option value="Nhà nước">Doanh nghiệp Nhà nước nắm giữ cổ phần chi phối</option>
@@ -457,7 +457,7 @@ export default function EnterpriseOwnerProfilePage() {
                     <select
                       value={formData.workforceScale || "10-50 người"}
                       onChange={(e) => setFormData({ ...formData, workforceScale: e.target.value })}
-                      className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800 bg-white"
+                      className="form-control w-full"
                     >
                       <option value="Dưới 10 người">Dưới 10 người (Siêu nhỏ)</option>
                       <option value="10-50 người">Từ 10 đến 50 người (Nhỏ)</option>
@@ -501,7 +501,7 @@ export default function EnterpriseOwnerProfilePage() {
                     <select
                       value={formData.revenueRange || "10 - 50 tỷ VNĐ"}
                       onChange={(e) => setFormData({ ...formData, revenueRange: e.target.value })}
-                      className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800 bg-white"
+                      className="form-control w-full"
                     >
                       <option value="Dưới 3 tỷ VNĐ">Dưới 3 tỷ VNĐ</option>
                       <option value="3 - 10 tỷ VNĐ">Từ 3 tỷ đến 10 tỷ VNĐ</option>

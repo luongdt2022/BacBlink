@@ -14,11 +14,15 @@ import {
   ChevronRight,
   TrendingUp,
   ClipboardList,
+  Sparkles,
+  Kanban,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 const portalNavItems = [
   { href: "/portal", label: "Tổng quan Workspace", icon: LayoutDashboard },
+  { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
+  { href: "/portal/opportunities/pipeline", label: "Pipeline Cơ Hội (Kanban)", icon: Kanban },
   { href: "/portal/expert/profile", label: "Hồ sơ Chuyên gia KH&CN", icon: GraduationCap },
   { href: "/portal/technologies", label: "Gian hàng Chào bán (TRL)", icon: Cpu },
   { href: "/portal/demands", label: "Bài toán Tìm mua (Buyer)", icon: ShoppingBag },
@@ -39,12 +43,16 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const navItems = isExpert
     ? [
         { href: "/portal", label: "Tổng quan chuyên gia", icon: LayoutDashboard },
+        { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
+        { href: "/portal/opportunities/pipeline", label: "Cơ hội đồng hành", icon: Kanban },
         { href: "/portal/expert/profile", label: "Hồ sơ của tôi", icon: GraduationCap },
         { href: "/profile/upgrade/expert", label: "Chỉnh sửa / Bổ sung", icon: FileCheck },
       ]
     : isPublicUser
     ? [
         { href: "/portal", label: "Tổng quan Workspace", icon: LayoutDashboard },
+        { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
+        { href: "/portal/opportunities/pipeline", label: "Pipeline Cơ Hội (Kanban)", icon: Kanban },
         { href: "/profile/upgrade/expert", label: "Đăng ký Chuyên gia KH&CN", icon: GraduationCap },
         { href: "/settings", label: "Nâng hạng & Cài đặt", icon: FileCheck },
       ]

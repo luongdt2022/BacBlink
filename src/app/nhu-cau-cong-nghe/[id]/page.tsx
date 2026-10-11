@@ -46,22 +46,14 @@ export default function PublicDemandDetailPage() {
       const res = await fetch(`/api/v1/public/demands/${id}`);
       if (res.ok) {
         const data = await res.json();
-        setItem(data);
-        setAsyncState("success");
-      } else {
-        // Fallback fetch first if param was not found
-        const listRes = await fetch("/api/v1/public/demands");
-        if (listRes.ok) {
-          const list = await listRes.json();
-          if (Array.isArray(list) && list.length > 0) {
-            setItem(list[0]);
-            setAsyncState("success");
-            return;
-          }
+        if (data) {
+          setItem(data);
+          setAsyncState("success");
+          return;
         }
-        setErrorMessage("Không tìm thấy bài toán nhu cầu hoặc hồ sơ đã đóng.");
-        setAsyncState("error");
       }
+      setErrorMessage("Không tìm thấy bài toán nhu cầu hoặc hồ sơ đã đóng.");
+      setAsyncState("error");
     } catch (err: any) {
       setErrorMessage(err?.message || "Lỗi kết nối máy chủ API.");
       setAsyncState("error");
@@ -300,7 +292,7 @@ export default function PublicDemandDetailPage() {
                           value={sellerName}
                           onChange={(e) => setSellerName(e.target.value)}
                           placeholder="Viện / Trường / Doanh nghiệp công nghệ"
-                          className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-brand-500 outline-none transition"
+                          className="form-control w-full text-sm"
                         />
                       </div>
 
@@ -314,7 +306,7 @@ export default function PublicDemandDetailPage() {
                             value={sellerEmail}
                             onChange={(e) => setSellerEmail(e.target.value)}
                             placeholder="seller@domain.vn"
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-brand-500 outline-none transition"
+                            className="form-control w-full text-sm"
                           />
                         </div>
                         <div>
@@ -326,7 +318,7 @@ export default function PublicDemandDetailPage() {
                             value={sellerPhone}
                             onChange={(e) => setSellerPhone(e.target.value)}
                             placeholder="0912xxxxxx"
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-brand-500 outline-none transition"
+                            className="form-control w-full text-sm font-mono"
                           />
                         </div>
                       </div>
@@ -334,7 +326,7 @@ export default function PublicDemandDetailPage() {
                       <button
                         type="submit"
                         disabled={isSubmittingOffer}
-                        className="w-full bg-brand-700 hover:bg-brand-800 text-white py-3 rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full h-11 bg-brand-700 hover:bg-brand-800 text-white rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {isSubmittingOffer ? (
                           <>

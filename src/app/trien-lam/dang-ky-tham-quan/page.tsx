@@ -14,55 +14,65 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useToast } from '@/components/common/toast';
+import { portalClient, TechmartEvent } from '@/lib/portal-client';
 
 export default function ExpoRegistrationPage() {
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successCode, setSuccessCode] = useState<string | null>(null);
+  const [events, setEvents] = useState<TechmartEvent[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>('');
+
+  React.useEffect(() => {
+    portalClient
+      .listEvents('UPCOMING', 1, 20)
+      .then((res) => {
+        setEvents(res.data);
+        if (res.data.length > 0) {
+          setSelectedEventId(res.data[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error('Lỗi nạp sự kiện:', err);
+      });
+  }, []);
 
   const [formData, setFormData] = useState({
-    fullName: 'Trần Đình Trọng',
-    jobTitle: 'Giám đốc Kỹ thuật',
-    companyName: 'Công ty CP Thiết bị Công nghiệp Tân Phát',
-    businessSector: 'Công nghiệp hỗ trợ & Cơ khí',
-    phone: '0987654321',
-    email: 'trong.td@tanphatequip.vn',
-    website: 'https://tanphatequip.vn',
-    expoChoice: 'VIMEXPO & VIETNAM AUTOEXPO 2026',
-    productCategory: 'Máy móc & thiết bị công nghiệp',
+    fullName: '',
+    jobTitle: '',
+    companyName: '',
+    businessSector: '',
+    phone: '',
+    email: '',
+    website: '',
+    productCategory: '',
     purpose: 'Tìm kiếm nhà cung cấp/đối tác'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedEventId) {
+      toast.error('Vui lòng chọn sự kiện Techmart muốn tham gia.');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      const payload = {
-        fullName: formData.fullName,
-        phone: formData.phone,
-        email: formData.email,
-        companyName: formData.companyName,
-        purpose: formData.purpose,
-        sectorOfInterest: formData.productCategory
-      };
-
-      const res = await fetch('/api/v1/trien-lam/dang-ky', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      const res = await portalClient.registerEvent({
+        eventId: selectedEventId,
+        organizationName: formData.companyName.trim() || 'Doanh nghiệp / Cá nhân',
+        contactName: formData.fullName.trim(),
+        phoneNumber: formData.phone.trim(),
+        email: formData.email.trim(),
+        roleType: 'VISITOR',
+        notes: `${formData.businessSector} | ${formData.productCategory} | Mục đích: ${formData.purpose}`
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        setSuccessCode(data.registrationCode);
-        toast.success(`Đã phát hành vé điện tử ${data.registrationCode} thành công!`, 'Đăng Ký Thành Công');
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        toast.error(errData.message || 'Lỗi đăng ký tham quan triển lãm.', 'Thao tác thất bại');
-      }
-    } catch (err: any) {
-      toast.error(err?.message || 'Không thể kết nối máy chủ.', 'Lỗi kết nối');
+      setSuccessCode(res.registrationCode);
+      toast.success(`Đã phát hành vé điện tử ${res.registrationCode} thành công!`, 'Đăng Ký Thành Công');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Không thể kết nối máy chủ.';
+      toast.error(msg, 'Thao Tác Thất Bại');
     } finally {
       setIsSubmitting(false);
     }
@@ -165,6 +175,28 @@ export default function ExpoRegistrationPage() {
           </div>
 
           <div className="space-y-4 text-xs">
+            <div>
+              <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                Sự kiện Techmart muốn tham quan *
+              </label>
+              <select
+                required
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className="form-control w-full text-sm font-semibold"
+              >
+                {events.length === 0 ? (
+                  <option value="">Đang tải danh sách sự kiện...</option>
+                ) : (
+                  events.map((ev) => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.title} ({ev.location})
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
@@ -175,7 +207,7 @@ export default function ExpoRegistrationPage() {
                   required
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 />
               </div>
 
@@ -187,7 +219,7 @@ export default function ExpoRegistrationPage() {
                   type="text"
                   value={formData.jobTitle}
                   onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 />
               </div>
             </div>
@@ -202,7 +234,7 @@ export default function ExpoRegistrationPage() {
                   required
                   value={formData.companyName}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 />
               </div>
 
@@ -214,7 +246,7 @@ export default function ExpoRegistrationPage() {
                   type="text"
                   value={formData.businessSector}
                   onChange={(e) => setFormData({ ...formData, businessSector: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 />
               </div>
             </div>
@@ -229,7 +261,7 @@ export default function ExpoRegistrationPage() {
                   required
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 />
               </div>
 
@@ -242,7 +274,7 @@ export default function ExpoRegistrationPage() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 />
               </div>
             </div>
@@ -255,7 +287,7 @@ export default function ExpoRegistrationPage() {
                 <select
                   value={formData.productCategory}
                   onChange={(e) => setFormData({ ...formData, productCategory: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 >
                   <option value="Máy móc & thiết bị công nghiệp">Máy móc & thiết bị công nghiệp</option>
                   <option value="Tự động hóa & Thị giác AI">Tự động hóa & Thị giác AI</option>
@@ -271,7 +303,7 @@ export default function ExpoRegistrationPage() {
                 <select
                   value={formData.purpose}
                   onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-                  className="form-control w-full px-3 py-2 text-xs"
+                  className="form-control w-full text-sm"
                 >
                   <option value="Tìm kiếm nhà cung cấp/đối tác">Tìm kiếm nhà cung cấp / đối tác</option>
                   <option value="Khảo sát công nghệ mới">Khảo sát công nghệ mới</option>
@@ -290,7 +322,7 @@ export default function ExpoRegistrationPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-nacen-green-500 hover:bg-nacen-green-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2 disabled:opacity-50"
+              className="h-11 bg-nacen-green-500 hover:bg-nacen-green-600 text-white px-6 rounded-xl font-bold text-sm shadow-md transition flex items-center gap-2 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

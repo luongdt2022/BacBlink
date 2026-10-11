@@ -105,7 +105,7 @@ export default function ChaoBanCongNghePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">
+    <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 flex flex-col">
       {/* HERO BANNER SECTION */}
       <section className="bg-gradient-to-r from-brand-900 via-brand-800 to-teal-900 text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-brand-700 shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -189,12 +189,12 @@ export default function ChaoBanCongNghePage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Tìm công nghệ, đơn vị nghiên cứu..."
-                className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                className="w-full h-11 pl-9 pr-4 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-control focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-slate-900 dark:text-white"
               />
             </div>
             <button
               type="submit"
-              className="bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition"
+              className="h-11 bg-brand-700 hover:bg-brand-800 text-white px-5 rounded-control text-sm font-bold transition shrink-0"
             >
               Tìm
             </button>

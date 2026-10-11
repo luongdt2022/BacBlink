@@ -246,7 +246,7 @@ export default function AdminApprovalsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-label border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-control px-3 py-1.5 focus:outline-none"
+              className="form-control text-sm font-medium"
             >
               <option value="ALL">Tất cả trạng thái</option>
               <option value="PENDING_REVIEW">Chờ sơ kiểm</option>
@@ -266,7 +266,7 @@ export default function AdminApprovalsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm nhanh theo Tên chuyên gia, Đơn vị viện trường, Email, Mã hồ sơ..."
-            className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-control text-body text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-600"
+            className="form-control w-full pl-10 pr-4 text-sm"
           />
         </div>
       </div>

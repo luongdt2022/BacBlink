@@ -230,40 +230,40 @@ export default function GovDashboard() {
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || "Không thể xử lý yêu cầu.");
+          throw new Error(err.message || "Không thể xử lý yêu cầu thẩm định.");
         }
       }
+
+      // Cập nhật trạng thái thành công trong UI
+      const nextStatus =
+        reviewAction === "APPROVE"
+          ? "APPROVED"
+          : reviewAction === "REJECT"
+          ? "REJECTED"
+          : "CHANGES_REQUESTED";
+
+      setItems((prev) =>
+        prev.map((it) =>
+          it.id === selectedItem.id
+            ? { ...it, status: nextStatus, version: it.version + 1 }
+            : it
+        )
+      );
+
+      showToast(
+        reviewAction === "APPROVE"
+          ? `Đã phê duyệt hồ sơ ${selectedItem.submitterName}! Cấp role VERIFIED_EXPERT thành công.`
+          : `Đã chuyển trạng thái hồ sơ sang ${nextStatus}.`,
+        reviewAction === "APPROVE" ? "success" : "info"
+      );
     } catch (e: any) {
-      // In offline / mock mode fallback simulation
+      showToast(e.message || "Không thể xử lý yêu cầu thẩm định. Vui lòng thử lại.", "error");
+    } finally {
+      setProcessing(false);
+      setSelectedItem(null);
+      setReviewAction(null);
+      setReviewNote("");
     }
-
-    // Cập nhật trạng thái thành công trong UI
-    const nextStatus =
-      reviewAction === "APPROVE"
-        ? "APPROVED"
-        : reviewAction === "REJECT"
-        ? "REJECTED"
-        : "CHANGES_REQUESTED";
-
-    setItems((prev) =>
-      prev.map((it) =>
-        it.id === selectedItem.id
-          ? { ...it, status: nextStatus, version: it.version + 1 }
-          : it
-      )
-    );
-
-    showToast(
-      reviewAction === "APPROVE"
-        ? `Đã phê duyệt hồ sơ ${selectedItem.submitterName}! Cấp role VERIFIED_EXPERT thành công.`
-        : `Đã chuyển trạng thái hồ sơ sang ${nextStatus}.`,
-      reviewAction === "APPROVE" ? "success" : "info"
-    );
-
-    setProcessing(false);
-    setSelectedItem(null);
-    setReviewAction(null);
-    setReviewNote("");
   };
 
   return (
@@ -390,7 +390,7 @@ export default function GovDashboard() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm theo tên chuyên gia, đơn vị, mã..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-control border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-label text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="form-control w-full pl-9 pr-3 text-sm"
           />
         </div>
       </div>

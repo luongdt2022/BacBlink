@@ -27,34 +27,34 @@ export default function KhaoSatNhuCauPage() {
 
   // Form states
   const [formData, setFormData] = useState({
-    companyName: 'Công ty Cổ phần Cơ khí Chính xác Thăng Long',
-    taxCode: '0101234567',
-    contactName: 'Nguyễn Văn Hùng',
-    contactPhone: '0912345678',
-    contactEmail: 'hung.nv@thanglongmech.vn',
+    companyName: '',
+    taxCode: '',
+    contactName: '',
+    contactPhone: '',
+    contactEmail: '',
     businessType: 'CO_PHAN',
     enterpriseSize: 'SMALL',
-    employeeScale: '50-199',
-    revenueRange3y: '20 – 50 tỷ đồng',
+    employeeScale: '',
+    revenueRange3y: '',
     
     // Phần B: Hiện trạng
-    machineName: 'Máy gia công phay CNC 3 trục Doosan',
-    investmentYear: '2019',
-    techOrigin: 'Hàn Quốc',
+    machineName: '',
+    investmentYear: '',
+    techOrigin: '',
 
     // Phần C: Điểm nghẽn
-    bottlenecks: ['Tiêu hao nhiều điện năng', 'Khuyết tật mối hàn chi tiết dày', 'Thiếu tự động hóa kiểm định'],
+    bottlenecks: [] as string[],
 
     // Phần E: Dòng nhu cầu
-    stageName: 'Kiểm tra chất lượng (QC) và Hàn kết cấu',
-    technicalProblem: 'Cần giải pháp nhận diện tự động lỗi mối hàn cơ khí chính xác, giảm tỷ lệ phụ thuộc vào thợ hàn bậc cao.',
-    desiredSolution: 'Hệ thống thị giác máy tính AI kết hợp cảm biến siêu âm',
+    stageName: '',
+    technicalProblem: '',
+    desiredSolution: '',
     needConsulting: true,
-    expectedGoal: 'Nâng tỷ lệ phát hiện lỗi khuyết tật lên > 99.5%, giảm 40% thời gian nghiệm thu sản phẩm xuất khẩu.',
+    expectedGoal: '',
     sectorCode: 'LV01',
     techGroupCode: 'CN01',
     demandTypeCode: 'NC01',
-    budgetRange: '500 triệu – 1 tỷ VNĐ'
+    budgetRange: ''
   });
 
   const [tniValues, setTniValues] = useState<TniValues>({

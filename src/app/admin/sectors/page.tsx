@@ -18,6 +18,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
+import { portalClient, TechmartEvent } from "@/lib/portal-client";
 
 interface SectorItem {
   id?: string;
@@ -40,24 +41,6 @@ interface TaxonomyTreeNode {
   childCount: number;
   children: TaxonomyTreeNode[];
 }
-
-const EXHIBITIONS = [
-  { id: 1, name: "Triển lãm Viễn thông, CNTT & Truyền thông (Vietnam Telecomp)", focus: "Viễn thông, CNTT, Phần mềm", location: "Hà Nội & TP.HCM", frequency: "Thường niên 2026" },
-  { id: 2, name: "Triển lãm Công nghiệp In ấn & Bao bì tại Hà Nội (HanoiPrintPack)", focus: "In ấn, Đóng gói bao bì", location: "Hà Nội", frequency: "2026" },
-  { id: 3, name: "Triển lãm Quốc tế Ngành nhựa và Cao su (HanoiPlas)", focus: "Vật liệu polymer, khuôn đúc", location: "Hà Nội", frequency: "2026" },
-  { id: 4, name: "Triển lãm Quốc tế Logistics Việt Nam (VILOG)", focus: "Chuỗi cung ứng, kho bãi thông minh", location: "TP.HCM", frequency: "2026" },
-  { id: 5, name: "Triển lãm Quốc tế Thủy sản Việt Nam (Vietfish)", focus: "Thủy sản, Công nghệ chế biến lạnh", location: "TP.HCM", frequency: "2026" },
-  { id: 6, name: "Triển lãm Công nghệ Chế biến Thực phẩm (Foodtech)", focus: "Thực phẩm đóng hộp, đồ uống", location: "Hà Nội", frequency: "2026" },
-  { id: 7, name: "Triển lãm Quốc tế Công nghiệp Hóa chất lần thứ 22 (Vinachem)", focus: "Hóa chất công nghiệp, phân bón", location: "TP.HCM", frequency: "2026" },
-  { id: 8, name: "Triển lãm Quốc tế Thực phẩm và Đồ uống 2026 (Vietfood & Beverage)", focus: "Thực phẩm, Đồ uống đóng chai", location: "Hà Nội", frequency: "2026" },
-  { id: 9, name: "Triển lãm Máy móc, Thiết bị, Nguyên phụ liệu Dệt may (VTG)", focus: "Dệt may, Máy may công nghiệp", location: "TP.HCM", frequency: "2026" },
-  { id: 10, name: "Triển lãm Nội thất & Xây dựng Việt Nam (Vietbuild)", focus: "Vật liệu xây dựng, Kiến trúc", location: "Hà Nội & TP.HCM", frequency: "2026" },
-  { id: 11, name: "Triển lãm Quốc tế PCCC & Cứu nạn (Fire Safety & Rescue)", focus: "Phòng cháy chữa cháy, Cứu hộ", location: "Hà Nội", frequency: "2026" },
-  { id: 12, name: "Triển lãm Công nghệ Dệt may Quốc tế (Textile Expo)", focus: "Dệt may, Phụ liệu kỹ thuật", location: "Hà Nội", frequency: "2026" },
-  { id: 13, name: "Triển lãm Nông nghiệp Công nghệ cao (Growtech Vietnam)", focus: "Cơ giới hóa nông nghiệp, Smart Farm", location: "Hà Nội", frequency: "2026" },
-  { id: 14, name: "Triển lãm Thang máy & Tòa nhà Thông minh (Vietnam Elevator Expo)", focus: "Thang máy, Tự động hóa", location: "TP.HCM", frequency: "2026" },
-  { id: 15, name: "Triển lãm Quốc tế Năng lượng Tái tạo & Tiết kiệm Điện (Entech Vietnam)", focus: "Năng lượng mặt trời, Pin lưu trữ", location: "Hà Nội", frequency: "2026" }
-];
 
 export default function AdminSectorsPage() {
   const [activeTab, setActiveTab] = useState<"sectors" | "tt17" | "matrix" | "tree" | "exhibitions">("sectors");
@@ -129,6 +112,26 @@ export default function AdminSectorsPage() {
       .finally(() => { if (!cancelled) setTreeLoading(false); });
     return () => { cancelled = true; };
   }, [loadVersion]);
+
+  const [exhibitions, setExhibitions] = useState<TechmartEvent[]>([]);
+  const [exhibitionsLoading, setExhibitionsLoading] = useState(false);
+  const [exhibitionsLoaded, setExhibitionsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "exhibitions" && !exhibitionsLoaded) {
+      setExhibitionsLoading(true);
+      portalClient.listEvents(undefined, 1, 50)
+        .then((res) => {
+          setExhibitions(res.data);
+          setExhibitionsLoaded(true);
+        })
+        .catch(() => {
+          setExhibitions([]);
+          setExhibitionsLoaded(true);
+        })
+        .finally(() => setExhibitionsLoading(false));
+    }
+  }, [activeTab, exhibitionsLoaded]);
 
   const filteredSectors = sectors.filter(
     (s) =>
@@ -520,7 +523,7 @@ export default function AdminSectorsPage() {
                   <select
                     value={selectedField}
                     onChange={(e) => setSelectedField(e.target.value)}
-                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="form-control text-sm font-medium"
                   >
                     <option value="">Tất cả Lĩnh Vực</option>
                     {sectors.filter((sector) => sector.isActive).map((sector) => (
@@ -765,26 +768,37 @@ export default function AdminSectorsPage() {
         {activeTab === "exhibitions" && (
           <div className="bg-white border border-gray-200 rounded-xl shadow-xs p-6">
             <div className="mb-4">
-              <h3 className="font-bold text-gray-900 text-base">Danh Mục 15 Triển Lãm Quốc Tế Chuyên Ngành</h3>
-              <p className="text-xs text-gray-500 mt-1">Sự kiện xúc tiến thương mại và kết nối cung cầu công nghệ tham chiếu</p>
+              <h3 className="font-bold text-gray-900 text-base">Danh Mục Triển Lãm & Phiên Chào Giá Công Nghệ</h3>
+              <p className="text-xs text-gray-500 mt-1">Sự kiện xúc tiến thương mại và kết nối cung cầu công nghệ theo thời gian thực từ CSDL Sàn</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {EXHIBITIONS.map((e) => (
-                <div key={e.id} className="border border-gray-200 rounded-xl p-4 bg-white hover:border-emerald-300 transition-all shadow-xs">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                      EXPO #{e.id < 10 ? `0${e.id}` : e.id}
-                    </span>
-                    <span className="text-xs text-gray-400">{e.frequency}</span>
+            {exhibitionsLoading ? (
+              <div className="py-12 text-center text-sm text-gray-500">Đang tải danh sách sự kiện triển lãm...</div>
+            ) : exhibitions.length === 0 ? (
+              <div className="py-12 text-center text-sm text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                Chưa có sự kiện triển lãm nào được cấu hình trong hệ thống.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {exhibitions.map((e, idx) => (
+                  <div key={e.id} className="border border-gray-200 rounded-xl p-4 bg-white hover:border-emerald-300 transition-all shadow-xs">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                        EXPO #{idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {e.startDate ? new Date(e.startDate).toLocaleDateString("vi-VN") : "Sắp diễn ra"}
+                      </span>
+                    </div>
+                    <h4 className="font-bold text-gray-900 text-sm mt-2">{e.title}</h4>
+                    <div className="mt-3 text-xs text-gray-600 space-y-1">
+                      <div>Mô tả: <strong className="text-gray-800">{e.description || "Chưa cập nhật"}</strong></div>
+                      <div>Địa điểm: <strong className="text-gray-800">{e.location || "Chưa cập nhật"}</strong></div>
+                      <div>Số công nghệ: <strong className="text-gray-800">{e.technologiesCount ?? 0} giải pháp</strong></div>
+                    </div>
                   </div>
-                  <h4 className="font-bold text-gray-900 text-sm mt-2">{e.name}</h4>
-                  <div className="mt-3 text-xs text-gray-600 space-y-1">
-                    <div>Lĩnh vực: <strong className="text-gray-800">{e.focus}</strong></div>
-                    <div>Địa điểm: <strong className="text-gray-800">{e.location}</strong></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -843,7 +857,7 @@ export default function AdminSectorsPage() {
                     disabled={!!editingSector}
                     value={formTt17}
                     onChange={(e) => setFormTt17(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="form-control w-full text-sm"
                   >
                     <option value="">Chưa ánh xạ phân ngành</option>
                     {tt17Subsectors.map((item) => <option key={item.code} value={item.code}>{item.code} - {item.name}</option>)}
@@ -918,7 +932,7 @@ export default function AdminSectorsPage() {
                       setPairRatingStars(stars);
                       setPairWeight(Number((stars / 5).toFixed(1)));
                     }}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="form-control w-full text-sm font-semibold"
                   >
                     <option value={5}>★★★★★ (5 Sao - Rất phù hợp / Trọng tâm)</option>
                     <option value={4}>★★★★☆ (4 Sao - Phù hợp cao)</option>

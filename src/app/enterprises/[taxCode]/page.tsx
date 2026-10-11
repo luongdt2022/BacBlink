@@ -457,7 +457,7 @@ export default function EnterpriseDetailPage() {
                   <select
                     value={connectPurpose}
                     onChange={(e) => setConnectPurpose(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white text-slate-800"
+                    className="form-control w-full text-sm"
                   >
                     <option value="Đề xuất hợp tác nghiên cứu / chuyển giao công nghệ">
                       Đề xuất hợp tác nghiên cứu / chuyển giao công nghệ
@@ -475,20 +475,20 @@ export default function EnterpriseDetailPage() {
                     value={connectMessage}
                     onChange={(e) => setConnectMessage(e.target.value)}
                     placeholder="Giới thiệu ngắn gọn về nhu cầu hợp tác của bạn..."
-                    className="w-full p-2.5 rounded-lg border border-slate-300 text-xs text-slate-800"
+                    className="w-full p-2.5 rounded-lg border border-slate-300 text-sm text-slate-800"
                   />
                 </div>
 
                 <div className="flex gap-2 justify-end pt-2">
                   <button
                     onClick={() => setConnectModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                    className="h-11 px-5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition"
                   >
                     Hủy
                   </button>
                   <button
                     onClick={() => setConnectSuccess(true)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700"
+                    className="h-11 px-5 rounded-xl text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 transition"
                   >
                     Gửi đề xuất
                   </button>

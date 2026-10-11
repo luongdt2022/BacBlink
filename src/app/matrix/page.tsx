@@ -160,12 +160,12 @@ export default function PublicMatrixExplorerPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm theo tên công nghệ (AI, Robot, IoT, Nông nghiệp...), mã CN..."
-                className="w-full pl-9 pr-3 py-2 text-xs text-slate-900 bg-white rounded-xl focus:outline-none"
+                className="w-full h-11 pl-9 pr-3 text-sm text-slate-900 bg-white rounded-xl focus:outline-none shadow-sm"
               />
             </div>
             <button
               type="button"
-              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto h-11 bg-nacen-green-500 hover:bg-nacen-green-600 text-slate-950 font-bold px-6 rounded-xl text-sm transition flex items-center justify-center gap-1.5 shrink-0 shadow-sm"
             >
               <Compass className="w-4 h-4" />
               <span>Khám Phá</span>

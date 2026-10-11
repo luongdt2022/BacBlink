@@ -248,7 +248,7 @@ export default function ExpertsDirectoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 flex flex-col">
       {/* 1. COMPACT HERO SEARCH BANNER */}
       <section className="workspace-banner text-white py-4 sm:py-5 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
@@ -271,22 +271,22 @@ export default function ExpertsDirectoryPage() {
             </p>
 
             {/* Compact Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="mt-3 bg-white p-1 rounded-xl shadow-md flex flex-col sm:flex-row gap-1 max-w-3xl">
+            <form onSubmit={handleSearchSubmit} className="mt-3 bg-white dark:bg-slate-900 p-1.5 rounded-xl shadow-md flex flex-col sm:flex-row gap-1.5 max-w-3xl border border-slate-200 dark:border-slate-800">
               <div className="relative flex-1">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Tìm theo họ tên chuyên gia, đơn vị công tác, từ khóa nghiên cứu..."
-                  className="w-full pl-9 pr-3 py-2 text-caption sm:text-body text-slate-800 placeholder-slate-400 bg-transparent rounded-lg focus:outline-none"
+                  className="w-full h-11 pl-10 pr-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 bg-transparent rounded-lg focus:outline-none font-medium"
                 />
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white text-caption font-bold rounded-lg flex items-center justify-center gap-1.5 transition"
+                className="h-11 px-5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition shrink-0"
               >
-                <Search className="w-3.5 h-3.5" />
+                <Search className="w-4 h-4" />
                 Tìm kiếm
               </button>
             </form>
@@ -481,7 +481,7 @@ export default function ExpertsDirectoryPage() {
                 <select
                   value={selectedProvince}
                   onChange={(e) => { setCurrentPage(1); setSelectedProvince(e.target.value); }}
-                  className="w-full text-caption rounded-xl border-slate-200 bg-slate-50 px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                  className="form-control w-full"
                 >
                   <option value="">Tất cả địa bàn</option>
                   {provinceOptions.map((prov) => (
@@ -802,7 +802,7 @@ export default function ExpertsDirectoryPage() {
                     value={modalCompanyName}
                     onChange={(e) => setModalCompanyName(e.target.value)}
                     placeholder="VD: Công ty Cổ phần Công nghệ ABC"
-                    className="w-full rounded-xl border-slate-200 bg-slate-50 p-2.5 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 border dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                    className="form-control w-full text-sm"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -814,7 +814,7 @@ export default function ExpertsDirectoryPage() {
                       value={modalContactName}
                       onChange={(e) => setModalContactName(e.target.value)}
                       placeholder="VD: Nguyễn Văn A"
-                      className="w-full rounded-xl border-slate-200 bg-slate-50 p-2.5 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 border dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                      className="form-control w-full text-sm"
                     />
                   </div>
                   <div>
@@ -826,7 +826,7 @@ export default function ExpertsDirectoryPage() {
                       value={modalContactPhone}
                       onChange={(e) => setModalContactPhone(e.target.value)}
                       placeholder="VD: 0912345678"
-                      className="w-full rounded-xl border-slate-200 bg-slate-50 p-2.5 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 border dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                      className="form-control w-full text-sm"
                     />
                   </div>
                 </div>
@@ -838,7 +838,7 @@ export default function ExpertsDirectoryPage() {
                     value={modalContactEmail}
                     onChange={(e) => setModalContactEmail(e.target.value)}
                     placeholder="VD: contact@doanhnghiep.vn"
-                    className="w-full rounded-xl border-slate-200 bg-slate-50 p-2.5 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 border dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                    className="form-control w-full text-sm"
                   />
                 </div>
                 <div>
@@ -886,14 +886,14 @@ export default function ExpertsDirectoryPage() {
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="h-11 px-5 rounded-control border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 text-sm transition"
                   >
                     Hủy bỏ
                   </button>
                   <button
                     type="submit"
                     disabled={modalSending}
-                    className="px-5 py-2 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold shadow-sm transition"
+                    className="h-11 px-6 rounded-control bg-brand-700 hover:bg-brand-800 text-white font-bold shadow-sm transition text-sm disabled:opacity-50"
                   >
                     {modalSending ? "Đang gửi…" : "Gửi yêu cầu"}
                   </button>

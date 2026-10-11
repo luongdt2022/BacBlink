@@ -128,13 +128,13 @@ export default function PublicDemandsPage() {
           <div className="flex-1 w-full flex flex-wrap items-center gap-3">
             {/* Search Input */}
             <div className="relative flex-1 min-w-[240px]">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Tìm bài toán, công đoạn, mã hồ sơ..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs focus:ring-2 focus:ring-brand-500 outline-none transition"
+                className="w-full h-11 pl-10 pr-4 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-control focus:ring-2 focus:ring-brand-500 outline-none transition font-medium text-slate-900 dark:text-white"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function PublicDemandsPage() {
             <select
               value={filterSector}
               onChange={(e) => setFilterSector(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-brand-500 transition"
+              className="form-control text-sm font-semibold"
             >
               <option value="">Tất cả Lĩnh vực TT17</option>
               <option value="LV01">LV01 — Cơ khí chế tạo & Tự động hóa</option>
@@ -154,7 +154,7 @@ export default function PublicDemandsPage() {
             <select
               value={filterTni}
               onChange={(e) => setFilterTni(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-brand-500 transition"
+              className="form-control text-sm font-semibold"
             >
               <option value="">Tất cả Mức Ưu Tiên TNI</option>
               <option value="VERY_HIGH">TNI Rất Cao (≥ 80) — Ưu tiên P0</option>

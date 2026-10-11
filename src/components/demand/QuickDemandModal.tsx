@@ -133,7 +133,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
               <select
                 value={formData.sectorCode}
                 onChange={(e) => setFormData({ ...formData, sectorCode: e.target.value })}
-                className="form-control w-full px-3 py-2 text-xs"
+                className="form-control w-full text-sm font-medium"
               >
                 <option value="LV01">LV01 — Cơ khí chế tạo & Tự động hóa</option>
                 <option value="LV07">LV07 — Nông nghiệp công nghệ cao</option>
@@ -148,7 +148,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
               <select
                 value={formData.budgetRange}
                 onChange={(e) => setFormData({ ...formData, budgetRange: e.target.value })}
-                className="form-control w-full px-3 py-2 text-xs"
+                className="form-control w-full text-sm font-medium"
               >
                 <option value="500 triệu – 1 tỷ VNĐ">500 triệu – 1 tỷ VNĐ</option>
                 <option value="1 – 2 tỷ VNĐ">1 – 2 tỷ VNĐ</option>
@@ -170,14 +170,14 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
+              className="h-11 px-5 border border-slate-200 dark:border-slate-700 rounded-control font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
             >
               Hủy bỏ
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow transition flex items-center gap-2 disabled:opacity-50"
+              className="h-11 bg-brand-700 hover:bg-brand-800 text-white px-6 rounded-control font-bold text-sm shadow transition flex items-center gap-2 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

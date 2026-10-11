@@ -124,18 +124,18 @@ export default function GovEnterpriseApprovalPage() {
         )}
 
         {/* Filter Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-4">
+        <div className="surface-card p-4 flex flex-col md:flex-row items-center gap-4">
           <form onSubmit={handleSearchSubmit} className="flex-1 w-full flex items-center gap-2">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm theo Tên DN hoặc Mã số thuế..."
-              className="flex-1 p-2.5 rounded-xl border border-slate-300 text-xs text-slate-800"
+              className="form-control flex-1"
             />
             <button
               type="submit"
-              className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-semibold shrink-0"
+              className="h-11 px-5 bg-brand-700 hover:bg-brand-800 text-white rounded-control text-sm font-semibold shrink-0 transition"
             >
               Tìm kiếm
             </button>
@@ -145,7 +145,7 @@ export default function GovEnterpriseApprovalPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="p-2.5 rounded-xl border border-slate-300 text-xs bg-white text-slate-800"
+              className="form-control"
             >
               <option value="all">Tất cả trạng thái</option>
               <option value="pending">Chờ thẩm định / Chưa duyệt</option>
@@ -157,7 +157,7 @@ export default function GovEnterpriseApprovalPage() {
               value={filterProvince}
               onChange={(e) => setFilterProvince(e.target.value)}
               placeholder="Lọc theo Tỉnh/TP..."
-              className="p-2.5 rounded-xl border border-slate-300 text-xs text-slate-800 w-36"
+              className="form-control w-44"
             />
           </div>
         </div>

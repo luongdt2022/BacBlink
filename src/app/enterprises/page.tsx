@@ -129,7 +129,7 @@ export default function EnterprisesDirectoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-20">
+    <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 pb-20">
       {/* Hero Header */}
       <section className="bg-gradient-to-r from-brand-900 via-brand-900 to-slate-900 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div className="max-w-7xl mx-auto">
@@ -147,18 +147,18 @@ export default function EnterprisesDirectoryPage() {
           {/* Search Box */}
           <form onSubmit={handleSearchSubmit} className="mt-8 flex flex-col sm:flex-row gap-3 max-w-3xl">
             <div className="relative flex-1">
-              <Search className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
+              <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Tìm theo tên doanh nghiệp, mã số thuế (MST), tỉnh thành, ngành nghề..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl bg-white text-slate-900 placeholder-slate-400 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium shadow-inner text-sm"
+                className="w-full h-11 pl-11 pr-4 rounded-control bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm"
               />
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-brand-900/40 text-sm"
+              className="h-11 px-6 bg-brand-700 hover:bg-brand-800 text-white rounded-control font-bold flex items-center justify-center gap-2 transition shadow-md text-sm shrink-0"
             >
               <Search className="w-4 h-4" /> Tra Cứu
             </button>
@@ -171,10 +171,10 @@ export default function EnterprisesDirectoryPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Bộ Lọc */}
           <aside className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <span className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-brand-600" /> Bộ Lọc Đa Chiều
+            <div className="surface-card p-5 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-border-default dark:border-slate-800">
+                <span className="font-bold text-text-primary dark:text-white text-sm flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-brand-700" /> Bộ Lọc Đa Chiều
                 </span>
                 {(province || sectorCode || subjectType || tniClassification || q) && (
                   <button
@@ -185,7 +185,7 @@ export default function EnterprisesDirectoryPage() {
                       setSubjectType("");
                       setTniClassification("");
                     }}
-                    className="text-xs text-brand-600 hover:underline font-semibold"
+                    className="text-xs text-brand-700 hover:underline font-semibold"
                   >
                     Xóa lọc
                   </button>
@@ -194,13 +194,13 @@ export default function EnterprisesDirectoryPage() {
 
               {/* Lọc Tỉnh Thành */}
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                   Địa Bàn Hoạt Động
                 </label>
                 <select
                   value={province}
                   onChange={(e) => setProvince(e.target.value)}
-                  className="w-full text-xs font-medium rounded-lg border-slate-300 bg-slate-50 border p-2.5 focus:ring-2 focus:ring-brand-500"
+                  className="form-control w-full"
                 >
                   {PROVINCES.map((p) => (
                     <option key={p.code} value={p.code}>{p.label}</option>
@@ -210,13 +210,13 @@ export default function EnterprisesDirectoryPage() {
 
               {/* Lọc Lĩnh Vực TT17 */}
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                   Lĩnh Vực Công Nghệ TT17
                 </label>
                 <select
                   value={sectorCode}
                   onChange={(e) => setSectorCode(e.target.value)}
-                  className="w-full text-xs font-medium rounded-lg border-slate-300 bg-slate-50 border p-2.5 focus:ring-2 focus:ring-brand-500"
+                  className="form-control w-full"
                 >
                   {SECTORS_TT17.map((s) => (
                     <option key={s.code} value={s.code}>{s.label}</option>
@@ -226,13 +226,13 @@ export default function EnterprisesDirectoryPage() {
 
               {/* Lọc Loại Hình Chủ Thể */}
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                   Loại Hình Chủ Thể
                 </label>
                 <select
                   value={subjectType}
                   onChange={(e) => setSubjectType(e.target.value)}
-                  className="w-full text-xs font-medium rounded-lg border-slate-300 bg-slate-50 border p-2.5 focus:ring-2 focus:ring-brand-500"
+                  className="form-control w-full"
                 >
                   {SUBJECT_TYPES.map((t) => (
                     <option key={t.code} value={t.code}>{t.label}</option>
@@ -242,13 +242,13 @@ export default function EnterprisesDirectoryPage() {
 
               {/* Lọc Phân Tầng TNI */}
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                   Chỉ Số Nhu Cầu ĐMST (TNI)
                 </label>
                 <select
                   value={tniClassification}
                   onChange={(e) => setTniClassification(e.target.value)}
-                  className="w-full text-xs font-medium rounded-lg border-slate-300 bg-slate-50 border p-2.5 focus:ring-2 focus:ring-brand-500"
+                  className="form-control w-full"
                 >
                   {TNI_LEVELS.map((l) => (
                     <option key={l.code} value={l.code}>{l.label}</option>
