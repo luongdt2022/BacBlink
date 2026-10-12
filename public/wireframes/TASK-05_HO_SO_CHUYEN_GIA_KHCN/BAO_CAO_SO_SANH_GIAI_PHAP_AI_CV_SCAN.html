@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Báo cáo lựa chọn AI CV Scan — NacenTech</title>
+  <style>
+    :root { --navy:#0d214d; --blue:#2563eb; --teal:#0f766e; --amber:#b45309; --red:#b91c1c; --ink:#172033; --muted:#5e6b85; --line:#dbe3f0; --bg:#f5f8fc; --card:#fff; }
+    * { box-sizing:border-box; } body { margin:0; font:15px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+    .cover { color:#fff; padding:54px max(24px, calc((100vw - 1180px)/2)); background:radial-gradient(circle at 82% 0,#2676c7 0,transparent 34%), linear-gradient(132deg,#0a1740,#123b76); }
+    .eyebrow { margin:0 0 9px; color:#92d7ff; font-weight:750; letter-spacing:.12em; font-size:12px; text-transform:uppercase; }
+    h1 { font-size:clamp(31px,5vw,52px); line-height:1.08; margin:0; max-width:900px; letter-spacing:-.035em; } .cover p { max-width:800px; margin:18px 0 0; color:#d6e8ff; font-size:18px; }
+    .meta { display:flex; flex-wrap:wrap; gap:10px; margin-top:25px; } .pill { border:1px solid #74a5db; border-radius:999px; padding:5px 11px; font-size:12px; color:#e5f2ff; }
+    main { max-width:1180px; margin:28px auto 64px; padding:0 20px; } section { margin:28px 0; } .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; } .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:19px; box-shadow:0 2px 10px rgba(23,32,51,.035); } .metric { font-size:27px; font-weight:800; color:var(--navy); letter-spacing:-.03em; } .label { color:var(--muted); font-size:13px; margin-top:3px; }
+    h2 { margin:0 0 14px; color:var(--navy); font-size:25px; letter-spacing:-.02em; } h3 { margin:0 0 7px; font-size:16px; color:var(--navy); } p { margin:8px 0; } .lead { font-size:17px; color:#384664; max-width:960px; }
+    .decision { border-left:5px solid var(--teal); background:#ecfdf8; padding:18px 20px; border-radius:0 12px 12px 0; } .warning { border-left-color:var(--amber); background:#fff9eb; } .danger { border-left-color:var(--red); background:#fff2f2; }
+    .scroll { overflow-x:auto; background:#fff; border:1px solid var(--line); border-radius:14px; } table { border-collapse:collapse; width:100%; min-width:960px; } th { background:#eff5ff; color:#26385f; font-size:12px; text-transform:uppercase; letter-spacing:.045em; text-align:left; padding:12px; border-bottom:1px solid var(--line); } td { vertical-align:top; padding:14px 12px; border-bottom:1px solid #e7edf6; } tr:last-child td { border-bottom:0; } .tag { display:inline-block; border-radius:999px; padding:3px 8px; font-size:11px; font-weight:750; white-space:nowrap; } .oss{color:#065f46;background:#d1fae5}.paid{color:#1d4ed8;background:#dbeafe}.quote{color:#92400e;background:#fef3c7}.recommend{color:#fff;background:#0f766e}.no{color:#991b1b;background:#fee2e2}
+    .two { display:grid; grid-template-columns:1fr 1fr; gap:18px; } ul { padding-left:20px; margin:8px 0; } li { margin:5px 0; } code { background:#edf2f8; padding:2px 5px; border-radius:4px; font-size:.88em; } .small { font-size:12px; color:var(--muted); }
+    .calc { display:grid; grid-template-columns:1.1fr .9fr; gap:18px; background:#0e2451; color:#fff; border-radius:16px; padding:24px; } .calc h2 { color:#fff; } .calc input { width:100%; padding:9px 10px; border-radius:7px; border:1px solid #86a4d7; font:inherit; } .calc label { display:block; font-size:12px; font-weight:700; margin:12px 0 4px; color:#d4e5ff; } .result { border:1px solid #4872b3; border-radius:12px; padding:17px; background:rgba(255,255,255,.08); } .result .v { font-weight:800; font-size:25px; } .result-row { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.13); } .result-row:last-child { border:0; }
+    a { color:#1759c5; } footer { max-width:1180px; padding:20px; margin:auto; color:var(--muted); font-size:12px; } @media(max-width:800px){ .grid,.two,.calc{grid-template-columns:1fr 1fr}.calc{grid-template-columns:1fr}.cover{padding:35px 22px} } @media(max-width:520px){.grid,.two{grid-template-columns:1fr}}
+    @media print { body{background:#fff}.cover{padding:28px}.card,.scroll{box-shadow:none} main{margin:18px auto}.calc{background:#0e2451!important;-webkit-print-color-adjust:exact;print-color-adjust:exact} .pill,.tag{print-color-adjust:exact;-webkit-print-color-adjust:exact} }
+  </style>
+</head>
+<body>
+  <header class="cover">
+    <p class="eyebrow">NacenTech · TASK-05.2 · Tài liệu họp</p>
+    <h1>Báo cáo chọn giải pháp đọc CV bằng AI</h1>
+    <p>Mục tiêu: chọn một cách để hệ thống tự đọc CV/Lý lịch khoa học, điền trước các thông tin cần thiết và để chuyên gia kiểm tra lại trước khi gửi hồ sơ. AI chỉ hỗ trợ nhập liệu, không tự quyết định thay con người.</p>
+    <div class="meta"><span class="pill">Phiên bản 1.1 — ngôn ngữ dễ hiểu</span><span class="pill">30/09/2026</span><span class="pill">Tỷ giá: 1 USD = 26.160 VND</span><span class="pill">Dùng để thảo luận và ra quyết định</span></div>
+  </header>
+  <main>
+    <section class="grid">
+      <div class="card"><div class="metric">94</div><div class="label">nhóm thông tin AI cần điền trước</div></div>
+      <div class="card"><div class="metric">200</div><div class="label">CV có sự đồng ý dùng để kiểm tra thử</div></div>
+      <div class="card"><div class="metric">~379.320đ</div><div class="label">chi phí ước tính cho 1.000 CV, mỗi CV 5 trang scan</div></div>
+      <div class="card"><div class="metric">0%</div><div class="label">AI không được tự gửi hồ sơ hoặc tự cấp vai trò</div></div>
+    </section>
+
+    <section>
+      <h2>Đọc nhanh trong 2 phút</h2>
+      <div class="two">
+        <div class="card"><h3>Phương án đề xuất</h3><p>Dùng dịch vụ Google để đọc phần chữ trong CV bị scan, sau đó dùng AI để sắp xếp thông tin vào đúng biểu mẫu. Phần CV PDF/Word có sẵn chữ sẽ được đọc ngay trong hệ thống để tiết kiệm tiền và hạn chế gửi dữ liệu ra ngoài.</p></div>
+        <div class="card"><h3>Chi phí dễ hình dung</h3><p>Với 1.000 CV, mỗi CV khoảng 5 trang scan, chi phí AI ước tính khoảng <strong>379.320đ/tháng</strong>. Đây là tiền dùng dịch vụ; chưa gồm chi phí lưu file, bảo mật và nhân sự vận hành.</p></div>
+        <div class="card"><h3>Khi nào chọn mã nguồn mở?</h3><p>Khi CV không được phép gửi ra dịch vụ bên ngoài. Phần mềm có thể miễn phí, nhưng cần thuê hoặc mua máy chủ riêng và có người kỹ thuật vận hành.</p></div>
+        <div class="card"><h3>Điều kiện an toàn</h3><p>Chỉ chạy thử với CV có sự đồng ý rõ ràng. Trước khi dùng chính thức phải kiểm tra độ đúng trên 200 CV và ký thỏa thuận xử lý dữ liệu với nhà cung cấp.</p></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Từ ngữ dùng trong report</h2>
+      <div class="two">
+        <p><strong>Bản scan:</strong> CV được chụp ảnh hoặc quét thành PDF; máy nhìn thấy ảnh chữ nên phải dùng AI để đọc.</p>
+        <p><strong>Dịch vụ cloud:</strong> gửi tài liệu hoặc phần chữ của tài liệu đến hệ thống của nhà cung cấp qua Internet để xử lý.</p>
+        <p><strong>Mã nguồn mở:</strong> phần mềm có thể tự cài trên máy chủ NacenTech, không trả phí bản quyền nhưng phải tự vận hành.</p>
+        <p><strong>Thỏa thuận xử lý dữ liệu:</strong> văn bản ràng buộc nhà cung cấp chỉ được dùng CV đúng mục đích đã được đồng ý và phải bảo mật dữ liệu.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Kết luận đề xuất để chốt họp</h2>
+      <div class="decision"><strong>Đề xuất để thử nghiệm trước:</strong> hệ thống tự đọc PDF/Word có sẵn chữ; với bản scan hoặc ảnh, dùng Google đọc chữ; sau đó dùng GPT-5 Mini sắp xếp thông tin vào 94 mục của biểu mẫu. Chuyên gia xem, sửa và xác nhận trước khi gửi. Chi phí dịch vụ ước tính <strong>379đ/CV</strong> nếu mỗi CV có 5 trang scan. Chỉ dùng chính thức sau khi có sự đồng ý của người nộp CV, đánh giá nhà cung cấp và kiểm tra độ đúng.</div>
+      <p class="lead">Nếu bắt buộc CV không được rời khỏi hạ tầng NacenTech, dùng phương án thay thế: phần mềm mã nguồn mở Docling + PaddleOCR tự vận hành. Phần mềm không mất phí bản quyền, nhưng vẫn phải trả tiền máy chủ, bảo mật và người vận hành.</p>
+    </section>
+
+    <section>
+      <h2>So sánh các cách đọc CV</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>Giải pháp</th><th>Đây là gì?</th><th>Giá công bố</th><th>Ước tính / 1.000 CV<br><span class="small">5 trang/CV</span></th><th>Thông tin về độ đúng</th><th>Khi nào nên dùng?</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Docling</strong></td><td><span class="tag oss">Mã nguồn mở</span><br>Công cụ đọc PDF/Word có sẵn chữ</td><td>Không mất tiền bản quyền</td><td>Không có phí theo CV; dùng chung máy chủ</td><td>Không phải công cụ nhận ảnh chữ; không có số liệu riêng cho CV Việt</td><td>Nên dùng ở bước đầu để đọc file bình thường ngay trong hệ thống.</td></tr>
+          <tr><td><strong>PaddleOCR PP-OCRv5</strong></td><td><span class="tag oss">Mã nguồn mở</span><br>AI đọc chữ từ ảnh/PDF scan, tự cài đặt</td><td>Không mất tiền bản quyền<br>Phát sinh tiền máy chủ và vận hành</td><td>~1,26–2,51 triệuđ/tháng máy chủ tham chiếu; xem bảng hạ tầng</td><td>Hãng công bố điểm 0,8401 trên bộ tài liệu nhiều ngôn ngữ; không phải số liệu CV Việt.</td><td>Chọn khi ưu tiên giữ dữ liệu trong NacenTech. Cần tự kiểm tra trên CV tiếng Việt.</td></tr>
+          <tr><td><strong>Tesseract + OCRmyPDF</strong></td><td><span class="tag oss">Mã nguồn mở</span><br>Công cụ đọc PDF scan cơ bản</td><td>Không mất tiền bản quyền<br>Phát sinh tiền máy chủ</td><td>~1,26 triệuđ/tháng máy chủ tối thiểu</td><td>Không có số liệu CV Việt đáng tin cậy để so sánh</td><td>Rẻ, phù hợp bản scan đơn giản; không nên dùng làm lựa chọn chính cho CV có nhiều bảng/cột.</td></tr>
+          <tr><td><strong>Google Enterprise Document OCR</strong><br><span class="tag recommend">Nên thử trước</span></td><td><span class="tag paid">Dịch vụ có phí</span><br>Google đọc chữ từ ảnh/PDF scan</td><td>$1,50 / 1.000 trang</td><td><strong>196.200đ đọc chữ</strong><br>+ 183.120đ sắp xếp thông tin = <strong>379.320đ</strong></td><td>Có hỗ trợ tiếng Việt; chưa có số liệu riêng cho CV/LLKH Việt.</td><td>Nhanh, giá thấp. Chỉ gửi trang scan/ảnh; cần người nộp đồng ý và ký thỏa thuận xử lý dữ liệu.</td></tr>
+          <tr><td><strong>Azure Document Intelligence</strong></td><td><span class="tag paid">Dịch vụ có phí</span><br>Microsoft đọc và hiểu tài liệu</td><td>Tính theo trang, loại tính năng và khu vực; cần báo giá</td><td>Chưa quy đổi để tránh dùng số đoán</td><td>Có thể đọc nhiều ngôn ngữ; chưa có số liệu CV Việt chung công khai</td><td>Phù hợp khi tổ chức đang dùng Microsoft Azure và đã có hợp đồng doanh nghiệp.</td></tr>
+          <tr><td><strong>AWS Textract</strong></td><td><span class="tag paid">Dịch vụ có phí</span><br>Amazon đọc chữ và biểu mẫu</td><td>Ví dụ đọc chữ: $0,0015/trang</td><td>~196.200đ đọc chữ<br>+ tiền sắp xếp thông tin nếu cần</td><td>Chưa có số liệu CV Việt đủ để chọn mặc định</td><td>Chỉ nên thử khi NacenTech bắt buộc dùng hạ tầng AWS.</td></tr>
+          <tr><td><strong>Mistral OCR 4</strong></td><td><span class="tag paid">Dịch vụ có phí</span><br>Đọc tài liệu phức tạp</td><td>$4 / 1.000 trang; chạy theo lô $2 / 1.000 trang</td><td>~523.200đ thường<br>~261.600đ chạy theo lô<br><span class="small">có thể phát sinh AI sắp xếp thông tin</span></td><td>Hãng công bố kết quả tốt với tài liệu phức tạp; chưa có điểm CV Việt độc lập.</td><td>Nên thử nếu LLKH có nhiều bảng, cột và biểu đồ.</td></tr>
+          <tr><td><strong>FPT.AI Read</strong></td><td><span class="tag quote">Dịch vụ Việt Nam</span></td><td>Chưa có bảng giá công khai phù hợp; cần xin báo giá và thử nghiệm</td><td>Chưa xác định</td><td>Chưa có số liệu CV Việt công khai để đối chiếu</td><td>Nên mời thử nghiệm khi ưu tiên hợp đồng, hỗ trợ và lưu trữ dữ liệu tại Việt Nam.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="small"><strong>Hiểu đơn giản:</strong> các hãng dùng các bộ tài liệu khác nhau để đo, vì vậy không thể lấy một con số rồi kết luận hãng nào tốt nhất. NacenTech chỉ chọn sau khi cho các giải pháp cùng đọc một bộ CV mẫu giống nhau.</p>
+    </section>
+
+    <section class="two">
+      <div class="card"><h2>Máy chủ tối thiểu nếu dùng phần mềm miễn phí</h2><p>“Miễn phí” chỉ là không mất tiền bản quyền phần mềm. Vẫn cần một máy chủ riêng để chạy AI đọc chữ, lưu CV và theo dõi lỗi.</p>
+        <div class="scroll"><table style="min-width:610px"><thead><tr><th>Mức</th><th>Cấu hình tối thiểu</th><th>Khối lượng phù hợp</th><th>Chi phí/tháng</th></tr></thead><tbody>
+          <tr><td><strong>Chạy thử</strong></td><td>4 lõi xử lý, 8GB bộ nhớ, 160GB ổ SSD</td><td>Đọc lần lượt từng CV; phù hợp khi thử nghiệm hoặc có ít hồ sơ</td><td><strong>$48 ≈ 1.255.680đ</strong></td></tr>
+          <tr><td><strong>Dùng quy mô nhỏ</strong></td><td>8 lõi xử lý, 16GB bộ nhớ, 320GB ổ SSD; có hàng chờ và theo dõi lỗi</td><td>Đọc CV liên tục, giảm nguy cơ nghẽn khi nhiều người tải lên</td><td><strong>$96 ≈ 2.511.360đ</strong></td></tr>
+          <tr><td><strong>Máy có card đồ họa (không bắt buộc)</strong></td><td>Card 16GB, 8 lõi xử lý, 32GB bộ nhớ, 200GB ổ SSD</td><td>Giúp xử lý nhanh số lượng lớn; không cần mua ở giai đoạn thử nghiệm</td><td><span class="tag quote">Cần xin báo giá</span><br><span class="small">chỉ cân nhắc sau khi đo tốc độ thực tế</span></td></tr>
+        </tbody></table></div>
+        <p class="small">Mức giá máy chủ tham chiếu dùng bảng giá DigitalOcean. Nếu tận dụng máy chủ có sẵn, vẫn phải tính thêm điện, sao lưu, dung lượng lưu file, theo dõi lỗi và công vận hành; không nên ghi là 0đ.</p>
+      </div>
+      <div class="card"><h2>Những khoản thường dễ bị bỏ sót</h2><ul><li><strong>Lưu file và sao lưu:</strong> CV là tài liệu riêng tư; cần nơi lưu file gốc và bản sao dự phòng.</li><li><strong>Kiểm tra an toàn:</strong> phải quét virus và kiểm tra file trước khi hệ thống mở PDF/Word.</li><li><strong>Theo dõi tiến trình:</strong> cần biết CV nào đang đọc, đọc xong, lỗi hay cần đọc lại.</li><li><strong>AI sắp xếp thông tin:</strong> công cụ đọc chữ chỉ cho ra chữ; cần bước tiếp theo để đưa chữ vào đúng 94 mục của biểu mẫu.</li><li><strong>Người vận hành:</strong> phần mềm miễn phí vẫn cần người cập nhật, xử lý lỗi và bảo mật.</li><li><strong>Pháp lý và dữ liệu cá nhân:</strong> phải có sự đồng ý rõ ràng, xác định nơi lưu/xử lý CV và không dùng CV để huấn luyện AI.</li></ul></div>
+    </section>
+
+    <section class="calc">
+      <div><h2>Ước tính chi phí hàng tháng</h2><p class="small" style="color:#d4e5ff">Dành cho phương án Google đọc chữ + GPT-5 Mini sắp xếp thông tin. Chỉ để dự trù; chưa gồm VAT, lưu file, internet, quét virus và nhân sự.</p>
+        <label for="cv">Số CV mỗi tháng</label><input id="cv" type="number" min="1" value="1000" />
+        <label for="pages">Trang scan trung bình / CV</label><input id="pages" type="number" min="0" step="0.1" value="5" />
+        <label for="rate">Tỷ giá VND / USD</label><input id="rate" type="number" min="1" value="26160" />
+      </div>
+      <div class="result"><div class="result-row"><span>Google đọc chữ từ ảnh</span><strong id="ocr">—</strong></div><div class="result-row"><span>AI sắp xếp thông tin<br><small>ước tính theo lượng chữ của một CV</small></span><strong id="llm">—</strong></div><div class="result-row"><span>Tổng tiền dịch vụ/tháng</span><span class="v" id="total">—</span></div><div class="result-row"><span>Trung bình mỗi CV</span><strong id="per">—</strong></div><p class="small" style="color:#d4e5ff">Mặc định: Google đọc chữ $1,50/1.000 trang; AI sắp xếp thông tin $0,007/CV.</p></div>
+    </section>
+
+    <section>
+      <h2>Kiểm tra trước khi dùng chính thức</h2>
+      <div class="two"><div class="decision"><h3>Cách kiểm tra</h3><ul><li>Dùng 200 CV/LLKH mà người gửi đã đồng ý cho thử nghiệm, gồm PDF, Word, bản scan và ảnh chụp điện thoại.</li><li>Đếm số thông tin AI đọc đúng: tên, học vị, cơ quan, ngày tháng, công tác và công trình.</li><li>Cho ít nhất 3 giải pháp cùng đọc một bộ CV để so sánh công bằng.</li></ul></div><div class="decision warning"><h3>Mức tối thiểu để đạt</h3><ul><li>Tên, học vị, cơ quan: đúng ít nhất 95% với file có sẵn chữ và 90% với bản scan.</li><li>Đào tạo, công tác, công trình: đúng ít nhất 85%.</li><li>Không được tự gửi hồ sơ, tự cấp vai trò hoặc làm lộ CV. Mọi thông tin AI không chắc phải đánh dấu “Cần chuyên gia kiểm tra”.</li></ul></div></div>
+    </section>
+
+    <section class="decision danger"><h2>4 việc team cần thống nhất</h2><ol><li>Đồng ý thử Google đọc chữ + GPT-5 Mini, hay bắt buộc dùng giải pháp cài nội bộ.</li><li>Đồng ý dùng 200 CV có sự đồng ý để kiểm tra chất lượng và cấp ngân sách thử nghiệm.</li><li>Đồng ý chỉ gửi CV ra dịch vụ cloud sau khi hoàn tất thỏa thuận xử lý dữ liệu với nhà cung cấp.</li><li>Sau khi chốt, triển khai phần kỹ thuật trong <code>TASK-05</code>; không tạo thêm Epic mới.</li></ol></section>
+
+    <section><h2>Nguồn và giả định</h2><div class="card small"><ul><li>Tỷ giá dùng trong report: USD bán ra Vietcombank 26.160 VND/USD, cập nhật 29/09/2026; giá thực tế thay đổi theo thời điểm thanh toán. <a href="https://vietcombank.com.vn/vi-VN/To-chuc/Trang-chu-DCTC/KHTC---Ti-gia---DCTC">Nguồn Vietcombank</a></li><li><a href="https://cloud.google.com/products/document-ai/pricing">Google Document AI pricing</a>; <a href="https://docs.cloud.google.com/document-ai/docs/processors-list">Google OCR language support</a>; <a href="https://developers.openai.com/api/docs/models/gpt-5-mini">GPT-5 Mini pricing</a>.</li><li><a href="https://www.paddleocr.ai/latest/en/version3.x/algorithm/PP-OCRv5/PP-OCRv5_multi_languages.html">PaddleOCR language support</a>; <a href="https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/algorithm/PP-OCRv5/PP-OCRv5.md">PaddleOCR benchmark</a>; <a href="https://github.com/docling-project/docling">Docling license</a>.</li><li><a href="https://azure.microsoft.com/en-us/pricing/details/document-intelligence/">Azure pricing</a>; <a href="https://aws.amazon.com/textract/pricing/">AWS Textract pricing</a>; <a href="https://mistral.ai/pricing/api/">Mistral pricing</a>; <a href="https://mistral.ai/news/ocr-4/">Mistral OCR 4</a>.</li><li><a href="https://www.digitalocean.com/pricing/droplets">DigitalOcean VPS pricing</a> dùng làm mốc hạ tầng cloud tham chiếu, không phải nhà cung cấp bắt buộc.</li></ul></div></section>
+  </main>
+  <footer>NacenTech · Báo cáo quyết định AI CV Scan · Giá, model, SLA và điều khoản nhà cung cấp phải được xác minh lại ngay trước thời điểm ký hợp đồng.</footer>
+  <script>
+    const money = n => new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(n) + 'đ';
+    function calc() { const cv = +document.getElementById('cv').value || 0, pages = +document.getElementById('pages').value || 0, rate = +document.getElementById('rate').value || 0; const ocrUsd = cv * pages * .0015, llmUsd = cv * .007, total = (ocrUsd + llmUsd) * rate; document.getElementById('ocr').textContent = '$' + ocrUsd.toFixed(2) + ' · ' + money(ocrUsd * rate); document.getElementById('llm').textContent = '$' + llmUsd.toFixed(2) + ' · ' + money(llmUsd * rate); document.getElementById('total').textContent = money(total); document.getElementById('per').textContent = money(cv ? total / cv : 0) + ' / CV'; }
+    document.querySelectorAll('.calc input').forEach(e => e.addEventListener('input', calc)); calc();
+  </script>
+</body>
+</html>

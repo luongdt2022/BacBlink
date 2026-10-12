@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Phiếu Khảo Sát & Thu Thập Sổ Tay Chuyên Gia Viện NacenTech (Zalo Mobile Form)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            zalo: '#0068ff',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex justify-center items-start sm:py-8">
+
+  <!-- MOBILE DEVICE CONTAINER -->
+  <div class="w-full max-w-md bg-white min-h-screen sm:min-h-[820px] sm:rounded-3xl shadow-xl flex flex-col overflow-hidden border border-slate-200">
+    
+    <!-- ZALO HEADER SIMULATION -->
+    <div class="bg-zalo text-white px-4 py-3 flex items-center justify-between shadow-xs sticky top-0 z-30">
+      <div class="flex items-center gap-2.5">
+        <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        <div class="flex flex-col">
+          <span class="text-xs font-bold leading-tight">Viện Ứng Dụng Công Nghệ</span>
+          <span class="text-[10px] text-blue-100 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Zalo Official Form
+          </span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <i data-lucide="share-2" class="w-4 h-4"></i>
+        <i data-lucide="more-vertical" class="w-4 h-4"></i>
+      </div>
+    </div>
+
+    <!-- BANNER KHẢO SÁT CHUYÊN GIA -->
+    <div class="bg-gradient-to-br from-blue-900 via-brand-800 to-indigo-900 text-white p-5 relative overflow-hidden">
+      <div class="relative z-10 space-y-2">
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-cyan-300 border border-white/20">
+          <i data-lucide="sparkles" class="w-3 h-3 text-cyan-300"></i>
+          Thu thập Sổ tay Chuyên gia Viện NacenTech
+        </span>
+        <h1 class="text-base font-extrabold leading-snug">
+          Đăng Ký & Số Hóa Lý Lịch Khoa Học Chuyên Gia KH&CN
+        </h1>
+        <p class="text-[11px] text-blue-100 leading-relaxed">
+          Kính mời Quý Thầy/Cô, Chuyên gia tải lên tệp LLKH/CV có sẵn. Trợ lý AI sẽ tự động trích xuất các công trình và đề tài vào hệ sinh thái trong 30 giây.
+        </p>
+      </div>
+      <!-- Background icon -->
+      <i data-lucide="graduation-cap" class="w-24 h-24 text-white/5 absolute -bottom-4 -right-4"></i>
+    </div>
+
+    <!-- MAIN FORM BODY (FAST INGESTION - 2 PHÚT) -->
+    <form id="expertForm" onsubmit="handleFormSubmit(event)" class="p-5 space-y-4 flex-1 flex flex-col justify-between">
+      <div class="space-y-4">
+
+        <!-- 1. HỌ VÀ TÊN -->
+        <div class="space-y-1">
+          <label class="block text-xs font-bold text-slate-700">
+            Họ và tên chuyên gia <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <input
+              type="text"
+              required
+              id="fullName"
+              placeholder="VD: TS. Vũ Văn Liệu"
+              class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none"
+            >
+          </div>
+        </div>
+
+        <!-- 2. SỐ ĐIỆN THOẠI & EMAIL (DÒNG 7, 8) - ĐÃ BỎ CCCD DO NHẠY CẢM -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-slate-700">
+              Số điện thoại Zalo <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="tel"
+              required
+              id="phone"
+              name="phone"
+              placeholder="0912..."
+              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none font-mono"
+            >
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-slate-700">
+              Email công tác <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="email"
+              required
+              id="email"
+              name="email"
+              placeholder="ten@nacentech.vn"
+              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none"
+            >
+          </div>
+        </div>
+
+        <!-- 3. HỌC VỊ CAO NHẤT & ĐƠN VỊ CÔNG TÁC (DÒNG 27, 36) -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-slate-700">
+              Học vị cao nhất <span class="text-rose-500">*</span>
+            </label>
+            <select id="highestDegree" name="highestDegree" class="w-full px-2.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+              <option value="TS">Tiến sĩ (TS)</option>
+              <option value="PGS">Phó Giáo sư (PGS)</option>
+              <option value="GS">Giáo sư (GS)</option>
+              <option value="ThS">Thạc sĩ (ThS)</option>
+              <option value="KS">Kỹ sư / Cử nhân</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-slate-700">
+              Đơn vị công tác <span class="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              id="organization"
+              name="organization"
+              placeholder="Viện NacenTech..."
+              class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none"
+            >
+          </div>
+        </div>
+
+        <!-- 4. LĨNH VỰC THẾ MẠNH (CHUẨN 18 NGÀNH TT17) -->
+        <div class="space-y-1">
+          <label class="block text-xs font-bold text-slate-700">
+            Lĩnh vực chuyên môn chính (Theo 18 ngành TT17) <span class="text-rose-500">*</span>
+          </label>
+          <select id="sectorCode" name="sectorCode" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none">
+            <option value="01">01. Công nghệ thông tin, Trí tuệ nhân tạo (AI) & Viễn thông</option>
+            <option value="02">02. Cơ khí chế tạo & Khuôn mẫu chính xác</option>
+            <option value="03">03. Điện - Điện tử, Tự động hóa & Robot</option>
+            <option value="04">04. Công nghệ sinh học & Vi sinh ứng dụng</option>
+            <option value="05">05. Sản xuất thuốc, Hóa dược & Dược liệu</option>
+            <option value="06">06. Vật liệu mới, Hợp kim & Nanotech</option>
+            <option value="07">07. Năng lượng tái tạo & Lưu trữ BESS</option>
+            <option value="08">08. Sản xuất hóa chất & Hóa mỹ phẩm</option>
+            <option value="09">09. Nông nghiệp công nghệ cao & Giống</option>
+            <option value="10">10. Sản xuất chế biến thực phẩm & Đồ uống</option>
+            <option value="11">11. Môi trường, Nước thải & Quan trắc tự động</option>
+            <option value="12">12. Sản xuất thiết bị y tế & Chăm sóc sức khỏe</option>
+            <option value="13">13. Công nghiệp in ấn & Sản xuất bao bì</option>
+            <option value="14">14. Dệt may & Da giày</option>
+            <option value="15">15. Sản phẩm nhựa & Cao su kỹ thuật</option>
+            <option value="16">16. Dịch vụ Logistics & Quản trị chuỗi cung ứng</option>
+            <option value="17">17. Chế biến gỗ, Lâm sản & Nội thất</option>
+            <option value="18">18. Xây dựng, Vật liệu & Hạ tầng</option>
+          </select>
+        </div>
+
+        <!-- 5. CÔNG NGHỆ LÀM CHỦ (CHỌN NHIỀU CÔNG NGHỆ THEO DANH MỤC 34 CN CHUẨN) -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-slate-700">
+              Công nghệ làm chủ <span class="text-rose-500">*</span>
+            </label>
+            <span class="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              Được chọn nhiều công nghệ
+            </span>
+          </div>
+          <select id="masteredTechs" name="masteredTechs" multiple class="w-full px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none h-24">
+            <option value="CN06" selected>CN06: Trí tuệ nhân tạo – AI</option>
+            <option value="CN05" selected>CN05: IoT và cảm biến</option>
+            <option value="CN04" selected>CN04: Điện – điện tử</option>
+            <option value="CN02">CN02: Tự động hóa</option>
+            <option value="CN01">CN01: Cơ khí – chế tạo</option>
+            <option value="CN03">CN03: Robot</option>
+            <option value="CN07">CN07: Dữ liệu lớn – Big Data</option>
+            <option value="CN08">CN08: Điện toán đám mây</option>
+            <option value="CN11">CN11: Blockchain</option>
+            <option value="CN12">CN12: Truy xuất nguồn gốc</option>
+            <option value="CN14">CN14: UAV – drone</option>
+            <option value="CN15">CN15: Công nghệ sinh học</option>
+            <option value="CN16">CN16: Công nghệ thực phẩm</option>
+            <option value="CN19">CN19: Vật liệu mới</option>
+            <option value="CN20">CN20: Công nghệ nano</option>
+            <option value="CN22">CN22: Công nghệ môi trường</option>
+            <option value="CN23">CN23: Xử lý nước</option>
+            <option value="CN25">CN25: Năng lượng tái tạo</option>
+            <option value="CN28">CN28: Công nghệ xanh</option>
+            <option value="CN36">CN36: Công nghệ in 3D</option>
+            <option value="CN38">CN38: Đo lường – kiểm định</option>
+            <option value="CN39">CN39: Quan trắc</option>
+          </select>
+          <p class="text-[10px] text-slate-500 italic">
+            * Nhấn giữ Ctrl (hoặc Cmd trên Mac) để chọn nhiều công nghệ mà Thầy/Cô làm chủ.
+          </p>
+        </div>
+
+        <!-- 5. TẢI TỆP CV / LÝ LỊCH KHOA HỌC (CORE FEATURE) -->
+        <div class="space-y-1.5 pt-1">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-slate-700">
+              Tải lên tệp LLKH / CV sẵn có <span class="text-rose-500">*</span>
+            </label>
+            <span class="text-[10px] text-blue-700 font-semibold flex items-center gap-0.5">
+              <i data-lucide="zap" class="w-3 h-3 text-amber-500"></i> AI tự trích xuất
+            </span>
+          </div>
+
+          <div
+            id="dropzone"
+            onclick="triggerFileInput()"
+            class="border-2 border-dashed border-blue-400 bg-blue-50/50 hover:bg-blue-50 rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1.5"
+          >
+            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+              <i data-lucide="upload-cloud" class="w-5 h-5" id="uploadIcon"></i>
+            </div>
+            <div class="text-xs font-bold text-slate-800" id="fileLabel">
+              Chọn tệp PDF / Word / Ảnh chụp CV
+            </div>
+            <p class="text-[10px] text-slate-500" id="fileDesc">
+              Dung lượng tối đa 20MB. Chấp nhận mẫu LLKH Bộ KH&CN.
+            </p>
+            <input type="file" id="fileInput" name="fileInput" class="hidden" accept=".pdf,.doc,.docx,image/*" onchange="handleFileChange(event)">
+          </div>
+        </div>
+
+        <!-- AI PROGRESS STATE (Ẩn ban đầu) -->
+        <div id="aiScanning" class="hidden bg-slate-900 text-white rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="flex items-center gap-1.5 text-cyan-300 font-semibold">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+              Trợ lý AI đang đọc hiểu hồ sơ...
+            </span>
+            <span class="text-[10px] font-mono text-slate-400" id="scanPercent">45%</span>
+          </div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div id="scanBar" class="bg-cyan-400 h-full transition-all duration-300" style="width: 45%;"></div>
+          </div>
+          <div class="text-[10px] text-slate-300 flex items-center gap-1">
+            <i data-lucide="check" class="w-3 h-3 text-emerald-400"></i>
+            <span id="scanStepText">Đã bóc tách: 5 bài báo khoa học, 2 bằng sáng chế</span>
+          </div>
+        </div>
+
+        <!-- 6. CAM KẾT PHÁP LÝ (PDPD NĐ 13) -->
+        <div class="pt-2">
+          <label class="flex items-start gap-2 cursor-pointer text-[11px] text-slate-600 leading-tight">
+            <input type="checkbox" id="chkPdpdConsent" name="chkPdpdConsent" required checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500">
+            <span>Tôi đồng ý lưu trữ hồ sơ và chia sẻ thông tin chuyên môn trong mạng lưới chuyên gia Viện NacenTech (theo NĐ 13/2023/NĐ-CP).</span>
+          </label>
+        </div>
+
+      </div>
+
+      <!-- SUBMIT BUTTON -->
+      <div class="pt-4 mt-auto">
+        <button
+          type="submit"
+          id="btnSubmit"
+          class="w-full py-3 bg-zalo hover:bg-blue-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 transition active:scale-98"
+        >
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>Gửi Hồ Sơ & Nhận Kết Quả Bóc Tách AI</span>
+        </button>
+        <p class="text-[10px] text-center text-slate-400 mt-2">
+          Bảo mật thông tin bởi Viện Ứng Dụng Công Nghệ — Bộ KH&CN
+        </p>
+      </div>
+    </form>
+
+    <!-- SUCCESS POPUP (MODAL XÁC NHẬN) -->
+    <div id="successModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-3 shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+          <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900">Tiếp Nhận Thành Công!</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          AI đã trích xuất hoàn tất <b>92%</b> dữ liệu từ tệp LLKH của Quý Thầy/Cô. Một <b>Magic Link</b> xác thực đã được gửi về Zalo/Email.
+        </p>
+        <div class="p-3 bg-blue-50 rounded-xl text-left text-[11px] text-blue-900 space-y-1">
+          <div>• Mã hồ sơ: <b class="font-mono">EXPERT-2026-0814</b></div>
+          <div>• Trạng thái: <b>Đã điền sẵn 15 trường</b></div>
+        </div>
+        <button
+          onclick="openWebPortalReview()"
+          class="w-full py-2.5 bg-brand-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm"
+        >
+          <span>Mở Xem Lại & Xác Nhận Ngay</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function triggerFileInput() {
+      document.getElementById('fileInput').click();
+    }
+
+    function handleFileChange(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      document.getElementById('uploadIcon').setAttribute('data-lucide', 'file-text');
+      document.getElementById('fileLabel').innerText = file.name;
+      document.getElementById('fileDesc').innerText = `${(file.size / (1024 * 1024)).toFixed(2)} MB — Đã sẵn sàng phân tích`;
+      lucide.createIcons();
+
+      // Hiển thị simulation tiến trình AI
+      const aiScanning = document.getElementById('aiScanning');
+      aiScanning.classList.remove('hidden');
+
+      let progress = 20;
+      const interval = setInterval(() => {
+        progress += 25;
+        if (progress > 100) progress = 100;
+        document.getElementById('scanPercent').innerText = `${progress}%`;
+        document.getElementById('scanBar').style.width = `${progress}%`;
+
+        if (progress === 70) {
+          document.getElementById('scanStepText').innerText = 'Đang nhận diện: Đơn vị công tác, chức danh, quá trình đào tạo...';
+        }
+        if (progress >= 100) {
+          clearInterval(interval);
+          document.getElementById('scanStepText').innerText = 'Bóc tách thành công 15 mục dữ liệu chuẩn!';
+        }
+      }, 400);
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      document.getElementById('successModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function openWebPortalReview() {
+      alert('Chuyển hướng đến Web Portal NacenTwin để chuyên gia rà soát bảng công trình và ký cam kết pháp lý...');
+      document.getElementById('successModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

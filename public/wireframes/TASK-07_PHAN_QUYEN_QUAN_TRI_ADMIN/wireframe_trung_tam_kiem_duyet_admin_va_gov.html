@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trung Tâm Kiểm Duyệt & Cổng Tác Nghiệp Sở KH&CN — NacenTwin (TASK-07)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .workflow-tab.active {
+      background-color: #0f172a;
+      color: #ffffff;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP GOV/ADMIN HEADER -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center text-white font-black text-xl shadow">
+          G
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-white text-base">CỔNG TÁC NGHIỆP CẤP 2 · SỞ KH&CN</span>
+            <span class="rounded-full bg-red-500/20 text-red-300 text-[10px] font-bold px-2 py-0.5 border border-red-500/30">HÀ NỘI (SCOPE: 01)</span>
+            <span class="rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 border border-blue-500/30">MAKER-CHECKER</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Trung Tâm Tiếp Nhận & Thẩm Định Hồ Sơ ĐMST Địa Bàn Thủ Đô Hà Nội</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <div class="text-right hidden sm:block">
+          <div class="font-bold text-white">Đ/c Trần Văn Minh</div>
+          <div class="text-[10px] text-slate-400">Trưởng phòng QL Công nghệ · Sở KH&CN HN</div>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold">
+          TM
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 5 LUỒNG KIỂM DUYỆT TẬP TRUNG TABS -->
+  <section class="bg-white border-b border-slate-200 px-4 sm:px-6 shadow-sm">
+    <div class="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto py-2.5">
+      <button onclick="switchWorkflow('expert')" id="btn-wf-expert" class="workflow-tab active shrink-0 px-4 py-2 rounded-xl text-xs flex items-center gap-2 transition">
+        <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+        <span>1. Duyệt Chuyên Gia Cấp 2</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-red-600 text-white font-black text-[10px]">04</span>
+      </button>
+
+      <button onclick="switchWorkflow('seller')" id="btn-wf-seller" class="workflow-tab shrink-0 px-4 py-2 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i data-lucide="store" class="w-4 h-4"></i>
+        <span>2. Thẩm Định Seller & TRL</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-amber-500 text-white font-black text-[10px]">08</span>
+      </button>
+
+      <button onclick="switchWorkflow('enterprise')" id="btn-wf-enterprise" class="workflow-tab shrink-0 px-4 py-2 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i data-lucide="building-2" class="w-4 h-4"></i>
+        <span>3. Duyệt Doanh Nghiệp ĐMST</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-blue-600 text-white font-black text-[10px]">05</span>
+      </button>
+
+      <button onclick="switchWorkflow('buyer')" id="btn-wf-buyer" class="workflow-tab shrink-0 px-4 py-2 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i data-lucide="help-circle" class="w-4 h-4"></i>
+        <span>4. Duyệt Nhu Cầu Buyer & Gán CG</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-purple-600 text-white font-black text-[10px]">02</span>
+      </button>
+
+      <button onclick="switchWorkflow('audit')" id="btn-wf-audit" class="workflow-tab shrink-0 px-4 py-2 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <i data-lucide="history" class="w-4 h-4"></i>
+        <span>5. Trung Ương Hậu Kiểm (Revoke)</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- MAIN APPROVAL TABLE & REVIEW QUEUE -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+    <!-- SUMMARY METRICS -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-[11px] font-bold text-slate-500 uppercase">Hồ sơ chờ thẩm định</div>
+        <div class="text-2xl font-black text-red-600 mt-1">19 Hồ Sơ</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">SLA cam kết xử lý: 24h - 48h</div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-[11px] font-bold text-slate-500 uppercase">Đã phê duyệt tuần này</div>
+        <div class="text-2xl font-black text-emerald-600 mt-1">32 Hồ Sơ</div>
+        <div class="text-[10px] text-emerald-700 mt-0.5">100% đúng hạn SLA</div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-[11px] font-bold text-slate-500 uppercase">Yêu cầu bổ sung tài liệu</div>
+        <div class="text-2xl font-black text-amber-600 mt-1">06 Hồ Sơ</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">Đang chờ chủ thể phản hồi</div>
+      </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="text-[11px] font-bold text-slate-500 uppercase">Phạm vi địa bàn trực thuộc</div>
+        <div class="text-2xl font-black text-blue-700 mt-1">30 Quận/Huyện</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">TP. Hà Nội (ScopeId = 01)</div>
+      </div>
+    </div>
+
+    <!-- QUEUE TABLE FOR WORKFLOW 1: EXPERT APPROVALS -->
+    <div id="queue-expert" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-4 p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900">Hàng Đợi Thẩm Định Hồ Sơ Chuyên Gia KH&CN Cấp Tỉnh (Hà Nội)</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Theo Quyết định phân cấp Cấp 2 (TASK-07 / BR-ADM-007): Lãnh đạo Sở KH&CN duyệt cấp thẻ Chuyên gia trực tiếp.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" placeholder="Lọc theo tên, học vị, cơ quan..." class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs">
+          <button class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold">Lọc</button>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+            <tr>
+              <th class="p-3">Mã Hồ Sơ</th>
+              <th class="p-3">Họ Tên & Học Vị</th>
+              <th class="p-3">Cơ Quan Công Tác</th>
+              <th class="p-3">Lĩnh Vực TT17</th>
+              <th class="p-3">Thời Gian Nộp</th>
+              <th class="p-3">Hạn SLA</th>
+              <th class="p-3 text-right">Tác Nghiệp</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <!-- ROW 1 -->
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-3 font-mono font-bold text-blue-700">EXP-REQ-HN-084</td>
+              <td class="p-3">
+                <div class="font-extrabold text-slate-900 text-sm">PGS.TS. Trần Quốc Tuấn</div>
+                <div class="text-[11px] text-slate-400">Tiến sĩ Tự Động Hóa (2016) · 02 Sáng chế</div>
+              </td>
+              <td class="p-3 font-medium">Đại Học Bách Khoa Hà Nội</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">LV01 - Cơ khí tự động</span></td>
+              <td class="p-3 text-slate-500">10:15 Hôm qua</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-red-100 text-red-800 font-bold text-[10px]">Còn 14h</span></td>
+              <td class="p-3 text-right space-x-1.5">
+                <button onclick="openReviewModal('PGS.TS. Trần Quốc Tuấn', 'EXP-REQ-HN-084')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition shadow-sm">
+                  Thẩm Định Ngay
+                </button>
+              </td>
+            </tr>
+
+            <!-- ROW 2 -->
+            <tr class="hover:bg-slate-50 transition">
+              <td class="p-3 font-mono font-bold text-blue-700">EXP-REQ-HN-085</td>
+              <td class="p-3">
+                <div class="font-extrabold text-slate-900 text-sm">TS. Lê Thị Mai Hoa</div>
+                <div class="text-[11px] text-slate-400">Tiến sĩ Sinh học Phân tử · 05 Bài Scopus</div>
+              </td>
+              <td class="p-3 font-medium">Viện Công Nghệ Sinh Học · VAST</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">LV05 - Y dược sinh học</span></td>
+              <td class="p-3 text-slate-500">14:30 Hôm qua</td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">Còn 28h</span></td>
+              <td class="p-3 text-right space-x-1.5">
+                <button onclick="openReviewModal('TS. Lê Thị Mai Hoa', 'EXP-REQ-HN-085')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition shadow-sm">
+                  Thẩm Định Ngay
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL THẨM ĐỊNH HỒ SƠ CHUYÊN GIA -->
+  <div id="review-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 relative space-y-4">
+      <button onclick="closeReviewModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+        <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+          <i data-lucide="file-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900" id="modal-expert-name">Thẩm Định Hồ Sơ: PGS.TS. Trần Quốc Tuấn</h3>
+          <p class="text-xs text-slate-500 font-mono" id="modal-app-id">Mã yêu cầu: EXP-REQ-HN-084</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl">
+          <div><span class="text-slate-400 text-[10px] block">Văn Bằng Học Vị:</span> <b>Tiến sĩ Tự Động Hóa (ĐH Bách Khoa)</b></div>
+          <div><span class="text-slate-400 text-[10px] block">Cơ quan quản lý trực tiếp:</span> <b>Đại Học Bách Khoa Hà Nội</b></div>
+          <div><span class="text-slate-400 text-[10px] block">Bằng SHTT / Sáng Chế:</span> <b>02 Bằng SHTT còn hiệu lực</b></div>
+          <div><span class="text-slate-400 text-[10px] block">Cam kết Nghị định 13/2023:</span> <b class="text-emerald-700">Đã Ký Điện Tử PDPD</b></div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Ý Kiến Thẩm Định Của Cán Bộ Sở KH&CN Hà Nội: <span class="text-red-500">*</span></label>
+          <textarea rows="3" class="w-full p-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none" placeholder="Nhập căn cứ phê duyệt hoặc lý do yêu cầu bổ sung minh chứng..."></textarea>
+        </div>
+
+        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-900 flex items-start gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-700 shrink-0 mt-0.5"></i>
+          <span>Khi bấm <b>PHÊ DUYỆT</b>, hệ thống sẽ tự động gán vai trò <code class="font-mono font-bold">VERIFIED_EXPERT</code> cho tài khoản của chuyên gia và công khai hồ sơ lên Danh bạ Chuyên gia Quốc gia.</span>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+        <button type="button" onclick="rejectApp()" class="px-4 py-2.5 rounded-xl border border-red-200 text-red-600 font-bold hover:bg-red-50 text-xs">Từ Chối</button>
+        <button type="button" onclick="requestMoreInfo()" class="px-4 py-2.5 rounded-xl border border-amber-200 text-amber-700 font-bold hover:bg-amber-50 text-xs">Yêu Cầu Bổ Sung Minh Chứng</button>
+        <button type="button" onclick="approveApp()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md">Phê Duyệt & Cấp Thẻ Chuyên Gia</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function switchWorkflow(type) {
+      alert('Chuyển luồng thẩm định: ' + type);
+    }
+
+    function openReviewModal(name, id) {
+      document.getElementById('modal-expert-name').innerText = 'Thẩm Định Hồ Sơ: ' + name;
+      document.getElementById('modal-app-id').innerText = 'Mã yêu cầu: ' + id;
+      document.getElementById('review-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeReviewModal() {
+      document.getElementById('review-modal').classList.add('hidden');
+    }
+
+    function approveApp() {
+      alert('ĐÃ PHÊ DUYỆT THÀNH CÔNG! Tài khoản đã được cấp vai trò VERIFIED_EXPERT và ghi nhận vào Audit Log Sở KH&CN Hà Nội.');
+      closeReviewModal();
+    }
+
+    function requestMoreInfo() {
+      alert('Đã gửi thông báo yêu cầu bổ sung hồ sơ về email của chuyên gia.');
+      closeReviewModal();
+    }
+
+    function rejectApp() {
+      alert('Đã từ chối tiếp nhận hồ sơ.');
+      closeReviewModal();
+    }
+  </script>
+</body>
+</html>

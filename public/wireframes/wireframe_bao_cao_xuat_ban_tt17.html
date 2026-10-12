@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe Báo Cáo Xuất Bản TT17 (Phụ Lục IV) — NacenTwin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col justify-between">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-base shadow-sm">TT17</div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base font-extrabold text-slate-900">Báo Cáo Đánh Giá Trình Độ & Năng Lực Công Nghệ</h1>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">PHỤ LỤC IV / TT17</span>
+        </div>
+        <p class="text-xs text-slate-500">Hồ Sơ Đánh Giá Doanh Nghiệp Theo Thông tư 17/2019/TT-BKHCN (/assessments/tt17/[id]/report)</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5">
+        <i data-lucide="printer" class="w-3.5 h-3.5"></i> In Báo Cáo
+      </button>
+      <button class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i> Xuất PDF Phụ Lục IV
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto w-full px-4 py-8 space-y-6">
+    <!-- Header Thông Tin Doanh Nghiệp -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">HỒ SƠ ĐÁNH GIÁ CHÍNH THỨC</span>
+          <h2 class="text-xl font-black text-slate-900">Công Ty Cổ Phần Công Nghệ Sinh Học Dược Phẩm Hải Phòng</h2>
+          <p class="text-xs text-slate-500">Mã Số Thuế: 0201994821 • Ngành: Y Dược & Vật Liệu Sinh Học Mới</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="text-xs text-slate-500">Điểm Năng Lực (T_ĐB)</div>
+            <div class="text-2xl font-black text-emerald-600">76.4 <span class="text-xs font-bold text-slate-500">/ 100</span></div>
+          </div>
+          <div class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold border border-emerald-200">
+            HẠNG KHÁ
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 Nhóm Điểm T-E-O-R-I -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center text-xs">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="text-slate-500 font-bold">1. Kỹ Thuật (T)</div>
+          <div class="text-lg font-black text-blue-600">22.5 / 30</div>
+          <div class="text-[10px] text-slate-400">6 tiêu chí</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="text-slate-500 font-bold">2. Hiệu Quả (E)</div>
+          <div class="text-lg font-black text-emerald-600">16.8 / 20</div>
+          <div class="text-[10px] text-slate-400">5 tiêu chí</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="text-slate-500 font-bold">3. Tổ Chức (O)</div>
+          <div class="text-lg font-black text-purple-600">14.2 / 20</div>
+          <div class="text-[10px] text-slate-400">5 tiêu chí</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="text-slate-500 font-bold">4. R&D ĐMST (R)</div>
+          <div class="text-lg font-black text-amber-600">12.9 / 15</div>
+          <div class="text-[10px] text-slate-400">5 tiêu chí</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="text-slate-500 font-bold">5. Thông Tin (I)</div>
+          <div class="text-lg font-black text-cyan-600">10.0 / 15</div>
+          <div class="text-[10px] text-slate-400">5 tiêu chí</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chi Tiết 26 Tiêu Chí (Table) -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+          <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i> Bảng Điểm Chi Tiết 26 Tiêu Chí Thẩm Định
+        </h3>
+        <span class="text-xs text-slate-500 font-mono">Phiên thẩm định: #TT17-2026-081</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold">
+              <th class="py-2.5 px-3">Mã</th>
+              <th class="py-2.5 px-3">Nội Dung Tiêu Chí</th>
+              <th class="py-2.5 px-3 text-center">Trọng Số</th>
+              <th class="py-2.5 px-3 text-center">Điểm Đạt</th>
+              <th class="py-2.5 px-3">Căn Cứ / Minh Chứng Đính Kèm</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-blue-600">T1</td>
+              <td class="py-2.5 px-3">Tỷ lệ máy móc thiết bị có nguồn gốc hiện đại</td>
+              <td class="py-2.5 px-3 text-center font-bold">5.0</td>
+              <td class="py-2.5 px-3 text-center font-black text-emerald-600">4.5</td>
+              <td class="py-2.5 px-3 text-slate-500">Hóa đơn nhập khẩu dây chuyền từ CHLB Đức (2024)</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-blue-600">T2</td>
+              <td class="py-2.5 px-3">Mức độ tự động hóa dây chuyền sản xuất</td>
+              <td class="py-2.5 px-3 text-center font-bold">5.0</td>
+              <td class="py-2.5 px-3 text-center font-black text-emerald-600">4.0</td>
+              <td class="py-2.5 px-3 text-slate-500">Hệ thống SCADA điều khiển tập trung</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-emerald-600">E1</td>
+              <td class="py-2.5 px-3">Năng suất lao động bình quân so với ngành</td>
+              <td class="py-2.5 px-3 text-center font-bold">4.0</td>
+              <td class="py-2.5 px-3 text-center font-black text-emerald-600">3.5</td>
+              <td class="py-2.5 px-3 text-slate-500">Báo cáo tài chính kiểm toán 2025</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-purple-600">O1</td>
+              <td class="py-2.5 px-3">Áp dụng hệ thống quản lý chất lượng (ISO/GMP)</td>
+              <td class="py-2.5 px-3 text-center font-bold">4.0</td>
+              <td class="py-2.5 px-3 text-center font-black text-emerald-600">4.0</td>
+              <td class="py-2.5 px-3 text-slate-500">Chứng nhận GMP-WHO & ISO 13485 còn hiệu lực</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 px-3 font-bold text-amber-600">R1</td>
+              <td class="py-2.5 px-3">Tỷ lệ đầu tư cho R&D / Doanh thu thuần</td>
+              <td class="py-2.5 px-3 text-center font-bold">3.0</td>
+              <td class="py-2.5 px-3 text-center font-black text-emerald-600">2.8</td>
+              <td class="py-2.5 px-3 text-slate-500">Quỹ phát triển KH&CN đạt 3.8% doanh thu</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500">
+    © 2026 NacenTwin — Báo Cáo Xuất Bản Theo Quy Chuẩn Thông Tư 17/2019/TT-BKHCN.
+  </footer>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

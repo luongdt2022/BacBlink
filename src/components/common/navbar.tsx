@@ -8,6 +8,7 @@ import { useI18n, I18nToggle } from "./i18n-provider";
 import { ThemeToggle } from "./theme-toggle";
 import { ConfirmModal } from "./confirm-modal";
 import { useToast } from "./toast";
+import { FontsizeControl } from "./fontsize-control";
 import {
   LogOut,
   LogIn,
@@ -73,6 +74,7 @@ export function Navbar() {
     { href: "/trien-lam", label: "Sự kiện Techmart" },
     { href: "/chuyen-gia", label: t("experts") },
     { href: "/dich-vu-khac", label: t("services") },
+    { href: "/wireframes", label: t("wireframes") || "Wireframes" },
   ];
 
   const isActiveLink = (href: string) => href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -126,6 +128,11 @@ export function Navbar() {
 
               {/* Dark/Light Theme Toggle */}
               <ThemeToggle />
+
+              {/* Font Size Scaling Control (A- / A / A+) */}
+              <div className="hidden xl:block">
+                <FontsizeControl />
+              </div>
 
               <div className="mx-1 hidden h-6 w-px bg-slate-200 dark:bg-slate-800 lg:block" />
 
@@ -248,6 +255,10 @@ export function Navbar() {
                 <button type="button" onClick={() => { setMobileMenuOpen(false); setLogoutModalOpen(true); }} className="focus-ring rounded-control px-4 py-3 text-label font-semibold text-brand-700 dark:text-brand-200">{t("logout")}</button>
               </div>
             )}
+            <div className="flex items-center justify-between border-t border-border-default pt-3 xl:hidden">
+              <span className="text-xs font-semibold text-text-secondary dark:text-slate-400">Cỡ chữ hiển thị:</span>
+              <FontsizeControl />
+            </div>
           </div>
         )}
       </header>

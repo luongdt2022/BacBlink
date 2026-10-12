@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bàn Làm Việc Chuyên Gia (Expert Dashboard) — NacenTwin (TASK-05)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-700 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          E
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+            <span class="rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 border border-purple-200">EXPERT WORKSPACE</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">TASK-05 BASIC DESIGN</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Không Gian Tác Nghiệp & Quản Lý Hồ Sơ Chuyên Gia KH&CN</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a href="wireframe_ai_cv_scan_wizard.html" class="border border-purple-200 hover:bg-purple-50 text-purple-700 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="sparkles" class="w-4 h-4 text-purple-600"></i> AI Scan CV (94 Trường)
+        </a>
+        <a href="wireframe_chinh_sua_ho_so_chuyen_gia.html" class="bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="edit-3" class="w-4 h-4"></i> Cập Nhật LLKH Scopus
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+    <!-- CỜ 3: BANNER THÔNG BÁO TỪ CHỐI / YÊU CẦU BỔ SUNG CỦA SỞ KH&CN (NẾU CÓ) -->
+    <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-700"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-slate-900 text-xs sm:text-sm">Hồ sơ thẩm định chuyên gia của bạn có phản hồi từ Sở KH&CN Hà Nội</h4>
+          <p class="text-[11px] text-slate-600 mt-0.5">Cán bộ chuyên quản yêu cầu bổ sung tài liệu minh chứng công trình nghiên cứu và cập nhật mã định danh Scopus/ORCID.</p>
+        </div>
+      </div>
+      <button onclick="openExpertAuditDrawer()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shrink-0 transition flex items-center gap-1.5 shadow-xs">
+        <i data-lucide="file-text" class="w-4 h-4"></i>
+        <span>Xem Biên Bản Thẩm Định Sở</span>
+      </button>
+    </div>
+
+    <!-- PROFILE HERO CARD -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-extrabold text-2xl flex items-center justify-center shadow-md">
+          MA
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-xl font-black text-slate-900">TS. Nguyễn Minh An</h2>
+            <span class="bg-purple-100 text-purple-800 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+              <i data-lucide="award" class="w-3.5 h-3.5"></i> Chuyên Gia KH&CN
+            </span>
+            <span class="bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5 rounded-full">
+              Hồ sơ cần bổ sung (70%)
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Viện Công Nghệ Thông Tin & Truyền Thông · Sở KH&CN Hà Nội quản lý địa bàn</p>
+          <div class="flex items-center gap-3 mt-2 text-xs text-slate-600">
+            <span>Mã LLKH: <b class="font-mono text-slate-800">EXP-2026-HN-0089</b></span>
+            <span>·</span>
+            <span>Lĩnh vực TT17: <b class="text-purple-700">Công nghệ thông tin & Tự động hóa</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="wireframe_so_tay_chuyen_gia_profile.html" class="p-2.5 border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600 font-bold text-xs flex items-center gap-1.5 transition">
+          <i data-lucide="eye" class="w-4 h-4"></i> Xem Hồ Sơ Công Khai
+        </a>
+        <a href="wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html" class="px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-sm">
+          <i data-lucide="mail" class="w-4 h-4"></i> Hộp Thư Tư Vấn (3)
+        </a>
+      </div>
+    </div>
+
+    <!-- KPI STATS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Bài Báo Khoa Học (Scopus/WoS)</span>
+          <i data-lucide="book-open" class="w-4 h-4 text-purple-600"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-slate-900">14</p>
+        <p class="text-[11px] text-slate-400">8 bài báo nhóm Q1/Q2 quốc tế</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Bằng Sáng Chế / GPHI</span>
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-emerald-600">2</p>
+        <p class="text-[11px] text-emerald-700 font-semibold">Được Cục SHTT cấp bằng</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Yêu Cầu Tư Vấn Tiếp Nhận</span>
+          <i data-lucide="users" class="w-4 h-4 text-blue-600"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-blue-700">7</p>
+        <p class="text-[11px] text-blue-600 font-semibold">3 yêu cầu mới đang chờ xếp lịch</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Đề Tài KH&CN Chủ Trì</span>
+          <i data-lucide="folder-kanban" class="w-4 h-4 text-amber-600"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-amber-600">5</p>
+        <p class="text-[11px] text-slate-400">2 cấp Nhà nước · 3 cấp Bộ</p>
+      </div>
+    </div>
+
+    <!-- MAIN GRID 2 CỘT: VIỆC CẦN LÀM & TÁC NGHIỆP NHANH -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- CỘT TRÁI (8 CỘT): VIỆC CẦN LÀM & BÀI TOÁN GỢI Ý PHÙ HỢP -->
+      <div class="lg:col-span-8 space-y-6">
+
+        <!-- VIỆC CẦN LÀM ĐỂ HOÀN THIỆN HỒ SƠ -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Việc Cần Hoàn Thành Để Cấp Verified Badge</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Sau khi hoàn tất, Sở KH&CN sẽ cấp con dấu Chuyên Gia Được Xác Thực trên sàn.</p>
+            </div>
+            <span class="bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-1 rounded-lg text-xs font-bold">
+              Tiến độ: 70%
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 flex items-center justify-between gap-3 text-xs">
+              <div class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
+                <div>
+                  <b class="text-slate-900 block font-bold">Bổ sung minh chứng Bằng Tiến sĩ và Chứng chỉ Ngoại ngữ</b>
+                  <span class="text-slate-500 text-[11px]">Sở KH&CN yêu cầu bản scan công chứng rõ nét để phục vụ đối soát.</span>
+                </div>
+              </div>
+              <a href="wireframe_chinh_sua_ho_so_chuyen_gia.html" class="px-3 py-1.5 bg-amber-600 text-white rounded-lg font-bold text-[11px] hover:bg-amber-700 shrink-0 transition">
+                Tải Minh Chứng
+              </a>
+            </div>
+
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between gap-3 text-xs">
+              <div class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
+                <div>
+                  <b class="text-slate-900 block font-bold">Cập nhật mã định danh Scopus Author ID & ORCID</b>
+                  <span class="text-slate-500 text-[11px]">Tự động kéo trích dẫn và chỉ số h-index thời gian thực từ cơ sở dữ liệu quốc tế.</span>
+                </div>
+              </div>
+              <a href="wireframe_chinh_sua_ho_so_chuyen_gia.html" class="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg font-bold text-[11px] hover:bg-blue-100 shrink-0 transition">
+                Cập Nhật
+              </a>
+            </div>
+
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between gap-3 text-xs">
+              <div class="flex items-start gap-2.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0"></span>
+                <div>
+                  <b class="text-slate-900 block font-bold">Xác nhận khung giờ tư vấn trực tuyến (Office Hours)</b>
+                  <span class="text-slate-500 text-[11px]">Thiết lập lịch rảnh trong tuần để Doanh nghiệp chủ động đặt lịch hẹn tư vấn.</span>
+                </div>
+              </div>
+              <a href="wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-[11px] hover:bg-emerald-100 shrink-0 transition">
+                Cài Đặt Lịch
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- BÀI TOÁN DOANH NGHIỆP PHÙ HỢP GỢI Ý TỪ RADAR -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Bài Toán Doanh Nghiệp Cần Chuyên Gia Tư Vấn (TNI &ge; 80)</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Các bài toán thuộc lĩnh vực chuyên môn của bạn được hệ thống tự động gợi ý.</p>
+            </div>
+            <a href="../TASK-03_HO_SO_TIM_MUA_BUYER/wireframe_san_nhu_cau_cong_nghe.html" class="text-xs font-bold text-blue-700 hover:underline">
+              Xem Tất Cả &gt;
+            </a>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-4 rounded-xl border border-slate-200 hover:border-purple-300 transition space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-mono text-purple-700 font-bold text-[11px]">DEMAND-2026-LV01-018</span>
+                <span class="bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-full text-[10px]">TNI: 88.5 (Cực kỳ cấp thiết)</span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-sm">Tự Động Hóa Dây Chuyền Chiết Rót & Đóng Chai Dược Phẩm GMP-WHO</h4>
+              <p class="text-slate-500 text-[11px]">Bên Mua: [Công Ty CP Dược Phẩm MediTech] · Ngân sách: 1.5 - 2.0 Tỷ VNĐ</p>
+              <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span class="text-slate-400 text-[11px]">Cần chuyên gia: Tư vấn tiêu chuẩn TRL và đánh giá phương án chuyển giao</span>
+                <a href="../TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_deal_room_hop_tac.html" class="px-3 py-1 bg-purple-700 text-white rounded-lg font-bold text-[11px] hover:bg-purple-800 transition">
+                  Đăng Ký Tư Vấn
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CỘT PHẢI (4 CỘT): CÔNG CỤ TÁC NGHIỆP & LIÊN KẾT NHANH -->
+      <div class="lg:col-span-4 space-y-6">
+
+        <!-- THAO TÁC HỒ SƠ 1-CLICK -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs">
+          <h4 class="font-extrabold text-slate-900 text-sm pb-2 border-b border-slate-100">Lối Tắt Tác Nghiệp</h4>
+
+          <a href="wireframe_chinh_sua_ho_so_chuyen_gia.html" class="p-3 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/30 flex items-center justify-between transition">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="file-edit" class="w-4 h-4 text-purple-600"></i>
+              <span class="font-bold text-slate-800">Chỉnh Sửa LLKH 94 Trường</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </a>
+
+          <a href="wireframe_ai_cv_scan_wizard.html" class="p-3 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/30 flex items-center justify-between transition">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="wand-2" class="w-4 h-4 text-indigo-600"></i>
+              <span class="font-bold text-slate-800">Bóc Tách CV Bằng AI</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </a>
+
+          <a href="wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html" class="p-3 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/30 flex items-center justify-between transition">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
+              <span class="font-bold text-slate-800">Lịch Hẹn & Hộp Thư Tư Vấn</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </a>
+
+          <a href="wireframe_zalo_input_form.html" class="p-3 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50/30 flex items-center justify-between transition">
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="smartphone" class="w-4 h-4 text-emerald-600"></i>
+              <span class="font-bold text-slate-800">Mẫu Nhập Liệu Zalo Mini App</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </a>
+        </div>
+
+        <!-- THÔNG TIN ĐƠN VỊ THẨM ĐỊNH -->
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 rounded-2xl shadow-sm space-y-3 text-xs">
+          <span class="text-[10px] font-black uppercase text-purple-300 tracking-wider flex items-center gap-1">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Cấp Quản Lý Trực Tiếp
+          </span>
+          <h4 class="font-extrabold text-sm text-white">Sở Khoa Học & Công Nghệ TP. Hà Nội</h4>
+          <p class="text-slate-300 leading-relaxed text-[11px]">
+            Hồ sơ lý lịch khoa học của bạn được quản lý và thẩm định trực tiếp bởi Phòng Quản lý Khoa học — Sở KH&CN Hà Nội theo cơ chế Phân cấp Cấp 2 (Quyết định PO-DEC-20261011-01).
+          </p>
+          <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
+            Chuyên viên hỗ trợ: <b>Đ/c Lê Thanh Tùng</b> (024.3825.xxxx)
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- DRAWER: BIÊN BẢN THẨM ĐỊNH TỪ CHỐI / YÊU CẦU BỔ SUNG CỦA SỞ (GIẢI QUYẾT CỜ 3) -->
+  <div id="expert-drawer-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden transition-opacity" onclick="closeExpertAuditDrawer()"></div>
+  <aside id="expert-drawer-audit" class="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 border-l border-slate-200 p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out">
+    <div class="space-y-5 overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Biên Bản Thẩm Định Cấp Sở</h3>
+            <p class="text-[11px] text-slate-500">Số: BB-TĐCG/2026/HN-0089</p>
+          </div>
+        </div>
+        <button onclick="closeExpertAuditDrawer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+          <div>
+            <span class="text-slate-400 text-[10px] block font-semibold">Chuyên gia nộp thẩm định:</span>
+            <b class="text-slate-900 text-sm">TS. Nguyễn Minh An</b>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200 text-[11px]">
+            <div>Đơn vị thẩm định: <b class="text-purple-700 block">Sở KH&CN Hà Nội</b></div>
+            <div>Ngày thẩm định: <b class="text-slate-700 block">09/10/2026</b></div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-900 space-y-2">
+          <div class="flex items-center gap-1.5 font-extrabold text-xs text-amber-800">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+            <span>NỘI DUNG YÊU CẦU BỔ SUNG MINH CHỨNG:</span>
+          </div>
+          <p class="text-xs leading-relaxed text-amber-950 font-medium">
+            1. Thiếu bản scan công chứng Văn bằng Tiến sĩ được Bộ GD&ĐT công nhận.<br>
+            2. Bài báo quốc tế Scopus năm 2025 cần cập nhật mã DOI hợp lệ để hệ thống tự động kiểm tra chỉ mục Q1.<br>
+            3. Bổ sung Giấy xác nhận chủ trì đề tài cấp Bộ mã số B2024-05-18.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-extrabold text-slate-800">Quy Định Thẩm Định Cấp 2:</h4>
+          <p class="text-slate-600 leading-relaxed text-[11px]">
+            Sau khi Chuyên gia cập nhật đầy đủ minh chứng qua trang Chỉnh sửa LLKH, Cán bộ Sở sẽ tái thẩm định trong vòng 48 giờ làm việc và cấp chứng nhận Verified Badge chính thức trên sàn.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 text-xs">
+      <button onclick="closeExpertAuditDrawer()" class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition">
+        Đóng
+      </button>
+      <a href="wireframe_chinh_sua_ho_so_chuyen_gia.html" class="px-5 py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl transition flex items-center gap-1.5 shadow">
+        <i data-lucide="edit-3" class="w-4 h-4"></i>
+        <span>Bổ Sung Hồ Sơ Lại Ngay</span>
+      </a>
+    </div>
+  </aside>
+
+  <script>
+    lucide.createIcons();
+
+    function openExpertAuditDrawer() {
+      document.getElementById('expert-drawer-backdrop').classList.remove('hidden');
+      document.getElementById('expert-drawer-audit').classList.remove('translate-x-full');
+      lucide.createIcons();
+    }
+
+    function closeExpertAuditDrawer() {
+      document.getElementById('expert-drawer-backdrop').classList.add('hidden');
+      document.getElementById('expert-drawer-audit').classList.add('translate-x-full');
+    }
+  </script>
+</body>
+</html>

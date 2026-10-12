@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cập Nhật & Chỉnh Sửa Hồ Sơ Chuyên Gia KH&CN — NacenTwin (TASK-05)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="wireframe_expert_dashboard.html" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition" title="Quay lại Dashboard chuyên gia">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">CHỈNH SỬA HỒ SƠ CHUYÊN GIA</span>
+            <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">VERIFIED EXPERT</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Mã Định Danh: CG-NACEN-DEMOIT01 · GS.TS. Nguyễn Văn Tuấn</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="wireframe_so_tay_chuyen_gia_profile.html" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Xem Hồ Sơ Sổ Tay</span>
+        </a>
+        <button onclick="saveExpertProfile()" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="save" class="w-4 h-4"></i>
+          <span>Lưu Thay Đổi Hồ Sơ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN EDITING BODY -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+    <!-- COMPLETENESS & STATUS BAR -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-md">
+          NT
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-extrabold text-slate-900">GS.TS. Nguyễn Văn Tuấn</h2>
+            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">Viện Cơ học & Tự động hóa</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Sở KH&CN Hà Nội phê duyệt cấp thẻ Chuyên gia số: <span class="font-mono font-bold text-slate-700">EXP-HN-2024-0012</span></p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <span class="text-[11px] text-slate-500 font-semibold block">Trạng thái nhận lời mời:</span>
+          <span class="text-xs font-bold text-emerald-600 flex items-center gap-1 justify-end">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Đang Nhận Tư Vấn
+          </span>
+        </div>
+        <button onclick="toggleAvailability()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+          Tạm Ngưng
+        </button>
+      </div>
+    </div>
+
+    <!-- FORM SECTIONS -->
+    <form class="space-y-6">
+
+      <!-- SECTION 1: HỌC VỊ & CƠ QUAN -->
+      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-black">1</span>
+            <span>Học Hàm, Học Vị & Cơ Quan Công Tác Chính</span>
+          </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Học Hàm Cao Nhất:</label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-800 bg-white">
+              <option value="GS" selected>Giáo Sư (GS)</option>
+              <option value="PGS">Phó Giáo Sư (PGS)</option>
+              <option value="NONE">Chưa có học hàm</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Học Vị Cao Nhất: <span class="text-red-500">*</span></label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-800 bg-white">
+              <option value="TS" selected>Tiến Sĩ Khoa Học / Tiến Sĩ (TS)</option>
+              <option value="ThS">Thạc Sĩ (ThS)</option>
+              <option value="KS">Kỹ Sư / Cử Nhân (KS/CN)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Năm Được Phong / Công Nhận:</label>
+            <input type="number" value="2018" class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold">
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Cơ Quan / Đơn Vị Công Tác Hiện Tại: <span class="text-red-500">*</span></label>
+            <input type="text" value="Viện Cơ học & Tự động hóa · Viện Hàn lâm KH&CN Việt Nam" class="w-full p-2.5 rounded-xl border border-slate-200 font-bold text-slate-900">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Chức Vụ Chuyên Môn:</label>
+            <input type="text" value="Trưởng phòng Thí nghiệm Robot Công nghiệp" class="w-full p-2.5 rounded-xl border border-slate-200 font-medium">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: LĨNH VỰC & TỪ KHÓA CHUYÊN SÂU -->
+      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-black">2</span>
+            <span>Lĩnh Vực Chuyên Môn (10 LV TT17) & Từ Khóa Nghiên Cứu</span>
+          </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Lĩnh Vực Trụ Cột (Theo Thông tư 17):</label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-blue-700 bg-blue-50/40">
+              <option value="LV01" selected>LV01 - Cơ khí chế tạo & Tự động hóa</option>
+              <option value="LV07">LV07 - Công nghệ thông tin & Trí tuệ nhân tạo</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Từ Khóa Chuyên Sâu (SpecializedKeywords):</label>
+            <input type="text" value="Robot Delta, Xử lý ảnh công nghiệp, Thị giác máy tính, PLC Simatic S7-1500" class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-800">
+            <span class="text-[10px] text-slate-400 mt-1 block">Phân cách nhau bằng dấu phẩy để hệ thống tự động gợi ý ghép nối</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: CẬP NHẬT CÔNG TRÌNH & SÁNG CHẾ MỚI -->
+      <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-black">3</span>
+            <span>Danh Mục Công Trình Khoa Học, Sáng Chế & Đề Tài</span>
+          </h3>
+          <button type="button" onclick="alert('Thêm công trình mới')" class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold border border-blue-200 flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Thêm Công Bố Mới
+          </button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Tạp chí Quốc tế Scopus Q1</span>
+                <span class="font-mono text-slate-500">IEEE Transactions on Automation Science, 2024</span>
+              </div>
+              <h4 class="font-bold text-slate-900">Real-time Vision-guided High-speed Delta Robot Manipulation for Irregular Objects</h4>
+              <p class="text-[11px] text-slate-500 mt-0.5">Tác giả chính: Nguyễn Văn Tuấn (First Author)</p>
+            </div>
+            <button class="text-blue-600 hover:underline font-bold">Chỉnh sửa</button>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">Bằng Độc Quyền Sáng Chế</span>
+                <span class="font-mono font-bold text-slate-700">VN 1-0031892 (2023)</span>
+              </div>
+              <h4 class="font-bold text-slate-900">Cơ cấu khớp cổ tay Robot 3 bậc tự do chịu tải trọng động học cao</h4>
+              <p class="text-[11px] text-slate-500 mt-0.5">Đồng tác giả & Chủ nhiệm nhiệm vụ</p>
+            </div>
+            <button class="text-blue-600 hover:underline font-bold">Chỉnh sửa</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER ACTIONS -->
+      <div class="flex items-center justify-between pt-2">
+        <button type="button" onclick="confirmDeRegister()" class="text-xs text-red-600 font-bold hover:underline">
+          Yêu cầu Rút Tên Khỏi Mạng Lưới Chuyên Gia
+        </button>
+
+        <div class="flex items-center gap-3">
+          <a href="wireframe_expert_dashboard.html" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50">
+            Hủy Bỏ
+          </a>
+          <button type="button" onclick="saveExpertProfile()" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md">
+            Lưu Toàn Bộ Hồ Sơ
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function saveExpertProfile() {
+      alert('Đã cập nhật thành công hồ sơ Chuyên gia! Dữ liệu đã được đồng bộ vào Danh bạ Công khai /experts.');
+    }
+
+    function toggleAvailability() {
+      alert('Đã chuyển trạng thái sang TẠM NGƯNG NHẬN LỜI MỜI TƯ VẤN. Doanh nghiệp sẽ không thấy nút Đặt lịch trên hồ sơ của bạn.');
+    }
+
+    function confirmDeRegister() {
+      if (confirm('Bạn có chắc chắn muốn gửi yêu cầu Rút Tên khỏi Mạng Lưới Chuyên Gia KH&CN Quốc Gia?')) {
+        alert('Đã gửi yêu cầu rút tên tới Ban Quản Trị NacenTech.');
+      }
+    }
+  </script>
+</body>
+</html>

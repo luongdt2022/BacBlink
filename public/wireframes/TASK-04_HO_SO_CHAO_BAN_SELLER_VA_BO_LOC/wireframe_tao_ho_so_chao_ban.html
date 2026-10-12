@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wireframe tạo hồ sơ chào bán | NacenTwin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: { colors: { navy:'#1e40af', cyan:'#06b6d4', emerald:'#10b981' } } } };
+  </script>
+  <style>
+    body { font-family:'Plus Jakarta Sans',system-ui,sans-serif; }
+    code,.mono { font-family:'JetBrains Mono',monospace; }
+    .nav-item.active { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .option.active { border-color:#2563eb; background:#eff6ff; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+    .hidden-state { display:none; }
+    @media (max-width: 1023px) { .side-nav { display:none; } }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-navy to-cyan font-black text-white shadow">N</div>
+        <div><div class="font-extrabold tracking-tight text-slate-900">NACENTWIN</div><div class="text-[10px] font-bold tracking-wider text-slate-500">CỔNG ĐỔI MỚI SÁNG TẠO QUỐC GIA</div></div>
+      </div>
+      <div class="hidden items-center gap-2 sm:flex"><span class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-700">Prototype · TASK-04</span><button class="rounded-lg border border-slate-200 p-2 text-slate-500" onclick="toggleTheme()" title="Đổi chế độ xem"><i data-lucide="moon" class="h-4 w-4"></i></button></div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+      <div><nav class="mb-2 text-xs text-slate-500">Trang chủ / Hồ sơ của tôi / <span class="font-semibold text-slate-700">Tạo hồ sơ chào bán</span></nav><h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Tạo hồ sơ chào bán</h1><p class="mt-1 text-sm text-slate-600">Đăng sản phẩm, thiết bị hoặc giải pháp công nghệ để kết nối nhu cầu phù hợp.</p></div>
+      <div class="flex gap-2"><button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"><i data-lucide="save" class="mr-1 inline h-3.5 w-3.5"></i>Lưu nháp</button><button class="rounded-lg bg-navy px-3 py-2 text-xs font-bold text-white shadow-sm"><i data-lucide="send" class="mr-1 inline h-3.5 w-3.5"></i>Gửi chờ duyệt</button></div>
+    </div>
+
+    <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3"><div class="text-xs font-bold text-emerald-700">Bước hiện tại</div><div class="mt-1 text-sm font-extrabold text-emerald-900">01 · Thông tin bắt buộc</div></div>
+      <div class="rounded-xl border border-blue-200 bg-blue-50 p-3"><div class="text-xs font-bold text-blue-700">Tối giản MVP</div><div class="mt-1 text-sm font-extrabold text-blue-900">6 trường lõi + điều kiện</div></div>
+      <div class="rounded-xl border border-slate-200 bg-white p-3"><div class="text-xs font-bold text-slate-500">Bộ quy tắc áp dụng</div><div id="rule-count" class="mt-1 text-sm font-extrabold text-slate-900">MECH · Thiết bị · Không chuyển giao</div></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <aside class="side-nav space-y-3">
+        <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"><p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Tiến trình hồ sơ</p>
+          <button class="nav-item active flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-bold"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>Thông tin bắt buộc</button>
+          <button class="nav-item mt-1 flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left text-sm font-semibold text-slate-500"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs">2</span>Thông số & ngành</button>
+          <button class="nav-item mt-1 flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left text-sm font-semibold text-slate-500"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs">3</span>Giá & thương mại</button>
+          <button class="nav-item mt-1 flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left text-sm font-semibold text-slate-500"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs">4</span>Minh chứng bổ sung</button>
+        </div>
+        <div class="rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-blue-50 p-4 shadow-sm">
+          <div class="flex items-center gap-2 text-sm font-extrabold text-cyan-900">
+            <i data-lucide="sparkles" class="h-4 w-4 text-cyan-600"></i>
+            <span>Trợ Lý AI Nhập Liệu</span>
+            <span class="rounded bg-cyan-200/80 text-cyan-900 text-[10px] px-1.5 py-0.5 font-bold">PO-DEC-07</span>
+          </div>
+          <p class="mt-2 text-xs leading-5 text-cyan-800">Tải catalogue, tài liệu thuyết minh hoặc ghi âm giọng nói để AI tự động trích xuất thông số, TRL và bảo hộ SHTT.</p>
+          <button type="button" onclick="openAiModal()" class="mt-3 w-full rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs py-2 px-3 shadow transition flex items-center justify-center gap-1.5">
+            <i data-lucide="wand-2" class="h-3.5 w-3.5"></i>
+            Kích hoạt Trợ lý AI (OCR/Voice) →
+          </button>
+        </div>
+      </aside>
+
+      <section class="min-w-0">
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-100 px-5 py-4 sm:px-7"><div class="flex flex-wrap items-center justify-between gap-2"><div><h2 class="font-extrabold text-slate-900">1. Thông tin để đăng và tra cứu</h2><p class="mt-1 text-xs text-slate-500">Các trường có dấu <span class="font-bold text-rose-600">*</span> là đề xuất tối giản trong Basic Design; thông tin tài khoản được tự điền khi đăng nhập.</p></div><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">Đã điền 0 / 6</span></div></div>
+          <div class="space-y-7 p-5 sm:p-7">
+            <div><label class="mb-2 block text-xs font-extrabold text-slate-700">Loại chào bán <span class="text-rose-600">*</span></label><div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <button class="option active rounded-xl border-2 border-slate-200 p-3 text-left" data-type="Thiết bị" onclick="selectType(this)"><i data-lucide="settings-2" class="mb-2 h-5 w-5 text-blue-600"></i><div class="text-sm font-extrabold">Thiết bị</div><div class="mt-1 text-[11px] text-slate-500">Máy móc, dây chuyền</div></button>
+              <button class="option rounded-xl border-2 border-slate-200 p-3 text-left" data-type="Sản phẩm" onclick="selectType(this)"><i data-lucide="package" class="mb-2 h-5 w-5 text-emerald-600"></i><div class="text-sm font-extrabold">Sản phẩm</div><div class="mt-1 text-[11px] text-slate-500">Hàng hóa, vật liệu</div></button>
+              <button class="option rounded-xl border-2 border-slate-200 p-3 text-left" data-type="Giải pháp" onclick="selectType(this)"><i data-lucide="cpu" class="mb-2 h-5 w-5 text-cyan-600"></i><div class="text-sm font-extrabold">Giải pháp công nghệ</div><div class="mt-1 text-[11px] text-slate-500">Quy trình, phần mềm</div></button>
+            </div></div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2"><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Ngành công nghiệp <span class="text-rose-600">*</span></label><select id="industry" onchange="updateIndustry()" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm outline-none focus:border-blue-500"><option value="MECH" selected>MECH — Cơ khí chế tạo</option><option value="AG">AG — Nông nghiệp</option><option value="IT">IT — Phần mềm và giải pháp số</option><option value="OTHER">18 ngành khác theo ma trận nguồn</option></select><p class="mt-1 text-[11px] text-slate-500">Ngành quyết định bộ thông số chuyên môn ở Bước 2.</p></div><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Có chuyển giao công nghệ? <span class="text-rose-600">*</span></label><div class="flex rounded-lg border border-slate-300 p-1"><button id="transfer-no" onclick="setTransfer(false)" class="flex-1 rounded-md bg-slate-900 px-3 py-2 text-xs font-bold text-white">Không</button><button id="transfer-yes" onclick="setTransfer(true)" class="flex-1 rounded-md px-3 py-2 text-xs font-bold text-slate-600">Có</button></div><p class="mt-1 text-[11px] text-slate-500">Chọn Có sẽ yêu cầu khai mức TRL.</p></div></div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2"><div class="sm:col-span-2"><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Tên sản phẩm/thiết bị/công nghệ <span class="text-rose-600">*</span></label><input class="w-full rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Ví dụ: Máy phay CNC 5 trục tích hợp robot nạp phôi"></div><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Mô tả ngắn <span class="text-rose-600">*</span></label><textarea class="h-24 w-full rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Nêu ngắn gọn đặc điểm chính của đối tượng chào bán"></textarea></div><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Công dụng / bài toán giải quyết <span class="text-rose-600">*</span></label><textarea class="h-24 w-full rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Sản phẩm giải quyết nhu cầu nào cho bên mua?"></textarea></div></div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4"><div class="mb-3 flex items-center gap-2"><i data-lucide="badge-dollar-sign" class="h-4 w-4 text-navy"></i><h3 class="text-sm font-extrabold">Hình thức công bố giá <span class="text-rose-600">*</span></h3></div><div class="flex flex-wrap gap-2"><label class="cursor-pointer rounded-lg border border-blue-600 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700"><input type="radio" name="price" onchange="togglePrice(true)" checked class="mr-1">Giá cụ thể</label><label class="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold"><input type="radio" name="price" onchange="togglePrice(true)" class="mr-1">Khoảng giá</label><label class="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold"><input type="radio" name="price" onchange="togglePrice(false)" class="mr-1">Liên hệ báo giá</label></div><div id="price-fields" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3"><input class="rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Giá chào bán"><select class="rounded-lg border border-slate-300 p-2.5 text-sm"><option>VND</option></select><input class="rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Đơn vị: bộ, chiếc..."></div></div>
+            <!-- BỘ TỨ SHTT & CHUYỂN GIAO CÔNG NGHỆ (PO-DEC-20261008-04) -->
+            <div id="trl-panel" class="hidden-state rounded-2xl border-2 border-amber-300 bg-amber-50/70 p-5 shadow-sm space-y-4">
+              <div class="flex items-start justify-between gap-3 border-b border-amber-200 pb-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600 text-white shadow"><i data-lucide="award" class="h-5 w-5"></i></div>
+                  <div>
+                    <h3 class="text-sm font-extrabold text-amber-950">Hồ Sơ Chuyển Giao Công Nghệ & SHTT (IP Quad) <span class="text-rose-600">*</span></h3>
+                    <p class="text-[11px] text-amber-800">Chuẩn hóa theo danh mục công nghệ ITRI (PO-DEC-20261008-04) · Bắt buộc khai báo khi có chuyển giao</p>
+                  </div>
+                </div>
+                <span class="rounded-full bg-amber-200/80 px-2.5 py-0.5 text-[11px] font-extrabold text-amber-900">4 Thuộc Tính Bắt Buộc</span>
+              </div>
+
+              <!-- Thuộc tính 1: TRL 1-9 -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs font-extrabold text-slate-800">1. Mức độ hoàn thiện công nghệ TRL (1–9) <span class="text-rose-600">*</span></label>
+                  <span id="trl-current-desc" class="text-xs font-bold text-amber-900 bg-amber-200/60 px-2 py-0.5 rounded">TRL 7: Sẵn sàng ứng dụng công nghiệp</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 sm:grid-cols-9" id="trl-buttons"></div>
+                <input type="hidden" id="selected-trl" value="7">
+              </div>
+
+              <!-- Thuộc tính 2 & Đơn vị phát triển -->
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-1">
+                <div>
+                  <label class="mb-1 block text-xs font-extrabold text-slate-800">Nguồn gốc / Đơn vị nghiên cứu phát triển (Origin/Developer) <span class="text-rose-600">*</span></label>
+                  <input type="text" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm" placeholder="VD: The Industrial Technology Research Institute (ITRI), Viện NacenTech...">
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-extrabold text-slate-800">2. Tình trạng bảo hộ SHTT (Intellectual Property Status) <span class="text-rose-600">*</span></label>
+                  <select class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm">
+                    <option value="PATENT_GRANTED">Bằng độc quyền sáng chế (Patent Granted)</option>
+                    <option value="UTILITY_MODEL">Bằng độc quyền giải pháp hữu ích (Utility Model)</option>
+                    <option value="TRADE_SECRET">Bí quyết công nghệ / Know-how (Trade Secret)</option>
+                    <option value="PATENT_PENDING">Đang nộp đơn hợp lệ, chờ cấp bằng (Patent Pending)</option>
+                    <option value="SOFTWARE_COPYRIGHT">Bản quyền phần mềm (Software Copyright)</option>
+                    <option value="NONE">Chưa đăng ký bảo hộ SHTT</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Thuộc tính 3 & 4: Hình thức chuyển giao & Trạng thái thương mại hóa -->
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-1">
+                <div>
+                  <label class="mb-1 block text-xs font-extrabold text-slate-800">Số hiệu văn bằng / Đơn SHTT</label>
+                  <input type="text" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm" placeholder="VD: VN-1-0028945 / R&D 100 Awards">
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-extrabold text-slate-800">3. Hình thức chuyển giao (Transfer Method) <span class="text-rose-600">*</span></label>
+                  <select class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm">
+                    <option value="NON_EXCLUSIVE_LICENSE">Li-xăng không độc quyền (Non-exclusive)</option>
+                    <option value="EXCLUSIVE_LICENSE">Li-xăng độc quyền (Exclusive License)</option>
+                    <option value="ASSIGNMENT_SALE">Chuyển nhượng toàn bộ quyền (Full Assignment)</option>
+                    <option value="JOINT_RD">Hợp tác R&D / Đồng phát triển</option>
+                    <option value="CAPITAL_CONTRIBUTION">Góp vốn bằng tài sản SHTT</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-extrabold text-slate-800">4. Trạng thái thương mại hóa <span class="text-rose-600">*</span></label>
+                  <select class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm">
+                    <option value="COMMERCIALLY_READY">Sẵn sàng thương mại hóa diện rộng</option>
+                    <option value="PILOT_TESTING">Đang vận hành thử nghiệm hiện trường (Pilot)</option>
+                    <option value="LAB_PROTOTYPE">Nguyên mẫu phòng thí nghiệm (Prototype)</option>
+                    <option value="SEEKING_MANUFACTURER">Tìm đối tác hợp tác sản xuất</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- CƠ QUAN QUẢN LÝ NHÀ NƯỚC & SỞ KH&CN TIẾP NHẬN THẨM ĐỊNH (COMMERCIAL GRADE GOVERNANCE) -->
+            <div class="rounded-2xl border-2 border-blue-200 bg-blue-50/60 p-5 shadow-sm space-y-3">
+              <div class="flex items-start justify-between gap-3 border-b border-blue-200 pb-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-navy text-white shadow"><i data-lucide="building" class="h-5 w-5"></i></div>
+                  <div>
+                    <h3 class="text-sm font-extrabold text-slate-900">Cơ Quan Quản Lý Nhà Nước Tiếp Nhận Thẩm Định <span class="text-rose-600">*</span></h3>
+                    <p class="text-[11px] text-slate-600">Hồ sơ sau khi gửi sẽ chuyển về Cổng Tác Nghiệp Cấp 2 (/gov) của Sở KH&CN để thẩm định văn bằng SHTT & TRL trước khi công khai</p>
+                  </div>
+                </div>
+                <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-extrabold text-navy">Phân Cấp Quản Lý Cấp 2</span>
+              </div>
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-1">
+                <div>
+                  <label class="mb-1 block text-xs font-extrabold text-slate-800">Sở KH&CN tỉnh / thành phố tiếp nhận <span class="text-rose-600">*</span></label>
+                  <select id="managing-authority" class="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-medium outline-none focus:border-navy">
+                    <option value="VN-HN" selected>Sở Khoa học và Công nghệ TP. Hà Nội</option>
+                    <option value="VN-SG">Sở Khoa học và Công nghệ TP. Hồ Chí Minh</option>
+                    <option value="VN-DN">Sở Khoa học và Công nghệ TP. Đà Nẵng</option>
+                    <option value="VN-HP">Sở Khoa học và Công nghệ TP. Hải Phòng</option>
+                    <option value="VN-CT">Sở Khoa học và Công nghệ TP. Cần Thơ</option>
+                    <option value="VN-BD">Sở Khoa học và Công nghệ tỉnh Bình Dương</option>
+                    <option value="VN-DNA">Sở Khoa học và Công nghệ tỉnh Đồng Nai</option>
+                    <option value="VN-63">Các Sở KH&CN tỉnh/thành phố khác (63 tỉnh thành)...</option>
+                  </select>
+                  <p class="mt-1 text-[11px] text-slate-500">Mặc định chọn theo địa bàn đặt trụ sở chính của Doanh nghiệp.</p>
+                </div>
+                <div>
+                  <label class="mb-1 block text-xs font-extrabold text-slate-800">Cam kết bản quyền & Trách nhiệm pháp lý <span class="text-rose-600">*</span></label>
+                  <div class="flex items-start gap-2 rounded-lg border border-slate-200 bg-white p-2.5">
+                    <input type="checkbox" id="legal-consent" checked class="mt-0.5 h-4 w-4 rounded border-slate-300 text-navy">
+                    <label for="legal-consent" class="text-xs text-slate-700 leading-relaxed">
+                      Doanh nghiệp cam kết chịu trách nhiệm hoàn toàn trước pháp luật về tính chính xác của hồ sơ SHTT, mức TRL và sẵn sàng tiếp nhận thẩm định của Sở KH&CN.
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div><button class="flex w-full items-center justify-between rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-left text-sm font-bold text-slate-700" onclick="toggleSupplement()"><span><i data-lucide="plus-circle" class="mr-2 inline h-4 w-4 text-emerald"></i>Thông tin bổ sung sau (không chặn đăng hồ sơ)</span><i data-lucide="chevron-down" class="h-4 w-4"></i></button><div id="supplement" class="hidden-state mt-3 grid grid-cols-1 gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-3"><div class="rounded-lg border border-slate-200 bg-white p-3 text-xs"><b>Ảnh & tài liệu</b><p class="mt-1 text-slate-500">Ảnh đại diện, catalogue, chứng nhận.</p></div><div class="rounded-lg border border-slate-200 bg-white p-3 text-xs"><b>Thông số kỹ thuật</b><p class="mt-1 text-slate-500">Chọn từ bộ mẫu ngành, bổ sung theo đối tượng.</p></div><div class="rounded-lg border border-slate-200 bg-white p-3 text-xs"><b>Điều kiện thương mại</b><p class="mt-1 text-slate-500">Bảo hành, giao hàng, thanh toán, phạm vi cung cấp.</p></div></div></div>
+          </div>
+          <div class="border-t border-slate-100 bg-white px-5 py-4 sm:px-7"><div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><p class="text-xs text-slate-500"><i data-lucide="shield-check" class="mr-1 inline h-3.5 w-3.5 text-emerald"></i>Điện thoại/email lấy từ tài khoản và chỉ mở cho Buyer sau yêu cầu kết nối.</p><div class="flex gap-2"><button class="rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold">Lưu nháp</button><button class="rounded-lg bg-navy px-4 py-2 text-xs font-bold text-white">Tiếp tục: thông số ngành <i data-lucide="arrow-right" class="ml-1 inline h-3.5 w-3.5"></i></button></div></div></div>
+        </div>
+        <div class="mt-4 rounded-xl border border-slate-200 bg-white p-4"><div class="flex flex-wrap items-center justify-between gap-2"><div><b class="text-sm">5 trạng thái UX cần triển khai</b><p class="mt-1 text-xs text-slate-500">Wireframe mô phỏng Success. Các trạng thái còn lại được kiểm thử khi triển khai frontend.</p></div><div class="flex flex-wrap gap-1"><button onclick="showState('loading')" class="rounded border px-2 py-1 text-[11px]">Loading</button><button onclick="showState('empty')" class="rounded border px-2 py-1 text-[11px]">Empty</button><button onclick="showState('error')" class="rounded border px-2 py-1 text-[11px]">Error</button><button onclick="showState('partial')" class="rounded border px-2 py-1 text-[11px]">Partial</button><button onclick="showState('success')" class="rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700">Success</button></div></div><div id="state-message" class="mt-3 hidden rounded-lg p-3 text-xs"></div></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const labels={MECH:'Cơ khí: vật liệu gia công · kích thước phôi · dung sai · tốc độ · chu kỳ',AG:'Nông nghiệp: đối tượng sinh học · quy mô · năng suất · độ ẩm · nhiệt độ',IT:'Giải pháp số: triển khai · phân hệ · tải đồng thời · hạ tầng · API',OTHER:'Bộ thông số tải theo 18 ngành từ ma trận 1.479 quy tắc'};
+    const trlDescMap={
+      1:'TRL 1: Nguyên lý cơ bản được quan sát và báo cáo',
+      2:'TRL 2: Khái niệm công nghệ hoặc ứng dụng được hình thành',
+      3:'TRL 3: Bằng chứng thực nghiệm về khái niệm (Proof of Concept)',
+      4:'TRL 4: Công nghệ được kiểm chứng trong phòng thí nghiệm',
+      5:'TRL 5: Công nghệ được kiểm chứng trong môi trường mô phỏng',
+      6:'TRL 6: Mô hình thử nghiệm hoàn chỉnh trong môi trường mô phỏng',
+      7:'TRL 7: Nguyên mẫu trình diễn trong môi trường vận hành thực tế',
+      8:'TRL 8: Hệ thống công nghệ hoàn chỉnh và đạt tiêu chuẩn chất lượng',
+      9:'TRL 9: Công nghệ đã được chứng minh trong môi trường sản xuất thực tế'
+    };
+    function updateIndustry(){const id=document.getElementById('industry').value;document.getElementById('rule-count').textContent=id+' · '+(labels[id]||'Bộ thông số tải theo ma trận ngành đã chọn');}
+    function selectType(el){document.querySelectorAll('.option').forEach(x=>x.classList.remove('active'));el.classList.add('active');updateIndustry();}
+    function setTransfer(value){document.getElementById('trl-panel').classList.toggle('hidden-state',!value);document.getElementById('transfer-no').className='flex-1 rounded-md px-3 py-2 text-xs font-bold '+(!value?'bg-slate-900 text-white':'text-slate-600');document.getElementById('transfer-yes').className='flex-1 rounded-md px-3 py-2 text-xs font-bold '+(value?'bg-amber-600 text-white':'text-slate-600');}
+    function togglePrice(show){document.getElementById('price-fields').classList.toggle('hidden-state',!show)}
+    function toggleSupplement(){document.getElementById('supplement').classList.toggle('hidden-state')}
+    function showState(state){const el=document.getElementById('state-message');const map={loading:['bg-slate-100 text-slate-700','Đang tải bộ trường theo ngành… hiển thị skeleton form.'],empty:['bg-blue-50 text-blue-800','Chưa có bộ thông số phù hợp — cho phép tiếp tục với thông tin bắt buộc.'],error:['bg-rose-50 text-rose-800','Không tải được ma trận ngành. Nút “Thử lại” và lưu nháp vẫn khả dụng.'],partial:['bg-amber-50 text-amber-800','Đã tải trường chung; một phần thông số ngành đang được tải thêm.'],success:['bg-emerald-50 text-emerald-800','Đã tải đầy đủ trường áp dụng cho tổ hợp đã chọn.']};el.className='mt-3 rounded-lg p-3 text-xs '+map[state][0];el.textContent=map[state][1];el.classList.remove('hidden')}
+    function toggleTheme(){document.body.classList.toggle('bg-slate-900');document.body.classList.toggle('text-slate-100')}
+    function selectTrl(level){
+      document.querySelectorAll('#trl-buttons button').forEach((b,idx)=>{
+        b.className='rounded-lg border py-2 text-xs font-bold ' + (idx+1===level?'bg-amber-600 text-white border-amber-600 shadow-sm':'bg-white text-amber-800 border-amber-200');
+      });
+      document.getElementById('selected-trl').value=level;
+      document.getElementById('trl-current-desc').textContent=trlDescMap[level]||`TRL ${level}`;
+    }
+    function renderTrlButtons(){
+      document.getElementById('trl-buttons').innerHTML=Array.from({length:9},(_,i)=>`<button type="button" onclick="selectTrl(${i+1})" class="rounded-lg border py-2 text-xs font-bold ${i+1===7?'bg-amber-600 text-white border-amber-600 shadow-sm':'bg-white text-amber-800 border-amber-200'}" title="${trlDescMap[i+1]}">${i+1}</button>`).join('');
+    }
+    renderTrlButtons();
+    
+    // AI Modal handlers (PO-DEC-20261008-07)
+    function openAiModal(){ document.getElementById('ai-modal').classList.remove('hidden'); }
+    function closeAiModal(){ document.getElementById('ai-modal').classList.add('hidden'); }
+    function applyAiExtractedData(){
+      const nameInput = document.querySelector('input[placeholder*="Ví dụ: Máy phay CNC"]');
+      if (nameInput) nameInput.value = 'Hệ thống robot hàn laser sợi quang 6 bậc tự do tích hợp thị giác máy';
+      const descInput = document.querySelector('textarea[placeholder*="Nêu ngắn gọn đặc điểm"]');
+      if (descInput) descInput.value = 'Công nghệ hàn laser fiber thông minh với thuật toán AI bù sai số quỹ đạo hàn thời gian thực dưới 0.05mm.';
+      const probInput = document.querySelector('textarea[placeholder*="Sản phẩm giải quyết nhu cầu"]');
+      if (probInput) probInput.value = 'Giải quyết triệt để vấn đề biến dạng nhiệt trong chế tạo vỏ xe điện và bồn áp lực công nghiệp.';
+      setTransfer(true);
+      selectTrl(7);
+      closeAiModal();
+      alert('Đã áp dụng thành công dữ liệu bóc tách AI vào Form chào bán!');
+    }
+
+    lucide.createIcons();updateIndustry();
+  </script>
+
+  <!-- MODAL TRỢ LÝ AI NHẬP LIỆU (PO-DEC-20261008-07) -->
+  <div id="ai-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-5 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-lg font-bold">
+            <i data-lucide="wand-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base text-white">Trợ Lý AI Nhập Liệu & Bóc Tách Công Nghệ</h3>
+            <p class="text-xs text-blue-200">Chuẩn hóa theo Quyết định PO-DEC-20261008-07 · Human-in-the-Loop</p>
+          </div>
+        </div>
+        <button onclick="closeAiModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <div class="border-2 border-dashed border-cyan-300 bg-cyan-50/30 rounded-xl p-6 text-center space-y-3">
+          <div class="w-12 h-12 mx-auto rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center">
+            <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-slate-800">Kéo thả Catalogue, Bản thuyết minh kỹ thuật hoặc Đơn đăng ký SHTT</p>
+            <p class="text-xs text-slate-500 mt-0.5">Hỗ trợ PDF, DOCX, JPG, PNG (Tối đa 25MB) hoặc ghi âm giọng nói thuyết minh</p>
+          </div>
+          <div class="flex justify-center gap-3 pt-1">
+            <button class="px-3.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5">
+              <i data-lucide="file-up" class="w-4 h-4 text-cyan-600"></i> Chọn Tệp PDF / Ảnh
+            </button>
+            <button class="px-3.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5">
+              <i data-lucide="mic" class="w-4 h-4 text-rose-600"></i> Ghi Âm Giọng Nói
+            </button>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold text-emerald-900 flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-4 h-4 text-emerald-600"></i>
+              Bản xem trước dữ liệu trích xuất mẫu (Gemini Multimodal OCR):
+            </span>
+            <span class="px-2 py-0.5 rounded bg-emerald-200 text-emerald-900 text-[10px] font-extrabold">Độ tin cậy 96%</span>
+          </div>
+          <div class="text-xs space-y-1.5 text-slate-700">
+            <p>• <span class="font-bold text-slate-900">Tên công nghệ:</span> Hệ thống robot hàn laser sợi quang 6 bậc tự do tích hợp thị giác máy</p>
+            <p>• <span class="font-bold text-slate-900">Ngành:</span> Cơ khí chế tạo & Tự động hóa (MECH)</p>
+            <p>• <span class="font-bold text-slate-900">Mức hoàn thiện TRL:</span> TRL 7 (Nguyên mẫu trình diễn trong môi trường thực tế)</p>
+            <p>• <span class="font-bold text-slate-900">Sở hữu trí tuệ:</span> Bằng Độc quyền Sáng chế số VN 1-0028491 (Cục SHTT)</p>
+            <p>• <span class="font-bold text-slate-900">Phương thức chuyển giao:</span> Chuyển giao công nghệ có điều kiện & Hợp tác sản xuất</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-between">
+        <a href="../TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_ai_cv_scan_wizard.html" target="_blank" class="text-xs text-blue-700 font-bold hover:underline flex items-center gap-1">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Mở Wizard AI toàn màn hình
+        </a>
+        <div class="flex gap-2">
+          <button onclick="closeAiModal()" class="px-4 py-2 border border-slate-300 bg-white text-xs font-bold rounded-lg text-slate-700 hover:bg-slate-100">
+            Hủy bỏ
+          </button>
+          <button onclick="applyAiExtractedData()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-lg shadow flex items-center gap-1.5 transition">
+            <i data-lucide="check" class="w-4 h-4"></i> Áp Dụng Dữ Liệu Vào Form
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>

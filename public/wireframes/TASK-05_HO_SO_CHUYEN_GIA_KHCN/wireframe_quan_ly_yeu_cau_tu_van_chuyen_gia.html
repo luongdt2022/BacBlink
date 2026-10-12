@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Yêu Cầu Tư Vấn & Lịch Hẹn Chuyên Gia — NacenTwin (TASK-05)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .tab-btn.active {
+      background-color: #1e40af;
+      color: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="wireframe_expert_dashboard.html" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">HỘP THƯ TƯ VẤN & KẾT NỐI</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">EXPERT INBOX</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">GS.TS. Nguyễn Văn Tuấn · Chuyên gia Cơ khí Tự động hóa</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+        <button onclick="switchTab('new')" id="btn-tab-new" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          <i data-lucide="inbox" class="w-4 h-4"></i>
+          <span>Lời Mời Chờ Xử Lý (03)</span>
+        </button>
+        <button onclick="switchTab('schedule')" id="btn-tab-schedule" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          <span>Lịch Hẹn Sắp Tới (02)</span>
+        </button>
+        <button onclick="switchTab('history')" id="btn-tab-history" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="check-check" class="w-4 h-4"></i>
+          <span>Đã Hoàn Thành (14)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN INBOX CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
+
+    <!-- TAB 1: YÊU CẦU MỚI CHỜ DUYỆT -->
+    <div id="view-new" class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+          <span>Yêu Cầu Tư Vấn Mới Từ Doanh Nghiệp & Sở KH&CN (03 Lời Mời)</span>
+        </h2>
+        <span class="text-xs text-slate-500">SLA phản hồi: Tối đa 48 giờ</span>
+      </div>
+
+      <!-- INVITATION CARD 1: CẤP SỞ GÁN CHUYÊN GIA -->
+      <div class="bg-white p-6 rounded-2xl border-2 border-blue-500/30 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+              <span class="px-2.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-black uppercase flex items-center gap-1">
+                <i data-lucide="shield" class="w-3 h-3"></i> Sở KH&CN Hà Nội Chỉ Định Kết Nối 1-1
+              </span>
+              <span class="font-mono text-xs font-bold text-slate-500">Mã Đơn: REQ-CON-2026-081</span>
+              <span class="text-[10px] text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded border border-red-200">Còn 18 giờ để phản hồi</span>
+            </div>
+
+            <h3 class="text-base font-extrabold text-slate-900">
+              Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP
+            </h3>
+
+            <p class="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+              <span>Đơn vị mời: <b>Công ty CP Dược Phẩm Trung Ương MediTech</b></span>
+              <span>·</span>
+              <span>Điểm TNI Doanh nghiệp: <b class="text-amber-600 font-mono">86.4 điểm</b></span>
+            </p>
+          </div>
+
+          <div class="text-right shrink-0 bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+            <span class="text-[10px] text-slate-500 font-semibold block">Kinh phí thù lao tư vấn:</span>
+            <span class="text-base font-black text-blue-700">15.000.000 VNĐ</span>
+            <span class="text-[10px] text-emerald-700 font-bold block">(Quỹ ĐMST Hà Nội chi trả)</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 rounded-xl text-xs text-slate-700 space-y-2">
+          <div><b>Nội dung yêu cầu từ DN:</b> Doanh nghiệp đang chuẩn bị đấu thầu gói mua sắm dây chuyền chiết rót 4.000 chai/h, cần chuyên gia tư vấn độc lập đánh giá thông số kỹ thuật của 03 nhà thầu, kiểm tra sự tương thích với hệ thống bồn chứa hiện hữu và lập báo cáo thẩm định kỹ thuật.</div>
+          <div class="flex flex-wrap gap-4 text-[11px] text-slate-500 pt-1 border-t border-slate-200">
+            <span><i data-lucide="map-pin" class="w-3.5 h-3.5 inline text-slate-400"></i> Địa điểm: Khảo sát tại Nhà máy Hòa Lạc, Hà Nội</span>
+            <span><i data-lucide="clock" class="w-3.5 h-3.5 inline text-slate-400"></i> Thời lượng dự kiến: 02 buổi làm việc</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-1">
+          <button onclick="rejectInvitation()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Từ Chối & Nêu Lý Do
+          </button>
+          <button onclick="acceptAndSchedule('Công ty CP Dược Phẩm MediTech')" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+            <i data-lucide="calendar-check" class="w-4 h-4"></i>
+            <span>Đồng Ý Tư Vấn & Chọn Lịch Hẹn</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- INVITATION CARD 2: DOANH NGHIỆP TỰ ĐẶT LỊCH -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+              <span class="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase">
+                Doanh Nghiệp Đặt Lịch Trực Tiếp Qua Portal
+              </span>
+              <span class="font-mono text-xs font-bold text-slate-500">Mã: REQ-CON-2026-079</span>
+            </div>
+
+            <h3 class="text-base font-extrabold text-slate-900">
+              Tư Vấn Thiết Kế Hệ Thống Cánh Tay Robot Phân Loại Nông Sản Cho HTX Nông Nghiệp
+            </h3>
+
+            <p class="text-xs text-slate-500 mt-0.5">
+              Đơn vị mời: <b>HTX Nông Nghiệp Công Nghệ Cao An Phú (Lâm Đồng)</b>
+            </p>
+          </div>
+
+          <div class="text-right shrink-0 bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <span class="text-[10px] text-slate-500 font-semibold block">Hình thức tư vấn:</span>
+            <span class="text-sm font-black text-slate-900">Trực tuyến qua Zoom</span>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 rounded-xl text-xs text-slate-700">
+          HTX cần chuyên gia xem xét bản vẽ mặt bằng nhà xưởng sơ bộ và tư vấn có nên đầu tư robot Delta phân loại nấm hay dùng băng chuyền cơ học thông thường.
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-1">
+          <button onclick="rejectInvitation()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Từ Chối
+          </button>
+          <button onclick="acceptAndSchedule('HTX An Phú')" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+            <i data-lucide="calendar-check" class="w-4 h-4"></i>
+            <span>Đồng Ý & Hẹn Giờ Họp Zoom</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LỊCH HẸN SẮP TỚI (HIDDEN BY DEFAULT) -->
+    <div id="view-schedule" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-3">
+        <h3 class="text-sm font-extrabold text-slate-900">Phiên Tư Vấn Sắp Diễn Ra Trong Tuần:</h3>
+        <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-emerald-800">14:00 - 16:00 · Chiều Mai (12/10/2026)</div>
+            <div class="text-sm font-extrabold text-slate-900 mt-1">Họp Thẩm Định Sơ Bộ Với Công Ty CP Robot Rạng Đông</div>
+            <p class="text-xs text-slate-500">Phòng họp trực tuyến: <a href="#" class="text-blue-600 underline font-mono font-bold">zoom.us/j/982348271</a></p>
+          </div>
+          <button class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm">Vào Phòng Họp</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: LỊCH SỬ (HIDDEN BY DEFAULT) -->
+    <div id="view-history" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200">
+        <h3 class="text-sm font-extrabold text-slate-900 mb-3">14 Phiên Tư Vấn Đã Nghiệm Thu Biên Bản:</h3>
+        <p class="text-xs text-slate-500">Đã đóng dấu xác nhận hoàn thành và nhận đánh giá 4.9/5 sao từ các doanh nghiệp.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tab) {
+      document.getElementById('btn-tab-new').classList.remove('active');
+      document.getElementById('btn-tab-schedule').classList.remove('active');
+      document.getElementById('btn-tab-history').classList.remove('active');
+      document.getElementById('view-new').classList.add('hidden');
+      document.getElementById('view-schedule').classList.add('hidden');
+      document.getElementById('view-history').classList.add('hidden');
+
+      if (tab === 'new') {
+        document.getElementById('btn-tab-new').classList.add('active');
+        document.getElementById('view-new').classList.remove('hidden');
+      } else if (tab === 'schedule') {
+        document.getElementById('btn-tab-schedule').classList.add('active');
+        document.getElementById('view-schedule').classList.remove('hidden');
+      } else if (tab === 'history') {
+        document.getElementById('btn-tab-history').classList.add('active');
+        document.getElementById('view-history').classList.remove('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function acceptAndSchedule(name) {
+      alert('ĐÃ CHẤP NHẬN LỜI MỜI! Hệ thống đã gửi email xác nhận và mở lịch hẹn công vụ với ' + name);
+    }
+
+    function rejectInvitation() {
+      const reason = prompt('Vui lòng nhập lý do từ chối (bận lịch công tác, không đúng lĩnh vực chuyên sâu...):');
+      if (reason) {
+        alert('Đã gửi thông báo từ chối lịch hẹn tới đơn vị gửi.');
+      }
+    }
+  </script>
+</body>
+</html>

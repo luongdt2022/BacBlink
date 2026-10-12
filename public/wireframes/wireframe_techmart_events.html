@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Sự Kiện & Phiên Chào Giá Công Nghệ Techmart — NacenTwin (TASK-01)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .tab-btn.active {
+      background-color: #1e40af;
+      color: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          T
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">TASK-01 BASIC DESIGN</span>
+            <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">SHOWCASE LISTING</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Lịch Sự Kiện & Phiên Chào Giá Công Nghệ Techmart Quốc Gia</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+        <button onclick="switchTab('upcoming')" id="tab-btn-upcoming" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          <span>1. Phiên Chào Giá Đang/Sắp Mở (4)</span>
+        </button>
+        <button onclick="switchTab('past')" id="tab-btn-past" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="archive" class="w-4 h-4"></i>
+          <span>2. Sự Kiện Đã Khép Lại (12)</span>
+        </button>
+        <button onclick="openRegisterModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Đăng Ký Tham Gia Phiên Chào Giá</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO BANNER -->
+  <section class="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white py-8 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold mb-3 border border-blue-400/30">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>Quyết Định PO: PO-DEC-20261008-06 (MVP1 Showcase Listing)</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+          Sàn Trưng Bày & Các Phiên Chào Giá Công Nghệ Trực Tuyến
+        </h1>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">
+          Nơi hội tụ các sự kiện Techmart, Techfest, Diễn đàn chuyển giao công nghệ và các phiên kết nối 1-1 giữa Viện, Trường, Doanh nghiệp ĐMST với cộng đồng người mua.
+        </p>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="grid grid-cols-3 gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 shrink-0">
+        <div class="text-center px-3">
+          <div class="text-2xl font-black text-cyan-300">15</div>
+          <div class="text-[10px] text-slate-300 font-semibold uppercase mt-0.5">Triển Lãm TT17</div>
+        </div>
+        <div class="text-center px-3 border-x border-white/20">
+          <div class="text-2xl font-black text-emerald-300">84</div>
+          <div class="text-[10px] text-slate-300 font-semibold uppercase mt-0.5">Công Nghệ Tham Gia</div>
+        </div>
+        <div class="text-center px-3">
+          <div class="text-2xl font-black text-amber-300">320+</div>
+          <div class="text-[10px] text-slate-300 font-semibold uppercase mt-0.5">Doanh Nghiệp Đăng Ký</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH & FILTER BAR -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 -mt-5 z-20 w-full">
+    <div class="bg-white p-4 rounded-2xl shadow-lg border border-slate-200 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+        <input type="text" placeholder="Tìm tên sự kiện, đơn vị chủ trì, từ khóa..." class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-600">
+      </div>
+      <div>
+        <select class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+          <option value="">Tất cả Lĩnh Vực (10 LV TT17)</option>
+          <option value="LV01">LV01 - Cơ khí chế tạo & Tự động hóa</option>
+          <option value="LV05">LV05 - Công nghệ sinh học & Y dược</option>
+          <option value="LV07">LV07 - Công nghệ thông tin & Viễn thông</option>
+          <option value="LV08">LV08 - Nông nghiệp công nghệ cao</option>
+          <option value="LV11">LV11 - Năng lượng tái tạo & Xanh</option>
+        </select>
+      </div>
+      <div>
+        <select class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+          <option value="">Địa bàn tổ chức (63 Tỉnh/Thành)</option>
+          <option value="HN">Hà Nội (Cung Triển Lãm ICE)</option>
+          <option value="HCM">TP. Hồ Chí Minh (SECC)</option>
+          <option value="DN">Đà Nẵng</option>
+          <option value="ONLINE">Phiên Chào Giá Trực Tuyến (Virtual)</option>
+        </select>
+      </div>
+      <div>
+        <select class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white">
+          <option value="">Trạng thái đăng ký</option>
+          <option value="OPEN">Đang nhận đăng ký</option>
+          <option value="LIVE">Đang diễn ra (Live Session)</option>
+          <option value="COMING">Sắp diễn ra</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN EVENT LISTING CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+
+    <!-- Tab 1: UPCOMING & LIVE EVENTS -->
+    <div id="tab-upcoming" class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Các Phiên Chào Giá & Triển Lãm Đang Mở Đăng Ký (4 Sự Kiện)</span>
+        </h2>
+        <span class="text-xs text-slate-500 font-medium">Cập nhật lúc: 10:30 Hôm nay</span>
+      </div>
+
+      <!-- EVENT CARD 1: FEATURED -->
+      <div class="bg-white rounded-2xl border-2 border-blue-500/40 p-6 shadow-md hover:shadow-lg transition relative overflow-hidden">
+        <div class="absolute top-0 right-0 bg-gradient-to-l from-red-600 to-amber-500 text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-wider flex items-center gap-1 shadow">
+          <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+          <span>Sự Kiện Trọng Điểm Năm 2026</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div class="lg:col-span-8 space-y-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 text-xs font-extrabold">TECHMART-2026-HN01</span>
+              <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-extrabold flex items-center gap-1">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Đang Tiếp Nhận Hồ Sơ
+              </span>
+              <span class="px-2.5 py-1 rounded-md bg-purple-100 text-purple-800 text-xs font-semibold">Cơ Khí & Tự Động Hóa (LV01)</span>
+            </div>
+
+            <h3 class="text-xl font-black text-slate-900 hover:text-blue-700 cursor-pointer">
+              Chợ Công Nghệ & Thiết Bị Techmart Hà Nội 2026: Giải Pháp Chuyển Đổi Số Cho Doanh Nghiệp Sản Xuất
+            </h3>
+
+            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+              Phiên kết nối cung-cầu quy mô quốc gia kết hợp trực tiếp tại Cung Văn hóa Hữu nghị Việt Xô (ICE) và Sàn giao dịch ảo NacenTwin. Dự kiến thu hút 120 gian hàng công nghệ cao và 500 lượt kết nối B2B với sự chủ trì của Bộ KH&CN và UBND TP. Hà Nội.
+            </p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs text-slate-600">
+              <div class="flex items-center gap-1.5 font-medium">
+                <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
+                <span>15/11/2026 - 18/11/2026</span>
+              </div>
+              <div class="flex items-center gap-1.5 font-medium">
+                <i data-lucide="map-pin" class="w-4 h-4 text-red-600"></i>
+                <span>ICE Cung Việt Xô, Hà Nội</span>
+              </div>
+              <div class="flex items-center gap-1.5 font-medium">
+                <i data-lucide="box" class="w-4 h-4 text-amber-600"></i>
+                <span>45 Gian hàng còn trống</span>
+              </div>
+              <div class="flex items-center gap-1.5 font-medium">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                <span>Sở KH&CN Hà Nội bảo trợ</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-4 flex flex-col justify-center items-center lg:items-end gap-3 border-t lg:border-t-0 lg:border-l border-slate-100 pt-4 lg:pt-0 lg:pl-6">
+            <div class="text-right w-full">
+              <span class="text-[11px] text-slate-500 font-semibold block">Hạn chót đăng ký:</span>
+              <span class="text-sm font-black text-red-600">05/11/2026 (Còn 25 ngày)</span>
+            </div>
+            <div class="flex gap-2 w-full">
+              <button onclick="openRegisterModal('Techmart Hà Nội 2026')" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i data-lucide="ticket" class="w-4 h-4"></i>
+                <span>Đăng Ký Gian Hàng</span>
+              </button>
+              <button class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition" title="Xem sơ đồ">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-400 text-center lg:text-right">Miễn phí 100% chi phí gian hàng cho DN KH&CN có chứng nhận</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- EVENT CARD 2: VIRTUAL SHOWCASE -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div class="lg:col-span-8 space-y-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-mono font-bold">VIRTUAL-2026-BIO02</span>
+              <span class="px-2.5 py-1 rounded-md bg-blue-100 text-blue-800 text-xs font-extrabold flex items-center gap-1">
+                <i data-lucide="video" class="w-3.5 h-3.5"></i> Phiên Chào Giá Trực Tuyến
+              </span>
+              <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-semibold">Sinh Học & Y Dược (LV05)</span>
+            </div>
+
+            <h3 class="text-lg font-black text-slate-900 hover:text-blue-700 cursor-pointer">
+              Phiên Chào Bán 15 Công Nghệ Chiết Xuất Dược Liệu & Chế Phẩm Vi Sinh Tự Động Hóa
+            </h3>
+
+            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+              Phiên kết nối chuyển giao công nghệ độc quyền do Viện Công nghệ Môi trường phối hợp cùng NacenTech tổ chức. 15 công trình nghiên cứu TRL 6-8 sẵn sàng chuyển giao cho các nhà máy sản xuất đông dược.
+            </p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs text-slate-600">
+              <div class="flex items-center gap-1.5 font-medium">
+                <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i>
+                <span>28/10/2026 (09:00 - 12:00)</span>
+              </div>
+              <div class="flex items-center gap-1.5 font-medium">
+                <i data-lucide="monitor" class="w-4 h-4 text-purple-600"></i>
+                <span>Hội trường trực tuyến NacenTwin Live</span>
+              </div>
+              <div class="flex items-center gap-1.5 font-medium">
+                <i data-lucide="users" class="w-4 h-4 text-emerald-600"></i>
+                <span>Đã có 48 Buyer đăng ký lắng nghe</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-4 flex flex-col justify-center items-center lg:items-end gap-3 border-t lg:border-t-0 lg:border-l border-slate-100 pt-4 lg:pt-0 lg:pl-6">
+            <div class="text-right w-full">
+              <span class="text-[11px] text-slate-500 font-semibold block">Hình thức:</span>
+              <span class="text-sm font-black text-blue-600">Livestream Pitching & B2B 1-1</span>
+            </div>
+            <div class="flex gap-2 w-full">
+              <button onclick="openRegisterModal('Phiên Chào Giá Sinh Học LV05')" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i data-lucide="user-check" class="w-4 h-4"></i>
+                <span>Đăng Ký Tham Dự B2B</span>
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-400">Có hỗ trợ ký kết Thỏa thuận Bảo mật (NDA) trực tuyến</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: PAST EVENTS (HIDDEN BY DEFAULT) -->
+    <div id="tab-past" class="hidden space-y-4">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200">
+        <h3 class="text-sm font-extrabold text-slate-900 mb-4">Các Kỳ Techmart Đã Kết Thúc & Thống Kê Chuyển Giao</h3>
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+            <tr>
+              <th class="p-3">Mã Sự Kiện</th>
+              <th class="p-3">Tên Triển Lãm / Sự Kiện</th>
+              <th class="p-3">Địa Điểm & Thời Gian</th>
+              <th class="p-3">Số Công Nghệ</th>
+              <th class="p-3">Số MOU Đã Ký</th>
+              <th class="p-3 text-right">Báo Cáo</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td class="p-3 font-mono font-bold text-blue-700">TECHMART-2025-HCM</td>
+              <td class="p-3 font-semibold">Chợ Thiết Bị & Công Nghệ Nông Nghiệp Công Nghệ Cao 2025</td>
+              <td class="p-3">TP. HCM · 12-14/12/2025</td>
+              <td class="p-3">68 Công nghệ</td>
+              <td class="p-3 font-bold text-emerald-600">18 Biên bản MOU</td>
+              <td class="p-3 text-right"><button class="text-blue-600 hover:underline font-bold">Xem kết quả</button></td>
+            </tr>
+            <tr>
+              <td class="p-3 font-mono font-bold text-blue-700">TECHFEST-2025-DN</td>
+              <td class="p-3 font-semibold">Ngày Hội Khởi Nghiệp ĐMST Vùng Duyên Hải Nam Trung Bộ</td>
+              <td class="p-3">Đà Nẵng · 18-20/10/2025</td>
+              <td class="p-3">92 Công nghệ</td>
+              <td class="p-3 font-bold text-emerald-600">24 Biên bản MOU</td>
+              <td class="p-3 text-right"><button class="text-blue-600 hover:underline font-bold">Xem kết quả</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: ĐĂNG KÝ THAM GIA PHIÊN CHÀO GIÁ TECHMART -->
+  <div id="register-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative">
+      <button onclick="closeRegisterModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+          <i data-lucide="file-signature" class="w-4 h-4"></i>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900">Đăng Ký Tham Gia Phiên Chào Giá Techmart</h3>
+      </div>
+      <p class="text-xs text-slate-500 mb-4">Dành cho Doanh nghiệp, Viện, Trường hoặc Cá nhân muốn mở gian hàng chào bán công nghệ hoặc tham dự phiên kết nối B2B.</p>
+
+      <form class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Phiên Chào Giá / Sự Kiện:</label>
+          <input type="text" id="modal-event-name" value="Techmart Hà Nội 2026: Giải Pháp Chuyển Đổi Số" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-semibold" readonly>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tên Đơn Vị / Doanh Nghiệp / Viện Trường:</label>
+          <input type="text" placeholder="Công ty CP Công nghệ Cơ khí Chính xác..." class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Mã Số Thuế (MST) / Giấy Phép:</label>
+            <input type="text" placeholder="0101234567" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:outline-none font-mono">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Vai Trò Tham Gia:</label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-white font-semibold">
+              <option value="SELLER">Bên Bán (Trưng bày Công nghệ)</option>
+              <option value="BUYER">Bên Mua (Tìm kiếm giải pháp)</option>
+              <option value="EXPERT">Chuyên Gia Tư Vấn KH&CN</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Người Liên Hệ Đại Diện:</label>
+            <input type="text" placeholder="Nguyễn Văn A" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Số Điện Thoại:</label>
+            <input type="tel" placeholder="0912345678" class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:outline-none font-mono">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nhu Cầu / Sản Phẩm Đăng Ký Trưng Bày:</label>
+          <textarea rows="2" placeholder="Mô tả tóm tắt giải pháp công nghệ, cấp độ TRL hoặc bài toán cần kết nối..." class="w-full p-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:outline-none"></textarea>
+        </div>
+
+        <div class="p-3 bg-blue-50 rounded-xl border border-blue-200 text-[11px] text-blue-900 flex items-start gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-blue-700 shrink-0 mt-0.5"></i>
+          <span>Hồ sơ đăng ký sẽ được Hội đồng Thẩm định của Sở KH&CN và NacenTech rà soát TRL trong 24h trước khi cấp thư mời và vị trí gian hàng chính thức.</span>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeRegisterModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition">Hủy bỏ</button>
+          <button type="button" onclick="alert('Đã tiếp nhận đơn đăng ký! Mã hồ sơ: REG-TECHMART-2026-089. Ban tổ chức sẽ liên hệ lại trong 24 giờ.')" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition shadow-md">Gửi Đơn Đăng Ký</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tab) {
+      document.getElementById('tab-btn-upcoming').classList.remove('active');
+      document.getElementById('tab-btn-past').classList.remove('active');
+      document.getElementById('tab-upcoming').classList.add('hidden');
+      document.getElementById('tab-past').classList.add('hidden');
+
+      if (tab === 'upcoming') {
+        document.getElementById('tab-btn-upcoming').classList.add('active');
+        document.getElementById('tab-upcoming').classList.remove('hidden');
+      } else {
+        document.getElementById('tab-btn-past').classList.add('active');
+        document.getElementById('tab-past').classList.remove('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function openRegisterModal(name) {
+      if (name) {
+        document.getElementById('modal-event-name').value = name;
+      }
+      document.getElementById('register-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeRegisterModal() {
+      document.getElementById('register-modal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

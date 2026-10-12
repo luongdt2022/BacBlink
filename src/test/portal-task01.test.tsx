@@ -5,8 +5,10 @@ import TechmartEventsPage from "@/app/trien-lam/page";
 import { AIAssistantWidget } from "@/components/home/AIAssistantWidget";
 import { portalClient } from "@/lib/portal-client";
 
+const mockPush = vi.fn();
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockPush }),
   usePathname: () => "/",
 }));
 
@@ -29,6 +31,7 @@ vi.mock("@/components/common/toast", () => ({
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  mockPush.mockClear();
 });
 
 describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
@@ -38,7 +41,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       totalDemands: 89,
       totalEnterprises: 310,
       totalExperts: 96,
-      totalProvinces: 34,
+      totalProvinces: 63,
       updatedAt: "2026-10-11T12:00:00Z",
     };
 
@@ -53,7 +56,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
     const stats = await portalClient.getStats();
     expect(stats.totalOffers).toBe(125);
     expect(stats.totalDemands).toBe(89);
-    expect(stats.totalProvinces).toBe(34);
+    expect(stats.totalProvinces).toBe(63);
     expect(stats.totalEnterprises).toBe(310);
   });
 
@@ -112,7 +115,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
     expect(res.status).toBe("CONFIRMED");
   });
 
-  it("HomePage renders Techmart navigation and Floating AI Widget", async () => {
+  it("HomePage renders 4-Tab Quick Search, Metric links and interactive controls (Zero-Shallow)", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -124,7 +127,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
             totalDemands: 90,
             totalEnterprises: 320,
             totalExperts: 100,
-            totalProvinces: 34,
+            totalProvinces: 63,
             updatedAt: "2026-10-11T00:00:00Z",
           },
         }),
@@ -133,16 +136,54 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
 
     render(<HomePage />);
 
-    // Link Sàn Sự Kiện Techmart
-    expect(screen.getByRole("link", { name: /Sàn Sự Kiện Techmart/i })).toHaveAttribute(
+    // 1. Kiểm tra thanh tìm kiếm phẳng và từ khóa gợi ý hiện diện
+    expect(screen.getByPlaceholderText(/Tìm công nghệ, lĩnh vực, đơn vị chuyển giao/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Tìm kiếm/i })).toBeInTheDocument();
+    expect(screen.getByText(/Gợi ý tìm kiếm:/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Sàn Sự Kiện Techmart/i })).toHaveAttribute("href", "/trien-lam");
+
+    // 2. Kiểm tra các thẻ Metric Card có link chuyển trang (Không còn là thẻ chết)
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /Công nghệ chào bán/i })).toHaveAttribute(
+        "href",
+        "/chao-ban-cong-nghe"
+      );
+      expect(screen.getByRole("link", { name: /Nhu cầu đặt hàng/i })).toHaveAttribute(
+        "href",
+        "/nhu-cau-cong-nghe"
+      );
+      expect(screen.getByRole("link", { name: /Tỉnh, thành kết nối/i })).toHaveAttribute(
+        "href",
+        "/matrix"
+      );
+      expect(screen.getByRole("link", { name: /Doanh nghiệp tham gia/i })).toHaveAttribute(
+        "href",
+        "/enterprises"
+      );
+    });
+
+    // 3. Kiểm tra Nút Đăng Ký Tư Vấn Thẩm Định có link điều hướng (Không còn nút chết)
+    expect(screen.getByRole("link", { name: /Đăng Ký Tư Vấn Thẩm Định/i })).toHaveAttribute(
       "href",
-      "/trien-lam"
+      "/khao-sat-nhu-cau"
     );
 
-    // Nút kích hoạt AI trên HomePage
-    expect(
-      screen.getByRole("button", { name: "Mở Trợ Lý AI" })
-    ).toBeInTheDocument();
+    // 4. KIỂM THỬ TƯƠNG TÁC THỰC: Submit form tìm kiếm phải gọi router.push
+    const searchInput = screen.getByPlaceholderText(/Tìm công nghệ/i);
+    fireEvent.change(searchInput, { target: { value: "Robot Laser" } });
+    const searchButton = screen.getByRole("button", { name: /Tìm kiếm/i });
+    fireEvent.click(searchButton);
+
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining("/chao-ban-cong-nghe?q=Robot%20Laser")
+    );
+
+    // 5. KIỂM THỬ TƯƠNG TÁC THỰC: Click từ khóa gợi ý phải gọi router.push
+    const kwButton = screen.getByRole("button", { name: "AI thị giác máy" });
+    fireEvent.click(kwButton);
+    expect(mockPush).toHaveBeenCalledWith(
+      expect.stringContaining("/chao-ban-cong-nghe?q=AI%20th%E1%BB%8B%20gi%C3%A1c%20m%C3%A1y")
+    );
   });
 
   it("AIAssistantWidget renders floating FAB and opens chat conversation", async () => {

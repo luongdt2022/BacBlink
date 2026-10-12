@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe Cài Đặt Tài Khoản & Bảo Mật — NacenTwin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between">
+  <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-blue-700 text-white flex items-center justify-center font-bold text-sm">NT</div>
+      <div>
+        <h1 class="text-sm font-extrabold text-slate-900">Cài Đặt Tài Khoản & Bảo Mật (/settings)</h1>
+        <p class="text-xs text-slate-500">Phân hệ Cấu hình tài khoản & PDPD Privacy (TASK-00)</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto w-full px-4 py-8 space-y-6">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h2 class="text-base font-bold text-slate-900">Thông tin bảo mật cá nhân</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Email tài khoản</label>
+          <input type="email" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50" value="buyer.user@demo.nacentech.vn" disabled>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Số điện thoại xác thực</label>
+          <input type="text" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" value="0912 345 678">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Mật khẩu hiện tại</label>
+        <input type="password" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm" placeholder="••••••••••••">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Mật khẩu mới</label>
+          <input type="password" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Nhập lại mật khẩu mới</label>
+          <input type="password" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <h2 class="text-base font-bold text-slate-900">Quyền riêng tư & Masking PDPD</h2>
+      <div class="space-y-3 text-xs text-slate-600">
+        <label class="flex items-center justify-between p-3 rounded-lg border border-slate-200">
+          <div>
+            <b class="block text-slate-800">Ẩn thông tin liên hệ khi đăng bài toán</b>
+            <span>Chỉ mở lộ danh tính sau khi đối tác được xác thực chấp thuận qua Deal Room.</span>
+          </div>
+          <input type="checkbox" checked class="w-4 h-4 text-blue-600">
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-lg border border-slate-200">
+          <div>
+            <b class="block text-slate-800">Nhận thông báo khi có công nghệ mới phù hợp</b>
+            <span>Radar AI tự động gửi email thông báo khi phát hiện hồ sơ sáng chế TRL trùng khớp.</span>
+          </div>
+          <input type="checkbox" checked class="w-4 h-4 text-blue-600">
+        </label>
+      </div>
+      <button class="px-5 py-2.5 rounded-lg bg-blue-700 text-white font-bold text-xs hover:bg-blue-800">Lưu Thay Đổi Cài Đặt</button>
+    </div>
+  </main>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

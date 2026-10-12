@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe Danh Bạ Chuyên Gia KH&CN — NacenTwin / NacenTech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .badge-verified { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- 1. TOP NAVBAR (Kế thừa Navbar chuẩn NacenTwin) -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        <!-- Logo Brand -->
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-blue-700 flex items-center justify-center text-white font-extrabold shadow-sm">
+            NT
+          </div>
+          <div class="flex flex-col">
+            <span class="text-base font-extrabold tracking-tight text-slate-900 leading-none">NacenTwin</span>
+            <span class="text-xs font-semibold text-emerald-700 mt-0.5">Viện Đổi Mới Sáng Tạo Quốc Gia</span>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-1 font-semibold text-sm">
+          <a href="/" class="px-3 py-2 text-slate-600 hover:text-blue-700 rounded-lg">Trang chủ</a>
+          <a href="/gioi-thieu" class="px-3 py-2 text-slate-600 hover:text-blue-700 rounded-lg">Giới thiệu</a>
+          <a href="/chao-ban-cong-nghe" class="px-3 py-2 text-slate-600 hover:text-blue-700 rounded-lg">Chào bán CN</a>
+          <a href="/nhu-cau-cong-nghe" class="px-3 py-2 text-slate-600 hover:text-blue-700 rounded-lg">Nhu cầu CN</a>
+          <a href="/doanh-nghiep-dmst" class="px-3 py-2 text-slate-600 hover:text-blue-700 rounded-lg">Doanh nghiệp ĐMST</a>
+          <a href="/chuyen-gia" class="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg font-bold">Chuyên gia KH&CN</a>
+          <a href="/dich-vu-khac" class="px-3 py-2 text-slate-600 hover:text-blue-700 rounded-lg">Dịch vụ khác</a>
+        </nav>
+
+        <!-- User Controls / Upgrade CTA -->
+        <div class="flex items-center gap-3">
+          <a href="/profile/upgrade/expert" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition">
+            <i data-lucide="award" class="w-4 h-4"></i>
+            Đăng ký làm Chuyên gia
+          </a>
+          <a href="/portal" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition">
+            Workspace
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. HERO SEARCH & BREADCRUMB -->
+  <section class="bg-gradient-to-b from-blue-900 via-indigo-900 to-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+    <div class="max-w-7xl mx-auto relative z-10">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-xs text-blue-200 mb-4 font-medium">
+        <a href="/" class="hover:text-white">Trang chủ</a>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-blue-300"></i>
+        <span class="text-white font-semibold">Danh bạ Chuyên gia KH&CN</span>
+      </nav>
+
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-semibold mb-3">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-300"></i>
+          Mạng lưới 1.250+ Nhà khoa học & Chuyên gia đầu ngành
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+          Danh Bạ Chuyên Gia Khoa Học & Công Nghệ
+        </h1>
+        <p class="mt-3 text-sm sm:text-base text-blue-100/90 leading-relaxed">
+          Kết nối trực tiếp với các Giáo sư, Tiến sĩ và Chuyên gia hàng đầu trong 18 ngành công nghiệp trọng điểm theo chuẩn Thông tư 17/2019/TT-BKHCN để tư vấn, chuyển giao và giải quyết bài toán kỹ thuật.
+        </p>
+
+        <!-- Big Search Bar -->
+        <div class="mt-6 bg-white p-2 rounded-2xl shadow-xl flex flex-col sm:flex-row gap-2">
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="mainSearchInput"
+              placeholder="Tìm theo họ tên chuyên gia, đơn vị công tác, từ khóa nghiên cứu..." 
+              class="w-full pl-11 pr-4 py-3 text-sm text-slate-800 placeholder-slate-400 bg-transparent rounded-xl focus:outline-none"
+            >
+          </div>
+          <button class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 shadow-md transition">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            Tìm kiếm
+          </button>
+        </div>
+
+        <!-- Quick filter chips -->
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-xs text-blue-200">
+          <span class="font-medium text-blue-300">Xu hướng:</span>
+          <button class="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition">#Trí tuệ nhân tạo</button>
+          <button class="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition">#Vật liệu nano</button>
+          <button class="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition">#Năng lượng tái tạo</button>
+          <button class="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition">#Cơ khí chính xác</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. MAIN DIRECTORY LAYOUT (SIDEBAR FILTER + RESULTS GRID) -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
+    <div class="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-8 items-start">
+
+      <!-- LEFT SIDEBAR: BỘ LỌC 4 TRỤC CHUYÊN SÂU -->
+      <aside class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs sticky top-20">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-blue-700"></i>
+            <h2 class="text-sm font-bold text-slate-900">Bộ Lọc Chuyên Sâu</h2>
+          </div>
+          <button id="resetFiltersBtn" class="text-xs font-semibold text-slate-500 hover:text-blue-700">
+            Đặt lại
+          </button>
+        </div>
+
+        <div class="divide-y divide-slate-100 text-sm">
+          <!-- Trục 1: Học hàm / Học vị -->
+          <div class="py-4">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+              Học hàm & Học vị
+            </label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span>Giáo sư (GS)</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(42)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span>Phó Giáo sư (PGS)</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(128)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span>Tiến sĩ (TS / TSKH)</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(580)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span>Thạc sĩ / Kỹ sư chính</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(500)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Trục 2: 18 Ngành công nghiệp TT17 -->
+          <div class="py-4">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+              18 Ngành Trọng Điểm (TT17)
+            </label>
+            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span class="truncate">01. Chế biến thực phẩm</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(85)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span class="truncate">02. Hóa chất & Dược phẩm</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(94)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span class="truncate">03. Điện tử & CNTT</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(162)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span class="truncate">04. Cơ khí chế tạo</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(110)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span class="truncate">05. Năng lượng & Môi trường</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(76)</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span class="truncate">06. Dệt may & Da giày</span>
+                <span class="ml-auto text-[11px] text-slate-400 font-mono">(32)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Trục 3: Địa bàn Sở Tỉnh (34 Tỉnh thành) -->
+          <div class="py-4">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+              Địa bàn Tỉnh / Thành phố
+            </label>
+            <select class="w-full text-xs rounded-xl border-slate-200 bg-slate-50 px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Tất cả 34 Tỉnh thành</option>
+              <optgroup label="Miền Bắc (12)">
+                <option value="HN">Hà Nội (Trung ương)</option>
+                <option value="HP">Hải Phòng</option>
+                <option value="QN">Quảng Ninh</option>
+                <option value="BN">Bắc Ninh</option>
+              </optgroup>
+              <optgroup label="Miền Trung (10)">
+                <option value="DN">Đà Nẵng</option>
+                <option value="TH">Thừa Thiên Huế</option>
+                <option value="KH">Khánh Hòa</option>
+              </optgroup>
+              <optgroup label="Miền Nam (12)">
+                <option value="HCM">TP. Hồ Chí Minh</option>
+                <option value="BD">Bình Dương</option>
+                <option value="DN">Đồng Nai</option>
+                <option value="CT">Cần Thơ</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Trục 4: Tiêu chí kiểm định & Vai trò -->
+          <div class="py-4">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+              Chứng thực & Thẩm quyền
+            </label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" checked class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span>Đã xác thực bởi Sở / Viện</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span>Chủ nhiệm nhiệm vụ KH&CN</span>
+              </label>
+              <label class="flex items-center gap-2.5 text-xs text-slate-700 cursor-pointer">
+                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <span>Có bằng Sáng chế / GPHI</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button class="mt-4 w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition">
+          Áp dụng bộ lọc
+        </button>
+      </aside>
+
+      <!-- RIGHT CONTENT: TIÊU ĐỀ KẾT QUẢ & GRID THẺ CHUYÊN GIA -->
+      <section class="space-y-6">
+        <!-- Control Bar: Đếm số lượng, sắp xếp, view switch -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200">
+          <div>
+            <div class="text-sm font-bold text-slate-900">
+              Tìm thấy <span class="text-blue-700 font-extrabold font-mono">148</span> chuyên gia phù hợp
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Hiển thị hồ sơ đã được Hội đồng Khoa học hoặc Sở KH&CN thẩm định chính thức.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3 self-end sm:self-auto">
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <span>Sắp xếp theo:</span>
+              <select class="text-xs font-semibold rounded-lg border-slate-200 bg-slate-50 px-2.5 py-1.5 text-slate-700 focus:bg-white focus:outline-none">
+                <option>Nổi bật / Công trình nhiều nhất</option>
+                <option>Học hàm GS / PGS ưu tiên</option>
+                <option>Mới cập nhật gần đây</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPERT CARDS GRID (3 Cột trên màn hình lớn) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+          <!-- CARD 1: GS.TS NGUYỄN VĂN AN -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+            <div>
+              <!-- Header Card: Avatar & Badges -->
+              <div class="flex items-start gap-3.5">
+                <div class="relative shrink-0">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+                    NA
+                  </div>
+                  <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white" title="Đã xác thực">
+                    <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+                  </span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      Giáo sư (GS)
+                    </span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold badge-verified flex items-center gap-1">
+                      <i data-lucide="shield-check" class="w-3 h-3"></i> Sở Hà Nội
+                    </span>
+                  </div>
+                  <h3 class="text-base font-extrabold text-slate-900 mt-1 group-hover:text-blue-700 transition truncate">
+                    GS.TS. Nguyễn Văn An
+                  </h3>
+                  <p class="text-xs text-slate-500 truncate mt-0.5" title="Viện Ứng Dụng Công Nghệ (NacenTech)">
+                    Viện Ứng Dụng Công Nghệ
+                  </p>
+                </div>
+              </div>
+
+              <!-- Lĩnh vực thế mạnh TT17 & Tags -->
+              <div class="mt-4 pt-3.5 border-t border-slate-100">
+                <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Lĩnh vực TT17 chính:
+                </div>
+                <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-800 border border-blue-100">
+                  03. Điện tử & Viễn thông
+                </span>
+
+                <div class="mt-2.5 flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Trí tuệ nhân tạo</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">IoT công nghiệp</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Xử lý tín hiệu</span>
+                </div>
+              </div>
+
+              <!-- Thống kê năng lực (Metrics) -->
+              <div class="mt-4 grid grid-cols-3 gap-2 py-2 px-3 bg-slate-50 rounded-xl text-center">
+                <div>
+                  <div class="text-xs font-extrabold text-slate-800 font-mono">45+</div>
+                  <div class="text-[10px] text-slate-500">Công bố</div>
+                </div>
+                <div>
+                  <div class="text-xs font-extrabold text-slate-800 font-mono">03</div>
+                  <div class="text-[10px] text-slate-500">Sáng chế</div>
+                </div>
+                <div>
+                  <div class="text-xs font-extrabold text-blue-700 font-mono">12</div>
+                  <div class="text-[10px] text-slate-500">Đề tài QG</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nút hành động liên thông -->
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center gap-2">
+              <a href="/experts/EXP-2026-0001" class="flex-1 py-2 text-center text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition">
+                Xem hồ sơ chi tiết
+              </a>
+              <button onclick="openConnectModal('GS.TS. Nguyễn Văn An', 'Viện Ứng Dụng Công Nghệ')" class="p-2 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl border border-slate-200 transition" title="Gửi yêu cầu kết nối">
+                <i data-lucide="message-square-plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD 2: PGS.TS TRẦN THỊ MAI -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+            <div>
+              <div class="flex items-start gap-3.5">
+                <div class="relative shrink-0">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+                    TM
+                  </div>
+                  <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white">
+                    <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+                  </span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-100">
+                      Phó Giáo sư (PGS)
+                    </span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold badge-verified flex items-center gap-1">
+                      <i data-lucide="shield-check" class="w-3 h-3"></i> Sở TP.HCM
+                    </span>
+                  </div>
+                  <h3 class="text-base font-extrabold text-slate-900 mt-1 group-hover:text-blue-700 transition truncate">
+                    PGS.TS. Trần Thị Mai
+                  </h3>
+                  <p class="text-xs text-slate-500 truncate mt-0.5">
+                    Đại học Bách Khoa TP.HCM
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3.5 border-t border-slate-100">
+                <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Lĩnh vực TT17 chính:
+                </div>
+                <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-100">
+                  02. Hóa chất & Dược phẩm
+                </span>
+
+                <div class="mt-2.5 flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Hóa dược thảo mộc</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Chiết xuất nano</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Dược liệu sạch</span>
+                </div>
+              </div>
+
+              <div class="mt-4 grid grid-cols-3 gap-2 py-2 px-3 bg-slate-50 rounded-xl text-center">
+                <div>
+                  <div class="text-xs font-extrabold text-slate-800 font-mono">32+</div>
+                  <div class="text-[10px] text-slate-500">Công bố</div>
+                </div>
+                <div>
+                  <div class="text-xs font-extrabold text-slate-800 font-mono">02</div>
+                  <div class="text-[10px] text-slate-500">Sáng chế</div>
+                </div>
+                <div>
+                  <div class="text-xs font-extrabold text-blue-700 font-mono">08</div>
+                  <div class="text-[10px] text-slate-500">Đề tài Bộ</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center gap-2">
+              <a href="/experts/EXP-2026-0002" class="flex-1 py-2 text-center text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition">
+                Xem hồ sơ chi tiết
+              </a>
+              <button onclick="openConnectModal('PGS.TS. Trần Thị Mai', 'ĐH Bách Khoa TP.HCM')" class="p-2 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl border border-slate-200 transition" title="Gửi yêu cầu kết nối">
+                <i data-lucide="message-square-plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD 3: TS LÊ HOÀNG NAM -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+            <div>
+              <div class="flex items-start gap-3.5">
+                <div class="relative shrink-0">
+                  <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-700 flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
+                    LN
+                  </div>
+                  <span class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white">
+                    <i data-lucide="check" class="w-3 h-3 stroke-[3]"></i>
+                  </span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      Tiến sĩ (TS)
+                    </span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold badge-verified flex items-center gap-1">
+                      <i data-lucide="shield-check" class="w-3 h-3"></i> Sở Đà Nẵng
+                    </span>
+                  </div>
+                  <h3 class="text-base font-extrabold text-slate-900 mt-1 group-hover:text-blue-700 transition truncate">
+                    TS. Lê Hoàng Nam
+                  </h3>
+                  <p class="text-xs text-slate-500 truncate mt-0.5">
+                    Đại học Bách Khoa Đà Nẵng
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3.5 border-t border-slate-100">
+                <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Lĩnh vực TT17 chính:
+                </div>
+                <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-100">
+                  04. Cơ khí chính xác & Robot
+                </span>
+
+                <div class="mt-2.5 flex flex-wrap gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Tay máy công nghiệp</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Tự động hóa PLC</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] bg-slate-100 text-slate-600">Gia công 5 trục</span>
+                </div>
+              </div>
+
+              <div class="mt-4 grid grid-cols-3 gap-2 py-2 px-3 bg-slate-50 rounded-xl text-center">
+                <div>
+                  <div class="text-xs font-extrabold text-slate-800 font-mono">18+</div>
+                  <div class="text-[10px] text-slate-500">Công bố</div>
+                </div>
+                <div>
+                  <div class="text-xs font-extrabold text-slate-800 font-mono">01</div>
+                  <div class="text-[10px] text-slate-500">Sáng chế</div>
+                </div>
+                <div>
+                  <div class="text-xs font-extrabold text-blue-700 font-mono">05</div>
+                  <div class="text-[10px] text-slate-500">Ứng dụng TT</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-slate-100 flex items-center gap-2">
+              <a href="/experts/EXP-2026-0003" class="flex-1 py-2 text-center text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition">
+                Xem hồ sơ chi tiết
+              </a>
+              <button onclick="openConnectModal('TS. Lê Hoàng Nam', 'ĐH Bách Khoa Đà Nẵng')" class="p-2 text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl border border-slate-200 transition" title="Gửi yêu cầu kết nối">
+                <i data-lucide="message-square-plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PHÂN TRANG (PAGINATION) -->
+        <div class="flex items-center justify-between pt-6 border-t border-slate-200 text-xs">
+          <span class="text-slate-500">
+            Hiển thị <span class="font-bold text-slate-700">1 - 9</span> trên tổng số <span class="font-bold text-slate-700">148</span> chuyên gia
+          </span>
+          <div class="flex items-center gap-1.5">
+            <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-50" disabled>
+              Trước
+            </button>
+            <button class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold">1</button>
+            <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">2</button>
+            <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">3</button>
+            <span class="px-2 text-slate-400">...</span>
+            <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">17</button>
+            <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+              Sau
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL GỬI YÊU CẦU KẾT NỐI NHANH (MÔ PHỎNG LUỒNG MVP) -->
+  <div id="connectModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button onclick="closeConnectModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+          <i data-lucide="send" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Gửi Yêu Cầu Kết Nối & Tư Vấn</h3>
+          <p id="modalExpertName" class="text-xs text-slate-500 mt-0.5">Gửi tới Chuyên gia</p>
+        </div>
+      </div>
+
+      <form onsubmit="handleSendRequest(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tên Doanh nghiệp / Tổ chức của bạn (*)</label>
+          <input type="text" required placeholder="VD: Công ty Cổ phần Công nghệ ABC" class="w-full rounded-xl border-slate-200 bg-slate-50 p-2.5 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tóm tắt bài toán công nghệ cần tư vấn (*)</label>
+          <textarea required rows="3" placeholder="Mô tả ngắn gọn khó khăn kỹ thuật hoặc nhu cầu chuyển giao cần chuyên gia hỗ trợ..." class="w-full rounded-xl border-slate-200 bg-slate-50 p-2.5 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Hình thức tư vấn mong muốn</label>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="mode" checked class="text-blue-600">
+              <span>Họp trực tuyến (Online)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="mode" class="text-blue-600">
+              <span>Khảo sát trực tiếp tại xưởng</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px] leading-relaxed">
+          <strong>Lưu ý bảo mật:</strong> Yêu cầu kết nối sẽ được chuyển tiếp an toàn tới Chuyên gia qua Không gian Tác nghiệp của họ. Không chia sẻ thông tin bí mật kinh doanh trước khi ký Thỏa thuận bảo mật (NDA).
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeConnectModal()" class="px-4 py-2 rounded-xl border border-slate-200 font-semibold text-slate-600 hover:bg-slate-50">
+            Hủy bỏ
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm transition">
+            Gửi yêu cầu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 mt-12">
+    <div class="max-w-7xl mx-auto px-4">
+      <p>© 2026 Viện Ứng Dụng Công Nghệ (NacenTech) • Nền tảng Đổi Mới Sáng Tạo & Kết Nối Cung Cầu Nacentwin</p>
+      <p class="mt-1 text-[11px] text-slate-400">Tuân thủ nghiêm ngặt Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân (PDPD)</p>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function openConnectModal(name, org) {
+      document.getElementById('modalExpertName').innerText = `Gửi tới: ${name} (${org})`;
+      const modal = document.getElementById('connectModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeConnectModal() {
+      const modal = document.getElementById('connectModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleSendRequest(e) {
+      e.preventDefault();
+      alert('Đã gửi yêu cầu kết nối thành công! Chuyên gia sẽ nhận được thông báo trong Workspace tác nghiệp.');
+      closeConnectModal();
+    }
+  </script>
+</body>
+</html>

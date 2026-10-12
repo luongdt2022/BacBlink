@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<link rel="stylesheet" href="css/tailwind.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Wireframe tạo hồ sơ chào bán | NacenTwin</title>
+  
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family:'Plus Jakarta Sans',system-ui,sans-serif; }
+    code,.mono { font-family:'JetBrains Mono',monospace; }
+    .nav-item.active { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .option.active { border-color:#2563eb; background:#eff6ff; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+    .hidden-state { display:none; }
+    @media (max-width: 1023px) { .side-nav { display:none; } }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+    <div id="nacentech-design-toolbar" style="position: sticky; top: 0; left: 0; right: 0; z-index: 99999; background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 700; transition: background 0.2s;">
+          ← Về Danh Sách Màn Hình
+        </a>
+        <span style="color: #94a3b8;">|</span>
+        <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4);">
+          Màn hình: Wireframe Biểu Mẫu Tạo Hồ Sơ Chào Bán Công Nghệ (Seller Upload)
+        </span>
+        <span style="color: #64748b;">(20_wireframe_form_tao_chao_ban_seller.html)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="color: #94a3b8; font-size: 11px;">Nền tảng NacenTwin · Viện Ứng Dụng Công Nghệ</span>
+        <button onclick="document.getElementById('nacentech-design-toolbar').style.display='none'" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;" title="Ẩn thanh công cụ">✕</button>
+      </div>
+    </div>
+    
+  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-navy to-cyan font-black text-white shadow">N</div>
+        <div><div class="font-extrabold tracking-tight text-slate-900">NACENTWIN</div><div class="text-[10px] font-bold tracking-wider text-slate-500">CỔNG ĐỔI MỚI SÁNG TẠO QUỐC GIA</div></div>
+      </div>
+      <div class="hidden items-center gap-2 sm:flex"><span class="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-700">Prototype · TASK-04</span><button class="rounded-lg border border-slate-200 p-2 text-slate-500" onclick="toggleTheme()" title="Đổi chế độ xem"><i data-lucide="moon" class="h-4 w-4"></i></button></div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+      <div><nav class="mb-2 text-xs text-slate-500">Trang chủ / Hồ sơ của tôi / <span class="font-semibold text-slate-700">Tạo hồ sơ chào bán</span></nav><h1 class="text-2xl font-extrabold tracking-tight text-slate-900">Tạo hồ sơ chào bán</h1><p class="mt-1 text-sm text-slate-600">Đăng sản phẩm, thiết bị hoặc giải pháp công nghệ để kết nối nhu cầu phù hợp.</p></div>
+      <div class="flex gap-2"><button class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"><i data-lucide="save" class="mr-1 inline h-3.5 w-3.5"></i>Lưu nháp</button><button class="rounded-lg bg-navy px-3 py-2 text-xs font-bold text-white shadow-sm"><i data-lucide="send" class="mr-1 inline h-3.5 w-3.5"></i>Gửi chờ duyệt</button></div>
+    </div>
+
+    <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3"><div class="text-xs font-bold text-emerald-700">Bước hiện tại</div><div class="mt-1 text-sm font-extrabold text-emerald-900">01 · Thông tin bắt buộc</div></div>
+      <div class="rounded-xl border border-blue-200 bg-blue-50 p-3"><div class="text-xs font-bold text-blue-700">Tối giản MVP</div><div class="mt-1 text-sm font-extrabold text-blue-900">6 trường lõi + điều kiện</div></div>
+      <div class="rounded-xl border border-slate-200 bg-white p-3"><div class="text-xs font-bold text-slate-500">Bộ quy tắc áp dụng</div><div id="rule-count" class="mt-1 text-sm font-extrabold text-slate-900">MECH · Thiết bị · Không chuyển giao</div></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <aside class="side-nav space-y-3">
+        <div class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"><p class="px-2 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Tiến trình hồ sơ</p>
+          <button class="nav-item active flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm font-bold"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>Thông tin bắt buộc</button>
+          <button class="nav-item mt-1 flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left text-sm font-semibold text-slate-500"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs">2</span>Thông số & ngành</button>
+          <button class="nav-item mt-1 flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left text-sm font-semibold text-slate-500"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs">3</span>Giá & thương mại</button>
+          <button class="nav-item mt-1 flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left text-sm font-semibold text-slate-500"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-xs">4</span>Minh chứng bổ sung</button>
+        </div>
+        <div class="rounded-2xl border border-cyan-100 bg-cyan-50 p-4"><div class="flex items-center gap-2 text-sm font-extrabold text-cyan-900"><i data-lucide="sparkles" class="h-4 w-4"></i>Gợi ý AI</div><p class="mt-2 text-xs leading-5 text-cyan-800">Tải catalogue hoặc ảnh sản phẩm để AI gợi ý mô tả và thông số. Anh/chị luôn kiểm tra trước khi lưu.</p><button class="mt-3 text-xs font-bold text-cyan-700">Thử tải tài liệu →</button></div>
+      </aside>
+
+      <section class="min-w-0">
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-100 px-5 py-4 sm:px-7"><div class="flex flex-wrap items-center justify-between gap-2"><div><h2 class="font-extrabold text-slate-900">1. Thông tin để đăng và tra cứu</h2><p class="mt-1 text-xs text-slate-500">Các trường có dấu <span class="font-bold text-rose-600">*</span> là đề xuất tối giản trong Basic Design; thông tin tài khoản được tự điền khi đăng nhập.</p></div><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">Đã điền 0 / 6</span></div></div>
+          <div class="space-y-7 p-5 sm:p-7">
+            <div><label class="mb-2 block text-xs font-extrabold text-slate-700">Loại chào bán <span class="text-rose-600">*</span></label><div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <button class="option active rounded-xl border-2 border-slate-200 p-3 text-left" data-type="Thiết bị" onclick="selectType(this)"><i data-lucide="settings-2" class="mb-2 h-5 w-5 text-blue-600"></i><div class="text-sm font-extrabold">Thiết bị</div><div class="mt-1 text-[11px] text-slate-500">Máy móc, dây chuyền</div></button>
+              <button class="option rounded-xl border-2 border-slate-200 p-3 text-left" data-type="Sản phẩm" onclick="selectType(this)"><i data-lucide="package" class="mb-2 h-5 w-5 text-emerald-600"></i><div class="text-sm font-extrabold">Sản phẩm</div><div class="mt-1 text-[11px] text-slate-500">Hàng hóa, vật liệu</div></button>
+              <button class="option rounded-xl border-2 border-slate-200 p-3 text-left" data-type="Giải pháp" onclick="selectType(this)"><i data-lucide="cpu" class="mb-2 h-5 w-5 text-cyan-600"></i><div class="text-sm font-extrabold">Giải pháp công nghệ</div><div class="mt-1 text-[11px] text-slate-500">Quy trình, phần mềm</div></button>
+            </div></div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2"><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Ngành công nghiệp <span class="text-rose-600">*</span></label><select id="industry" onchange="updateIndustry()" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm outline-none focus:border-blue-500"><option value="MECH" selected>MECH — Cơ khí chế tạo</option><option value="AG">AG — Nông nghiệp</option><option value="IT">IT — Phần mềm và giải pháp số</option><option value="OTHER">18 ngành khác theo ma trận nguồn</option></select><p class="mt-1 text-[11px] text-slate-500">Ngành quyết định bộ thông số chuyên môn ở Bước 2.</p></div><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Có chuyển giao công nghệ? <span class="text-rose-600">*</span></label><div class="flex rounded-lg border border-slate-300 p-1"><button id="transfer-no" onclick="setTransfer(false)" class="flex-1 rounded-md bg-slate-900 px-3 py-2 text-xs font-bold text-white">Không</button><button id="transfer-yes" onclick="setTransfer(true)" class="flex-1 rounded-md px-3 py-2 text-xs font-bold text-slate-600">Có</button></div><p class="mt-1 text-[11px] text-slate-500">Chọn Có sẽ yêu cầu khai mức TRL.</p></div></div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2"><div class="sm:col-span-2"><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Tên sản phẩm/thiết bị/công nghệ <span class="text-rose-600">*</span></label><input class="w-full rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Ví dụ: Máy phay CNC 5 trục tích hợp robot nạp phôi"></div><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Mô tả ngắn <span class="text-rose-600">*</span></label><textarea class="h-24 w-full rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Nêu ngắn gọn đặc điểm chính của đối tượng chào bán"></textarea></div><div><label class="mb-1.5 block text-xs font-extrabold text-slate-700">Công dụng / bài toán giải quyết <span class="text-rose-600">*</span></label><textarea class="h-24 w-full rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Sản phẩm giải quyết nhu cầu nào cho bên mua?"></textarea></div></div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4"><div class="mb-3 flex items-center gap-2"><i data-lucide="badge-dollar-sign" class="h-4 w-4 text-navy"></i><h3 class="text-sm font-extrabold">Hình thức công bố giá <span class="text-rose-600">*</span></h3></div><div class="flex flex-wrap gap-2"><label class="cursor-pointer rounded-lg border border-blue-600 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700"><input type="radio" name="price" onchange="togglePrice(true)" checked class="mr-1">Giá cụ thể</label><label class="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold"><input type="radio" name="price" onchange="togglePrice(true)" class="mr-1">Khoảng giá</label><label class="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold"><input type="radio" name="price" onchange="togglePrice(false)" class="mr-1">Liên hệ báo giá</label></div><div id="price-fields" class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3"><input class="rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Giá chào bán"><select class="rounded-lg border border-slate-300 p-2.5 text-sm"><option>VND</option></select><input class="rounded-lg border border-slate-300 p-2.5 text-sm" placeholder="Đơn vị: bộ, chiếc..."></div></div>
+            <div id="trl-panel" class="hidden-state rounded-xl border border-amber-200 bg-amber-50 p-4"><div class="flex items-center gap-2"><i data-lucide="flask-conical" class="h-4 w-4 text-amber-700"></i><div><h3 class="text-sm font-extrabold text-amber-900">Mức TRL <span class="text-rose-600">*</span></h3><p class="text-[11px] text-amber-800">Bắt buộc vì hồ sơ có chuyển giao công nghệ; minh chứng có thể bổ sung sau.</p></div></div><div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-9" id="trl-buttons"></div></div>
+            <div><button class="flex w-full items-center justify-between rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-left text-sm font-bold text-slate-700" onclick="toggleSupplement()"><span><i data-lucide="plus-circle" class="mr-2 inline h-4 w-4 text-emerald"></i>Thông tin bổ sung sau (không chặn đăng hồ sơ)</span><i data-lucide="chevron-down" class="h-4 w-4"></i></button><div id="supplement" class="hidden-state mt-3 grid grid-cols-1 gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-3"><div class="rounded-lg border border-slate-200 bg-white p-3 text-xs"><b>Ảnh & tài liệu</b><p class="mt-1 text-slate-500">Ảnh đại diện, catalogue, chứng nhận.</p></div><div class="rounded-lg border border-slate-200 bg-white p-3 text-xs"><b>Thông số kỹ thuật</b><p class="mt-1 text-slate-500">Chọn từ bộ mẫu ngành, bổ sung theo đối tượng.</p></div><div class="rounded-lg border border-slate-200 bg-white p-3 text-xs"><b>Điều kiện thương mại</b><p class="mt-1 text-slate-500">Bảo hành, giao hàng, thanh toán, phạm vi cung cấp.</p></div></div></div>
+          </div>
+          <div class="border-t border-slate-100 bg-white px-5 py-4 sm:px-7"><div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><p class="text-xs text-slate-500"><i data-lucide="shield-check" class="mr-1 inline h-3.5 w-3.5 text-emerald"></i>Điện thoại/email lấy từ tài khoản và chỉ mở cho Buyer sau yêu cầu kết nối.</p><div class="flex gap-2"><button class="rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold">Lưu nháp</button><button class="rounded-lg bg-navy px-4 py-2 text-xs font-bold text-white">Tiếp tục: thông số ngành <i data-lucide="arrow-right" class="ml-1 inline h-3.5 w-3.5"></i></button></div></div></div>
+        </div>
+        <div class="mt-4 rounded-xl border border-slate-200 bg-white p-4"><div class="flex flex-wrap items-center justify-between gap-2"><div><b class="text-sm">5 trạng thái UX cần triển khai</b><p class="mt-1 text-xs text-slate-500">Wireframe mô phỏng Success. Các trạng thái còn lại được kiểm thử khi triển khai frontend.</p></div><div class="flex flex-wrap gap-1"><button onclick="showState('loading')" class="rounded border px-2 py-1 text-[11px]">Loading</button><button onclick="showState('empty')" class="rounded border px-2 py-1 text-[11px]">Empty</button><button onclick="showState('error')" class="rounded border px-2 py-1 text-[11px]">Error</button><button onclick="showState('partial')" class="rounded border px-2 py-1 text-[11px]">Partial</button><button onclick="showState('success')" class="rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700">Success</button></div></div><div id="state-message" class="mt-3 hidden rounded-lg p-3 text-xs"></div></div>
+      </section>
+    </div>
+  </main>
+  
+</body></html>

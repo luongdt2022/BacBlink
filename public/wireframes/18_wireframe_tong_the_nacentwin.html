@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NacenTwin — Thư Viện Wireframe Basic Design (Phân Cấp 2 Tầng)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --navy: #091f3d;
+      --blue: #1e40af;
+      --blue-hover: #172554;
+      --cyan: #06b6d4;
+      --mint: #10b981;
+      --canvas: #f1f5f9;
+      --line: #cbd5e1;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --panel: #ffffff;
+      --sidebar-w: 340px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font: 13px/1.5 'Plus Jakarta Sans', Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* TOP UTILITY BAR */
+    .utility {
+      height: 34px;
+      background: #061a34;
+      color: #adc1d8;
+    }
+    .wrap {
+      max-width: 1680px;
+      margin: auto;
+      padding: 0 20px;
+    }
+    .utility .wrap {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .live {
+      color: #6ee7b7;
+      font-weight: 700;
+    }
+    .live:before {
+      content: '•';
+      font-size: 16px;
+      vertical-align: -2px;
+      margin-right: 4px;
+    }
+
+    /* HEADER */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+    header .wrap {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand img {
+      height: 42px;
+      width: 42px;
+      object-fit: contain;
+    }
+    .brand b {
+      font-size: 16px;
+      letter-spacing: -0.4px;
+      color: #0f172a;
+    }
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+    }
+    .header-note {
+      color: var(--muted);
+      font-size: 11px;
+      background: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .header-note b { color: #1e40af; }
+
+    /* LAYOUT */
+    .layout {
+      min-height: calc(100vh - 102px);
+      display: grid;
+      grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    }
+
+    /* ASIDE SIDEBAR */
+    aside {
+      background: #ffffff;
+      border-right: 1px solid var(--line);
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 102px);
+      position: sticky;
+      top: 0;
+      overflow-y: auto;
+    }
+    aside::-webkit-scrollbar { width: 5px; }
+    aside::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    aside::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .sidebar-head {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .aside-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .aside-title {
+      color: #475569;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+    .aside-badge {
+      font-size: 10px;
+      font-weight: 700;
+      background: #e0e7ff;
+      color: #1e40af;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    /* SEARCH & CONTROLS */
+    .search-box {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .search-box input {
+      width: 100%;
+      height: 32px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0 10px 0 28px;
+      font-size: 11px;
+      font-family: inherit;
+      color: var(--ink);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-box input:focus {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.12);
+    }
+    .search-box i {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      width: 15px;
+      height: 15px;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .btn-tool-sm {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-tool-sm:hover {
+      background: #f1f5f9;
+      color: #1e40af;
+      border-color: #94a3b8;
+    }
+
+    /* ROLE FILTER PILLS BAR */
+    .role-filter-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed #e2e8f0;
+    }
+    .role-filter-label {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #64748b;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .role-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .role-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2.5px 7px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .role-pill:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+      color: #1e293b;
+    }
+    .role-pill.active {
+      background: #1e40af !important;
+      color: #ffffff !important;
+      border-color: #1e40af !important;
+      box-shadow: 0 1px 3px rgba(30,64,175,0.25);
+    }
+    .role-pill-count {
+      font-size: 8.5px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0 4px;
+      border-radius: 99px;
+      background: rgba(0,0,0,0.06);
+    }
+    .role-pill.active .role-pill-count {
+      background: rgba(255,255,255,0.25);
+      color: #ffffff;
+    }
+
+    /* SUB-GROUP HEADER INSIDE TASK */
+    .sub-group-header {
+      font-size: 8.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      padding: 7px 4px 3px;
+      margin-top: 5px;
+      border-top: 1px dashed #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .sub-group-header:first-child {
+      border-top: none;
+      margin-top: 0;
+      padding-top: 2px;
+    }
+    .sub-group-header i {
+      width: 11px;
+      height: 11px;
+      color: #94a3b8;
+    }
+
+    /* ROLE TAGS ON TAB ITEM */
+    .role-tag {
+      display: inline-block;
+      font-size: 8.5px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.2px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+    .role-tag.role-public { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+    .role-tag.role-common { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .role-tag.role-buyer { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+    .role-tag.role-seller { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .role-tag.role-expert { background: #faf5ff; color: #9333ea; border: 1px solid #e9d5ff; }
+    .role-tag.role-gov { background: #ecfeff; color: #0891b2; border: 1px solid #a5f3fc; }
+    .role-tag.role-admin { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+    /* FRAME ROLE BADGE */
+    .frame-role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 10px;
+      margin-left: 6px;
+      border: 1px solid;
+      letter-spacing: 0.2px;
+    }
+
+    /* 2-LEVEL MENU CONTAINERS */
+    #task-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    /* CẤP 1: TASK MODULE ACCORDION */
+    .task-group {
+      margin-bottom: 6px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .task-group:hover {
+      border-color: #cbd5e1;
+    }
+    .task-group.has-active {
+      border-color: #93c5fd;
+      background: #f8faff;
+      box-shadow: 0 1px 3px rgba(30,64,175,0.06);
+    }
+
+    .task-header {
+      width: 100%;
+      border: 0;
+      background: #f8fafc;
+      padding: 9px 10px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .task-header:hover {
+      background: #f1f5f9;
+    }
+    .task-group.has-active .task-header {
+      background: #eff6ff;
+    }
+
+    .task-header-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      flex: 1;
+    }
+    .task-chevron {
+      width: 14px;
+      height: 14px;
+      color: #64748b;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    .task-group.expanded .task-chevron {
+      transform: rotate(90deg);
+      color: #1e40af;
+    }
+    .task-icon {
+      width: 15px;
+      height: 15px;
+      color: #1e40af;
+      flex-shrink: 0;
+    }
+    .task-code-pill {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      color: #1e293b;
+      flex-shrink: 0;
+    }
+    .task-group.has-active .task-code-pill {
+      background: #1e40af;
+      color: #ffffff;
+    }
+    .task-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .task-count-badge {
+      font-size: 9px;
+      font-weight: 700;
+      color: #64748b;
+      background: #e2e8f0;
+      padding: 1px 6px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .task-group.has-active .task-count-badge {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    /* CẤP 2: SCREENS INSIDE TASK */
+    .task-screens-container {
+      display: none;
+      padding: 4px 6px 6px 12px;
+      border-top: 1px solid #f1f5f9;
+      background: #ffffff;
+    }
+    .task-group.expanded .task-screens-container {
+      display: block;
+    }
+    .tree-branch {
+      border-left: 2px solid #e2e8f0;
+      padding-left: 6px;
+      margin-left: 4px;
+    }
+
+    .tab {
+      width: 100%;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      padding: 7px 8px;
+      text-align: left;
+      color: #475569;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 2px 0;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab:hover {
+      background: #f8fafc;
+      color: #0f172a;
+      border-color: #e2e8f0;
+    }
+    .tab.active {
+      color: #124d8c;
+      background: #eaf3ff;
+      border-color: #bfdbfe;
+      border-left: 3px solid #1e40af;
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(30,64,175,0.06);
+    }
+    .tab i {
+      width: 14px;
+      height: 14px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .tab b {
+      display: block;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+    .tab small {
+      display: block;
+      color: #64748b;
+      font-size: 9px;
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
+    .sidebar-footer {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      color: #64748b;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    .sidebar-footer b {
+      display: block;
+      color: #1e40af;
+      margin-bottom: 2px;
+    }
+
+    /* RIGHT CONTENT */
+    .content {
+      padding: 22px;
+      overflow-x: hidden;
+    }
+    .crumb {
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .crumb span { color: #94a3b8; }
+    .crumb b { color: #1e40af; }
+    
+    .title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 8px 0 16px;
+    }
+    .title-row h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.6px;
+      color: #0f172a;
+    }
+    .title-row p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .device {
+      display: flex;
+      border: 1px solid var(--line);
+      padding: 3px;
+      border-radius: 8px;
+      background: #ffffff;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .device button {
+      border: 0;
+      border-radius: 5px;
+      padding: 5px 10px;
+      background: transparent;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .device button.active {
+      color: #1e40af;
+      background: #eaf3ff;
+    }
+
+    /* FRAME SHELL */
+    .frame-shell {
+      height: calc(100vh - 205px);
+      min-height: 610px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .frame-bar {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 11px;
+      color: #64748b;
+      flex-shrink: 0;
+    }
+    .frame-bar .dots {
+      display: flex;
+      gap: 5px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+    .frame-bar code {
+      font-family: 'JetBrains Mono', monospace;
+      color: #475569;
+      font-size: 10px;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .frame {
+      width: 100%;
+      flex: 1;
+      border: 0;
+      background: #ffffff;
+    }
+    .empty {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+      background: #ffffff;
+    }
+    .empty div { max-width: 460px; }
+    .empty i {
+      width: 42px;
+      height: 42px;
+      color: #2563eb;
+      margin-bottom: 12px;
+    }
+    .empty h2 {
+      font-size: 18px;
+      margin: 0 0 6px;
+      color: #0f172a;
+    }
+    .empty p {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0;
+    }
+    .empty code {
+      display: block;
+      margin-top: 12px;
+      padding: 8px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      font: 10px 'JetBrains Mono';
+      color: #475569;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      aside {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .frame-shell {
+        height: calc(100vh - 280px);
+        min-height: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div id="nacentech-design-toolbar" style="position: sticky; top: 0; left: 0; right: 0; z-index: 99999; background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 700; transition: background 0.2s;">
+          ← Về Danh Sách Màn Hình
+        </a>
+        <span style="color: #94a3b8;">|</span>
+        <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4);">
+          Màn hình: Wireframe Tổng Thể Luồng Tác Nghiệp & Kiến Trúc NacenTwin (2 Cấp Phân Hệ)
+        </span>
+        <span style="color: #64748b;">(18_wireframe_tong_the_nacentwin.html)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="color: #94a3b8; font-size: 11px;">Nền tảng NacenTwin · Viện Ứng Dụng Công Nghệ</span>
+        <button onclick="document.getElementById('nacentech-design-toolbar').style.display='none'" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;" title="Ẩn thanh công cụ">✕</button>
+      </div>
+    </div>
+
+  <div class="utility">
+    <div class="wrap">
+      <span>Viện Đổi mới Sáng tạo Quốc gia · NacenTech</span>
+      <span class="live">Wireframe 2 Cấp Phân Hệ · 35 Màn Hình Tương Tác Sống</span>
+    </div>
+  </div>
+
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <img src="../../SourceCode/frontend/public/NACENTECH_Main-Logo-G.png" alt="NacenTech">
+        <div>
+          <b>NacenTwin · Basic Design</b>
+          <small>WIREFRAME SOURCE LIBRARY (2-LEVEL NAVIGATION)</small>
+        </div>
+      </div>
+      <div class="header-note">
+        <b>Phân rã 2 cấp:</b> Cấp 1 là 9 Task Module kỹ thuật; Cấp 2 là toàn bộ các wireframe màn hình tương ứng.
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ASIDE SIDEBAR 2-LEVEL -->
+    <aside>
+      <div class="sidebar-head">
+        <div class="aside-title-row">
+          <span class="aside-title">Phân Hệ & Wireframe</span>
+          <span class="aside-badge" id="stat-badge">9 Tasks · 35 Màn</span>
+        </div>
+        <div class="search-box">
+          <i data-lucide="search"></i>
+          <input type="text" id="filter-input" placeholder="Tìm kiếm task, màn hình..." oninput="handleSearch(this.value)">
+        </div>
+        <div class="toolbar-row">
+          <button class="btn-tool-sm" onclick="expandAll(true)">Mở tất cả</button>
+          <button class="btn-tool-sm" onclick="expandAll(false)">Thu gọn</button>
+          <button class="btn-tool-sm" onclick="resetActiveModule()">Về Task hiện hành</button>
+        </div>
+        <!-- BỘ LỌC VAI TRÒ (ROLE FILTER PILLS BAR) -->
+        <div class="role-filter-section">
+          <div class="role-filter-label">
+            <span>Lọc Theo Vai Trò (Roles)</span>
+            <span id="role-active-indicator" style="color:#1e40af; font-family:'JetBrains Mono',monospace;">TẤT CẢ (48)</span>
+          </div>
+          <div class="role-filter-bar" id="role-filter-bar"></div>
+        </div>
+      </div>
+
+      <!-- Container chứa cây 2 cấp -->
+      <div id="task-list-container"></div>
+
+      <div class="sidebar-footer">
+        <b>Kiểm soát liên thông 100%</b>
+        Đảm bảo mỗi wireframe được định danh chính xác theo Task phân hệ và mã module kiến trúc.
+      </div>
+    </aside>
+
+    <!-- MAIN VIEWER CONTENT -->
+    <section class="content">
+      <div class="crumb" id="crumb">
+        <span>Basic Design</span> / <b id="crumb-task">TASK-01</b> / <span id="crumb-screen">Portal công cộng</span>
+      </div>
+
+      <div class="title-row">
+        <div>
+          <h1 id="title">Portal công cộng</h1>
+          <p id="desc">Nguồn: wireframe_home.html</p>
+        </div>
+        <div class="device">
+          <button class="active" onclick="setDevice('desktop')">Desktop</button>
+          <button onclick="setDevice('mobile')">Mobile</button>
+        </div>
+      </div>
+
+      <div class="frame-shell">
+        <div class="frame-bar">
+          <span class="dots"><i class="dot"></i><i class="dot"></i><i class="dot"></i></span>
+          <code id="source-path"></code>
+          <span id="route-badge" style="background:#eff6ff; color:#1d4ed8; padding:2px 8px; border-radius:4px; font-weight:700; font-size:10px; margin-left:8px; border:1px solid #bfdbfe;">Route: /</span>
+          <span id="role-frame-badge" class="frame-role-badge" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe;">VAI TRÒ: CHUNG</span>
+          <span id="frame-status">HTML nguồn</span>
+          <a id="live-code-btn" href="http://localhost:3000" target="_blank" style="margin-left:auto; display:inline-flex; align-items:center; gap:4px; background:#2563eb; color:#ffffff; padding:2px 10px; border-radius:6px; font-size:10px; font-weight:700; text-decoration:none;" title="Mở trang code thật chạy trên cổng 3000">
+            <span>Mở Web Thật (Port 3000)</span> ↗
+          </a>
+        </div>
+        <iframe id="source-frame" class="frame" title="Wireframe nguồn"></iframe>
+        <div id="missing-frame" class="empty hidden" style="display:none;">
+          <div>
+            <i data-lucide="file-question"></i>
+            <h2>Chưa có wireframe HTML nguồn</h2>
+            <p id="missing-text"></p>
+            <code id="missing-path"></code>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // 1. ĐỊNH NGHĨA 10 TASK MODULES CHÍNH (CẤP 1)
+    const taskModules = [
+      {
+        id: 'TASK-00',
+        name: 'Nền Tảng, Common Architecture & Cổng Xác Thực',
+        icon: 'shield-check',
+        desc: 'Cổng đăng nhập 10 roles, đăng ký thành viên, Portal Hub, cài đặt tài khoản & PDPD'
+      },
+      {
+        id: 'TASK-01',
+        name: 'Tổng Quan & Kiến Trúc Home',
+        icon: 'layout-grid',
+        desc: 'Portal công cộng, tra cứu đa chiều, lịch sự kiện & Chợ Techmart'
+      },
+      {
+        id: 'TASK-02',
+        name: 'Hồ Sơ Chủ Thể & DN ĐMST',
+        icon: 'building-2',
+        desc: 'Danh bạ DN, hồ sơ năng lực, tự quản trị & CSDL 304 DN ĐMST'
+      },
+      {
+        id: 'TASK-03',
+        name: 'Hồ Sơ Tìm Mua (Buyer) & TNI',
+        icon: 'shopping-cart',
+        desc: 'Sàn bài toán, quản lý nhu cầu, khảo sát DNNVV & máy tính TNI 4 chiều'
+      },
+      {
+        id: 'TASK-04',
+        name: 'Hồ Sơ Chào Bán (Seller) & 18 Ngành',
+        icon: 'store',
+        desc: 'Sàn chào bán, chi tiết hồ sơ, kho TRL, biên tập, tạo mới & bộ lọc 18 ngành'
+      },
+      {
+        id: 'TASK-05',
+        name: 'Hồ Sơ Chuyên Gia KH&CN & AI Wizard',
+        icon: 'graduation-cap',
+        desc: 'Danh bạ, LLKH profile, tư vấn, dashboard, nâng hạng, OCR/Voice & Zalo Mobile'
+      },
+      {
+        id: 'TASK-06',
+        name: 'Danh Mục Ngành & Ma Trận Công Nghệ',
+        icon: 'compass',
+        desc: 'Bản đồ ma trận công nghệ khám phá công cộng & ma trận quản trị 18 ngành'
+      },
+      {
+        id: 'TASK-07',
+        name: 'Phân Quyền, 10 Roles & Quản Trị',
+        icon: 'shield-alert',
+        desc: 'Tổng hành dinh Admin HQ, Cổng QLNN Sở GOV, phân công cán bộ, kiểm duyệt Maker-Checker'
+      },
+      {
+        id: 'TASK-08',
+        name: 'Kết Nối Cung Cầu, Radar & Deal Room',
+        icon: 'radar',
+        desc: 'Radar ghép nối AI, pipeline cơ hội 5 bước & Deal Room 1-1 ký MOU'
+      },
+      {
+        id: 'TASK-09',
+        name: 'Đánh Giá Trình Độ & Năng Lực TT17',
+        icon: 'award',
+        desc: 'Wizard 26 tiêu chí 5 nhóm T-E-O-R-I, tự động tính tau & T_ĐB, báo cáo Phụ lục II & IV'
+      }
+    ];
+
+    // 2. ĐỊNH NGHĨA 7 NHÓM VAI TRÒ CHUẨN (ROLES)
+    const ROLES = [
+      { id: 'ALL', name: 'Tất Cả', icon: 'layers', color: '#1e40af', bg: '#eff6ff', border: '#bfdbfe' },
+      { id: 'PUBLIC', name: 'Đại Chúng', icon: 'globe', color: '#0284c7', bg: '#f0f9ff', border: '#bae6fd' },
+      { id: 'COMMON', name: 'Dùng Chung', icon: 'shield-check', color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
+      { id: 'BUYER', name: 'Bên Mua (Buyer)', icon: 'shopping-cart', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
+      { id: 'SELLER', name: 'Bên Bán (Seller)', icon: 'store', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+      { id: 'EXPERT', name: 'Chuyên Gia', icon: 'graduation-cap', color: '#9333ea', bg: '#faf5ff', border: '#e9d5ff' },
+      { id: 'GOV', name: 'Sở KH&CN (GOV)', icon: 'landmark', color: '#0891b2', bg: '#ecfeff', border: '#a5f3fc' },
+      { id: 'ADMIN', name: 'Super Admin', icon: 'shield-alert', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' }
+    ];
+
+    // 3. DANH SÁCH 48 WIREFRAMES MÀN HÌNH (CẤP 2) — PHÂN LOẠI THEO VAI TRÒ & PHÂN NHÓM
+    const sources = [
+      // TASK-00: Nền Tảng, Common Architecture & Cổng Xác Thực (Giao diện màn đã code)
+      { id: 'auth-login', task: 'TASK-00', role: 'PUBLIC', group: 'Cổng Xác Thực & Khách Vãng Lai', icon: 'log-in', name: 'Đăng nhập (Role Gateway)', desc: 'Giao diện màn đã code: Cổng xác thực tập trung phân quyền 10 roles, tự động định tuyến.', path: '02_dang_nhap.html', route: '/login' },
+      { id: 'auth-register', task: 'TASK-00', role: 'PUBLIC', group: 'Cổng Xác Thực & Khách Vãng Lai', icon: 'user-plus', name: 'Đăng ký tài khoản', desc: 'Giao diện màn đã code: Đăng ký thành viên mới (Cá nhân, Doanh nghiệp ĐMST, Chuyên gia).', path: '03_dang_ky.html', route: '/register' },
+      { id: 'portal-hub', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'layout-dashboard', name: 'Bàn làm việc Portal Hub', desc: 'Giao diện màn đã code: Bàn làm việc trung tâm điều phối tác nghiệp (/portal).', path: '13_portal_workspace_thanh_vien.html', route: '/portal' },
+      { id: 'account-settings', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'settings', name: 'Cài đặt tài khoản & PDPD', desc: 'Cài đặt tài khoản, cấu hình bảo mật 2FA và quyền riêng tư theo Nghị định 13/2023/NĐ-CP.', path: 'wireframe_cai_dat_tai_khoan.html', route: '/settings' },
+      { id: 'user-profile', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'user-circle-2', name: 'Hồ sơ cá nhân & Nâng hạng', desc: 'Hồ sơ thông tin tài khoản, xác thực định danh và hành trình nâng cấp vai trò thành viên.', path: 'wireframe_ho_so_ca_nhan.html', route: '/profile' },
+
+      // TASK-01: Tổng Quan & Kiến Trúc Home (Giao diện màn đã code)
+      { id: 'home', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'house', name: 'Portal công cộng', desc: 'Giao diện màn đã code: Trang chủ, tra cứu cung–cầu, role gateway và hành trình chuyển giao.', path: '01_trang_chu.html', route: '/' },
+      { id: 'events-techmart', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'calendar-days', name: 'Lịch sự kiện & Chợ Techmart', desc: 'Sàn trưng bày lịch các kỳ Techmart, Techfest và phiên chào giá công nghệ trực tuyến.', path: 'wireframe_techmart_events.html', route: '/trien-lam' },
+      { id: 'about-nacentech', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'book-open', name: 'Giới thiệu Viện NacenTech', desc: 'Giao diện màn đã code: Giới thiệu Viện Ứng dụng Công nghệ và Nền tảng Đổi mới sáng tạo NacenTwin.', path: '08_gioi_thieu_nacentech.html', route: '/gioi-thieu' },
+      { id: 'techmart-ticket', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'ticket', name: 'Đăng ký vé tham quan Techmart', desc: 'Đăng ký vé điện tử QR Code tham dự các phiên triển lãm và giao thương B2B Matching.', path: 'wireframe_dang_ky_tham_quan_techmart.html', route: '/trien-lam/dang-ky-tham-quan' },
+      { id: 'services-ip', task: 'TASK-01', role: 'PUBLIC', group: 'Dịch Vụ Pháp Lý & SHTT', icon: 'scale', name: 'Dịch vụ khác & Tư vấn SHTT', desc: 'Giao diện màn đã code: Định giá công nghệ, bảo hộ sở hữu trí tuệ sáng chế và DN KH&CN.', path: '10_dich_vu_khac_shtt.html', route: '/dich-vu-khac' },
+
+      // TASK-02: Hồ Sơ Chủ Thể & DN ĐMST (Giao diện màn đã code)
+      { id: 'enterprise-directory', task: 'TASK-02', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Toàn Quốc', icon: 'search', name: 'Danh bạ DN ĐMST toàn quốc', desc: 'Giao diện màn đã code: Tra cứu & xác minh năng lực DN ĐMST, lọc theo 34 tỉnh, 18 ngành.', path: '07_doanh_nghiep_dmst.html', route: '/enterprises' },
+      { id: 'enterprise-public', task: 'TASK-02', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Toàn Quốc', icon: 'badge-check', name: 'Hồ sơ công khai DN ĐMST', desc: 'Showcase năng lực, bằng sáng chế, chứng nhận DN KH&CN và công nghệ chào bán.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_public_dn_dmst.html', route: '/enterprises/0101234567' },
+      { id: 'enterprise-dashboard', task: 'TASK-02', role: 'ADMIN', group: 'Phân Tích Dữ Liệu Lớn (Admin/Sở)', icon: 'bar-chart-3', name: 'CSDL 304 DN ĐMST', desc: 'Dashboard phân tích thực nghiệm 304 doanh nghiệp có MST thực tế và điểm TNI.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_dashboard_304_dn.html', route: '/doanh-nghiep-dmst' },
+      { id: 'enterprise-edit', task: 'TASK-02', role: 'SELLER', group: 'Bàn Làm Việc Doanh Nghiệp (Owner)', icon: 'edit-3', name: 'Tự quản trị & Sửa hồ sơ DN', desc: 'Bàn làm việc nội bộ doanh nghiệp: Cập nhật 10 nhóm trường, bằng SHTT mới, doanh thu R&D.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_chinh_sua_ho_so_dn.html', route: '/portal/enterprise/profile' },
+      { id: 'enterprise-profile', task: 'TASK-02', role: 'SELLER', group: 'Bàn Làm Việc Doanh Nghiệp (Owner)', icon: 'building-2', name: 'Khai báo hồ sơ DN (Wizard)', desc: 'Kê khai 10 nhóm trường định danh pháp lý, năng lực R&D và SHTT từ kho 304 DN.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_ho_so_dn_dmst.html', route: '/portal/enterprise/profile/edit' },
+
+      // TASK-03: Hồ Sơ Tìm Mua (Buyer) & TNI (Giao diện màn đã code)
+      { id: 'demand-market', task: 'TASK-03', role: 'PUBLIC', group: 'Sàn Nhu Cầu Mua Công Khai', icon: 'shopping-cart', name: 'Sàn nhu cầu mua công nghệ', desc: 'Giao diện màn đã code: Sàn bài toán kỹ thuật công khai (PDPD masked), ngân sách đầu tư.', path: '05_san_nhu_cau_cong_nghe.html', route: '/nhu-cau-cong-nghe' },
+      { id: 'buyer-tni', task: 'TASK-03', role: 'PUBLIC', group: 'Sàn Nhu Cầu Mua Công Khai', icon: 'calculator', name: 'Chỉ số TNI & Nhu cầu Buyer', desc: 'Máy tính TNI 4 chiều chính thức và danh mục 36 trường nhu cầu.', path: '22_wireframe_danh_muc_truong_nhu_cau_buyer.html', route: '/nhu-cau-cong-nghe/demo' },
+      { id: 'buyer-demand-mgmt', task: 'TASK-03', role: 'BUYER', group: 'Tác Nghiệp Doanh Nghiệp Bên Mua', icon: 'file-question', name: 'Quản lý bài toán Buyer', desc: 'Workspace quản lý các bài toán kỹ thuật cần tìm cung và kết nối giải pháp.', path: 'TASK-03_HO_SO_TIM_MUA_BUYER/wireframe_quan_ly_nhu_cau_buyer.html', route: '/portal/buyer/demands' },
+      { id: 'buyer-survey', task: 'TASK-03', role: 'BUYER', group: 'Tác Nghiệp Doanh Nghiệp Bên Mua', icon: 'file-spreadsheet', name: 'Phiếu khảo sát DNNVV', desc: 'Giao diện màn đã code: Phiếu khảo sát sâu hiện trạng & điểm nghẽn công nghệ DNNVV.', path: '25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html', route: '/khao-sat-nhu-cau' },
+
+      // TASK-04: Hồ Sơ Chào Bán (Seller) & 18 Ngành (Giao diện màn đã code)
+      { id: 'seller-market', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'store', name: 'Sàn chào bán công nghệ 18 ngành', desc: 'Giao diện màn đã code: Marketplace công nghệ, thiết bị, dây chuyền và sáng chế có thẩm định.', path: '04_san_chao_ban_cong_nghe.html', route: '/chao-ban-cong-nghe' },
+      { id: 'seller-detail', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'file-search-2', name: 'Chi tiết hồ sơ chào bán', desc: 'Giao diện màn đã code: Màn hình Buyer xem thông tin, thông số kỹ thuật và IP Quad.', path: '19_wireframe_chi_tiet_chao_ban_seller.html', route: '/chao-ban-cong-nghe/demo' },
+      { id: 'seller-filter', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'filter', name: 'Ma trận bộ lọc 18 ngành', desc: 'Giao diện màn đã code: Bộ lọc động và 1.479 quy tắc theo 18 nhóm ngành công nghiệp.', path: '21_wireframe_bo_loc_cung_cau_18_nganh.html', route: '/chao-ban-cong-nghe' },
+      { id: 'seller-inventory', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'boxes', name: 'Quản lý kho chào bán Seller', desc: 'Workspace quản trị danh mục công nghệ chào bán, lượt xem và trạng thái duyệt Sở.', path: 'TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_quan_ly_kho_cong_nghe_seller.html', route: '/portal/seller/technologies' },
+      { id: 'seller-edit', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'file-edit', name: 'Sửa hồ sơ chào bán & TRL', desc: 'Chỉnh sửa thông số kỹ thuật, giá chuyển giao, cập nhật TRL và quy tắc chuyển PENDING.', path: 'TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_chinh_sua_ho_so_chao_ban.html', route: '/portal/seller/technologies/demo/edit' },
+      { id: 'seller-create', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'file-pen-line', name: 'Tạo hồ sơ chào bán mới', desc: 'Giao diện màn đã code: Nhập Sản phẩm / Thiết bị / Giải pháp với Bộ tứ IP Quad.', path: '20_wireframe_form_tao_chao_ban_seller.html', route: '/portal/seller/technologies/create' },
+
+      // TASK-05: Hồ Sơ Chuyên Gia KH&CN & AI Wizard (Giao diện màn đã code)
+      { id: 'expert-directory-v11', task: 'TASK-05', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Chuyên Gia', icon: 'search-check', name: 'Danh bạ chuyên gia · Delta v11', desc: 'Giao diện màn đã code: Tìm kiếm compact, bộ lọc theo taxonomy active và địa bàn.', path: '06_mang_luoi_chuyen_gia.html', route: '/experts' },
+      { id: 'expert-profile', task: 'TASK-05', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Chuyên Gia', icon: 'contact-round', name: 'Sổ tay chuyên gia profile', desc: 'Giao diện màn đã code: Hồ sơ chi tiết công khai/đăng nhập và đặt lịch kết nối chuyên gia.', path: '11_chi_tiet_ho_so_chuyen_gia.html', route: '/experts/EXP-001' },
+      { id: 'expert-zalo', task: 'TASK-05', role: 'EXPERT', group: 'Thu Thập Hồ Sơ Nhanh (Mobile)', icon: 'smartphone', name: 'Zalo Mobile Input Form', desc: 'Giao diện màn đã code: Biểu mẫu mobile thu thập thông tin chuyên gia nhanh dưới 2 phút.', path: '23_wireframe_zalo_mini_app_input_chuyen_gia.html', route: '/experts' },
+      { id: 'expert-edit', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'user-cog', name: 'Chỉnh sửa hồ sơ chuyên gia', desc: 'Giao diện màn đã code: Bàn làm việc tự cập nhật học vị, thêm công trình Scopus, bằng sáng chế.', path: '15_portal_chinh_sua_ho_so_chuyen_gia.html', route: '/portal/expert/profile/edit' },
+      { id: 'expert-consulting', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'mail-check', name: 'Hộp thư tư vấn & lịch hẹn', desc: 'Quản lý yêu cầu tư vấn gửi đến từ DN và Sở KH&CN, hẹn giờ Zoom/khảo sát trực tiếp.', path: 'TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html', route: '/portal/expert/profile' },
+      { id: 'expert-dashboard', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'layout-dashboard', name: 'Dashboard chuyên gia', desc: 'Giao diện màn đã code: Bảng điều khiển tác nghiệp của chuyên gia đã được định danh VERIFIED_EXPERT.', path: '14_portal_workspace_chuyen_gia.html', route: '/portal/expert/profile' },
+      { id: 'expert-upgrade', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'badge-plus', name: 'Nâng cấp chuyên gia 3 bước', desc: 'Giao diện màn đã code: Form đăng ký, thẩm định và nâng hạng hồ sơ chuyên gia chuẩn Bộ KH&CN.', path: '12_nang_cap_tai_khoan_chuyen_gia.html', route: '/profile/upgrade/expert' },
+      { id: 'ai-wizard', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'wand-2', name: 'Trợ lý AI nhập liệu (OCR/Voice)', desc: 'Wizard bóc tách tự động CV Chuyên gia và hồ sơ sáng chế công nghệ Human-in-the-Loop.', path: 'TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_ai_cv_scan_wizard.html', route: '/profile/upgrade/expert' },
+
+      // TASK-06: Danh Mục Ngành & Ma Trận Công Nghệ
+      { id: 'tech-explorer', task: 'TASK-06', role: 'PUBLIC', group: 'Bản Đồ Ma Trận Công Khai', icon: 'compass', name: 'Bản đồ ma trận (Public)', desc: 'Bản đồ ma trận công nghệ và danh mục 18 ngành dành cho Doanh nghiệp & Công chúng.', path: 'TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_kham_pha_danh_muc_va_ma_tran.html', route: '/matrix' },
+      { id: 'catalog', task: 'TASK-06', role: 'ADMIN', group: 'Quản Trị Danh Mục & Ma Trận (Admin)', icon: 'grid-2x2', name: 'Ma trận danh mục (Admin)', desc: 'Wireframe quản trị 18 nhóm ngành & ma trận Lĩnh vực - Công nghệ (Lưới 2D Heatmap & Cây Taxonomy 3 tầng).', path: 'TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_quan_tri_danh_muc_nganh.html', route: '/admin/sectors' },
+
+      // TASK-07: Phân Quyền, 10 Roles & Quản Trị (Giao diện màn đã code)
+      { id: 'admin-hq', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'command', name: 'Tổng hành dinh Admin HQ', desc: 'Giao diện màn đã code: Command Center giám sát toàn quốc, sức khỏe hệ thống, CSDL (/admin).', path: '16_admin_quan_tri_he_thong.html', route: '/admin' },
+      { id: 'user-mgmt', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'users', name: 'Quản trị người dùng & 10 Roles', desc: 'Quản lý danh tính, phân quyền 10 roles 3D Scoped RBAC, khóa tài khoản, audit logs.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_nguoi_dung_admin.html', route: '/admin/users' },
+      { id: 'roles-tree', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'network', name: 'Quản lý vai trò & Cây 34 tỉnh', desc: 'Cấu hình phân quyền 10 roles và quản trị phân bổ cây địa bàn 34 tỉnh/thành phố.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_vai_tro_va_cay_34_tinh.html', route: '/admin/roles' },
+      { id: 'gov-monitor', task: 'TASK-07', role: 'GOV', group: 'Cổng QLNN Sở KH&CN Địa Phương', icon: 'landmark', name: 'Cổng QLNN Sở KH&CN (GOV)', desc: 'Giao diện màn đã code: Góc nhìn tác nghiệp của Cán bộ Sở: Giám sát địa bàn, thẩm định hồ sơ (/gov).', path: '17_gov_quan_ly_nha_nuoc_so_khcn.html', route: '/gov' },
+      { id: 'gov-staff', task: 'TASK-07', role: 'GOV', group: 'Cổng QLNN Sở KH&CN Địa Phương', icon: 'user-check', name: 'Phân công cán bộ Sở KH&CN', desc: 'Quản lý danh sách cán bộ thẩm định, phân quyền theo ngành và cụm địa bàn phụ trách.', path: 'wireframe_gov_phan_cong_can_bo.html', route: '/gov/settings/staff' },
+      { id: 'gov-approvals', task: 'TASK-07', role: 'GOV', group: 'Trung Tâm Kiểm Duyệt Maker-Checker', icon: 'shield-alert', name: 'Cổng duyệt Cấp 2 Sở & Admin', desc: 'Trung tâm tiếp nhận & thẩm định hồ sơ Maker-Checker 5 luồng cho 63 tỉnh/thành.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_trung_tam_kiem_duyet_admin_va_gov.html', route: '/admin/approvals' },
+      { id: 'tenant-settings', task: 'TASK-07', role: 'SELLER', group: 'Quản Trị Nội Bộ Doanh Nghiệp (Tenant)', icon: 'building', name: 'Quản trị nội bộ Tenant DN', desc: 'Phân quyền thành viên nội bộ doanh nghiệp và theo dõi nhật ký thẩm định Sở KH&CN.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_tenant_quan_tri_dn.html', route: '/admin/enterprises/dashboard' },
+
+      // TASK-08: Kết Nối Cung Cầu, Radar & Deal Room
+      { id: 'matching-radar', task: 'TASK-08', role: 'BUYER', group: 'Radar Ghép Nối AI & Quản Lý Cơ Hội', icon: 'radar', name: 'Radar Ghép Nối & Pipeline', desc: 'Khớp nối tự động Cung–Cầu theo TNI x SHTT, Pipeline 5 bước quản lý cơ hội và Giám sát Sở KH&CN.', path: 'TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_matching_va_quan_ly_co_hoi.html', route: '/portal/matching/radar' },
+      { id: 'deal-room', task: 'TASK-08', role: 'BUYER', group: 'Không Gian Đàm Phán & Ký MOU', icon: 'handshake', name: 'Phòng đàm phán Deal Room & MOU', desc: 'Không gian hợp tác 1-1: Kho dữ liệu mật (unmask PDPD), biên bản họp và soạn thảo MOU.', path: 'TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_deal_room_hop_tac.html', route: '/portal/opportunities/demo/deal-room' },
+
+      // TASK-09: Đánh Giá Trình Độ & Năng Lực TT17
+      { id: 'buyer-tni-assessment', task: 'TASK-09', role: 'BUYER', group: 'Đo Lường Cấp Thiết & Hấp Thụ Công Nghệ', icon: 'calculator', name: 'Đánh giá năng lực Buyer TNI', desc: 'Khảo sát năng lực hấp thụ công nghệ và đo lường chỉ số cấp thiết TNI cho Bên Mua.', path: 'wireframe_danh_gia_buyer_tni.html', route: '/assessments/buyer' },
+      { id: 'tt17-dashboard', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'clipboard-check', name: 'Báo cáo đánh giá TT17', desc: 'Wireframe dashboard và biểu mẫu báo cáo Phụ lục II & IV theo Thông tư 17/2019/TT-BKHCN.', path: 'TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/wireframe_danh_gia_tt17.html', route: '/assessments/tt17' },
+      { id: 'tt17-wizard', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'file-plus-2', name: 'Wizard 26 tiêu chí TT17 & Thẩm định', desc: 'Form wizard nhập số liệu 26 tiêu chí 5 nhóm T-E-O-R-I, tự động tính tau & T_ĐB và thẩm định Sở.', path: 'TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/wireframe_wizard_nhap_lieu_va_tham_dinh_tt17.html', route: '/assessments/tt17/wizard' },
+      { id: 'tt17-report', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'file-text', name: 'Báo cáo xuất bản TT17 (Phụ lục IV)', desc: 'Bản in báo cáo thẩm định năng lực công nghệ chính thức theo mẫu Phụ lục IV Bộ KH&CN.', path: 'wireframe_bao_cao_xuat_ban_tt17.html', route: '/assessments/tt17/current/report' }
+    ];
+
+    let current = 'home';
+    let device = 'desktop';
+    let searchQuery = '';
+    let selectedRole = 'ALL';
+    const expandedTasks = new Set();
+
+    const $ = id => document.getElementById(id);
+
+    // Khởi tạo: Mở task hiện tại
+    function initActiveTask() {
+      const activeItem = sources.find(x => x.id === current) || sources[0];
+      if (activeItem) {
+        expandedTasks.add(activeItem.task);
+      }
+    }
+
+    function toggleTask(taskId, e) {
+      if (e) e.stopPropagation();
+      if (expandedTasks.has(taskId)) {
+        expandedTasks.delete(taskId);
+      } else {
+        expandedTasks.add(taskId);
+      }
+      renderSidebar();
+    }
+
+    function expandAll(expand) {
+      if (expand) {
+        taskModules.forEach(m => expandedTasks.add(m.id));
+      } else {
+        expandedTasks.clear();
+        const s = sources.find(x => x.id === current);
+        if (s) expandedTasks.add(s.task);
+      }
+      renderSidebar();
+    }
+
+    function resetActiveModule() {
+      expandedTasks.clear();
+      const s = sources.find(x => x.id === current);
+      if (s) expandedTasks.add(s.task);
+      searchQuery = '';
+      selectedRole = 'ALL';
+      $('filter-input').value = '';
+      renderRoleFilter();
+      renderSidebar();
+    }
+
+    function handleSearch(q) {
+      searchQuery = (q || '').trim().toLowerCase();
+      if (searchQuery) {
+        taskModules.forEach(m => {
+          const matchingScreens = sources.filter(s => 
+            s.task === m.id && (selectedRole === 'ALL' || s.role === selectedRole) && (
+              s.name.toLowerCase().includes(searchQuery) ||
+              s.desc.toLowerCase().includes(searchQuery) ||
+              s.task.toLowerCase().includes(searchQuery) ||
+              s.group.toLowerCase().includes(searchQuery) ||
+              m.name.toLowerCase().includes(searchQuery)
+            )
+          );
+          if (matchingScreens.length > 0) {
+            expandedTasks.add(m.id);
+          }
+        });
+      }
+      renderSidebar();
+    }
+
+    function setRoleFilter(roleId) {
+      selectedRole = roleId;
+      if (selectedRole !== 'ALL') {
+        // Tự động mở tất cả Task Module có chứa màn hình thuộc role được chọn
+        taskModules.forEach(m => {
+          const hasRoleScreen = sources.some(s => s.task === m.id && s.role === selectedRole);
+          if (hasRoleScreen) {
+            expandedTasks.add(m.id);
+          }
+        });
+        // Nếu màn hình hiện tại không thuộc role này, tự chuyển sang màn hình đầu tiên của role
+        const curItem = sources.find(x => x.id === current);
+        if (!curItem || curItem.role !== selectedRole) {
+          const firstScreen = sources.find(x => x.role === selectedRole);
+          if (firstScreen) {
+            current = firstScreen.id;
+            history.replaceState(null, '', '#' + current);
+          }
+        }
+      }
+      renderRoleFilter();
+      renderSidebar();
+      renderContent();
+    }
+
+    function renderRoleFilter() {
+      const container = $('role-filter-bar');
+      if (!container) return;
+
+      const indicator = $('role-active-indicator');
+      const activeRoleObj = ROLES.find(r => r.id === selectedRole) || ROLES[0];
+      if (indicator) {
+        const count = selectedRole === 'ALL' 
+          ? sources.length 
+          : sources.filter(s => s.role === selectedRole).length;
+        indicator.textContent = `${activeRoleObj.name.toUpperCase()} (${count})`;
+        indicator.style.color = activeRoleObj.color;
+      }
+
+      container.innerHTML = ROLES.map(r => {
+        const count = r.id === 'ALL' 
+          ? sources.length 
+          : sources.filter(s => s.role === r.id).length;
+        const isActive = (r.id === selectedRole);
+        return `
+          <button class="role-pill ${isActive ? 'active' : ''}" onclick="setRoleFilter('${r.id}')" title="Lọc các màn hình của: ${r.name}">
+            <span>${r.name}</span>
+            <span class="role-pill-count">${count}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderSidebar() {
+      const activeSource = sources.find(x => x.id === current) || sources[0];
+      const container = $('task-list-container');
+      let html = '';
+      let matchCount = 0;
+
+      taskModules.forEach(mod => {
+        // Lấy danh sách màn hình thuộc module thỏa mãn cả Role và Search
+        let screens = sources.filter(s => s.task === mod.id);
+        
+        if (selectedRole !== 'ALL') {
+          screens = screens.filter(s => s.role === selectedRole);
+        }
+
+        if (searchQuery) {
+          screens = screens.filter(s => 
+            s.name.toLowerCase().includes(searchQuery) ||
+            s.desc.toLowerCase().includes(searchQuery) ||
+            s.task.toLowerCase().includes(searchQuery) ||
+            s.group.toLowerCase().includes(searchQuery) ||
+            s.role.toLowerCase().includes(searchQuery) ||
+            mod.name.toLowerCase().includes(searchQuery)
+          );
+        }
+
+        if (screens.length === 0) {
+          return; // Ẩn module nếu không có màn hình thỏa mãn
+        }
+
+        matchCount += screens.length;
+        const isExpanded = expandedTasks.has(mod.id);
+        const hasActive = (activeSource.task === mod.id);
+
+        // Gom nhóm các màn hình theo group bên trong task
+        const groups = {};
+        screens.forEach(scr => {
+          const gName = scr.group || 'Chức Năng Khác';
+          if (!groups[gName]) groups[gName] = [];
+          groups[gName].push(scr);
+        });
+
+        html += `
+          <div class="task-group ${isExpanded ? 'expanded' : ''} ${hasActive ? 'has-active' : ''}" id="group-${mod.id}">
+            <!-- CẤP 1: HEADER TASK MODULE -->
+            <button class="task-header" onclick="toggleTask('${mod.id}', event)" title="${mod.desc}">
+              <div class="task-header-left">
+                <i data-lucide="chevron-right" class="task-chevron"></i>
+                <i data-lucide="${mod.icon}" class="task-icon"></i>
+                <span class="task-code-pill">${mod.id}</span>
+                <span class="task-title">${mod.name}</span>
+              </div>
+              <span class="task-count-badge">${screens.length} màn</span>
+            </button>
+
+            <!-- CẤP 2: DANH SÁCH MÀN HÌNH THEO PHÂN NHÓM & VAI TRÒ -->
+            <div class="task-screens-container">
+              <div class="tree-branch">
+                ${Object.keys(groups).map(gName => {
+                  const groupScreens = groups[gName];
+                  return `
+                    <div class="sub-group-header">
+                      <i data-lucide="folder-git-2"></i>
+                      <span>${gName}</span>
+                    </div>
+                    ${groupScreens.map(scr => {
+                      const isActive = scr.id === current;
+                      return `
+                        <button class="tab ${isActive ? 'active' : ''}" onclick="selectSource('${scr.id}')" title="[Vai trò: ${scr.role}] ${scr.desc}">
+                          <i data-lucide="${scr.icon}"></i>
+                          <span style="flex:1; min-width:0;">
+                            <b>${scr.name}</b>
+                            <small>${scr.path.split('/').pop()}</small>
+                          </span>
+                          <span class="role-tag role-${scr.role.toLowerCase()}">${scr.role}</span>
+                        </button>
+                      `;
+                    }).join('')}
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      if (matchCount === 0) {
+        html = `
+          <div style="text-align: center; padding: 24px 12px; color: #94a3b8;">
+            <p style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 4px;">Không tìm thấy màn hình nào</p>
+            <p style="font-size: 11px;">Thử chọn lại tab "Tất Cả" hoặc từ khóa khác.</p>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+      $('stat-badge').textContent = searchQuery || selectedRole !== 'ALL'
+        ? `${matchCount} màn khớp` 
+        : `10 Tasks · ${sources.length} Màn`;
+
+      lucide.createIcons();
+    }
+
+    function renderContent() {
+      const s = sources.find(x => x.id === current) || sources[0];
+      const mod = taskModules.find(m => m.id === s.task);
+      const roleObj = ROLES.find(r => r.id === s.role) || ROLES[1];
+
+      $('crumb-task').textContent = `${s.task}: ${mod ? mod.name : ''}`;
+      $('crumb-screen').textContent = `${s.name} [${s.role}]`;
+      $('title').textContent = s.name;
+      $('desc').textContent = `${s.desc} (Nguồn: ${s.path} • Route: ${s.route || '/'} • Phân nhóm: ${s.group})`;
+      $('source-path').textContent = s.path;
+      $('frame-status').textContent = s.missing ? 'Thiếu HTML nguồn' : 'HTML nguồn';
+      
+      const routeBadge = $('route-badge');
+      if (routeBadge) {
+        routeBadge.textContent = `Route: ${s.route || '/'}`;
+      }
+
+      const roleBadge = $('role-frame-badge');
+      if (roleBadge) {
+        roleBadge.textContent = `VAI TRÒ: ${roleObj.name.toUpperCase()}`;
+        roleBadge.style.color = roleObj.color;
+        roleBadge.style.background = roleObj.bg;
+        roleBadge.style.borderColor = roleObj.border;
+      }
+
+      const liveBtn = $('live-code-btn');
+      if (liveBtn) {
+        liveBtn.href = `http://localhost:3000${s.route || '/'}`;
+      }
+
+      const frame = $('source-frame');
+      const missingFrame = $('missing-frame');
+
+      if (s.missing) {
+        frame.style.display = 'none';
+        missingFrame.style.display = 'flex';
+        $('missing-text').textContent = `${s.task} chưa có wireframe HTML để nạp trực tiếp. Cần tạo wireframe nguồn trước khi chuẩn hóa hoặc hợp nhất.`;
+        $('missing-path').textContent = s.path;
+      } else {
+        frame.style.display = 'block';
+        missingFrame.style.display = 'none';
+        frame.src = s.path;
+      }
+
+      setDevice(device);
+    }
+
+    function selectSource(id) {
+      current = id;
+      const s = sources.find(x => x.id === current);
+      if (s) {
+        expandedTasks.add(s.task);
+      }
+      renderSidebar();
+      renderContent();
+      history.replaceState(null, '', '#' + id);
+    }
+
+    function setDevice(mode) {
+      device = mode;
+      document.querySelectorAll('.device button').forEach(b => {
+        b.classList.toggle('active', b.textContent.toLowerCase() === mode);
+      });
+      const frame = $('source-frame');
+      if (mode === 'mobile') {
+        frame.style.width = '390px';
+        frame.style.margin = '0 auto';
+        frame.style.boxShadow = '0 0 20px rgba(0,0,0,0.15)';
+      } else {
+        frame.style.width = '100%';
+        frame.style.margin = '0';
+        frame.style.boxShadow = 'none';
+      }
+    }
+
+    // Khởi chạy
+    const initialHash = location.hash.slice(1);
+    if (sources.some(x => x.id === initialHash)) {
+      current = initialHash;
+    }
+    initActiveTask();
+    renderRoleFilter();
+    renderSidebar();
+    renderContent();
+  </script>
+</body>
+</html>

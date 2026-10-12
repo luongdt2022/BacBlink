@@ -5,7 +5,7 @@ import { AppButton } from "@/components/ui/design-system";
 import Link from "next/link";
 import { AlertTriangle, Award, BadgeCheck, BriefcaseBusiness, Building2, CalendarPlus, CheckCircle2, FileText, GraduationCap, LockKeyhole, Mail, Phone, Share2 } from "lucide-react";
 import { Async } from "@/components/ui/async";
-import { Achievement, ExpertApiError, ExpertPrivateDetail, ExpertPublicDetail, getMyExpertDetail, getPublicExpertDetail, Timeline } from "@/lib/expert-detail";
+import { Achievement, ExpertApiError, ExpertCompleteness, ExpertPrivateDetail, ExpertPublicDetail, getMyExpertCompleteness, getMyExpertDetail, getPublicExpertDetail, Timeline } from "@/lib/expert-detail";
 import { authClient } from "@/lib/auth-client";
 import { API_BASE } from "@/lib/api-client";
 import { getSectorLabels } from "@/lib/master-data-client";
@@ -52,21 +52,69 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
 
 function PrivatePanel({ detail }: { detail: ExpertPrivateDetail }) { return <section className="rounded-surface border border-brand-800 bg-brand-700 p-5 text-white"><div className="flex items-center gap-2"><LockKeyhole className="h-5 w-5 text-brand-200" /><h2 className="font-bold text-card-title">Khu vực dữ liệu riêng tư</h2></div><p className="mt-1 text-body text-brand-100">Chỉ chủ hồ sơ hoặc quản trị viên được phân quyền mới xem được. Lượt truy cập được ghi nhận.</p><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><div><p className="text-body text-brand-200">SĐT</p><p className="text-body font-bold">{detail.phone || "Chưa cập nhật"}</p></div><div><p className="text-body text-brand-200">Email</p><p className="text-body font-bold">{detail.email || "Chưa cập nhật"}</p></div><div><p className="text-body text-brand-200">PDPD / Cam kết</p><p className="text-body font-bold">{detail.pdpdConsent && detail.legalOath ? "Đã xác nhận" : "Chưa đủ"}</p></div></div><div className="mt-4 border-t border-white/20 pt-3 text-label text-brand-100">Chứng từ: {detail.activeDocumentTypes.length ? detail.activeDocumentTypes.join(", ") : "Chưa có chứng từ đã kích hoạt"}</div></section>; }
 
-function CompletenessAlert({ detail }: { detail: ExpertPrivateDetail }) {
+function CompletenessAlert({ detail, completeness }: { detail: ExpertPrivateDetail; completeness?: ExpertCompleteness | null }) {
+  if (completeness && typeof completeness.score === "number" && Array.isArray(completeness.missingCriteria)) {
+    const isExcellent = completeness.score >= 90;
+    if (isExcellent) {
+      return (
+        <section className="rounded-surface border border-emerald-200 bg-emerald-50 p-5 text-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-900">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold">
+              <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-200" />
+              <span>Hồ sơ đạt tiêu chuẩn xuất sắc ({completeness.score}/100 điểm)</span>
+            </div>
+            <span className="rounded-full bg-emerald-100 text-emerald-800 text-caption font-bold px-2.5 py-1">HẠNG {completeness.grade}</span>
+          </div>
+          <p className="mt-1 text-body">Hồ sơ đã hoàn thiện đầy đủ 5 trụ cột chuẩn hóa Bộ KH&CN.</p>
+        </section>
+      );
+    }
+    return (
+      <section className="rounded-surface border border-amber-300 bg-amber-50 p-5 dark:bg-amber-950/60 dark:border-amber-900">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <h2 className="flex items-center gap-2 font-bold text-amber-950 text-card-title dark:text-amber-200">
+              <AlertTriangle className="h-5 w-5 text-amber-700 dark:text-amber-200" />
+              <span>Độ hoàn thiện hồ sơ: {completeness.score}/100 điểm ({completeness.grade})</span>
+            </h2>
+            <div className="w-64 bg-slate-200 h-2 rounded-full overflow-hidden my-1">
+              <div className="bg-amber-500 h-full rounded-full transition-all" style={{ width: `${completeness.score}%` }} />
+            </div>
+            {completeness.missingCriteria.length > 0 && (
+              <p className="text-body text-amber-900 dark:text-amber-200">
+                Cần bổ sung: {completeness.missingCriteria.join(", ")}.
+              </p>
+            )}
+          </div>
+          <Link href="/portal/expert/profile/edit" className="rounded-xl bg-brand-700 hover:bg-brand-800 px-3 py-2 text-label font-semibold text-white focus-ring min-h-11 inline-flex items-center justify-center">
+            Bổ sung ngay
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   const missing = [!detail.phone && "Số điện thoại", !detail.email && "Email công tác", !detail.activeDocumentTypes.length && "Chứng từ xác minh", (!detail.publicProfile.publications.length && !detail.publicProfile.patents.length) && "Công trình tiêu biểu"].filter(Boolean) as string[];
   if (!missing.length) return <section className="rounded-surface border border-emerald-200 bg-emerald-50 p-5 text-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-900"><div className="flex items-center gap-2 font-bold"><CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-200" />Hồ sơ đã đủ thông tin cốt lõi</div><p className="mt-1 text-body">Bạn vẫn có thể cập nhật thành tựu mới trong phần Chỉnh sửa hồ sơ.</p></section>;
-  return <section className="rounded-surface border border-amber-300 bg-amber-50 p-5 dark:bg-amber-950/60 dark:border-amber-900"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="flex items-center gap-2 font-bold text-amber-950 text-card-title dark:text-amber-200"><AlertTriangle className="h-5 w-5 text-amber-700 dark:text-amber-200" />Hồ sơ cần bổ sung</h2><p className="mt-1 text-body text-amber-900 dark:text-amber-200">Còn {missing.length} nhóm thông tin: {missing.join(", ")}. Hoàn thiện để tăng chất lượng hồ sơ và sẵn sàng đối soát.</p></div><Link href="/profile/upgrade/expert" className="rounded-xl bg-brand-700 hover:bg-brand-800 px-3 py-2 text-label font-semibold text-white focus-ring min-h-11 inline-flex items-center justify-center">Bổ sung ngay</Link></div></section>;
+  return <section className="rounded-surface border border-amber-300 bg-amber-50 p-5 dark:bg-amber-950/60 dark:border-amber-900"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="flex items-center gap-2 font-bold text-amber-950 text-card-title dark:text-amber-200"><AlertTriangle className="h-5 w-5 text-amber-700 dark:text-amber-200" />Hồ sơ cần bổ sung</h2><p className="mt-1 text-body text-amber-900 dark:text-amber-200">Còn {missing.length} nhóm thông tin: {missing.join(", ")}. Hoàn thiện để tăng chất lượng hồ sơ và sẵn sàng đối soát.</p></div><Link href="/portal/expert/profile/edit" className="rounded-xl bg-brand-700 hover:bg-brand-800 px-3 py-2 text-label font-semibold text-white focus-ring min-h-11 inline-flex items-center justify-center">Bổ sung ngay</Link></div></section>;
 }
 
 export function ExpertPublicDetailPage({ expertCode }: { expertCode: string }) { const [state, setState] = useState<"loading" | "error" | "success">("loading"); const [data, setData] = useState<ExpertPublicDetail | null>(null); const load = () => { setState("loading"); getPublicExpertDetail(expertCode).then(x => { setData(x); setState("success"); }).catch(() => setState("error")); }; useEffect(load, [expertCode]); return <Async state={state} onRetry={load} errorMessage="Hồ sơ chưa được công khai hoặc không tồn tại.">{data && <PublicBody detail={data} />}</Async>; }
 export function ExpertOwnerDetailPage() {
   const [state, setState] = useState<"loading" | "error" | "success">("loading");
   const [data, setData] = useState<ExpertPrivateDetail | null>(null);
+  const [completeness, setCompleteness] = useState<ExpertCompleteness | null>(null);
   const [errorMessage, setErrorMessage] = useState("Bạn cần đăng nhập để xem hồ sơ riêng tư.");
   const load = () => {
     setState("loading");
     getMyExpertDetail()
-      .then((detail) => { setData(detail); setState("success"); })
+      .then((detail) => {
+        setData(detail);
+        setState("success");
+        getMyExpertCompleteness().then((res) => {
+          if (res && typeof res.score === "number") setCompleteness(res);
+        }).catch(() => {});
+      })
       .catch((error: unknown) => {
         if (error instanceof ExpertApiError && error.status === 401) {
           authClient.clearSession();
@@ -98,7 +146,7 @@ export function ExpertOwnerDetailPage() {
               </div>
             </section>
           )}
-          <CompletenessAlert detail={data} />
+          <CompletenessAlert detail={data} completeness={completeness} />
           <PrivatePanel detail={data} />
           <PublicBody detail={data.publicProfile} />
           {isPendingReview ? (
@@ -113,7 +161,7 @@ export function ExpertOwnerDetailPage() {
           ) : (
             <Link
               className="fixed bottom-5 right-5 rounded-full bg-brand-700 hover:bg-brand-800 max-w-[calc(100%-2rem)] px-4 py-3 text-label font-bold text-white shadow-lg focus-ring min-h-11 inline-flex items-center justify-center"
-              href="/profile/upgrade/expert"
+              href="/portal/expert/profile/edit"
             >
               Chỉnh sửa hồ sơ
             </Link>

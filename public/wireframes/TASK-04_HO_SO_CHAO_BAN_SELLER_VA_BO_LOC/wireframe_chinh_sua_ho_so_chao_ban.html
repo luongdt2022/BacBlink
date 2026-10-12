@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chỉnh Sửa Hồ Sơ Chào Bán Công Nghệ — NacenTwin (TASK-04)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="wireframe_quan_ly_kho_cong_nghe_seller.html" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition" title="Quay lại Kho công nghệ">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">CHỈNH SỬA CÔNG NGHỆ CHÀO BÁN</span>
+            <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">TRẠNG THÁI: ĐANG NIÊM YẾT</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Mã Hồ Sơ: TECH-2026-MECH-012 · Viện Cơ học & Tin học Ứng dụng</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="togglePublish(false)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-slate-200 text-amber-700 hover:bg-amber-50 transition flex items-center gap-1.5">
+          <i data-lucide="pause-circle" class="w-4 h-4"></i>
+          <span>Tạm Ẩn Khỏi Sàn</span>
+        </button>
+        <button onclick="submitUpdate()" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Lưu & Gửi Thẩm Định Lại</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- WARNING NOTICE ACCORDING TO CR-2026-006 -->
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 mt-6 w-full">
+    <div class="bg-amber-50 border-2 border-amber-300/80 rounded-2xl p-4 flex items-start gap-3.5 text-xs text-amber-900 shadow-sm">
+      <i data-lucide="alert-octagon" class="w-5 h-5 text-amber-700 shrink-0 mt-0.5"></i>
+      <div class="space-y-1">
+        <h4 class="font-black text-amber-900 text-sm">Quy Tắc Quản Trị Vòng Đời & Phân Cấp Thẩm Định (CR-2026-006):</h4>
+        <p class="leading-relaxed">
+          Nếu bạn thay đổi <b>Cấp độ TRL</b>, <b>Số Bằng Sáng Chế / Tình trạng SHTT</b>, hoặc <b>Đơn vị Sở KH&CN tiếp nhận</b>, hệ thống sẽ tự động chuyển hồ sơ về trạng thái <span class="bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-mono font-black">PENDING_REVIEW</span> để Sở KH&CN phụ trách địa bàn thẩm định lại tính pháp lý trước khi cập nhật lên sàn công khai. Các chỉnh sửa về hình ảnh, mô tả văn phong, mức giá ưu đãi sẽ có hiệu lực ngay lập tức.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN EDITING FORM -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+    <form class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8">
+
+      <!-- SECTION 1: THÔNG TIN CƠ BẢN -->
+      <div class="space-y-4">
+        <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-black">1</span>
+            <span>Thông Tin Nhận Diện Công Nghệ & Phân Loại 18 Ngành</span>
+          </h3>
+          <span class="text-xs text-slate-400">Các trường có dấu <span class="text-red-500">*</span> là bắt buộc</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="md:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Tên Đầy Đủ Của Công Nghệ / Thiết Bị / Giải Pháp: <span class="text-red-500">*</span></label>
+            <input type="text" value="Hệ Thống Phân Loại Nông Sản Tự Động Bằng Thị Giác AI Kết Hợp Cánh Tay Robot Delta Tốc Độ Cao" class="w-full p-2.5 rounded-xl border border-slate-200 font-bold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Nhóm Ngành Công Nghiệp (18 Ngành TT17): <span class="text-red-500">*</span></label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-700 bg-white">
+              <option value="1" selected>Cơ khí chế tạo & Tự động hóa công nghiệp</option>
+              <option value="2">Dược phẩm, Mỹ phẩm & Chế phẩm y sinh</option>
+              <option value="3">Nông nghiệp công nghệ cao & Chế biến thực phẩm</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Sở KH&CN Tiếp Nhận Thẩm Định Địa Bàn: <span class="text-red-500">*</span></label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-blue-700 bg-blue-50/50">
+              <option value="HN" selected>Sở Khoa học và Công nghệ TP. Hà Nội (Mặc định theo trụ sở)</option>
+              <option value="HCM">Sở Khoa học và Công nghệ TP. Hồ Chí Minh</option>
+              <option value="DN">Sở Khoa học và Công nghệ TP. Đà Nẵng</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Tóm Tắt Giải Pháp & Điểm Đột Phá Kỹ Thuật (Executive Summary):</label>
+            <textarea rows="3" class="w-full p-2.5 rounded-xl border border-slate-200 text-slate-700 focus:ring-2 focus:ring-blue-600 focus:outline-none leading-relaxed">Tốc độ phân loại 180 sản phẩm/phút, độ chính xác nhận diện khuyết tật bề mặt 98.5%. Đã triển khai tại 03 nhà máy chế biến thanh long và chanh leo xuất khẩu. Tích hợp thuật toán mạng nơ-ron Deep Learning tối ưu hóa trên phần cứng nhúng biên (Edge AI).</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: BỘ TỨ SHTT & TRL -->
+      <div class="space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-black">2</span>
+            <span>Bộ Tứ Sở Hữu Trí Tuệ & Cấp Độ Sẵn Sàng (IP Quad & TRL)</span>
+          </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Cấp Độ Sẵn Sàng Công Nghệ (TRL): <span class="text-red-500">*</span></label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-bold text-emerald-800 bg-emerald-50/50">
+              <option value="5">TRL 5: Thử nghiệm trong phòng thí nghiệm</option>
+              <option value="6">TRL 6: Thử nghiệm trong môi trường mô phỏng</option>
+              <option value="7">TRL 7: Mô hình trình diễn quy mô Pilot</option>
+              <option value="8" selected>TRL 8: Đã kiểm chứng trong môi trường sản xuất thực tế</option>
+              <option value="9">TRL 9: Đã thương mại hóa hàng loạt trên thị trường</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tình Trạng Văn Bằng SHTT: <span class="text-red-500">*</span></label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-bold text-blue-800 bg-blue-50/50">
+              <option value="PATENT" selected>Đã Được Cấp Bằng Độc Quyền Sáng Chế</option>
+              <option value="UTILITY">Đã Được Cấp Bằng Giải Pháp Hữu Ích</option>
+              <option value="PENDING">Đang Thẩm Định Nội Dung (Có số đơn hợp lệ)</option>
+              <option value="SECRET">Bí Quyết Công Nghệ (Trade Secret)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Số Văn Bằng SHTT / Số Đơn Cục SHTT:</label>
+            <input type="text" value="VN 1-0031892" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono font-bold text-slate-900">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Ngày Cấp Văn Bằng / Ngày Chấp Nhận Hợp Lệ:</label>
+            <input type="date" value="2023-11-20" class="w-full p-2.5 rounded-xl border border-slate-200 font-medium text-slate-700">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: ĐIỀU KIỆN THƯƠNG MẠI & CHUYỂN GIAO -->
+      <div class="space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-black">3</span>
+            <span>Điều Kiện Thương Mại, Mức Giá & Phương Thức Chuyển Giao</span>
+          </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Phương Thức Chuyển Giao Ưu Tiên:</label>
+            <select class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-700 bg-white">
+              <option value="SELL" selected>Chuyển nhượng toàn bộ quyền sở hữu</option>
+              <option value="LICENSE">Cấp quyền sử dụng (Li-xăng có thời hạn)</option>
+              <option value="EQUITY">Góp vốn bằng công nghệ vào dự án mới</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Mức Giá Chuyển Giao Dự Kiến (VNĐ):</label>
+            <input type="text" value="850.000.000" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono font-bold text-emerald-700">
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Thời Gian Bàn Giao & Đào Tạo Vận Hành:</label>
+            <input type="text" value="60 Ngày kể từ khi ký hợp đồng" class="w-full p-2.5 rounded-xl border border-slate-200 font-medium">
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER BUTTONS -->
+      <div class="pt-4 border-t border-slate-200 flex items-center justify-between">
+        <button type="button" onclick="confirmDelete()" class="px-4 py-2.5 rounded-xl border border-red-200 text-red-600 font-bold hover:bg-red-50 text-xs flex items-center gap-1.5 transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          <span>Xóa Hồ Sơ Này</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="alert('Đã lưu bản nháp vào hệ thống!')" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 text-xs transition">
+            Lưu Bản Nháp (Draft)
+          </button>
+          <button type="button" onclick="submitUpdate()" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Cập Nhật Thông Tin Lên Sàn</span>
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function submitUpdate() {
+      alert('Đã ghi nhận yêu cầu chỉnh sửa! Nếu có thay đổi TRL hoặc SHTT, hồ sơ sẽ được chuyển tới Cổng Tác Nghiệp Sở KH&CN Hà Nội để phê duyệt trong 24 giờ.');
+    }
+
+    function togglePublish(status) {
+      if (!status) {
+        if (confirm('Bạn có chắc chắn muốn Tạm Ẩn công nghệ này khỏi sàn giao dịch công khai? Người mua sẽ không thể tìm thấy cho đến khi bạn mở lại.')) {
+          alert('Công nghệ đã được chuyển sang trạng thái TẠM ẨN (UNPUBLISHED).');
+        }
+      }
+    }
+
+    function confirmDelete() {
+      if (confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA vĩnh viễn hồ sơ công nghệ này? Hành động này không thể hoàn tác nếu chưa phát sinh giao dịch hợp tác.')) {
+        alert('Hồ sơ đã được xóa khỏi hệ thống!');
+        window.location.href = 'wireframe_quan_ly_kho_cong_nghe_seller.html';
+      }
+    }
+  </script>
+</body>
+</html>

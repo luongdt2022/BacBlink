@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bản Đồ Khám Phá Danh Mục & Ma Trận Công Nghệ — NacenTwin (TASK-06 Public)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            matrixGreen: '#059669'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .sector-card.active {
+      border-color: #1d4ed8;
+      background-color: #eff6ff;
+      box-shadow: 0 4px 6px -1px rgba(29, 78, 216, 0.15);
+    }
+    .badge-star-5 { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .badge-star-4 { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .badge-star-3 { background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-700 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          M
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+            <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">PUBLIC TECH MATRIX EXPLORER</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">TASK-06 BASIC DESIGN</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Bản Đồ Khám Phá Danh Mục Ngành & Ma Trận Công Nghệ Việt Nam</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="wireframe_quan_tri_danh_muc_nganh.html" class="text-xs font-bold text-slate-600 hover:text-emerald-700 border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-xl transition flex items-center gap-1">
+          <i data-lucide="shield" class="w-3.5 h-3.5"></i> Chế Độ Quản Trị (Admin Master Data)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white py-8 px-4">
+    <div class="max-w-7xl mx-auto space-y-4">
+      <div class="max-w-3xl space-y-2">
+        <span class="bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+          Cổng Tri Thức & Định Hướng Đổi Mới Sáng Tạo
+        </span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold">Tra Cứu Bản Đồ Ma Trận 18 Nhóm Ngành & 109 Cặp Công Nghệ Trọng Điểm</h1>
+        <p class="text-xs sm:text-sm text-slate-300">
+          Hệ thống danh mục chuẩn quốc gia tích hợp chuẩn Thông tư 17/2019/TT-BKHCN, giúp Doanh nghiệp dễ dàng nhận diện công nghệ cần đổi mới và kết nối nhà cung cấp sáng chế phù hợp.
+        </p>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div class="flex flex-col sm:flex-row items-center gap-2 max-w-2xl bg-white/10 p-1.5 rounded-2xl backdrop-blur-md border border-white/20">
+        <div class="relative flex-1 w-full">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="public-search-input" placeholder="Tìm theo tên công nghệ (AI, Robot, IoT, Sinh học...), ngành nghề..." class="w-full pl-9 pr-3 py-2 text-xs text-slate-900 bg-white rounded-xl focus:outline-none">
+        </div>
+        <button onclick="triggerSearch()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+          <i data-lucide="compass" class="w-4 h-4"></i> Khám Phá
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN INTERACTIVE EXPLORER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-8">
+
+    <!-- SECTION 1: 18 NHÓM NGÀNH TRỌNG ĐIỂM (CARDS SELECTOR) -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <i data-lucide="grid" class="w-5 h-5 text-emerald-600"></i>
+            18 Nhóm Ngành Công Nghiệp Trọng Điểm
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Chọn một ngành để xem ma trận công nghệ liên kết và các nguồn cung/nhu cầu thực tế.</p>
+        </div>
+        <span class="text-xs text-slate-500 font-bold">18/18 Ngành Chuẩn Hóa</span>
+      </div>
+
+      <!-- Grid of Sector Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        
+        <div onclick="selectSector('SEC-FOOD', 'Chế biến Thực phẩm & Đồ uống', 'LV05')" id="card-SEC-FOOD" class="sector-card active cursor-pointer bg-white p-3.5 rounded-2xl border border-slate-200 transition hover:shadow-md space-y-2">
+          <div class="w-9 h-9 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center font-bold">
+            <i data-lucide="utensils" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-xs text-slate-900 line-clamp-1">Thực Phẩm & Đồ Uống</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">Phân nhóm C.10, C.11</p>
+          </div>
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+            <span class="text-blue-700 font-bold">24 Cung</span>
+            <span class="text-amber-700 font-bold">42 Cầu</span>
+          </div>
+        </div>
+
+        <div onclick="selectSector('SEC-MECH', 'Cơ khí Chế tạo & Tự động hóa', 'LV07')" id="card-SEC-MECH" class="sector-card cursor-pointer bg-white p-3.5 rounded-2xl border border-slate-200 transition hover:shadow-md space-y-2">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <i data-lucide="cog" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-xs text-slate-900 line-clamp-1">Cơ Khí & Tự Động Hóa</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">Phân nhóm C.32</p>
+          </div>
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+            <span class="text-blue-700 font-bold">38 Cung</span>
+            <span class="text-amber-700 font-bold">65 Cầu</span>
+          </div>
+        </div>
+
+        <div onclick="selectSector('SEC-AGRI', 'Nông nghiệp Công nghệ cao', 'LV01')" id="card-SEC-AGRI" class="sector-card cursor-pointer bg-white p-3.5 rounded-2xl border border-slate-200 transition hover:shadow-md space-y-2">
+          <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <i data-lucide="sprout" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-xs text-slate-900 line-clamp-1">Nông Nghiệp CNC</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">Trồng trọt, chăn nuôi thông minh</p>
+          </div>
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+            <span class="text-blue-700 font-bold">19 Cung</span>
+            <span class="text-amber-700 font-bold">31 Cầu</span>
+          </div>
+        </div>
+
+        <div onclick="selectSector('SEC-ELEC', 'Điện tử, Viễn thông & CNTT', 'LV16')" id="card-SEC-ELEC" class="sector-card cursor-pointer bg-white p-3.5 rounded-2xl border border-slate-200 transition hover:shadow-md space-y-2">
+          <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-xs text-slate-900 line-clamp-1">Điện Tử & Viễn Thông</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">Phân nhóm C.26</p>
+          </div>
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+            <span class="text-blue-700 font-bold">45 Cung</span>
+            <span class="text-amber-700 font-bold">58 Cầu</span>
+          </div>
+        </div>
+
+        <div onclick="selectSector('SEC-PHARMA', 'Dược phẩm & Thiết bị Y tế', 'LV05')" id="card-SEC-PHARMA" class="sector-card cursor-pointer bg-white p-3.5 rounded-2xl border border-slate-200 transition hover:shadow-md space-y-2">
+          <div class="w-9 h-9 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-bold">
+            <i data-lucide="pill" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-xs text-slate-900 line-clamp-1">Dược & Thiết Bị Y Tế</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">Phân nhóm C.21</p>
+          </div>
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+            <span class="text-blue-700 font-bold">15 Cung</span>
+            <span class="text-amber-700 font-bold">22 Cầu</span>
+          </div>
+        </div>
+
+        <div onclick="selectSector('SEC-CHEM', 'Hóa chất & Vật liệu mới', 'LV11')" id="card-SEC-CHEM" class="sector-card cursor-pointer bg-white p-3.5 rounded-2xl border border-slate-200 transition hover:shadow-md space-y-2">
+          <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+            <i data-lucide="flask-conical" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-xs text-slate-900 line-clamp-1">Hóa Chất & Vật Liệu</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">Phân nhóm C.20</p>
+          </div>
+          <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
+            <span class="text-blue-700 font-bold">12 Cung</span>
+            <span class="text-amber-700 font-bold">18 Cầu</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 2: MA TRẬN CÔNG NGHỆ TƯƠNG QUAN & NGUỒN CUNG SÁNG CHẾ -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Chi Tiết Tương Quan Ma Trận</span>
+          <h3 id="selected-sector-title" class="text-lg font-extrabold text-slate-900 mt-0.5">
+            Ngành: Chế biến Thực phẩm & Đồ uống (Mã: SEC-FOOD)
+          </h3>
+          <p class="text-xs text-slate-500">Các công nghệ có trọng số phù hợp cao nhất (4–5 sao) được khuyến nghị đầu tư theo dữ liệu Bộ KH&CN.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a href="../TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_matching_va_quan_ly_co_hoi.html" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="radar" class="w-4 h-4"></i> Mở Radar Ghép Nối Cung–Cầu
+          </a>
+        </div>
+      </div>
+
+      <!-- Tech Matrix Grid (Technologies mapped to this sector) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="tech-matrix-container">
+        
+        <!-- Tech Box 1 -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="badge-star-5 px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1">
+              ★★★★★ Trọng số 1.0 (5/5)
+            </span>
+            <span class="mono font-bold text-slate-400 text-xs">CN02</span>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-slate-900 text-sm">Tự Động Hóa Dây Chuyền Đóng Gói</h4>
+            <p class="text-xs text-slate-600 mt-1">Hệ thống phân loại quang học, đóng chai tự động và robot xếp pallet tốc độ cao.</p>
+          </div>
+          <div class="pt-2 border-t border-slate-200/70 flex items-center justify-between text-xs">
+            <span class="text-slate-500">Nguồn cung có sẵn: <strong class="text-blue-700">6 Giải pháp</strong></span>
+            <a href="../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/bo_loc_cban_view.html" class="text-blue-700 font-bold hover:underline">Xem Cung &gt;</a>
+          </div>
+        </div>
+
+        <!-- Tech Box 2 -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="badge-star-5 px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1">
+              ★★★★★ Trọng số 1.0 (5/5)
+            </span>
+            <span class="mono font-bold text-slate-400 text-xs">CN12</span>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-slate-900 text-sm">Truy Xuất Nguồn Gốc & Blockchain</h4>
+            <p class="text-xs text-slate-600 mt-1">Tem truy xuất chống giả mã QR động, lưu vết nhật ký sản xuất chuẩn mã số mã vạch GS1.</p>
+          </div>
+          <div class="pt-2 border-t border-slate-200/70 flex items-center justify-between text-xs">
+            <span class="text-slate-500">Nguồn cung có sẵn: <strong class="text-blue-700">8 Giải pháp</strong></span>
+            <a href="../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/bo_loc_cban_view.html" class="text-blue-700 font-bold hover:underline">Xem Cung &gt;</a>
+          </div>
+        </div>
+
+        <!-- Tech Box 3 -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="badge-star-5 px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1">
+              ★★★★★ Trọng số 1.0 (5/5)
+            </span>
+            <span class="mono font-bold text-slate-400 text-xs">CN18</span>
+          </div>
+          <div>
+            <h4 class="font-extrabold text-slate-900 text-sm">Công Nghệ Bảo Quản & Sau Thu Hoạch</h4>
+            <p class="text-xs text-slate-600 mt-1">Bảo quản lạnh CAS, sấy thăng hoa chân không và màng bao sinh học kéo dài độ tươi thực phẩm.</p>
+          </div>
+          <div class="pt-2 border-t border-slate-200/70 flex items-center justify-between text-xs">
+            <span class="text-slate-500">Nguồn cung có sẵn: <strong class="text-blue-700">4 Giải pháp</strong></span>
+            <a href="../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/bo_loc_cban_view.html" class="text-blue-700 font-bold hover:underline">Xem Cung &gt;</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 3: 15 TRIỂN LÃM QUỐC TẾ & TECHMART 2026 -->
+    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <i data-lucide="calendar" class="w-4 h-4 text-emerald-600"></i>
+            15 Hội Chợ / Triển Lãm Quốc Tế Chuyên Ngành Tham Chiếu (Techmart 2026)
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Dữ liệu nguồn kết nối các phiên chào giá công nghệ và trưng bày thực tế.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0">
+            01
+          </div>
+          <div>
+            <p class="font-extrabold text-slate-900">Vietnam Telecomp 2026</p>
+            <p class="text-[11px] text-slate-500">Triển lãm Viễn thông, CNTT & Truyền thông</p>
+            <p class="text-[10px] text-emerald-600 font-bold mt-1">Hà Nội & TP.HCM • Thường niên</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 font-bold flex items-center justify-center shrink-0">
+            02
+          </div>
+          <div>
+            <p class="font-extrabold text-slate-900">Foodtech Vietnam 2026</p>
+            <p class="text-[11px] text-slate-500">Triển lãm Công nghệ Chế biến Thực phẩm</p>
+            <p class="text-[10px] text-emerald-600 font-bold mt-1">Hà Nội • Quý III/2026</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center shrink-0">
+            03
+          </div>
+          <div>
+            <p class="font-extrabold text-slate-900">Growtech Vietnam 2026</p>
+            <p class="text-[11px] text-slate-500">Triển lãm Nông nghiệp Công nghệ cao</p>
+            <p class="text-[10px] text-emerald-600 font-bold mt-1">Hà Nội • Tháng 11/2026</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function selectSector(code, name, lv) {
+      document.querySelectorAll('.sector-card').forEach(c => c.classList.remove('active'));
+      const activeCard = document.getElementById('card-' + code);
+      if (activeCard) activeCard.classList.add('active');
+
+      document.getElementById('selected-sector-title').innerText = `Ngành: ${name} (Mã: ${code} • Lĩnh vực: ${lv})`;
+    }
+
+    function triggerSearch() {
+      const q = document.getElementById('public-search-input').value.trim();
+      if (q) {
+        alert(`Đang tìm kiếm ma trận công nghệ khớp từ khóa: "${q}"...`);
+      }
+    }
+  </script>
+</body>
+</html>

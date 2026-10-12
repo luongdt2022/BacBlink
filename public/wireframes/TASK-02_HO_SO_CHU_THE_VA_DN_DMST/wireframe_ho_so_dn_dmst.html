@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ Sơ Chủ Thể & Doanh Nghiệp Đổi Mới Sáng Tạo — NacenTwin (TASK-02)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .tab-nav.active {
+      background-color: #1e40af;
+      color: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);
+    }
+    .badge-autofill {
+      animation: pulseGreen 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes pulseGreen {
+      from { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      to { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- TOP BAR -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-cyan-500 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          N
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">TASK-02 BASIC DESIGN</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold">HỒ SƠ CHỦ THỂ & DOANH NGHIỆP ĐMST (HẠT NHÂN DỮ LIỆU GỐC SSOT)</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <a href="wireframe_dashboard_304_dn.html" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-bold hover:bg-indigo-100 transition">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          Dashboard 304 DN Thực Tế
+        </a>
+        <button class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow flex items-center gap-1.5 transition">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          Gửi Duyệt Xác Minh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- PO DECISION ALERT & GROUND TRUTH SEED BANNER -->
+    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-2xl p-5 text-white shadow-lg border border-blue-700/50">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30 flex items-center gap-1">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Quyết định PO-DEC-20261008-05
+            </span>
+            <span class="text-xs text-blue-200 font-medium">CSDL 304 Doanh Nghiệp Khảo Sát Đã Làm Sạch (SSOT)</span>
+          </div>
+          <h2 class="text-lg font-bold text-white">Tra Cứu & Tự Động Kê Khai Hồ Sơ Theo Mã Số Thuế (MST)</h2>
+          <p class="text-xs text-slate-300 max-w-3xl leading-relaxed">
+            Hồ sơ chủ thể là "Căn cước số" trung tâm. Khi nhập MST hợp lệ, hệ thống tự động điền các thông tin pháp lý từ CSDL 304 doanh nghiệp thực tế, liên thông hai chiều với Phiếu khảo sát DNNVV (<span class="text-emerald-300 font-mono">TASK-03</span>) và Đánh giá công nghệ TT17 (<span class="text-cyan-300 font-mono">TASK-09</span>).
+          </p>
+        </div>
+
+        <!-- SEED AUTOFILL SEARCH BOX -->
+        <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20 w-full lg:w-96 space-y-2">
+          <label class="block text-[11px] font-bold text-blue-200 uppercase tracking-wider">
+            Tra cứu MST mẫu (Test Autofill):
+          </label>
+          <div class="flex gap-2">
+            <select id="sample-tax-code" class="bg-slate-900/80 text-white text-xs rounded-lg px-2.5 py-2 border border-slate-700 flex-1 outline-none">
+              <option value="0101234567">0101234567 — Cơ Khí Chính Xác Nam Thăng Long</option>
+              <option value="0309876543">0309876543 — Dược Phẩm Công Nghệ Sinh Học Sao Vàng</option>
+              <option value="4300567890">4300567890 — Nông Nghiệp Công Nghệ Cao Đà Nẵng</option>
+              <option value="3700112233">3700112233 — Tự Động Hóa & Robot Bình Dương</option>
+            </select>
+            <button onclick="autofillData()" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-lg shadow flex items-center gap-1 transition">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Điền
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID: LEFT NAVIGATION TABS & RIGHT CONTENT -->
+    <div class="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-6">
+
+      <!-- LEFT NAVIGATION: 10 NHÓM TRƯỜNG BASIC (SHEET DN ĐMST) -->
+      <aside class="space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm space-y-1">
+          <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-3 py-2">10 Nhóm Trường Cốt Lõi</p>
+          
+          <button onclick="switchTab(1)" id="btn-tab-1" class="tab-nav active w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="fingerprint" class="w-4 h-4"></i>1. Định Danh & Nguồn Nhập</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </button>
+
+          <button onclick="switchTab(2)" id="btn-tab-2" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="user-check" class="w-4 h-4"></i>2. Người Liên Hệ (Bảo Mật)</span>
+            <i data-lucide="lock" class="w-3 h-3 text-amber-500"></i>
+          </button>
+
+          <button onclick="switchTab(3)" id="btn-tab-3" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="factory" class="w-4 h-4"></i>3. Ngành Nghề & Quy Mô</span>
+            <span class="text-[10px] font-semibold text-slate-400">TT17</span>
+          </button>
+
+          <button onclick="switchTab(4)" id="btn-tab-4" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="cpu" class="w-4 h-4"></i>4. Nguồn Lực ĐMST & R&D</span>
+            <i data-lucide="lock" class="w-3 h-3 text-amber-500"></i>
+          </button>
+
+          <button onclick="switchTab(5)" id="btn-tab-5" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="rocket" class="w-4 h-4"></i>5. Hoạt Động / Dự Án ĐMST</span>
+            <span class="rounded bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.2">3 Dự án</span>
+          </button>
+
+          <button onclick="switchTab(6)" id="btn-tab-6" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="award" class="w-4 h-4"></i>6. Sở Hữu Trí Tuệ & Minh Chứng</span>
+            <span class="rounded bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2">Sáng chế</span>
+          </button>
+
+          <button onclick="switchTab(7)" id="btn-tab-7" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="gauge" class="w-4 h-4"></i>7. Đánh Giá Mức Độ ĐMST</span>
+            <span class="text-xs font-bold text-emerald-600">Dẫn đầu</span>
+          </button>
+
+          <button onclick="switchTab(8)" id="btn-tab-8" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="help-circle" class="w-4 h-4"></i>8. Nhu Cầu Hỗ Trợ ĐMST</span>
+            <span class="text-[10px] text-slate-400">Chuyển giao</span>
+          </button>
+
+          <button onclick="switchTab(9)" id="btn-tab-9" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="badge-check" class="w-4 h-4"></i>9. Xác Minh & Công Khai</span>
+            <span class="rounded bg-amber-100 text-amber-800 text-[10px] px-1.5">Verified</span>
+          </button>
+
+          <button onclick="switchTab(10)" id="btn-tab-10" class="tab-nav w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+            <span class="flex items-center gap-2.5"><i data-lucide="share-2" class="w-4 h-4"></i>10. Liên Thông & Nhắc Kỳ</span>
+            <span class="text-[10px] text-blue-600">TASK-03/09</span>
+          </button>
+        </div>
+
+        <!-- COMPLETION SUMMARY WIDGET -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700">Mức Độ Hoàn Thiện Hồ Sơ</span>
+            <span id="profile-percent" class="text-xs font-extrabold text-emerald-600">85%</span>
+          </div>
+          <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+            <div id="profile-bar" class="bg-gradient-to-r from-blue-600 to-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 85%;"></div>
+          </div>
+          <p class="text-[11px] text-slate-500">Hồ sơ đã đạt tiêu chuẩn xác minh thông tin và niêm yết danh bạ ĐMST Quốc gia.</p>
+        </div>
+      </aside>
+
+      <!-- RIGHT FORM CONTENT -->
+      <section class="space-y-6">
+
+        <!-- TAB 1: ĐỊNH DANH & NGUỒN DỮ LIỆU -->
+        <div id="panel-tab-1" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+          <div class="border-b border-slate-100 pb-4 flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">1. Nguồn Dữ Liệu & Thông Tin Định Danh Pháp Lý</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Thuộc tính dòng 1–4 và 14–22 từ Sheet DN ĐMST chuẩn.</p>
+            </div>
+            <span id="autofill-badge" class="hidden px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-bold flex items-center gap-1.5 badge-autofill">
+              <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Đã điền từ CSDL 304 DN
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Loại chủ thể <span class="text-rose-500">*</span></label>
+              <select id="entity-type" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white">
+                <option value="DN" selected>Doanh nghiệp (Doanh nghiệp KH&CN / DNNVV)</option>
+                <option value="HTX">Hợp tác xã</option>
+                <option value="HKD">Hộ kinh doanh đổi mới sáng tạo</option>
+                <option value="VIEN">Viện nghiên cứu / Trường Đại học</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Hình thức nhập hồ sơ <span class="text-rose-500">*</span></label>
+              <select class="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white">
+                <option selected>Chủ thể tự kê khai trực tuyến</option>
+                <option>Cán bộ khảo sát Sở KH&CN nhập hộ</option>
+                <option>Đồng bộ từ CSDL Quốc gia</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nguồn dữ liệu gốc</label>
+              <input type="text" value="Khảo sát ĐMST 2026 / Cục Phát triển Thị trường" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-slate-50" readonly>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tên đăng ký kinh doanh (Legal Name) <span class="text-rose-500">*</span></label>
+              <input type="text" id="legal-name" value="CÔNG TY CỔ PHẦN CÔNG NGHỆ CHÍNH XÁC NAM THĂNG LONG" class="w-full text-xs font-bold rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Mã số thuế / Mã định danh (Tax Code) <span class="text-rose-500">*</span></label>
+              <input type="text" id="tax-code-input" value="0101234567" class="w-full text-xs font-mono font-bold rounded-lg border border-slate-300 p-2.5 bg-slate-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Ngày thành lập / Ngày đăng ký</label>
+              <input type="date" value="2016-08-15" class="w-full text-xs rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Địa chỉ trụ sở chính <span class="text-rose-500">*</span></label>
+              <input type="text" id="address" value="Lô CN-08, Khu Công Nghiệp Thăng Long, Huyện Đông Anh, TP. Hà Nội" class="w-full text-xs rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tỉnh / Thành phố <span class="text-rose-500">*</span></label>
+              <input type="text" id="province" value="Hà Nội" class="w-full text-xs rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Website chính thức</label>
+              <input type="url" value="https://namthanglong-tech.vn" class="w-full text-xs rounded-lg border border-slate-300 p-2.5">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: NGƯỜI LIÊN HỆ & QUYỀN RIÊNG TƯ -->
+        <div id="panel-tab-2" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">2. Đầu Mối Liên Hệ & Chính Sách Bảo Mật</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Dòng 23–32 Sheet DN ĐMST · Thông tin nhạy cảm có cơ chế bảo vệ phân quyền.</p>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold flex items-center gap-1">
+              <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> PDPD Protected
+            </span>
+          </div>
+
+          <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
+            <i data-lucide="lock" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold">Quy tắc bảo mật liên hệ:</span> Số điện thoại và Email người đại diện mặc định <span class="underline font-bold">ẨN đối với công chúng</span>. Chỉ mở tự động sau khi doanh nghiệp chấp thuận yêu cầu kết nối từ đối tác qua nền tảng.
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Họ và tên người đại diện liên hệ <span class="text-rose-500">*</span></label>
+              <input type="text" id="contact-name" value="Trần Anh Tuấn" class="w-full text-xs rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Chức vụ / Vai trò</label>
+              <input type="text" id="contact-role" value="Phó Giám đốc Kỹ thuật & R&D" class="w-full text-xs rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Số điện thoại liên lạc <span class="text-rose-500">*</span></label>
+              <div class="relative">
+                <input type="text" id="contact-phone" value="0988 *** 128" class="w-full text-xs font-mono rounded-lg border border-slate-300 p-2.5 pr-20 bg-slate-50">
+                <span class="absolute right-2 top-2 text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold">Mã hóa</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Email công vụ <span class="text-rose-500">*</span></label>
+              <div class="relative">
+                <input type="email" id="contact-email" value="tuan.ta***@namthanglong-tech.vn" class="w-full text-xs font-mono rounded-lg border border-slate-300 p-2.5 pr-20 bg-slate-50">
+                <span class="absolute right-2 top-2 text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold">Mã hóa</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: NGÀNH NGHỀ & QUY MÔ KINH DOANH -->
+        <div id="panel-tab-3" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">3. Ngành Nghề Hoạt Động & Quy Mô Kinh Doanh</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Dòng 33–55 Sheet DN ĐMST · Liên thông 1:1 với phân ngành TT17.</p>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">
+              C.28 — Máy móc & Thiết bị
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Ngành hoạt động chính (TT17) <span class="text-rose-500">*</span></label>
+              <select id="main-sector" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white font-bold">
+                <option selected>C.28 — Sản xuất máy móc, thiết bị chưa được phân vào đâu</option>
+                <option>C.26 — Sản xuất sản phẩm điện tử, máy vi tính và quang học</option>
+                <option>C.10 — Sản xuất chế biến thực phẩm</option>
+                <option>C.20 — Sản xuất hóa chất và sản phẩm hóa chất</option>
+                <option>J.62 — Hoạt động lập trình máy vi tính và dịch vụ CNTT</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Vùng kinh tế - xã hội ưu tiên</label>
+              <input type="text" value="Vùng Đồng Bằng Sông Hồng (Hà Nội, Hải Phòng, Bắc Ninh...)" class="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-slate-50" readonly>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Tổng số lao động (Biến M) <span class="text-rose-500">*</span></label>
+              <input type="number" id="emp-count" value="145" class="w-full text-xs font-bold rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Doanh thu năm gần nhất (Triệu VND) <span class="text-rose-500">*</span></label>
+              <div class="relative">
+                <input type="text" id="revenue" value="85,600,000,000" class="w-full text-xs font-mono font-bold rounded-lg border border-slate-300 p-2.5 pr-28 bg-slate-50">
+                <span class="absolute right-2 top-2 text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                  <i data-lucide="eye-off" class="w-3 h-3"></i> Quyền xem riêng
+                </span>
+              </div>
+              <p class="text-[10px] text-slate-400 mt-1">Chỉ chủ thể và cán bộ quản lý hồ sơ được xem số liệu doanh thu.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: NGUỒN LỰC ĐỔI MỚI SÁNG TẠO & R&D -->
+        <div id="panel-tab-4" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">4. Nguồn Lực Đổi Mới Sáng Tạo & Nhân Lực R&D</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Dòng 56–74 Sheet DN ĐMST · Cung cấp trực tiếp vào chỉ số 20 & 21 của Thông tư 17.</p>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-bold">12 Kỹ sư R&D</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Bộ phận chuyên trách ĐMST / R&D</label>
+              <select class="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white font-bold">
+                <option selected>Chuyên trách (Phòng R&D độc lập)</option>
+                <option>Kiêm nhiệm bộ phận kỹ thuật</option>
+                <option>Chưa thành lập bộ phận riêng</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Số nhân sự R&D chuyên trách</label>
+              <input type="number" value="12" class="w-full text-xs font-bold rounded-lg border border-slate-300 p-2.5">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Kinh phí dành cho ĐMST / năm (VND)</label>
+              <input type="text" value="4,200,000,000" class="w-full text-xs font-mono rounded-lg border border-slate-300 p-2.5 bg-slate-50">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Cơ sở vật chất, phòng lab, phần mềm phục vụ ĐMST</label>
+            <textarea class="w-full text-xs rounded-lg border border-slate-300 p-2.5 h-20" placeholder="Nêu trang thiết bị phòng thí nghiệm, phần mềm CAD/CAM/CAE...">Phòng Lab đo kiểm tọa độ 3D CMM Mitutoyo; Trung tâm gia công 5 trục DMG MORI; Phần mềm bản quyền Siemens NX & ANSYS Simulation.</textarea>
+          </div>
+        </div>
+
+        <!-- TAB 5 & 6: DỰ ÁN & SHTT MINH CHỨNG -->
+        <div id="panel-tab-5" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">5. Dự Án ĐMST & Danh Mục Bằng Sáng Chế / SHTT</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Dòng 75–125 Sheet DN ĐMST · Minh chứng năng lực tự chủ công nghệ.</p>
+            </div>
+            <button class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold border border-blue-200 flex items-center gap-1 hover:bg-blue-100">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Thêm Bằng SHTT
+            </button>
+          </div>
+
+          <!-- BẢNG SHTT VÀ SÁNG CHẾ -->
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Loại Văn Bằng</th>
+                  <th class="p-3">Số Bằng / Số Đơn</th>
+                  <th class="p-3">Tên Sáng Chế / Giải Pháp</th>
+                  <th class="p-3">Ngày Cấp</th>
+                  <th class="p-3">Tình Trạng</th>
+                  <th class="p-3 text-right">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-600">
+                <tr>
+                  <td class="p-3 font-bold text-indigo-700">Bằng Độc Quyền Sáng Chế</td>
+                  <td class="p-3 font-mono">VN 1-0028491</td>
+                  <td class="p-3 font-semibold text-slate-800">Cơ cấu kẹp phôi tự định tâm độ chính xác cao cho máy phay CNC đa trục</td>
+                  <td class="p-3">12/04/2022</td>
+                  <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Đã Cấp Bằng</span></td>
+                  <td class="p-3 text-right"><button class="text-blue-600 hover:underline">Chi tiết</button></td>
+                </tr>
+                <tr>
+                  <td class="p-3 font-bold text-cyan-700">Giải Pháp Hữu Ích</td>
+                  <td class="p-3 font-mono">VN 2-0003418</td>
+                  <td class="p-3 font-semibold text-slate-800">Bộ cảm biến nhiệt độ không tiếp xúc cho đầu trục chính phay cao tốc</td>
+                  <td class="p-3">08/11/2023</td>
+                  <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Đã Cấp Bằng</span></td>
+                  <td class="p-3 text-right"><button class="text-blue-600 hover:underline">Chi tiết</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    // DỮ LIỆU SEED 304 DOANH NGHIỆP MẪU
+    const sampleDb = {
+      "0101234567": {
+        name: "CÔNG TY CỔ PHẦN CÔNG NGHỆ CHÍNH XÁC NAM THĂNG LONG",
+        address: "Lô CN-08, Khu Công Nghiệp Thăng Long, Huyện Đông Anh, TP. Hà Nội",
+        province: "Hà Nội",
+        contactName: "Trần Anh Tuấn",
+        contactRole: "Phó Giám đốc Kỹ thuật & R&D",
+        phone: "0988 234 128",
+        email: "tuan.ta@namthanglong-tech.vn",
+        emp: 145,
+        rev: "85,600,000,000",
+        sector: "C.28 — Sản xuất máy móc, thiết bị chưa được phân vào đâu"
+      },
+      "0309876543": {
+        name: "CÔNG TY CỔ PHẦN DƯỢC PHẨM CÔNG NGHỆ SINH HỌC SAO VÀNG",
+        address: "Khu Công Nghệ Cao TP.HCM, Phường Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM",
+        province: "TP. Hồ Chí Minh",
+        contactName: "Nguyễn Thị Mai Lan",
+        contactRole: "Trưởng phòng Nghiên cứu Công nghệ Sinh học",
+        phone: "0912 876 543",
+        email: "lan.nguyen@saovang-biotech.com",
+        emp: 210,
+        rev: "142,000,000,000",
+        sector: "C.21 — Sản xuất thuốc, hóa dược và dược liệu"
+      },
+      "4300567890": {
+        name: "CÔNG TY TNHH PHÁT TRIỂN NÔNG NGHIỆP CÔNG NGHỆ CAO ĐÀ NẴNG",
+        address: "Xã Hòa Khương, Huyện Hòa Vang, TP. Đà Nẵng",
+        province: "Đà Nẵng",
+        contactName: "Lê Văn Hùng",
+        contactRole: "Giám đốc Vận hành",
+        phone: "0905 567 890",
+        email: "hung.le@danang-agritech.vn",
+        emp: 68,
+        rev: "28,500,000,000",
+        sector: "A.01 — Nông nghiệp và dịch vụ trồng trọt công nghệ cao"
+      },
+      "3700112233": {
+        name: "CÔNG TY CỔ PHẦN TỰ ĐỘNG HÓA VÀ ROBOT CÔNG NGHIỆP BÌNH DƯƠNG",
+        address: "Khu Công Nghiệp VSIP II-A, TP. Tân Uyên, Tỉnh Bình Dương",
+        province: "Bình Dương",
+        contactName: "Phạm Quốc Dũng",
+        contactRole: "Chủ tịch HĐQT kiêm Giám đốc R&D",
+        phone: "0933 112 233",
+        email: "dung.pq@bd-robotics.vn",
+        emp: 180,
+        rev: "98,000,000,000",
+        sector: "C.28 — Sản xuất máy móc, thiết bị chưa được phân vào đâu"
+      }
+    };
+
+    function autofillData() {
+      const selectedMst = document.getElementById('sample-tax-code').value;
+      const data = sampleDb[selectedMst];
+      if (!data) return;
+
+      document.getElementById('tax-code-input').value = selectedMst;
+      document.getElementById('legal-name').value = data.name;
+      document.getElementById('address').value = data.address;
+      document.getElementById('province').value = data.province;
+      document.getElementById('contact-name').value = data.contactName;
+      document.getElementById('contact-role').value = data.contactRole;
+      document.getElementById('contact-phone').value = data.phone;
+      document.getElementById('contact-email').value = data.email;
+      document.getElementById('emp-count').value = data.emp;
+      document.getElementById('revenue').value = data.rev;
+      
+      const badge = document.getElementById('autofill-badge');
+      badge.classList.remove('hidden');
+      badge.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function switchTab(tabIndex) {
+      document.querySelectorAll('.tab-nav').forEach((b, idx) => {
+        if (idx + 1 === tabIndex) {
+          b.classList.add('active');
+          b.classList.remove('text-slate-600', 'hover:bg-slate-100');
+        } else {
+          b.classList.remove('active');
+          b.classList.add('text-slate-600', 'hover:bg-slate-100');
+        }
+      });
+      // In this wireframe, we keep the main structured panels visible and scroll smoothly to the corresponding section
+      const targetPanel = document.getElementById(`panel-tab-${tabIndex}`);
+      if (targetPanel) {
+        targetPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  </script>
+</body>
+</html>

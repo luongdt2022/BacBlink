@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bàn Làm Việc Tự Quản Trị & Chỉnh Sửa Hồ Sơ DN ĐMST — NacenTwin (TASK-02)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .side-tab.active {
+      background-color: #1e40af;
+      color: #ffffff;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          DN
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN PORTAL</span>
+            <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">DOANH NGHIỆP ĐÃ XÁC MINH</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Hồ Sơ Doanh Nghiệp ĐMST · Công ty CP Robot & Tự Động Hóa Rạng Đông</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a href="wireframe_public_dn_dmst.html" target="_blank" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>Xem Trang Public</span>
+        </a>
+        <button onclick="saveProfile()" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="save" class="w-4 h-4"></i>
+          <span>Lưu Thay Đổi (Cập Nhật)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- WORKSPACE STATUS BANNER -->
+  <section class="bg-white border-b border-slate-200 py-4 px-4 sm:px-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 font-black text-xl">
+          RD
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold text-slate-900">Công Ty Cổ Phần Công Nghệ Robot & Tự Động Hóa Rạng Đông</h1>
+            <span class="font-mono text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">MST: 0101234567</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">Sở KH&CN Hà Nội quản lý trực tiếp địa bàn · Mã hồ sơ hệ thống: <span class="font-mono font-bold text-slate-700">DN-2024-00304</span></p>
+        </div>
+      </div>
+
+      <!-- Completeness Progress -->
+      <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 shrink-0">
+        <div>
+          <div class="flex justify-between text-[11px] font-bold text-slate-600 mb-1">
+            <span>Độ Hoàn Thiện Hồ Sơ (SSOT):</span>
+            <span class="text-blue-700">92%</span>
+          </div>
+          <div class="w-48 bg-slate-200 rounded-full h-2">
+            <div class="bg-blue-600 h-2 rounded-full" style="width: 92%"></div>
+          </div>
+        </div>
+        <span class="text-[10px] text-emerald-700 font-extrabold bg-emerald-100 px-2 py-1 rounded">Rất Tốt</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN EDITING LAYOUT (SIDEBAR TABS + TAB CONTENT) -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col lg:flex-row gap-8 flex-1 w-full">
+
+    <!-- VERTICAL NAVIGATION TABS (10 NHÓM TRƯỜNG) -->
+    <aside class="w-full lg:w-64 space-y-1 shrink-0">
+      <div class="text-[11px] font-black uppercase text-slate-400 tracking-wider px-3 mb-2">10 Nhóm Trường Dữ Liệu</div>
+
+      <button onclick="switchTab('tab-legal')" id="btn-legal" class="side-tab active w-full text-left px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-between transition">
+        <span class="flex items-center gap-2"><i data-lucide="building" class="w-4 h-4"></i> 1. Pháp lý & Người đại diện</span>
+        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+      </button>
+
+      <button onclick="switchTab('tab-finance')" id="btn-finance" class="side-tab w-full text-left px-3.5 py-2.5 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center justify-between transition">
+        <span class="flex items-center gap-2"><i data-lucide="dollar-sign" class="w-4 h-4"></i> 2. Vốn & Doanh thu R&D</span>
+        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+      </button>
+
+      <button onclick="switchTab('tab-ip')" id="btn-ip" class="side-tab w-full text-left px-3.5 py-2.5 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center justify-between transition">
+        <span class="flex items-center gap-2"><i data-lucide="award" class="w-4 h-4"></i> 3. Sở Hữu Trí Tuệ & Sáng Chế</span>
+        <span class="text-[10px] bg-blue-100 text-blue-800 font-extrabold px-1.5 py-0.5 rounded">03 Bằng</span>
+      </button>
+
+      <button onclick="switchTab('tab-rd')" id="btn-rd" class="side-tab w-full text-left px-3.5 py-2.5 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center justify-between transition">
+        <span class="flex items-center gap-2"><i data-lucide="microscope" class="w-4 h-4"></i> 4. Nhân Lực R&D & Thiết Bị</span>
+        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+      </button>
+
+      <button onclick="switchTab('tab-cert')" id="btn-cert" class="side-tab w-full text-left px-3.5 py-2.5 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center justify-between transition">
+        <span class="flex items-center gap-2"><i data-lucide="badge-check" class="w-4 h-4"></i> 5. Chứng Nhận DN KH&CN</span>
+        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+      </button>
+
+      <button onclick="switchTab('tab-tech')" id="btn-tech" class="side-tab w-full text-left px-3.5 py-2.5 rounded-xl text-xs text-slate-600 hover:bg-slate-100 flex items-center justify-between transition">
+        <span class="flex items-center gap-2"><i data-lucide="cpu" class="w-4 h-4"></i> 6. Công Nghệ Làm Chủ</span>
+        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+      </button>
+
+      <div class="pt-4 border-t border-slate-200">
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 space-y-1">
+          <div class="font-bold flex items-center gap-1.5 text-amber-800">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+            <span>Quy Tắc Thẩm Định Lại:</span>
+          </div>
+          <p class="leading-relaxed">Nếu thay đổi MST, Tên Pháp Nhân hoặc Người đại diện, hồ sơ sẽ chuyển trạng thái <b class="text-amber-800">CHỜ THẨM ĐỊNH LẠI</b> bởi Sở KH&CN Hà Nội.</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT TABS FOR PROFILE EDITING -->
+    <div class="flex-1 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+
+      <!-- TAB 1: PHÁP LÝ & ĐẠI DIỆN -->
+      <div id="content-legal" class="space-y-6">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">1. Thông Tin Pháp Lý & Người Đại Diện Theo Pháp Luật</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Các thông tin cơ sở đối chiếu với Cơ sở dữ liệu Đăng ký kinh doanh Quốc gia.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tên Doanh Nghiệp Đầy Đủ (Tiếng Việt): <span class="text-red-500">*</span></label>
+            <input type="text" value="Công Ty Cổ Phần Công Nghệ Robot & Tự Động Hóa Rạng Đông" class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tên Giao Dịch Viết Tắt (Tiếng Anh/Viết tắt):</label>
+            <input type="text" value="RANG DONG ROBOTICS JSC (RD-ROBOT)" class="w-full p-2.5 rounded-xl border border-slate-200 font-semibold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Mã Số Doanh Nghiệp (MST):</label>
+            <input type="text" value="0101234567" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono bg-slate-50 text-slate-500 font-bold" readonly title="MST là khóa định danh bất biến, liên hệ Admin nếu muốn đổi">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Ngày Cấp ĐKKD Lần Đầu:</label>
+            <input type="date" value="2016-08-15" class="w-full p-2.5 rounded-xl border border-slate-200 font-medium">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block font-bold text-slate-700 mb-1">Địa Chỉ Trụ Sở Chính (Theo Giấy Phép ĐKKD): <span class="text-red-500">*</span></label>
+            <input type="text" value="Lô CN1-05, Khu Công nghệ cao Hòa Lạc, Xã Hạ Bằng, Huyện Thạch Thất, TP. Hà Nội" class="w-full p-2.5 rounded-xl border border-slate-200 font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Họ & Tên Người Đại Diện Pháp Luật: <span class="text-red-500">*</span></label>
+            <input type="text" value="Hoàng Văn Dũng" class="w-full p-2.5 rounded-xl border border-slate-200 font-bold focus:ring-2 focus:ring-blue-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Chức Danh:</label>
+            <input type="text" value="Tổng Giám Đốc" class="w-full p-2.5 rounded-xl border border-slate-200 font-medium">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Số Điện Thoại Liên Hệ (Được Bảo Vệ PDPD):</label>
+            <input type="tel" value="0912345678" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Email Công Vụ Tiếp Nhận Thông Báo:</label>
+            <input type="email" value="contact@rd-robotics.vn" class="w-full p-2.5 rounded-xl border border-slate-200 font-medium">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: VỐN & DOANH THU (HIDDEN BY DEFAULT) -->
+      <div id="content-finance" class="hidden space-y-6">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">2. Năng Lực Tài Chính & Đầu Tư Cho Nghiên Cứu R&D</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Tiêu chí quan trọng để xếp hạng quy mô doanh nghiệp ĐMST và đánh giá TT17.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Vốn Điều Lệ (VNĐ):</label>
+            <input type="text" value="45.000.000.000" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono font-bold text-blue-700">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tổng Tài Sản Năm Gần Nhất (VNĐ):</label>
+            <input type="text" value="68.500.000.000" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Doanh Thu Năm Gần Nhất (VNĐ):</label>
+            <input type="text" value="52.300.000.000" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tỷ Lệ Chi Cho R&D / Doanh Thu (%):</label>
+            <input type="text" value="8.5%" class="w-full p-2.5 rounded-xl border border-slate-200 font-bold text-emerald-700">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: SỞ HỮU TRÍ TUỆ (HIDDEN BY DEFAULT) -->
+      <div id="content-ip" class="hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">3. Danh Mục Văn Bằng Sở Hữu Trí Tuệ Đã Được Cấp</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Kê khai bằng độc quyền sáng chế, giải pháp hữu ích có xác thực của Cục SHTT.</p>
+          </div>
+          <button type="button" onclick="alert('Mở modal thêm mới bằng SHTT')" class="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1 border border-blue-200">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Thêm Bằng SHTT
+          </button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Bằng Độc Quyền Sáng Chế</span>
+                <span class="font-mono font-bold text-slate-700">Số: VN 1-0028456</span>
+              </div>
+              <h4 class="font-extrabold text-slate-900 text-sm">Hệ thống điều khiển cánh tay Robot 6 trục tích hợp thị giác máy tính</h4>
+              <p class="text-slate-500 text-[11px] mt-0.5">Ngày cấp: 12/03/2023 · Cục Sở hữu trí tuệ Việt Nam</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="text-blue-600 hover:underline font-bold">Sửa</button>
+              <button class="text-red-600 hover:underline font-bold">Xóa</button>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">Giải Pháp Hữu Ích</span>
+                <span class="font-mono font-bold text-slate-700">Số: VN 2-0003112</span>
+              </div>
+              <h4 class="font-extrabold text-slate-900 text-sm">Cơ cấu kẹp gắp tự thích nghi dùng cho robot phân loại sản phẩm nông sản</h4>
+              <p class="text-slate-500 text-[11px] mt-0.5">Ngày cấp: 05/11/2022 · Cục Sở hữu trí tuệ Việt Nam</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="text-blue-600 hover:underline font-bold">Sửa</button>
+              <button class="text-red-600 hover:underline font-bold">Xóa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.side-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('content-legal').classList.add('hidden');
+      document.getElementById('content-finance').classList.add('hidden');
+      document.getElementById('content-ip').classList.add('hidden');
+
+      if (tabId === 'tab-legal') {
+        document.getElementById('btn-legal').classList.add('active');
+        document.getElementById('content-legal').classList.remove('hidden');
+      } else if (tabId === 'tab-finance') {
+        document.getElementById('btn-finance').classList.add('active');
+        document.getElementById('content-finance').classList.remove('hidden');
+      } else if (tabId === 'tab-ip') {
+        document.getElementById('btn-ip').classList.add('active');
+        document.getElementById('content-ip').classList.remove('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function saveProfile() {
+      alert('Đã lưu thành công các thay đổi hồ sơ Doanh nghiệp! Dữ liệu đã được đồng bộ vào kho dữ liệu SSOT.');
+    }
+  </script>
+</body>
+</html>

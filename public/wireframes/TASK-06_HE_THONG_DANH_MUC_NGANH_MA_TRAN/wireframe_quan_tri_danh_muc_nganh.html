@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe: Quản Trị Danh Mục Ngành & Ma Trận TT17 (Master Data Admin)</title>
+  <style>
+    :root {
+      --primary: #059669;
+      --primary-hover: #047857;
+      --primary-bg: #ecfdf5;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --bg-surface: #ffffff;
+      --bg-app: #f9fafb;
+      --star-color: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-main);
+      background: var(--bg-app);
+      line-height: 1.5;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: var(--bg-surface);
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .header h1 { font-size: 22px; font-weight: 700; color: #111827; }
+    .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+    .badge-top {
+      background: #ecfdf5; color: #047857; font-weight: 600; font-size: 13px;
+      padding: 6px 14px; border-radius: 9999px; border: 1px solid #a7f3d0;
+    }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { background: #f3f4f6; color: var(--text-main); }
+    .tab-btn.active {
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-color: #a7f3d0;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: var(--bg-surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #111827;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 10px;
+    }
+    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #111827; margin-top: 4px; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f9fafb; font-weight: 600; color: #374151; }
+    tr:hover td { background: #fcfcfd; }
+
+    .badge-code {
+      display: inline-block; padding: 2px 6px; border-radius: 4px;
+      font-family: monospace; font-size: 12px; font-weight: 600;
+      background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb;
+    }
+    .badge-status {
+      display: inline-block; padding: 2px 8px; border-radius: 9999px;
+      font-size: 12px; font-weight: 600;
+    }
+    .status-active { background: #ecfdf5; color: #047857; }
+    .status-inactive { background: #fef2f2; color: #b91c1c; }
+
+    .star-rating { color: var(--star-color); letter-spacing: 2px; }
+
+    .toolbar {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;
+    }
+    .search-input {
+      padding: 9px 14px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 14px; min-width: 280px; outline: none;
+    }
+    .search-input:focus { border-color: var(--primary); }
+    .select-filter {
+      padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 14px; background: white; outline: none;
+    }
+
+    .btn {
+      padding: 9px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: white; border: 1px solid var(--border); color: #374151; }
+    .btn-outline:hover { background: #f9fafb; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 1000; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: white; width: 520px; border-radius: 12px; padding: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+    .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>Phân Hệ Quản Trị Danh Mục Ngành & Ma Trận TT17 (Master Data)</h1>
+      <p>Nguồn chân lý dữ liệu danh mục: 18 ngành trọng điểm, 10 nhóm C Thông tư 17, 15 triển lãm quốc tế và ma trận 109 cặp quan hệ.</p>
+    </div>
+    <span class="badge-top">Master Data v2.0</span>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label">Ngành Trọng Điểm</div>
+      <div class="stat-value">18 Ngành</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Chuẩn Thông Tư 17 (Nhóm C)</div>
+      <div class="stat-value">10 Phân Ngành</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Cặp Quan Hệ Lĩnh Vực - CN</div>
+      <div class="stat-value">109 Cặp (1-5 Sao)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Triển Lãm Chuyên Ngành</div>
+      <div class="stat-value">15 Triển Lãm</div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('tab-sectors')">
+      🏭 1. 18 Nhóm Ngành Công Nghiệp Trọng Điểm
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-tt17')">
+      📜 2. 10 Phân Ngành Chế Biến Chế Tạo (TT17)
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-matrix')">
+      🔗 3. Ma Trận 109 Cặp Lĩnh Vực - Công Nghệ (Lưới 2D)
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-tree')">
+      🌳 4. Cây Phân Cấp Taxonomy 3 Tầng (LV → CN → NC)
+    </button>
+    <button class="tab-btn" onclick="switchTab('tab-expo')">
+      🎪 5. 15 Triển Lãm Quốc Tế Chuyên Ngành
+    </button>
+  </div>
+
+  <!-- TAB 1: 18 NHÓM NGÀNH TRỌNG ĐIỂM -->
+  <div id="tab-sectors" class="tab-content active">
+    <div class="card">
+      <div class="card-title">
+        <span>Danh Sách 18 Nhóm Ngành Công Nghiệp & Công Nghệ Trọng Điểm</span>
+        <button class="btn btn-primary btn-sm" onclick="openSectorModal()">+ Thêm Ngành Mới</button>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" class="search-input" placeholder="Tìm theo tên ngành, mã định danh...">
+        <select class="select-filter">
+          <option value="">Tất cả Trạng thái</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Tạm ngưng</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Mã Ngành</th>
+            <th>Tên Nhóm Ngành</th>
+            <th>Phân Nhóm TT17 Tương Ứng</th>
+            <th>Số Lượng Quy Tắc Lọc</th>
+            <th>Trạng Thái</th>
+            <th>Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge-code">SEC-FOOD</span></td>
+            <td><strong>Chế biến Thực phẩm & Đồ uống</strong></td>
+            <td>C.10 (Thực phẩm), C.11 (Đồ uống)</td>
+            <td>164 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openSectorModal('Chế biến Thực phẩm & Đồ uống', 'SEC-FOOD')">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-TEXTILE</span></td>
+            <td><strong>Dệt may & Da giày</strong></td>
+            <td>C.13 (Dệt)</td>
+            <td>142 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openSectorModal('Dệt may & Da giày', 'SEC-TEXTILE')">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-WOOD</span></td>
+            <td><strong>Chế biến Gỗ & Sản phẩm từ gỗ</strong></td>
+            <td>C.16 (Gỗ, tre, nứa), C.31 (Nội thất)</td>
+            <td>98 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-CHEM</span></td>
+            <td><strong>Hóa chất & Sản phẩm hóa chất</strong></td>
+            <td>C.20 (Hóa chất)</td>
+            <td>115 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-PHARMA</span></td>
+            <td><strong>Dược phẩm, Hóa dược & Thiết bị y tế</strong></td>
+            <td>C.21 (Thuốc, dược liệu)</td>
+            <td>108 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-ELEC</span></td>
+            <td><strong>Điện tử, Viễn thông & CNTT</strong></td>
+            <td>C.26 (Điện tử, quang học)</td>
+            <td>178 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-POWER</span></td>
+            <td><strong>Thiết bị điện & Năng lượng tái tạo</strong></td>
+            <td>C.27 (Thiết bị điện)</td>
+            <td>126 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-MECH</span></td>
+            <td><strong>Cơ khí chế tạo & Tự động hóa</strong></td>
+            <td>C.32 (Chế tạo khác)</td>
+            <td>195 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm">Sửa</button></td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">SEC-AGRI</span></td>
+            <td><strong>Nông nghiệp Công nghệ cao</strong></td>
+            <td>Liên ngành Nông nghiệp</td>
+            <td>140 quy tắc</td>
+            <td><span class="badge-status status-active">Đang Hoạt Động</span></td>
+            <td><button class="btn btn-outline btn-sm">Sửa</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 2: 10 PHÂN NGÀNH THÔNG TƯ 17 -->
+  <div id="tab-tt17" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        <span>Bảng Chuẩn Hóa Nhóm C Công Nghiệp Chế Biến Chế Tạo (Thông Tư 17/2019/TT-BKHCN)</span>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Được trích xuất nguyên vẹn từ Phụ lục II Thông tư 17, phục vụ tính điểm hệ số đồng bộ TĐB và thẩm định công nghệ.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Mã Phân Ngành</th>
+            <th>Tên Phân Ngành Theo Thông Tư 17</th>
+            <th>Mức Tiêu Thụ Điện Tham Chiếu</th>
+            <th>Tỷ Suất Lợi Nhuận</th>
+            <th>Hệ Số Giá Trị Gia Tăng</th>
+            <th>Suất Đầu Tư (Tỷ VNĐ)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge-code">C.10</span></td>
+            <td><strong>Sản xuất chế biến thực phẩm</strong></td>
+            <td>200 kWh/tấn</td>
+            <td>0.07</td>
+            <td>0.75</td>
+            <td>150</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.11</span></td>
+            <td><strong>Sản xuất đồ uống</strong></td>
+            <td>200 kWh/m3</td>
+            <td>0.05</td>
+            <td>0.20</td>
+            <td>150</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.13</span></td>
+            <td><strong>Dệt</strong></td>
+            <td>200 kWh/1000m</td>
+            <td>0.05</td>
+            <td>0.40</td>
+            <td>75</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.16</span></td>
+            <td><strong>Chế biến gỗ và sản xuất sản phẩm từ gỗ, tre, nứa</strong></td>
+            <td>150 kWh/m3</td>
+            <td>0.05</td>
+            <td>0.65</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.20</span></td>
+            <td><strong>Sản xuất hóa chất và sản phẩm hóa chất</strong></td>
+            <td>250 kWh/tấn</td>
+            <td>0.10</td>
+            <td>0.55</td>
+            <td>150</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.21</span></td>
+            <td><strong>Sản xuất thuốc, hóa dược và dược liệu</strong></td>
+            <td>300 kWh/tấn</td>
+            <td>0.07</td>
+            <td>0.60</td>
+            <td>200</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.26</span></td>
+            <td><strong>Sản xuất sản phẩm điện tử, máy vi tính và sản phẩm quang học</strong></td>
+            <td>300 kWh/triệu SP</td>
+            <td>0.05</td>
+            <td>0.45</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.27</span></td>
+            <td><strong>Sản xuất thiết bị điện</strong></td>
+            <td>300 kWh/triệu SP</td>
+            <td>0.05</td>
+            <td>0.45</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.31</span></td>
+            <td><strong>Sản xuất giường, tủ, bàn, ghế</strong></td>
+            <td>150 kWh/bộ</td>
+            <td>0.05</td>
+            <td>0.55</td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td><span class="badge-code">C.32</span></td>
+            <td><strong>Công nghiệp chế biến, chế tạo khác</strong></td>
+            <td>200 kWh/tấn</td>
+            <td>0.07</td>
+            <td>0.55</td>
+            <td>150</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 3: MA TRẬN 109 CẶP LĨNH VỰC - CÔNG NGHỆ -->
+  <div id="tab-matrix" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        <span>Ma Trận Tương Thích Lĩnh Vực - Công Nghệ (109 Cặp Quan Hệ Trọng Số)</span>
+        <button class="btn btn-outline btn-sm" onclick="alert('Đã cập nhật trọng số ma trận cho Engine Khuyến nghị Cung - Cầu')">Export Ma Trận JSON</button>
+      </div>
+
+      <div class="toolbar">
+        <select class="select-filter" id="matrix-lv-filter" onchange="filterMatrix()">
+          <option value="">Tất cả Lĩnh Vực (LV01 - LV15)</option>
+          <option value="LV01">LV01 - Nông nghiệp</option>
+          <option value="LV05">LV05 - Chế biến thực phẩm – đồ uống</option>
+          <option value="LV08">LV08 - Cơ khí chế tạo</option>
+          <option value="LV10">LV10 - Điện tử & Bán dẫn</option>
+        </select>
+        <select class="select-filter">
+          <option value="">Tất cả Mức Điểm Phù Hợp (1 - 5 Sao)</option>
+          <option value="5">5 Sao (Rất phù hợp / Trọng tâm)</option>
+          <option value="4">4 Sao (Phù hợp cao)</option>
+          <option value="3">3 Sao (Phù hợp trung bình)</option>
+        </select>
+      </div>
+
+      <!-- Toggle View -->
+      <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+        <button id="btn-view-table" class="btn btn-primary btn-sm" onclick="switchMatrixView('table')">📋 Chế Độ Danh Sách</button>
+        <button id="btn-view-grid" class="btn btn-outline btn-sm" onclick="switchMatrixView('grid')">🗺️ Chế Độ Lưới Ma Trận 2D (Heatmap)</button>
+      </div>
+
+      <!-- VIEW 1: TABLE -->
+      <div id="matrix-table-view">
+        <table>
+          <thead>
+            <tr>
+              <th>Mã Lĩnh Vực</th>
+              <th>Tên Lĩnh Vực Ứng Dụng</th>
+              <th>Mã Công Nghệ</th>
+              <th>Nhóm Công Nghệ</th>
+              <th>Mức Độ Tương Thích</th>
+              <th>Trọng Số Matching</th>
+              <th>Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-table-body">
+            <tr>
+              <td><span class="badge-code">LV01</span></td>
+              <td>Nông nghiệp</td>
+              <td><span class="badge-code">CN05</span></td>
+              <td>IoT và cảm biến</td>
+              <td><span class="star-rating">★★★★★</span> (5/5)</td>
+              <td>1.0</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV01 - Nông nghiệp', 'CN05 - IoT và cảm biến', 5, 1.0)">Sửa Trọng Số</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge-code">LV01</span></td>
+              <td>Nông nghiệp</td>
+              <td><span class="badge-code">CN06</span></td>
+              <td>Trí tuệ nhân tạo – AI</td>
+              <td><span class="star-rating">★★★★★</span> (5/5)</td>
+              <td>1.0</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV01 - Nông nghiệp', 'CN06 - Trí tuệ nhân tạo – AI', 5, 1.0)">Sửa Trọng Số</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge-code">LV01</span></td>
+              <td>Nông nghiệp</td>
+              <td><span class="badge-code">CN13</span></td>
+              <td>GIS – bản đồ số</td>
+              <td><span class="star-rating">★★★★★</span> (5/5)</td>
+              <td>1.0</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV01 - Nông nghiệp', 'CN13 - GIS – bản đồ số', 5, 1.0)">Sửa Trọng Số</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge-code">LV01</span></td>
+              <td>Nông nghiệp</td>
+              <td><span class="badge-code">CN14</span></td>
+              <td>UAV – drone phun thuốc</td>
+              <td><span class="star-rating">★★★★★</span> (5/5)</td>
+              <td>1.0</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV01 - Nông nghiệp', 'CN14 - UAV – drone', 5, 1.0)">Sửa Trọng Số</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge-code">LV05</span></td>
+              <td>Chế biến thực phẩm – đồ uống</td>
+              <td><span class="badge-code">CN02</span></td>
+              <td>Tự động hóa dây chuyền đóng gói</td>
+              <td><span class="star-rating">★★★★★</span> (5/5)</td>
+              <td>1.0</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV05 - Thực phẩm', 'CN02 - Tự động hóa', 5, 1.0)">Sửa Trọng Số</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge-code">LV05</span></td>
+              <td>Chế biến thực phẩm – đồ uống</td>
+              <td><span class="badge-code">CN12</span></td>
+              <td>Truy xuất nguồn gốc Blockchain</td>
+              <td><span class="star-rating">★★★★★</span> (5/5)</td>
+              <td>1.0</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV05 - Thực phẩm', 'CN12 - Blockchain GS1', 5, 1.0)">Sửa Trọng Số</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge-code">LV08</span></td>
+              <td>Cơ khí chế tạo</td>
+              <td><span class="badge-code">CN01</span></td>
+              <td>Robot công nghiệp & Cánh tay robot</td>
+              <td><span class="star-rating">★★★★★</span> (5/5)</td>
+              <td>1.0</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV08 - Cơ khí chế tạo', 'CN01 - Robot công nghiệp', 5, 1.0)">Sửa Trọng Số</button></td>
+            </tr>
+            <tr>
+              <td><span class="badge-code">LV08</span></td>
+              <td>Cơ khí chế tạo</td>
+              <td><span class="badge-code">CN04</span></td>
+              <td>In 3D kim loại và chế tạo mẫu nhanh</td>
+              <td><span class="star-rating">★★★★☆</span> (4/5)</td>
+              <td>0.8</td>
+              <td><button class="btn btn-outline btn-sm" onclick="openMatrixModal('LV08 - Cơ khí chế tạo', 'CN04 - In 3D kim loại', 4, 0.8)">Sửa Trọng Số</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- VIEW 2: 2D HEATMAP GRID -->
+      <div id="matrix-grid-view" style="display: none; overflow-x: auto;">
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+          💡 <em>Nhấp chuột vào bất kỳ ô giao điểm nào để điều chỉnh trọng số (1–5 sao) hoặc kích hoạt/tắt liên kết.</em>
+        </p>
+        <table style="text-align: center; font-size: 12px;">
+          <thead>
+            <tr>
+              <th style="min-width: 160px; text-align: left;">Lĩnh Vực \ Nhóm CN</th>
+              <th>CN01 Cơ khí</th>
+              <th>CN02 Tự động</th>
+              <th>CN03 Robot</th>
+              <th>CN05 IoT</th>
+              <th>CN06 AI</th>
+              <th>CN12 Nguồn gốc</th>
+              <th>CN13 GIS</th>
+              <th>CN14 UAV</th>
+              <th>CN25 Năng lượng</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: left;"><strong>LV01 - Nông nghiệp</strong></td>
+              <td style="color: #cbd5e1;">—</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td onclick="openMatrixModal('LV01', 'CN05 IoT', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td onclick="openMatrixModal('LV01', 'CN06 AI', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td onclick="openMatrixModal('LV01', 'CN13 GIS', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td onclick="openMatrixModal('LV01', 'CN14 UAV', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td onclick="openMatrixModal('LV01', 'CN25 NLTT', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+            </tr>
+            <tr>
+              <td style="text-align: left;"><strong>LV05 - Thực phẩm & Đồ uống</strong></td>
+              <td style="color: #cbd5e1;">—</td>
+              <td onclick="openMatrixModal('LV05', 'CN02 Tự động', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td onclick="openMatrixModal('LV05', 'CN05 IoT', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td onclick="openMatrixModal('LV05', 'CN12 GS1', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td onclick="openMatrixModal('LV05', 'CN25 Tiết kiệm', 4, 0.8)" style="background: #fef9c3; cursor: pointer; font-weight: bold; color: #854d0e;">★★★★☆ 4.0</td>
+            </tr>
+            <tr>
+              <td style="text-align: left;"><strong>LV08 - Cơ khí chế tạo</strong></td>
+              <td onclick="openMatrixModal('LV08', 'CN01 Cơ khí', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td onclick="openMatrixModal('LV08', 'CN02 Tự động', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td onclick="openMatrixModal('LV08', 'CN03 Robot', 5, 1.0)" style="background: #dcfce7; cursor: pointer; font-weight: bold; color: #15803d;">★★★★★ 5.0</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td onclick="openMatrixModal('LV08', 'CN06 AI QC', 4, 0.8)" style="background: #fef9c3; cursor: pointer; font-weight: bold; color: #854d0e;">★★★★☆ 4.0</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td style="color: #cbd5e1;">—</td>
+              <td style="color: #cbd5e1;">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: CÂY PHÂN CẤP TAXONOMY 3 TẦNG (LV -> CN -> NC) -->
+  <div id="tab-tree" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        <span>Cây Phân Cấp Taxonomy Công Nghệ 3 Tầng (Hierarchical Tech Tree)</span>
+        <button class="btn btn-primary btn-sm" onclick="alert('Mở form tạo thêm nhánh công nghệ con')">+ Thêm Nhánh Danh Mục Mới</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Mô hình phân cấp 3 tầng liên thông: <strong>Tầng 1 (Lĩnh vực LV01–LV18)</strong> &rarr; <strong>Tầng 2 (Nhóm công nghệ CN01–CN48)</strong> &rarr; <strong>Tầng 3 (Công nghệ cụ thể NC01–NC25)</strong>.
+      </p>
+
+      <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 18px; font-size: 13px; font-family: monospace;">
+        <!-- Root Node 1 -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: bold; color: #1e3a8a; display: flex; align-items: center; gap: 6px;">
+            📁 <strong>[LV01] Nông Nghiệp, Lâm Nghiệp & Thủy Sản</strong>
+            <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px;">4 Nhóm CN • 12 Công nghệ cụ thể</span>
+          </div>
+          <div style="margin-left: 24px; margin-top: 6px; border-left: 2px dashed #cbd5e1; padding-left: 12px; space-y: 6px;">
+            <div>
+              <div style="font-weight: 600; color: #0f766e;">🔹 [CN05] IoT và Cảm biến nông nghiệp thông minh</div>
+              <div style="margin-left: 20px; font-size: 12px; color: #475569; margin-top: 2px;">
+                └─ 📄 [NC01] Cảm biến đo độ ẩm đất & NPK LoRaWAN (TRL 8)<br>
+                └─ 📄 [NC02] Trạm quan trắc tiểu khí hậu vườn ươm tự động (TRL 7)
+              </div>
+            </div>
+            <div style="margin-top: 6px;">
+              <div style="font-weight: 600; color: #0f766e;">🔹 [CN06] Trí tuệ nhân tạo (AI) trong nông nghiệp</div>
+              <div style="margin-left: 20px; font-size: 12px; color: #475569; margin-top: 2px;">
+                └─ 📄 [NC03] Thuật toán nhận diện sâu bệnh qua ảnh chụp lá cây (TRL 8)<br>
+                └─ 📄 [NC04] Mô hình dự báo sản lượng thu hoạch cây công nghiệp (TRL 6)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Root Node 2 -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-weight: bold; color: #1e3a8a; display: flex; align-items: center; gap: 6px;">
+            📁 <strong>[LV08] Cơ Khí Chế Tạo & Tự Động Hóa</strong>
+            <span style="font-size: 11px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px;">6 Nhóm CN • 18 Công nghệ cụ thể</span>
+          </div>
+          <div style="margin-left: 24px; margin-top: 6px; border-left: 2px dashed #cbd5e1; padding-left: 12px;">
+            <div>
+              <div style="font-weight: 600; color: #0f766e;">🔹 [CN01] Robot công nghiệp & Cánh tay thao tác</div>
+              <div style="margin-left: 20px; font-size: 12px; color: #475569; margin-top: 2px;">
+                └─ 📄 [NC05] Robot hàn tự động 6 bậc tự do NacenWeld (TRL 8)<br>
+                └─ 📄 [NC06] Xe tự hành AGV vận chuyển phôi trong nhà xưởng (TRL 7)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: 15 TRIỂN LÃM QUỐC TẾ -->
+  <div id="tab-expo" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        <span>Danh Mục 15 Hội Chợ / Triển Lãm Quốc Tế Chuyên Ngành Tham Chiếu</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Tên Triển Lãm Quốc Tế</th>
+            <th>Lĩnh Vực Trọng Tâm</th>
+            <th>Địa Điểm Tổ Chức</th>
+            <th>Kỳ Triển Lãm</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01</td>
+            <td><strong>Triển lãm Viễn thông, CNTT & Truyền thông (Vietnam Telecomp)</strong></td>
+            <td>Viễn thông, CNTT, Phần mềm</td>
+            <td>Hà Nội & TP.HCM</td>
+            <td>Thường niên 2026</td>
+          </tr>
+          <tr>
+            <td>02</td>
+            <td><strong>Triển lãm Công nghiệp In ấn & Bao bì tại Hà Nội (HanoiPrintPack)</strong></td>
+            <td>In ấn, Đóng gói bao bì</td>
+            <td>Hà Nội</td>
+            <td>2026</td>
+          </tr>
+          <tr>
+            <td>03</td>
+            <td><strong>Triển lãm Quốc tế Ngành nhựa và Cao su (HanoiPlas)</strong></td>
+            <td>Vật liệu polymer, khuôn đúc</td>
+            <td>Hà Nội</td>
+            <td>2026</td>
+          </tr>
+          <tr>
+            <td>04</td>
+            <td><strong>Triển lãm Quốc tế Logistics Việt Nam (VILOG)</strong></td>
+            <td>Chuỗi cung ứng, kho bãi thông minh</td>
+            <td>TP.HCM</td>
+            <td>2026</td>
+          </tr>
+          <tr>
+            <td>05</td>
+            <td><strong>Triển lãm Quốc tế Thủy sản Việt Nam (Vietfish)</strong></td>
+            <td>Thủy sản, Công nghệ chế biến lạnh</td>
+            <td>TP.HCM</td>
+            <td>2026</td>
+          </tr>
+          <tr>
+            <td>06</td>
+            <td><strong>Triển lãm Công nghệ Chế biến Thực phẩm (Foodtech)</strong></td>
+            <td>Thực phẩm đóng hộp, đồ uống</td>
+            <td>Hà Nội</td>
+            <td>2026</td>
+          </tr>
+          <tr>
+            <td>07</td>
+            <td><strong>Triển lãm Quốc tế Công nghiệp Hóa chất lần thứ 22 (Vinachem)</strong></td>
+            <td>Hóa chất công nghiệp, phân bón</td>
+            <td>TP.HCM</td>
+            <td>2026</td>
+          </tr>
+          <tr>
+            <td>08</td>
+            <td><strong>Triển lãm Nông nghiệp Công nghệ cao (Growtech Vietnam)</strong></td>
+            <td>Cơ giới hóa nông nghiệp, Smart Farm</td>
+            <td>Hà Nội</td>
+            <td>2026</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Thêm / Sửa Ngành -->
+<div id="sectorModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">Thêm / Chỉnh Sửa Nhóm Ngành</div>
+    <div class="form-group">
+      <label>Mã Ngành (Mã code chuẩn):</label>
+      <input type="text" id="modal-sec-code" placeholder="VD: SEC-FOOD, SEC-AI...">
+    </div>
+    <div class="form-group">
+      <label>Tên Nhóm Ngành:</label>
+      <input type="text" id="modal-sec-name" placeholder="VD: Chế biến thực phẩm...">
+    </div>
+    <div class="form-group">
+      <label>Ánh Xạ Phân Nhóm Thông Tư 17 (Nhóm C):</label>
+      <select id="modal-sec-tt17">
+        <option value="C.10">C.10: Sản xuất chế biến thực phẩm</option>
+        <option value="C.11">C.11: Sản xuất đồ uống</option>
+        <option value="C.13">C.13: Dệt</option>
+        <option value="C.16">C.16: Chế biến gỗ</option>
+        <option value="C.20">C.20: Sản xuất hóa chất</option>
+        <option value="C.21">C.21: Thuốc, dược liệu</option>
+        <option value="C.26">C.26: Điện tử, quang học</option>
+        <option value="C.27">C.27: Thiết bị điện</option>
+        <option value="C.31">C.31: Giường tủ bàn ghế</option>
+        <option value="C.32">C.32: Chế biến chế tạo khác</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Trạng Thái:</label>
+      <select id="modal-sec-status">
+        <option value="active">Đang hoạt động</option>
+        <option value="inactive">Tạm ngưng</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeSectorModal()">Hủy Bỏ</button>
+      <button class="btn btn-primary" onclick="submitSector()">Lưu Danh Mục</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chỉnh Sửa Trọng Số Ma Trận Cặp LV-CN -->
+<div id="matrixModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">Điều Chỉnh Trọng Số Matching Cặp Quan Hệ</div>
+    <div class="form-group">
+      <label>Cặp Lĩnh Vực - Công Nghệ:</label>
+      <input type="text" id="modal-matrix-pair" readonly style="background: #f1f5f9; font-weight: bold;">
+    </div>
+    <div class="form-group">
+      <label>Mức Độ Phù Hợp / Khuyến Nghị:</label>
+      <select id="modal-matrix-stars" onchange="updateWeightValue(this.value)">
+        <option value="5">★★★★★ (5 Sao - Rất phù hợp / Trọng số 1.0)</option>
+        <option value="4">★★★★☆ (4 Sao - Phù hợp cao / Trọng số 0.8)</option>
+        <option value="3">★★★☆☆ (3 Sao - Phù hợp trung bình / Trọng số 0.6)</option>
+        <option value="2">★★☆☆☆ (2 Sao - Phù hợp thấp / Trọng số 0.4)</option>
+        <option value="1">★☆☆☆☆ (1 Sao - Tương quan yếu / Trọng số 0.2)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Hệ Số Khuếch Đại Matching Engine (Weight Factor):</label>
+      <input type="number" id="modal-matrix-weight" step="0.1" min="0.1" max="1.0" value="1.0">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="modal-matrix-active" checked> Kích hoạt cặp quan hệ này trong thuật toán Radar Matching (TASK-08)
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeMatrixModal()">Hủy Bỏ</button>
+      <button class="btn btn-primary" onclick="saveMatrixWeight()">Lưu Cấu Hình</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  function openSectorModal(name = '', code = '') {
+    document.getElementById('modal-sec-name').value = name;
+    document.getElementById('modal-sec-code').value = code;
+    document.getElementById('sectorModal').classList.add('open');
+  }
+
+  function closeSectorModal() {
+    document.getElementById('sectorModal').classList.remove('open');
+  }
+
+  function submitSector() {
+    const code = document.getElementById('modal-sec-code').value;
+    const name = document.getElementById('modal-sec-name').value;
+    if (!code || !name) {
+      alert('Vui lòng nhập đầy đủ mã và tên ngành!');
+      return;
+    }
+    alert(`Đã lưu thành công ngành: [${code}] ${name}`);
+    closeSectorModal();
+  }
+
+  function switchMatrixView(mode) {
+    if (mode === 'grid') {
+      document.getElementById('matrix-table-view').style.display = 'none';
+      document.getElementById('matrix-grid-view').style.display = 'block';
+      document.getElementById('btn-view-grid').classList.replace('btn-outline', 'btn-primary');
+      document.getElementById('btn-view-table').classList.replace('btn-primary', 'btn-outline');
+    } else {
+      document.getElementById('matrix-table-view').style.display = 'block';
+      document.getElementById('matrix-grid-view').style.display = 'none';
+      document.getElementById('btn-view-table').classList.replace('btn-outline', 'btn-primary');
+      document.getElementById('btn-view-grid').classList.replace('btn-primary', 'btn-outline');
+    }
+  }
+
+  function openMatrixModal(lv, cn, stars = 5, weight = 1.0) {
+    document.getElementById('modal-matrix-pair').value = `${lv} ⟷ ${cn}`;
+    document.getElementById('modal-matrix-stars').value = stars;
+    document.getElementById('modal-matrix-weight').value = weight;
+    document.getElementById('matrixModal').classList.add('open');
+  }
+
+  function closeMatrixModal() {
+    document.getElementById('matrixModal').classList.remove('open');
+  }
+
+  function updateWeightValue(stars) {
+    const weights = { "5": 1.0, "4": 0.8, "3": 0.6, "2": 0.4, "1": 0.2 };
+    document.getElementById('modal-matrix-weight').value = weights[stars] || 1.0;
+  }
+
+  function saveMatrixWeight() {
+    const pair = document.getElementById('modal-matrix-pair').value;
+    const weight = document.getElementById('modal-matrix-weight').value;
+    alert(`Đã lưu thành công trọng số ${weight} cho cặp quan hệ: ${pair}!`);
+    closeMatrixModal();
+  }
+</script>
+
+</body>
+</html>

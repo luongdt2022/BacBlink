@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Kho Giải Pháp Chào Bán (Seller Workspace) — NacenTwin (TASK-04)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          S
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+            <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">SELLER WORKSPACE</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">TASK-04 BASIC DESIGN</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Quản Lý Danh Mục Giải Pháp & Công Nghệ Chào Bán Của Doanh Nghiệp</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="wireframe_tao_ho_so_chao_ban.html" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Đăng Chào Bán Công Nghệ Mới
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Tổng số giải pháp</span>
+          <i data-lucide="layers" class="w-4 h-4 text-slate-400"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-slate-900">8</p>
+        <p class="text-[11px] text-slate-400">Trong danh mục của đơn vị</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Đang niêm yết công khai</span>
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-emerald-600">6</p>
+        <p class="text-[11px] text-emerald-700 font-semibold">Đã được Sở KH&CN xác thực</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Chờ Sở duyệt hồ sơ</span>
+          <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-amber-600">1</p>
+        <p class="text-[11px] text-slate-400">SLA phản hồi &le; 48 giờ</p>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-slate-500">
+          <span class="text-xs font-bold">Yêu cầu kết nối nhận được</span>
+          <i data-lucide="handshake" class="w-4 h-4 text-blue-500"></i>
+        </div>
+        <p class="text-2xl font-extrabold text-blue-700">14</p>
+        <p class="text-[11px] text-blue-600 font-semibold">4 yêu cầu mới đang chờ trả lời</p>
+      </div>
+    </div>
+
+    <!-- Management Table & Filter -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <h3 class="text-base font-extrabold text-slate-900">Danh Mục Công Nghệ & Sáng Chế Của Doanh Nghiệp</h3>
+          <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-xs font-bold">8 mục</span>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <input type="text" placeholder="Tìm kiếm công nghệ..." class="text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full sm:w-64">
+          <select class="text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700">
+            <option>Tất cả trạng thái</option>
+            <option>Đang hiển thị</option>
+            <option>Chờ Sở duyệt</option>
+            <option>Bản nháp</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold">
+              <th class="py-3 px-3">Tên Công Nghệ & Giải Pháp</th>
+              <th class="py-3 px-3">Ngành / Lĩnh Vực</th>
+              <th class="py-3 px-3">Cấp Độ TRL</th>
+              <th class="py-3 px-3">Bảo Hộ SHTT</th>
+              <th class="py-3 px-3">Trạng Thái Sở KH&CN</th>
+              <th class="py-3 px-3 text-center">Hiển Thị</th>
+              <th class="py-3 px-3 text-right">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+
+            <!-- Item 1 -->
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="py-3.5 px-3">
+                <div class="font-extrabold text-slate-900 text-sm">Hệ Thống NacenVision QC-400</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Kiểm tra khuyết tật mối hàn chi tiết máy bằng AI & Hồng ngoại</div>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold text-[10px]">Chế biến, chế tạo</span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-bold text-[11px]">TRL 8</span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-bold text-[10px] flex items-center gap-1 w-max">
+                  <i data-lucide="shield-check" class="w-3 h-3"></i> Bằng Sáng Chế
+                </span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 w-max">
+                  <i data-lucide="check" class="w-3 h-3"></i> Đã Phê Duyệt
+                </span>
+              </td>
+              <td class="py-3.5 px-3 text-center">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" checked class="sr-only peer">
+                  <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+              </td>
+              <td class="py-3.5 px-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <a href="wireframe_chi_tiet_ho_so_chao_ban.html" class="p-1.5 text-slate-500 hover:text-blue-600 rounded-lg hover:bg-slate-100" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </a>
+                  <a href="wireframe_chinh_sua_ho_so_chao_ban.html" class="p-1.5 text-slate-500 hover:text-amber-600 rounded-lg hover:bg-slate-100" title="Chỉnh sửa">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Item 2 -->
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="py-3.5 px-3">
+                <div class="font-extrabold text-slate-900 text-sm">Robot Hàn Khung Thép Tự Động T-100</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Tích hợp cánh tay robot công nghiệp 6 bậc tự do</div>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold text-[10px]">Cơ điện tử</span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-bold text-[11px]">TRL 7</span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-bold text-[10px] w-max">
+                  Giải Pháp Hữu Ích
+                </span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-bold text-[10px] flex items-center gap-1 w-max">
+                  <i data-lucide="clock" class="w-3 h-3"></i> Chờ Sở Thẩm Định
+                </span>
+              </td>
+              <td class="py-3.5 px-3 text-center">
+                <span class="text-[10px] text-slate-400">Chờ duyệt</span>
+              </td>
+              <td class="py-3.5 px-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <a href="wireframe_chinh_sua_ho_so_chao_ban.html" class="p-1.5 text-slate-500 hover:text-amber-600 rounded-lg hover:bg-slate-100" title="Chỉnh sửa">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Item 3: BỊ TỪ CHỐI DUYỆT (GIẢI QUYẾT CỜ 3 PO-DEC-20261011-01) -->
+            <tr class="hover:bg-red-50/40 transition bg-red-50/20">
+              <td class="py-3.5 px-3">
+                <div class="font-extrabold text-slate-900 text-sm">Hệ Thống Phân Tích Khí Thải Công Nghiệp SmartGas-20</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Quan trắc tự động liên tục nồng độ SO2, NOx, CO</div>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-bold text-[10px]">Môi trường</span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-bold text-[11px]">TRL 6</span>
+              </td>
+              <td class="py-3.5 px-3">
+                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold text-[10px] w-max">
+                  Bí Quyết Công Nghệ
+                </span>
+              </td>
+              <td class="py-3.5 px-3">
+                <button onclick="openRejectionDrawer('Hệ Thống SmartGas-20', 'REF-2026-HN-0092', 'Sở KH&CN Hà Nội', '10/10/2026', 'Hồ sơ chưa đính kèm biên bản kiểm định hiệu chuẩn cảm biến khí của cơ quan độc lập và tài liệu mô tả bí quyết công nghệ chưa có cam kết bảo mật theo quy định.', 'wireframe_chinh_sua_ho_so_chao_ban.html')" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-300 px-2.5 py-1 rounded-full font-extrabold text-[10px] flex items-center gap-1 w-max transition shadow-xs">
+                  <i data-lucide="alert-circle" class="w-3 h-3 text-red-600"></i> Bị Từ Chối Duyệt (Xem Lý Do)
+                </button>
+              </td>
+              <td class="py-3.5 px-3 text-center">
+                <span class="text-[10px] text-red-600 font-bold">Đã ẩn sàn</span>
+              </td>
+              <td class="py-3.5 px-3 text-right">
+                <div class="flex items-center justify-end gap-1.5">
+                  <button onclick="openRejectionDrawer('Hệ Thống SmartGas-20', 'REF-2026-HN-0092', 'Sở KH&CN Hà Nội', '10/10/2026', 'Hồ sơ chưa đính kèm biên bản kiểm định hiệu chuẩn cảm biến khí của cơ quan độc lập và tài liệu mô tả bí quyết công nghệ chưa có cam kết bảo mật theo quy định.', 'wireframe_chinh_sua_ho_so_chao_ban.html')" class="p-1.5 text-red-600 hover:text-red-700 rounded-lg hover:bg-red-100" title="Xem Biên Bản Từ Chối">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                  </button>
+                  <a href="wireframe_chinh_sua_ho_so_chao_ban.html" class="p-1.5 text-amber-600 hover:text-amber-700 rounded-lg hover:bg-amber-100" title="Chỉnh sửa bổ sung hồ sơ">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- DRAWER: BIÊN BẢN THẨM ĐỊNH TỪ CHỐI CỦA SỞ KH&CN (GIẢI QUYẾT CỜ 3) -->
+  <div id="drawer-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden transition-opacity" onclick="closeRejectionDrawer()"></div>
+  <aside id="drawer-rejection" class="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 border-l border-slate-200 p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out">
+    <div class="space-y-5 overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-red-100 text-red-700 flex items-center justify-center font-bold">
+            <i data-lucide="shield-alert" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Biên Bản Thẩm Định Cấp Sở</h3>
+            <p class="text-[11px] text-slate-500" id="drawer-audit-code">Số: BB-TĐ/2026/SỞ-HN</p>
+          </div>
+        </div>
+        <button onclick="closeRejectionDrawer()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+          <div>
+            <span class="text-slate-400 text-[10px] block font-semibold">Tên công nghệ nộp thẩm định:</span>
+            <b class="text-slate-900 text-sm" id="drawer-tech-name">Hệ Thống Phân Tích Khí Thải</b>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200 text-[11px]">
+            <div>Đơn vị thẩm định: <b class="text-blue-700 block" id="drawer-gov-unit">Sở KH&CN Hà Nội</b></div>
+            <div>Ngày ra quyết định: <b class="text-slate-700 block" id="drawer-audit-date">10/10/2026</b></div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-red-50/70 border border-red-200 text-red-900 space-y-2">
+          <div class="flex items-center gap-1.5 font-extrabold text-xs text-red-800">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-600"></i>
+            <span>NỘI DUNG YÊU CẦU BỔ SUNG / LÝ DO TỪ CHỐI:</span>
+          </div>
+          <p class="text-xs leading-relaxed text-red-950 font-medium" id="drawer-reason-text">
+            Hồ sơ chưa đính kèm biên bản kiểm định hiệu chuẩn cảm biến khí của cơ quan độc lập và tài liệu mô tả bí quyết công nghệ chưa có cam kết bảo mật theo quy định.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="font-extrabold text-slate-800">Hướng Dẫn Khắc Phục Của Chuyên Viên Thẩm Định:</h4>
+          <ul class="list-disc list-inside space-y-1.5 text-slate-600 text-xs">
+            <li>Bổ sung Giấy chứng nhận thử nghiệm hiệu chuẩn thiết bị (Quatest 1 hoặc Viện Đo lường).</li>
+            <li>Tại Tab <b>Bảo hộ SHTT</b>, đính kèm văn bản Thỏa thuận bảo mật thông tin nội bộ (NDA).</li>
+            <li>Cập nhật lại mức TRL phù hợp với kết quả kiểm định thực tế.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 text-xs">
+      <button onclick="closeRejectionDrawer()" class="px-4 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition">
+        Đóng
+      </button>
+      <a id="drawer-edit-btn" href="wireframe_chinh_sua_ho_so_chao_ban.html" class="px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl transition flex items-center gap-1.5 shadow">
+        <i data-lucide="edit-3" class="w-4 h-4"></i>
+        <span>Chỉnh Sửa Hồ Sơ Lại Ngay</span>
+      </a>
+    </div>
+  </aside>
+
+  <script>
+    lucide.createIcons();
+
+    function openRejectionDrawer(techName, auditCode, govUnit, auditDate, reason, editUrl) {
+      document.getElementById('drawer-tech-name').textContent = techName;
+      document.getElementById('drawer-audit-code').textContent = 'Số: ' + auditCode;
+      document.getElementById('drawer-gov-unit').textContent = govUnit;
+      document.getElementById('drawer-audit-date').textContent = auditDate;
+      document.getElementById('drawer-reason-text').textContent = reason;
+      document.getElementById('drawer-edit-btn').href = editUrl || 'wireframe_chinh_sua_ho_so_chao_ban.html';
+
+      document.getElementById('drawer-backdrop').classList.remove('hidden');
+      document.getElementById('drawer-rejection').classList.remove('translate-x-full');
+      lucide.createIcons();
+    }
+
+    function closeRejectionDrawer() {
+      document.getElementById('drawer-backdrop').classList.add('hidden');
+      document.getElementById('drawer-rejection').classList.add('translate-x-full');
+    }
+  </script>
+</body>
+</html>

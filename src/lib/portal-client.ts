@@ -64,6 +64,19 @@ export const portalClient = {
     return json.data;
   },
 
+  async getPublicDemands(): Promise<any[]> {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/public/demands`, {
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) return [];
+      const json = await res.json();
+      return Array.isArray(json) ? json : (json.data ?? []);
+    } catch {
+      return [];
+    }
+  },
+
   async listEvents(status?: string, page = 1, pageSize = 10): Promise<{ data: TechmartEvent[]; total: number }> {
     const params = new URLSearchParams();
     if (status) params.set("status", status);

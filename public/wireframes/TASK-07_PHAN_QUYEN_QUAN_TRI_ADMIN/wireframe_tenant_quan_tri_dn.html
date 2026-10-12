@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cài Đặt Tổ Chức & Nhật Ký Thẩm Định Sở (Tenant Workspace) — NacenTwin (TASK-07)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .tab-btn.active {
+      background-color: #1e40af;
+      color: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-900 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          T
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+            <span class="rounded-full bg-slate-100 text-slate-800 text-[10px] font-bold px-2 py-0.5 border border-slate-200">TENANT SETTINGS</span>
+            <span class="rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 border border-purple-200">TASK-07 BASIC DESIGN</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Quản Trị Nhân Sự Doanh Nghiệp & Theo Dõi Thẩm Định Sở KH&CN</p>
+        </div>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <button onclick="switchTab('members')" id="tab-members" class="tab-btn active px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+          <i data-lucide="users" class="w-4 h-4"></i> Thành Viên Nội Bộ (4)
+        </button>
+        <button onclick="switchTab('audit')" id="tab-audit" class="tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4"></i> Tiến Độ Thẩm Định Từ Sở
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+    <!-- Organization Meta Bar -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-blue-700 text-white font-extrabold flex items-center justify-center text-lg shadow">
+          NTL
+        </div>
+        <div>
+          <h2 class="font-extrabold text-slate-900 text-base">CÔNG TY CỔ PHẦN CƠ KHÍ CHÍNH XÁC NAM THĂNG LONG</h2>
+          <p class="text-xs text-slate-500">Mã Định Danh Tổ Chức (ScopeId): <span class="mono font-bold text-slate-800">ORG_0101234567</span> • Hà Nội</p>
+        </div>
+      </div>
+      <button onclick="openInviteModal()" class="bg-blue-700 hover:bg-blue-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+        <i data-lucide="user-plus" class="w-4 h-4"></i> Mời Cán Bộ Doanh Nghiệp
+      </button>
+    </div>
+
+    <!-- PANEL 1: MEMBERS MANAGEMENT -->
+    <section id="panel-members" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-extrabold text-sm text-slate-900">Danh Sách Cán Bộ Được Cấp Quyền Truy Cập</h3>
+          <p class="text-xs text-slate-500">Các thành viên có quyền truy cập chung vào hồ sơ, sản phẩm và yêu cầu kết nối của doanh nghiệp.</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-extrabold">
+              <th class="py-3 px-3">Họ và Tên</th>
+              <th class="py-3 px-3">Email Doanh Nghiệp</th>
+              <th class="py-3 px-3">Vai Trò Hệ Thống</th>
+              <th class="py-3 px-3">Quyền Hạn Cốt Lõi</th>
+              <th class="py-3 px-3">Trạng Thái</th>
+              <th class="py-3 px-3 text-right">Thao Tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="py-3 px-3 font-bold text-slate-900">Nguyễn Văn Tuấn</td>
+              <td class="py-3 px-3 text-slate-600">tuan.nv@namthanglong-tech.vn</td>
+              <td class="py-3 px-3">
+                <span class="bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded text-[10px]">BUYER_ADMIN / SELLER_ADMIN</span>
+              </td>
+              <td class="py-3 px-3 text-slate-500">Toàn quyền doanh nghiệp & Ký số NDA</td>
+              <td class="py-3 px-3">
+                <span class="text-emerald-700 font-bold flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Đang hoạt động</span>
+              </td>
+              <td class="py-3 px-3 text-right text-slate-400">Chủ sở hữu</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-bold text-slate-900">Trần Thị Mai Lan</td>
+              <td class="py-3 px-3 text-slate-600">lan.ttm@namthanglong-tech.vn</td>
+              <td class="py-3 px-3">
+                <span class="bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded text-[10px]">SELLER_STAFF</span>
+              </td>
+              <td class="py-3 px-3 text-slate-500">Khai báo & quản lý hồ sơ chào bán công nghệ</td>
+              <td class="py-3 px-3">
+                <span class="text-emerald-700 font-bold flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Đang hoạt động</span>
+              </td>
+              <td class="py-3 px-3 text-right">
+                <button class="text-red-600 hover:underline">Thu hồi</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-bold text-slate-900">Lê Đức Thắng</td>
+              <td class="py-3 px-3 text-slate-600">thang.ld@namthanglong-tech.vn</td>
+              <td class="py-3 px-3">
+                <span class="bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded text-[10px]">BUYER_STAFF</span>
+              </td>
+              <td class="py-3 px-3 text-slate-500">Điền khảo sát TNI & Đăng bài toán kỹ thuật</td>
+              <td class="py-3 px-3">
+                <span class="text-emerald-700 font-bold flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Đang hoạt động</span>
+              </td>
+              <td class="py-3 px-3 text-right">
+                <button class="text-red-600 hover:underline">Thu hồi</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PANEL 2: AUDIT & GOV VERIFICATION LOG -->
+    <section id="panel-audit" class="hidden bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+      <div>
+        <h3 class="font-extrabold text-sm text-slate-900">Nhật Ký Thẩm Định & Chứng Thực Từ Sở KH&CN Hà Nội</h3>
+        <p class="text-xs text-slate-500">Theo dõi chi tiết quy trình phê duyệt hồ sơ doanh nghiệp ĐMST, giấy chứng nhận và thẩm định sáng chế.</p>
+      </div>
+
+      <!-- Timeline -->
+      <div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 text-xs">
+        
+        <!-- Timeline Item 1 -->
+        <div class="relative">
+          <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-600 border-2 border-white shadow"></div>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-emerald-800 text-sm">Phê Duyệt Chính Thức & Cấp Huy Hiệu Verified</span>
+              <span class="text-slate-400">08/10/2026 14:30</span>
+            </div>
+            <p class="text-slate-600">Lãnh đạo Sở KH&CN Hà Nội ký duyệt hồ sơ Doanh nghiệp Đổi mới sáng tạo chuẩn hóa theo 10 nhóm trường SSOT.</p>
+            <p class="text-[11px] text-slate-500">Người ký duyệt: <strong>TS. Hoàng Quốc Hùng (Phó Giám Đốc Sở)</strong></p>
+          </div>
+        </div>
+
+        <!-- Timeline Item 2 -->
+        <div class="relative">
+          <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-blue-600 border-2 border-white shadow"></div>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-blue-800 text-sm">Hoàn Tất Thẩm Định Minh Chứng SHTT & Bằng Sáng Chế</span>
+              <span class="text-slate-400">07/10/2026 09:15</span>
+            </div>
+            <p class="text-slate-600">Chuyên viên Sở đối soát thành công Bằng độc quyền sáng chế số VN-18294 trên CSDL Cục Sở hữu Trí tuệ.</p>
+            <p class="text-[11px] text-slate-500">Chuyên viên phụ trách: <strong>Vũ Thị Hương (Phòng Quản lý Công nghệ)</strong></p>
+          </div>
+        </div>
+
+        <!-- Timeline Item 3 -->
+        <div class="relative">
+          <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-slate-400 border-2 border-white shadow"></div>
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold text-slate-800 text-sm">Tiếp Nhận Hồ Sơ Đăng Ký Trực Tuyến</span>
+              <span class="text-slate-400">05/10/2026 16:00</span>
+            </div>
+            <p class="text-slate-600">Doanh nghiệp hoàn tất nộp hồ sơ kê khai 10 nhóm trường và đính kèm Giấy phép ĐKKD.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tab) {
+      document.getElementById('tab-members').classList.remove('active');
+      document.getElementById('tab-audit').classList.remove('active');
+      document.getElementById('panel-members').classList.add('hidden');
+      document.getElementById('panel-audit').classList.add('hidden');
+
+      if (tab === 'members') {
+        document.getElementById('tab-members').classList.add('active');
+        document.getElementById('panel-members').classList.remove('hidden');
+      } else {
+        document.getElementById('tab-audit').classList.add('active');
+        document.getElementById('panel-audit').classList.remove('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function openInviteModal() {
+      const email = prompt('Nhập địa chỉ email cán bộ doanh nghiệp cần mời:');
+      if (email) {
+        alert('Đã gửi email kích hoạt tài khoản đến ' + email + ' thuộc tổ chức Nam Thăng Long!');
+      }
+    }
+  </script>
+</body>
+</html>

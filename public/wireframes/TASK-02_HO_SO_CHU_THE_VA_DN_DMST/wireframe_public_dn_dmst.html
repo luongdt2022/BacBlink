@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ Sơ Công Khai Doanh Nghiệp ĐMST (Public Profile) — NacenTwin (TASK-02)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .nav-tab.active {
+      border-bottom: 2px solid #1e40af;
+      color: #1e40af;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP BAR -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          N
+        </div>
+        <div>
+          <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+          <span class="rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 ml-2 border border-slate-200">PUBLIC PROFILE VIEW</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="wireframe_ho_so_dn_dmst.html" class="text-xs font-bold text-slate-600 hover:text-blue-700 border border-slate-200 hover:bg-slate-50 px-3 py-1.5 rounded-xl transition flex items-center gap-1">
+          <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Về Trang Soạn Thảo (Workspace)
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+    <!-- Enterprise Hero Header Card -->
+    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+      <!-- Cover Banner -->
+      <div class="h-36 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 relative">
+        <div class="absolute right-6 top-4 bg-white/10 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-300"></i> Hà Nội, Việt Nam
+        </div>
+      </div>
+
+      <!-- Profile Summary Info -->
+      <div class="px-6 sm:px-8 pb-6 relative pt-0">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 mb-4">
+          <div class="flex items-end gap-4">
+            <div class="w-24 h-24 rounded-2xl bg-white p-1 shadow-lg border-2 border-white shrink-0">
+              <div class="w-full h-full rounded-xl bg-gradient-to-br from-blue-700 to-indigo-800 text-white flex items-center justify-center font-extrabold text-2xl">
+                NTL
+              </div>
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900">CÔNG TY CỔ PHẦN CƠ KHÍ CHÍNH XÁC NAM THĂNG LONG</h1>
+                <span class="bg-emerald-50 text-emerald-800 border border-emerald-300 px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i> Đã Xác Thực (Verified)
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">
+                Mã Số Thuế: <span class="mono font-bold text-slate-800">0101234567</span> • Thành lập: 2016 • Quy mô: 50–100 nhân sự
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="message-square" class="w-4 h-4"></i> Đề Xuất Kết Nối Cung–Cầu
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Core Badges -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-100 text-xs">
+          <div class="flex items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70">
+            <i data-lucide="award" class="w-5 h-5 text-amber-500 shrink-0"></i>
+            <div>
+              <p class="font-extrabold text-slate-800">Doanh Nghiệp KH&CN</p>
+              <p class="text-[11px] text-slate-500">Giấy chứng nhận số 42/DNKHCN do Sở KH&CN cấp</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70">
+            <i data-lucide="check-circle-2" class="w-5 h-5 text-blue-600 shrink-0"></i>
+            <div>
+              <p class="font-extrabold text-slate-800">Bằng Độc Quyền Sáng Chế</p>
+              <p class="text-[11px] text-slate-500">01 Sáng chế & 02 Giải pháp hữu ích bảo hộ</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70">
+            <i data-lucide="gauge" class="w-5 h-5 text-emerald-600 shrink-0"></i>
+            <div>
+              <p class="font-extrabold text-slate-800">Đánh Giá Trình Độ TT17</p>
+              <p class="text-[11px] text-slate-500">Mức Tiên Tiến (Điểm tổng hợp 78.4/100)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-1 flex gap-2 text-xs font-bold text-slate-600">
+      <button class="nav-tab active px-4 py-2.5">1. Tổng Quan & Năng Lực R&D</button>
+      <button class="nav-tab px-4 py-2.5 hover:text-slate-900">2. Sáng Chế & Sở Hữu Trí Tuệ (3)</button>
+      <button class="nav-tab px-4 py-2.5 hover:text-slate-900">3. Công Nghệ Đang Chào Bán (2)</button>
+      <button class="nav-tab px-4 py-2.5 hover:text-slate-900">4. Bài Toán Đang Tìm Cung (1)</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Left Column: Details -->
+      <div class="md:col-span-2 space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-extrabold text-base text-slate-900">Giới Thiệu Doanh Nghiệp</h3>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Công ty Cổ phần Cơ khí Chính xác Nam Thăng Long là đơn vị tiên phong trong lĩnh vực gia công cơ khí chính xác, chế tạo khuôn mẫu công nghiệp và tích hợp tự động hóa điều khiển máy CNC. Doanh nghiệp sở hữu trung tâm R&D với 12 kỹ sư cơ điện tử, hợp tác thường xuyên với Viện NacenTech và Trường ĐHBK Hà Nội.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-extrabold text-base text-slate-900">Sáng Chế & Tài Sản Sở Hữu Trí Tuệ Nổi Bật</h3>
+          <div class="space-y-3 text-xs">
+            <div class="p-3 bg-purple-50/70 border border-purple-200 rounded-xl space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-purple-900 text-sm">Bằng độc quyền sáng chế số VN-18294</span>
+                <span class="bg-purple-200 text-purple-900 px-2 py-0.5 rounded font-bold text-[10px]">Cục SHTT cấp</span>
+              </div>
+              <p class="text-slate-700">"Hệ thống đo kiểm kích thước quang học 3 chiều không tiếp xúc cho linh kiện đúc áp lực cao"</p>
+              <p class="text-[11px] text-slate-500">Cấp ngày: 15/04/2023 • Hiệu lực đến: 2043</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Meta Info -->
+      <div class="space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs">
+          <h4 class="font-extrabold text-sm text-slate-900">Thông Tin Liên Hệ Công Khai</h4>
+          <div class="space-y-2 text-slate-600">
+            <div class="flex items-start gap-2">
+              <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 shrink-0 mt-0.5"></i>
+              <span>Lô CN-08, Khu Công Nghiệp Thăng Long, Huyện Đông Anh, TP. Hà Nội</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="globe" class="w-4 h-4 text-slate-400 shrink-0"></i>
+              <a href="#" class="text-blue-700 hover:underline">www.namthanglong-tech.vn</a>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="mail" class="w-4 h-4 text-slate-400 shrink-0"></i>
+              <span>contact@namthanglong-tech.vn</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 p-5 rounded-2xl space-y-2 text-xs">
+          <div class="flex items-center gap-2 text-blue-900 font-extrabold text-sm">
+            <i data-lucide="shield-check" class="w-4 h-4 text-blue-700"></i>
+            Chứng Nhận Của Sở KH&CN
+          </div>
+          <p class="text-slate-600 text-[11px] leading-relaxed">
+            Hồ sơ năng lực pháp lý và tài sản sở hữu trí tuệ của doanh nghiệp đã được Sở Khoa học & Công nghệ Hà Nội thẩm định và chứng thực trên hệ sinh thái NacenTwin.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

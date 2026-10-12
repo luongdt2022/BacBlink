@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wizard Đánh Giá 26 Tiêu Chí TT17 & Cổng Thẩm Định Sở — NacenTwin (TASK-09)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .step-item.active {
+      border-color: #2563eb;
+      background-color: #eff6ff;
+      color: #1e40af;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="wireframe_danh_gia_tt17.html" class="p-2 rounded-xl hover:bg-slate-100 text-slate-600 transition" title="Quay lại Báo cáo TT17">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </a>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">ĐÁNH GIÁ TRÌNH ĐỘ CÔNG NGHỆ TT17</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">THÔNG TƯ 17/2019/TT-BKHCN</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Hồ sơ: CP Robot Rạng Đông · Ngành Chế Tạo Máy (Nhóm C - C28)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Realtime Score Badge -->
+        <div class="hidden sm:flex items-center gap-3 bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs">
+          <div>
+            <span class="text-slate-400 text-[10px] block">Tổng điểm ước tính τ:</span>
+            <span class="font-black text-blue-700 font-mono text-sm">76.4 <small class="text-slate-400 font-normal">/ 100</small></span>
+          </div>
+          <div class="h-6 w-px bg-slate-300"></div>
+          <div>
+            <span class="text-slate-400 text-[10px] block">Hệ số đồng bộ T_ĐB:</span>
+            <span class="font-black text-emerald-700 font-mono text-sm">0.82 <small class="text-slate-400 font-normal">(Hạng Tiên Tiến)</small></span>
+          </div>
+        </div>
+
+        <button onclick="saveDraft()" class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition">
+          Lưu Tạm (Draft)
+        </button>
+        <button onclick="submitAssessment()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          <span>Gửi Sở KH&CN Thẩm Định</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- WIZARD STEPPER (6 BƯỚC) -->
+  <section class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
+      <div class="step-item active p-2.5 rounded-xl border border-blue-200 flex items-center gap-2 cursor-pointer">
+        <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">1</span>
+        <span class="font-bold truncate">T - Thiết Bị & CN</span>
+      </div>
+      <div class="step-item p-2.5 rounded-xl border border-slate-200 text-slate-500 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">2</span>
+        <span class="font-bold truncate">E - Hiệu Quả Khai Thác</span>
+      </div>
+      <div class="step-item p-2.5 rounded-xl border border-slate-200 text-slate-500 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">3</span>
+        <span class="font-bold truncate">O - Tổ Chức Quản Lý</span>
+      </div>
+      <div class="step-item p-2.5 rounded-xl border border-slate-200 text-slate-500 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">4</span>
+        <span class="font-bold truncate">R - Năng Lực R&D</span>
+      </div>
+      <div class="step-item p-2.5 rounded-xl border border-slate-200 text-slate-500 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+        <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">5</span>
+        <span class="font-bold truncate">I - Đổi Mới Sáng Tạo</span>
+      </div>
+      <div class="step-item p-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 flex items-center gap-2 cursor-pointer">
+        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">6</span>
+        <span class="font-bold truncate">Sở Thẩm Định & Phụ Lục</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORM BODY: NHÓM T (THIẾT BỊ & CÔNG NGHỆ - 10 TIÊU CHÍ ĐIỀU 4 TT17) -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+
+    <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900">Nhóm Tiêu Chí T: Trình Độ Thiết Bị & Công Nghệ (Trọng số 0.35)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Quy định chi tiết tại Điều 4 và Phụ lục I Thông tư 17/2019/TT-BKHCN gồm 10 tiêu chí từ TC01 đến TC10.</p>
+        </div>
+        <span class="px-2.5 py-1 rounded bg-blue-100 text-blue-800 text-xs font-bold font-mono">Điểm nhóm T: 28.5 / 35.0</span>
+      </div>
+
+      <!-- CRITERIA 1 -->
+      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3 text-xs">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <span class="font-mono font-bold text-blue-700 block mb-0.5">TC01 · Tiêu chí 1:</span>
+            <h4 class="font-extrabold text-slate-900 text-sm">Hao Phí Năng Lượng Của Dây Chuyền / Thiết Bị Chính So Với Định Mức Ngành</h4>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold font-mono">Tối đa: 4.0 điểm</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Mức Tiêu Thụ Thực Tế Doanh Nghiệp:</label>
+            <input type="text" value="85 kWh / tấn sản phẩm" class="w-full p-2 rounded-lg border border-slate-200 bg-white font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Định Mức Tiên Tiến Của Ngành (TT17):</label>
+            <input type="text" value="90 kWh / tấn sản phẩm" class="w-full p-2 rounded-lg border border-slate-200 bg-slate-100 font-mono text-slate-500" readonly>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Đánh Giá Phù Hợp:</label>
+            <select class="w-full p-2 rounded-lg border border-slate-200 bg-white font-bold text-emerald-700">
+              <option selected>Tiết kiệm hơn định mức tiên tiến (4.0 điểm)</option>
+              <option>Bằng định mức tiên tiến (3.0 điểm)</option>
+              <option>Bằng định mức trung bình (2.0 điểm)</option>
+              <option>Vượt định mức trung bình (1.0 điểm)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 text-[11px] text-slate-500">
+          <span>Minh chứng đính kèm: <a href="#" class="text-blue-600 underline font-semibold">Hoa_don_dien_va_kiem_toan_nang_luong_2025.pdf</a></span>
+          <button class="text-blue-600 font-bold hover:underline">+ Tải lên minh chứng khác</button>
+        </div>
+      </div>
+
+      <!-- CRITERIA 2 -->
+      <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3 text-xs">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <span class="font-mono font-bold text-blue-700 block mb-0.5">TC02 · Tiêu chí 2:</span>
+            <h4 class="font-extrabold text-slate-900 text-sm">Tuổi Đời Trung Bình Của Máy Móc Thiết Bị Chính Sản Xuất</h4>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold font-mono">Tối đa: 4.0 điểm</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Tuổi Đời Thiết Bị Khấu Hao Bình Quân:</label>
+            <select class="w-full p-2 rounded-lg border border-slate-200 bg-white font-bold text-slate-800">
+              <option selected>Dưới 05 năm (4.0 điểm - Thiết bị mới)</option>
+              <option>Từ 05 đến 10 năm (3.0 điểm)</option>
+              <option>Từ 10 đến 15 năm (2.0 điểm)</option>
+              <option>Trên 15 năm (1.0 điểm)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Minh Chứng Danh Mục Tài Sản Cố Định:</label>
+            <input type="text" value="Bang_khau_hao_TSCD_so_sach_ke_toan_2025.xlsx" class="w-full p-2 rounded-lg border border-slate-200 bg-white text-slate-700" readonly>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRITERIA 3: LIÊN THÔNG VỚI TASK-03 -->
+      <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/40 space-y-3 text-xs">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <span class="font-mono font-bold text-blue-700 flex items-center gap-1.5 mb-0.5">
+              <i data-lucide="link" class="w-3.5 h-3.5"></i>
+              <span>TC03 · Tự Động Đồng Bộ Từ Phiếu Khảo Sát DNNVV (TASK-03):</span>
+            </span>
+            <h4 class="font-extrabold text-slate-900 text-sm">Tỷ Lệ Tự Động Hóa Dây Chuyền Sản Xuất (CNC, PLC, Robot)</h4>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold font-mono">3.5 / 4.0 điểm</span>
+        </div>
+
+        <p class="text-slate-600 text-[11px] leading-relaxed">
+          Số liệu tự động liên thông từ Phiếu khảo sát hiện trạng công nghệ mục 2.3: Doanh nghiệp đã trang bị <b>08 máy phay CNC 5 trục</b> và <b>02 cánh tay robot xếp hàng tự động</b>. Tỷ lệ tự động hóa đạt <b>72.5%</b>.
+        </p>
+      </div>
+
+      <!-- NHẬN DIỆN ĐIỂM NGHẼN & KHẮC PHỤC (GIẢI QUYẾT CỜ 5 PO-DEC-20261011-01) -->
+      <div class="p-4 rounded-xl border border-amber-300 bg-amber-50/60 space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-amber-200 text-amber-800 flex items-center justify-center font-bold">
+              <i data-lucide="alert-octagon" class="w-4 h-4 text-amber-800"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-xs">Cảnh Báo Điểm Nghẽn Công Nghệ (Bottleneck Detection)</h4>
+              <p class="text-[11px] text-slate-500">Phát hiện nhóm T và nhóm R của doanh nghiệp đang thấp hơn trung bình ngành 18%</p>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 bg-amber-200 text-amber-900 font-bold rounded text-[10px]">Cần giải pháp công nghệ</span>
+        </div>
+
+        <p class="text-slate-600 text-[11px] leading-relaxed">
+          Dây chuyền sản xuất của đơn vị có độ hao phí năng lượng cao ở khâu sấy nhiệt và tỷ lệ nhân lực R&D chỉ chiếm 1.8% tổng lao động. Hệ thống đề xuất các giải pháp khắc phục sau:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+          <a href="../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_san_chao_ban_cong_nghe.html" class="p-2.5 bg-white border border-slate-200 hover:border-blue-400 rounded-xl transition flex items-center gap-2 shadow-xs group">
+            <i data-lucide="store" class="w-4 h-4 text-blue-600 shrink-0"></i>
+            <div class="min-w-0">
+              <b class="text-slate-900 block font-bold truncate group-hover:text-blue-700">1. Sàn Chào Bán</b>
+              <span class="text-slate-500 text-[10px] block truncate">Tìm công nghệ thay thế</span>
+            </div>
+          </a>
+
+          <a href="../TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_danh_ba_chuyen_gia_v11.html" class="p-2.5 bg-white border border-slate-200 hover:border-purple-400 rounded-xl transition flex items-center gap-2 shadow-xs group">
+            <i data-lucide="graduation-cap" class="w-4 h-4 text-purple-600 shrink-0"></i>
+            <div class="min-w-0">
+              <b class="text-slate-900 block font-bold truncate group-hover:text-purple-700">2. Danh Bạ Chuyên Gia</b>
+              <span class="text-slate-500 text-[10px] block truncate">Mời tư vấn gỡ khó</span>
+            </div>
+          </a>
+
+          <a href="../TASK-03_HO_SO_TIM_MUA_BUYER/wireframe_san_nhu_cau_cong_nghe.html" class="p-2.5 bg-white border border-slate-200 hover:border-amber-400 rounded-xl transition flex items-center gap-2 shadow-xs group">
+            <i data-lucide="file-question" class="w-4 h-4 text-amber-600 shrink-0"></i>
+            <div class="min-w-0">
+              <b class="text-slate-900 block font-bold truncate group-hover:text-amber-700">3. Đăng Nhu Cầu Mua</b>
+              <span class="text-slate-500 text-[10px] block truncate">Tìm viện/trường chuyển giao</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- FOOTER NAVIGATION -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+        <button class="px-4 py-2 rounded-xl border border-slate-200 text-slate-400 text-xs font-bold" disabled>Bước Trước</button>
+        <button onclick="nextStep()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm">
+          <span>Tiếp Tục: Nhóm E - Hiệu Quả Khai Thác</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function nextStep() {
+      alert('Chuyển tiếp sang Nhóm Tiêu Chí E: Hiệu Quả Khai Thác Công Nghệ (4 Tiêu Chí).');
+    }
+
+    function saveDraft() {
+      alert('Đã lưu bản nháp đánh giá TT17! Doanh nghiệp có thể tiếp tục bổ sung minh chứng bất cứ lúc nào.');
+    }
+
+    function submitAssessment() {
+      if (confirm('Bạn có chắc chắn muốn nộp toàn bộ 26 tiêu chí và hồ sơ minh chứng để Sở KH&CN Hà Nội thẩm định và cấp Giấy Chứng Nhận Kết Quả Đánh Giá TT17?')) {
+        alert('HỒ SƠ ĐÃ ĐƯỢC TIẾP NHẬN! Mã đánh giá: TT17-2026-HN-00304. Sở KH&CN Hà Nội sẽ phản hồi trong 07 ngày làm việc.');
+      }
+    }
+  </script>
+</body>
+</html>

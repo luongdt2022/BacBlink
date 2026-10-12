@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe Cổng Quản Lý Nhà Nước (Sở KH&CN) — NacenTwin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col justify-between">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-cyan-700 text-white flex items-center justify-center font-bold text-base shadow-sm">GOV</div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base font-extrabold text-slate-900">Cổng Quản Lý Nhà Nước — Sở KH&CN Hải Phòng</h1>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800 border border-cyan-200">PROVINCIAL_ADMIN</span>
+        </div>
+        <p class="text-xs text-slate-500">Giám Sát Địa Bàn & Trung Tâm Thẩm Định Hồ Sơ Maker-Checker (/gov)</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/gov/settings/staff" class="text-xs font-semibold text-slate-600 hover:text-cyan-700 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white">
+        <i data-lucide="users" class="w-4 h-4 text-cyan-600"></i> Phân Công Cán Bộ Sở
+      </a>
+      <a href="/portal" class="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1">
+        <i data-lucide="layout-grid" class="w-4 h-4"></i> Portal Hub
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto w-full px-4 py-8 space-y-6">
+    <!-- Thống kê địa bàn cấp Sở -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span>Hồ Sơ Chờ Thẩm Định</span>
+          <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+        </div>
+        <div class="text-2xl font-black text-amber-600">7</div>
+        <div class="text-[11px] text-slate-500">Cần xử lý trong hạn 3 ngày làm việc</div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span>DN ĐMST Trên Địa Bàn</span>
+          <i data-lucide="building-2" class="w-4 h-4 text-blue-600"></i>
+        </div>
+        <div class="text-2xl font-black text-slate-900">42</div>
+        <div class="text-[11px] text-emerald-600 flex items-center gap-1">
+          <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> 38 DN đã cấp chứng nhận
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span>Chuyên Gia Địa Phương</span>
+          <i data-lucide="graduation-cap" class="w-4 h-4 text-purple-600"></i>
+        </div>
+        <div class="text-2xl font-black text-slate-900">89</div>
+        <div class="text-[11px] text-slate-500">Hồ sơ LLKH đã xác minh</div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span>Công Nghệ Đang Chào Bán</span>
+          <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
+        </div>
+        <div class="text-2xl font-black text-slate-900">115</div>
+        <div class="text-[11px] text-blue-600">TRL trung bình: 6.8 / 9.0</div>
+      </div>
+    </div>
+
+    <!-- Trung Tâm Thẩm Định Maker-Checker -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i data-lucide="clipboard-check" class="w-5 h-5 text-cyan-600"></i> Danh Sách Hồ Sơ Cần Phê Duyệt Cấp Sở
+          </h2>
+          <p class="text-xs text-slate-500">Quy trình 2 bước Maker-Checker: Cán bộ thẩm định lập phiếu, Lãnh đạo Sở ký duyệt.</p>
+        </div>
+
+        <!-- Bộ Lọc Trạng Thái -->
+        <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs">
+          <button class="px-3 py-1.5 rounded-lg font-bold bg-white text-cyan-800 shadow-xs">Chờ duyệt (7)</button>
+          <button class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Đã duyệt</button>
+          <button class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Yêu cầu bổ sung</button>
+          <button class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Từ chối</button>
+        </div>
+      </div>
+
+      <!-- Bảng Hồ Sơ -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50/70 text-slate-600 font-bold">
+              <th class="py-3 px-4">Loại Hồ Sơ</th>
+              <th class="py-3 px-4">Chủ Thể Nộp / Tổ Chức</th>
+              <th class="py-3 px-4">Nội Dung / Tiêu Đề Hồ Sơ</th>
+              <th class="py-3 px-4">Ngành / Lĩnh Vực</th>
+              <th class="py-3 px-4">Thời Gian Nộp</th>
+              <th class="py-3 px-4 text-center">Thao Tác Thẩm Định</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <!-- Dòng 1 -->
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 font-bold border border-purple-200">
+                  <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Chuyên Gia
+                </span>
+              </td>
+              <td class="py-3.5 px-4 font-semibold text-slate-900">
+                TS. Trần Đình Quân
+                <div class="text-[11px] font-normal text-slate-500">quan.td@hp-uni.edu.vn</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-medium text-slate-800">Nâng hạng Chuyên gia Cấp Sở (LLKH & 3 bài Scopus)</div>
+                <div class="text-[11px] text-slate-500">ĐH Hàng Hải Việt Nam • Hải Phòng</div>
+              </td>
+              <td class="py-3.5 px-4 text-slate-600">Tự động hóa & Robot biển</td>
+              <td class="py-3.5 px-4 text-slate-500 font-mono">11/10/2026 14:20</td>
+              <td class="py-3.5 px-4 text-center">
+                <div class="inline-flex items-center gap-1.5">
+                  <button class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold flex items-center gap-1">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Duyệt
+                  </button>
+                  <button class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600" title="Yêu cầu sửa">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Dòng 2 -->
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                  <i data-lucide="store" class="w-3.5 h-3.5"></i> Chào Bán
+                </span>
+              </td>
+              <td class="py-3.5 px-4 font-semibold text-slate-900">
+                Công ty CP Cơ Khí Chính Xác Duyên Hải
+                <div class="text-[11px] font-normal text-slate-500">MST: 0201889922</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-medium text-slate-800">Cánh tay robot hàn laser 6 trục độ chính xác cao</div>
+                <div class="text-[11px] text-slate-500">TRL 7 • Bằng Độc quyền GPHI số 3892</div>
+              </td>
+              <td class="py-3.5 px-4 text-slate-600">Cơ khí chế tạo & Laser</td>
+              <td class="py-3.5 px-4 text-slate-500 font-mono">10/10/2026 09:15</td>
+              <td class="py-3.5 px-4 text-center">
+                <div class="inline-flex items-center gap-1.5">
+                  <button class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold flex items-center gap-1">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Duyệt
+                  </button>
+                  <button class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600" title="Yêu cầu sửa">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Dòng 3 -->
+            <tr class="hover:bg-slate-50/80 transition">
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-200">
+                  <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Nhu Cầu Buyer
+                </span>
+              </td>
+              <td class="py-3.5 px-4 font-semibold text-slate-900">
+                Tập Đoàn Thủy Sản Hải Đăng
+                <div class="text-[11px] font-normal text-slate-500">MST: 0200456123</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="font-medium text-slate-800">Tìm kiếm công nghệ sấy thăng hoa tôm nõn xuất khẩu</div>
+                <div class="text-[11px] text-slate-500">Ngân sách dự kiến: 1.5 - 2.0 Tỷ VNĐ • TNI: 82/100</div>
+              </td>
+              <td class="py-3.5 px-4 text-slate-600">Chế biến thực phẩm & Thủy sản</td>
+              <td class="py-3.5 px-4 text-slate-500 font-mono">09/10/2026 16:40</td>
+              <td class="py-3.5 px-4 text-center">
+                <div class="inline-flex items-center gap-1.5">
+                  <button class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold flex items-center gap-1">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Duyệt
+                  </button>
+                  <button class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600" title="Yêu cầu sửa">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button class="px-2 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600" title="Xem chi tiết">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500">
+    © 2026 Sở Khoa Học và Công Nghệ TP. Hải Phòng • Cổng Thông Tin Điều Hành & Thẩm Định Chuyển Giao Công Nghệ.
+  </footer>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bóc Tách Toàn Diện Trường Sổ Tay Chuyên Gia Cho 18 Ngành Chuẩn TT17 — NacenTech</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .sector-btn.active {
+      background-color: #1e40af !important;
+      color: #ffffff !important;
+      border-color: #1e40af !important;
+      box-shadow: 0 4px 10px -1px rgba(30, 64, 175, 0.35) !important;
+    }
+    .sector-btn.active span {
+      color: #ffffff !important;
+    }
+    .sector-btn.active i {
+      color: #67e8f9 !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-100">
+          <i data-lucide="layers" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+              Bóc Tách Toàn Diện Trường Sổ Tay Chuyên Gia Cho Đủ 18 Ngành Chuẩn TT17
+            </h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+              18/18 Ngành Có Trường Đặc Thù Riêng
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Phân hệ TASK-05 Sổ Tay Chuyên Gia | Nguồn SSOT: Viện Ứng Dụng Công Nghệ (NacenTech)
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="resetToAll()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg border border-blue-200 transition">
+          <i data-lucide="grid" class="w-3.5 h-3.5"></i>
+          <span>Hiển Thị Toàn Bộ 18 Ngành</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- 1. BẢNG TRƯỜNG DÙNG CHUNG (UNIVERSAL) -->
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div class="p-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-blue-700"></i>
+          <h2 class="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
+            Phần A: 22 Trường Cơ Bản Chung (Bắt Buộc Với Mọi Ngành — Từ Sheet C.gia)
+          </h2>
+        </div>
+        <span class="text-xs text-slate-500 font-mono">100% Chuyên gia đều phải có</span>
+      </div>
+
+      <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-blue-900">1. Định danh cá nhân</div>
+          <div class="text-[11px] text-slate-600">• Họ tên, SĐT Zalo, Email công tác<br>• Năm sinh, Giới tính, Số CCCD, Ngày cấp<br>• Ảnh chân dung, Ảnh CCCD 2 mặt</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-blue-900">2. Học vị & Cơ quan</div>
+          <div class="text-[11px] text-slate-600">• Học vị cao nhất (TS/ThS/KS), Năm đạt<br>• Học hàm (GS/PGS), Năm phong<br>• Chức danh, Chức vụ, Đơn vị công tác</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-blue-900">3. Đào tạo & Công tác</div>
+          <div class="text-[11px] text-slate-600">• Bảng quá trình đào tạo (bậc, nơi, năm)<br>• Bảng quá trình công tác (thời gian, vị trí)<br>• Thông tin lãnh đạo đơn vị công tác</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1 bg-blue-50/40">
+          <div class="font-bold text-blue-900">4. Nhiệm vụ & Cung Cầu</div>
+          <div class="text-[11px] text-slate-700">• Đăng ký Chủ nhiệm / Thành viên chính<br>• Cam kết PDPD Nghị định 13<br>• Thù lao tham khảo, Hình thức tư vấn</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. BỘ LỌC 18 NÚT NGÀNH TRỌNG ĐIỂM -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
+      <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-100 pb-2.5">
+        <div class="flex items-center gap-2">
+          <i data-lucide="filter" class="w-4 h-4 text-blue-700"></i>
+          <h2 class="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
+            Phần B: Chọn Ngành Để Xem Chính Xác Các Trường Đặc Thù Riêng Biệt (18 Ngành)
+          </h2>
+        </div>
+        <div class="text-xs text-slate-500">
+          Đang xem: <b id="currentSectorLabel" class="text-blue-800 font-bold">Tất cả 18 ngành</b>
+        </div>
+      </div>
+
+      <!-- 18 BUTTONS -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs" id="sectorButtons">
+        <button onclick="filterSector('IT')" id="btn-IT" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
+          <span class="truncate font-semibold">1. CNTT & AI</span>
+        </button>
+        <button onclick="filterSector('MECH')" id="btn-MECH" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="cog" class="w-3.5 h-3.5 text-slate-700 shrink-0"></i>
+          <span class="truncate font-semibold">2. Cơ khí chế tạo</span>
+        </button>
+        <button onclick="filterSector('ELEC')" id="btn-ELEC" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="bot" class="w-3.5 h-3.5 text-amber-600 shrink-0"></i>
+          <span class="truncate font-semibold">3. Tự động hóa</span>
+        </button>
+        <button onclick="filterSector('BIO')" id="btn-BIO" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="dna" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+          <span class="truncate font-semibold">4. Công nghệ sinh học</span>
+        </button>
+        <button onclick="filterSector('PHARMA')" id="btn-PHARMA" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="pill" class="w-3.5 h-3.5 text-rose-600 shrink-0"></i>
+          <span class="truncate font-semibold">5. Thuốc & Dược liệu</span>
+        </button>
+        <button onclick="filterSector('MAT')" id="btn-MAT" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="box" class="w-3.5 h-3.5 text-indigo-600 shrink-0"></i>
+          <span class="truncate font-semibold">6. Vật liệu mới</span>
+        </button>
+        <button onclick="filterSector('ENERGY')" id="btn-ENERGY" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-yellow-600 shrink-0"></i>
+          <span class="truncate font-semibold">7. Năng lượng tái tạo</span>
+        </button>
+        <button onclick="filterSector('CHEM')" id="btn-CHEM" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="flask-conical" class="w-3.5 h-3.5 text-purple-600 shrink-0"></i>
+          <span class="truncate font-semibold">8. Hóa chất</span>
+        </button>
+        <button onclick="filterSector('AGRI')" id="btn-AGRI" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="sprout" class="w-3.5 h-3.5 text-green-600 shrink-0"></i>
+          <span class="truncate font-semibold">9. Nông nghiệp CNC</span>
+        </button>
+        <button onclick="filterSector('FOOD')" id="btn-FOOD" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="utensils" class="w-3.5 h-3.5 text-orange-600 shrink-0"></i>
+          <span class="truncate font-semibold">10. Thực phẩm</span>
+        </button>
+        <button onclick="filterSector('ENV')" id="btn-ENV" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="trees" class="w-3.5 h-3.5 text-teal-600 shrink-0"></i>
+          <span class="truncate font-semibold">11. Môi trường & Nước</span>
+        </button>
+        <button onclick="filterSector('MED')" id="btn-MED" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="stethoscope" class="w-3.5 h-3.5 text-red-600 shrink-0"></i>
+          <span class="truncate font-semibold">12. Thiết bị y tế</span>
+        </button>
+        <button onclick="filterSector('PACK')" id="btn-PACK" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="printer" class="w-3.5 h-3.5 text-cyan-600 shrink-0"></i>
+          <span class="truncate font-semibold">13. In ấn & Bao bì</span>
+        </button>
+        <button onclick="filterSector('TEXTILE')" id="btn-TEXTILE" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="scissors" class="w-3.5 h-3.5 text-pink-600 shrink-0"></i>
+          <span class="truncate font-semibold">14. Dệt may & Da giày</span>
+        </button>
+        <button onclick="filterSector('PLASTIC')" id="btn-PLASTIC" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="disc" class="w-3.5 h-3.5 text-stone-600 shrink-0"></i>
+          <span class="truncate font-semibold">15. Nhựa & Cao su</span>
+        </button>
+        <button onclick="filterSector('LOG')" id="btn-LOG" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="truck" class="w-3.5 h-3.5 text-sky-600 shrink-0"></i>
+          <span class="truncate font-semibold">16. Logistics & Chuỗi</span>
+        </button>
+        <button onclick="filterSector('WOOD')" id="btn-WOOD" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="hammer" class="w-3.5 h-3.5 text-amber-700 shrink-0"></i>
+          <span class="truncate font-semibold">17. Chế biến gỗ</span>
+        </button>
+        <button onclick="filterSector('CONST')" id="btn-CONST" class="sector-btn p-2 rounded-xl border border-slate-200 hover:border-blue-600 hover:bg-blue-50/50 transition text-left flex items-center gap-1.5">
+          <i data-lucide="building" class="w-3.5 h-3.5 text-slate-800 shrink-0"></i>
+          <span class="truncate font-semibold">18. Xây dựng & Hạ tầng</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. KHỐI TRƯỜNG ĐẶC THÙ ĐẦY ĐỦ 18/18 NGÀNH -->
+    <section class="space-y-4" id="dynamicSectorCards">
+
+      <!-- 1. IT -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="IT">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">01</span>
+            <h3 class="text-sm font-bold text-slate-900">1. Công Nghệ Thông Tin, Trí Tuệ Nhân Tạo (AI) & Viễn Thông (IT)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full">4 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Link Kho Mã Nguồn / Portfolio / Demo Live</div>
+            <p class="text-slate-500 text-[11px]">Đường dẫn GitHub, GitLab, Docker Hub, App Store, Google Play hoặc live web demo của hệ thống đang chạy.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Công Nghệ Quốc Tế</div>
+            <p class="text-slate-500 text-[11px]">AWS Solutions Architect, Google Cloud ML, Azure Solutions Architect, CKA (Kubernetes), CISSP, PMP/Scrum.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Framework AI & Nền Tảng Công Nghệ</div>
+            <p class="text-slate-500 text-[11px]">PyTorch, TensorFlow, LLM/LangChain, TensorRT, Kafka, Kubernetes, Vi kiến trúc Microservices / EDA.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Quy Mô Hệ Thống / Tải Dự Án Đã Triển Khai</div>
+            <p class="text-slate-500 text-[11px]">Số lượng người dùng hoạt động (MAU/DAU), năng lực chịu tải TPS, kiến trúc dữ liệu Big Data (Petabytes).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. MECH -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="MECH">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">02</span>
+            <h3 class="text-sm font-bold text-slate-900">2. Cơ Khí Chế Tạo & Khuôn Mẫu Chính Xác (MECH)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Kỹ Sư Chuyên Nghiệp ASEAN</div>
+            <p class="text-slate-500 text-[11px]">Kỹ sư chuyên nghiệp ASEAN (PE), chứng chỉ kiểm định an toàn thiết bị áp lực, NDT Level 2/3.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Hệ Thống Phần Mềm CAD/CAM/CAE</div>
+            <p class="text-slate-500 text-[11px]">SolidWorks, Siemens NX, CATIA, Mastercam, Ansys mô phỏng dòng chảy & ứng suất kết cấu.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Dòng Máy Công Cụ & Khuôn Mẫu Đã Chế Tạo</div>
+            <p class="text-slate-500 text-[11px]">Máy CNC 5 trục, khuôn ép nhựa chính xác dung sai &lt; 0.01mm, khuôn dập liên hoàn cho xe điện/điện tử.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ELEC -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="ELEC">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs">03</span>
+            <h3 class="text-sm font-bold text-slate-900">3. Điện - Điện Tử, Tự Động Hóa & Robot (ELEC)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Hãng Thiết Bị & PLC Am Hiểu Sâu</div>
+            <p class="text-slate-500 text-[11px]">Siemens (S7-1200/1500, TIA Portal), Mitsubishi, Omron, Rockwell/Allen-Bradley, Schneider Electric.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Dòng Cánh Tay Robot Công Nghiệp</div>
+            <p class="text-slate-500 text-[11px]">Fanuc, ABB, KUKA, Yaskawa, Universal Robots (Cobot). Tích hợp Vision 2D/3D nhận dạng phôi.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chuẩn Giao Tiếp Công Nghiệp</div>
+            <p class="text-slate-500 text-[11px]">Modbus RTU/TCP, Profinet, Profibus, EtherCAT, OPC-UA kết nối hệ thống SCADA/MES nhà máy.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. BIO -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="BIO">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">04</span>
+            <h3 class="text-sm font-bold text-slate-900">4. Công Nghệ Sinh Học & Vi Sinh Ứng Dụng (BIO)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chủng Vi Sinh Vật & Ngân Hàng Gen</div>
+            <p class="text-slate-500 text-[11px]">Mã định danh chủng nấm men, vi khuẩn lên men, enzyme bất hoạt, nấm đối kháng Trichoderma đăng ký ATCC.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Quy Mô Lên Men Sinh Học (Fermentation)</div>
+            <p class="text-slate-500 text-[11px]">Năng lực vận hành nồi lên men Pilot (50L, 500L) và công nghiệp (> 5,000L), kiểm soát pH, DO, nhiệt độ.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Tiêu Chuẩn An Toàn Sinh Học Cấp 2/3</div>
+            <p class="text-slate-500 text-[11px]">Chứng nhận phòng xét nghiệm an toàn sinh học cấp II, III do Bộ Y tế / Bộ NN&PTNT cấp phép.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. PHARMA -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="PHARMA">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-xs">05</span>
+            <h3 class="text-sm font-bold text-slate-900">5. Sản Xuất Thuốc, Hóa Dược & Dược Liệu (PHARMA)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Tiêu Chuẩn Thực Hành Tốt (GxP)</div>
+            <p class="text-slate-500 text-[11px]">GMP-WHO, GMP-EU, GLP (Phòng thử nghiệm thuốc), GCP (Thử nghiệm lâm sàng), GSP (Bảo quản kho lạnh thuốc).</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Số Đăng Ký Lưu Hành Thuốc (Visa Thuốc)</div>
+            <p class="text-slate-500 text-[11px]">Kinh nghiệm lập hồ sơ đăng ký thuốc ACTD/ICH nộp Cục Quản lý Dược, đánh giá tương đương sinh học (BE).</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Tiêu Chuẩn Dược Điển Áp Dụng</div>
+            <p class="text-slate-500 text-[11px]">Dược điển Việt Nam V, Dược điển Mỹ USP, Dược điển Châu Âu EP, phương pháp sắc ký HPLC/GC-MS.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. MAT -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="MAT">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center font-bold text-xs">06</span>
+            <h3 class="text-sm font-bold text-slate-900">6. Vật Liệu Mới, Hợp Kim & Công Nghệ Nano (MAT)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Dòng Vật Liệu Chuyên Sâu</div>
+            <p class="text-slate-500 text-[11px]">Vật liệu Nano (Carbon nanotube, Graphene), Composite sợi carbon, Hợp kim nhẹ Titan, Polymer phân hủy sinh học.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Phương Pháp Thử Nghiệm Đặc Tính</div>
+            <p class="text-slate-500 text-[11px]">Kính hiển vi điện tử quét SEM/TEM, nhiễu xạ tia X (XRD), đo cơ tính kéo nén ASTM D638/ISO 527.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Nhận An Toàn Hóa Chất REACH / RoHS</div>
+            <p class="text-slate-500 text-[11px]">Đánh giá hàm lượng kim loại nặng (Pb, Cd, Hg, Cr6+) và hợp chất độc hại xuất khẩu thị trường EU/Mỹ.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. ENERGY -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="ENERGY">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-yellow-100 text-yellow-800 flex items-center justify-center font-bold text-xs">07</span>
+            <h3 class="text-sm font-bold text-slate-900">7. Năng Lượng Tái Tạo, Pin & Tiết Kiệm Năng Lượng (ENERGY)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-yellow-700 bg-yellow-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Kiểm Toán Viên Năng Lượng</div>
+            <p class="text-slate-500 text-[11px]">Chứng chỉ Kiểm toán viên năng lượng do Bộ Công Thương cấp, Chuyên gia đánh giá ISO 50001 (EnMS).</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Hệ Thống Điện Mặt Trời & Lưu Trữ BESS</div>
+            <p class="text-slate-500 text-[11px]">Kinh nghiệm thiết kế hệ thống hòa lưới, Inverter trung tâm, hệ thống lưu trữ pin Lithium/Perovskite Megawatt.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Phần Mềm Mô Phỏng Năng Lượng</div>
+            <p class="text-slate-500 text-[11px]">PVsyst, Homer Energy, PSS/E mô phỏng ổn định lưới điện, tính toán giảm phát thải tín chỉ Carbon.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. CHEM -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="CHEM">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-xs">08</span>
+            <h3 class="text-sm font-bold text-slate-900">8. Sản Xuất Hóa Chất & Sản Phẩm Hóa Chất (CHEM)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Giấy Phép An Toàn Hóa Chất & Biện Pháp Ứng Phó</div>
+            <p class="text-slate-500 text-[11px]">Chứng chỉ tư vấn Kế hoạch/Biện pháp phòng ngừa ứng phó sự cố hóa chất theo Luật Hóa chất.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Phiếu Dữ Liệu An Toàn Hóa Chất (MSDS/GHS)</div>
+            <p class="text-slate-500 text-[11px]">Lập bảng chỉ dẫn an toàn 16 mục theo Hệ thống hài hòa toàn cầu GHS, phân loại hóa chất nguy hiểm.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Quy Trình Tổng Hợp & Phản Ứng Hóa Học</div>
+            <p class="text-slate-500 text-[11px]">Phản ứng trùng ngưng, cracking, điện phân màng ngăn, chiết tách dung môi hữu cơ công nghiệp.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. AGRI -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="AGRI">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-green-100 text-green-800 flex items-center justify-center font-bold text-xs">09</span>
+            <h3 class="text-sm font-bold text-slate-900">9. Nông Nghiệp Công Nghệ Cao & Canh Tác Chính Xác (AGRI)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Nhận Tiêu Chuẩn Nông Nghiệp Tốt</div>
+            <p class="text-slate-500 text-[11px]">VietGAP, GlobalGAP, Organic (USDA Organic, EU Organic), Rainforest Alliance cho nông sản xuất khẩu.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Hệ Thống Nhà Màng & Tưới Tự Động IoT</div>
+            <p class="text-slate-500 text-[11px]">Nhà màng Israel/Hà Lan, hệ thống châm phân tự động Fertigation, cảm biến độ ẩm EC/pH đất, Drone phun thuốc.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Giống Cây Trồng & Mã Vùng Trồng Xuất Khẩu</div>
+            <p class="text-slate-500 text-[11px]">Bằng bảo hộ giống cây trồng mới, tư vấn cấp Mã số vùng trồng (MSVT) và Mã cơ sở đóng gói (CSĐG) xuất khẩu.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. FOOD -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="FOOD">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs">10</span>
+            <h3 class="text-sm font-bold text-slate-900">10. Sản Xuất Chế Biến Thực Phẩm & Đồ Uống (FOOD)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-orange-700 bg-orange-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Đánh Giá Viên Trưởng (Lead Auditor)</div>
+            <p class="text-slate-500 text-[11px]">HACCP Codex 2020, ISO 22000:2018, FSSC 22000, BRC, Halal, Chứng nhận FDA Hoa Kỳ.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Công Nghệ Chế Biến & Bảo Quản Sau Thu Hoạch</div>
+            <p class="text-slate-500 text-[11px]">Chiết rót vô trùng Aseptic, cấp đông siêu tốc IQF, sấy thăng hoa (Freeze Drying), chiếu xạ bảo quản.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Quy Trình CIP/SIP Dây Chuyền Nhà Máy</div>
+            <p class="text-slate-500 text-[11px]">Vệ sinh tại chỗ tự động CIP, tiệt trùng đường ống thực phẩm, hệ thống lọc màng UF/RO.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. ENV -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="ENV">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs">11</span>
+            <h3 class="text-sm font-bold text-slate-900">11. Môi Trường, Xử Lý Chất Thải & Nước Thải (ENV)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Lập Báo Cáo ĐTM & Giấy Phép Môi Trường</div>
+            <p class="text-slate-500 text-[11px]">Chứng chỉ tư vấn Báo cáo ĐTM, Giấy phép môi trường (GPMT) tích hợp theo Luật BVMT 2020.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Công Nghệ Xử Lý Nước Thải & Rác Thải</div>
+            <p class="text-slate-500 text-[11px]">Màng sinh học MBR, oxy hóa bậc cao Fenton/Ozone, công nghệ đốt rác phát điện WTE (Waste to Energy).</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Trạm Quan Trắc Tự Động Kết Nối Sở TN&MT</div>
+            <p class="text-slate-500 text-[11px]">Hệ thống cảm biến đo COD, TSS, pH, Amoni, lưu lượng kế truyền dữ liệu trực tuyến về Trung tâm điều hành.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. MED -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="MED">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-red-100 text-red-800 flex items-center justify-center font-bold text-xs">12</span>
+            <h3 class="text-sm font-bold text-slate-900">12. Sản Xuất Thiết Bị Y Tế & Chăm Sóc Sức Khỏe (MED)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-red-700 bg-red-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Hệ Thống ISO 13485:2016</div>
+            <p class="text-slate-500 text-[11px]">Tiêu chuẩn hệ thống quản lý chất lượng chuyên ngành sản xuất trang thiết bị y tế toàn cầu.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Phân Loại Trang Thiết Bị Y Tế (A, B, C, D)</div>
+            <p class="text-slate-500 text-[11px]">Chứng chỉ hành nghề phân loại trang thiết bị y tế theo Nghị định 98/2021/NĐ-CP của Bộ Y tế.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Tiêu Chuẩn Phòng Sạch & Thử Nghiệm Tương Thích</div>
+            <p class="text-slate-500 text-[11px]">Thiết kế phòng sạch Class 10,000 / 100,000 (ISO 7, 8), thử nghiệm tương thích sinh học ISO 10993.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13. PACK -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="PACK">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-cyan-100 text-cyan-800 flex items-center justify-center font-bold text-xs">13</span>
+            <h3 class="text-sm font-bold text-slate-900">13. Công Nghiệp In Ấn & Sản Xuất Bao Bì (PACK)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-cyan-700 bg-cyan-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Công Nghệ In Công Nghiệp Chuyên Sâu</div>
+            <p class="text-slate-500 text-[11px]">In Offset nhiều màu, In ống đồng (Rotogravure), In Flexo màng nhôm/nhựa, In kỹ thuật số UV tốc độ cao.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Nhận Chuỗi Hành Trình Rừng FSC</div>
+            <p class="text-slate-500 text-[11px]">FSC-CoC (Quản lý chuỗi cung ứng giấy bền vững), Tiêu chuẩn bao bì tiếp xúc thực phẩm BRC Packaging.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Đặc Tính Rào Cản Màng Ghép Phức Hợp</div>
+            <p class="text-slate-500 text-[11px]">Đo độ cản khí O2 (OTR), độ cản hơi nước (WVTR), công nghệ màng ghép không dung môi (Solventless).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 14. TEXTILE -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="TEXTILE">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-pink-100 text-pink-800 flex items-center justify-center font-bold text-xs">14</span>
+            <h3 class="text-sm font-bold text-slate-900">14. Công Nghiệp Dệt May & Da Giày (TEXTILE)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-pink-700 bg-pink-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Xanh & Tiêu Chuẩn Trách Nhiệm Xã Hội</div>
+            <p class="text-slate-500 text-[11px]">OEKO-TEX Standard 100, Bluesign, Higg Index, Tiêu chuẩn tái chế GRS, Trách nhiệm xã hội WRAP/BSCI.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Hệ Thống Thiết Kế CAD Rập & Giác Sơ Đồ</div>
+            <p class="text-slate-500 text-[11px]">Gerber, Lectra, Optitex; Phần mềm mô phỏng 3D thời trang CLO3D; Máy cắt tự động CNC vải nhiều lớp.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Công Nghệ Nhuộm Sinh Học & Xử Lý Hoàn Tất</div>
+            <p class="text-slate-500 text-[11px]">Nhuộm không xả thải (Waterless dyeing), xử lý chống thấm nước Nano không chứa PFC, xử lý chống nhăn.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 15. PLASTIC -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="PLASTIC">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-stone-100 text-stone-800 flex items-center justify-center font-bold text-xs">15</span>
+            <h3 class="text-sm font-bold text-slate-900">15. Sản Xuất Sản Phẩm Nhựa & Cao Su Kỹ Thuật (PLASTIC)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-stone-700 bg-stone-100 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Công Nghệ Gia Công Ép Phun & Đùn Thổi</div>
+            <p class="text-slate-500 text-[11px]">Máy ép phun thủy lực/điện tử (Injection Molding 50T - 2000T), đùn thổi màng đa lớp, thổi chai PET vô trùng.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Công Nghệ Nhựa Sinh Học & Tái Chế PCR</div>
+            <p class="text-slate-500 text-[11px]">Phối trộn nhựa tái sinh sau tiêu dùng (PCR/PIR), hạt nhựa phân hủy sinh học hoàn toàn (PLA, PBS, PHA).</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Đặc Tính Cơ Lý Hóa & Chỉ Số Chảy MFI</div>
+            <p class="text-slate-500 text-[11px]">Đo tốc độ dòng chảy nhựa MFI/MFR (ASTM D1238), độ bền va đập Izod/Charpy, độ lưu hóa cao su Rheometer.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 16. LOG -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="LOG">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-sky-100 text-sky-800 flex items-center justify-center font-bold text-xs">16</span>
+            <h3 class="text-sm font-bold text-slate-900">16. Dịch Vụ Logistics & Quản Trị Chuỗi Cung Ứng (LOG)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Chuỗi Cung Ứng Quốc Tế</div>
+            <p class="text-slate-500 text-[11px]">CSCP (APICS/ASCM), CLTD (Vận tải & phân phối), FIATA Diploma, Chứng chỉ An toàn hàng không IATA.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Hệ Thống Phần Mềm Quản Trị Kho & Vận Tải</div>
+            <p class="text-slate-500 text-[11px]">Hệ thống WMS (Quản lý kho), TMS (Quản lý vận tải), Tự động hóa kho thông minh AS/RS, Robot tự hành AGV.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Tiêu Chuẩn Chuỗi Cung Ứng Lạnh (Cold Chain)</div>
+            <p class="text-slate-500 text-[11px]">Kiểm soát nhiệt độ âm sâu (-20°C / -80°C) cho vắc-xin, dược phẩm và thủy sản; Thiết bị ghi nhiệt Data Logger.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 17. WOOD -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="WOOD">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-900 flex items-center justify-center font-bold text-xs">17</span>
+            <h3 class="text-sm font-bold text-slate-900">17. Chế Biến Gỗ, Lâm Sản & Sản Xuất Nội Thất (WOOD)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Gỗ Hợp Pháp Quốc Tế</div>
+            <p class="text-slate-500 text-[11px]">FSC-FM/CoC (Quản lý rừng bền vững), PEFC, Quy chế gỗ EU (EUTR), Luật Lacey Hoa Kỳ chống khai thác lậu.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Tiêu Chuẩn Phát Thải Khí Formaldehyde</div>
+            <p class="text-slate-500 text-[11px]">CARB P2 (California Air Resources Board), EPA TSCA Title VI, Chuẩn E0/E1 Châu Âu cho ván MDF/HDF.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Công Nghệ Sấy Gỗ & Bảo Quản Chống Mối Mọt</div>
+            <p class="text-slate-500 text-[11px]">Lò sấy hơi nước tự động điều khiển độ ẩm &lt; 12%, công nghệ ngâm tẩm áp lực chân không, sơn UV sấy đèn.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 18. CONST -->
+      <div class="sector-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3" data-sector="CONST">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-800 flex items-center justify-center font-bold text-xs">18</span>
+            <h3 class="text-sm font-bold text-slate-900">18. Xây Dựng, Vật Liệu Xây Dựng & Hạ Tầng (CONST)</h3>
+          </div>
+          <span class="text-[11px] font-semibold text-slate-800 bg-slate-100 px-2.5 py-0.5 rounded-full">3 Trường Đặc Thù</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Chứng Chỉ Hành Nghề Hoạt Động Xây Dựng Hạng I/II</div>
+            <p class="text-slate-500 text-[11px]">Chứng chỉ thiết kế kết cấu, giám sát thi công, quản lý dự án do Cục Quản lý Hoạt động Xây dựng cấp.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Mô Hình Thông Tin Công Trình BIM (Revit/Tekla)</div>
+            <p class="text-slate-500 text-[11px]">Thiết kế mô hình BIM 3D/4D/5D, bóc tách va chạm kết cấu - cơ điện MEP, lập bản vẽ thi công Shopdrawing.</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <div class="font-bold text-slate-900">Vật Liệu Xây Dựng Xanh & Bê Tông Cường Độ Cao</div>
+            <p class="text-slate-500 text-[11px]">Bê tông tự lèn SCC, gạch không nung nhẹ AAC, tiêu chuẩn chứng chỉ công trình xanh LOTUS/LEED.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    function filterSector(sectorCode) {
+      document.querySelectorAll('.sector-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-${sectorCode}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const labels = {
+        'IT': '1. Công nghệ thông tin, Trí tuệ nhân tạo (AI)',
+        'MECH': '2. Cơ khí chế tạo & Khuôn mẫu chính xác',
+        'ELEC': '3. Điện - Điện tử, Tự động hóa & Robot',
+        'BIO': '4. Công nghệ sinh học & Vi sinh',
+        'PHARMA': '5. Thuốc, Hóa dược & Dược liệu',
+        'MAT': '6. Vật liệu mới, Hợp kim & Nanotech',
+        'ENERGY': '7. Năng lượng tái tạo & Lưu trữ',
+        'CHEM': '8. Sản xuất hóa chất & Hóa mỹ phẩm',
+        'AGRI': '9. Nông nghiệp công nghệ cao & Giống',
+        'FOOD': '10. Chế biến thực phẩm & Đồ uống',
+        'ENV': '11. Môi trường, Nước thải & Quan trắc',
+        'MED': '12. Sản xuất thiết bị y tế',
+        'PACK': '13. In ấn công nghiệp & Bao bì',
+        'TEXTILE': '14. Dệt may & Da giày',
+        'PLASTIC': '15. Sản phẩm nhựa & Cao su kỹ thuật',
+        'LOG': '16. Logistics & Quản trị chuỗi cung ứng',
+        'WOOD': '17. Chế biến gỗ, Lâm sản & Nội thất',
+        'CONST': '18. Xây dựng, Vật liệu & Hạ tầng'
+      };
+
+      document.getElementById('currentSectorLabel').innerText = labels[sectorCode] || sectorCode;
+
+      const cards = document.querySelectorAll('.sector-card');
+      cards.forEach(card => {
+        const sec = card.getAttribute('data-sector');
+        if (sec === sectorCode) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function resetToAll() {
+      document.querySelectorAll('.sector-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('currentSectorLabel').innerText = 'Tất cả 18 ngành';
+      document.querySelectorAll('.sector-card').forEach(card => {
+        card.style.display = 'block';
+      });
+    }
+  </script>
+</body>
+</html>

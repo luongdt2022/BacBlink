@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe Đăng Ký Tham Quan Techmart — NacenTwin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col justify-between">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-blue-700 text-white flex items-center justify-center font-bold text-base shadow-sm">NT</div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-base font-extrabold text-slate-900">Techmart Online & Trực Tiếp</h1>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">TICKETING / EXPO</span>
+        </div>
+        <p class="text-xs text-slate-500">Đăng Ký Vé Tham Quan & Kết Nối Giao Thương Công Nghệ</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/trien-lam" class="text-xs font-semibold text-slate-600 hover:text-blue-700 flex items-center gap-1">
+        <i data-lucide="calendar" class="w-4 h-4"></i> Lịch Sự Kiện Techmart
+      </a>
+      <a href="/" class="text-xs font-semibold text-slate-600 hover:text-blue-700 flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Về Trang Chủ
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto w-full px-4 py-8 space-y-8">
+    <!-- Title Section -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
+          <i data-lucide="ticket" class="w-3.5 h-3.5"></i> Vé Vào Cổng Điện Tử Miễn Phí
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-900">Đăng Ký Tham Quan Techmart 2026</h2>
+        <p class="text-xs text-slate-500">Mã QR Code vé điện tử sẽ được cấp tức thời và gửi về Email/Zalo của quý khách.</p>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+        <span>Bảo mật theo Nghị định 13/2023/NĐ-CP</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Form Container -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        <!-- Bước 1: Chọn sự kiện -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            1. Chọn Sự Kiện Triển Lãm Techmart <span class="text-rose-500">*</span>
+          </label>
+          <div class="space-y-2">
+            <label class="flex items-start gap-3 p-3 rounded-xl border-2 border-blue-600 bg-blue-50/50 cursor-pointer">
+              <input type="radio" name="event" checked class="mt-1 text-blue-600">
+              <div class="text-xs space-y-0.5">
+                <div class="font-bold text-slate-900 text-sm">Chợ Công Nghệ & Thiết Bị Chuyển Đổi Số 2026 (Techmart Hanoi)</div>
+                <div class="text-slate-600 flex items-center gap-3">
+                  <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600"></i> 15/11/2026 - 18/11/2026</span>
+                  <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-600"></i> Cung Triển lãm Kiến trúc & Quy hoạch, Hà Nội</span>
+                </div>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-slate-300 cursor-pointer">
+              <input type="radio" name="event" class="mt-1 text-blue-600">
+              <div class="text-xs space-y-0.5">
+                <div class="font-bold text-slate-900 text-sm">Techmart Chuyên Ngành Y Dược & Vật Liệu Sinh Học Mới</div>
+                <div class="text-slate-600 flex items-center gap-3">
+                  <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600"></i> 10/12/2026 - 12/12/2026</span>
+                  <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-600"></i> Trung tâm Triển lãm SECC, TP. Hồ Chí Minh</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <hr class="border-slate-100">
+
+        <!-- Bước 2: Thông tin cá nhân & Doanh nghiệp -->
+        <div class="space-y-4">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            2. Thông Tin Khách Tham Quan & Kết Nối Giao Thương
+          </label>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="space-y-1">
+              <span class="font-semibold text-slate-700">Họ và tên <span class="text-rose-500">*</span></span>
+              <input type="text" value="Nguyễn Văn An" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-blue-600">
+            </div>
+            <div class="space-y-1">
+              <span class="font-semibold text-slate-700">Chức vụ</span>
+              <input type="text" value="Giám đốc Kỹ thuật (CTO)" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-blue-600">
+            </div>
+            <div class="space-y-1">
+              <span class="font-semibold text-slate-700">Tên cơ quan / Doanh nghiệp <span class="text-rose-500">*</span></span>
+              <input type="text" value="Công ty CP Giải pháp Công nghệ Việt" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-blue-600">
+            </div>
+            <div class="space-y-1">
+              <span class="font-semibold text-slate-700">Lĩnh vực hoạt động</span>
+              <select class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-blue-600 bg-white">
+                <option>01. Công nghệ Thông tin & Chuyển đổi số</option>
+                <option>02. Nông nghiệp Công nghệ cao</option>
+                <option>03. Tự động hóa & Robot</option>
+                <option>04. Y dược & Thiết bị y tế</option>
+              </select>
+            </div>
+            <div class="space-y-1">
+              <span class="font-semibold text-slate-700">Số điện thoại di động <span class="text-rose-500">*</span></span>
+              <input type="tel" value="0987654321" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-blue-600">
+            </div>
+            <div class="space-y-1">
+              <span class="font-semibold text-slate-700">Địa chỉ Email nhận vé <span class="text-rose-500">*</span></span>
+              <input type="email" value="an.nguyen@viet-tech.vn" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-blue-600">
+            </div>
+          </div>
+
+          <div class="space-y-1 text-xs">
+            <span class="font-semibold text-slate-700">Mục đích chính khi tham dự Techmart</span>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer">
+                <input type="checkbox" checked class="text-blue-600"> Tìm mua công nghệ / Thiết bị
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer">
+                <input type="checkbox" checked class="text-blue-600"> Tìm chuyên gia tư vấn
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer">
+                <input type="checkbox" class="text-blue-600"> Chào bán giải pháp công nghệ
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-200 cursor-pointer">
+                <input type="checkbox" class="text-blue-600"> Khảo sát, học hỏi xu hướng
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+          <i data-lucide="send" class="w-4 h-4"></i> Hoàn Tất Đăng Ký & Nhận Vé Điện Tử
+        </button>
+      </div>
+
+      <!-- Preview Vé Điện Tử (Right Sidebar) -->
+      <div class="space-y-4">
+        <div class="bg-gradient-to-b from-blue-700 to-indigo-900 text-white p-5 rounded-2xl shadow-md space-y-4">
+          <div class="flex items-center justify-between border-b border-white/20 pb-3">
+            <span class="text-xs font-bold tracking-widest uppercase">E-TICKET TECHMART</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500 font-bold">XÁC NHẬN</span>
+          </div>
+
+          <div class="text-center py-2 space-y-2">
+            <div class="w-32 h-32 mx-auto bg-white p-2 rounded-xl flex items-center justify-center shadow-inner">
+              <!-- QR Mockup -->
+              <div class="w-full h-full border-4 border-slate-900 border-dashed rounded flex flex-col items-center justify-center text-slate-800 text-[10px] font-mono">
+                <i data-lucide="qr-code" class="w-12 h-12 text-slate-900"></i>
+                <span class="font-bold">TM-2026-9812</span>
+              </div>
+            </div>
+            <div class="text-xs font-mono font-bold text-blue-200">MÃ VÉ: TM-2026-9812</div>
+          </div>
+
+          <div class="text-xs space-y-1.5 border-t border-white/20 pt-3">
+            <div class="flex justify-between"><span class="text-slate-300">Khách tham quan:</span> <span class="font-bold">Nguyễn Văn An</span></div>
+            <div class="flex justify-between"><span class="text-slate-300">Đơn vị:</span> <span class="font-bold truncate max-w-[150px]">Công ty CP Việt Tech</span></div>
+            <div class="flex justify-between"><span class="text-slate-300">Ngày diễn ra:</span> <span class="font-bold">15 - 18/11/2026</span></div>
+            <div class="flex justify-between"><span class="text-slate-300">Phân hạng:</span> <span class="font-bold text-amber-300">Doanh nghiệp Buyer</span></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-2">
+          <h4 class="font-bold text-slate-800 flex items-center gap-1.5">
+            <i data-lucide="info" class="w-4 h-4 text-blue-600"></i> Lưu Ý Khi Tham Quan
+          </h4>
+          <ul class="list-disc pl-4 space-y-1 text-[11px]">
+            <li>Xuất trình mã QR tại quầy Check-in tự động để in thẻ đeo.</li>
+            <li>Được hỗ trợ đặt lịch hẹn trực tiếp (1-1 B2B Matching) với các Seller tại sự kiện.</li>
+            <li>Miễn phí tài liệu Kỷ yếu Công nghệ và Danh bạ Sáng chế 2026.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 px-6 text-center text-xs text-slate-500">
+    © 2026 NacenTwin — Ban Tổ Chức Sàn Giao Dịch & Triển Lãm Techmart.
+  </footer>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

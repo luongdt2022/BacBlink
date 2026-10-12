@@ -1,0 +1,2575 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phiếu Khảo Sát Nhu Cầu Đổi Mới Công Nghệ Doanh Nghiệp (DNNVV) — NacenTwin · Bộ Khoa Học & Công Nghệ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-900: #0E1A38;
+      --brand-800: #1E336B;
+      --brand-700: #3C5999;
+      --brand-600: #4B6CB7;
+      --brand-100: #DCE5F5;
+      --brand-50: #EEF3FA;
+      
+      --nacen-green-700: #195E50;
+      --nacen-green-600: #237A69;
+      --nacen-green-500: #2D9A85;
+      --nacen-green-100: #C7ECE4;
+      --nacen-green-50: #EBF8F5;
+      
+      --innovation-600: #0891B2;
+      --innovation-500: #06B6D4;
+      --innovation-400: #22D3EE;
+      --innovation-100: #CFFAFE;
+      --innovation-50: #ECFEFF;
+      
+      --surface-page: #F8FAFC;
+      --surface-card: #FFFFFF;
+      --surface-subtle: #F1F5F9;
+      --surface-muted: #E2E8F0;
+      
+      --border-default: #E2E8F0;
+      --border-control: #CBD5E1;
+      --border-focus: #3C5999;
+      
+      --text-primary: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
+      --text-caption: #94A3B8;
+      
+      --status-success: #10B981;
+      --status-warning: #F59E0B;
+      --status-danger: #EF4444;
+      --status-info: #2563EB;
+      
+      --radius-sm: 8px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+      
+      --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+      --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 8px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 12px 20px -4px rgba(30, 51, 107, 0.1), 0 4px 8px -4px rgba(30, 51, 107, 0.06);
+      --shadow-xl: 0 20px 30px -6px rgba(15, 23, 42, 0.15), 0 8px 12px -6px rgba(15, 23, 42, 0.08);
+      
+      --control-height: 48px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+      background-color: var(--surface-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 1. TOP NATIONAL / INSTITUTE HEADER */
+    .top-gov-bar {
+      background: #0B1120;
+      color: #94A3B8;
+      font-size: 11.5px;
+      padding: 7px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 500;
+    }
+    .gov-badge-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .national-emblem-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #F8FAFC;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .top-gov-bar a {
+      color: #38BDF8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .top-gov-bar a:hover {
+      text-decoration: underline;
+    }
+
+    /* 2. MAIN NAVIGATION HEADER */
+    .site-header {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-default);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo-img {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-main-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--brand-700);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .brand-sub-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 0 18px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-sm {
+      font-size: 12.5px;
+      height: 34px;
+      padding: 0 12px;
+      border-radius: var(--radius-sm);
+    }
+    .btn-lg {
+      font-size: 15px;
+      font-weight: 700;
+      height: var(--control-height);
+      padding: 0 28px;
+      border-radius: 12px;
+    }
+    .btn-primary {
+      background: var(--brand-700);
+      color: #FFFFFF;
+      border-color: var(--brand-700);
+    }
+    .btn-primary:hover {
+      background: var(--brand-800);
+      border-color: var(--brand-800);
+      box-shadow: 0 4px 12px rgba(60, 89, 153, 0.25);
+    }
+    .btn-cta {
+      background: var(--nacen-green-500);
+      color: #FFFFFF;
+      border-color: var(--nacen-green-500);
+      box-shadow: 0 4px 12px rgba(45, 154, 133, 0.3);
+    }
+    .btn-cta:hover {
+      background: var(--nacen-green-600);
+      border-color: var(--nacen-green-600);
+      box-shadow: 0 6px 16px rgba(45, 154, 133, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: #FFFFFF;
+      color: var(--brand-700);
+      border-color: var(--border-control);
+    }
+    .btn-outline:hover {
+      background: var(--brand-50);
+      border-color: var(--brand-700);
+      color: var(--brand-800);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border-color: transparent;
+    }
+    .btn-ghost:hover {
+      background: var(--surface-subtle);
+      color: var(--text-primary);
+    }
+
+    /* 3. HERO BANNER WITH HOMEPAGE-STYLE BACKGROUND & MOTIFS */
+    .hero-banner {
+      background: linear-gradient(135deg, #070D1F 0%, #0F1E42 35%, #182C5E 70%, #0B1530 100%);
+      color: #FFFFFF;
+      padding: 48px 24px 56px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Background Image overlay */
+    .hero-bg-art {
+      position: absolute;
+      inset: 0;
+      background-image: url('innovation-hero-background.png');
+      background-size: cover;
+      background-position: center right;
+      opacity: 0.28;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    /* Ambient Glowing Orbs */
+    .hero-orb-1 {
+      position: absolute;
+      top: -80px;
+      right: 15%;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(6, 182, 212, 0) 70%);
+      border-radius: 50%;
+      filter: blur(40px);
+      pointer-events: none;
+    }
+    .hero-orb-2 {
+      position: absolute;
+      bottom: -100px;
+      left: 8%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(37, 99, 235, 0) 70%);
+      border-radius: 50%;
+      filter: blur(50px);
+      pointer-events: none;
+    }
+    .hero-orb-3 {
+      position: absolute;
+      top: 35%;
+      left: 42%;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(45, 154, 133, 0.22) 0%, rgba(45, 154, 133, 0) 70%);
+      border-radius: 50%;
+      filter: blur(45px);
+      pointer-events: none;
+    }
+
+    /* Tech Grid & Vector Motif SVG */
+    .hero-circuit-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 28px 28px, 140px 140px, 140px 140px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 1240px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 5;
+    }
+
+    .hero-tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #E2E8F0;
+    }
+    .hero-pill.cyan {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #67E8F9;
+    }
+    .hero-pill.emerald {
+      background: rgba(45, 154, 133, 0.25);
+      border-color: rgba(45, 154, 133, 0.45);
+      color: #6EE7B7;
+    }
+
+    .hero-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      margin-bottom: 12px;
+      max-width: 950px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .hero-subtitle {
+      font-size: 15px;
+      color: #CBD5E1;
+      max-width: 860px;
+      line-height: 1.65;
+      margin-bottom: 26px;
+    }
+
+    /* Frosted Metric Cards */
+    .hero-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .hero-metric-item {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      transition: all 0.2s ease;
+    }
+    .hero-metric-item:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .hero-metric-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .hero-metric-num.cyan { color: #38BDF8; }
+    .hero-metric-num.emerald { color: #34D399; }
+    .hero-metric-num.amber { color: #FBBF24; }
+    .hero-metric-num.purple { color: #C084FC; }
+    .hero-metric-label {
+      font-size: 12px;
+      color: #94A3B8;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* 4. STICKY STEPPER & REAL-TIME PROGRESS BAR */
+    .sticky-stepper {
+      position: sticky;
+      top: 68px;
+      z-index: 90;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-default);
+      box-shadow: 0 4px 14px -3px rgba(15, 23, 42, 0.06);
+    }
+    .stepper-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 10px 24px 2px;
+    }
+    .stepper-progress-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 8px;
+    }
+    .progress-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .progress-badge {
+      background: var(--brand-50);
+      color: var(--brand-700);
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12.5px;
+      border: 1px solid var(--brand-100);
+    }
+    .progress-bar-wrapper {
+      flex: 1;
+      max-width: 380px;
+      height: 8px;
+      background: #E2E8F0;
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand-700), var(--nacen-green-500));
+      border-radius: var(--radius-full);
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stepper-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .stepper-tabs::-webkit-scrollbar { display: none; }
+    .stepper-tab {
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 3px solid transparent;
+      text-decoration: none;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.15s ease;
+    }
+    .stepper-tab:hover {
+      color: var(--brand-700);
+      background: var(--surface-subtle);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+    .stepper-tab.active {
+      color: var(--brand-700);
+      border-bottom-color: var(--brand-700);
+    }
+    .step-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #E2E8F0;
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .stepper-tab.active .step-circle {
+      background: var(--brand-700);
+      color: #FFFFFF;
+    }
+    .stepper-tab.completed .step-circle {
+      background: var(--nacen-green-500);
+      color: #FFFFFF;
+    }
+
+    /* 5. MAIN FORM CONTAINER */
+    .form-wrapper {
+      max-width: 1240px;
+      margin: 28px auto 60px;
+      padding: 0 24px;
+    }
+
+    /* Enterprise Guidance Card */
+    .intro-info-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-default);
+      border-left: 5px solid var(--nacen-green-500);
+      border-radius: var(--radius-md);
+      padding: 18px 24px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .intro-info-icon {
+      color: var(--nacen-green-600);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .intro-info-body h4 {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--brand-900);
+      margin-bottom: 4px;
+    }
+    .intro-info-body p {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* SECTIONS */
+    .form-section-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow-sm);
+      scroll-margin-top: 145px;
+      transition: all 0.2s ease;
+    }
+    .form-section-card:focus-within {
+      border-color: #CBD5E1;
+      box-shadow: var(--shadow-md);
+    }
+    .section-header-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      border-bottom: 2px solid var(--brand-50);
+      padding-bottom: 18px;
+      margin-bottom: 26px;
+    }
+    .section-badge-letter {
+      width: 40px;
+      height: 40px;
+      background: var(--brand-50);
+      color: var(--brand-700);
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--brand-100);
+      flex-shrink: 0;
+    }
+    .section-badge-letter.green {
+      background: var(--nacen-green-50);
+      color: var(--nacen-green-600);
+      border-color: var(--nacen-green-100);
+    }
+    .section-heading-text h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--brand-900);
+      letter-spacing: -0.015em;
+    }
+    .section-heading-text p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* 6. FORM CONTROLS STANDARDIZATION */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px 24px;
+    }
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px 24px;
+    }
+    .col-span-full {
+      grid-column: 1 / -1;
+    }
+
+    .form-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .form-item-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      min-height: 22px;
+    }
+    .req-mark {
+      color: var(--status-danger);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    /* Standard Input, Select, Textarea */
+    .form-input,
+    .form-select {
+      width: 100%;
+      height: var(--control-height);
+      min-height: var(--control-height);
+      line-height: 1.5;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text-primary);
+      background-color: #FFFFFF;
+      border: 1.5px solid var(--border-control);
+      border-radius: var(--radius-md);
+      padding: 0 16px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-sizing: border-box;
+    }
+
+    /* Custom styled SVG Dropdown Chevron */
+    .form-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%233C5999' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-position: right 14px center;
+      background-repeat: no-repeat;
+      padding-right: 44px;
+      cursor: pointer;
+    }
+
+    .form-textarea {
+      width: 100%;
+      min-height: 100px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text-primary);
+      background-color: #FFFFFF;
+      border: 1.5px solid var(--border-control);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      resize: vertical;
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--brand-700);
+      box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: var(--text-caption);
+    }
+
+    .field-hint {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+
+    /* Enterprise Size Cards (Row 7) */
+    .size-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 4px;
+    }
+    .size-option-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .size-option-card:hover {
+      border-color: var(--brand-700);
+      background: var(--brand-50);
+    }
+    .size-option-card input[type="radio"] {
+      accent-color: var(--brand-700);
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .size-option-card.selected {
+      border-color: var(--brand-700);
+      background: var(--brand-50);
+      box-shadow: 0 2px 6px rgba(60, 89, 153, 0.12);
+    }
+    .size-card-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .size-card-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Custom Revenue Dual Input Box */
+    .revenue-custom-box {
+      background: var(--surface-subtle);
+      border: 1.5px dashed var(--border-control);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-top: 12px;
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+    .revenue-custom-box.active {
+      display: block;
+    }
+    .revenue-inputs-inline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* CHIPS & TAG SELECTION (Bottlenecks, Trends) */
+    .chips-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .chip-btn {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--radius-full);
+      padding: 0 16px;
+      height: 38px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .chip-btn:hover {
+      border-color: var(--brand-700);
+      color: var(--brand-700);
+      background: var(--brand-50);
+    }
+    .chip-btn.active {
+      background: var(--brand-700);
+      color: #FFFFFF;
+      border-color: var(--brand-700);
+      box-shadow: 0 2px 6px rgba(60, 89, 153, 0.25);
+    }
+    .chip-btn input { display: none; }
+
+    /* MANAGEMENT CAPABILITY CHECKBOX CARDS */
+    .mgmt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .mgmt-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mgmt-card:hover {
+      border-color: var(--brand-700);
+      background: var(--brand-50);
+    }
+    .mgmt-card.selected {
+      border-color: var(--brand-700);
+      background: var(--brand-50);
+    }
+    .mgmt-card input[type="checkbox"] {
+      accent-color: var(--brand-700);
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    /* TABLES & MATRIX */
+    .table-responsive {
+      overflow-x: auto;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--radius-md);
+      margin: 16px 0;
+      background: #FFFFFF;
+    }
+    .portal-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+    .portal-table th {
+      background: #F8FAFC;
+      color: var(--text-secondary);
+      font-weight: 700;
+      padding: 14px 16px;
+      border-bottom: 1.5px solid var(--border-default);
+      border-right: 1px solid var(--border-default);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .portal-table th:last-child { border-right: none; }
+    .portal-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-default);
+      border-right: 1px solid var(--border-default);
+      vertical-align: middle;
+    }
+    .portal-table td:last-child { border-right: none; }
+    .portal-table tr:last-child td { border-bottom: none; }
+    .portal-table tr:hover td { background-color: #F8FAFC; }
+
+    .portal-table .form-input,
+    .portal-table .form-select {
+      height: 42px;
+      min-height: 42px;
+      padding: 0 12px;
+      font-size: 14px;
+    }
+
+    /* MATRIX SCALES PILL */
+    .scale-th {
+      text-align: center;
+      width: 90px;
+    }
+    .rating-circle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-control);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+    }
+    .rating-circle-btn:hover {
+      border-color: var(--brand-700);
+      background: var(--brand-50);
+      color: var(--brand-700);
+    }
+    .rating-radio-input:checked + .rating-circle-btn {
+      background: var(--brand-700);
+      color: #FFFFFF;
+      border-color: var(--brand-700);
+      box-shadow: 0 2px 6px rgba(60, 89, 153, 0.35);
+    }
+    .rating-radio-input { display: none; }
+
+    /* DEMAND TICKETS CARD (SECTION E) */
+    .demand-ticket-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .demand-ticket-card:hover {
+      border-color: #CBD5E1;
+      box-shadow: var(--shadow-md);
+    }
+    .demand-card-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1.5px solid var(--brand-50);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+    .ticket-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--brand-50);
+      color: var(--brand-700);
+      font-weight: 800;
+      font-size: 13.5px;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--brand-100);
+    }
+    .btn-remove-ticket {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-remove-ticket:hover {
+      background: #EF4444;
+      color: #FFFFFF;
+    }
+
+    /* SECURITY & PRIVACY CARD */
+    .privacy-cert-box {
+      background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+      border: 1.5px solid #A7F3D0;
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .privacy-cert-icon {
+      color: var(--nacen-green-600);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .privacy-cert-text h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #065F46;
+      margin-bottom: 4px;
+    }
+    .privacy-cert-text p {
+      font-size: 13.5px;
+      color: #047857;
+      line-height: 1.6;
+    }
+
+    /* ACTION BAR */
+    .action-submit-bar {
+      background: #FFFFFF;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: 24px 32px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 40px;
+    }
+    .submit-bar-left h4 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--brand-900);
+    }
+    .submit-bar-left p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    .submit-bar-btns {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* SUCCESS MODAL */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.active {
+      display: flex;
+    }
+    .modal-window {
+      background: #FFFFFF;
+      border-radius: var(--radius-xl);
+      max-width: 660px;
+      width: 100%;
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      animation: modalFadeIn 0.25s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header-hero {
+      background: linear-gradient(135deg, var(--brand-800), var(--brand-900));
+      color: #FFFFFF;
+      padding: 28px 24px;
+      text-align: center;
+      position: relative;
+    }
+    .modal-hero-icon {
+      width: 68px;
+      height: 68px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      color: #6EE7B7;
+    }
+    .ticket-id-display {
+      background: var(--brand-50);
+      border: 2px dashed var(--brand-700);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .ticket-id-title {
+      font-size: 12px;
+      color: var(--brand-700);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ticket-id-val {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--brand-900);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+    }
+
+    /* TOAST */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 14px 22px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s ease;
+    }
+    .toast-box.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast-box.success {
+      border-left: 4px solid var(--nacen-green-500);
+    }
+    .toast-box.error {
+      border-left: 4px solid var(--status-danger);
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      .top-gov-bar, .site-header, .sticky-stepper, .action-submit-bar, .header-tools, .btn-remove-ticket, #btn-add-ticket {
+        display: none !important;
+      }
+      body { background: #FFFFFF !important; font-size: 11pt; }
+      .form-wrapper { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+      .form-section-card { box-shadow: none !important; border: 1px solid #CCC !important; page-break-inside: avoid; margin-bottom: 16px !important; padding: 16px !important; }
+      .hero-banner { background: none !important; color: #000000 !important; padding: 0 0 16px 0 !important; border-bottom: 2px solid #000; }
+      .hero-title { color: #000000 !important; font-size: 16pt !important; }
+      .hero-subtitle, .hero-metrics-grid { display: none !important; }
+    }
+
+    /* RESPONSIVE BREAKPOINTS */
+    @media (max-width: 1024px) {
+      .hero-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .size-cards-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .grid-2col, .grid-3col { grid-template-columns: 1fr; }
+      .hero-title { font-size: 25px; }
+      .hero-metrics-grid { grid-template-columns: 1fr; }
+      .header-tools { display: none; }
+      .revenue-inputs-inline { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+    <div id="nacentech-design-toolbar" style="position: sticky; top: 0; left: 0; right: 0; z-index: 99999; background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 700; transition: background 0.2s;">
+          ← Về Danh Sách Màn Hình
+        </a>
+        <span style="color: #94a3b8;">|</span>
+        <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4);">
+          Màn hình: Web Khảo Sát Nhu Cầu Đổi Mới Công Nghệ DNNVV
+        </span>
+        <span style="color: #64748b;">(25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="color: #94a3b8; font-size: 11px;">Nền tảng NacenTwin · Viện Ứng Dụng Công Nghệ</span>
+        <button onclick="document.getElementById('nacentech-design-toolbar').style.display='none'" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;" title="Ẩn thanh công cụ">✕</button>
+      </div>
+    </div>
+
+
+  <!-- 1. TOP NATIONAL / INSTITUTE GOVERNMENT BAR -->
+  <div class="top-gov-bar">
+    <div class="gov-badge-left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      <span class="national-emblem-badge">BỘ KHOA HỌC VÀ CÔNG NGHỆ · VIỆN ỨNG DỤNG CÔNG NGHỆ (NACENTECH)</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span>Cổng Dữ Liệu Đổi Mới Sáng Tạo Quốc Gia</span>
+      <span>Đầu mối tiếp nhận: <b>024.3868.xxxx</b></span>
+    </div>
+  </div>
+
+  <!-- 2. MAIN HEADER -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="/" class="brand-link">
+        <img src='data:image/png;base64,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' alt='NacenTech Logo' class='brand-logo-img'>
+        <div class="brand-titles">
+          <span class="brand-main-title">NacenTwin</span>
+          <span class="brand-sub-title">Cổng Đổi Mới Sáng Tạo & Khớp Nối Cung Cầu Công Nghệ</span>
+        </div>
+      </a>
+      <div class="header-tools">
+        <button type="button" class="btn btn-outline btn-sm" id="btn-save-draft" title="Lưu tạm vào trình duyệt để tiếp tục sau">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          Lưu bản nháp
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-load-draft" title="Khôi phục dữ liệu đã lưu">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Tải lại nháp
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="window.print()" title="In hoặc lưu file PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          In phiếu / PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. HERO BANNER WITH HOMEPAGE AESTHETICS & AMBIENT MOTIFS -->
+  <section class="hero-banner">
+    <div class="hero-bg-art"></div>
+    <div class="hero-circuit-overlay"></div>
+    <div class="hero-orb-1"></div>
+    <div class="hero-orb-2"></div>
+    <div class="hero-orb-3"></div>
+
+    <div class="hero-content">
+      <div class="hero-tag-row">
+        <span class="hero-pill cyan">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          CHƯƠNG TRÌNH ĐỔI MỚI CÔNG NGHỆ QUỐC GIA
+        </span>
+        <span class="hero-pill emerald">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          BẢO MẬT DỮ LIỆU PDPD THEO NGHỊ ĐỊNH 13/2023/NĐ-CP
+        </span>
+        <span class="hero-pill">
+          CHUẨN HÓA TIÊU CHÍ TT17/2019/TT-BKHCN
+        </span>
+      </div>
+
+      <h1 class="hero-title">Phiếu Khảo Sát Nhu Cầu Đổi Mới Công Nghệ Doanh Nghiệp (DNNVV)</h1>
+      <p class="hero-subtitle">
+        Thu thập có cấu trúc hiện trạng thiết bị, các điểm nghẽn sản xuất và bài toán tìm mua công nghệ của Quý Doanh nghiệp. 
+        Hội đồng Khoa học Viện NacenTech (Bộ KH&CN) trực tiếp tiếp nhận để tư vấn, định vị chỉ số công nghệ (TNI) và kết nối giải pháp công nghệ, chuyên gia hàng đầu.
+      </p>
+
+      <div class="hero-metrics-grid">
+        <div class="hero-metric-item">
+          <div class="hero-metric-num cyan">3,420+</div>
+          <div class="hero-metric-label">Nhà khoa học & Chuyên gia công nghệ sẵn sàng tư vấn</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-num emerald">1,479+</div>
+          <div class="hero-metric-label">Hồ sơ công nghệ & Sáng chế đã kiểm định TRL 1-9</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-num amber">100%</div>
+          <div class="hero-metric-label">Bảo mật thông tin liên hệ, ngân sách và bí mật kinh doanh</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-num purple">1 : 1</div>
+          <div class="hero-metric-label">Hỗ trợ khảo sát trực tiếp tại nhà máy từ Viện NacenTech</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. STICKY PROGRESS TRACKER & STEPPER NAV -->
+  <div class="sticky-stepper">
+    <div class="stepper-container">
+      <div class="stepper-progress-row">
+        <div class="progress-info">
+          <span>Tiến độ hoàn thành:</span>
+          <span class="progress-badge" id="progress-percent">0%</span>
+          <span style="color: var(--text-muted); font-size: 12px;" id="progress-count">(0/11 tiêu chí bắt buộc)</span>
+        </div>
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar-inner" id="progress-bar"></div>
+        </div>
+      </div>
+      <nav class="stepper-tabs" id="stepper-tabs">
+        <a href="#section-a" class="stepper-tab active"><span class="step-circle">A</span> Thông tin doanh nghiệp</a>
+        <a href="#section-b" class="stepper-tab"><span class="step-circle">B</span> Hiện trạng công nghệ</a>
+        <a href="#section-c" class="stepper-tab"><span class="step-circle">C</span> Điểm nghẽn sản xuất</a>
+        <a href="#section-d" class="stepper-tab"><span class="step-circle">D</span> Năng lực tiếp nhận</a>
+        <a href="#section-e" class="stepper-tab"><span class="step-circle">E</span> Bài toán nhu cầu</a>
+        <a href="#section-f" class="stepper-tab"><span class="step-circle">F</span> Hướng & Hỗ trợ</a>
+        <a href="#section-g" class="stepper-tab"><span class="step-circle">G</span> Xác nhận gửi</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- 5. MAIN FORM -->
+  <main class="form-wrapper">
+    <form id="survey-form" novalidate>
+
+      <!-- Introductory Guidance Card -->
+      <div class="intro-info-card">
+        <div class="intro-info-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        </div>
+        <div class="intro-info-body">
+          <h4>Quyền lợi của doanh nghiệp khi tham gia khảo sát</h4>
+          <p>
+            Doanh nghiệp được Hội đồng Khoa học Viện NacenTech hỗ trợ phân tích miễn phí báo cáo hiện trạng công nghệ, định danh chính xác bài toán kỹ thuật, kết nối nguồn cung máy móc/thiết bị uy tín và hỗ trợ thủ tục vay vốn từ Quỹ Đổi mới công nghệ Quốc gia (NATIF). Các trường có dấu <span class="req-mark">*</span> là bắt buộc để mở hồ sơ tiếp nhận.
+          </p>
+        </div>
+      </div>
+
+      <!-- ================= SECTION A ================= -->
+      <section class="form-section-card" id="section-a">
+        <div class="section-header-box">
+          <div class="section-badge-letter">A</div>
+          <div class="section-heading-text">
+            <h3>Thông Tin Chung Về Doanh Nghiệp</h3>
+            <p>Nhận diện pháp nhân, phân đoạn quy mô doanh nghiệp nhỏ và vừa theo quy chuẩn quốc gia.</p>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <!-- Row 1: Company Name -->
+          <div class="form-item col-span-full">
+            <label class="form-item-label" for="company-name">Tên doanh nghiệp <span class="req-mark">*</span></label>
+            <input type="text" id="company-name" name="company_name" class="form-input" placeholder="Ví dụ: Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh" required>
+            <span class="field-hint">Ghi chính xác theo Giấy chứng nhận đăng ký kinh doanh.</span>
+          </div>
+
+          <!-- Row 2: Tax Code & Province -->
+          <div class="form-item">
+            <label class="form-item-label" for="tax-code">Mã số thuế (MST)</label>
+            <input type="text" id="tax-code" name="tax_code" class="form-input" placeholder="Ví dụ: 0101234567">
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" for="province">Tỉnh / Thành phố trụ sở <span class="req-mark">*</span></label>
+            <select id="province" name="province" class="form-select" required>
+              <option value="">-- Chọn Tỉnh / Thành phố --</option>
+              <option value="Hà Nội">Hà Nội</option>
+              <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+              <option value="Đà Nẵng">Đà Nẵng</option>
+              <option value="Hải Phòng">Hải Phòng</option>
+              <option value="Cần Thơ">Cần Thơ</option>
+              <option value="Bắc Ninh">Bắc Ninh</option>
+              <option value="Bình Dương">Bình Dương</option>
+              <option value="Đồng Nai">Đồng Nai</option>
+              <option value="Hưng Yên">Hưng Yên</option>
+              <option value="Hải Dương">Hải Dương</option>
+              <option value="Vĩnh Phúc">Vĩnh Phúc</option>
+              <option value="Thái Nguyên">Thái Nguyên</option>
+              <option value="Quảng Ninh">Quảng Ninh</option>
+              <option value="Nghệ An">Nghệ An</option>
+              <option value="Khác">Tỉnh / Thành phố khác</option>
+            </select>
+          </div>
+
+          <!-- Row 3: Address -->
+          <div class="form-item col-span-full">
+            <label class="form-item-label" for="address">Địa chỉ trụ sở chính / Nhà máy sản xuất</label>
+            <input type="text" id="address" name="address" class="form-input" placeholder="Số nhà, đường phố, Khu/Cụm công nghiệp, phường/xã, quận/huyện...">
+          </div>
+
+          <!-- Row 4: Contact Name & Position -->
+          <div class="form-item">
+            <label class="form-item-label" for="contact-name">Người cung cấp thông tin <span class="req-mark">*</span></label>
+            <input type="text" id="contact-name" name="contact_name" class="form-input" placeholder="Họ và tên người đại diện điền phiếu" required>
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" for="contact-position">Chức vụ đại diện <span class="req-mark">*</span></label>
+            <select id="contact-position" name="contact_position" class="form-select" required>
+              <option value="">-- Chọn chức vụ --</option>
+              <option value="Chủ doanh nghiệp">Chủ doanh nghiệp / Chủ tịch HĐQT</option>
+              <option value="Giám đốc">Tổng Giám đốc / Giám đốc điều hành</option>
+              <option value="Phó Giám đốc">Phó Giám đốc phụ trách Kỹ thuật / Sản xuất</option>
+              <option value="Trưởng phòng Kỹ thuật">Trưởng phòng Kỹ thuật công nghệ</option>
+              <option value="Trưởng phòng Sản xuất">Trưởng phòng Quản lý Sản xuất</option>
+              <option value="Trưởng phòng R&D">Trưởng phòng Nghiên cứu & Phát triển (R&D)</option>
+              <option value="Khác">Chức danh chuyên môn khác</option>
+            </select>
+          </div>
+
+          <!-- Row 5: Phone & Email -->
+          <div class="form-item">
+            <label class="form-item-label" for="contact-phone">Điện thoại liên hệ trực tiếp <span class="req-mark">*</span></label>
+            <input type="tel" id="contact-phone" name="contact_phone" class="form-input" placeholder="Ví dụ: 0912 345 678" required>
+            <span class="field-hint">🔒 Được mã hóa bảo mật, phục vụ chuyên gia liên hệ xác minh.</span>
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" for="contact-email">Email tiếp nhận kết quả <span class="req-mark">*</span></label>
+            <input type="email" id="contact-email" name="contact_email" class="form-input" placeholder="Ví dụ: contact@doanhnghiep.vn" required>
+            <span class="field-hint">🔒 Dùng để nhận bản phân tích đánh giá công nghệ chính thức.</span>
+          </div>
+
+          <!-- Row 6: Company Type & Employee Count -->
+          <div class="form-item">
+            <label class="form-item-label" for="company-type">Loại hình doanh nghiệp</label>
+            <select id="company-type" name="company_type" class="form-select">
+              <option value="">-- Chọn loại hình doanh nghiệp --</option>
+              <option value="Công ty TNHH">Công ty TNHH (1 thành viên / 2 thành viên trở lên)</option>
+              <option value="Công ty Cổ phần">Công ty Cổ phần</option>
+              <option value="Doanh nghiệp tư nhân">Doanh nghiệp tư nhân</option>
+              <option value="Hợp tác xã">Hợp tác xã / Liên hiệp HTX</option>
+              <option value="Khác">Loại hình khác</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" for="employee-count">Số lượng lao động tham gia BHXH</label>
+            <select id="employee-count" name="employee_count" class="form-select">
+              <option value="">-- Chọn khoảng số lao động --</option>
+              <option value="Dưới 10 người">Dưới 10 người (Siêu nhỏ)</option>
+              <option value="10–49 người">Từ 10 – 49 người (Nhỏ)</option>
+              <option value="50–199 người">Từ 50 – 199 người (Vừa)</option>
+              <option value="200–300 người">Từ 200 – 300 người</option>
+              <option value="Trên 300 người">Trên 300 người</option>
+            </select>
+          </div>
+
+          <!-- Row 7: Enterprise Size (Full Width) -->
+          <div class="form-item col-span-full">
+            <label class="form-item-label">Quy mô doanh nghiệp <span class="req-mark">*</span></label>
+            <div class="size-cards-grid">
+              <label class="size-option-card" id="size-card-micro">
+                <input type="radio" name="company_size" value="Siêu nhỏ" required>
+                <div>
+                  <div class="size-card-title">Doanh nghiệp Siêu nhỏ</div>
+                  <div class="size-card-sub">Dưới 10 lao động tham gia BHXH</div>
+                </div>
+              </label>
+              <label class="size-option-card" id="size-card-small">
+                <input type="radio" name="company_size" value="Nhỏ">
+                <div>
+                  <div class="size-card-title">Doanh nghiệp Nhỏ</div>
+                  <div class="size-card-sub">Từ 10 – 49 lao động</div>
+                </div>
+              </label>
+              <label class="size-option-card" id="size-card-medium">
+                <input type="radio" name="company_size" value="Vừa">
+                <div>
+                  <div class="size-card-title">Doanh nghiệp Vừa</div>
+                  <div class="size-card-sub">Từ 50 – 199 lao động</div>
+                </div>
+              </label>
+            </div>
+            <span class="field-hint">Phân định theo chuẩn Nghị định số 80/2021/NĐ-CP của Chính phủ.</span>
+          </div>
+
+          <!-- Row 8: Primary Sector & Revenue (Perfect Height Alignment) -->
+          <div class="form-item">
+            <label class="form-item-label" for="primary-sector">Ngành / Lĩnh vực hoạt động chính <span class="req-mark">*</span></label>
+            <select id="primary-sector" name="primary_sector" class="form-select" required>
+              <option value="">-- Chọn theo danh mục 18 ngành TT17/2019 --</option>
+              <option value="1. CNTT & Viễn thông">1. Công nghệ thông tin & Viễn thông</option>
+              <option value="2. CNSH & Y dược">2. Công nghệ sinh học & Y dược</option>
+              <option value="3. Tự động hóa & Robot">3. Tự động hóa & Robot học</option>
+              <option value="4. Vật liệu mới & Nanotech">4. Vật liệu mới & Công nghệ Nano</option>
+              <option value="5. Năng lượng tái tạo & Môi trường">5. Năng lượng tái tạo & Xử lý môi trường</option>
+              <option value="6. Nông nghiệp CNC">6. Nông nghiệp công nghệ cao & Chế biến nông sản</option>
+              <option value="7. Cơ khí chế tạo chính xác">7. Cơ khí chế tạo chính xác & Khuôn mẫu</option>
+              <option value="8. Điện & Điện tử công nghiệp">8. Điện, điện tử công nghiệp và vi mạch</option>
+              <option value="9. Chế biến thực phẩm & Đồ uống">9. Công nghiệp chế biến thực phẩm & đồ uống</option>
+              <option value="10. Hóa chất & Hóa mỹ phẩm">10. Hóa chất, hóa dược và hóa mỹ phẩm</option>
+              <option value="11. Dệt may & Da giày CNC">11. Dệt may, da giày kỹ thuật cao</option>
+              <option value="12. Xây dựng & Vật liệu xây dựng">12. Xây dựng và công nghệ vật liệu xây dựng mới</option>
+              <option value="13. Giao thông vận tải & Logistics">13. Giao thông vận tải thông minh & Logistics</option>
+              <option value="14. Công nghệ môi trường & Xử lý rác thải">14. Kinh tế tuần hoàn & Xử lý chất thải</option>
+              <option value="15. Khác">Lĩnh vực chuyên ngành khác</option>
+            </select>
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label" for="revenue-range-select">Doanh thu bình quân 3 năm gần nhất</label>
+            <select id="revenue-range-select" name="revenue_range" class="form-select">
+              <option value="">-- Chọn khoảng doanh thu --</option>
+              <option value="Dưới 10 tỷ VNĐ">Dưới 10 tỷ VNĐ / năm</option>
+              <option value="Từ 10 – 50 tỷ VNĐ">Từ 10 – 50 tỷ VNĐ / năm</option>
+              <option value="Từ 50 – 100 tỷ VNĐ">Từ 50 – 100 tỷ VNĐ / năm</option>
+              <option value="Từ 100 – 300 tỷ VNĐ">Từ 100 – 300 tỷ VNĐ / năm</option>
+              <option value="Trên 300 tỷ VNĐ">Trên 300 tỷ VNĐ / năm</option>
+              <option value="custom">Tùy chỉnh khoảng số tiền (Min – Max)</option>
+              <option value="Chưa xác định">Bảo mật / Chưa xác định</option>
+            </select>
+          </div>
+
+          <!-- Dynamic Custom Revenue Inputs (Appears only when 'custom' is selected) -->
+          <div class="col-span-full revenue-custom-box" id="revenue-custom-container">
+            <div class="form-item-label" style="margin-bottom: 6px;">Nhập khoảng doanh thu tùy chỉnh (Tỷ đồng / năm):</div>
+            <div class="revenue-inputs-inline">
+              <input type="number" id="revenue-min-custom" class="form-input" min="0" step="0.5" placeholder="Từ (Tỷ VNĐ)">
+              <input type="number" id="revenue-max-custom" class="form-input" min="0" step="0.5" placeholder="Đến (Tỷ VNĐ)">
+            </div>
+          </div>
+
+          <!-- Row 9: Main Products -->
+          <div class="form-item col-span-full">
+            <label class="form-item-label" for="main-products">Sản phẩm / Dịch vụ chủ lực của doanh nghiệp</label>
+            <textarea id="main-products" name="main_products" class="form-textarea" placeholder="Mô tả tóm tắt: Tên sản phẩm chính, công suất thực tế hiện nay, thị trường tiêu thụ (nội địa / xuất khẩu), tiêu chuẩn chất lượng đang áp dụng (ISO, GMP, HACCP, CE, FDA...)..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION B ================= -->
+      <section class="form-section-card" id="section-b">
+        <div class="section-header-box">
+          <div class="section-badge-letter">B</div>
+          <div class="section-heading-text">
+            <h3>Hiện Trạng Công Nghệ & Thiết Bị</h3>
+            <p>Danh mục công đoạn, máy móc thiết bị đang vận hành và tự đánh giá năng lực công nghệ hiện tại.</p>
+          </div>
+        </div>
+
+        <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">1. Công đoạn và thiết bị chính đang sử dụng</p>
+        <span class="field-hint" style="margin-bottom: 12px; display: block;">Quý doanh nghiệp có thể khai báo nhiều công đoạn trên dây chuyền để chuyên gia nắm bắt đầy đủ hiện trạng.</span>
+
+        <div class="table-responsive">
+          <table class="portal-table" id="tech-table">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">STT</th>
+                <th style="min-width: 180px;">Công đoạn sản xuất</th>
+                <th style="min-width: 230px;">Công nghệ / Thiết bị đang sử dụng</th>
+                <th style="width: 130px;">Năm đầu tư</th>
+                <th style="min-width: 180px;">Nguồn gốc công nghệ</th>
+                <th style="width: 70px; text-align: center;">Xóa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align: center; font-weight: 700; color: var(--text-muted);">1</td>
+                <td><input type="text" class="form-input" name="tech_stage[]" placeholder="VD: Gia công cơ khí CNC"></td>
+                <td><input type="text" class="form-input" name="tech_equipment[]" placeholder="VD: Máy phay CNC 3 trục"></td>
+                <td><input type="number" class="form-input" name="tech_year[]" min="1980" max="2026" placeholder="VD: 2019"></td>
+                <td>
+                  <select class="form-select" name="tech_origin[]">
+                    <option value="">-- Chọn nguồn gốc --</option>
+                    <option value="Tự nghiên cứu chế tạo">Tự nghiên cứu chế tạo</option>
+                    <option value="Mua mới trong nước">Mua mới trong nước</option>
+                    <option value="Nhập khẩu mới">Nhập khẩu mới</option>
+                    <option value="Máy cũ qua sử dụng">Máy cũ qua sử dụng</option>
+                    <option value="Chuyển giao công nghệ">Chuyển giao công nghệ</option>
+                    <option value="Thuê ngoài / Gia công">Thuê ngoài / Gia công</option>
+                    <option value="Khác">Nguồn khác</option>
+                  </select>
+                </td>
+                <td style="text-align: center;">
+                  <button type="button" class="btn-remove-ticket" style="padding: 4px 8px;" title="Xóa dòng" onclick="deleteTableRow(this)">✕</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-add-tech-row" style="margin-bottom: 28px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          + Thêm công đoạn / thiết bị khác
+        </button>
+
+        <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">2. Doanh nghiệp tự đánh giá hiện trạng công nghệ (Thang điểm 1 - 5)</p>
+        <span class="field-hint" style="margin-bottom: 12px; display: block;">1 = Rất thấp / Chưa có; 3 = Đạt chuẩn trung bình; 5 = Rất cao / Tiên tiến, hiện đại.</span>
+
+        <div class="table-responsive">
+          <table class="portal-table">
+            <thead>
+              <tr>
+                <th style="min-width: 240px;">Tiêu chí tự đánh giá</th>
+                <th class="scale-th">1<br><small style="font-weight:400;text-transform:none;">Rất thấp</small></th>
+                <th class="scale-th">2<br><small style="font-weight:400;text-transform:none;">Thấp</small></th>
+                <th class="scale-th">3<br><small style="font-weight:400;text-transform:none;">Trung bình</small></th>
+                <th class="scale-th">4<br><small style="font-weight:400;text-transform:none;">Cao</small></th>
+                <th class="scale-th">5<br><small style="font-weight:400;text-transform:none;">Rất cao</small></th>
+              </tr>
+            </thead>
+            <tbody id="current-tech-scale-body">
+              <!-- Dynamically generated rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION C ================= -->
+      <section class="form-section-card" id="section-c">
+        <div class="section-header-box">
+          <div class="section-badge-letter">C</div>
+          <div class="section-heading-text">
+            <h3>Vấn Đề & Điểm Nghẽn Công Nghệ</h3>
+            <p>Nhận diện chính xác các nút thắt kỹ thuật cản trở năng suất, chi phí và chất lượng sản phẩm.</p>
+          </div>
+        </div>
+
+        <div class="form-item col-span-full">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label class="form-item-label" style="margin-bottom:0;">1. Các vấn đề và điểm nghẽn doanh nghiệp đang gặp phải</label>
+            <span style="font-size:13px; font-weight:800; color:var(--brand-700); background:var(--brand-50); padding:3px 12px; border-radius:var(--radius-full); border:1px solid var(--brand-100);" id="bottleneck-counter">Đã chọn: 0/5 vấn đề</span>
+          </div>
+          <span class="field-hint" style="margin-bottom: 12px; display: block;">
+            Chọn <b>tối đa 5 vấn đề cấp thiết nhất</b>. Bảng bên dưới sẽ tự động hiển thị để doanh nghiệp chấm điểm mức độ ảnh hưởng thực tế.
+          </span>
+
+          <div class="chips-group" id="bottleneck-chips-container">
+            <!-- Chips injected via JS -->
+          </div>
+          <div id="bottleneck-limit-warning" style="display:none; color:var(--status-danger); font-size:13px; font-weight:700; margin-top:10px;">
+            ⚠️ Bạn đã chọn đủ 5 vấn đề ưu tiên cao nhất. Vui lòng bỏ chọn một mục trước khi chọn mục khác.
+          </div>
+        </div>
+
+        <div class="grid-2col" style="margin-top: 24px;">
+          <div class="form-item">
+            <label class="form-item-label" for="bottleneck-stage">Công đoạn gây khó khăn lớn nhất trong sản xuất <span class="req-mark">*</span></label>
+            <textarea id="bottleneck-stage" name="bottleneck_stage" class="form-textarea" placeholder="Mô tả cụ thể: Tên công đoạn, dây chuyền, vị trí thao tác gặp lỗi hoặc gây tắc nghẽn sản lượng nhiều nhất..." required></textarea>
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" for="bottleneck-cause">Nguyên nhân chủ yếu được xác định</label>
+            <textarea id="bottleneck-cause" name="bottleneck_cause" class="form-textarea" placeholder="Do máy móc thiết bị cũ, thao tác thủ công, thiếu cảm biến tự động, nguyên vật liệu không đồng đều, thiếu dữ liệu kiểm soát..."></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top: 26px;">
+          <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">2. Chấm điểm mức độ ảnh hưởng của các điểm nghẽn đã chọn (Thang 1 - 5)</p>
+          <span class="field-hint" style="margin-bottom: 10px; display: block;">
+            1 = Ảnh hưởng rất thấp; 5 = Ảnh hưởng đặc biệt nghiêm trọng đến chất lượng sản phẩm, doanh thu hoặc an toàn lao động.
+          </span>
+          <div class="table-responsive">
+            <table class="portal-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 260px;">Vấn đề / Điểm nghẽn đã chọn</th>
+                  <th class="scale-th">1<br><small style="font-weight:400;text-transform:none;">Rất thấp</small></th>
+                  <th class="scale-th">2<br><small style="font-weight:400;text-transform:none;">Thấp</small></th>
+                  <th class="scale-th">3<br><small style="font-weight:400;text-transform:none;">Trung bình</small></th>
+                  <th class="scale-th">4<br><small style="font-weight:400;text-transform:none;">Cao</small></th>
+                  <th class="scale-th">5<br><small style="font-weight:400;text-transform:none;">Rất cao</small></th>
+                </tr>
+              </thead>
+              <tbody id="bottleneck-rating-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 22px;">
+                    👆 Vui lòng chọn ít nhất 1 vấn đề (tối đa 5) ở danh sách phía trên để chấm mức độ ảnh hưởng.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION D ================= -->
+      <section class="form-section-card" id="section-d">
+        <div class="section-header-box">
+          <div class="section-badge-letter">D</div>
+          <div class="section-heading-text">
+            <h3>Năng Lực Tiếp Nhận & Vận Hành Công Nghệ</h3>
+            <p>Đánh giá cơ cấu nhân sự kỹ thuật, cơ chế quản trị và mức độ sẵn sàng làm chủ công nghệ mới.</p>
+          </div>
+        </div>
+
+        <p class="form-item-label" style="font-size:15px; margin-bottom:8px;">1. Cơ cấu nhân sự kỹ thuật trực tiếp</p>
+        <div class="grid-3col">
+          <div class="form-item">
+            <label class="form-item-label" for="tech-technicians">Số lượng Kỹ thuật viên / Thợ bậc cao</label>
+            <input type="number" id="tech-technicians" name="tech_technicians" class="form-input" min="0" placeholder="VD: 15 người">
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" for="tech-engineers">Số lượng Kỹ sư / Cử nhân kỹ thuật</label>
+            <input type="number" id="tech-engineers" name="tech_engineers" class="form-input" min="0" placeholder="VD: 5 người">
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" for="tech-rd">Nhân sự CNTT / Tự động hóa / R&D</label>
+            <input type="text" id="tech-rd" name="tech_rd" class="form-input" placeholder="VD: 2 R&D, 3 QA/QC, 1 IT">
+          </div>
+        </div>
+
+        <div style="margin-top: 26px;">
+          <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">2. Cơ chế quản trị và chính sách đổi mới công nghệ</p>
+          <span class="field-hint" style="margin-bottom: 10px; display: block;">Tích chọn các cơ chế hiện đang được duy trì tại doanh nghiệp:</span>
+          <div class="mgmt-grid" id="management-container">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <div style="margin-top: 26px;">
+          <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">3. Tự đánh giá khả năng hấp thụ và làm chủ công nghệ (Thang 1 - 5)</p>
+          <span class="field-hint" style="margin-bottom: 10px; display: block;">1 = Chưa có / Rất yếu; 3 = Đạt mức trung bình; 5 = Tốt / Rất thành thạo, có khả năng tự cải tiến.</span>
+          <div class="table-responsive">
+            <table class="portal-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 250px;">Nội dung năng lực hấp thụ</th>
+                  <th class="scale-th">1<br><small style="font-weight:400;text-transform:none;">Chưa có</small></th>
+                  <th class="scale-th">2<br><small style="font-weight:400;text-transform:none;">Yếu</small></th>
+                  <th class="scale-th">3<br><small style="font-weight:400;text-transform:none;">Trung bình</small></th>
+                  <th class="scale-th">4<br><small style="font-weight:400;text-transform:none;">Khá</small></th>
+                  <th class="scale-th">5<br><small style="font-weight:400;text-transform:none;">Tốt</small></th>
+                </tr>
+              </thead>
+              <tbody id="readiness-scale-body">
+                <!-- Dynamically generated rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION E ================= -->
+      <section class="form-section-card" id="section-e">
+        <div class="section-header-box">
+          <div class="section-badge-letter green">E</div>
+          <div class="section-heading-text">
+            <h3>Bài Toán & Nhu Cầu Đổi Mới Công Nghệ (Demand Tickets)</h3>
+            <p>Mỗi bài toán ở đây sẽ được mở thành một hồ sơ đặt hàng công nghệ chính thức để Viện NacenTech kết nối giải pháp.</p>
+          </div>
+        </div>
+
+        <div id="demand-items-container">
+          <!-- Demand card template rendered here -->
+        </div>
+
+        <button type="button" class="btn btn-outline" id="btn-add-demand" style="border-style: dashed; width: 100%; border-color: var(--brand-700); color: var(--brand-700); height: 46px; margin-bottom: 28px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          + Thêm Bài Toán / Dòng Nhu Cầu Công Nghệ Mới
+        </button>
+
+        <div class="grid-2col" style="border-top: 1.5px solid var(--border-default); padding-top: 24px;">
+          <div class="form-item">
+            <label class="form-item-label">Nguồn vốn dự kiến để đổi mới công nghệ</label>
+            <span class="field-hint" style="margin-bottom: 8px;">Có thể chọn nhiều nguồn vốn phù hợp:</span>
+            <div class="chips-group" id="funding-chips-container"></div>
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label">Hình thức tiếp nhận công nghệ mong muốn <span class="req-mark">*</span></label>
+            <span class="field-hint" style="margin-bottom: 8px;">Chọn ít nhất một hình thức mong muốn:</span>
+            <div class="chips-group" id="receipt-chips-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION F ================= -->
+      <section class="form-section-card" id="section-f">
+        <div class="section-header-box">
+          <div class="section-badge-letter">F</div>
+          <div class="section-heading-text">
+            <h3>Định Hướng Công Nghệ & Nhu Cầu Hỗ Trợ Chung</h3>
+            <p>Khảo sát các xu hướng công nghệ chiến lược trong 2 - 3 năm tới và mức độ cần hỗ trợ từ Viện NacenTech.</p>
+          </div>
+        </div>
+
+        <p class="form-item-label" style="font-size:15px; margin-bottom:6px;">1. Các nhóm công nghệ và đối tác doanh nghiệp quan tâm</p>
+        <span class="field-hint" style="margin-bottom: 16px; display: block;">Chọn các lĩnh vực công nghệ mà Quý Doanh nghiệp dự kiến đầu tư nâng cấp:</span>
+
+        <div class="grid-2col">
+          <div class="form-item">
+            <label class="form-item-label" style="font-size:13.5px; color:var(--brand-800);">1.1 Công nghệ tự động hóa sản xuất</label>
+            <div class="chips-group" id="automation-chips-container"></div>
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" style="font-size:13.5px; color:var(--brand-800);">1.2 Công nghệ chuyển đổi số quản trị & nhà máy</label>
+            <div class="chips-group" id="digital-chips-container"></div>
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" style="font-size:13.5px; color:var(--brand-800);">1.3 Công nghệ xanh & Tiết kiệm năng lượng</label>
+            <div class="chips-group" id="green-chips-container"></div>
+          </div>
+          <div class="form-item">
+            <label class="form-item-label" style="font-size:13.5px; color:var(--brand-800);">1.4 Đối tác mong muốn kết nối</label>
+            <div class="chips-group" id="partners-chips-container"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px;">
+          <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">2. Mức độ cần hỗ trợ từ Viện NacenTech và mạng lưới chuyên gia</p>
+          <span class="field-hint" style="margin-bottom: 10px; display: block;">Với mỗi dịch vụ hỗ trợ, chọn mức độ nhu cầu thực tế của Quý Doanh nghiệp:</span>
+
+          <div class="table-responsive">
+            <table class="portal-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 280px;">Hình thức hỗ trợ chuyên môn</th>
+                  <th class="scale-th" style="width:110px;">Không cần</th>
+                  <th class="scale-th" style="width:110px;">Ít cần</th>
+                  <th class="scale-th" style="width:110px;">Cần</th>
+                  <th class="scale-th" style="width:110px;">Rất cần</th>
+                </tr>
+              </thead>
+              <tbody id="support-scale-body">
+                <!-- Dynamically injected rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION G ================= -->
+      <section class="form-section-card" id="section-g">
+        <div class="section-header-box">
+          <div class="section-badge-letter green">G</div>
+          <div class="section-heading-text">
+            <h3>Cam Kết Bảo Mật & Xác Nhận Gửi Phiếu</h3>
+            <p>Xác thực thông tin và đồng ý điều khoản xử lý dữ liệu phục vụ thẩm định, kết nối công nghệ.</p>
+          </div>
+        </div>
+
+        <div class="privacy-cert-box">
+          <div class="privacy-cert-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
+          <div class="privacy-cert-text">
+            <h4>Bảo mật thông tin doanh nghiệp theo tiêu chuẩn Nhà nước (Nghị định 13/2023/NĐ-CP)</h4>
+            <p>
+              Toàn bộ dữ liệu khảo sát được mã hóa và lưu trữ an toàn trên nền tảng số quốc gia do Viện Ứng dụng Công nghệ quản trị. 
+              Các thông tin liên hệ, ngân sách chi tiết và tài liệu kỹ thuật nội bộ của Quý Doanh nghiệp <b>tuyệt đối không bị công khai trên internet</b>. 
+              Dữ liệu chỉ được phục vụ công tác thống kê khoa học, tư vấn và giới thiệu giải pháp khi có sự đồng ý của Quý Doanh nghiệp.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="form-item">
+            <label class="form-item-label" for="confirm-name">Họ và tên người đại diện xác nhận <span class="req-mark">*</span></label>
+            <input type="text" id="confirm-name" name="confirm_name" class="form-input" placeholder="Ví dụ: Nguyễn Văn Thắng" required>
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label" for="confirm-date">Ngày xác nhận <span class="req-mark">*</span></label>
+            <input type="date" id="confirm-date" name="confirm_date" class="form-input" required>
+          </div>
+
+          <div class="form-item col-span-full">
+            <label class="size-option-card" style="border-color: var(--nacen-green-500); background: #F0FDF4; padding: 16px 20px;">
+              <input type="checkbox" id="confirm-agree" name="confirm_agree" required style="width: 22px; height: 22px; accent-color: var(--nacen-green-600);">
+              <div style="margin-left: 6px;">
+                <div class="size-card-title" style="color: #065F46; font-size: 14.5px;">
+                  Tôi xác nhận thông tin cung cấp tại phiếu này là hoàn toàn chính xác theo thực tế doanh nghiệp và đồng ý để Viện NacenTech sử dụng cho mục đích tư vấn, kết nối công nghệ. <span class="req-mark">*</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. SUBMISSION FOOTER ACTION BAR -->
+      <div class="action-submit-bar">
+        <div class="submit-bar-left">
+          <h4>Hoàn Tất Phiếu Khảo Sát Nhu Cầu Đổi Mới Công Nghệ</h4>
+          <p>Hệ thống tự động kiểm tra tính đầy đủ của các tiêu chí trước khi chuyển tiếp về Hội đồng KH&CN.</p>
+        </div>
+        <div class="submit-bar-btns">
+          <button type="button" class="btn btn-outline btn-lg" id="btn-save-draft-bottom">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            Lưu bản nháp
+          </button>
+          <button type="submit" class="btn btn-cta btn-lg" id="btn-submit-survey">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            Kiểm Tra & Gửi Phiếu Khảo Sát
+          </button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <!-- 7. SUCCESS MODAL -->
+  <div class="modal-backdrop" id="success-modal">
+    <div class="modal-window">
+      <div class="modal-header-hero">
+        <div class="modal-hero-icon">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h3 style="font-size: 22px; font-weight: 800;">Tiếp Nhận Phiếu Thành Công!</h3>
+        <p style="font-size: 14px; opacity: 0.9; margin-top: 4px;">Phiếu khảo sát của Quý Doanh nghiệp đã được ghi nhận trên CSDL Đổi mới sáng tạo NacenTwin.</p>
+      </div>
+      <div style="padding: 24px 28px;">
+        <div class="ticket-id-display">
+          <div class="ticket-id-title">Mã số tiếp nhận hồ sơ khảo sát (Ticket ID)</div>
+          <div class="ticket-id-val" id="modal-ticket-id">SURVEY-2026-DNNVV-0842</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; font-size:13.5px;">
+          <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
+            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Doanh nghiệp</div>
+            <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-company-name">—</div>
+          </div>
+          <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
+            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Người đại diện</div>
+            <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-contact-name">—</div>
+          </div>
+          <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
+            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Ngành chính</div>
+            <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-sector">—</div>
+          </div>
+          <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
+            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Số bài toán đăng ký</div>
+            <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-demand-count">1 bài toán</div>
+          </div>
+        </div>
+
+        <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:var(--radius-md); padding:14px 18px; font-size:13px; color:#166534; line-height:1.55;">
+          <b>Quy trình xử lý tiếp theo:</b><br>
+          1. Ban Thư ký Hội đồng Khoa học Viện NacenTech phân tích hiện trạng và định vị bài toán.<br>
+          2. Chuyên gia chuyên ngành sẽ liên hệ lại qua điện thoại / email đã đăng ký trong vòng <b>03 ngày làm việc</b> để hỗ trợ tư vấn 1:1 trực tiếp.
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--border-default); padding:16px 28px; display:flex; justify-content:flex-end; gap:12px; background:#F8FAFC;">
+        <button type="button" class="btn btn-outline" id="btn-export-json">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Tải file dữ liệu JSON
+        </button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          In phiếu xác nhận
+        </button>
+        <button type="button" class="btn btn-ghost" id="btn-close-modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-box" id="toast-notification">
+    <span id="toast-icon">✓</span>
+    <span id="toast-message">Đã lưu bản nháp thành công!</span>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const lists = {
+      current: [
+        'Mức độ hiện đại của dây chuyền & thiết bị',
+        'Năng suất sản xuất so với trung bình ngành',
+        'Chất lượng và độ đồng đều của sản phẩm',
+        'Mức độ tiết kiệm năng lượng & nguyên vật liệu',
+        'Mức độ tự động hóa trong các công đoạn',
+        'Mức độ số hóa dữ liệu quản lý vận hành',
+        'Tiêu chuẩn an toàn lao động & vận hành máy móc',
+        'Mức độ tuân thủ & bảo vệ môi trường sản xuất'
+      ],
+      bottleneck: [
+        'Thiết bị cũ, lạc hậu, hay hỏng hóc',
+        'Năng suất thấp, chưa đáp ứng đơn hàng lớn',
+        'Tiêu hao nhiều nguyên vật liệu trong chế tạo',
+        'Tiêu hao nhiều năng lượng (điện, dầu, than)',
+        'Chất lượng sản phẩm chưa ổn định đồng đều',
+        'Tỷ lệ sản phẩm lỗi / phế phẩm còn cao',
+        'Chi phí sản xuất và giá thành đơn vị còn cao',
+        'Thiếu tự động hóa, còn phụ thuộc nhân công thủ công',
+        'Thiếu nhân lực kỹ thuật lành nghề & kỹ sư giỏi',
+        'Thiếu dữ liệu theo dõi sản xuất thời gian thực',
+        'Công nghệ giữa các công đoạn chưa đồng bộ',
+        'Khó tiếp cận công nghệ mới, thiết bị tiên tiến',
+        'Khó tiếp cận nguồn vốn ưu đãi đổi mới công nghệ',
+        'Phát sinh nhiều chất thải, nước thải sản xuất',
+        'Khó đáp ứng tiêu chuẩn kiểm định xuất khẩu',
+        'Khó truy xuất nguồn gốc sản phẩm theo chuỗi',
+        'Khó mở rộng quy mô và công suất nhà máy'
+      ],
+      readiness: [
+        'Nhận biết và cập nhật xu hướng công nghệ mới',
+        'Năng lực vận hành máy móc thiết bị hiện đại',
+        'Năng lực bảo trì, sửa chữa, bảo dưỡng thiết bị',
+        'Khả năng cải tiến, tối ưu hóa công nghệ tại xưởng',
+        'Khả năng làm chủ và chuyển giao công nghệ mới',
+        'Năng lực nghiên cứu và phát triển sản phẩm (R&D)',
+        'Khả năng ứng dụng phần mềm chuyển đổi số quy trình',
+        'Năng lực quản trị và khai thác dữ liệu sản xuất',
+        'Sự sẵn sàng đầu tư tài chính cho đổi mới công nghệ'
+      ],
+      management: [
+        'Có bộ phận hoặc nhân sự chuyên trách về kỹ thuật / công nghệ',
+        'Có kế hoạch / lộ trình đổi mới công nghệ rõ ràng trong 1–3 năm',
+        'Có ngân sách dự phòng riêng cho hoạt động KH&CN / công nghệ',
+        'Có quy trình đánh giá, nghiệm thu hiệu quả công nghệ định kỳ',
+        'Có hoạt động nghiên cứu & phát triển (R&D) nội bộ',
+        'Có hợp tác thường xuyên với Viện nghiên cứu, Trường đại học',
+        'Có liên kết, hợp tác với các doanh nghiệp công nghệ / nhà cung cấp'
+      ],
+      funding: [
+        'Vốn tự có của doanh nghiệp',
+        'Vay vốn ngân hàng thương mại',
+        'Quỹ Phát triển KH&CN của doanh nghiệp',
+        'Quỹ Đổi mới công nghệ Quốc gia (NATIF)',
+        'Chương trình hỗ trợ từ ngân sách Nhà nước',
+        'Đối tác đầu tư / Quỹ tài trợ quốc tế',
+        'Nguồn huy động khác'
+      ],
+      receipt: [
+        'Mua sắm thiết bị / máy móc mới trọn gói',
+        'Nâng cấp, cải tạo thiết bị hiện có',
+        'Thay thế từng phần dây chuyền sản xuất',
+        'Chuyển giao quyền sở hữu công nghệ',
+        'Thuê công nghệ / Bản quyền phần mềm',
+        'Thuê chuyên gia tư vấn kỹ thuật trực tiếp',
+        'Mua bản quyền sáng chế / Giải pháp hữu ích',
+        'Hợp tác nghiên cứu phát triển chung',
+        'Liên doanh, liên kết sản xuất',
+        'Đồng phát triển công nghệ (Co-development)',
+        'Đào tạo chuyển giao kỹ thuật chuyên sâu',
+        'Cần tư vấn xác định giải pháp phù hợp'
+      ],
+      automation: [
+        'Tự động hóa dây chuyền sản xuất',
+        'Robot công nghiệp (AGV, Robot hàn, xếp hàng)',
+        'Hệ thống điều khiển tự động (PLC, SCADA)',
+        'Cảm biến thông minh & Chuẩn kết nối IoT',
+        'Hệ thống giám sát vận hành thời gian thực',
+        'Hệ thống kho thông minh (Smart Warehouse)',
+        'Hệ thống tối ưu hóa và quản lý năng lượng'
+      ],
+      digital: [
+        'Phần mềm quản trị tổng thể doanh nghiệp (ERP)',
+        'Hệ thống quản lý khách hàng & bán hàng (CRM)',
+        'Hệ thống điều hành sản xuất tại xưởng (MES)',
+        'Hệ thống quản lý kho & chuỗi cung ứng (WMS)',
+        'Nền tảng thương mại điện tử B2B/B2C',
+        'Điện toán đám mây & Dữ liệu tập trung',
+        'Phân tích dữ liệu lớn (Big Data)',
+        'Trí tuệ nhân tạo (AI Vision, Dự báo)',
+        'An toàn thông tin & Bảo mật mạng công nghiệp',
+        'Hệ thống số hóa hồ sơ & văn phòng không giấy'
+      ],
+      green: [
+        'Giải pháp tiết kiệm & sử dụng hiệu quả năng lượng',
+        'Năng lượng tái tạo (Điện mặt trời mái nhà, Sinh khối)',
+        'Công nghệ giảm phát thải khí nhà kính (CO2)',
+        'Hệ thống xử lý nước thải & tái sử dụng nước',
+        'Tái chế và tận thu phụ phẩm công nghiệp',
+        'Quy trình sản xuất sạch hơn (Cleaner Production)',
+        'Mô hình kinh tế tuần hoàn trong sản xuất'
+      ],
+      partners: [
+        'Nhà cung cấp giải pháp / thiết bị công nghệ trong nước',
+        'Nhà cung cấp công nghệ / chuyển giao từ nước ngoài',
+        'Viện nghiên cứu, Trường đại học chuyên ngành',
+        'Chuyên gia tư vấn KH&CN độc lập',
+        'Quỹ đầu tư / Tổ chức hỗ trợ tài chính',
+        'Doanh nghiệp cùng chuỗi cung ứng để hợp tác'
+      ],
+      support: [
+        'Tư vấn xác định bài toán & lộ trình đổi mới công nghệ',
+        'Tìm kiếm, định danh và kết nối nguồn cung công nghệ',
+        'Tìm kiếm nhà cung cấp giải pháp kỹ thuật phù hợp',
+        'Đánh giá trình độ công nghệ và thẩm định TRL 1-9',
+        'Hỗ trợ đàm phán hợp đồng chuyển giao công nghệ',
+        'Đào tạo, nâng cao năng lực cho đội ngũ nhân sự',
+        'Hỗ trợ tiếp cận các quỹ tài trợ KH&CN và vốn vay ưu đãi',
+        'Hỗ trợ triển khai chuyển đổi số trong nhà máy',
+        'Tư vấn bảo hộ và khai thác quyền sở hữu trí tuệ (SHTT)',
+        'Kết nối hợp tác nghiên cứu với Viện trường thuộc Bộ KH&CN',
+        'Kết nối với các doanh nghiệp công nghệ số tiên phong'
+      ]
+    };
+
+    // REQUIRED INPUT SELECTORS FOR REAL-TIME PROGRESS
+    const requiredInputs = [
+      '#company-name',
+      '#province',
+      '#contact-name',
+      '#contact-position',
+      '#contact-phone',
+      '#contact-email',
+      'input[name="company_size"]:checked',
+      '#primary-sector',
+      '#bottleneck-stage',
+      '#confirm-name',
+      '#confirm-agree:checked'
+    ];
+
+    function calculateProgress() {
+      let filled = 0;
+      requiredInputs.forEach(selector => {
+        const el = document.querySelector(selector);
+        if (el) {
+          if (el.type === 'checkbox' || el.type === 'radio') {
+            if (el.checked) filled++;
+          } else if (el.value && el.value.trim() !== '') {
+            filled++;
+          }
+        }
+      });
+
+      // Demand tickets check
+      const demandRows = document.querySelectorAll('input[name="demand_stage[]"]');
+      let demandValid = false;
+      demandRows.forEach(row => {
+        if (row.value && row.value.trim() !== '') demandValid = true;
+      });
+      if (demandValid) filled++;
+
+      const total = requiredInputs.length + 1; // 12 total criteria
+      const percent = Math.min(100, Math.round((filled / total) * 100));
+
+      const bar = document.getElementById('progress-bar');
+      const text = document.getElementById('progress-percent');
+      const countEl = document.getElementById('progress-count');
+
+      if (bar) bar.style.width = percent + '%';
+      if (text) text.textContent = percent + '%';
+      if (countEl) countEl.textContent = `(${filled}/${total} tiêu chí bắt buộc)`;
+
+      updateNavStepper();
+    }
+
+    function updateNavStepper() {
+      const sections = ['section-a', 'section-b', 'section-c', 'section-d', 'section-e', 'section-f', 'section-g'];
+      sections.forEach((secId, i) => {
+        const sec = document.getElementById(secId);
+        const tab = document.querySelectorAll('.stepper-tab')[i];
+        if (!sec || !tab) return;
+
+        const reqs = sec.querySelectorAll('[required]');
+        let complete = reqs.length > 0;
+        reqs.forEach(input => {
+          if (input.type === 'checkbox' || input.type === 'radio') {
+            const checked = sec.querySelector(`input[name="${input.name}"]:checked`);
+            if (!checked) complete = false;
+          } else if (!input.value || input.value.trim() === '') {
+            complete = false;
+          }
+        });
+        tab.classList.toggle('completed', complete);
+      });
+    }
+
+    // RENDER MATRIX SCALES
+    function renderRatingRow(item, name, index, maxScore = 5) {
+      let html = `<tr><td><span style="font-weight:600;">${item}</span></td>`;
+      for (let s = 1; s <= maxScore; s++) {
+        html += `
+          <td class="scale-th">
+            <input type="radio" id="${name}_${index}_${s}" name="${name}_${index}" value="${s}" class="rating-radio-input">
+            <label for="${name}_${index}_${s}" class="rating-circle-btn" title="${item} - Mức ${s}">${s}</label>
+          </td>`;
+      }
+      html += `</tr>`;
+      return html;
+    }
+
+    // 1. Current tech scale
+    document.getElementById('current-tech-scale-body').innerHTML = 
+      lists.current.map((item, i) => renderRatingRow(item, 'current_tech', i, 5)).join('');
+
+    // 2. Readiness scale
+    document.getElementById('readiness-scale-body').innerHTML = 
+      lists.readiness.map((item, i) => renderRatingRow(item, 'readiness', i, 5)).join('');
+
+    // 3. Support scale (4 levels)
+    const supportLabels = ['Không cần', 'Ít cần', 'Cần', 'Rất cần'];
+    document.getElementById('support-scale-body').innerHTML = lists.support.map((item, i) => {
+      let html = `<tr><td><span style="font-weight:600;">${item}</span></td>`;
+      for (let s = 1; s <= 4; s++) {
+        html += `
+          <td class="scale-th">
+            <input type="radio" id="support_${i}_${s}" name="support_${i}" value="${supportLabels[s-1]}" class="rating-radio-input">
+            <label for="support_${i}_${s}" class="rating-circle-btn" title="${supportLabels[s-1]}">${s}</label>
+          </td>`;
+      }
+      html += `</tr>`;
+      return html;
+    }).join('');
+
+    // 4. Bottlenecks Chips (Max 5 items)
+    const bottleneckContainer = document.getElementById('bottleneck-chips-container');
+    const bottleneckCounter = document.getElementById('bottleneck-counter');
+    const bottleneckWarning = document.getElementById('bottleneck-limit-warning');
+    const bottleneckRatingBody = document.getElementById('bottleneck-rating-body');
+
+    bottleneckContainer.innerHTML = lists.bottleneck.map((item, idx) => `
+      <label class="chip-btn" data-bottleneck-idx="${idx}">
+        <input type="checkbox" name="bottlenecks[]" value="${item}">
+        <span>${item}</span>
+      </label>
+    `).join('');
+
+    function updateBottlenecks() {
+      const checkedBoxes = bottleneckContainer.querySelectorAll('input[type="checkbox"]:checked');
+      const count = checkedBoxes.length;
+      bottleneckCounter.textContent = `Đã chọn: ${count}/5 vấn đề`;
+
+      bottleneckContainer.querySelectorAll('.chip-btn').forEach(label => {
+        const input = label.querySelector('input');
+        label.classList.toggle('active', input.checked);
+      });
+
+      if (count >= 5) {
+        bottleneckWarning.style.display = 'block';
+        bottleneckContainer.querySelectorAll('.chip-btn:not(.active)').forEach(label => {
+          label.style.opacity = '0.5';
+          label.style.pointerEvents = 'none';
+        });
+      } else {
+        bottleneckWarning.style.display = 'none';
+        bottleneckContainer.querySelectorAll('.chip-btn').forEach(label => {
+          label.style.opacity = '1';
+          label.style.pointerEvents = 'auto';
+        });
+      }
+
+      if (count === 0) {
+        bottleneckRatingBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 22px;">👆 Vui lòng chọn ít nhất 1 vấn đề (tối đa 5) ở danh sách phía trên để chấm mức độ ảnh hưởng.</td></tr>`;
+      } else {
+        let rowsHtml = '';
+        checkedBoxes.forEach((cb, idx) => {
+          rowsHtml += renderRatingRow(cb.value, 'bottleneck_score', idx, 5);
+        });
+        bottleneckRatingBody.innerHTML = rowsHtml;
+      }
+      calculateProgress();
+    }
+
+    bottleneckContainer.addEventListener('change', updateBottlenecks);
+
+    // 5. Management capabilities
+    document.getElementById('management-container').innerHTML = lists.management.map((item, idx) => `
+      <label class="mgmt-card">
+        <input type="checkbox" name="management_capabilities[]" value="${item}">
+        <div style="font-size:13.5px; font-weight:600; color:var(--text-primary);">${item}</div>
+      </label>
+    `).join('');
+
+    document.getElementById('management-container').addEventListener('change', (e) => {
+      if (e.target.type === 'checkbox') {
+        e.target.closest('.mgmt-card').classList.toggle('selected', e.target.checked);
+      }
+    });
+
+    // 6. Generic Chips renderer
+    function renderChipsGroup(containerId, items, fieldName) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = items.map(item => `
+        <label class="chip-btn">
+          <input type="checkbox" name="${fieldName}[]" value="${item}">
+          <span>${item}</span>
+        </label>
+      `).join('');
+      el.addEventListener('change', () => {
+        el.querySelectorAll('.chip-btn').forEach(lbl => {
+          lbl.classList.toggle('active', lbl.querySelector('input').checked);
+        });
+        calculateProgress();
+      });
+    }
+
+    renderChipsGroup('funding-chips-container', lists.funding, 'funding_sources');
+    renderChipsGroup('receipt-chips-container', lists.receipt, 'receipt_methods');
+    renderChipsGroup('automation-chips-container', lists.automation, 'automation_interest');
+    renderChipsGroup('digital-chips-container', lists.digital, 'digital_interest');
+    renderChipsGroup('green-chips-container', lists.green, 'green_interest');
+    renderChipsGroup('partners-chips-container', lists.partners, 'desired_partners');
+
+    // 7. Dynamic Tech Table
+    const techTable = document.getElementById('tech-table');
+    document.getElementById('btn-add-tech-row').addEventListener('click', () => {
+      const tbody = techTable.querySelector('tbody');
+      const rowCount = tbody.rows.length + 1;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${rowCount}</td>
+        <td><input type="text" class="form-input" name="tech_stage[]" placeholder="VD: Công đoạn..."></td>
+        <td><input type="text" class="form-input" name="tech_equipment[]" placeholder="VD: Tên thiết bị..."></td>
+        <td><input type="number" class="form-input" name="tech_year[]" min="1980" max="2026" placeholder="Năm"></td>
+        <td>
+          <select class="form-select" name="tech_origin[]">
+            <option value="">-- Chọn nguồn gốc --</option>
+            <option value="Tự nghiên cứu chế tạo">Tự nghiên cứu chế tạo</option>
+            <option value="Mua mới trong nước">Mua mới trong nước</option>
+            <option value="Nhập khẩu mới">Nhập khẩu mới</option>
+            <option value="Máy cũ qua sử dụng">Máy cũ qua sử dụng</option>
+            <option value="Chuyển giao công nghệ">Chuyển giao công nghệ</option>
+            <option value="Thuê ngoài / Gia công">Thuê ngoài / Gia công</option>
+            <option value="Khác">Nguồn khác</option>
+          </select>
+        </td>
+        <td style="text-align: center;">
+          <button type="button" class="btn-remove-ticket" style="padding: 4px 8px;" title="Xóa dòng" onclick="deleteTableRow(this)">✕</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    window.deleteTableRow = function(btn) {
+      const tbody = techTable.querySelector('tbody');
+      if (tbody.rows.length > 1) {
+        btn.closest('tr').remove();
+        Array.from(tbody.rows).forEach((row, i) => {
+          row.cells[0].textContent = i + 1;
+        });
+      } else {
+        showToast('Giữ lại ít nhất 1 dòng để khai báo công đoạn', 'error');
+      }
+    };
+
+    // 8. Demand Tickets Manager
+    let demandCount = 0;
+    const demandContainer = document.getElementById('demand-items-container');
+
+    function createDemandCard(index) {
+      const div = document.createElement('div');
+      div.className = 'demand-ticket-card';
+      div.dataset.index = index;
+      div.innerHTML = `
+        <div class="demand-card-topbar">
+          <span class="ticket-badge-pill">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Bài Toán Nhu Cầu #${index + 1} (Demand Ticket)
+          </span>
+          ${index > 0 ? `<button type="button" class="btn-remove-ticket" onclick="removeDemandCard(this)">✕ Xóa bài toán này</button>` : ''}
+        </div>
+
+        <div class="grid-2col">
+          <div class="form-item">
+            <label class="form-item-label">Công đoạn sản xuất có nhu cầu <span class="req-mark">*</span></label>
+            <input type="text" class="form-input" name="demand_stage[]" placeholder="VD: Khâu đóng gói & dán nhãn tự động" required>
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label">Vấn đề kỹ thuật cần giải quyết <span class="req-mark">*</span></label>
+            <input type="text" class="form-input" name="demand_problem[]" placeholder="VD: Tốc độ chậm, tỷ lệ dán lệch nhãn 8%, tốn 4 nhân công" required>
+          </div>
+
+          <div class="form-item col-span-full">
+            <label class="form-item-label">Công nghệ / Giải pháp kỹ thuật mong muốn tiếp nhận</label>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <input type="text" class="form-input" name="demand_solution[]" placeholder="VD: Dây chuyền dán nhãn tốc độ cao tích hợp AI Vision kiểm tra ngoại quan">
+              <label class="size-option-card" style="padding:0 16px; height:var(--control-height); white-space:nowrap; margin:0; flex-shrink:0;">
+                <input type="checkbox" onchange="toggleNeedConsulting(this)">
+                <span class="size-card-title" style="font-size:13px;">Cần tư vấn giải pháp</span>
+              </label>
+            </div>
+            <span class="field-hint">Nếu chưa rõ tên công nghệ cụ thể, tích chọn "Cần tư vấn giải pháp" để Hội đồng KH&CN hỗ trợ khảo sát trực tiếp.</span>
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label">Mục tiêu kỹ thuật & kinh tế kỳ vọng <span class="req-mark">*</span></label>
+            <input type="text" class="form-input" name="demand_goal[]" placeholder="VD: Tăng công suất lên 120 sp/phút, giảm tỷ lệ lỗi < 0.5%" required>
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label">Quy mô áp dụng dự kiến</label>
+            <input type="text" class="form-input" name="demand_scale[]" placeholder="VD: 02 dây chuyền tại xưởng số 1">
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label">Mức độ ưu tiên của doanh nghiệp</label>
+            <select class="form-select" name="demand_priority[]">
+              <option value="5">★★★★★ Mức 5 (Rất cấp thiết, cần triển khai ngay)</option>
+              <option value="4">★★★★☆ Mức 4 (Ưu tiên cao trong năm nay)</option>
+              <option value="3" selected>★★★☆☆ Mức 3 (Ưu tiên trung bình)</option>
+              <option value="2">★★☆☆☆ Mức 2 (Ưu tiên thấp, khi có ngân sách)</option>
+              <option value="1">★☆☆☆☆ Mức 1 (Tìm hiểu tiềm năng)</option>
+            </select>
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label">Thời gian mong muốn hoàn thành</label>
+            <select class="form-select" name="demand_timeframe[]">
+              <option value="Trong 6 tháng">Trong vòng 6 tháng tới</option>
+              <option value="6–12 tháng" selected>Từ 6 – 12 tháng</option>
+              <option value="1–3 năm">Từ 1 – 3 năm</option>
+              <option value="Trên 3 năm">Trên 3 năm (Dài hạn)</option>
+              <option value="Chưa xác định">Chưa xác định thời gian</option>
+            </select>
+          </div>
+
+          <div class="form-item col-span-full">
+            <label class="form-item-label">Dự toán ngân sách đầu tư dự kiến</label>
+            <select class="form-select" name="demand_budget[]">
+              <option value="Chưa xác định">Chưa xác định / Cần báo giá từ chuyên gia</option>
+              <option value="Dưới 100 triệu VNĐ">Dưới 100 triệu VNĐ</option>
+              <option value="100 – 500 triệu VNĐ">Từ 100 – 500 triệu VNĐ</option>
+              <option value="500 triệu – 1 tỷ VNĐ">Từ 500 triệu – 1 tỷ VNĐ</option>
+              <option value="1 – 5 tỷ VNĐ">Từ 1 – 5 tỷ VNĐ</option>
+              <option value="5 – 10 tỷ VNĐ">Từ 5 – 10 tỷ VNĐ</option>
+              <option value="Trên 10 tỷ VNĐ">Trên 10 tỷ VNĐ</option>
+            </select>
+            <span class="field-hint">🔒 Ngân sách được phân loại theo khoảng giá trị để bảo mật bí mật kinh doanh, không hiển thị công khai.</span>
+          </div>
+        </div>
+      `;
+      return div;
+    }
+
+    function addDemandCard() {
+      demandContainer.appendChild(createDemandCard(demandCount));
+      demandCount++;
+      calculateProgress();
+    }
+
+    window.removeDemandCard = function(btn) {
+      const cards = demandContainer.querySelectorAll('.demand-ticket-card');
+      if (cards.length > 1) {
+        btn.closest('.demand-ticket-card').remove();
+        demandContainer.querySelectorAll('.demand-ticket-card').forEach((card, idx) => {
+          card.querySelector('.ticket-badge-pill').innerHTML = `
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Bài Toán Nhu Cầu #${idx + 1} (Demand Ticket)
+          `;
+        });
+        calculateProgress();
+      }
+    };
+
+    window.toggleNeedConsulting = function(cb) {
+      const input = cb.closest('.form-item').querySelector('input[type="text"]');
+      if (cb.checked) {
+        if (!input.value) input.value = "Chưa xác định công nghệ cụ thể - Cần Hội đồng KH&CN Viện NacenTech khảo sát và tư vấn giải pháp";
+      } else {
+        if (input.value.includes("Chưa xác định công nghệ cụ thể")) input.value = "";
+      }
+    };
+
+    document.getElementById('btn-add-demand').addEventListener('click', addDemandCard);
+    addDemandCard();
+
+    // 9. Revenue selector toggle
+    const revSelect = document.getElementById('revenue-range-select');
+    const revCustomBox = document.getElementById('revenue-custom-container');
+    revSelect.addEventListener('change', () => {
+      revCustomBox.classList.toggle('active', revSelect.value === 'custom');
+    });
+
+    // 10. Default today's date
+    const dateInput = document.getElementById('confirm-date');
+    if (dateInput) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+
+    // 11. Radio card selection styles
+    document.querySelectorAll('.size-option-card').forEach(card => {
+      const input = card.querySelector('input[type="radio"]');
+      if (input) {
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.size-option-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          calculateProgress();
+        });
+      }
+    });
+
+    // 12. LocalStorage Drafts
+    const STORAGE_KEY = 'nacentech_survey_commercial_draft';
+
+    function getFormData() {
+      const form = document.getElementById('survey-form');
+      const data = {};
+      const formData = new FormData(form);
+      for (const [key, value] of formData.entries()) {
+        if (key.endsWith('[]')) {
+          if (!data[key]) data[key] = [];
+          data[key].push(value);
+        } else {
+          data[key] = value;
+        }
+      }
+      return data;
+    }
+
+    function saveDraft(manual = true) {
+      const data = getFormData();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      if (manual) {
+        showToast('✓ Bản nháp đã được lưu thành công trên thiết bị!', 'success');
+      }
+    }
+
+    function loadDraft() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        showToast('Chưa tìm thấy bản nháp nào được lưu trước đó.', 'error');
+        return;
+      }
+      try {
+        const data = JSON.parse(raw);
+        for (const [key, val] of Object.entries(data)) {
+          if (Array.isArray(val)) {
+            const inputs = document.querySelectorAll(`[name="${key}"]`);
+            inputs.forEach(inp => {
+              if (val.includes(inp.value)) {
+                inp.checked = true;
+                const parent = inp.closest('.chip-btn, .size-option-card, .mgmt-card');
+                if (parent) parent.classList.add('active', 'selected');
+              }
+            });
+          } else {
+            const inp = document.querySelector(`[name="${key}"]`);
+            if (inp) {
+              if (inp.type === 'radio' || inp.type === 'checkbox') {
+                const target = document.querySelector(`[name="${key}"][value="${val}"]`);
+                if (target) {
+                  target.checked = true;
+                  const parent = target.closest('.size-option-card');
+                  if (parent) parent.classList.add('selected');
+                }
+              } else {
+                inp.value = val;
+              }
+            }
+          }
+        }
+        if (revSelect.value === 'custom') revCustomBox.classList.add('active');
+        updateBottlenecks();
+        calculateProgress();
+        showToast('✓ Đã khôi phục thành công dữ liệu bản nháp!', 'success');
+      } catch (e) {
+        showToast('Lỗi khi đọc file nháp: ' + e.message, 'error');
+      }
+    }
+
+    document.getElementById('btn-save-draft').addEventListener('click', () => saveDraft(true));
+    document.getElementById('btn-save-draft-bottom').addEventListener('click', () => saveDraft(true));
+    document.getElementById('btn-load-draft').addEventListener('click', loadDraft);
+
+    setInterval(() => saveDraft(false), 60000);
+
+    // Toast
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast-notification');
+      const msgEl = document.getElementById('toast-message');
+      const iconEl = document.getElementById('toast-icon');
+
+      msgEl.textContent = msg;
+      toast.className = `toast-box show ${type}`;
+      iconEl.textContent = type === 'success' ? '✓' : (type === 'error' ? '✕' : 'ℹ');
+
+      setTimeout(() => {
+        toast.className = 'toast-box';
+      }, 3500);
+    }
+
+    // 13. Form Submission
+    document.getElementById('survey-form').addEventListener('input', calculateProgress);
+    document.getElementById('survey-form').addEventListener('change', calculateProgress);
+
+    document.getElementById('survey-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const form = e.target;
+
+      if (!form.checkValidity()) {
+        const firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.focus();
+          showToast('Vui lòng hoàn thành các trường bắt buộc có dấu (*)', 'error');
+        }
+        return;
+      }
+
+      const receipts = document.querySelectorAll('input[name="receipt_methods[]"]:checked');
+      if (receipts.length === 0) {
+        document.getElementById('section-e').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast('Vui lòng chọn ít nhất 1 hình thức tiếp nhận công nghệ ở Phần E!', 'error');
+        return;
+      }
+
+      const randomCode = Math.floor(1000 + Math.random() * 9000);
+      const ticketId = `SURVEY-2026-DNNVV-${randomCode}`;
+
+      document.getElementById('modal-ticket-id').textContent = ticketId;
+      document.getElementById('modal-company-name').textContent = document.getElementById('company-name').value || 'Doanh nghiệp chưa đặt tên';
+      document.getElementById('modal-contact-name').textContent = document.getElementById('contact-name').value || 'Đại diện DN';
+      document.getElementById('modal-sector').textContent = document.getElementById('primary-sector').value || 'Chưa chọn';
+      
+      const demandCards = document.querySelectorAll('.demand-ticket-card');
+      document.getElementById('modal-demand-count').textContent = `${demandCards.length} bài toán nhu cầu`;
+
+      document.getElementById('success-modal').classList.add('active');
+    });
+
+    document.getElementById('btn-close-modal').addEventListener('click', () => {
+      document.getElementById('success-modal').classList.remove('active');
+    });
+
+    document.getElementById('btn-export-json').addEventListener('click', () => {
+      const data = getFormData();
+      data.ticket_id = document.getElementById('modal-ticket-id').textContent;
+      data.submitted_at = new Date().toISOString();
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Phieu_Khao_Sat_${data.ticket_id}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    calculateProgress();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1447 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17) — NacenTwin · Bộ Khoa Học & Công Nghệ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand-900: #0E1A38;
+      --brand-800: #1E336B;
+      --brand-700: #3C5999;
+      --brand-600: #4B6CB7;
+      --brand-100: #DCE5F5;
+      --brand-50: #EEF3FA;
+      
+      --nacen-green-700: #195E50;
+      --nacen-green-600: #237A69;
+      --nacen-green-500: #2D9A85;
+      --nacen-green-100: #C7ECE4;
+      --nacen-green-50: #EBF8F5;
+      
+      --surface-page: #F8FAFC;
+      --surface-card: #FFFFFF;
+      --surface-subtle: #F1F5F9;
+      --border-default: #E2E8F0;
+      --border-control: #CBD5E1;
+      
+      --text-primary: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
+      
+      --status-danger: #EF4444;
+      --status-warning: #F59E0B;
+      --status-success: #10B981;
+      
+      --radius-sm: 8px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+      
+      --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 8px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 12px 20px -4px rgba(30, 51, 107, 0.1), 0 4px 8px -4px rgba(30, 51, 107, 0.06);
+
+      --control-height: 44px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      background: var(--surface-page);
+      font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+      font-size: 14.5px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 1. TOP GOVERNMENT BAR */
+    .top-gov-bar {
+      background: #0B1120;
+      color: #94A3B8;
+      font-size: 11.5px;
+      padding: 7px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .gov-badge-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .national-emblem-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #F8FAFC;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    /* 2. MAIN HEADER */
+    .site-header {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-default);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo-img {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-main-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--brand-700);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .brand-sub-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .header-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 0 18px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-sm {
+      font-size: 12.5px;
+      height: 34px;
+      padding: 0 12px;
+      border-radius: var(--radius-sm);
+    }
+    .btn-outline {
+      background: #FFFFFF;
+      color: var(--brand-700);
+      border-color: var(--border-control);
+    }
+    .btn-outline:hover {
+      background: var(--brand-50);
+      border-color: var(--brand-700);
+      color: var(--brand-800);
+    }
+    .btn-primary {
+      background: var(--brand-700);
+      color: #FFFFFF;
+      border-color: var(--brand-700);
+    }
+    .btn-primary:hover {
+      background: var(--brand-800);
+      box-shadow: 0 4px 12px rgba(60, 89, 153, 0.25);
+    }
+
+    /* 3. HERO BANNER WITH HOMEPAGE TECH MOTIFS */
+    .hero-banner {
+      background: linear-gradient(135deg, #070D1F 0%, #0F1E42 35%, #182C5E 70%, #0B1530 100%);
+      color: #FFFFFF;
+      padding: 48px 24px 56px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Vector Background Artwork with science illustration */
+    .hero-bg-art {
+      position: absolute;
+      inset: 0;
+      background-image: url('innovation-hero-background.png');
+      background-size: cover;
+      background-position: center right;
+      opacity: 0.28;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    /* Glowing ambient orbs */
+    .hero-orb-1 {
+      position: absolute;
+      top: -80px;
+      right: 15%;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, rgba(6, 182, 212, 0) 70%);
+      border-radius: 50%;
+      filter: blur(40px);
+      pointer-events: none;
+    }
+    .hero-orb-2 {
+      position: absolute;
+      bottom: -100px;
+      left: 8%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(37, 99, 235, 0) 70%);
+      border-radius: 50%;
+      filter: blur(50px);
+      pointer-events: none;
+    }
+    .hero-orb-3 {
+      position: absolute;
+      top: 35%;
+      left: 42%;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(45, 154, 133, 0.22) 0%, rgba(45, 154, 133, 0) 70%);
+      border-radius: 50%;
+      filter: blur(45px);
+      pointer-events: none;
+    }
+
+    /* Tech Grid Overlay */
+    .hero-circuit-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 28px 28px, 140px 140px, 140px 140px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 1240px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 5;
+    }
+    .hero-tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #E2E8F0;
+    }
+    .hero-pill.cyan {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: rgba(6, 182, 212, 0.4);
+      color: #67E8F9;
+    }
+    .hero-pill.emerald {
+      background: rgba(45, 154, 133, 0.25);
+      border-color: rgba(45, 154, 133, 0.45);
+      color: #6EE7B7;
+    }
+    .hero-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      margin-bottom: 12px;
+      max-width: 950px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .hero-subtitle {
+      font-size: 15px;
+      color: #CBD5E1;
+      max-width: 860px;
+      line-height: 1.65;
+      margin-bottom: 26px;
+    }
+    .hero-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .hero-metric-item {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      transition: all 0.2s ease;
+    }
+    .hero-metric-item:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .hero-metric-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .hero-metric-num.cyan { color: #38BDF8; }
+    .hero-metric-num.emerald { color: #34D399; }
+    .hero-metric-num.amber { color: #FBBF24; }
+    .hero-metric-num.purple { color: #C084FC; }
+    .hero-metric-label {
+      font-size: 12px;
+      color: #94A3B8;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    /* 4. MAIN CONTENT LAYOUT - EXACT 1240PX CENTERED MARGIN */
+    main {
+      max-width: 1240px;
+      margin: 28px auto 60px;
+      padding: 0 24px;
+    }
+    .notice {
+      background: #EEF3FA;
+      border-left: 4px solid var(--brand-700);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      color: #334155;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      font-size: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .assessment-summary { order: -1; }
+    .summary-card { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; align-items: center; }
+    .summary-card h2 { grid-column: 1 / -1; margin: 0; }
+    .summary-score { grid-column: span 3; min-width: 0; }
+    .summary-score .total-box { margin: 0; }
+    .summary-status { grid-column: span 3; min-width: 0; }
+    .summary-bars { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; width: 100%; min-width: 0; }
+    .tc07-notice { grid-column: span 6; min-width: 0; }
+    .summary-bars > div { min-width: 0; margin: 0; padding: 12px; border: 1px solid var(--border-default); border-radius: 10px; background: #F8FAFC; }
+    .summary-bars b { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-height: 54px; }
+    .summary-bars b span:first-child { min-height: 34px; line-height: 1.4; }
+    .summary-bars b span:last-child { align-self: flex-end; white-space: nowrap; }
+    .summary-footnote { grid-column: 1 / -1; margin: 0; }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--brand-900);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .hint {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin: 4px 0 16px;
+      line-height: 1.5;
+    }
+
+    /* STANDARDIZED FORM CONTROLS & UNIFORM HEIGHTS */
+    .fields-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px 18px;
+    }
+    .fields-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 18px;
+    }
+    .survey-section { border:1px solid var(--border-default); border-radius:12px; padding:18px; margin-top:16px; background:#fff; }
+    .survey-section:first-child { margin-top:0; }
+    .survey-section-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .survey-section-head h3 { margin:0; color:var(--brand-900); font-size:15px; }
+    .survey-section-head p { margin:4px 0 0; color:var(--text-muted); font-size:12.5px; line-height:1.5; }
+    .survey-section .fields-grid-3 { margin-top:12px; }
+    .survey-section .form-group { min-width:0; }
+    .series-entry { border:1px solid var(--border-default); border-radius:9px; padding:10px; background:#F8FAFC; }
+    .series-entry-label { font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; }
+    .series-years { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+    .series-years label { min-width:0; font-size:11px; color:var(--text-muted); font-weight:700; }
+    .series-years .form-control { margin-top:4px; padding:8px; font-size:12px; }
+    .survey-progress { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 18px; }
+    .survey-progress a { text-decoration:none; border:1px solid var(--border-default); border-radius:999px; padding:7px 11px; color:var(--text-secondary); font-size:12px; font-weight:700; background:#fff; }
+    .survey-progress a:hover, .survey-progress a:focus { border-color:var(--brand-700); color:var(--brand-700); }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .form-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      min-height: 24px;
+      margin-bottom: 6px;
+    }
+    .form-label-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .map-tag {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+    .map-tag.has { background: #E6F4EA; color: #137333; }
+    .map-tag.miss { background: #FCE8E6; color: #C5221F; }
+    .map-tag.both { background: #E8F0FE; color: #1A73E8; }
+
+    .form-control {
+      width: 100%;
+      height: var(--control-height);
+      min-height: var(--control-height);
+      box-sizing: border-box;
+      border: 1.5px solid var(--border-control);
+      border-radius: var(--radius-md);
+      padding: 0 14px;
+      background: #FFFFFF;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13.5px;
+      transition: all 0.2s ease;
+    }
+    .form-control:focus {
+      border-color: var(--brand-700);
+      outline: 3px solid var(--brand-100);
+    }
+    select.form-control {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233C5999' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 15px;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+
+    /* 26 CRITERIA CARDS - CLEAN AND UNIFORM */
+    .criteria-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .criterion-card {
+      border: 1.5px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 148px;
+      transition: all 0.15s ease;
+    }
+    .criterion-card:hover {
+      border-color: var(--nacen-green-100);
+      background: #F8FDFC;
+      box-shadow: var(--shadow-sm);
+    }
+    .criterion-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .criterion-title-wrap {
+      flex: 1;
+    }
+    .criterion-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--brand-900);
+      line-height: 1.35;
+    }
+    .criterion-group {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+      display: block;
+    }
+    .criterion-score-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--nacen-green-700);
+      background: var(--nacen-green-50);
+      border: 1px solid var(--nacen-green-100);
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .criterion-control-area {
+      margin-top: 10px;
+    }
+    .criterion-control-area select.form-control {
+      height: 38px;
+      min-height: 38px;
+      font-size: 13px;
+    }
+    .check-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .check-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border-default);
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .check-item:hover {
+      border-color: var(--brand-700);
+      background: var(--brand-50);
+      color: var(--brand-700);
+    }
+    .check-item input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      accent-color: var(--brand-700);
+    }
+    .auto-calc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #F1F5F9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px dashed #CBD5E1;
+    }
+
+    /* AUTOMATIC RESULTS SUMMARY */
+    .sticky {
+      position: sticky;
+      top: 84px;
+    }
+    .total-box {
+      background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+      border: 1.5px solid #A7F3D0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      text-align: center;
+      margin: 14px 0;
+    }
+    .total {
+      font-size: 44px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--nacen-green-700);
+      font-weight: 900;
+      line-height: 1;
+    }
+    .total-max {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .result {
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: #EBF8F5;
+      color: #195E50;
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .result b {
+      font-size: 15px;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .bars div {
+      margin: 12px 0;
+    }
+    .summary-bars > div { margin: 0; }
+    .bars b {
+      font-size: 12.5px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .bar {
+      height: 9px;
+      background: #E2E8F0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .bar i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--nacen-green-500), var(--brand-700));
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+
+    /* MODAL OVERLAY */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      padding: 5vh 4vw;
+      overflow: auto;
+      display: none;
+    }
+    .modal-box {
+      max-width: 980px;
+      margin: auto;
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: 1024px) {
+      .hero-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .fields-grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .criteria-grid { grid-template-columns: 1fr; }
+      .summary-card { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .summary-score { grid-column: span 2; }
+      .summary-status { grid-column: span 4; }
+      .tc07-notice { grid-column: 1 / -1; }
+      .summary-bars { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 768px) {
+      main { padding: 0 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .fields-grid-3, .fields-grid-2 { grid-template-columns: 1fr; }
+      .summary-card { grid-template-columns: 1fr; }
+      .summary-card h2, .summary-score, .summary-status, .tc07-notice, .summary-bars, .summary-footnote { grid-column: 1; }
+      .summary-bars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sticky { position: static; }
+      .hero-title { font-size: 26px; }
+      .hero-metrics-grid { grid-template-columns: 1fr; }
+      .header-tools { display: none; }
+    }
+    @media (max-width: 480px) {
+      .summary-bars { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. TOP NATIONAL / INSTITUTE GOVERNMENT BAR -->
+  <div class="top-gov-bar">
+    <div class="gov-badge-left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      <span class="national-emblem-badge">BỘ KHOA HỌC VÀ CÔNG NGHỆ · VIỆN ỨNG DỤNG CÔNG NGHỆ (NACENTECH)</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span>Cổng Dữ Liệu Đổi Mới Sáng Tạo Quốc Gia</span>
+      <span>Đầu mối tiếp nhận: <b>024.3868.xxxx</b></span>
+    </div>
+  </div>
+
+  <!-- 2. MAIN HEADER -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="/" class="brand-link">
+        <img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAAHaX54IAAAACXBIWXMAAAsSAAALEgHS3X78AAAgAElEQVR4nO29e5gTZbYv/Ht73N/Zs3XmpD1DRFEnOefZZ/bZ39kzzYz3CyReUORiN6KA1wSQiyB0uHb6klQl3Z3m2mkEBBQ6iHJRlAZF1EE7ON51pHXvc/aes5/vo0bUwbCPnTOO3xaFXt8fqUpXVaoqlaTSnYb8nqefrlS911q13ne9613vWkAp4q+f/ZhyzVORawZ78hQu3/JuZy55zsupgpVH6LvkqSQIn+SSL6eenE6ewunk90gsd0UvrH/tmNl8zGzCC+e/SCC4wdBNDL7exyZEzeY13ZNh553CsL861X3Red+5pQp+Ubs3549AF7fzz5D0X35tWQUPrd9W7dmwjTwbthEAyK+l39nKyPq6hg/7y76LfvaX5EU/+wuW71lHF/3sL4jNm84AYPmedd2xedPZst2POYzKMCT82ngzMUaVRKwXABa5GtnaeDNJ11Ia6TqvnvyHC77F/3X+/9e7yNXI/sMF32LDR3766wu+dUuFbvjIT/LrnHsSfrOJwMCDEJTuEeBmQDcANI0Kp/OG3mzqDYwKV+bUk0df448lvjvPffLfzwue/O48NI0Ks5PfnYd/++687pPf/ahGqmDBazwBQGBUuFK6No0pB8I05UCY5Nfq3+r0WtcSMl7XNc+1EgMEMaUDAN67u55d81yrZkvfu7ueAcC1z7V29xE63r+nvitrJQBw2dNtBADH769j0nU2HL+/jkl5pWvNSi55skUqMAmgA+gnuhl8ObMhXd4lT7aQ9FtRybANYTo5r4kN25D5XnPByXlN+j2xrw5aNx4BSCzhTY/yQwT2QGo4UP9X39N7rvrrtgf87bK0HCByvDyjPHMiFEm/U9l1XJbULd1PhCIsEYq4AXwiz5euRLppD/ir9XoqwxGNe3K0i/lcBmmM8fPD/4PLO3PJ4PIt75L8f9FgX3mkeBVcWP8aXVj/Gsl/m81rSu66cP6Lnr5vTjnx51PSb/q6dYzpIcNUJcPOO9V50Y9OHftPP/q+8he1e+nr9RMYAPxd7d5uSyq5nX+GnJWn4Kw8hf9y4Xe9f4hOZuL9zn+JTnbfxu90ZCvDVJclAY6BaohYe2z+dCcAeNZv643Nn64rQJjC8j3raPmedaS+ln5rXWvBcH1iH/bnSlaB3rXxZqK+PztZBY4BkkC3gKmvc65kw4f+XrBvbQAAQhQM6fXIIlcj2/CR/ygR3POvbGQbP/JX9RGq5l8ZiRlVpkDozSZP+M0mAlJCnvxa/l99rQfdbvYLaxQFWK10f92YoCjYcRyB/fyxMUGvlF56lrUSuXC2Z2ITk37Lr6XfUnrZdRUB1c9ObOIMK7nmuVaSC3MM6KKUkFelTksE9/v31Mfl+Uz1RC7MmRXu5MKcaeHuy5kNTCbomYYkzMkFO0UlokBXCaA318IVIBJOzg845bdSc/vqYDWAHqCfFwrFWSjYAQoBjlP99qiFO63fWs/U/yu0KhQxWi7QyWQzAvplNfl/tUAoQU+CtAHwyHsog9vs2xlQDHvp0wzJ1GrkrLjLFf9p+weeM1+f2lfseorGk8PXvXUM4gL9xIIbis77RaHI8PDrLvSe8iF5CkieSt8bHnq9aN+15R05f/HL9E3yVPc3fz6170TgZvbN/zmVPH/xy/RN73eOE4GbmSxdYdOJCpaSfMScru4vNlW7R8zpUrz5LzZVM1kaUt+zApYVdnXd7nTjCYh90DbVK917v20qk19L6a5cvsdRweiY/F6+sKQjk1c9RXuXPsgmr9rOAUyht9q79EF29+rtnueWPBST7t218ikPY+hkjCqfW/JQ0oo2FNyR+ds2Kz4jIrg3zJgdl99fP302k6eVfivLoOT66XPyXkjl3ZHQi6vSw2tgwlIWemlVJyg1U0sITFjKwi+tdBGx7sCEpUyZfzUHUJAxcjaNXybk2w4JeXVk84f1nbOvbPVu+aheSQ2gZ/YVrSPV92dd0coAYNOHDVUVjI4C1DXrikiNPI2YJznrita8qJJzR1a/26Bo5JJrW9iqdxpsjKmlcxKWXNvqXP1uwzEADiLULL2uRaGNlspacm0LU96vPwowx5JrW0x3KqeO1HWn1Lhtbp7VvRE8Bpb6tCS0uVPSu5ROfV9dhjyNvzvIERAEoabtJj5D/Z4NOXVkxsFQxsy8dVyATT8YamdArfIJJbeOC1ZOPxjiGBDcOi6QUZdUXh9Q2TkukNR6ppVPC6YSjd3XnO4AA9wv1zTG5fdkzypfrmlMaj1TgCAcmtSoWOTdsa/ZQcAxEJKHJjUqPqmx+5qPHqppHJl3R36xK+IB0PmHaX72X3dFXNIGlhx/mOZnf7sr4qgoYIH5h2n+jHb8YleE9J5pwTDRZTHNLaWa4576Lp1nhYMQPe6t96naUQugHYTYcW+9VyubZkeGb1Ju/JyYk9LHqO8PBKS65bhoU5j7ak4WnZC9gycCuk4uDNbYo/xRsExd0KCB4E7UBuNajzI70hYY+LVwnkjUhc5GZc1ZAiZXq0g6HQB8IhTh7AG/A+KwKtMH9QKwAYgipc6xyfIlkdL1IRGKuGVlVyZCkaSkL7IH/N1iGVXo3zx0if+l3z3on2R5iNva6jaKbSKFUl5DV3RMzFgrU1rZkNqtjAPwqdLbALhUyi03gF57wJ9OK3bSBaBb3OmU1+2SvchaWVmcqq6gPeBPr33Sa3Yxg6DVqUQoEpXdcwLoVqv/DF6I1LF2dToDBEWq1WipGkXw4pZvmeFzws9e/JR+9uKnpjYESxY/fvZjx18/+7FlSv5BxYVPfUgXbv/AUh3WgOLyze92Xr7lXRooW4CiKbG/P3XG8/13Z/DDqTNOAPhs1rXs4sfechSrvqLAvvII2Vce6ZZdF11+K542XqawPhG4mYm/hROBm50G2fKG5R25sP7VowBLi/4VDJX/1jIm2f/8NSIid2/ktriV9VrKIxcsftlx6tSZqlOnTuPUqdPRr1vHsH//7nTv+YtfTlPn69Yx7PsfzjisrBewmCIXzn+RAODr9ROYdK36LXy9fkJRPi3LKDJiTlfn1+snsB+fPh0fMaeLfnz6DMQ/Hkh15sc/nBk5Yk4XjZi7z2VVvRIso8h/q33O0QemmMX/EJ3MflG7lxgQ/5fo5PRO7X9duLeTMXgkkyMrYElB8r0RILUHck3d7m4S1xhEzM0YdVcwON+NTBXk+RjDyPciU3sKbYMlHZEs9ImYs6KiLymZpUt4JXgfA4Db+GeOMcAh/bYSBRc4edVTBKBn79IHR4rXaRDB+fyyBwWdPNi79MHS+LS8G7Y6OufNEDwbtvYCzJZ+QOiJzZ8+Unm8gYTYvBmKEcuzYRsxEN85bwZXSDuAAketC/7mB9f8bZvpgh+ftl3w4x9wwY9/QGzedHbB33yP1P3+e+f/9Wl+/rbN9GjnJpeUPzZvOvubH5/+j+pdr3yQN0WW71nXCfTvUK2YsoDVPbvOQaTUAROxypVTH03K8vUCsK2YorTwW75nHanv5YJCtt7Et8j4wIQlXP/vNGKBCUu94v2ewISlI7Xyq7fk8kVehcgPyEjXcqTuh7sB5gIAInQxhmrGyOkb3SRI6da80WxjFegFKLrI1aTWyOSEvN/Glo/8nHoretYVreyJ3/sdRMqJUdpDlPYWpd8SNn9Yv48xVKvv54K8MqpPDTGg5pErIl1ap4nmXZGprpHSqZ/p3TeDnDJkbnpScsm1rZWr322QtI9pSBucehuea96tryawfQD4Jde2cPJnq99tIHX6bMgpsdwKt2lUmIXebKplasUbg7fpxnBMYbHL4Aahm4CewKiwgunDbzb1ArDJj3EBQPh3TdVNN4ZNb4qa7kjdG8FOMHgYUBlx80n1zi2AZJubr6x7I9gNltbjAlDs9qYoR3C23cQLivJ1dnst78iC17jOdWM4r9ZZtHVjguzR13gH09hH1DJtlspQP1vwGmcDWC8BPY+NCRpufqphuiPTD4a6GZRvmjFyPnlHUNDbtgbS28zJreMCip3amS/zNkm4VG9BzzjI7wNYNQEjt40LmJKMTXVE45BefM/EJvc9B8K9TMXkAPg9E5s4rWdE8D57Z1NMVXYnAA8BvNpWXG5vXnBH1Hvmh2oa2e0vNHsYQ6c6rfismjEYGmMeqsk8XSrVo/nshebuQ5MaDU1oDTty9XOt6e9eMn7XOgVp9MwIWgb1Uhl6xvZ6yGYwQBWA95+n+WPSBr4cFcDIf57m79F6lgPif5jmV7zt/7Yr4upLGSf0/GGa3xTT63bksh2R9uMP+H2X7Yh0g6VkJhl6jt9fN/LSHZFOxpgn15ZrgYicnz/gFxRteLpNtCzKfKaGbkcu7Wx1MJY5nB731LNLO1s1zJqswXFP5iclWVloPZOg+UDr2IX8WEX+zTSN5JczGxTD9SVbW2wg9AJwfzmzIa7OYMaEgz8xp4m7aJPmUFtUEJj3qzmNMVXbOk/MacqwR8noiPwA8sl5TWzY+lA1GCu6bbsR1IeataBIYI/yNjD0JhamRAd7R45H44sMqV1aUB5+O0OOxGKOpU9u/9BX3JblCLFd8cQSPmNyVFKkLaBQKJQ4nIm6kDDYjSijjKECyWRISIQiTpnFjmTStA9ANQBvItR/HFdm3NKTCEVGqu5JcKvKMhrK3VBZsGrk60qEIjUabewG4JJ0vw6dCqTTaum1h6zgGgBVqgbGZX/q9Oo0QMoaKY6UnVdGflleL4Bqo5eRnkfERBnjs8zQK31eUGZaxFRp0/nlDiDk1yr7rO0y4zF1/m5VXTF1WXIoPFmIxmRSQQrp1h7wdwIYrVWILI2W/RYPDcNnE/k1G6yR1gWoZnZVI2yqex4AIwEclaU/BsChPiYqh2gJF1Tf14Iqvw8ynZmsHW55WolHzpMXon6b8oJFU8Aee8Cv7nBMo7J0hSJMHZrWsK9sV5WZIfWeVRjxyj92jnjln0pKwD1n8ZN9Pcd+sq+nTIxSwAU7P6ILdn5kA4ALnvnIMcjNsQRD1vL34q3v2yDTRxFYDQPtE3/E/jTj6iE5Tg9Jgly68Z2MIerzR65jqjS9APV8/sj1horvUsOQIoh97ZsOyDfEGPMmfDfG7GverAJDe2LRqCH18rUwZAgyvLXbA6D9RL27UvwtrVsBACfq3Wx4a3d6g5yInF813CQMQlMLwtAhSNNvFXOGGidCtyr6cnHwMEdE0gIoeiJ0a0FGLgOFkifIT5YdOsYYc2g9Y4D7/6y4Pf6TZYccADq/WTlWc8j6j8tfsZG4oCOiym9WjrXEv0QxUNIE+WntQaWNJyB8Ex3nBICfLDzYyZhcz05OyM2NiSr/3DG+ZF+8HkqWIMPnHkhZEAO+rx6fGL14zn4bMaY/ZD0+UdGXi+YeSBuaMCL+T5vu5IrZXqtQkgS5bN4LtuMbJiUvm/8CBwM3zQT0fL5+0kgAuGz+C7bj6ydpcsRl815wgaU0gwQkP18/qTA3nEVEyRHkl0uezTAllIMINf+45p4ujbRJ6Zox8J+suoczqOMYRGU9Y/B+suqemBVttwIlQxBX065qgqZFVPJIeFolALgCuzxEmRZVAHAkPC3dl1GNu9oZS58aT+fXwqjGXbWMoV2efzBREo2Y2LpDsRFOxPgXG+7nxGfpr1kThOSBhgd0X/iElqcdjFF6smeAe3/9A/GCG10kDDpB7o3GRCMsVO7yeZL3dXS6iFi2nSB+Z62HE/MriMkYOZ9Z6BUM6uuGzA/DzlpPSa3uB50gADBr8xPyl6QJIlb5xJyZydlbttjUZ7YAYMvsh9nDm560MUbyZ9Etsx/WXRA+vOlJF2OUJj5j5Nw8a5aQew+sw6ARxLdjY7Y9jFj7A494AWDR0xs4IqYrbQFA+wOPZPTFt2OjTL1CyfYH5hlKV74dG/uHR0a+9vvnmQ4UZBUGhSBNL7RrEoMIzua7fEIqzVrluTnt9DXNd/m6ACCwb60tVLNIdyHY+Hx7FWP9+8+MkTdUsyhmkN7DGD0UnrRoQIe0ASXIitciijNKBMT9t9W5xWfVRFkNJZN1t9Wlv/K2VyPaRGPE143JcOGsQNurbUeR9rVOQt1tfqfZfhQTA0aQ9e8EPADrJIL70ev5uHhP4XlAC0TgH72e5wBgw7sBDxHTFHvnX9d/WGb9O0HZ+oSS868LGQ5Vj70dVBxCYIzc864NxU10y3IMKIds/n2dpkW6GgxU+fCvVyQBYMvv6zJ8WGaCkrN+vULzpW/5eDknP1FIhJrZv2kzPKa15ePlac4jQnz2b9oGbNgqOkE63q/vBMtqbBtbeFWrFwCi79e7GDNlABVdeFWrT8zjYEBw4dWthtu26z6oT2t9AQCEnoVXtxoe4Fj3QX3KCamIhVflf7zTDIpaeOTtRl1JigHOuuubBTFdVrFXnaf17UYNR6n96CNUNtzQbKjtbXu7cR/JNrmIMLL+hmbdU2htbzfaCOglwF1/fXM8W3vzQdEI0nQkw69jT3h0aCQANMYDJocuxEOjQ+nhoulIQFfPFR7d75sxcCTQSUoTeD48OsQZ1RU40lRFYEdlt7rCo0M1uhmKhKIQZPHh1KEGxlCz+uaUr+HFh4PtMPii0w1icK++OTXpLzrMeRhIcxJXY80t2idgl7weVDs3SK65hc+q7V18OCiTwgACq1x7C1f0/ZWiccjsQ7yNAcfAsh5aEjbdHkyLnHMO8SYmcQBA16bbg+kvePYh3rV5rLZbVjnmvMIrhkci1GweGzSc5Oe+wisUn0TgN48NcibamDMsJcj9L4UyD7Frw7tjfCAm5tF036yDkTvGp04a3/9SSPNINpBa3zw9PpBVMnrgpZALsroJ6Hl6fCDrKc0HXgr1G1MAyafHByzbX7GEIHd2NWc7tpTcX93vlPvOrmZTkziAnv3V/Y67TdSjCQKcB6obhWzp7uxqVsxRZvJVdzWnpbD91cbheM2g4AJu2tuiqR5nQPT1yQ0+AHDtbXVUgLJO4kBq3nn9roYuMZ+tAqS7bZsPCIh2i+0yws3Pt3CkjCQc657cYChW3/J8i+3wXQ0FzTMFEeSXe5Qn1Bng/GRKvSA+MzWJA0h+OqU+zT2/3NPKIcfougVAUbcefrWnVbl+AQBC5adT6y2f5PMmiGNnGwGIC/fWpcdqxzNtvSYmcTCAP3ZvHZdrvmKDCN4/3lcXy5bOubNNIVYTgf/jff39KQQFccjl21OxFUzWVPnZg/6kmK8a2tu1pQThs4eyKxwvfyrigEqs/uwh/8CF4BmxreUYM9pS7UfX59Mb0mLpiG0tR5lGJMuhAiK4v5iR6bhAjUu3tWSI1V/MaLDexdHwLc1mvuqRJ2Y19ojpHbAwpGWJIX5ilrE7GQAYvqXZBVGsPjHLnARmKpF9Y1hP3OxJPNI00kS6sxzkTDwSEKwoKStB7OtCarG2JrEg0AUAw9bxNgZ9a8JzFNHEgkDeht2GBBm2liMAyZOLuErZPQ4DJ5YOdSjenRmYG7JW6mtZy8gJ3sSyUMwogSZBhrc2VtMgOwI6ByB85Q+XxD5+GWWUUUYZZwcyHLVADBoHpH3vSBs46cBvErQcDWl5oMninQkARiZCkR4zaUVnLvJ2AaKHKa36tJzRGCDDU5QG4hox5/QgBeCTt1frPabVLUpHfyn02gN+t9zHkRbsAb/cICDdEXvA354IRXyydIqXoypDenbUHvDXJEIRuc4nLnfYlAUOWcC/DKi8Ablg/HI086nSVEHmFsmgX732QG6KRjVBeKQWfd32gF+KMqjXIElRGEuEInFZulqIkQ8lr1ciMl5ulqB+LiNiyu/LPHrpEiUfaAQi5MRrXWJo3VO9Q0VkRjUUBBEJEEfqCwraA/5f6eSTc4fHHvB7VA2QXox8A8cFmY82EzDFIfaAn1MTRazHlUNdmjAgbvr4nD3gr5KGW5MwHLIyAqOIQ5XEZtXq5+qvRvUXk1eSCCmCwwflw5w94OeMwm/mCtXLcxVaXpa65MPQUdEbIoCUZ8RC+qU1h0Cc1DMmQ3vAL9+SjaopLabxiJcue8DvEL9eG1JboGrvhgDgk2KlquDS6pDRkCTWZXwELgfovNB4IhRxi3VJc4mWJ8Ws8/BZi58f/h/cYLfBKhQtbuZA4vRpCo545R/NbSWXODSHrKGEn734afeplB9u1yA3xRKUxKHPfHHBCz3pKAff1FQN6b5IGNIccvp0n7RnX1JHmwvBkJ1DLtj5keu8031d393za3beD33CYLfHKgx5Nr9w+we9YKnjZ4zI+78fuio2yE0qCEOWIBdvfV99VE6AtP4gVP5pxtVDzlcWMESHrMu3vEt/dabP81en+yD9/Wn61c7zTvc5/+p0H/7qTF/v5ZvfHZJi8JAjyKUb3+7uO01Q/wHA8VnXCp/NupbRGfL2nSHP4LY0PwypIWt4x1tajjBjJxbcoHlMYPi6t9pPLLhhSDi/lDCkCGJf+6bCYVli0ahK8X43CL7E4lEFRzgfbAwZgthXxl2A6LaJwZlYOlqwr4jXgjHZETpKJpa5StZ9nxkMmTmk4jR1V5zu4xPLRjP2/RkMb+2mijPUXnG6D+IfX3GabMNbu0l0sjwkMSQ45OLQ61V/CtycsqoPva6pXj8RuJmJz/uPAxBqTgRvNn0UoBQwJAgCAMMDvzU8Iif3bH1x8LCNiOQuNCpPhG8dEuuSkidIpf9VF2P6Lv8YA/+/W8ZwWs9+1vCaq48kgwbq+br1tpyiUQ8GSpogP1l2yMb0nSf3/HnF7SPFdN0AvN+sHCtoJfzp8lc6AXiISPhm5diStqctaYKcv/hlbat7hspvV9+RPH/RQQ+Ywn9W8ts1d+hKWecvfrmXASP/suYOwfrWWoOSlbJ+uvCg60dnyPajM4T+v76ab9fcwX70Qx9+WnuQftSHTulZxRnq+tEZsv209iD9ZOFBTbXJt2vuqKw4U1pBZdUoWQ65cP6LaaMBArp610+oEe9rSllfr5/AxOf9XEVwf71hQnwAmmsZSpIgw+fs58BYEEDyxOMTKwHg4jn7OWL6nknlzvjtcw9UVchsxxhR5Z823VmWsvLFiDldBMLILzZX94yYu88FY8fKyS82VWvOGyPmdHFIH7+j+Bebakp+Z7HkCHLZvBeqjm+Y1AMAl85/wTgmPcF9fMOkuFFkBLEc+dl6/vj6SZyVbbYSJUcQAPi72r3dZGBFQoTo/+qY7FOnrQC5/zl6d1wrz98ufN5WIfN6XQFy/nP0bsHKdluBkiLIr5Y+qxv9QITw6ep7nGJahbceGZKfrr5HV/T9h8XPehhL12GYdjBQMgS5xr+7ikhhxK1AHzHnhyumCNf6dzv6KNNDxPttU9nVdbvTbvkYEH+vbarunHFV3e59TLRdfr9tasm8h5JpyOimXXrux71vNk+LiWl0j2dL8T9GNe5K22oBqYAt8VAqv069vQB8R8L6aQYSJUGQ2/lnOKicERAQfzV4n1t8ntVlxyvB+xR9uY3bWc0Yyb1VVx4K3K858d/G7ax6lbu3JDa3SoIgE1t39HOHLEDLna07XJTliBkR877YcH9M7/mElh3yaG7CgfoHyrosI0xetb0bYC4g5QLp+WUPxu9evV0zRogcRIg/v+xBNwDcvXq757klD8WM63lK7g+e37v0Ia7w1luPQSXIfR2d0ouP7qz1+ICMCDhaSO6s9VSK+RXRFgDEdtZ6dP0iTmuPKRw4M0buZxZ644X0wWoMKkE8G7Ydjc2bPhIAvBu2cgTjoC1EcG+fPz2eyrv1GMAcWukYqKZz3gzdnULP+m0cWHoFn4zNm1Eyou+gD1mzt2xRf+UaYPyW2TM5AJi1+QnNncMtsx9mszY/oZj8GaPKzbNm6a7gZ21+Qu69Or5l9sODrloZVILM37YpWxQdYf302U4AeLRzk2GwsPXTZ6f7Mn/bZplGmHrWT5+ju1M4b+tmlZhM3se8c2Jm+2A1BoUgvqc31ILk5jsaIFS2P/hIEgB8OzZkDX+kjkHle2qjA8r5gl97/zxOt01PbayGLKiLVkyrgcCgVLp8zzrd06lEzLty6qMxMZ0ZD9jRFVMW6FonLtv9WC1jlCY+Y3C23bNAMGibNOzFVkxZYOg4uRgYcII0vbA2LeaqEA9P8rkBILBvrW5oIxmE8CSfU0xvGBAsVW+7jLiUDE9aZDiRN73Q3hue5BvwyX5ACRJ+aaXW+iIZmLC0UnxuYoIHQMwZmLhEAIDQi6v69VeM3E3jl8X1soUOrLYhFfUzNfwxxALjlw44FxhhQAmijqpGBLf/9rq4+ExXjJWl9/pvT3mebnstwkEztiEl624z9i8SeaVNEVaJMapZPsZfEgZ1A0aQtfGwS7LNJQK/2N3IiffbAWboI54I8cXulJ/c9iNhTS6iPjhZhVwLTPFFriZDMXZNd7M8iDEYo0rf6KZB3eodMIKsfydIAIT51/FOANjwbsBMzNvk/Ov6o+GsfyegK21JYfMeeztYy5g8hgn55l8XMozYuf6doEJMnn9daNAM6gaEIFs+quf6iEXnXNmSFH9n9XLaR8w958qWeCq9vxNgHqP0s65QRk/b/GF9N2P9Ehpj5Hz4NxFBL/+mDxscFUweUoP4WVdkug4pNgZ0Dtn8+zrFS9IGRWf9eoVPTK8I+GiQh5/16xWc+u4THy+3EXAszVUEYdZv2gy1vVs+Xl4L9K+RiOCc/Zs2IXsbrMGAEGT9h375tqkehHlXpLzCrf/Qr1g9G6Bn3hWRrMPLxo/8SjU+ITrvyojhyaqNH/n79/UJyXlXRgZEBC46QTo+qM/qoogBzgVXtQoA0PF+/VGw7FEUGFC54KrWpJinkwC+9upUGQZtUejBiOCuvbo1rpdeDETZLyYTYtmCVxaKohJk9bsNhnMFA3kXX9saE9NyMOHCnIFqFl/b2gUAq95pUA9pwpJrW7JuQK1+t14uYieJ4Fx6XYuudLXm3XoXIS2AOJdc2yJkqyNfFI0grW81KsJlqyqN113f7M6WTn6EhvcAACAASURBVJUnVnd9sxcAWt5qtFUYDGkEROuvbzYcktrebnSQMpxG3C+2ySBPOwG1/uubi/beilZw+M0mraEq2TQqnB6LQ282GRvCaefRDAzTNCrMwm82Kex+CXAHRoXjhu38XVMtqF9MJsAXGBU2FJPDbzZVNY0KF2UPvigEaToS4KAafhjIHRqdejlNRwL7oOE+MLNx5AyNDgt6ZcohhV4NHGmykTKERjI82jh8dypfQGGcRwRnsyskZMtnNYpCkLruYJo7GBCNuHkfANS9EVSouA0axUfcqRjqdW8EFWp0PbS5laFX/d1BD8njYxHibTfxhkOSvzuonsSFtpv4ATWKsJwgiw8HJa2qsOaWVGcWHeZszFw8wp41t/BpMXbx4WDWBaSI6JpbeM05Q9YeAACBedfewsWMClvyetBFpLB20S3falhKkEdf420M6AXIuW4MJ4j3TAYDo8p1Y1LBfx99je9kpkInkbBuDGfqC17wGqdUbALOx8YEhSx5FHo2AtyPjckeb7cQWEqQua/w1Y/fngr0O/sQzzFmRoxFjSyPyZV5au3y+O2pF2o2MPHcV3j1AlHYNDaYlaBzXuH7hQVCkgDn5rHBoighLR+yph8MVTFkF2MBim0dF/QCgPdgyFahjqSpA8bI9+QdwbQUNOOgIlAwv21cgMtWxsyXeY5kqnsCotvGGceNmvkyr9AyExDfNi57AORcYSlB7n8pZEqM3SGLrnz/SyGz8Q3jO2QRoO9/KdTNdLZ3CXA+PT571LQHXgpliMlPjw/Es+SpBZRi8tPjA4Zici6whCD3HAhzzNQqG87dE5uEXPIASIr5kgBwz/6wGb0YCEg+O7Epq7g79UBYEefWbL4pB8IKYWHPxCZL3qUlhdzZ1Wyor2IA31Wd2pCa2NWsGwddjQqQe191UzzXfCrE9lc3ZtU/VXeFPQTFPn58f7Vx8MiarrCtD0wSk03Vkw0FE2TsC83d0Fep9xyq6Y+HPvaFZrPBi6Mv1zSmx/SxLzQfA8s8eZsLiFDzyqTGrNu0Y/cpY70TwfvKpMaYUZ479jW7COg+VDPI8dSN4p1XMFRKscXde1tMirEQ3pjckJZ63Htb2pm5EOCm0QdWGZ+cPez2TXtbFGugPjBnfHIqNLkebn6+xfP6XQ2xQtpXEEGuea41Y+FWAap55+5UMN6rn201Lcb+COR8++4GQcynMEIoAnreu7s+6z7Kdc+1uPqg2GYW3ru7vqgr97wJ8ss9rS7IZHoGxD6ZUu8FgF/ubtVyxafXAN8nU+rTUsov92QSuYjgP51Sz2VL9Ks9rRwpBZDop1Pqi7Jyz5sgv9gVkSby5B+m9Zvd/GJXRG7AbFRx/F+m+dOT5i92RcxYKRYFfYDzX6f5hWzp/m5X5BipxOT/Nc0ft7IteRHE8UwbB4YgA5zH7q0TAODnz7SZWplDFGOP3VuXFPOZEmOLDkJSuK8uq7jr3NmmEJPN5jOLvAhy+dNt3Gf313EAcOmOiIMxE9aGqcrcn92fMozLJd9Agohinz/gzyq+Xv50m0qbTPHjD/gNxWQzKGhSv3x7xLQ29rOH/Okx9/LtEcUKuURR89lD2a0ZL98eUe/teD97yB/Lt9K8CHJZZ6vazbcehOOefqnkss7WdjBrxdhigwiVn3uzi8mXxZTCCBGcn3uNxWQt5ESQEVtbTIuxYCzdoBFbW4otxhYVBPR8Mb0hq5h8aWdrFYjSilUChC+mN+QkJpsmyCVPtriQPQomwOD7ckZDWoy95MmWgRRjiw3+y5kNXLZEl2xt4SBz+/HlzAbT79l0wuFbjPVVAOInZvXrfoZvaR40MXYA4Dwxq1HIlmj4lmZprvSemGWsfpFgiiAXbTLUzCYBOE/MSWljL9rU7GGgwRdjiwwCkl/Nya4VHr4pbAPQe2KOOW2wqUT2jWFt7mBwJ+amtLH2jSEHUHpi7AAglnikyTJrxqwEGbY+1A2WcQQtenJek0+W5hgYc1jVqCEJopqT8wMFH/rJShD7upCcO4TEgoBT9szQ2/S5CAJVnlyQ/367IUHsUT69f0GA8+TClFGBPcq7MITF2KKD0JOoDeZ16EeXIMPWBKvA2FEAvpOLuLQYO2wtdzaJscUGf3IRx+WSQZcg9tXB7sSSfks/++rg2SzGFhvOxBJeMJMw+xyyMuABSkAbO/SRTCzLbmOszyFtAQfyMyoowxixRF1IV0zWJMhFkaahoI0d0mBENSfqm0vibHwZZZRRRhlllFFGGWWUcW6D2QP+tHo9EYooFopGz9TP9dLI0mpZNHoToUhMrzwNxBOhiFuVLp4IRfp1bgE/h/7dTR7AaJjUwSVCEZatDfI+2gN+B1J2Bg5VMnciFInL0pl+jxWqB6bsccW0Ho176obBHvB7xAq1zEs7c6lTB64C8+cFe8DfiZRqyaHxuFv8AHOGOmyeTeul6kBL4agwEbIH/DZVOgFADQD5ETCb2Dk14hp/mt4TshC1R1WGUR1yJHXaAHvA74LyeEUPADeAmOxeldZHmw3nadw7htzstXrQ//WruUCunOxKhCI10rU94N+PfrMiDwCFwk0+DJmAzR7wOxKhiKB+kAgp3TCphg+jOnoMnss353yJUET6wOL2gP+P6B8yO6EkUlbICRKDSHV7wF+dCEV0FV/2gF/uBNkHYCFEc0p7wF+VCEWkLzm9kSUjhvQ7jsJPcCVldUgfUhzmzi5aAhkxpN8cAC7f8uQE2Y5+NtwH45eV3kdPhCJxe8AvoN++tRtAwdbgqsmVFzuqhg2qDwmpYdEKuLJNxvkgm9Agn0MckA0bIhdk83iTBADVUDGg27uJUEQ+1O2TceeQhJxDHIlQhJNNsLXInOigmoBtWhS3B/weuTibD3L8Ir0QhQfVcFoI4jnOY6aQi9g7WvwvNw52aZTpMVFvhtQkSiYZDZH+TJSpCxXxB9QsSZQk5b8dhfQrI1q0OPxo2hWpKk8itfCS/6khH0665URRNVYw2V4jDKQbpZjsuldaKoj/j+mkMwUtsRdIdU5Ltpd/+W71eG0P+H+FfmmrNhGKRMUhRCJktz3gzyg0EYpkvEydr0t3GEmEIoI94JdLXYXCpdWGRCjCEqGIV7XGOKbTr5xNTDXjqSdCEWlRpEa1LI3W5ClvQLuYrhL6X0rSKulFxIBxidjuuM5jId9+We4NqIz8cNlr/+SQvCgRMPL4mP8uDHKTykCZQUoCFx381AWmiktA5P5q3C/jg9OiMiRoTullDBxs+z/xfH+aur//oQ/f/9CHr+74B/bD6b7KH06Ty7b/k6yOdMsoLsozyCDi/L1HOajU0t9OHlmmSQmhTIxBwt/s+n0nGDwkqp/+fepvLHOiWYZ1KDPIIOCnT39YC8bif77vih4AsO340EZAbTp4NYFnQDT5wJWDGiyujDKDDBrsne+7wFiQshgwMSAOIj7hvTo+MC0rQ44ygwwgLn3iPQ4MC2GwWfP5zGsYAIx48j2OISNtEoSOzx++hituS8uQUGaQAcDlm95xwYyPMQCfzbkugyZi/nYoDRDdn825Lm5B88owQJlBioxL1r/tgTl/C0kGdHwx/3rOKNGI9W/bAAQpZVTj/XL+9bGCG1mGLsoMUkTYo7/jYGxd3AMGX2LhjfGBaVEZuaLMIEWCffWRTmibdkbBGJ9YPCoJAPZVR2yi9kptZhkFgU8sHV3WZA0iygxSBFzU1t0NpH1TCmDwfbXc1SV77gLQDjCto30CMo7GUQ8A31d17rj1rS3DCGUGsRDDw6/bRE+IcTDwJxpuEmT3a5GplcrAicabGAAMb3nDJgau9qiSJAF0gCh6ounm8uxSZJQZpEi4OHi4ihjakeNB7RPcLZo0Gc6/7gGR/OyAhDgj+P7E3zKkz4qVKsoMYiGGNb5WCyDIZGGoc4AABl8ifGtWP3/2pt86AHSClMxHoCQA/mTzmLLZikUoM0iBsNW96kH+Qcy6GODrjdwmFNKGSv+rHGmJbwRvsu22WCFln+soM0gBuGDpIQ65OYlIEgP/7cqx6RH+J0tetoGxWlWcSjCAB1H0m9V35LTOOH/ZIRdLBfNxibf4v6way+VSRhn9KDNInjjfd1BPjatGHIz5vl17R3qNcL7voAtQfMTZywD4b9vHxXNq46KXbQBqQfTzb9vHWRZi5lxCmUHygG3Bi3I1rhopLRMQTa4bnx79Kxe8KIpBxuuT5LrxLFXHSy6kduAdyhSUZEBH77oJXJ7NLyMHlBkkB9jn7rdRSo3rUD3qIQbfv22YGJeldYCxzmzWumqc3DgxgyY/m3fAxrRVvpK1rzfx+J1CLvWUYQ5lBjGJEbO6HACOysJvRQHwX26uTsrSeAC0S2lyBQHCl5urs3oCuWR2lwdAkKkZlZAE4PtiS3Usn/rLyESZQUxgxCP7XAA6GcH3+eM1aTXsiHn79DbzTIMRYgTwXzxeI+TVtrn7HAxoJ6YIFi4hBgbfFxtqyhuKeaLMIDniPy943tWnuTYwCUKSAN8fH7srJr/tXPC8h0TfVQzwHVunfG4WP3/0+VoGBDVmMaEC8P6/6+6K51PuuYoyg2TBPyx61gZkqmFzARHiBHj/Z/vdgqrcdsoy+zAgBpDvH9fek/Ms8Pe+56oY0M5Y5jqIATxA0XzKPZdQZhAd/GbZnnbK15Fpai3Q8fGqKZyqTBdlmX2I4BRnAI/GY4EB3t+vnBLPtUkjl+6xMfm5dxkYEP39yik+rXznOsoMooEb6ncZqXH10EME39uRqXHpxo0Nu2wAaomY6dnnrdapCppc79/tYSmbroyFP2PEA4j+rmVazrPA9f7dLsbkzErxt1qnWe4eeqijzCAy3MrttBFBS42rCQKiRODfCN2b/kBv5Xa6AASJ8osmc5i/V5cmNwV2OipSH3VG2YylNhN/y90bz7XOmwI7bYyhnQEuxjDyt9y9ZbFLRJlBRIxvftohMoeRilYAMd/BwH0Kg8LxzU9zRNlN2bOgRyw7bjbDuPAzHEBa9SYZQ8dLjfdzBbSnDJQZBAAwacVTLiKVb9x+xIjAd/kfEGTpHUTozEMMUyMqll3wiF0d2eESRTGNQ1gUZwzeF5Y/KBRaz7mGc55BpqzZ7oHSqUKSCL5nlzwUk6ebujbmIUJ7NlORLBDEshUz0NS1MZdYtvhxUw9j8O1e5InnU8k9q7fbmPYxXgCUFMuO5VP2uYZzmkEeeKyTQ8ryNU4E79MLvYL07MHHttkIrB2U/yagiBgReHnZqfI7zYplScbQ8dSjXi7fBtzf0Vktzi6OjIcMMQbyPfXo9PK6QwPnLINM3/ikbdsjMxUfxcxNT7iIWP6bgCkkieDb9sjMmKpsh1i2yyjz1rkz2fSNT9aKM4AW88QZI++Tcx4W8mnc9I1POgAEmZ4aOVV2PJ+yz0acswwCAI9s3WwjQi1gXg2rBSLEAXg3PTxLUJWfs1j2+MxZCprMeWJLFXQ2+yRxaeOM2bHcW50uX1eNDBDPGKIbZ8w+Z2eXc45BFj71uIsop7MYWkgSoeMxz1xOVbYDhGC23XEjrHtori5NHo09bgMgzS4ZYCnbK77jwblCPnU/GnvcwYBOaDIj4ixVdjyfsocqzhkGWbprvRk1ri4IiIPAr7lvflxZ7mPVRExbvs8NSSL41tw3P2Y2w+Jn1qs2+xQQGCPfqmmPZj3jrlv+zvWa/oEZw8hV0+YL+ZY7lHBOMEj93qgL+mpcXRDAEyHads/CtIjRsDdqIyAIYgXH0yVROdB2z0Kh0LLqnu2QNvs8mgkYRRnAt0yuzUtcqnu2wyWWXyWW526dXBvPt71DBWc9g3D713hgzjcuCBCImDdUvSguv88fWO0SZwktR2+mQUASxDr46kWc+hl/YLVHrAOMkS84cUmskLoCXWurGaP2jDMjKfSIdcTzLNvGQEHG8Al35+KC2lnqOKsZpOXQCg5Z7KAIiIHgaxy3TDGypvJmPyJrAj2UKj8uv9l6aIVDnIk8hrkZxRjA149dLuTbgOaDKx1Ijf4aZ0YoCYaOhrHLuXzLP5tx1jLIqsMtek4VkkTMt+zW+pj85urXW8Td8YIW7wDE04bE+GW31iuYbvXrLdUprZaBNS8Yz7TNRwBAYAy+JTc35L2uAICVv22tZYwM1MjwLrm5QSikjrMFZyWDdPyOV1jjSmrY2lEBQZ5u3Vu8FbvjgLhDXjsqoPhw173F21IaM/PrlYU3BtI0ib4ZMjAfAQCKMgZ+wQ3BvNWw0TdDWdXIC24IxvItf6jjrGKQTR802IiYqKliHXOvDnOq5w7R9NxTeG0sRgT+kWvCgqqOgtYrc69u1qTJxveaRPMR0mO2HsbIN+eqlng+9crqqNUxgASAGGPEz7mqRci3jqGGs4pBnvy4zjHz122C/N4THy/XN7PIDUkQ8838dVtMVb74URVszQsAmDlyhSmaPPlxXTUY6fUrCaCDCNGHf70i79nlyY/rXGIdml7oieB7+NcrChL3Sh1nFYMAwOMf1dmQMqUoWA2LlMM275zfKJnu8Y/qDMSSvBADwKvrMYtNv69zIHWeXctxgyRi+uZe0Za3g+tNv0+9V+icsiRKeXmZe0XbWbXrflYwyLoP6l0sM4ZfHkg5ZZt/VYTTqCPlDMGCWUKsxzf/qkis8LIysf4Dv3iGXnNtlSSAX3BVa0EOrtd/4K9OOZlgDo3HPQT4FlzVGi+kjlLAkGaQte/VcyjAmYKIHgb4fNe0xuU317xX72AGo3KuYOJs5LumVVA/E/shF9GSADoWXdPKFVpv+3v1VQDaDRzYdRHgW6zRrhzqcIh1aL0r3op+DBaGLIOseLuhU8ci1QyiAPhl17UoxIEVbzdUIyU6OQpsHiB+5Muua+HUD1a83eAA0GlWRJO0cMuvL2xxvPKdhpSvXp31EhEEAL7l17cUpkZ+p6EWstmWCLHl17cMSd/AQ5JBmt9q6kZu+xUCA/kabmhWED78uyaDg0V5oacC5Ku/oTmufhD+XZOB1Ww/KkBOgqHL0iQRfE03hmOFNrb1rUZXHww1blEi8E03hvNeV7S81VglujdC4w3hIecUYkgxSPBIkw0MR3XMJ9SIAeC5UUo1bPBIkwtym6LCERXrUXxEwSNNDjAEdW2jdMCNCitowr3ZxMFAQyZaAvD8aGU/cwX3ZpPxIhzoAcHHjw7HC6lnqGHIMEh9d9DBQEbWuEnG4Gt2hWKqfCkTcX3dfq4QxHoyxJD67mA1g67q1RRa3CFdmjTGA9lM9QUC87W6+YJVr43xgNGuf5LAOgBEW938WaW1UmNIMMjS14MuABnWuEw0i1hxEy/I7y95PVglLrBdVtTPgBhj4DXqsTGDUTcfrLqZN0WT5W8EbQTUigyjhygB/OqbC/uIl78RdBDpLsIBIE6Ab/XNfN5q5FJFyTNI7W85D+sPcZYE0NF+C8dppKtFav/DilkiyQDf2lu4mEY9LqQW8laJaAAQF+vL+wNbdJgz9NpIhB4AvuitXDzfOiT4DnOKRbiqniQAPnorV5AauVRQ0gwy71WeA3AnY/CtHxOMy5898ipvqRoW4my0fkxQ0GmHVSIaIDpiABBdPyZ/Oyo9zH+Nt5Gx1/kkgI4NtwU5C+qqEuty6STpIsC38bbM9zoUUNIMosbMl/lqkSkcFhSXZAwdW8ZmfiQzX+ZTR08tEtFE9DAG35axSkaX1Se3EYsRwD95hzUf1axDklGmLoPHCfAWWt+sQ7zoalV3MBEI8D15R3DImKeUNIM89FLISrMRQNwU7BwXiGvU5WEFBL/RQZQBfOe4QMYs8dBLoWqxPodhCZT6qLaPD1jyUXkPhhxkxPxieIbt4wMxC+pykYGFg2Sesn185vspFZQcg0w9EFYe7SwQDBQFwD8zQUmEqQfCDpaHGtYYJDDA98yEzI956oGwTayvIGaX/AHvnthkyUd134shw9iJJPr12j2xSSiwHhuAIOmY/pN4sGz3xKZ4IfVYjZJhkJqusI0xHEPhcr7AAN/zdzZlfKQ1XWGrLHvTYEAXUvUJGvVlOc9RMHqI4NtXbc1Hddf+sAtA0GCTUhDrK3g2u2t/WLTlyqBFEsDIFzTe52CgJBhk/L7mKsZwtIAiYgzgD1Q3CvKb4/Y125i1IhqQIiD/YnWjppZm/L5mDsBCi7RppiFqjzpeqmnkrChvYlezTYyPoqtGJkqpkQ/WNBY0m03sanaQSuFCBPdLNY3xQsq1AoPOILc+3yJX45pFkoF8r05qjKkf3PJ8i4sVRQ1LvlcnNWaoYW95vsXBcrCrGihIUa0O32XN0dnbXmh2EfS9ThKlLHgP39UQt6CuWgILEsH327saYoWWVwgGlUFu3NvKMfPWuPEKwBufXC/olGOtGhboYEA0Prk+Y3S88bkWD2Msq11VCSFJRL7f3W3Nx+ba22rrg7EamYCO302u56yobzAxaAzym2dbO7MskJMM6PjwnsyXPHJPq6OCoZNZrIatAHwf3FMf16qPMQQrLF3QDx76xIX30SmZg00+uPLZVikAqd5CP95H8FpV30BiUBjk/94d0bPG7WEg3z9NzfxI/353xMMMiJAPGBAFiP+nqZmzxN/vjli551LKEAjw/c+pfkvUyP99d6tDFMVcOkmSYn0xK+orNgaUQf7LzohNXIw7ZLejDOD/dZo/qUrrEE3RPRY2QWCA71+nZX4MYtsstasaoogSgf9/7vVbokb+210RUY2sO7DFxPoEK+qzGgPGIJc90+YAcJSBkgB8n92X+ZFe9kxb6sCSpaM2dTHA98f7Mglw2TNtLrG+YqlhhzQIKfut4/fVxa0o7+fPRFziUWCXTn2CWF/J7LQP6iL9509FbGTxqE2iGvb4A35NNezlOyIcrF3QnytIAuj47AE/Z0Vhl+2IiMcQjK2RGYH/44PWzGb5YMAZ5LJYq0vUAFmqhgXg++whf4Ya9rJYq4Ox7IFrysgZcSLyHvdYs/C+fHvEBeMY8j1E5DvuyVyfFhMDwiCXdrZysFgNC6SsYT/3Zi6wL+1s9cDiBX0ZhkgC8H3uVbpzzReXdrbakEWNDKDjc2/x1chFY5BLtra0w9oFbw8A35czMjeiLtna4gAsX9CXkT9iAPgvZ1izSXnJ1hYPUvR16CSJfjmjwWdFXWoUhUEufqK526I9iigA/suHM00ZLn6iuQgL+jKshrTw/tPDjZYsvC95otkBjXNABMT/9HCj5U4hLGeQ4ZubjyH/j1YAg+/ErMyXOXxzs6FTgTKGDKIA+BOzC7PfkjB8S3OtGKnYhhQzjrSqbMBCBrE/HrYBeVnjdoExX2KO0tBQLNMFSzwmllGi6AHgS8y1xhrZvqm5CkRBsUzBijItYRD7hnAVYNoaNwlGfOKRgKYa1r4hzKGshj0XkQTQkZjXxA12Q+QomEHsj4WqAezLkixODL6T8wMZalj7YyEHrD/eWsbQRxyAN/GoMqbLQKMgBhnWwXPQDkmcVsOeXJDplGBYB++B9cdbyzhbkTrr4ju5cOAD+eTNIPZ2Th3iLCVP+jLdylzUzqXi8ZXVsGVYgxgD+K98nFDsivJiEPsaTrLGjRKIP7k40zGZfQ1XjXPDGraMwYUAwJdYzBXFfitnBhm2Kmg7uTSTIYatDNpQtoYtY/ARBYE/ucwal6gFrUGGrwgYunUpo4xBRg8DfCeWh+L5FpAzg1wUMfY2XkYZJYokgI6v/MrArtmQlUEuamlyoKyGLePsQxyA96uGwsJGlFFGGWWUUUYZZZRRRhlllFFGGWWUUUYZZZRR0hh059XFgj3gdyBlB+ZSPYoDEBKhiDCQ7SnDGPaAvwopesmtMpJIGcH2JEKRQXH9w+wBPxk89yVCEe2DTQG/CxqRZwHwiVCEM6rUHvDbAPRmaVtPIhQZmSWNuj1GbmP0IACoSYQimWdVjN+NGcQToYhb1j6t9yXBnQhF4loP7AE/B23/UXwiFOHsAb+eK9dC4E6EInEr34Ec9oBfNxBotvKQopeCYQr5HsX8mu+wIku+dpE4VsPoQ5FQJb5EQ9gD/mqRiN3Iz3LYAeCoPeDvFWedwUK3mf4OddgD/naRXvm6ZXIB6BU/6KLjPBNpgvaA/+eJUMRrRYXiR6Bl3NiFzIi17faAP641uotlcdD3zBdDagZUjzQOaDOTDcAxe8BfmWU61xwRLUK7PeC3mRnx5DBqT6Ejqw7yegdZZjpvIhSJaeRxQbv9LnvAfzQXKSMfZJtBJHis4Fjx42zXeBRNhCI1SMmcamge57UH/NXQZ47KRCji1frQE6GIkAhFnEiJVloYyFFcq79Be8CvDihUskEuzcIe8OuFio4nQhGmxRwAIIqdTp1iq0QGKhr0ZpCRSHGtfAp02QP+Y+LHBaQWT7lCi8mSiVBEcvrFI5OBHPaAv1NjBluoU4cmY6gh60eucBnI5bmOyjak3rXa4YXHHvA7ZKN0Pu+6mMjnHegNPFklE1Ghkq9CKWgP+M0GacqA3gxiQ4pr1R+aQ5TVbblqFcQRxKHxKP2CRIWA1sfgEWcMMxByaVcJQO9du+wB/zEgPYqelSh1baLeDOISiVJpD/iPQrlmsCG1SHIipVFwZatE/Li1RpA4gKRqmuwANGMWdiK1ThlsSKpHLQh5lGdLhCKC+D7VfsUc9oC/F/0MVCpncKx+B8WEAHNtqoLG+9VjkF9JF4lQZKTO4uoYzE/9ekE6XRrl6sFmD/j3iWsVADiik7cdKbHFEPaA3wPtGU3Qk4dF9Fi8SK8C0CXOyJXirCFvl6QSF1A6DJLPO4hDg172gJ8zqYbVS9Olp8QRsb0Yal4FIcSXEdNIl/WorT3g36curwBUix82xE4LWm2yB/xHxb0WvTbVIsW0QY2/QV0Qi2ujuMYjx8C2xHLorTW0lBIKiN+QFq2CKPKMZUbNCwBIhCJee8D/R5iPSiuN0lprh6hsYa6XV28zsVNU/QqJUMSpIQJC/N1rD/gB5RSrOY3K4E2Ed172zAAAAPxJREFUItnEOKMFqhp5qUMToYhb/Gg8ueYdIOT8DmRi5FFk0sAjDXxISSXSIOXKUraz2DvsZtW8ANKjtqn9EFGlqzUyCNmYQ6wraVDXPlm6kUiJVIJOWgf6RTk95oghpRqOZWvXQEHU2vGD3Q4rIQ5qlUjRVe/DrkJ20dsrqoYFK9unhfOgPZ3rynSJUCRmD/gF6M8kgvh/oU7ZpuM4iHX9ChqinD3g90gftCiDOsX7DqRG3tHQfslJsV370S/76yFutq06kL9HqV41BL3MohlJD/RV2rp5C6lXBa28uSDjWxLpFgPSG4EPIUVjLZFdENuwP8vsXmg/Nb/5/x/I0t2DUeDzfgAAAABJRU5ErkJggg==' alt='NacenTech Logo' class='brand-logo-img'>
+        <div class="brand-titles">
+          <span class="brand-main-title">NacenTwin</span>
+          <span class="brand-sub-title">Cổng Đổi Mới Sáng Tạo & Khớp Nối Cung Cầu Công Nghệ</span>
+        </div>
+      </a>
+      <div class="header-tools">
+        <button type="button" class="btn btn-outline btn-sm" onclick="showFieldMapping()" title="Hiển thị đối chiếu trường khảo sát với dữ liệu đánh giá">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+          Đối chiếu trường khảo sát
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-save-draft" title="Lưu tạm vào trình duyệt để tiếp tục sau">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          Lưu bản nháp
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-load-draft" title="Khôi phục dữ liệu đã lưu">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Tải lại nháp
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="window.print()" title="In hoặc lưu file PDF">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          In phiếu / PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. HERO BANNER WITH HOMEPAGE-STYLE BACKGROUND & SCIENCE MOTIFS -->
+  <section class="hero-banner">
+    <!-- Vector Background Image with Science Art -->
+    <div class="hero-bg-art"></div>
+    <div class="hero-circuit-overlay"></div>
+    <div class="hero-orb-1"></div>
+    <div class="hero-orb-2"></div>
+    <div class="hero-orb-3"></div>
+
+    <div class="hero-content">
+      <div class="hero-tag-row">
+        <span class="hero-pill cyan">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          CHƯƠNG TRÌNH ĐỔI MỚI CÔNG NGHỆ QUỐC GIA
+        </span>
+        <span class="hero-pill emerald">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          DỰ THẢO TỰ KÊ KHAI · CẦN XÁC MINH MINH CHỨNG
+        </span>
+        <span class="hero-pill">
+          CHUẨN HÓA TIÊU CHÍ TT17/2019/TT-BKHCN
+        </span>
+      </div>
+
+      <h1 class="hero-title">Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất</h1>
+      <p class="hero-subtitle">
+        Tự kê khai, tính toán 26 tiêu chí theo Thông tư 17/2019/TT-BKHCN; hỗ trợ doanh nghiệp xác định hiện trạng công nghệ, điểm cần cải thiện, hệ số đồng bộ TĐB và lộ trình đổi mới phù hợp.
+      </p>
+
+      <div class="hero-metrics-grid">
+        <div class="hero-metric-item">
+          <div class="hero-metric-num cyan">26</div>
+          <div class="hero-metric-label">Tiêu chí đánh giá theo 5 nhóm năng lực cốt lõi</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-num emerald">100</div>
+          <div class="hero-metric-label">Thang điểm tối đa phân loại trình độ công nghệ</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-num amber">23</div>
+          <div class="hero-metric-label">Mã ngành chế biến, chế tạo Nhóm C có chuẩn so sánh</div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-num purple">4 Mức</div>
+          <div class="hero-metric-label">Phân loại xếp hạng công nghệ theo Điều 9 Thông tư 17</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. MAIN FORM & REAL-TIME EVALUATION ENGINE -->
+  <main>
+    <div class="notice">
+      <b>Kết quả là dự thảo tự tính:</b> Số liệu cần có minh chứng và được Hội đồng đánh giá Viện NacenTech xác minh trước khi phát hành Báo cáo Phụ lục IV chính thức.
+    </div>
+
+    <div class="notice" style="background:#F0FDF4; border-left-color: var(--nacen-green-500);">
+      <b>Chú giải mapping:</b> Các nhãn mapping bên dưới là gợi ý sơ bộ từ biểu mẫu; trạng thái schema/backend chưa được kiểm tra. Nguồn/kỳ/định nghĩa phải được xác nhận trước khi kế thừa.
+    </div>
+
+    <div class="grid">
+      <!-- LEFT SECTION: FORM CARDS -->
+      <section>
+        <!-- CARD 1 -->
+        <div class="card">
+          <h2>1. Mục A · Thông tin chung của doanh nghiệp</h2>
+          <p class="hint">Kê khai thông tin doanh nghiệp, ngành nghề chính và các thông số quy mô theo kỳ thống kê.</p>
+          
+          <div class="fields-grid-3">
+            <div class="form-group"><div class="form-label-row"><span class="form-label-title">Doanh nghiệp</span><span class="map-tag miss">Chọn hồ sơ</span></div><select class="form-control" aria-label="Chọn doanh nghiệp"><option value="">Chọn doanh nghiệp hoặc nhập MST</option></select><small class="hint">Khi chọn hồ sơ, dữ liệu có sẵn cần hiện nguồn, kỳ và trạng thái xác minh để DN xác nhận/cập nhật.</small></div>
+            <div class="form-group"><div class="form-label-row"><span class="form-label-title">Cơ sở/phạm vi sản xuất</span></div><input type="text" class="form-control" placeholder="Tên cơ sở hoặc phạm vi dây chuyền được đánh giá"></div>
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Tên doanh nghiệp</span>
+                <span class="map-tag both">Chưa đối soát</span>
+              </div>
+              <input type="text" class="form-control" placeholder="Công ty CP / TNHH ...">
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Năm điều tra/đánh giá</span>
+                <span class="map-tag both">Chưa đối soát</span>
+              </div>
+              <input id="assessment-year" type="number" min="2000" max="2100" class="form-control" placeholder="Nhập năm đánh giá">
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Ngành sản xuất chính</span>
+                <span class="map-tag both">Chưa đối soát</span>
+              </div>
+              <select id="industry" class="form-control"></select>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Tổng nguồn vốn (VNĐ)</span>
+                <span class="map-tag miss">Cần xác nhận</span>
+              </div>
+              <select class="form-control" data-for="capital" aria-label="Trạng thái tổng nguồn vốn"><option value="">Chưa khai</option><option value="exact">Đã khai số chính xác</option><option value="range">Chỉ có khoảng/ước lượng</option><option value="unknown">Chưa biết</option><option value="na">Không áp dụng — ghi lý do</option><option value="review">Cần kiểm tra</option></select>
+              <input id="capital" type="number" min="0" class="form-control" placeholder="Tổng nguồn vốn theo báo cáo tài chính; không phải vốn điều lệ/tổng tài sản"><small class="hint">TC20 phân nhánh theo tổng nguồn vốn và tổng lao động theo TT17. Nếu chưa có số chính xác, chưa tự chọn nhánh tính điểm.</small>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Tổng số người lao động M (năm trước kỳ đánh giá)</span>
+                <span class="map-tag both">Chưa đối soát</span>
+              </div>
+              <select class="form-control" data-for="m" aria-label="Trạng thái tổng lao động"><option value="">Chưa khai</option><option value="exact">Đã khai số chính xác</option><option value="range">Chỉ có khoảng/ước lượng</option><option value="unknown">Chưa biết</option><option value="na">Không áp dụng — ghi lý do</option><option value="review">Cần kiểm tra</option></select>
+              <input id="m" type="number" min="0" class="form-control" placeholder="Số người đủ điều kiện theo định nghĩa TT17"><small class="hint">Không lấy trực tiếp khoảng lao động hoặc số tham gia BHXH. Cần theo định nghĩa và kỳ tại TT17.</small>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Người lập phiếu</span>
+                <span class="map-tag both">Chưa đối soát</span>
+              </div>
+              <input type="text" class="form-control" placeholder="Họ và tên người khai">
+            </div>
+          </div>
+
+          <div class="survey-section" style="margin-top:18px;">
+            <div class="survey-section-head"><div><h3>Thông tin liên hệ và cơ sở sản xuất</h3><p>Các trường này theo Phiếu điều tra Phụ lục I; có thể điền sau nếu hồ sơ doanh nghiệp đã có dữ liệu cần xác nhận.</p></div></div>
+            <div class="fields-grid-3">
+              <div class="form-group"><label class="form-label-title" for="company-address">Địa chỉ doanh nghiệp</label><input id="company-address" class="form-control" placeholder="Số nhà, đường, tỉnh/thành"></div>
+              <div class="form-group"><label class="form-label-title" for="company-phone">Điện thoại</label><input id="company-phone" class="form-control" type="tel" placeholder="Số liên hệ"></div>
+              <div class="form-group"><label class="form-label-title" for="company-email">Email</label><input id="company-email" class="form-control" type="email" placeholder="name@company.vn"></div>
+              <div class="form-group"><label class="form-label-title" for="company-fax">Fax (nếu có)</label><input id="company-fax" class="form-control" placeholder="Không bắt buộc"></div>
+              <div class="form-group"><label class="form-label-title" for="company-website">Website (nếu có)</label><input id="company-website" class="form-control" type="url" placeholder="https://"></div>
+              <div class="form-group"><label class="form-label-title" for="company-type">Loại hình doanh nghiệp</label><select id="company-type" class="form-control"><option value="">Chọn loại hình</option><option>Doanh nghiệp nhà nước</option><option>Doanh nghiệp tư nhân</option><option>Doanh nghiệp nước ngoài</option><option>Công ty TNHH</option><option>Công ty cổ phần</option><option>Công ty liên doanh</option><option>Hợp tác xã/Liên hiệp HTX</option><option>Loại hình khác</option></select></div>
+              <div class="form-group"><label class="form-label-title" for="parent-company">Cơ quan chủ quản/công ty mẹ</label><input id="parent-company" class="form-control" placeholder="Nếu có"></div>
+              <div class="form-group"><label class="form-label-title" for="contact-position">Chức vụ người khai</label><input id="contact-position" class="form-control" placeholder="Chức vụ"></div>
+              <div class="form-group"><label class="form-label-title" for="contact-phone">Điện thoại người khai</label><input id="contact-phone" class="form-control" type="tel" placeholder="Số liên hệ"></div>
+            </div>
+            <p class="hint" style="margin:12px 0 0;">Địa chỉ các cơ sở sản xuất, danh mục dây chuyền, sản phẩm chính, nguyên liệu và minh chứng cần hỗ trợ thêm nhiều dòng theo biểu mẫu gốc; bản wireframe này chưa mô phỏng đầy đủ các bảng lặp đó.</p>
+          </div>
+
+          <p class="hint" id="benchmark" style="margin-top:16px; font-weight:600; color:var(--brand-700);"></p>
+        </div>
+
+        <!-- CARD 2 -->
+        <div class="card">
+          <h2>2. Phiếu điều tra doanh nghiệp — theo Phụ lục I</h2>
+          <p class="hint">Chia theo các mục B–E giống phiếu giấy để doanh nghiệp dễ đối chiếu. Mỗi trường có nhãn kỳ/đơn vị và trạng thái dữ liệu; chỉ dùng số liệu chính xác, đúng kỳ để tính điểm.</p>
+          <nav class="survey-progress" aria-label="Đi tới mục trong phiếu điều tra">
+            <a href="#survey-b">B · Thiết bị, công nghệ</a><a href="#survey-c">C · Sản xuất, kinh doanh</a><a href="#survey-d">D · Nhân lực, quản lý</a><a href="#survey-dd">Đ · Nghiên cứu, phát triển</a><a href="#survey-e">E · Đổi mới sáng tạo</a>
+          </nav>
+          <div id="survey-sections"></div>
+        </div>
+
+        <!-- CARD 3 -->
+        <div class="card">
+          <h2>3. Phiếu chấm điểm — theo Phụ lục II và IV</h2>
+          <p class="hint">Mục này tương ứng bảng chấm điểm/báo cáo kết quả: tiêu chí định tính được chọn theo mô tả mức; tiêu chí định lượng lấy từ phiếu điều tra. Điểm tự tính chỉ là dự thảo để đối chiếu.</p>
+          <div class="criteria-grid" id="criteria"></div>
+        </div>
+
+        <!-- CARD 4 -->
+        <div class="card">
+          <h2>4. Minh chứng & Lưu trữ hồ sơ</h2>
+          <div class="fields-grid-2">
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Loại minh chứng</span>
+              </div>
+              <select class="form-control">
+                <option>Báo cáo tài chính 3 năm gần nhất</option>
+                <option>Chứng chỉ ISO / Giấy phép sản xuất</option>
+                <option>Hợp đồng chuyển giao công nghệ / R&D</option>
+                <option>Bằng độc quyền sáng chế / GPHI / SHTT</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <span class="form-label-title">Tiêu chí liên quan</span>
+              </div>
+              <select id="evidence" class="form-control"></select>
+            </div>
+          </div>
+          <p class="hint" style="margin-top:14px;">Loại minh chứng và tiêu chí liên quan được ghi nhận trong bản đánh giá; cán bộ xác minh theo quy trình vận hành ISO.</p>
+          <div style="display:flex; gap:12px; margin-top:16px;">
+            <button type="button" class="btn btn-primary" onclick="alert('Đã lưu nháp hồ sơ đánh giá')">Lưu bản nháp</button>
+            <button type="button" class="btn btn-outline" onclick="window.print()">In bản dự thảo</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT SECTION: STICKY RESULTS PANEL -->
+      <aside class="assessment-summary">
+        <div class="card summary-card">
+          <h2>Kết Quả Tự Động</h2>
+          <div class="summary-score">
+            <div class="total-box">
+              <div class="total" id="total">0</div>
+              <div class="total-max">/ 100 điểm tối đa</div>
+            </div>
+          </div>
+
+          <div class="result summary-status">
+            <b id="classification">Chưa đủ dữ liệu để phân loại</b>
+            <span id="sync">Hệ số đồng bộ: —</span>
+          </div>
+
+          <p class="hint tc07-notice" style="margin:0; padding:10px 12px; border-radius:8px; background:#FFFBEB; color:#92400E; font-size:12px;">
+            <b>Đang chờ đối soát TC07:</b> Điều 4 và workbook ghi tối đa 4 điểm; bảng Phụ lục IV ghi 3 điểm. Bản minh họa đang theo Điều 4/workbook; cần xác nhận trước khi khóa mẫu báo cáo.
+          </p>
+
+          <div class="bars summary-bars" id="bars"></div>
+
+          <p class="hint summary-footnote" style="font-size:12.5px; margin-bottom:0; padding-top:12px; border-top:1px solid var(--border-default);">
+            <b>Trạng thái:</b> Dự thảo tự kê khai · Chưa xác minh
+            <br><span style="font-size:12px;">Trạng thái hoàn thành dựa trên câu đã trả lời và dữ liệu hợp lệ, độc lập với điểm nhóm. Điểm 0 đã khai khác câu chưa trả lời; cách tính/xếp loại cuối cùng cần được đối chiếu độc lập theo TT17 trước khi dùng chính thức.</span>
+          </p>
+          <div id="assessment-detail" class="summary-footnote" style="margin-top:0; padding-top:12px; border-top:1px solid var(--border-default); font-size:13px; line-height:1.55;"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- MAPPING MODAL -->
+  <div id="field-mapping-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h2 style="font-size:20px; font-weight:800; color:var(--brand-900);">Đối chiếu trường khảo sát ↔ dữ liệu đánh giá TT17</h2>
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('field-mapping-modal').style.display='none'">Đóng</button>
+      </div>
+      <p class="hint" style="margin-bottom:16px;">
+        Các nhãn mapping trong bản cũ chỉ là giả thuyết đối chiếu; chưa xác nhận trạng thái schema/backend. Chỉ dùng như gợi ý nguồn câu hỏi, phải hiển thị lại nguồn, kỳ và ý nghĩa cụ thể.
+      </p>
+      <div style="overflow-x:auto;">
+        <table style="border-collapse:collapse; width:100%; min-width:760px; font-size:13px;">
+          <thead>
+            <tr style="background:var(--surface-subtle); border-bottom:2px solid var(--border-default);">
+              <th style="text-align:left; padding:12px;">Nhóm trường TT17</th>
+              <th style="text-align:center; padding:12px; width:120px;">Trạng thái đối soát</th>
+              <th style="text-align:left; padding:12px;">Trường hiện có / Khoảng thiếu</th>
+            </tr>
+          </thead>
+          <tbody id="mapping-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const industries = {
+      "C.10": ["Sản xuất chế biến thực phẩm", 200, 7, 75, 150],
+      "C.11": ["Sản xuất đồ uống", 200, 5, 20, 150],
+      "C.12": ["Sản xuất sản phẩm thuốc lá", 200, 7, 45, 200],
+      "C.13": ["Dệt", 200, 5, 40, 75],
+      "C.14": ["Sản xuất trang phục", 200, 5, 65, 75],
+      "C.15": ["Sản xuất da và sản phẩm liên quan", 200, 5, 35, 75],
+      "C.16": ["Chế biến gỗ và sản phẩm từ gỗ", 150, 5, 65, 100],
+      "C.17": ["Sản xuất giấy và sản phẩm từ giấy", 250, 5, 65, 100],
+      "C.18": ["In, sao chép bản ghi", 250, 5, 65, 100],
+      "C.19": ["Than cốc, sản phẩm dầu mỏ tinh chế", 300, 10, 75, 150],
+      "C.20": ["Hóa chất và sản phẩm hóa chất", 250, 10, 55, 150],
+      "C.21": ["Thuốc, hóa dược và dược liệu", 300, 7, 60, 200],
+      "C.22": ["Sản phẩm cao su và plastic", 250, 10, 55, 150],
+      "C.23": ["Sản phẩm từ khoáng phi kim", 250, 10, 40, 100],
+      "C.24": ["Sản xuất kim loại", 300, 10, 65, 150],
+      "C.25": ["Sản phẩm từ kim loại đúc sẵn", 300, 7, 65, 100],
+      "C.26": ["Điện tử, máy vi tính, quang học", 300, 5, 45, 100],
+      "C.27": ["Sản xuất thiết bị điện", 300, 5, 45, 100],
+      "C.28": ["Máy móc, thiết bị", 300, 7, 55, 150],
+      "C.29": ["Sản xuất xe có động cơ", 300, 7, 65, 150],
+      "C.30": ["Phương tiện vận tải khác", 300, 7, 65, 150],
+      "C.31": ["Giường, tủ, bàn, ghế", 150, 5, 55, 100],
+      "C.32": ["Chế biến, chế tạo khác", 200, 7, 55, 150]
+    };
+
+    const numeric = [
+      ['gbd', 'Giá trị TBCN ban đầu Gbđ'],
+      ['gsx', 'Giá trị TBCN hiện tại Gsx'],
+      ['gdt', 'Tổng doanh thu 3 năm Gdt'],
+      ['investment3y', 'Tổng đầu tư TBCN 3 năm Gđt (TC2)'],
+      ['gtbm1', 'TBCN mới mở rộng 3 năm'],
+      ['gtbm2', 'TBCN mới thay thế 3 năm'],
+      ['gnl', 'Chi phí năng lượng năm Gnl'],
+      ['gnvl', 'Chi phí nguyên liệu năm Gnvl'],
+      ['gsp', 'Giá trị sản phẩm năm (TC5/6/8)'],
+      ['gsp3', 'Tổng giá trị sản phẩm 3 năm Gsp (TC15)'],
+      ['ptt', 'Sản lượng thực tế TB 3 năm Ptt'],
+      ['p', 'Công suất thiết kế năm P'],
+      ['gd', 'Tổng giá trị sản phẩm đạt chuẩn 3 năm Gđ'],
+      ['gdthl', 'Chi phí đào tạo 3 năm Gđthl'],
+      ['gtt', 'Chi phí thông tin 3 năm Gtt'],
+      ['gcp', 'Tổng chi phí 3 năm Gcp'],
+      ['mtt', 'Lao động trực tiếp Mtt'],
+      ['mcn', 'Công nhân qua đào tạo Mcn'],
+      ['mbc', 'Công nhân bậc cao Mbc'],
+      ['mql', 'Quản lý đủ điều kiện Mql'],
+      ['mnv', 'Nghiệp vụ đủ điều kiện Mnv'],
+      ['mrd', 'Nhân lực R&D Mr&d (không gồm CNTT/tự động hóa nếu không làm R&D)'],
+      ['grd', 'Chi phí đào tạo + R&D 3 năm']
+    ];
+
+    const numericMapping = Array(numeric.length).fill('Chờ đối soát');
+    const surveySections = [
+      { id:'survey-b', key:'B', title:'Thông tin thiết bị, công nghệ', note:'Danh mục máy móc/dây chuyền nên cho khai nhiều dòng; biểu mẫu gốc hướng dẫn nêu tối đa 3 dây chuyền sản xuất chính. Giá trị đầu tư và thay thế tách riêng.', fields:['gbd','gsx','investment3y','gtbm1','gtbm2'] },
+      { id:'survey-c', key:'C', title:'Thông tin sản xuất, kinh doanh', note:'Biểu mẫu gốc thu nhiều chỉ tiêu theo từng năm trong 3 năm liền kề trước năm điều tra. Mỗi năm là một cột; tổng/giá trị năm dùng tính điểm được hệ thống rút ra theo công thức tương ứng.', fields:['gdt','gnl','gnvl','gsp','ptt','p','gd','gcp'] },
+      { id:'survey-d', key:'D', title:'Nhân lực, quản lý, thông tin và môi trường', note:'Khai lao động theo năm liền kề trước năm đánh giá; số liệu đào tạo theo từng năm trong 3 năm. Các hệ thống/chứng chỉ/hoạt động nên dùng lựa chọn có mô tả và cho bổ sung minh chứng.', fields:['mtt','mcn','mbc','mql','mnv','gdthl'] },
+      { id:'survey-dd', key:'Đ', title:'Đầu tư cho thông tin, nghiên cứu và phát triển', note:'Tách chi phí thông tin/CNTT khỏi chi phí R&D; giữ số liệu từng năm trong 3 năm và tổng số.', fields:['gtt','mrd','grd'] },
+      { id:'survey-e', key:'E', title:'Năng lực đổi mới sáng tạo', note:'Kết quả sản phẩm/công nghệ, chuyển đổi số và hợp tác R&D được khai theo câu hỏi lựa chọn, mô tả, số liệu và minh chứng liên quan.', fields:[] }
+    ];
+    const seriesFields = {
+      gdt:{aggregate:'sum',label:'Doanh thu'}, gnl:{aggregate:'last',label:'Chi phí năng lượng'},
+      gnvl:{aggregate:'last',label:'Giá trị nguyên vật liệu'}, gsp:{aggregate:'last',label:'Giá trị sản phẩm'},
+      gsp3:{aggregate:'sum',label:'Giá trị sản phẩm'}, ptt:{aggregate:'average',label:'Sản lượng thực tế'},
+      gd:{aggregate:'sum',label:'Giá trị sản phẩm đạt yêu cầu'}, gcp:{aggregate:'sum',label:'Chi phí sản xuất'},
+      gdthl:{aggregate:'sum',label:'Chi phí đào tạo/huấn luyện'}, gtt:{aggregate:'sum',label:'Chi phí thông tin/CNTT'},
+      grd:{aggregate:'sum',label:'Chi phí R&D'}
+    };
+    const seriesUnits = { ptt:'đơn vị sản phẩm', gnl:'VNĐ', gnvl:'VNĐ', gsp:'VNĐ' };
+    const groupDisplayNames = { T:'A · Hiện trạng công nghệ sản xuất', E:'B · Hiệu quả khai thác công nghệ', O:'C · Năng lực tổ chức, quản lý', R:'D · Năng lực nghiên cứu, phát triển', I:'E · Năng lực đổi mới sáng tạo' };
+    const surveyFieldAliases = { gbd:'B2 · Nguyên giá TBCN ban đầu', gsx:'B3 · Giá trị TBCN hiện tại', investment3y:'TC02 · Tổng giá trị đầu tư TBCN, gồm đầu tư trong 3 năm gần nhất', gtbm1:'B4 · Thiết bị mới phục vụ mở rộng', gtbm2:'B5 · Thiết bị mới thay thế/bảo dưỡng', gdt:'C1 · Tổng doanh thu theo năm', gnl:'C5 · Chi phí năng lượng theo năm', gnvl:'C4 · Giá trị nguyên vật liệu theo năm', gsp:'C1 · Giá trị sản phẩm theo năm', gsp3:'TC15 · Tổng giá trị sản phẩm trong 3 năm', ptt:'C1 · Sản lượng thực tế', p:'C1 · Công suất thiết kế', gd:'C2 · Giá trị sản phẩm đạt yêu cầu', gcp:'C1 · Tổng chi phí doanh nghiệp theo năm', mtt:'D1 · Lao động trực tiếp', mcn:'D1 · Công nhân đã qua huấn luyện nghề', mbc:'D1 · Công nhân bậc cao/nghệ nhân', mql:'D1 · Cán bộ quản lý đủ điều kiện', mnv:'D1 · Cán bộ nghiệp vụ đủ điều kiện', gdthl:'D2 · Chi phí đào tạo, huấn luyện', gtt:'Đ2 · Chi phí thông tin/CNTT', mrd:'D1/Đ3 · Nhân lực chuyên trách R&D', grd:'TC22 · Tổng chi đào tạo và R&D trong 3 năm' };
+
+    const defs = [
+      ['T', 1, 'Khấu hao TBCN', 5, 'auto'],
+      ['T', 2, 'Cường độ vốn TBCN', 3, 'auto'],
+      ['T', 3, 'Đổi mới TBCN', 3, 'auto'],
+      ['T', 4, 'Tự động hóa & tích hợp', 7, 'automation'],
+      ['T', 5, 'Chi phí năng lượng', 4, 'auto'],
+      ['T', 6, 'Chi phí nguyên vật liệu', 4, 'auto'],
+      ['T', 7, 'Tiêu chuẩn sản phẩm', 4, 'select'],
+      ['E', 8, 'Năng suất lao động', 5, 'auto'],
+      ['E', 9, 'Sáng kiến/cải tiến', 3, 'check3'],
+      ['E', 10, 'Bảo dưỡng/sửa chữa', 4, 'select'],
+      ['E', 11, 'Tiếp nhận CGCN', 4, 'select'],
+      ['E', 12, 'Chất lượng nhân lực', 4, 'auto'],
+      ['O', 13, 'Chi phí đào tạo', 3, 'auto'],
+      ['O', 14, 'Thông tin SX/quản lý', 5, 'systems'],
+      ['O', 15, 'Hiệu suất thiết bị tổng thể', 5, 'auto'],
+      ['O', 16, 'Hệ thống quản lý chất lượng', 3, 'select'],
+      ['O', 17, 'Bảo vệ môi trường', 3, 'select'],
+      ['R', 18, 'Ứng dụng CNTT', 3, 'select'],
+      ['R', 19, 'Chi phí thông tin', 3, 'auto'],
+      ['R', 20, 'Nhân lực R&D', 4, 'auto'],
+      ['R', 21, 'Hạ tầng R&D', 3, 'select'],
+      ['R', 22, 'Quỹ KH&CN & đầu tư R&D', 4, 'fund'],
+      ['I', 23, 'Kết quả R&D sản phẩm', 4, 'product'],
+      ['I', 24, 'Kết quả R&D công nghệ', 4, 'select'],
+      ['I', 25, 'Liên kết R&D', 2, 'select'],
+      ['I', 26, 'Chuyển đổi số', 4, 'digital']
+    ];
+
+    const criterionMapping = Array(defs.length).fill('Chờ đối soát');
+    const max = { T: 30, E: 20, O: 19, R: 17, I: 14 };
+    const weights = { T: 0.30, E: 0.20, O: 0.19, R: 0.17, I: 0.14 };
+
+    const n = id => +document.getElementById(id)?.value || 0;
+    const ratio = (a, b) => b ? 100 * a / b : 0;
+    function pts(v, a) {
+      for (let i = 0; i < a.length; i++) {
+        if (v >= a[i][0]) return a[i][1];
+      }
+      return 0;
+    }
+    function industryData() {
+      return industries[document.getElementById('industry').value] || null;
+    }
+
+    const requiredInputs = {
+      1: ['gbd', 'gsx'],
+      2: ['gsx', 'investment3y'],
+      4: ['gsx', 'mtt'],
+      3: ['gtbm1', 'gtbm2', 'gsx'],
+      5: ['gnl', 'gsp'],
+      6: ['gnvl', 'gsp'],
+      8: ['gsp', 'gnvl', 'm'],
+      12: ['mcn', 'mbc', 'mtt', 'mql', 'mnv', 'm'],
+      13: ['gdthl', 'gdt'],
+      15: ['ptt', 'p', 'gd', 'gsp3'],
+      19: ['gtt', 'gcp'],
+      20: ['mrd', 'm', 'capital'],
+      22: ['grd', 'gdt']
+    };
+
+    function score(d) {
+      let [g, id, , mx, type] = d;
+      let b = industryData();
+      let v = 0;
+      if ([4, 5, 6, 8].includes(id) && !b) return null;
+
+      if (type === 'auto') {
+        const req = requiredInputs[id];
+        if (req && req.some(f => document.getElementById(f)?.value === '' || document.querySelector(`[data-for="${f}"]`)?.value !== 'exact')) return null;
+        if ((id === 1 && n('gbd') === 0) || (id === 2 && n('investment3y') === 0) || (id === 4 && n('mtt') === 0) || (id === 5 && n('gsp') === 0) || (id === 6 && n('gsp') === 0) || (id === 3 && n('gsx') === 0) || (id === 8 && n('m') === 0) || (id === 12 && (n('mtt') === 0 || n('m') - n('mtt') === 0)) || (id === 15 && (n('p') === 0 || n('gsp3') === 0)) || (id === 13 && n('gdt') === 0) || (id === 19 && n('gcp') === 0) || (id === 20 && n('m') === 0) || (id === 22 && n('gdt') === 0)) return null;
+
+        if (id === 1) { const k = ratio(n('gbd') - n('gsx'), n('gbd')); v = k < 20 ? 5 : k < 40 ? 4 : k < 60 ? 3 : k < 80 ? 2 : 1; }
+        if (id === 2) v = pts(ratio(n('gsx'), n('investment3y')), [[75, 3], [50, 2], [25, 1]]);
+        if (id === 3) v = pts(ratio((2 * n('gtbm1') + n('gtbm2')) / 2, n('gsx')), [[75, 3], [50, 2], [25, 1]]);
+        if (id === 5) {
+          let x = ratio(n('gnl'), n('gsp'));
+          v = x <= 0.25 * b[2] ? 4 : x <= 0.5 * b[2] ? 3 : x <= b[2] ? 2 : 1;
+        }
+        if (id === 6) {
+          let x = ratio(n('gnvl'), n('gsp'));
+          v = x <= 0.25 * b[3] ? 4 : x <= 0.5 * b[3] ? 3 : x <= b[3] ? 2 : x <= 2 * b[3] ? 1 : 0;
+        }
+        if (id === 8) v = pts(n('m') ? ((n('gsp') - n('gnvl')) / n('m') / 1000000) : 0, [[3 * b[4], 5], [2 * b[4], 4], [b[4], 3], [0.5 * b[4], 2], [0.25 * b[4], 1]]);
+        if (id === 12) {
+          let h1 = ratio(n('mcn') + 2 * n('mbc'), n('mtt')), h2 = ratio(3 * n('mql') + n('mnv'), n('m') - n('mtt'));
+          v = pts(h1 * h2 / 100, [[25, 4], [15, 3], [5, 2], [2.5, 1]]);
+        }
+        if (id === 13) v = pts(ratio(n('gdthl'), n('gdt')), [[2, 3], [1, 2], [0.5, 1]]);
+        if (id === 15) v = pts((n('ptt') / n('p')) * (n('gd') / n('gsp3')) * 100, [[75, 5], [60, 4], [45, 3], [30, 2], [15, 1]]);
+        if (id === 19) v = pts(ratio(n('gtt'), n('gcp')), [[0.25, 3], [0.05, 2], [0.01, 1]]);
+        if (id === 20) {
+          let h = ratio(n('mrd'), n('m')), large = n('capital') > 1e12 && n('m') > 3000, mid = n('capital') > 1e11 && n('m') > 200;
+          v = large ? (h >= 1 && n('mrd') >= 50 ? 4 : h >= 0.8 && n('mrd') >= 40 ? 3 : h >= 0.6 && n('mrd') >= 30 ? 2 : h >= 0.4 && n('mrd') >= 20 ? 1 : 0) :
+              mid ? (h >= 2.5 && n('mrd') >= 15 ? 4 : h >= 2 && n('mrd') >= 12 ? 3 : h >= 1.5 && n('mrd') >= 9 ? 2 : h >= 1 && n('mrd') >= 6 ? 1 : 0) :
+              pts(h, [[5, 4], [4, 3], [3, 2], [2, 1]]);
+        }
+      } else {
+        const control = document.querySelector(`[name="c${id}"]`);
+        if (control && control.value === '') return null;
+        if (['check3','systems','automation','fund','product','digital'].includes(type) && !document.querySelector(`[data-criterion="${id}"]`)?.checked) return null;
+        v = +control?.value || 0;
+        if (type === 'automation') {
+          let a = ratio(n('gsx') / 1000000, n('mtt'));
+          v = (a >= 1.5 * b[1] ? 3 : a >= b[1] ? 2 : a >= 0.5 * b[1] ? 1 : 0) + [...document.querySelectorAll('.c4x:checked')].length;
+        }
+        if (type === 'systems') v = Math.min(5, [...document.querySelectorAll('.c14:checked')].length);
+        if (type === 'check3') v = [...document.querySelectorAll('.c9:checked')].length;
+        if (type === 'fund') v = (document.querySelector('.fund:checked') ? 1 : 0) + pts(ratio(n('grd'), n('gdt')), [[1, 3], [0.6, 2], [0.2, 1]]);
+        if (type === 'product') v = (+document.querySelector('[name="c23"]')?.value || 0) + (document.querySelector('.newrevenue:checked') ? 1 : 0);
+        if (type === 'digital') v = (document.querySelector('.strategy:checked') ? 1 : 0) + (+document.querySelector('[name="c26"]')?.value || 0);
+      }
+      return Math.min(mx, v || 0);
+    }
+
+    function criterionOptions(id, mx) {
+      const levels = {
+        7: ['Chưa đáp ứng tiêu chuẩn cơ sở', 'Đáp ứng tiêu chuẩn cơ sở', 'Đáp ứng tiêu chuẩn quốc gia', 'Đáp ứng tiêu chuẩn quốc tế', 'Tiêu chuẩn cơ sở có chỉ tiêu tiên tiến hơn tiêu chuẩn quốc tế'],
+        10: ['Chưa đáp ứng mức bảo dưỡng/sửa chữa trong tiêu chí', 'Bảo dưỡng, sửa chữa khi có sự cố', 'Bảo dưỡng, sửa chữa định kỳ theo kế hoạch/nhà sản xuất', 'Bảo dưỡng, sửa chữa chuyên sâu', 'Chẩn đoán, bảo dưỡng, sửa chữa dựa trên dữ liệu và độ tin cậy'],
+        11: ['Chưa có hình thức tiếp nhận thuộc các mức TT17', 'Nhận chuyển giao dây chuyền/thiết bị đồng bộ chìa khóa trao tay', 'Mua bản quyền hoặc nhận cấp phép công nghệ để sản xuất', 'Mua công nghệ để điều chỉnh, cải tiến và tích hợp vào dây chuyền', 'Mua phát minh/sáng chế để tự hoàn thiện, phát triển và ứng dụng'],
+        16: ['Chưa đáp ứng điều kiện TC16', 'Đạt hệ thống quản lý chất lượng tiên tiến, chưa có chứng chỉ', 'Đã được cấp chứng chỉ hệ thống quản lý chất lượng tiên tiến', 'Có chứng chỉ và tích hợp công cụ cải tiến năng suất/chất lượng'],
+        17: ['Chưa đáp ứng điều kiện TC17', 'Hệ thống quản lý môi trường tiên tiến và xử lý chất thải đáp ứng quy định', 'Có chứng chỉ hệ thống môi trường và xử lý chất thải đáp ứng quy định', 'Có chứng chỉ, xử lý chất thải và hệ thống tái chế/tái sử dụng chất thải'],
+        18: ['Chưa có ứng dụng CNTT theo các mức TC18', 'Phần cứng/phần mềm phục vụ một số ứng dụng thường xuyên', 'Phần cứng/phần mềm đủ tự động hóa quy trình tác nghiệp/kinh doanh', 'CSDL và phần mềm tích hợp dùng trên toàn bộ hoạt động quản lý/tác nghiệp'],
+        21: ['Chưa có hạ tầng R&D thuộc các mức tiêu chí', 'Có bộ phận hoạt động R&D công nghệ/sản phẩm (có thể kiêm nhiệm)', 'Có bộ phận R&D chuyên trách và trung tâm/phòng thí nghiệm đáp ứng nhu cầu', 'Có viện/trung tâm nghiên cứu phát triển trực thuộc'],
+        24: ['Chưa có kết quả R&D công nghệ thuộc các mức tiêu chí', 'Đang tiến hành nghiên cứu công nghệ/quy trình/bí quyết/thiết bị', 'Đã nghiên cứu, thử nghiệm hoặc ở quy mô phòng thí nghiệm', 'Được chấp nhận đăng ký hoặc cấp bằng độc quyền giải pháp hữu ích', 'Có bằng sáng chế và công nghệ đã thương mại hóa'],
+        25: ['Chưa có hợp tác thuộc điều kiện TC25', 'Có đầu tư thuê chuyên gia, mua kết quả nghiên cứu hoặc đào tạo nhân lực', 'Có đầu tư cùng thực hiện dự án R&D công nghệ/sản phẩm mới']
+      }[id];
+      if (!levels) return `<option value="">Chưa trả lời</option><option value="0">Đã khai: 0 điểm</option>` + Array.from({ length: mx }, (_, i) => `<option value="${i + 1}">${i + 1} điểm</option>`).join('');
+      return `<option value="">Chưa trả lời</option>` + levels.map((label, i) => `<option value="${i}">${label}${i === 0 ? ' (0 điểm)' : ` (${i} điểm)`}</option>`).join('');
+    }
+
+    function render() {
+      const industrySelect = document.getElementById('industry');
+      Object.entries(industries).forEach(([k, v]) => industrySelect.insertAdjacentHTML('beforeend', `<option value="${k}">${k} — ${v[0]}</option>`));
+
+      const fieldMarkup = (id) => {
+        const idx = numeric.findIndex(item => item[0] === id);
+        const label = numeric[idx][1];
+        if (id === 'gsp3') return '';
+        const sharedGsp = id === 'gsp' ? `<input id="gsp3" type="hidden"><select data-for="gsp3" aria-hidden="true" tabindex="-1" style="display:none"><option value="exact">Đã khai số chính xác</option></select>` : '';
+        return `<div class="form-group">
+          <div class="form-label-row"><span class="form-label-title" title="${label}">${surveyFieldAliases[id] || label}</span><span class="map-tag both">${numericMapping[idx]}</span></div>
+          <select class="form-control number-status" data-for="${id}" aria-label="Trạng thái dữ liệu ${label}"><option value="">Chưa khai</option><option value="exact">Đã khai số chính xác</option><option value="range">Chỉ có khoảng / ước lượng</option><option value="unknown">Chưa biết</option><option value="na">Không áp dụng — cần ghi lý do</option><option value="review">Cần kiểm tra</option></select>
+          ${seriesFields[id] ? `<input id="${id}" type="hidden"><div class="series-entry"><div class="series-entry-label">${seriesFields[id].label} · ${id === 'ptt' ? '3 năm, sản lượng bình quân' : '3 năm'} · ${seriesUnits[id] || 'VNĐ'}</div><div class="series-years">${[0,1,2].map((offset) => `<label><span class="series-year-label" data-year-offset="${offset}">Năm ${offset + 1}</span><input class="form-control series-value" data-series-for="${id}" data-year-offset="${offset}" type="number" min="0" placeholder="Số liệu"></label>`).join('')}</div></div>` : `<input id="${id}" type="number" min="0" class="form-control" placeholder="${label}; số 0 là giá trị đã khai">`}
+          ${sharedGsp}
+          <small class="hint">${seriesFields[id] ? 'Nhập riêng từng năm theo đơn vị trong phiếu; hệ thống tổng hợp theo kỳ dùng cho tiêu chí.' : 'Đơn vị/kỳ theo phiếu TT17; ghi năm, nguồn và minh chứng. Giá trị khoảng không dùng để tính điểm.'}</small>
+        </div>`;
+      };
+      const sectionsEl = document.getElementById('survey-sections');
+      sectionsEl.innerHTML = surveySections.map(section => `
+        <section class="survey-section" id="${section.id}">
+          <div class="survey-section-head"><div><h3>Mục ${section.key}. ${section.title}</h3><p>${section.note}</p></div><span class="map-tag both">Theo phiếu gốc</span></div>
+          ${section.fields.length ? `<div class="fields-grid-3">${section.fields.map(fieldMarkup).join('')}</div>` : `<p class="hint" style="margin:0">Các câu hỏi định tính liên quan nằm ở tiêu chí 23–26 bên dưới; cần bổ sung trường mô tả/danh sách lặp trước khi coi wireframe là phiếu đầy đủ.</p>`}
+        </section>`).join('');
+      updateSeriesValues();
+
+      const criteriaEl = document.getElementById('criteria');
+      criteriaEl.innerHTML = defs.map(([g, id, name, mx, type], idx) => `
+        <div class="criterion-card">
+          <div>
+            <div class="criterion-head">
+              <div class="criterion-title-wrap">
+                <div class="criterion-title">${id}. ${name} <span class="map-tag ${criterionMapping[idx] === '(0)' ? 'miss' : criterionMapping[idx] === '(1)' ? 'has' : 'both'}">${criterionMapping[idx]}</span></div>
+                <span class="criterion-group">Nhóm ${groupDisplayNames[g]} (${g})</span>
+              </div>
+              <span class="criterion-score-badge" id="s${id}">0/${mx}</span>
+            </div>
+          </div>
+          <div class="criterion-control-area">
+            ${type === 'check3' ? `
+              <div class="check-list">
+                <label class="check-item"><input class="c9" type="checkbox"> Có chương trình</label>
+                <label class="check-item"><input class="c9" type="checkbox"> Tăng 3 năm</label>
+                <label class="check-item"><input class="c9" type="checkbox"> Đã áp dụng</label>
+              </div>` :
+              type === 'systems' ? `
+              <div class="check-list">
+                ${['MES', 'ERP', 'PLM', 'PDM', 'PPS', 'SCM'].map(x => `<label class="check-item"><input class="c14" type="checkbox"> ${x}</label>`).join('')}
+              </div>` :
+              type === 'automation' ? `
+              <select name="c4" class="form-control" style="margin-bottom:8px;">
+                <option value="">Chưa trả lời</option><option value="0">Đã đánh giá: 0 điểm</option>
+                <option value="1">0,5–1× chuẩn ngành</option>
+                <option value="2">1–1,5× chuẩn ngành</option>
+                <option value="3">≥1,5× chuẩn ngành</option>
+              </select>
+              <div class="check-list">
+                ${['PDA/SCADA', 'MDC', 'FMS/DCS', 'CIM'].map(x => `<label class="check-item"><input class="c4x" type="checkbox"> ${x}</label>`).join('')}
+              </div>` :
+              type === 'fund' ? `
+              <div class="check-list">
+                <label class="check-item"><input class="fund" type="checkbox"> Có quỹ phát triển KH&CN (+1 điểm)</label>
+              </div>` :
+              type === 'product' ? `
+              <select name="c23" class="form-control" style="margin-bottom:8px;">
+                <option value="">Chưa trả lời</option><option value="0">Đã khai: không có/không đạt điều kiện (0 điểm)</option>
+                <option value="1">Mới về kiểu dáng</option>
+                <option value="2">Mới về tính năng</option>
+                <option value="3">Sản phẩm hoàn toàn mới</option>
+              </select>
+              <div class="check-list">
+                <label class="check-item"><input class="newrevenue" type="checkbox"> Doanh thu SP mới ≥5% (+1 điểm)</label>
+              </div>` :
+              type === 'digital' ? `
+              <div class="check-list" style="margin-bottom:8px;">
+                <label class="check-item"><input class="strategy" type="checkbox"> Có chiến lược số (+1 điểm)</label>
+              </div>
+              <select name="c26" class="form-control">
+                <option value="">Chưa trả lời</option><option value="0">Đã khai: không có/không đạt điều kiện (0 điểm)</option>
+                <option value="1">Đang nghiên cứu</option>
+                <option value="2">Triển khai một số bộ phận</option>
+                <option value="3">Toàn bộ nhà máy/doanh nghiệp</option>
+              </select>` :
+              type === 'auto' ? `
+              <div class="auto-calc-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                Tự tính tự động từ bảng số liệu
+              </div>` :
+              `<select name="c${id}" class="form-control">${criterionOptions(id, mx)}</select>`
+            }
+            ${['check3','systems','automation','fund','product','digital'].includes(type) ? `<label class="check-item" style="display:block;margin-top:8px;"><input type="checkbox" data-criterion="${id}"> Đã trả lời / rà soát đủ điều kiện tiêu chí</label>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      const evidenceEl = document.getElementById('evidence');
+      evidenceEl.innerHTML = defs.map(d => `<option>TC ${d[1]} — ${d[2]}</option>`).join('');
+
+      document.addEventListener('input', () => { updateSeriesValues(); calculate(); updateAssessmentDetail(); });
+      document.addEventListener('change', () => { updateSeriesValues(); updateSeriesYearLabels(); calculate(); updateAssessmentDetail(); });
+
+      calculate();
+      updateAssessmentDetail();
+    }
+
+    function updateSeriesYearLabels() {
+      const year = Number(document.getElementById('assessment-year')?.value);
+      document.querySelectorAll('.series-year-label').forEach(el => {
+        const offset = Number(el.dataset.yearOffset);
+        el.textContent = year ? String(year - 3 + offset) : `Năm ${offset + 1}`;
+      });
+    }
+
+    function updateSeriesValues() {
+      updateSeriesYearLabels();
+      Object.entries(seriesFields).forEach(([id, config]) => {
+        const cells = [...document.querySelectorAll(`[data-series-for="${id}"]`)];
+        const target = document.getElementById(id);
+        if (!target) return;
+        if (cells.length !== 3 || cells.some(cell => cell.value === '')) { target.value = ''; return; }
+        const values = cells.map(cell => Number(cell.value));
+        const value = config.aggregate === 'sum' ? values.reduce((a,b)=>a+b,0) : config.aggregate === 'average' ? values.reduce((a,b)=>a+b,0)/values.length : values[values.length - 1];
+        target.value = String(value);
+      });
+      const gspStatus = document.querySelector('[data-for="gsp"]')?.value || '';
+      const gsp3Status = document.querySelector('[data-for="gsp3"]');
+      if (gsp3Status) gsp3Status.value = gspStatus;
+      const gsp3 = document.getElementById('gsp3');
+      const gspCells = [...document.querySelectorAll('[data-series-for="gsp"]')];
+      if (gsp3) gsp3.value = gspCells.length === 3 && gspCells.every(cell => cell.value !== '') ? String(gspCells.reduce((sum, cell) => sum + Number(cell.value), 0)) : '';
+    }
+
+    function calculate() {
+      let sums = { T: 0, E: 0, O: 0, R: 0, I: 0 };
+      defs.forEach(d => {
+        let s = score(d);
+        if (s !== null) sums[d[0]] += s;
+        const el = document.getElementById('s' + d[1]);
+        if (el) el.textContent = `${s === null ? '—' : s}/${d[3]}`;
+      });
+
+      let total = Object.values(sums).reduce((a, b) => a + b, 0);
+      const numericInputsComplete = Object.entries(requiredInputs).every(([id, fields]) => fields.every(f => document.getElementById(f)?.value !== '' && document.querySelector(`[data-for="${f}"]`)?.value === 'exact'));
+      const qualitativeInputsComplete = [...document.querySelectorAll('#criteria select')].every(el => el.value !== '') && [...document.querySelectorAll('#criteria [data-criterion]')].every(el => el.checked);
+      const unscoredCriteria = defs.filter(d => score(d) === null);
+      const allInputsComplete = numericInputsComplete && qualitativeInputsComplete && !!document.getElementById('industry').value && unscoredCriteria.length === 0;
+      let sync = allInputsComplete ? Object.keys(max).reduce((a, k) => a * Math.pow(sums[k] / max[k], weights[k]), 1) : null;
+
+      document.getElementById('total').textContent = total;
+      document.getElementById('sync').textContent = 'Hệ số đồng bộ: ' + (sync === null ? '—' : sync.toFixed(3));
+
+      let cl = sync === null ? 'Chưa đủ dữ liệu để phân loại' :
+               sync < 0.3 && total < 35 ? 'Lạc hậu' :
+               sync >= 0.65 && total >= 75 ? 'Tiên tiến' :
+               sync >= 0.5 && total >= 60 ? 'Trung bình tiên tiến' :
+               sync >= 0.3 && total >= 35 ? 'Trung bình' : 'Cần cán bộ đánh giá kết luận';
+      document.getElementById('classification').textContent = cl;
+
+      document.getElementById('bars').innerHTML = Object.keys(max).map(k => `
+        <div>
+          <b><span>Nhóm ${groupDisplayNames[k]} (${k})</span> <span>${sums[k]}/${max[k]} đ</span></b>
+          <div class="bar"><i style="width:${100 * sums[k] / max[k]}%"></i></div>
+        </div>
+      `).join('');
+
+      let b = industryData();
+      document.getElementById('benchmark').textContent = b ? `Chuẩn ngành Phụ lục II: Kchuẩn1 ${b[1]} triệu đồng/lao động trực tiếp; Kchuẩn2 ${b[2]}%; Kchuẩn3 ${b[3]}%; Kchuẩn4 ${b[4]} triệu đồng/lao động.` : 'Chọn mã ngành sản xuất để xác định chuẩn Phụ lục II.';
+    }
+
+    function updateAssessmentDetail() {
+      const detailEl = document.getElementById('assessment-detail');
+      if (!detailEl) return;
+      const sums = { T: 0, E: 0, O: 0, R: 0, I: 0 };
+      defs.forEach(d => { const value = score(d); if (value !== null) sums[d[0]] += value; });
+      const filled = numeric.filter(([id]) => document.getElementById(id)?.value !== '').length;
+      const groupName = groupDisplayNames;
+      const noScore = Object.keys(sums).filter(k => sums[k] === 0);
+      const numericInputsComplete = Object.entries(requiredInputs).every(([id, fields]) => fields.every(f => document.getElementById(f)?.value !== '' && document.querySelector(`[data-for="${f}"]`)?.value === 'exact'));
+      const qualitativeInputsComplete = [...document.querySelectorAll('#criteria select')].every(el => el.value !== '') && [...document.querySelectorAll('#criteria [data-criterion]')].every(el => el.checked);
+      const unscoredCriteria = defs.filter(d => score(d) === null);
+      const industryMissing = !document.getElementById('industry').value;
+      const allInputsComplete = numericInputsComplete && qualitativeInputsComplete && !industryMissing && unscoredCriteria.length === 0;
+      const incompleteReasons = [
+        industryMissing ? 'Chưa chọn mã ngành nên chưa có chuẩn ngành Phụ lục II để tính TC04/05/06/08.' : '',
+        unscoredCriteria.length ? `Chưa tính được ${unscoredCriteria.map(d => `TC${String(d[1]).padStart(2, '0')}`).join(', ')}; kiểm tra đầu vào, đơn vị, kỳ và mẫu số theo TT17/Phụ lục III.` : '',
+        !numericInputsComplete || !qualitativeInputsComplete ? 'Còn trường dữ liệu hoặc điều kiện tiêu chí chưa được khai báo đầy đủ/chính xác.' : ''
+      ].filter(Boolean);
+      const groupReview = Object.keys(sums).map(k => {
+        const pending = defs.filter(d => d[0] === k && score(d) === null).map(d => `TC${String(d[1]).padStart(2, '0')}`);
+        const status = pending.length
+          ? `Chưa đủ dữ liệu cho ${pending.join(', ')}; điểm nhóm hiện là tạm tính.`
+          : sums[k] === 0
+            ? 'Đã chấm đủ tiêu chí trong nhóm; tổng điểm được chấm là 0.'
+            : sums[k] / max[k] < 0.5 ? 'Mức điểm còn thấp; cần cải thiện thêm.' : 'Đã chấm đủ tiêu chí; cần tiếp tục xác minh minh chứng.';
+        return `<li style="margin-bottom:6px;"><b>${groupName[k]} (${k}): ${sums[k]}/${max[k]} điểm.</b> ${status}</li>`;
+      }).join('');
+      const need = !allInputsComplete ? `Chưa tính hệ số/phân loại. ${incompleteReasons.join(' ')}` : 'Đã khai đủ trường mô hình; kết quả đồng bộ/xếp loại vẫn cần đối chiếu phiên bản quy tắc TT17 và minh chứng.';
+      
+      detailEl.innerHTML = `
+        <h4 style="margin:0 0 8px; color:var(--brand-900); font-weight:800;">Nhận xét tự động:</h4>
+        <p style="margin:0 0 8px;"><b>Tiến độ kê khai:</b> ${filled}/${numeric.length} trường định lượng đã nhập. ${need}</p>
+        <ul style="padding-left:18px; margin:0 0 10px; font-size:12.5px;">${groupReview}</ul>
+        <p style="margin:0; font-size:12px; color:var(--text-muted);">
+          <b>Lưu ý:</b> Điểm nhóm bằng 0 vẫn là điểm, không phải trạng thái thiếu. Phân loại chính thức chỉ dùng sau khi xác nhận căn cứ, dữ liệu, minh chứng và người có thẩm quyền duyệt.
+        </p>
+      `;
+    }
+
+    const mappingRows = [
+      ['Định danh, kỳ đánh giá, ngành, phạm vi', 'Tên DN/MST; mã ngành; cơ sở; năm/kỳ', 'Cần xác nhận', 'Kế thừa tên/MST sau chọn đúng pháp nhân; ngành/phạm vi cần xác nhận. DB/API chưa được kiểm tra.'],
+      ['TC01–03: Tài sản và đầu tư', 'Gbđ, Gsx, Gtbm1, Gtbm2; nguồn BCTC', 'Cần số liệu exact', 'Đúng kỳ theo TT17; TC02 dùng tổng đầu tư TBCN 3 năm Gđt.'],
+      ['TC04–08: Tích hợp, chi phí, năng suất', 'Mtt, Gnl, Gnvl, Gsp năm; mã ngành/chuẩn', 'Cần xác nhận', 'Đơn vị và kỳ theo từng TC; chuẩn ngành theo Phụ lục II.'],
+      ['TC09–11: Cải tiến, bảo trì, tiếp nhận', 'Điều kiện và minh chứng thực tế', 'Cần trả lời điều kiện', 'Chọn mức đúng mô tả TT17 và gắn tài liệu hỗ trợ.'],
+      ['TC12–15: Nhân lực, đào tạo, thông tin, hiệu suất', 'Mcn/Mbc/Mql/Mnv; Gđthl; Gsp năm và Gsp 3 năm', 'Cần tách nghĩa/kỳ', 'Không cộng trùng nhân lực; TC15 dùng Ptt, P, Gđ và Gsp của kỳ theo DOC.'],
+      ['TC16–17: Chất lượng và môi trường', 'Chứng chỉ, điều kiện xử lý, tái chế, công cụ', 'Cần xác minh minh chứng', 'Chứng chỉ ISO riêng lẻ không tự xác lập toàn bộ điều kiện/điểm.'],
+      ['TC18–26: CNTT, R&D, đổi mới', 'Ứng dụng, chi phí, nhân lực, hạ tầng, kết quả/hợp tác', 'Cần xác nhận', 'Chỉ map khi đúng định nghĩa, hình thức, kỳ và mức triển khai trong TT17.'],
+      ['Dữ liệu phiếu, minh chứng và duyệt', 'Nguồn, kỳ, phiên bản, kết quả, người xác minh', 'Chưa khảo sát DB/API', 'Là yêu cầu thiết kế đề xuất; không khẳng định hệ thống hiện đã lưu các trường này.']
+    ];
+
+    function showFieldMapping() {
+      const tbody = document.getElementById('mapping-table-body');
+      tbody.innerHTML = mappingRows.map(r => `
+        <tr style="border-bottom:1px solid var(--border-default);">
+          <td style="vertical-align:top; padding:10px;">${r[0]}</td>
+          <td style="text-align:center; font-weight:800; padding:10px; color:#825700;">${r[2]}</td>
+          <td style="vertical-align:top; padding:10px;"><b>${r[1]}</b><br><small style="color:var(--text-muted);">${r[3]}</small></td>
+        </tr>
+      `).join('');
+      document.getElementById('field-mapping-modal').style.display = 'block';
+    }
+
+    render();
+  </script>
+</body>
+</html>

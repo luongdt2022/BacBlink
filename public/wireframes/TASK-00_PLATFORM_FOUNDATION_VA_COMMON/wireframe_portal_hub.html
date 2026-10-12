@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe Bàn Làm Việc Trung Tâm Portal — NacenTwin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+  <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-blue-700 text-white flex items-center justify-center font-bold text-sm">NT</div>
+      <div>
+        <h1 class="text-sm font-extrabold text-slate-900">Không Gian Tác Nghiệp B2B (/portal)</h1>
+        <p class="text-xs text-slate-500">Bàn làm việc trung tâm đa vai trò (TASK-00 Platform)</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">Vai trò: Doanh Nghiệp Buyer</span>
+      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-700">DB</div>
+    </div>
+  </header>
+
+  <div class="flex-1 flex max-w-7xl w-full mx-auto p-4 sm:p-6 gap-6">
+    <!-- Dynamic Sidebar -->
+    <aside class="w-64 bg-white rounded-2xl border border-slate-200 p-4 space-y-4 shrink-0">
+      <div class="pb-3 border-b border-slate-100">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cổng Điều Hướng</span>
+        <h3 class="text-sm font-bold text-slate-800 mt-1">Workspace Bên Mua</h3>
+      </div>
+      <nav class="space-y-1 text-xs font-semibold">
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-blue-700 text-white"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Tổng quan Mua sắm</a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50"><i data-lucide="shopping-bag" class="w-4 h-4"></i> Bài toán Tìm mua</a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50"><i data-lucide="sparkles" class="w-4 h-4"></i> Radar Ghép Nối AI</a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50"><i data-lucide="kanban" class="w-4 h-4"></i> Tiến trình Hợp tác</a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50"><i data-lucide="clipboard-list" class="w-4 h-4"></i> Khảo sát Nhu cầu (TNI)</a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50"><i data-lucide="file-check" class="w-4 h-4"></i> Đánh giá TT17</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 space-y-6">
+      <div class="bg-gradient-to-r from-blue-800 to-indigo-900 rounded-2xl p-6 text-white space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-xs font-semibold">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-300"></i> Trung tâm Tác nghiệp
+        </div>
+        <h2 class="text-2xl font-bold">Xin chào, Doanh nghiệp Mẫu (Buyer)!</h2>
+        <p class="text-xs text-blue-100">Chọn mô-đun chức năng để đăng bài toán, duyệt hồ sơ TRL hoặc theo dõi tiến trình chuyển giao.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center"><i data-lucide="shopping-bag" class="w-5 h-5"></i></div>
+          <h3 class="font-bold text-sm text-slate-900">Bài toán Tìm mua Công nghệ</h3>
+          <p class="text-xs text-slate-500">Đăng bài toán kỹ thuật mới, đặt ngân sách và tìm kiếm viện trường giải quyết.</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
+          <h3 class="font-bold text-sm text-slate-900">Radar Khớp nối AI Cung - Cầu</h3>
+          <p class="text-xs text-slate-500">Thuật toán tự động ghép nối 18 ngành giữa nhu cầu và sáng chế chào bán.</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center"><i data-lucide="file-check" class="w-5 h-5"></i></div>
+          <h3 class="font-bold text-sm text-slate-900">Đánh giá Năng lực TT17</h3>
+          <p class="text-xs text-slate-500">Tự đo lường 26 tiêu chí theo Thông tư 17/2019/TT-BKHCN để nhận hỗ trợ Sở.</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center"><i data-lucide="building-2" class="w-5 h-5"></i></div>
+          <h3 class="font-bold text-sm text-slate-900">Hồ sơ Doanh nghiệp ĐMST</h3>
+          <p class="text-xs text-slate-500">Quản lý mã số thuế, hồ sơ năng lực R&D và chứng nhận doanh nghiệp KH&CN.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script>lucide.createIcons();</script>
+</body>
+</html>

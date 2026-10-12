@@ -31,3 +31,49 @@ async function request<T>(path: string, auth = false): Promise<T> {
 
 export const getPublicExpertDetail = (expertCode: string) => request<ExpertPublicDetail>(`/api/v1/public/experts/${encodeURIComponent(expertCode)}`);
 export const getMyExpertDetail = () => request<ExpertPrivateDetail>("/api/v1/experts/me/detail", true);
+
+export type UpdateExpertProfilePayload = {
+  academicRank?: string | null;
+  academicRankYear?: number | null;
+  degree: string;
+  degreeYear: number;
+  organizationName: string;
+  organizationAddress?: string | null;
+  researchTitle?: string | null;
+  positionTitle?: string | null;
+  expertiseSectors?: string[];
+  specializedKeywords?: string[];
+  publicBio?: string | null;
+  isAcceptingConsultation: boolean;
+  trainingHistoryJson?: string | null;
+  employmentHistoryJson?: string | null;
+  publicationsJson?: string | null;
+  consultingSummary?: string | null;
+};
+
+export type ExpertCompleteness = {
+  score: number;
+  grade: string;
+  completedCriteria: string[];
+  missingCriteria: string[];
+  suggestions: string[];
+};
+
+export const updateMyExpertProfile = async (payload: UpdateExpertProfilePayload) => {
+  const response = await fetch(`${API_BASE}/api/v1/experts/my-profile`, {
+    method: "PUT",
+    headers: {
+      ...authClient.getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => null);
+    throw new ExpertApiError(response.status, err?.message || "Không thể cập nhật hồ sơ chuyên gia.");
+  }
+  const data = await response.json();
+  return data.data;
+};
+
+export const getMyExpertCompleteness = () => request<ExpertCompleteness>("/api/v1/experts/me/completeness", true);

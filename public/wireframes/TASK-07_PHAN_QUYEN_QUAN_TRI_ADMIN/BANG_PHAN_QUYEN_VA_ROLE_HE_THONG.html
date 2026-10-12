@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Phân Quyền & Vai Trò (Roles) Hệ Thống Nacentwin / NacenTech</title>
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-light: #3b82f6;
+      --primary-bg: #eff6ff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --bg-surface: #ffffff;
+      --bg-app: #f9fafb;
+      --tag-t0: #dc2626;
+      --tag-t0-bg: #fef2f2;
+      --tag-t1: #d97706;
+      --tag-t1-bg: #fffbeb;
+      --tag-t2: #059669;
+      --tag-t2-bg: #ecfdf5;
+      --tag-t3: #4b5563;
+      --tag-t3-bg: #f3f4f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-main);
+      background: var(--bg-app);
+      line-height: 1.5;
+      padding: 32px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--bg-surface);
+      padding: 24px 32px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-review { background: #fef3c7; color: #92400e; }
+
+    h1 { font-size: 24px; font-weight: 700; color: #111827; }
+    p.subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+    .summary-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+    .card .val { font-size: 18px; font-weight: 700; color: #111827; }
+    .card .desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    .table-container {
+      background: var(--bg-surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .table-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .table-header h2 { font-size: 16px; font-weight: 700; color: #111827; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: #f8fafc; }
+
+    .tag-tier {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tier-0 { background: var(--tag-t0-bg); color: var(--tag-t0); border: 1px solid #fecaca; }
+    .tier-1 { background: var(--tag-t1-bg); color: var(--tag-t1); border: 1px solid #fde68a; }
+    .tier-2 { background: var(--tag-t2-bg); color: var(--tag-t2); border: 1px solid #a7f3d0; }
+    .tier-3 { background: var(--tag-t3-bg); color: var(--tag-t3); border: 1px solid #e5e7eb; }
+
+    code.role-code {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+
+    .role-title { font-weight: 600; color: #111827; }
+
+    .matrix-check {
+      text-align: center;
+      font-weight: bold;
+    }
+    .check-yes { color: #059669; }
+    .check-scope { color: #d97706; font-size: 12px; }
+    .check-no { color: #d1d5db; }
+
+    .phase-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .p1-active { background: #dbeafe; color: #1e40af; }
+    .p2-ready { background: #fef3c7; color: #92400e; }
+
+    .note-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 24px;
+      font-size: 13px;
+      color: #1e3a8a;
+    }
+    .note-box ul { margin-left: 20px; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <h1>HỆ THỐNG PHÂN QUYỀN ĐA TẦNG (MULTI-TIER SCOPED RBAC)</h1>
+      <span class="badge badge-review">Tài liệu họp Review Team</span>
+    </div>
+    <p class="subtitle">Dự án NacenTech / Nacentwin — Bóc tách từ Sheet Admin, C.bán, T.mua và Kiến trúc chuẩn NacenTwin</p>
+  </header>
+
+  <!-- HIGHLIGHT CARDS -->
+  <div class="summary-card">
+    <div class="card">
+      <h3>Cơ chế Vận hành</h3>
+      <div class="val">2 Giai đoạn (Phasing)</div>
+      <div class="desc">Pha 1: NacenX duyệt tập trung &rarr; Pha 2: Ủy quyền Tỉnh/Ngành/Cơ sở.</div>
+    </div>
+    <div class="card">
+      <h3>3 Chiều Phân Cấp (Scope)</h3>
+      <div class="val">Địa bàn &bull; Ngành &bull; Cơ sở</div>
+      <div class="desc">63 Sở Tỉnh / 18 Ngành CN / Viện - Trường đối tác.</div>
+    </div>
+    <div class="card">
+      <h3>Quy mô Danh mục</h3>
+      <div class="val">4 Tầng &bull; 10 Vai trò</div>
+      <div class="desc">Thiết kế CSDL sẵn sàng Day 1, không đập đi làm lại.</div>
+    </div>
+  </div>
+
+  <!-- TABLE 1: ROLES DEFINITION -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>BẢNG 1: DANH MỤC 10 VAI TRÒ (ROLES) VÀ PHẠM VI QUẢN TRỊ</h2>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 80px;">Tầng</th>
+          <th style="width: 220px;">Mã Role & Tên gọi</th>
+          <th style="width: 200px;">Đối tượng đại diện</th>
+          <th>Phạm vi thẩm quyền (Scope) & Nhiệm vụ cốt lõi</th>
+          <th style="width: 140px; text-align: center;">Kích hoạt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- TẦNG 0 -->
+        <tr>
+          <td><span class="tag-tier tier-0">TẦNG 0</span></td>
+          <td>
+            <code class="role-code">SUPER_ADMIN</code><br>
+            <span class="role-title">Admin Bộ / Viện NacenTech</span>
+          </td>
+          <td>Viện NacenTech (Chủ quản Nhà nước)</td>
+          <td>
+            <strong>Toàn quốc</strong>. Ban hành danh mục Master Data (18 ngành, tiêu chuẩn TT17); phân quyền cho 63 Sở Tỉnh và đơn vị vận hành; giám sát Audit Log toàn hệ thống.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-0">TẦNG 0</span></td>
+          <td>
+            <code class="role-code">OPERATOR_ADMIN</code><br>
+            <span class="role-title">Admin Vận hành (NacenX Core)</span>
+          </td>
+          <td>NacenX (Đơn vị vận hành tư nhân)</td>
+          <td>
+            <strong>Toàn hệ thống</strong>. Thực thi 5 quyền duyệt hạt nhân (Duyệt user, shop, chuyên gia, nhu cầu, liên kết); làm điều phối viên giao dịch và vận hành kỹ thuật.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+
+        <!-- TẦNG 1 -->
+        <tr>
+          <td><span class="tag-tier tier-1">TẦNG 1</span></td>
+          <td>
+            <code class="role-code">PROVINCIAL_ADMIN</code><br>
+            <span class="role-title">Admin Địa phương (Sở KH&CN)</span>
+          </td>
+          <td>Sở KH&CN / Trung tâm Ứng dụng 63 Tỉnh/TP</td>
+          <td>
+            <strong>Theo địa bàn tỉnh</strong> (<code>province_id</code>). Quản lý, xác thực doanh nghiệp, chuyên gia, gian hàng công nghệ và nhu cầu đổi mới trên địa bàn tỉnh mình.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p2-ready">Pha 2 (Ủy quyền)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-1">TẦNG 1</span></td>
+          <td>
+            <code class="role-code">SECTOR_ADMIN</code><br>
+            <span class="role-title">Admin Ngành dọc / Hiệp hội</span>
+          </td>
+          <td>Ban chuyên ngành / Hiệp hội (18 ngành CN)</td>
+          <td>
+            <strong>Theo ngành công nghệ</strong> (<code>sector_id</code>). Thẩm định chuyên môn, đánh giá công nghệ và kết nối chuyên gia thuộc 18 ngành trọng điểm.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p2-ready">Pha 2 (Ủy quyền)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-1">TẦNG 1</span></td>
+          <td>
+            <code class="role-code">CLUSTER_ADMIN</code><br>
+            <span class="role-title">Admin Cơ sở Liên kết (Viện/Trường)</span>
+          </td>
+          <td>TTO Viện nghiên cứu, ĐH lớn, Vườn ươm</td>
+          <td>
+            <strong>Theo tổ chức</strong> (<code>org_unit_id</code>). Quản lý và duyệt danh sách nhà khoa học, công nghệ chào bán nội bộ của viện/trường trước khi đưa ra sàn chung.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p2-ready">Pha 2 (Ủy quyền)</span></td>
+        </tr>
+
+        <!-- TẦNG 2 -->
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">SELLER</code> / <code>SHOP_OWNER</code><br>
+            <span class="role-title">Bên Bán (Nhà cung ứng CN)</span>
+          </td>
+          <td>Viện, Trường, Doanh nghiệp công nghệ</td>
+          <td>
+            Quản lý gian hàng (Shop), đăng tải công nghệ (4 lớp trường, 1.479 quy tắc bộ lọc), cập nhật chứng nhận TRL, SHTT, báo giá.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">BUYER</code><br>
+            <span class="role-title">Bên Mua (Doanh nghiệp Tìm mua)</span>
+          </td>
+          <td>DNNVV, Doanh nghiệp sản xuất có bài toán</td>
+          <td>
+            Điền phiếu khảo sát nhu cầu công nghệ, đăng bài toán tìm kiếm giải pháp, đặt lịch tư vấn chuyên gia, đăng ký tham quan triển lãm.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">INNOVATION_ENTITY</code><br>
+            <span class="role-title">Chủ thể ĐMST (DN ĐMST)</span>
+          </td>
+          <td>Doanh nghiệp KH&CN, Trung tâm ĐMST</td>
+          <td>
+            Khai báo hồ sơ năng lực ĐMST 10 nhóm trường (định danh, nhân lực R&D, phòng lab, công nghệ lõi, SHTT, kết nối mạng lưới).
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">VERIFIED_EXPERT</code><br>
+            <span class="role-title">Chuyên gia KH&CN</span>
+          </td>
+          <td>Nhà khoa học, Chuyên gia SHTT, Định giá</td>
+          <td>
+            Quản lý Lý lịch khoa học (LLKH 3 bước, AI-scan CV), cung cấp dịch vụ đánh giá công nghệ, mở phòng tư vấn cho doanh nghiệp.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+
+        <!-- TẦNG 3 -->
+        <tr>
+          <td><span class="tag-tier tier-3">TẦNG 3</span></td>
+          <td>
+            <code class="role-code">PUBLIC_USER</code> / <code>GUEST</code><br>
+            <span class="role-title">Khách vãng lai / Học viên</span>
+          </td>
+          <td>Cộng đồng, Kỹ sư, Học viên</td>
+          <td>
+            Tra cứu công nghệ công khai, xem ma trận ngành, đăng ký học các khóa đào tạo trực tuyến (E-Learning).
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLE 2: PERMISSION MATRIX -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>BẢNG 2: MA TRẬN PHÂN QUYỀN 5 THẨM QUYỀN HẠT NHÂN (TRÍCH TỪ SHEET ADMIN)</h2>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Vai trò (Role)</th>
+          <th style="text-align: center;">1. Duyệt Tài khoản</th>
+          <th style="text-align: center;">2. Duyệt Shop Bên Bán</th>
+          <th style="text-align: center;">3. Duyệt Chuyên gia</th>
+          <th style="text-align: center;">4. Duyệt Nhu cầu Mua</th>
+          <th style="text-align: center;">5. Phân quyền Cơ sở</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>SUPER_ADMIN</strong> (Viện NacenTech)</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Tối cao (Cấp Tầng 1)</td>
+        </tr>
+        <tr>
+          <td><strong>OPERATOR_ADMIN</strong> (NacenX Vận hành)</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-scope">&bull; Điều phối liên kết</td>
+        </tr>
+        <tr>
+          <td><strong>PROVINCIAL_ADMIN</strong> (Sở KH&CN Tỉnh)</td>
+          <td class="matrix-check check-scope">Trong Tỉnh</td>
+          <td class="matrix-check check-scope">Shop trong Tỉnh</td>
+          <td class="matrix-check check-scope">CG trong Tỉnh</td>
+          <td class="matrix-check check-scope">Bài toán trong Tỉnh</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+        <tr>
+          <td><strong>SECTOR_ADMIN</strong> (Hiệp hội / Ban Ngành)</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-scope">Thẩm định kỹ thuật</td>
+          <td class="matrix-check check-scope">Duyệt chuyên môn</td>
+          <td class="matrix-check check-scope">Gợi ý ghép cặp</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+        <tr>
+          <td><strong>CLUSTER_ADMIN</strong> (Viện/Đại học liên kết)</td>
+          <td class="matrix-check check-scope">User thuộc Đơn vị</td>
+          <td class="matrix-check check-scope">Shop nội bộ Viện</td>
+          <td class="matrix-check check-scope">CG trực thuộc Viện</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+        <tr>
+          <td><strong>SELLER / BUYER / EXPERT</strong></td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- NOTE BOX -->
+  <div class="note-box">
+    <strong>KẾT LUẬN & ĐỀ XUẤT THẢO LUẬN TEAM:</strong>
+    <ul>
+      <li><strong>Kiến trúc CSDL:</strong> Lưu <code>scope_type (GLOBAL | PROVINCE | SECTOR | ORG_UNIT)</code> và <code>scope_id</code> ngay trong bảng tài khoản để sau này không phải migrate dữ liệu.</li>
+      <li><strong>Quy trình Duyệt Pha 1:</strong> Mọi hồ sơ mới tạo đều rơi vào Hàng đợi chung (Central Queue) của NacenX.</li>
+      <li><strong>Quy trình Duyệt Pha 2:</strong> Hệ thống tự động chia nhánh (Routing): Hồ sơ có mã tỉnh hoặc thuộc viện nào sẽ rơi vào Hàng đợi của Tỉnh/Viện đó duyệt sơ bộ (L1), NacenX duyệt phát hành (L2).</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

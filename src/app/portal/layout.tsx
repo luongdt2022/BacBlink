@@ -16,62 +16,92 @@ import {
   ClipboardList,
   Sparkles,
   Kanban,
+  Inbox,
+  Rocket,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
-const expertNavItems = [
-  { href: "/portal", label: "Tổng quan chuyên gia", icon: LayoutDashboard },
-  { href: "/portal/expert/profile", label: "Hồ sơ LLKH của tôi", icon: GraduationCap },
-  { href: "/portal/matching/radar", label: "Radar Cơ hội AI", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Cơ hội đồng hành", icon: Kanban },
-  { href: "/profile/upgrade/expert", label: "Cập nhật / Nâng cấp LLKH", icon: FileCheck },
-];
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  section?: string;
+}
 
-const buyerNavItems = [
+// 1. Bên Mua Công Nghệ (BUYER) - Tập trung giải bài toán, tìm cung & tiến trình hợp tác
+const buyerNavItems: NavItem[] = [
   { href: "/portal", label: "Tổng quan Mua sắm", icon: LayoutDashboard },
-  { href: "/portal/buyer/demands", label: "Bài toán Tìm mua (Buyer)", icon: ShoppingBag },
-  { href: "/khao-sat-nhu-cau", label: "Khảo sát Nhu cầu DNNVV", icon: ClipboardList },
-  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck },
+  { href: "/portal/buyer/demands", label: "Bài toán Tìm mua", icon: ShoppingBag },
   { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Pipeline Cơ Hội (Kanban)", icon: Kanban },
+  { href: "/portal/opportunities/pipeline", label: "Tiến trình Hợp tác & MOU", icon: Kanban },
+  { href: "/khao-sat-nhu-cau", label: "Khảo sát Nhu cầu (TNI)", icon: ClipboardList },
+  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck },
   { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2 },
 ];
 
-const sellerNavItems = [
-  { href: "/portal", label: "Tổng quan Chào bán", icon: LayoutDashboard },
+// 2. Nhà Cung Ứng Công Nghệ (SELLER) - Quản lý tài sản TRL, đón nhận leads & chuyển giao
+const sellerNavItems: NavItem[] = [
+  { href: "/portal", label: "Tổng quan Gian hàng", icon: LayoutDashboard },
   { href: "/portal/seller/technologies", label: "Kho Công nghệ (TRL)", icon: Cpu },
-  { href: "/portal/seller/technologies/create", label: "Niêm yết Công nghệ mới", icon: Sparkles },
-  { href: "/portal/matching/radar", label: "Radar Ghép Nối Cầu AI", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Pipeline Thương mại hóa", icon: Kanban },
+  { href: "/portal/opportunities/pipeline?tab=inbound", label: "Yêu cầu Kết nối Nhận được", icon: Inbox },
+  { href: "/portal/matching/radar", label: "Radar Tìm Kiếm Nhu Cầu (AI)", icon: Sparkles },
+  { href: "/portal/opportunities/pipeline", label: "Tiến trình Chuyển giao & MOU", icon: Kanban },
   { href: "/portal/enterprise/profile", label: "Hồ sơ Đơn vị / Viện Trường", icon: Building2 },
 ];
 
-const innovationEntityNavItems = [
-  { href: "/portal", label: "Tổng quan ĐMST", icon: LayoutDashboard },
-  { href: "/portal/buyer/demands", label: "Bài toán Tìm mua (Buyer)", icon: ShoppingBag },
-  { href: "/portal/seller/technologies", label: "Kho Chào bán (TRL)", icon: Cpu },
-  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck },
+// 3. Chuyên Gia KH&CN (EXPERT / VERIFIED_EXPERT) - Thuần chất LLKH, tư vấn & đồng hành
+const expertNavItems: NavItem[] = [
+  { href: "/portal", label: "Tổng quan Chuyên gia", icon: LayoutDashboard },
+  { href: "/portal/expert/profile", label: "Hồ sơ LLKH của tôi", icon: GraduationCap },
+  { href: "/portal/opportunities/pipeline?type=consulting", label: "Lời mời Tư vấn Doanh nghiệp", icon: ClipboardList },
+  { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles },
+  { href: "/portal/opportunities/pipeline", label: "Dự án Đồng hành & Hợp tác", icon: Kanban },
+];
+
+// 4. Doanh Nghiệp ĐMST (INNOVATION_ENTITY) - Phân tách 2 khối Cung-Cầu & Năng lực
+const innovationEntityNavItems: NavItem[] = [
+  { href: "/portal", label: "Tổng quan Hoạt động ĐMST", icon: LayoutDashboard, section: "Hoạt động Cung – Cầu" },
+  { href: "/portal/buyer/demands", label: "Bài toán Cần Mua", icon: ShoppingBag },
+  { href: "/portal/seller/technologies", label: "Công nghệ Chào Bán", icon: Cpu },
   { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Pipeline Cơ Hội (Kanban)", icon: Kanban },
+  { href: "/portal/opportunities/pipeline", label: "Tiến trình Hợp tác", icon: Kanban },
+  { href: "/assessments/tt17", label: "Tự Đánh giá TT17", icon: FileCheck, section: "Năng lực & Hồ sơ" },
   { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp ĐMST", icon: Building2 },
 ];
 
-const publicNavItems = [
-  { href: "/portal", label: "Tổng quan Workspace", icon: LayoutDashboard },
-  { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Pipeline Cơ Hội (Kanban)", icon: Kanban },
-  { href: "/profile/upgrade/expert", label: "Đăng ký Chuyên gia KH&CN", icon: GraduationCap },
-  { href: "/settings", label: "Nâng hạng & Cài đặt", icon: FileCheck },
+// 5. Thành Viên Đại Chúng (PUBLIC_USER / USER) - Khám phá và hub đăng ký nâng hạng
+const publicNavItems: NavItem[] = [
+  { href: "/portal", label: "Bàn làm việc Cá nhân", icon: LayoutDashboard },
+  { href: "/portal/matching/radar", label: "Radar Khám Phá AI", icon: Sparkles },
+  { href: "/profile/upgrade/expert", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
+  { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
 ];
 
-const adminPortalNavItems = [
+// 6. Quản Trị Viên (ADMIN / GOV) - Góc nhìn Giám sát Thực địa
+const adminPortalNavItems: NavItem[] = [
   { href: "/portal", label: "Tổng quan Sàn B2B", icon: LayoutDashboard },
   { href: "/portal/matching/radar", label: "Radar Ghép Nối Toàn Sàn", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Giám sát Cơ Hội (Kanban)", icon: Kanban },
-  { href: "/portal/seller/technologies", label: "Kho Chào bán (TRL)", icon: Cpu },
-  { href: "/portal/buyer/demands", label: "Bài toán Tìm mua", icon: ShoppingBag },
-  { href: "/portal/expert/profile", label: "Hồ sơ Chuyên gia KH&CN", icon: GraduationCap },
-  { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2 },
+  { href: "/portal/opportunities/pipeline", label: "Giám sát Kết nối Toàn Sàn", icon: Kanban },
+  { href: "/portal/seller/technologies", label: "Kho Chào bán Toàn sàn", icon: Cpu },
+  { href: "/portal/buyer/demands", label: "Bài toán Nhu cầu Toàn sàn", icon: ShoppingBag },
+];
+
+const PORTAL_ALLOWED_ROLES = [
+  "SELLER",
+  "BUYER",
+  "INNOVATION_ENTITY",
+  "VERIFIED_EXPERT",
+  "EXPERT",
+  "SUPER_ADMIN",
+  "OPERATOR_ADMIN",
+  "ADMIN",
+  "PROVINCIAL_ADMIN",
+  "SECTOR_ADMIN",
+  "CLUSTER_ADMIN",
+  "PROVINCE_OFFICER",
+  "PROVINCE_LEADER",
+  "USER",
+  "PUBLIC_USER",
 ];
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -95,9 +125,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     upperRole === "PROVINCE_OFFICER" ||
     upperRole === "PROVINCE_LEADER";
 
-  let navItems = publicNavItems;
-  let workspaceTitle = "Workspace Tác Nghiệp";
-  let workspaceBadge = "Cổng Thị Trường B2B & Chuyên Gia";
+  let navItems: NavItem[] = publicNavItems;
+  let workspaceTitle = "Bàn Làm Việc Cá Nhân";
+  let workspaceBadge = "Thành Viên Đại Chúng";
 
   if (isExpert) {
     navItems = expertNavItems;
@@ -117,7 +147,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     workspaceBadge = "Doanh Nghiệp ĐMST";
   } else if (isAdmin) {
     navItems = adminPortalNavItems;
-    workspaceTitle = "Góc Nhìn Quản Trị Thị Trường";
+    workspaceTitle = "Góc Nhìn Giám Sát Thực Địa";
     workspaceBadge = "Quản Trị Viên Hệ Thống";
   } else if (isGov) {
     navItems = adminPortalNavItems;
@@ -127,23 +157,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   return (
     <RoleGuard
-      allowedRoles={[
-        "SELLER",
-        "BUYER",
-        "INNOVATION_ENTITY",
-        "VERIFIED_EXPERT",
-        "EXPERT",
-        "SUPER_ADMIN",
-        "OPERATOR_ADMIN",
-        "ADMIN",
-        "PROVINCIAL_ADMIN",
-        "SECTOR_ADMIN",
-        "CLUSTER_ADMIN",
-        "PROVINCE_OFFICER",
-        "PROVINCE_LEADER",
-        "USER",
-        "PUBLIC_USER",
-      ]}
+      allowedRoles={PORTAL_ALLOWED_ROLES}
       portalName="Cổng Không Gian Thị Trường & Đổi Mới Sáng Tạo"
     >
       <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-surface-page dark:bg-slate-950 lg:flex-row">
@@ -193,36 +207,33 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
+              const basePath = item.href.split("?")[0];
               const isActive =
-                item.href === "/portal"
+                basePath === "/portal"
                   ? pathname === "/portal"
-                  : pathname === item.href || pathname?.startsWith(item.href + "/");
+                  : pathname === basePath || pathname?.startsWith(basePath + "/");
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`focus-ring flex min-h-11 items-center gap-2.5 px-3 py-2 rounded-control text-label font-semibold transition ${
-                    isActive
-                      ? "bg-brand-700 text-white shadow-sm shadow-brand-700/20"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 hover:text-brand-700 dark:hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.label}</span>
-                </Link>
+                <React.Fragment key={item.href + item.label}>
+                  {item.section && (
+                    <div className="pt-3 pb-1 px-3 text-caption font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      {item.section}
+                    </div>
+                  )}
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`focus-ring flex min-h-11 items-center gap-2.5 px-3 py-2 rounded-control text-label font-semibold transition ${
+                      isActive
+                        ? "bg-brand-700 text-white shadow-sm shadow-brand-700/20"
+                        : "text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 hover:text-brand-700 dark:hover:text-white"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                </React.Fragment>
               );
             })}
-            {isExpert && (
-              <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800">
-                <div className="flex items-center gap-2.5 px-3 py-2 text-label font-semibold text-slate-400 dark:text-slate-300">
-                  <ClipboardList className="h-4 w-4" />
-                  <span>Yêu cầu tư vấn & kết nối</span>
-                  <span className="ml-auto rounded-full bg-slate-100 px-1.5 py-0.5 text-caption dark:bg-slate-800">
-                    Sắp có
-                  </span>
-                </div>
-              </div>
-            )}
           </nav>
         </aside>
 

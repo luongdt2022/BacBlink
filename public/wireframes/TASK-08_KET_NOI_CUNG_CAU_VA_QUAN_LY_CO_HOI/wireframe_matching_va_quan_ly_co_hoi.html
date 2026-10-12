@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghép Nối Cung-Cầu & Quản Lý Cơ Hội Hợp Tác — NacenTwin (TASK-08)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#f0f7ff', 100: '#e0effe', 500: '#3b82f6', 600: '#1d4ed8', 700: '#1e40af', 800: '#1e3a8a', 900: '#0f172a' },
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            purpleAccent: '#8b5cf6'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .tab-btn.active {
+      background-color: #1e40af;
+      color: #ffffff;
+      box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.25);
+    }
+    .match-pill-high { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .match-pill-med { background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow">
+          M
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+            <span class="rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 border border-blue-200">TASK-08 BASIC DESIGN</span>
+            <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 border border-emerald-200">PO-DEC-20261008 APPROVED</span>
+          </div>
+          <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Bàn Làm Việc Ghép Nối Cung–Cầu & Quản Lý Cơ Hội Hợp Tác</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+        <button onclick="switchTab('radar')" id="tab-btn-radar" class="tab-btn active px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          <i data-lucide="radar" class="w-4 h-4"></i>
+          <span>1. Radar Ghép Nối Cung–Cầu</span>
+        </button>
+        <button onclick="switchTab('pipeline')" id="tab-btn-pipeline" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="git-pull-request" class="w-4 h-4"></i>
+          <span>2. Pipeline Quản Lý Cơ Hội (5 Bước)</span>
+        </button>
+        <button onclick="switchTab('gov')" id="tab-btn-gov" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>3. Giám Sát Của Sở KH&CN</span>
+        </button>
+      </div>
+
+      <!-- Role Switcher -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-slate-500 font-medium">Góc nhìn:</span>
+        <select id="role-select" onchange="changeRolePerspective(this.value)" class="text-xs font-bold bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm">
+          <option value="BUYER">Doanh Nghiệp ĐMST (Buyer / Cần Tìm)</option>
+          <option value="SELLER">Đơn Vị Chào Bán (Seller / Nguồn Cung)</option>
+          <option value="GOV">Lãnh Đạo Sở KH&CN (Cấp 2 Quản Lý)</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNER QUYẾT ĐỊNH PO -->
+  <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white py-3 px-4 shadow-inner">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="bg-blue-500/30 border border-blue-400 text-blue-200 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">
+          Thuật Toán Khớp Nối Minh Bạch
+        </span>
+        <p class="text-slate-200">
+          <strong>Trọng số tích hợp:</strong> Nhu cầu TNI $\ge 80$ (TASK-03) ưu tiên cao nhất + Sáng chế có bằng độc quyền TRL 7–9 (TASK-04) thưởng +20% Trust Score.
+        </p>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-emerald-400 flex items-center gap-1 font-semibold">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Mở liên hệ sau khi 2 bên đồng ý
+        </span>
+        <span class="text-amber-300 flex items-center gap-1 font-semibold">
+          <i data-lucide="shield" class="w-3.5 h-3.5"></i> Ký Cam Kết Bảo Mật (NDA)
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+
+    <!-- ==================== TAB 1: RADAR GHÉP NỐI CUNG–CẦU ==================== -->
+    <section id="panel-radar" class="space-y-6">
+      
+      <!-- Top Filters & Search Bar -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-5 h-5 text-blue-600"></i>
+              Radar Gợi Ý Đối Tác Công Nghệ Phù Hợp
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Dựa trên ma trận 109 cặp Lĩnh vực - Công nghệ và phân tầng chỉ số TNI của 304 doanh nghiệp.</p>
+          </div>
+          <div class="flex items-center gap-2 w-full lg:w-auto">
+            <div class="relative flex-1 lg:w-72">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" placeholder="Tìm theo từ khóa, mã số thuế, tên giải pháp..." class="w-full text-xs pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i> Lọc Nâng Cao
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Pills Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-3 border-t border-slate-100 text-xs">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Ngành Công Nghiệp (18 Ngành):</label>
+            <select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800 focus:bg-white">
+              <option>Tất cả 18 ngành</option>
+              <option selected>Chế biến, chế tạo công nghệ cao</option>
+              <option>Nông nghiệp công nghệ cao</option>
+              <option>Năng lượng sạch & Môi trường</option>
+              <option>Công nghệ thông tin & CĐS</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Địa Bàn Trọng Điểm:</label>
+            <select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800 focus:bg-white">
+              <option>Toàn quốc (34 tỉnh)</option>
+              <option selected>Hà Nội (Vùng Thủ đô)</option>
+              <option>Hải Phòng</option>
+              <option>TP. Hồ Chí Minh</option>
+              <option>Đồng Nai</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Cấp Độ Sẵn Sàng (TRL):</label>
+            <select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800 focus:bg-white">
+              <option>Mọi cấp độ (TRL 1-9)</option>
+              <option selected>TRL 7–9 (Sẵn sàng thương mại hóa)</option>
+              <option>TRL 4–6 (Thử nghiệm quy mô mẫu)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Bảo Hộ SHTT:</label>
+            <select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800 focus:bg-white">
+              <option>Tất cả trạng thái</option>
+              <option selected>Đã cấp Bằng độc quyền sáng chế</option>
+              <option>Giải pháp hữu ích</option>
+              <option>Bí quyết công nghệ (Trade Secret)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Ngưỡng Khớp Nối (Score):</label>
+            <select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-slate-800 focus:bg-white">
+              <option selected>Khớp cao (&gt; 85%)</option>
+              <option>Khớp khá (&gt; 70%)</option>
+              <option>Tất cả gợi ý</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matching Suggestions List (Cards) -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between text-xs text-slate-500 font-semibold px-1">
+          <span>Tìm thấy <strong>14 cặp đối tác tiềm năng</strong> phù hợp tiêu chí</span>
+          <span>Sắp xếp theo: <strong class="text-blue-700">Điểm tương thích giảm dần</strong></span>
+        </div>
+
+        <!-- Card 1 (Match 96% - High Priority) -->
+        <div class="bg-white rounded-2xl border-2 border-emerald-300 p-6 shadow-sm hover:shadow-md transition relative">
+          <div class="absolute -top-3 left-6 bg-emerald-600 text-white font-extrabold text-[11px] px-3 py-0.5 rounded-full shadow flex items-center gap-1">
+            <i data-lucide="award" class="w-3.5 h-3.5"></i> KHỚP NỐI HOÀN HẢO (TOP 1 RECOMMENDATION)
+          </div>
+
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pt-2">
+            <!-- Left: Match Analysis & Parties -->
+            <div class="flex-1 space-y-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="match-pill-high px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-600"></i> Điểm Tương Thích: 96%
+                </span>
+                <span class="bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded text-[11px] font-bold">
+                  Chế biến, chế tạo
+                </span>
+                <span class="bg-purple-50 text-purple-800 border border-purple-200 px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1">
+                  <i data-lucide="check-circle" class="w-3 h-3 text-purple-600"></i> Bằng Độc Quyền Sáng Chế #VN-18294
+                </span>
+                <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-bold">
+                  TRL 8 (Đã kiểm nghiệm sản xuất)
+                </span>
+              </div>
+
+              <!-- Pair Detail -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 rounded-xl p-4 border border-slate-200/80">
+                <!-- Bên Cần (Buyer) -->
+                <div>
+                  <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span> BÊN TÌM MUA (BUYER / DN ĐMST)
+                  </div>
+                  <h4 class="font-extrabold text-sm text-slate-900">CÔNG TY CỔ PHẦN CƠ KHÍ CHÍNH XÁC NAM THĂNG LONG</h4>
+                  <p class="text-xs text-slate-600 mt-1 line-clamp-2">
+                    <strong>Bài toán cần giải quyết:</strong> Tự động hóa hệ thống kiểm tra khuyết tật mối hàn chi tiết máy cơ khí bằng thị giác máy tính AI; yêu cầu độ chính xác &gt; 99.2%.
+                  </p>
+                  <div class="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
+                    <span>MST: <span class="mono font-bold text-slate-800">0101234567</span></span>
+                    <span>•</span>
+                    <span class="text-emerald-700 font-bold">Điểm TNI: 88.5 (Rất cao - Ưu tiên P0)</span>
+                  </div>
+                </div>
+
+                <!-- Bên Cung (Seller) -->
+                <div class="border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
+                  <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span> BÊN CUNG ỨNG (SELLER / GIẢI PHÁP)
+                  </div>
+                  <h4 class="font-extrabold text-sm text-slate-900">VIỆN ĐIỆN TỬ - TIN HỌC - TỰ ĐỘNG HÓA NACENTECH</h4>
+                  <p class="text-xs text-slate-600 mt-1 line-clamp-2">
+                    <strong>Giải pháp chào bán:</strong> Module kiểm soát chất lượng quang học thông minh tích hợp Deep Learning và quang phổ hồng ngoại (NacenVision QC-400).
+                  </p>
+                  <div class="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
+                    <span>Phương thức: <span class="font-bold text-slate-800">Chuyển giao trọn gói & Đào tạo</span></span>
+                    <span>•</span>
+                    <span class="text-blue-700 font-bold">Sở KH&CN Hà Nội Bảo Chứng</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Explainability -->
+              <div class="flex items-center gap-2 text-xs text-slate-600">
+                <i data-lucide="help-circle" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                <span><strong>Lý do khớp nối:</strong> Lĩnh vực khớp 100% (CN-12 Cơ điện tử), TRL 8 đáp ứng ngay nhu cầu cấp bách TNI 88.5; cùng địa bàn Hà Nội thuận tiện hỗ trợ On-site.</span>
+              </div>
+            </div>
+
+            <!-- Right Actions -->
+            <div class="w-full lg:w-48 flex lg:flex-col items-center justify-end gap-2.5 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0">
+              <button onclick="openRequestModal('CÔNG TY CỔ PHẦN CƠ KHÍ CHÍNH XÁC NAM THĂNG LONG', 'NacenVision QC-400')" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="send" class="w-4 h-4"></i> Gửi Yêu Cầu Kết Nối
+              </button>
+              <button onclick="openDetailModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Xem Đối Soát Chi Tiết
+              </button>
+              <button class="w-full border border-purple-200 hover:bg-purple-50 text-purple-700 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Mời Chuyên Gia Đồng Hành
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 (Match 89%) -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div class="flex-1 space-y-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="match-pill-high px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-600"></i> Điểm Tương Thích: 89%
+                </span>
+                <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px] font-bold">
+                  Nông nghiệp CNC
+                </span>
+                <span class="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded text-[11px] font-bold">
+                  Giải Pháp Hữu Ích Đang Thẩm Định
+                </span>
+                <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-bold">
+                  TRL 7 (Mô hình thử nghiệm trang trại)
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 rounded-xl p-4 border border-slate-200/80">
+                <div>
+                  <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span> BÊN TÌM MUA (BUYER)
+                  </div>
+                  <h4 class="font-extrabold text-sm text-slate-900">CÔNG TY TNHH MTV LÂM NGHIỆP ĐÔNG BẮC</h4>
+                  <p class="text-xs text-slate-600 mt-1 line-clamp-2">
+                    <strong>Nhu cầu:</strong> Hệ thống cảm biến giám sát vi khí hậu và tự động tưới tiêu chính xác cho vườn ươm giống cây lâm nghiệp quy mô 15 ha.
+                  </p>
+                  <div class="mt-2 text-[11px] text-slate-500">
+                    MST: <span class="mono font-bold text-slate-800">2400120030</span> (Lạng Sơn) • TNI: 76.0 (Cao)
+                  </div>
+                </div>
+
+                <div class="border-t md:border-t-0 md:border-l border-slate-200 pt-3 md:pt-0 md:pl-4">
+                  <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span> BÊN CUNG ỨNG (SELLER)
+                  </div>
+                  <h4 class="font-extrabold text-sm text-slate-900">CÔNG TY CP GIẢI PHÁP NÔNG NGHIỆP THÔNG MINH AGRITECH</h4>
+                  <p class="text-xs text-slate-600 mt-1 line-clamp-2">
+                    <strong>Giải pháp:</strong> Nền tảng IoT AgriSense điều khiển tưới nhỏ giọt cảm biến phân bón thông minh.
+                  </p>
+                  <div class="mt-2 text-[11px] text-slate-500">
+                    Trụ sở: Hà Nội • Chuyển giao công nghệ & Cài đặt phần cứng
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 text-xs text-slate-600">
+                <i data-lucide="help-circle" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                <span><strong>Lý do khớp nối:</strong> Phù hợp bài toán tưới tự động vi khí hậu; ngân sách dự kiến của Buyer (300-500 triệu) nằm trọn trong gói chuyển giao của Seller.</span>
+              </div>
+            </div>
+
+            <div class="w-full lg:w-48 flex lg:flex-col items-center justify-end gap-2.5 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0">
+              <button onclick="openRequestModal('CÔNG TY TNHH MTV LÂM NGHIỆP ĐÔNG BẮC', 'AgriSense IoT')" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                <i data-lucide="send" class="w-4 h-4"></i> Gửi Yêu Cầu Kết Nối
+              </button>
+              <button onclick="openDetailModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Xem Chi Tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: PIPELINE QUẢN LÝ CƠ HỘI ==================== -->
+    <section id="panel-pipeline" class="hidden space-y-6">
+      
+      <!-- Top Overview Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-bold">1. Khớp Nối Mới</p>
+          <p class="text-2xl font-extrabold text-blue-700 mt-1">14</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Chờ gửi yêu cầu</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-bold">2. Đã Gửi Yêu Cầu</p>
+          <p class="text-2xl font-extrabold text-amber-600 mt-1">6</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Chờ bên nhận phản hồi</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-bold">3. Đã Chấp Thuận & Ký NDA</p>
+          <p class="text-2xl font-extrabold text-indigo-700 mt-1">8</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Đã mở số liên hệ 2 bên</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-bold">4. Có Chuyên Gia Hỗ Trợ</p>
+          <p class="text-2xl font-extrabold text-purple-700 mt-1">3</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Thẩm định kỹ thuật</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-bold">5. Thỏa Thuận Thành Công</p>
+          <p class="text-2xl font-extrabold text-emerald-600 mt-1">2</p>
+          <p class="text-[11px] text-slate-400 mt-0.5">Ký biên bản ghi nhớ (MOU)</p>
+        </div>
+      </div>
+
+      <!-- Pipeline Kanban Board -->
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+
+        <!-- Column 1: Matched Candidates -->
+        <div class="bg-slate-100/80 rounded-2xl p-3 space-y-3">
+          <div class="flex items-center justify-between font-extrabold text-xs text-slate-700 px-1">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Gợi Ý Mới (14)</span>
+          </div>
+          <div class="space-y-2.5">
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-blue-700">Khớp 96%</span>
+                <span class="text-[10px] text-slate-400">Hôm nay</span>
+              </div>
+              <h5 class="font-bold text-slate-900 line-clamp-1">NacenVision QC-400</h5>
+              <p class="text-[11px] text-slate-500">Buyer: Cơ khí Nam Thăng Long</p>
+              <button onclick="openRequestModal('Cơ khí Nam Thăng Long', 'NacenVision QC-400')" class="w-full bg-blue-50 text-blue-700 font-bold py-1.5 rounded-lg text-[11px] hover:bg-blue-100 transition">
+                Gửi yêu cầu ngay
+              </button>
+            </div>
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-blue-700">Khớp 89%</span>
+                <span class="text-[10px] text-slate-400">Hôm qua</span>
+              </div>
+              <h5 class="font-bold text-slate-900 line-clamp-1">AgriSense IoT</h5>
+              <p class="text-[11px] text-slate-500">Buyer: Lâm nghiệp Đông Bắc</p>
+              <button onclick="openRequestModal('Lâm nghiệp Đông Bắc', 'AgriSense IoT')" class="w-full bg-blue-50 text-blue-700 font-bold py-1.5 rounded-lg text-[11px] hover:bg-blue-100 transition">
+                Gửi yêu cầu ngay
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Request Sent -->
+        <div class="bg-slate-100/80 rounded-2xl p-3 space-y-3">
+          <div class="flex items-center justify-between font-extrabold text-xs text-slate-700 px-1">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Đã Gửi Yêu Cầu (6)</span>
+          </div>
+          <div class="space-y-2.5">
+            <div class="bg-white p-3.5 rounded-xl border border-amber-200 shadow-sm space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded">Chờ Seller duyệt</span>
+                <span class="text-[10px] text-slate-400">1 ngày trước</span>
+              </div>
+              <h5 class="font-bold text-slate-900 line-clamp-1">Robot Hàn Tự Động T-100</h5>
+              <p class="text-[11px] text-slate-500">Buyer: Cơ khí Nam Thăng Long</p>
+              <div class="text-[10px] text-slate-400 italic">"Đã gửi kèm bản mô tả yêu cầu kỹ thuật"</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: Connected & NDA -->
+        <div class="bg-slate-100/80 rounded-2xl p-3 space-y-3">
+          <div class="flex items-center justify-between font-extrabold text-xs text-slate-700 px-1">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span> Đã Mở Liên Hệ & NDA (8)</span>
+          </div>
+          <div class="space-y-2.5">
+            <div class="bg-white p-3.5 rounded-xl border border-indigo-200 shadow-sm space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1">
+                  <i data-lucide="check" class="w-3 h-3"></i> Đã Ký NDA Điện Tử
+                </span>
+                <span class="text-[10px] text-slate-400">Deal Room Active</span>
+              </div>
+              <h5 class="font-bold text-slate-900 line-clamp-1">Công Nghệ Xử Lý Khí Thải BioFilter</h5>
+              <p class="text-[11px] text-slate-500">Hai bên: Nhà máy Xi măng HP ↔ Viện Hóa học</p>
+              <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 text-[11px] space-y-1">
+                <div class="flex items-center gap-1 font-semibold text-slate-800">
+                  <i data-lucide="phone" class="w-3 h-3 text-emerald-600"></i> 0912.345.xxx (Đã mở)
+                </div>
+                <div class="flex items-center gap-1 text-slate-600">
+                  <i data-lucide="calendar" class="w-3 h-3 text-blue-600"></i> Lịch hẹn: 14:00 Thứ Tư (On-site)
+                </div>
+              </div>
+              <a href="wireframe_deal_room_hop_tac.html" class="w-full py-1.5 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1 transition">
+                <span>Vào Phòng Đàm Phán Deal Room 1-1</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 4: Expert Assisted -->
+        <div class="bg-slate-100/80 rounded-2xl p-3 space-y-3">
+          <div class="flex items-center justify-between font-extrabold text-xs text-slate-700 px-1">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span> Chuyên Gia Tham Gia (3)</span>
+          </div>
+          <div class="space-y-2.5">
+            <div class="bg-white p-3.5 rounded-xl border border-purple-200 shadow-sm space-y-2 text-xs">
+              <span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                Tư vấn định giá & TRL
+              </span>
+              <h5 class="font-bold text-slate-900 line-clamp-1">Dây Chuyền Đúc Áp Lực Cao</h5>
+              <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=80" class="w-6 h-6 rounded-full object-cover">
+                <div class="text-[11px]">
+                  <p class="font-bold text-slate-800">PGS. TS. Trần Văn Minh</p>
+                  <p class="text-[10px] text-slate-500">Chuyên gia Viện Cơ khí</p>
+                </div>
+              </div>
+              <a href="wireframe_deal_room_hop_tac.html" class="w-full py-1.5 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1 transition">
+                <span>Vào Deal Room Đàm Phán Kỹ Thuật</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 5: Closed Success -->
+        <div class="bg-slate-100/80 rounded-2xl p-3 space-y-3">
+          <div class="flex items-center justify-between font-extrabold text-xs text-slate-700 px-1">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Thành Công / MOU (2)</span>
+          </div>
+          <div class="space-y-2.5">
+            <div class="bg-white p-3.5 rounded-xl border-2 border-emerald-400 shadow-sm space-y-2 text-xs">
+              <span class="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                Ký Kết Chuyển Giao
+              </span>
+              <h5 class="font-bold text-slate-900 line-clamp-1">Men Vi Sinh Phân Giải Xenlulozo</h5>
+              <p class="text-[11px] text-slate-500">Hợp đồng chuyển giao công nghệ thành công tại Techmart 2026.</p>
+              <a href="wireframe_deal_room_hop_tac.html" class="w-full py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg text-[11px] flex items-center justify-center gap-1 transition">
+                <span>Xem Hồ Sơ & Biên Bản MOU (.PDF)</span>
+                <i data-lucide="file-check" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: GIÁM SÁT CỦA SỞ KH&CN ==================== -->
+    <section id="panel-gov" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900">Báo Cáo Giám Sát Kết Nối Công Nghệ Thuộc Địa Bàn Sở KH&CN Hà Nội</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Thực hiện theo Quyết định giao nhiệm vụ xúc tiến và cơ chế hỗ trợ DNNVV đổi mới công nghệ.</p>
+          </div>
+          <button class="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> Xuất Báo Cáo Định Kỳ
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <span class="text-xs text-slate-500 font-bold">Tổng số phiên kết nối khởi tạo:</span>
+            <p class="text-2xl font-extrabold text-slate-900">42 phiên</p>
+            <p class="text-[11px] text-emerald-600 font-medium">Tăng 24% so với tháng trước</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <span class="text-xs text-slate-500 font-bold">Tỉ lệ phản hồi đồng ý mở liên hệ:</span>
+            <p class="text-2xl font-extrabold text-blue-700">78.5%</p>
+            <p class="text-[11px] text-slate-500">Thời gian phản hồi bình quân: 18 giờ (SLA &lt; 48h)</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <span class="text-xs text-slate-500 font-bold">Doanh nghiệp TNI &ge; 80 được hỗ trợ:</span>
+            <p class="text-2xl font-extrabold text-emerald-700">100%</p>
+            <p class="text-[11px] text-emerald-600 font-medium">18/18 DN đã ghép nối chuyên gia tư vấn</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: GỬI YÊU CẦU KẾT NỐI (CONNECTION REQUEST MODAL) -->
+  <div id="modal-request" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-slate-900">Khởi Tạo Yêu Cầu Kết Nối Cung–Cầu</h3>
+        </div>
+        <button onclick="closeRequestModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Đối tác & Giải pháp kết nối:</label>
+          <div id="modal-target-info" class="bg-blue-50/70 border border-blue-200 p-3 rounded-xl font-medium text-slate-800">
+            <!-- Dynamic Info -->
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Mục đích kết nối & Nhu cầu trao đổi: <span class="text-red-500">*</span></label>
+          <textarea rows="3" placeholder="Ví dụ: Doanh nghiệp chúng tôi muốn tìm hiểu sâu về năng lực giải thuật và chi phí triển khai hệ thống NacenVision QC-400 cho dây chuyền 2..." class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none"></textarea>
+        </div>
+
+        <!-- Privacy & NDA Policy Checkbox -->
+        <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-2">
+          <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500">
+            <span class="text-slate-700 font-medium">
+              Tôi đồng ý ký <strong>Thỏa Thuận Bảo Mật Thông Tin (NDA Điện Tử)</strong> theo chuẩn bảo mật của Sở KH&CN khi đối tác chấp nhận mở liên hệ.
+            </span>
+          </label>
+          <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox" checked class="mt-0.5 rounded text-blue-600 focus:ring-blue-500">
+            <span class="text-slate-700 font-medium">
+              Đề nghị Sở KH&CN chỉ định 01 <strong>Chuyên gia KH&CN độc lập</strong> tham gia hỗ trợ tư vấn và định giá công nghệ.
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <button onclick="closeRequestModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition">
+          Hủy Bỏ
+        </button>
+        <button onclick="submitConnectionRequest()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow">
+          <i data-lucide="check" class="w-4 h-4"></i> Gửi Yêu Cầu Chính Thức
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('section[id^="panel-"]').forEach(p => p.classList.add('hidden'));
+
+      document.getElementById('tab-btn-' + tabId).classList.add('active');
+      document.getElementById('panel-' + tabId).classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function changeRolePerspective(role) {
+      if (role === 'GOV') {
+        switchTab('gov');
+      } else if (role === 'SELLER') {
+        switchTab('pipeline');
+      } else {
+        switchTab('radar');
+      }
+    }
+
+    function openRequestModal(buyer, solution) {
+      document.getElementById('modal-target-info').innerHTML = `
+        <div class="flex items-center justify-between">
+          <span><strong>Bên nhận:</strong> ${buyer}</span>
+          <span class="text-blue-700 font-bold">${solution}</span>
+        </div>
+      `;
+      document.getElementById('modal-request').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeRequestModal() {
+      document.getElementById('modal-request').classList.add('hidden');
+    }
+
+    function submitConnectionRequest() {
+      alert('Đã gửi yêu cầu kết nối thành công! Hệ thống đã ghi nhận vào Pipeline Quản lý Cơ hội và thông báo cho đối tác.');
+      closeRequestModal();
+      switchTab('pipeline');
+    }
+
+    function openDetailModal() {
+      alert('Hiển thị bảng đối soát ma trận tương thích 4 thành phần: Lĩnh vực (100%), Cấp độ TRL (Khớp TRL 8), Ngân sách (Khớp), Địa bàn (Cùng Hà Nội).');
+    }
+  </script>
+</body>
+</html>
