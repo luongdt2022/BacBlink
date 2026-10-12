@@ -307,5 +307,112 @@ public sealed class ExpertProfileInvariantsTests
         items.Count(x => x.ProvinceCode == "DN").ShouldBe(2);
         items.Count(x => x.ProvinceCode == "CT").ShouldBe(2);
     }
+
+    [Fact]
+    public void UpdateProfileDetails_when_pending_review_throws_validation_exception()
+    {
+        var profile = new ExpertProfile(
+            Guid.NewGuid(), "TS. Nguyễn Văn Tuấn", 1980, "male", null, null, "GS", 2020,
+            "DOCTOR", 2015, "ĐHBK Hà Nội", null, null, null, ["LV01"], null, null, null, null, false, false, DateTimeOffset.UtcNow);
+
+        profile.Status.ShouldBe(ExpertStatuses.PendingReview);
+
+        Should.Throw<ValidationException>(() => profile.UpdateProfileDetails(
+            academicRank: "GS",
+            academicRankYear: 2020,
+            degree: "DOCTOR",
+            degreeYear: 2015,
+            organizationName: "ĐHBK Hà Nội Mới",
+            organizationAddress: null,
+            researchTitle: null,
+            positionTitle: null,
+            expertiseSectors: ["LV01"],
+            specializedKeywords: ["Robot"],
+            publicBio: "Bio",
+            isAcceptingConsultation: true,
+            trainingHistoryJson: null,
+            employmentHistoryJson: null,
+            publicationsJson: null,
+            consultingSummary: null));
+    }
+
+    [Fact]
+    public void UpdateProfileDetails_when_approved_successfully_updates_and_touches()
+    {
+        var profile = new ExpertProfile(
+            Guid.NewGuid(), "TS. Nguyễn Văn Tuấn", 1980, "male", null, null, "PGS", 2018,
+            "DOCTOR", 2015, "ĐHBK Hà Nội", null, null, null, ["LV01"], null, null, null, null, false, false, DateTimeOffset.UtcNow);
+
+        profile.Approve("Đã phê duyệt");
+        var beforeUpdate = profile.UpdatedAt;
+
+        profile.UpdateProfileDetails(
+            academicRank: "GS",
+            academicRankYear: 2024,
+            degree: "DOCTOR",
+            degreeYear: 2015,
+            organizationName: "Viện Cơ học & Tự động hóa",
+            organizationAddress: "18 Hoàng Quốc Việt, Cầu Giấy, Hà Nội",
+            researchTitle: "Nghiên cứu viên cao cấp",
+            positionTitle: "Trưởng phòng Thí nghiệm",
+            expertiseSectors: ["LV01", "LV07"],
+            specializedKeywords: ["Robot Delta", "Thị giác máy tính"],
+            publicBio: "Chuyên gia về Robot công nghiệp.",
+            isAcceptingConsultation: true,
+            trainingHistoryJson: "[{\"level\":\"TS\"}]",
+            employmentHistoryJson: "[{\"org\":\"Viện Cơ học\"}]",
+            publicationsJson: "[{\"title\":\"Paper A\"}]",
+            consultingSummary: "Tư vấn tự động hóa.");
+
+        profile.AcademicRank.ShouldBe("GS");
+        profile.AcademicRankYear.ShouldBe(2024);
+        profile.OrganizationName.ShouldBe("Viện Cơ học & Tự động hóa");
+        profile.SpecializedKeywords.ShouldContain("Robot Delta");
+        profile.PublicBio.ShouldBe("Chuyên gia về Robot công nghiệp.");
+        profile.IsAcceptingConsultation.ShouldBeTrue();
+        profile.UpdatedAt.ShouldBeGreaterThanOrEqualTo(beforeUpdate);
+    }
+
+    [Fact]
+    public void CalculateCompleteness_evaluates_5_pillars_accurately()
+    {
+        // 1. Hồ sơ vừa tạo tối thiểu
+        var basicProfile = new ExpertProfile(
+            Guid.NewGuid(), "TS. Nguyễn Văn Tuấn", 1980, "male", null, null, "PGS", 2018,
+            "DOCTOR", 2015, "ĐHBK Hà Nội", null, null, null, [], null, null, null, null, false, false, DateTimeOffset.UtcNow, legalOath: true);
+
+        var (score1, grade1, completed1, missing1, suggestions1) = basicProfile.CalculateCompleteness();
+        score1.ShouldBe(40); // 20đ định danh/pháp lý + 20đ học vị/cơ quan
+        grade1.ShouldBe("INCOMPLETE");
+        completed1.Count.ShouldBe(2);
+        missing1.Count.ShouldBe(5);
+
+        // 2. Hồ sơ đầy đủ cả 5 trụ cột
+        basicProfile.Approve("Phê duyệt");
+        basicProfile.UpdateProfileDetails(
+            academicRank: "GS",
+            academicRankYear: 2020,
+            degree: "DOCTOR",
+            degreeYear: 2015,
+            organizationName: "Viện Cơ học",
+            organizationAddress: "Hà Nội",
+            researchTitle: "Nghiên cứu viên",
+            positionTitle: "Trưởng phòng",
+            expertiseSectors: ["LV01"],
+            specializedKeywords: ["Robot"],
+            publicBio: "Tiểu sử nhà khoa học",
+            isAcceptingConsultation: true,
+            trainingHistoryJson: null,
+            employmentHistoryJson: null,
+            publicationsJson: "[{\"title\":\"Sáng chế A\"}]",
+            consultingSummary: "Tư vấn");
+
+        var (score2, grade2, completed2, missing2, suggestions2) = basicProfile.CalculateCompleteness();
+        score2.ShouldBe(100);
+        grade2.ShouldBe("EXCELLENT");
+        completed2.Count.ShouldBe(5);
+        missing2.Count.ShouldBe(0);
+        suggestions2.Count.ShouldBe(0);
+    }
 }
 

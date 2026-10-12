@@ -31,6 +31,7 @@ public static class NotificationTypes
     public const string CollaborationRequestAccepted = "collaboration_request_accepted";
     public const string CollaborationRequestRejected = "collaboration_request_rejected";
     public const string ExpertConsultationRequestReceived = "expert_consultation_request_received";
+    public const string ExpertCompletenessReminder = "expert_completeness_reminder";
 }
 
 public sealed record InvitationDto(

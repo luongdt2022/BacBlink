@@ -280,6 +280,42 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         return document is null ? null : await OpenDocumentAsync(document, ct);
     }
 
+    public async Task<ExpertProfileDto> UpdateMyProfileAsync(Guid personId, UpdateExpertProfileRequest request, CancellationToken ct)
+    {
+        var profile = await db.Set<ExpertProfile>().FirstOrDefaultAsync(p => p.PersonId == personId, ct)
+            ?? throw new NotFoundException("Không tìm thấy hồ sơ chuyên gia.");
+
+        profile.UpdateProfileDetails(
+            academicRank: request.AcademicRank ?? "NONE",
+            academicRankYear: request.AcademicRankYear,
+            degree: request.Degree,
+            degreeYear: request.DegreeYear,
+            organizationName: request.OrganizationName,
+            organizationAddress: request.OrganizationAddress,
+            researchTitle: request.ResearchTitle,
+            positionTitle: request.PositionTitle,
+            expertiseSectors: request.ExpertiseSectors ?? [],
+            specializedKeywords: request.SpecializedKeywords,
+            publicBio: request.PublicBio,
+            isAcceptingConsultation: request.IsAcceptingConsultation,
+            trainingHistoryJson: request.TrainingHistoryJson,
+            employmentHistoryJson: request.EmploymentHistoryJson,
+            publicationsJson: request.PublicationsJson,
+            consultingSummary: request.ConsultingSummary);
+
+        await uow.CommitAsync(ct);
+        return ToDto(profile);
+    }
+
+    public async Task<ExpertCompletenessDto> GetMyCompletenessAsync(Guid personId, CancellationToken ct)
+    {
+        var profile = await db.Set<ExpertProfile>().AsNoTracking().FirstOrDefaultAsync(p => p.PersonId == personId, ct)
+            ?? throw new NotFoundException("Không tìm thấy hồ sơ chuyên gia.");
+
+        var (score, grade, completed, missing, suggestions) = profile.CalculateCompleteness();
+        return new ExpertCompletenessDto(score, grade, completed, missing, suggestions);
+    }
+
     private async Task<ExpertDocumentContent?> OpenDocumentAsync(ExpertDocument document, CancellationToken ct)
     {
         var content = await storage.OpenReadAsync(document.StorageKey, ct);

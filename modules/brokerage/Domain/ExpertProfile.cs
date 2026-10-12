@@ -218,5 +218,134 @@ public sealed class ExpertProfile : AggregateRoot
         Touch();
     }
 
-    private static string CreateExpertCode(Guid id) => $"CG-NACEN-{id.ToString("N")[..8].ToUpperInvariant()}";
+    /// <summary>
+    /// Delta v14: Cập nhật thông tin chuyên môn bởi chính chuyên gia sở hữu hồ sơ (Self-service Edit).
+    /// </summary>
+    public void UpdateProfileDetails(
+        string academicRank,
+        int? academicRankYear,
+        string degree,
+        int degreeYear,
+        string organizationName,
+        string? organizationAddress,
+        string? researchTitle,
+        string? positionTitle,
+        IReadOnlyList<string> expertiseSectors,
+        IReadOnlyList<string>? specializedKeywords,
+        string? publicBio,
+        bool isAcceptingConsultation,
+        string? trainingHistoryJson,
+        string? employmentHistoryJson,
+        string? publicationsJson,
+        string? consultingSummary)
+    {
+        if (Status == ExpertStatuses.PendingReview)
+            throw new ValidationException("Hồ sơ đang trong quá trình thẩm định, không thể chỉnh sửa.");
+
+        if (string.IsNullOrWhiteSpace(degree)) throw new ValidationException("Học vị cao nhất là bắt buộc.");
+        if (string.IsNullOrWhiteSpace(organizationName)) throw new ValidationException("Cơ quan công tác là bắt buộc.");
+
+        AcademicRank = string.IsNullOrWhiteSpace(academicRank) ? "NONE" : academicRank.Trim();
+        AcademicRankYear = academicRankYear;
+        Degree = degree.Trim();
+        DegreeYear = degreeYear;
+        OrganizationName = organizationName.Trim();
+        OrganizationAddress = organizationAddress?.Trim();
+        ResearchTitle = researchTitle?.Trim();
+        PositionTitle = positionTitle?.Trim();
+        ExpertiseSectors = expertiseSectors.ToArray();
+        SpecializedKeywords = (specializedKeywords ?? []).Where(k => !string.IsNullOrWhiteSpace(k)).Select(k => k.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        PublicBio = publicBio?.Trim();
+        IsAcceptingConsultation = isAcceptingConsultation;
+        TrainingHistoryJson = trainingHistoryJson;
+        EmploymentHistoryJson = employmentHistoryJson;
+        PublicationsJson = publicationsJson;
+        ConsultingSummary = consultingSummary?.Trim();
+        Touch();
+    }
+
+    /// <summary>
+    /// Delta v14: Tính toán tỷ lệ phần trăm hoàn thiện hồ sơ chuẩn hóa 5 trụ cột Bộ KH&CN.
+    /// </summary>
+    public (int Score, string Grade, List<string> Completed, List<string> Missing, List<string> Suggestions) CalculateCompleteness()
+    {
+        int score = 0;
+        var completed = new List<string>();
+        var missing = new List<string>();
+        var suggestions = new List<string>();
+
+        // 1. Định danh & Pháp lý (20đ)
+        if (!string.IsNullOrWhiteSpace(FullName) && BirthYear >= 1940 && PdpdConsentAtUtc != default && LegalOath)
+        {
+            score += 20;
+            completed.Add("Định danh & Cam kết pháp lý");
+        }
+        else
+        {
+            missing.Add("Cam kết pháp lý & Thông tin định danh");
+            suggestions.Add("Xác nhận đầy đủ cam kết PDPD và tính xác thực của hồ sơ");
+        }
+
+        // 2. Học vị & Cơ quan (20đ)
+        if (!string.IsNullOrWhiteSpace(Degree) && !string.IsNullOrWhiteSpace(OrganizationName))
+        {
+            score += 20;
+            completed.Add("Học vị & Cơ quan công tác chính");
+        }
+        else
+        {
+            missing.Add("Học vị cao nhất và Cơ quan công tác");
+            suggestions.Add("Bổ sung học vị (ThS/TS/GS) và cơ quan công tác hiện tại");
+        }
+
+        // 3. Lĩnh vực TT17 & Từ khóa chuyên môn (20đ)
+        int domainScore = 0;
+        if (ExpertiseSectors.Length > 0) domainScore += 10;
+        if (SpecializedKeywords.Length > 0) domainScore += 10;
+        score += domainScore;
+        if (domainScore == 20)
+        {
+            completed.Add("Lĩnh vực TT17 & Từ khóa nghiên cứu");
+        }
+        else
+        {
+            if (ExpertiseSectors.Length == 0) missing.Add("Lĩnh vực trụ cột TT17");
+            if (SpecializedKeywords.Length == 0) missing.Add("Từ khóa chuyên môn sâu");
+            suggestions.Add("Chọn ít nhất 1 Lĩnh vực TT17 và nhập từ khóa chuyên môn");
+        }
+
+        // 4. Thành tựu KH&CN (20đ)
+        bool hasAchievement = !string.IsNullOrWhiteSpace(PublicationsJson) && PublicationsJson != "[]";
+        if (hasAchievement)
+        {
+            score += 20;
+            completed.Add("Danh mục công trình & Thành tựu KH&CN");
+        }
+        else
+        {
+            missing.Add("Công trình khoa học hoặc Sáng chế");
+            suggestions.Add("Khai báo ít nhất 1 bài báo Scopus/ISI, đề tài hoặc bằng sáng chế");
+        }
+
+        // 5. Hồ sơ công khai & Tư vấn (20đ)
+        int profileScore = 0;
+        if (!string.IsNullOrWhiteSpace(PublicBio)) profileScore += 10;
+        if (IsAcceptingConsultation) profileScore += 10;
+        score += profileScore;
+        if (profileScore == 20)
+        {
+            completed.Add("Tiểu sử tóm tắt & Sẵn sàng nhận tư vấn");
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(PublicBio)) missing.Add("Tóm tắt tiểu sử khoa học");
+            if (!IsAcceptingConsultation) missing.Add("Chưa bật nhận lời mời tư vấn");
+            suggestions.Add("Bổ sung tóm tắt tiểu sử và bật sẵn sàng nhận tư vấn");
+        }
+
+        string grade = score >= 90 ? "EXCELLENT" : (score >= 70 ? "GOOD" : (score >= 50 ? "BASIC" : "INCOMPLETE"));
+        return (score, grade, completed, missing, suggestions);
+    }
+
+    private static string CreateExpertCode(Guid id) => $"CG-NACEN-{id.ToString("N")[^8..].ToUpperInvariant()}";
 }

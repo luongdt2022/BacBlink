@@ -76,6 +76,8 @@ public static class PersistenceServiceCollectionExtensions
         services.AddHostedService<ScheduledObligationWorker>();
         // Phải đứng sau ScheduledObligationWorker: nó chỉ tạo mục lịch, việc chạy là của worker ở trên.
         services.AddHostedService<RecurringObligationSeeder>();
+        services.AddSingleton<ExpertCompletenessReminderWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<ExpertCompletenessReminderWorker>());
         return services;
     }
 

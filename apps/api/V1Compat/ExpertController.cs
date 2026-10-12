@@ -85,6 +85,32 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
         return result is null ? NotFound() : Ok(Ok200(result));
     }
 
+    [HttpPut("my-profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateExpertProfileRequest request, CancellationToken ct)
+    {
+        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert)
+            throw new ForbiddenException("Verified expert access required");
+
+        if (request.ExpertiseSectors is { Count: > 0 } sectors)
+            await ValidateSectorsAsync(sectors, ct);
+
+        var result = await experts.UpdateMyProfileAsync(PersonId, request, ct);
+        Audit("EXPERT_PROFILE_UPDATE", result.Id.ToString("N"), "OWNER");
+        return Ok(Ok200(result));
+    }
+
+    [HttpGet("me/completeness")]
+    [Authorize]
+    public async Task<IActionResult> GetMyCompleteness(CancellationToken ct)
+    {
+        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert)
+            throw new ForbiddenException("Verified expert access required");
+
+        var result = await experts.GetMyCompletenessAsync(PersonId, ct);
+        return Ok(Ok200(result));
+    }
+
     [HttpGet("me/detail")]
     [Authorize]
     public async Task<IActionResult> GetMyDetail(CancellationToken ct)

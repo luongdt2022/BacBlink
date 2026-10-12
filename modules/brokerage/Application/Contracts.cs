@@ -112,6 +112,31 @@ public sealed record ExpertProfileDto(
     DateTimeOffset UpdatedAtUtc,
     IReadOnlyList<string>? SpecializedKeywords = null);
 
+public sealed record UpdateExpertProfileRequest(
+    string? AcademicRank,
+    int? AcademicRankYear,
+    string Degree,
+    int DegreeYear,
+    string OrganizationName,
+    string? OrganizationAddress,
+    string? ResearchTitle,
+    string? PositionTitle,
+    IReadOnlyList<string>? ExpertiseSectors,
+    IReadOnlyList<string>? SpecializedKeywords,
+    string? PublicBio,
+    bool IsAcceptingConsultation,
+    string? TrainingHistoryJson = null,
+    string? EmploymentHistoryJson = null,
+    string? PublicationsJson = null,
+    string? ConsultingSummary = null);
+
+public sealed record ExpertCompletenessDto(
+    int Score,
+    string Grade,
+    IReadOnlyList<string> CompletedCriteria,
+    IReadOnlyList<string> MissingCriteria,
+    IReadOnlyList<string> Suggestions);
+
 public sealed record AiCvScanResultDto(
     string ExtractedFullName,
     string ExtractedDegree,
@@ -220,5 +245,7 @@ public interface IExpertService
     Task SetPublicListingAsync(string expertCode, bool isPublic, bool isAcceptingConsultation, string? publicBio, CancellationToken ct);
     Task<ExpertDocumentContent?> OpenMyDocumentAsync(Guid personId, Guid documentId, CancellationToken ct);
     Task<ExpertDocumentContent?> OpenAdminDocumentAsync(string expertCode, Guid documentId, CancellationToken ct);
+    Task<ExpertProfileDto> UpdateMyProfileAsync(Guid personId, UpdateExpertProfileRequest request, CancellationToken ct);
+    Task<ExpertCompletenessDto> GetMyCompletenessAsync(Guid personId, CancellationToken ct);
 }
 
