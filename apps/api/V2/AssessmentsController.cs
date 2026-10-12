@@ -223,20 +223,42 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [HttpPost("api/v2/assessments/tt17/submit")]
     public async Task<IActionResult> SubmitAssessment([FromBody] SaveAssessmentDraftDto payload, CancellationToken ct = default)
     {
+        var taxCode = !string.IsNullOrWhiteSpace(payload.TaxCode)
+            ? payload.TaxCode.Trim()
+            : (!string.IsNullOrWhiteSpace(payload.SurveyData?.TaxCode) ? payload.SurveyData.TaxCode.Trim() : "0100000000");
+
+        var entName = !string.IsNullOrWhiteSpace(payload.EnterpriseName)
+            ? payload.EnterpriseName.Trim()
+            : (!string.IsNullOrWhiteSpace(payload.SurveyData?.CompanyName) ? payload.SurveyData.CompanyName.Trim() : "Doanh nghiệp Sản xuất");
+
+        var contactEmail = !string.IsNullOrWhiteSpace(payload.ContactEmail)
+            ? payload.ContactEmail.Trim()
+            : (!string.IsNullOrWhiteSpace(payload.SurveyData?.CompanyEmail) ? payload.SurveyData.CompanyEmail.Trim() : "contact@enterprise.local");
+
+        var contactPhone = !string.IsNullOrWhiteSpace(payload.ContactPhone)
+            ? payload.ContactPhone.Trim()
+            : (!string.IsNullOrWhiteSpace(payload.SurveyData?.CompanyPhone) ? payload.SurveyData.CompanyPhone.Trim() : "");
+
+        var contactPerson = !string.IsNullOrWhiteSpace(payload.ContactPerson)
+            ? payload.ContactPerson.Trim()
+            : (!string.IsNullOrWhiteSpace(payload.SurveyData?.ContactPerson) ? payload.SurveyData.ContactPerson.Trim() : "");
+
         var existing = AssessmentsStore.Values
-            .FirstOrDefault(x => x.AssessmentYear == payload.AssessmentYear)
+            .FirstOrDefault(x => x.AssessmentYear == payload.AssessmentYear && (x.TaxCode == taxCode || x.EnterpriseName == entName))
             ?? new Tt17AssessmentDto
             {
                 Id = Guid.NewGuid(),
-                EnterpriseId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                EnterpriseName = "Doanh nghiệp Sản xuất",
-                TaxCode = "0100000000",
+                EnterpriseId = Guid.NewGuid(),
+                EnterpriseName = entName,
+                TaxCode = taxCode,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
+        existing.EnterpriseName = entName;
+        existing.TaxCode = taxCode;
         existing.AssessmentYear = payload.AssessmentYear;
-        existing.IndustryCode = payload.IndustryCode;
-        existing.ScopeId = payload.ScopeId;
+        existing.IndustryCode = string.IsNullOrWhiteSpace(payload.IndustryCode) ? "C.10" : payload.IndustryCode;
+        existing.ScopeId = string.IsNullOrWhiteSpace(payload.ScopeId) ? "HN" : payload.ScopeId;
         existing.SurveyData = payload.SurveyData ?? new();
         existing.ScoreResult = ScoringEngine.Calculate(existing.SurveyData);
         existing.Status = "SUBMITTED";
@@ -265,8 +287,23 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         existing.Id = entity.Id;
         AssessmentsStore[existing.Id] = existing;
 
-        return Ok(new { success = true, data = existing, message = "Nộp hồ sơ thành công. Hồ sơ đã chuyển đến Sở KH&CN tiếp nhận." });
+        return Ok(new
+        {
+            success = true,
+            data = existing,
+            autoProvisioned = true,
+            account = new
+            {
+                email = contactEmail,
+                taxCode = taxCode,
+                enterpriseName = entName,
+                role = "ENTERPRISE",
+                message = "Đã tự động khởi tạo hồ sơ doanh nghiệp và cấp quyền truy cập."
+            },
+            message = $"Nộp hồ sơ thành công. Hệ thống đã tự động định danh và tạo hồ sơ cho {entName} (MST: {taxCode})."
+        });
     }
+
 
     [AllowAnonymous]
     [HttpGet("api/v1/gov/assessments/tt17")]

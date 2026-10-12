@@ -16,7 +16,14 @@ public sealed record EnterprisePublicDirectoryItemDto(
     decimal? TniScore,
     string? TniClassification,
     int IpCount,
-    string Status
+    string Status,
+    string? OwnershipType = null,
+    string? OperatingZone = null,
+    bool HasRdUnit = false,
+    bool IsExporting = false,
+    bool InValueChain = false,
+    IReadOnlyList<string>? TopBottlenecks = null,
+    IReadOnlyList<string>? SupportNeeds = null
 );
 
 public sealed record EnterprisePublicDirectoryDto(
@@ -130,6 +137,7 @@ public sealed class EnterpriseSearchQuery
     public string? SectorCode { get; set; }
     public string? SubjectType { get; set; }
     public string? TniClassification { get; set; }
+    public string? SortBy { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 9;
 }

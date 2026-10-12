@@ -1,4 +1,6 @@
 using System;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +15,104 @@ namespace NacenTech.Api.V1Compat;
 [Route("api/v1/enterprises")]
 public sealed class EnterpriseController(IEnterpriseService enterpriseService, IUnitOfWork uow, IAuditWriter audit) : V1ControllerBase
 {
+    private static readonly string[] KnownProvinces =
+    [
+        "Hà Nội", "Hồ Chí Minh", "TP. Hồ Chí Minh", "TP Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ",
+        "Bắc Ninh", "Bình Dương", "Đồng Nai", "Bà Rịa - Vũng Tàu", "Vĩnh Phúc", "Hưng Yên", "Hải Dương",
+        "Quảng Ninh", "Thái Nguyên", "Bắc Giang", "Long An", "Tiền Giang", "Khánh Hòa", "Lâm Đồng",
+        "Bình Định", "Nghệ An", "Thanh Hóa", "Thừa Thiên Huế", "Quảng Nam", "Quảng Ngãi", "Bình Phước",
+        "Tây Ninh", "Bến Tre", "Đồng Tháp", "An Giang", "Kiên Giang", "Cà Mau", "Sóc Trăng", "Trà Vinh",
+        "Vĩnh Long", "Hậu Giang", "Bạc Liêu", "Ninh Thuận", "Bình Thuận", "Kon Tum", "Gia Lai", "Đắk Lắk",
+        "Đắk Nông", "Phú Yên", "Hà Tĩnh", "Quảng Bình", "Quảng Trị", "Ninh Bình", "Nam Định", "Hà Nam",
+        "Thái Bình", "Phú Thọ", "Lào Cai", "Yên Bái", "Tuyên Quang", "Hà Giang", "Cao Bằng", "Bắc Kạn",
+        "Lạng Sơn", "Sơn La", "Hòa Bình", "Điện Biên", "Lai Châu"
+    ];
+
+    private static string? ExtractProvinceFromAddress(string? address)
+    {
+        if (string.IsNullOrWhiteSpace(address)) return null;
+        foreach (var prov in KnownProvinces)
+        {
+            if (address.Contains(prov, StringComparison.OrdinalIgnoreCase))
+            {
+                if (prov.Contains("Hồ Chí Minh", StringComparison.OrdinalIgnoreCase))
+                    return "TP. Hồ Chí Minh";
+                return prov;
+            }
+        }
+        return null;
+    }
+
+    [HttpGet("lookup-tax/{taxCode}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> LookupTax(string taxCode, [FromServices] IHttpClientFactory httpClientFactory, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(taxCode))
+            return BadRequest(new { message = "Mã số thuế không được để trống." });
+
+        var cleanTaxCode = taxCode.Trim();
+
+        // 1. Kiểm tra CSDL nội bộ trước (Ưu tiên nội bộ 304 DN)
+        var internalDetail = await enterpriseService.GetPublicDetailAsync(cleanTaxCode, isPrivileged: false, ct);
+        if (internalDetail != null)
+        {
+            return Ok(Ok200(new
+            {
+                found = true,
+                source = "INTERNAL",
+                taxCode = internalDetail.TaxCode,
+                name = internalDetail.Name,
+                province = internalDetail.ProvinceCity,
+                address = internalDetail.AddressDetail,
+                sectorName = internalDetail.MainSectorName
+            }));
+        }
+
+        // 2. Fallback sang Open VietQR Business API
+        try
+        {
+            var client = httpClientFactory.CreateClient();
+            client.Timeout = TimeSpan.FromSeconds(5);
+            var url = $"https://api.vietqr.io/v2/business/{cleanTaxCode}";
+            using var response = await client.GetAsync(url, ct);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync(ct);
+                using var doc = JsonDocument.Parse(content);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("code", out var codeProp) && codeProp.GetString() == "00" &&
+                    root.TryGetProperty("data", out var dataProp) && dataProp.ValueKind == JsonValueKind.Object)
+                {
+                    var name = dataProp.TryGetProperty("name", out var n) ? n.GetString() : null;
+                    var address = dataProp.TryGetProperty("address", out var a) ? a.GetString() : null;
+                    var id = dataProp.TryGetProperty("id", out var i) ? i.GetString() : cleanTaxCode;
+
+                    string? extractedProvince = ExtractProvinceFromAddress(address);
+
+                    return Ok(Ok200(new
+                    {
+                        found = true,
+                        source = "VIETQR",
+                        taxCode = id,
+                        name = name,
+                        province = extractedProvince,
+                        address = address,
+                        sectorName = (string?)null
+                    }));
+                }
+            }
+        }
+        catch
+        {
+            // Graceful degradation khi mất kết nối mạng ngoài
+        }
+
+        return Ok(Ok200(new
+        {
+            found = false,
+            message = $"Không tìm thấy thông tin doanh nghiệp với mã số thuế {cleanTaxCode}."
+        }));
+    }
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetDirectory(
@@ -21,6 +121,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
         [FromQuery] string? sectorCode,
         [FromQuery] string? subjectType,
         [FromQuery] string? tniClassification,
+        [FromQuery] string? sortBy,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 9,
         CancellationToken ct = default)
@@ -32,6 +133,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
             SectorCode = sectorCode,
             SubjectType = subjectType,
             TniClassification = tniClassification,
+            SortBy = sortBy,
             Page = page <= 0 ? 1 : page,
             PageSize = pageSize <= 0 ? 9 : pageSize
         };

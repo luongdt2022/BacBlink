@@ -29,6 +29,7 @@ builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection(CorsOpt
 
 // Platform: DbContext duy nhất, UnitOfWork, policy engine, toàn bộ module.
 builder.Services.AddNacenTechPlatform(builder.Configuration);
+builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 if (builder.Configuration.GetValue<bool>("Api:RunWorkersInProcess")) builder.Services.AddNacenTechWorkers();

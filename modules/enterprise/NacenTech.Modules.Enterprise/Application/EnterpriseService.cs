@@ -62,13 +62,21 @@ public class EnterpriseService : IEnterpriseService
                 TniScore: x.TniScore,
                 TniClassification: x.TniClassification,
                 IpCount: x.IntellectualProperties?.Count ?? 0,
-                Status: x.Status
+                Status: x.Status,
+                OwnershipType: x.OwnershipType,
+                OperatingZone: x.OperatingZone,
+                HasRdUnit: x.HasRdUnit,
+                IsExporting: x.IsExporting,
+                InValueChain: x.InValueChain,
+                TopBottlenecks: SafeParseStringList(x.TopBottlenecksJson),
+                SupportNeeds: SafeParseStringList(x.SupportNeedsJson)
             )).ToList();
 
             return new EnterprisePublicDirectoryDto(dtoItems, totalCount, query.Page, pageSize, totalPages);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"[ERROR GetPublicDirectoryAsync] {ex}");
             var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
             return new EnterprisePublicDirectoryDto([], 0, query.Page, pageSize, 0);
         }

@@ -9,13 +9,14 @@ using Microsoft.EntityFrameworkCore;
 using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Demand.Domain;
+using NacenTech.Modules.Identity.Application;
 using NacenTech.Persistence;
 
 namespace NacenTech.Api.V1Compat;
 
 [ApiController]
 [Route("api/v1")]
-public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V1ControllerBase
+public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPersonService personService) : V1ControllerBase
 {
     // =========================================================================
     // LUỒNG 1: KHẢO SÁT SÂU DNNVV & BÓC TÁCH BÀI TOÁN (SC-03-01 / WF-01)
@@ -29,6 +30,56 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V
             return BadRequest(new { message = "Tên doanh nghiệp không được để trống." });
         if (string.IsNullOrWhiteSpace(req.ContactName) || string.IsNullOrWhiteSpace(req.ContactPhone) || string.IsNullOrWhiteSpace(req.ContactEmail))
             return BadRequest(new { message = "Thông tin liên hệ (Họ tên, SĐT, Email) là bắt buộc." });
+
+        // Xác định người gửi và tự động cấp tài khoản BUYER nếu chưa tồn tại (Kênh triển lãm / khảo sát công khai)
+        Guid? submitterPersonId = null;
+        bool isNewAccountProvisioned = false;
+        string? initialTemporaryPassword = null;
+
+        if (Actor.IsAuthenticated)
+        {
+            submitterPersonId = Actor.PersonId;
+        }
+        else
+        {
+            var cleanEmail = req.ContactEmail.Trim().ToLowerInvariant();
+            var existingPerson = await personService.FindByEmailAsync(cleanEmail, ct);
+            if (existingPerson != null)
+            {
+                submitterPersonId = existingPerson.Id;
+            }
+            else
+            {
+                initialTemporaryPassword = $"Buyer@{DateTime.UtcNow:yyyy}!";
+                var fullName = req.ContactName?.Trim() ?? "Đại diện Doanh nghiệp";
+                var parts = fullName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+                var lastName = parts.Length > 1 ? parts[0] : "";
+                var firstName = parts.Length > 1 ? parts[1] : parts[0];
+
+                try
+                {
+                    var provisioned = await personService.ProvisionAsync(new ProvisionPersonCommand(
+                        Email: cleanEmail,
+                        Password: initialTemporaryPassword,
+                        FirstName: firstName,
+                        LastName: string.IsNullOrEmpty(lastName) ? null : lastName,
+                        Phone: req.ContactPhone?.Trim(),
+                        Organization: req.CompanyName?.Trim(),
+                        PlatformRole: PlatformRoles.Buyer,
+                        ScopeType: ScopeTypes.Global,
+                        ScopeId: null,
+                        IsActive: true
+                    ), ct);
+
+                    submitterPersonId = provisioned.Id;
+                    isNewAccountProvisioned = true;
+                }
+                catch
+                {
+                    // Tránh chặn lưu phiếu nếu có lỗi tạo tài khoản
+                }
+            }
+        }
 
         var surveyCode = $"SUR-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
 
@@ -54,18 +105,18 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V
         var survey = new DemandSurvey(
             surveyCode,
             req.SurveyType ?? "DEEP_SURVEY",
-            req.CompanyName,
+            req.CompanyName!,
             req.TaxCode,
-            req.ContactName,
-            req.ContactPhone,
-            req.ContactEmail,
+            req.ContactName!,
+            req.ContactPhone!,
+            req.ContactEmail!,
             req.BusinessType,
             req.EnterpriseSize,
             req.EmployeeScale,
             req.RevenueRange3y,
             req.TopBottlenecks,
             req.OrganizationId,
-            Actor.IsAuthenticated ? Actor.PersonId : null,
+            submitterPersonId,
             req.Province,
             req.HeadquartersAddress,
             req.SurveyedFacility,
@@ -107,7 +158,7 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V
                     itemReq.ImpactScore,
                     itemReq.InvestmentCapacity,
                     itemReq.AdoptionReadiness,
-                    Actor.IsAuthenticated ? Actor.PersonId : null
+                    submitterPersonId
                 );
 
                 survey.AddItem(demandItem);
@@ -124,7 +175,17 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V
             surveyId = survey.Id,
             surveyCode = survey.SurveyCode,
             createdTickets,
-            message = "Tiếp nhận phiếu khảo sát nhu cầu công nghệ thành công."
+            accountProvisioned = isNewAccountProvisioned,
+            account = isNewAccountProvisioned ? new
+            {
+                email = req.ContactEmail.Trim().ToLowerInvariant(),
+                temporaryPassword = initialTemporaryPassword,
+                role = "BUYER",
+                note = "Hệ thống đã tự động cấp tài khoản Doanh nghiệp (Buyer). Quý DN có thể đăng nhập ngay hoặc đổi mật khẩu."
+            } : null,
+            message = isNewAccountProvisioned
+                ? "Tiếp nhận phiếu khảo sát thành công. Tài khoản Doanh nghiệp đã được khởi tạo tự động."
+                : "Tiếp nhận phiếu khảo sát nhu cầu công nghệ thành công."
         });
     }
 

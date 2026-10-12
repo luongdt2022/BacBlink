@@ -71,12 +71,57 @@ public class EfEnterpriseRepository : IEnterpriseRepository
         if (!string.IsNullOrWhiteSpace(query.Province))
         {
             var p = query.Province.Trim().ToLower();
-            qry = qry.Where(x => x.ProvinceCity.ToLower().Contains(p));
+            if (p.Contains("hồ chí minh") || p.Contains("tphcm") || p.Contains("tp.hcm"))
+            {
+                qry = qry.Where(x => x.ProvinceCity.ToLower().Contains("tphcm") || 
+                                     x.ProvinceCity.ToLower().Contains("hồ chí minh") ||
+                                     x.ProvinceCity.ToLower().Contains("hcm"));
+            }
+            else if (p.Contains("hà nội") || p.Contains("hà nội"))
+            {
+                qry = qry.Where(x => x.ProvinceCity.ToLower().Contains("hà nội") || 
+                                     x.ProvinceCity.ToLower().Contains("hà nội"));
+            }
+            else if (p.Contains("huế"))
+            {
+                qry = qry.Where(x => x.ProvinceCity.ToLower().Contains("huế"));
+            }
+            else if (p.Contains("đắk lắk") || p.Contains("đắc lắc") || p.Contains("dak lak"))
+            {
+                qry = qry.Where(x => x.ProvinceCity.ToLower().Contains("đắc lắc") || 
+                                     x.ProvinceCity.ToLower().Contains("đắk lắk"));
+            }
+            else
+            {
+                qry = qry.Where(x => x.ProvinceCity.ToLower().Contains(p));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(query.SectorCode))
         {
-            qry = qry.Where(x => x.SectorCode == query.SectorCode);
+            var sc = query.SectorCode.Trim().ToUpper();
+            if (sc == "LV01")
+                qry = qry.Where(x => x.SectorCode == "LV01" || x.MainSectorName.ToLower().Contains("cơ khí") || x.MainSectorName.ToLower().Contains("chế tạo") || x.MainSectorName.ToLower().Contains("chế biến"));
+            else if (sc == "LV05")
+                qry = qry.Where(x => x.SectorCode == "LV05" || x.MainSectorName.ToLower().Contains("nông nghiệp"));
+            else if (sc == "LV07")
+                qry = qry.Where(x => x.SectorCode == "LV07" || x.MainSectorName.ToLower().Contains("dược") || x.MainSectorName.ToLower().Contains("y sinh"));
+            else if (sc == "LV08")
+                qry = qry.Where(x => x.SectorCode == "LV08" || x.MainSectorName.ToLower().Contains("thông tin") || x.MainSectorName.ToLower().Contains("chuyển đổi số"));
+            else if (sc == "LV11")
+                qry = qry.Where(x => x.SectorCode == "LV11" || x.MainSectorName.ToLower().Contains("vật liệu") || x.MainSectorName.ToLower().Contains("hóa chất"));
+            else if (sc == "LV12")
+                qry = qry.Where(x => x.SectorCode == "LV12" || x.MainSectorName.ToLower().Contains("năng lượng") || x.MainSectorName.ToLower().Contains("môi trường"));
+            else if (sc == "LV14")
+                qry = qry.Where(x => x.SectorCode == "LV14" || x.MainSectorName.ToLower().Contains("điện tử") || x.MainSectorName.ToLower().Contains("viễn thông"));
+            else if (sc == "LV15")
+                qry = qry.Where(x => x.SectorCode == "LV15" || x.MainSectorName.ToLower().Contains("thực phẩm") || x.MainSectorName.ToLower().Contains("đồ uống"));
+            else if (sc == "LV16")
+                qry = qry.Where(x => x.SectorCode == "LV16" || x.MainSectorName.ToLower().Contains("dệt may") || x.MainSectorName.ToLower().Contains("da giày"));
+            else if (sc == "LV17")
+                qry = qry.Where(x => x.SectorCode == "LV17" || x.MainSectorName.ToLower().Contains("logistics") || x.MainSectorName.ToLower().Contains("chuỗi cung ứng"));
+            else
+                qry = qry.Where(x => x.SectorCode == sc || x.MainSectorName.ToLower().Contains(sc.ToLower()));
         }
 
         if (!string.IsNullOrWhiteSpace(query.SubjectType))
@@ -86,17 +131,45 @@ public class EfEnterpriseRepository : IEnterpriseRepository
 
         if (!string.IsNullOrWhiteSpace(query.TniClassification))
         {
-            qry = qry.Where(x => x.TniClassification == query.TniClassification);
+            var tni = query.TniClassification.Trim().ToUpper();
+            if (tni == "HIGH")
+            {
+                qry = qry.Where(x => x.TniClassification == "HIGH" || x.TniClassification == "VERY_HIGH" || (x.TniScore.HasValue && x.TniScore >= 75));
+            }
+            else if (tni == "VERY_HIGH")
+            {
+                qry = qry.Where(x => x.TniClassification == "VERY_HIGH" || (x.TniScore.HasValue && x.TniScore >= 85));
+            }
+            else if (tni == "MEDIUM")
+            {
+                qry = qry.Where(x => x.TniClassification == "MEDIUM" || (x.TniScore.HasValue && x.TniScore >= 50 && x.TniScore < 75));
+            }
+            else if (tni == "LOW")
+            {
+                qry = qry.Where(x => x.TniClassification == "LOW" || (x.TniScore.HasValue && x.TniScore < 50));
+            }
+            else
+            {
+                qry = qry.Where(x => x.TniClassification == tni);
+            }
         }
 
         var totalCount = await qry.CountAsync(ct);
         var page = query.Page <= 0 ? 1 : query.Page;
         var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
 
-        var items = await qry
+        var sortBy = query.SortBy?.Trim().ToLower();
+        IQueryable<Domain.Enterprise> sortedQry = sortBy switch
+        {
+            "ip_desc" => qry.OrderByDescending(x => x.IntellectualProperties.Count).ThenByDescending(x => x.TniScore),
+            "name_asc" => qry.OrderBy(x => x.Name),
+            "name_desc" => qry.OrderByDescending(x => x.Name),
+            "recent" => qry.OrderByDescending(x => x.UpdatedAt).ThenByDescending(x => x.CreatedAt),
+            _ => qry.OrderByDescending(x => x.TniScore).ThenBy(x => x.Name)
+        };
+
+        var items = await sortedQry
             .Include(x => x.IntellectualProperties)
-            .OrderByDescending(x => x.TniScore)
-            .ThenBy(x => x.Name)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);

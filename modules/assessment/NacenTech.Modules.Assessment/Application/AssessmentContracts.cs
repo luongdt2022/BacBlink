@@ -25,7 +25,10 @@ public sealed class Tt17AssessmentDto
 
 public sealed class Tt17SurveyDataDto
 {
-    // Mục A: Thông tin chung
+    // Mục A: Thông tin chung & Định danh
+    public string CompanyName { get; set; } = "";
+    public string TaxCode { get; set; } = "";
+    public string ContactPerson { get; set; } = "";
     public double TotalCapital { get; set; } // Tổng nguồn vốn (VNĐ)
     public int TotalWorkforce { get; set; } // Lao động M
     public string CompanyAddress { get; set; } = "";
@@ -123,6 +126,11 @@ public sealed class SaveAssessmentDraftDto
     public int AssessmentYear { get; set; }
     public string IndustryCode { get; set; } = "";
     public string ScopeId { get; set; } = "";
+    public string? EnterpriseName { get; set; }
+    public string? TaxCode { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? ContactPhone { get; set; }
+    public string? ContactEmail { get; set; }
     public Tt17SurveyDataDto SurveyData { get; set; } = new();
 }
 
