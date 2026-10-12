@@ -130,3 +130,30 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 3. **AC-03**: Backend Unit Test bao phủ 100% các ca biên của `TniCalculationEngine` (min = 20, max = 100, invalid < 1 hoặc > 5 bị từ chối).
 4. **AC-04**: Public API che giấu 100% thông tin PII nhạy cảm theo đúng chuẩn PDPD.
 5. **AC-05**: Bộ test Playwright E2E Black-box kiểm thử thông suốt 5 luồng công việc đạt 100% Green.
+
+---
+
+## Spec Delta v2: Cải Tiến Giao Diện & Trải Nghiệm Sàn Nhu Cầu Công Khai (SC-03-04)
+
+> **Căn cứ thay đổi**: Đánh giá thực nghiệm giao diện `localhost:3000/nhu-cau-cong-nghe` ngày 12/10/2026, đối soát 1:1 với `wireframe_san_nhu_cau_cong_nghe.html` và chỉ đạo trực tiếp từ PO.
+
+### 1. Bối cảnh & Mục tiêu
+- **Khắc phục lỗi tương phản WCAG AA**: Nền banner `bg-brand-700` và ảnh nền vi mạch làm mờ tịt tiêu đề H1 và văn bản giới thiệu. Bổ sung overlay gradient tối màu và ép định dạng chữ trắng tương phản cao.
+- **Chuẩn hóa thông tin hiển thị (Zero Technical Jargon on UI)**:
+  - Ẩn hoàn toàn các mã hồ sơ kỹ thuật ngẫu nhiên/hash (ví dụ `DMD-202610-0FF52B`) khỏi vị trí tiêu đề chính của Card.
+  - Thay thế mã phân loại thô (`LV08`, `LV07`) bằng tên tiếng Việt chính thức của 10 Lĩnh vực công nghệ Thông tư 17.
+  - Bổ sung định danh Doanh nghiệp ẩn danh theo chuẩn PDPD Nghị định 13/2023/NĐ-CP (ví dụ: `[Doanh nghiệp Cơ khí - Hải Phòng] (PDPD Masked)`).
+- **Mở rộng Combobox Lĩnh vực**: Nạp đầy đủ 10 Lĩnh vực TT17 từ API `/api/v1/sectors` (thay thế 3 option hardcode cũ).
+- **Phân quyền nút bấm theo vai trò (Role-Based Action Boundaries)**:
+  - Nút "Đăng Nhanh Bài Toán": Kiểm tra phiên đăng nhập `BUYER` / `INNOVATION_ENTITY`. Nếu khách vãng lai, hiển thị dẫn hướng đăng nhập hoặc gợi ý điền form khảo sát.
+  - Nút "Chi tiết & Chào giải pháp": Đảm bảo dẫn hướng thông suốt cho `SELLER` và `EXPERT`.
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-01 -> FR-Delta-04)
+- **FR-Delta-01**: Hero Banner hiển thị khối Quick Metrics (140+ Bài toán đang tìm, 68.5+ Tỷ ngân sách mua, 24 Giờ hỗ trợ kết nối) với độ tương phản WCAG AA đạt chuẩn.
+- **FR-Delta-02**: Combobox Bộ lọc Lĩnh vực nạp động toàn bộ danh mục 10 Lĩnh vực TT17 kèm fallback an toàn.
+- **FR-Delta-03**: Bổ sung bộ lọc Ngân sách đầu tư (5 mức) và bộ lọc Mức độ cấp thiết TNI.
+- **FR-Delta-04**: Thẻ Card hiển thị đầy đủ thông tin nghiệp vụ: Tên lĩnh vực tiếng Việt, Ngân sách chuẩn hóa, Nhãn doanh nghiệp PDPD masked, nút Bookmark và CTA nộp giải pháp.
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung
+- **BR-Delta-01 (PDPD Masking Presentation)**: Sàn công khai tuyệt đối không hiển thị mã hash nội bộ, MST, SĐT, Email của Doanh nghiệp. Chỉ hiển thị định danh dạng `[Loại hình - Lĩnh vực - Địa bàn] (PDPD Masked)`.
+- **BR-Delta-02 (Role Action Guard)**: Khách vãng lai chưa xác thực khi thực hiện thao tác tạo bài toán nhanh phải được chuyển hướng đăng nhập văn minh hoặc hướng dẫn sử dụng Phiếu khảo sát công khai.

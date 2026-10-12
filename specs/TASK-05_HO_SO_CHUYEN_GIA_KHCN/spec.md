@@ -434,3 +434,42 @@ This scope supersedes v11 owner/admin/Zalo exclusions for sector data consumptio
 ## 13. Delta v13 — close real draft handoff gap
 
 Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-signed HMAC token with onlySHA256 hash stored in existing DB column; legacy plaintext tokens are rejected. GET does notconsume; authenticated officialsubmit claims originalprofile and clears hash/expiry in samehosttransaction as approval enqueue. Runtimeindustrycode survives handoff, historical inactivecode requires active user selection before submission. No fabricatedAIprogress/prefill is reported. ConfiguredfrontendURL replaces hardcodedhost. Minimal handoff completion does not imply completion of CV ingestion/ZNS pipeline.
+
+---
+
+## 14. Spec Delta v14: Form Chỉnh Sửa Hồ Sơ Chuyên Gia & Completeness Engine
+
+**Căn cứ pháp lý & Thiết kế cơ sở**: Basic Design Wireframe [`wireframe_chinh_sua_ho_so_chuyen_gia.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_chinh_sua_ho_so_chuyen_gia.html) và [`wireframe_expert_dashboard.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_dashboard.html).
+
+### User Story 17 — Chuyên Gia Tự Quản Trị & Cập Nhật Hồ Sơ LLKH (Priority: P1)
+**User Persona**: Chuyên gia đã được phê duyệt tài khoản (`VERIFIED_EXPERT`).  
+**Mục tiêu**: Có giao diện tự phục vụ (Self-service Workspace) để cập nhật học hàm, cơ quan, từ khóa nghiên cứu, thành tựu khoa học và trạng thái sẵn sàng nhận tư vấn chuyển giao công nghệ.
+
+**Acceptance Scenarios**:
+1. **Given** chuyên gia đã đăng nhập với vai trò `VERIFIED_EXPERT`, **When** bấm nút "Chỉnh sửa hồ sơ" trên trang cá nhân hoặc truy cập `/portal/expert/profile/edit`, **Then** hệ thống nạp dữ liệu hiện hành từ CSDL thật vào biểu mẫu 3 khối chuẩn Wireframe:
+   - *Khối 1*: Học hàm, Học vị, Năm công nhận, Cơ quan công tác, Chức vụ chuyên môn.
+   - *Khối 2*: Lĩnh vực trụ cột TT17 (chọn từ taxonomy active trong DB) & Từ khóa chuyên sâu (`specializedKeywords`).
+   - *Khối 3*: Danh mục công trình khoa học, bằng sáng chế, đề tài và tóm tắt năng lực tư vấn.
+   - *Khối Trạng thái*: Bật/tắt trạng thái Nhận lời mời tư vấn (`isAcceptingConsultation`).
+2. **Given** chuyên gia sửa đổi thông tin và bấm [Lưu Thay Đổi Hồ Sơ], **When** gửi yêu cầu `PUT /api/v1/experts/my-profile`, **Then** hệ thống cập nhật vào PostgreSQL thật, trả thông báo thành công và điều hướng mượt mà.
+3. **Given** hồ sơ chuyên gia đang ở trạng thái chờ duyệt `PENDING_REVIEW`, **When** truy cập trang chỉnh sửa, **Then** hệ thống khóa form và hiển thị cảnh báo giải thích quy trình thẩm định.
+
+### User Story 18 — Đánh Giá Tỷ Lệ Hoàn Thiện Hồ Sơ (Priority: P2)
+**User Persona**: Chuyên gia muốn biết hồ sơ của mình đạt chuẩn chất lượng ở mức độ nào để bổ sung kịp thời.  
+**Mục tiêu**: Cung cấp thước đo định lượng (Completeness Score) chuẩn hóa 100% dựa trên 5 trụ cột dữ liệu Bộ KH&CN.
+
+**Acceptance Scenarios**:
+1. **Given** chuyên gia truy cập trang hồ sơ hoặc trang chỉnh sửa, **When** hệ thống gọi `GET /api/v1/experts/me/completeness`, **Then** trả về:
+   - `score`: Số nguyên từ 0 đến 100.
+   - `grade`: Phân loại (`EXCELLENT` $\ge 90$, `GOOD` $\ge 70$, `BASIC` $\ge 50$, `INCOMPLETE` $< 50$).
+   - `completedCriteria`: Mảng tên các tiêu chí đã hoàn thành.
+   - `missingCriteria`: Mảng tên các nhóm thông tin còn thiếu kèm gợi ý bổ sung.
+2. **Given** tỷ lệ hoàn thiện còn thiếu, **When** hiển thị banner cảnh báo, **Then** cung cấp lối tắt nhanh dẫn đến đúng nhóm trường cần bổ sung.
+
+### Quy Tắc Nghiệp Vụ Bổ Sung (Spec Delta Rules)
+- **REQ-EXP-EDIT-001**: Hệ thống cung cấp API `PUT /api/v1/experts/my-profile` cho phép cập nhật thông tin cá nhân chuyên gia an toàn.
+- **REQ-EXP-EDIT-002**: Hệ thống cung cấp API `GET /api/v1/experts/me/completeness` trả về điểm hoàn thiện hồ sơ được tính toán từ máy chủ (Server-side calculation).
+- **BR-EXP-041 (Owner Authorization Guard)**: Chỉ tài khoản sở hữu hồ sơ và mang role `VERIFIED_EXPERT` mới được phép gọi API cập nhật hoặc tính completeness của chính mình.
+- **BR-EXP-042 (Pending Review State Guard)**: Hồ sơ mang trạng thái `PENDING_REVIEW` bị khóa sửa đổi để bảo toàn tính toàn vẹn trong thẩm định.
+- **BR-EXP-043 (Sector Active Validation)**: Mã lĩnh vực trong `expertiseSectors` bắt buộc phải là mã đang `active` trong bảng taxonomy của hệ thống.
+

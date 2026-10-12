@@ -556,3 +556,49 @@ Migration `20260929140000_MakeExpertIdentityCardOptional` chỉ `ALTER ... DROP 
 - Frontend: nạp taxonomy và tỉnh từ API, reset/clear filters, query-state/page reset nhất quán; bỏ sort chưa hoạt động và nối CTA với endpoint consultation request hiện hữu.
 - Không cần migration nếu truy vấn Person scope đáp ứng; nếu kiểm chứng cho thấy không, dừng phần province và đề xuất schema delta trước khi đổi DB.
 - QC: API/invariant (10 taxonomy active, sector/province filters, approved/public only, PII), FE tests (loading/error/retry/empty/query combination/pagination), contract và E2E screenshot desktop/mobile.
+
+---
+
+## 15. Plan Delta v14: Form Chỉnh Sửa Hồ Sơ Chuyên Gia & Completeness Engine
+
+### 15.1. Domain & Kiến Trúc Tầng Ứng Dụng (Clean Architecture)
+- **Domain Entity (`ExpertProfile.cs`)**:
+  - Bổ sung phương thức `UpdateProfileDetails(...)` cho phép chủ hồ sơ cập nhật: `AcademicRank`, `AcademicRankYear`, `Degree`, `DegreeYear`, `OrganizationName`, `OrganizationAddress`, `ResearchTitle`, `PositionTitle`, `ExpertiseSectors`, `SpecializedKeywords`, `PublicBio`, `IsAcceptingConsultation`, `TrainingHistoryJson`, `EmploymentHistoryJson`, `PublicationsJson`, `ConsultingSummary`.
+  - Cưỡng chế quy tắc bất biến: Ném ngoại lệ `ValidationException` nếu thiếu học vị, cơ quan, hoặc nếu hồ sơ đang trong trạng thái `PENDING_REVIEW` (`BR-EXP-042`).
+  - Cập nhật thời điểm `UpdatedAtUtc = clock.UtcNow`.
+
+- **Completeness Engine Logic (Thuật Toán Định Lượng)**:
+  - Điểm tổng chuẩn hóa 100 điểm, chia đều 5 nhóm (mỗi nhóm 20 điểm):
+    1. **Định danh & Pháp lý** (20đ): Có FullName, BirthYear hợp lệ, Gender, và đã xác nhận PDPD.
+    2. **Học vị & Cơ quan** (20đ): Có Degree, DegreeYear, OrganizationName, và PositionTitle.
+    3. **Lĩnh vực TT17 & Từ khóa** (20đ): Có ít nhất 1 mã trong `ExpertiseSectors` (10đ) và ít nhất 1 từ khóa trong `SpecializedKeywords` (10đ).
+    4. **Thành tựu KH&CN** (20đ): Có dữ liệu công trình trong `PublicationsJson` hoặc `ExpertPublication` hoặc `ExpertPatent` (20đ).
+    5. **Hồ sơ Công khai & Tư vấn** (20đ): Có `PublicBio` không rỗng (10đ) và đã kích hoạt `IsAcceptingConsultation` (10đ).
+  - Phân hạng (`Grade`):
+    - $\ge 90$: `EXCELLENT` (Xuất sắc)
+    - $\ge 70$: `GOOD` (Khá tốt)
+    - $\ge 50$: `BASIC` (Cơ bản)
+    - $< 50$: `INCOMPLETE` (Chưa đạt)
+
+### 15.2. Hợp Đồng API & DTOs
+- `UpdateExpertProfileRequest`: Chứa toàn bộ các trường chuyên môn cho phép cập nhật.
+- `ExpertCompletenessDto`: `Score` (int), `Grade` (string), `CompletedCriteria` (list string), `MissingCriteria` (list string), `Suggestions` (list string).
+- Endpoint `PUT /api/v1/experts/my-profile`: Yêu cầu xác thực `[Authorize]`, kiểm tra role `VERIFIED_EXPERT`, validate `ExpertiseSectors` thuộc taxonomy active qua `ITaxonomyService`.
+- Endpoint `GET /api/v1/experts/me/completeness`: Yêu cầu xác thực `[Authorize]`, trả về `ExpertCompletenessDto`.
+
+### 15.3. Giao Diện Người Dùng & Trải Nghiệm 5 UX States
+- Tạo trang `SourceCode/frontend/src/app/portal/expert/profile/edit/page.tsx` bọc `RoleGuard(VERIFIED_EXPERT)`:
+  - Bố cục 3 khối chuẩn Wireframe `wireframe_chinh_sua_ho_so_chuyen_gia.html`:
+    - Khối 1: Học Hàm, Học Vị & Cơ Quan Công Tác Chính.
+    - Khối 2: Lĩnh Vực Chuyên Môn (10 LV TT17) & Từ Khóa Nghiên Cứu (`SpecializedKeywords`).
+    - Khối 3: Danh Mục Công Trình Khoa Học, Sáng Chế & Đề Tài.
+    - Status Bar: Thanh Completeness động & Công tắc bật/tắt nhận tư vấn.
+  - Xử lý 5 UX states qua component chuẩn `<Async>`.
+- Điều hướng:
+  - Trang chi tiết `/portal/expert/profile`: Cập nhật nút "Chỉnh sửa hồ sơ" trỏ sang `/portal/expert/profile/edit`.
+  - `CompletenessAlert`: Nạp dữ liệu thực tế từ `GET /api/v1/experts/me/completeness`.
+
+### 15.4. Kế Hoạch Kiểm Thử
+- Backend Invariants: Viết Unit tests cho `UpdateProfileDetails` và tính toán `Completeness` (đạt 100% các ngưỡng điểm).
+- Frontend Vitest: Viết Component tests cho trang `edit/page.tsx` kiểm chứng render 5 UX states, tương tác form, và lưu thành công.
+

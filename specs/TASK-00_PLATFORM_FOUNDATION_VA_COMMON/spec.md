@@ -288,3 +288,35 @@ Chọn Đăng xuất chỉ mở hộp xác nhận; chỉ sau khi người dùng 
 2. Chọn Đăng xuất rồi hủy giữ token và user context; xác nhận xóa cả hai, điều hướng `/` và lần tải lại không còn nhận diện phiên.
 3. Hành động Đăng xuất ở `/settings` có cùng quy tắc xác nhận/kết thúc phiên.
 4. Vitest component và `pnpm build` đều pass; menu dùng được bằng bàn phím và không làm hồi quy Header ở desktop/mobile.
+
+---
+
+## Spec Delta v7 (CR-2026-006): Phân Nhánh Menu Tác Nghiệp Động Theo Vai Trò (Dynamic Role-Tailored Workspace Navigation)
+
+**Căn cứ thay đổi:** Quyết định PO về Tối ưu hóa Trải nghiệm Tác nghiệp Đa vai trò (Role-Tailored Workspaces) & Ma trận 30 Màn hình Basic Design (`Specification/02_BASIC_DESIGN/MA_TRAN_KICH_BAN_VA_TRANG_THAI_30_MAN_HINH.md`).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+Trước Delta v7, `PortalLayout` (`src/app/portal/layout.tsx`) hiển thị một danh sách menu tĩnh cố định 7 mục chung cho mọi đối tượng. Điều này dẫn đến sự chồng chéo và nhiễu loạn giao diện: Bên Mua (Buyer) nhìn thấy menu của Nhà Cung Ứng (Seller) và Chuyên gia; Chuyên gia nhìn thấy menu quản lý gian hàng và bài toán tìm mua; Admin và Cán bộ Nhà nước không có lối tắt quay lại Console chuyên trách.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Requirements Delta)
+
+- **REQ-NAV-001 (Dynamic Role-Tailored Sidebar Menu - PO Approved)**:
+  - Sidebar tác nghiệp `/portal` MUST render danh sách menu động được "may đo" riêng cho từng nhóm vai trò, loại bỏ hoàn toàn các nhãn kỹ thuật dev, nút trùng lặp và các liên kết rỗng:
+    - **Bên Mua (`BUYER`)**: Tổng quan Mua sắm (`/portal`), Bài toán Tìm mua (`/portal/buyer/demands`), Radar Ghép Nối AI (`/portal/matching/radar`), Tiến trình Hợp tác & MOU (`/portal/opportunities/pipeline`), Khảo sát Nhu cầu (TNI) (`/khao-sat-nhu-cau`), Đánh giá Năng lực TT17 (`/assessments/tt17`), Hồ sơ Doanh nghiệp (`/portal/enterprise/profile`).
+    - **Nhà Cung Ứng (`SELLER`)**: Tổng quan Gian hàng (`/portal`), Kho Công nghệ TRL 1-9 (`/portal/seller/technologies`), Yêu cầu Kết nối Nhận được (`/portal/opportunities/pipeline?tab=inbound`), Radar Tìm Kiếm Nhu Cầu AI (`/portal/matching/radar`), Tiến trình Chuyển giao & MOU (`/portal/opportunities/pipeline`), Hồ sơ Đơn vị / Viện Trường (`/portal/enterprise/profile`).
+    - **Chuyên Gia KH&CN (`VERIFIED_EXPERT`, `EXPERT`)**: Tổng quan chuyên gia (`/portal`), Hồ sơ LLKH của tôi (`/portal/expert/profile`), Lời mời Tư vấn Doanh nghiệp (`/portal/opportunities/pipeline?type=consulting`), Radar Cơ hội Phù hợp AI (`/portal/matching/radar`), Dự án Đồng hành & Hợp tác (`/portal/opportunities/pipeline`).
+    - **Chủ Thể ĐMST (`INNOVATION_ENTITY`)**: Phân 2 khối trực quan: Khối Cung–Cầu (Tổng quan ĐMST, Bài toán Cần Mua, Công nghệ Chào Bán, Radar AI, Tiến trình Hợp tác); Khối Năng lực & Hồ sơ (Tự Đánh giá TT17, Hồ sơ Doanh nghiệp ĐMST).
+    - **Công Chúng / Mới Đăng Ký (`PUBLIC_USER`, `USER`)**: Bàn làm việc Cá nhân (`/portal`), Radar Khám Phá AI (`/portal/matching/radar`), Đăng ký Nâng hạng Vai trò (`/profile/upgrade/expert`), Cài đặt Tài khoản (`/settings`). (Triệt tiêu Kanban rỗng).
+    - **Quản Trị Viên (`SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`, `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`)**: Góc nhìn Giám sát Thực địa sàn B2B kèm card điều hướng nhanh 1-click quay về `/admin` hoặc `/gov`.
+
+- **REQ-NAV-002 (Dynamic Workspace Identity Badge)**:
+  - Header Sidebar MUST hiển thị nhãn và tiêu đề phân định rõ không gian tác nghiệp của vai trò hiện tại (ví dụ: *Bên Mua Công Nghệ - Workspace Bên Mua*, *Nhà Cung Ứng Công Nghệ - Workspace Nhà Cung Ứng*, *Chuyên Gia KH&CN - Workspace Chuyên Gia*, *Thành Viên Đại Chúng - Bàn Làm Việc Cá Nhân*, *Quản Trị Viên Hệ Thống - Góc Nhìn Giám Sát Thực Địa*).
+
+- **REQ-NAV-003 (Accurate Sub-route Mapping)**:
+  - Tất cả các liên kết trong Sidebar MUST trỏ chính xác về route thực tế (ví dụ: `/portal/buyer/demands`, `/portal/seller/technologies`, `/portal/enterprise/profile`), triệt tiêu hoàn toàn các route giả định chưa tồn tại.
+
+### 3. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **AC-DELTA-07**: Đăng nhập với role `BUYER` không nhìn thấy menu chào bán công nghệ hoặc hồ sơ chuyên gia; đăng nhập với `SELLER` không nhìn thấy bài toán mua; đăng nhập với `VERIFIED_EXPERT` chỉ thấy LLKH và lời mời tư vấn; `PUBLIC_USER` không thấy bảng Kanban rỗng.
+- **AC-DELTA-08**: Quản trị viên (`ADMIN`/`GOV`) có card chuyển nhanh về `/admin` hoặc `/gov`.
+- **AC-DELTA-09**: Vitest kiểm thử phân nhánh 6 vai trò chính (`src/app/portal/layout.test.tsx`) đạt 6/6 pass; build production Next.js 15 (`pnpm build`) đạt 51/51 trang tĩnh 0 lỗi (Exit code 0).
+

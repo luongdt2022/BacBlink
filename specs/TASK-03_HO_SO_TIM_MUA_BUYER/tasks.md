@@ -61,3 +61,14 @@
 - [x] **T-03.21** `[QC-TEST]` Tầng 3 (DB Integration): Kiểm định lưu trữ CSDL PostgreSQL, kiểm tra tính toàn vẹn và cách ly với Master DN `TASK-02`.
 - [x] **T-03.22** `[QC-TEST]` Tầng 4 (Playwright E2E Black-box): Xây dựng và thực thi trọn bộ kịch bản E2E `test_task03_buyer_demands_blackbox.py` bao phủ cả 6 màn hình và 5 luồng công việc đạt 100% Pass.
 - [x] **T-03.23** `[PO-GATE]` Nghiệm thu Gate 4 & Gate 5 Sign-off, cập nhật `ROADMAP.md` và `TRACEABILITY.md`.
+
+---
+
+## Phase 8: Delta v2 — Tối Ưu Hóa Sàn Nhu Cầu Công Khai & Phân Quyền Hành Động
+
+- [ ] **T-03.24** `[FE]` Tối ưu giao diện Hero Banner: Thêm overlay gradient tối màu, `relative z-10`, khắc phục lỗi text mờ tịt (đạt chuẩn WCAG AA), thêm khối Quick Metrics (140+ Bài toán, 68.5+ Tỷ ngân sách, 24 Giờ hỗ trợ).
+- [ ] **T-03.25** `[FE]` Mở rộng Combobox Lĩnh vực: Tích hợp `getActiveSectors()` từ `master-data-client.ts`, hiển thị đầy đủ 10 Lĩnh vực TT17 kèm fallback an toàn.
+- [ ] **T-03.26** `[FE]` Chuẩn hóa thẻ bài toán (Humanized Cards): Ẩn mã hồ sơ hash/ID thô (`DMD-202610-0FF52B`), hiển thị tên tiếng Việt của lĩnh vực, hiển thị định danh doanh nghiệp ẩn danh theo chuẩn PDPD masking.
+- [ ] **T-03.27** `[FE]` Phân quyền nút bấm & Bảo vệ vai trò (Role Guards): Tích hợp `authClient` kiểm tra quyền khi bấm "Đăng Nhanh Bài Toán", dẫn hướng khách vãng lai hoặc mở modal cho Doanh nghiệp; gắn auth headers vào `QuickDemandModal.tsx`.
+- [ ] **T-03.28** `[QC-TEST]` Kiểm thử hồi quy giao diện, kiểm chứng độ tương phản, kiểm tra bộ lọc và sự kiện nút bấm.
+

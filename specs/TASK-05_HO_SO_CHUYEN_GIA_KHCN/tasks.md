@@ -211,3 +211,28 @@
 - [x] T111 [DELTA-13][TEST] VerifyrealDB lookup/expiry/tampering/one-timeclaim/validationrollback plushandoffUI.
 
 - [x] T112 [DELTA-12][BE][DB][API][TEST] Lưu SpecializedKeywords độc lập ExpertiseSectors; optional additive contract, text[] migration, draft/owner/admin/public roundtrip và kiểm chứng thực.
+
+---
+
+## Phase 18: Delta v14 — Form Chỉnh Sửa Hồ Sơ Chuyên Gia & Completeness Engine [CR-2026-007]
+
+- [x] `T114` **[BE][DOMAIN][REQ-EXP-EDIT-001][BR-EXP-041..043]** Thêm method `UpdateProfileDetails` và `CalculateCompleteness` trong `ExpertProfile.cs`; bảo đảm invariants về trạng thái `PENDING_REVIEW`, học vị và cơ quan bắt buộc.
+- [x] `T115` **[BE][CONTRACT][REQ-EXP-EDIT-001..002]** Thêm DTO `UpdateExpertProfileRequest` và `ExpertCompletenessDto` trong `modules/brokerage/Application/Contracts.cs`.
+- [x] `T116` **[BE][SERVICE][REQ-EXP-EDIT-001..002]** Cài đặt `UpdateMyProfileAsync` và `GetMyCompletenessAsync` trong `ExpertService.cs`.
+- [x] `T117` **[BE][API][REQ-EXP-EDIT-001..002]** Bổ sung endpoints `PUT /api/v1/experts/my-profile` và `GET /api/v1/experts/me/completeness` trong `ExpertController.cs` kèm phân quyền `VERIFIED_EXPERT`, validation taxonomy và audit log.
+- [x] `T118` **[BE][TEST][BR-EXP-041..043]** Viết Unit Invariants tests cho `UpdateProfileDetails`, `CalculateCompleteness` và validation trong `ExpertProfileInvariantsTests.cs`.
+- [x] `T119` **[FE][CLIENT][REQ-EXP-EDIT-001..002]** Bổ sung các hàm client `updateMyExpertProfile` và `getMyExpertCompleteness` vào `src/lib/expert-detail.ts`.
+- [x] `T120` **[FE][UI][REQ-EXP-EDIT-001..004]** Xây dựng trang `/portal/expert/profile/edit` bám sát `wireframe_chinh_sua_ho_so_chuyen_gia.html`, bọc `RoleGuard(VERIFIED_EXPERT)`, xử lý 5 UX states qua `<Async>`, và cập nhật nút link trên `/portal/expert/profile`.
+- [x] `T121` **[FE][TEST][AC-EDIT-01..03]** Viết Vitest component test cho `edit/page.tsx` và regression test cho `profile-detail.tsx`, đảm bảo 100% tests pass.
+
+---
+
+## Phase 19: Delta v15 — Background Worker & In-App Notification Reminders [CR-2026-008]
+
+- [x] `T122` **[BE][CONTRACT][REQ-EXP-REMIND-001]** Khai báo notification type `NotificationTypes.ExpertCompletenessReminder = "expert_completeness_reminder"` trong `modules/communication/Application/Contracts.cs`.
+- [x] `T123` **[BE][WORKER][REQ-EXP-REMIND-002][BR-EXP-044..046]** Xây dựng `ExpertCompletenessReminderWorker` kế thừa `BackgroundService` tại `packages/persistence/Workers/ExpertCompletenessReminderWorker.cs`. Quét hồ sơ chuyên gia `Status == APPROVED` có `PersonId != null`, lọc điều kiện completeness `< 70%` hoặc stale `> 30 ngày`, kiểm tra chống spam/idempotency (tối đa 1 thông báo/chuyên gia trong 7 ngày), gửi in-app notification chi tiết kèm link dẫn về `/portal/expert/profile/edit`.
+- [x] `T124` **[BE][DI][REQ-EXP-REMIND-003]** Đăng ký `ExpertCompletenessReminderWorker` vào `IServiceCollection` trong `packages/persistence/PersistenceServiceCollectionExtensions.cs` thông qua `AddNacenTechWorkers()`.
+- [x] `T125` **[BE][TEST][BR-EXP-044..046]** Viết trọn bộ kiểm thử xUnit cho `ExpertCompletenessReminderWorker`: kiểm chứng chỉ duyệt `APPROVED`, lọc điểm `< 70%` và stale `> 30 ngày`, chặn gửi lặp trong vòng 7 ngày, tính toán chính xác số lượng thông báo được phát đi.
+- [x] `T126` **[INT][GUARD-RAILS][GATE-5]** Chạy toàn bộ test suites (`dotnet test`, `npm test`), chạy `./Agent/scripts/guard-rails.sh`, tick `[x]` T122..T126, cập nhật `ROADMAP.md` và nghiệm thu xuất xưởng.
+
+

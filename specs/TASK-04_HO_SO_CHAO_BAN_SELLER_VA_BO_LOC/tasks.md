@@ -65,3 +65,17 @@
 - [x] T-04.30 [FE] Liên kết nút Chỉnh sửa tại Workspace Seller `/portal/seller/technologies` sang trang edit.
 - [x] T-04.31 [FE] Nâng cấp modal liên hệ tại `/chao-ban-cong-nghe/[id]` thành Quick Demand Modal (1 phút) giải quyết bài toán Cờ 2.
 - [x] T-04.32 [TEST] Viết bổ sung Unit test xUnit kiểm chứng `ValidateUpdate` và `BR-SELLER-07` đạt 100% Pass (20/20 tests).
+
+---
+
+### Phase 10: Delta v3 — Chuẩn Hóa Chi Tiết Chào Bán & Loại Bỏ Mock Dữ Liệu [FE][TEST]
+- [x] T-04.33 [FE] Loại bỏ bảng thông số sấy thăng hoa tĩnh tại Tab Specs trong `[id]/page.tsx`; chuyển sang kết xuất động thông số kỹ thuật từ `offer` (`offerType`, `unit`, `trlLevel`, `ipStatus`, `ipRegistrationNumber`, `problemSolved`).
+- [x] T-04.34 [FE] Sửa lỗi nút Bookmark "Lưu quan tâm" trong `[id]/page.tsx`: toggle state `isBookmarked`, lưu vào localStorage và thông báo Toast.
+- [x] T-04.35 [FE] Sửa nút "Chia sẻ": dùng thông báo giao diện (Toast/inline alert) thay cho `window.alert()`.
+- [x] T-04.36 [FE] Sửa nút chết "Tải về" trong Tab DataRoom: gắn sự kiện download thật/thông báo tải Teaser thành công; tên tệp DataRoom gắn với mã hồ sơ thật.
+- [x] T-04.37 [FE] Hiển thị đúng dữ liệu Đánh giá sàn (`ratingScore`, `reviewCount`) và Đơn vị tính (`unit`) từ PostgreSQL trong Hero Quick Specs.
+- [x] T-04.38 [FE] Đấu nối API `POST /api/v1/demands/items` cho Quick Demand Modal khi gửi yêu cầu kết nối, hiển thị mã phiếu nhu cầu khi gửi thành công.
+- [x] T-04.39 [TEST] Viết bộ kiểm thử `src/app/chao-ban-cong-nghe/[id]/page.test.tsx` kiểm tra toàn bộ các tương tác: Bookmark, Share, Download DataRoom, Tab Navigation, Modal submit API và hiển thị thông số động.
+- [x] T-04.40 [QC] Chạy `tsc --noEmit`, Vitest và `./Agent/scripts/guard-rails.sh` đảm bảo 100% Pass và không có hồi quy.
+
+

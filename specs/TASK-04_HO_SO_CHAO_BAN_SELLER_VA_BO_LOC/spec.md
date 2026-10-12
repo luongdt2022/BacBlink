@@ -123,3 +123,17 @@ Bảng chính `tech_transfer_offers`, kết hợp với `offer_documents` và `o
 - **AC-04-3**: Người dùng công khai truy cập `/chao-ban-cong-nghe` (tab chính của web), thấy danh sách công nghệ niêm yết, lọc theo ngành và TRL hoạt động mượt mà.
 - **AC-04-4**: Bấm vào một công nghệ chuyển sang `/chao-ban-cong-nghe/[id]`, hiển thị đầy đủ thông tin Bộ Tứ SHTT và nút gửi yêu cầu kết nối.
 - **AC-04-5**: 100% test suites (Unit test BR-*, Contract test, Integration test, Playwright E2E) đạt trạng thái Passed.
+
+---
+
+## 8. ĐẶC TẢ DELTA V3: CHUẨN HÓA DỮ LIỆU THẬT & TƯƠNG TÁC CHI TIẾT CHÀO BÁN (`/chao-ban-cong-nghe/[id]`)
+
+### 8.1. Bối Cảnh & Mục Tiêu Nghiệp Vụ
+Sau đợt kiểm toán thực tế (PO & QC Audit) trên bản ghi `OFF-202610-LV16-08` (Nền tảng Digital Twin mô phỏng nhiệt lò nung công nghiệp), phát hiện các vi phạm Zero-Mock và tương tác cần khắc phục triệt để:
+1. **Zero-Mock Thông số kỹ thuật (Tab Specs)**: Loại bỏ bảng thông số sấy thăng hoa chân không tĩnh; xây dựng bảng thông số động hiển thị chính xác theo loại hình (`offerType`), ngành (`sectorName`), quy cách (`unit`), cấp độ kiểm định (`trlLevel`), số hiệu văn bằng (`ipRegistrationNumber`), và các chỉ tiêu giải quyết bài toán (`problemSolved`).
+2. **Loại bỏ Mock DataRoom & Sửa nút chết**: Danh mục tài liệu DataRoom được gắn với mã hồ sơ và thông tin thực tế của công nghệ; nút `<button> Tải về </button>` tài liệu công khai (Teaser) phải có sự kiện kích hoạt tải xuống thật.
+3. **Chuẩn hóa nút "Lưu quan tâm" (Bookmark)**: Thay thế hành vi chuyển tab sai lệch bằng logic Bookmark thực thụ: toggle trạng thái `isBookmarked`, lưu trữ trong local state / storage và hiển thị Toast phản hồi.
+4. **Chia sẻ liên kết đồng bộ**: Thay thế `window.alert()` bằng cơ chế sao chép clipboard kèm Toast thông báo giao diện thống nhất.
+5. **Hiển thị trung thực Đánh giá & Đơn vị tính từ DB**: Thay thế chuỗi cứng `4,9/5 · Đã xác thực` bằng điểm số thật `{offer.ratingScore}/5 ({offer.reviewCount} đánh giá)`, bổ sung đơn vị tính `{offer.unit}` vào khối Quick Specs ở Hero.
+6. **Đấu nối API cho Quick Demand Modal**: Khi submit form, gọi trực tiếp API `POST /api/v1/demands/items` trên backend để tạo phiếu nhu cầu gắn liền với hồ sơ chào bán, phản hồi mã phiếu nhu cầu vừa tạo (`DMD-...`) và chuẩn hóa màu sắc nút submit.
+

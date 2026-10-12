@@ -106,3 +106,13 @@
 ## Delta CR-2026-005 — Common/Home taxonomy sync
 - [x] T-00.49 [FE][REQ-MD-SECTOR-001] Home uses active sector taxonomy for dynamic sector cards/count and opens directory with selected sector code.
 - [x] T-00.50 [FE][INT] Remove static industry-count copy from login/common admin surfaces; render DB count only where runtime-loaded, otherwise count-free copy.
+
+---
+
+## Giai đoạn 11: Delta v7 (CR-2026-006) — Phân Nhánh Menu Tác Nghiệp Động Theo Vai Trò (`[ROLE-NAV-UX]`)
+
+- [x] `T-00.51` **[SPEC][REQ-NAV-001..003]** Ghi nhận Spec Delta v7, phân rã ma trận menu đa vai trò từ Basic Design (`MA_TRAN_KICH_BAN_VA_TRANG_THAI_30_MAN_HINH.md`).
+- [x] `T-00.52` **[FE][REQ-NAV-001, UI-NAV-001]** Tái cấu trúc `src/app/portal/layout.tsx`: xây dựng 6 bộ menu động may đo riêng cho `BUYER`, `SELLER`, `VERIFIED_EXPERT`, `INNOVATION_ENTITY`, `ADMIN`, `PUBLIC_USER`.
+- [x] `T-00.53` **[FE][REQ-NAV-002..003]** Bổ sung Badge định danh không gian làm việc tương ứng và thẻ chuyển hướng nhanh về `/admin` và `/gov` cho tài khoản có quyền quản trị; chuẩn hóa toàn bộ sub-routes thực tế (`buyer/demands`, `seller/technologies`, `enterprise/profile`).
+- [x] `T-00.54` **[TEST][AC-DELTA-07..09]** Viết Unit Test `src/app/portal/layout.test.tsx` kiểm chứng 100% logic phân nhánh vai trò và chạy Vitest hồi quy đạt 100% pass (112/112 tests).
+
