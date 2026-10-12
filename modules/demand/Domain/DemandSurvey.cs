@@ -24,7 +24,17 @@ public sealed class DemandSurvey : AggregateRoot
         string? revenueRange3y,
         List<string>? topBottlenecks,
         Guid? organizationId = null,
-        Guid? createdBy = null)
+        Guid? createdBy = null,
+        string? province = null,
+        string? headquartersAddress = null,
+        string? surveyedFacility = null,
+        string? contactTitle = null,
+        string? mainIndustry = null,
+        string? mainProducts = null,
+        string? confirmedByName = null,
+        string? confirmedByTitle = null,
+        DateTimeOffset? pdpdConsentAt = null,
+        string? surveyDetails = null)
     {
         SurveyCode = surveyCode;
         SurveyType = surveyType;
@@ -40,6 +50,16 @@ public sealed class DemandSurvey : AggregateRoot
         TopBottlenecks = topBottlenecks ?? [];
         OrganizationId = organizationId;
         CreatedBy = createdBy;
+        Province = province;
+        HeadquartersAddress = headquartersAddress;
+        SurveyedFacility = surveyedFacility;
+        ContactTitle = contactTitle;
+        MainIndustry = mainIndustry;
+        MainProducts = mainProducts;
+        ConfirmedByName = confirmedByName;
+        ConfirmedByTitle = confirmedByTitle;
+        PdpdConsentAt = pdpdConsentAt;
+        SurveyDetails = surveyDetails;
         Status = "SUBMITTED";
         SubmittedAt = DateTimeOffset.UtcNow;
     }
@@ -56,6 +76,16 @@ public sealed class DemandSurvey : AggregateRoot
     public string? EmployeeScale { get; private set; }
     public string? RevenueRange3y { get; private set; }
     public List<string> TopBottlenecks { get; private set; } = [];
+    public string? Province { get; private set; }
+    public string? HeadquartersAddress { get; private set; }
+    public string? SurveyedFacility { get; private set; }
+    public string? ContactTitle { get; private set; }
+    public string? MainIndustry { get; private set; }
+    public string? MainProducts { get; private set; }
+    public string? ConfirmedByName { get; private set; }
+    public string? ConfirmedByTitle { get; private set; }
+    public DateTimeOffset? PdpdConsentAt { get; private set; }
+    public string? SurveyDetails { get; private set; }
     public string Status { get; private set; } = "DRAFT";
     public DateTimeOffset? SubmittedAt { get; private set; }
     public Guid? OrganizationId { get; private set; }

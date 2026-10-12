@@ -31,6 +31,26 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V
             return BadRequest(new { message = "Thông tin liên hệ (Họ tên, SĐT, Email) là bắt buộc." });
 
         var surveyCode = $"SUR-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+
+        string? surveyDetailsJson = req.SurveyDetails;
+        if (string.IsNullOrWhiteSpace(surveyDetailsJson))
+        {
+            var detailsObj = new
+            {
+                currentEquipments = req.CurrentEquipments,
+                criteria8 = req.Criteria8,
+                bottlenecksDetail = req.BottlenecksDetail,
+                hardestStage = req.HardestStage,
+                primaryCause = req.PrimaryCause,
+                technicalPersonnel = req.TechnicalPersonnel,
+                adoptionCapacity = req.AdoptionCapacity,
+                futureDirections = req.FutureDirections,
+                supportNeeds = req.SupportNeeds,
+                desiredPartners = req.DesiredPartners
+            };
+            surveyDetailsJson = System.Text.Json.JsonSerializer.Serialize(detailsObj);
+        }
+
         var survey = new DemandSurvey(
             surveyCode,
             req.SurveyType ?? "DEEP_SURVEY",
@@ -45,7 +65,17 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V
             req.RevenueRange3y,
             req.TopBottlenecks,
             req.OrganizationId,
-            Actor.IsAuthenticated ? Actor.PersonId : null
+            Actor.IsAuthenticated ? Actor.PersonId : null,
+            req.Province,
+            req.HeadquartersAddress,
+            req.SurveyedFacility,
+            req.ContactTitle,
+            req.MainIndustry,
+            req.MainProducts,
+            req.ConfirmedByName,
+            req.ConfirmedByTitle,
+            req.PdpdConsentAt ?? DateTimeOffset.UtcNow,
+            surveyDetailsJson
         );
 
         db.Set<DemandSurvey>().Add(survey);
@@ -53,10 +83,11 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow) : V
         var createdTickets = new List<string>();
 
         // Bóc tách từng dòng nhu cầu công nghệ (Demand Items)
-        if (req.DemandItems != null && req.DemandItems.Count > 0)
+        var itemsToProcess = req.DemandItems ?? req.Demands;
+        if (itemsToProcess != null && itemsToProcess.Count > 0)
         {
             int index = 1;
-            foreach (var itemReq in req.DemandItems)
+            foreach (var itemReq in itemsToProcess)
             {
                 var itemCode = $"DMD-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}-{index++:D2}";
                 var demandItem = new DemandItem(
@@ -367,7 +398,36 @@ public sealed record SubmitDeepSurveyRequest(
     List<string>? TopBottlenecks,
     string? SurveyType,
     Guid? OrganizationId,
-    List<DeepSurveyItemRequest>? DemandItems
+    List<DeepSurveyItemRequest>? DemandItems,
+    List<DeepSurveyItemRequest>? Demands = null,
+    string? Province = null,
+    string? HeadquartersAddress = null,
+    string? SurveyedFacility = null,
+    string? ContactTitle = null,
+    string? MainIndustry = null,
+    string? MainProducts = null,
+    string? ConfirmedByName = null,
+    string? ConfirmedByTitle = null,
+    DateTimeOffset? PdpdConsentAt = null,
+    string? SurveyDetails = null,
+    List<DeepSurveyEquipmentRequest>? CurrentEquipments = null,
+    Dictionary<string, int>? Criteria8 = null,
+    Dictionary<string, int>? BottlenecksDetail = null,
+    string? HardestStage = null,
+    string? PrimaryCause = null,
+    Dictionary<string, int>? TechnicalPersonnel = null,
+    Dictionary<string, int>? AdoptionCapacity = null,
+    List<string>? FutureDirections = null,
+    Dictionary<string, int>? SupportNeeds = null,
+    List<string>? DesiredPartners = null
+);
+
+public sealed record DeepSurveyEquipmentRequest(
+    string? StageName,
+    string? MachineName,
+    int? InvestmentYear,
+    string? TechOrigin,
+    string? DepreciationStatus
 );
 
 public sealed record DeepSurveyItemRequest(

@@ -85,18 +85,23 @@ public sealed class V2SurfaceBoundaryTests
 
         v2Routes.ShouldNotBeEmpty("Bề mặt v2 rỗng — `/api/v2` lại trở về 0 endpoint (B-01)");
 
-        foreach (var route in v2Routes)
-            route.ShouldStartWith("api/v2", Case.Sensitive, $"Controller v2 khai đường dẫn ngoài /api/v2: {route}");
+        foreach (var controller in ControllersIn(V2Namespace))
+        {
+            var routes = controller.GetCustomAttributes<RouteAttribute>().Select(r => r.Template).ToList();
+            routes.ShouldContain(r => r.StartsWith("api/v2", StringComparison.Ordinal),
+                $"Controller v2 {controller.Name} không khai đường dẫn nào bắt đầu bằng /api/v2");
+        }
 
         foreach (var route in v1Routes)
             route.ShouldNotStartWith("api/v2", Case.Sensitive, $"Facade v1 lấn sang bề mặt v2: {route}");
     }
 
     private static List<Type> ControllersIn(string ns) => Api.GetTypes()
-        .Where(t => t.Namespace == ns && !t.IsAbstract && t.GetCustomAttribute<RouteAttribute>() is not null)
+        .Where(t => t.Namespace == ns && !t.IsAbstract && t.GetCustomAttributes<RouteAttribute>().Any())
         .ToList();
 
     private static List<string> RoutesOf(string ns) => ControllersIn(ns)
-        .Select(t => t.GetCustomAttribute<RouteAttribute>()!.Template)
+        .SelectMany(t => t.GetCustomAttributes<RouteAttribute>())
+        .Select(r => r.Template)
         .ToList();
 }

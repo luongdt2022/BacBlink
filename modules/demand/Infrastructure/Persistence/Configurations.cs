@@ -66,6 +66,15 @@ public sealed class DemandSurveyConfiguration : IEntityTypeConfiguration<DemandS
         b.Property(x => x.EmployeeScale).HasMaxLength(50);
         b.Property(x => x.RevenueRange3y).HasMaxLength(50);
         b.Property(x => x.TopBottlenecks).HasColumnType("text[]");
+        b.Property(x => x.Province).HasMaxLength(100);
+        b.Property(x => x.HeadquartersAddress).HasMaxLength(255);
+        b.Property(x => x.SurveyedFacility).HasMaxLength(255);
+        b.Property(x => x.ContactTitle).HasMaxLength(100);
+        b.Property(x => x.MainIndustry).HasMaxLength(100);
+        b.Property(x => x.MainProducts).HasColumnType("text");
+        b.Property(x => x.ConfirmedByName).HasMaxLength(150);
+        b.Property(x => x.ConfirmedByTitle).HasMaxLength(100);
+        b.Property(x => x.SurveyDetails).HasColumnType("jsonb");
         b.Property(x => x.Status).HasMaxLength(30).IsRequired();
 
         b.HasIndex(x => x.SurveyCode).IsUnique();
