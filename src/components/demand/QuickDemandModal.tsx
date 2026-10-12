@@ -13,6 +13,9 @@ import {
 } from 'lucide-react';
 import TniRealtimeCalculator, { TniValues } from '@/components/demand/TniRealtimeCalculator';
 import { useToast } from '@/components/common/toast';
+import { authClient } from '@/lib/auth-client';
+import { getActiveSectors, SectorOption } from '@/lib/master-data-client';
+import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
 
 interface QuickDemandModalProps {
   isOpen: boolean;
@@ -23,6 +26,20 @@ interface QuickDemandModalProps {
 export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDemandModalProps) {
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sectors, setSectors] = useState<SectorOption[]>(
+    SECTORS_18_CATALOG.filter((s) => s.code !== 'ALL')
+  );
+
+  useEffect(() => {
+    getActiveSectors()
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setSectors(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const [formData, setFormData] = useState({
     stageName: 'Đúc và Nhiệt luyện kim loại',
     technicalProblem: 'Khắc phục hiện tượng nứt chân chim và co ngót khi đúc phôi hợp kim chịu nhiệt',

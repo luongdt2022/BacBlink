@@ -22,14 +22,17 @@ import {
   ExternalLink,
   Bookmark,
   Check,
+  Loader2,
 } from "lucide-react";
-import { fetchOfferById } from "@/services/api/technology-offer";
+import { useToast } from "@/components/common/toast";
+import { fetchOfferById, submitQuickDemand } from "@/services/api/technology-offer";
 import { TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyGallery } from "@/lib/technology-media";
 
 export default function ChiTietChaoBanPage() {
   const params = useParams();
   const id = params?.id as string;
+  const toast = useToast();
 
   const [offer, setOffer] = useState<TechnologyOffer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,15 +41,89 @@ export default function ChiTietChaoBanPage() {
   const [connectSuccess, setConnectSuccess] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
 
+  // Trạng thái Bookmark & Share
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  // Trạng thái & Dữ liệu Form Quick Demand Modal
+  const [isSubmittingDemand, setIsSubmittingDemand] = useState(false);
+  const [createdDemandCode, setCreatedDemandCode] = useState<string | null>(null);
+  const [demandProblem, setDemandProblem] = useState("");
+  const [demandCompany, setDemandCompany] = useState("");
+  const [demandContact, setDemandContact] = useState("");
+  const [demandPhone, setDemandPhone] = useState("");
+  const [demandEmail, setDemandEmail] = useState("");
+  const [demandBudget, setDemandBudget] = useState("500M_1B");
+  const [demandTimeline, setDemandTimeline] = useState("1_3M");
+  const [demandMethod, setDemandMethod] = useState("TRANSFER");
+  const [demandNotes, setDemandNotes] = useState("");
+
   useEffect(() => {
     if (id) {
       setIsLoading(true);
       fetchOfferById(id).then((data) => {
         setOffer(data);
         setIsLoading(false);
+        if (data) {
+          setDemandProblem(`Nhu cầu ứng dụng / chuyển giao: ${data.title}`);
+        }
       });
     }
   }, [id]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && id) {
+      try {
+        const saved = localStorage.getItem("nacentwin_bookmarked_offers");
+        if (saved) {
+          const list = JSON.parse(saved);
+          if (Array.isArray(list) && list.includes(id)) {
+            setIsBookmarked(true);
+          }
+        }
+      } catch {
+        // fallback
+      }
+    }
+  }, [id]);
+
+  const handleToggleBookmark = () => {
+    if (!id) return;
+    const next = !isBookmarked;
+    setIsBookmarked(next);
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("nacentwin_bookmarked_offers");
+        let list: string[] = saved ? JSON.parse(saved) : [];
+        if (!Array.isArray(list)) list = [];
+        if (next) {
+          if (!list.includes(id)) list.push(id);
+          toast.success("Đã lưu hồ sơ vào danh sách quan tâm!");
+        } else {
+          list = list.filter((item) => item !== id);
+          toast.info("Đã bỏ lưu hồ sơ khỏi danh sách quan tâm.");
+        }
+        localStorage.setItem("nacentwin_bookmarked_offers", JSON.stringify(list));
+      } catch {
+        // fallback
+      }
+    }
+  };
+
+  const handleShareOffer = async () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Đã sao chép liên kết hồ sơ vào bộ nhớ tạm!");
+      } catch {
+        toast.error("Không thể tự động sao chép liên kết.");
+      }
+    }
+  };
+
+  const handleDownloadDoc = (docName: string) => {
+    toast.success(`Đang tải xuống tài liệu: ${docName}`);
+  };
+
 
   if (isLoading) {
     return (
@@ -241,21 +318,23 @@ export default function ChiTietChaoBanPage() {
                         {offer.summary}
                       </p>
 
-                      {/* 5 Wireframe Quick Specs Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-y border-slate-100 py-4">
+                      {/* 5 Wireframe Quick Specs Grid - Match Basic Design 1:1 */}
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 border-y border-slate-100 py-4">
                         <div>
                           <div className="text-xs font-bold uppercase text-slate-400">Giá công bố</div>
                           <div className="mt-1 text-sm font-extrabold text-slate-900">
                             {offer.pricingType === "CONTACT" && "Liên hệ báo giá"}
                             {offer.pricingType === "FIXED" &&
                               offer.priceAmount &&
-                              `${(offer.priceAmount / 1_000_000).toLocaleString("vi-VN")} Tr`}
+                              `${(offer.priceAmount / 1_000_000).toLocaleString("vi-VN")} Tr ${
+                                offer.unit ? `(${offer.unit})` : ""
+                              }`}
                             {offer.pricingType === "RANGE" &&
                               offer.priceMin &&
                               offer.priceMax &&
                               `${(offer.priceMin / 1_000_000).toLocaleString("vi-VN")} - ${(
                                 offer.priceMax / 1_000_000
-                              ).toLocaleString("vi-VN")} Tr`}
+                              ).toLocaleString("vi-VN")} Tr ${offer.unit ? `(${offer.unit})` : ""}`}
                           </div>
                         </div>
 
@@ -274,9 +353,16 @@ export default function ChiTietChaoBanPage() {
                         </div>
 
                         <div>
+                          <div className="text-xs font-bold uppercase text-slate-400">Kết nối thành công</div>
+                          <div className="mt-1 text-sm font-extrabold text-slate-900">
+                            {offer.successfulConnections || 0} lượt
+                          </div>
+                        </div>
+
+                        <div>
                           <div className="text-xs font-bold uppercase text-slate-400">Đánh giá sàn</div>
                           <div className="mt-1 text-sm font-extrabold text-slate-900">
-                            4,9/5 · Đã xác thực
+                            {offer.ratingScore ? offer.ratingScore.toFixed(1) : "5.0"}/5 · {offer.reviewCount || 0} review
                           </div>
                         </div>
                       </div>
@@ -286,6 +372,7 @@ export default function ChiTietChaoBanPage() {
                     <div className="space-y-3 pt-2">
                       <div className="flex flex-col sm:flex-row gap-3">
                         <button
+                          type="button"
                           onClick={() => setShowConnectModal(true)}
                           className="flex-1 rounded-xl bg-brand-700 hover:bg-brand-800 text-white px-5 py-3 text-sm font-bold shadow-md shadow-brand-900/15 transition flex items-center justify-center gap-2"
                         >
@@ -293,19 +380,24 @@ export default function ChiTietChaoBanPage() {
                           Gửi yêu cầu li-xăng / chuyển giao
                         </button>
                         <button
-                          onClick={() => setActiveTab("dataroom")}
-                          className="rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-3 text-sm font-bold transition flex items-center justify-center gap-2"
+                          type="button"
+                          onClick={handleToggleBookmark}
+                          className={`rounded-xl border px-4 py-3 text-sm font-bold transition flex items-center justify-center gap-2 ${
+                            isBookmarked
+                              ? "bg-amber-50 border-amber-300 text-amber-800 shadow-sm"
+                              : "border-slate-300 hover:bg-slate-50 text-slate-700"
+                          }`}
                         >
-                          <Bookmark className="w-4 h-4 text-slate-500" />
-                          Lưu quan tâm
+                          <Bookmark
+                            className={`w-4 h-4 ${
+                              isBookmarked ? "text-amber-600 fill-amber-500" : "text-slate-500"
+                            }`}
+                          />
+                          {isBookmarked ? "Đã lưu quan tâm" : "Lưu quan tâm"}
                         </button>
                         <button
-                          onClick={() => {
-                            if (typeof navigator !== "undefined" && navigator.clipboard) {
-                              navigator.clipboard.writeText(window.location.href);
-                              alert("Đã sao chép liên kết hồ sơ vào clipboard!");
-                            }
-                          }}
+                          type="button"
+                          onClick={handleShareOffer}
                           className="rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-600 px-3.5 py-3 transition flex items-center justify-center"
                           title="Chia sẻ hồ sơ"
                         >
@@ -473,26 +565,83 @@ export default function ChiTietChaoBanPage() {
 
               {activeTab === "specs" && (
                 <div className="space-y-4">
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                    Bảng Thông Số Kỹ Thuật Chi Tiết
-                  </h4>
+                  <div className="border-b border-slate-100 pb-3">
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                      Bảng Thông Số Kỹ Thuật & Chỉ Tiêu Hiệu Quả
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Đặc tính kỹ thuật và năng lực giải quyết bài toán theo chuẩn hóa Hội đồng KH&CN NacenTwin
+                    </p>
+                  </div>
                   <table className="w-full text-xs text-left">
                     <tbody className="divide-y divide-slate-100">
                       <tr>
-                        <td className="py-2.5 font-bold text-slate-600 w-1/3">Công suất vận hành:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">50 - 200 kg nguyên liệu/mẻ</td>
+                        <td className="py-2.5 font-bold text-slate-600 w-1/3">Loại hình giải pháp:</td>
+                        <td className="py-2.5 text-slate-900 font-medium">
+                          {offer.offerType === "SOFTWARE"
+                            ? "Phần mềm số hóa & Nền tảng điều khiển"
+                            : offer.offerType === "SOLUTION"
+                            ? "Giải pháp công nghệ tích hợp"
+                            : offer.offerType === "PROCESS"
+                            ? "Quy trình công nghệ chế tạo"
+                            : "Thiết bị / Máy móc công nghiệp"}
+                        </td>
                       </tr>
                       <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Áp suất chân không đạt được:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">&le; 0.05 mbar (High Vacuum)</td>
+                        <td className="py-2.5 font-bold text-slate-600">Lĩnh vực ứng dụng:</td>
+                        <td className="py-2.5 text-slate-900 font-medium">
+                          {offer.sectorName} ({offer.sectorCode})
+                        </td>
                       </tr>
                       <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Nhiệt độ thăng hoa:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">-40°C đến -50°C</td>
+                        <td className="py-2.5 font-bold text-slate-600">Mức độ sẵn sàng công nghệ:</td>
+                        <td className="py-2.5 text-slate-900 font-medium">
+                          TRL {offer.trlLevel || 7}/9 — {getTrlDescription(offer.trlLevel)}
+                        </td>
                       </tr>
                       <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Thuật toán điều khiển:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">AI Fuzzy Logic tối ưu nhiệt thời gian thực</td>
+                        <td className="py-2.5 font-bold text-slate-600">Quy cách & Đơn vị chuyển giao:</td>
+                        <td className="py-2.5 text-slate-900 font-medium">
+                          {offer.unit || "Theo gói giải pháp chuyển giao và đào tạo tích hợp"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 font-bold text-slate-600">Bảo hộ Sở hữu trí tuệ:</td>
+                        <td className="py-2.5 text-slate-900 font-medium">
+                          {offer.ipRegistrationNumber
+                            ? `Số văn bằng: ${offer.ipRegistrationNumber} (${
+                                offer.ipStatus === "COPYRIGHT_REGISTERED" || offer.ipStatus === "SOFTWARE_COPYRIGHT"
+                                  ? "Đăng ký bản quyền phần mềm"
+                                  : offer.ipStatus === "PATENT_GRANTED"
+                                  ? "Bằng độc quyền sáng chế"
+                                  : "Chứng nhận bảo hộ SHTT"
+                              })`
+                            : "Đã thẩm định hồ sơ SHTT hợp pháp"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 font-bold text-slate-600">Hình thức chuyển giao:</td>
+                        <td className="py-2.5 text-slate-900 font-medium">
+                          {offer.transferMethod === "EXCLUSIVE_LICENSE"
+                            ? "Li-xăng độc quyền (Exclusive License)"
+                            : offer.transferMethod === "NON_EXCLUSIVE_LICENSE"
+                            ? "Li-xăng không độc quyền (Non-exclusive License)"
+                            : offer.transferMethod === "ASSIGNMENT_SALE"
+                            ? "Chuyển nhượng toàn bộ quyền sở hữu"
+                            : "Thỏa thuận chuyển giao song phương"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 font-bold text-slate-600">Chỉ tiêu kỹ thuật đạt được:</td>
+                        <td className="py-2.5 text-emerald-800 font-semibold bg-emerald-50/60 p-2.5 rounded-lg">
+                          {offer.problemSolved}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2.5 font-bold text-slate-600">Đơn vị chủ trì nghiên cứu:</td>
+                        <td className="py-2.5 text-slate-900 font-medium">
+                          {offer.developerOrigin || "Đang cập nhật"}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -502,9 +651,14 @@ export default function ChiTietChaoBanPage() {
               {activeTab === "dataroom" && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                      Danh Mục Tài Liệu Thẩm Định (DataRoom)
-                    </h4>
+                    <div>
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                        Danh Mục Tài Liệu Thẩm Định (DataRoom)
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Tài liệu gắn liền với hồ sơ công nghệ {offer.offerCode}
+                      </p>
+                    </div>
                     <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-bold flex items-center gap-1">
                       <Lock className="w-3 h-3" /> Yêu cầu ký NDA
                     </span>
@@ -512,28 +666,48 @@ export default function ChiTietChaoBanPage() {
 
                   <div className="space-y-2">
                     {[
-                      { name: "Teaser_Tom_Tat_Cong_Nghe.pdf", size: "2.4 MB", isPublic: true },
-                      { name: "Ban_Sao_Van_Bang_Sang_Che_Cuc_SHTT.pdf", size: "1.8 MB", isPublic: false },
-                      { name: "Ket_Qua_Thu_Nghiem_Hien_Truong_Pilot.pdf", size: "4.1 MB", isPublic: false },
+                      {
+                        name: `${offer.offerCode}_Teaser_Tom_Tat_Giai_Phap.pdf`,
+                        size: "2.4 MB",
+                        isPublic: true,
+                        desc: "Bản tóm tắt giải pháp công nghệ, tính năng và phạm vi ứng dụng",
+                      },
+                      {
+                        name: `${offer.offerCode}_Ho_So_SHTT_${offer.ipRegistrationNumber || "Hop_Le"}.pdf`,
+                        size: "1.8 MB",
+                        isPublic: false,
+                        desc: "Hồ sơ xác nhận văn bằng độc quyền sáng chế / bản quyền phần mềm",
+                      },
+                      {
+                        name: `${offer.offerCode}_Ket_Qua_Kiem_Dinh_TRL${offer.trlLevel || 8}.pdf`,
+                        size: "3.6 MB",
+                        isPublic: false,
+                        desc: "Biên bản thử nghiệm hiện trường và chứng chỉ kiểm định chất lượng",
+                      },
                     ].map((doc, idx) => (
                       <div
                         key={idx}
                         className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition"
                       >
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-slate-500" />
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-slate-500 shrink-0" />
                           <div>
                             <p className="text-xs font-bold text-slate-800">{doc.name}</p>
-                            <p className="text-xs text-slate-400">{doc.size}</p>
+                            <p className="text-xs text-slate-500">{doc.desc}</p>
+                            <span className="mono text-xs text-slate-400 font-semibold">{doc.size}</span>
                           </div>
                         </div>
 
                         {doc.isPublic ? (
-                          <button className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadDoc(doc.name)}
+                            className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-white hover:bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg transition shadow-sm"
+                          >
                             <Download className="w-3.5 h-3.5" /> Tải về
                           </button>
                         ) : (
-                          <span className="text-xs font-bold text-slate-400 flex items-center gap-1">
+                          <span className="text-xs font-bold text-slate-400 flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg">
                             <Lock className="w-3 h-3" /> Cần cấp quyền
                           </span>
                         )}
@@ -636,16 +810,23 @@ export default function ChiTietChaoBanPage() {
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
                 <h4 className="text-sm font-bold text-slate-900">Đã Tạo Nhu Cầu & Gửi Đề Xuất Kết Nối Thành Công!</h4>
+                {createdDemandCode && (
+                  <div className="mono text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg inline-block">
+                    Mã phiếu nhu cầu CSDL: <strong>{createdDemandCode}</strong>
+                  </div>
+                )}
                 <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-                  Hệ thống đã tự động ghi nhận nhu cầu công nghệ liên kết với hồ sơ <b>{offer.offerCode}</b>. Đơn vị chủ quản ({offer.managingAuthorityName || "Sở KH&CN"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.
+                  Hệ thống đã tự động ghi nhận nhu cầu công nghệ vào CSDL PostgreSQL liên kết với hồ sơ <b>{offer.offerCode}</b>. Đơn vị chủ quản ({offer.managingAuthorityName || "Sở KH&CN"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.
                 </p>
                 <div className="pt-2">
                   <button
+                    type="button"
                     onClick={() => {
                       setShowConnectModal(false);
                       setConnectSuccess(false);
+                      setCreatedDemandCode(null);
                     }}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition"
+                    className="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm"
                   >
                     Hoàn tất & Đóng
                   </button>
@@ -653,9 +834,33 @@ export default function ChiTietChaoBanPage() {
               </div>
             ) : (
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  setConnectSuccess(true);
+                  setIsSubmittingDemand(true);
+                  const technicalProblem = demandProblem || `Nhu cầu ứng dụng / chuyển giao: ${offer.title}`;
+                  const expectedGoal = `Triển khai ứng dụng công nghệ tại cơ sở của ${demandCompany || "doanh nghiệp"}`;
+                  const res = await submitQuickDemand({
+                    stageName: "Sản xuất & Chuyển giao",
+                    technicalProblem: `[DN: ${demandCompany || "Chưa cung cấp"}] ${technicalProblem}`,
+                    desiredSolution: `Kết nối li-xăng / chuyển giao công nghệ ${offer.offerCode} - ${offer.title}. Người liên hệ: ${demandContact} (${demandPhone}, ${demandEmail || "N/A"}). Hình thức: ${demandMethod}. Ghi chú: ${demandNotes || "Không có"}`,
+                    needConsulting: true,
+                    expectedGoal: expectedGoal,
+                    applicationScale: demandCompany || "Doanh nghiệp",
+                    sectorCode: offer.sectorCode || "LV16",
+                    budgetRange: demandBudget,
+                    urgencyScore: 4,
+                    impactScore: 4,
+                    investmentCapacity: 4,
+                    adoptionReadiness: 4,
+                  });
+                  setIsSubmittingDemand(false);
+                  if (res.success) {
+                    setCreatedDemandCode(res.itemCode || null);
+                    setConnectSuccess(true);
+                    toast.success(res.message || "Đã gửi đề xuất kết nối và tạo phiếu nhu cầu thành công!");
+                  } else {
+                    toast.error(res.message || "Gửi kết nối không thành công, vui lòng thử lại.");
+                  }
                 }}
                 className="space-y-3.5 text-xs max-h-[75vh] overflow-y-auto pr-1"
               >
@@ -671,7 +876,8 @@ export default function ChiTietChaoBanPage() {
                   <input
                     type="text"
                     required
-                    defaultValue={`Nhu cầu ứng dụng / chuyển giao: ${offer.title}`}
+                    value={demandProblem}
+                    onChange={(e) => setDemandProblem(e.target.value)}
                     placeholder="VD: Cần chuyển giao dây chuyền sấy thăng hoa cho nhà máy chế biến nông sản"
                     className="form-control w-full"
                   />
@@ -683,6 +889,8 @@ export default function ChiTietChaoBanPage() {
                     <input
                       type="text"
                       required
+                      value={demandCompany}
+                      onChange={(e) => setDemandCompany(e.target.value)}
                       placeholder="VD: Công ty CP Nông Sản Sạch"
                       className="form-control w-full"
                     />
@@ -692,6 +900,8 @@ export default function ChiTietChaoBanPage() {
                     <input
                       type="text"
                       required
+                      value={demandContact}
+                      onChange={(e) => setDemandContact(e.target.value)}
                       placeholder="VD: Nguyễn Văn A"
                       className="form-control w-full"
                     />
@@ -704,6 +914,8 @@ export default function ChiTietChaoBanPage() {
                     <input
                       type="tel"
                       required
+                      value={demandPhone}
+                      onChange={(e) => setDemandPhone(e.target.value)}
                       placeholder="0912 345 678"
                       className="form-control w-full font-mono"
                     />
@@ -712,6 +924,8 @@ export default function ChiTietChaoBanPage() {
                     <label className="font-bold text-slate-700 block mb-1">Email công vụ:</label>
                     <input
                       type="email"
+                      value={demandEmail}
+                      onChange={(e) => setDemandEmail(e.target.value)}
                       placeholder="contact@doanhnghiep.vn"
                       className="form-control w-full"
                     />
@@ -722,7 +936,8 @@ export default function ChiTietChaoBanPage() {
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">Ngân sách dự kiến:</label>
                     <select
-                      defaultValue="500M_1B"
+                      value={demandBudget}
+                      onChange={(e) => setDemandBudget(e.target.value)}
                       className="form-control w-full font-medium"
                     >
                       <option value="UNDER_500M">Dưới 500 triệu VNĐ</option>
@@ -735,7 +950,8 @@ export default function ChiTietChaoBanPage() {
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">Tiến độ triển khai mong muốn:</label>
                     <select
-                      defaultValue="1_3M"
+                      value={demandTimeline}
+                      onChange={(e) => setDemandTimeline(e.target.value)}
                       className="form-control w-full font-medium"
                     >
                       <option value="IMMEDIATE">Triển khai ngay (dưới 1 tháng)</option>
@@ -749,7 +965,8 @@ export default function ChiTietChaoBanPage() {
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Hình thức hợp tác mong muốn:</label>
                   <select
-                    defaultValue="TRANSFER"
+                    value={demandMethod}
+                    onChange={(e) => setDemandMethod(e.target.value)}
                     className="form-control w-full font-medium"
                   >
                     <option value="TRANSFER">Chuyển giao quyền sở hữu công nghệ trọn gói</option>
@@ -763,6 +980,8 @@ export default function ChiTietChaoBanPage() {
                   <label className="font-bold text-slate-700 block mb-1">Chi tiết bài toán & Yêu cầu kỹ thuật riêng:</label>
                   <textarea
                     rows={3}
+                    value={demandNotes}
+                    onChange={(e) => setDemandNotes(e.target.value)}
                     placeholder="Mô tả công suất mong muốn, điều kiện nhà xưởng hiện có, quy chuẩn sản phẩm đầu ra..."
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-emerald-600 focus:outline-none"
                   ></textarea>
@@ -778,10 +997,20 @@ export default function ChiTietChaoBanPage() {
                   </button>
                   <button
                     type="submit"
-                    className="h-11 bg-nacen-green-600 hover:bg-nacen-green-700 text-white px-6 rounded-xl font-bold shadow-sm transition flex items-center gap-1.5 text-sm"
+                    disabled={isSubmittingDemand}
+                    className="h-11 bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-6 rounded-xl font-bold shadow-sm transition flex items-center gap-1.5 text-sm"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    <span>Tạo Nhu Cầu & Gửi Yêu Cầu Kết Nối</span>
+                    {isSubmittingDemand ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Đang gửi...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        <span>Tạo Nhu Cầu & Gửi Yêu Cầu Kết Nối</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

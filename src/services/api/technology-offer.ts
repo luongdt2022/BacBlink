@@ -254,3 +254,55 @@ export async function togglePublishOffer(
     return { success: false, message: err?.message || "Lỗi kết nối máy chủ." };
   }
 }
+
+export interface CreateQuickDemandPayload {
+  stageName?: string;
+  technicalProblem: string;
+  desiredSolution?: string;
+  needConsulting: boolean;
+  expectedGoal: string;
+  applicationScale?: string;
+  sectorCode?: string;
+  techGroupCode?: string;
+  demandTypeCode?: string;
+  budgetRange?: string;
+  urgencyScore: number;
+  impactScore: number;
+  investmentCapacity: number;
+  adoptionReadiness: number;
+}
+
+export async function submitQuickDemand(payload: CreateQuickDemandPayload): Promise<{
+  success: boolean;
+  itemId?: string;
+  itemCode?: string;
+  message?: string;
+}> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/demands/items`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return {
+        success: true,
+        itemId: json.itemId,
+        itemCode: json.itemCode,
+        message: json.message || "Đăng bài toán nhu cầu công nghệ thành công.",
+      };
+    }
+    const errJson = await res.json().catch(() => null);
+    return {
+      success: false,
+      message: errJson?.message || "Không thể tạo nhu cầu kết nối.",
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err?.message || "Lỗi kết nối khi gửi nhu cầu.",
+    };
+  }
+}
+

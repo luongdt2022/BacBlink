@@ -129,12 +129,7 @@ export function Navbar() {
               {/* Dark/Light Theme Toggle */}
               <ThemeToggle />
 
-              {/* Font Size Scaling Control (A- / A / A+) */}
-              <div className="hidden xl:block">
-                <FontsizeControl />
-              </div>
-
-              <div className="mx-1 hidden h-6 w-px bg-slate-200 dark:bg-slate-800 lg:block" />
+              <div className="mx-1 hidden h-6 w-px bg-slate-200 dark:bg-slate-800 sm:block" />
 
               {/* User Session */}
               {user ? (
@@ -204,9 +199,9 @@ export function Navbar() {
 
                   <Link
                     href="/register"
-                    className="focus-ring hidden items-center gap-1 rounded-control bg-nacen-green-500 px-3 2xl:px-4 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-white shadow-sm transition hover:bg-nacen-green-600 lg:inline-flex"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-control bg-nacen-green-500 px-3 2xl:px-4 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-white shadow-sm transition hover:bg-nacen-green-600 whitespace-nowrap"
                   >
-                    <UserPlus className="w-3.5 h-3.5" />
+                    <UserPlus className="w-3.5 h-3.5 shrink-0" />
                     <span>{t("register")}</span>
                   </Link>
                 </div>
