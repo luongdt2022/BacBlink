@@ -1217,6 +1217,11 @@
       renderSidebar();
       renderContent();
       history.replaceState(null, '', '#' + id);
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'WIREFRAME_SCREEN_CHANGED', id: id }, '*');
+        }
+      } catch(e) {}
     }
 
     function setDevice(mode) {
