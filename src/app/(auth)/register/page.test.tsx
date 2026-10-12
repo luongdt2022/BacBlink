@@ -63,4 +63,96 @@ describe("RegisterPage", () => {
 
     expect(await screen.findByText("Không thể kết nối máy chủ đăng ký. Vui lòng kiểm tra API NacenTech đang chạy rồi thử lại.")).toBeInTheDocument();
   });
+
+  it("blocks submission when PDPD consent is unchecked (TC-REG-03)", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
+    fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "binh@test.vn" } });
+    const passwords = screen.getAllByPlaceholderText("••••••••");
+    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[1], { target: { value: "NacenTech@2026" } });
+    // KHÔNG TÍCH CHECKBOX PDPD
+    fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
+
+    expect(await screen.findByText("Bạn cần đồng ý với Điều khoản Bảo vệ Dữ liệu Cá nhân (Nghị định 13/2023/NĐ-CP) để tiếp tục.")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks submission when password is shorter than 8 characters (TC-REG-04)", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
+    fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "binh@test.vn" } });
+    const passwords = screen.getAllByPlaceholderText("••••••••");
+    fireEvent.change(passwords[0], { target: { value: "1234567" } });
+    fireEvent.change(passwords[1], { target: { value: "1234567" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
+
+    expect(await screen.findByText("Mật khẩu phải có ít nhất 8 ký tự.")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks submission when confirm password does not match (TC-REG-05)", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
+    fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "binh@test.vn" } });
+    const passwords = screen.getAllByPlaceholderText("••••••••");
+    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[1], { target: { value: "Different@2026" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
+
+    expect(await screen.findByText("Mật khẩu xác nhận không khớp.")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks submission when email is invalid format (TC-REG-06)", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
+    fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "invalid-email-format" } });
+    const passwords = screen.getAllByPlaceholderText("••••••••");
+    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[1], { target: { value: "NacenTech@2026" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
+
+    expect(await screen.findByText("Địa chỉ email chưa đúng định dạng.")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("displays server error when API returns duplicate email 409 (TC-REG-02)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      json: async () => ({ message: "Email này đã được sử dụng." })
+    }));
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
+    fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "duplicate@nacentech.vn" } });
+    const passwords = screen.getAllByPlaceholderText("••••••••");
+    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[1], { target: { value: "NacenTech@2026" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
+
+    expect(await screen.findByText("Email này đã được sử dụng.")).toBeInTheDocument();
+  });
 });

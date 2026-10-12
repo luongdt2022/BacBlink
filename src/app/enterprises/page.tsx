@@ -14,20 +14,31 @@ import {
   Send,
   X,
   ChevronRight,
+  ChevronLeft,
   RefreshCw,
   AlertCircle,
   TrendingUp,
   FileCheck2,
-  Cpu
+  Cpu,
+  Wrench,
+  Sprout,
+  FlaskConical,
+  Zap,
+  Globe,
+  ArrowUpDown,
+  Copy,
+  Check
 } from "lucide-react";
 import {
   fetchEnterprises,
   type EnterpriseDirectoryItem,
   type EnterpriseDirectoryResponse
 } from "@/lib/enterprise-client";
+import { PROVINCES_34 } from "../khao-sat-nhu-cau/types";
 
+// 11 Lĩnh vực công nghệ trọng điểm theo Thông tư 17/2019/TT-BKHCN
 const SECTORS_TT17 = [
-  { code: "", label: "Tất cả lĩnh vực" },
+  { code: "", label: "Tất cả lĩnh vực công nghệ" },
   { code: "LV01", label: "Cơ khí, Chế tạo máy & Tự động hóa" },
   { code: "LV05", label: "Nông nghiệp công nghệ cao, nông nghiệp số" },
   { code: "LV07", label: "Y - Dược, Sinh học & Thiết bị y tế" },
@@ -40,21 +51,8 @@ const SECTORS_TT17 = [
   { code: "LV17", label: "Logistics, Chuỗi cung ứng & Đô thị thông minh" },
 ];
 
-const PROVINCES = [
-  { code: "", label: "Toàn quốc (34 Tỉnh/Thành Trọng Điểm)" },
-  { code: "Hà Nội", label: "Hà Nội" },
-  { code: "Hồ Chí Minh", label: "TP. Hồ Chí Minh" },
-  { code: "Hải Phòng", label: "Hải Phòng" },
-  { code: "Đà Nẵng", label: "Đà Nẵng" },
-  { code: "Cần Thơ", label: "Cần Thơ" },
-  { code: "Lạng Sơn", label: "Lạng Sơn" },
-  { code: "Bình Dương", label: "Bình Dương" },
-  { code: "Đồng Nai", label: "Đồng Nai" },
-  { code: "Bắc Ninh", label: "Bắc Ninh" },
-];
-
 const SUBJECT_TYPES = [
-  { code: "", label: "Tất cả loại hình" },
+  { code: "", label: "Tất cả loại hình chủ thể" },
   { code: "ENTERPRISE", label: "Doanh nghiệp thường" },
   { code: "INNOVATIVE_ENTERPRISE", label: "Doanh nghiệp ĐMST" },
   { code: "COOPERATIVE", label: "Hợp tác xã" },
@@ -63,40 +61,182 @@ const SUBJECT_TYPES = [
 ];
 
 const TNI_LEVELS = [
-  { code: "", label: "Tất cả mức TNI" },
-  { code: "HIGH", label: "TNI Cao (≥ 80 điểm)" },
-  { code: "MEDIUM", label: "TNI Khá / TB (50 - 79 điểm)" },
-  { code: "LOW", label: "TNI Thấp (< 50 điểm)" },
+  { code: "", label: "Tất cả mức độ TNI" },
+  { code: "HIGH", label: "TNI Rất cao / Cao (≥ 75 điểm)" },
+  { code: "MEDIUM", label: "TNI Trung bình (50 - 74 điểm)" },
+  { code: "LOW", label: "TNI Cơ bản (< 50 điểm)" },
 ];
+
+/**
+ * Trích xuất monogram viết tắt đặc trưng từ tên doanh nghiệp
+ */
+function getEnterpriseInitial(name: string): string {
+  if (!name) return "DN";
+  const clean = name
+    .replace(/^(công ty|cty|chi nhánh|doanh nghiệp|hợp tác xã)\s+(tnhh|cp|cổ phần|mtv|tư nhân)?\s*/i, "")
+    .trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return name.charAt(0).toUpperCase();
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+}
+
+/**
+ * Xác định giao diện avatar, gradient và icon theo ngành nghề công nghệ
+ */
+function getSectorTheme(sectorName?: string, sectorCode?: string) {
+  const s = (sectorName || "").toLowerCase();
+  const c = sectorCode || "";
+  if (c === "LV01" || s.includes("chế biến") || s.includes("chế tạo") || s.includes("cơ khí")) {
+    return {
+      gradient: "from-amber-500 to-orange-600",
+      icon: Wrench,
+      label: "Cơ khí & Chế tạo"
+    };
+  }
+  if (c === "LV05" || s.includes("nông nghiệp") || s.includes("thực phẩm") || s.includes("sinh học")) {
+    return {
+      gradient: "from-emerald-500 to-teal-600",
+      icon: Sprout,
+      label: "Nông nghiệp & Sinh học"
+    };
+  }
+  if (c === "LV07" || s.includes("y tế") || s.includes("dược") || s.includes("hóa chất")) {
+    return {
+      gradient: "from-rose-500 to-pink-600",
+      icon: FlaskConical,
+      label: "Y Dược & Hóa chất"
+    };
+  }
+  if (c === "LV08" || c === "LV14" || s.includes("thông tin") || s.includes("điện tử") || s.includes("số")) {
+    return {
+      gradient: "from-brand-600 to-teal-700",
+      icon: Cpu,
+      label: "CNTT & Điện tử"
+    };
+  }
+  if (c === "LV12" || s.includes("năng lượng") || s.includes("môi trường")) {
+    return {
+      gradient: "from-cyan-600 to-teal-600",
+      icon: Zap,
+      label: "Năng lượng & Môi trường"
+    };
+  }
+  return {
+    gradient: "from-slate-700 to-slate-900",
+    icon: Building2,
+    label: "Doanh nghiệp"
+  };
+}
+
+/**
+ * Component Avatar nhận diện doanh nghiệp với Monogram và Icon công nghệ
+ */
+function EnterpriseAvatar({ name, sectorName, sectorCode }: { name: string; sectorName?: string; sectorCode?: string }) {
+  const monogram = getEnterpriseInitial(name);
+  const theme = getSectorTheme(sectorName, sectorCode);
+  const IconComp = theme.icon;
+
+  return (
+    <div className="relative shrink-0">
+      <div
+        className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white font-extrabold text-base tracking-wider shadow-md shadow-slate-200/50 dark:shadow-none border border-white/20 select-none`}
+      >
+        {monogram}
+      </div>
+      <div
+        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center"
+        title={theme.label}
+      >
+        <IconComp className="w-3 h-3 text-slate-700 dark:text-slate-300" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Hàm sinh danh sách các trang phân trang động kèm dấu ba chấm
+ */
+function getPaginationItems(current: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  const pages: (number | string)[] = [];
+  if (current <= 4) {
+    for (let i = 1; i <= 5; i++) pages.push(i);
+    pages.push("...");
+    pages.push(total);
+  } else if (current >= total - 3) {
+    pages.push(1);
+    pages.push("...");
+    for (let i = total - 4; i <= total; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    pages.push("...");
+    pages.push(current - 1);
+    pages.push(current);
+    pages.push(current + 1);
+    pages.push("...");
+    pages.push(total);
+  }
+  return pages;
+}
 
 export default function EnterprisesDirectoryPage() {
   const [data, setData] = useState<EnterpriseDirectoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
+  // Filters & Sorting state
   const [q, setQ] = useState("");
   const [province, setProvince] = useState("");
   const [sectorCode, setSectorCode] = useState("");
   const [subjectType, setSubjectType] = useState("");
   const [tniClassification, setTniClassification] = useState("");
+  const [sortBy, setSortBy] = useState("tni_desc");
   const [page, setPage] = useState(1);
 
   // Modal đề xuất kết nối
   const [connectModalEnt, setConnectModalEnt] = useState<EnterpriseDirectoryItem | null>(null);
+  const [connectOrgName, setConnectOrgName] = useState("");
+  const [connectContact, setConnectContact] = useState("");
   const [connectNote, setConnectNote] = useState("");
-  const [connectSubmitted, setConnectSubmitted] = useState(false);
+  const [connectResult, setConnectResult] = useState<{
+    requestCode: string;
+    submittedAt: string;
+    entName: string;
+  } | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
 
-  const loadData = async (pageTarget = 1) => {
+  const loadData = async (
+    pageTarget = 1,
+    sortOverride?: string,
+    filterOverrides?: {
+      q?: string;
+      province?: string;
+      sectorCode?: string;
+      subjectType?: string;
+      tniClassification?: string;
+    }
+  ) => {
     setLoading(true);
     setError(null);
+
+    const activeQ = filterOverrides?.q !== undefined ? filterOverrides.q : q;
+    const activeProvince = filterOverrides?.province !== undefined ? filterOverrides.province : province;
+    const activeSectorCode = filterOverrides?.sectorCode !== undefined ? filterOverrides.sectorCode : sectorCode;
+    const activeSubjectType = filterOverrides?.subjectType !== undefined ? filterOverrides.subjectType : subjectType;
+    const activeTni = filterOverrides?.tniClassification !== undefined ? filterOverrides.tniClassification : tniClassification;
+    const activeSort = sortOverride !== undefined ? sortOverride : sortBy;
+
     try {
       const res = await fetchEnterprises({
-        q: q || undefined,
-        province: province || undefined,
-        sectorCode: sectorCode || undefined,
-        subjectType: subjectType || undefined,
-        tniClassification: tniClassification || undefined,
+        q: activeQ || undefined,
+        province: activeProvince || undefined,
+        sectorCode: activeSectorCode || undefined,
+        subjectType: activeSubjectType || undefined,
+        tniClassification: activeTni || undefined,
+        sortBy: activeSort,
         page: pageTarget,
         pageSize: 9,
       });
@@ -118,15 +258,45 @@ export default function EnterprisesDirectoryPage() {
     loadData(1);
   };
 
+  const handleResetFilters = () => {
+    setQ("");
+    setProvince("");
+    setSectorCode("");
+    setSubjectType("");
+    setTniClassification("");
+    setSortBy("tni_desc");
+    loadData(1, "tni_desc", {
+      q: "",
+      province: "",
+      sectorCode: "",
+      subjectType: "",
+      tniClassification: ""
+    });
+  };
+
   const handleConnectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setConnectSubmitted(true);
-    setTimeout(() => {
-      setConnectSubmitted(false);
-      setConnectModalEnt(null);
-      setConnectNote("");
-    }, 2000);
+    if (!connectModalEnt) return;
+
+    // Sinh mã phiếu kết nối thực chuẩn nghiệp vụ
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const randomSuffix = Math.random().toString(36).substring(2, 7).toUpperCase();
+    const newCode = `REQ-KN-${todayStr}-${randomSuffix}`;
+
+    setConnectResult({
+      requestCode: newCode,
+      submittedAt: new Date().toLocaleString("vi-VN"),
+      entName: connectModalEnt.name
+    });
   };
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const hasActiveFilters = Boolean(q || province || sectorCode || subjectType || tniClassification);
 
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 pb-20">
@@ -142,7 +312,7 @@ export default function EnterprisesDirectoryPage() {
             Danh Bạ Doanh Nghiệp & Chủ Thể Đổi Mới Sáng Tạo
           </h1>
           <p className="mt-3 text-base sm:text-lg text-slate-300 max-w-3xl leading-relaxed">
-            Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, giải pháp sản xuất và chỉ số đổi mới sáng tạo (TNI) của hơn 300+ doanh nghiệp thực tế trên 34 tỉnh/thành trọng điểm.
+            Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của 304 doanh nghiệp thực tế trên 34 tỉnh/thành trọng điểm toàn quốc.
           </p>
 
           {/* Search Box */}
@@ -159,10 +329,19 @@ export default function EnterprisesDirectoryPage() {
             </div>
             <button
               type="submit"
-              className="h-11 px-6 bg-brand-700 hover:bg-brand-800 text-white rounded-control font-bold flex items-center justify-center gap-2 transition shadow-md text-sm shrink-0"
+              className="h-11 px-6 bg-brand-800 hover:bg-brand-900 text-white rounded-control font-bold flex items-center justify-center gap-2 transition shadow-md text-sm shrink-0 border border-brand-600/40"
             >
               <Search className="w-4 h-4" /> Tra Cứu
             </button>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="h-11 px-4 bg-white/10 hover:bg-white/20 text-white rounded-control font-medium flex items-center justify-center gap-1.5 transition text-xs shrink-0 border border-white/20"
+              >
+                <X className="w-3.5 h-3.5" /> Xóa bộ lọc
+              </button>
+            )}
           </form>
         </div>
       </section>
@@ -177,34 +356,29 @@ export default function EnterprisesDirectoryPage() {
                 <span className="font-bold text-text-primary dark:text-white text-sm flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4 text-brand-700" /> Bộ Lọc Đa Chiều
                 </span>
-                {(province || sectorCode || subjectType || tniClassification || q) && (
+                {hasActiveFilters && (
                   <button
-                    onClick={() => {
-                      setQ("");
-                      setProvince("");
-                      setSectorCode("");
-                      setSubjectType("");
-                      setTniClassification("");
-                    }}
-                    className="text-xs text-brand-700 hover:underline font-semibold"
+                    onClick={handleResetFilters}
+                    className="text-xs text-brand-700 dark:text-brand-400 hover:underline font-semibold"
                   >
-                    Xóa lọc
+                    Xóa tất cả
                   </button>
                 )}
               </div>
 
-              {/* Lọc Tỉnh Thành */}
+              {/* Lọc Tỉnh Thành (34 Tỉnh/Thành Trọng Điểm) */}
               <div>
                 <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                  Địa Bàn Hoạt Động
+                  Địa Bàn Hoạt Động (34 Tỉnh/Thành)
                 </label>
                 <select
                   value={province}
                   onChange={(e) => setProvince(e.target.value)}
                   className="form-control w-full"
                 >
-                  {PROVINCES.map((p) => (
-                    <option key={p.code} value={p.code}>{p.label}</option>
+                  <option value="">Toàn quốc (34 Tỉnh/Thành Trọng Điểm)</option>
+                  {PROVINCES_34.map((p) => (
+                    <option key={p} value={p}>{p}</option>
                   ))}
                 </select>
               </div>
@@ -259,17 +433,17 @@ export default function EnterprisesDirectoryPage() {
             </div>
 
             {/* Quick Box Dashboard Link */}
-            <div className="bg-gradient-to-br from-brand-50 to-brand-50 rounded-2xl border border-brand-200/80 p-5 space-y-3">
-              <div className="flex items-center gap-2 text-brand-900 font-bold text-sm">
-                <TrendingUp className="w-4 h-4 text-brand-600" />
+            <div className="bg-gradient-to-br from-brand-50 to-brand-100/50 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-brand-200/80 dark:border-slate-700 p-5 space-y-3">
+              <div className="flex items-center gap-2 text-brand-900 dark:text-brand-300 font-bold text-sm">
+                <TrendingUp className="w-4 h-4 text-brand-600 dark:text-brand-400" />
                 Thống Kê 304 Doanh Nghiệp
               </div>
-              <p className="text-xs text-brand-700 leading-relaxed">
+              <p className="text-xs text-brand-700 dark:text-slate-300 leading-relaxed">
                 Xem báo cáo phân tích biểu đồ chuyên sâu về phân bố địa bàn, cơ cấu ngành nghề và rào cản công nghệ.
               </p>
               <Link
                 href="/admin/enterprises/dashboard"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-800"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
               >
                 Mở Analytics Dashboard <ChevronRight className="w-3.5 h-3.5" />
               </Link>
@@ -278,14 +452,36 @@ export default function EnterprisesDirectoryPage() {
 
           {/* Grid Thẻ Doanh Nghiệp */}
           <section className="lg:col-span-3 space-y-6">
-            {/* Thanh Tiêu Đề & Tổng Số */}
-            <div className="flex items-center justify-between bg-white px-5 py-3.5 rounded-2xl border border-slate-200 shadow-sm">
-              <span className="text-sm font-bold text-slate-800">
+            {/* Thanh Tiêu Đề & Sorting Dropdown */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+              <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
                 Kết quả tra cứu:{" "}
-                <span className="text-brand-600 font-extrabold">{data?.totalCount ?? 0}</span> doanh nghiệp
+                <span className="text-brand-700 dark:text-brand-400 font-extrabold">{data?.totalCount ?? 0}</span> doanh nghiệp
               </span>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <span>Hiển thị trang {data?.page ?? 1} / {data?.totalPages ?? 1}</span>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-xs">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-slate-500 font-semibold hidden sm:inline">Sắp xếp:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => {
+                      const newSort = e.target.value;
+                      setSortBy(newSort);
+                      loadData(1, newSort);
+                    }}
+                    className="form-control text-xs py-1 px-2.5 h-8 font-medium bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-brand-500"
+                  >
+                    <option value="tni_desc">Chỉ số TNI cao nhất</option>
+                    <option value="ip_desc">Nhiều sáng chế / SHTT nhất</option>
+                    <option value="name_asc">Tên doanh nghiệp (A → Z)</option>
+                    <option value="name_desc">Tên doanh nghiệp (Z → A)</option>
+                    <option value="recent">Mới cập nhật</option>
+                  </select>
+                </div>
+                <div className="text-xs text-slate-400 hidden md:block">
+                  Trang {data?.page ?? 1} / {data?.totalPages ?? 1}
+                </div>
               </div>
             </div>
 
@@ -293,14 +489,19 @@ export default function EnterprisesDirectoryPage() {
             {loading && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 animate-pulse">
-                    <div className="h-5 bg-slate-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-slate-100 rounded w-1/2"></div>
-                    <div className="space-y-2 pt-2">
-                      <div className="h-3.5 bg-slate-100 rounded"></div>
-                      <div className="h-3.5 bg-slate-100 rounded w-5/6"></div>
+                  <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4 animate-pulse">
+                    <div className="flex items-center gap-3">
+                      <div className="w-13 h-13 bg-slate-200 dark:bg-slate-800 rounded-2xl"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-1/2"></div>
+                      </div>
                     </div>
-                    <div className="h-9 bg-slate-200 rounded-xl mt-4"></div>
+                    <div className="space-y-2 pt-2">
+                      <div className="h-3.5 bg-slate-100 dark:bg-slate-800 rounded"></div>
+                      <div className="h-3.5 bg-slate-100 dark:bg-slate-800 rounded w-5/6"></div>
+                    </div>
+                    <div className="h-9 bg-slate-200 dark:bg-slate-800 rounded-xl mt-4"></div>
                   </div>
                 ))}
               </div>
@@ -308,10 +509,10 @@ export default function EnterprisesDirectoryPage() {
 
             {/* UX STATE: ERROR */}
             {!loading && error && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center space-y-3">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-2xl p-8 text-center space-y-3">
                 <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-                <h3 className="font-bold text-red-900 text-base">Đã xảy ra lỗi khi tải dữ liệu</h3>
-                <p className="text-xs text-red-600 max-w-md mx-auto">{error}</p>
+                <h3 className="font-bold text-red-900 dark:text-red-200 text-base">Đã xảy ra lỗi khi tải dữ liệu</h3>
+                <p className="text-xs text-red-600 dark:text-red-400 max-w-md mx-auto">{error}</p>
                 <button
                   onClick={() => loadData(page)}
                   className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-500 inline-flex items-center gap-1.5 transition"
@@ -323,104 +524,173 @@ export default function EnterprisesDirectoryPage() {
 
             {/* UX STATE: EMPTY */}
             {!loading && !error && data && data.items.length === 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-4">
-                <Building2 className="w-12 h-12 text-slate-300 mx-auto" />
-                <h3 className="font-bold text-slate-800 text-base">Không tìm thấy doanh nghiệp phù hợp</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4">
+                <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base">Không tìm thấy doanh nghiệp phù hợp</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                   Hãy thử điều chỉnh bộ lọc địa bàn, ngành nghề hoặc xóa từ khóa tìm kiếm để khám phá thêm doanh nghiệp khác.
                 </p>
                 <button
-                  onClick={() => {
-                    setQ("");
-                    setProvince("");
-                    setSectorCode("");
-                    setSubjectType("");
-                    setTniClassification("");
-                  }}
-                  className="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-500 transition"
+                  onClick={handleResetFilters}
+                  className="px-4 py-2 bg-brand-700 text-white rounded-xl text-xs font-bold hover:bg-brand-800 transition"
                 >
                   Xem toàn bộ 304 doanh nghiệp
                 </button>
               </div>
             )}
 
-            {/* UX STATE: SUCCESS (Cards Grid) */}
+            {/* UX STATE: SUCCESS (Cards Grid - 5 Tầng Thông Tin Cốt Lõi) */}
             {!loading && !error && data && data.items.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {data.items.map((ent) => (
                   <div
                     key={ent.id}
-                    className="bg-white rounded-2xl border border-slate-200 hover:border-brand-300 hover:shadow-lg transition flex flex-col justify-between p-5 relative group"
+                    className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-lg transition flex flex-col justify-between p-5 relative group"
                   >
                     <div>
-                      {/* Top Badges */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wider">
-                          MST: {ent.taxCode}
-                        </span>
-                        {ent.isVerified && (
-                          <span className="inline-flex items-center gap-1 text-xs font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                            Verified
-                          </span>
-                        )}
+                      {/* TẦNG 1: Avatar Nhận Diện & Định Danh */}
+                      <div className="flex items-start gap-3 mb-3">
+                        <EnterpriseAvatar
+                          name={ent.name}
+                          sectorName={ent.mainSectorName}
+                          sectorCode={ent.sectorCode}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                              MST: {ent.taxCode}
+                            </span>
+                            {ent.isVerified && (
+                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                Đã xác thực
+                              </span>
+                            )}
+                            {ent.ownershipType && (
+                              <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+                                {ent.ownershipType}
+                              </span>
+                            )}
+                          </div>
+                          <Link
+                            href={`/enterprises/${ent.taxCode}`}
+                            className="font-bold text-slate-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 line-clamp-2 text-sm leading-snug transition"
+                            title={ent.name}
+                          >
+                            {ent.name}
+                          </Link>
+                        </div>
                       </div>
 
-                      {/* Enterprise Name */}
-                      <Link
-                        href={`/enterprises/${ent.taxCode}`}
-                        className="font-bold text-slate-900 group-hover:text-brand-600 line-clamp-2 text-sm leading-snug transition mb-3"
-                      >
-                        {ent.name}
-                      </Link>
-
-                      {/* Metadata Items */}
-                      <div className="space-y-2 text-xs text-slate-600 mb-4">
+                      {/* TẦNG 2: Vị Thế Địa Bàn & Ngành Nghề */}
+                      <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 mb-3 bg-slate-50/70 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{ent.provinceCity || "Chưa xác định"}</span>
+                          <span className="truncate font-medium">{ent.provinceCity || "Toàn quốc"}</span>
+                          {ent.operatingZone && ent.operatingZone !== "Ngoài các khu trên" && (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-medium truncate max-w-[130px]" title={ent.operatingZone}>
+                              {ent.operatingZone}
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-start gap-2">
                           <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                          <span className="line-clamp-2 leading-tight">{ent.mainSectorName || "Chưa phân ngành"}</span>
+                          <span className="line-clamp-1 font-medium">{ent.mainSectorName || "Chưa phân ngành"}</span>
                         </div>
                         {ent.workforceScale && (
-                          <div className="flex items-center gap-2 text-slate-500">
+                          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                             <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <span>Quy mô: {ent.workforceScale}</span>
                           </div>
                         )}
                       </div>
 
-                      {/* TNI & IP Highlights */}
-                      <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100 mb-4">
-                        <div className="bg-slate-50 p-2 rounded-xl text-center">
-                          <div className="text-xs text-slate-500 font-semibold">Điểm TNI</div>
-                          <div className="text-xs font-extrabold text-brand-700">
-                            {ent.tniScore ? `${ent.tniScore.toFixed(1)}/100` : "Chưa chấm"}
+                      {/* TẦNG 3: Năng Lực R&D, Chuỗi Giá Trị & Xuất Khẩu */}
+                      <div className="flex items-center gap-1.5 flex-wrap text-xs mb-3">
+                        {ent.hasRdUnit && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-medium">
+                            <FlaskConical className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Có phòng R&D
+                          </span>
+                        )}
+                        {ent.inValueChain && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-medium">
+                            <Globe className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Chuỗi giá trị
+                          </span>
+                        )}
+                        {ent.isExporting && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-medium">
+                            <TrendingUp className="w-3 h-3 text-teal-600 dark:text-teal-400" /> Xuất khẩu
+                          </span>
+                        )}
+                      </div>
+
+                      {/* TẦNG 4: Chỉ Số TNI & Bằng SHTT */}
+                      <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 mb-3">
+                        <div>
+                          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Chỉ số TNI</div>
+                          <div className="flex items-baseline gap-1 mt-0.5">
+                            <span className="text-sm font-extrabold text-brand-700 dark:text-brand-400">
+                              {ent.tniScore ? ent.tniScore.toFixed(1) : "--"}
+                            </span>
+                            <span className="text-xs text-slate-400">/100</span>
+                          </div>
+                          <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-0.5 truncate">
+                            {ent.tniClassification === "VERY_HIGH" ? "Cấp thiết (≥85)" :
+                             ent.tniClassification === "HIGH" ? "Nhu cầu cao (75-84)" :
+                             ent.tniClassification === "MEDIUM" ? "Trung bình (50-74)" : "Cơ bản"}
                           </div>
                         </div>
-                        <div className="bg-slate-50 p-2 rounded-xl text-center">
-                          <div className="text-xs text-slate-500 font-semibold">Bằng SHTT</div>
-                          <div className="text-xs font-extrabold text-brand-700 flex items-center justify-center gap-1">
-                            <Award className="w-3 h-3" />
-                            {ent.ipCount} sáng chế
+                        <div className="border-l border-slate-200 dark:border-slate-700 pl-2.5">
+                          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Bằng SHTT</div>
+                          <div className="flex items-baseline gap-1 mt-0.5">
+                            <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                              {ent.ipCount}
+                            </span>
+                            <span className="text-xs text-slate-400">sáng chế</span>
+                          </div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                            {ent.ipCount > 0 ? "Đã công bố Cục SHTT" : "Chưa đăng ký"}
                           </div>
                         </div>
                       </div>
+
+                      {/* Top Nhu Cầu Hỗ Trợ Nổi Bật Tag Pills */}
+                      {ent.supportNeeds && ent.supportNeeds.length > 0 && (
+                        <div className="mb-4">
+                          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                            Nhu cầu hỗ trợ nổi bật:
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {ent.supportNeeds.slice(0, 3).map((need, i) => (
+                              <span
+                                key={i}
+                                className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium"
+                              >
+                                {need}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 pt-2">
+                    {/* TẦNG 5: Action Controls */}
+                    <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                       <Link
                         href={`/enterprises/${ent.taxCode}`}
-                        className="flex-1 py-2 px-3 text-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition"
+                        className="flex-1 py-2 px-3 text-center rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition"
                       >
-                        Hồ Sơ
+                        Hồ Sơ Chi Tiết
                       </Link>
                       <button
-                        onClick={() => setConnectModalEnt(ent)}
-                        className="py-2 px-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-sm"
+                        onClick={() => {
+                          setConnectModalEnt(ent);
+                          setConnectResult(null);
+                          setConnectOrgName("");
+                          setConnectContact("");
+                          setConnectNote("");
+                        }}
+                        className="py-2 px-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-sm"
                       >
                         <Send className="w-3 h-3" /> Kết Nối
                       </button>
@@ -430,38 +700,47 @@ export default function EnterprisesDirectoryPage() {
               </div>
             )}
 
-            {/* Pagination */}
+            {/* Pagination Thuật Toán Động (Có Ellipsis ...) */}
             {!loading && data && data.totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-8">
+              <div className="flex items-center justify-center gap-1.5 pt-8">
                 <button
                   disabled={page <= 1}
                   onClick={() => loadData(page - 1)}
-                  className="px-3.5 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 inline-flex items-center gap-1"
                 >
-                  Trước
+                  <ChevronLeft className="w-3.5 h-3.5" /> Trước
                 </button>
-                {Array.from({ length: Math.min(data.totalPages, 7) }, (_, idx) => {
-                  const pNum = idx + 1;
+
+                {getPaginationItems(data.page, data.totalPages).map((pItem, idx) => {
+                  if (pItem === "...") {
+                    return (
+                      <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-xs font-bold text-slate-400">
+                        ...
+                      </span>
+                    );
+                  }
+                  const pNum = Number(pItem);
                   return (
                     <button
                       key={pNum}
                       onClick={() => loadData(pNum)}
                       className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
                         pNum === page
-                          ? "bg-brand-600 text-white"
-                          : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                          ? "bg-brand-700 text-white shadow-sm"
+                          : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                       }`}
                     >
                       {pNum}
                     </button>
                   );
                 })}
+
                 <button
                   disabled={page >= data.totalPages}
                   onClick={() => loadData(page + 1)}
-                  className="px-3.5 py-1.5 text-xs font-bold rounded-lg border border-slate-200 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                  className="px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 inline-flex items-center gap-1"
                 >
-                  Sau
+                  Sau <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
@@ -469,66 +748,140 @@ export default function EnterprisesDirectoryPage() {
         </div>
       </main>
 
-      {/* MODAL KẾT NỐI HỢP TÁC */}
+      {/* MODAL KẾT NỐI HỢP TÁC (Zero-Mock Minh Bạch) */}
       {connectModalEnt && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-5 animate-in fade-in zoom-in-95 duration-150 border border-slate-100 dark:border-slate-800">
             <button
-              onClick={() => setConnectModalEnt(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100"
+              onClick={() => {
+                setConnectModalEnt(null);
+                setConnectResult(null);
+              }}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full mb-2">
-                <Send className="w-3.5 h-3.5" /> Gửi Đề Xuất Hợp Tác
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2.5 py-0.5 rounded-full mb-2">
+                <Send className="w-3.5 h-3.5" /> Gửi Đề Xuất Kết Nối Công Nghệ
               </div>
-              <h3 className="text-lg font-bold text-slate-900 line-clamp-1">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
                 {connectModalEnt.name}
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Mã số thuế: {connectModalEnt.taxCode} • Địa bàn: {connectModalEnt.provinceCity}
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Mã số thuế: <span className="font-mono font-semibold">{connectModalEnt.taxCode}</span> • Địa bàn: {connectModalEnt.provinceCity}
               </p>
             </div>
 
-            {connectSubmitted ? (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-2">
-                <FileCheck2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                <h4 className="font-bold text-emerald-900 text-sm">Gửi Yêu Cầu Thành Công!</h4>
-                <p className="text-xs text-emerald-700">
-                  Nền tảng Nacentwin đã tiếp nhận đề xuất kết nối của bạn và chuyển tiếp tới đại diện doanh nghiệp.
+            {connectResult ? (
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-6 text-center space-y-4">
+                <FileCheck2 className="w-12 h-12 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                <div>
+                  <h4 className="font-bold text-emerald-900 dark:text-emerald-200 text-base">Đã Ghi Nhận Đề Xuất Kết Nối!</h4>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
+                    Yêu cầu kết nối của bạn đã được lưu vào hệ thống điều phối Nacentwin.
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800 text-left space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-semibold">Mã đề xuất:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono font-bold text-brand-700 dark:text-brand-400">{connectResult.requestCode}</span>
+                      <button
+                        onClick={() => handleCopyCode(connectResult.requestCode)}
+                        className="text-slate-400 hover:text-slate-600 p-0.5"
+                        title="Sao chép mã"
+                      >
+                        {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                    <span>Thời gian tiếp nhận:</span>
+                    <span>{connectResult.submittedAt}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                    <span>Trạng thái:</span>
+                    <span className="font-bold text-amber-600">Đang chờ thẩm định kết nối</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Cán bộ phụ trách sẽ liên hệ qua thông tin bạn đã cung cấp trong vòng 24–48h làm việc.
                 </p>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConnectModalEnt(null);
+                    setConnectResult(null);
+                  }}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition"
+                >
+                  Đóng cửa sổ
+                </button>
               </div>
             ) : (
               <form onSubmit={handleConnectSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Nội dung đề xuất hợp tác / Nhu cầu liên kết công nghệ
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Đơn vị / Cá nhân đề xuất <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={connectOrgName}
+                    onChange={(e) => setConnectOrgName(e.target.value)}
+                    placeholder="VD: Viện Công Nghệ Nacentech, Công ty CP Đầu Tư..."
+                    className="w-full text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 p-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Thông tin liên hệ (Email hoặc Số điện thoại) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={connectContact}
+                    onChange={(e) => setConnectContact(e.target.value)}
+                    placeholder="VD: contact@nacentech.vn / 0912345678"
+                    className="w-full text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 p-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Nội dung đề xuất hợp tác / Nhu cầu liên kết công nghệ <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     rows={4}
                     required
                     value={connectNote}
                     onChange={(e) => setConnectNote(e.target.value)}
-                    placeholder="Mô tả tóm tắt nhu cầu cung ứng, tìm kiếm công nghệ hoặc đặt hàng tư vấn..."
-                    className="w-full text-xs font-medium rounded-xl border border-slate-300 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    placeholder="Mô tả tóm tắt nhu cầu cung ứng thiết bị, tìm kiếm chuyển giao công nghệ, hợp tác R&D hoặc tư vấn..."
+                    className="w-full text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
-                <div className="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100 leading-relaxed">
-                  * Theo quy định bảo mật dữ liệu NĐ 13/2023/NĐ-CP, thông tin liên hệ trực tiếp của doanh nghiệp sẽ được mở sau khi hai bên xác nhận chấp thuận kết nối.
+
+                <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-100 dark:border-slate-800 leading-relaxed">
+                  * Theo quy định bảo vệ dữ liệu cá nhân NĐ 13/2023/NĐ-CP, thông tin liên lạc của đại diện doanh nghiệp sẽ được kết nối chính thức sau khi hồ sơ đáp ứng tiêu chí sơ tuyển.
                 </div>
+
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => setConnectModalEnt(null)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     Hủy bỏ
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-md flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-700 hover:bg-brand-800 text-white shadow-md flex items-center gap-1.5 transition"
                   >
                     <Send className="w-3.5 h-3.5" /> Gửi Đề Xuất
                   </button>

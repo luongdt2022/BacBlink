@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+<link rel="stylesheet" href="/wireframes/css/tailwind.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wireframe: Quản Lý Vai Trò & Cây Thư Mục 34 Tỉnh Thành (Admin Governance)</title>
+  <title>Bảng Phân Quyền & Vai Trò (Roles) Hệ Thống Nacentwin / NacenTech</title>
   <style>
     :root {
       --primary: #1e40af;
-      --primary-hover: #1d4ed8;
+      --primary-light: #3b82f6;
       --primary-bg: #eff6ff;
       --text-main: #1f2937;
       --text-muted: #6b7280;
       --border: #e5e7eb;
       --bg-surface: #ffffff;
       --bg-app: #f9fafb;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --info: #3b82f6;
+      --tag-t0: #dc2626;
+      --tag-t0-bg: #fef2f2;
+      --tag-t1: #d97706;
+      --tag-t1-bg: #fffbeb;
+      --tag-t2: #059669;
+      --tag-t2-bg: #ecfdf5;
+      --tag-t3: #4b5563;
+      --tag-t3-bg: #f3f4f6;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,1064 +31,436 @@
       color: var(--text-main);
       background: var(--bg-app);
       line-height: 1.5;
-      padding: 24px;
+      padding: 32px 20px;
     }
 
     .container {
-      max-width: 1300px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
-    /* Header */
-    .header {
+    header {
       background: var(--bg-surface);
-      padding: 24px;
+      padding: 24px 32px;
       border-radius: 12px;
       border: 1px solid var(--border);
       margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .header-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .header h1 { font-size: 22px; font-weight: 700; color: #111827; }
-    .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-    .badge-top {
-      background: #ecfdf5; color: #047857; font-weight: 600; font-size: 13px;
-      padding: 6px 14px; border-radius: 9999px; border: 1px solid #a7f3d0;
+      margin-bottom: 12px;
     }
 
-    /* Tab Controls */
-    .tabs-nav {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 12px;
-    }
-    .tab-btn {
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: 1px solid transparent;
-      background: transparent;
-      font-size: 15px;
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
       font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .tab-btn:hover { background: #f3f4f6; color: var(--text-main); }
-    .tab-btn.active {
-      background: var(--primary-bg);
-      color: var(--primary);
-      border-color: #bfdbfe;
+    .badge-review { background: #fef3c7; color: #92400e; }
+
+    h1 { font-size: 24px; font-weight: 700; color: #111827; }
+    p.subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+    .summary-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* Cards */
     .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .card h3 { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+    .card .val { font-size: 18px; font-weight: 700; color: #111827; }
+    .card .desc { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    .table-container {
       background: var(--bg-surface);
       border-radius: 12px;
       border: 1px solid var(--border);
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      color: #111827;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    /* Grid Layout for Roles & Permissions */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
+    .table-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
     }
-    .stat-box {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      padding: 16px;
-      border-radius: 10px;
-    }
-    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-    .stat-value { font-size: 24px; font-weight: 700; color: #111827; margin-top: 4px; }
+    .table-header h2 { font-size: 16px; font-weight: 700; color: #111827; }
 
-    /* Tables */
     table {
       width: 100%;
       border-collapse: collapse;
+      text-align: left;
       font-size: 14px;
     }
-    th, td {
-      padding: 12px 14px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    th {
-      background: #f9fafb;
-      font-weight: 600;
-      color: #374151;
-    }
-    tr:hover td { background: #fcfcfd; }
 
-    .role-badge {
+    th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: #f8fafc; }
+
+    .tag-tier {
       display: inline-block;
       padding: 3px 8px;
       border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      font-family: monospace;
-    }
-    .role-super { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-    .role-prov { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-    .role-sec { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-    .role-user { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
-
-    .check-icon { color: var(--success); font-weight: bold; }
-    .cross-icon { color: #d1d5db; }
-
-    /* Search & Filter Bar */
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-      align-items: center;
-    }
-    .search-input {
-      padding: 9px 14px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 14px;
-      min-width: 280px;
-      outline: none;
-    }
-    .search-input:focus { border-color: var(--primary); }
-    .select-filter {
-      padding: 9px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 14px;
-      background: white;
-      outline: none;
-    }
-
-    .btn {
-      padding: 9px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-outline { background: white; border: 1px solid var(--border); color: #374151; }
-    .btn-outline:hover { background: #f9fafb; }
-    .btn-sm { padding: 5px 10px; font-size: 12px; }
-
-    /* Tree View Styling (Cây Thư Mục 34 Tỉnh Thành) */
-    .tree-container {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 20px;
-    }
-    .tree-pane {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      max-height: 700px;
-      overflow-y: auto;
-    }
-    .detail-pane {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-    }
-
-    .tree-node {
-      margin-bottom: 6px;
-    }
-    .tree-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      user-select: none;
-      font-size: 14px;
-      font-weight: 500;
-    }
-    .tree-label:hover { background: #f3f4f6; }
-    .tree-label.active {
-      background: var(--primary-bg);
-      color: var(--primary);
-      font-weight: 600;
-    }
-    .tree-toggle {
-      width: 18px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-    .tree-children {
-      margin-left: 24px;
-      padding-left: 8px;
-      border-left: 1px dashed #d1d5db;
-    }
-
-    .region-tag {
       font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tier-0 { background: var(--tag-t0-bg); color: var(--tag-t0); border: 1px solid #fecaca; }
+    .tier-1 { background: var(--tag-t1-bg); color: var(--tag-t1); border: 1px solid #fde68a; }
+    .tier-2 { background: var(--tag-t2-bg); color: var(--tag-t2); border: 1px solid #a7f3d0; }
+    .tier-3 { background: var(--tag-t3-bg); color: var(--tag-t3); border: 1px solid #e5e7eb; }
+
+    code.role-code {
+      background: #f1f5f9;
+      color: #0f172a;
       padding: 2px 6px;
       border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
       font-weight: 600;
-      margin-left: auto;
+      display: inline-block;
+      margin-bottom: 4px;
     }
-    .tag-north { background: #fee2e2; color: #991b1b; }
-    .tag-central { background: #fef3c7; color: #92400e; }
-    .tag-south { background: #e0e7ff; color: #3730a3; }
 
-    /* Modal Styling */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
+    .role-title { font-weight: 600; color: #111827; }
+
+    .matrix-check {
+      text-align: center;
+      font-weight: bold;
     }
-    .modal-overlay.open { display: flex; }
-    .modal-card {
-      background: white;
-      width: 500px;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    .check-yes { color: #059669; }
+    .check-scope { color: #d97706; font-size: 12px; }
+    .check-no { color: #d1d5db; }
+
+    .phase-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
     }
-    .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-    .form-group input, .form-group select {
-      width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
+    .p1-active { background: #dbeafe; color: #1e40af; }
+    .p2-ready { background: #fef3c7; color: #92400e; }
+
+    .note-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 24px;
+      font-size: 13px;
+      color: #1e3a8a;
     }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .note-box ul { margin-left: 20px; margin-top: 6px; }
   </style>
 </head>
 <body>
+    <div id="nacentech-design-toolbar" style="position: sticky; top: 0; left: 0; right: 0; z-index: 99999; background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 700; transition: background 0.2s;">
+          ← Về Danh Sách Màn Hình
+        </a>
+        <span style="color: #94a3b8;">|</span>
+        <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4);">
+          Màn hình: Bảng Phân Quyền Vai Trò & Ma Trận Phân Quyền 10 Roles
+        </span>
+        <span style="color: #64748b;">(24_wireframe_bang_phan_quyen_roles.html)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="color: #94a3b8; font-size: 11px;">Nền tảng NacenTwin · Viện Ứng Dụng Công Nghệ</span>
+        <button onclick="document.getElementById('nacentech-design-toolbar').style.display='none'" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;" title="Ẩn thanh công cụ">✕</button>
+      </div>
+    </div>
+    
 
 <div class="container">
-  <div class="header">
-    <div>
-      <h1>Phân Hệ Quản Trị Hệ Thống & Cây Đơn Vị (Admin Governance)</h1>
-      <p>Quản lý 10 vai trò 3D Scoped RBAC, gán quyền tài khoản và Cây thư mục 34 tỉnh thành trọng điểm KH&CN toàn quốc.</p>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-top">
+      <h1>HỆ THỐNG PHÂN QUYỀN ĐA TẦNG (MULTI-TIER SCOPED RBAC)</h1>
+      <span class="badge badge-review">Tài liệu họp Review Team</span>
     </div>
-    <span class="badge-top">Phiên bản Thiết kế Cơ sở v2.5</span>
-  </div>
+    <p class="subtitle">Dự án NacenTech / Nacentwin — Bóc tách từ Sheet Admin, C.bán, T.mua và Kiến trúc chuẩn NacenTwin</p>
+  </header>
 
-  <!-- Tabs Navigation -->
-  <div class="tabs-nav">
-    <button class="tab-btn active" onclick="switchTab('roles-tab')">
-      🛡️ 1. Quản Lý Vai Trò & Phân Quyền Tài Khoản
-    </button>
-    <button class="tab-btn" onclick="switchTab('tree-tab')">
-      🏢 2. Cây Thư Mục 34 Tỉnh Thành Trọng Điểm & Cơ Sở
-    </button>
-  </div>
-
-  <!-- TAB 1: ROLES & PERMISSIONS -->
-  <div id="roles-tab" class="tab-content active">
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-label">Tổng Số Vai Trò Chuẩn</div>
-        <div class="stat-value">10 Roles</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Tầng Quản Trị Hệ Thống</div>
-        <div class="stat-value">4 Tầng</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Chiều Dữ Liệu Phân Quyền</div>
-        <div class="stat-value">3D Scoped</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Tài Khoản Quản Trị Hoạt Động</div>
-        <div class="stat-value">48 Quản Trị Viên</div>
-      </div>
-    </div>
-
-    <!-- Ma Trận Quyền Hạn -->
+  <!-- HIGHLIGHT CARDS -->
+  <div class="summary-card">
     <div class="card">
-      <div class="card-title">
-        <span>Ma Trận Quyền Hạn Chi Tiết Theo 10 Vai Trò (Permissions Matrix)</span>
-        <button class="btn btn-outline btn-sm" onclick="alert('Đã đồng bộ ma trận với config/policies/authorization-rules.v1.json')">🔄 Đối Soát Policy</button>
-      </div>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Mã Vai Trò</th>
-              <th>Tên Nghiệp Vụ</th>
-              <th>Tầng / Scope</th>
-              <th>Thẩm Định Hồ Sơ</th>
-              <th>Ký Duyệt Cuối</th>
-              <th>Quản Trị Tỉnh</th>
-              <th>Quản Trị Ngành</th>
-              <th>Cấu Hình Hệ Thống</th>
-              <th>Tra Cứu / Đăng Bài</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="role-badge role-super">SUPER_ADMIN</span></td>
-              <td>Quản trị Tối cao (NacenTech)</td>
-              <td><code>GLOBAL</code></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="check-icon">✓</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-super">OPERATOR_ADMIN</span></td>
-              <td>Vận hành Nền tảng</td>
-              <td><code>GLOBAL</code></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-prov">PROVINCIAL_ADMIN</span></td>
-              <td>Lãnh đạo Sở KH&CN Tỉnh</td>
-              <td><code>PROVINCE</code></td>
-              <td><span class="check-icon">✓</span></td>
-              <td><span class="check-icon">✓ (Tỉnh)</span></td>
-              <td><span class="check-icon">✓ (Tỉnh)</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-prov">CLUSTER_ADMIN</span></td>
-              <td>Chuyên viên Sở Tỉnh</td>
-              <td><code>PROVINCE</code></td>
-              <td><span class="check-icon">✓ (Sơ kiểm)</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-sec">SECTOR_ADMIN</span></td>
-              <td>Trưởng Ban Quản lý Ngành TT17</td>
-              <td><code>SECTOR</code></td>
-              <td><span class="check-icon">✓ (Ngành)</span></td>
-              <td><span class="check-icon">✓ (Ngành)</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓ (Ngành)</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-user">INNOVATION_ENTITY</span></td>
-              <td>Đơn vị Viện/Trường/DN ĐMST</td>
-              <td><code>ORG_UNIT</code></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓ (Nội bộ)</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-user">VERIFIED_EXPERT</span></td>
-              <td>Chuyên gia KH&CN Đã Thẩm Định</td>
-              <td><code>PERSONAL</code></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓ (Tư vấn)</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-user">SELLER</span></td>
-              <td>Nhà Cung Ứng Công Nghệ</td>
-              <td><code>PERSONAL</code></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓ (Chào bán)</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-user">BUYER</span></td>
-              <td>Bên Mua / Doanh nghiệp Tìm Mua</td>
-              <td><code>PERSONAL</code></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓ (Đăng cầu)</span></td>
-            </tr>
-            <tr>
-              <td><span class="role-badge role-user">PUBLIC_USER</span></td>
-              <td>Người dùng Thành viên Tự do</td>
-              <td><code>PERSONAL</code></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="cross-icon">-</span></td>
-              <td><span class="check-icon">✓ (Xem tin)</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <h3>Cơ chế Vận hành</h3>
+      <div class="val">2 Giai đoạn (Phasing)</div>
+      <div class="desc">Pha 1: NacenX duyệt tập trung &rarr; Pha 2: Ủy quyền Tỉnh/Ngành/Cơ sở.</div>
     </div>
-
-    <!-- Danh Sách Tài Khoản & Gán Quyền -->
     <div class="card">
-      <div class="card-title">
-        <span>Danh Sách Cán Bộ Quản Trị & Gán Quyền Tài Khoản</span>
-        <button class="btn btn-primary btn-sm" onclick="openAssignModal()">+ Gán Vai Trò Mới</button>
-      </div>
-      <div class="toolbar">
-        <input type="text" class="search-input" placeholder="Tìm theo email, họ tên, mã tỉnh...">
-        <select class="select-filter">
-          <option value="">Tất cả Vai trò</option>
-          <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-          <option value="PROVINCIAL_ADMIN">PROVINCIAL_ADMIN</option>
-          <option value="SECTOR_ADMIN">SECTOR_ADMIN</option>
-        </select>
-        <select class="select-filter">
-          <option value="">Tất cả Phạm vi (Scope)</option>
-          <option value="GLOBAL">Toàn quốc (GLOBAL)</option>
-          <option value="PROVINCE">Tỉnh/Thành (PROVINCE)</option>
-          <option value="SECTOR">Chuyên ngành (SECTOR)</option>
-        </select>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Họ & Tên</th>
-            <th>Email Tài Khoản</th>
-            <th>Vai Trò Hiện Tại</th>
-            <th>Phạm Vi (Scope)</th>
-            <th>Mã Định Danh Scope</th>
-            <th>Ngày Bổ Nhiệm</th>
-            <th>Thao Tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Lãnh Đạo Cục ĐMST</strong></td>
-            <td>admin.super@nacentech.local</td>
-            <td><span class="role-badge role-super">SUPER_ADMIN</span></td>
-            <td><code>GLOBAL</code></td>
-            <td>Toàn quốc</td>
-            <td>01/01/2026</td>
-            <td><button class="btn btn-outline btn-sm">Xem Audit</button></td>
-          </tr>
-          <tr>
-            <td><strong>Nguyễn Văn Hùng (Sở HN)</strong></td>
-            <td>so.hanoi@nacentech.local</td>
-            <td><span class="role-badge role-prov">PROVINCIAL_ADMIN</span></td>
-            <td><code>PROVINCE</code></td>
-            <td>HN (Hà Nội)</td>
-            <td>15/02/2026</td>
-            <td><button class="btn btn-outline btn-sm" onclick="openAssignModal('so.hanoi@nacentech.local', 'PROVINCIAL_ADMIN', 'HN')">Sửa Quyền</button></td>
-          </tr>
-          <tr>
-            <td><strong>Trần Thị Mai (Sở HCM)</strong></td>
-            <td>so.hcm@nacentech.local</td>
-            <td><span class="role-badge role-prov">PROVINCIAL_ADMIN</span></td>
-            <td><code>PROVINCE</code></td>
-            <td>SG (TP. Hồ Chí Minh)</td>
-            <td>20/02/2026</td>
-            <td><button class="btn btn-outline btn-sm" onclick="openAssignModal('so.hcm@nacentech.local', 'PROVINCIAL_ADMIN', 'SG')">Sửa Quyền</button></td>
-          </tr>
-          <tr>
-            <td><strong>Lê Hoàng Long (Ban Cơ Khí)</strong></td>
-            <td>sector.cokhi@nacentech.local</td>
-            <td><span class="role-badge role-sec">SECTOR_ADMIN</span></td>
-            <td><code>SECTOR</code></td>
-            <td>C.27 (Thiết bị điện)</td>
-            <td>01/03/2026</td>
-            <td><button class="btn btn-outline btn-sm" onclick="openAssignModal('sector.cokhi@nacentech.local', 'SECTOR_ADMIN', 'C.27')">Sửa Quyền</button></td>
-          </tr>
-        </tbody>
-      </table>
+      <h3>3 Chiều Phân Cấp (Scope)</h3>
+      <div class="val">Địa bàn &bull; Ngành &bull; Cơ sở</div>
+      <div class="desc">63 Sở Tỉnh / 18 Ngành CN / Viện - Trường đối tác.</div>
+    </div>
+    <div class="card">
+      <h3>Quy mô Danh mục</h3>
+      <div class="val">4 Tầng &bull; 10 Vai trò</div>
+      <div class="desc">Thiết kế CSDL sẵn sàng Day 1, không đập đi làm lại.</div>
     </div>
   </div>
 
-  <!-- TAB 2: CÂY THƯ MỤC 34 TỈNH THÀNH TRỌNG ĐIỂM -->
-  <div id="tree-tab" class="tab-content">
-    <div class="tree-container">
-      <!-- Cột Trái: Cây Thư Mục Trực Quan -->
-      <div class="tree-pane">
-        <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="font-size: 15px; font-weight: 700;">Cây Đơn Vị Tổ Chức</h3>
-          <span style="font-size: 12px; color: var(--text-muted);">34 Tỉnh Thành</span>
-        </div>
-        <input type="text" class="search-input" style="width: 100%; min-width: 0; margin-bottom: 12px;" placeholder="Lọc tỉnh/thành...">
-
-        <!-- Root Node -->
-        <div class="tree-node">
-          <div class="tree-label active" onclick="selectNode('root', 'CỤC ĐỔI MỚI SÁNG TẠO NACENTECH (TRUNG ƯƠNG)', 'GLOBAL', 'NacenTech Hub')">
-            <span class="tree-toggle">▼</span>
-            🏛️ <strong>NACENTECH (TRUNG ƯƠNG)</strong>
-          </div>
-          
-          <div class="tree-children">
-            <!-- Vùng Miền Bắc (12 Tỉnh Trọng Điểm) -->
-            <div class="tree-node">
-              <div class="tree-label" onclick="selectRegion('bac')">
-                <span class="tree-toggle">▼</span>
-                📁 <strong>Khu Vực Miền Bắc</strong>
-                <span class="region-tag tag-north">12 Tỉnh/TP</span>
-              </div>
-              <div class="tree-children">
-                <div class="tree-label" onclick="selectNode('HN', 'Sở KH&CN TP. Hà Nội', 'PROVINCE', 'Hà Nội')">
-                  📄 Sở KH&CN TP. Hà Nội
-                </div>
-                <div class="tree-label" onclick="selectNode('HP', 'Sở KH&CN TP. Hải Phòng', 'PROVINCE', 'Hải Phòng')">
-                  📄 Sở KH&CN TP. Hải Phòng
-                </div>
-                <div class="tree-label" onclick="selectNode('QN', 'Sở KH&CN Tỉnh Quảng Ninh', 'PROVINCE', 'Quảng Ninh')">
-                  📄 Sở KH&CN Tỉnh Quảng Ninh
-                </div>
-                <div class="tree-label" onclick="selectNode('BN', 'Sở KH&CN Tỉnh Bắc Ninh', 'PROVINCE', 'Bắc Ninh')">
-                  📄 Sở KH&CN Tỉnh Bắc Ninh
-                </div>
-                <div class="tree-label" onclick="selectNode('VP', 'Sở KH&CN Tỉnh Vĩnh Phúc', 'PROVINCE', 'Vĩnh Phúc')">
-                  📄 Sở KH&CN Tỉnh Vĩnh Phúc
-                </div>
-                <div class="tree-label" onclick="selectNode('TN', 'Sở KH&CN Tỉnh Thái Nguyên', 'PROVINCE', 'Thái Nguyên')">
-                  📄 Sở KH&CN Tỉnh Thái Nguyên
-                </div>
-                <div class="tree-label" onclick="selectNode('HD', 'Sở KH&CN Tỉnh Hải Dương', 'PROVINCE', 'Hải Dương')">
-                  📄 Sở KH&CN Tỉnh Hải Dương
-                </div>
-                <div class="tree-label" onclick="selectNode('HY', 'Sở KH&CN Tỉnh Hưng Yên', 'PROVINCE', 'Hưng Yên')">
-                  📄 Sở KH&CN Tỉnh Hưng Yên
-                </div>
-                <div class="tree-label" onclick="selectNode('ND', 'Sở KH&CN Tỉnh Nam Định', 'PROVINCE', 'Nam Định')">
-                  📄 Sở KH&CN Tỉnh Nam Định
-                </div>
-                <div class="tree-label" onclick="selectNode('PT', 'Sở KH&CN Tỉnh Phú Thọ', 'PROVINCE', 'Phú Thọ')">
-                  📄 Sở KH&CN Tỉnh Phú Thọ
-                </div>
-                <div class="tree-label" onclick="selectNode('NB', 'Sở KH&CN Tỉnh Ninh Bình', 'PROVINCE', 'Ninh Bình')">
-                  📄 Sở KH&CN Tỉnh Ninh Bình
-                </div>
-                <div class="tree-label" onclick="selectNode('BG', 'Sở KH&CN Tỉnh Bắc Giang', 'PROVINCE', 'Bắc Giang')">
-                  📄 Sở KH&CN Tỉnh Bắc Giang
-                </div>
-              </div>
-            </div>
-
-            <!-- Vùng Miền Trung & Tây Nguyên (10 Tỉnh Trọng Điểm) -->
-            <div class="tree-node">
-              <div class="tree-label" onclick="selectRegion('trung')">
-                <span class="tree-toggle">▼</span>
-                📁 <strong>Khu Vực Miền Trung & Tây Nguyên</strong>
-                <span class="region-tag tag-central">10 Tỉnh/TP</span>
-              </div>
-              <div class="tree-children">
-                <div class="tree-label" onclick="selectNode('DN', 'Sở KH&CN TP. Đà Nẵng', 'PROVINCE', 'Đà Nẵng')">
-                  📄 Sở KH&CN TP. Đà Nẵng
-                </div>
-                <div class="tree-label" onclick="selectNode('TH', 'Sở KH&CN Tỉnh Thanh Hóa', 'PROVINCE', 'Thanh Hóa')">
-                  📄 Sở KH&CN Tỉnh Thanh Hóa
-                </div>
-                <div class="tree-label" onclick="selectNode('NA', 'Sở KH&CN Tỉnh Nghệ An', 'PROVINCE', 'Nghệ An')">
-                  📄 Sở KH&CN Tỉnh Nghệ An
-                </div>
-                <div class="tree-label" onclick="selectNode('TTH', 'Sở KH&CN Tỉnh Thừa Thiên Huế', 'PROVINCE', 'Huế')">
-                  📄 Sở KH&CN Tỉnh TT-Huế
-                </div>
-                <div class="tree-label" onclick="selectNode('QNA', 'Sở KH&CN Tỉnh Quảng Nam', 'PROVINCE', 'Quảng Nam')">
-                  📄 Sở KH&CN Tỉnh Quảng Nam
-                </div>
-                <div class="tree-label" onclick="selectNode('QNG', 'Sở KH&CN Tỉnh Quảng Ngãi', 'PROVINCE', 'Quảng Ngãi')">
-                  📄 Sở KH&CN Tỉnh Quảng Ngãi
-                </div>
-                <div class="tree-label" onclick="selectNode('BD', 'Sở KH&CN Tỉnh Bình Định', 'PROVINCE', 'Bình Định')">
-                  📄 Sở KH&CN Tỉnh Bình Định
-                </div>
-                <div class="tree-label" onclick="selectNode('KH', 'Sở KH&CN Tỉnh Khánh Hòa', 'PROVINCE', 'Khánh Hòa')">
-                  📄 Sở KH&CN Tỉnh Khánh Hòa
-                </div>
-                <div class="tree-label" onclick="selectNode('DL', 'Sở KH&CN Tỉnh Đắk Lắk', 'PROVINCE', 'Đắk Lắk')">
-                  📄 Sở KH&CN Tỉnh Đắk Lắk
-                </div>
-                <div class="tree-label" onclick="selectNode('LD', 'Sở KH&CN Tỉnh Lâm Đồng', 'PROVINCE', 'Lâm Đồng')">
-                  📄 Sở KH&CN Tỉnh Lâm Đồng
-                </div>
-              </div>
-            </div>
-
-            <!-- Vùng Miền Nam (12 Tỉnh Trọng Điểm) -->
-            <div class="tree-node">
-              <div class="tree-label" onclick="selectRegion('nam')">
-                <span class="tree-toggle">▼</span>
-                📁 <strong>Khu Vực Miền Nam</strong>
-                <span class="region-tag tag-south">12 Tỉnh/TP</span>
-              </div>
-              <div class="tree-children">
-                <div class="tree-label" onclick="selectNode('SG', 'Sở KH&CN TP. Hồ Chí Minh', 'PROVINCE', 'TP.HCM')">
-                  📄 Sở KH&CN TP. Hồ Chí Minh
-                </div>
-                <div class="tree-label" onclick="selectNode('BDG', 'Sở KH&CN Tỉnh Bình Dương', 'PROVINCE', 'Bình Dương')">
-                  📄 Sở KH&CN Tỉnh Bình Dương
-                </div>
-                <div class="tree-label" onclick="selectNode('DNA', 'Sở KH&CN Tỉnh Đồng Nai', 'PROVINCE', 'Đồng Nai')">
-                  📄 Sở KH&CN Tỉnh Đồng Nai
-                </div>
-                <div class="tree-label" onclick="selectNode('BRVT', 'Sở KH&CN Tỉnh Bà Rịa - Vũng Tàu', 'PROVINCE', 'Vũng Tàu')">
-                  📄 Sở KH&CN Tỉnh BR-Vũng Tàu
-                </div>
-                <div class="tree-label" onclick="selectNode('CT', 'Sở KH&CN TP. Cần Thơ', 'PROVINCE', 'Cần Thơ')">
-                  📄 Sở KH&CN TP. Cần Thơ
-                </div>
-                <div class="tree-label" onclick="selectNode('LA', 'Sở KH&CN Tỉnh Long An', 'PROVINCE', 'Long An')">
-                  📄 Sở KH&CN Tỉnh Long An
-                </div>
-                <div class="tree-label" onclick="selectNode('TG', 'Sở KH&CN Tỉnh Tiền Giang', 'PROVINCE', 'Tiền Giang')">
-                  📄 Sở KH&CN Tỉnh Tiền Giang
-                </div>
-                <div class="tree-label" onclick="selectNode('AG', 'Sở KH&CN Tỉnh An Giang', 'PROVINCE', 'An Giang')">
-                  📄 Sở KH&CN Tỉnh An Giang
-                </div>
-                <div class="tree-label" onclick="selectNode('DT', 'Sở KH&CN Tỉnh Đồng Tháp', 'PROVINCE', 'Đồng Tháp')">
-                  📄 Sở KH&CN Tỉnh Đồng Tháp
-                </div>
-                <div class="tree-label" onclick="selectNode('KG', 'Sở KH&CN Tỉnh Kiên Giang', 'PROVINCE', 'Kiên Giang')">
-                  📄 Sở KH&CN Tỉnh Kiên Giang
-                </div>
-                <div class="tree-label" onclick="selectNode('TN', 'Sở KH&CN Tỉnh Tây Ninh', 'PROVINCE', 'Tây Ninh')">
-                  📄 Sở KH&CN Tỉnh Tây Ninh
-                </div>
-                <div class="tree-label" onclick="selectNode('CM', 'Sở KH&CN Tỉnh Cà Mau', 'PROVINCE', 'Cà Mau')">
-                  📄 Sở KH&CN Tỉnh Cà Mau
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cột Phải: Chi Tiết Đơn Vị Đang Chọn -->
-      <div class="detail-pane">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-          <div>
-            <h2 id="detail-title" style="font-size: 20px; font-weight: 700; color: #111827;">Sở KH&CN TP. Hà Nội</h2>
-            <p id="detail-sub" style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">Mã Scope: <strong>HN</strong> | Cấp: <strong>PROVINCE (Tỉnh/Thành Trực Thuộc)</strong></p>
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn btn-outline btn-sm" onclick="openAddUnitModal()">+ Thêm Cơ Sở Con</button>
-            <button class="btn btn-outline btn-sm" onclick="openEditUnitModal()">✏️ Sửa Đơn Vị</button>
-            <button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="openDeleteUnitModal()">🗑️ Vô Hiệu Hóa / Xóa</button>
-            <button class="btn btn-primary btn-sm" onclick="openAssignModal('so.hanoi@nacentech.local', 'PROVINCIAL_ADMIN', 'HN')">Bổ Nhiệm Lãnh Đạo Sở</button>
-          </div>
-        </div>
-
-        <div class="stats-row" style="margin-bottom: 20px;">
-          <div class="stat-box">
-            <div class="stat-label">Cơ Sở Liên Kết</div>
-            <div class="stat-value" id="count-inst">14 Viện/Trường</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Chuyên Gia Địa Bàn</div>
-            <div class="stat-value" id="count-expert">68 Chuyên gia</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Gian Hàng Seller</div>
-            <div class="stat-value" id="count-shop">42 Doanh nghiệp</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Nhu Cầu Đang Mở</div>
-            <div class="stat-value" id="count-demand">19 Bài toán</div>
-          </div>
-        </div>
-
-        <!-- Danh sách cơ sở liên kết trực thuộc -->
-        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Các Cơ Sở Liên Kết Trực Thuộc Địa Bàn</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Tên Đơn Vị Cơ Sở</th>
-              <th>Mã Đơn Vị</th>
-              <th>Phân Loại</th>
-              <th>Đại Diện / Người Phụ Trách</th>
-              <th>Trạng Thái</th>
-              <th>Thao Tác</th>
-            </tr>
-          </thead>
-          <tbody id="inst-table-body">
-            <tr id="row-inst-hust">
-              <td><strong class="inst-name">Đại Học Bách Khoa Hà Nội</strong></td>
-              <td><code>INST-HUST</code></td>
-              <td>Trường Đại học Trọng điểm</td>
-              <td class="inst-leader">GS. Vũ Văn A</td>
-              <td><span style="color: var(--success); font-weight: 600;">Đang Hoạt Động</span></td>
-              <td>
-                <div style="display: flex; gap: 6px;">
-                  <button class="btn btn-outline btn-sm" onclick="editRowUnit('INST-HUST', 'Đại Học Bách Khoa Hà Nội', 'GS. Vũ Văn A')">✏️ Sửa</button>
-                  <button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="deleteRowUnit('INST-HUST', 'Đại Học Bách Khoa Hà Nội')">🗑️ Xóa</button>
-                </div>
-              </td>
-            </tr>
-            <tr id="row-inst-vast">
-              <td><strong class="inst-name">Viện Hàn Lâm Khoa Học & Công Nghệ VN</strong></td>
-              <td><code>INST-VAST</code></td>
-              <td>Viện Nghiên cứu Quốc gia</td>
-              <td class="inst-leader">PGS. Lê Thị B</td>
-              <td><span style="color: var(--success); font-weight: 600;">Đang Hoạt Động</span></td>
-              <td>
-                <div style="display: flex; gap: 6px;">
-                  <button class="btn btn-outline btn-sm" onclick="editRowUnit('INST-VAST', 'Viện Hàn Lâm Khoa Học & Công Nghệ VN', 'PGS. Lê Thị B')">✏️ Sửa</button>
-                  <button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="deleteRowUnit('INST-VAST', 'Viện Hàn Lâm Khoa Học & Công Nghệ VN')">🗑️ Xóa</button>
-                </div>
-              </td>
-            </tr>
-            <tr id="row-inst-nic">
-              <td><strong class="inst-name">Trung Tâm ĐMST Quốc Gia (NIC)</strong></td>
-              <td><code>INST-NIC</code></td>
-              <td>Trung tâm ĐMST</td>
-              <td class="inst-leader">Ông Trần Hoàng C</td>
-              <td><span style="color: var(--success); font-weight: 600;">Đang Hoạt Động</span></td>
-              <td>
-                <div style="display: flex; gap: 6px;">
-                  <button class="btn btn-outline btn-sm" onclick="editRowUnit('INST-NIC', 'Trung Tâm ĐMST Quốc Gia (NIC)', 'Ông Trần Hoàng C')">✏️ Sửa</button>
-                  <button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="deleteRowUnit('INST-NIC', 'Trung Tâm ĐMST Quốc Gia (NIC)')">🗑️ Xóa</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Đại Học Quốc Gia Hà Nội</strong></td>
-              <td><code>INST-VNU</code></td>
-              <td>Đại học Đa ngành</td>
-              <td>GS. Phạm Minh D</td>
-              <td><span style="color: var(--success); font-weight: 600;">Đang Hoạt Động</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <!-- TABLE 1: ROLES DEFINITION -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>BẢNG 1: DANH MỤC 10 VAI TRÒ (ROLES) VÀ PHẠM VI QUẢN TRỊ</h2>
     </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 80px;">Tầng</th>
+          <th style="width: 220px;">Mã Role & Tên gọi</th>
+          <th style="width: 200px;">Đối tượng đại diện</th>
+          <th>Phạm vi thẩm quyền (Scope) & Nhiệm vụ cốt lõi</th>
+          <th style="width: 140px; text-align: center;">Kích hoạt</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- TẦNG 0 -->
+        <tr>
+          <td><span class="tag-tier tier-0">TẦNG 0</span></td>
+          <td>
+            <code class="role-code">SUPER_ADMIN</code><br>
+            <span class="role-title">Admin Bộ / Viện NacenTech</span>
+          </td>
+          <td>Viện NacenTech (Chủ quản Nhà nước)</td>
+          <td>
+            <strong>Toàn quốc</strong>. Ban hành danh mục Master Data (18 ngành, tiêu chuẩn TT17); phân quyền cho 63 Sở Tỉnh và đơn vị vận hành; giám sát Audit Log toàn hệ thống.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-0">TẦNG 0</span></td>
+          <td>
+            <code class="role-code">OPERATOR_ADMIN</code><br>
+            <span class="role-title">Admin Vận hành (NacenX Core)</span>
+          </td>
+          <td>NacenX (Đơn vị vận hành tư nhân)</td>
+          <td>
+            <strong>Toàn hệ thống</strong>. Thực thi 5 quyền duyệt hạt nhân (Duyệt user, shop, chuyên gia, nhu cầu, liên kết); làm điều phối viên giao dịch và vận hành kỹ thuật.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+
+        <!-- TẦNG 1 -->
+        <tr>
+          <td><span class="tag-tier tier-1">TẦNG 1</span></td>
+          <td>
+            <code class="role-code">PROVINCIAL_ADMIN</code><br>
+            <span class="role-title">Admin Địa phương (Sở KH&CN)</span>
+          </td>
+          <td>Sở KH&CN / Trung tâm Ứng dụng 63 Tỉnh/TP</td>
+          <td>
+            <strong>Theo địa bàn tỉnh</strong> (<code>province_id</code>). Quản lý, xác thực doanh nghiệp, chuyên gia, gian hàng công nghệ và nhu cầu đổi mới trên địa bàn tỉnh mình.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p2-ready">Pha 2 (Ủy quyền)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-1">TẦNG 1</span></td>
+          <td>
+            <code class="role-code">SECTOR_ADMIN</code><br>
+            <span class="role-title">Admin Ngành dọc / Hiệp hội</span>
+          </td>
+          <td>Ban chuyên ngành / Hiệp hội (18 ngành CN)</td>
+          <td>
+            <strong>Theo ngành công nghệ</strong> (<code>sector_id</code>). Thẩm định chuyên môn, đánh giá công nghệ và kết nối chuyên gia thuộc 18 ngành trọng điểm.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p2-ready">Pha 2 (Ủy quyền)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-1">TẦNG 1</span></td>
+          <td>
+            <code class="role-code">CLUSTER_ADMIN</code><br>
+            <span class="role-title">Admin Cơ sở Liên kết (Viện/Trường)</span>
+          </td>
+          <td>TTO Viện nghiên cứu, ĐH lớn, Vườn ươm</td>
+          <td>
+            <strong>Theo tổ chức</strong> (<code>org_unit_id</code>). Quản lý và duyệt danh sách nhà khoa học, công nghệ chào bán nội bộ của viện/trường trước khi đưa ra sàn chung.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p2-ready">Pha 2 (Ủy quyền)</span></td>
+        </tr>
+
+        <!-- TẦNG 2 -->
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">SELLER</code> / <code>SHOP_OWNER</code><br>
+            <span class="role-title">Bên Bán (Nhà cung ứng CN)</span>
+          </td>
+          <td>Viện, Trường, Doanh nghiệp công nghệ</td>
+          <td>
+            Quản lý gian hàng (Shop), đăng tải công nghệ (4 lớp trường, 1.479 quy tắc bộ lọc), cập nhật chứng nhận TRL, SHTT, báo giá.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">BUYER</code><br>
+            <span class="role-title">Bên Mua (Doanh nghiệp Tìm mua)</span>
+          </td>
+          <td>DNNVV, Doanh nghiệp sản xuất có bài toán</td>
+          <td>
+            Điền phiếu khảo sát nhu cầu công nghệ, đăng bài toán tìm kiếm giải pháp, đặt lịch tư vấn chuyên gia, đăng ký tham quan triển lãm.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">INNOVATION_ENTITY</code><br>
+            <span class="role-title">Chủ thể ĐMST (DN ĐMST)</span>
+          </td>
+          <td>Doanh nghiệp KH&CN, Trung tâm ĐMST</td>
+          <td>
+            Khai báo hồ sơ năng lực ĐMST 10 nhóm trường (định danh, nhân lực R&D, phòng lab, công nghệ lõi, SHTT, kết nối mạng lưới).
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+        <tr>
+          <td><span class="tag-tier tier-2">TẦNG 2</span></td>
+          <td>
+            <code class="role-code">VERIFIED_EXPERT</code><br>
+            <span class="role-title">Chuyên gia KH&CN</span>
+          </td>
+          <td>Nhà khoa học, Chuyên gia SHTT, Định giá</td>
+          <td>
+            Quản lý Lý lịch khoa học (LLKH 3 bước, AI-scan CV), cung cấp dịch vụ đánh giá công nghệ, mở phòng tư vấn cho doanh nghiệp.
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+
+        <!-- TẦNG 3 -->
+        <tr>
+          <td><span class="tag-tier tier-3">TẦNG 3</span></td>
+          <td>
+            <code class="role-code">PUBLIC_USER</code> / <code>GUEST</code><br>
+            <span class="role-title">Khách vãng lai / Học viên</span>
+          </td>
+          <td>Cộng đồng, Kỹ sư, Học viên</td>
+          <td>
+            Tra cứu công nghệ công khai, xem ma trận ngành, đăng ký học các khóa đào tạo trực tuyến (E-Learning).
+          </td>
+          <td style="text-align: center;"><span class="phase-badge p1-active">Pha 1 (Ngay)</span></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+
+  <!-- TABLE 2: PERMISSION MATRIX -->
+  <div class="table-container">
+    <div class="table-header">
+      <h2>BẢNG 2: MA TRẬN PHÂN QUYỀN 5 THẨM QUYỀN HẠT NHÂN (TRÍCH TỪ SHEET ADMIN)</h2>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Vai trò (Role)</th>
+          <th style="text-align: center;">1. Duyệt Tài khoản</th>
+          <th style="text-align: center;">2. Duyệt Shop Bên Bán</th>
+          <th style="text-align: center;">3. Duyệt Chuyên gia</th>
+          <th style="text-align: center;">4. Duyệt Nhu cầu Mua</th>
+          <th style="text-align: center;">5. Phân quyền Cơ sở</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>SUPER_ADMIN</strong> (Viện NacenTech)</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Toàn quốc</td>
+          <td class="matrix-check check-yes">&check; Tối cao (Cấp Tầng 1)</td>
+        </tr>
+        <tr>
+          <td><strong>OPERATOR_ADMIN</strong> (NacenX Vận hành)</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-yes">&check; Trực tiếp</td>
+          <td class="matrix-check check-scope">&bull; Điều phối liên kết</td>
+        </tr>
+        <tr>
+          <td><strong>PROVINCIAL_ADMIN</strong> (Sở KH&CN Tỉnh)</td>
+          <td class="matrix-check check-scope">Trong Tỉnh</td>
+          <td class="matrix-check check-scope">Shop trong Tỉnh</td>
+          <td class="matrix-check check-scope">CG trong Tỉnh</td>
+          <td class="matrix-check check-scope">Bài toán trong Tỉnh</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+        <tr>
+          <td><strong>SECTOR_ADMIN</strong> (Hiệp hội / Ban Ngành)</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-scope">Thẩm định kỹ thuật</td>
+          <td class="matrix-check check-scope">Duyệt chuyên môn</td>
+          <td class="matrix-check check-scope">Gợi ý ghép cặp</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+        <tr>
+          <td><strong>CLUSTER_ADMIN</strong> (Viện/Đại học liên kết)</td>
+          <td class="matrix-check check-scope">User thuộc Đơn vị</td>
+          <td class="matrix-check check-scope">Shop nội bộ Viện</td>
+          <td class="matrix-check check-scope">CG trực thuộc Viện</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+        <tr>
+          <td><strong>SELLER / BUYER / EXPERT</strong></td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+          <td class="matrix-check check-no">&minus;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- NOTE BOX -->
+  <div class="note-box">
+    <strong>KẾT LUẬN & ĐỀ XUẤT THẢO LUẬN TEAM:</strong>
+    <ul>
+      <li><strong>Kiến trúc CSDL:</strong> Lưu <code>scope_type (GLOBAL | PROVINCE | SECTOR | ORG_UNIT)</code> và <code>scope_id</code> ngay trong bảng tài khoản để sau này không phải migrate dữ liệu.</li>
+      <li><strong>Quy trình Duyệt Pha 1:</strong> Mọi hồ sơ mới tạo đều rơi vào Hàng đợi chung (Central Queue) của NacenX.</li>
+      <li><strong>Quy trình Duyệt Pha 2:</strong> Hệ thống tự động chia nhánh (Routing): Hồ sơ có mã tỉnh hoặc thuộc viện nào sẽ rơi vào Hàng đợi của Tỉnh/Viện đó duyệt sơ bộ (L1), NacenX duyệt phát hành (L2).</li>
+    </ul>
+  </div>
+
 </div>
-
-<!-- Modal Thêm/Sửa Đơn Vị (CRUD Unit Modal) -->
-<div id="unitModal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-header" id="unitModalTitle">Thêm Đơn Vị / Cơ Sở Liên Kết Mới</div>
-    <input type="hidden" id="unit-edit-mode" value="add">
-    <div class="form-group">
-      <label>Mã Đơn Vị (Code duy nhất):</label>
-      <input type="text" id="unit-code" placeholder="VD: DH-BKHN, VIEN-NACENTECH...">
-    </div>
-    <div class="form-group">
-      <label>Tên Đơn Vị Chính Thức:</label>
-      <input type="text" id="unit-name" placeholder="VD: Đại học Bách Khoa Hà Nội...">
-    </div>
-    <div class="form-group">
-      <label>Cấp Bậc & Phân Loại (Unit Type):</label>
-      <select id="unit-type">
-        <option value="INSTITUTION">Cấp 3: Cơ sở liên kết / Viện / Trường</option>
-        <option value="PROVINCIAL">Cấp 2: Sở Khoa học và Công nghệ Tỉnh</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Đơn Vị Trực Thuộc Cấp Trên (Parent Node):</label>
-      <select id="unit-parent">
-        <option value="HN">Sở KH&CN TP. Hà Nội (HN)</option>
-        <option value="SG">Sở KH&CN TP. Hồ Chí Minh (SG)</option>
-        <option value="HP">Sở KH&CN TP. Hải Phòng (HP)</option>
-        <option value="root">NacenTech Trung Ương (Bộ KH&CN)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Người Đại Diện / Phụ Trách:</label>
-      <input type="text" id="unit-leader" placeholder="VD: GS. Nguyễn Văn D">
-    </div>
-    <div class="form-group">
-      <label>Email Liên Hệ / Công Vụ:</label>
-      <input type="email" id="unit-email" placeholder="contact@donvi.edu.vn">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeUnitModal()">Hủy Bỏ</button>
-      <button class="btn btn-primary" onclick="submitUnitForm()">Lưu Đơn Vị</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Xác Nhận Xóa / Vô Hiệu Hóa (Delete Modal) -->
-<div id="deleteModal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-header" style="color: var(--danger);">⚠️ Xác Nhận Vô Hiệu Hóa / Xóa Đơn Vị</div>
-    <input type="hidden" id="delete-target-id" value="">
-    <p id="delete-warning-text" style="font-size: 14px; margin-bottom: 14px; color: var(--text-main);">
-      Anh có chắc chắn muốn vô hiệu hóa đơn vị này không?
-    </p>
-    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: #991b1b;">
-      <strong>Quy tắc BR-TREE-003:</strong> Hệ thống thực hiện Soft-delete (Chuyển trạng thái sang INACTIVE). Nếu đơn vị còn cơ sở con trực thuộc hoặc còn chuyên gia hoạt động, thao tác sẽ bị chặn!
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeDeleteModal()">Hủy Bỏ</button>
-      <button class="btn btn-sm" style="background: var(--danger); color: white;" onclick="confirmDeleteUnit()">Xác Nhận Vô Hiệu Hóa</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Gán Quyền -->
-<div id="assignModal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-header">Bổ Nhiệm & Gán Vai Trò Tài Khoản</div>
-    <div class="form-group">
-      <label>Email Tài Khoản Cán Bộ:</label>
-      <input type="email" id="modal-email" placeholder="cán_bộ@tinh_thanh.gov.vn">
-    </div>
-    <div class="form-group">
-      <label>Chọn Vai Trò (Platform Role):</label>
-      <select id="modal-role">
-        <option value="PROVINCIAL_ADMIN">PROVINCIAL_ADMIN (Lãnh đạo Sở KH&CN)</option>
-        <option value="CLUSTER_ADMIN">CLUSTER_ADMIN (Chuyên viên Sở Tỉnh)</option>
-        <option value="SECTOR_ADMIN">SECTOR_ADMIN (Trưởng Ban Quản lý Ngành)</option>
-        <option value="OPERATOR_ADMIN">OPERATOR_ADMIN (Quản trị Vận hành Sàn)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Phạm Vi Quản Lý (Scope Type):</label>
-      <select id="modal-scope-type">
-        <option value="PROVINCE">PROVINCE (Tỉnh/Thành Phố)</option>
-        <option value="SECTOR">SECTOR (Chuyên Ngành TT17)</option>
-        <option value="GLOBAL">GLOBAL (Toàn Quốc)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Mã Định Danh Scope (Scope Id):</label>
-      <input type="text" id="modal-scope-id" placeholder="VD: HN, SG, HP, C.10...">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeAssignModal()">Hủy Bỏ</button>
-      <button class="btn btn-primary" onclick="submitAssign()">Xác Nhận Bổ Nhiệm</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  let currentSelectedCode = 'HN';
-  let currentSelectedName = 'Sở KH&CN TP. Hà Nội';
-
-  function switchTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    if (tabId === 'roles-tab') {
-      document.querySelectorAll('.tab-btn')[0].classList.add('active');
-    } else {
-      document.querySelectorAll('.tab-btn')[1].classList.add('active');
-    }
-    document.getElementById(tabId).classList.add('active');
-  }
-
-  function selectNode(code, name, type, region) {
-    currentSelectedCode = code;
-    currentSelectedName = name;
-    document.getElementById('detail-title').innerText = name;
-    document.getElementById('detail-sub').innerHTML = `Mã Scope: <strong>${code}</strong> | Cấp: <strong>${type}</strong>`;
-    if (code === 'root') {
-      document.getElementById('count-inst').innerText = '120 Viện/Trường';
-      document.getElementById('count-expert').innerText = '450 Chuyên gia';
-      document.getElementById('count-shop').innerText = '320 Doanh nghiệp';
-      document.getElementById('count-demand').innerText = '95 Bài toán';
-    } else if (code === 'HN') {
-      document.getElementById('count-inst').innerText = '14 Viện/Trường';
-      document.getElementById('count-expert').innerText = '68 Chuyên gia';
-      document.getElementById('count-shop').innerText = '42 Doanh nghiệp';
-      document.getElementById('count-demand').innerText = '19 Bài toán';
-    } else if (code === 'SG') {
-      document.getElementById('count-inst').innerText = '18 Viện/Trường';
-      document.getElementById('count-expert').innerText = '82 Chuyên gia';
-      document.getElementById('count-shop').innerText = '58 Doanh nghiệp';
-      document.getElementById('count-demand').innerText = '24 Bài toán';
-    } else {
-      document.getElementById('count-inst').innerText = '3 Viện/Trường';
-      document.getElementById('count-expert').innerText = '12 Chuyên gia';
-      document.getElementById('count-shop').innerText = '9 Doanh nghiệp';
-      document.getElementById('count-demand').innerText = '4 Bài toán';
-    }
-  }
-
-  // Unit Modal CRUD
-  function openAddUnitModal() {
-    document.getElementById('unit-edit-mode').value = 'add';
-    document.getElementById('unitModalTitle').innerText = 'Thêm Đơn Vị / Cơ Sở Liên Kết Mới';
-    document.getElementById('unit-code').value = '';
-    document.getElementById('unit-code').disabled = false;
-    document.getElementById('unit-name').value = '';
-    document.getElementById('unit-leader').value = '';
-    document.getElementById('unit-email').value = '';
-    document.getElementById('unitModal').classList.add('open');
-  }
-
-  function openEditUnitModal() {
-    document.getElementById('unit-edit-mode').value = 'edit-node';
-    document.getElementById('unitModalTitle').innerText = `Chỉnh Sửa Thông Tin Đơn Vị [${currentSelectedCode}]`;
-    document.getElementById('unit-code').value = currentSelectedCode;
-    document.getElementById('unit-code').disabled = true;
-    document.getElementById('unit-name').value = currentSelectedName;
-    document.getElementById('unit-leader').value = 'Nguyễn Hoàng Long';
-    document.getElementById('unit-email').value = `lanhdao.${currentSelectedCode.toLowerCase()}@nacentech.gov.vn`;
-    document.getElementById('unitModal').classList.add('open');
-  }
-
-  function editRowUnit(code, name, leader) {
-    document.getElementById('unit-edit-mode').value = 'edit-row-' + code;
-    document.getElementById('unitModalTitle').innerText = `Chỉnh Sửa Cơ Sở [${code}]`;
-    document.getElementById('unit-code').value = code;
-    document.getElementById('unit-code').disabled = true;
-    document.getElementById('unit-name').value = name;
-    document.getElementById('unit-leader').value = leader;
-    document.getElementById('unit-email').value = 'contact@' + code.toLowerCase() + '.vn';
-    document.getElementById('unitModal').classList.add('open');
-  }
-
-  function closeUnitModal() {
-    document.getElementById('unitModal').classList.remove('open');
-  }
-
-  function submitUnitForm() {
-    const mode = document.getElementById('unit-edit-mode').value;
-    const code = document.getElementById('unit-code').value.trim();
-    const name = document.getElementById('unit-name').value.trim();
-    const leader = document.getElementById('unit-leader').value.trim();
-
-    if (!code || !name) {
-      alert('Vui lòng nhập đầy đủ Mã đơn vị và Tên đơn vị!');
-      return;
-    }
-
-    if (mode === 'add') {
-      const tbody = document.getElementById('inst-table-body');
-      const tr = document.createElement('tr');
-      tr.id = 'row-' + code.toLowerCase();
-      tr.innerHTML = `
-        <td><strong class="inst-name">${name}</strong></td>
-        <td><code>${code}</code></td>
-        <td>Cơ sở NCKH / Đào tạo</td>
-        <td class="inst-leader">${leader || 'Chưa cập nhật'}</td>
-        <td><span class="status-active" style="color: var(--success); font-weight: 600;">Đang Hoạt Động</span></td>
-        <td>
-          <div style="display: flex; gap: 6px;">
-            <button class="btn btn-outline btn-sm" onclick="editRowUnit('${code}', '${name}', '${leader}')">✏️ Sửa</button>
-            <button class="btn btn-outline btn-sm" style="color: var(--danger); border-color: #fca5a5;" onclick="deleteRowUnit('${code}', '${name}')">🗑️ Xóa</button>
-          </div>
-        </td>
-      `;
-      tbody.prepend(tr);
-      alert(`Đã thêm thành công đơn vị cơ sở [${code}] ${name} vào CSDL!`);
-    } else if (mode.startsWith('edit-row-')) {
-      const rowId = mode.replace('edit-row-', '');
-      const row = document.getElementById('row-' + rowId.toLowerCase());
-      if (row) {
-        row.querySelector('.inst-name').innerText = name;
-        row.querySelector('.inst-leader').innerText = leader;
-      }
-      alert(`Đã cập nhật thông tin đơn vị [${code}]!`);
-    } else {
-      document.getElementById('detail-title').innerText = name;
-      currentSelectedName = name;
-      alert(`Đã cập nhật tên đơn vị thành công: ${name}`);
-    }
-
-    closeUnitModal();
-  }
-
-  // Delete Unit Modal
-  function openDeleteUnitModal() {
-    document.getElementById('delete-target-id').value = currentSelectedCode;
-    document.getElementById('delete-warning-text').innerText = 
-      `Anh có chắc chắn muốn vô hiệu hóa đơn vị [${currentSelectedCode}] ${currentSelectedName}?`;
-    document.getElementById('deleteModal').classList.add('open');
-  }
-
-  function deleteRowUnit(code, name) {
-    document.getElementById('delete-target-id').value = code;
-    document.getElementById('delete-warning-text').innerText = 
-      `Anh có chắc chắn muốn vô hiệu hóa cơ sở liên kết [${code}] ${name}?`;
-    document.getElementById('deleteModal').classList.add('open');
-  }
-
-  function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.remove('open');
-  }
-
-  function confirmDeleteUnit() {
-    const target = document.getElementById('delete-target-id').value;
-    if (target === 'HN' || target === 'SG' || target === 'root') {
-      alert(`[Chặn vi phạm BR-TREE-003]: Không thể xóa đơn vị [${target}] vì đang có 14 cơ sở con trực thuộc và 68 chuyên gia đang hoạt động!`);
-      closeDeleteModal();
-      return;
-    }
-    const row = document.getElementById('row-' + target.toLowerCase());
-    if (row) {
-      row.remove();
-    }
-    alert(`Đã vô hiệu hóa đơn vị [${target}] thành công (Chuyển trạng thái sang INACTIVE)!`);
-    closeDeleteModal();
-  }
-
-  // Assign Modal
-  function openAssignModal(email = '', role = 'PROVINCIAL_ADMIN', scopeId = 'HN') {
-    document.getElementById('modal-email').value = email;
-    document.getElementById('modal-role').value = role;
-    document.getElementById('modal-scope-id').value = scopeId;
-    document.getElementById('assignModal').classList.add('open');
-  }
-
-  function closeAssignModal() {
-    document.getElementById('assignModal').classList.remove('open');
-  }
-
-  function submitAssign() {
-    const email = document.getElementById('modal-email').value;
-    const role = document.getElementById('modal-role').value;
-    const scopeId = document.getElementById('modal-scope-id').value;
-    if (!email) {
-      alert('Vui lòng nhập email cán bộ!');
-      return;
-    }
-    alert(`Đã gán thành công:\n- Email: ${email}\n- Vai trò: ${role}\n- Scope: ${scopeId}`);
-    closeAssignModal();
-  }
-</script>
 
 </body>
 </html>

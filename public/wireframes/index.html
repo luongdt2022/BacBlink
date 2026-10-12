@@ -670,7 +670,16 @@
         min-height: 520px;
       }
     }
-  </style>
+  
+    .status-dot { font-size: 10px; margin-left: 4px; display: inline-block; vertical-align: middle; }
+    .status-dot.match { color: #10b981; }
+    .status-dot.gap { color: #f59e0b; }
+    .view-mode-toggle { display: inline-flex; align-items: center; background: #e2e8f0; border-radius: 6px; padding: 2px; gap: 2px; margin-left: 8px; }
+    .view-mode-toggle button { border: none; background: transparent; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; color: #475569; transition: all 0.2s; }
+    .view-mode-toggle button.active { background: #2563eb; color: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .gap-alert-box { background: #fffbeb; color: #92400e; border-left: 4px solid #f59e0b; padding: 8px 16px; font-size: 11px; line-height: 1.5; display: none; }
+    .frame-status-badge { padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 10px; border: 1px solid transparent; }
+</style>
 </head>
 <body>
     <div id="nacentech-design-toolbar" style="position: sticky; top: 0; left: 0; right: 0; z-index: 99999; background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
@@ -718,7 +727,7 @@
       <div class="sidebar-head">
         <div class="aside-title-row">
           <span class="aside-title">Phân Hệ & Wireframe</span>
-          <span class="aside-badge" id="stat-badge">9 Tasks · 35 Màn</span>
+          <span class="aside-badge" id="stat-badge">48 Màn: 42 Khớp 🟢 · 6 Gap 🟡</span>
         </div>
         <div class="search-box">
           <i data-lucide="search"></i>
@@ -869,72 +878,72 @@
     // 3. DANH SÁCH 48 WIREFRAMES MÀN HÌNH (CẤP 2) — PHÂN LOẠI THEO VAI TRÒ & PHÂN NHÓM
     const sources = [
       // TASK-00: Nền Tảng, Common Architecture & Cổng Xác Thực (Giao diện màn đã code)
-      { id: 'auth-login', task: 'TASK-00', role: 'PUBLIC', group: 'Cổng Xác Thực & Khách Vãng Lai', icon: 'log-in', name: 'Đăng nhập (Role Gateway)', desc: 'Giao diện màn đã code: Cổng xác thực tập trung phân quyền 10 roles, tự động định tuyến.', path: '02_dang_nhap.html', route: '/login' },
-      { id: 'auth-register', task: 'TASK-00', role: 'PUBLIC', group: 'Cổng Xác Thực & Khách Vãng Lai', icon: 'user-plus', name: 'Đăng ký tài khoản', desc: 'Giao diện màn đã code: Đăng ký thành viên mới (Cá nhân, Doanh nghiệp ĐMST, Chuyên gia).', path: '03_dang_ky.html', route: '/register' },
-      { id: 'portal-hub', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'layout-dashboard', name: 'Bàn làm việc Portal Hub', desc: 'Giao diện màn đã code: Bàn làm việc trung tâm điều phối tác nghiệp (/portal).', path: '13_portal_workspace_thanh_vien.html', route: '/portal' },
-      { id: 'account-settings', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'settings', name: 'Cài đặt tài khoản & PDPD', desc: 'Cài đặt tài khoản, cấu hình bảo mật 2FA và quyền riêng tư theo Nghị định 13/2023/NĐ-CP.', path: 'wireframe_cai_dat_tai_khoan.html', route: '/settings' },
-      { id: 'user-profile', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'user-circle-2', name: 'Hồ sơ cá nhân & Nâng hạng', desc: 'Hồ sơ thông tin tài khoản, xác thực định danh và hành trình nâng cấp vai trò thành viên.', path: 'wireframe_ho_so_ca_nhan.html', route: '/profile' },
+      { id: 'auth-login', task: 'TASK-00', role: 'PUBLIC', group: 'Cổng Xác Thực & Khách Vãng Lai', icon: 'log-in', name: 'Đăng nhập (Role Gateway)', desc: 'Giao diện màn đã code: Cổng xác thực tập trung phân quyền 10 roles, tự động định tuyến.', path: '02_dang_nhap.html', route: '/login', status: 'MATCH', gapDetail: '' },
+      { id: 'auth-register', task: 'TASK-00', role: 'PUBLIC', group: 'Cổng Xác Thực & Khách Vãng Lai', icon: 'user-plus', name: 'Đăng ký tài khoản', desc: 'Giao diện màn đã code: Đăng ký thành viên mới (Cá nhân, Doanh nghiệp ĐMST, Chuyên gia).', path: '03_dang_ky.html', route: '/register', status: 'MATCH', gapDetail: '' },
+      { id: 'portal-hub', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'layout-dashboard', name: 'Bàn làm việc Portal Hub', desc: 'Giao diện màn đã code: Bàn làm việc trung tâm điều phối tác nghiệp (/portal).', path: '13_portal_workspace_thanh_vien.html', route: '/portal', status: 'MATCH', gapDetail: '' },
+      { id: 'account-settings', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'settings', name: 'Cài đặt tài khoản & PDPD', desc: 'Cài đặt tài khoản, cấu hình bảo mật 2FA và quyền riêng tư theo Nghị định 13/2023/NĐ-CP.', path: 'wireframe_cai_dat_tai_khoan.html', route: '/settings', status: 'MATCH', gapDetail: '' },
+      { id: 'user-profile', task: 'TASK-00', role: 'COMMON', group: 'Tác Nghiệp Chung (Sau Khi Đăng Nhập)', icon: 'user-circle-2', name: 'Hồ sơ cá nhân & Nâng hạng', desc: 'Hồ sơ thông tin tài khoản, xác thực định danh và hành trình nâng cấp vai trò thành viên.', path: 'wireframe_ho_so_ca_nhan.html', route: '/profile', status: 'GAP', gapDetail: 'Tuyến /profile trên web đang redirect về /settings, chưa có màn hình độc lập hiển thị tóm tắt Avatar/Bio và hành trình nâng cấp vai trò.' },
 
       // TASK-01: Tổng Quan & Kiến Trúc Home (Giao diện màn đã code)
-      { id: 'home', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'house', name: 'Portal công cộng', desc: 'Giao diện màn đã code: Trang chủ, tra cứu cung–cầu, role gateway và hành trình chuyển giao.', path: '01_trang_chu.html', route: '/' },
-      { id: 'events-techmart', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'calendar-days', name: 'Lịch sự kiện & Chợ Techmart', desc: 'Sàn trưng bày lịch các kỳ Techmart, Techfest và phiên chào giá công nghệ trực tuyến.', path: 'wireframe_techmart_events.html', route: '/trien-lam' },
-      { id: 'about-nacentech', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'book-open', name: 'Giới thiệu Viện NacenTech', desc: 'Giao diện màn đã code: Giới thiệu Viện Ứng dụng Công nghệ và Nền tảng Đổi mới sáng tạo NacenTwin.', path: '08_gioi_thieu_nacentech.html', route: '/gioi-thieu' },
-      { id: 'techmart-ticket', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'ticket', name: 'Đăng ký vé tham quan Techmart', desc: 'Đăng ký vé điện tử QR Code tham dự các phiên triển lãm và giao thương B2B Matching.', path: 'wireframe_dang_ky_tham_quan_techmart.html', route: '/trien-lam/dang-ky-tham-quan' },
-      { id: 'services-ip', task: 'TASK-01', role: 'PUBLIC', group: 'Dịch Vụ Pháp Lý & SHTT', icon: 'scale', name: 'Dịch vụ khác & Tư vấn SHTT', desc: 'Giao diện màn đã code: Định giá công nghệ, bảo hộ sở hữu trí tuệ sáng chế và DN KH&CN.', path: '10_dich_vu_khac_shtt.html', route: '/dich-vu-khac' },
+      { id: 'home', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'house', name: 'Portal công cộng', desc: 'Giao diện màn đã code: Trang chủ, tra cứu cung–cầu, role gateway và hành trình chuyển giao.', path: '01_trang_chu.html', route: '/', status: 'MATCH', gapDetail: '' },
+      { id: 'events-techmart', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'calendar-days', name: 'Lịch sự kiện & Chợ Techmart', desc: 'Sàn trưng bày lịch các kỳ Techmart, Techfest và phiên chào giá công nghệ trực tuyến.', path: 'wireframe_techmart_events.html', route: '/trien-lam', status: 'MATCH', gapDetail: '' },
+      { id: 'about-nacentech', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'book-open', name: 'Giới thiệu Viện NacenTech', desc: 'Giao diện màn đã code: Giới thiệu Viện Ứng dụng Công nghệ và Nền tảng Đổi mới sáng tạo NacenTwin.', path: '08_gioi_thieu_nacentech.html', route: '/gioi-thieu', status: 'GAP', gapDetail: 'Tuyến /gioi-thieu trên web đang dùng template sơ bộ [module], thiếu phần lịch sử hình thành, ban lãnh đạo và chức năng nhiệm vụ chi tiết như wireframe.' },
+      { id: 'techmart-ticket', task: 'TASK-01', role: 'PUBLIC', group: 'Không Gian Công Cộng (Đại Chúng)', icon: 'ticket', name: 'Đăng ký vé tham quan Techmart', desc: 'Đăng ký vé điện tử QR Code tham dự các phiên triển lãm và giao thương B2B Matching.', path: 'wireframe_dang_ky_tham_quan_techmart.html', route: '/trien-lam/dang-ky-tham-quan', status: 'MATCH', gapDetail: '' },
+      { id: 'services-ip', task: 'TASK-01', role: 'PUBLIC', group: 'Dịch Vụ Pháp Lý & SHTT', icon: 'scale', name: 'Dịch vụ khác & Tư vấn SHTT', desc: 'Giao diện màn đã code: Định giá công nghệ, bảo hộ sở hữu trí tuệ sáng chế và DN KH&CN.', path: '10_dich_vu_khac_shtt.html', route: '/dich-vu-khac', status: 'GAP', gapDetail: 'Tuyến /dich-vu-khac trên web đang dùng template sơ bộ [module], thiếu đặc tả 4 dịch vụ SHTT, định giá sáng chế chuyên sâu như wireframe.' },
 
       // TASK-02: Hồ Sơ Chủ Thể & DN ĐMST (Giao diện màn đã code)
-      { id: 'enterprise-directory', task: 'TASK-02', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Toàn Quốc', icon: 'search', name: 'Danh bạ DN ĐMST toàn quốc', desc: 'Giao diện màn đã code: Tra cứu & xác minh năng lực DN ĐMST, lọc theo 34 tỉnh, 18 ngành.', path: '07_doanh_nghiep_dmst.html', route: '/enterprises' },
-      { id: 'enterprise-public', task: 'TASK-02', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Toàn Quốc', icon: 'badge-check', name: 'Hồ sơ công khai DN ĐMST', desc: 'Showcase năng lực, bằng sáng chế, chứng nhận DN KH&CN và công nghệ chào bán.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_public_dn_dmst.html', route: '/enterprises/0101234567' },
-      { id: 'enterprise-dashboard', task: 'TASK-02', role: 'ADMIN', group: 'Phân Tích Dữ Liệu Lớn (Admin/Sở)', icon: 'bar-chart-3', name: 'CSDL 304 DN ĐMST', desc: 'Dashboard phân tích thực nghiệm 304 doanh nghiệp có MST thực tế và điểm TNI.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_dashboard_304_dn.html', route: '/doanh-nghiep-dmst' },
-      { id: 'enterprise-edit', task: 'TASK-02', role: 'SELLER', group: 'Bàn Làm Việc Doanh Nghiệp (Owner)', icon: 'edit-3', name: 'Tự quản trị & Sửa hồ sơ DN', desc: 'Bàn làm việc nội bộ doanh nghiệp: Cập nhật 10 nhóm trường, bằng SHTT mới, doanh thu R&D.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_chinh_sua_ho_so_dn.html', route: '/portal/enterprise/profile' },
-      { id: 'enterprise-profile', task: 'TASK-02', role: 'SELLER', group: 'Bàn Làm Việc Doanh Nghiệp (Owner)', icon: 'building-2', name: 'Khai báo hồ sơ DN (Wizard)', desc: 'Kê khai 10 nhóm trường định danh pháp lý, năng lực R&D và SHTT từ kho 304 DN.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_ho_so_dn_dmst.html', route: '/portal/enterprise/profile/edit' },
+      { id: 'enterprise-directory', task: 'TASK-02', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Toàn Quốc', icon: 'search', name: 'Danh bạ DN ĐMST toàn quốc', desc: 'Giao diện màn đã code: Tra cứu & xác minh năng lực DN ĐMST, lọc theo 34 tỉnh, 18 ngành.', path: '07_doanh_nghiep_dmst.html', route: '/enterprises', status: 'MATCH', gapDetail: '' },
+      { id: 'enterprise-public', task: 'TASK-02', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Toàn Quốc', icon: 'badge-check', name: 'Hồ sơ công khai DN ĐMST', desc: 'Showcase năng lực, bằng sáng chế, chứng nhận DN KH&CN và công nghệ chào bán.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_public_dn_dmst.html', route: '/enterprises/0101234567', status: 'MATCH', gapDetail: '' },
+      { id: 'enterprise-dashboard', task: 'TASK-02', role: 'ADMIN', group: 'Phân Tích Dữ Liệu Lớn (Admin/Sở)', icon: 'bar-chart-3', name: 'CSDL 304 DN ĐMST', desc: 'Dashboard phân tích thực nghiệm 304 doanh nghiệp có MST thực tế và điểm TNI.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_dashboard_304_dn.html', route: '/doanh-nghiep-dmst', status: 'MATCH', gapDetail: '' },
+      { id: 'enterprise-edit', task: 'TASK-02', role: 'SELLER', group: 'Bàn Làm Việc Doanh Nghiệp (Owner)', icon: 'edit-3', name: 'Tự quản trị & Sửa hồ sơ DN', desc: 'Bàn làm việc nội bộ doanh nghiệp: Cập nhật 10 nhóm trường, bằng SHTT mới, doanh thu R&D.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_chinh_sua_ho_so_dn.html', route: '/portal/enterprise/profile', status: 'MATCH', gapDetail: '' },
+      { id: 'enterprise-profile', task: 'TASK-02', role: 'SELLER', group: 'Bàn Làm Việc Doanh Nghiệp (Owner)', icon: 'building-2', name: 'Khai báo hồ sơ DN (Wizard)', desc: 'Kê khai 10 nhóm trường định danh pháp lý, năng lực R&D và SHTT từ kho 304 DN.', path: 'TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_ho_so_dn_dmst.html', route: '/portal/enterprise/profile/edit', status: 'MATCH', gapDetail: '' },
 
       // TASK-03: Hồ Sơ Tìm Mua (Buyer) & TNI (Giao diện màn đã code)
-      { id: 'demand-market', task: 'TASK-03', role: 'PUBLIC', group: 'Sàn Nhu Cầu Mua Công Khai', icon: 'shopping-cart', name: 'Sàn nhu cầu mua công nghệ', desc: 'Giao diện màn đã code: Sàn bài toán kỹ thuật công khai (PDPD masked), ngân sách đầu tư.', path: '05_san_nhu_cau_cong_nghe.html', route: '/nhu-cau-cong-nghe' },
-      { id: 'buyer-tni', task: 'TASK-03', role: 'PUBLIC', group: 'Sàn Nhu Cầu Mua Công Khai', icon: 'calculator', name: 'Chỉ số TNI & Nhu cầu Buyer', desc: 'Máy tính TNI 4 chiều chính thức và danh mục 36 trường nhu cầu.', path: '22_wireframe_danh_muc_truong_nhu_cau_buyer.html', route: '/nhu-cau-cong-nghe/demo' },
-      { id: 'buyer-demand-mgmt', task: 'TASK-03', role: 'BUYER', group: 'Tác Nghiệp Doanh Nghiệp Bên Mua', icon: 'file-question', name: 'Quản lý bài toán Buyer', desc: 'Workspace quản lý các bài toán kỹ thuật cần tìm cung và kết nối giải pháp.', path: 'TASK-03_HO_SO_TIM_MUA_BUYER/wireframe_quan_ly_nhu_cau_buyer.html', route: '/portal/buyer/demands' },
-      { id: 'buyer-survey', task: 'TASK-03', role: 'BUYER', group: 'Tác Nghiệp Doanh Nghiệp Bên Mua', icon: 'file-spreadsheet', name: 'Phiếu khảo sát DNNVV', desc: 'Giao diện màn đã code: Phiếu khảo sát sâu hiện trạng & điểm nghẽn công nghệ DNNVV.', path: '25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html', route: '/khao-sat-nhu-cau' },
+      { id: 'demand-market', task: 'TASK-03', role: 'PUBLIC', group: 'Sàn Nhu Cầu Mua Công Khai', icon: 'shopping-cart', name: 'Sàn nhu cầu mua công nghệ', desc: 'Giao diện màn đã code: Sàn bài toán kỹ thuật công khai (PDPD masked), ngân sách đầu tư.', path: '05_san_nhu_cau_cong_nghe.html', route: '/nhu-cau-cong-nghe', status: 'MATCH', gapDetail: '' },
+      { id: 'buyer-tni', task: 'TASK-03', role: 'PUBLIC', group: 'Sàn Nhu Cầu Mua Công Khai', icon: 'calculator', name: 'Chỉ số TNI & Nhu cầu Buyer', desc: 'Máy tính TNI 4 chiều chính thức và danh mục 36 trường nhu cầu.', path: '22_wireframe_danh_muc_truong_nhu_cau_buyer.html', route: '/nhu-cau-cong-nghe/demo', status: 'MATCH', gapDetail: '' },
+      { id: 'buyer-demand-mgmt', task: 'TASK-03', role: 'BUYER', group: 'Tác Nghiệp Doanh Nghiệp Bên Mua', icon: 'file-question', name: 'Quản lý bài toán Buyer', desc: 'Workspace quản lý các bài toán kỹ thuật cần tìm cung và kết nối giải pháp.', path: 'TASK-03_HO_SO_TIM_MUA_BUYER/wireframe_quan_ly_nhu_cau_buyer.html', route: '/portal/buyer/demands', status: 'MATCH', gapDetail: '' },
+      { id: 'buyer-survey', task: 'TASK-03', role: 'BUYER', group: 'Tác Nghiệp Doanh Nghiệp Bên Mua', icon: 'file-spreadsheet', name: 'Phiếu khảo sát DNNVV', desc: 'Giao diện màn đã code: Phiếu khảo sát sâu hiện trạng & điểm nghẽn công nghệ DNNVV.', path: '25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html', route: '/khao-sat-nhu-cau', status: 'MATCH', gapDetail: '' },
 
       // TASK-04: Hồ Sơ Chào Bán (Seller) & 18 Ngành (Giao diện màn đã code)
-      { id: 'seller-market', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'store', name: 'Sàn chào bán công nghệ 18 ngành', desc: 'Giao diện màn đã code: Marketplace công nghệ, thiết bị, dây chuyền và sáng chế có thẩm định.', path: '04_san_chao_ban_cong_nghe.html', route: '/chao-ban-cong-nghe' },
-      { id: 'seller-detail', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'file-search-2', name: 'Chi tiết hồ sơ chào bán', desc: 'Giao diện màn đã code: Màn hình Buyer xem thông tin, thông số kỹ thuật và IP Quad.', path: '19_wireframe_chi_tiet_chao_ban_seller.html', route: '/chao-ban-cong-nghe/demo' },
-      { id: 'seller-filter', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'filter', name: 'Ma trận bộ lọc 18 ngành', desc: 'Giao diện màn đã code: Bộ lọc động và 1.479 quy tắc theo 18 nhóm ngành công nghiệp.', path: '21_wireframe_bo_loc_cung_cau_18_nganh.html', route: '/chao-ban-cong-nghe' },
-      { id: 'seller-inventory', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'boxes', name: 'Quản lý kho chào bán Seller', desc: 'Workspace quản trị danh mục công nghệ chào bán, lượt xem và trạng thái duyệt Sở.', path: 'TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_quan_ly_kho_cong_nghe_seller.html', route: '/portal/seller/technologies' },
-      { id: 'seller-edit', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'file-edit', name: 'Sửa hồ sơ chào bán & TRL', desc: 'Chỉnh sửa thông số kỹ thuật, giá chuyển giao, cập nhật TRL và quy tắc chuyển PENDING.', path: 'TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_chinh_sua_ho_so_chao_ban.html', route: '/portal/seller/technologies/demo/edit' },
-      { id: 'seller-create', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'file-pen-line', name: 'Tạo hồ sơ chào bán mới', desc: 'Giao diện màn đã code: Nhập Sản phẩm / Thiết bị / Giải pháp với Bộ tứ IP Quad.', path: '20_wireframe_form_tao_chao_ban_seller.html', route: '/portal/seller/technologies/create' },
+      { id: 'seller-market', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'store', name: 'Sàn chào bán công nghệ 18 ngành', desc: 'Giao diện màn đã code: Marketplace công nghệ, thiết bị, dây chuyền và sáng chế có thẩm định.', path: '04_san_chao_ban_cong_nghe.html', route: '/chao-ban-cong-nghe', status: 'MATCH', gapDetail: '' },
+      { id: 'seller-detail', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'file-search-2', name: 'Chi tiết hồ sơ chào bán', desc: 'Giao diện màn đã code: Màn hình Buyer xem thông tin, thông số kỹ thuật và IP Quad.', path: '19_wireframe_chi_tiet_chao_ban_seller.html', route: '/chao-ban-cong-nghe/demo', status: 'MATCH', gapDetail: '' },
+      { id: 'seller-filter', task: 'TASK-04', role: 'PUBLIC', group: 'Sàn Chào Bán Công Khai 18 Ngành', icon: 'filter', name: 'Ma trận bộ lọc 18 ngành', desc: 'Giao diện màn đã code: Bộ lọc động và 1.479 quy tắc theo 18 nhóm ngành công nghiệp.', path: '21_wireframe_bo_loc_cung_cau_18_nganh.html', route: '/chao-ban-cong-nghe', status: 'MATCH', gapDetail: '' },
+      { id: 'seller-inventory', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'boxes', name: 'Quản lý kho chào bán Seller', desc: 'Workspace quản trị danh mục công nghệ chào bán, lượt xem và trạng thái duyệt Sở.', path: 'TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_quan_ly_kho_cong_nghe_seller.html', route: '/portal/seller/technologies', status: 'MATCH', gapDetail: '' },
+      { id: 'seller-edit', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'file-edit', name: 'Sửa hồ sơ chào bán & TRL', desc: 'Chỉnh sửa thông số kỹ thuật, giá chuyển giao, cập nhật TRL và quy tắc chuyển PENDING.', path: 'TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_chinh_sua_ho_so_chao_ban.html', route: '/portal/seller/technologies/demo/edit', status: 'MATCH', gapDetail: '' },
+      { id: 'seller-create', task: 'TASK-04', role: 'SELLER', group: 'Tác Nghiệp Doanh Nghiệp Bên Bán', icon: 'file-pen-line', name: 'Tạo hồ sơ chào bán mới', desc: 'Giao diện màn đã code: Nhập Sản phẩm / Thiết bị / Giải pháp với Bộ tứ IP Quad.', path: '20_wireframe_form_tao_chao_ban_seller.html', route: '/portal/seller/technologies/create', status: 'MATCH', gapDetail: '' },
 
       // TASK-05: Hồ Sơ Chuyên Gia KH&CN & AI Wizard (Giao diện màn đã code)
-      { id: 'expert-directory-v11', task: 'TASK-05', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Chuyên Gia', icon: 'search-check', name: 'Danh bạ chuyên gia · Delta v11', desc: 'Giao diện màn đã code: Tìm kiếm compact, bộ lọc theo taxonomy active và địa bàn.', path: '06_mang_luoi_chuyen_gia.html', route: '/experts' },
-      { id: 'expert-profile', task: 'TASK-05', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Chuyên Gia', icon: 'contact-round', name: 'Sổ tay chuyên gia profile', desc: 'Giao diện màn đã code: Hồ sơ chi tiết công khai/đăng nhập và đặt lịch kết nối chuyên gia.', path: '11_chi_tiet_ho_so_chuyen_gia.html', route: '/experts/EXP-001' },
-      { id: 'expert-zalo', task: 'TASK-05', role: 'EXPERT', group: 'Thu Thập Hồ Sơ Nhanh (Mobile)', icon: 'smartphone', name: 'Zalo Mobile Input Form', desc: 'Giao diện màn đã code: Biểu mẫu mobile thu thập thông tin chuyên gia nhanh dưới 2 phút.', path: '23_wireframe_zalo_mini_app_input_chuyen_gia.html', route: '/experts' },
-      { id: 'expert-edit', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'user-cog', name: 'Chỉnh sửa hồ sơ chuyên gia', desc: 'Giao diện màn đã code: Bàn làm việc tự cập nhật học vị, thêm công trình Scopus, bằng sáng chế.', path: '15_portal_chinh_sua_ho_so_chuyen_gia.html', route: '/portal/expert/profile/edit' },
-      { id: 'expert-consulting', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'mail-check', name: 'Hộp thư tư vấn & lịch hẹn', desc: 'Quản lý yêu cầu tư vấn gửi đến từ DN và Sở KH&CN, hẹn giờ Zoom/khảo sát trực tiếp.', path: 'TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html', route: '/portal/expert/profile' },
-      { id: 'expert-dashboard', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'layout-dashboard', name: 'Dashboard chuyên gia', desc: 'Giao diện màn đã code: Bảng điều khiển tác nghiệp của chuyên gia đã được định danh VERIFIED_EXPERT.', path: '14_portal_workspace_chuyen_gia.html', route: '/portal/expert/profile' },
-      { id: 'expert-upgrade', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'badge-plus', name: 'Nâng cấp chuyên gia 3 bước', desc: 'Giao diện màn đã code: Form đăng ký, thẩm định và nâng hạng hồ sơ chuyên gia chuẩn Bộ KH&CN.', path: '12_nang_cap_tai_khoan_chuyen_gia.html', route: '/profile/upgrade/expert' },
-      { id: 'ai-wizard', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'wand-2', name: 'Trợ lý AI nhập liệu (OCR/Voice)', desc: 'Wizard bóc tách tự động CV Chuyên gia và hồ sơ sáng chế công nghệ Human-in-the-Loop.', path: 'TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_ai_cv_scan_wizard.html', route: '/profile/upgrade/expert' },
+      { id: 'expert-directory-v11', task: 'TASK-05', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Chuyên Gia', icon: 'search-check', name: 'Danh bạ chuyên gia · Delta v11', desc: 'Giao diện màn đã code: Tìm kiếm compact, bộ lọc theo taxonomy active và địa bàn.', path: '06_mang_luoi_chuyen_gia.html', route: '/experts', status: 'MATCH', gapDetail: '' },
+      { id: 'expert-profile', task: 'TASK-05', role: 'PUBLIC', group: 'Tra Cứu Danh Bạ Chuyên Gia', icon: 'contact-round', name: 'Sổ tay chuyên gia profile', desc: 'Giao diện màn đã code: Hồ sơ chi tiết công khai/đăng nhập và đặt lịch kết nối chuyên gia.', path: '11_chi_tiet_ho_so_chuyen_gia.html', route: '/experts/EXP-001', status: 'MATCH', gapDetail: '' },
+      { id: 'expert-zalo', task: 'TASK-05', role: 'EXPERT', group: 'Thu Thập Hồ Sơ Nhanh (Mobile)', icon: 'smartphone', name: 'Zalo Mobile Input Form', desc: 'Giao diện màn đã code: Biểu mẫu mobile thu thập thông tin chuyên gia nhanh dưới 2 phút.', path: '23_wireframe_zalo_mini_app_input_chuyen_gia.html', route: '/experts', status: 'GAP', gapDetail: 'Giao diện chuyên biệt cho Zalo Mini App trên Mobile (SourceCode/ZaloMiniApp/). Trên Web portal hiện đang gán tạm route /experts.' },
+      { id: 'expert-edit', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'user-cog', name: 'Chỉnh sửa hồ sơ chuyên gia', desc: 'Giao diện màn đã code: Bàn làm việc tự cập nhật học vị, thêm công trình Scopus, bằng sáng chế.', path: '15_portal_chinh_sua_ho_so_chuyen_gia.html', route: '/portal/expert/profile/edit', status: 'MATCH', gapDetail: '' },
+      { id: 'expert-consulting', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'mail-check', name: 'Hộp thư tư vấn & lịch hẹn', desc: 'Quản lý yêu cầu tư vấn gửi đến từ DN và Sở KH&CN, hẹn giờ Zoom/khảo sát trực tiếp.', path: 'TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html', route: '/portal/expert/profile', status: 'MATCH', gapDetail: '' },
+      { id: 'expert-dashboard', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'layout-dashboard', name: 'Dashboard chuyên gia', desc: 'Giao diện màn đã code: Bảng điều khiển tác nghiệp của chuyên gia đã được định danh VERIFIED_EXPERT.', path: '14_portal_workspace_chuyen_gia.html', route: '/portal/expert/profile', status: 'MATCH', gapDetail: '' },
+      { id: 'expert-upgrade', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'badge-plus', name: 'Nâng cấp chuyên gia 3 bước', desc: 'Giao diện màn đã code: Form đăng ký, thẩm định và nâng hạng hồ sơ chuyên gia chuẩn Bộ KH&CN.', path: '12_nang_cap_tai_khoan_chuyen_gia.html', route: '/profile/upgrade/expert', status: 'MATCH', gapDetail: '' },
+      { id: 'ai-wizard', task: 'TASK-05', role: 'EXPERT', group: 'Bàn Làm Việc Chuyên Gia KH&CN', icon: 'wand-2', name: 'Trợ lý AI nhập liệu (OCR/Voice)', desc: 'Wizard bóc tách tự động CV Chuyên gia và hồ sơ sáng chế công nghệ Human-in-the-Loop.', path: 'TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_ai_cv_scan_wizard.html', route: '/profile/upgrade/expert', status: 'MATCH', gapDetail: '' },
 
       // TASK-06: Danh Mục Ngành & Ma Trận Công Nghệ
-      { id: 'tech-explorer', task: 'TASK-06', role: 'PUBLIC', group: 'Bản Đồ Ma Trận Công Khai', icon: 'compass', name: 'Bản đồ ma trận (Public)', desc: 'Bản đồ ma trận công nghệ và danh mục 18 ngành dành cho Doanh nghiệp & Công chúng.', path: 'TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_kham_pha_danh_muc_va_ma_tran.html', route: '/matrix' },
-      { id: 'catalog', task: 'TASK-06', role: 'ADMIN', group: 'Quản Trị Danh Mục & Ma Trận (Admin)', icon: 'grid-2x2', name: 'Ma trận danh mục (Admin)', desc: 'Wireframe quản trị 18 nhóm ngành & ma trận Lĩnh vực - Công nghệ (Lưới 2D Heatmap & Cây Taxonomy 3 tầng).', path: 'TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_quan_tri_danh_muc_nganh.html', route: '/admin/sectors' },
+      { id: 'tech-explorer', task: 'TASK-06', role: 'PUBLIC', group: 'Bản Đồ Ma Trận Công Khai', icon: 'compass', name: 'Bản đồ ma trận (Public)', desc: 'Bản đồ ma trận công nghệ và danh mục 18 ngành dành cho Doanh nghiệp & Công chúng.', path: 'TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_kham_pha_danh_muc_va_ma_tran.html', route: '/matrix', status: 'MATCH', gapDetail: '' },
+      { id: 'catalog', task: 'TASK-06', role: 'ADMIN', group: 'Quản Trị Danh Mục & Ma Trận (Admin)', icon: 'grid-2x2', name: 'Ma trận danh mục (Admin)', desc: 'Wireframe quản trị 18 nhóm ngành & ma trận Lĩnh vực - Công nghệ (Lưới 2D Heatmap & Cây Taxonomy 3 tầng).', path: 'TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_quan_tri_danh_muc_nganh.html', route: '/admin/sectors', status: 'MATCH', gapDetail: '' },
 
       // TASK-07: Phân Quyền, 10 Roles & Quản Trị (Giao diện màn đã code)
-      { id: 'admin-hq', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'command', name: 'Tổng hành dinh Admin HQ', desc: 'Giao diện màn đã code: Command Center giám sát toàn quốc, sức khỏe hệ thống, CSDL (/admin).', path: '16_admin_quan_tri_he_thong.html', route: '/admin' },
-      { id: 'user-mgmt', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'users', name: 'Quản trị người dùng & 10 Roles', desc: 'Quản lý danh tính, phân quyền 10 roles 3D Scoped RBAC, khóa tài khoản, audit logs.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_nguoi_dung_admin.html', route: '/admin/users' },
-      { id: 'roles-tree', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'network', name: 'Quản lý vai trò & Cây 34 tỉnh', desc: 'Cấu hình phân quyền 10 roles và quản trị phân bổ cây địa bàn 34 tỉnh/thành phố.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_vai_tro_va_cay_34_tinh.html', route: '/admin/roles' },
-      { id: 'gov-monitor', task: 'TASK-07', role: 'GOV', group: 'Cổng QLNN Sở KH&CN Địa Phương', icon: 'landmark', name: 'Cổng QLNN Sở KH&CN (GOV)', desc: 'Giao diện màn đã code: Góc nhìn tác nghiệp của Cán bộ Sở: Giám sát địa bàn, thẩm định hồ sơ (/gov).', path: '17_gov_quan_ly_nha_nuoc_so_khcn.html', route: '/gov' },
-      { id: 'gov-staff', task: 'TASK-07', role: 'GOV', group: 'Cổng QLNN Sở KH&CN Địa Phương', icon: 'user-check', name: 'Phân công cán bộ Sở KH&CN', desc: 'Quản lý danh sách cán bộ thẩm định, phân quyền theo ngành và cụm địa bàn phụ trách.', path: 'wireframe_gov_phan_cong_can_bo.html', route: '/gov/settings/staff' },
-      { id: 'gov-approvals', task: 'TASK-07', role: 'GOV', group: 'Trung Tâm Kiểm Duyệt Maker-Checker', icon: 'shield-alert', name: 'Cổng duyệt Cấp 2 Sở & Admin', desc: 'Trung tâm tiếp nhận & thẩm định hồ sơ Maker-Checker 5 luồng cho 63 tỉnh/thành.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_trung_tam_kiem_duyet_admin_va_gov.html', route: '/admin/approvals' },
-      { id: 'tenant-settings', task: 'TASK-07', role: 'SELLER', group: 'Quản Trị Nội Bộ Doanh Nghiệp (Tenant)', icon: 'building', name: 'Quản trị nội bộ Tenant DN', desc: 'Phân quyền thành viên nội bộ doanh nghiệp và theo dõi nhật ký thẩm định Sở KH&CN.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_tenant_quan_tri_dn.html', route: '/admin/enterprises/dashboard' },
+      { id: 'admin-hq', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'command', name: 'Tổng hành dinh Admin HQ', desc: 'Giao diện màn đã code: Command Center giám sát toàn quốc, sức khỏe hệ thống, CSDL (/admin).', path: '16_admin_quan_tri_he_thong.html', route: '/admin', status: 'MATCH', gapDetail: '' },
+      { id: 'user-mgmt', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'users', name: 'Quản trị người dùng & 10 Roles', desc: 'Quản lý danh tính, phân quyền 10 roles 3D Scoped RBAC, khóa tài khoản, audit logs.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_nguoi_dung_admin.html', route: '/admin/users', status: 'GAP', gapDetail: 'Tuyến /admin/users trên web đang redirect về /admin/roles, chưa có bảng quản lý danh sách người dùng riêng biệt để khóa/mở/reset password.' },
+      { id: 'roles-tree', task: 'TASK-07', role: 'ADMIN', group: 'Tổng Hành Dinh Super Admin (TW)', icon: 'network', name: 'Quản lý vai trò & Cây 34 tỉnh', desc: 'Cấu hình phân quyền 10 roles và quản trị phân bổ cây địa bàn 34 tỉnh/thành phố.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_vai_tro_va_cay_34_tinh.html', route: '/admin/roles', status: 'MATCH', gapDetail: '' },
+      { id: 'gov-monitor', task: 'TASK-07', role: 'GOV', group: 'Cổng QLNN Sở KH&CN Địa Phương', icon: 'landmark', name: 'Cổng QLNN Sở KH&CN (GOV)', desc: 'Giao diện màn đã code: Góc nhìn tác nghiệp của Cán bộ Sở: Giám sát địa bàn, thẩm định hồ sơ (/gov).', path: '17_gov_quan_ly_nha_nuoc_so_khcn.html', route: '/gov', status: 'MATCH', gapDetail: '' },
+      { id: 'gov-staff', task: 'TASK-07', role: 'GOV', group: 'Cổng QLNN Sở KH&CN Địa Phương', icon: 'user-check', name: 'Phân công cán bộ Sở KH&CN', desc: 'Quản lý danh sách cán bộ thẩm định, phân quyền theo ngành và cụm địa bàn phụ trách.', path: 'wireframe_gov_phan_cong_can_bo.html', route: '/gov/settings/staff', status: 'MATCH', gapDetail: '' },
+      { id: 'gov-approvals', task: 'TASK-07', role: 'GOV', group: 'Trung Tâm Kiểm Duyệt Maker-Checker', icon: 'shield-alert', name: 'Cổng duyệt Cấp 2 Sở & Admin', desc: 'Trung tâm tiếp nhận & thẩm định hồ sơ Maker-Checker 5 luồng cho 63 tỉnh/thành.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_trung_tam_kiem_duyet_admin_va_gov.html', route: '/admin/approvals', status: 'MATCH', gapDetail: '' },
+      { id: 'tenant-settings', task: 'TASK-07', role: 'SELLER', group: 'Quản Trị Nội Bộ Doanh Nghiệp (Tenant)', icon: 'building', name: 'Quản trị nội bộ Tenant DN', desc: 'Phân quyền thành viên nội bộ doanh nghiệp và theo dõi nhật ký thẩm định Sở KH&CN.', path: 'TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_tenant_quan_tri_dn.html', route: '/admin/enterprises/dashboard', status: 'MATCH', gapDetail: '' },
 
       // TASK-08: Kết Nối Cung Cầu, Radar & Deal Room
-      { id: 'matching-radar', task: 'TASK-08', role: 'BUYER', group: 'Radar Ghép Nối AI & Quản Lý Cơ Hội', icon: 'radar', name: 'Radar Ghép Nối & Pipeline', desc: 'Khớp nối tự động Cung–Cầu theo TNI x SHTT, Pipeline 5 bước quản lý cơ hội và Giám sát Sở KH&CN.', path: 'TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_matching_va_quan_ly_co_hoi.html', route: '/portal/matching/radar' },
-      { id: 'deal-room', task: 'TASK-08', role: 'BUYER', group: 'Không Gian Đàm Phán & Ký MOU', icon: 'handshake', name: 'Phòng đàm phán Deal Room & MOU', desc: 'Không gian hợp tác 1-1: Kho dữ liệu mật (unmask PDPD), biên bản họp và soạn thảo MOU.', path: 'TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_deal_room_hop_tac.html', route: '/portal/opportunities/demo/deal-room' },
+      { id: 'matching-radar', task: 'TASK-08', role: 'BUYER', group: 'Radar Ghép Nối AI & Quản Lý Cơ Hội', icon: 'radar', name: 'Radar Ghép Nối & Pipeline', desc: 'Khớp nối tự động Cung–Cầu theo TNI x SHTT, Pipeline 5 bước quản lý cơ hội và Giám sát Sở KH&CN.', path: 'TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_matching_va_quan_ly_co_hoi.html', route: '/portal/matching/radar', status: 'MATCH', gapDetail: '' },
+      { id: 'deal-room', task: 'TASK-08', role: 'BUYER', group: 'Không Gian Đàm Phán & Ký MOU', icon: 'handshake', name: 'Phòng đàm phán Deal Room & MOU', desc: 'Không gian hợp tác 1-1: Kho dữ liệu mật (unmask PDPD), biên bản họp và soạn thảo MOU.', path: 'TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/wireframe_deal_room_hop_tac.html', route: '/portal/opportunities/demo/deal-room', status: 'MATCH', gapDetail: '' },
 
       // TASK-09: Đánh Giá Trình Độ & Năng Lực TT17
-      { id: 'buyer-tni-assessment', task: 'TASK-09', role: 'BUYER', group: 'Đo Lường Cấp Thiết & Hấp Thụ Công Nghệ', icon: 'calculator', name: 'Đánh giá năng lực Buyer TNI', desc: 'Khảo sát năng lực hấp thụ công nghệ và đo lường chỉ số cấp thiết TNI cho Bên Mua.', path: 'wireframe_danh_gia_buyer_tni.html', route: '/assessments/buyer' },
-      { id: 'tt17-dashboard', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'clipboard-check', name: 'Báo cáo đánh giá TT17', desc: 'Wireframe dashboard và biểu mẫu báo cáo Phụ lục II & IV theo Thông tư 17/2019/TT-BKHCN.', path: 'TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/wireframe_danh_gia_tt17.html', route: '/assessments/tt17' },
-      { id: 'tt17-wizard', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'file-plus-2', name: 'Wizard 26 tiêu chí TT17 & Thẩm định', desc: 'Form wizard nhập số liệu 26 tiêu chí 5 nhóm T-E-O-R-I, tự động tính tau & T_ĐB và thẩm định Sở.', path: 'TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/wireframe_wizard_nhap_lieu_va_tham_dinh_tt17.html', route: '/assessments/tt17/wizard' },
-      { id: 'tt17-report', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'file-text', name: 'Báo cáo xuất bản TT17 (Phụ lục IV)', desc: 'Bản in báo cáo thẩm định năng lực công nghệ chính thức theo mẫu Phụ lục IV Bộ KH&CN.', path: 'wireframe_bao_cao_xuat_ban_tt17.html', route: '/assessments/tt17/current/report' }
+      { id: 'buyer-tni-assessment', task: 'TASK-09', role: 'BUYER', group: 'Đo Lường Cấp Thiết & Hấp Thụ Công Nghệ', icon: 'calculator', name: 'Đánh giá năng lực Buyer TNI', desc: 'Khảo sát năng lực hấp thụ công nghệ và đo lường chỉ số cấp thiết TNI cho Bên Mua.', path: 'wireframe_danh_gia_buyer_tni.html', route: '/assessments/buyer', status: 'GAP', gapDetail: 'Tuyến /assessments/buyer trên web đang redirect về /portal/buyer/demands, chưa có form độc lập khảo sát năng lực hấp thụ TNI.' },
+      { id: 'tt17-dashboard', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'clipboard-check', name: 'Báo cáo đánh giá TT17', desc: 'Wireframe dashboard và biểu mẫu báo cáo Phụ lục II & IV theo Thông tư 17/2019/TT-BKHCN.', path: 'TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/wireframe_danh_gia_tt17.html', route: '/assessments/tt17', status: 'MATCH', gapDetail: '' },
+      { id: 'tt17-wizard', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'file-plus-2', name: 'Wizard 26 tiêu chí TT17 & Thẩm định', desc: 'Form wizard nhập số liệu 26 tiêu chí 5 nhóm T-E-O-R-I, tự động tính tau & T_ĐB và thẩm định Sở.', path: 'TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/wireframe_wizard_nhap_lieu_va_tham_dinh_tt17.html', route: '/assessments/tt17/wizard', status: 'MATCH', gapDetail: '' },
+      { id: 'tt17-report', task: 'TASK-09', role: 'GOV', group: 'Hội Đồng Thẩm Định & Đánh Giá TT17', icon: 'file-text', name: 'Báo cáo xuất bản TT17 (Phụ lục IV)', desc: 'Bản in báo cáo thẩm định năng lực công nghệ chính thức theo mẫu Phụ lục IV Bộ KH&CN.', path: 'wireframe_bao_cao_xuat_ban_tt17.html', route: '/assessments/tt17/current/report', status: 'MATCH', gapDetail: '' }
     ];
 
     let current = 'home';
@@ -1129,7 +1138,7 @@
                         <button class="tab ${isActive ? 'active' : ''}" onclick="selectSource('${scr.id}')" title="[Vai trò: ${scr.role}] ${scr.desc}">
                           <i data-lucide="${scr.icon}"></i>
                           <span style="flex:1; min-width:0;">
-                            <b>${scr.name}</b>
+                            <b>${scr.name} <span class="status-dot ${scr.status === "MATCH" ? "match" : "gap"}" title="${scr.status === "MATCH" ? "Trùng khớp 100% web thật" : "Có GAP nghiệp vụ/kỹ thuật"}">${scr.status === "MATCH" ? "●" : "▲"}</span></b>
                             <small>${scr.path.split('/').pop()}</small>
                           </span>
                           <span class="role-tag role-${scr.role.toLowerCase()}">${scr.role}</span>
@@ -1161,6 +1170,38 @@
       lucide.createIcons();
     }
 
+    
+    let viewMode = 'wireframe'; // 'wireframe' or 'live'
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      $('btn-mode-wireframe').classList.toggle('active', mode === 'wireframe');
+      $('btn-mode-live').classList.toggle('active', mode === 'live');
+      renderFrameSrc();
+    }
+
+    function renderFrameSrc() {
+      const s = sources.find(x => x.id === current) || sources[0];
+      const frame = $('source-frame');
+      const missingFrame = $('missing-frame');
+      if (viewMode === 'live') {
+        frame.style.display = 'block';
+        missingFrame.style.display = 'none';
+        frame.src = `http://localhost:3000${s.route || '/'}`;
+      } else {
+        if (s.missing) {
+          frame.style.display = 'none';
+          missingFrame.style.display = 'flex';
+          $('missing-text').textContent = `${s.task} chưa có wireframe HTML để nạp trực tiếp.`;
+          $('missing-path').textContent = s.path;
+        } else {
+          frame.style.display = 'block';
+          missingFrame.style.display = 'none';
+          renderFrameSrc();
+        }
+      }
+    }
+
     function renderContent() {
       const s = sources.find(x => x.id === current) || sources[0];
       const mod = taskModules.find(m => m.id === s.task);
@@ -1186,6 +1227,32 @@
         roleBadge.style.borderColor = roleObj.border;
       }
 
+      
+      const isMatch = s.status === 'MATCH';
+      const gapBadge = $('gap-badge');
+      if (gapBadge) {
+        if (isMatch) {
+          gapBadge.textContent = '🟢 TRÙNG KHỚP 100%';
+          gapBadge.style.color = '#047857';
+          gapBadge.style.background = '#ecfdf5';
+          gapBadge.style.borderColor = '#a7f3d0';
+        } else {
+          gapBadge.textContent = '🟡 CÓ GAP NGHIỆP VỤ';
+          gapBadge.style.color = '#b45309';
+          gapBadge.style.background = '#fffbeb';
+          gapBadge.style.borderColor = '#fde68a';
+        }
+      }
+      const gapAlert = $('gap-alert');
+      if (gapAlert) {
+        if (!isMatch && s.gapDetail) {
+          gapAlert.style.display = 'block';
+          gapAlert.innerHTML = `<strong>⚠️ ĐIỂM CHÊNH LỆCH (GAP):</strong> ${s.gapDetail}`;
+        } else {
+          gapAlert.style.display = 'none';
+        }
+      }
+
       const liveBtn = $('live-code-btn');
       if (liveBtn) {
         liveBtn.href = `http://localhost:3000${s.route || '/'}`;
@@ -1202,7 +1269,7 @@
       } else {
         frame.style.display = 'block';
         missingFrame.style.display = 'none';
-        frame.src = s.path;
+        renderFrameSrc();
       }
 
       setDevice(device);

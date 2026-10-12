@@ -23,10 +23,16 @@ import {
   Target,
   Compass,
   FileCheck2,
-  Info
+  Info,
+  Search,
+  Loader2,
+  KeyRound,
+  LogIn
 } from 'lucide-react';
 import { useToast } from '@/components/common/toast';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
+import { lookupTaxCode, fetchMyEnterpriseProfile } from '@/lib/enterprise-client';
+import { getStoredSession } from '@/lib/auth-client';
 
 import {
   PROVINCES_63,
@@ -58,10 +64,19 @@ export default function DeepSurveyPage() {
   // Wizard state: 1 -> 7
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isLookingUpTax, setIsLookingUpTax] = useState<boolean>(false);
+  const [isPrefilledFromSession, setIsPrefilledFromSession] = useState<boolean>(false);
   const [submitResult, setSubmitResult] = useState<{
     surveyCode: string;
     createdTickets: string[];
     companyName: string;
+    accountProvisioned?: boolean;
+    account?: {
+      email: string;
+      temporaryPassword?: string;
+      role: string;
+      note: string;
+    } | null;
   } | null>(null);
 
   // -------------------------------------------------------------
@@ -69,18 +84,18 @@ export default function DeepSurveyPage() {
   // -------------------------------------------------------------
   const [companyName, setCompanyName] = useState('');
   const [taxCode, setTaxCode] = useState('');
-  const [province, setProvince] = useState('Hà Nội');
+  const [province, setProvince] = useState('');
   const [address, setAddress] = useState('');
   const [surveySite, setSurveySite] = useState('');
   const [contactName, setContactName] = useState('');
-  const [contactPosition, setContactPosition] = useState('Giám đốc điều hành');
+  const [contactPosition, setContactPosition] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
-  const [companyType, setCompanyType] = useState('CO_PHAN');
-  const [mainIndustry, setMainIndustry] = useState('LV07');
+  const [companyType, setCompanyType] = useState('');
+  const [mainIndustry, setMainIndustry] = useState('');
   const [mainProducts, setMainProducts] = useState('');
-  const [employeeScale, setEmployeeScale] = useState('50-199');
-  const [revenueRange3y, setRevenueRange3y] = useState('10-50 tỷ VNĐ');
+  const [employeeScale, setEmployeeScale] = useState('');
+  const [revenueRange3y, setRevenueRange3y] = useState('');
 
   // -------------------------------------------------------------
   // PHẦN B: HIỆN TRẠNG & 8 TIÊU CHÍ
@@ -88,124 +103,82 @@ export default function DeepSurveyPage() {
   const [equipments, setEquipments] = useState<EquipmentItem[]>([
     {
       id: 'eq-1',
-      stageName: 'Đúc phôi & gia công tinh',
-      machineName: 'Máy đúc áp lực buồng lạnh 650 tấn',
-      productOutput: 'Phôi nhôm chi tiết máy',
-      investmentYear: 2021,
-      techOrigin: 'Nhật Bản / G7',
-      depreciationStatus: 'Đang hoạt động tốt (50–80%)'
+      stageName: '',
+      machineName: '',
+      productOutput: '',
+      investmentYear: new Date().getFullYear(),
+      techOrigin: '',
+      depreciationStatus: ''
     }
   ]);
 
-  const [criteria8, setCriteria8] = useState<Record<number, number>>({
-    0: 4, 1: 3, 2: 4, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4
-  });
+  const [criteria8, setCriteria8] = useState<Record<number, number>>({});
 
   // -------------------------------------------------------------
   // PHẦN C: ĐIỂM NGHẼN SẢN XUẤT (MAX 5)
   // -------------------------------------------------------------
-  const [selectedBottlenecks, setSelectedBottlenecks] = useState<string[]>([
-    'Tỷ lệ sản phẩm lỗi / phế phẩm còn cao',
-    'Thiếu tự động hóa, còn phụ thuộc nhân công thủ công',
-    'Khó tiếp cận công nghệ mới, thiết bị tiên tiến'
-  ]);
-  const [bottleneckSeverity, setBottleneckSeverity] = useState<Record<string, number>>({
-    'Tỷ lệ sản phẩm lỗi / phế phẩm còn cao': 4,
-    'Thiếu tự động hóa, còn phụ thuộc nhân công thủ công': 5,
-    'Khó tiếp cận công nghệ mới, thiết bị tiên tiến': 4
-  });
-  const [hardestStage, setHardestStage] = useState('Kiểm tra chất lượng ngoại quan và đóng gói');
-  const [primaryCause, setPrimaryCause] = useState('Thiếu hệ thống cảm biến quang học kiểm tra tự động và nhân lực lập trình AI.');
+  const [selectedBottlenecks, setSelectedBottlenecks] = useState<string[]>([]);
+  const [bottleneckSeverity, setBottleneckSeverity] = useState<Record<string, number>>({});
+  const [hardestStage, setHardestStage] = useState('');
+  const [primaryCause, setPrimaryCause] = useState('');
 
   // -------------------------------------------------------------
   // PHẦN D: NĂNG LỰC TIẾP NHẬN (TAR)
   // -------------------------------------------------------------
   const [techPersonnel, setTechPersonnel] = useState({
-    technicians: 12,
-    engineers: 6,
-    it: 2,
-    automation: 3,
-    rd: 2,
-    quality: 4,
-    notes: 'Kỹ sư cơ điện kiêm nhiệm bảo trì hệ thống điều khiển PLC.'
+    technicians: 0,
+    engineers: 0,
+    it: 0,
+    automation: 0,
+    rd: 0,
+    quality: 0,
+    notes: ''
   });
 
-  const [tarReadiness, setTarReadiness] = useState<Record<number, number>>({
-    0: 4, 1: 4, 2: 4, 3: 3, 4: 3, 5: 3, 6: 3, 7: 3, 8: 4
-  });
-
-  const [managementStatus, setManagementStatus] = useState<Record<number, boolean>>({
-    0: true, 1: true, 2: false, 3: true, 4: false, 5: true, 6: true
-  });
+  const [tarReadiness, setTarReadiness] = useState<Record<number, number>>({});
+  const [managementStatus, setManagementStatus] = useState<Record<number, boolean>>({});
 
   // -------------------------------------------------------------
   // PHẦN E: BÀI TOÁN & NHU CẦU KỸ THUẬT (DEMAND ITEMS)
   // -------------------------------------------------------------
-  const [fundingSourcesSelected, setFundingSourcesSelected] = useState<string[]>([
-    'Vốn tự có của doanh nghiệp',
-    'Vay vốn ngân hàng thương mại'
-  ]);
-  const [receiptFormatsSelected, setReceiptFormatsSelected] = useState<string[]>([
-    'Mua sắm thiết bị / máy móc mới trọn gói',
-    'Đào tạo chuyển giao kỹ thuật chuyên sâu'
-  ]);
+  const [fundingSourcesSelected, setFundingSourcesSelected] = useState<string[]>([]);
+  const [receiptFormatsSelected, setReceiptFormatsSelected] = useState<string[]>([]);
 
   const [demandItems, setDemandItems] = useState<DemandItemForm[]>([
     {
       id: 'dmd-1',
-      sectorCode: 'LV07',
+      sectorCode: '',
       techGroupCode: 'CN01',
       demandTypeCode: 'NC01',
-      stageName: 'Gia công & Lắp ráp chi tiết',
-      technicalProblem: 'Tự động hóa phát hiện khuyết tật bề mặt mối hàn bằng AI Vision',
-      desiredSolution: 'Cánh tay Robot gắn Camera quang học 3D kèm phần mềm AI Deep Learning',
+      stageName: '',
+      technicalProblem: '',
+      desiredSolution: '',
       needConsulting: true,
-      expectedGoal: 'Giảm tỷ lệ lỗi phế phẩm từ 4.5% xuống dưới 0.3%, tiết kiệm 3 nhân công',
-      budgetRange: '1–5 tỷ đồng',
-      urgency: 4,
-      impact: 5,
-      investment: 4,
-      readiness: 4
+      expectedGoal: '',
+      budgetRange: '',
+      urgency: 0,
+      impact: 0,
+      investment: 0,
+      readiness: 0
     }
   ]);
 
   // -------------------------------------------------------------
   // PHẦN F: ĐỊNH HƯỚNG CÔNG NGHỆ & HỖ TRỢ
   // -------------------------------------------------------------
-  const [automationSelected, setAutomationSelected] = useState<string[]>([
-    'Tự động hóa dây chuyền sản xuất',
-    'Robot công nghiệp (AGV, Robot hàn, xếp hàng)',
-    'Hệ thống điều khiển tự động (PLC, SCADA)'
-  ]);
-  const [digitalSelected, setDigitalSelected] = useState<string[]>([
-    'Hệ thống điều hành sản xuất tại xưởng (MES)',
-    'Hệ thống quản lý kho & chuỗi cung ứng (WMS)',
-    'Trí tuệ nhân tạo (AI Vision, Dự báo)'
-  ]);
-  const [greenSelected, setGreenSelected] = useState<string[]>([
-    'Giải pháp tiết kiệm & sử dụng hiệu quả năng lượng',
-    'Hệ thống xử lý nước thải & tái sử dụng nước'
-  ]);
-  const [partnersSelected, setPartnersSelected] = useState<string[]>([
-    'Nhà cung cấp giải pháp / thiết bị công nghệ trong nước',
-    'Viện nghiên cứu, Trường đại học chuyên ngành',
-    'Chuyên gia tư vấn kỹ thuật độc lập'
-  ]);
-  const [supportRatings, setSupportRatings] = useState<Record<string, number>>({
-    consulting: 5,
-    matching: 5,
-    finance: 4,
-    training: 4,
-    assessment: 4
-  });
+  const [automationSelected, setAutomationSelected] = useState<string[]>([]);
+  const [digitalSelected, setDigitalSelected] = useState<string[]>([]);
+  const [greenSelected, setGreenSelected] = useState<string[]>([]);
+  const [partnersSelected, setPartnersSelected] = useState<string[]>([]);
+  const [supportRatings, setSupportRatings] = useState<Record<string, number>>({});
 
   // -------------------------------------------------------------
   // PHẦN G: RÀ SOÁT, XÁC NHẬN & PDPD
   // -------------------------------------------------------------
   const [confirmName, setConfirmName] = useState('');
-  const [confirmPosition, setConfirmPosition] = useState('Giám đốc điều hành');
+  const [confirmPosition, setConfirmPosition] = useState('');
   const [confirmDate, setConfirmDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [pdpdConsent, setPdpdConsent] = useState(true);
+  const [pdpdConsent, setPdpdConsent] = useState(false);
 
   // -------------------------------------------------------------
   // LOCALSTORAGE DRAFT MANAGEMENT
@@ -218,23 +191,110 @@ export default function DeepSurveyPage() {
         if (d.companyName) setCompanyName(d.companyName);
         if (d.taxCode) setTaxCode(d.taxCode);
         if (d.contactName) setContactName(d.contactName);
+        if (d.contactPosition) setContactPosition(d.contactPosition);
         if (d.contactPhone) setContactPhone(d.contactPhone);
         if (d.contactEmail) setContactEmail(d.contactEmail);
         if (d.province) setProvince(d.province);
         if (d.address) setAddress(d.address);
+        if (d.surveySite) setSurveySite(d.surveySite);
+        if (d.companyType) setCompanyType(d.companyType);
         if (d.mainIndustry) setMainIndustry(d.mainIndustry);
         if (d.mainProducts) setMainProducts(d.mainProducts);
+        if (d.employeeScale) setEmployeeScale(d.employeeScale);
+        if (d.revenueRange3y) setRevenueRange3y(d.revenueRange3y);
         if (d.equipments && Array.isArray(d.equipments)) setEquipments(d.equipments);
+        if (d.criteria8) setCriteria8(d.criteria8);
         if (d.selectedBottlenecks) setSelectedBottlenecks(d.selectedBottlenecks);
+        if (d.bottleneckSeverity) setBottleneckSeverity(d.bottleneckSeverity);
         if (d.hardestStage) setHardestStage(d.hardestStage);
         if (d.primaryCause) setPrimaryCause(d.primaryCause);
+        if (d.techPersonnel) setTechPersonnel(d.techPersonnel);
+        if (d.tarReadiness) setTarReadiness(d.tarReadiness);
+        if (d.managementStatus) setManagementStatus(d.managementStatus);
+        if (d.fundingSourcesSelected) setFundingSourcesSelected(d.fundingSourcesSelected);
+        if (d.receiptFormatsSelected) setReceiptFormatsSelected(d.receiptFormatsSelected);
         if (d.demandItems && Array.isArray(d.demandItems) && d.demandItems.length > 0) setDemandItems(d.demandItems);
+        if (d.automationSelected) setAutomationSelected(d.automationSelected);
+        if (d.digitalSelected) setDigitalSelected(d.digitalSelected);
+        if (d.greenSelected) setGreenSelected(d.greenSelected);
+        if (d.partnersSelected) setPartnersSelected(d.partnersSelected);
+        if (d.supportRatings) setSupportRatings(d.supportRatings);
+        if (d.confirmName) setConfirmName(d.confirmName);
+        if (d.confirmPosition) setConfirmPosition(d.confirmPosition);
         toast.info('Đã khôi phục dữ liệu bản nháp từ phiên làm việc trước.', 'Khôi phục bản nháp');
       }
     } catch {
       // Ignore parse error
     }
   }, []);
+
+  // -------------------------------------------------------------
+  // SMART PRE-FILL CHO DOANH NGHIỆP ĐÃ ĐĂNG NHẬP
+  // -------------------------------------------------------------
+  useEffect(() => {
+    const session = getStoredSession();
+    if (session?.accessToken) {
+      fetchMyEnterpriseProfile()
+        .then((profile) => {
+          if (profile && (profile.name || profile.taxCode)) {
+            setIsPrefilledFromSession(true);
+            setCompanyName(prev => prev || profile.name || '');
+            setTaxCode(prev => prev || profile.taxCode || '');
+            if (profile.provinceCity) setProvince(prev => prev || profile.provinceCity);
+            if (profile.addressDetail) setAddress(prev => prev || profile.addressDetail);
+            if (profile.contactPerson) setContactName(prev => prev || profile.contactPerson);
+            if (profile.contactPhone) setContactPhone(prev => prev || profile.contactPhone);
+            if (profile.contactEmail) setContactEmail(prev => prev || profile.contactEmail);
+            if (profile.sectorCode) setMainIndustry(prev => prev || profile.sectorCode);
+            if (profile.workforceScale) setEmployeeScale(prev => prev || profile.workforceScale);
+            if (profile.revenueRange && profile.revenueRange !== '[BẢO MẬT]') {
+              setRevenueRange3y(prev => prev || profile.revenueRange);
+            }
+            toast.success(
+              `Đã tự động nạp hồ sơ doanh nghiệp "${profile.name || 'Đã đăng ký'}".`,
+              'Đồng bộ hồ sơ DN'
+            );
+          }
+        })
+        .catch(() => {
+          // Bỏ qua nếu lỗi mạng hoặc chưa tạo hồ sơ
+        });
+    }
+  }, []);
+
+  // -------------------------------------------------------------
+  // TRA CỨU MÃ SỐ THUẾ TỰ ĐỘNG (HYBRID LOOKUP)
+  // -------------------------------------------------------------
+  const handleLookupTaxCode = async () => {
+    if (!taxCode.trim()) {
+      toast.warning('Vui lòng nhập Mã số thuế trước khi tra cứu.', 'Chưa nhập MST');
+      return;
+    }
+
+    setIsLookingUpTax(true);
+    try {
+      const res = await lookupTaxCode(taxCode);
+      if (res && res.found && res.name) {
+        setCompanyName(res.name);
+        if (res.province) setProvince(res.province);
+        if (res.address) setAddress(res.address);
+        const sourceName = res.source === 'INTERNAL' ? 'CSDL Doanh nghiệp NacenTwin' : 'Cổng Thông tin VietQR';
+        toast.success(
+          `Đã tìm thấy thông tin: ${res.name} (Nguồn: ${sourceName}). Đã tự động điền vào phiếu.`,
+          'Tra cứu MST thành công'
+        );
+      } else {
+        toast.warning(
+          res?.message || `Không tìm thấy thông tin cho MST ${taxCode}. Quý DN vui lòng điền thủ công.`,
+          'Không tìm thấy'
+        );
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Lỗi khi tra cứu mã số thuế từ máy chủ.', 'Lỗi tra cứu');
+    } finally {
+      setIsLookingUpTax(false);
+    }
+  };
 
   const handleSaveDraft = () => {
     try {
@@ -282,7 +342,186 @@ export default function DeepSurveyPage() {
 
   const handleClearDraft = () => {
     localStorage.removeItem(STORAGE_KEY);
-    toast.info('Đã xóa dữ liệu bản nháp.', 'Đã xóa');
+    setCurrentStep(1);
+    setCompanyName('');
+    setTaxCode('');
+    setProvince('');
+    setAddress('');
+    setSurveySite('');
+    setContactName('');
+    setContactPosition('');
+    setContactPhone('');
+    setContactEmail('');
+    setCompanyType('');
+    setMainIndustry('');
+    setMainProducts('');
+    setEmployeeScale('');
+    setRevenueRange3y('');
+    setEquipments([
+      {
+        id: 'eq-1',
+        stageName: '',
+        machineName: '',
+        productOutput: '',
+        investmentYear: new Date().getFullYear(),
+        techOrigin: '',
+        depreciationStatus: ''
+      }
+    ]);
+    setCriteria8({});
+    setSelectedBottlenecks([]);
+    setBottleneckSeverity({});
+    setHardestStage('');
+    setPrimaryCause('');
+    setTechPersonnel({
+      technicians: 0,
+      engineers: 0,
+      it: 0,
+      automation: 0,
+      rd: 0,
+      quality: 0,
+      notes: ''
+    });
+    setTarReadiness({});
+    setManagementStatus({});
+    setFundingSourcesSelected([]);
+    setReceiptFormatsSelected([]);
+    setDemandItems([
+      {
+        id: 'dmd-1',
+        sectorCode: '',
+        techGroupCode: 'CN01',
+        demandTypeCode: 'NC01',
+        stageName: '',
+        technicalProblem: '',
+        desiredSolution: '',
+        needConsulting: true,
+        expectedGoal: '',
+        budgetRange: '',
+        urgency: 0,
+        impact: 0,
+        investment: 0,
+        readiness: 0
+      }
+    ]);
+    setAutomationSelected([]);
+    setDigitalSelected([]);
+    setGreenSelected([]);
+    setPartnersSelected([]);
+    setSupportRatings({});
+    setConfirmName('');
+    setConfirmPosition('');
+    setConfirmDate(new Date().toISOString().slice(0, 10));
+    setPdpdConsent(false);
+    toast.info('Đã xóa dữ liệu bản nháp và làm mới toàn bộ biểu mẫu.', 'Đã làm mới');
+  };
+
+  const handleFillSampleData = () => {
+    setCompanyName('Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh');
+    setTaxCode('0108992134');
+    setProvince('Hà Nội');
+    setAddress('Lô CN-08, Khu Công nghiệp vừa và nhỏ Từ Liêm, Bắc Từ Liêm, Hà Nội');
+    setSurveySite('Nhà xưởng gia công chính xác số 1');
+    setContactName('Nguyễn Văn Tuấn');
+    setContactPosition('Phó Giám đốc Kỹ thuật');
+    setContactPhone('0912345678');
+    setContactEmail('tuan.nv@minhanh-mech.vn');
+    setCompanyType('CO_PHAN');
+    setMainIndustry('LV07');
+    setMainProducts('Linh kiện dập cơ khí chính xác, vỏ tủ điện điều khiển, khung máy CNC');
+    setEmployeeScale('50-199');
+    setRevenueRange3y('10-50 tỷ VNĐ');
+    setEquipments([
+      {
+        id: 'eq-1',
+        stageName: 'Đúc phôi & gia công tinh',
+        machineName: 'Máy đúc áp lực buồng lạnh 650 tấn',
+        productOutput: 'Phôi nhôm chi tiết máy',
+        investmentYear: 2021,
+        techOrigin: 'Nhật Bản / G7',
+        depreciationStatus: 'Đang hoạt động tốt (50–80%)'
+      }
+    ]);
+    setCriteria8({ 0: 4, 1: 3, 2: 4, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4 });
+    setSelectedBottlenecks([
+      'Tỷ lệ sản phẩm lỗi / phế phẩm còn cao',
+      'Thiếu tự động hóa, còn phụ thuộc nhân công thủ công',
+      'Khó tiếp cận công nghệ mới, thiết bị tiên tiến'
+    ]);
+    setBottleneckSeverity({
+      'Tỷ lệ sản phẩm lỗi / phế phẩm còn cao': 4,
+      'Thiếu tự động hóa, còn phụ thuộc nhân công thủ công': 5,
+      'Khó tiếp cận công nghệ mới, thiết bị tiên tiến': 4
+    });
+    setHardestStage('Kiểm tra chất lượng ngoại quan và đóng gói');
+    setPrimaryCause('Thiếu hệ thống cảm biến quang học kiểm tra tự động và nhân lực lập trình AI.');
+    setTechPersonnel({
+      technicians: 12,
+      engineers: 6,
+      it: 2,
+      automation: 3,
+      rd: 2,
+      quality: 4,
+      notes: 'Kỹ sư cơ điện kiêm nhiệm bảo trì hệ thống điều khiển PLC.'
+    });
+    setManagementStatus({ 0: true, 1: true, 2: false, 3: true, 4: false, 5: true, 6: true });
+    setTarReadiness({ 0: 4, 1: 4, 2: 4, 3: 3, 4: 3, 5: 3, 6: 3, 7: 3, 8: 4 });
+    setFundingSourcesSelected([
+      'Vốn tự có của doanh nghiệp',
+      'Vay vốn ngân hàng thương mại'
+    ]);
+    setReceiptFormatsSelected([
+      'Mua sắm thiết bị / máy móc mới trọn gói',
+      'Đào tạo chuyển giao kỹ thuật chuyên sâu'
+    ]);
+    setDemandItems([
+      {
+        id: 'dmd-1',
+        sectorCode: 'LV07',
+        techGroupCode: 'CN01',
+        demandTypeCode: 'NC01',
+        stageName: 'Gia công & Lắp ráp chi tiết',
+        technicalProblem: 'Tự động hóa phát hiện khuyết tật bề mặt mối hàn bằng AI Vision',
+        desiredSolution: 'Cánh tay Robot gắn Camera quang học 3D kèm phần mềm AI Deep Learning',
+        needConsulting: true,
+        expectedGoal: 'Giảm tỷ lệ lỗi phế phẩm từ 4.5% xuống dưới 0.3%, tiết kiệm 3 nhân công',
+        budgetRange: '1–5 tỷ đồng',
+        urgency: 4,
+        impact: 5,
+        investment: 4,
+        readiness: 4
+      }
+    ]);
+    setAutomationSelected([
+      'Tự động hóa dây chuyền sản xuất',
+      'Robot công nghiệp (AGV, Robot hàn, xếp hàng)',
+      'Hệ thống điều khiển tự động (PLC, SCADA)'
+    ]);
+    setDigitalSelected([
+      'Hệ thống điều hành sản xuất tại xưởng (MES)',
+      'Hệ thống quản lý kho & chuỗi cung ứng (WMS)',
+      'Trí tuệ nhân tạo (AI Vision, Dự báo)'
+    ]);
+    setGreenSelected([
+      'Giải pháp tiết kiệm & sử dụng hiệu quả năng lượng',
+      'Hệ thống xử lý nước thải & tái sử dụng nước'
+    ]);
+    setPartnersSelected([
+      'Nhà cung cấp giải pháp / thiết bị công nghệ trong nước',
+      'Viện nghiên cứu, Trường đại học chuyên ngành',
+      'Chuyên gia tư vấn kỹ thuật độc lập'
+    ]);
+    setSupportRatings({
+      consulting: 5,
+      matching: 5,
+      finance: 4,
+      training: 4,
+      assessment: 4
+    });
+    setConfirmName('Nguyễn Văn Tuấn');
+    setConfirmPosition('Phó Giám đốc Kỹ thuật');
+    setPdpdConsent(true);
+    toast.success('Đã nạp bộ dữ liệu thử nghiệm chuẩn doanh nghiệp cơ khí.', 'Nạp dữ liệu mẫu');
   };
 
   // -------------------------------------------------------------
@@ -295,8 +534,8 @@ export default function DeepSurveyPage() {
       machineName: '',
       productOutput: '',
       investmentYear: new Date().getFullYear(),
-      techOrigin: 'Việt Nam',
-      depreciationStatus: 'Đang hoạt động tốt (50–80%)'
+      techOrigin: '',
+      depreciationStatus: ''
     };
     setEquipments([...equipments, newEq]);
   };
@@ -322,16 +561,13 @@ export default function DeepSurveyPage() {
         return;
       }
       setSelectedBottlenecks([...selectedBottlenecks, item]);
-      if (!bottleneckSeverity[item]) {
-        setBottleneckSeverity({ ...bottleneckSeverity, [item]: 4 });
-      }
     }
   };
 
   const handleAddDemandItem = () => {
     const newItem: DemandItemForm = {
       id: `dmd-${Date.now()}`,
-      sectorCode: mainIndustry || 'LV07',
+      sectorCode: mainIndustry || '',
       techGroupCode: 'CN01',
       demandTypeCode: 'NC01',
       stageName: '',
@@ -339,11 +575,11 @@ export default function DeepSurveyPage() {
       desiredSolution: '',
       needConsulting: true,
       expectedGoal: '',
-      budgetRange: '500 triệu–1 tỷ đồng',
-      urgency: 4,
-      impact: 4,
-      investment: 3,
-      readiness: 4
+      budgetRange: '',
+      urgency: 0,
+      impact: 0,
+      investment: 0,
+      readiness: 0
     };
     setDemandItems([...demandItems, newItem]);
     toast.success(`Đã thêm bài toán kỹ thuật #${demandItems.length + 1}.`, 'Thêm bài toán');
@@ -370,15 +606,23 @@ export default function DeepSurveyPage() {
         toast.error('Vui lòng nhập Tên Doanh nghiệp.', 'Thiếu thông tin');
         return false;
       }
+      if (!province.trim()) {
+        toast.error('Vui lòng chọn Tỉnh / Thành phố trụ sở chính.', 'Thiếu thông tin địa bàn');
+        return false;
+      }
       if (!contactName.trim() || !contactPhone.trim() || !contactEmail.trim()) {
         toast.error('Vui lòng điền đầy đủ Người liên hệ, Số điện thoại và Email.', 'Thiếu thông tin liên hệ');
         return false;
       }
     }
     if (step === 2) {
+      if (equipments.length === 0) {
+        toast.error('Vui lòng thêm ít nhất 1 dòng máy móc / thiết bị.', 'Thiếu thông tin thiết bị');
+        return false;
+      }
       const hasEmptyEq = equipments.some(e => !e.machineName.trim() || !e.stageName.trim());
       if (hasEmptyEq) {
-        toast.error('Vui lòng điền đầy đủ Tên máy móc và Công đoạn cho tất cả các thiết bị.', 'Thiếu thông tin thiết bị');
+        toast.error('Vui lòng điền đầy đủ Tên máy móc và Công đoạn cho thiết bị.', 'Thiếu thông tin thiết bị');
         return false;
       }
     }
@@ -393,6 +637,10 @@ export default function DeepSurveyPage() {
       }
     }
     if (step === 5) {
+      if (demandItems.length === 0) {
+        toast.error('Phiếu khảo sát cần có ít nhất 1 bài toán kỹ thuật.', 'Thiếu bài toán');
+        return false;
+      }
       const hasInvalidItem = demandItems.some(d => !d.technicalProblem.trim() || !d.expectedGoal.trim());
       if (hasInvalidItem) {
         toast.error('Vui lòng mô tả cụ thể Vấn đề kỹ thuật và Mục tiêu kỳ vọng cho từng bài toán.', 'Thiếu nội dung bài toán');
@@ -484,6 +732,9 @@ export default function DeepSurveyPage() {
         adoptionCapacity: Object.fromEntries(
           Object.entries(tarReadiness).map(([idx, val]) => [TAR_READINESS_9_LIST[Number(idx)] || `TAR_${idx}`, val])
         ),
+        managementMechanisms: Object.fromEntries(
+          Object.entries(managementStatus).map(([idx, val]) => [MANAGEMENT_7_LIST[Number(idx)] || `Management_${idx}`, val])
+        ),
 
         futureDirections: [
           ...automationSelected.map(a => `[Tự động hóa] ${a}`),
@@ -523,7 +774,9 @@ export default function DeepSurveyPage() {
         setSubmitResult({
           surveyCode: data.surveyCode || `SUR-${Date.now()}`,
           createdTickets: data.createdTickets || ['DMD-202610-01'],
-          companyName
+          companyName,
+          accountProvisioned: Boolean(data.accountProvisioned),
+          account: data.account || null
         });
         localStorage.removeItem(STORAGE_KEY);
         toast.success('Đã tiếp nhận hồ sơ khảo sát và khởi tạo Demand Tickets thành công!', 'Nộp phiếu thành công');
@@ -586,13 +839,55 @@ export default function DeepSurveyPage() {
             </div>
           </div>
 
+          {submitResult.accountProvisioned && submitResult.account && (
+            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl p-5 text-left max-w-lg mx-auto space-y-2.5 shadow-sm">
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs">
+                <KeyRound className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>TÀI KHOẢN DOANH NGHIỆP ĐÃ ĐƯỢC CẤP TỰ ĐỘNG</span>
+              </div>
+              <p className="text-caption text-amber-700 dark:text-amber-400">
+                Hệ thống đã tự động tạo tài khoản Bên mua (Buyer) để bạn có thể theo dõi tiến độ xử lý và kết nối chuyên gia:
+              </p>
+              <div className="bg-white/80 dark:bg-slate-900/80 p-3 rounded-xl border border-amber-200 dark:border-amber-900 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Tên đăng nhập (Email):</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{submitResult.account.email}</span>
+                </div>
+                {submitResult.account.temporaryPassword && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Mật khẩu tạm thời:</span>
+                    <span className="font-mono font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 rounded">
+                      {submitResult.account.temporaryPassword}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Vai trò hệ thống:</span>
+                  <span className="font-bold text-brand-700 dark:text-cyan-400">Doanh nghiệp tìm mua (Buyer)</span>
+                </div>
+              </div>
+              <p className="text-caption text-slate-500 dark:text-slate-400 italic">
+                * Vui lòng lưu lại thông tin trên. Bạn có thể đổi mật khẩu sau lần đăng nhập đầu tiên.
+              </p>
+            </div>
+          )}
+
           <div className="flex flex-wrap justify-center gap-3 pt-3">
-            <Link
-              href="/portal/buyer/demands"
-              className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
-            >
-              Đến Bàn Làm Việc Buyer Workspace <ArrowRight className="w-4 h-4" />
-            </Link>
+            {submitResult.accountProvisioned ? (
+              <Link
+                href="/login"
+                className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4" /> Đăng Nhập Ngay Vào Hệ Thống
+              </Link>
+            ) : (
+              <Link
+                href="/portal/buyer/demands"
+                className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
+              >
+                Đến Bàn Làm Việc Buyer Workspace <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
             <button
               onClick={() => {
                 setSubmitResult(null);
@@ -631,7 +926,15 @@ export default function DeepSurveyPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2.5 shrink-0">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={handleFillSampleData}
+                className="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-300/30 text-amber-200 text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-sm"
+                title="Điền dữ liệu mẫu demo để thử nghiệm nhanh quy trình"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Điền dữ liệu mẫu (Demo)
+              </button>
               <button
                 type="button"
                 onClick={handleSaveDraft}
@@ -643,9 +946,9 @@ export default function DeepSurveyPage() {
                 type="button"
                 onClick={handleClearDraft}
                 className="bg-red-500/20 hover:bg-red-500/30 border border-red-300/30 text-red-200 text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5"
-                title="Xóa bản nháp trên máy này"
+                title="Xóa dữ liệu và làm mới form từ đầu"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> Xóa nháp
+                <RotateCcw className="w-3.5 h-3.5" /> Làm mới / Xóa nháp
               </button>
             </div>
             <span className="text-caption text-white/75">
@@ -748,6 +1051,20 @@ export default function DeepSurveyPage() {
                 </span>
               </div>
 
+              {isPrefilledFromSession && (
+                <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-start gap-3">
+                  <Building2 className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-xs font-bold text-teal-900 dark:text-teal-200 uppercase tracking-wide">
+                      Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký
+                    </h4>
+                    <p className="text-xs text-teal-700 dark:text-teal-300 mt-0.5">
+                      Hệ thống đã tự động nhận diện và điền sẵn các thông tin hồ sơ của doanh nghiệp bạn. Quý DN có thể bổ sung các thông tin khảo sát chuyên sâu mà không cần nhập lại từ đầu.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
@@ -767,14 +1084,39 @@ export default function DeepSurveyPage() {
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                     Mã số thuế (MST) <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={taxCode}
-                    onChange={e => setTaxCode(e.target.value)}
-                    placeholder="Ví dụ: 0108992134"
-                    className="form-control w-full px-3 py-2 text-xs"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      required
+                      value={taxCode}
+                      onChange={e => setTaxCode(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleLookupTaxCode();
+                        }
+                      }}
+                      placeholder="Ví dụ: 0108992134"
+                      className="form-control flex-1 px-3 py-2 text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleLookupTaxCode}
+                      disabled={isLookingUpTax || !taxCode.trim()}
+                      className="px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-cyan-300 dark:hover:bg-brand-900 border border-brand-200 dark:border-brand-800 rounded-xl transition shadow-sm disabled:opacity-50"
+                      title="Tự động tra cứu Tên DN, Tỉnh thành và Địa chỉ theo MST"
+                    >
+                      {isLookingUpTax ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Search className="w-3.5 h-3.5" />
+                      )}
+                      Tra cứu MST
+                    </button>
+                  </div>
+                  <p className="text-caption text-slate-500 dark:text-slate-400 mt-1">
+                    Nhập MST và bấm Tra cứu để tự động nạp Tên DN, Tỉnh thành và Địa chỉ.
+                  </p>
                 </div>
 
                 <div>
@@ -786,6 +1128,7 @@ export default function DeepSurveyPage() {
                     onChange={e => setProvince(e.target.value)}
                     className="form-control w-full px-3 py-2 text-xs"
                   >
+                    <option value="">-- Chọn Tỉnh / Thành phố --</option>
                     {PROVINCES_63.map(p => (
                       <option key={p} value={p}>{p}</option>
                     ))}
@@ -841,6 +1184,7 @@ export default function DeepSurveyPage() {
                     onChange={e => setContactPosition(e.target.value)}
                     className="form-control w-full px-3 py-2 text-xs"
                   >
+                    <option value="">-- Chọn chức vụ đại diện --</option>
                     <option value="Giám đốc điều hành">Giám đốc điều hành / Chủ tịch</option>
                     <option value="Phó Giám đốc Kỹ thuật">Phó Giám đốc Kỹ thuật / Công nghệ</option>
                     <option value="Trưởng phòng R&D">Trưởng phòng R&D / Đổi mới sáng tạo</option>
@@ -886,6 +1230,7 @@ export default function DeepSurveyPage() {
                     onChange={e => setCompanyType(e.target.value)}
                     className="form-control w-full px-3 py-2 text-xs"
                   >
+                    <option value="">-- Chọn loại hình doanh nghiệp --</option>
                     <option value="CO_PHAN">Công ty Cổ phần</option>
                     <option value="TNHH">Công ty TNHH</option>
                     <option value="TU_NHAN">Doanh nghiệp Tư nhân</option>
@@ -903,6 +1248,7 @@ export default function DeepSurveyPage() {
                     onChange={e => setMainIndustry(e.target.value)}
                     className="form-control w-full px-3 py-2 text-xs"
                   >
+                    <option value="">-- Chọn lĩnh vực sản xuất chính --</option>
                     {SECTORS_18_CATALOG.filter(s => s.code !== 'ALL').map(sec => (
                       <option key={sec.code} value={sec.code}>
                         [{sec.code}] {sec.name}
@@ -933,6 +1279,7 @@ export default function DeepSurveyPage() {
                     onChange={e => setEmployeeScale(e.target.value)}
                     className="form-control w-full px-3 py-2 text-xs"
                   >
+                    <option value="">-- Chọn quy mô lao động --</option>
                     <option value="UNDER_10">Dưới 10 người (Siêu nhỏ)</option>
                     <option value="10-49">10 – 49 người (Nhỏ)</option>
                     <option value="50-199">50 – 199 người (Vừa)</option>
@@ -949,6 +1296,7 @@ export default function DeepSurveyPage() {
                     onChange={e => setRevenueRange3y(e.target.value)}
                     className="form-control w-full px-3 py-2 text-xs"
                   >
+                    <option value="">-- Chọn khoảng doanh thu --</option>
                     <option value="Dưới 10 tỷ VNĐ">Dưới 10 tỷ VNĐ</option>
                     <option value="10-50 tỷ VNĐ">10 – 50 tỷ VNĐ</option>
                     <option value="50-100 tỷ VNĐ">50 – 100 tỷ VNĐ</option>
@@ -1066,6 +1414,7 @@ export default function DeepSurveyPage() {
                             onChange={e => handleUpdateEquipment(eq.id, 'techOrigin', e.target.value)}
                             className="form-control w-full px-3 py-1.5 text-xs"
                           >
+                            <option value="">-- Chọn xuất xứ --</option>
                             <option value="Việt Nam">Việt Nam</option>
                             <option value="Nhật Bản / G7">Nhật Bản / G7 / EU</option>
                             <option value="Hàn Quốc / Đài Loan">Hàn Quốc / Đài Loan</option>
@@ -1083,6 +1432,7 @@ export default function DeepSurveyPage() {
                             onChange={e => handleUpdateEquipment(eq.id, 'depreciationStatus', e.target.value)}
                             className="form-control w-full px-3 py-1.5 text-xs"
                           >
+                            <option value="">-- Chọn tình trạng khấu hao --</option>
                             <option value="Mới >80%">Mới &gt;80% (Vận hành tối ưu)</option>
                             <option value="Đang hoạt động tốt (50–80%)">Đang hoạt động tốt (50–80%)</option>
                             <option value="Hao mòn nhiều (<50%)">Hao mòn nhiều (&lt;50%)</option>
@@ -1201,7 +1551,7 @@ export default function DeepSurveyPage() {
                                   type="button"
                                   onClick={() => setBottleneckSeverity({ ...bottleneckSeverity, [item]: lvl })}
                                   className={`w-5 h-5 rounded-md text-xs font-black transition ${
-                                    (bottleneckSeverity[item] || 4) === lvl
+                                    bottleneckSeverity[item] === lvl
                                       ? 'bg-amber-600 text-white'
                                       : 'bg-white dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-700'
                                   }`}
@@ -1274,8 +1624,12 @@ export default function DeepSurveyPage() {
                     <input
                       type="number"
                       min={0}
-                      value={techPersonnel.technicians}
-                      onChange={e => setTechPersonnel({ ...techPersonnel, technicians: Number(e.target.value) })}
+                      value={techPersonnel.technicians === 0 ? '' : techPersonnel.technicians}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        technicians: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
                       className="form-control w-full px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -1287,8 +1641,12 @@ export default function DeepSurveyPage() {
                     <input
                       type="number"
                       min={0}
-                      value={techPersonnel.engineers}
-                      onChange={e => setTechPersonnel({ ...techPersonnel, engineers: Number(e.target.value) })}
+                      value={techPersonnel.engineers === 0 ? '' : techPersonnel.engineers}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        engineers: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
                       className="form-control w-full px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -1300,8 +1658,12 @@ export default function DeepSurveyPage() {
                     <input
                       type="number"
                       min={0}
-                      value={techPersonnel.it}
-                      onChange={e => setTechPersonnel({ ...techPersonnel, it: Number(e.target.value) })}
+                      value={techPersonnel.it === 0 ? '' : techPersonnel.it}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        it: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
                       className="form-control w-full px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -1313,8 +1675,12 @@ export default function DeepSurveyPage() {
                     <input
                       type="number"
                       min={0}
-                      value={techPersonnel.automation}
-                      onChange={e => setTechPersonnel({ ...techPersonnel, automation: Number(e.target.value) })}
+                      value={techPersonnel.automation === 0 ? '' : techPersonnel.automation}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        automation: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
                       className="form-control w-full px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -1326,8 +1692,12 @@ export default function DeepSurveyPage() {
                     <input
                       type="number"
                       min={0}
-                      value={techPersonnel.rd}
-                      onChange={e => setTechPersonnel({ ...techPersonnel, rd: Number(e.target.value) })}
+                      value={techPersonnel.rd === 0 ? '' : techPersonnel.rd}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        rd: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
                       className="form-control w-full px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -1339,8 +1709,12 @@ export default function DeepSurveyPage() {
                     <input
                       type="number"
                       min={0}
-                      value={techPersonnel.quality}
-                      onChange={e => setTechPersonnel({ ...techPersonnel, quality: Number(e.target.value) })}
+                      value={techPersonnel.quality === 0 ? '' : techPersonnel.quality}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        quality: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
                       className="form-control w-full px-3 py-1.5 text-xs font-bold"
                     />
                   </div>
@@ -1353,20 +1727,73 @@ export default function DeepSurveyPage() {
                   <input
                     type="text"
                     value={techPersonnel.notes}
+                    placeholder="Ví dụ: Kỹ sư cơ điện kiêm nhiệm bảo trì hệ thống PLC..."
                     onChange={e => setTechPersonnel({ ...techPersonnel, notes: e.target.value })}
                     className="form-control w-full px-3 py-1.5 text-xs"
                   />
                 </div>
               </div>
 
-              {/* D.2: 9 TIÊU CHÍ NĂNG LỰC HẤP THỤ */}
+              {/* D.2: CƠ CHẾ QUẢN LÝ CÔNG NGHỆ HIỆN CÓ */}
               <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN D.2 • NĂNG LỰC HẤP THỤ CÔNG NGHỆ (TAR)
+                    PHẦN D.2 • CƠ CHẾ QUẢN LÝ CÔNG NGHỆ
                   </span>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                    Đánh Giá Khả Năng Tiếp Nhận & Làm Chủ Công Nghệ Mới (1–5)
+                    Cơ Chế Quản Lý & Đổi Mới Công Nghệ Hiện Có Tại Doanh Nghiệp
+                  </h2>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Đánh giá các hoạt động quản trị, quy trình và hợp tác công nghệ tại đơn vị.
+                  </p>
+                </div>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {MANAGEMENT_7_LIST.map((item, idx) => {
+                    const status = managementStatus[idx];
+                    return (
+                      <div key={idx} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 sm:max-w-md">
+                          {idx + 1}. {item}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setManagementStatus({ ...managementStatus, [idx]: true })}
+                            className={`px-3 py-1 rounded-xl font-bold transition border ${
+                              status === true
+                                ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-500'
+                            }`}
+                          >
+                            Có
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setManagementStatus({ ...managementStatus, [idx]: false })}
+                            className={`px-3 py-1 rounded-xl font-bold transition border ${
+                              status === false
+                                ? 'bg-slate-700 text-white border-slate-800 shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-500'
+                            }`}
+                          >
+                            Không
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* D.3: 9 TIÊU CHÍ NĂNG LỰC HẤP THỤ */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                    PHẦN D.3 • NĂNG LỰC HẤP THỤ CÔNG NGHỆ (TAR)
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Đánh Giá Khả Năng Tiếp Nhận & Làm Chủ Công Nghệ Mới (Thang 1–5)
                   </h2>
                 </div>
 
@@ -1383,7 +1810,7 @@ export default function DeepSurveyPage() {
                             className={`w-7 h-7 rounded-xl flex items-center justify-center cursor-pointer font-bold border transition text-xs ${
                               tarReadiness[idx] === score
                                 ? 'bg-brand-700 text-white border-brand-800 shadow-sm'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-500'
                             }`}
                           >
                             <input
@@ -1534,6 +1961,7 @@ export default function DeepSurveyPage() {
                               onChange={e => handleUpdateDemandItem(item.id, 'sectorCode', e.target.value)}
                               className="form-control w-full px-3 py-1.5 text-xs"
                             >
+                              <option value="">-- Chọn lĩnh vực ứng dụng --</option>
                               {SECTORS_18_CATALOG.filter(s => s.code !== 'ALL').map(sec => (
                                 <option key={sec.code} value={sec.code}>
                                   [{sec.code}] {sec.name}
@@ -1637,6 +2065,7 @@ export default function DeepSurveyPage() {
                               onChange={e => handleUpdateDemandItem(item.id, 'budgetRange', e.target.value)}
                               className="form-control w-full px-3 py-1.5 text-xs"
                             >
+                              <option value="">-- Chọn dự toán ngân sách --</option>
                               {BUDGET_RANGES_7.map(b => (
                                 <option key={b} value={b}>{b}</option>
                               ))}
@@ -1680,6 +2109,7 @@ export default function DeepSurveyPage() {
                                 onChange={e => handleUpdateDemandItem(item.id, 'urgency', Number(e.target.value))}
                                 className="form-control w-full px-2 py-1 text-xs font-bold"
                               >
+                                <option value={0}>-- Chọn mức --</option>
                                 <option value={1}>1: Sau &gt;= 36 tháng</option>
                                 <option value={2}>2: Trong 24-36 tháng</option>
                                 <option value={3}>3: Trong 12-24 tháng</option>
@@ -1697,6 +2127,7 @@ export default function DeepSurveyPage() {
                                 onChange={e => handleUpdateDemandItem(item.id, 'impact', Number(e.target.value))}
                                 className="form-control w-full px-2 py-1 text-xs font-bold"
                               >
+                                <option value={0}>-- Chọn mức --</option>
                                 <option value={1}>1: Cải thiện nhỏ</option>
                                 <option value={2}>2: Cải thiện rõ rệt</option>
                                 <option value={3}>3: Tác động đáng kể</option>
@@ -1714,6 +2145,7 @@ export default function DeepSurveyPage() {
                                 onChange={e => handleUpdateDemandItem(item.id, 'investment', Number(e.target.value))}
                                 className="form-control w-full px-2 py-1 text-xs font-bold"
                               >
+                                <option value={0}>-- Chọn mức --</option>
                                 <option value={1}>1: Cần hỗ trợ 100%</option>
                                 <option value={2}>2: Tự bố trí &lt; 30%</option>
                                 <option value={3}>3: Tự bố trí 30-50%</option>
@@ -1731,6 +2163,7 @@ export default function DeepSurveyPage() {
                                 onChange={e => handleUpdateDemandItem(item.id, 'readiness', Number(e.target.value))}
                                 className="form-control w-full px-2 py-1 text-xs font-bold"
                               >
+                                <option value={0}>-- Chọn mức --</option>
                                 <option value={1}>1: Chưa có kế hoạch</option>
                                 <option value={2}>2: Tìm hiểu sơ bộ</option>
                                 <option value={3}>3: Đang chuẩn bị nhân lực</option>
@@ -1857,7 +2290,7 @@ export default function DeepSurveyPage() {
                                 type="button"
                                 onClick={() => setSupportRatings({ ...supportRatings, [sup.id]: score })}
                                 className={`w-6 h-6 rounded-md text-xs font-bold transition ${
-                                  (supportRatings[sup.id] || 4) === score
+                                  supportRatings[sup.id] === score
                                     ? 'bg-brand-700 text-white'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-700'
                                 }`}
@@ -1989,6 +2422,7 @@ export default function DeepSurveyPage() {
                       required
                       value={confirmPosition}
                       onChange={e => setConfirmPosition(e.target.value)}
+                      placeholder="Chức vụ người ký"
                       className="form-control w-full px-3 py-2 text-xs"
                     />
                   </div>

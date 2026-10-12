@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { AppButton } from "@/components/ui/design-system";
 import { Async, UXState } from "@/components/ui/async";
+import { authClient } from "@/lib/auth-client";
 import {
   Tt17Assessment,
   getAssessmentHistory,
@@ -26,14 +27,17 @@ import {
 export default function AssessmentDashboardPage() {
   const [uxState, setUxState] = useState<UXState>("loading");
   const [history, setHistory] = useState<Tt17Assessment[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
         setUxState("loading");
+        const user = authClient.getUser();
+        setCurrentUser(user);
         const list = await getAssessmentHistory();
         setHistory(list);
-        setUxState(list.length === 0 ? "empty" : "success");
+        setUxState("success");
       } catch {
         setUxState("error");
       }
@@ -41,7 +45,9 @@ export default function AssessmentDashboardPage() {
     loadData();
   }, []);
 
-  const latest = history[0];
+  const isPublicUser = !currentUser || ["PUBLIC_USER", "USER", "GUEST"].includes(currentUser.role?.toUpperCase() ?? "");
+  const displayLatest = isPublicUser ? null : history[0];
+  const latest = displayLatest;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -64,25 +70,121 @@ export default function AssessmentDashboardPage() {
           <Link href="/assessments/tt17/wizard">
             <AppButton variant="primary">
               <Sparkles className="w-4 h-4 mr-2" />
-              Bắt Đầu Kê Khai Mới
+              {displayLatest ? "Kê Khai Kỳ Mới" : "Bắt Đầu Kê Khai Khảo Sát"}
             </AppButton>
           </Link>
         </div>
       </div>
 
-      <Async
-        state={uxState}
-        onRetry={() => getAssessmentHistory().then(setHistory)}
-        emptyContent={
-          <div className="p-8 text-center text-slate-500">
-            Doanh nghiệp chưa có kỳ đánh giá nào. Bấm 'Bắt Đầu Kê Khai Mới' để khởi tạo.
+      {!displayLatest ? (
+        /* HERO BANNER CHO KHÁCH KHẢO SÁT VÀ PUBLIC USER (MÀU SÁNG & HOA VĂN CHÌM BÊN DƯỚI) */
+        <div className="space-y-8">
+          <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-8 sm:p-12 shadow-sm space-y-6">
+            {/* HOA VĂN BÊN DƯỚI: HỌA TIẾT NACENTECH INNOVATION & TECH GRID */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-[url('/innovation-hero-background.png')] bg-cover bg-bottom bg-no-repeat opacity-[0.10] dark:opacity-20 mix-blend-multiply"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(#3c5999_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-[0.04]"
+            />
+
+            <div className="relative z-10 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold text-xs border border-emerald-200/90 dark:border-emerald-800">
+                <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Khảo Sát Thực Địa Doanh Nghiệp Sản Xuất · TT 17/2019/TT-BKHCN</span>
+              </div>
+
+              <div className="max-w-3xl space-y-3">
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                  Phiếu Khảo Sát & Tự Chẩn Đoán Trình Độ Công Nghệ Sản Xuất
+                </h2>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Hệ thống hỗ trợ các doanh nghiệp ngành chế biến, chế tạo (VSIC C.10 – C.32) tự đánh giá toàn diện qua 26 tiêu chí, tính toán tức thời hệ số đồng bộ $T_ĐB$ và bóc tách các khâu điểm nghẽn dây chuyền.
+                </p>
+                <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60">
+                  <p className="text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 font-medium flex items-start gap-2">
+                    <span className="text-base shrink-0">💡</span>
+                    <span>
+                      <strong className="font-bold">Cơ chế Khảo sát Mở:</strong> Quý Doanh nghiệp có thể điền form trực tiếp mà không cần đăng ký tài khoản trước. Hệ thống sẽ tự động khởi tạo hồ sơ doanh nghiệp và lưu trữ bảo mật khi nộp bài.
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm transition hover:shadow-md hover:border-emerald-200">
+                  <div className="text-emerald-700 dark:text-emerald-400 font-bold text-sm mb-1.5 flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <span>100 Điểm Khách Quan</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Đánh giá 26 tiêu chí theo thang điểm chuẩn Thông tư 17, xếp hạng 4 mức trình độ công nghệ.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm transition hover:shadow-md hover:border-brand-200">
+                  <div className="text-brand-700 dark:text-brand-300 font-bold text-sm mb-1.5 flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-brand-100 dark:bg-brand-900/50 flex items-center justify-center text-brand-700 dark:text-brand-300">
+                      <Layers className="w-4 h-4" />
+                    </div>
+                    <span>Biểu Đồ Mạng Nhện Realtime</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Vẽ biểu đồ Radar 5 trục (T-E-O-R-I) theo thời gian thực và xác định điểm nghẽn dây chuyền.
+                  </p>
+                </div>
+
+                <div className="bg-slate-50/90 dark:bg-slate-800/80 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm transition hover:shadow-md hover:border-teal-200">
+                  <div className="text-teal-700 dark:text-teal-300 font-bold text-sm mb-1.5 flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-700 dark:text-teal-300">
+                      <FileCheck2 className="w-4 h-4" />
+                    </div>
+                    <span>Tự Động Cấp Tài Khoản</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Nhập Mã số thuế và Email liên hệ, hệ thống tự động khởi tạo tài khoản quản trị khi nộp bài.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 flex flex-wrap items-center gap-4">
+                <Link href="/assessments/tt17/wizard">
+                  <AppButton variant="primary" className="px-6 py-3 text-base font-bold shadow-md hover:shadow-lg transition">
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Bắt Đầu Kê Khai Khảo Sát Ngay (Mở Form)
+                  </AppButton>
+                </Link>
+                <a
+                  href="https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-brand-300 transition underline underline-offset-4"
+                >
+                  Tra cứu văn bản Thông tư 17/2019/TT-BKHCN &rarr;
+                </a>
+              </div>
+            </div>
           </div>
-        }
-      >
-        {latest && (
-          <div className="space-y-8">
-            {/* Top Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        </div>
+      ) : (
+        <Async
+          state={uxState}
+          onRetry={() => getAssessmentHistory().then(setHistory)}
+          emptyContent={
+            <div className="p-8 text-center text-slate-500">
+              Doanh nghiệp chưa có kỳ đánh giá nào. Bấm 'Bắt Đầu Kê Khai Mới' để khởi tạo.
+            </div>
+          }
+        >
+          {latest && (
+            <div className="space-y-8">
+              {/* Top Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+
               {/* Điểm tổng */}
               <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase">
@@ -353,6 +455,9 @@ export default function AssessmentDashboardPage() {
           </div>
         )}
       </Async>
-    </div>
-  );
+    )}
+  </div>
+);
 }
+
+

@@ -19,7 +19,10 @@ export interface FinancialSeriesItem {
 }
 
 export interface Tt17SurveyData {
-  // Mục A: Thông tin chung
+  // Mục A: Thông tin chung & Định danh
+  companyName?: string;
+  taxCode?: string;
+  contactPerson?: string;
   totalCapital: number;
   totalWorkforce: number;
   companyAddress: string;
@@ -110,12 +113,15 @@ export interface Tt17Assessment {
 }
 
 export const INITIAL_SURVEY_DATA: Tt17SurveyData = {
+  companyName: "",
+  taxCode: "",
+  contactPerson: "",
   totalCapital: 0,
   totalWorkforce: 0,
   companyAddress: "",
   companyPhone: "",
   companyEmail: "",
-  companyType: "",
+  companyType: "Công ty Cổ phần",
 
   machineries: [],
   depreciationCoefficient: 0,
@@ -191,12 +197,19 @@ export async function getAssessmentById(id: string): Promise<Tt17Assessment | nu
   return null;
 }
 
-export async function saveAssessmentDraft(payload: {
+export interface SaveAssessmentDraftPayload {
   assessmentYear: number;
   industryCode: string;
   scopeId: string;
   surveyData: Tt17SurveyData;
-}): Promise<Tt17Assessment> {
+  enterpriseName?: string;
+  taxCode?: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+export async function saveAssessmentDraft(payload: SaveAssessmentDraftPayload): Promise<Tt17Assessment> {
   const res = await fetch("/api/v1/assessments/tt17/draft", {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
@@ -210,12 +223,37 @@ export async function saveAssessmentDraft(payload: {
   return json.data;
 }
 
-export async function submitAssessment(payload: {
+export interface SubmitAssessmentPayload {
   assessmentYear: number;
   industryCode: string;
   scopeId: string;
   surveyData: Tt17SurveyData;
-}): Promise<Tt17Assessment> {
+  enterpriseName?: string;
+  taxCode?: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+export interface SubmitAssessmentResponse extends Tt17Assessment {
+  autoProvisioned?: boolean;
+  message?: string;
+  account?: {
+    email: string;
+    taxCode?: string;
+    enterpriseName?: string;
+    role?: string;
+    temporaryPassword?: string;
+    message?: string;
+  };
+  credentials?: {
+    email: string;
+    temporaryPassword?: string;
+    enterpriseCode?: string;
+  };
+}
+
+export async function submitAssessment(payload: SubmitAssessmentPayload): Promise<SubmitAssessmentResponse> {
   const res = await fetch("/api/v1/assessments/tt17/submit", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
@@ -226,8 +264,21 @@ export async function submitAssessment(payload: {
     throw new Error(err.message || "Không thể nộp hồ sơ đánh giá.");
   }
   const json = await res.json();
-  return json.data;
+  const creds = json.credentials || (json.account ? {
+    email: json.account.email,
+    temporaryPassword: json.account.temporaryPassword || "NacenTech@2026",
+    enterpriseCode: json.account.taxCode,
+  } : undefined);
+
+  return {
+    ...json.data,
+    autoProvisioned: json.autoProvisioned,
+    message: json.message,
+    account: json.account,
+    credentials: creds,
+  };
 }
+
 
 export async function getGovAssessmentQueue(scopeId?: string, status?: string): Promise<Tt17Assessment[]> {
   try {
@@ -259,7 +310,28 @@ export async function reviewAssessment(id: string, action: "APPROVE" | "REJECT" 
   return json.data;
 }
 
-// Client-side instant calculator simulation
+// Thuật toán tính tốc độ tăng năng suất lao động bình quân từ chuỗi tài chính 3 năm (Chuẩn Backend Tt17ScoringEngine)
+export function calculateLaborProductivityGrowth(series?: FinancialSeriesItem[]): number {
+  if (!series || series.length < 2) return 5.0; // Mặc định 5% nếu chưa đủ chuỗi 2 kỳ
+  const ordered = [...series].sort((a, b) => a.year - b.year);
+  const y1 = ordered[0];
+  const yLast = ordered[ordered.length - 1];
+
+  const val1 = y1.industrialOutputValue || y1.netRevenue || 0;
+  const workers1 = y1.directWorkersCount || (y1 as any).workforce || 0;
+  const prod1 = workers1 > 0 ? val1 / workers1 : 0;
+
+  const valLast = yLast.industrialOutputValue || yLast.netRevenue || 0;
+  const workersLast = yLast.directWorkersCount || (yLast as any).workforce || 0;
+  const prodLast = workersLast > 0 ? valLast / workersLast : 0;
+
+  if (prod1 <= 0) return 5.0;
+  const totalGrowth = ((prodLast - prod1) / prod1) * 100.0;
+  const years = Math.max(1, yLast.year - y1.year);
+  return Math.round((totalGrowth / years) * 100) / 100;
+}
+
+// Client-side instant calculator simulation (Zero-Mock 26 Tiêu Chí Chuẩn Thông Tư 17)
 export function calculateLocalScore(survey: Tt17SurveyData): Tt17ScoreResult {
   const criteria: CriterionScore[] = [];
 
@@ -281,7 +353,8 @@ export function calculateLocalScore(survey: Tt17SurveyData): Tt17ScoreResult {
   const scoreT = Math.min(30, s01 + s02 + s03 + s04 + s05 + s06 + s07);
 
   // E
-  const s08 = 4.0;
+  const laborGrowth = calculateLaborProductivityGrowth(survey.financialSeries);
+  const s08 = laborGrowth >= 15 ? 5 : laborGrowth >= 10 ? 4 : laborGrowth >= 5 ? 3 : laborGrowth >= 0 ? 2 : 1;
   criteria.push({ code: "TC08", group: "E", name: "Tốc độ tăng năng suất lao động", maxScore: 5, achievedScore: s08, isBottleneck: s08 < 2, recommendation: "Cải tiến năng suất lao động." });
   const s09 = survey.defectProductRatio <= 1 ? 4 : survey.defectProductRatio <= 3 ? 3 : 2;
   criteria.push({ code: "TC09", group: "E", name: "Tỷ lệ sản phẩm lỗi trong sản xuất", maxScore: 4, achievedScore: s09, isBottleneck: s09 < 1.6, recommendation: "Áp dụng kiểm soát chất lượng." });

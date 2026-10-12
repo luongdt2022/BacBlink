@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppButton } from "@/components/ui/design-system";
@@ -12,6 +12,9 @@ import {
   submitAssessment,
   MachineryItem,
 } from "@/services/api/assessment-tt17";
+import { lookupTaxCode, fetchMyEnterpriseProfile } from "@/lib/enterprise-client";
+import { getStoredSession } from "@/lib/auth-client";
+import { PROVINCES_63 } from "@/app/khao-sat-nhu-cau/types";
 import {
   Award,
   Layers,
@@ -30,6 +33,12 @@ import {
   Briefcase,
   FlaskConical,
   Lightbulb,
+  Search,
+  Loader2,
+  KeyRound,
+  LogIn,
+  ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
 
 const STEPS = [
@@ -49,11 +58,85 @@ export default function AssessmentWizardPage() {
   const [scopeId, setScopeId] = useState("HP");
   const [survey, setSurvey] = useState<Tt17SurveyData>(INITIAL_SURVEY_DATA);
   const [saving, setSaving] = useState(false);
+  const [isLookingUpTax, setIsLookingUpTax] = useState(false);
+  const [isPrefilledFromSession, setIsPrefilledFromSession] = useState(false);
+  const [submitResult, setSubmitResult] = useState<{
+    id: string;
+    surveyCode: string;
+    companyName: string;
+    autoProvisioned?: boolean;
+    credentials?: {
+      email: string;
+      temporaryPassword?: string;
+      enterpriseCode?: string;
+    } | null;
+  } | null>(null);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setToastMsg({ text, type });
     setTimeout(() => setToastMsg(null), 4000);
+  };
+
+  // Smart Pre-fill: Tự động lấy hồ sơ Doanh nghiệp từ CSDL nếu đã có phiên đăng nhập
+  useEffect(() => {
+    const session = getStoredSession();
+    if (session?.accessToken) {
+      fetchMyEnterpriseProfile()
+        .then((profile) => {
+          if (profile && (profile.name || profile.taxCode)) {
+            setIsPrefilledFromSession(true);
+            setSurvey((prev) => ({
+              ...prev,
+              companyName: prev.companyName || profile.name || "",
+              taxCode: prev.taxCode || profile.taxCode || "",
+              contactPerson: prev.contactPerson || profile.contactPerson || "",
+              companyEmail: prev.companyEmail || profile.contactEmail || "",
+              companyPhone: prev.companyPhone || profile.contactPhone || "",
+              companyAddress: prev.companyAddress || profile.addressDetail || "",
+              totalWorkforce: prev.totalWorkforce || (profile.workforceScale ? parseInt(profile.workforceScale) || 0 : 0),
+            }));
+            if (profile.provinceCity) {
+              setScopeId(profile.provinceCity);
+            }
+            if (profile.sectorCode) {
+              setIndustryCode(profile.sectorCode);
+            }
+            showToast(`Đã tự động nạp hồ sơ Doanh nghiệp "${profile.name || 'Đã đăng ký'}".`);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
+  // Hybrid Tax Lookup: Tra cứu tức thời Tên DN, Tỉnh thành và Địa chỉ qua API Cổng Quốc gia / VietQR
+  const handleLookupTaxCode = async () => {
+    const rawTax = (survey.taxCode || "").trim();
+    if (!rawTax) {
+      showToast("Vui lòng nhập Mã số thuế trước khi tra cứu.", "error");
+      return;
+    }
+    setIsLookingUpTax(true);
+    try {
+      const res = await lookupTaxCode(rawTax);
+      if (res && res.found && res.name) {
+        setSurvey((prev) => ({
+          ...prev,
+          companyName: res.name || prev.companyName,
+          companyAddress: res.address || prev.companyAddress,
+        }));
+        if (res.province) {
+          setScopeId(res.province);
+        }
+        showToast(`Đã tìm thấy thông tin: ${res.name}. Đã tự động điền vào phiếu!`);
+      } else {
+        showToast(res?.message || `Không tìm thấy thông tin cho MST ${rawTax}. Quý DN vui lòng điền thủ công.`, "error");
+      }
+    } catch (err: any) {
+      showToast(err.message || "Lỗi khi tra cứu mã số thuế từ máy chủ.", "error");
+    } finally {
+      setIsLookingUpTax(false);
+    }
   };
 
   // Realtime instant calculation
@@ -107,69 +190,233 @@ export default function AssessmentWizardPage() {
   };
 
   const handleSubmit = async () => {
+    // Validate tối thiểu các trường định danh bắt buộc
+    if (!survey.companyName?.trim()) {
+      showToast("Vui lòng nhập Tên Doanh nghiệp trước khi nộp hồ sơ.", "error");
+      setCurrentStep(1);
+      return;
+    }
+    if (!survey.taxCode?.trim()) {
+      showToast("Vui lòng nhập Mã số thuế trước khi nộp hồ sơ.", "error");
+      setCurrentStep(1);
+      return;
+    }
+    if (!survey.companyEmail?.trim()) {
+      showToast("Vui lòng nhập Email liên hệ để nhận thông tin tài khoản và kết quả.", "error");
+      setCurrentStep(1);
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await submitAssessment({
         assessmentYear,
         industryCode,
         scopeId,
+        enterpriseName: survey.companyName,
+        taxCode: survey.taxCode,
+        contactPerson: survey.contactPerson,
+        contactEmail: survey.companyEmail,
+        contactPhone: survey.companyPhone,
         surveyData: survey,
       });
-      showToast("Đã nộp hồ sơ đánh giá chính thức thành công!");
-      setTimeout(() => {
-        router.push(`/assessments/tt17/${res.id}/report`);
-      }, 1500);
-    } catch {
-      showToast("Lỗi khi nộp hồ sơ.", "error");
+
+      const creds = res.credentials || (res.account ? {
+        email: res.account.email,
+        temporaryPassword: res.account.temporaryPassword || "NacenTech@2026",
+        enterpriseCode: res.account.taxCode,
+      } : undefined);
+
+      setSubmitResult({
+        id: res.id,
+        surveyCode: res.id ? `TT17-${res.id.slice(0, 8).toUpperCase()}` : "TT17-SUBMITTED",
+        companyName: survey.companyName || "Doanh nghiệp",
+        autoProvisioned: !!res.autoProvisioned,
+        credentials: creds,
+      });
+
+      showToast(res.message || "Đã nộp hồ sơ đánh giá và khởi tạo tài khoản thành công!");
+      window.scrollTo({ top: 100, behavior: "smooth" });
+    } catch (err: any) {
+      showToast(err.message || "Lỗi khi nộp hồ sơ đánh giá.", "error");
     } finally {
       setSaving(false);
     }
   };
 
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-lg shadow-xl text-sm font-semibold flex items-center gap-2 animate-bounce transition ${
-            toastMsg.type === "success" ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
-          }`}
-        >
-          {toastMsg.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
-          <span>{toastMsg.text}</span>
-        </div>
-      )}
+  if (submitResult) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-16 px-4">
+        <div className="surface-card max-w-3xl mx-auto p-8 sm:p-10 text-center space-y-6 shadow-xl rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-sm">
+            <CheckCircle2 className="w-12 h-12" />
+          </div>
 
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200 dark:border-slate-800">
-        <div>
-          <Link
-            href="/assessments/tt17"
-            className="text-xs font-semibold text-brand-700 hover:underline flex items-center gap-1 mb-2"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            Quay lại Dashboard Lịch Sử
-          </Link>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Kê Khai Đánh Giá Trình Độ Công Nghệ (Phụ Lục I - TT17)
-          </h1>
-        </div>
+          <div>
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-3.5 py-1.5 rounded-full border border-emerald-400/30">
+              HỒ SƠ ĐÁNH GIÁ TRÌNH ĐỘ CÔNG NGHỆ ĐÃ TIẾP NHẬN (TT 17/2019/TT-BKHCN)
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-3">
+              Nộp Phiếu Đánh Giá Công Nghệ Thành Công!
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-2 max-w-lg mx-auto leading-relaxed">
+              Hệ thống NacenTwin đã tiếp nhận đầy đủ dữ liệu kê khai đánh giá trình độ và năng lực công nghệ sản xuất cho <strong>{submitResult.companyName}</strong> theo Thông tư 17/2019/TT-BKHCN.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleSaveDraft}
-            disabled={saving}
-            className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2"
-          >
-            <Save className="w-4 h-4" />
-            Lưu Nháp (Auto-Save)
-          </button>
-          <AppButton variant="primary" onClick={handleSubmit} disabled={saving}>
-            <Send className="w-4 h-4 mr-2" />
-            Nộp Hồ Sơ Đánh Giá
-          </AppButton>
+          <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-left max-w-lg mx-auto space-y-3.5 shadow-inner">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">Mã hồ sơ đánh giá:</span>
+              <span className="font-mono font-black text-brand-700 dark:text-cyan-400 text-sm">
+                {submitResult.surveyCode}
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-slate-500 dark:text-slate-400 font-semibold">Tổng điểm dự báo:</span>
+              <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                {scoreResult.totalScore}/100 điểm ({scoreResult.classificationLabel})
+              </span>
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>Dữ liệu đã được lưu trữ an toàn trong CSDL PostgreSQL và sẵn sàng đồng bộ sang Hội đồng Thẩm định Sở KH&CN.</span>
+            </div>
+          </div>
+
+          {submitResult.autoProvisioned && submitResult.credentials && (
+            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl p-5 text-left max-w-lg mx-auto space-y-2.5 shadow-sm">
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs">
+                <KeyRound className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>TÀI KHOẢN DOANH NGHIỆP ĐÃ ĐƯỢC CẤP TỰ ĐỘNG</span>
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                Hệ thống đã tự động khởi tạo tài khoản Doanh nghiệp để bạn có thể theo dõi tiến độ thẩm định, tải báo cáo Phụ lục IV và nhận hỗ trợ đổi mới công nghệ:
+              </p>
+              <div className="bg-white/80 dark:bg-slate-900/80 p-3.5 rounded-xl border border-amber-200 dark:border-amber-900 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Tên đăng nhập (Email):</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{submitResult.credentials.email}</span>
+                </div>
+                {submitResult.credentials.temporaryPassword && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 font-medium">Mật khẩu tạm thời:</span>
+                    <span className="font-mono font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 rounded">
+                      {submitResult.credentials.temporaryPassword}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-medium">Vai trò hệ thống:</span>
+                  <span className="font-bold text-brand-700 dark:text-cyan-400">Doanh nghiệp Sản xuất (Enterprise)</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 italic">
+                * Vui lòng lưu lại thông tin trên. Quý DN có thể đổi mật khẩu sau lần đăng nhập đầu tiên.
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-center gap-3 pt-3">
+            <Link
+              href={`/assessments/tt17/${submitResult.id}/report`}
+              className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
+            >
+              Xem Báo Cáo Phụ Lục IV <ArrowRight className="w-4 h-4" />
+            </Link>
+            {submitResult.autoProvisioned ? (
+              <Link
+                href="/login"
+                className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
+              >
+                <LogIn className="w-4 h-4" /> Đăng Nhập Ngay Vào Hệ Thống
+              </Link>
+            ) : (
+              <Link
+                href="/assessments/tt17"
+                className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-6 py-2.5 rounded-xl font-bold text-xs border border-slate-300 dark:border-slate-700 transition flex items-center gap-2"
+              >
+                Quay Lại Dashboard Lịch Sử
+              </Link>
+            )}
+          </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="relative min-h-screen bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16">
+      {/* HOA VĂN BÊN DƯỚI: HỌA TIẾT NACENTECH INNOVATION & TECH GRID */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 bg-[url('/innovation-hero-background.png')] bg-cover bg-bottom bg-no-repeat opacity-[0.08] dark:opacity-15 mix-blend-multiply"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 bg-[radial-gradient(#3c5999_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-[0.04]"
+      />
+
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+        {/* Toast Notification */}
+        {toastMsg && (
+          <div
+            className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-lg shadow-xl text-sm font-semibold flex items-center gap-2 animate-bounce transition ${
+              toastMsg.type === "success" ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+            }`}
+          >
+            {toastMsg.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+            <span>{toastMsg.text}</span>
+          </div>
+        )}
+
+        {/* Top Header Card với màu sáng và hoa văn đồng bộ */}
+        <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm mb-6">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[url('/innovation-hero-background.png')] bg-cover bg-bottom bg-no-repeat opacity-[0.10] dark:opacity-20 mix-blend-multiply"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(#3c5999_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-[0.04]"
+          />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <Link
+                href="/assessments/tt17"
+                className="text-xs font-semibold text-brand-700 hover:underline flex items-center gap-1 mb-2"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                Quay lại Dashboard Lịch Sử
+              </Link>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold text-xs border border-emerald-200/90 dark:border-emerald-800 mb-2">
+                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Khảo Sát Thực Địa & Tự Đánh Giá Doanh Nghiệp (TT 17/2019/TT-BKHCN)</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Kê Khai Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                Điền đầy đủ thông tin theo 26 tiêu chí Phụ lục I. Hệ thống tự động tính điểm real-time, đồng bộ hồ sơ từ CSDL và tự động cấp tài khoản khi hoàn tất.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={handleSaveDraft}
+                disabled={saving}
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 shadow-sm transition"
+              >
+                <Save className="w-4 h-4" />
+                Lưu Nháp (Auto-Save)
+              </button>
+              <AppButton variant="primary" onClick={handleSubmit} disabled={saving} className="px-5 py-2.5 text-xs font-bold shadow-md">
+                <Send className="w-4 h-4 mr-2" />
+                Hoàn Tất & Nộp Hồ Sơ
+              </AppButton>
+            </div>
+          </div>
+        </div>
 
       {/* Step Navigator Bar */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-8">
@@ -207,8 +454,169 @@ export default function AssessmentWizardPage() {
             <div className="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
               <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-brand-700" />
-                <span>Mục A · Thông Tin Chung Của Doanh Nghiệp</span>
+                <span>Mục A · Thông Tin Định Danh & Chung Của Doanh Nghiệp</span>
               </h2>
+
+              {/* Khối định danh doanh nghiệp phục vụ khảo sát & cấp tài khoản */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-700 dark:text-brand-300 uppercase tracking-wider">
+                    1. Thông tin Định Danh Doanh Nghiệp (Hệ thống tự động cấp tài khoản khi nộp bài)
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">Bắt buộc</span>
+                </div>
+
+                {isPrefilledFromSession && (
+                  <div className="p-3.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-start gap-3">
+                    <Building2 className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-bold text-teal-900 dark:text-teal-200 uppercase tracking-wide">
+                        Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký
+                      </h4>
+                      <p className="text-xs text-teal-700 dark:text-teal-300 mt-0.5">
+                        Hệ thống đã tự động nhận diện và nạp sẵn thông tin doanh nghiệp từ CSDL. Quý Doanh nghiệp có thể tiến hành đánh giá mà không cần nhập lại từ đầu.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="tt17-company-name" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Tên Doanh Nghiệp (Pháp Nhân) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      id="tt17-company-name"
+                      type="text"
+                      placeholder="Ví dụ: Công ty Cổ phần Chế tạo Cơ khí Nam Á"
+                      value={survey.companyName || ""}
+                      onChange={(e) => updateSurvey({ companyName: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="tt17-tax-code" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Mã Số Thuế (MST) <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="tt17-tax-code"
+                        type="text"
+                        placeholder="Ví dụ: 0109988776"
+                        value={survey.taxCode || ""}
+                        onChange={(e) => updateSurvey({ taxCode: e.target.value })}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleLookupTaxCode();
+                          }
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleLookupTaxCode}
+                        disabled={isLookingUpTax || !survey.taxCode?.trim()}
+                        className="px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-cyan-300 dark:hover:bg-brand-900 border border-brand-200 dark:border-brand-800 rounded-lg transition shadow-sm disabled:opacity-50"
+                        title="Tự động tra cứu Tên DN, Tỉnh thành và Địa chỉ theo MST"
+                      >
+                        {isLookingUpTax ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Search className="w-3.5 h-3.5" />
+                        )}
+                        Tra cứu MST
+                      </button>
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 mt-1 block">
+                      Nhập MST và bấm Tra cứu để tự động nạp Tên DN, Tỉnh thành và Địa chỉ từ API Quốc gia.
+                    </span>
+                  </div>
+
+                  <div>
+                    <label htmlFor="tt17-contact-person" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Họ Tên Người Đại Diện / Liên Hệ Khảo Sát <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      id="tt17-contact-person"
+                      type="text"
+                      placeholder="Ví dụ: Trần Quốc Tuấn (Phó Giám đốc Kỹ thuật)"
+                      value={survey.contactPerson || ""}
+                      onChange={(e) => updateSurvey({ contactPerson: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="tt17-contact-email" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Email Liên Hệ (Nhận Báo Cáo & Tài Khoản) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      id="tt17-contact-email"
+                      type="email"
+                      placeholder="tuan.tq@nama-tech.vn"
+                      value={survey.companyEmail || ""}
+                      onChange={(e) => updateSurvey({ companyEmail: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="tt17-contact-phone" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Số Điện Thoại Liên Hệ <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      id="tt17-contact-phone"
+                      type="tel"
+                      placeholder="0988 776 655"
+                      value={survey.companyPhone || ""}
+                      onChange={(e) => updateSurvey({ companyPhone: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="tt17-scope-id" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Tỉnh / Thành Phố Trụ Sở Chính
+                    </label>
+                    <select
+                      id="tt17-scope-id"
+                      value={scopeId}
+                      onChange={(e) => setScopeId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    >
+                      <option value="">-- Chọn Tỉnh / Thành phố --</option>
+                      {PROVINCES_63.map((p) => (
+                        <option key={p} value={p}>
+                          {p}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label htmlFor="tt17-company-address" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      Địa Chỉ Trụ Sở Chính Chi Tiết
+                    </label>
+                    <input
+                      id="tt17-company-address"
+                      type="text"
+                      placeholder="Số nhà, đường, phường/xã, quận/huyện..."
+                      value={survey.companyAddress || ""}
+                      onChange={(e) => updateSurvey({ companyAddress: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-3">
+                  2. Thông tin Quy Mô & Ngành Nghề Sản Xuất
+                </span>
+              </div>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -850,5 +1258,6 @@ export default function AssessmentWizardPage() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

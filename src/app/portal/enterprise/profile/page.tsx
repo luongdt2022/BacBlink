@@ -253,6 +253,36 @@ export default function EnterpriseOwnerProfilePage() {
           </div>
         </div>
 
+        {/* Widget Liên Kết Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17) */}
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+              <span className="text-lg">⚙️</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900">
+                  Tự Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất (TT17)
+                </h3>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-800">
+                  Phụ lục I-IV
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                Tự chẩn đoán 26 tiêu chí (5 nhóm T-E-O-R-I), đo lường hệ số đồng bộ $T_ĐB$ và bóc tách điểm nghẽn dây chuyền sản xuất để nhận báo cáo và cấp chứng nhận chính thức.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/assessments/tt17"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition shrink-0 shadow-sm shadow-emerald-700/20"
+          >
+            <span>Mở Hồ Sơ Đánh Giá TT17</span>
+            <span>&rarr;</span>
+          </Link>
+        </div>
+
+
         {/* Notification alerts */}
         {error && (
           <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center justify-between">

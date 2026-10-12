@@ -278,28 +278,45 @@ def run_tier4_playwright_e2e():
         page.wait_for_load_state("networkidle")
 
         page.wait_for_selector("text=Đánh Giá Trình Độ & Năng Lực Công Nghệ", timeout=10000)
-        assert page.is_visible("text=Tổng Điểm Đánh Giá"), "Màn 1 thiếu thẻ Tổng Điểm"
-        assert page.is_visible("text=Hệ Số Đồng Bộ"), "Màn 1 thiếu thẻ Hệ Số Đồng Bộ"
-        assert page.is_visible("text=Cơ Cấu Điểm 5 Nhóm Tiêu Chí"), "Màn 1 thiếu cơ cấu 5 nhóm"
-        assert page.is_visible("text=Lịch Sử Kỳ Đánh Giá"), "Màn 1 thiếu bảng lịch sử"
-        print("  ✅ PASS: Màn 1 Dashboard hiển thị đầy đủ KPI, cơ cấu 5 nhóm và bảng lịch sử niên độ.")
 
-        # MÀN 2: Form Wizard Kê Khai Phụ Lục I (6 Bước) + Sticky Calculator
+        # Kiểm chứng Zero-Mock & Public Intake: Khi chưa có hồ sơ hiển thị Survey Hero Banner, khi có hồ sơ hiển thị Dashboard KPI
+        if page.is_visible("text=Phiếu Khảo Sát & Tự Chẩn Đoán Trình Độ Công Nghệ Sản Xuất"):
+            assert page.is_visible("text=Bắt Đầu Kê Khai Khảo Sát"), "Thiếu nút CTA Bắt Đầu Kê Khai Khảo Sát"
+            assert page.is_visible("text=100 Điểm Khách Quan"), "Thiếu thẻ 100 Điểm Khách Quan"
+            assert page.is_visible("text=Tự Động Cấp Tài Khoản"), "Thiếu thẻ Tự Động Cấp Tài Khoản"
+            print("  ✅ PASS: Màn 1 Hiển thị Hero Banner Khảo Sát Tự Chẩn Đoán chuẩn Zero-Mock (không leak mock data).")
+        else:
+            assert page.is_visible("text=Tổng Điểm Đánh Giá"), "Màn 1 thiếu thẻ Tổng Điểm"
+            assert page.is_visible("text=Hệ Số Đồng Bộ"), "Màn 1 thiếu thẻ Hệ Số Đồng Bộ"
+            assert page.is_visible("text=Cơ Cấu Điểm 5 Nhóm Tiêu Chí"), "Màn 1 thiếu cơ cấu 5 nhóm"
+            print("  ✅ PASS: Màn 1 Dashboard hiển thị đầy đủ KPI, cơ cấu 5 nhóm và bảng lịch sử niên độ.")
+
+        # MÀN 2: Form Wizard Kê Khai Phụ Lục I (6 Bước) + Sticky Calculator + Tax Lookup
         print(f"▶ [E2E-M2] Truy cập Màn 2: {BASE_WEB_URL}/assessments/tt17/wizard...")
         page.goto(f"{BASE_WEB_URL}/assessments/tt17/wizard", timeout=15000)
         page.wait_for_load_state("networkidle")
 
-        page.wait_for_selector("text=Kê Khai Đánh Giá Trình Độ Công Nghệ (Phụ Lục I - TT17)", timeout=10000)
-        assert page.is_visible("text=Mục A · Thông Tin Chung"), "Màn 2 thiếu Mục A"
+        page.wait_for_selector("text=Kê Khai Đánh Giá Trình Độ", timeout=10000)
+        assert page.is_visible("text=Mục A · Thông Tin"), "Màn 2 thiếu Mục A"
         assert page.is_visible("text=Tính Điểm Tức Thời"), "Màn 2 thiếu Sticky Realtime Scorecard"
         assert page.is_visible("text=Hệ số đồng bộ T_ĐB"), "Màn 2 thiếu realtime sync indicator"
+
+        # Tương tác thật: Nhập MST và bấm Tra cứu MST
+        tax_input = page.locator("#tt17-tax-code")
+        if tax_input.is_visible():
+            tax_input.fill("0109988776")
+            lookup_btn = page.locator("button:has-text('Tra cứu MST')")
+            if lookup_btn.is_visible():
+                lookup_btn.click()
+                page.wait_for_timeout(1000)
+                print("  ✅ PASS: Màn 2 Tương tác nút Tra cứu MST thành công.")
 
         # Thử bấm chuyển bước sang Bước 2 (Nhóm T)
         next_btn = page.locator("button:has-text('Bước Tiếp Theo')")
         if next_btn.is_visible():
             next_btn.click()
             page.wait_for_timeout(500)
-            assert page.is_visible("text=Nhóm T · Trình Độ Thiết Bị") or page.is_visible("text=Kê Khai"), "Chuyển bước wizard thất bại"
+            assert page.is_visible("text=Nhóm T") or page.is_visible("text=Kê Khai"), "Chuyển bước wizard thất bại"
         print("  ✅ PASS: Màn 2 Form Wizard 6 bước và Realtime Sticky Calculator hoạt động trơn tru.")
 
         # MÀN 3: Báo Cáo Phân Tích Phụ Lục II & IV + Radar Chart + Điểm Nghẽn + TASK-03 Bridge

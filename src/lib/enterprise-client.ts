@@ -15,6 +15,13 @@ export interface EnterpriseDirectoryItem {
   tniClassification?: string;
   ipCount: number;
   status: string;
+  ownershipType?: string | null;
+  operatingZone?: string | null;
+  hasRdUnit?: boolean;
+  isExporting?: boolean;
+  inValueChain?: boolean;
+  topBottlenecks?: string[];
+  supportNeeds?: string[];
 }
 
 export interface EnterpriseDirectoryResponse {
@@ -114,6 +121,8 @@ export async function fetchEnterprises(params: {
   sectorCode?: string;
   subjectType?: string;
   tniClassification?: string;
+  sortBy?: string;
+  sort?: string;
   page?: number;
   pageSize?: number;
 }): Promise<EnterpriseDirectoryResponse> {
@@ -123,6 +132,8 @@ export async function fetchEnterprises(params: {
   if (params.sectorCode) query.set("sectorCode", params.sectorCode);
   if (params.subjectType) query.set("subjectType", params.subjectType);
   if (params.tniClassification) query.set("tniClassification", params.tniClassification);
+  const sortVal = params.sortBy || params.sort;
+  if (sortVal) query.set("sortBy", sortVal);
   query.set("page", String(params.page || 1));
   query.set("pageSize", String(params.pageSize || 9));
 
@@ -239,4 +250,26 @@ export async function rejectEnterpriseGov(enterpriseId: string, notes?: string):
     throw new Error(await readApiError(res, "Cập nhật yêu cầu bổ sung thất bại."));
   }
   return res.json();
+}
+
+export async function lookupTaxCode(taxCode: string): Promise<{
+  found: boolean;
+  source?: 'INTERNAL' | 'VIETQR';
+  taxCode?: string;
+  name?: string;
+  province?: string;
+  address?: string;
+  contactPerson?: string;
+  sectorName?: string;
+  message?: string;
+}> {
+  const clean = taxCode.trim();
+  if (!clean) throw new Error("Mã số thuế không được để trống.");
+
+  const res = await fetch(`${API_BASE}/api/v1/enterprises/lookup-tax/${encodeURIComponent(clean)}`);
+  if (!res.ok) {
+    throw new Error(await readApiError(res, "Không thể tra cứu mã số thuế."));
+  }
+  const body = await res.json();
+  return body.data || body;
 }

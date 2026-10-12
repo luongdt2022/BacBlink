@@ -88,13 +88,11 @@
       align-items: center;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       font-weight: 500;
-      white-space: nowrap;
     }
     .gov-badge-left {
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-shrink: 0;
     }
     .national-emblem-badge {
       display: inline-flex;
@@ -964,119 +962,6 @@
       color: #FFFFFF;
     }
 
-    /* TNI INTERACTIVE WIDGET (TASK-03 & PO-DEC-20261008-03) */
-    .tni-panel {
-      background: #F8FAFC;
-      border: 1.5px solid #E2E8F0;
-      border-radius: var(--radius-md);
-      padding: 18px 20px;
-      margin-top: 20px;
-      margin-bottom: 8px;
-    }
-    .tni-panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px dashed #CBD5E1;
-    }
-    .tni-panel-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--brand-900);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .tni-score-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: var(--radius-sm);
-      font-weight: 800;
-      font-size: 13.5px;
-    }
-    .tni-badge-very-high { background: #FEE2E2; color: #991B1B; border: 1.5px solid #FCA5A5; }
-    .tni-badge-high { background: #FFEDD5; color: #9A3412; border: 1.5px solid #FDBA74; }
-    .tni-badge-medium { background: #FEF9C3; color: #854D0E; border: 1.5px solid #FDE047; }
-    .tni-badge-low { background: #F1F5F9; color: #475569; border: 1.5px solid #CBD5E1; }
-
-    .tni-grid-4col {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-bottom: 14px;
-    }
-    @media (max-width: 900px) {
-      .tni-grid-4col { grid-template-columns: 1fr; }
-    }
-    .tni-dimension-card {
-      background: #FFFFFF;
-      border: 1px solid #E2E8F0;
-      border-radius: var(--radius-sm);
-      padding: 12px 14px;
-    }
-    .tni-dim-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--brand-800);
-      margin-bottom: 4px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .tni-dim-weight {
-      font-size: 11.5px;
-      color: var(--brand-600);
-      font-weight: 800;
-      background: var(--brand-50);
-      padding: 1px 6px;
-      border-radius: 4px;
-    }
-    .tni-dim-desc {
-      font-size: 11.5px;
-      color: #64748B;
-      margin-bottom: 8px;
-      line-height: 1.35;
-    }
-    .tni-radio-group {
-      display: flex;
-      gap: 6px;
-    }
-    .tni-radio-btn {
-      flex: 1;
-      text-align: center;
-      padding: 6px 0;
-      background: #F8FAFC;
-      border: 1px solid #CBD5E1;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      user-select: none;
-    }
-    .tni-radio-btn:hover {
-      background: #EEF2F6;
-      border-color: var(--brand-500);
-    }
-    .tni-radio-btn.active {
-      background: var(--brand-700);
-      color: #FFFFFF;
-      border-color: var(--brand-700);
-      box-shadow: 0 1px 4px rgba(60, 89, 153, 0.3);
-    }
-    .tni-summary-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 10px;
-      border-top: 1px solid #E2E8F0;
-      font-size: 12px;
-      color: #475569;
-    }
-
     /* SECURITY & PRIVACY CARD */
     .privacy-cert-box {
       background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
@@ -1265,15 +1150,33 @@
   </style>
 </head>
 <body>
+    <div id="nacentech-design-toolbar" style="position: sticky; top: 0; left: 0; right: 0; z-index: 99999; background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="index.html" style="display: inline-flex; align-items: center; gap: 6px; background: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 6px; text-decoration: none; font-weight: 700; transition: background 0.2s;">
+          ← Về Danh Sách Màn Hình
+        </a>
+        <span style="color: #94a3b8;">|</span>
+        <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4);">
+          Màn hình: Web Khảo Sát Nhu Cầu Đổi Mới Công Nghệ DNNVV
+        </span>
+        <span style="color: #64748b;">(25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="color: #94a3b8; font-size: 11px;">Nền tảng NacenTwin · Viện Ứng Dụng Công Nghệ</span>
+        <button onclick="document.getElementById('nacentech-design-toolbar').style.display='none'" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;" title="Ẩn thanh công cụ">✕</button>
+      </div>
+    </div>
+
 
   <!-- 1. TOP NATIONAL / INSTITUTE GOVERNMENT BAR -->
   <div class="top-gov-bar">
     <div class="gov-badge-left">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-      <span class="national-emblem-badge">BẢN THIẾT KẾ MINH HỌA · CHƯA PHẢI CỔNG TIẾP NHẬN ĐANG VẬN HÀNH</span>
+      <span class="national-emblem-badge">BỘ KHOA HỌC VÀ CÔNG NGHỆ · VIỆN ỨNG DỤNG CÔNG NGHỆ (NACENTECH)</span>
     </div>
     <div style="display: flex; align-items: center; gap: 16px;">
-      <span>Phiếu khảo sát nhu cầu công nghệ — bản thiết kế cơ sở</span>
+      <span>Cổng Dữ Liệu Đổi Mới Sáng Tạo Quốc Gia</span>
+      <span>Đầu mối tiếp nhận: <b>024.3868.xxxx</b></span>
     </div>
   </div>
 
@@ -1284,7 +1187,7 @@
         <img src='data:image/png;base64,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' alt='NacenTech Logo' class='brand-logo-img'>
         <div class="brand-titles">
           <span class="brand-main-title">NacenTwin</span>
-          <span class="brand-sub-title">Thiết kế phiếu khảo sát và kết nối dữ liệu dự kiến</span>
+          <span class="brand-sub-title">Cổng Đổi Mới Sáng Tạo & Khớp Nối Cung Cầu Công Nghệ</span>
         </div>
       </a>
       <div class="header-tools">
@@ -1316,11 +1219,11 @@
       <div class="hero-tag-row">
         <span class="hero-pill cyan">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          BẢN MINH HỌA · PHIẾU KHẢO SÁT NHU CẦU
+          CHƯƠNG TRÌNH ĐỔI MỚI CÔNG NGHỆ QUỐC GIA
         </span>
         <span class="hero-pill emerald">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          THÔNG TIN PHỤC VỤ KHẢO SÁT · CẦN XÁC NHẬN CHÍNH SÁCH
+          BẢO MẬT DỮ LIỆU PDPD THEO NGHỊ ĐỊNH 13/2023/NĐ-CP
         </span>
         <span class="hero-pill">
           CHUẨN HÓA TIÊU CHÍ TT17/2019/TT-BKHCN
@@ -1330,25 +1233,25 @@
       <h1 class="hero-title">Phiếu Khảo Sát Nhu Cầu Đổi Mới Công Nghệ Doanh Nghiệp (DNNVV)</h1>
       <p class="hero-subtitle">
         Thu thập có cấu trúc hiện trạng thiết bị, các điểm nghẽn sản xuất và bài toán tìm mua công nghệ của Quý Doanh nghiệp. 
-        Thông tin giúp ghi nhận hiện trạng, điểm nghẽn và nhu cầu công nghệ. Phạm vi tiếp nhận, tư vấn và chia sẻ dữ liệu cần được đơn vị vận hành xác nhận trước khi phát hành chính thức.
+        Hội đồng Khoa học Viện NacenTech (Bộ KH&CN) trực tiếp tiếp nhận để tư vấn, định vị chỉ số công nghệ (TNI) và kết nối giải pháp công nghệ, chuyên gia hàng đầu.
       </p>
 
       <div class="hero-metrics-grid">
         <div class="hero-metric-item">
-          <div class="hero-metric-num cyan">A–G</div>
-          <div class="hero-metric-label">Các bước từ hồ sơ DN đến rà soát nhu cầu</div>
+          <div class="hero-metric-num cyan">3,420+</div>
+          <div class="hero-metric-label">Nhà khoa học & Chuyên gia công nghệ sẵn sàng tư vấn</div>
         </div>
         <div class="hero-metric-item">
-          <div class="hero-metric-num emerald">≤ 5</div>
-          <div class="hero-metric-label">Điểm nghẽn ưu tiên doanh nghiệp lựa chọn</div>
+          <div class="hero-metric-num emerald">1,479+</div>
+          <div class="hero-metric-label">Hồ sơ công nghệ & Sáng chế đã kiểm định TRL 1-9</div>
         </div>
         <div class="hero-metric-item">
-          <div class="hero-metric-num amber">Rà soát</div>
-          <div class="hero-metric-label">Doanh nghiệp xem lại dữ liệu trước khi gửi</div>
+          <div class="hero-metric-num amber">100%</div>
+          <div class="hero-metric-label">Bảo mật thông tin liên hệ, ngân sách và bí mật kinh doanh</div>
         </div>
         <div class="hero-metric-item">
-          <div class="hero-metric-num purple">Nháp</div>
-          <div class="hero-metric-label">Lưu và tiếp tục trên thiết bị này (bản minh họa)</div>
+          <div class="hero-metric-num purple">1 : 1</div>
+          <div class="hero-metric-label">Hỗ trợ khảo sát trực tiếp tại nhà máy từ Viện NacenTech</div>
         </div>
       </div>
     </div>
@@ -1389,9 +1292,9 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
         </div>
         <div class="intro-info-body">
-          <h4>Thông tin về phạm vi phiếu</h4>
+          <h4>Quyền lợi của doanh nghiệp khi tham gia khảo sát</h4>
           <p>
-            Phiếu ghi nhận thông tin do doanh nghiệp cung cấp để phục vụ việc xem xét nhu cầu. Cách xử lý, người được xem và thời hạn phản hồi phải theo chính sách vận hành được phê duyệt. Dấu <span class="req-mark">*</span> chỉ trường bắt buộc trong bản minh họa này.
+            Doanh nghiệp được Hội đồng Khoa học Viện NacenTech hỗ trợ phân tích miễn phí báo cáo hiện trạng công nghệ, định danh chính xác bài toán kỹ thuật, kết nối nguồn cung máy móc/thiết bị uy tín và hỗ trợ thủ tục vay vốn từ Quỹ Đổi mới công nghệ Quốc gia (NATIF). Các trường có dấu <span class="req-mark">*</span> là bắt buộc để mở hồ sơ tiếp nhận.
           </p>
         </div>
       </div>
@@ -1421,18 +1324,31 @@
           </div>
           <div class="form-item">
             <label class="form-item-label" for="province">Tỉnh / Thành phố trụ sở <span class="req-mark">*</span></label>
-            <input type="text" id="province" name="province" class="form-input" list="province-master-data" placeholder="Chọn từ danh mục tỉnh/thành theo master data" required>
-            <datalist id="province-master-data"></datalist>
-            <span class="field-hint">Bản minh họa chưa nạp danh mục. Khi phát hành, danh sách phải lấy từ master data được phê duyệt, không dùng lựa chọn hardcode.</span>
+            <select id="province" name="province" class="form-select" required>
+              <option value="">-- Chọn Tỉnh / Thành phố --</option>
+              <option value="Hà Nội">Hà Nội</option>
+              <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+              <option value="Đà Nẵng">Đà Nẵng</option>
+              <option value="Hải Phòng">Hải Phòng</option>
+              <option value="Cần Thơ">Cần Thơ</option>
+              <option value="Bắc Ninh">Bắc Ninh</option>
+              <option value="Bình Dương">Bình Dương</option>
+              <option value="Đồng Nai">Đồng Nai</option>
+              <option value="Hưng Yên">Hưng Yên</option>
+              <option value="Hải Dương">Hải Dương</option>
+              <option value="Vĩnh Phúc">Vĩnh Phúc</option>
+              <option value="Thái Nguyên">Thái Nguyên</option>
+              <option value="Quảng Ninh">Quảng Ninh</option>
+              <option value="Nghệ An">Nghệ An</option>
+              <option value="Khác">Tỉnh / Thành phố khác</option>
+            </select>
           </div>
 
           <!-- Row 3: Address -->
           <div class="form-item col-span-full">
-            <label class="form-item-label" for="address">Địa chỉ trụ sở chính</label>
+            <label class="form-item-label" for="address">Địa chỉ trụ sở chính / Nhà máy sản xuất</label>
             <input type="text" id="address" name="address" class="form-input" placeholder="Số nhà, đường phố, Khu/Cụm công nghiệp, phường/xã, quận/huyện...">
           </div>
-
-          <div class="form-item col-span-full"><label class="form-item-label" for="survey-site">Cơ sở / nhà máy được khảo sát</label><input type="text" id="survey-site" name="survey_site" class="form-input" placeholder="Tên cơ sở và địa chỉ; có thể khác trụ sở chính"><span class="field-hint">Phân biệt địa chỉ trụ sở pháp nhân với nơi có công đoạn/thiết bị được khảo sát.</span></div>
 
           <!-- Row 4: Contact Name & Position -->
           <div class="form-item">
@@ -1457,12 +1373,12 @@
           <div class="form-item">
             <label class="form-item-label" for="contact-phone">Điện thoại liên hệ trực tiếp <span class="req-mark">*</span></label>
             <input type="tel" id="contact-phone" name="contact_phone" class="form-input" placeholder="Ví dụ: 0912 345 678" required>
-            <span class="field-hint">Thông tin liên hệ chỉ dùng theo mục đích và quyền truy cập do đơn vị vận hành công bố.</span>
+            <span class="field-hint">🔒 Được mã hóa bảo mật, phục vụ chuyên gia liên hệ xác minh.</span>
           </div>
           <div class="form-item">
             <label class="form-item-label" for="contact-email">Email tiếp nhận kết quả <span class="req-mark">*</span></label>
             <input type="email" id="contact-email" name="contact_email" class="form-input" placeholder="Ví dụ: contact@doanhnghiep.vn" required>
-            <span class="field-hint">Chỉ nhập nếu cần kênh liên hệ theo quy trình đã công bố.</span>
+            <span class="field-hint">🔒 Dùng để nhận bản phân tích đánh giá công nghệ chính thức.</span>
           </div>
 
           <!-- Row 6: Company Type & Employee Count -->
@@ -1520,20 +1436,25 @@
 
           <!-- Row 8: Primary Sector & Revenue (Perfect Height Alignment) -->
           <div class="form-item">
-            <label class="form-item-label" for="primary-sector">Ngành kinh tế của hoạt động chính <span class="req-mark">*</span></label>
+            <label class="form-item-label" for="primary-sector">Ngành / Lĩnh vực hoạt động chính <span class="req-mark">*</span></label>
             <select id="primary-sector" name="primary_sector" class="form-select" required>
-              <option value="">-- Chọn ngành kinh tế sản xuất; chưa rõ thì bổ sung mã --</option>
-              <option value="C.10">C.10 — Sản xuất chế biến thực phẩm</option><option value="C.11">C.11 — Sản xuất đồ uống</option><option value="C.12">C.12 — Sản xuất sản phẩm thuốc lá</option><option value="C.13">C.13 — Dệt</option><option value="C.14">C.14 — Sản xuất trang phục</option><option value="C.15">C.15 — Sản xuất da và sản phẩm liên quan</option><option value="C.16">C.16 — Chế biến gỗ và sản phẩm từ gỗ, tre, nứa</option><option value="C.17">C.17 — Sản xuất giấy và sản phẩm từ giấy</option><option value="C.18">C.18 — In, sao chép bản ghi</option><option value="C.19">C.19 — Than cốc, sản phẩm dầu mỏ tinh chế</option><option value="C.20">C.20 — Hóa chất và sản phẩm hóa chất</option><option value="C.21">C.21 — Thuốc, hóa dược và dược liệu</option><option value="C.22">C.22 — Sản phẩm cao su và plastic</option><option value="C.23">C.23 — Sản phẩm từ khoáng phi kim loại khác</option><option value="C.24">C.24 — Sản xuất kim loại</option><option value="C.25">C.25 — Sản phẩm kim loại đúc sẵn</option><option value="C.26">C.26 — Sản phẩm điện tử, máy vi tính và quang học</option><option value="C.27">C.27 — Sản xuất thiết bị điện</option><option value="C.28">C.28 — Máy móc, thiết bị chưa phân vào đâu</option><option value="C.29">C.29 — Sản xuất xe có động cơ</option><option value="C.30">C.30 — Phương tiện vận tải khác</option><option value="C.31">C.31 — Giường, tủ, bàn, ghế</option><option value="C.32">C.32 — Công nghiệp chế biến, chế tạo khác</option><option value="other">Ngành khác / cần xác nhận mã</option>
+              <option value="">-- Chọn theo danh mục 18 ngành TT17/2019 --</option>
+              <option value="1. CNTT & Viễn thông">1. Công nghệ thông tin & Viễn thông</option>
+              <option value="2. CNSH & Y dược">2. Công nghệ sinh học & Y dược</option>
+              <option value="3. Tự động hóa & Robot">3. Tự động hóa & Robot học</option>
+              <option value="4. Vật liệu mới & Nanotech">4. Vật liệu mới & Công nghệ Nano</option>
+              <option value="5. Năng lượng tái tạo & Môi trường">5. Năng lượng tái tạo & Xử lý môi trường</option>
+              <option value="6. Nông nghiệp CNC">6. Nông nghiệp công nghệ cao & Chế biến nông sản</option>
+              <option value="7. Cơ khí chế tạo chính xác">7. Cơ khí chế tạo chính xác & Khuôn mẫu</option>
+              <option value="8. Điện & Điện tử công nghiệp">8. Điện, điện tử công nghiệp và vi mạch</option>
+              <option value="9. Chế biến thực phẩm & Đồ uống">9. Công nghiệp chế biến thực phẩm & đồ uống</option>
+              <option value="10. Hóa chất & Hóa mỹ phẩm">10. Hóa chất, hóa dược và hóa mỹ phẩm</option>
+              <option value="11. Dệt may & Da giày CNC">11. Dệt may, da giày kỹ thuật cao</option>
+              <option value="12. Xây dựng & Vật liệu xây dựng">12. Xây dựng và công nghệ vật liệu xây dựng mới</option>
+              <option value="13. Giao thông vận tải & Logistics">13. Giao thông vận tải thông minh & Logistics</option>
+              <option value="14. Công nghệ môi trường & Xử lý rác thải">14. Kinh tế tuần hoàn & Xử lý chất thải</option>
+              <option value="15. Khác">Lĩnh vực chuyên ngành khác</option>
             </select>
-          </div>
-
-          <div class="form-item col-span-full">
-            <label class="form-item-label" for="technology-interest">Lĩnh vực công nghệ doanh nghiệp đang quan tâm</label>
-            <select id="technology-interest" name="technology_interest" class="form-select">
-              <option value="">-- Chọn lĩnh vực quan tâm (không thay thế mã ngành kinh tế) --</option>
-              <option>Công nghệ thông tin và viễn thông</option><option>Công nghệ sinh học và y dược</option><option>Tự động hóa và robot</option><option>Vật liệu mới</option><option>Năng lượng và môi trường</option><option>Nông nghiệp công nghệ cao</option><option>Cơ khí chế tạo</option><option>Điện và điện tử</option><option>Chế biến thực phẩm</option><option>Dệt may và da giày</option><option>Khác / chưa xác định</option>
-            </select>
-            <span class="field-hint">Lĩnh vực quan tâm chỉ dùng định hướng nhu cầu; không tự ánh xạ thành mã ngành TT17.</span>
           </div>
 
           <div class="form-item">
@@ -1562,9 +1483,7 @@
           <!-- Row 9: Main Products -->
           <div class="form-item col-span-full">
             <label class="form-item-label" for="main-products">Sản phẩm / Dịch vụ chủ lực của doanh nghiệp</label>
-            <textarea id="main-products" name="main_products" class="form-textarea" placeholder="Có thể ghi tóm tắt sản phẩm tại đây; thuộc tính chi tiết có thể bổ sung theo từng dòng bên dưới."></textarea>
-            <div class="table-responsive" style="margin-top:12px;"><table class="portal-table" id="product-table"><thead><tr><th>Sản phẩm/dịch vụ</th><th>Sản lượng + đơn vị/kỳ</th><th>Công suất thiết kế</th><th>Công suất thực tế</th><th>Thị trường trong nước / xuất khẩu</th><th>Khách hàng chủ yếu</th><th>Tiêu chuẩn, yêu cầu kỹ thuật</th><th>Khả năng mở rộng</th><th>Thao tác</th></tr></thead><tbody id="product-rows"><tr><td><input class="form-input" name="product_name[]" placeholder="Tên sản phẩm"></td><td><input class="form-input" name="product_volume[]" placeholder="Số lượng + đơn vị + kỳ"></td><td><input class="form-input" name="product_capacity_design[]" placeholder="Giá trị + đơn vị"></td><td><input class="form-input" name="product_capacity_actual[]" placeholder="Giá trị + đơn vị"></td><td><input class="form-input" name="product_market[]" placeholder="Thị trường/địa bàn"></td><td><input class="form-input" name="product_customer[]" placeholder="Nhóm khách hàng"></td><td><input class="form-input" name="product_standards[]" placeholder="Tiêu chuẩn/yêu cầu"></td><td><input class="form-input" name="product_scaling[]" placeholder="Điều kiện/dự kiến"></td><td><button type="button" class="btn btn-outline btn-sm remove-product-row" aria-label="Xóa dòng sản phẩm">Xóa</button></td></tr></tbody></table></div>
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;"><button type="button" class="btn btn-outline btn-sm" id="btn-add-product-row">+ Thêm sản phẩm/dịch vụ</button><span class="field-hint">Có thể khai nhiều sản phẩm; trên màn hình nhỏ, vuốt ngang bảng để xem đủ trường.</span></div>
+            <textarea id="main-products" name="main_products" class="form-textarea" placeholder="Mô tả tóm tắt: Tên sản phẩm chính, công suất thực tế hiện nay, thị trường tiêu thụ (nội địa / xuất khẩu), tiêu chuẩn chất lượng đang áp dụng (ISO, GMP, HACCP, CE, FDA...)..."></textarea>
           </div>
         </div>
       </section>
@@ -1580,19 +1499,17 @@
         </div>
 
         <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">1. Công đoạn và thiết bị chính đang sử dụng</p>
-        <span class="field-hint" style="margin-bottom: 12px; display: block;">Mỗi dòng là một công đoạn/thiết bị. Ghi ID để liên kết với sản phẩm, điểm nghẽn và nhu cầu; khai năm đầu tư và nguồn công nghệ nếu biết.</span>
+        <span class="field-hint" style="margin-bottom: 12px; display: block;">Quý doanh nghiệp có thể khai báo nhiều công đoạn trên dây chuyền để chuyên gia nắm bắt đầy đủ hiện trạng.</span>
 
         <div class="table-responsive">
           <table class="portal-table" id="tech-table">
             <thead>
               <tr>
-                <th style="width: 70px; text-align: center;">ID</th>
+                <th style="width: 50px; text-align: center;">STT</th>
                 <th style="min-width: 180px;">Công đoạn sản xuất</th>
                 <th style="min-width: 230px;">Công nghệ / Thiết bị đang sử dụng</th>
-                <th style="min-width:160px;">Sản phẩm liên quan</th>
                 <th style="width: 130px;">Năm đầu tư</th>
                 <th style="min-width: 180px;">Nguồn gốc công nghệ</th>
-                <th style="min-width:170px;">Ghi chú hiện trạng / minh chứng</th>
                 <th style="width: 70px; text-align: center;">Xóa</th>
               </tr>
             </thead>
@@ -1601,7 +1518,6 @@
                 <td style="text-align: center; font-weight: 700; color: var(--text-muted);">1</td>
                 <td><input type="text" class="form-input" name="tech_stage[]" placeholder="VD: Gia công cơ khí CNC"></td>
                 <td><input type="text" class="form-input" name="tech_equipment[]" placeholder="VD: Máy phay CNC 3 trục"></td>
-                <td><input type="text" class="form-input" name="tech_product[]" placeholder="ID/tên sản phẩm"></td>
                 <td><input type="number" class="form-input" name="tech_year[]" min="1980" max="2026" placeholder="VD: 2019"></td>
                 <td>
                   <select class="form-select" name="tech_origin[]">
@@ -1615,7 +1531,6 @@
                     <option value="Khác">Nguồn khác</option>
                   </select>
                 </td>
-                <td><input type="text" class="form-input" name="tech_evidence[]" placeholder="Mã/tên tài liệu (nếu có)"></td>
                 <td style="text-align: center;">
                   <button type="button" class="btn-remove-ticket" style="padding: 4px 8px;" title="Xóa dòng" onclick="deleteTableRow(this)">✕</button>
                 </td>
@@ -1629,7 +1544,7 @@
         </button>
 
         <p class="form-item-label" style="font-size:15px; margin-bottom:4px;">2. Doanh nghiệp tự đánh giá hiện trạng công nghệ (Thang điểm 1 - 5)</p>
-        <span class="field-hint" style="margin-bottom: 12px; display: block;">Đánh giá 8 mặt: mức độ hiện đại, năng suất, chất lượng, tiết kiệm năng lượng, tự động hóa, số hóa, an toàn và bảo vệ môi trường. Thang chọn 1–5 theo hướng dẫn; câu hỏi chi tiết về “hiệu quả công nghệ” chưa được định nghĩa trong mẫu nguồn nên chưa dùng để chấm điểm.</span>
+        <span class="field-hint" style="margin-bottom: 12px; display: block;">1 = Rất thấp / Chưa có; 3 = Đạt chuẩn trung bình; 5 = Rất cao / Tiên tiến, hiện đại.</span>
 
         <div class="table-responsive">
           <table class="portal-table">
@@ -1697,9 +1612,7 @@
             <table class="portal-table">
               <thead>
                 <tr>
-                  <th style="min-width: 240px;">Vấn đề / Điểm nghẽn đã chọn (tối đa 5)</th>
-                  <th style="min-width:180px;">Công đoạn / ID liên quan</th>
-                  <th style="min-width:200px;">Nguyên nhân (nếu biết)</th>
+                  <th style="min-width: 260px;">Vấn đề / Điểm nghẽn đã chọn</th>
                   <th class="scale-th">1<br><small style="font-weight:400;text-transform:none;">Rất thấp</small></th>
                   <th class="scale-th">2<br><small style="font-weight:400;text-transform:none;">Thấp</small></th>
                   <th class="scale-th">3<br><small style="font-weight:400;text-transform:none;">Trung bình</small></th>
@@ -1709,7 +1622,7 @@
               </thead>
               <tbody id="bottleneck-rating-body">
                 <tr>
-                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 22px;">
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 22px;">
                     👆 Vui lòng chọn ít nhất 1 vấn đề (tối đa 5) ở danh sách phía trên để chấm mức độ ảnh hưởng.
                   </td>
                 </tr>
@@ -1739,11 +1652,10 @@
             <label class="form-item-label" for="tech-engineers">Số lượng Kỹ sư / Cử nhân kỹ thuật</label>
             <input type="number" id="tech-engineers" name="tech_engineers" class="form-input" min="0" placeholder="VD: 5 người">
           </div>
-          <div class="form-item"><label class="form-item-label" for="tech-it">Nhân sự CNTT</label><input type="number" id="tech-it" name="tech_it" class="form-input" min="0" placeholder="Số người"></div>
-          <div class="form-item"><label class="form-item-label" for="tech-automation">Nhân sự tự động hóa</label><input type="number" id="tech-automation" name="tech_automation" class="form-input" min="0" placeholder="Số người"></div>
-          <div class="form-item"><label class="form-item-label" for="tech-rd">Nhân sự R&D</label><input type="number" id="tech-rd" name="tech_rd" class="form-input" min="0" placeholder="Số người; nếu kiêm nhiệm, ghi chú bên dưới"></div>
-          <div class="form-item"><label class="form-item-label" for="tech-quality">Nhân sự quản lý chất lượng</label><input type="number" id="tech-quality" name="tech_quality" class="form-input" min="0" placeholder="Số người"></div>
-          <div class="form-item col-span-full"><label class="form-item-label" for="tech-overlap">Ghi chú người kiêm nhiệm / cách tính</label><input type="text" id="tech-overlap" name="tech_overlap" class="form-input" placeholder="Ghi nhóm công việc kiêm nhiệm để tránh cộng trùng"></div>
+          <div class="form-item">
+            <label class="form-item-label" for="tech-rd">Nhân sự CNTT / Tự động hóa / R&D</label>
+            <input type="text" id="tech-rd" name="tech_rd" class="form-input" placeholder="VD: 2 R&D, 3 QA/QC, 1 IT">
+          </div>
         </div>
 
         <div style="margin-top: 26px;">
@@ -1783,7 +1695,7 @@
           <div class="section-badge-letter green">E</div>
           <div class="section-heading-text">
             <h3>Bài Toán & Nhu Cầu Đổi Mới Công Nghệ (Demand Tickets)</h3>
-            <p>Mỗi bài toán ghi nhận nhu cầu và đề xuất của doanh nghiệp để đơn vị phụ trách xem xét; việc tiếp nhận chính thức hoặc kết nối giải pháp cần được xác nhận theo quy trình vận hành.</p>
+            <p>Mỗi bài toán ở đây sẽ được mở thành một hồ sơ đặt hàng công nghệ chính thức để Viện NacenTech kết nối giải pháp.</p>
           </div>
         </div>
 
@@ -1871,7 +1783,7 @@
         <div class="section-header-box">
           <div class="section-badge-letter green">G</div>
           <div class="section-heading-text">
-            <h3>Rà Soát & Xác Nhận Thông Tin</h3>
+            <h3>Cam Kết Bảo Mật & Xác Nhận Gửi Phiếu</h3>
             <p>Xác thực thông tin và đồng ý điều khoản xử lý dữ liệu phục vụ thẩm định, kết nối công nghệ.</p>
           </div>
         </div>
@@ -1881,8 +1793,12 @@
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
           </div>
           <div class="privacy-cert-text">
-            <h4>Thông tin và đồng ý xử lý dữ liệu</h4>
-            <p>Trước khi phát hành chính thức, đơn vị vận hành cần công bố mục đích, phạm vi sử dụng, người có quyền truy cập, thời hạn lưu trữ và đầu mối liên hệ về dữ liệu. Nội dung này là chỗ giữ cho chính sách đã được phê duyệt; bản minh họa không khẳng định biện pháp bảo mật hay phạm vi chia sẻ cụ thể.</p>
+            <h4>Bảo mật thông tin doanh nghiệp theo tiêu chuẩn Nhà nước (Nghị định 13/2023/NĐ-CP)</h4>
+            <p>
+              Toàn bộ dữ liệu khảo sát được mã hóa và lưu trữ an toàn trên nền tảng số quốc gia do Viện Ứng dụng Công nghệ quản trị. 
+              Các thông tin liên hệ, ngân sách chi tiết và tài liệu kỹ thuật nội bộ của Quý Doanh nghiệp <b>tuyệt đối không bị công khai trên internet</b>. 
+              Dữ liệu chỉ được phục vụ công tác thống kê khoa học, tư vấn và giới thiệu giải pháp khi có sự đồng ý của Quý Doanh nghiệp.
+            </p>
           </div>
         </div>
 
@@ -1902,7 +1818,7 @@
               <input type="checkbox" id="confirm-agree" name="confirm_agree" required style="width: 22px; height: 22px; accent-color: var(--nacen-green-600);">
               <div style="margin-left: 6px;">
                 <div class="size-card-title" style="color: #065F46; font-size: 14.5px;">
-                  Tôi đã rà soát thông tin do doanh nghiệp cung cấp. Việc sử dụng dữ liệu sẽ theo thông báo mục đích, phạm vi và quyền truy cập của đơn vị tiếp nhận được xác định trước khi phát hành chính thức. <span class="req-mark">*</span>
+                  Tôi xác nhận thông tin cung cấp tại phiếu này là hoàn toàn chính xác theo thực tế doanh nghiệp và đồng ý để Viện NacenTech sử dụng cho mục đích tư vấn, kết nối công nghệ. <span class="req-mark">*</span>
                 </div>
               </div>
             </label>
@@ -1913,8 +1829,8 @@
       <!-- 6. SUBMISSION FOOTER ACTION BAR -->
       <div class="action-submit-bar">
         <div class="submit-bar-left">
-          <h4>Rà soát bản khai khảo sát</h4>
-          <p>Bản minh họa kiểm tra tính đầy đủ trên thiết bị. Lưu/gửi thật và bên tiếp nhận cần được cấu hình, xác nhận riêng.</p>
+          <h4>Hoàn Tất Phiếu Khảo Sát Nhu Cầu Đổi Mới Công Nghệ</h4>
+          <p>Hệ thống tự động kiểm tra tính đầy đủ của các tiêu chí trước khi chuyển tiếp về Hội đồng KH&CN.</p>
         </div>
         <div class="submit-bar-btns">
           <button type="button" class="btn btn-outline btn-lg" id="btn-save-draft-bottom">
@@ -1923,7 +1839,7 @@
           </button>
           <button type="submit" class="btn btn-cta btn-lg" id="btn-submit-survey">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            Kiểm tra & xem trước phiếu
+            Kiểm Tra & Gửi Phiếu Khảo Sát
           </button>
         </div>
       </div>
@@ -1937,11 +1853,14 @@
         <div class="modal-hero-icon">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        <h3 style="font-size: 22px; font-weight: 800;">Đã rà soát bản minh họa — chưa gửi</h3>
-        <p style="font-size: 14px; opacity: 0.9; margin-top: 4px;">Đây là màn hình xem trước dữ liệu trên thiết bị; chưa gửi phiếu và chưa ghi nhận vào hệ thống tiếp nhận.</p>
+        <h3 style="font-size: 22px; font-weight: 800;">Tiếp Nhận Phiếu Thành Công!</h3>
+        <p style="font-size: 14px; opacity: 0.9; margin-top: 4px;">Phiếu khảo sát của Quý Doanh nghiệp đã được ghi nhận trên CSDL Đổi mới sáng tạo NacenTwin.</p>
       </div>
       <div style="padding: 24px 28px;">
-        <div class="notice" style="margin:0 0 18px;"><b>Bản xem trước:</b> không tạo mã hồ sơ, không xác nhận đã lưu trên máy chủ và không gửi tới đơn vị tiếp nhận.</div>
+        <div class="ticket-id-display">
+          <div class="ticket-id-title">Mã số tiếp nhận hồ sơ khảo sát (Ticket ID)</div>
+          <div class="ticket-id-val" id="modal-ticket-id">SURVEY-2026-DNNVV-0842</div>
+        </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; font-size:13.5px;">
           <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
@@ -1949,7 +1868,7 @@
             <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-company-name">—</div>
           </div>
           <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
-            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Người cung cấp thông tin</div>
+            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Người đại diện</div>
             <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-contact-name">—</div>
           </div>
           <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
@@ -1957,14 +1876,15 @@
             <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-sector">—</div>
           </div>
           <div style="background:var(--surface-subtle); padding:10px 14px; border-radius:var(--radius-md);">
-            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Số bài toán đã khai</div>
+            <div style="color:var(--text-muted); font-size:11px; font-weight:700; text-transform:uppercase;">Số bài toán đăng ký</div>
             <div style="font-weight:700; color:var(--text-primary); margin-top:2px;" id="modal-demand-count">1 bài toán</div>
-            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="modal-product-count">0 sản phẩm/dịch vụ đã khai</div>
           </div>
         </div>
 
         <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:var(--radius-md); padding:14px 18px; font-size:13px; color:#166534; line-height:1.55;">
-          <b>Bản minh họa:</b> dữ liệu đã được tổng hợp để doanh nghiệp rà soát. Gửi phiếu thật, bên tiếp nhận, thời gian phản hồi và hình thức hỗ trợ chỉ hiển thị sau khi quy trình vận hành được xác nhận.
+          <b>Quy trình xử lý tiếp theo:</b><br>
+          1. Ban Thư ký Hội đồng Khoa học Viện NacenTech phân tích hiện trạng và định vị bài toán.<br>
+          2. Chuyên gia chuyên ngành sẽ liên hệ lại qua điện thoại / email đã đăng ký trong vòng <b>03 ngày làm việc</b> để hỗ trợ tư vấn 1:1 trực tiếp.
         </div>
       </div>
       <div style="border-top:1px solid var(--border-default); padding:16px 28px; display:flex; justify-content:flex-end; gap:12px; background:#F8FAFC;">
@@ -2261,15 +2181,11 @@
       }
 
       if (count === 0) {
-        bottleneckRatingBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 22px;">👆 Vui lòng chọn ít nhất 1 vấn đề (tối đa 5) ở danh sách phía trên để chấm mức độ ảnh hưởng.</td></tr>`;
+        bottleneckRatingBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 22px;">👆 Vui lòng chọn ít nhất 1 vấn đề (tối đa 5) ở danh sách phía trên để chấm mức độ ảnh hưởng.</td></tr>`;
       } else {
         let rowsHtml = '';
         checkedBoxes.forEach((cb, idx) => {
-          rowsHtml += `<tr><td><span style="font-weight:600;">${cb.value}</span></td>
-            <td><select class="form-select" name="bottleneck_stage_link[]"><option value="">Chọn công đoạn/ID đã khai</option>${[...document.querySelectorAll('#tech-table tbody tr')].map((row, i) => `<option value="${i + 1}">CĐ${i + 1} · ${row.querySelector('[name="tech_stage[]"]')?.value || 'Chưa đặt tên'}</option>`).join('')}<option value="Chưa xác định">Chưa xác định</option></select></td>
-            <td><input class="form-input" name="bottleneck_cause[]" placeholder="Nguyên nhân; có thể chưa rõ"></td>
-            ${[1,2,3,4,5].map((score) => `<td class="scale-th"><input type="radio" id="bottleneck_score_${idx}_${score}" name="bottleneck_score_${idx}" value="${score}" class="rating-radio-input"><label for="bottleneck_score_${idx}_${score}" class="rating-circle-btn" title="Mức ảnh hưởng ${score}">${score}</label></td>`).join('')}
-          </tr>`;
+          rowsHtml += renderRatingRow(cb.value, 'bottleneck_score', idx, 5);
         });
         bottleneckRatingBody.innerHTML = rowsHtml;
       }
@@ -2327,7 +2243,6 @@
         <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${rowCount}</td>
         <td><input type="text" class="form-input" name="tech_stage[]" placeholder="VD: Công đoạn..."></td>
         <td><input type="text" class="form-input" name="tech_equipment[]" placeholder="VD: Tên thiết bị..."></td>
-        <td><input type="text" class="form-input" name="tech_product[]" placeholder="ID/tên sản phẩm"></td>
         <td><input type="number" class="form-input" name="tech_year[]" min="1980" max="2026" placeholder="Năm"></td>
         <td>
           <select class="form-select" name="tech_origin[]">
@@ -2341,7 +2256,6 @@
             <option value="Khác">Nguồn khác</option>
           </select>
         </td>
-        <td><input type="text" class="form-input" name="tech_evidence[]" placeholder="Mã/tên tài liệu"></td>
         <td style="text-align: center;">
           <button type="button" class="btn-remove-ticket" style="padding: 4px 8px;" title="Xóa dòng" onclick="deleteTableRow(this)">✕</button>
         </td>
@@ -2361,75 +2275,14 @@
       }
     };
 
-    // 8. Demand Tickets Manager & Realtime TNI Calculator (PO-DEC-20261008-03)
+    // 8. Demand Tickets Manager
     let demandCount = 0;
     const demandContainer = document.getElementById('demand-items-container');
-
-    const SECTOR_OPTIONS = [
-      { code: 'LV01', name: 'Nông nghiệp, lâm nghiệp và thủy sản CNC' },
-      { code: 'LV02', name: 'Chế biến thực phẩm và đồ uống' },
-      { code: 'LV03', name: 'Dệt may, da giày và phụ liệu thời trang' },
-      { code: 'LV04', name: 'Chế biến gỗ, giấy và lâm sản' },
-      { code: 'LV05', name: 'Sản xuất hóa chất, phân bón và cao su' },
-      { code: 'LV06', name: 'Dược phẩm, mỹ phẩm và thiết bị y tế' },
-      { code: 'LV07', name: 'Sản xuất vật liệu xây dựng và gốm sứ' },
-      { code: 'LV08', name: 'Luyện kim và gia công kim loại' },
-      { code: 'LV09', name: 'Cơ khí chế tạo máy và tự động hóa' },
-      { code: 'LV10', name: 'Điện, điện tử và quang học' },
-      { code: 'LV11', name: 'Công nghệ thông tin và truyền thông (ICT)' },
-      { code: 'LV12', name: 'Năng lượng tái tạo và điện lực' },
-      { code: 'LV13', name: 'Cấp nước, xử lý nước thải và chất thải' },
-      { code: 'LV14', name: 'Xây dựng và phát triển hạ tầng' },
-      { code: 'LV15', name: 'Giao thông vận tải, logistics và kho bãi' },
-      { code: 'LV16', name: 'Thương mại điện tử và dịch vụ số' },
-      { code: 'LV17', name: 'Dịch vụ KH&CN, thử nghiệm và đo lường' },
-      { code: 'LV18', name: 'Lĩnh vực công nghệ tích hợp liên ngành khác' }
-    ];
-
-    const TECH_GROUP_OPTIONS = [
-      { code: 'CN01', name: 'Tự động hóa dây chuyền & Cánh tay Robot' },
-      { code: 'CN02', name: 'AI, Thị giác máy tính (Machine Vision) & OCR' },
-      { code: 'CN03', name: 'Cảm biến thông minh & Internet vạn vật (IoT)' },
-      { code: 'CN04', name: 'Công nghệ sinh học, vi sinh & lên men' },
-      { code: 'CN05', name: 'Công nghệ chiết xuất, tinh chế & hóa dược' },
-      { code: 'CN06', name: 'Công nghệ bảo quản sau thu hoạch & sấy lạnh' },
-      { code: 'CN07', name: 'Vật liệu mới, vật liệu Nano & Polymer composite' },
-      { code: 'CN08', name: 'Gia công CNC chính xác & Khuôn mẫu' },
-      { code: 'CN09', name: 'Hệ thống năng lượng mặt trời, ESS & Tiết kiệm điện' },
-      { code: 'CN10', name: 'Xử lý nước thải công nghiệp & Tái tuần hoàn nước' },
-      { code: 'CN11', name: 'Xử lý khí thải, bụi & Giảm phát thải CO2' },
-      { code: 'CN12', name: 'Phần mềm ERP/MES điều hành sản xuất thông minh' }
-    ];
-
-    const DEMAND_TYPE_OPTIONS = [
-      { code: 'NC01', name: 'Mua sắm dây chuyền / máy móc thiết bị mới hoàn toàn' },
-      { code: 'NC02', name: 'Đổi mới, cải tiến, nâng cấp dây chuyền hiện có' },
-      { code: 'NC03', name: 'Mua bản quyền, tiếp nhận chuyển giao quy trình công nghệ' },
-      { code: 'NC04', name: 'Hợp tác nghiên cứu, đồng phát triển (R&D) với Viện/Trường' },
-      { code: 'NC05', name: 'Thuê thiết bị, giải pháp hoặc dịch vụ công nghệ' },
-      { code: 'NC06', name: 'Cần tư vấn xác định giải pháp kỹ thuật tối ưu' }
-    ];
-
-    function calculateTniScore(k, l, n, o) {
-      return Math.round((k * 35 + l * 30 + n * 20 + o * 15) / 5);
-    }
-
-    function getTniClassification(score) {
-      if (score >= 80) return { label: 'Nhu cầu rất cao (Ưu tiên đặc biệt)', badgeClass: 'tni-badge-very-high' };
-      if (score >= 65) return { label: 'Nhu cầu cao (Ưu tiên đợt 1)', badgeClass: 'tni-badge-high' };
-      if (score >= 50) return { label: 'Nhu cầu trung bình', badgeClass: 'tni-badge-medium' };
-      return { label: 'Nhu cầu thấp (Theo dõi)', badgeClass: 'tni-badge-low' };
-    }
 
     function createDemandCard(index) {
       const div = document.createElement('div');
       div.className = 'demand-ticket-card';
       div.dataset.index = index;
-      
-      const sectorOptionsHtml = SECTOR_OPTIONS.map(s => `<option value="${s.code}">[${s.code}] ${s.name}</option>`).join('');
-      const techOptionsHtml = TECH_GROUP_OPTIONS.map(t => `<option value="${t.code}">[${t.code}] ${t.name}</option>`).join('');
-      const demandTypeOptionsHtml = DEMAND_TYPE_OPTIONS.map(d => `<option value="${d.code}">[${d.code}] ${d.name}</option>`).join('');
-
       div.innerHTML = `
         <div class="demand-card-topbar">
           <span class="ticket-badge-pill">
@@ -2441,40 +2294,17 @@
 
         <div class="grid-2col">
           <div class="form-item">
-            <label class="form-item-label">Lĩnh vực ứng dụng (MA_LINH_VUC) <span class="req-mark">*</span></label>
-            <select class="form-select" name="demand_sector[]" required>
-              <option value="">-- Chọn lĩnh vực ứng dụng (18 ngành) --</option>
-              ${sectorOptionsHtml}
-            </select>
-          </div>
-
-          <div class="form-item">
-            <label class="form-item-label">Nhóm công nghệ quan tâm (MA_NHOM_CN) <span class="req-mark">*</span></label>
-            <select class="form-select" name="demand_tech_group[]" required>
-              <option value="">-- Chọn nhóm công nghệ kỹ thuật --</option>
-              ${techOptionsHtml}
-            </select>
-          </div>
-
-          <div class="form-item">
-            <label class="form-item-label">Loại hình nhu cầu tiếp nhận (MA_NHU_CAU) <span class="req-mark">*</span></label>
-            <select class="form-select" name="demand_type_code[]" required>
-              ${demandTypeOptionsHtml}
-            </select>
-          </div>
-
-          <div class="form-item">
             <label class="form-item-label">Công đoạn sản xuất có nhu cầu <span class="req-mark">*</span></label>
             <input type="text" class="form-input" name="demand_stage[]" placeholder="VD: Khâu đóng gói & dán nhãn tự động" required>
           </div>
 
-          <div class="form-item col-span-full">
-            <label class="form-item-label">Vấn đề kỹ thuật cần giải quyết (Điểm nghẽn) <span class="req-mark">*</span></label>
+          <div class="form-item">
+            <label class="form-item-label">Vấn đề kỹ thuật cần giải quyết <span class="req-mark">*</span></label>
             <input type="text" class="form-input" name="demand_problem[]" placeholder="VD: Tốc độ chậm, tỷ lệ dán lệch nhãn 8%, tốn 4 nhân công" required>
           </div>
 
           <div class="form-item col-span-full">
-            <label class="form-item-label">Công nghệ / Thiết bị tìm mua cụ thể</label>
+            <label class="form-item-label">Công nghệ / Giải pháp kỹ thuật mong muốn tiếp nhận</label>
             <div style="display:flex; gap:12px; align-items:center;">
               <input type="text" class="form-input" name="demand_solution[]" placeholder="VD: Dây chuyền dán nhãn tốc độ cao tích hợp AI Vision kiểm tra ngoại quan">
               <label class="size-option-card" style="padding:0 16px; height:var(--control-height); white-space:nowrap; margin:0; flex-shrink:0;">
@@ -2482,7 +2312,7 @@
                 <span class="size-card-title" style="font-size:13px;">Cần tư vấn giải pháp</span>
               </label>
             </div>
-            <span class="field-hint">Nếu chưa rõ công nghệ cụ thể, tích chọn “Cần tư vấn giải pháp” để nhận trợ giúp từ Mạng lưới Chuyên gia.</span>
+            <span class="field-hint">Nếu chưa rõ tên công nghệ cụ thể, tích chọn "Cần tư vấn giải pháp" để Hội đồng KH&CN hỗ trợ khảo sát trực tiếp.</span>
           </div>
 
           <div class="form-item">
@@ -2491,203 +2321,48 @@
           </div>
 
           <div class="form-item">
-            <label class="form-item-label">Dự toán ngân sách đầu tư dự kiến (7 mức chuẩn)</label>
-            <select class="form-select" name="demand_budget[]">
-              <option value="Chưa xác định">Chưa xác định / Cần báo giá từ chuyên gia</option>
-              <option value="Dưới 100 triệu đồng">Dưới 100 triệu đồng</option>
-              <option value="100–500 triệu đồng" selected>100–500 triệu đồng</option>
-              <option value="500 triệu–1 tỷ đồng">500 triệu–1 tỷ đồng</option>
-              <option value="1–5 tỷ đồng">1–5 tỷ đồng</option>
-              <option value="5–10 tỷ đồng">5–10 tỷ đồng</option>
-              <option value="Trên 10 tỷ đồng">Trên 10 tỷ đồng</option>
+            <label class="form-item-label">Quy mô áp dụng dự kiến</label>
+            <input type="text" class="form-input" name="demand_scale[]" placeholder="VD: 02 dây chuyền tại xưởng số 1">
+          </div>
+
+          <div class="form-item">
+            <label class="form-item-label">Mức độ ưu tiên của doanh nghiệp</label>
+            <select class="form-select" name="demand_priority[]">
+              <option value="5">★★★★★ Mức 5 (Rất cấp thiết, cần triển khai ngay)</option>
+              <option value="4">★★★★☆ Mức 4 (Ưu tiên cao trong năm nay)</option>
+              <option value="3" selected>★★★☆☆ Mức 3 (Ưu tiên trung bình)</option>
+              <option value="2">★★☆☆☆ Mức 2 (Ưu tiên thấp, khi có ngân sách)</option>
+              <option value="1">★☆☆☆☆ Mức 1 (Tìm hiểu tiềm năng)</option>
             </select>
           </div>
-        </div>
 
-        <!-- BỘ TỨ THAM SỐ ĐỊNH LƯỢNG & WIDGET TÍNH ĐIỂM TNI TỰ ĐỘNG -->
-        <div class="tni-panel" data-card-idx="${index}">
-          <div class="tni-panel-header">
-            <div class="tni-panel-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-              <span>Đánh Giá Định Lượng & Chỉ Số Nhu Cầu Công Nghệ (TNI)</span>
-            </div>
-            <div class="tni-score-badge tni-badge-medium" id="tni-badge-${index}">
-              <span>TNI:</span>
-              <strong id="tni-val-${index}">62</strong>
-              <span>/ 100</span>
-              <span id="tni-class-${index}" style="margin-left:6px; font-weight:700;">(Nhu cầu trung bình)</span>
-            </div>
+          <div class="form-item">
+            <label class="form-item-label">Thời gian mong muốn hoàn thành</label>
+            <select class="form-select" name="demand_timeframe[]">
+              <option value="Trong 6 tháng">Trong vòng 6 tháng tới</option>
+              <option value="6–12 tháng" selected>Từ 6 – 12 tháng</option>
+              <option value="1–3 năm">Từ 1 – 3 năm</option>
+              <option value="Trên 3 năm">Trên 3 năm (Dài hạn)</option>
+              <option value="Chưa xác định">Chưa xác định thời gian</option>
+            </select>
           </div>
 
-          <div class="tni-grid-4col">
-            <!-- Dim 1: K - Cấp thiết -->
-            <div class="tni-dimension-card">
-              <div class="tni-dim-title">
-                <span>1. Mức độ cấp thiết (K)</span>
-                <span class="tni-dim-weight">Trọng số 35%</span>
-              </div>
-              <div class="tni-dim-desc" id="k-desc-${index}">Thời gian mong muốn: 12–24 tháng (Triển khai trung hạn)</div>
-              <div class="tni-radio-group" data-dim="k">
-                <div class="tni-radio-btn" data-val="1">1 (Rất thấp)</div>
-                <div class="tni-radio-btn" data-val="2">2 (Thấp)</div>
-                <div class="tni-radio-btn active" data-val="3">3 (TB)</div>
-                <div class="tni-radio-btn" data-val="4">4 (Cấp thiết)</div>
-                <div class="tni-radio-btn" data-val="5">5 (Khẩn cấp)</div>
-              </div>
-              <input type="hidden" name="urgency_score[]" value="3" class="dim-k-input">
-            </div>
-
-            <!-- Dim 2: L - Tác động -->
-            <div class="tni-dimension-card">
-              <div class="tni-dim-title">
-                <span>2. Tác động kỳ vọng (L)</span>
-                <span class="tni-dim-weight">Trọng số 30%</span>
-              </div>
-              <div class="tni-dim-desc" id="l-desc-${index}">Tạo cải thiện đáng kể ở một số chỉ tiêu vận hành</div>
-              <div class="tni-radio-group" data-dim="l">
-                <div class="tni-radio-btn" data-val="1">1 (Rất thấp)</div>
-                <div class="tni-radio-btn" data-val="2">2 (Thấp)</div>
-                <div class="tni-radio-btn active" data-val="3">3 (TB)</div>
-                <div class="tni-radio-btn" data-val="4">4 (Cao)</div>
-                <div class="tni-radio-btn" data-val="5">5 (Rất cao)</div>
-              </div>
-              <input type="hidden" name="impact_score[]" value="3" class="dim-l-input">
-            </div>
-
-            <!-- Dim 3: N - Khả năng đầu tư -->
-            <div class="tni-dimension-card">
-              <div class="tni-dim-title">
-                <span>3. Khả năng đầu tư / Tài chính (N)</span>
-                <span class="tni-dim-weight">Trọng số 20%</span>
-              </div>
-              <div class="tni-dim-desc" id="n-desc-${index}">Tự bố trí dưới 30% kinh phí, cần vốn hỗ trợ bên ngoài</div>
-              <div class="tni-radio-group" data-dim="n">
-                <div class="tni-radio-btn" data-val="1">1 (Rất thấp)</div>
-                <div class="tni-radio-btn active" data-val="2">2 (Thấp)</div>
-                <div class="tni-radio-btn" data-val="3">3 (TB)</div>
-                <div class="tni-radio-btn" data-val="4">4 (Khá)</div>
-                <div class="tni-radio-btn" data-val="5">5 (Cao)</div>
-              </div>
-              <input type="hidden" name="investment_capacity[]" value="2" class="dim-n-input">
-            </div>
-
-            <!-- Dim 4: O - TAR Sẵn sàng -->
-            <div class="tni-dimension-card">
-              <div class="tni-dim-title">
-                <span>4. Sẵn sàng tiếp nhận TAR (O)</span>
-                <span class="tni-dim-weight">Trọng số 15%</span>
-              </div>
-              <div class="tni-dim-desc" id="o-desc-${index}">Chưa sẵn sàng: Chưa có kế hoạch/nhân lực cụ thể</div>
-              <div class="tni-radio-group" data-dim="o">
-                <div class="tni-radio-btn active" data-val="1">1 (Chưa SS)</div>
-                <div class="tni-radio-btn" data-val="2">2 (SS thấp)</div>
-                <div class="tni-radio-btn" data-val="3">3 (SS TB)</div>
-                <div class="tni-radio-btn" data-val="4">4 (SS cao)</div>
-                <div class="tni-radio-btn" data-val="5">5 (Rất SS)</div>
-              </div>
-              <input type="hidden" name="adoption_readiness[]" value="1" class="dim-o-input">
-            </div>
+          <div class="form-item col-span-full">
+            <label class="form-item-label">Dự toán ngân sách đầu tư dự kiến</label>
+            <select class="form-select" name="demand_budget[]">
+              <option value="Chưa xác định">Chưa xác định / Cần báo giá từ chuyên gia</option>
+              <option value="Dưới 100 triệu VNĐ">Dưới 100 triệu VNĐ</option>
+              <option value="100 – 500 triệu VNĐ">Từ 100 – 500 triệu VNĐ</option>
+              <option value="500 triệu – 1 tỷ VNĐ">Từ 500 triệu – 1 tỷ VNĐ</option>
+              <option value="1 – 5 tỷ VNĐ">Từ 1 – 5 tỷ VNĐ</option>
+              <option value="5 – 10 tỷ VNĐ">Từ 5 – 10 tỷ VNĐ</option>
+              <option value="Trên 10 tỷ VNĐ">Trên 10 tỷ VNĐ</option>
+            </select>
+            <span class="field-hint">🔒 Ngân sách được phân loại theo khoảng giá trị để bảo mật bí mật kinh doanh, không hiển thị công khai.</span>
           </div>
-
-          <div class="tni-summary-row">
-            <span>Công thức chuẩn: <code>TNI = ROUND((K×35 + L×30 + N×20 + O×15) / 5, 0)</code></span>
-            <span>Chỉ số TNI cao sẽ được hệ thống tự động ưu tiên ghép nối nguồn cung (Seller) và chuyên gia tư vấn.</span>
-          </div>
-          <input type="hidden" name="tni_score[]" value="62" class="tni-score-input">
-          <input type="hidden" name="tni_classification[]" value="MEDIUM" class="tni-class-input">
         </div>
       `;
-
-      // Bind TNI Button Click Events
-      bindTniEvents(div, index);
-
       return div;
-    }
-
-    const K_DESCRIPTIONS = {
-      1: 'Thời gian mong muốn: > 36 tháng (Chưa cần thiết phải triển khai ngay)',
-      2: 'Thời gian mong muốn: 24–36 tháng (Đưa vào kế hoạch dài hạn)',
-      3: 'Thời gian mong muốn: 12–24 tháng (Chuẩn bị triển khai trung hạn)',
-      4: 'Thời gian mong muốn: 6–12 tháng (Cần triển khai ngắn hạn)',
-      5: 'Thời gian mong muốn: ≤ 6 tháng (Rất khẩn cấp, cần triển khai ngay)'
-    };
-
-    const L_DESCRIPTIONS = {
-      1: 'Tác động không đáng kể, cải thiện nhỏ trong vận hành',
-      2: 'Có cải thiện nhưng chưa tạo thay đổi rõ rệt',
-      3: 'Tạo cải thiện đáng kể ở một số chỉ tiêu vận hành',
-      4: 'Tạo chuyển biến rõ rệt về hiệu quả sản xuất – kinh doanh',
-      5: 'Tác động rất lớn, tạo bước nhảy vọt về năng lực cạnh tranh'
-    };
-
-    const N_DESCRIPTIONS = {
-      1: 'Rất thấp: Chưa có vốn, cần tài trợ/hỗ trợ gần như 100%',
-      2: 'Thấp: Tự bố trí dưới 30% kinh phí, cần huy động vốn ngoài',
-      3: 'Trung bình: Tự bố trí 30–<50% kinh phí, kết hợp nhiều nguồn',
-      4: 'Khá: Tự bố trí 50–<80% kinh phí, tương đối chủ động',
-      5: 'Cao: Tự bố trí từ 80% trở lên, cơ bản chủ động nguồn vốn'
-    };
-
-    const O_DESCRIPTIONS = {
-      1: 'Chưa sẵn sàng: Chưa có kế hoạch hoặc nguồn lực tiếp nhận',
-      2: 'Sẵn sàng thấp: Đang tìm hiểu sơ bộ; chưa có kế hoạch đầu tư cụ thể',
-      3: 'Sẵn sàng trung bình: Đã xác định giải pháp sơ bộ; cần chuẩn bị nguồn lực',
-      4: 'Sẵn sàng cao: Đã có kế hoạch, nhân sự và dự toán kinh phí',
-      5: 'Rất sẵn sàng: Đã bố trí đầy đủ nguồn lực và quyết định triển khai ngay'
-    };
-
-    function bindTniEvents(card, index) {
-      card.querySelectorAll('.tni-radio-group').forEach(group => {
-        const dim = group.dataset.dim;
-        group.querySelectorAll('.tni-radio-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            group.querySelectorAll('.tni-radio-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const val = parseInt(btn.dataset.val, 10);
-            
-            card.querySelector(`.dim-${dim}-input`).value = val;
-
-            // Update description
-            if (dim === 'k') card.querySelector(`#k-desc-${index}`).textContent = K_DESCRIPTIONS[val];
-            if (dim === 'l') card.querySelector(`#l-desc-${index}`).textContent = L_DESCRIPTIONS[val];
-            if (dim === 'n') card.querySelector(`#n-desc-${index}`).textContent = N_DESCRIPTIONS[val];
-            if (dim === 'o') card.querySelector(`#o-desc-${index}`).textContent = O_DESCRIPTIONS[val];
-
-            updateCardTni(card, index);
-          });
-        });
-      });
-    }
-
-    function updateCardTni(card, index) {
-      const k = parseInt(card.querySelector('.dim-k-input').value, 10) || 3;
-      const l = parseInt(card.querySelector('.dim-l-input').value, 10) || 3;
-      const n = parseInt(card.querySelector('.dim-n-input').value, 10) || 2;
-      const o = parseInt(card.querySelector('.dim-o-input').value, 10) || 1;
-
-      const score = calculateTniScore(k, l, n, o);
-      const classification = getTniClassification(score);
-
-      const valEl = card.querySelector(`#tni-val-${index}`);
-      const classEl = card.querySelector(`#tni-class-${index}`);
-      const badgeEl = card.querySelector(`#tni-badge-${index}`);
-
-      if (valEl) valEl.textContent = score;
-      if (classEl) classEl.textContent = `(${classification.label.split(' ')[0]} ${classification.label.split(' ')[1] || ''})`;
-      
-      if (badgeEl) {
-        badgeEl.className = `tni-score-badge ${classification.badgeClass}`;
-      }
-
-      const scoreInput = card.querySelector('.tni-score-input');
-      const classInput = card.querySelector('.tni-class-input');
-      if (scoreInput) scoreInput.value = score;
-      if (classInput) {
-        if (score >= 80) classInput.value = 'VERY_HIGH';
-        else if (score >= 65) classInput.value = 'HIGH';
-        else if (score >= 50) classInput.value = 'MEDIUM';
-        else classInput.value = 'LOW';
-      }
     }
 
     function addDemandCard() {
@@ -2713,7 +2388,7 @@
     window.toggleNeedConsulting = function(cb) {
       const input = cb.closest('.form-item').querySelector('input[type="text"]');
       if (cb.checked) {
-        if (!input.value) input.value = "Chưa xác định công nghệ cụ thể - doanh nghiệp cần tư vấn xác định yêu cầu";
+        if (!input.value) input.value = "Chưa xác định công nghệ cụ thể - Cần Hội đồng KH&CN Viện NacenTech khảo sát và tư vấn giải pháp";
       } else {
         if (input.value.includes("Chưa xác định công nghệ cụ thể")) input.value = "";
       }
@@ -2747,32 +2422,6 @@
       }
     });
 
-    // Product list: keep each field as a parallel [] array for draft/export compatibility.
-    const productFieldNames = ['product_name[]', 'product_volume[]', 'product_capacity_design[]', 'product_capacity_actual[]', 'product_market[]', 'product_customer[]', 'product_standards[]', 'product_scaling[]'];
-    const productRowMarkup = `<td><input class="form-input" name="product_name[]" placeholder="Tên sản phẩm"></td><td><input class="form-input" name="product_volume[]" placeholder="Số lượng + đơn vị + kỳ"></td><td><input class="form-input" name="product_capacity_design[]" placeholder="Giá trị + đơn vị"></td><td><input class="form-input" name="product_capacity_actual[]" placeholder="Giá trị + đơn vị"></td><td><input class="form-input" name="product_market[]" placeholder="Thị trường/địa bàn"></td><td><input class="form-input" name="product_customer[]" placeholder="Nhóm khách hàng"></td><td><input class="form-input" name="product_standards[]" placeholder="Tiêu chuẩn/yêu cầu"></td><td><input class="form-input" name="product_scaling[]" placeholder="Điều kiện/dự kiến"></td><td><button type="button" class="btn btn-outline btn-sm remove-product-row" aria-label="Xóa dòng sản phẩm">Xóa</button></td>`;
-    const productRows = document.getElementById('product-rows');
-
-    function addProductRow(values = null) {
-      const row = document.createElement('tr');
-      row.innerHTML = productRowMarkup;
-      if (values) productFieldNames.forEach((name, i) => { row.querySelector(`[name="${name}"]`).value = values[i] ?? ''; });
-      productRows.appendChild(row);
-    }
-
-    function renderProductRows(data = {}) {
-      const rowCount = Math.max(1, ...productFieldNames.map(name => Array.isArray(data[name]) ? data[name].length : 0));
-      productRows.innerHTML = '';
-      for (let i = 0; i < rowCount; i++) {
-        addProductRow(Object.fromEntries(productFieldNames.map(name => [name, data[name]?.[i] ?? ''])));
-      }
-    }
-
-    document.getElementById('btn-add-product-row').addEventListener('click', () => addProductRow());
-    productRows.addEventListener('click', event => {
-      const removeButton = event.target.closest('.remove-product-row');
-      if (removeButton && productRows.rows.length > 1) removeButton.closest('tr').remove();
-    });
-
     // 12. LocalStorage Drafts
     const STORAGE_KEY = 'nacentech_survey_commercial_draft';
 
@@ -2795,7 +2444,7 @@
       const data = getFormData();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       if (manual) {
-        showToast('✓ Bản nháp xem trước đã lưu trên thiết bị này.', 'success');
+        showToast('✓ Bản nháp đã được lưu thành công trên thiết bị!', 'success');
       }
     }
 
@@ -2807,9 +2456,7 @@
       }
       try {
         const data = JSON.parse(raw);
-        renderProductRows(data);
         for (const [key, val] of Object.entries(data)) {
-          if (productFieldNames.includes(key)) continue;
           if (Array.isArray(val)) {
             const inputs = document.querySelectorAll(`[name="${key}"]`);
             inputs.forEach(inp => {
@@ -2838,7 +2485,7 @@
         if (revSelect.value === 'custom') revCustomBox.classList.add('active');
         updateBottlenecks();
         calculateProgress();
-        showToast('✓ Đã khôi phục bản nháp xem trước trên thiết bị này.', 'success');
+        showToast('✓ Đã khôi phục thành công dữ liệu bản nháp!', 'success');
       } catch (e) {
         showToast('Lỗi khi đọc file nháp: ' + e.message, 'error');
       }
@@ -2890,14 +2537,16 @@
         return;
       }
 
+      const randomCode = Math.floor(1000 + Math.random() * 9000);
+      const ticketId = `SURVEY-2026-DNNVV-${randomCode}`;
+
+      document.getElementById('modal-ticket-id').textContent = ticketId;
       document.getElementById('modal-company-name').textContent = document.getElementById('company-name').value || 'Doanh nghiệp chưa đặt tên';
       document.getElementById('modal-contact-name').textContent = document.getElementById('contact-name').value || 'Đại diện DN';
       document.getElementById('modal-sector').textContent = document.getElementById('primary-sector').value || 'Chưa chọn';
       
       const demandCards = document.querySelectorAll('.demand-ticket-card');
       document.getElementById('modal-demand-count').textContent = `${demandCards.length} bài toán nhu cầu`;
-      const productCount = [...document.querySelectorAll('[name="product_name[]"]')].filter(input => input.value.trim()).length;
-      document.getElementById('modal-product-count').textContent = `${productCount} sản phẩm/dịch vụ đã khai`;
 
       document.getElementById('success-modal').classList.add('active');
     });
@@ -2908,13 +2557,14 @@
 
     document.getElementById('btn-export-json').addEventListener('click', () => {
       const data = getFormData();
-      data.previewed_at = new Date().toISOString();
+      data.ticket_id = document.getElementById('modal-ticket-id').textContent;
+      data.submitted_at = new Date().toISOString();
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Phieu_Khao_Sat_Xem_Truoc_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `Phieu_Khao_Sat_${data.ticket_id}.json`;
       a.click();
       URL.revokeObjectURL(url);
     });

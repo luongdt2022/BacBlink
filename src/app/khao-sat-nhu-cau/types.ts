@@ -3,21 +3,18 @@
  * SSOT từ wireframe: Specification/02_BASIC_DESIGN/TASK-03_HO_SO_TIM_MUA_BUYER/wireframe_phieu_khao_sat_dnnvv.html
  */
 
-export const PROVINCES_63 = [
+// Danh mục 34 Tỉnh/Thành phố Trọng Điểm thuộc phạm vi Đề tài / CSDL Quốc Gia NacenTwin (SSOT)
+export const PROVINCES_34 = [
   'Hà Nội', 'TP. Hồ Chí Minh', 'Hải Phòng', 'Đà Nẵng', 'Cần Thơ',
-  'Bắc Ninh', 'Bắc Giang', 'Vĩnh Phúc', 'Quảng Ninh', 'Hải Dương',
-  'Hưng Yên', 'Thái Nguyên', 'Phú Thọ', 'Nam Định', 'Ninh Bình',
-  'Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị',
-  'Thừa Thiên Huế', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên',
-  'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Đắk Lắk', 'Đắk Nông',
-  'Gia Lai', 'Kon Tum', 'Lâm Đồng', 'Bình Phước', 'Tây Ninh',
-  'Bình Dương', 'Đồng Nai', 'Bà Rịa - Vũng Tàu', 'Long An', 'Tiền Giang',
-  'Bến Tre', 'Trà Vinh', 'Vĩnh Long', 'Đồng Tháp', 'An Giang',
-  'Kiên Giang', 'Hậu Giang', 'Sóc Trăng', 'Bạc Liêu', 'Cà Mau',
-  'Hà Giang', 'Cao Bằng', 'Bắc Kạn', 'Tuyên Quang', 'Lào Cai',
-  'Yên Bái', 'Điện Biên', 'Lai Châu', 'Sơn La', 'Hòa Bình',
-  'Lạng Sơn', 'Hà Nam', 'Thái Bình'
+  'Bắc Ninh', 'Quảng Ninh', 'Hưng Yên', 'Thái Nguyên', 'Phú Thọ',
+  'Ninh Bình', 'Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Trị',
+  'Thừa Thiên Huế', 'Quảng Ngãi', 'Khánh Hòa', 'Đắk Lắk', 'Gia Lai',
+  'Lâm Đồng', 'Tây Ninh', 'Đồng Nai', 'Vĩnh Long', 'Đồng Tháp',
+  'An Giang', 'Cà Mau', 'Cao Bằng', 'Tuyên Quang', 'Lào Cai',
+  'Điện Biên', 'Lai Châu', 'Sơn La', 'Lạng Sơn'
 ];
+
+export const PROVINCES_63 = PROVINCES_34; // Đồng bộ toàn bộ dự án về 34 tỉnh thành trọng điểm
 
 export const TECH_GROUP_OPTIONS = [
   { code: 'CN01', name: 'Tự động hóa dây chuyền & Cánh tay Robot' },
@@ -184,11 +181,18 @@ export const SUPPORT_NEEDS_LIST = [
 // THUẬT TOÁN TNI CHUẨN PO-DEC-20261008-01 (4 CHIỀU K, L, N, O)
 // =========================================================================
 export function calculateTniScore(k: number, l: number, n: number, o: number): number {
+  if (k <= 0 || l <= 0 || n <= 0 || o <= 0) return 0;
   const raw = (k * 35 + l * 30 + n * 20 + o * 15) / 5;
   return Math.round(raw);
 }
 
 export function getTniBadge(score: number) {
+  if (score <= 0) {
+    return {
+      label: 'Chưa đánh giá (Chọn 4 chỉ số K, L, N, O)',
+      className: 'bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-700'
+    };
+  }
   if (score >= 80) {
     return {
       label: 'Cấp thiết rất cao (SLA 24h)',
