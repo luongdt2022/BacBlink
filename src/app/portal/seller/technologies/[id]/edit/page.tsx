@@ -57,7 +57,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [problemSolved, setProblemSolved] = useState("");
-  const [sectorCode, setSectorCode] = useState("FOOD");
+  const [sectorCode, setSectorCode] = useState("LV01");
   const [pricingType, setPricingType] = useState<PricingType>("RANGE");
   const [priceAmount, setPriceAmount] = useState<number | undefined>(undefined);
   const [priceMin, setPriceMin] = useState<number | undefined>(undefined);

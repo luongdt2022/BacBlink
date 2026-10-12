@@ -7,19 +7,19 @@ import {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
 
-// Danh mục 10 Lĩnh vực công nghệ trọng điểm chuẩn hóa theo Thông tư 17/2019/TT-BKHCN
+// Danh mục 10 Lĩnh vực công nghệ trọng điểm chuẩn hóa đồng bộ với CSDL (/api/v1/sectors)
 export const SECTORS_18_CATALOG: SectorItem[] = [
-  { code: "ALL", name: "Tất cả 10 lĩnh vực", count: 0 },
-  { code: "LV01", name: "Nông nghiệp & Chế biến nông sản", count: 0 },
-  { code: "LV05", name: "Y tế & Dược phẩm", count: 0 },
-  { code: "LV07", name: "Cơ khí, Chế tạo máy & Tự động hóa", count: 0 },
-  { code: "LV08", name: "Điện tử, Viễn thông & CNTT", count: 0 },
-  { code: "LV11", name: "Năng lượng mới & Tái tạo", count: 0 },
-  { code: "LV12", name: "Vật liệu mới & Nanotech", count: 0 },
-  { code: "LV14", name: "Hóa chất & Công nghệ sinh học", count: 0 },
-  { code: "LV15", name: "Môi trường & Xử lý rác thải", count: 0 },
-  { code: "LV16", name: "Xây dựng & Giao thông", count: 0 },
-  { code: "LV17", name: "Dịch vụ KH&CN & Khác", count: 0 },
+  { code: "ALL", name: "Tất cả lĩnh vực", count: 0 },
+  { code: "LV01", name: "Nông nghiệp", count: 0 },
+  { code: "LV05", name: "Chế biến thực phẩm – đồ uống", count: 0 },
+  { code: "LV07", name: "Cơ khí – chế tạo – công nghiệp hỗ trợ", count: 0 },
+  { code: "LV08", name: "Điện – điện tử – tự động hóa", count: 0 },
+  { code: "LV11", name: "Nước – môi trường – chất thải", count: 0 },
+  { code: "LV12", name: "Xây dựng – vật liệu – hạ tầng", count: 0 },
+  { code: "LV14", name: "Logistics – vận tải – kho bãi", count: 0 },
+  { code: "LV15", name: "Du lịch – khách sạn – nhà hàng", count: 0 },
+  { code: "LV16", name: "CNTT – viễn thông – chuyển đổi số", count: 0 },
+  { code: "LV17", name: "Khoa học – công nghệ – đổi mới sáng tạo", count: 0 },
 ];
 
 export async function fetchPublicOffers(params?: {
@@ -29,7 +29,10 @@ export async function fetchPublicOffers(params?: {
   hasTechTransfer?: boolean;
   minTrl?: number;
   ipStatus?: string;
-}): Promise<{ total: number; data: TechnologyOffer[] }> {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+}): Promise<{ total: number; data: TechnologyOffer[]; page?: number; limit?: number; totalPages?: number }> {
   try {
     const query = new URLSearchParams();
     if (params?.search) query.set("search", params.search);
@@ -42,6 +45,8 @@ export async function fetchPublicOffers(params?: {
     if (params?.minTrl) query.set("minTrl", String(params.minTrl));
     if (params?.ipStatus && params.ipStatus !== "ALL")
       query.set("ipStatus", params.ipStatus);
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.limit) query.set("limit", String(params.limit));
 
     const res = await fetch(`${API_BASE}/api/v1/technologies?${query.toString()}`, {
       cache: "no-store",
@@ -54,13 +59,16 @@ export async function fetchPublicOffers(params?: {
         ? json.data.items
         : [];
       const total = json.total ?? json.data?.total ?? items.length;
-      return { total, data: items };
+      const page = json.page ?? params?.page ?? 1;
+      const limit = json.limit ?? params?.limit ?? 12;
+      const totalPages = json.totalPages ?? (Math.ceil(total / limit) || 1);
+      return { total, data: items, page, limit, totalPages };
     }
   } catch (err) {
     console.error("Lỗi khi tải danh sách công nghệ:", err);
   }
 
-  return { total: 0, data: [] };
+  return { total: 0, data: [], page: 1, limit: 12, totalPages: 1 };
 }
 
 export async function fetchOfferById(id: string): Promise<TechnologyOffer | null> {

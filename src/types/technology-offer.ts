@@ -1,11 +1,19 @@
-export type OfferType = "PRODUCT" | "DEVICE" | "SOLUTION";
+export type OfferType =
+  | "PRODUCT"
+  | "DEVICE"
+  | "SOLUTION"
+  | "SOFTWARE"
+  | "EQUIPMENT"
+  | "PROCESS";
 
 export type IntellectualPropertyStatus =
   | "PATENT_GRANTED"
   | "UTILITY_MODEL"
   | "TRADE_SECRET"
   | "PATENT_PENDING"
+  | "PATENT_APPLICATION"
   | "SOFTWARE_COPYRIGHT"
+  | "COPYRIGHT_REGISTERED"
   | "NONE";
 
 export type TransferMethod =

@@ -92,11 +92,11 @@ export default function WireframesPage() {
               <h1 className="text-sm font-bold text-text-primary dark:text-white truncate">
                 Thư Viện Wireframe Basic Design (NacenTwin)
               </h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
                 <Sparkles className="size-3" />
                 48 Màn Hình Sống
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700 border border-brand-200 dark:bg-brand-950/60 dark:text-brand-300 dark:border-brand-800">
                 <ShieldCheck className="size-3" />
                 7 Vai Trò Tác Nhân
               </span>
@@ -175,7 +175,7 @@ export default function WireframesPage() {
 
       {/* FOOTNOTE THÔNG TIN HƯỚNG DẪN DÀNH CHO TEAM */}
       {!isZenMode && (
-        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-text-tertiary dark:text-slate-400 px-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-caption text-text-tertiary dark:text-slate-400 px-1">
           <div className="flex items-center gap-1.5">
             <Info className="size-3.5 text-brand-600 dark:text-brand-400" />
             <span>

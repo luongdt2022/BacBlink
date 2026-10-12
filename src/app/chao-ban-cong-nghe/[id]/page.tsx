@@ -191,7 +191,13 @@ export default function ChiTietChaoBanPage() {
                       {/* Tags Bar */}
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-full bg-brand-50 border border-brand-200/80 px-2.5 py-1 text-xs font-bold text-brand-700 uppercase tracking-wide">
-                          {offer.offerType === "SOLUTION" ? "Giải pháp công nghệ" : "Thiết bị công nghiệp"}
+                          {offer.offerType === "SOLUTION"
+                            ? "Giải pháp công nghệ"
+                            : offer.offerType === "SOFTWARE"
+                            ? "Phần mềm số hóa"
+                            : offer.offerType === "PROCESS"
+                            ? "Quy trình công nghệ"
+                            : "Thiết bị công nghiệp"}
                         </span>
                         <span className="rounded-full bg-cyan-50 border border-cyan-200/80 px-2.5 py-1 text-xs font-bold text-cyan-800">
                           {offer.sectorName}
@@ -204,7 +210,15 @@ export default function ChiTietChaoBanPage() {
                         )}
                         <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-bold text-emerald-700 flex items-center gap-1">
                           <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                          {offer.ipStatus === "PATENT_GRANTED" ? "Bằng độc quyền sáng chế" : "Bản quyền & SHTT hợp pháp"}
+                          {offer.ipStatus === "PATENT_GRANTED"
+                            ? "Bằng độc quyền sáng chế"
+                            : offer.ipStatus === "UTILITY_MODEL"
+                            ? "Giải pháp hữu ích"
+                            : offer.ipStatus === "COPYRIGHT_REGISTERED" || offer.ipStatus === "SOFTWARE_COPYRIGHT"
+                            ? "Đã đăng ký bản quyền"
+                            : offer.ipStatus === "PATENT_APPLICATION" || offer.ipStatus === "PATENT_PENDING"
+                            ? "Đang thẩm định sáng chế"
+                            : "Bản quyền & SHTT hợp pháp"}
                         </span>
                       </div>
 
@@ -357,6 +371,9 @@ export default function ChiTietChaoBanPage() {
                     {offer.ipStatus === "PATENT_GRANTED" && "Bằng Độc Quyền Sáng Chế"}
                     {offer.ipStatus === "UTILITY_MODEL" && "Giải Pháp Hữu Ích Đã Cấp"}
                     {offer.ipStatus === "TRADE_SECRET" && "Bí Quyết Công Nghệ (Know-how)"}
+                    {(offer.ipStatus === "COPYRIGHT_REGISTERED" || offer.ipStatus === "SOFTWARE_COPYRIGHT") && "Bản Quyền Đã Đăng Ký"}
+                    {(offer.ipStatus === "PATENT_APPLICATION" || offer.ipStatus === "PATENT_PENDING") && "Đơn Đăng Ký Sáng Chế Hợp Lệ"}
+                    {offer.ipStatus === "NONE" && "Chưa Đăng Ký SHTT"}
                     {!offer.ipStatus && "Chưa xác định"}
                   </p>
                   {offer.ipRegistrationNumber && (
