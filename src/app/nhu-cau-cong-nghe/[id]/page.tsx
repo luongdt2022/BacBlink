@@ -20,6 +20,8 @@ import {
 import { Async, AsyncState } from "@/components/ui/async";
 import { getTniClassification } from "@/components/demand/TniRealtimeCalculator";
 import { useToast } from "@/components/common/toast";
+import { authClient } from "@/lib/auth-client";
+import { SECTORS_18_CATALOG } from "@/services/api/technology-offer";
 
 export default function PublicDemandDetailPage() {
   const params = useParams();
@@ -31,6 +33,12 @@ export default function PublicDemandDetailPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [offerSent, setOfferSent] = useState(false);
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
+
+  const getSectorName = (code?: string) => {
+    if (!code) return "Lĩnh vực chung";
+    const found = SECTORS_18_CATALOG.find((s) => s.code.toUpperCase() === code.toUpperCase());
+    return found?.name || code;
+  };
 
   // Form chào bán giải pháp
   const [solutionTitle, setSolutionTitle] = useState("");
@@ -177,7 +185,7 @@ export default function PublicDemandDetailPage() {
                       </span>
                       <span className="flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 text-brand-500" />
-                        Lĩnh vực: <strong className="text-text-primary dark:text-slate-200">{item.sectorCode}</strong>
+                        Lĩnh vực: <strong className="text-text-primary dark:text-slate-200">{getSectorName(item.sectorCode)}</strong>
                       </span>
                       <span className="flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-brand-500" />

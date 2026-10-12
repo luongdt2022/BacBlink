@@ -112,8 +112,7 @@ export default function PublicDemandsPage() {
   };
 
   const getSectorShortName = (code?: string) => {
-    const fullName = getSectorName(code);
-    return fullName.split("–")[0].split("-")[0].trim();
+    return getSectorName(code);
   };
 
   // Lọc tìm kiếm và ngân sách phía Client
@@ -182,42 +181,40 @@ export default function PublicDemandsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
-      {/* HERO BANNER SECTION (ĐẠT CHUẨN ĐỘ TƯƠNG PHẢN WCAG AA & WIREFRAME BASIC DESIGN) */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-slate-950 via-brand-950 to-slate-900 text-white py-10 sm:py-12 px-4 sm:px-6 lg:px-8 border-b border-brand-900/80 shadow-md">
+      {/* HERO BANNER SECTION (ĐỒNG BỘ NACENTWIN VÀ BASIC DESIGN WIREFRAME) */}
+      <section className="relative overflow-hidden bg-brand-700 text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         {/* Lớp nghệ thuật vi mạch vi tính nền mờ nhẹ */}
         <div
           aria-hidden="true"
-          className="innovation-hero-art pointer-events-none absolute inset-0 opacity-20"
+          className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80"
         />
-        {/* Dark overlay đảm bảo 100% tương phản cho text */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/80 pointer-events-none" />
 
-        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Cột trái: Tiêu đề & Giới thiệu sắc nét */}
-          <div className="space-y-3.5 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-xs font-bold backdrop-blur-md border border-cyan-400/30">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+          <div className="space-y-3 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-xs font-semibold backdrop-blur-sm border border-white/20">
+              <Sparkles className="w-3.5 h-3.5 text-teal-300" />
               Sàn Giao Dịch Bài Toán & Nhu Cầu Đổi Mới Công Nghệ (NacenTwin)
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-tight drop-shadow-md">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight">
               Nhu Cầu Đổi Mới Công Nghệ Từ Doanh Nghiệp
             </h1>
-            <p className="text-slate-200 text-sm sm:text-base leading-relaxed font-normal">
+            <p className="text-white/80 text-xs sm:text-sm leading-relaxed max-w-xl">
               Các bài toán kỹ thuật thực tế từ các DNNVV đã được chuẩn hóa chỉ số cấp thiết TNI (Technology Need Index).
               Hỗ trợ kết nối nhà khoa học, viện trường và doanh nghiệp công nghệ giải quyết điểm nghẽn sản xuất.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link
                 href="/khao-sat-nhu-cau"
-                className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 backdrop-blur-sm shadow-sm"
+                className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 backdrop-blur-sm shadow-sm"
               >
-                <ClipboardCheck className="w-4 h-4 text-cyan-300" />
+                <ClipboardCheck className="w-4 h-4 text-teal-300" />
                 Phiếu Khảo Sát DNNVV
               </Link>
               <button
                 onClick={handleOpenQuickDemand}
-                className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-5 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2 shadow-lg shadow-emerald-950/30 border border-emerald-400/30"
+                className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 shadow-lg shadow-emerald-950/20"
               >
                 <PlusCircle className="w-4 h-4" />
                 Đăng Nhanh Bài Toán
@@ -226,22 +223,22 @@ export default function PublicDemandsPage() {
           </div>
 
           {/* Cột phải: 3 Khối Quick Metrics từ Basic Design Wireframe */}
-          <div className="grid grid-cols-3 gap-3 bg-white/10 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/20 shrink-0 text-center shadow-xl">
-            <div>
-              <div className="text-2xl sm:text-3xl font-black text-amber-400">142</div>
-              <div className="text-[10px] sm:text-xs text-slate-200 font-semibold uppercase mt-0.5">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white/10 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/20 shrink-0 text-center shadow-lg">
+            <div className="px-1 sm:px-2">
+              <div className="text-xl sm:text-2xl font-black text-amber-300">142</div>
+              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
                 Bài Toán Đang Tìm
               </div>
             </div>
-            <div className="border-x border-white/20 px-3 sm:px-4">
-              <div className="text-2xl sm:text-3xl font-black text-emerald-400">68.5 tỷ</div>
-              <div className="text-[10px] sm:text-xs text-slate-200 font-semibold uppercase mt-0.5">
+            <div className="border-x border-white/20 px-2 sm:px-3">
+              <div className="text-xl sm:text-2xl font-black text-emerald-300">68.5 tỷ</div>
+              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
                 Tổng Ngân Sách Mua
               </div>
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-black text-cyan-300">24 Giờ</div>
-              <div className="text-[10px] sm:text-xs text-slate-200 font-semibold uppercase mt-0.5">
+            <div className="px-1 sm:px-2">
+              <div className="text-xl sm:text-2xl font-black text-teal-300">24 Giờ</div>
+              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
                 Sở KH&CN Kết Nối
               </div>
             </div>
@@ -427,7 +424,7 @@ export default function PublicDemandsPage() {
                           <strong className="text-slate-700 dark:text-slate-200 font-semibold">
                             [DN {sectorShortName} - {item.province || "Hà Nội"}]
                           </strong>{" "}
-                          <span className="text-slate-400 text-[10px] font-medium">(PDPD Masked)</span>
+                          <span className="text-slate-400 text-xs font-medium">(PDPD Masked)</span>
                         </span>
                       </p>
 

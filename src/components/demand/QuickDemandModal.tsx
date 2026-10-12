@@ -103,7 +103,10 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
 
       const res = await fetch('/api/v1/demands/items', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...authClient.getAuthHeaders(),
+        },
         body: JSON.stringify(payload)
       });
 
@@ -234,12 +237,11 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                       onChange={(e) => setFormData({ ...formData, sectorCode: e.target.value })}
                       className="form-control w-full text-xs sm:text-sm font-medium"
                     >
-                      <option value="LV01">LV01 — Cơ khí chế tạo & Tự động hóa</option>
-                      <option value="LV02">LV02 — Điện tử, Viễn thông & CNTT</option>
-                      <option value="LV03">LV03 — Hóa chất & Vật liệu mới</option>
-                      <option value="LV07">LV07 — Nông nghiệp công nghệ cao</option>
-                      <option value="LV11">LV11 — Năng lượng & Môi trường</option>
-                      <option value="LV12">LV12 — Y - Dược & Thiết bị y tế</option>
+                      {sectors.map((sec) => (
+                        <option key={sec.code} value={sec.code}>
+                          {sec.code} — {sec.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
