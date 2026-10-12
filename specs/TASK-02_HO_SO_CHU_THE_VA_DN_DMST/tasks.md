@@ -44,3 +44,19 @@
 - [x] **T-02.25** `[FE]` Tạo route alias `/doanh-nghiep-dmst` đồng bộ hiển thị Danh bạ tra cứu quốc gia 304 Doanh nghiệp ĐMST theo `wireframe_danh_ba_dn_dmst.html`.
 - [x] **T-02.26** `[FE]` Cập nhật module router tại `/[module]` tự động điều hướng slug `doanh-nghiep-dmst` sang `/enterprises` thay vì hiển thị trang tĩnh giữ chỗ.
 - [x] **T-02.27** `[INT]` Xác thực kiểm thử build Next.js 15 và đối soát đồng bộ dữ liệu hồ sơ Doanh nghiệp với backend REST API V1.
+
+---
+
+### Phase 6: Delta CR-2026-010 — Nâng Cấp Toàn Diện Danh Bạ 34 Tỉnh Thành Trọng Điểm, Icon Nhận Diện & Thông Tin Cốt Lõi [BE][FE][INT][TEST]
+- [x] **T-02.28** `[CONTRACT]` Mở rộng `EnterprisePublicDirectoryItemDto` bổ sung `OwnershipType`, `OperatingZone`, `HasRdUnit`, `IsExporting`, `InValueChain`, `TopBottlenecks`, `SupportNeeds`.
+- [x] **T-02.29** `[BE]` Cập nhật `EnterpriseService.GetPublicDirectoryAsync` trích xuất các trường cốt lõi từ bảng `enterprises` và parse JSONB `demand_surveys`.
+- [x] **T-02.30** `[BE]` Nâng cấp `EfEnterpriseRepository.SearchAsync`: Sửa lỗi alias địa bàn `Hồ Chí Minh`/`TPHCM`, `Huế`, `Đắk Lắk`, chuẩn hóa Unicode `Hà Nội`, mapping thông minh `SectorCode` sang từ khóa ngành TT17, hỗ trợ `VERY_HIGH` trong TNI, và hỗ trợ tham số sắp xếp `SortBy`.
+- [x] **T-02.31** `[FE]` Cập nhật SDK `enterprise-client.ts`: Mở rộng interface `EnterpriseDirectoryItem` và hàm `fetchEnterprises` hỗ trợ tham số `sort`.
+- [x] **T-02.32** `[FE]` Tích hợp danh mục chuẩn **34 Tỉnh/Thành phố Trọng Điểm** (`PROVINCES_34`) thay thế mảng hardcoded cũ trong `enterprises/page.tsx`.
+- [x] **T-02.33** `[FE]` Xây dựng Control Sắp xếp (Sorting dropdown) và sửa triệt để nút "Đặt lại bộ lọc" đồng bộ `q` trong `enterprises/page.tsx`.
+- [x] **T-02.34** `[FE]` Viết lại thuật toán phân trang động (Dynamic Pagination) hỗ trợ trang đầu, trang cuối, window $\pm 1$ và dấu chấm lửng `...`.
+- [x] **T-02.35** `[FE]` Xây dựng component `EnterpriseAvatar`: Tự động render Logo hoặc Tech Avatar Badge bo góc (chữ cái đầu + icon ngành công nghệ trên nền gradient).
+- [x] **T-02.36** `[FE]` Thiết kế lại Card Doanh nghiệp chuẩn 5 tầng Thông tin cốt lõi (Identity, Geo/Sector, R&D/IP/Chuỗi giá trị, TNI Tag nhu cầu, Action CTAs).
+- [x] **T-02.37** `[FE]` Triệt tiêu Zero-Mock tại Modal "Kết Nối Hợp Tác": Lưu trữ yêu cầu kết nối thật sự với phản hồi minh bạch thay thế `setTimeout 2000ms`.
+- [x] **T-02.38** `[TEST]` Kiểm thử hồi quy 100% Backend & Frontend, kiểm thử thực tế các bộ lọc 34 tỉnh và ngành TT17 qua `curl` và browser.
+

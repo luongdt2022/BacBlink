@@ -215,3 +215,47 @@ Mọi màn hình và bảng danh sách đều được bọc qua `<Async>` compo
   - Duyệt mảng `DemandItems`: Khởi tạo $1..n$ bản ghi `DemandItem` gắn kèm `survey_id`, tính toán điểm TNI chuẩn hóa từ `TniCalculationEngine`.
   - Trả về mã phiếu `surveyCode` và danh sách toàn bộ mã tickets khởi tạo `createdTickets`.
 
+---
+
+## Plan Delta v4: Mở Rộng Kênh Triển Lãm, Tra Cứu MST & Auto-Provisioning Tài Khoản (PO-DEC-20261012-01)
+
+### 1. Kiến Trúc Backend & Tích Hợp API Ngoài
+- **Endpoint Tra cứu Mã số thuế Hybrid**:
+  - `GET /api/v1/enterprises/lookup-tax/{taxCode}` (trong `EnterpriseController.cs`):
+    1. Kiểm tra CSDL nội bộ `NacenTechDbContext.Enterprises` (kho 304 DN ĐMST). Nếu tìm thấy $\rightarrow$ trả về dữ liệu nội bộ đã xác thực (Tên, MST, Tỉnh/TP, Địa chỉ, Đại diện, Ngành nghề).
+    2. Nếu không tìm thấy trong DB: Gọi HTTP GET tới VietQR Business Open API (`https://api.vietqr.io/v2/business/{taxCode}`), timeout 3 giây.
+    3. Trích xuất: `data.name` (Tên công ty), `data.address` (Địa chỉ), bóc tách Tỉnh/Thành phố từ địa chỉ.
+    4. Trả về DTO chuẩn `TaxLookupResultDto`.
+- **Nâng cấp `SubmitDeepSurvey` Auto-Provisioning**:
+  - Trong `DemandController.cs`:
+    - Inject `IPersonService` và `IAuthenticationService`.
+    - Khi nhận request từ khách chưa đăng nhập (`Actor.IsAuthenticated == false`):
+      1. Kiểm tra email `req.ContactEmail` trong bảng `identity.Persons`.
+      2. Nếu chưa có: Tạo mật khẩu ngẫu nhiên an toàn, gọi `IPersonService.ProvisionAsync` với:
+         - `Email = req.ContactEmail.Trim()`
+         - `FirstName = req.ContactName.Trim()`
+         - `Organization = req.CompanyName.Trim()`
+         - `Phone = req.ContactPhone`
+         - `PlatformRole = "BUYER"`
+         - `ScopeType = "GLOBAL"`
+         - `IsActive = true`
+      3. Gán `PersonId` vừa tạo vào `survey.CreatedByPersonId` và các `demandItem.CreatedByPersonId`.
+      4. Bổ sung trường `accountProvisioned = true` và `provisionedEmail = req.ContactEmail` vào response JSON.
+
+### 2. Kiến Trúc Frontend (`/khao-sat-nhu-cau`)
+- **Nút Tra cứu MST (Tax Lookup Trigger)**:
+  - Thêm nút 🔍 "Tra cứu" ngay bên phải ô input `Mã số thuế`.
+  - Khi click hoặc khi người dùng nhập đủ 10/13 số và blur:
+    - Gọi API `/api/v1/enterprises/lookup-tax/{taxCode}`.
+    - Hiển thị spinner trạng thái và thông báo toast.
+    - Tự động điền các state: `companyName`, `province`, `address`.
+- **Smart Pre-fill Profile cho Doanh nghiệp đã đăng nhập**:
+  - Kiểm tra `authClient.getToken()`. Nếu có phiên đăng nhập:
+    - Gọi `fetchMyEnterpriseProfile()` từ `@/lib/enterprise-client`.
+    - Tự động điền: `companyName`, `taxCode`, `province`, `address`, `contactName`, `contactPosition`, `contactPhone`, `contactEmail`, `companyType`, `mainIndustry`, `employeeScale`, `revenueRange3y`.
+    - Render Banner chào mừng màu xanh trên đầu Hero Card.
+- **Màn hình thành công (Success State UI)**:
+  - Hiển thị thông báo nếu tài khoản đã được cấp tự động:
+    - *"Tài khoản Cổng ĐMST của DN đã được khởi tạo tự động với email [email@dn.vn]. Mật khẩu và liên kết kích hoạt đã được gửi tới hộp thư của bạn."*
+    - Nút CTA: *"Đăng nhập ngay để theo dõi tiến độ"*.
+

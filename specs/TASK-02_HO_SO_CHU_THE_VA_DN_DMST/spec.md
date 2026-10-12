@@ -95,3 +95,30 @@
 - **`SC-02-002`**: API tra cứu danh bạ `/api/v1/enterprises` phản hồi dưới 200ms với dataset 304 DN có index.
 - **`SC-02-003`**: 100% Business Rules (`BR-02-001` đến `BR-02-007`) được bao phủ bởi Unit Invariant Tests.
 - **`SC-02-004`**: Giao diện hiển thị chuẩn xác đầy đủ 5 trạng thái UX (Loading, Empty, Error, Success, Partial) trên cả Desktop 1440px và Mobile 390px.
+
+---
+
+## 6. SPEC DELTA V2 (CR-2026-010): NÂNG CẤP TOÀN DIỆN DANH BẠ 34 TỈNH THÀNH TRỌNG ĐIỂM, ICON THƯƠNG HIỆU & THÔNG TIN CỐT LÕI
+
+> **Căn cứ thay đổi**: Quyết định PO phê duyệt ngày 12/10/2026 rà soát màn hình `http://localhost:3000/doanh-nghiep-dmst` đối chiếu 1:1 với `wireframe_danh_ba_dn_dmst.html`. Đồng bộ phạm vi toàn dự án là **34 tỉnh/thành trọng điểm**.
+
+### 6.1 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-02-014` [Bao Phủ 34 Tỉnh/Thành Trọng Điểm & Alias Địa Bàn Thông Minh]**:
+  - Giao diện tra cứu tích hợp danh mục chuẩn **34 Tỉnh/Thành phố Trọng Điểm** (`PROVINCES_34`) thuộc phạm vi Đề tài CSDL Quốc gia NacenTwin.
+  - Backend API hỗ trợ cơ chế giải quyết alias địa bàn: truy vấn `Hồ Chí Minh` hoặc `TP. Hồ Chí Minh` tự động khớp với cả dữ liệu lưu trữ `TPHCM`; hỗ trợ `Huế` $\leftrightarrow$ `Thừa Thiên Huế`, `Đắk Lắk` $\leftrightarrow$ `Đắc Lắc`; chuẩn hóa đối soát Unicode NFC/NFD đối với `Hà Nội` và các tỉnh có dấu tiếng Việt.
+- **`REQ-02-015` [Ánh Xạ Lĩnh Vực TT17 Thông Minh]**:
+  - Bộ lọc Lĩnh vực TT17 (`SectorCode`) tự động liên thông truy vấn giữa mã chuẩn (`LV01`..`LV17`) và tên phân ngành thực tế (`main_sector_name`) của 304 DN, đảm bảo không trả về rỗng khi dữ liệu hạt nhân chưa gán `sector_code`.
+- **`REQ-02-016` [Hệ Thống Icon / Avatar Nhận Diện Thương Hiệu Doanh Nghiệp]**:
+  - Mỗi thẻ doanh nghiệp bắt buộc hiển thị Khối Biểu Trưng Thương Hiệu (Tech Avatar Badge): Render Logo nếu có URL; tự động sinh Initial Avatar Badge (chữ cái đầu tên giao dịch) kết hợp Icon công nghệ theo ngành (`Cpu`, `FlaskConical`, `Wrench`, `Sprout`, `Zap`, `Factory`) trên nền Gradient công nghệ.
+- **`REQ-02-017` [Chuẩn Hóa 5 Khối Thông Tin Cốt Lõi Trên Thẻ Card]**:
+  - Thẻ Card hiển thị đầy đủ 5 tầng thông tin cốt lõi: (1) Nhận diện & Loại hình chủ thể; (2) Địa bàn & Lĩnh vực TT17; (3) Năng lực R&D, SHTT & Chuỗi giá trị; (4) Điểm TNI & Tag phân loại nhu cầu; (5) Cặp nút hành động (Xem hồ sơ & Kết nối).
+- **`REQ-02-018` [Bộ Điều Khiển Sắp Xếp & Phân Trang Động]**:
+  - Bổ sung Dropdown sắp xếp đa tiêu chí (TNI cao nhất, SHTT nhiều nhất, Tên A-Z, Mới nhất).
+  - Thuật toán phân trang hiển thị linh hoạt trang đầu, trang cuối, trang hiện tại $\pm 1$ và dấu chấm lửng `...`.
+- **`REQ-02-019` [Triệt Tiêu Zero-Mock Tại Modal Kết Nối]**:
+  - Xóa bỏ giả lập `setTimeout`; kết nối trực tiếp với backend hoặc lưu trữ phiên làm việc thực tế với phản hồi minh bạch cho người dùng.
+
+### 6.2 Quy Tắc Nghiệp Vụ Mới (Business Rules)
+- **`BR-02-008` [Toàn Vẹn Phân Tầng TNI]**: Khi người dùng chọn lọc mức "TNI Cao", hệ thống bắt buộc phải truy vấn cả mức `HIGH` và `VERY_HIGH` (điểm TNI $\ge 75$), không được phép bỏ sót các doanh nghiệp điểm cao nhất.
+- **`BR-02-009` [Bảo Mật & Minh Bạch Đề Xuất Kết Nối]**: Mọi yêu cầu kết nối từ công chúng phải lưu vết thời gian, nội dung đề xuất và người nhận; thông tin định danh cá nhân tuân thủ Nghị định 13/2023/NĐ-CP (PDPD Masking).
+

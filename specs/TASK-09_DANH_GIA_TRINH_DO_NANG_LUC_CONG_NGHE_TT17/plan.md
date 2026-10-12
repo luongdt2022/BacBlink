@@ -84,3 +84,21 @@ public sealed class Tt17ScoreResultDto
   - `recharts` hoặc SVG thuần để vẽ biểu đồ mạng nhện Radar Chart 5 đỉnh chuẩn nét.
   - Component chuẩn `<Async>` bọc toàn bộ giao diện đảm bảo 5 trạng thái UX (Loading, Empty, Error, Success, Partial).
   - Tuân thủ nghiêm ngặt Design Token System (`slate`, `emerald`, `brand`, font $\ge$ 12px).
+
+---
+
+## 4. THIẾT KẾ DELTA: PUBLIC SURVEY INTAKE & AUTO-PROVISIONING (PO-DEC-20261012-08)
+
+- **Public Survey Intake**: Form Wizard (`/assessments/tt17/wizard`) không chặn xác thực, cho phép bất kỳ doanh nghiệp nào nhận link đều có thể kê khai trực tiếp và xem kết quả tính điểm thời gian thực.
+- **Thu thập định danh Mục A**: Bổ sung bắt buộc: Tên Doanh nghiệp, Mã số thuế (MST), Họ tên người đại diện liên hệ, Email, Số điện thoại.
+- **Auto-Provisioning Engine Backend (`POST /api/v1/assessments/tt17/submit`)**:
+  - Khi người dùng chưa đăng nhập bấm nộp bài:
+    * Kiểm tra CSDL xem MST đã tồn tại chưa.
+    * Nếu chưa: Tự động khởi tạo `EnterpriseProfile` và User mới với vai trò `ENTERPRISE`.
+    * Đóng băng dữ liệu khảo sát thành Snapshot bất biến, gán `enterprise_id` và trạng thái `SUBMITTED`.
+    * Trả về kết quả đánh giá kèm thông tin tài khoản tự động sinh để FE hiển thị.
+- **Hub UI Zero Data Leak (`/assessments/tt17`)**:
+  - Khi người dùng chưa đăng nhập hoặc chưa có hồ sơ đánh giá: Tuyệt đối không hiển thị dữ liệu mẫu 80.7đ của doanh nghiệp khác.
+  - Thay vào đó hiển thị **Hero Banner Khảo Sát Năng Lực Công Nghệ** + nút CTA lớn *"Bắt Đầu Kê Khai Khảo Sát"* dẫn thẳng vào Wizard.
+  - Khi Doanh nghiệp đã nộp bài: Hiển thị bảng tổng hợp và lịch sử các năm của chính DN đó.
+

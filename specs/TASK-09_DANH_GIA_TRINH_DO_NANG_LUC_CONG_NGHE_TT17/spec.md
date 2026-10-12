@@ -60,6 +60,16 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
   - Hàng đợi hồ sơ đánh giá của tỉnh/thành (`/gov/assessments/tt17`).
   - Giao diện đối soát số liệu tự khai vs minh chứng đính kèm.
   - Điều chỉnh điểm có lưu vết Audit Trail và phê duyệt ban hành Báo cáo chính thức Phụ lục IV.
+- **`REQ-09-007` (Khảo Sát Public Intake & Tự Động Tạo Tài Khoản - Auto-Provisioning)**:
+  - Cho phép người dùng vãng lai hoặc Doanh nghiệp mở form kê khai trực tiếp tại `/assessments/tt17/wizard` mà không cần đăng nhập trước.
+  - Form thu thập bắt buộc tại Mục A: Tên DN, Mã số thuế (MST), Người đại diện liên hệ, Email, Số điện thoại.
+  - Tại trang Hub `/assessments/tt17`: Nếu chưa đăng nhập hoặc chưa có bản đánh giá, hiển thị Hero Banner Khảo Sát + nút CTA lớn kêu gọi tự chẩn đoán công nghệ (Zero Mock Leak - không hiển thị điểm số của doanh nghiệp mẫu).
+  - Khi bấm *"Nộp Hồ Sơ Đánh Giá"*: Hệ thống tự động kiểm tra MST; nếu chưa có tài khoản sẽ tự động tạo hồ sơ Doanh nghiệp và cấp tài khoản `ENTERPRISE`, gắn kết quả đánh giá và chuyển sang màn hình Báo cáo Phụ lục IV.
+- **`REQ-09-008` (Tự Động Đồng Bộ Từ CSDL & Tra Cứu MST Qua API - Pre-fill & Tax Lookup)**:
+  - Khi người dùng đã có phiên đăng nhập (`ENTERPRISE`, `BUYER`, `SELLER`): Wizard tự động gọi `fetchMyEnterpriseProfile()` để điền sẵn toàn bộ Mục A và hiển thị banner thông báo xanh ngọc.
+  - Tích hợp nút *"Tra cứu MST"* cạnh ô nhập Mã số thuế và sự kiện phím tắt `Enter`: Gọi API `lookupTaxCode(taxCode)` tra cứu dữ liệu Cổng VietQR / CSDL Quốc gia, tự động điền Tên DN, Tỉnh thành, Địa chỉ nhà máy và thông báo kết quả qua Toast.
+- **`REQ-09-009` (Modal Chúc Mừng & Xác Nhận Cấp Tài Khoản Tự Động)**:
+  - Khi khách vãng lai nộp bài đánh giá thành công (`autoProvisioned = true`), Wizard hiển thị Modal chúc mừng trang trọng chứa Mã hồ sơ khảo sát, Hộp thông báo màu hổ phách ghi rõ Tên đăng nhập (Email), Mật khẩu tạm thời, Nút *"Đăng Nhập Ngay Vào Hệ Thống"* và Nút *"Xem Báo Cáo Đánh Giá Phụ Lục IV"*.
 
 ---
 
@@ -73,6 +83,11 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
 - **`BR-09-004 (Xếp loại kép có điều kiện)`**: Chỉ xếp loại khi thỏa mãn đồng thời cả 2 điều kiện $\tau$ và $T_{ĐB}$. Trường hợp lệch pha phải gán nhãn *"Cần thẩm định chuyên gia"*.
 - **`BR-09-005 (Tính bất biến của Snapshot)`**: Khi hồ sơ chuyển sang trạng thái `SUBMITTED`, toàn bộ dữ liệu khảo sát và điểm số được đóng băng thành bản chụp cố định của năm đánh giá, không bị ảnh hưởng nếu thông tin pháp nhân thay đổi.
 - **`BR-09-006 (Cô lập dữ liệu địa bàn)`**: Cán bộ Sở KH&CN chỉ được thẩm định hồ sơ của doanh nghiệp có cơ sở sản xuất trên địa bàn tỉnh mình (`ScopeId`). Mọi truy cập chéo địa bàn bị chặn HTTP 403 Forbidden.
+- **`BR-09-007 (Auto-Provisioning khi Nộp bài Khảo sát vãng lai)`**: Khi người dùng chưa đăng nhập nộp hồ sơ đánh giá với MST và Email hợp lệ:
+  1. Kiểm tra CSDL `enterprise_profiles`: Nếu MST chưa tồn tại, tự động tạo mới `EnterpriseProfile`.
+  2. Tạo mới tài khoản người dùng với role `ENTERPRISE` liên kết với Email và Enterprise này.
+  3. Gắn `enterprise_id` vào bản đánh giá `tt17_evaluations`, đóng băng trạng thái `SUBMITTED` và cấp quyền truy cập.
+- **`BR-09-008 (Tính toán Tự động Năng suất Lao động TC08 & Zero-Mock Engine)`**: Tuyệt đối không gán cứng giá trị cho TC08 (`s08 = 4.0`); hệ thống bắt buộc tính toán tự động tốc độ tăng năng suất lao động bình quân từ chuỗi tài chính 3 năm, đồng bộ 100% giữa Frontend và Backend Engine.
 
 ---
 
@@ -85,10 +100,11 @@ Bảng dữ liệu: `assessment.tt17_evaluations`
 - `status`: VARCHAR(30) (`DRAFT`, `SUBMITTED`, `IN_REVIEW`, `CHANGES_REQUESTED`, `APPROVED`)
 - `scope_type`: VARCHAR(20) (`PROVINCE`)
 - `scope_id`: VARCHAR(10) (Mã tỉnh/thành: `HN`, `HP`, `HCM`...)
-- `survey_data_json`: JSONB (Lưu trữ toàn bộ thông tin kê khai Phụ lục I: danh mục máy móc thiết bị, chuỗi tài chính 3 năm, chứng chỉ ISO, dữ liệu R&D)
+- `survey_data_json`: JSONB (Lưu trữ toàn bộ thông tin kê khai Phụ lục I: danh mục máy móc thiết bị, chuỗi tài chính 3 năm, chứng chỉ ISO, dữ liệu R&D, thông tin liên hệ email/phone)
 - `scores_json`: JSONB (Chi tiết điểm 26 tiêu chí, điểm 5 nhóm T-E-O-R-I, tổng điểm $\tau$, hệ số $T_{ĐB}$, xếp loại)
 - `reviewer_id`: UUID (Nullable - Cán bộ thẩm định)
 - `review_notes`: TEXT (Nhận xét của Hội đồng thẩm định)
 - `audit_trail_json`: JSONB (Lịch sử điều chỉnh điểm)
 - `created_at`, `updated_at`, `submitted_at`, `approved_at`: TIMESTAMPTZ
 - **Unique Constraint**: `(enterprise_id, assessment_year)` — Mỗi doanh nghiệp chỉ có 1 bản đánh giá chính thức cho mỗi năm.
+

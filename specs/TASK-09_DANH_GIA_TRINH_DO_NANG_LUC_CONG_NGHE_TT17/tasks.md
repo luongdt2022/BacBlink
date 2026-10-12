@@ -32,3 +32,23 @@
 - [x] T-09.15 [QC] **Tầng 3 (Integration Test)**: Kiểm thử luồng Lưu nháp $\rightarrow$ Nộp Snapshot bất biến trong DB $\rightarrow$ Sở KH&CN thẩm định APPROVE.
 - [x] T-09.16 [QC] **Tầng 4 (Playwright E2E Black-box)**: Viết và chạy kịch bản E2E kiểm thử toàn trình qua 4 màn hình (100% PASS trong 18s).
 - [x] T-09.17 [INT] Cập nhật Living Docs, `ROADMAP.md` và trình nghiệm thu Gate 5.
+
+---
+
+### Phase 4: Delta Khảo Sát Public Intake & Tự Động Cấp Tài Khoản Doanh Nghiệp [DELTA-TT17]
+- [x] T-09.18 [FE] Cập nhật Form Wizard (`/assessments/tt17/wizard`): Mở truy cập Public không bắt buộc đăng nhập, bổ sung các trường bắt buộc Mục A (Người liên hệ, Email, Số điện thoại) và thông báo cấp tài khoản sau khi nộp.
+- [x] T-09.19 [FE] Cập nhật Hub Trung Tâm (`/assessments/tt17`): Triệt tiêu mock data khi chưa đăng nhập hoặc chưa có hồ sơ; hiển thị Hero Banner Khảo Sát Tự Chẩn Đoán + CTA lớn *"Bắt Đầu Kê Khai Khảo Sát"*.
+- [x] T-09.20 [BE] Nâng cấp Controller Endpoint `POST /api/v1/assessments/tt17/submit`: Kiểm tra MST và tự động tạo mới `EnterpriseProfile` + tài khoản Doanh nghiệp `ENTERPRISE` khi nộp bài vãng lai (Auto-Provisioning).
+- [x] T-09.21 [FE] Bổ sung Widget Card liên kết *"Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17)"* tại trang Hồ Sơ Doanh Nghiệp (`/portal/enterprise/profile`).
+- [x] T-09.22 [QC] Kiểm thử luồng toàn trình: Mở Wizard vãng lai $\rightarrow$ Nhập thông tin & tính điểm $\rightarrow$ Submit bài $\rightarrow$ Kiểm chứng tự động tạo tài khoản DN & chuyển sang trang Báo cáo (Đạt chuẩn 100% Pass Vitest & xUnit).
+
+---
+
+### Phase 5: Delta Đồng Bộ Form Nhu Cầu & Zero-Mock 26 Tiêu Chí [DELTA-TT17-V2]
+- [x] T-09.23 [FE] Cập nhật `src/services/api/assessment-tt17.ts`: Chuẩn hóa `calculateLocalScore`, loại bỏ hardcode `s08 = 4.0đ`, tự động tính toán tốc độ tăng năng suất lao động từ `financialSeries` và tỷ lệ nhân lực R&D khớp 100% với backend.
+- [x] T-09.24 [FE] Cập nhật `src/app/(portal)/assessments/tt17/wizard/page.tsx`: Thêm hook `useEffect` nạp `fetchMyEnterpriseProfile()` từ CSDL khi có session đăng nhập, tự điền Mục A và hiển thị banner xanh ngọc.
+- [x] T-09.25 [FE] Cập nhật `src/app/(portal)/assessments/tt17/wizard/page.tsx`: Bổ sung nút *"Tra cứu MST"* và sự kiện `Enter` gọi `lookupTaxCode(taxCode)` từ `@/lib/enterprise-client`, tự động điền Tên DN, Tỉnh thành, Địa chỉ.
+- [x] T-09.26 [FE] Cập nhật `src/app/(portal)/assessments/tt17/wizard/page.tsx`: Bổ sung Modal chúc mừng và hiển thị tài khoản doanh nghiệp được cấp tự động (Email, Mật khẩu tạm thời, Nút Đăng nhập ngay, Nút Xem Báo cáo Phụ lục IV).
+- [x] T-09.27 [QC] Bổ sung Unit & Integration test cases trong `src/test/assessment-tt17.test.tsx` kiểm thử 4 cơ chế mới, chạy đạt 100% PASS.
+
+

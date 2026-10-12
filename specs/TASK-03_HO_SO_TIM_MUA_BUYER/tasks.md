@@ -86,3 +86,14 @@
 - [x] **T-03.36** `[FE]` Tích hợp toàn trình nộp phiếu API `POST /api/v1/demands/surveys`, hiển thị mã phiếu `SUR-XXXXX` và điều hướng về Bàn làm việc Buyer.
 - [x] **T-03.37** `[TEST]` Viết bộ kiểm thử Frontend Vitest và Backend Integration Test kiểm tra toàn vẹn dữ liệu 7 phần.
 
+---
+
+## Phase 10: Delta v4 — Tự Động Hóa Định Danh, Tra Cứu MST & Tối Ưu Kênh Triển Lãm
+
+- [x] **T-03.38** `[BE]` Xây dựng API `GET /api/v1/enterprises/lookup-tax/{taxCode}` (Hybrid Lookup: Tra cứu CSDL nội bộ `enterprise.enterprises` trước, nếu không có fallback sang VietQR Business API `https://api.vietqr.io/v2/business/{taxCode}`, trích xuất tự động Tỉnh/Thành phố).
+- [x] **T-03.39** `[BE]` Nâng cấp `POST /api/v1/demands/surveys` trong `DemandController.cs`: Tự động gọi `IPersonService.ProvisionAsync` cấp tài khoản `PlatformRoles.Buyer` cho người nộp ẩn danh/chưa có tài khoản tại triển lãm, phản hồi thông tin tài khoản tạm thời.
+- [x] **T-03.40** `[FE]` Bổ sung nút bấm 🔍 Tra Cứu MST tại Bước 1 (Phần A) form `/khao-sat-nhu-cau`, tự động điền Tên DN, Tỉnh thành, Địa chỉ theo kết quả tra cứu kèm trạng thái loading và toast thông báo.
+- [x] **T-03.41** `[FE]` Cài đặt Smart Pre-fill cho Doanh nghiệp đã đăng nhập: Tự động gọi `fetchMyEnterpriseProfile()` khi phát hiện auth token hợp lệ, điền sẵn thông tin DN vào Bước 1 và hiển thị Banner UX thông báo.
+- [x] **T-03.42** `[FE]` Cập nhật Success View tại Bước 7: Phân biệt người dùng vãng lai tại triển lãm (hiển thị thông tin tài khoản được cấp tự động: username/email, mật khẩu tạm thời kèm nút Đăng Nhập) và người dùng đã đăng nhập (nút điều hướng về Bàn làm việc).
+- [x] **T-03.43** `[TEST]` Bổ sung bộ kiểm thử Frontend Vitest (`page.test.tsx`) kiểm chứng 3 kịch bản: Tra cứu MST tự động điền form, Doanh nghiệp đã đăng nhập tự động điền dữ liệu, Nộp thành công hiển thị tài khoản được cấp.
+

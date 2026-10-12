@@ -201,3 +201,67 @@ src/app/
 - **Error**: Khung thông báo lỗi thân thiện kèm nút "Thử lại".
 - **Success**: Hiển thị dữ liệu trơn tru kèm Verified Badge.
 - **Partial**: Phân trang linh hoạt 9 thẻ/trang trên Desktop, Infinite Pagination trên Mobile.
+
+---
+
+## 4. PLAN DELTA V2 (CR-2026-010): THIẾT KẾ KỸ THUẬT NÂNG CẤP DANH BẠ 34 TỈNH TRỌNG ĐIỂM & THÔNG TIN CỐT LÕI
+
+### 4.1 Mở Rộng DTO `EnterprisePublicDirectoryItemDto`
+```csharp
+public sealed record EnterprisePublicDirectoryItemDto(
+    Guid Id,
+    string Name,
+    string TaxCode,
+    string SubjectType,
+    string ProvinceCity,
+    string MainSectorName,
+    string? SectorCode,
+    string? WorkforceScale,
+    bool IsVerified,
+    decimal? TniScore,
+    string? TniClassification,
+    int IpCount,
+    string Status,
+    string? OwnershipType,
+    string? OperatingZone,
+    bool HasRdUnit,
+    bool IsExporting,
+    bool InValueChain,
+    IReadOnlyList<string> TopBottlenecks,
+    IReadOnlyList<string> SupportNeeds
+);
+```
+
+### 4.2 Thiết Kế Chuẩn Hóa Lọc Địa Bàn & Ngành Tại Backend
+- **Tỉnh/Thành (`EfEnterpriseRepository.cs`)**:
+  - Khi `query.Province` chứa `"hồ chí minh"` hoặc `"tphcm"`:
+    `qry = qry.Where(x => x.ProvinceCity.ToLower().Contains("tphcm") || x.ProvinceCity.ToLower().Contains("hồ chí minh"));`
+  - Chuẩn hóa Unicode NFC đối với chuỗi tìm kiếm địa phương.
+- **Lĩnh vực TT17 (`SectorCode`)**:
+  - Ánh xạ từ điển:
+    `LV01` $\rightarrow$ `cơ khí, chế tạo, tự động hóa`  
+    `LV05` $\rightarrow$ `nông nghiệp`  
+    `LV07` $\rightarrow$ `y - dược, sinh học, thiết bị y tế`  
+    `LV08` $\rightarrow$ `thông tin, chuyển đổi số`  
+    `LV11` $\rightarrow$ `vật liệu`  
+    `LV12` $\rightarrow$ `năng lượng, môi trường`  
+    `LV14` $\rightarrow$ `điện - điện tử, viễn thông`  
+    `LV15` $\rightarrow$ `thực phẩm, đồ uống`  
+    `LV16` $\rightarrow$ `dệt may, da giày`  
+    `LV17` $\rightarrow$ `logistics`  
+    và `chế biến, chế tạo` $\rightarrow$ `LV01`.
+  - Truy vấn linh hoạt: `x.SectorCode == query.SectorCode || [khớp từ khóa trong MainSectorName]`.
+- **Phân tầng TNI**:
+  - Khi lọc `query.TniClassification == "HIGH"`: Khớp cả `x.TniClassification == "HIGH" || x.TniClassification == "VERY_HIGH" || x.TniScore >= 75`.
+- **Sắp xếp (`SortBy`)**:
+  - Mặc định: `tni_desc` (`TniScore DESC`).
+  - `ip_desc`: `IntellectualProperties.Count DESC, TniScore DESC`.
+  - `name_asc`: `Name ASC`.
+  - `recent`: `CreatedAt DESC`.
+
+### 4.3 Thiết Kế Frontend Enterprise Avatar & Core Card UI
+- Component `EnterpriseAvatar`:
+  - Input: `name`, `sectorCode`, `mainSectorName`, `taxCode`.
+  - Output: Avatar Badge $48 \times 48\text{ px}$, bo tròn `rounded-2xl`, chữ cái đầu in hoa cỡ lớn, huy hiệu icon ngành ở góc nhỏ, màu Gradient theo ngành (Blue cho Cơ khí, Green cho Nông nghiệp, Purple cho CNTT, Emerald cho Môi trường...).
+- Phân trang động (Dynamic Pagination Component) có Ellipsis `...`.
+

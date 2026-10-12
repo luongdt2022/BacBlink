@@ -184,3 +184,34 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 - **BR-Delta-03 (Max 5 Bottlenecks Invariant)**: Doanh nghiệp chỉ được chọn tối đa 5 điểm nghẽn kỹ thuật tại Phần C. Hệ thống tự động disable các checkbox còn lại khi đã đủ 5 lựa chọn.
 - **BR-Delta-04 (Zero Data Loss on Step Transition)**: Dữ liệu đã nhập ở bất kỳ bước nào trong Wizard không bị mất khi chuyển đổi qua lại giữa các bước hoặc tải lại trang.
 - **BR-Delta-05 (PDPD Consent Mandatory Gate)**: Nút "Nộp Phiếu Khảo Sát" ở Phần G chỉ được kích hoạt khi người dùng đã tích chọn đồng ý cam kết xử lý dữ liệu theo Nghị định 13/2023/NĐ-CP.
+
+---
+
+## Spec Delta v4: Mở Rộng Kênh Triển Lãm & Tự Động Hóa Định Danh Doanh Nghiệp (PO-DEC-20261012-01)
+
+> **Căn cứ thay đổi**: Quyết định PO-DEC-20261012-01 ngày 12/10/2026 về mở rộng kênh thu thập nhu cầu tại Triển lãm Doanh nghiệp / Hội chợ Techmart, tối ưu trải nghiệm nhập liệu và tự động cấp quyền truy cập.
+
+### 1. Bối cảnh & Mục tiêu
+- **Phục vụ chiến dịch Triển lãm Doanh nghiệp & Techmart**: Cung cấp đường dẫn công khai / QR Code để khách tham quan quét và điền phiếu nhanh trên thiết bị di động.
+- **Giảm ma sát nhập liệu**: Tự động tra cứu MST và tự động nạp hồ sơ có sẵn để rút ngắn thời gian hoàn thành Bước 1 xuống dưới 3 giây.
+- **Giữ chân khách hàng sau sự kiện**: Tự động tạo tài khoản Bên Mua (`BUYER`) ngay khi nộp phiếu để doanh nghiệp đăng nhập theo dõi tiến độ matching và nhận tư vấn chuyên gia.
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-09 -> FR-Delta-11)
+- **FR-Delta-09 (Tax Code Auto-Lookup & Pre-fill)**:
+  - Khi người dùng nhập đủ 10 hoặc 13 số MST (hoặc bấm biểu tượng 🔍 **"Tra cứu"** cạnh ô MST), hệ thống tự động gọi API tra cứu pháp nhân `GET /api/v1/enterprises/lookup-tax/{taxCode}`.
+  - Tự động điền: Tên doanh nghiệp chính thức, Tỉnh/thành phố, Địa chỉ chi tiết trụ sở.
+  - Hiển thị spinner loading 0.5s và thông báo toast kết quả tra cứu.
+- **FR-Delta-10 (Smart Profile Pre-fill for Authenticated Enterprises)**:
+  - Khi người dùng đã đăng nhập mở form `/khao-sat-nhu-cau`, hệ thống tự động kiểm tra phiên và gọi `GET /api/v1/portal/enterprise/profile`.
+  - Tự động điền toàn bộ 100% dữ liệu đã có vào Bước 1 (Tên DN, MST, Tỉnh/thành, Địa chỉ, Người liên hệ, Chức vụ, SĐT, Email, Loại hình, Ngành nghề, Quy mô, Doanh thu).
+  - Hiển thị Banner UX chào mừng thông báo dữ liệu đã được nạp sẵn từ hồ sơ cá nhân.
+- **FR-Delta-11 (Exhibition On-the-Fly Account Auto-Provisioning)**:
+  - Khi khách nộp phiếu ẩn danh tại triển lãm, API `POST /api/v1/demands/surveys` tự động kiểm tra `ContactEmail` trong bảng `identity.Persons`.
+  - Nếu chưa có tài khoản: Tự động khởi tạo tài khoản mới với vai trò `BUYER`, sinh token kích hoạt / mật khẩu và gửi email chào mừng.
+  - Tự động gán `PersonId` vừa tạo làm chủ sở hữu phiếu khảo sát `DemandSurvey` và các bài toán `DemandItem`.
+  - Màn hình kết quả (Success View) thông báo tài khoản đã được cấp tự động kèm nút "Đăng nhập ngay để theo dõi tiến độ".
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung (BR-Delta-06 -> BR-Delta-08)
+- **BR-Delta-06 (Hybrid Tax Lookup Fallback)**: Cơ chế tra cứu MST ưu tiên tìm trong CSDL nội bộ NacenTech (304 DN) trước; nếu không có mới gọi API VietQR Business Open API. Nếu cả 2 không có hoặc mạng lỗi, hệ thống không chặn form, cho phép người dùng nhập tay bình thường.
+- **BR-Delta-07 (Idempotent Account Provisioning)**: Nếu email liên hệ hoặc MST đã tồn tại trong hệ thống Identity, hệ thống không tạo tài khoản trùng lặp mà tự động gán liên kết phiếu khảo sát vào tài khoản hiện hữu.
+- **BR-Delta-08 (PDPD Privacy & Welcome Notification)**: Tài khoản tự tạo tại triển lãm được gửi email chào mừng kèm link thiết lập mật khẩu; thông tin SĐT/Email tiếp tục được ẩn danh trên sàn công khai theo chuẩn PDPD NĐ 13/2023/NĐ-CP.
