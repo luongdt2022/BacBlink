@@ -157,3 +157,30 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 ### 3. Quy tắc Nghiệp vụ Bổ Sung
 - **BR-Delta-01 (PDPD Masking Presentation)**: Sàn công khai tuyệt đối không hiển thị mã hash nội bộ, MST, SĐT, Email của Doanh nghiệp. Chỉ hiển thị định danh dạng `[Loại hình - Lĩnh vực - Địa bàn] (PDPD Masked)`.
 - **BR-Delta-02 (Role Action Guard)**: Khách vãng lai chưa xác thực khi thực hiện thao tác tạo bài toán nhanh phải được chuyển hướng đăng nhập văn minh hoặc hướng dẫn sử dụng Phiếu khảo sát công khai.
+
+---
+
+## Spec Delta v3: Chuẩn Hóa Toàn Diện Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần (SC-03-01)
+
+> **Căn cứ thay đổi**: Quyết định PO phê duyệt Scope ngày 12/10/2026, đối soát 1:1 với Hồ sơ Thiết kế cơ sở gốc `SPEC_PHIEU_KHAO_SAT_NHU_CAU_CONG_NGHE_DNNVV.md` và `wireframe_phieu_khao_sat_dnnvv.html` (158KB).
+
+### 1. Bối cảnh & Mục tiêu
+- Thay thế bản nguyên mẫu rút gọn (MVP stub) bằng **Form Wizard 7 bước (A $\rightarrow$ G)** đạt chuẩn 100% trường dữ liệu nghiệp vụ:
+  - **Phần A**: Thông tin pháp nhân và quy mô doanh nghiệp toàn diện (Tên, MST, Tỉnh/TP, Địa chỉ, Nhà máy khảo sát, Người liên hệ, Chức vụ, SĐT, Email, Ngành KD chính, Sản phẩm chủ lực, Quy mô lao động, Doanh thu 3 năm dạng khoảng).
+  - **Phần B**: Hiện trạng thiết bị & Dây chuyền sản xuất (Bảng động nhiều thiết bị kèm công đoạn, năm, xuất xứ, khấu hao) và **Bảng Tự đánh giá 8 tiêu chí hiện trạng** thang điểm 1–5 (Cơ giới hóa, Đồng bộ, Hao phí năng lượng, Phụ thuộc thợ, Tỷ lệ lỗi, Số hóa MES/ERP, An toàn môi trường, Tự sửa chữa).
+  - **Phần C**: Vấn đề & Điểm nghẽn công nghệ (Chọn tối đa 5 điểm nghẽn kèm mức độ nghiêm trọng 1–5, công đoạn khó nhất, nguyên nhân chủ yếu).
+  - **Phần D**: Năng lực tiếp nhận & Hấp thụ công nghệ (Thống kê 6 nhóm nhân lực kỹ thuật, năng lực quản lý công nghệ, khả năng tự hấp thụ thang 1–5).
+  - **Phần E**: Dòng nhu cầu & Bài toán kỹ thuật (Cho phép thêm $1..n$ Demand Tickets động, nguồn vốn, hình thức chuyển giao, nhúng bộ tính điểm TNI 4 chiều $K, L, N, O$ tự động cập nhật thời gian thực).
+  - **Phần F**: Định hướng công nghệ mới & Nhu cầu hỗ trợ chung (Tự động hóa, Chuyển đổi số, Công nghệ xanh, mức độ cần hỗ trợ 1–5, đối tác mong muốn).
+  - **Phần G**: Rà soát, Xác nhận & Đồng ý xử lý dữ liệu PDPD (Chế độ xem trước toàn văn, Họ tên người đại diện, Chức vụ, Cam kết Nghị định 13/2023/NĐ-CP).
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-05 -> FR-Delta-08)
+- **FR-Delta-05 (Multi-Step Wizard & Draft Persistence)**: Giao diện form chia làm 7 bước với Stepper trực quan, hỗ trợ nút "Quay lại", "Tiếp tục" kèm validation riêng từng bước, tự động lưu và khôi phục bản nháp vào `localStorage`.
+- **FR-Delta-06 (Dynamic Equipment & 8-Criteria Evaluation Table)**: Hỗ trợ thêm/sửa/xóa dòng thiết bị ở Phần B; bảng chấm điểm 8 tiêu chí hiện trạng radio 1–5 tự động tính điểm trung bình hiện trạng.
+- **FR-Delta-07 (Multiple Demand Items & Per-Item TNI Engine)**: Phần E cho phép thêm nhiều dòng bài toán kỹ thuật; mỗi bài toán sở hữu riêng bộ thanh trượt/chấm điểm 4 tham số $K, L, N, O$ và hiển thị điểm TNI cùng Badge phân loại.
+- **FR-Delta-08 (Rich Data Payload Submission)**: Tích hợp API nộp phiếu, lưu trữ toàn vẹn 7 phần dữ liệu vào CSDL PostgreSQL, trả về mã phiếu `SUR-YYYYMMDD-XXXXX` và danh sách mã Demand Tickets khởi tạo.
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung
+- **BR-Delta-03 (Max 5 Bottlenecks Invariant)**: Doanh nghiệp chỉ được chọn tối đa 5 điểm nghẽn kỹ thuật tại Phần C. Hệ thống tự động disable các checkbox còn lại khi đã đủ 5 lựa chọn.
+- **BR-Delta-04 (Zero Data Loss on Step Transition)**: Dữ liệu đã nhập ở bất kỳ bước nào trong Wizard không bị mất khi chuyển đổi qua lại giữa các bước hoặc tải lại trang.
+- **BR-Delta-05 (PDPD Consent Mandatory Gate)**: Nút "Nộp Phiếu Khảo Sát" ở Phần G chỉ được kích hoạt khi người dùng đã tích chọn đồng ý cam kết xử lý dữ liệu theo Nghị định 13/2023/NĐ-CP.

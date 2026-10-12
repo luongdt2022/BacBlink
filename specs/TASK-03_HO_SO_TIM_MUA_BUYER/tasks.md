@@ -66,9 +66,23 @@
 
 ## Phase 8: Delta v2 — Tối Ưu Hóa Sàn Nhu Cầu Công Khai & Phân Quyền Hành Động
 
-- [ ] **T-03.24** `[FE]` Tối ưu giao diện Hero Banner: Thêm overlay gradient tối màu, `relative z-10`, khắc phục lỗi text mờ tịt (đạt chuẩn WCAG AA), thêm khối Quick Metrics (140+ Bài toán, 68.5+ Tỷ ngân sách, 24 Giờ hỗ trợ).
-- [ ] **T-03.25** `[FE]` Mở rộng Combobox Lĩnh vực: Tích hợp `getActiveSectors()` từ `master-data-client.ts`, hiển thị đầy đủ 10 Lĩnh vực TT17 kèm fallback an toàn.
-- [ ] **T-03.26** `[FE]` Chuẩn hóa thẻ bài toán (Humanized Cards): Ẩn mã hồ sơ hash/ID thô (`DMD-202610-0FF52B`), hiển thị tên tiếng Việt của lĩnh vực, hiển thị định danh doanh nghiệp ẩn danh theo chuẩn PDPD masking.
-- [ ] **T-03.27** `[FE]` Phân quyền nút bấm & Bảo vệ vai trò (Role Guards): Tích hợp `authClient` kiểm tra quyền khi bấm "Đăng Nhanh Bài Toán", dẫn hướng khách vãng lai hoặc mở modal cho Doanh nghiệp; gắn auth headers vào `QuickDemandModal.tsx`.
-- [ ] **T-03.28** `[QC-TEST]` Kiểm thử hồi quy giao diện, kiểm chứng độ tương phản, kiểm tra bộ lọc và sự kiện nút bấm.
+- [x] **T-03.24** `[FE]` Tối ưu giao diện Hero Banner: Thêm overlay gradient tối màu, `relative z-10`, khắc phục lỗi text mờ tịt (đạt chuẩn WCAG AA), thêm khối Quick Metrics (140+ Bài toán, 68.5+ Tỷ ngân sách, 24 Giờ hỗ trợ).
+- [x] **T-03.25** `[FE]` Mở rộng Combobox Lĩnh vực: Tích hợp `getActiveSectors()` từ `master-data-client.ts`, hiển thị đầy đủ 10 Lĩnh vực TT17 kèm fallback an toàn.
+- [x] **T-03.26** `[FE]` Chuẩn hóa thẻ bài toán (Humanized Cards): Ẩn mã hồ sơ hash/ID thô (`DMD-202610-0FF52B`), hiển thị tên tiếng Việt của lĩnh vực, hiển thị định danh doanh nghiệp ẩn danh theo chuẩn PDPD masking.
+- [x] **T-03.27** `[FE]` Phân quyền nút bấm & Bảo vệ vai trò (Role Guards): Tích hợp `authClient` kiểm tra quyền khi bấm "Đăng Nhanh Bài Toán", dẫn hướng khách vãng lai hoặc mở modal cho Doanh nghiệp; gắn auth headers vào `QuickDemandModal.tsx`.
+- [x] **T-03.28** `[QC-TEST]` Kiểm thử hồi quy giao diện, kiểm chứng độ tương phản, kiểm tra bộ lọc và sự kiện nút bấm.
+
+---
+
+## Phase 9: Delta v3 — Chuẩn Hóa Toàn Diện Phiếu Khảo Sát Sâu DNNVV 7 Phần (A -> G)
+
+- [x] **T-03.29** `[BE]` `[PERSISTENCE]` Tạo EF Core Migration `AddDeepSurveyFullSpecification` bổ sung các cột pháp nhân và cột `jsonb survey_details` vào bảng `demand.demand_surveys`.
+- [x] **T-03.30** `[BE]` `[CONTRACT]` Cập nhật DTO `SubmitDeepSurveyRequest` và mapping logic trong `DemandController.cs` để lưu trữ đầy đủ 7 phần dữ liệu.
+- [x] **T-03.31** `[FE]` Xây dựng Stepper Wizard Navigation & LocalStorage Draft Persistence cho trang `/khao-sat-nhu-cau`.
+- [x] **T-03.32** `[FE]` Cài đặt Bước 1 & 2: Form Phần A (Thông tin DN đầy đủ) và Phần B (Bảng thiết bị động + Bảng 8 tiêu chí hiện trạng).
+- [x] **T-03.33** `[FE]` Cài đặt Bước 3 & 4: Form Phần C (Danh mục điểm nghẽn tối đa 5 điểm) và Phần D (Năng lực tiếp nhận nhân lực & TAR).
+- [x] **T-03.34** `[FE]` Cài đặt Bước 5: Form Phần E cho phép thêm/xóa nhiều bài toán kỹ thuật, nhúng bộ tính điểm `TniRealtimeCalculator` cho từng bài toán.
+- [x] **T-03.35** `[FE]` Cài đặt Bước 6 & 7: Form Phần F (Định hướng & Hỗ trợ) và Phần G (Trang Review tổng hợp, người ký xác nhận, PDPD Consent).
+- [x] **T-03.36** `[FE]` Tích hợp toàn trình nộp phiếu API `POST /api/v1/demands/surveys`, hiển thị mã phiếu `SUR-XXXXX` và điều hướng về Bàn làm việc Buyer.
+- [x] **T-03.37** `[TEST]` Viết bộ kiểm thử Frontend Vitest và Backend Integration Test kiểm tra toàn vẹn dữ liệu 7 phần.
 

@@ -172,3 +172,46 @@ Mọi màn hình và bảng danh sách đều được bọc qua `<Async>` compo
   - Sử dụng `authClient` để nhận diện vai trò người dùng khi kích hoạt nút bấm "Đăng Nhanh Bài Toán".
   - Với khách vãng lai: Hiển thị hộp thoại mời đăng nhập tài khoản Doanh nghiệp hoặc link tới Phiếu khảo sát công khai.
 
+---
+
+## Plan Delta v3: Kiến Trúc Wizard 7 Bước & Mở Rộng Schema CSDL Phi Phá Hủy
+
+### 1. Kiến Trúc Frontend Wizard (`khao-sat-nhu-cau`)
+- **Quản lý trạng thái đa bước (Step State Machine)**:
+  - Khai báo enum 7 bước: `STEP_ENTERPRISE_INFO (A)`, `STEP_TECH_EQUIPMENT (B)`, `STEP_BOTTLENECKS (C)`, `STEP_ADOPTION_CAPACITY (D)`, `STEP_DEMAND_ITEMS (E)`, `STEP_FUTURE_SUPPORT (F)`, `STEP_REVIEW_CONFIRM (G)`.
+  - Bộ hook `useSurveyWizard` quản lý state toàn cục, tự động sync vào `localStorage` key `nacentwin_deep_survey_draft_v1`.
+  - Validate độc lập từng bước trước khi cho phép chuyển `currentStep + 1`.
+- **Thành phần giao diện từng bước**:
+  - `StepNavigation`: Thanh tiến trình (Progress Bar) + Stepper 7 nút bấm đánh dấu trạng thái Hoàn thành / Đang làm.
+  - `EquipmentDynamicTable`: Cho phép Thêm / Xóa thiết bị, có trường Công đoạn, Tên máy móc, Năm đầu tư, Xuất xứ, Tình trạng.
+  - `Criteria8EvaluationTable`: Bảng radio ma trận 8 tiêu chí hiện trạng (thang 1–5), tự động tính điểm trung bình hiện trạng.
+  - `BottlenecksSelector`: Lưới checkbox tối đa 5 điểm nghẽn, tự động disable khi đã tích đủ 5 mục; kèm dropdown công đoạn khó nhất & nguyên nhân.
+  - `AdoptionCapacityForm`: Lưới nhập số lượng 6 vị trí nhân lực kỹ thuật, tự động tính tổng nhân sự; 3 thang đo năng lực hấp thụ 1–5.
+  - `DemandItemsList`: Cho phép thêm $1..n$ bài toán; mỗi bài toán nhúng `TniRealtimeCalculator` độc lập.
+  - `FutureSupportForm`: Checkbox định hướng Tự động hóa, CĐS, Công nghệ xanh; thang đo 4 nhu cầu hỗ trợ 1–5; đối tác mong muốn.
+  - `ReviewConfirmStep`: Render bảng tóm tắt tổng thể dữ liệu đã nhập, 2 ô nhập Người đại diện + Chức vụ, và checkbox PDPD bắt buộc.
+
+### 2. Mở Rộng CSDL PostgreSQL (Non-destructive Migration)
+- **Tên Migration**: `AddDeepSurveyFullSpecification`
+- **Thay đổi trên bảng `demand.demand_surveys`**:
+  - Thêm cột Nullable:
+    - `province` (`character varying(100)`, NULLABLE)
+    - `headquarters_address` (`character varying(255)`, NULLABLE)
+    - `surveyed_facility` (`character varying(255)`, NULLABLE)
+    - `contact_title` (`character varying(100)`, NULLABLE)
+    - `main_industry` (`character varying(100)`, NULLABLE)
+    - `main_products` (`text`, NULLABLE)
+    - `confirmed_by_name` (`character varying(150)`, NULLABLE)
+    - `confirmed_by_title` (`character varying(100)`, NULLABLE)
+    - `pdpd_consent_at` (`timestamp with time zone`, NULLABLE)
+    - `survey_details` (`jsonb`, NULLABLE) — lưu trữ chi tiết: bảng thiết bị B, điểm 8 tiêu chí B, chi tiết C, nhân lực D, định hướng F.
+- **Không thay đổi phá hủy**: Toàn bộ dữ liệu cũ giữ nguyên 100%, không Drop bất kỳ cột nào.
+
+### 3. Backend DTO & API Logic
+- Mở rộng DTO `SubmitDeepSurveyRequest`:
+  - Tiếp nhận các trường định danh mở rộng, `List<EquipmentDto> CurrentEquipments`, `TechEvaluationDto Criteria8`, `BottleneckDetailDto BottlenecksDetail`, `AdoptionCapacityDto AdoptionCapacity`, `List<DeepSurveyItemRequest> DemandItems`, `FutureSupportDto FutureSupport`, `ConfirmationDto Confirmation`.
+- Cập nhật mapping trong `DemandController.cs`:
+  - Lưu đầy đủ thông tin vào `DemandSurvey` và `survey_details`.
+  - Duyệt mảng `DemandItems`: Khởi tạo $1..n$ bản ghi `DemandItem` gắn kèm `survey_id`, tính toán điểm TNI chuẩn hóa từ `TniCalculationEngine`.
+  - Trả về mã phiếu `surveyCode` và danh sách toàn bộ mã tickets khởi tạo `createdTickets`.
+
