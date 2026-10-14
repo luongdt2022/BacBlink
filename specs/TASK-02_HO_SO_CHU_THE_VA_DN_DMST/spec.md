@@ -122,3 +122,49 @@
 - **`BR-02-008` [Toàn Vẹn Phân Tầng TNI]**: Khi người dùng chọn lọc mức "TNI Cao", hệ thống bắt buộc phải truy vấn cả mức `HIGH` và `VERY_HIGH` (điểm TNI $\ge 75$), không được phép bỏ sót các doanh nghiệp điểm cao nhất.
 - **`BR-02-009` [Bảo Mật & Minh Bạch Đề Xuất Kết Nối]**: Mọi yêu cầu kết nối từ công chúng phải lưu vết thời gian, nội dung đề xuất và người nhận; thông tin định danh cá nhân tuân thủ Nghị định 13/2023/NĐ-CP (PDPD Masking).
 
+---
+
+## 7. SPEC DELTA V3 (CR-2026-012): BỘ TIÊU CHÍ ĐÁNH GIÁ & CHẤM ĐIỂM MỨC ĐỘ ĐỔI MỚI SÁNG TẠO DOANH NGHIỆP (THANG 100 ĐIỂM, 8 NHÓM TIÊU CHÍ)
+
+> **Căn cứ thay đổi**: 
+> 1. Quyết định PO `PO-DEC-20261014-03` (14/10/2026) phê duyệt chuẩn hóa bộ tiêu chí ĐMST.
+> 2. Tài liệu Thiết kế cơ sở: [`Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/THIET_KE_CO_SO_BO_TIEU_CHI_CHAM_DIEM_DN_DMST.md`](../../../../Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/THIET_KE_CO_SO_BO_TIEU_CHI_CHAM_DIEM_DN_DMST.md).
+> 3. Bảng tiêu chí gốc: [`Specification/01_DATA_RAW/Nhóm tiêu chí.xlsx`](../../../../Specification/01_DATA_RAW/Nho%CC%81m%20tie%CC%82u%20chi%CC%81.xlsx) (8 nhóm, 37 tiêu chí, 100 điểm).
+> 4. Bộ câu hỏi khảo sát 304 DN: [`Specification/01_DATA_RAW/Khảo sát 304 DN-final-2408.xlsx`](../../../../Specification/01_DATA_RAW/Kha%CC%89o%20sa%CC%81t%20304%20DN-final-2408.xlsx) (C11 $\rightarrow$ C36).
+
+### 7.1 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-02-020` [Bộ Tiêu Chí ĐMST 8 Nhóm & 37 Tiêu Chí]**:
+  - Hệ thống hỗ trợ bộ tiêu chí chuẩn hóa 100 điểm trên 8 nhóm năng lực:
+    1. *Quản trị (12đ)*: `QT1` (4đ - C15), `QT2` (3đ - C12), `QT3` (2đ - C16), `QT4` (3đ - C20).
+    2. *R&D và Công nghệ (18đ)*: `CN1` (5đ - C22), `CN2` (4đ - C14), `CN3` (3đ - C22), `CN4` (4đ - C22), `CN5` (2đ - C31).
+    3. *Sản phẩm / Quy trình (20đ)*: `SP1` (5đ - C17), `SP2` (4đ - C18), `SP3` (5đ - C19), `SP4` (3đ - C32), `SP5` (3đ - C23+C34).
+    4. *Sở hữu trí tuệ (10đ)*: `IP1` (5đ - C31), `IP2` (3đ - C31), `IP3` (2đ - Tự khai).
+    5. *Chuyển đổi số (10đ)*: `S1` (2đ - C24), `S2` (2đ - C25), `S3` (2đ - C26), `S4` (3đ - C27), `S5` (1đ - C16).
+    6. *Thị trường (15đ)*: `TT1` (5đ - C33), `TT2` (2đ - C21), `TT3` (3đ - C34), `TT4` (2đ - C35), `TT5` (2đ - C36), `TT6` (1đ - C32+C34).
+    7. *Nhân lực (7đ)*: `NL1` (2đ - C11), `NL2` (3đ - C12), `NL3` (2đ - C13).
+    8. *Liên kết (8đ)*: `LK1` (2đ - C28 ĐH+Viện), `LK2` (1đ - C28 DN), `LK3` (1đ - C28 Tổ chức hỗ trợ), `LK4` (1đ - C28 Quỹ/C30), `LK5` (1đ - C28 NN/C29), `LK6` (2đ - C28 Quốc tế).
+- **`REQ-02-021` [Phân Tầng Năng Lực ĐMST 3 Cấp Độ & Nhóm Chưa Đánh Giá]**:
+  - `LEADING` (Dẫn đầu): Điểm $\ge 75$ $\rightarrow$ Gán Huy hiệu Vàng ĐMST.
+  - `DEVELOPING` (Đang phát triển): Điểm $50 - 74$ $\rightarrow$ Gán Huy hiệu Bạc ĐMST.
+  - `POTENTIAL` (Tiềm năng): Điểm $< 50$ $\rightarrow$ Gán Huy hiệu Đồng ĐMST.
+  - `UNRATED` (Chưa đánh giá): Doanh nghiệp chưa hoàn thành phiếu khảo sát hoặc chưa có kỳ đánh giá được duyệt, thống kê riêng và không tự tiện gán mức.
+- **`REQ-02-022` [Engine Tính Điểm Tự Động Từ Khảo Sát 304 DN]**:
+  - Backend cung cấp module/service tính toán tự động điểm của 36/37 tiêu chí từ mảng dữ liệu JSONB `demand_surveys.survey_answers` của 304 DN thật, lưu kết quả vào schema `enterprise.innovation_evaluations`.
+- **`REQ-02-023` [Trực Quan Hóa Radar Chart 8 Trục & Bộ Lọc Phân Tầng]**:
+  - Giao diện chi tiết doanh nghiệp (`/enterprises/[taxCode]`) bổ sung Tab *"Năng Lực ĐMST"* hiển thị Biểu đồ Radar Chart 8 trục và bảng điểm thành phần.
+  - Danh bạ Doanh nghiệp (`/doanh-nghiep-dmst` và `/enterprises`) bổ sung Dropdown lọc theo mức ĐMST: Tất cả / Dẫn đầu / Đang phát triển / Tiềm năng / Chưa đánh giá.
+
+### 7.2 Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+- **`BR-02-010` [Lưu Trữ Lịch Sử Đánh Giá Bất Biến Theo Kỳ]**:
+  - Mỗi kỳ đánh giá được lưu độc lập kèm `evaluation_year` và `criteria_version = 'v1.0'`. Kỳ đánh giá mới không được ghi đè kỳ đánh giá cũ.
+- **`BR-02-011` [Bảo Vệ Dữ Liệu Nhạy Cảm PDPD & Phân Quyền 3D Scoped RBAC]**:
+  - Khách vãng lai và người dùng công chúng chỉ được xem Tổng điểm, Xếp hạng và Radar Chart 8 trục.
+  - CẤM hiển thị công khai chi tiết số liệu doanh thu (C33), ngân sách R&D (C15) và thông tin liên hệ cá nhân.
+  - Chỉ `ENTERPRISE_OWNER` và `PROVINCIAL_ADMIN` (thuộc đúng địa bàn tỉnh) mới có quyền xem toàn bộ 37 tiêu chí và minh chứng.
+
+### 7.3 Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **`AC-02-010`**: Given doanh nghiệp thuộc tập 304 DN có câu trả lời C11-C36 trong CSDL, When gọi API tính điểm ĐMST, Then trả về tổng điểm trong dải 0-100 và điểm chi tiết của 8 nhóm.
+- **`AC-02-011`**: Given người dùng truy cập trang `/enterprises/[taxCode]`, When mở tab "Năng Lực ĐMST", Then hiển thị Radar Chart 8 trục với đầy đủ 8 đỉnh năng lực và nhãn Huy hiệu tương ứng.
+- **`AC-02-012`**: Given người dùng trên trang `/doanh-nghiep-dmst`, When chọn bộ lọc "Dẫn đầu", Then danh sách chỉ hiển thị các doanh nghiệp có điểm $\ge 75$.
+
+

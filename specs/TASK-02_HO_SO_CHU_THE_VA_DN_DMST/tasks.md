@@ -60,3 +60,22 @@
 - [x] **T-02.37** `[FE]` Triệt tiêu Zero-Mock tại Modal "Kết Nối Hợp Tác": Lưu trữ yêu cầu kết nối thật sự với phản hồi minh bạch thay thế `setTimeout 2000ms`.
 - [x] **T-02.38** `[TEST]` Kiểm thử hồi quy 100% Backend & Frontend, kiểm thử thực tế các bộ lọc 34 tỉnh và ngành TT17 qua `curl` và browser.
 
+---
+
+## Giai đoạn 5: Delta v3 — Triển Khai Bộ Tiêu Chí ĐMST 8 Nhóm & Radar Chart
+
+- [ ] **T-02.39** `[CONTRACT]` Định nghĩa bộ DTOs Đánh giá ĐMST (`InnovationEvaluationDto`, `InnovationGroupScoreDto`, `InnovationCriteriaDetailDto`, `RadarAxisDto`) trong `modules/enterprise/Application/Contracts.cs`.
+- [ ] **T-02.40** `[BE]` Xây dựng Domain Entity `EnterpriseInnovationEvaluation` và cấu hình Fluent API mapping trong `EnterpriseConfiguration.cs` (Schema `enterprise.innovation_evaluations`, non-destructive).
+- [ ] **T-02.41** `[BE]` Tạo EF Core Migration phi phá hủy bổ sung bảng `enterprise.innovation_evaluations` và các indexes B-Tree / GIN.
+- [ ] **T-02.42** `[BE]` Xây dựng service `InnovationRatingEngine`: Hiện thực hóa thuật toán chấm điểm 8 nhóm / 37 tiêu chí từ mảng dữ liệu `survey_answers` JSONB (C11–C36) và hồ sơ doanh nghiệp.
+- [ ] **T-02.43** `[BE]` Cập nhật `IEnterpriseRepository` & `EfEnterpriseRepository`: Bổ sung phương thức truy vấn và lưu trữ lịch sử đánh giá ĐMST theo `tax_code` và `evaluation_year`.
+- [ ] **T-02.44** `[BE]` Xây dựng API Endpoint `GET /api/v1/enterprises/{taxCode}/innovation-rating` trong `EnterpriseController` và xử lý tại `EnterpriseService`, tích hợp bảo vệ dữ liệu nhạy cảm PDPD Masking (`BR-02-011`) và Scoped RBAC.
+- [ ] **T-02.45** `[BE]` Xây dựng Data Seeder / API tính toán tự động nạp điểm ĐMST kỳ 2024 cho 304 Doanh nghiệp thực tế có trong CSDL từ dữ liệu khảo sát C11–C36.
+- [ ] **T-02.46** `[FE]` Cập nhật client SDK `enterprise-client.ts`: Bổ sung interface `InnovationEvaluation` và hàm gọi API `fetchInnovationRating(taxCode)`.
+- [ ] **T-02.47** `[FE]` Xây dựng Component `RadarChart` 8 trục độc lập bằng SVG Canvas thuần (không phụ thuộc thư viện nặng ngoài, hỗ trợ responsive, grid đa giác đều, polygon điểm số, và hover tooltip).
+- [ ] **T-02.48** `[FE]` Tích hợp Tab "Năng Lực ĐMST" tại trang Hồ sơ chi tiết `/enterprises/[taxCode]`: Hiển thị Biểu đồ Radar Chart 8 trục, Thẻ Tổng điểm & Huy hiệu phân tầng (Vàng/Bạc/Đồng), Bảng ma trận 8 nhóm tiêu chí.
+- [ ] **T-02.49** `[FE]` Nâng cấp trang Danh bạ `/doanh-nghiep-dmst` và `/enterprises`: Bổ sung Dropdown bộ lọc mức ĐMST (Dẫn đầu / Đang phát triển / Tiềm năng / Chưa đánh giá) và hiển thị nhãn Huy hiệu ĐMST trên từng thẻ Card doanh nghiệp.
+- [ ] **T-02.50** `[TEST]` Viết bộ Unit Invariant Tests cho `InnovationRatingEngine`: Kiểm thử độc lập công thức quy đổi điểm 8 nhóm (QT1..QT4, CN1..CN5, SP1..SP5, IP1..IP3, S1..S5, TT1..TT6, NL1..NL3, LK1..LK6), phân tầng điểm (ngưỡng 75, 50), và trường hợp `UNRATED`.
+- [ ] **T-02.51** `[TEST]` Viết kịch bản kiểm thử E2E Playwright: Xác thực hiển thị Tab Năng Lực ĐMST, Biểu đồ Radar Chart 8 trục và tương tác lọc danh bạ theo mức ĐMST tại `/doanh-nghiep-dmst`.
+
+
