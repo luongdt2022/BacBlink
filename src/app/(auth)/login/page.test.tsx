@@ -66,5 +66,20 @@ describe("LoginPage", () => {
     expect(authClient.getToken()).toBeNull();
     expect(push).not.toHaveBeenCalled();
   });
+
+  it("populates inputs correctly when clicking quick-fill for Doanh Nghiệp ĐMST", () => {
+    render(<LoginPage />);
+    const dnDmstBtn = screen.getByRole("button", { name: /Doanh Nghiệp ĐMST/i });
+    expect(dnDmstBtn).toBeInTheDocument();
+
+    fireEvent.click(dnDmstBtn);
+
+    const emailInput = screen.getByPlaceholderText("tenban@tochuc.vn") as HTMLInputElement;
+    const passwordInput = screen.getByPlaceholderText("••••••••") as HTMLInputElement;
+
+    expect(emailInput.value).toBe("innovation.entity@demo.nacentech.vn");
+    expect(passwordInput.value).toBe("Password@123");
+  });
 });
+
 

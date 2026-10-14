@@ -215,6 +215,8 @@ export default function LoginPage() {
                     { label: "Sở KH&CN Hà Nội", email: "hanoi.admin@demo.nacentech.vn", color: "hover:bg-cyan-50 text-cyan-700 border-cyan-200" },
                     { label: "Doanh Nghiệp Buyer", email: "buyer.user@demo.nacentech.vn", color: "hover:bg-amber-50 text-amber-700 border-amber-200" },
                     { label: "Doanh Nghiệp Seller", email: "seller.user@demo.nacentech.vn", color: "hover:bg-emerald-50 text-emerald-700 border-emerald-200" },
+                    { label: "Doanh Nghiệp ĐMST", email: "innovation.entity@demo.nacentech.vn", color: "hover:bg-purple-50 text-purple-700 border-purple-200" },
+                    { label: "Cụm ĐMST HN", email: "cluster.admin@demo.nacentech.vn", color: "hover:bg-indigo-50 text-indigo-700 border-indigo-200" },
                     { label: "Chuyên Gia KH&CN", email: "expert.user@demo.nacentech.vn", color: "hover:bg-teal-50 text-teal-700 border-teal-200" },
                     { label: "Người Dùng Thường", email: "public.user@demo.nacentech.vn", color: "hover:bg-slate-100 text-slate-700 border-slate-200" },
                   ].map((acc) => (
