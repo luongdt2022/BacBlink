@@ -96,13 +96,13 @@ export function NavigationProgress() {
       aria-valuemax={100}
       aria-valuenow={progress}
       aria-label="Đang tải trang"
-      className="fixed top-0 left-0 right-0 z-[9999] h-[3px] pointer-events-none overflow-hidden bg-transparent"
+      className="fixed top-0 left-0 right-0 z-[9999] h-[2px] pointer-events-none overflow-hidden bg-transparent"
     >
       <div
-        className="h-full bg-gradient-to-r from-nacen-green-500 via-emerald-400 to-brand-600 transition-all duration-200 ease-out shadow-[0_0_8px_rgba(45,154,133,0.8)]"
+        className="h-full bg-gradient-to-r from-teal-400/80 via-emerald-400/70 to-brand-500/70 transition-all duration-200 ease-out shadow-[0_0_4px_rgba(45,154,133,0.3)]"
         style={{
           width: `${progress}%`,
-          opacity: visible ? 1 : 0,
+          opacity: visible ? 0.9 : 0,
           transitionProperty: "width, opacity",
         }}
       />
