@@ -220,7 +220,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
       target: { value: '0701234567' }
     });
     fireEvent.change(screen.getByDisplayValue('-- Chọn Tỉnh / Thành phố --'), {
-      target: { value: 'Hà Nam' }
+      target: { value: 'Hà Nội' }
     });
     fireEvent.change(screen.getByPlaceholderText(/Họ và tên người đại diện/i), {
       target: { value: 'Lê Văn Nam' }

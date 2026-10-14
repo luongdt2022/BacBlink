@@ -18,14 +18,17 @@ import {
   Kanban,
   Inbox,
   Rocket,
+  ShieldCheck,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { resolveExpertActiveMenu } from "@/lib/expert-nav";
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   section?: string;
+  key?: string;
 }
 
 // 1. Bên Mua Công Nghệ (BUYER) - Tập trung giải bài toán, tìm cung & tiến trình hợp tác
@@ -51,11 +54,12 @@ const sellerNavItems: NavItem[] = [
 
 // 3. Chuyên Gia KH&CN (EXPERT / VERIFIED_EXPERT) - Thuần chất LLKH, tư vấn & đồng hành
 const expertNavItems: NavItem[] = [
-  { href: "/portal", label: "Tổng quan Chuyên gia", icon: LayoutDashboard },
-  { href: "/portal/expert/profile", label: "Hồ sơ LLKH của tôi", icon: GraduationCap },
-  { href: "/portal/opportunities/pipeline?type=consulting", label: "Lời mời Tư vấn Doanh nghiệp", icon: ClipboardList },
-  { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Dự án Đồng hành & Hợp tác", icon: Kanban },
+  { href: "/portal/expert/account", label: "Tài khoản Chuyên gia", icon: ShieldCheck, key: "account" },
+  { href: "/portal/expert/profile", label: "Tổng quan Chuyên gia", icon: LayoutDashboard, key: "profile" },
+  { href: "/portal/expert/profile/edit", label: "Hồ sơ LLKH của tôi", icon: GraduationCap, key: "profile-edit" },
+  { href: "/portal/expert/consultations", label: "Hộp Thư Tư Vấn & Kết Nối", icon: Inbox, key: "consultations" },
+  { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles, key: "radar" },
+  { href: "/portal/expert/projects", label: "Dự án Đồng hành & Hợp tác", icon: Kanban, key: "projects" },
 ];
 
 // 4. Doanh Nghiệp ĐMST (INNOVATION_ENTITY) - Phân tách 2 khối Cung-Cầu & Năng lực
@@ -208,10 +212,13 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {navItems.map((item) => {
               const Icon = item.icon;
               const basePath = item.href.split("?")[0];
+              const activeExpertKey = isExpert ? resolveExpertActiveMenu(pathname) : null;
               const isActive =
-                basePath === "/portal"
-                  ? pathname === "/portal"
-                  : pathname === basePath || pathname?.startsWith(basePath + "/");
+                isExpert && item.key
+                  ? item.key === activeExpertKey
+                  : basePath === "/portal"
+                    ? pathname === "/portal"
+                    : pathname === basePath || pathname?.startsWith(basePath + "/");
               return (
                 <React.Fragment key={item.href + item.label}>
                   {item.section && (

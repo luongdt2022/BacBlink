@@ -85,8 +85,8 @@ export default function ExpertProfileEditPage() {
   // Load sectors and profile on mount
   useEffect(() => {
     const user = authClient.getUser();
-    if (!user || user.role !== "VERIFIED_EXPERT") {
-      setErrorMessage("Chỉ tài khoản Chuyên gia đã xác thực (VERIFIED_EXPERT) mới có quyền truy cập trang này.");
+    if (!user || (user.role !== "VERIFIED_EXPERT" && user.role !== "EXPERT")) {
+      setErrorMessage("Chỉ tài khoản Chuyên gia đã xác thực (VERIFIED_EXPERT) hoặc đang chờ phê duyệt (EXPERT) mới có quyền truy cập trang này.");
       setUxState("error");
       return;
     }

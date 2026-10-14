@@ -4,8 +4,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import PortalLayout from "./layout";
 import { authClient } from "@/lib/auth-client";
 
+let mockPathname = "/portal";
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/portal",
+  usePathname: () => mockPathname,
   useRouter: () => ({ push: vi.fn() }),
 }));
 
@@ -22,6 +24,7 @@ vi.mock("@/lib/auth-client", () => ({
 describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPathname = "/portal";
   });
 
   afterEach(() => {
@@ -92,13 +95,70 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
 
     expect(screen.getByText("Chuyên Gia KH&CN")).toBeInTheDocument();
     expect(screen.getByText("Workspace Chuyên Gia")).toBeInTheDocument();
+    expect(screen.getByText("Tài khoản Chuyên gia")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Tài khoản Chuyên gia/i })).toHaveAttribute("href", "/portal/expert/account");
+    expect(screen.getByText("Tổng quan Chuyên gia")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Tổng quan Chuyên gia/i })).toHaveAttribute("href", "/portal/expert/profile");
     expect(screen.getByText("Hồ sơ LLKH của tôi")).toBeInTheDocument();
-    expect(screen.getByText("Lời mời Tư vấn Doanh nghiệp")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Hồ sơ LLKH của tôi/i })).toHaveAttribute("href", "/portal/expert/profile/edit");
+    expect(screen.getByText("Hộp Thư Tư Vấn & Kết Nối")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Hộp Thư Tư Vấn & Kết Nối/i })).toHaveAttribute("href", "/portal/expert/consultations");
     expect(screen.getByText("Radar Cơ hội Phù hợp (AI)")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Radar Cơ hội Phù hợp \(AI\)/i })).toHaveAttribute("href", "/portal/matching/radar");
     expect(screen.getByText("Dự án Đồng hành & Hợp tác")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Dự án Đồng hành & Hợp tác/i })).toHaveAttribute("href", "/portal/expert/projects");
+
+    // Negative assertions: Expert workspace must not link to legacy pipeline
+    expect(document.querySelector('a[href*="/portal/opportunities/pipeline"]')).toBeNull();
     expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
     expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
+  });
+
+  it("activates only consultations item on /portal/expert/consultations without colliding with projects", () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u3",
+      email: "expert@example.com",
+      fullName: "PGS.TS Lê Chuyên Gia",
+      role: "VERIFIED_EXPERT",
+    });
+    mockPathname = "/portal/expert/consultations";
+
+    render(
+      <PortalLayout>
+        <div>Content</div>
+      </PortalLayout>
+    );
+
+    const consultationsLink = screen.getByRole("link", { name: /Hộp Thư Tư Vấn & Kết Nối/i });
+    const projectsLink = screen.getByRole("link", { name: /Dự án Đồng hành & Hợp tác/i });
+
+    expect(consultationsLink.className).toContain("bg-brand-700");
+    expect(consultationsLink.className).toContain("text-white");
+    expect(projectsLink.className).not.toContain("bg-brand-700");
+  });
+
+  it("activates only projects item on /portal/expert/projects without colliding with consultations", () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u3",
+      email: "expert@example.com",
+      fullName: "PGS.TS Lê Chuyên Gia",
+      role: "VERIFIED_EXPERT",
+    });
+    mockPathname = "/portal/expert/projects";
+
+    render(
+      <PortalLayout>
+        <div>Content</div>
+      </PortalLayout>
+    );
+
+    const consultationsLink = screen.getByRole("link", { name: /Hộp Thư Tư Vấn & Kết Nối/i });
+    const projectsLink = screen.getByRole("link", { name: /Dự án Đồng hành & Hợp tác/i });
+
+    expect(projectsLink.className).toContain("bg-brand-700");
+    expect(projectsLink.className).toContain("text-white");
+    expect(consultationsLink.className).not.toContain("bg-brand-700");
   });
 
   it("renders Innovation Entity grouped workspace menu for INNOVATION_ENTITY role", () => {
