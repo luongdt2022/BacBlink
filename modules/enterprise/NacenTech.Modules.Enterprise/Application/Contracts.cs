@@ -23,7 +23,53 @@ public sealed record EnterprisePublicDirectoryItemDto(
     bool IsExporting = false,
     bool InValueChain = false,
     IReadOnlyList<string>? TopBottlenecks = null,
-    IReadOnlyList<string>? SupportNeeds = null
+    IReadOnlyList<string>? SupportNeeds = null,
+    decimal? InnovationScore = null,
+    string? InnovationTier = null,
+    string? InnovationBadge = null
+);
+
+public sealed record InnovationCriteriaDetailDto(
+    string CriteriaCode,
+    string CriteriaName,
+    decimal MaxScore,
+    decimal Score,
+    string? SourceQuestion,
+    string? ReviewerComment = null
+);
+
+public sealed record InnovationGroupScoreDto(
+    string GroupCode,
+    string GroupName,
+    decimal MaxScore,
+    decimal Score,
+    decimal Percentage,
+    IReadOnlyList<InnovationCriteriaDetailDto>? CriteriaList = null
+);
+
+public sealed record RadarAxisDto(
+    string Axis,
+    decimal Value,
+    decimal MaxValue,
+    int FullMark = 100
+);
+
+public sealed record InnovationEvaluationDto(
+    Guid Id,
+    Guid EnterpriseId,
+    string TaxCode,
+    int EvaluationYear,
+    string CriteriaVersion,
+    decimal TotalScore,
+    string Classification,          // "LEADING", "DEVELOPING", "POTENTIAL", "UNRATED"
+    string ClassificationLabel,     // "Dẫn đầu", "Đang phát triển", "Tiềm năng", "Chưa đánh giá"
+    string BadgeName,               // "Huy hiệu Vàng ĐMST", "Huy hiệu Bạc ĐMST", "Huy hiệu Đồng ĐMST", "Chưa xếp hạng"
+    string Status,                  // "DRAFT_CALCULATED", "SUBMITTED", "APPROVED", "REJECTED"
+    string? ReviewedBy,
+    DateTimeOffset? ReviewedAt,
+    IReadOnlyList<InnovationGroupScoreDto> GroupScores,
+    IReadOnlyList<RadarAxisDto> RadarChartData,
+    IReadOnlyList<InnovationCriteriaDetailDto>? CriteriaDetails = null // PDPD BR-02-011 masking
 );
 
 public sealed record EnterprisePublicDirectoryDto(
@@ -137,6 +183,7 @@ public sealed class EnterpriseSearchQuery
     public string? SectorCode { get; set; }
     public string? SubjectType { get; set; }
     public string? TniClassification { get; set; }
+    public string? InnovationTier { get; set; }
     public string? SortBy { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 9;

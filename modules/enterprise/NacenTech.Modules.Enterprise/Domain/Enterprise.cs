@@ -45,6 +45,8 @@ public class Enterprise : AggregateRoot
     
     public decimal? TniScore { get; set; }
     public string? TniClassification { get; set; }
+    public decimal? LatestInnovationScore { get; set; }
+    public string? LatestInnovationTier { get; set; }
     
     public string AddressInfoJson { get; set; } = "{}";
     public string ProfileDetailsJson { get; set; } = "{}";
@@ -54,6 +56,7 @@ public class Enterprise : AggregateRoot
     public ICollection<EnterpriseIdentifier> Identifiers { get; set; } = new List<EnterpriseIdentifier>();
     public ICollection<EnterpriseInnovationProject> InnovationProjects { get; set; } = new List<EnterpriseInnovationProject>();
     public ICollection<EnterpriseIntellectualProperty> IntellectualProperties { get; set; } = new List<EnterpriseIntellectualProperty>();
+    public ICollection<EnterpriseInnovationEvaluation> InnovationEvaluations { get; set; } = new List<EnterpriseInnovationEvaluation>();
 
     public void UpdateBasicInfo(string legalName, string addressInfoJson)
     {
