@@ -191,26 +191,26 @@ public class EnterpriseService : IEnterpriseService
     public async Task<EnterpriseProfileFullDto> UpsertProfileAsync(Guid enterpriseId, UpsertEnterpriseProfileRequest request, CancellationToken ct = default)
     {
         var ent = await _repository.GetByIdAsync(enterpriseId, ct);
-        if (ent is null)
+        var isNew = ent is null;
+        if (isNew)
         {
-            ent = new Domain.Enterprise();
-            await _repository.AddAsync(ent, ct);
+            ent = new Domain.Enterprise(enterpriseId);
         }
 
         if (!string.IsNullOrWhiteSpace(request.Name))
         {
-            ent.Name = request.Name;
+            ent!.Name = request.Name;
             ent.LegalName = request.Name;
         }
 
-        if (!string.IsNullOrWhiteSpace(request.SubjectType)) ent.SubjectType = request.SubjectType;
-        if (!string.IsNullOrWhiteSpace(request.EstablishedDate)) ent.EstablishedDate = request.EstablishedDate;
-        if (!string.IsNullOrWhiteSpace(request.ProvinceCity)) ent.ProvinceCity = request.ProvinceCity;
-        if (!string.IsNullOrWhiteSpace(request.AddressDetail)) ent.AddressDetail = request.AddressDetail;
-        if (!string.IsNullOrWhiteSpace(request.Website)) ent.Website = request.Website;
-        if (!string.IsNullOrWhiteSpace(request.Description)) ent.Description = request.Description;
+        if (!string.IsNullOrWhiteSpace(request.SubjectType)) ent!.SubjectType = request.SubjectType;
+        if (!string.IsNullOrWhiteSpace(request.EstablishedDate)) ent!.EstablishedDate = request.EstablishedDate;
+        if (!string.IsNullOrWhiteSpace(request.ProvinceCity)) ent!.ProvinceCity = request.ProvinceCity;
+        if (!string.IsNullOrWhiteSpace(request.AddressDetail)) ent!.AddressDetail = request.AddressDetail;
+        if (!string.IsNullOrWhiteSpace(request.Website)) ent!.Website = request.Website;
+        if (!string.IsNullOrWhiteSpace(request.Description)) ent!.Description = request.Description;
 
-        ent.ContactPerson = request.ContactPerson;
+        ent!.ContactPerson = request.ContactPerson;
         ent.ContactPhone = request.ContactPhone;
         ent.ContactEmail = request.ContactEmail;
         ent.IsContactPublic = request.IsContactPublic;
@@ -238,7 +238,14 @@ public class EnterpriseService : IEnterpriseService
             ent.ProfileDetailsJson = request.ProfileDetailsJson;
 
         ent.TouchEntity();
-        await _repository.UpdateAsync(ent, ct);
+        if (isNew)
+        {
+            await _repository.AddAsync(ent, ct);
+        }
+        else
+        {
+            await _repository.UpdateAsync(ent, ct);
+        }
 
         return (await GetOwnerProfileAsync(ent.Id, ct))!;
     }

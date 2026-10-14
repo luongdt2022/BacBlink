@@ -154,10 +154,10 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
                     itemReq.TechGroupCode ?? "CN01",
                     itemReq.DemandTypeCode ?? "NC01",
                     itemReq.BudgetRange ?? "Chưa xác định",
-                    itemReq.UrgencyScore,
-                    itemReq.ImpactScore,
-                    itemReq.InvestmentCapacity,
-                    itemReq.AdoptionReadiness,
+                    Math.Clamp(itemReq.UrgencyScore <= 0 ? 3 : itemReq.UrgencyScore, 1, 5),
+                    Math.Clamp(itemReq.ImpactScore <= 0 ? 3 : itemReq.ImpactScore, 1, 5),
+                    Math.Clamp(itemReq.InvestmentCapacity <= 0 ? 3 : itemReq.InvestmentCapacity, 1, 5),
+                    Math.Clamp(itemReq.AdoptionReadiness <= 0 ? 3 : itemReq.AdoptionReadiness, 1, 5),
                     submitterPersonId
                 );
 
@@ -267,6 +267,91 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             .ToListAsync(ct);
 
         return Ok(items);
+    }
+
+    [HttpPut("buyer/demands/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateDemandItem(Guid id, [FromBody] UpdateDemandItemRequest req, CancellationToken ct)
+    {
+        var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
+        if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
+
+        if (item.Status != DemandItemStatuses.Pending && item.Status != DemandItemStatuses.Draft)
+        {
+            return BadRequest(new { message = "Chỉ có thể chỉnh sửa bài toán khi ở trạng thái Chờ thẩm định (PENDING) hoặc Nháp (DRAFT)." });
+        }
+
+        if (string.IsNullOrWhiteSpace(req.TechnicalProblem) || string.IsNullOrWhiteSpace(req.ExpectedGoal))
+            return BadRequest(new { message = "Vấn đề kỹ thuật và mục tiêu kỳ vọng không được để trống." });
+
+        if (req.UrgencyScore < 1 || req.UrgencyScore > 5 ||
+            req.ImpactScore < 1 || req.ImpactScore > 5 ||
+            req.InvestmentCapacity < 1 || req.InvestmentCapacity > 5 ||
+            req.AdoptionReadiness < 1 || req.AdoptionReadiness > 5)
+        {
+            return BadRequest(new { message = "Các chỉ số định lượng K, L, N, O phải nằm trong khoảng từ 1 đến 5." });
+        }
+
+        item.Update(
+            req.StageName ?? item.StageName,
+            req.TechnicalProblem,
+            req.DesiredSolution,
+            req.NeedConsulting,
+            req.ExpectedGoal,
+            req.ApplicationScale,
+            req.SectorCode ?? item.SectorCode,
+            req.TechGroupCode ?? item.TechGroupCode,
+            req.DemandTypeCode ?? item.DemandTypeCode,
+            req.BudgetRange ?? item.BudgetRange,
+            req.UrgencyScore,
+            req.ImpactScore,
+            req.InvestmentCapacity,
+            req.AdoptionReadiness
+        );
+
+        await uow.CommitAsync(ct);
+
+        return Ok(new
+        {
+            success = true,
+            id = item.Id,
+            itemCode = item.ItemCode,
+            stageName = item.StageName,
+            technicalProblem = item.TechnicalProblem,
+            desiredSolution = item.DesiredSolution,
+            needConsulting = item.NeedConsulting,
+            expectedGoal = item.ExpectedGoal,
+            applicationScale = item.ApplicationScale,
+            sectorCode = item.SectorCode,
+            budgetRange = item.BudgetRange,
+            urgencyScore = item.UrgencyScore,
+            impactScore = item.ImpactScore,
+            investmentCapacity = item.InvestmentCapacity,
+            adoptionReadiness = item.AdoptionReadiness,
+            tniScore = item.TniScore,
+            tniClassification = item.TniClassification,
+            status = item.Status,
+            message = "Cập nhật bài toán nhu cầu công nghệ thành công."
+        });
+    }
+
+    [HttpPost("buyer/demands/{id}/close")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CloseDemandItem(Guid id, CancellationToken ct)
+    {
+        var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
+        if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
+
+        item.Close();
+        await uow.CommitAsync(ct);
+
+        return Ok(new
+        {
+            success = true,
+            id = item.Id,
+            status = item.Status,
+            message = "Đã đóng bài toán nhu cầu công nghệ thành công."
+        });
     }
 
     // =========================================================================
@@ -539,5 +624,22 @@ public sealed record ExpoVisitorRegistrationRequest(
 public sealed record SubmitSolutionOfferRequest(
     string SolutionTitle,
     string? ProposalDetails
+);
+
+public sealed record UpdateDemandItemRequest(
+    string? StageName,
+    string TechnicalProblem,
+    string? DesiredSolution,
+    bool NeedConsulting,
+    string ExpectedGoal,
+    string? ApplicationScale,
+    string? SectorCode,
+    string? TechGroupCode,
+    string? DemandTypeCode,
+    string? BudgetRange,
+    int UrgencyScore,
+    int ImpactScore,
+    int InvestmentCapacity,
+    int AdoptionReadiness
 );
 

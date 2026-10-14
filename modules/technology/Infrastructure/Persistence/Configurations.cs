@@ -51,13 +51,15 @@ public sealed class SellerTechnologyOfferConfiguration : IEntityTypeConfiguratio
         b.Property(x => x.PricingType).HasMaxLength(30).IsRequired();
         b.Property(x => x.Currency).HasMaxLength(10).IsRequired();
         b.Property(x => x.Status).HasMaxLength(30).IsRequired();
-        b.Property(x => x.ManagingAuthorityId).HasMaxLength(50);
         b.Property(x => x.ScopeType).HasMaxLength(30);
         b.Property(x => x.ScopeId).HasMaxLength(50);
+        b.Property(x => x.EnterpriseTaxCode).HasMaxLength(50);
+        b.Property(x => x.EnterpriseName).HasMaxLength(255);
 
         b.HasIndex(x => x.OfferCode).IsUnique();
         b.HasIndex(x => x.SectorCode);
         b.HasIndex(x => x.Status);
         b.HasIndex(x => x.ManagingAuthorityId);
+        b.HasIndex(x => x.EnterpriseTaxCode);
     }
 }

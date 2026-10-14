@@ -94,4 +94,50 @@ public sealed class DemandItem : Entity
         AssignedExpertId = expertId;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
+
+    public void Update(
+        string stageName,
+        string technicalProblem,
+        string? desiredSolution,
+        bool needConsulting,
+        string expectedGoal,
+        string? applicationScale,
+        string sectorCode,
+        string techGroupCode,
+        string demandTypeCode,
+        string budgetRange,
+        int urgencyScore,
+        int impactScore,
+        int investmentCapacity,
+        int adoptionReadiness)
+    {
+        StageName = stageName;
+        TechnicalProblem = technicalProblem;
+        DesiredSolution = desiredSolution;
+        NeedConsulting = needConsulting;
+        ExpectedGoal = expectedGoal;
+        ApplicationScale = applicationScale;
+        SectorCode = sectorCode;
+        TechGroupCode = techGroupCode;
+        DemandTypeCode = demandTypeCode;
+        BudgetRange = budgetRange;
+
+        UrgencyScore = urgencyScore;
+        ImpactScore = impactScore;
+        InvestmentCapacity = investmentCapacity;
+        AdoptionReadiness = adoptionReadiness;
+
+        var tni = TniCalculationEngine.Calculate(urgencyScore, impactScore, investmentCapacity, adoptionReadiness);
+        TniScore = tni.Score;
+        TniClassification = tni.Classification.ToString();
+
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void Close()
+    {
+        Status = DemandItemStatuses.Closed;
+        IsPublicListed = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

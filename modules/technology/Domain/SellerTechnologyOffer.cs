@@ -37,7 +37,9 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         string? scopeId,
         bool legalConsent = true,
         Guid? createdBy = null,
-        DateTimeOffset? publishedAt = null)
+        DateTimeOffset? publishedAt = null,
+        string? enterpriseTaxCode = null,
+        string? enterpriseName = null)
     {
         Id = id;
         OfferCode = offerCode;
@@ -69,6 +71,8 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         LegalConsent = legalConsent;
         CreatedBy = createdBy;
         PublishedAt = publishedAt;
+        EnterpriseTaxCode = enterpriseTaxCode;
+        EnterpriseName = enterpriseName;
         SuccessfulConnections = 0;
         RatingScore = 5.0m;
         ReviewCount = 0;
@@ -108,6 +112,15 @@ public sealed class SellerTechnologyOffer : AggregateRoot
     public string? ScopeId { get; private set; }
     public bool LegalConsent { get; private set; } = true;
     public Guid? CreatedBy { get; private set; }
+    public string? EnterpriseTaxCode { get; private set; }
+    public string? EnterpriseName { get; private set; }
+
+    public void SetEnterpriseLink(string? taxCode, string? name)
+    {
+        EnterpriseTaxCode = taxCode;
+        EnterpriseName = name;
+        Touch();
+    }
 
     public void Review(string action, string? reviewNote = null)
     {
@@ -153,7 +166,9 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         string? managingAuthorityId,
         string? managingAuthorityName,
         string? scopeType,
-        string? scopeId)
+        string? scopeId,
+        string? enterpriseTaxCode = null,
+        string? enterpriseName = null)
     {
         // BR-SELLER-07: Nếu hasTechTransfer và có sự thay đổi các trường cốt lõi (TRL, IP, TransferMethod)
         // Hệ thống tự động chuyển về PENDING để Sở KH&CN thẩm định lại trước khi tái xuất bản
@@ -188,6 +203,8 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         ManagingAuthorityName = managingAuthorityName;
         ScopeType = scopeType;
         ScopeId = scopeId;
+        if (!string.IsNullOrWhiteSpace(enterpriseTaxCode)) EnterpriseTaxCode = enterpriseTaxCode;
+        if (!string.IsNullOrWhiteSpace(enterpriseName)) EnterpriseName = enterpriseName;
 
         if (coreIpChanged)
         {

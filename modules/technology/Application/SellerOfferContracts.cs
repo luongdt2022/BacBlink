@@ -78,7 +78,9 @@ public sealed record CreateSellerOfferDto(
     string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
     string? ScopeType = "PROVINCE",
     string? ScopeId = "VN-HN",
-    bool LegalConsent = true
+    bool LegalConsent = true,
+    string? EnterpriseTaxCode = null,
+    string? EnterpriseName = null
 );
 
 public sealed record UpdateSellerOfferDto(
@@ -104,7 +106,9 @@ public sealed record UpdateSellerOfferDto(
     string? ManagingAuthorityId = "VN-HN",
     string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
     string? ScopeType = "PROVINCE",
-    string? ScopeId = "VN-HN"
+    string? ScopeId = "VN-HN",
+    string? EnterpriseTaxCode = null,
+    string? EnterpriseName = null
 );
 
 public sealed record SellerOfferDto(
@@ -139,7 +143,9 @@ public sealed record SellerOfferDto(
     string? ManagingAuthorityId = "VN-HN",
     string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
     string? ScopeType = "PROVINCE",
-    string? ScopeId = "VN-HN"
+    string? ScopeId = "VN-HN",
+    string? EnterpriseTaxCode = null,
+    string? EnterpriseName = null
 );
 
 public sealed record ReviewOfferDto(

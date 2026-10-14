@@ -49,7 +49,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 RatingScore: 4.85m,
                 ReviewCount: 15,
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-20),
-                PublishedAt: DateTimeOffset.UtcNow.AddDays(-18)
+                PublishedAt: DateTimeOffset.UtcNow.AddDays(-18),
+                EnterpriseTaxCode: "2400120030",
+                EnterpriseName: "CÔNG TY TNHH MỘT THÀNH VIÊN LÂM NGHIỆP ĐÔNG BẮC"
             ),
             new(
                 Id: Guid.Parse("22222222-2222-2222-2222-222222222222"),
@@ -79,7 +81,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 RatingScore: 4.90m,
                 ReviewCount: 9,
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-15),
-                PublishedAt: DateTimeOffset.UtcNow.AddDays(-14)
+                PublishedAt: DateTimeOffset.UtcNow.AddDays(-14),
+                EnterpriseTaxCode: "4900142903",
+                EnterpriseName: "CÔNG TY TRÁCH NHIỆM HỮU HẠN THÀNH LONG"
             ),
             new(
                 Id: Guid.Parse("33333333-3333-3333-3333-333333333333"),
@@ -109,7 +113,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 RatingScore: 4.70m,
                 ReviewCount: 38,
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-10),
-                PublishedAt: DateTimeOffset.UtcNow.AddDays(-9)
+                PublishedAt: DateTimeOffset.UtcNow.AddDays(-9),
+                EnterpriseTaxCode: "4900224521",
+                EnterpriseName: "CÔNG TY TNHH SẢN XUẤT VÀ THƯƠNG MẠI AN SƠN"
             ),
             new(
                 Id: Guid.Parse("44444444-4444-4444-4444-444444444444"),
@@ -139,7 +145,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 RatingScore: 5.00m,
                 ReviewCount: 22,
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-5),
-                PublishedAt: DateTimeOffset.UtcNow.AddDays(-4)
+                PublishedAt: DateTimeOffset.UtcNow.AddDays(-4),
+                EnterpriseTaxCode: "4900232057",
+                EnterpriseName: "CÔNG TY CỔ PHẦN VẬT LIỆU VÀ XÂY DỰNG CAO LỘC"
             )
         };
 
@@ -178,7 +186,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         ManagingAuthorityId: x.ManagingAuthorityId,
         ManagingAuthorityName: x.ManagingAuthorityName,
         ScopeType: x.ScopeType,
-        ScopeId: x.ScopeId
+        ScopeId: x.ScopeId,
+        EnterpriseTaxCode: x.EnterpriseTaxCode,
+        EnterpriseName: x.EnterpriseName
     );
 
     [HttpGet]
@@ -190,6 +200,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         [FromQuery] bool? hasTechTransfer,
         [FromQuery] int? minTrl,
         [FromQuery] string? ipStatus,
+        [FromQuery] string? enterpriseTaxCode,
         [FromQuery] int page = 1,
         [FromQuery] int limit = 12,
         CancellationToken ct = default)
@@ -203,7 +214,8 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 var s = search.Trim().ToLower();
                 dbQuery = dbQuery.Where(x => x.Title.ToLower().Contains(s)
                                       || x.Summary.ToLower().Contains(s)
-                                      || (x.DeveloperOrigin != null && x.DeveloperOrigin.ToLower().Contains(s)));
+                                      || (x.DeveloperOrigin != null && x.DeveloperOrigin.ToLower().Contains(s))
+                                      || (x.EnterpriseName != null && x.EnterpriseName.ToLower().Contains(s)));
             }
 
             if (!string.IsNullOrWhiteSpace(sectorCode) && sectorCode != "ALL")
@@ -234,6 +246,12 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 dbQuery = dbQuery.Where(x => x.IpStatus != null && x.IpStatus.ToLower() == ip);
             }
 
+            if (!string.IsNullOrWhiteSpace(enterpriseTaxCode))
+            {
+                var cleanTax = enterpriseTaxCode.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.EnterpriseTaxCode != null && x.EnterpriseTaxCode.ToLower() == cleanTax);
+            }
+
             var total = await dbQuery.CountAsync(ct);
             var entities = await dbQuery.OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
                                         .Skip((page - 1) * limit)
@@ -258,7 +276,8 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             var s = search.Trim().ToLowerInvariant();
             query = query.Where(x => x.Title.ToLowerInvariant().Contains(s)
                                   || x.Summary.ToLowerInvariant().Contains(s)
-                                  || (x.DeveloperOrigin != null && x.DeveloperOrigin.ToLowerInvariant().Contains(s)));
+                                  || (x.DeveloperOrigin != null && x.DeveloperOrigin.ToLowerInvariant().Contains(s))
+                                  || (x.EnterpriseName != null && x.EnterpriseName.ToLowerInvariant().Contains(s)));
         }
 
         if (!string.IsNullOrWhiteSpace(sectorCode) && sectorCode != "ALL")
@@ -284,6 +303,11 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         if (!string.IsNullOrWhiteSpace(ipStatus) && ipStatus != "ALL")
         {
             query = query.Where(x => x.IpStatus != null && x.IpStatus.Equals(ipStatus, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(enterpriseTaxCode))
+        {
+            query = query.Where(x => x.EnterpriseTaxCode != null && x.EnterpriseTaxCode.Equals(enterpriseTaxCode.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
         var totalFallback = query.Count();
@@ -461,7 +485,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             ManagingAuthorityId: dto.ManagingAuthorityId ?? "VN-HN",
             ManagingAuthorityName: dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
             ScopeType: dto.ScopeType ?? "PROVINCE",
-            ScopeId: dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN"
+            ScopeId: dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
+            EnterpriseTaxCode: dto.EnterpriseTaxCode,
+            EnterpriseName: dto.EnterpriseName
         );
 
         // Lưu thực thể lâu dài vào CSDL PostgreSQL
@@ -493,7 +519,11 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
             dto.ScopeType ?? "PROVINCE",
             dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
-            dto.LegalConsent
+            dto.LegalConsent,
+            null,
+            null,
+            dto.EnterpriseTaxCode,
+            dto.EnterpriseName
         );
 
         db.Set<SellerTechnologyOffer>().Add(entity);
@@ -614,7 +644,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             ManagingAuthorityId = dto.ManagingAuthorityId ?? existing.ManagingAuthorityId,
             ManagingAuthorityName = dto.ManagingAuthorityName ?? existing.ManagingAuthorityName,
             ScopeType = dto.ScopeType ?? existing.ScopeType,
-            ScopeId = dto.ScopeId ?? existing.ScopeId
+            ScopeId = dto.ScopeId ?? existing.ScopeId,
+            EnterpriseTaxCode = dto.EnterpriseTaxCode ?? existing.EnterpriseTaxCode,
+            EnterpriseName = dto.EnterpriseName ?? existing.EnterpriseName
         };
 
         // Cập nhật CSDL PostgreSQL
@@ -645,7 +677,9 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 dto.ManagingAuthorityId ?? existing.ManagingAuthorityId,
                 dto.ManagingAuthorityName ?? existing.ManagingAuthorityName,
                 dto.ScopeType ?? existing.ScopeType,
-                dto.ScopeId ?? existing.ScopeId
+                dto.ScopeId ?? existing.ScopeId,
+                dto.EnterpriseTaxCode ?? existing.EnterpriseTaxCode,
+                dto.EnterpriseName ?? existing.EnterpriseName
             );
             await uow.CommitAsync(ct);
         }
