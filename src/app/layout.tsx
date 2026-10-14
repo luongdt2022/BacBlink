@@ -7,6 +7,7 @@ import { ToastProvider } from "@/components/common/toast";
 import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
 import { AIAssistantWidget } from "@/components/home/AIAssistantWidget";
+import { NavigationProgress } from "@/components/common/navigation-progress";
 
 const beVietnamPro = localFont({
   src: [
@@ -36,8 +37,9 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
             <ToastProvider>
+              <NavigationProgress />
               <Navbar />
-              <main className="flex-1">{children}</main>
+              <main className="flex-1 animate-page-enter">{children}</main>
               <Footer />
               {/* Trợ lý ảo AI NacentTwin nổi toàn hệ thống trên tất cả các màn hình */}
               <AIAssistantWidget />
