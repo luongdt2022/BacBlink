@@ -92,17 +92,17 @@ export default function MatchingRadarPage() {
   return (
     <div className="min-h-screen bg-surface-subtle p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Executive Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-brand-950 to-brand-900 p-6 sm:p-8 text-white shadow-xl shadow-brand-950/20 border border-brand-800/40">
+      <div className="relative overflow-hidden rounded-3xl workspace-banner p-6 sm:p-8 text-white shadow-xl shadow-brand-950/10 border border-brand-800/20">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-innovation-400 text-xs font-bold tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-brand-100 text-xs font-bold tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 text-brand-200" />
               <span>AI MATCHING ENGINE 4.0 · TT 17/2019/TT-BKHCN</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
               Radar Ghép Nối Cung–Cầu & Điểm Tương Thích
             </h1>
-            <p className="text-xs sm:text-sm text-brand-100/90 leading-relaxed max-w-2xl">
+            <p className="text-xs sm:text-sm text-brand-100 leading-relaxed max-w-2xl">
               Hệ thống định lượng tương thích tự động dựa trên ma trận 10 lĩnh vực trọng điểm, độ sẵn sàng TRL 1–9, chỉ số cấp thiết TNI và xác thực Sở hữu trí tuệ độc quyền.
             </p>
           </div>
@@ -110,22 +110,18 @@ export default function MatchingRadarPage() {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               href="/portal/opportunities/pipeline"
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm backdrop-blur-sm hover:scale-[1.02]"
+              className="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm backdrop-blur-sm hover:scale-[1.02]"
             >
-              <Kanban className="w-4 h-4 text-innovation-400" /> Pipeline Cơ Hội (Kanban)
+              <Kanban className="w-4 h-4 text-brand-200" /> Pipeline Cơ Hội (Kanban)
             </Link>
             <Link
               href="/gov/opportunities"
-              className="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-300 text-xs font-bold flex items-center gap-2 transition-all backdrop-blur-sm"
+              className="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-300/40 text-emerald-200 text-xs font-bold flex items-center gap-2 transition-all backdrop-blur-sm"
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" /> Cổng Giám Sát Sở KH&CN
+              <ShieldCheck className="w-4 h-4 text-emerald-300" /> Cổng Giám Sát Sở KH&CN
             </Link>
           </div>
         </div>
-
-        {/* Ambient Decorative Glow */}
-        <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-brand-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 -top-12 w-48 h-48 rounded-full bg-innovation-500/10 blur-2xl pointer-events-none" />
       </div>
 
       {/* Segmented Control Tabs */}
