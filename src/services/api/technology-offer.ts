@@ -29,6 +29,7 @@ export async function fetchPublicOffers(params?: {
   hasTechTransfer?: boolean;
   minTrl?: number;
   ipStatus?: string;
+  enterpriseTaxCode?: string;
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -45,6 +46,8 @@ export async function fetchPublicOffers(params?: {
     if (params?.minTrl) query.set("minTrl", String(params.minTrl));
     if (params?.ipStatus && params.ipStatus !== "ALL")
       query.set("ipStatus", params.ipStatus);
+    if (params?.enterpriseTaxCode)
+      query.set("enterpriseTaxCode", params.enterpriseTaxCode);
     if (params?.page) query.set("page", String(params.page));
     if (params?.limit) query.set("limit", String(params.limit));
 

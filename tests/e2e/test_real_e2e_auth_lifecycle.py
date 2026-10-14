@@ -83,11 +83,10 @@ def run_real_e2e_auth_suite():
         page.goto(f"{BASE_URL}/admin")
         page.wait_for_timeout(2000)
         
-        # Phải bị đá văng về trang chủ hoặc trang đăng nhập
-        current_url = page.url
-        assert "/admin" not in current_url or current_url.endswith("/login") or current_url.endswith("/"), \
-            f"Lỗi: Guest vẫn vào được {current_url}!"
-        print(f"  ✓ RoleGuard hoạt động chuẩn xác: Đã nắn dòng người dùng về {current_url}")
+        # Phải bị chặn bằng Card Yêu cầu Đăng nhập và không render nội dung quản trị
+        expect(page.locator("text=Yêu cầu Đăng nhập")).to_be_visible(timeout=5000)
+        assert page.locator("text=Tổng Hành Dinh Quản Trị").count() == 0, "Lỗi: Guest vẫn thấy nội dung quản trị!"
+        print("  ✓ RoleGuard hoạt động chuẩn xác: Đã chặn Guest truy cập trái phép, bảo vệ 100% nội dung quản trị.")
 
         # -------------------------------------------------------------
         # CA 4: KIỂM THỬ ĐĂNG XUẤT VÀ NÚT BACK TRÌNH DUYỆT

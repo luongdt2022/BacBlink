@@ -91,7 +91,7 @@ export const portalClient = {
     }
     const json = await res.json();
     return {
-      data: json.data?.items ?? [],
+      data: json.data?.data ?? json.data?.items ?? [],
       total: json.data?.total ?? 0,
     };
   },

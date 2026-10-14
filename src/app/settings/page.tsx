@@ -75,21 +75,21 @@ export default function SettingsPage() {
               <Link href="/profile/upgrade/expert" className="focus-ring rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-800 transition hover:border-brand-500 hover:bg-brand-100 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-100 dark:hover:bg-brand-950">
                 <GraduationCap className="h-5 w-5" />
                 <span className="mt-3 block font-semibold">Chuyên gia KH&CN</span>
-                <span className="mt-1 block text-label">Khai báo hồ sơ để gửi thẩm định.</span>
-                <span className="mt-4 inline-flex items-center gap-1 text-label font-bold">Bắt đầu <ChevronRight className="h-4 w-4" /></span>
+                <span className="mt-1 block text-label">Khai báo hồ sơ 3 bước, thẩm định LLKH.</span>
+                <span className="mt-4 inline-flex items-center gap-1 text-label font-bold">Nộp hồ sơ <ChevronRight className="h-4 w-4" /></span>
               </Link>
-              <a href="mailto:contact@nacentech.gov.vn?subject=Y%C3%AAu%20c%E1%BA%A7u%20n%C3%A2ng%20h%E1%BA%A1ng%20Doanh%20nghi%E1%BB%87p" className="focus-ring rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-800 transition hover:border-brand-500 hover:bg-brand-100 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-100 dark:hover:bg-brand-950">
+              <Link href="/portal/enterprise/profile" className="focus-ring rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-800 transition hover:border-brand-500 hover:bg-brand-100 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-100 dark:hover:bg-brand-950">
                 <Building2 className="h-5 w-5" />
                 <span className="mt-3 block font-semibold">Doanh nghiệp</span>
-                <span className="mt-1 block text-label">Gửi yêu cầu tư vấn, hoàn thiện hồ sơ doanh nghiệp.</span>
-                <span className="mt-4 inline-flex items-center gap-1 text-label font-bold">Gửi yêu cầu <ChevronRight className="h-4 w-4" /></span>
-              </a>
-              <a href="mailto:contact@nacentech.gov.vn?subject=Y%C3%AAu%20c%E1%BA%A7u%20n%C3%A2ng%20h%E1%BA%A1ng%20Doanh%20nghi%E1%BB%87p%20%C4%90MST" className="focus-ring rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-800 transition hover:border-brand-500 hover:bg-brand-100 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-100 dark:hover:bg-brand-950">
+                <span className="mt-1 block text-label">Quản lý hồ sơ năng lực 10 nhóm tiêu chí.</span>
+                <span className="mt-4 inline-flex items-center gap-1 text-label font-bold">Vào hồ sơ <ChevronRight className="h-4 w-4" /></span>
+              </Link>
+              <Link href="/profile/upgrade?action=enterprise" className="focus-ring rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-800 transition hover:border-brand-500 hover:bg-brand-100 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-100 dark:hover:bg-brand-950">
                 <Lightbulb className="h-5 w-5" />
                 <span className="mt-3 block font-semibold">Doanh nghiệp ĐMST</span>
-                <span className="mt-1 block text-label">Gửi yêu cầu tư vấn hồ sơ doanh nghiệp đổi mới sáng tạo.</span>
-                <span className="mt-4 inline-flex items-center gap-1 text-label font-bold">Gửi yêu cầu <ChevronRight className="h-4 w-4" /></span>
-              </a>
+                <span className="mt-1 block text-label">Xác thực MST, tệp ĐKKD để xin công nhận pháp nhân ĐMST.</span>
+                <span className="mt-4 inline-flex items-center gap-1 text-label font-bold">Gửi thẩm định <ChevronRight className="h-4 w-4" /></span>
+              </Link>
             </div>
           ) : (
             <Link href={getRedirectPathByRole(user.role)} className="focus-ring mt-4 flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-800 transition hover:border-brand-500 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-100">

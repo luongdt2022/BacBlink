@@ -7,6 +7,9 @@ import {
   fetchEnterpriseDetail,
   EnterprisePublicDetail,
 } from "../../../lib/enterprise-client";
+import { fetchPublicOffers } from "@/services/api/technology-offer";
+import { TechnologyOffer } from "@/types/technology-offer";
+import { getTechnologyImage } from "@/lib/technology-media";
 
 export default function EnterpriseDetailPage() {
   const params = useParams();
@@ -17,7 +20,9 @@ export default function EnterpriseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<EnterprisePublicDetail | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "rd" | "ip" | "needs">("overview");
+  const [enterpriseOffers, setEnterpriseOffers] = useState<TechnologyOffer[]>([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "products" | "rd" | "ip" | "needs">("overview");
 
   // Connect Modal state
   const [connectModalOpen, setConnectModalOpen] = useState(false);
@@ -38,6 +43,19 @@ export default function EnterpriseDetailPage() {
       })
       .finally(() => {
         setLoading(false);
+      });
+
+    // Tải danh sách sản phẩm/công nghệ do doanh nghiệp này chào bán
+    setOffersLoading(true);
+    fetchPublicOffers({ enterpriseTaxCode: taxCode, limit: 12 })
+      .then((res) => {
+        setEnterpriseOffers(res.data || []);
+      })
+      .catch(() => {
+        setEnterpriseOffers([]);
+      })
+      .finally(() => {
+        setOffersLoading(false);
       });
   }, [taxCode]);
 
@@ -162,10 +180,10 @@ export default function EnterpriseDetailPage() {
 
         {/* Tabs Bar */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="flex border-b border-slate-200 text-sm font-medium">
+          <div className="flex border-b border-slate-200 text-sm font-medium overflow-x-auto">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`flex-1 py-4 text-center border-b-2 transition ${
+              className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
                 activeTab === "overview"
                   ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
                   : "border-transparent text-slate-600 hover:text-slate-900"
@@ -174,8 +192,18 @@ export default function EnterpriseDetailPage() {
               🏢 Tổng Quan Doanh Nghiệp
             </button>
             <button
+              onClick={() => setActiveTab("products")}
+              className={`flex-1 min-w-[180px] py-4 text-center border-b-2 transition ${
+                activeTab === "products"
+                  ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              📦 Sản Phẩm Chào Bán ({enterpriseOffers.length})
+            </button>
+            <button
               onClick={() => setActiveTab("rd")}
-              className={`flex-1 py-4 text-center border-b-2 transition ${
+              className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
                 activeTab === "rd"
                   ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
                   : "border-transparent text-slate-600 hover:text-slate-900"
@@ -185,7 +213,7 @@ export default function EnterpriseDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab("ip")}
-              className={`flex-1 py-4 text-center border-b-2 transition ${
+              className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
                 activeTab === "ip"
                   ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
                   : "border-transparent text-slate-600 hover:text-slate-900"
@@ -195,7 +223,7 @@ export default function EnterpriseDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab("needs")}
-              className={`flex-1 py-4 text-center border-b-2 transition ${
+              className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
                 activeTab === "needs"
                   ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
                   : "border-transparent text-slate-600 hover:text-slate-900"
@@ -206,6 +234,96 @@ export default function EnterpriseDetailPage() {
           </div>
 
           <div className="p-6 md:p-8">
+            {/* TAB: PRODUCTS (SẢN PHẨM & CÔNG NGHỆ CHÀO BÁN CỦA DOANH NGHIỆP) */}
+            {activeTab === "products" && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900">
+                      Danh Mục Sản Phẩm & Giải Pháp Chào Bán
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Các giải pháp công nghệ, thiết bị và sản phẩm thương mại của {data.name} niêm yết trên Sàn NacenTwin
+                    </p>
+                  </div>
+                  <Link
+                    href="/chao-ban-cong-nghe"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1.5 rounded-xl border border-brand-200 self-start sm:self-auto"
+                  >
+                    Xem tất cả trên Sàn công nghệ →
+                  </Link>
+                </div>
+
+                {offersLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-8 animate-pulse">
+                    <div className="h-40 bg-slate-100 rounded-2xl"></div>
+                    <div className="h-40 bg-slate-100 rounded-2xl"></div>
+                  </div>
+                ) : enterpriseOffers.length === 0 ? (
+                  <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 space-y-3">
+                    <div className="text-3xl text-slate-400">📦</div>
+                    <h4 className="text-sm font-bold text-slate-800">
+                      Doanh nghiệp chưa có sản phẩm chào bán niêm yết công khai
+                    </h4>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      Hồ sơ sản phẩm đang được cập nhật hoặc đang trong quá trình thẩm định của Sở KH&CN.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {enterpriseOffers.map((item) => {
+                      const coverImg = getTechnologyImage(item.sectorCode, item.title);
+                      return (
+                        <div
+                          key={item.id}
+                          className="bg-white rounded-2xl border border-slate-200 hover:border-brand-300 shadow-sm hover:shadow-md transition p-4 flex flex-col justify-between space-y-3 group"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-caption">
+                              <span className="mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                                {item.offerCode}
+                              </span>
+                              <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                {item.sectorName}
+                              </span>
+                            </div>
+                            <Link
+                              href={`/chao-ban-cong-nghe/${item.id}`}
+                              className="text-sm font-extrabold text-slate-900 group-hover:text-brand-600 transition line-clamp-2 leading-snug block"
+                            >
+                              {item.title}
+                            </Link>
+                            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                              {item.summary}
+                            </p>
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span className="font-extrabold text-slate-900">
+                              {item.pricingType === "CONTACT" && "Thỏa thuận"}
+                              {item.pricingType === "FIXED" &&
+                                item.priceAmount &&
+                                `${(item.priceAmount / 1_000_000).toLocaleString("vi-VN")} Triệu VND`}
+                              {item.pricingType === "RANGE" &&
+                                item.priceMin &&
+                                item.priceMax &&
+                                `${(item.priceMin / 1_000_000).toLocaleString("vi-VN")} - ${(item.priceMax / 1_000_000).toLocaleString("vi-VN")} Triệu VND`}
+                            </span>
+                            <Link
+                              href={`/chao-ban-cong-nghe/${item.id}`}
+                              className="text-xs font-bold text-brand-600 hover:text-brand-800 flex items-center gap-1"
+                            >
+                              Chi tiết sản phẩm →
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* TAB 1: OVERVIEW */}
             {activeTab === "overview" && (
               <div className="space-y-6">

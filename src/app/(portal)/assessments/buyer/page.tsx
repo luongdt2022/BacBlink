@@ -9,7 +9,7 @@ export default function BuyerWizardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/portal/buyer/demands");
+    router.replace("/khao-sat-nhu-cau");
   }, [router]);
 
   return (
@@ -18,16 +18,16 @@ export default function BuyerWizardPage() {
         <ShoppingBag className="w-6 h-6" />
       </div>
       <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-        Đang chuyển hướng đến Không Gian Nhu Cầu Bên Mua...
+        Đang chuyển hướng đến Phiếu Khảo Sát Nhu Cầu & Chỉ Số Cấp Thiết TNI...
       </h1>
       <p className="text-sm text-slate-500 max-w-md">
-        Hồ sơ bài toán công nghệ và nhu cầu đổi mới sáng tạo được quản lý tập trung tại Cổng Doanh Nghiệp (Buyer Portal).
+        Khảo sát sâu năng lực hấp thụ công nghệ DNNVV và đo lường chỉ số cấp thiết TNI (4 chiều K-L-N-O) được hợp nhất tại Phiếu Khảo Sát Nhu Cầu.
       </p>
       <Link
-        href="/portal/buyer/demands"
+        href="/khao-sat-nhu-cau"
         className="inline-flex items-center gap-2 px-4 py-2 bg-brand-700 text-white rounded-lg font-semibold hover:bg-brand-800 transition"
       >
-        <span>Đến Không Gian Nhu Cầu</span>
+        <span>Đến Phiếu Khảo Sát Nhu Cầu</span>
         <ArrowRight className="w-4 h-4" />
       </Link>
     </div>

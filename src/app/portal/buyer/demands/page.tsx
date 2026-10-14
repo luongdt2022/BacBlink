@@ -14,10 +14,17 @@ import {
   ArrowRight,
   Filter,
   Search,
-  ExternalLink
+  ExternalLink,
+  Edit,
+  Archive,
+  XCircle
 } from 'lucide-react';
 import { Async, AsyncState } from '@/components/ui/async';
 import QuickDemandModal from '@/components/demand/QuickDemandModal';
+import EditDemandModal from '@/components/demand/EditDemandModal';
+import { ConfirmModal } from '@/components/common/confirm-modal';
+import { useToast } from '@/components/common/toast';
+import { authClient } from '@/lib/auth-client';
 import { getTniClassification } from '@/components/demand/TniRealtimeCalculator';
 
 interface DemandItem {
@@ -25,8 +32,18 @@ interface DemandItem {
   itemCode: string;
   stageName: string;
   technicalProblem: string;
+  desiredSolution?: string;
+  needConsulting?: boolean;
+  expectedGoal?: string;
+  applicationScale?: string;
   sectorCode: string;
+  techGroupCode?: string;
+  demandTypeCode?: string;
   budgetRange: string;
+  urgencyScore?: number;
+  impactScore?: number;
+  investmentCapacity?: number;
+  adoptionReadiness?: number;
   tniScore: number;
   tniClassification: string;
   matchingCount?: number;
@@ -34,10 +51,14 @@ interface DemandItem {
 }
 
 export default function BuyerDemandsPage() {
+  const toast = useToast();
   const [demands, setDemands] = useState<DemandItem[]>([]);
   const [asyncState, setAsyncState] = useState<AsyncState>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDemand, setEditingDemand] = useState<DemandItem | null>(null);
+  const [closingDemandId, setClosingDemandId] = useState<string | null>(null);
+  const [isClosingSubmitting, setIsClosingSubmitting] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
 
   const fetchDemands = async () => {
@@ -73,6 +94,43 @@ export default function BuyerDemandsPage() {
     setAsyncState('success');
   };
 
+  const handleEditSuccess = (updatedItem: any) => {
+    setDemands((prev) =>
+      prev.map((d) => (d.id === updatedItem.id ? { ...d, ...updatedItem } : d))
+    );
+  };
+
+  const handleCloseConfirm = async () => {
+    if (!closingDemandId) return;
+    setIsClosingSubmitting(true);
+    try {
+      const token = authClient.getToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const res = await fetch(`/api/v1/buyer/demands/${closingDemandId}/close`, {
+        method: 'POST',
+        headers
+      });
+      if (res.ok) {
+        setDemands((prev) =>
+          prev.map((d) => (d.id === closingDemandId ? { ...d, status: 'CLOSED' } : d))
+        );
+        toast.success('Đã đóng bài toán kỹ thuật thành công.', 'Thông báo');
+      } else {
+        toast.error('Không thể đóng bài toán kỹ thuật.', 'Lỗi');
+      }
+    } catch {
+      toast.error('Lỗi kết nối khi đóng bài toán.', 'Lỗi');
+    } finally {
+      setIsClosingSubmitting(false);
+      setClosingDemandId(null);
+    }
+  };
+
   const filteredList = demands.filter((item) => {
     if (filterStatus === 'ALL') return true;
     return item.status === filterStatus;
@@ -80,6 +138,7 @@ export default function BuyerDemandsPage() {
 
   const verifiedCount = demands.filter(d => d.status === 'VERIFIED').length;
   const pendingCount = demands.filter(d => d.status === 'PENDING').length;
+  const closedCount = demands.filter(d => d.status === 'CLOSED').length;
   const avgTni = demands.length > 0
     ? Math.round(demands.reduce((sum, d) => sum + (d.tniScore || 70), 0) / demands.length)
     : 80;
@@ -215,6 +274,16 @@ export default function BuyerDemandsPage() {
             >
               Chờ thẩm định ({pendingCount})
             </button>
+            <button
+              onClick={() => setFilterStatus('CLOSED')}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                filterStatus === 'CLOSED'
+                  ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 shadow-sm'
+                  : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
+              }`}
+            >
+              Đã đóng ({closedCount})
+            </button>
           </div>
 
           <div className="text-xs text-text-secondary dark:text-slate-400">
@@ -303,6 +372,10 @@ export default function BuyerDemandsPage() {
                             <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200 dark:border-emerald-800">
                               <CheckCircle2 className="w-3 h-3" /> Đang Mở Tìm Cung
                             </span>
+                          ) : item.status === 'CLOSED' ? (
+                            <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2.5 py-0.5 rounded-full font-bold border border-slate-200 dark:border-slate-700">
+                              <Archive className="w-3 h-3" /> Đã Đóng
+                            </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 px-2.5 py-0.5 rounded-full font-bold border border-amber-200 dark:border-amber-800">
                               <Clock className="w-3 h-3" /> Chờ Thẩm Định
@@ -310,12 +383,34 @@ export default function BuyerDemandsPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <Link
-                            href={item.id ? `/nhu-cau-cong-nghe/${item.id}` : '/nhu-cau-cong-nghe'}
-                            className="inline-flex items-center gap-1 text-brand-700 dark:text-cyan-400 hover:underline font-bold text-xs"
-                          >
-                            Chi tiết <ExternalLink className="w-3.5 h-3.5" />
-                          </Link>
+                          <div className="flex items-center justify-end gap-2.5">
+                            <Link
+                              href={item.id ? `/nhu-cau-cong-nghe/${item.id}` : '/nhu-cau-cong-nghe'}
+                              className="inline-flex items-center gap-1 text-brand-700 dark:text-cyan-400 hover:underline font-bold text-xs"
+                            >
+                              Chi tiết <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+
+                            {item.status === 'PENDING' && (
+                              <button
+                                onClick={() => setEditingDemand(item)}
+                                className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:underline font-bold text-xs"
+                                title="Chỉnh sửa bài toán"
+                              >
+                                <Edit className="w-3.5 h-3.5" /> Sửa
+                              </button>
+                            )}
+
+                            {item.status !== 'CLOSED' && (
+                              <button
+                                onClick={() => setClosingDemandId(item.id || null)}
+                                className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 hover:underline font-bold text-xs"
+                                title="Đóng bài toán"
+                              >
+                                <XCircle className="w-3.5 h-3.5" /> Đóng
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -332,6 +427,27 @@ export default function BuyerDemandsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleCreateSuccess}
+      />
+
+      {/* EDIT DEMAND MODAL */}
+      <EditDemandModal
+        isOpen={Boolean(editingDemand)}
+        demand={editingDemand}
+        onClose={() => setEditingDemand(null)}
+        onSuccess={handleEditSuccess}
+      />
+
+      {/* CONFIRM CLOSE MODAL */}
+      <ConfirmModal
+        isOpen={Boolean(closingDemandId)}
+        title="Xác nhận đóng bài toán"
+        message="Bạn có chắc chắn muốn đóng bài toán này? Bài toán sẽ được chuyển sang trạng thái Đã đóng và rút khỏi sàn nhu cầu công khai."
+        confirmText="Đồng ý đóng"
+        cancelText="Hủy bỏ"
+        loading={isClosingSubmitting}
+        variant="warning"
+        onConfirm={handleCloseConfirm}
+        onClose={() => setClosingDemandId(null)}
       />
     </div>
   );

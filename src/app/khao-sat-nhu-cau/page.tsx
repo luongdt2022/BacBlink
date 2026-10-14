@@ -2483,16 +2483,20 @@ export default function DeepSurveyPage() {
                 <Save className="w-4 h-4" /> Lưu nháp
               </button>
 
-              {currentStep < 7 ? (
+              {currentStep < 7 && (
                 <button
+                  key="btn-next"
                   type="button"
                   onClick={handleNextStep}
                   className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5"
                 >
                   Tiếp tục Bước {currentStep + 1} <ArrowRight className="w-4 h-4" />
                 </button>
-              ) : (
+              )}
+
+              {currentStep === 7 && (
                 <button
+                  key="btn-submit"
                   type="submit"
                   disabled={isSubmitting || !pdpdConsent}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-black text-xs shadow-lg transition flex items-center gap-2 disabled:opacity-50"

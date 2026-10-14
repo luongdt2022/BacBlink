@@ -763,6 +763,51 @@ export default function ChiTietChaoBanPage() {
               </button>
             </div>
 
+            {/* KHỐI ĐƠN VỊ CUNG ỨNG / DOANH NGHIỆP CHÀO BÁN */}
+            <div className="bg-gradient-to-br from-brand-50/60 to-brand-50/40 rounded-xl p-4 border border-brand-200/80 space-y-3">
+              <div className="flex items-center justify-between border-b border-brand-200/60 pb-2">
+                <span className="text-xs font-bold text-brand-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Building2 className="w-4 h-4 text-brand-600" /> Đơn Vị Chào Bán
+                </span>
+                <span className="text-xs font-extrabold bg-brand-100 text-brand-800 px-2 py-0.5 rounded-full border border-brand-300">
+                  Đối tác xác thực
+                </span>
+              </div>
+
+              <div>
+                <p className="text-xs font-extrabold text-slate-900 leading-snug line-clamp-2">
+                  {offer.enterpriseName || offer.developerOrigin || "Đang cập nhật tên đơn vị"}
+                </p>
+                {offer.enterpriseTaxCode && (
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                    <span>Mã số thuế:</span>
+                    <span className="mono font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                      {offer.enterpriseTaxCode}
+                    </span>
+                  </p>
+                )}
+                {offer.contactPointRole && (
+                  <p className="text-xs text-slate-600 mt-1">
+                    <span className="text-slate-400">Đầu mối:</span> {offer.contactPointRole}
+                  </p>
+                )}
+              </div>
+
+              {offer.enterpriseTaxCode ? (
+                <Link
+                  href={`/enterprises/${offer.enterpriseTaxCode}`}
+                  className="w-full bg-white hover:bg-brand-50 text-brand-700 border border-brand-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-brand-600" />
+                  Xem Hồ Sơ Doanh Nghiệp →
+                </Link>
+              ) : (
+                <div className="text-xs text-slate-500 italic text-center py-1 bg-white/70 rounded-lg border border-slate-200">
+                  Hồ sơ đang liên kết thẩm định
+                </div>
+              )}
+            </div>
+
             {/* Thông tin hỗ trợ sàn & Cơ quan quản lý */}
             <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-1 text-center">
               <p className="text-xs font-bold text-slate-800 flex items-center justify-center gap-1">

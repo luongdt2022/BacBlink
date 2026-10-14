@@ -55,6 +55,12 @@ export default async function PublicModulePage({ params }: { params: Promise<{ m
   if (module === "doanh-nghiep-dmst") {
     redirect("/enterprises");
   }
+  if (module === "gioi-thieu") {
+    redirect("/gioi-thieu");
+  }
+  if (module === "dich-vu-khac") {
+    redirect("/dich-vu-khac");
+  }
 
   const item = modules[module as ModuleSlug];
   if (!item) notFound();

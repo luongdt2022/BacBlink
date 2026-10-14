@@ -817,9 +817,9 @@ function ChaoBanCongNgheContent() {
                           {offer.summary}
                         </p>
 
-                        {/* SHTT Info Badge */}
-                        {offer.hasTechTransfer && (
-                          <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60 rounded-xl p-2.5 space-y-1">
+                        {/* SHTT & Đơn vị chào bán Info Badge */}
+                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60 rounded-xl p-2.5 space-y-1.5">
+                          {offer.hasTechTransfer && (
                             <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
                               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                               <span className="truncate">{getIpStatusLabel(offer.ipStatus)}</span>
@@ -829,14 +829,30 @@ function ChaoBanCongNgheContent() {
                                 </span>
                               )}
                             </div>
-                            {offer.developerOrigin && (
-                              <div className="flex items-center gap-1.5 text-caption text-slate-600 dark:text-slate-400">
-                                <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span className="truncate">{offer.developerOrigin}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          )}
+
+                          {/* Đơn vị chào bán / Doanh nghiệp sở hữu */}
+                          {offer.enterpriseTaxCode ? (
+                            <Link
+                              href={`/enterprises/${offer.enterpriseTaxCode}`}
+                              className="flex items-center gap-1.5 text-caption text-brand-700 dark:text-brand-400 hover:text-brand-900 font-semibold group/seller"
+                              title={`Xem hồ sơ doanh nghiệp: ${offer.enterpriseName || offer.developerOrigin || "Xem chi tiết"}`}
+                            >
+                              <Building2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                              <span className="truncate group-hover/seller:underline">
+                                {offer.enterpriseName || offer.developerOrigin || `Doanh nghiệp MST: ${offer.enterpriseTaxCode}`}
+                              </span>
+                              <span className="text-xs bg-brand-100 dark:bg-brand-900/60 text-brand-800 dark:text-brand-300 px-1 py-0.2 rounded font-bold ml-auto shrink-0">
+                                Xem hồ sơ →
+                              </span>
+                            </Link>
+                          ) : offer.developerOrigin ? (
+                            <div className="flex items-center gap-1.5 text-caption text-slate-600 dark:text-slate-400">
+                              <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate">{offer.developerOrigin}</span>
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
 

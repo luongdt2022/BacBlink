@@ -263,12 +263,22 @@ export default function ExpertsDirectoryPage() {
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
               Mạng lưới Nhà khoa học & Chuyên gia Đổi mới Sáng tạo
             </div>
-            <h1 className="font-extrabold tracking-tight text-white leading-tight type-page-title">
-              Tìm chuyên gia KH&CN
-            </h1>
-            <p className="mt-1 text-caption sm:text-body text-brand-100 leading-relaxed max-w-2xl">
-              Tra cứu năng lực, lĩnh vực và địa bàn thẩm định.
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="font-extrabold tracking-tight text-white leading-tight type-page-title">
+                  Tìm chuyên gia KH&CN
+                </h1>
+                <p className="mt-1 text-caption sm:text-body text-brand-100 leading-relaxed max-w-2xl">
+                  Tra cứu năng lực, lĩnh vực và địa bàn thẩm định.
+                </p>
+              </div>
+              <Link
+                href="/experts/zalo-preview"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold border border-white/20 transition shadow-sm"
+              >
+                <span>📲 Kênh Zalo Mini App Form</span>
+              </Link>
+            </div>
 
             {/* Compact Search Bar */}
             <form onSubmit={handleSearchSubmit} className="mt-3 bg-white dark:bg-slate-900 p-1.5 rounded-xl shadow-md flex flex-col sm:flex-row gap-1.5 max-w-3xl border border-slate-200 dark:border-slate-800">

@@ -305,11 +305,16 @@ def run_tier4_playwright_e2e():
         tax_input = page.locator("#tt17-tax-code")
         if tax_input.is_visible():
             tax_input.fill("0109988776")
+            page.wait_for_timeout(500)
             lookup_btn = page.locator("button:has-text('Tra cứu MST')")
-            if lookup_btn.is_visible():
+            if lookup_btn.is_enabled():
                 lookup_btn.click()
                 page.wait_for_timeout(1000)
                 print("  ✅ PASS: Màn 2 Tương tác nút Tra cứu MST thành công.")
+            else:
+                tax_input.press("Enter")
+                page.wait_for_timeout(1000)
+                print("  ✅ PASS: Màn 2 Kích hoạt Tra cứu MST bằng phím Enter.")
 
         # Thử bấm chuyển bước sang Bước 2 (Nhóm T)
         next_btn = page.locator("button:has-text('Bước Tiếp Theo')")

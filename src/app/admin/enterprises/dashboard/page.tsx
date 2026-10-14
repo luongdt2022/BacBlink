@@ -65,7 +65,7 @@ export default function EnterpriseAdminDashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">
-              Bảng Điều Khiển & Giám Sát 304 Doanh Nghiệp ĐMST
+              Bảng Điều Khiển & Giám Sát Doanh Nghiệp ĐMST
             </h1>
             <p className="text-sm text-slate-500 mt-1">
               Trung tâm Dữ liệu Đổi mới sáng tạo Quốc gia — Phân tích theo Thông tư 17/2019/TT-BKHCN
@@ -92,7 +92,7 @@ export default function EnterpriseAdminDashboardPage() {
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="text-xs font-bold uppercase text-slate-400 tracking-wider">Tổng số DN trong kho</div>
             <div className="text-3xl font-extrabold text-slate-900 mt-2">{stats.totalEnterprises}</div>
-            <div className="text-xs text-slate-500 mt-1">304 DN mục tiêu khảo sát</div>
+            <div className="text-xs text-slate-500 mt-1">Doanh nghiệp trong hệ thống</div>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">

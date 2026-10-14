@@ -73,7 +73,7 @@ const innovationEntityNavItems: NavItem[] = [
 const publicNavItems: NavItem[] = [
   { href: "/portal", label: "Bàn làm việc Cá nhân", icon: LayoutDashboard },
   { href: "/portal/matching/radar", label: "Radar Khám Phá AI", icon: Sparkles },
-  { href: "/profile/upgrade/expert", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
+  { href: "/profile/upgrade", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
   { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
 ];
 

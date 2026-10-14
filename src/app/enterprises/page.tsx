@@ -306,13 +306,13 @@ export default function EnterprisesDirectoryPage() {
         <div className="relative max-w-7xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-200 border border-brand-400/30 text-xs font-semibold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5 text-brand-300" />
-            CSDL Quốc Gia 304 Doanh Nghiệp ĐMST & Đổi Mới Công Nghệ
+            CSDL Quốc Gia Doanh Nghiệp ĐMST & Đổi Mới Công Nghệ
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Danh Bạ Doanh Nghiệp & Chủ Thể Đổi Mới Sáng Tạo
           </h1>
           <p className="mt-3 text-base sm:text-lg text-slate-300 max-w-3xl leading-relaxed">
-            Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của 304 doanh nghiệp thực tế trên 34 tỉnh/thành trọng điểm toàn quốc.
+            Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của các doanh nghiệp trên 63 tỉnh/thành toàn quốc.
           </p>
 
           {/* Search Box */}
@@ -366,17 +366,17 @@ export default function EnterprisesDirectoryPage() {
                 )}
               </div>
 
-              {/* Lọc Tỉnh Thành (34 Tỉnh/Thành Trọng Điểm) */}
+              {/* Lọc Tỉnh Thành */}
               <div>
                 <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
-                  Địa Bàn Hoạt Động (34 Tỉnh/Thành)
+                  Địa Bàn Hoạt Động (Tỉnh/Thành)
                 </label>
                 <select
                   value={province}
                   onChange={(e) => setProvince(e.target.value)}
                   className="form-control w-full"
                 >
-                  <option value="">Toàn quốc (34 Tỉnh/Thành Trọng Điểm)</option>
+                  <option value="">Tất cả Tỉnh / Thành phố</option>
                   {PROVINCES_34.map((p) => (
                     <option key={p} value={p}>{p}</option>
                   ))}
@@ -436,7 +436,7 @@ export default function EnterprisesDirectoryPage() {
             <div className="bg-gradient-to-br from-brand-50 to-brand-100/50 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-brand-200/80 dark:border-slate-700 p-5 space-y-3">
               <div className="flex items-center gap-2 text-brand-900 dark:text-brand-300 font-bold text-sm">
                 <TrendingUp className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-                Thống Kê 304 Doanh Nghiệp
+                Thống Kê Doanh Nghiệp ĐMST
               </div>
               <p className="text-xs text-brand-700 dark:text-slate-300 leading-relaxed">
                 Xem báo cáo phân tích biểu đồ chuyên sâu về phân bố địa bàn, cơ cấu ngành nghề và rào cản công nghệ.
@@ -534,7 +534,7 @@ export default function EnterprisesDirectoryPage() {
                   onClick={handleResetFilters}
                   className="px-4 py-2 bg-brand-700 text-white rounded-xl text-xs font-bold hover:bg-brand-800 transition"
                 >
-                  Xem toàn bộ 304 doanh nghiệp
+                  Xem tất cả doanh nghiệp
                 </button>
               </div>
             )}
@@ -605,27 +605,31 @@ export default function EnterprisesDirectoryPage() {
                         )}
                       </div>
 
-                      {/* TẦNG 3: Năng Lực R&D, Chuỗi Giá Trị & Xuất Khẩu */}
-                      <div className="flex items-center gap-1.5 flex-wrap text-xs mb-3">
-                        {ent.hasRdUnit && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-medium">
-                            <FlaskConical className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Có phòng R&D
-                          </span>
-                        )}
-                        {ent.inValueChain && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-medium">
-                            <Globe className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Chuỗi giá trị
-                          </span>
-                        )}
-                        {ent.isExporting && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-medium">
-                            <TrendingUp className="w-3 h-3 text-teal-600 dark:text-teal-400" /> Xuất khẩu
-                          </span>
-                        )}
-                      </div>
+                      {/* TẦNG 3: Năng Lực R&D, Chuỗi Giá Trị & Xuất Khẩu (Chỉ hiển thị khi có dữ liệu) */}
+                      {(ent.hasRdUnit || ent.inValueChain || ent.isExporting) && (
+                        <div className="flex items-center gap-1.5 flex-wrap text-xs mb-3">
+                          {ent.hasRdUnit && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-medium">
+                              <FlaskConical className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Có phòng R&D
+                            </span>
+                          )}
+                          {ent.inValueChain && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-medium">
+                              <Globe className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Chuỗi giá trị
+                            </span>
+                          )}
+                          {ent.isExporting && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-medium">
+                              <TrendingUp className="w-3 h-3 text-teal-600 dark:text-teal-400" /> Xuất khẩu
+                            </span>
+                          )}
+                        </div>
+                      )}
 
-                      {/* TẦNG 4: Chỉ Số TNI & Bằng SHTT */}
-                      <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 mb-3">
+                      {/* TẦNG 4: Chỉ Số TNI & Bằng SHTT (Tôn vinh dữ liệu mạnh: có gì đẹp show ra, bằng SHTT = 0 thì ẩn) */}
+                      <div className={`p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 mb-3 ${
+                        (ent.ipCount && ent.ipCount > 0) ? "grid grid-cols-2 gap-2" : "block"
+                      }`}>
                         <div>
                           <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Chỉ số TNI</div>
                           <div className="flex items-baseline gap-1 mt-0.5">
@@ -640,18 +644,21 @@ export default function EnterprisesDirectoryPage() {
                              ent.tniClassification === "MEDIUM" ? "Trung bình (50-74)" : "Cơ bản"}
                           </div>
                         </div>
-                        <div className="border-l border-slate-200 dark:border-slate-700 pl-2.5">
-                          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Bằng SHTT</div>
-                          <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
-                              {ent.ipCount}
-                            </span>
-                            <span className="text-xs text-slate-400">sáng chế</span>
+
+                        {ent.ipCount !== undefined && ent.ipCount > 0 && (
+                          <div className="border-l border-slate-200 dark:border-slate-700 pl-2.5">
+                            <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Bằng SHTT</div>
+                            <div className="flex items-baseline gap-1 mt-0.5">
+                              <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                                {ent.ipCount}
+                              </span>
+                              <span className="text-xs text-slate-400">sáng chế</span>
+                            </div>
+                            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 truncate">
+                              Đã công bố Cục SHTT
+                            </div>
                           </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                            {ent.ipCount > 0 ? "Đã công bố Cục SHTT" : "Chưa đăng ký"}
-                          </div>
-                        </div>
+                        )}
                       </div>
 
                       {/* Top Nhu Cầu Hỗ Trợ Nổi Bật Tag Pills */}

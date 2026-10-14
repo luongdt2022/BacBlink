@@ -65,6 +65,8 @@ export interface TechnologyOffer {
   scopeType?: string | null;
   scopeId?: string | null;
   legalConsent?: boolean;
+  enterpriseTaxCode?: string | null;
+  enterpriseName?: string | null;
 }
 
 export interface CreateSellerOfferPayload {
@@ -92,6 +94,8 @@ export interface CreateSellerOfferPayload {
   scopeType?: string;
   scopeId?: string;
   legalConsent?: boolean;
+  enterpriseTaxCode?: string;
+  enterpriseName?: string;
 }
 
 export interface SellerKpi {

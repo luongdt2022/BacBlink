@@ -101,7 +101,7 @@ export const orgTreeApi = {
     });
     const payload = await res.json();
     if (!res.ok || !payload.success) {
-      throw new Error(payload.error || "Không thể vô hiệu hóa đơn vị.");
+      throw new Error(payload.message || payload.error || "Không thể vô hiệu hóa đơn vị.");
     }
   },
 
