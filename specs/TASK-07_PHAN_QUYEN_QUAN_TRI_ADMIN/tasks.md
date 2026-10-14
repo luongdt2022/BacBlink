@@ -92,3 +92,12 @@
 - [x] T038 [FE] Xây dựng module API client và Refactor `src/app/admin/org-tree/page.tsx`: Loại bỏ 100% mock tĩnh `INITIAL_ORG_TREE`, kết nối trực tiếp API online `GET /api/v1/governance/org-units/tree`, chuẩn hóa 5 trạng thái UX qua `<Async>`.
 - [x] T039 [FE] Tích hợp bộ công cụ CRUD trên giao diện: Modal Thêm đơn vị (POST), Modal Chỉnh sửa đơn vị (PUT), Modal Vô hiệu hóa đơn vị (DELETE) kèm xử lý lỗi vi phạm `BR-TREE-003` (409 Conflict) và toast phản hồi.
 - [x] T040 [TEST] Bổ sung Unit Invariant Test cho `OrganizationUnit` & `BR-TREE-003`, kiểm tra biên dịch .NET & Next.js frontend, đảm bảo 100% kiểm thử hồi quy pass.
+
+---
+
+## Phase 10: Delta v6 (CR-2026-012) — Xây Dựng Bàn Quản Trị Người Dùng & 10 Roles (/admin/users) [GAP-02]
+
+- [x] `T041` **[SPEC]** Ghi nhận Spec Delta v6 bổ sung REQ-ADM-015..016 và AC-DELTA-12..13 vào `specs/TASK-07_.../spec.md`.
+- [x] `T042` **[FE]** Thay thế redirect trong `src/app/admin/users/page.tsx` bằng Data Table quản lý người dùng kết nối trực tiếp `GET /api/v1/admin/users`, thanh tìm kiếm, bộ lọc 10 Roles & trạng thái ACTIVE/LOCKED, phân trang, các nút thao tác Khóa/Mở tài khoản (`PATCH /api/v1/admin/users/{id}`) và Reset mật khẩu (`POST /api/v1/admin/users/{id}/reset-password`).
+- [x] `T043` **[TEST]** Kiểm thử biên dịch Frontend và Backend, kiểm chứng trang `/admin/users` tải dữ liệu và hoạt động không lỗi.
+

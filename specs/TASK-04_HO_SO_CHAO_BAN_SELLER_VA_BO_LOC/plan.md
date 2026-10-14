@@ -137,31 +137,31 @@
 
 ---
 
-## 6. KẾ HOẠCH KỸ THUẬT DELTA V3: CHUẨN HÓA THÔNG SỐ ĐỘNG, SỰ KIỆN TƯƠNG TÁC & API MODAL
+---
 
-### 6.1. Kiến Trúc Frontend (`src/app/chao-ban-cong-nghe/[id]/page.tsx`)
-1. **Dynamic Specifications Component**:
-   - Nhận props trực tiếp từ đối tượng `offer` thật lấy từ PostgreSQL.
-   - Kết xuất động các hàng thông số kỹ thuật cốt lõi:
-     * *Loại hình & Chuyên ngành*: Map theo `offer.offerType` và `offer.sectorName`.
-     * *Quy cách / Đơn vị cung cấp*: `offer.unit || "Theo gói giải pháp chuyển giao"`.
-     * *Cấp độ sẵn sàng công nghệ*: `TRL ${offer.trlLevel}/9` kèm giải thích giai đoạn kiểm định thực tế.
-     * *Căn cứ Pháp lý & Sở hữu trí tuệ*: Trạng thái SHTT kèm `offer.ipRegistrationNumber`.
-     * *Hình thức chuyển giao & Thương mại hóa*: `transferMethod` và `commercialStatus`.
-     * *Chỉ tiêu kỹ thuật / Hiệu quả giải quyết*: Trích xuất trực tiếp từ `offer.problemSolved`.
-2. **Bookmark & Share Action Handlers**:
-   - Khởi tạo state `isBookmarked` đọc từ `localStorage.getItem("nacentwin_bookmarks")`.
-   - Nút Bookmark: Toggle state, cập nhật localStorage và kích hoạt Toast phản hồi *"Đã lưu hồ sơ vào danh sách quan tâm"* hoặc *"Đã bỏ lưu hồ sơ"*.
-   - Nút Share: `navigator.clipboard.writeText(window.location.href)` kèm Toast *"Đã sao chép liên kết hồ sơ"*.
-3. **DataRoom Documents & Download Action**:
-   - Sinh danh sách tài liệu DataRoom dựa trên mã hồ sơ thật:
-     * Teaser tóm tắt giải pháp: `{offer.offerCode}_Teaser_Tom_Tat.pdf` (công khai).
-     * Hồ sơ SHTT & Pháp lý: `{offer.offerCode}_Ho_So_SHTT_${offer.ipRegistrationNumber || "Hop_Le"}.pdf` (yêu cầu NDA).
-     * Báo cáo thử nghiệm kỹ thuật: `{offer.offerCode}_Ket_Qua_Kiem_Dinh_TRL${offer.trlLevel || 7}.pdf` (yêu cầu NDA).
-   - Nút `[Tải về]` tài liệu công khai: gắn sự kiện download thật / thông báo tải tài liệu thành công.
-4. **Quick Demand Modal API Submission**:
-   - Form submit: tổng hợp dữ liệu từ form input + `offer.offerCode` + `offer.title` + `offer.sectorCode`.
-   - Gọi `POST /api/v1/demands/items` với payload chuẩn `CreateQuickDemandItemRequest`.
-   - Khi thành công: cập nhật state `connectSuccess = true` kèm mã phiếu nhu cầu vừa tạo (`DMD-...`).
-   - Chuẩn hóa style nút submit sang `bg-brand-700 hover:bg-brand-800`.
+## 7. KẾ HOẠCH KỸ THUẬT DELTA V4: LIÊN KẾT BÊN BÁN (SELLER) VỚI HỒ SƠ DOANH NGHIỆP THƯỜNG
+
+### 7.1. Database Schema & Migration (PostgreSQL)
+- Bảng `technology.seller_technology_offers`:
+  * Bổ sung cột `enterprise_tax_code VARCHAR(50) NULL`.
+  * Bổ sung cột `enterprise_name VARCHAR(255) NULL`.
+  * Index: `CREATE INDEX idx_seller_technology_offers_tax_code ON technology.seller_technology_offers(enterprise_tax_code);`
+- Tạo file migration non-destructive: `AddEnterpriseLinkToSellerOffers`.
+
+### 7.2. Backend Contracts & Mapping
+- Mở rộng `CreateSellerOfferDto`, `UpdateSellerOfferDto`, `SellerOfferDto`:
+  * Thêm `string? EnterpriseTaxCode = null` và `string? EnterpriseName = null`.
+- Trong `TechnologyService.cs`:
+  * Khi lấy chi tiết `GetByIdAsync`: nếu `EnterpriseTaxCode` có giá trị nhưng `EnterpriseName` trống, query bổ sung tên từ bảng `enterprises`.
+  * Cung cấp endpoint tra cứu sản phẩm theo DN: `GET /api/v1/technologies?enterpriseTaxCode={taxCode}`.
+
+### 7.3. Frontend Implementation
+- Cập nhật TypeScript models trong `src/types/technology-offer.ts`.
+- Màn hình `/chao-ban-cong-nghe`:
+  * Trên thẻ sản phẩm: hiển thị tên đơn vị chào bán kèm Link bọc ngoài dẫn đến `/enterprises/[taxCode]` (hoặc fallback nếu chưa gắn MST).
+- Màn hình `/chao-ban-cong-nghe/[id]`:
+  * Khối "Cơ quan quản lý & Đơn vị chào bán" ở sidebar: bổ sung Card Doanh nghiệp chào bán (Tên DN, MST, Logo/Avatar, Badge Verified) kèm nút CTA `Xem Hồ sơ Doanh nghiệp →`.
+- Màn hình `/enterprises/[taxCode]`:
+  * Xử lý trường hợp `SubjectType = 'ENTERPRISE'` (Doanh nghiệp thường): ẩn các tab R&D/TNI nâng cao nếu dữ liệu trống.
+  * Thêm Tab mới: `"Sản phẩm & Giải pháp chào bán"` gọi API `fetchPublicOffers({ enterpriseTaxCode: taxCode })` và render danh sách card sản phẩm.
 

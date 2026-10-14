@@ -318,5 +318,58 @@ Trước Delta v7, `PortalLayout` (`src/app/portal/layout.tsx`) hiển thị m�
 ### 3. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
 - **AC-DELTA-07**: Đăng nhập với role `BUYER` không nhìn thấy menu chào bán công nghệ hoặc hồ sơ chuyên gia; đăng nhập với `SELLER` không nhìn thấy bài toán mua; đăng nhập với `VERIFIED_EXPERT` chỉ thấy LLKH và lời mời tư vấn; `PUBLIC_USER` không thấy bảng Kanban rỗng.
 - **AC-DELTA-08**: Quản trị viên (`ADMIN`/`GOV`) có card chuyển nhanh về `/admin` hoặc `/gov`.
-- **AC-DELTA-09**: Vitest kiểm thử phân nhánh 6 vai trò chính (`src/app/portal/layout.test.tsx`) đạt 6/6 pass; build production Next.js 15 (`pnpm build`) đạt 51/51 trang tĩnh 0 lỗi (Exit code 0).
+---
+
+## Spec Delta v8 (CR-2026-011): Hồ Sơ Cá Nhân & Hub Nâng Hạng Vai Trò Thành Viên (/profile) [GAP-01]
+
+**Căn cứ thay đổi:** Quyết định PO `PO-DEC-20261013-10` & HTML Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/wireframe_ho_so_ca_nhan.html`).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+Trước Delta v8, tuyến `/profile` đang bị `redirect("/settings")` cưỡng bức, dẫn đến việc thiếu một màn hình Hồ sơ cá nhân độc lập hiển thị thông tin Avatar/Bio, thẻ định danh tài khoản, và quan trọng nhất là Hub hành trình nâng cấp vai trò thành viên (từ Member đại chúng lên Bên Mua, Nhà Cung Ứng, hoặc Chuyên gia KH&CN).
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Requirements Delta)
+- **REQ-PROFILE-001 (Standalone Profile Screen 3 Tabs)**:
+  - Tuyến `/profile` MUST render trang Hồ sơ cá nhân độc lập với 3 tab:
+    - **Tab 1: Thông tin cá nhân & Định danh**: Hiển thị Avatar (Monogram), Họ tên, Email, Số điện thoại, Mã định danh người dùng (`USR-XXXX`), Vai trò hiện tại (`Role Badge`), và Trạng thái xác thực PDPD.
+    - **Tab 2: Nâng hạng vai trò (Role Upgrade Hub)**: Hiển thị các khối tùy chọn nâng hạng:
+      1. *Nâng hạng Chuyên gia KH&CN*: Dẫn hướng sang `/profile/upgrade/expert`.
+      2. *Định danh Doanh nghiệp ĐMST (Bên Mua/Bên Bán)*: Dẫn hướng sang `/portal/enterprise/profile/edit` hoặc `/portal/buyer/demands`.
+    - **Tab 3: Lịch sử & Không gian làm việc**: Hiển thị các lối tắt nhanh đến Workspace tương ứng với vai trò đã kích hoạt (`/portal`).
+- **REQ-PROFILE-002 (Auth Guard & State Handling)**:
+  - Khi chưa đăng nhập, tự động điều hướng về `/login?redirect=/profile`.
+  - Hiển thị đầy đủ 5 UX States (Loading spinner, Success view, Error toast).
+
+### 3. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **AC-DELTA-10**: Truy cập `/profile` khi đã đăng nhập hiển thị đầy đủ thông tin định danh và không bị redirect sang `/settings`.
+- **AC-DELTA-11**: Các nút "Bắt đầu Đăng ký Nâng hạng" Chuyên gia và Doanh nghiệp điều hướng chính xác 1:1 sang Wizard tương ứng.
+
+---
+
+## Spec Delta v9 (CR-2026-012): Cổng Đăng Ký Nâng Cấp Vai Trò Đa Tuyến (Upgrade Hub `/profile/upgrade` 4 Lộ Trình)
+
+**Căn cứ thay đổi:** Quyết định PO `PO-DEC-20261013-11`, Mục 1.5 [`Specification/HUONG_DAN_SU_DUNG_CHI_TIET_NACENTWIN.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/HUONG_DAN_SU_DUNG_CHI_TIET_NACENTWIN.md) và HTML Wireframe SSOT [`wireframe_nang_cap_tai_khoan_hub.html`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/wireframe_nang_cap_tai_khoan_hub.html).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+Tuyến `/profile/upgrade` trước đây chỉ chứa lệnh chuyển hướng cứng `redirect("/profile/upgrade/expert")`. Điều này khiến tài khoản đại chúng (`PUBLIC_USER`) bị tước quyền lựa chọn nâng hạng lên Bên Mua (`BUYER`), Bên Bán (`SELLER`), hoặc Doanh nghiệp ĐMST (`INNOVATION_ENTITY`), gây mâu thuẫn trực tiếp với tài liệu Hướng Dẫn Sử Dụng và Thiết Kế Cơ Sở.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Requirements Delta)
+- **REQ-UPGRADE-HUB-001 (4 Upgrade Route Cards Display)**:
+  - Tuyến `/profile/upgrade` MUST render giao diện Hub hoàn chỉnh bao gồm 4 Thẻ Lộ Trình (4 Cards):
+    1. **Chuyên gia KH&CN (`VERIFIED_EXPERT`)**: Dẫn sang `/profile/upgrade/expert` (Wizard 3 bước).
+    2. **Doanh nghiệp ĐMST (`INNOVATION_ENTITY`)**: Mở Modal/Form Kê khai Mã số thuế, Tra cứu MST tự động, Tên doanh nghiệp, Tỉnh/thành, Tệp Giấy phép ĐKKD (PDF $\le$ 10MB), Cam kết pháp lý theo chuẩn `ui-profile-upgrade-001.svg`.
+    3. **Bên Mua (Buyer) (`BUYER`)**: Cung cấp tùy chọn dẫn trực tiếp vào Phiếu Khảo Sát Sâu DNNVV 7 Phần (`/khao-sat-nhu-cau`) để đăng bài toán tìm mua và tự động kích hoạt vai trò Buyer.
+    4. **Bên Bán (Seller) (`SELLER`)**: Mở Modal/Form Đăng ký Mở Gian Hàng Công Nghệ (Tên đơn vị R&D/viện trường, Lĩnh vực TT17, Sở KH&CN tiếp nhận quản lý địa bàn, Mô tả năng lực cung ứng) với SLA 24h.
+- **REQ-UPGRADE-HUB-002 (Comparison Matrix)**:
+  - Hiển thị Bảng đối soát ma trận phân cấp và điều kiện hồ sơ giữa 4 vai trò (Hồ sơ bắt buộc, Cơ quan thẩm định, Cam kết SLA, Mã Role).
+- **REQ-UPGRADE-HUB-003 (Role-Tailored Sidebar Link Update)**:
+  - Cập nhật mục "Đăng ký Nâng hạng Vai trò" trong Sidebar của `PUBLIC_USER` tại `src/app/portal/layout.tsx` trỏ chính xác về `/profile/upgrade` (Hub tổng quan) thay vì `/profile/upgrade/expert`.
+
+### 3. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **AC-DELTA-12**: Truy cập `/profile/upgrade` khi đã đăng nhập hiển thị đầy đủ 4 Thẻ Lộ Trình và không bị chuyển hướng sang `/profile/upgrade/expert`.
+- **AC-DELTA-13**: Thẻ Chuyên gia dẫn đến `/profile/upgrade/expert`; Thẻ Bên Mua dẫn đến `/khao-sat-nhu-cau`.
+- **AC-DELTA-14**: Modal Doanh nghiệp ĐMST hỗ trợ tra cứu MST và nộp hồ sơ có thông báo mã tiếp nhận thành công.
+- **AC-DELTA-15**: Modal Gian hàng Seller tiếp nhận thông tin và nộp đơn thành công với SLA 24h.
+- **AC-DELTA-16**: Sidebar của `PUBLIC_USER` trong Portal liên kết đến `/profile/upgrade`.
+
+
 

@@ -259,3 +259,60 @@ Mọi màn hình và bảng danh sách đều được bọc qua `<Async>` compo
     - *"Tài khoản Cổng ĐMST của DN đã được khởi tạo tự động với email [email@dn.vn]. Mật khẩu và liên kết kích hoạt đã được gửi tới hộp thư của bạn."*
     - Nút CTA: *"Đăng nhập ngay để theo dõi tiến độ"*.
 
+---
+
+## Plan Delta v5: Hoàn Thiện Vòng Đời CRUD & Quản Trị Bài Toán Bên Mua (Edit & Close Actions)
+
+### 1. Kiến Trúc Backend Domain & API (`NacenTech.Modules.Demand`)
+- **Domain Entity Enhancement (`DemandItem.cs`)**:
+  - Bổ sung phương thức `Update(...)`:
+    ```csharp
+    public void Update(
+        string stageName,
+        string technicalProblem,
+        string? desiredSolution,
+        bool needConsulting,
+        string expectedGoal,
+        string? applicationScale,
+        string sectorCode,
+        string techGroupCode,
+        string demandTypeCode,
+        string budgetRange,
+        int urgencyScore,
+        int impactScore,
+        int investmentCapacity,
+        int adoptionReadiness)
+    ```
+    - Tính lại $TNI = TniCalculationEngine.Calculate(...)$.
+    - Cập nhật `TniScore`, `TniClassification`, `UpdatedAt = DateTimeOffset.UtcNow`.
+  - Bổ sung phương thức `Close()`:
+    ```csharp
+    public void Close()
+    {
+        Status = DemandItemStatuses.Closed;
+        IsPublicListed = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+    ```
+- **Hợp đồng DTO & Endpoints (`DemandController.cs`)**:
+  - `PUT /api/v1/buyer/demands/{id}`:
+    - Nhận `UpdateDemandItemRequest`.
+    - Kiểm tra `Status`: Chỉ cho phép sửa khi `Status == DemandItemStatuses.Pending || Status == DemandItemStatuses.Draft`.
+    - Gọi `item.Update(...)` và `await uow.CommitAsync(ct)`.
+  - `POST /api/v1/buyer/demands/{id}/close`:
+    - Gọi `item.Close()` và `await uow.CommitAsync(ct)`.
+
+### 2. Kiến Trúc Frontend (`/portal/buyer/demands`)
+- **Component `EditDemandModal.tsx` (`src/components/demand/EditDemandModal.tsx`)**:
+  - Nạp toàn bộ dữ liệu ban đầu từ `item` được chọn.
+  - Cho phép sửa đổi tiêu đề, công đoạn, mục tiêu, lĩnh vực, ngân sách, và bộ 4 thanh trượt $K, L, N, O$.
+  - Tính toán và render preview màu Badge TNI thời gian thực bằng `getTniClassification`.
+  - Gọi API `PUT /api/v1/buyer/demands/{id}` và callback `onSuccess(updatedItem)` để cập nhật state danh sách mà không cần reload trang.
+- **Tích hợp Bàn làm việc Bên Mua (`src/app/portal/buyer/demands/page.tsx`)**:
+  - Cột "Thao tác":
+    - Nếu `item.status === 'PENDING'`: Hiển thị nút `[Chỉnh sửa]` (Icon `Edit`).
+    - Nếu `item.status !== 'CLOSED'`: Hiển thị nút `[Đóng bài toán]` (Icon `Archive` / `XCircle`).
+    - Nút `[Chi tiết]` (Icon `ExternalLink`).
+  - Hộp thoại `ConfirmModal` khi đóng bài toán kèm toast feedback.
+  - Thêm filter tab `Đã đóng` (`CLOSED`) bên cạnh `Tất cả`, `Đang mở tìm cung`, `Chờ thẩm định`.
+

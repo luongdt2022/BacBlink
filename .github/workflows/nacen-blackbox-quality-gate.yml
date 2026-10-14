@@ -1,0 +1,104 @@
+name: nacen-blackbox-quality-gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  e2e-blackbox-gate:
+    name: Pure Blackbox E2E & Deep DB State Verification (10 Modules)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: nacentech
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Umbrella & Submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node.js & pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: 'SourceCode/frontend/pnpm-lock.yaml'
+
+      - name: Setup Python for Playwright
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python Dependencies & Playwright Browsers
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright psycopg2-binary
+          playwright install chromium --with-deps
+
+      - name: Apply DB Schema & Initial Seeds
+        run: |
+          export PGPASSWORD=postgres
+          # Áp dụng migration từ backend persistence
+          cd SourceCode/backend
+          dotnet restore
+          dotnet ef database update --project packages/persistence --startup-project apps/api || dotnet run --project apps/api --migrate-only || true
+          cd ../..
+
+      - name: Build & Start Backend API (Port 5080)
+        run: |
+          cd SourceCode/backend/apps/api
+          dotnet build -c Release
+          ASPNETCORE_URLS="http://localhost:5080" ASPNETCORE_ENVIRONMENT="Development" nohup ./bin/Release/net10.0/NacenTech.Api > /tmp/backend.log 2>&1 &
+          sleep 5
+          curl -s http://localhost:5080/health || cat /tmp/backend.log
+          cd ../../..
+
+      - name: Install Frontend Dependencies & Start Next.js (Port 3000)
+        run: |
+          cd SourceCode/frontend
+          pnpm install --frozen-lockfile
+          nohup pnpm dev --port 3000 > /tmp/frontend.log 2>&1 &
+          sleep 6
+          curl -s http://localhost:3000/ || cat /tmp/frontend.log
+          cd ../..
+
+      - name: Run Master Black-Box Test Suite (10 Modules)
+        run: |
+          python3 SourceCode/tests/run_all_blackbox_tests.py
+
+      - name: Upload Test Logs on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackbox-test-logs
+          path: |
+            /tmp/backend.log
+            /tmp/frontend.log

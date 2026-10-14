@@ -97,3 +97,13 @@
 - [x] **T-03.42** `[FE]` Cập nhật Success View tại Bước 7: Phân biệt người dùng vãng lai tại triển lãm (hiển thị thông tin tài khoản được cấp tự động: username/email, mật khẩu tạm thời kèm nút Đăng Nhập) và người dùng đã đăng nhập (nút điều hướng về Bàn làm việc).
 - [x] **T-03.43** `[TEST]` Bổ sung bộ kiểm thử Frontend Vitest (`page.test.tsx`) kiểm chứng 3 kịch bản: Tra cứu MST tự động điền form, Doanh nghiệp đã đăng nhập tự động điền dữ liệu, Nộp thành công hiển thị tài khoản được cấp.
 
+---
+
+## Phase 11: Delta v5 — Hoàn Thiện Vòng Đời CRUD Bàn Làm Việc Bên Mua (Edit & Close Actions)
+
+- [x] **T-03.44** `[BE]` `[DOMAIN]` Bổ sung phương thức `Update(...)` và `Close()` vào Domain Entity `DemandItem.cs`, tự động tính lại điểm `TniScore` và `TniClassification` qua `TniCalculationEngine`.
+- [x] **T-03.45** `[BE]` `[API]` Xây dựng DTO `UpdateDemandItemRequest`, cài đặt endpoint `PUT /api/v1/buyer/demands/{id}` (kiểm tra guard chỉ sửa khi `PENDING` / `DRAFT`) và `POST /api/v1/buyer/demands/{id}/close` trong `DemandController.cs`.
+- [x] **T-03.46** `[FE]` Xây dựng component `EditDemandModal.tsx` (`src/components/demand/EditDemandModal.tsx`) nạp dữ liệu bài toán hiện tại, hỗ trợ điều chỉnh 4 chỉ số $K, L, N, O$ hiển thị màu Badge TNI thời gian thực, submit `PUT /api/v1/buyer/demands/{id}`.
+- [x] **T-03.47** `[FE]` Cập nhật `src/app/portal/buyer/demands/page.tsx`: Cột Thao tác hiển thị nút [Sửa] (khi `PENDING`), nút [Đóng bài toán] (khi chưa đóng), tích hợp `ConfirmModal` và tab bộ lọc bài toán `CLOSED`.
+- [x] **T-03.48** `[TEST]` Bổ sung kiểm thử Unit Test cho `DemandItem` methods và test cases giao diện kiểm chứng hành vi Sửa và Đóng bài toán.
+

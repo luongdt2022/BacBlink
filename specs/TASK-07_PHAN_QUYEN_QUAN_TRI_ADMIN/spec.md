@@ -170,6 +170,30 @@ Phân hệ quản trị tập trung và phân cấp (Hierarchical Admin & Govern
   - *AC-TREE-01*: Gọi `GET /api/v1/governance/org-units` trả về danh sách đơn vị từ PostgreSQL thật với `status = "ACTIVE"`.
   - *AC-TREE-02*: Tạo mới một đơn vị cơ sở `INST-TEST` trực thuộc Sở Hà Nội thành công, dữ liệu được ghi vào PostgreSQL và xuất hiện ngay trên cây.
   - *AC-TREE-03*: Cập nhật thông tin đơn vị qua `PUT` thành công, lưu vết `ApprovalAuditLog`.
-  - *AC-TREE-04*: Cố tình xóa Sở Hà Nội (`SO-KHCN-HN`) khi còn các đơn vị con (`DH-BACHKHOA-HN`, `VIEN-NACENTECH`), hệ thống trả về mã lỗi `400` với thông điệp chặn vi phạm `BR-TREE-003`. Xóa một cơ sở không có con thành công chuyển trạng thái sang `INACTIVE`.
+  ---
+
+## 8. Spec Delta v6 (CR-2026-012): Bàn Quản Trị Người Dùng & Phân Vai Trò 10 Roles (/admin/users) [GAP-02]
+
+**Căn cứ thay đổi:** Quyết định PO `PO-DEC-20261013-10` & HTML Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_nguoi_dung_admin.html`).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+Trước Delta v6, tuyến `/admin/users` trên Web Portal bị `redirect("/admin/roles")` cưỡng bức, khiến Quản trị viên (Super Admin) không có giao diện quản lý danh sách tài khoản độc lập để tìm kiếm người dùng, lọc theo vai trò/trạng thái, xem chi tiết định danh, khóa/mở khóa tài khoản, hoặc đặt lại mật khẩu. Mặc dù Backend đã có đầy đủ API `GET/POST/PATCH /api/v1/admin/users`.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Requirements Delta)
+- **REQ-ADM-015 (Màn Hình Quản Trị Người Dùng /admin/users)**:
+  - Xây dựng Data Table người dùng kết nối trực tiếp `GET /api/v1/admin/users`:
+    - Thanh tìm kiếm: Theo Tên, Email, Số điện thoại, Mã định danh.
+    - Bộ lọc vai trò: Lọc theo 10 vai trò 3D Scoped RBAC (`SUPER_ADMIN`, `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`, `ENTERPRISE`, `BUYER`, `SELLER`, `VERIFIED_EXPERT`, `INNOVATION_ENTITY`, `OPERATOR_ADMIN`, `USER`).
+    - Bộ lọc trạng thái: `Tất cả`, `Đang hoạt động (ACTIVE)`, `Đang bị khóa (LOCKED)`.
+    - Cột thông tin: Avatar/Monogram, Họ và Tên, Email/SĐT, Vai trò chính, Trạng thái (Badge xanh/đỏ), Ngày tạo, Thao tác.
+- **REQ-ADM-016 (Hành Động Quản Trị Tài Khoản)**:
+  - Nút **[Khóa / Mở khóa tài khoản]**: Gọi `PATCH /api/v1/admin/users/{id}` với `isActive: !currentStatus` kèm hộp thoại xác nhận `ConfirmModal`.
+  - Nút **[Đặt lại mật khẩu]**: Modal sinh/nhập mật khẩu mới gọi `POST /api/v1/admin/users/{id}/reset-password`.
+  - Nút **[Xem chi tiết]**: Drawer hiển thị lịch sử đăng nhập, hồ sơ pháp nhân/chuyên gia liên kết.
+
+### 3. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **AC-DELTA-12**: Truy cập `/admin/users` với tài khoản Admin hiển thị danh sách người dùng, không bị redirect sang `/admin/roles`.
+- **AC-DELTA-13**: Thao tác Khóa và Mở khóa tài khoản cập nhật tức thì trạng thái badge trên giao diện và gọi đúng API backend.
+
 
 

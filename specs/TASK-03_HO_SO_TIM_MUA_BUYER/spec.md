@@ -215,3 +215,32 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 - **BR-Delta-06 (Hybrid Tax Lookup Fallback)**: Cơ chế tra cứu MST ưu tiên tìm trong CSDL nội bộ NacenTech (304 DN) trước; nếu không có mới gọi API VietQR Business Open API. Nếu cả 2 không có hoặc mạng lỗi, hệ thống không chặn form, cho phép người dùng nhập tay bình thường.
 - **BR-Delta-07 (Idempotent Account Provisioning)**: Nếu email liên hệ hoặc MST đã tồn tại trong hệ thống Identity, hệ thống không tạo tài khoản trùng lặp mà tự động gán liên kết phiếu khảo sát vào tài khoản hiện hữu.
 - **BR-Delta-08 (PDPD Privacy & Welcome Notification)**: Tài khoản tự tạo tại triển lãm được gửi email chào mừng kèm link thiết lập mật khẩu; thông tin SĐT/Email tiếp tục được ẩn danh trên sàn công khai theo chuẩn PDPD NĐ 13/2023/NĐ-CP.
+
+---
+
+## Spec Delta v5: Hoàn Thiện Vòng Đời CRUD & Quản Trị Bài Toán Bên Mua (Edit & Close Actions)
+
+> **Căn cứ thay đổi**: Rà soát Kiến trúc 48 màn hình ngày 13/10/2026 về điểm nghẽn thiếu hành vi Chỉnh sửa và Đóng bài toán trên Bàn làm việc Bên Mua (`/portal/buyer/demands`).
+
+### 1. Bối cảnh & Mục tiêu
+- **Hoàn thiện vòng đời dữ liệu 5 bước**: Cung cấp đầy đủ các thao tác `[CREATE]`, `[READ]`, `[UPDATE]`, `[CLOSE/STATUS]` cho đại diện Bên Mua.
+- **Cho phép sửa đổi bài toán chưa duyệt**: Giúp doanh nghiệp kịp thời bổ sung, điều chỉnh thông số kỹ thuật, công đoạn, ngân sách hoặc mức độ cấp thiết khi bài toán còn ở trạng thái `PENDING`.
+- **Hỗ trợ đóng/rút bài toán**: Cho phép doanh nghiệp đóng bài toán khi đã kết nối thành công với nhà cung cấp hoặc thay đổi kế hoạch sản xuất kinh doanh.
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-12 -> FR-Delta-14)
+- **FR-Delta-12 (Edit Pending Demand Item)**:
+  - Cột "Thao tác" trên Bàn làm việc Bên Mua (`/portal/buyer/demands`) hiển thị nút **[Chỉnh sửa]** (Icon Edit) đối với các bài toán có trạng thái `PENDING`.
+  - Bấm nút mở `EditDemandModal` nạp sẵn toàn bộ dữ liệu hiện tại (Công đoạn, Bài toán, Giải pháp mong muốn, Mục tiêu, Lĩnh vực, Nhóm CN, Loại nhu cầu, Ngân sách, 4 chỉ số $K, L, N, O$).
+  - Gửi dữ liệu cập nhật qua API `PUT /api/v1/buyer/demands/{id}`.
+- **FR-Delta-13 (Realtime TNI Recalculation on Edit)**:
+  - Trên Modal chỉnh sửa, khi người dùng trượt 4 thanh $K, L, N, O$, giao diện tự động tính nhẩm và cập nhật màu Badge TNI.
+  - Khi lưu, Domain Service của Backend tự động tính toán lại $TNI = \text{ROUND}((35K + 30L + 20N + 15O)/5, 0)$ và cập nhật `TniScore`, `TniClassification`, `UpdatedAt`.
+- **FR-Delta-14 (Close / Withdraw Demand Item)**:
+  - Cột "Thao tác" hiển thị nút **[Đóng bài toán]** (Icon Archive/XCircle).
+  - Mở `ConfirmModal` yêu cầu xác nhận với nội dung: *"Bạn có chắc chắn muốn đóng bài toán này? Bài toán sẽ được rút khỏi sàn công khai."*
+  - Gửi yêu cầu qua API `POST /api/v1/buyer/demands/{id}/close`.
+  - Bảng danh sách cập nhật ngay trạng thái `CLOSED` và tab bộ lọc có thể lọc bài toán đã đóng.
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung (BR-Delta-09 -> BR-Delta-10)
+- **BR-Delta-09 (Immutable Locked State for Verified Demands)**: Bài toán khi đã được Sở duyệt niêm yết (`VERIFIED`) hoặc đã đóng (`CLOSED`) thì nút [Chỉnh sửa] sẽ bị ẩn hoặc disabled. Doanh nghiệp chỉ có thể đóng bài toán chứ không thể sửa đổi thông số kỹ thuật đã thẩm định.
+- **BR-Delta-10 (Soft Close Invariant)**: Hành động đóng bài toán chỉ cập nhật `Status = 'CLOSED'` và gỡ niêm yết công khai (`IsPublicListed = false`). Tuyệt đối cấm xóa cứng (Hard Delete) bản ghi khỏi CSDL nhằm phục vụ lưu trữ lịch sử và thống kê phân tích.

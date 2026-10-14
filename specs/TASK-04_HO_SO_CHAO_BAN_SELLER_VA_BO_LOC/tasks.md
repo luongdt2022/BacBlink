@@ -78,4 +78,13 @@
 - [x] T-04.39 [TEST] Viết bộ kiểm thử `src/app/chao-ban-cong-nghe/[id]/page.test.tsx` kiểm tra toàn bộ các tương tác: Bookmark, Share, Download DataRoom, Tab Navigation, Modal submit API và hiển thị thông số động.
 - [x] T-04.40 [QC] Chạy `tsc --noEmit`, Vitest và `./Agent/scripts/guard-rails.sh` đảm bảo 100% Pass và không có hồi quy.
 
+---
 
+### Phase 11: Delta v4 — Liên Kết Profile Bên Bán (Seller) & Xem Doanh Nghiệp Thường [BE][FE][TEST]
+- [x] T-04.41 [BE] Tạo EF Core migration non-destructive bổ sung `EnterpriseTaxCode` và `EnterpriseName` vào entity `SellerTechnologyOffer` và bảng `technology.seller_technology_offers`.
+- [x] T-04.42 [BE] Cập nhật `SellerOfferContracts.cs`, `TechnologyService.cs` hỗ trợ `EnterpriseTaxCode`, `EnterpriseName` và bộ lọc query `enterpriseTaxCode`.
+- [x] T-04.43 [FE] Cập nhật models `TechnologyOffer` trong `types/technology-offer.ts` và API service `fetchPublicOffers`.
+- [x] T-04.44 [FE] Cập nhật `/chao-ban-cong-nghe`: tên đơn vị chào bán trên thẻ công nghệ thành link clickable điều hướng `/enterprises/[taxCode]`.
+- [x] T-04.45 [FE] Cập nhật `/chao-ban-cong-nghe/[id]`: bổ sung Card "Đơn vị cung ứng / Doanh nghiệp chào bán" ở sidebar kèm nút CTA "Xem Hồ sơ Năng lực Doanh nghiệp".
+- [x] T-04.46 [FE] Cập nhật `/enterprises/[taxCode]`: hỗ trợ hiển thị Doanh nghiệp thường (`SubjectType = 'ENTERPRISE'`) mượt mà, và bổ sung Tab "Sản phẩm & Giải pháp niêm yết" hiển thị các sản phẩm của chính doanh nghiệp.
+- [x] T-04.47 [TEST] Cập nhật Unit test backend và kiểm thử tương tác frontend đảm bảo không hồi quy và 100% test suites pass.

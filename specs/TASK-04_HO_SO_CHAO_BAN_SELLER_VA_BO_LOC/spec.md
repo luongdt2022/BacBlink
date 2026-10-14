@@ -124,16 +124,17 @@ Bảng chính `tech_transfer_offers`, kết hợp với `offer_documents` và `o
 - **AC-04-4**: Bấm vào một công nghệ chuyển sang `/chao-ban-cong-nghe/[id]`, hiển thị đầy đủ thông tin Bộ Tứ SHTT và nút gửi yêu cầu kết nối.
 - **AC-04-5**: 100% test suites (Unit test BR-*, Contract test, Integration test, Playwright E2E) đạt trạng thái Passed.
 
+
 ---
 
-## 8. ĐẶC TẢ DELTA V3: CHUẨN HÓA DỮ LIỆU THẬT & TƯƠNG TÁC CHI TIẾT CHÀO BÁN (`/chao-ban-cong-nghe/[id]`)
+## 9. ĐẶC TẢ DELTA V4: LIÊN KẾT PROFILE BÊN BÁN (SELLER) & XEM DOANH NGHIỆP THƯỜNG TRÊN TOÀN HỆ THỐNG
 
-### 8.1. Bối Cảnh & Mục Tiêu Nghiệp Vụ
-Sau đợt kiểm toán thực tế (PO & QC Audit) trên bản ghi `OFF-202610-LV16-08` (Nền tảng Digital Twin mô phỏng nhiệt lò nung công nghiệp), phát hiện các vi phạm Zero-Mock và tương tác cần khắc phục triệt để:
-1. **Zero-Mock Thông số kỹ thuật (Tab Specs)**: Loại bỏ bảng thông số sấy thăng hoa chân không tĩnh; xây dựng bảng thông số động hiển thị chính xác theo loại hình (`offerType`), ngành (`sectorName`), quy cách (`unit`), cấp độ kiểm định (`trlLevel`), số hiệu văn bằng (`ipRegistrationNumber`), và các chỉ tiêu giải quyết bài toán (`problemSolved`).
-2. **Loại bỏ Mock DataRoom & Sửa nút chết**: Danh mục tài liệu DataRoom được gắn với mã hồ sơ và thông tin thực tế của công nghệ; nút `<button> Tải về </button>` tài liệu công khai (Teaser) phải có sự kiện kích hoạt tải xuống thật.
-3. **Chuẩn hóa nút "Lưu quan tâm" (Bookmark)**: Thay thế hành vi chuyển tab sai lệch bằng logic Bookmark thực thụ: toggle trạng thái `isBookmarked`, lưu trữ trong local state / storage và hiển thị Toast phản hồi.
-4. **Chia sẻ liên kết đồng bộ**: Thay thế `window.alert()` bằng cơ chế sao chép clipboard kèm Toast thông báo giao diện thống nhất.
-5. **Hiển thị trung thực Đánh giá & Đơn vị tính từ DB**: Thay thế chuỗi cứng `4,9/5 · Đã xác thực` bằng điểm số thật `{offer.ratingScore}/5 ({offer.reviewCount} đánh giá)`, bổ sung đơn vị tính `{offer.unit}` vào khối Quick Specs ở Hero.
-6. **Đấu nối API cho Quick Demand Modal**: Khi submit form, gọi trực tiếp API `POST /api/v1/demands/items` trên backend để tạo phiếu nhu cầu gắn liền với hồ sơ chào bán, phản hồi mã phiếu nhu cầu vừa tạo (`DMD-...`) và chuẩn hóa màu sắc nút submit.
+### 9.1. Bối Cảnh & Mục Tiêu Nghiệp Vụ
+- **Căn cứ**: Quyết định PO/PM ngày 2026-10-13, tài liệu Thiết kế Cơ sở `BASIC_DESIGN_DELTA_ENT_SELLER_LINK.md`.
+- **Nghiệp vụ**:
+  1. Trên màn hình danh sách chào bán `/chao-ban-cong-nghe` và chi tiết `/chao-ban-cong-nghe/[id]`, tên đơn vị chào bán phải chuyển thành Hyperlink có thể click dẫn trực tiếp đến Hồ sơ Doanh nghiệp `/enterprises/{taxCode}`.
+  2. Màn hình chi tiết `/chao-ban-cong-nghe/[id]` bổ sung Card / Widget "Đơn vị cung ứng / Doanh nghiệp chào bán" với thông tin: Tên DN, MST, Địa bàn, Loại hình chủ thể, Huy hiệu xác thực, và nút "Xem Hồ sơ Năng lực Doanh nghiệp".
+  3. Kế thừa hạt nhân `TASK-02`: Hệ thống hỗ trợ xem Doanh nghiệp thường (`SubjectType = 'ENTERPRISE'`) bên cạnh DN ĐMST (`INNOVATIVE_ENTERPRISE`). Nếu là DN thường chưa kê khai R&D/TNI, giao diện ẩn gracefully các tab này, tập trung vào Pháp lý, Địa bàn, Ngành nghề, Thông tin liên hệ.
+  4. Màn hình `/enterprises/[taxCode]` bổ sung Tab "Sản phẩm & Giải pháp đang chào bán" hiển thị các sản phẩm của chính doanh nghiệp đó đang niêm yết trên sàn.
+  5. Đảm bảo bảo vệ dữ liệu PII/Tài chính (`BR-02-002`): Doanh thu, Kinh phí R&D và SĐT người liên hệ của bên bán mặc định được che `[BẢO MẬT]` đối với khách công khai.
 

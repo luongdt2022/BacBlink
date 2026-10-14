@@ -115,4 +115,28 @@
 - [x] `T-00.52` **[FE][REQ-NAV-001, UI-NAV-001]** Tái cấu trúc `src/app/portal/layout.tsx`: xây dựng 6 bộ menu động may đo riêng cho `BUYER`, `SELLER`, `VERIFIED_EXPERT`, `INNOVATION_ENTITY`, `ADMIN`, `PUBLIC_USER`.
 - [x] `T-00.53` **[FE][REQ-NAV-002..003]** Bổ sung Badge định danh không gian làm việc tương ứng và thẻ chuyển hướng nhanh về `/admin` và `/gov` cho tài khoản có quyền quản trị; chuẩn hóa toàn bộ sub-routes thực tế (`buyer/demands`, `seller/technologies`, `enterprise/profile`).
 - [x] `T-00.54` **[TEST][AC-DELTA-07..09]** Viết Unit Test `src/app/portal/layout.test.tsx` kiểm chứng 100% logic phân nhánh vai trò và chạy Vitest hồi quy đạt 100% pass (112/112 tests).
+ 
+---
+
+## Giai đoạn 12: Delta v8 (CR-2026-011) — Xây Dựng Màn Hình Hồ Sơ Cá Nhân & Hub Nâng Hạng (/profile) [GAP-01]
+
+- [x] `T-00.55` **[SPEC]** Ghi nhận Spec Delta v8 bổ sung REQ-PROFILE-001..002 và AC-DELTA-10..11 vào `specs/TASK-00_.../spec.md`.
+- [x] `T-00.56` **[FE]** Thay thế redirect trong `src/app/profile/page.tsx` bằng UI Hồ sơ cá nhân 3 Tab chuẩn 1:1 theo `wireframe_ho_so_ca_nhan.html`: Card Avatar Monogram, Vai trò hiện tại, 2 Khối CTA nâng hạng Chuyên gia (`/profile/upgrade/expert`) & Doanh nghiệp ĐMST (`/portal/enterprise/profile/edit`), Tab Lịch sử không gian làm việc.
+- [x] `T-00.57` **[TEST]** Viết kiểm thử component cho `/profile` và chạy build Next.js 15 xác nhận 0 lỗi biên dịch.
+
+---
+
+## Giai đoạn 13: Delta v9 (CR-2026-012) — Xây Dựng Cổng Đăng Ký Nâng Cấp Vai Trò (Upgrade Hub 4 Lộ Trình - /profile/upgrade)
+
+- [x] `T-00.58` **[SPEC]** Ghi nhận Spec Delta v9 bổ sung REQ-UPGRADE-HUB-001..003 và AC-DELTA-12..16 vào `specs/TASK-00_.../spec.md` và `plan.md`.
+- [x] `T-00.59` **[FE]** Thay thế redirect trong `src/app/profile/upgrade/page.tsx` bằng UI Upgrade Hub 4 Lộ Trình chuẩn 1:1 theo `wireframe_nang_cap_tai_khoan_hub.html`:
+  - Hero banner phân cấp quyền hạn 3D Scoped RBAC.
+  - 4 Cards: Chuyên gia KH&CN, Doanh nghiệp ĐMST, Bên Mua Buyer, Bên Bán Seller.
+  - Modal Kê khai Doanh nghiệp ĐMST (tra cứu MST, tải file ĐKKD, chọn Sở KH&CN tiếp nhận).
+  - Modal Đăng ký Gian hàng Seller (Lĩnh vực TT17, Sở KH&CN quản lý, cam kết pháp lý SLA 24h).
+  - Bảng ma trận so sánh quyền hạn và tiêu chuẩn hồ sơ 4 vai trò.
+- [x] `T-00.60` **[FE]** Cập nhật liên kết mục "Đăng ký Nâng hạng Vai trò" trong Sidebar `src/app/portal/layout.tsx` của `PUBLIC_USER` trỏ về `/profile/upgrade` (Hub tổng thể).
+- [x] `T-00.61` **[TEST]** Viết kiểm thử Unit/Integration cho trang `/profile/upgrade` và chạy Vitest hồi quy xác nhận 100% pass, Next.js build sạch 0 lỗi.
+
+
 
