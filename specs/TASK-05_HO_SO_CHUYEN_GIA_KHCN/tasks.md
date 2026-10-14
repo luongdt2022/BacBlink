@@ -235,4 +235,88 @@
 - [x] `T125` **[BE][TEST][BR-EXP-044..046]** Viết trọn bộ kiểm thử xUnit cho `ExpertCompletenessReminderWorker`: kiểm chứng chỉ duyệt `APPROVED`, lọc điểm `< 70%` và stale `> 30 ngày`, chặn gửi lặp trong vòng 7 ngày, tính toán chính xác số lượng thông báo được phát đi.
 - [x] `T126` **[INT][GUARD-RAILS][GATE-5]** Chạy toàn bộ test suites (`dotnet test`, `npm test`), chạy `./Agent/scripts/guard-rails.sh`, tick `[x]` T122..T126, cập nhật `ROADMAP.md` và nghiệm thu xuất xưởng.
 
+---
+
+## Phase 20: Delta v16 — Không Gian Quản Trị Tài Khoản Chuyên Gia (Account Workspace) [CR-2026-013]
+
+- [x] `T127` **[FE][LAYOUT][REQ-EXP-ACC-001]** Cập nhật `expertNavItems` trong `src/app/portal/layout.tsx`: Thêm item đầu tiên `Tài khoản Chuyên gia` (`/portal/expert/account`, icon `ShieldCheck` hoặc `UserCheck`), cấu trúc lại Sidebar thành 6 mục theo đúng Quyết định PO-DEC-20261014-01.
+- [x] `T128` **[FE][UI][REQ-EXP-ACC-001..003]** Xây dựng trang `src/app/portal/expert/account/page.tsx` bám sát `wireframe_expert_account.html`, bọc `RoleGuard(VERIFIED_EXPERT)`, xử lý 5 UX states qua `<Async>`, triển khai đầy đủ 5 khối chức năng: Khối 1 (Định danh khoa học & QĐ phê duyệt cấp Sở), Khối 2 (Thiết lập sẵn sàng tiếp nhận tư vấn On/Off), Khối 3 (Thước đo hoàn thiện hồ sơ Completeness Engine 5 trụ cột), Khối 4 (Bảo mật, Active Sessions đa thiết bị và Định danh Zalo Mini App), Khối 5 (Tùy chọn trải nghiệm & Cấu hình thông báo SLA Deal Room).
+- [x] `T129` **[FE][TEST][AC-ACC-01..02]** Cập nhật test `src/app/portal/layout.test.tsx` (kiểm chứng item 1/6 `Tài khoản Chuyên gia` cho vai trò `VERIFIED_EXPERT`) và viết Vitest component test cho `src/app/portal/expert/account/page.tsx` (kiểm chứng 5 UX states, tương tác toggle và render 5 khối chức năng).
+- [x] `T130` **[INT][GUARD-RAILS][GATE-5]** Chạy kiểm thử hồi quy `npm test`, kiểm tra TypeScript compiler và nghiệm thu hoàn tất xuất xưởng `[x]`.
+
+---
+
+## Phase 21: Delta v17 — Chuẩn Hóa Bàn Làm Việc Chuyên Gia, Hộp Thư Tư Vấn 3 Tab & Kanban TRL 1-9 [PO-DEC-20261014-02]
+
+- [x] `T131` **[FE-TASK-05-DELTA-01][FE][LAYOUT][REQ-EXP-UI-007] Sửa layout.tsx & Triệt tiêu lỗi active menu**
+  - **Mục tiêu**: Tái cấu trúc thanh Sidebar Workspace Chuyên gia thành 6 mục độc lập và cài đặt thuật toán xác định active menu chính xác tuyệt đối.
+  - **Hành động kỹ thuật**:
+    + Thêm hàm `resolveExpertActiveMenu(pathname: string): string` xuất khẩu trong `src/app/portal/layout.tsx` (hoặc module router helper) với 6 key tương ứng: `account`, `profile`, `profile-edit`, `consultations`, `radar`, `projects`.
+    + Cập nhật mảng `expertNavItems` gán `key` rõ ràng cho từng item:
+      1. `account` (`/portal/expert/account`, `ShieldCheck`)
+      2. `profile` (`/portal/expert/profile`, `LayoutDashboard`)
+      3. `profile-edit` (`/portal/expert/profile/edit`, `GraduationCap`)
+      4. `consultations` (`/portal/expert/consultations`, `Inbox`)
+      5. `radar` (`/portal/matching/radar`, `Sparkles`)
+      6. `projects` (`/portal/expert/projects`, `Kanban`)
+    + Thay đổi cơ chế so khớp `isActive`: Đối với chuyên gia, so sánh `item.key === resolveExpertActiveMenu(pathname)`.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Truy cập `/portal/expert/consultations`: Chỉ mục "Hộp Thư Tư Vấn & Kết Nối" sáng màu active (`bg-brand-700 text-white`), mục "Dự án Đồng hành & Hợp tác" không bị active nhầm.
+    + Truy cập `/portal/expert/projects`: Chỉ mục "Dự án Đồng hành & Hợp tác" sáng màu active.
+    + Không có bất kỳ liên kết nào của Chuyên gia trỏ về `/portal/opportunities/pipeline?type=consulting` hay `/portal/opportunities/pipeline`.
+
+- [x] `T132` **[FE-TASK-05-DELTA-02][FE][UI][REQ-EXP-UI-008][BR-EXP-011..012] Xây dựng trang Hộp thư tư vấn /portal/expert/consultations**
+  - **Mục tiêu**: Xây dựng phân hệ Hộp thư tư vấn 3 tab nghiệp vụ theo chuẩn wireframe `wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html`.
+  - **Hành động kỹ thuật**:
+    + Tạo mới trang `src/app/portal/expert/consultations/page.tsx` bọc `RoleGuard(["VERIFIED_EXPERT", "EXPERT"])`.
+    + Cài đặt thanh tab 3 trạng thái với Badge đếm bản ghi động: Tab 1 "Lời Mời Chờ Xử Lý (03)", Tab 2 "Lịch Hẹn Sắp Tới (02)", Tab 3 "Đã Hoàn Thành (14)".
+    + Tab 1: Render các thẻ lời mời tư vấn với bộ đếm ngược SLA 48h (tự động chuyển màu đỏ khi $\le 24$h), phân biệt nguồn Cấp Sở (Quỹ ĐMST chi trả thù lao) vs Doanh nghiệp đặt trực tiếp (kèm điểm TNI ĐMST), Modal "Đồng ý tư vấn & Chọn lịch hẹn" (chọn ngày/giờ/link Zoom), Modal "Từ chối tư vấn & Nêu lý do bắt buộc".
+    + Tab 2: Render thẻ lịch hẹn trực tuyến, link Zoom/Meet, tính toán thời gian nút "Vào Phòng Họp" (sáng nút trước 15 phút, hiển thị countdown nếu chưa tới giờ họp), liên kết tải tệp đính kèm pre-read.
+    + Tab 3: Render thẻ lịch sử tư vấn, nút xem/tải Biên bản tư vấn kỹ thuật (MoA), đánh giá 2 chiều (5 sao) và nhãn trạng thái quyết toán thù lao (`ĐÃ QUYẾT TOÁN THÙ LAO` / `ĐANG ĐỐI SOÁT HỒ SƠ`).
+    + Tích hợp 5 UX states qua component `<Async>`.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Chuyển tab mượt mà, đúng badge số lượng.
+    + Thẻ có thời gian còn $\le 24$h hiển thị viền đỏ và text cảnh báo `Còn XX giờ để phản hồi`.
+    + Nhấn chấp thuận mở modal, submit cập nhật danh sách và chuyển lịch sang Tab 2.
+    + Nhấn từ chối mở modal, chặn submit nếu chưa nhập lý do từ chối.
+    + Nút "Vào Phòng Họp" bị disable kèm countdown nếu thời gian họp còn cách $> 15$ phút.
+
+- [x] `T133` **[FE-TASK-05-DELTA-03][FE][UI][REQ-EXP-UI-009..010][BR-EXP-013] Xây dựng trang Kanban Dự án Đồng hành /portal/expert/projects**
+  - **Mục tiêu**: Xây dựng bảng Kanban đàm phán và đồng hành R&D dài hạn 5 cột TRL 1-9, loại bỏ dứt điểm chức năng sai thẩm quyền và chữ "Trống" thô thiển.
+  - **Hành động kỹ thuật**:
+    + Tạo mới trang `src/app/portal/expert/projects/page.tsx` bọc `RoleGuard(["VERIFIED_EXPERT", "EXPERT"])`.
+    + Loại bỏ hoàn toàn nút "Giám sát Sở KH&CN"; thay bằng bộ công cụ chuyên gia: Bộ lọc Lĩnh vực TT17, Bộ lọc Thang đo TRL (`All`, `TRL 1-3`, `TRL 4-6`, `TRL 7-9`), Ô tìm kiếm dự án, Nút "Xuất Báo Cáo Tiến Độ Đồng Hành".
+    + Xây dựng 5 cột Kanban: `INTAKE_NDA` (Tiếp nhận & Ký NDA), `DEAL_ROOM` (Đàm phán Deal Room 1-1), `TRL_ASSESSMENT` (Thẩm định TRL), `MOU_SIGNED` (Ký kết Thỏa thuận MOU), `TRANSFER_COMPLETED` (Đồng hành Chuyển giao & Nghiệm thu).
+    + Xây dựng thẻ dự án TRL (`ExpertProjectCard`): Mã `PRJ-EXP-YYYY-XXXX`, badge trạng thái bảo mật (`CHỜ KÝ NDA`, `NDA ĐÃ KÝ`, `DỰ THẢO MOU`, `ĐANG NGHIỆM THU`), thanh đo TRL kép (`[TRL Hiện tại] -> [TRL Mục tiêu]`), đối tác DN, kinh phí R&D dự kiến, deadline SLA mốc thẩm định, nút [VÀO DEAL ROOM 1-1].
+    + Triệt tiêu hoàn toàn chữ "Trống" thô sơ trên các cột: Chuẩn hóa 5 UX states cho từng cột qua component `<Async>` (Loading Skeleton, Ideal thẻ TRL, Empty State nét đứt có icon + CTA "Khám Phá Radar Cơ Hội AI" dẫn về `/portal/matching/radar`, Error State + Retry, Filtered Empty + Reset).
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Giao diện tuyệt đối không tồn tại nút "Giám sát Sở KH&CN".
+    + Tuyệt đối không xuất hiện chữ "Trống" thô sơ ở bất kỳ cột Kanban nào khi không có dữ liệu.
+    + Cột rỗng hiển thị hộp nét đứt thẩm mỹ có nút CTA chuyển về Radar AI.
+    + Thẻ dự án hiển thị trực quan lộ trình nâng cấp TRL (ví dụ TRL 4 -> TRL 6).
+    + Bộ lọc TRL và Lĩnh vực lọc chính xác danh sách dự án trên các cột.
+
+- [x] `T134` **[FE-TASK-05-DELTA-04][FE][SEC][REQ-EXP-UI-007][BR-EXP-014] Cập nhật RoleGuard mở quyền song song EXPERT & VERIFIED_EXPERT**
+  - **Mục tiêu**: Phân định rõ ràng ma trận phân quyền Scoped RBAC và bảo vệ an toàn PII chuyên gia theo Nghị định 13/2023/NĐ-CP.
+  - **Hành động kỹ thuật**:
+    + Cấu hình RoleGuard tại `src/app/portal/layout.tsx` và các tuyến trang chuyên gia hỗ trợ cả `VERIFIED_EXPERT` và `EXPERT`.
+    + Tại `/portal/expert/consultations` và `/portal/expert/projects`: Kiểm tra trạng thái người dùng. Nếu là `EXPERT` (hồ sơ đang chờ duyệt cấp Sở), hiển thị Banner cảnh báo màu hổ phách giải thích tài khoản đang chờ phê duyệt, khóa các chức năng ký biên bản hoặc nhận ủy thác tư vấn có thù lao Quỹ ĐMST.
+    + Đảm bảo người dùng công chúng hoặc doanh nghiệp không xem được SĐT/Email cá nhân của chuyên gia trên danh bạ trước khi phiên tư vấn được chấp thuận.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Người dùng `VERIFIED_EXPERT` thao tác không giới hạn trên cả 6 màn hình.
+    + Người dùng `EXPERT` xem được thông tin nhưng thấy banner hướng dẫn chờ duyệt tại trang Consultations và Projects.
+    + Người dùng `BUYER` / `USER` truy cập các route `/portal/expert/*` bị RoleGuard chặn và điều hướng về trang thông báo quyền truy cập.
+
+- [x] `T135` **[TEST-TASK-05-DELTA-01][FE][TEST][REQ-EXP-UI-007..010] Unit test & Component test cho các màn hình và router helper**
+  - **Mục tiêu**: Bảo đảm chất lượng mã nguồn, độ tin cậy của router helper và ngăn ngừa lỗi hồi quy (regression) bằng kiểm thử tự động.
+  - **Hành động kỹ thuật**:
+    + Bổ sung unit tests cho hàm `resolveExpertActiveMenu` trong `src/app/portal/layout.test.tsx` (kiểm tra đầy đủ 6 routes và loại trừ xung đột active giữa consultations và projects).
+    + Viết file test mới `src/app/portal/expert/consultations/consultations.test.tsx`: kiểm tra render 3 tab, chuyển tab, cảnh báo SLA $\le 24$h, hiển thị modal chấp thuận/từ chối, trạng thái rỗng và lỗi.
+    + Viết file test mới `src/app/portal/expert/projects/projects.test.tsx`: kiểm tra 5 cột TRL, assertion không chứa text "Giám sát Sở KH&CN", assertion không chứa text "Trống", kiểm tra render thẻ TRL và CTA dẫn về Radar AI.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Chạy `npm test` trong `SourceCode/frontend` vượt qua 100% test suites (0 fail).
+    + Chạy `pnpm build` hoặc `npm run build` không phát sinh bất kỳ lỗi TypeScript compiler nào.
+
+
+
 
