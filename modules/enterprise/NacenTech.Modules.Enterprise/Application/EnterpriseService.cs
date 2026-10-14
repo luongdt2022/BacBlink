@@ -17,6 +17,11 @@ public interface IEnterpriseRepository
     Task UpdateAsync(Domain.Enterprise enterprise, CancellationToken ct = default);
     Task<(IReadOnlyList<Domain.Enterprise> Items, int TotalCount)> SearchAsync(EnterpriseSearchQuery query, CancellationToken ct = default);
     Task<EnterpriseDashboardStatsDto> GetDashboardStatsAsync(CancellationToken ct = default);
+    Task<EnterpriseInnovationEvaluation?> GetInnovationEvaluationAsync(string taxCode, int? evaluationYear = null, CancellationToken ct = default);
+    Task AddInnovationEvaluationAsync(EnterpriseInnovationEvaluation evaluation, CancellationToken ct = default);
+    Task UpdateInnovationEvaluationAsync(EnterpriseInnovationEvaluation evaluation, CancellationToken ct = default);
+    Task<(string? SurveyAnswersJson, bool HasMachineryUpgrade, bool HasTechTraining)> GetSurveyAnswersAsync(Guid enterpriseId, string taxCode, CancellationToken ct = default);
+    Task<IReadOnlyList<Domain.Enterprise>> GetAllEnterprisesForRatingAsync(CancellationToken ct = default);
 }
 
 public interface IEnterpriseService
@@ -30,6 +35,8 @@ public interface IEnterpriseService
     Task RejectEnterpriseAsync(Guid enterpriseId, string reason, string? adminScopeId = null, CancellationToken ct = default);
     Task<EnterpriseDashboardStatsDto> GetDashboardStatsAsync(CancellationToken ct = default);
     bool CanViewRevenueAndFunding(string actorRole, bool isOwner);
+    Task<InnovationEvaluationDto?> GetInnovationRatingAsync(string taxCode, bool isPrivileged = false, CancellationToken ct = default);
+    Task<int> RecalculateAllInnovationRatingsAsync(CancellationToken ct = default);
 }
 
 public class EnterpriseService : IEnterpriseService
@@ -69,7 +76,10 @@ public class EnterpriseService : IEnterpriseService
                 IsExporting: x.IsExporting,
                 InValueChain: x.InValueChain,
                 TopBottlenecks: SafeParseStringList(x.TopBottlenecksJson),
-                SupportNeeds: SafeParseStringList(x.SupportNeedsJson)
+                SupportNeeds: SafeParseStringList(x.SupportNeedsJson),
+                InnovationScore: x.LatestInnovationScore,
+                InnovationTier: x.LatestInnovationTier,
+                InnovationBadge: GetInnovationBadgeName(x.LatestInnovationTier)
             )).ToList();
 
             return new EnterprisePublicDirectoryDto(dtoItems, totalCount, query.Page, pageSize, totalPages);
@@ -338,6 +348,208 @@ public class EnterpriseService : IEnterpriseService
         try
         {
             return JsonSerializer.Deserialize<List<string>>(json) ?? [];
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    public async Task<InnovationEvaluationDto?> GetInnovationRatingAsync(string taxCode, bool isPrivileged = false, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(taxCode)) return null;
+
+        var ent = await _repository.GetByTaxCodeAsync(taxCode.Trim(), ct);
+        if (ent is null) return null;
+
+        var eval = await _repository.GetInnovationEvaluationAsync(ent.TaxCode, 2024, ct);
+        if (eval is null)
+        {
+            // Tự động tính toán sơ bộ từ dữ liệu khảo sát 304 DN nếu chưa có bản ghi đánh giá
+            var (surveyJson, hasMachinery, hasTraining) = await _repository.GetSurveyAnswersAsync(ent.Id, ent.TaxCode, ct);
+            var calc = InnovationRatingEngine.Calculate(ent, surveyJson, hasMachinery, hasTraining);
+
+            eval = new EnterpriseInnovationEvaluation(Guid.NewGuid())
+            {
+                EnterpriseId = ent.Id,
+                TaxCode = ent.TaxCode,
+                EvaluationYear = 2024,
+                CriteriaVersion = "v1.0",
+                TotalScore = calc.TotalScore,
+                Classification = calc.Classification,
+                GroupScoresJson = JsonSerializer.Serialize(calc.GroupScores),
+                CriteriaDetailsJson = JsonSerializer.Serialize(calc.CriteriaDetails),
+                Status = calc.Classification == "UNRATED" ? "DRAFT_CALCULATED" : "APPROVED",
+                ReviewedBy = calc.Classification == "UNRATED" ? null : "Hệ thống ĐMST Quốc gia (Sơ bộ)",
+                ReviewedAt = calc.Classification == "UNRATED" ? null : DateTimeOffset.UtcNow,
+                Notes = "Tính toán sơ bộ từ CSDL Khảo sát thực nghiệm 304 DN"
+            };
+
+            await _repository.AddInnovationEvaluationAsync(eval, ct);
+
+            // Cập nhật điểm và phân tầng mới nhất trên entity Enterprise
+            ent.LatestInnovationScore = calc.TotalScore;
+            ent.LatestInnovationTier = calc.Classification;
+            await _repository.UpdateAsync(ent, ct);
+        }
+
+        // Parse GroupScores & CriteriaDetails
+        var groups = SafeParseGroupScores(eval.GroupScoresJson);
+        var criteria = SafeParseCriteriaDetails(eval.CriteriaDetailsJson);
+
+        // Tạo RadarChartData từ GroupScores
+        var radarData = groups.Select(g => new RadarAxisDto(
+            Axis: g.GroupName switch
+            {
+                "Quản trị" => "Quản trị",
+                "R&D và Công nghệ" => "R&D & CN",
+                "Sản phẩm / Quy trình" => "SP / Quy trình",
+                "Sở hữu trí tuệ" => "Sở hữu trí tuệ",
+                "Chuyển đổi số" => "Chuyển đổi số",
+                "Thị trường" => "Thị trường",
+                "Nhân lực" => "Nhân lực",
+                "Liên kết" => "Liên kết",
+                _ => g.GroupName
+            },
+            Value: g.Score,
+            MaxValue: g.MaxScore,
+            FullMark: 100
+        )).ToList();
+
+        string classificationLabel = eval.Classification switch
+        {
+            "LEADING" => "Dẫn đầu",
+            "DEVELOPING" => "Đang phát triển",
+            "POTENTIAL" => "Tiềm năng",
+            _ => "Chưa đánh giá"
+        };
+
+        string badgeName = eval.Classification switch
+        {
+            "LEADING" => "Huy hiệu Vàng ĐMST",
+            "DEVELOPING" => "Huy hiệu Bạc ĐMST",
+            "POTENTIAL" => "Huy hiệu Đồng ĐMST",
+            _ => "Chưa xếp hạng"
+        };
+
+        // PDPD Masking (BR-02-011): Khách công chúng không được xem chi tiết 37 tiêu chí (ẩn doanh thu C33 và R&D C15)
+        IReadOnlyList<InnovationCriteriaDetailDto>? publicCriteria = null;
+        IReadOnlyList<InnovationGroupScoreDto> resultGroups;
+
+        if (isPrivileged)
+        {
+            publicCriteria = criteria;
+            resultGroups = groups;
+        }
+        else
+        {
+            publicCriteria = null;
+            resultGroups = groups.Select(g => new InnovationGroupScoreDto(
+                g.GroupCode,
+                g.GroupName,
+                g.MaxScore,
+                g.Score,
+                g.Percentage,
+                null
+            )).ToList();
+        }
+
+        return new InnovationEvaluationDto(
+            Id: eval.Id,
+            EnterpriseId: eval.EnterpriseId,
+            TaxCode: eval.TaxCode,
+            EvaluationYear: eval.EvaluationYear,
+            CriteriaVersion: eval.CriteriaVersion,
+            TotalScore: eval.TotalScore,
+            Classification: eval.Classification,
+            ClassificationLabel: classificationLabel,
+            BadgeName: badgeName,
+            Status: eval.Status,
+            ReviewedBy: eval.ReviewedBy,
+            ReviewedAt: eval.ReviewedAt,
+            GroupScores: resultGroups,
+            RadarChartData: radarData,
+            CriteriaDetails: publicCriteria
+        );
+    }
+
+    public async Task<int> RecalculateAllInnovationRatingsAsync(CancellationToken ct = default)
+    {
+        var allEnterprises = await _repository.GetAllEnterprisesForRatingAsync(ct);
+        int count = 0;
+        foreach (var ent in allEnterprises)
+        {
+            var (surveyJson, hasMachinery, hasTraining) = await _repository.GetSurveyAnswersAsync(ent.Id, ent.TaxCode, ct);
+            var calc = InnovationRatingEngine.Calculate(ent, surveyJson, hasMachinery, hasTraining);
+
+            var existing = await _repository.GetInnovationEvaluationAsync(ent.TaxCode, 2024, ct);
+            if (existing is null)
+            {
+                var eval = new EnterpriseInnovationEvaluation(Guid.NewGuid())
+                {
+                    EnterpriseId = ent.Id,
+                    TaxCode = ent.TaxCode,
+                    EvaluationYear = 2024,
+                    CriteriaVersion = "v1.0",
+                    TotalScore = calc.TotalScore,
+                    Classification = calc.Classification,
+                    GroupScoresJson = JsonSerializer.Serialize(calc.GroupScores),
+                    CriteriaDetailsJson = JsonSerializer.Serialize(calc.CriteriaDetails),
+                    Status = calc.Classification == "UNRATED" ? "DRAFT_CALCULATED" : "APPROVED",
+                    ReviewedBy = calc.Classification == "UNRATED" ? null : "Hệ thống ĐMST Quốc gia (Sơ bộ)",
+                    ReviewedAt = calc.Classification == "UNRATED" ? null : DateTimeOffset.UtcNow,
+                    Notes = "Tính toán sơ bộ từ CSDL Khảo sát thực nghiệm 304 DN"
+                };
+                await _repository.AddInnovationEvaluationAsync(eval, ct);
+            }
+            else
+            {
+                existing.TotalScore = calc.TotalScore;
+                existing.Classification = calc.Classification;
+                existing.GroupScoresJson = JsonSerializer.Serialize(calc.GroupScores);
+                existing.CriteriaDetailsJson = JsonSerializer.Serialize(calc.CriteriaDetails);
+                existing.TouchEvaluation();
+                await _repository.UpdateInnovationEvaluationAsync(existing, ct);
+            }
+
+            ent.LatestInnovationScore = calc.TotalScore;
+            ent.LatestInnovationTier = calc.Classification;
+            await _repository.UpdateAsync(ent, ct);
+            count++;
+        }
+        return count;
+    }
+
+    private static string? GetInnovationBadgeName(string? tier) => tier switch
+    {
+        "LEADING" => "Huy hiệu Vàng ĐMST",
+        "DEVELOPING" => "Huy hiệu Bạc ĐMST",
+        "POTENTIAL" => "Huy hiệu Đồng ĐMST",
+        "UNRATED" => "Chưa xếp hạng",
+        _ => null
+    };
+
+    private static List<InnovationGroupScoreDto> SafeParseGroupScores(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json) || json == "[]" || json == "{}") return [];
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            return JsonSerializer.Deserialize<List<InnovationGroupScoreDto>>(json, options) ?? [];
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private static List<InnovationCriteriaDetailDto> SafeParseCriteriaDetails(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json) || json == "[]") return [];
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            return JsonSerializer.Deserialize<List<InnovationCriteriaDetailDto>>(json, options) ?? [];
         }
         catch
         {

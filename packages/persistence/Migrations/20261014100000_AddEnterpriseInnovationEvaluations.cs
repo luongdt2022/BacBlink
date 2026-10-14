@@ -35,6 +35,13 @@ public sealed class AddEnterpriseInnovationEvaluations : Migration
                 created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 version integer NOT NULL DEFAULT 0,
+                legacy_source_system character varying(50),
+                legacy_source_table character varying(80),
+                legacy_id character varying(100),
+                legacy_source_hash character varying(64),
+                legacy_migrated_at timestamp with time zone,
+                legacy_mapping_version character varying(30),
+                legacy_batch_id uuid,
                 CONSTRAINT fk_innovation_evaluations_enterprise_id FOREIGN KEY (enterprise_id) 
                     REFERENCES enterprise.enterprises(id) ON DELETE CASCADE,
                 CONSTRAINT uq_enterprise_evaluation_period UNIQUE (enterprise_id, evaluation_year, criteria_version)

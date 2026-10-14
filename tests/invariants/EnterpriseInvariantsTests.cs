@@ -97,6 +97,31 @@ public sealed class EnterpriseInvariantsTests
             );
             return Task.FromResult(stats);
         }
+
+        public Task<EnterpriseInnovationEvaluation?> GetInnovationEvaluationAsync(string taxCode, int? evaluationYear = null, CancellationToken ct = default)
+        {
+            return Task.FromResult<EnterpriseInnovationEvaluation?>(null);
+        }
+
+        public Task AddInnovationEvaluationAsync(EnterpriseInnovationEvaluation evaluation, CancellationToken ct = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateInnovationEvaluationAsync(EnterpriseInnovationEvaluation evaluation, CancellationToken ct = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<(string? SurveyAnswersJson, bool HasMachineryUpgrade, bool HasTechTraining)> GetSurveyAnswersAsync(Guid enterpriseId, string taxCode, CancellationToken ct = default)
+        {
+            return Task.FromResult<(string?, bool, bool)>((null, false, false));
+        }
+
+        public Task<IReadOnlyList<Enterprise>> GetAllEnterprisesForRatingAsync(CancellationToken ct = default)
+        {
+            return Task.FromResult<IReadOnlyList<Enterprise>>(_enterprises.ToList());
+        }
     }
 
     [Fact]

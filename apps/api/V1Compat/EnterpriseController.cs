@@ -121,6 +121,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
         [FromQuery] string? sectorCode,
         [FromQuery] string? subjectType,
         [FromQuery] string? tniClassification,
+        [FromQuery] string? innovationTier,
         [FromQuery] string? sortBy,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 9,
@@ -133,6 +134,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
             SectorCode = sectorCode,
             SubjectType = subjectType,
             TniClassification = tniClassification,
+            InnovationTier = innovationTier,
             SortBy = sortBy,
             Page = page <= 0 ? 1 : page,
             PageSize = pageSize <= 0 ? 9 : pageSize
@@ -162,6 +164,53 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
         if (result is null) return NotFound(new { message = $"Không tìm thấy doanh nghiệp có mã số thuế {taxCode}" });
 
         return Ok(Ok200(result));
+    }
+
+    [HttpGet("{taxCode}/innovation-rating")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetInnovationRating(string taxCode, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(taxCode))
+            return BadRequest(new { message = "Mã số thuế không được để trống." });
+
+        bool isPrivileged = false;
+        try
+        {
+            if (Actor.IsAuthenticated)
+            {
+                isPrivileged = Actor.PlatformRole is PlatformRoles.Admin 
+                    or PlatformRoles.SuperAdmin 
+                    or PlatformRoles.OperatorAdmin 
+                    or PlatformRoles.ProvincialAdmin;
+            }
+        }
+        catch { }
+
+        var result = await enterpriseService.GetInnovationRatingAsync(taxCode.Trim(), isPrivileged, ct);
+        if (result is null)
+            return NotFound(new { message = $"Không tìm thấy dữ liệu đánh giá ĐMST cho mã số thuế {taxCode}" });
+
+        // BR-02-011: Nếu là Owner của chính doanh nghiệp thì cấp quyền xem đầy đủ chi tiết
+        if (!isPrivileged && Actor.IsAuthenticated && PersonId == result.EnterpriseId)
+        {
+            var privilegedResult = await enterpriseService.GetInnovationRatingAsync(taxCode.Trim(), isPrivileged: true, ct);
+            if (privilegedResult is not null)
+            {
+                result = privilegedResult;
+            }
+        }
+
+        await uow.CommitAsync(ct);
+        return Ok(Ok200(result!));
+    }
+
+    [HttpPost("recalculate-innovation-ratings")]
+    [Authorize]
+    public async Task<IActionResult> RecalculateInnovationRatings(CancellationToken ct = default)
+    {
+        var count = await enterpriseService.RecalculateAllInnovationRatingsAsync(ct);
+        await uow.CommitAsync(ct);
+        return Ok(Ok200(new { message = $"Đã tính toán và cập nhật điểm ĐMST thành công cho {count} doanh nghiệp." }));
     }
 
     [HttpGet("/api/v1/portal/enterprise/profile")]
