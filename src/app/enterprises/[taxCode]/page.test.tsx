@@ -26,6 +26,28 @@ vi.mock("../../../lib/enterprise-client", () => ({
     isVerified: true,
     intellectualProperties: [],
   }),
+  getInnovationRating: vi.fn().mockResolvedValue({
+    taxCode: "2400120030",
+    enterpriseName: "CÔNG TY TNHH MỘT THÀNH VIÊN LÂM NGHIỆP ĐÔNG BẮC",
+    totalScore: 78.5,
+    classification: "LEADING",
+    classificationLabel: "Dẫn đầu",
+    badgeName: "Huy hiệu Vàng ĐMST",
+    evaluatedAt: "2026-10-14T00:00:00Z",
+    evaluationYear: 2024,
+    groupScores: [],
+    radarChartData: [
+      { axis: "Quản trị ĐMST", value: 85, fullMark: 100 },
+      { axis: "Năng lực Công nghệ", value: 70, fullMark: 100 },
+      { axis: "Sản phẩm & Dịch vụ", value: 80, fullMark: 100 },
+      { axis: "Tài sản Trí tuệ", value: 90, fullMark: 100 },
+      { axis: "Tài chính & Đầu tư", value: 65, fullMark: 100 },
+      { axis: "Thị trường & Khách hàng", value: 80, fullMark: 100 },
+      { axis: "Nhân lực ĐMST", value: 75, fullMark: 100 },
+      { axis: "Liên kết & Hợp tác", value: 85, fullMark: 100 },
+    ],
+    criteriaDetails: [],
+  }),
 }));
 
 // Mock technology offer API

@@ -67,6 +67,14 @@ const TNI_LEVELS = [
   { code: "LOW", label: "TNI Cơ bản (< 50 điểm)" },
 ];
 
+const INNOVATION_TIERS = [
+  { code: "", label: "Tất cả mức độ ĐMST" },
+  { code: "LEADING", label: "⭐️ Dẫn đầu (≥ 75 điểm)" },
+  { code: "DEVELOPING", label: "🥈 Đang phát triển (50 - 74 điểm)" },
+  { code: "POTENTIAL", label: "🥉 Tiềm năng (< 50 điểm)" },
+  { code: "UNRATED", label: "⚪ Chưa đánh giá" },
+];
+
 /**
  * Trích xuất monogram viết tắt đặc trưng từ tên doanh nghiệp
  */
@@ -193,6 +201,7 @@ export default function EnterprisesDirectoryPage() {
   const [sectorCode, setSectorCode] = useState("");
   const [subjectType, setSubjectType] = useState("");
   const [tniClassification, setTniClassification] = useState("");
+  const [innovationTier, setInnovationTier] = useState("");
   const [sortBy, setSortBy] = useState("tni_desc");
   const [page, setPage] = useState(1);
 
@@ -217,6 +226,7 @@ export default function EnterprisesDirectoryPage() {
       sectorCode?: string;
       subjectType?: string;
       tniClassification?: string;
+      innovationTier?: string;
     }
   ) => {
     setLoading(true);
@@ -227,6 +237,7 @@ export default function EnterprisesDirectoryPage() {
     const activeSectorCode = filterOverrides?.sectorCode !== undefined ? filterOverrides.sectorCode : sectorCode;
     const activeSubjectType = filterOverrides?.subjectType !== undefined ? filterOverrides.subjectType : subjectType;
     const activeTni = filterOverrides?.tniClassification !== undefined ? filterOverrides.tniClassification : tniClassification;
+    const activeInnovationTier = filterOverrides?.innovationTier !== undefined ? filterOverrides.innovationTier : innovationTier;
     const activeSort = sortOverride !== undefined ? sortOverride : sortBy;
 
     try {
@@ -236,6 +247,7 @@ export default function EnterprisesDirectoryPage() {
         sectorCode: activeSectorCode || undefined,
         subjectType: activeSubjectType || undefined,
         tniClassification: activeTni || undefined,
+        innovationTier: activeInnovationTier || undefined,
         sortBy: activeSort,
         page: pageTarget,
         pageSize: 9,
@@ -251,7 +263,7 @@ export default function EnterprisesDirectoryPage() {
 
   useEffect(() => {
     loadData(1);
-  }, [province, sectorCode, subjectType, tniClassification]);
+  }, [province, sectorCode, subjectType, tniClassification, innovationTier]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,13 +276,15 @@ export default function EnterprisesDirectoryPage() {
     setSectorCode("");
     setSubjectType("");
     setTniClassification("");
+    setInnovationTier("");
     setSortBy("tni_desc");
     loadData(1, "tni_desc", {
       q: "",
       province: "",
       sectorCode: "",
       subjectType: "",
-      tniClassification: ""
+      tniClassification: "",
+      innovationTier: ""
     });
   };
 
@@ -296,7 +310,7 @@ export default function EnterprisesDirectoryPage() {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const hasActiveFilters = Boolean(q || province || sectorCode || subjectType || tniClassification);
+  const hasActiveFilters = Boolean(q || province || sectorCode || subjectType || tniClassification || innovationTier);
 
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 pb-20">
@@ -430,6 +444,22 @@ export default function EnterprisesDirectoryPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Lọc Mức Độ ĐMST 8 Nhóm */}
+              <div>
+                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                  Mức Độ ĐMST (Thang 100đ)
+                </label>
+                <select
+                  value={innovationTier}
+                  onChange={(e) => setInnovationTier(e.target.value)}
+                  className="form-control w-full"
+                >
+                  {INNOVATION_TIERS.map((tier) => (
+                    <option key={tier.code} value={tier.code}>{tier.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Quick Box Dashboard Link */}
@@ -473,6 +503,7 @@ export default function EnterprisesDirectoryPage() {
                     className="form-control text-xs py-1 px-2.5 h-8 font-medium bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-brand-500"
                   >
                     <option value="tni_desc">Chỉ số TNI cao nhất</option>
+                    <option value="innovation_desc">Điểm ĐMST cao nhất</option>
                     <option value="ip_desc">Nhiều sáng chế / SHTT nhất</option>
                     <option value="name_asc">Tên doanh nghiệp (A → Z)</option>
                     <option value="name_desc">Tên doanh nghiệp (Z → A)</option>
@@ -564,6 +595,21 @@ export default function EnterprisesDirectoryPage() {
                               <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                                 <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                 Đã xác thực
+                              </span>
+                            )}
+                            {(ent.innovationTier === "LEADING" || (ent.innovationScore && ent.innovationScore >= 75)) && (
+                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                                ⭐️ Vàng ĐMST
+                              </span>
+                            )}
+                            {(ent.innovationTier === "DEVELOPING" || (ent.innovationScore && ent.innovationScore >= 50 && ent.innovationScore < 75)) && (
+                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+                                🥈 Bạc ĐMST
+                              </span>
+                            )}
+                            {(ent.innovationTier === "POTENTIAL" || (ent.innovationScore && ent.innovationScore < 50 && ent.innovationScore > 0)) && (
+                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-800">
+                                🥉 Đồng ĐMST
                               </span>
                             )}
                             {ent.ownershipType && (
@@ -660,6 +706,31 @@ export default function EnterprisesDirectoryPage() {
                           </div>
                         )}
                       </div>
+
+                      {/* Huy Hiệu & Điểm Năng Lực ĐMST (8 Nhóm Tiêu Chí) */}
+                      {ent.innovationScore !== undefined && ent.innovationScore !== null && ent.innovationScore > 0 && (
+                        <div className="mb-3 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-50/80 via-orange-50/50 to-amber-50/80 dark:from-slate-800/80 dark:to-slate-800/80 border border-amber-200/80 dark:border-slate-700 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            {ent.innovationTier === "LEADING" || ent.innovationScore >= 75 ? (
+                              <span className="text-xs font-extrabold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                                ⭐️ ĐMST Dẫn Đầu
+                              </span>
+                            ) : ent.innovationTier === "DEVELOPING" || ent.innovationScore >= 50 ? (
+                              <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                🥈 ĐMST Đang Phát Triển
+                              </span>
+                            ) : (
+                              <span className="text-xs font-extrabold text-orange-700 dark:text-orange-300 flex items-center gap-1">
+                                🥉 ĐMST Tiềm Năng
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-baseline gap-0.5 font-black text-slate-900 dark:text-white text-xs">
+                            <span className="text-sm font-black text-brand-700 dark:text-brand-400">{ent.innovationScore.toFixed(1)}</span>
+                            <span className="text-xs text-slate-400 font-semibold">/100đ</span>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Top Nhu Cầu Hỗ Trợ Nổi Bật Tag Pills */}
                       {ent.supportNeeds && ent.supportNeeds.length > 0 && (

@@ -22,6 +22,52 @@ export interface EnterpriseDirectoryItem {
   inValueChain?: boolean;
   topBottlenecks?: string[];
   supportNeeds?: string[];
+  innovationScore?: number;
+  innovationTier?: string;
+  innovationBadge?: string;
+}
+
+export interface InnovationCriteriaDetail {
+  criteriaCode: string;
+  criteriaName: string;
+  maxScore: number;
+  score: number;
+  sourceQuestion?: string;
+  reviewerComment?: string;
+}
+
+export interface InnovationGroupScore {
+  groupCode: string;
+  groupName: string;
+  maxScore: number;
+  score: number;
+  percentage: number;
+  criteriaList?: InnovationCriteriaDetail[];
+}
+
+export interface RadarAxis {
+  axis: string;
+  value: number;
+  maxValue: number;
+  fullMark?: number;
+}
+
+export interface InnovationEvaluation {
+  id: string;
+  enterpriseId: string;
+  taxCode: string;
+  evaluationYear: number;
+  criteriaVersion: string;
+  totalScore: number;
+  classification: 'LEADING' | 'DEVELOPING' | 'POTENTIAL' | 'UNRATED';
+  classificationLabel: string;
+  badgeName: string;
+  status: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  groupScores: InnovationGroupScore[];
+  radarChartData: RadarAxis[];
+  criteriaDetails?: InnovationCriteriaDetail[];
 }
 
 export interface EnterpriseDirectoryResponse {
@@ -121,6 +167,7 @@ export async function fetchEnterprises(params: {
   sectorCode?: string;
   subjectType?: string;
   tniClassification?: string;
+  innovationTier?: string;
   sortBy?: string;
   sort?: string;
   page?: number;
@@ -132,6 +179,7 @@ export async function fetchEnterprises(params: {
   if (params.sectorCode) query.set("sectorCode", params.sectorCode);
   if (params.subjectType) query.set("subjectType", params.subjectType);
   if (params.tniClassification) query.set("tniClassification", params.tniClassification);
+  if (params.innovationTier) query.set("innovationTier", params.innovationTier);
   const sortVal = params.sortBy || params.sort;
   if (sortVal) query.set("sortBy", sortVal);
   query.set("page", String(params.page || 1));
@@ -273,3 +321,20 @@ export async function lookupTaxCode(taxCode: string): Promise<{
   const body = await res.json();
   return body.data || body;
 }
+
+export async function fetchInnovationRating(taxCode: string): Promise<InnovationEvaluation> {
+  const session = getStoredSession();
+  const headers: HeadersInit = {};
+  if (session?.accessToken) {
+    headers["Authorization"] = `Bearer ${session.accessToken}`;
+  }
+
+  const res = await fetch(`${API_BASE}/api/v1/enterprises/${encodeURIComponent(taxCode)}/innovation-rating`, { headers });
+  if (!res.ok) {
+    throw new Error(await readApiError(res, "Không thể tải kết quả đánh giá năng lực ĐMST."));
+  }
+  const body = await res.json();
+  return body.data || body;
+}
+
+export const getInnovationRating = fetchInnovationRating;

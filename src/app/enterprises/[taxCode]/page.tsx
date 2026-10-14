@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   fetchEnterpriseDetail,
-  EnterprisePublicDetail,
+  getInnovationRating,
+  type EnterprisePublicDetail,
+  type InnovationEvaluation,
 } from "../../../lib/enterprise-client";
 import { fetchPublicOffers } from "@/services/api/technology-offer";
 import { TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyImage } from "@/lib/technology-media";
+import RadarChart from "@/components/RadarChart";
 
 export default function EnterpriseDetailPage() {
   const params = useParams();
@@ -22,7 +25,9 @@ export default function EnterpriseDetailPage() {
   const [data, setData] = useState<EnterprisePublicDetail | null>(null);
   const [enterpriseOffers, setEnterpriseOffers] = useState<TechnologyOffer[]>([]);
   const [offersLoading, setOffersLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "products" | "rd" | "ip" | "needs">("overview");
+  const [innovationRating, setInnovationRating] = useState<InnovationEvaluation | null>(null);
+  const [innovationLoading, setInnovationLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "innovation" | "products" | "rd" | "ip" | "needs">("overview");
 
   // Connect Modal state
   const [connectModalOpen, setConnectModalOpen] = useState(false);
@@ -43,6 +48,19 @@ export default function EnterpriseDetailPage() {
       })
       .finally(() => {
         setLoading(false);
+      });
+
+    // Tải thông tin đánh giá Năng lực ĐMST & Radar Chart
+    setInnovationLoading(true);
+    getInnovationRating(taxCode)
+      .then((res) => {
+        setInnovationRating(res);
+      })
+      .catch(() => {
+        setInnovationRating(null);
+      })
+      .finally(() => {
+        setInnovationLoading(false);
       });
 
     // Tải danh sách sản phẩm/công nghệ do doanh nghiệp này chào bán
@@ -192,6 +210,16 @@ export default function EnterpriseDetailPage() {
               🏢 Tổng Quan Doanh Nghiệp
             </button>
             <button
+              onClick={() => setActiveTab("innovation")}
+              className={`flex-1 min-w-[170px] py-4 text-center border-b-2 transition ${
+                activeTab === "innovation"
+                  ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              ⭐ Năng Lực ĐMST
+            </button>
+            <button
               onClick={() => setActiveTab("products")}
               className={`flex-1 min-w-[180px] py-4 text-center border-b-2 transition ${
                 activeTab === "products"
@@ -234,6 +262,214 @@ export default function EnterpriseDetailPage() {
           </div>
 
           <div className="p-6 md:p-8">
+            {/* TAB: INNOVATION (ĐÁNH GIÁ NĂNG LỰC ĐMST & RADAR CHART 8 TRỤC) */}
+            {activeTab === "innovation" && (
+              <div className="space-y-8">
+                {/* Header Summary Banner */}
+                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-800 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-xs font-semibold text-brand-200 border border-white/10">
+                        <span>Bộ Tiêu Chí ĐMST Quốc Gia v1.0</span>
+                        <span>•</span>
+                        <span>Kỳ 2024</span>
+                      </div>
+                      <h3 className="text-xl md:text-2xl font-extrabold text-white">
+                        Hồ Sơ Năng Lực Đổi Mới Sáng Tạo
+                      </h3>
+                      <p className="text-xs md:text-sm text-slate-300 max-w-xl leading-relaxed">
+                        Đánh giá toàn diện trên 8 nhóm năng lực (37 tiêu chí chuẩn hóa, thang 100 điểm) theo Quyết định PO-DEC-20261014-03 của Cục ĐMST và Sở KH&CN.
+                      </p>
+                    </div>
+
+                    {/* Total Score & Tier Badge Card */}
+                    <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shrink-0">
+                      <div className="text-center">
+                        <div className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Tổng Điểm</div>
+                        <div className="text-3xl md:text-4xl font-black text-amber-400">
+                          {innovationRating ? innovationRating.totalScore.toFixed(1) : "--"}
+                          <span className="text-sm font-semibold text-slate-400">/100</span>
+                        </div>
+                      </div>
+
+                      <div className="w-px h-12 bg-white/20"></div>
+
+                      <div>
+                        <div className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Phân Tầng</div>
+                        {innovationRating?.classification === "LEADING" ? (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs mt-1 shadow-sm">
+                            ⭐️ {innovationRating.badgeName || "Huy hiệu Vàng ĐMST"}
+                          </div>
+                        ) : innovationRating?.classification === "DEVELOPING" ? (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-200 text-slate-900 font-extrabold text-xs mt-1 shadow-sm">
+                            🥈 {innovationRating.badgeName || "Huy hiệu Bạc ĐMST"}
+                          </div>
+                        ) : innovationRating?.classification === "POTENTIAL" ? (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-700 text-white font-extrabold text-xs mt-1 shadow-sm">
+                            🥉 {innovationRating.badgeName || "Huy hiệu Đồng ĐMST"}
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-700 text-slate-300 font-extrabold text-xs mt-1">
+                            ⚪ Chưa Đánh Giá
+                          </div>
+                        )}
+                        <div className="text-xs text-slate-300 mt-0.5">
+                          {innovationRating?.reviewedBy ? `Thẩm định: ${innovationRating.reviewedBy}` : "Tính toán tự động"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {innovationLoading ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-pulse py-8">
+                    <div className="h-96 bg-slate-100 rounded-2xl"></div>
+                    <div className="h-96 bg-slate-100 rounded-2xl"></div>
+                  </div>
+                ) : !innovationRating || innovationRating.radarChartData.length === 0 ? (
+                  <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 space-y-3">
+                    <div className="text-4xl text-slate-400">📊</div>
+                    <h4 className="text-base font-bold text-slate-800">
+                      Chưa có dữ liệu đánh giá ĐMST cho doanh nghiệp này
+                    </h4>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      Doanh nghiệp có thể hoàn thiện bảng câu hỏi khảo sát tại Bàn làm việc để hệ thống tự động lượng hóa 8 nhóm năng lực.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Left: Radar Chart Component (5 cols) */}
+                    <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between space-y-6">
+                      <div>
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                          <div>
+                            <h4 className="font-extrabold text-slate-900 text-base">
+                              Biểu Đồ Radar Năng Lực 360°
+                            </h4>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              Trực quan hóa mức độ đáp ứng trên 8 đỉnh năng lực cốt lõi
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 border border-brand-200">
+                            8 Trục
+                          </span>
+                        </div>
+
+                        <RadarChart data={innovationRating.radarChartData} />
+                      </div>
+
+                      {/* Thresholds Legend */}
+                      <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 text-xs space-y-2">
+                        <div className="font-bold text-slate-700 uppercase tracking-wider text-xs">
+                          Thang Chuẩn Phân Tầng Năng Lực:
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                          <div className="p-1.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200 font-semibold">
+                            ⭐️ Dẫn đầu: ≥ 75đ
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-300 font-semibold">
+                            🥈 Đang phát triển: 50–74đ
+                          </div>
+                          <div className="p-1.5 rounded-lg bg-orange-50 text-orange-900 border border-orange-200 font-semibold">
+                            🥉 Tiềm năng: &lt; 50đ
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: 8 Capability Groups Matrix Breakdown (7 cols) */}
+                    <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
+                      <div className="border-b border-slate-100 pb-3">
+                        <h4 className="font-extrabold text-slate-900 text-base">
+                          Ma Trận Điểm 8 Nhóm Tiêu Chí Thành Phần
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Chi tiết tỷ lệ hoàn thành trên từng nhóm năng lực (Tổng điểm chuẩn 100đ)
+                        </p>
+                      </div>
+
+                      <div className="space-y-4">
+                        {innovationRating.groupScores.map((g) => {
+                          const pct = g.percentage || (g.maxScore > 0 ? Math.round((g.score / g.maxScore) * 100) : 0);
+                          const barColor =
+                            pct >= 75
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-600"
+                              : pct >= 50
+                              ? "bg-gradient-to-r from-brand-500 to-teal-600"
+                              : "bg-gradient-to-r from-amber-500 to-orange-500";
+
+                          return (
+                            <div
+                              key={g.groupCode}
+                              className="p-3.5 rounded-xl border border-slate-100 hover:border-slate-300 bg-slate-50/50 hover:bg-white transition space-y-2 group"
+                            >
+                              <div className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono font-black text-xs px-2 py-0.5 rounded bg-brand-100 text-brand-800">
+                                    {g.groupCode}
+                                  </span>
+                                  <span className="font-bold text-slate-800 text-sm">
+                                    {g.groupName}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-black text-slate-900 text-sm">
+                                    {g.score.toFixed(1)}
+                                    <span className="text-xs text-slate-400 font-normal"> / {g.maxScore}đ</span>
+                                  </span>
+                                  <span
+                                    className={`text-xs font-extrabold px-2 py-0.5 rounded-md ${
+                                      pct >= 75
+                                        ? "bg-emerald-100 text-emerald-800"
+                                        : pct >= 50
+                                        ? "bg-teal-100 text-teal-800"
+                                        : "bg-amber-100 text-amber-800"
+                                    }`}
+                                  >
+                                    {pct}%
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="h-2 w-full bg-slate-200/80 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                                  style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
+                                ></div>
+                              </div>
+
+                              {/* Optional criteria list (for owner/admin) */}
+                              {g.criteriaList && g.criteriaList.length > 0 && (
+                                <div className="pt-2 mt-2 border-t border-slate-100 space-y-1">
+                                  {g.criteriaList.map((c) => (
+                                    <div key={c.criteriaCode} className="flex justify-between text-xs text-slate-600">
+                                      <span>{c.criteriaCode} - {c.criteriaName}</span>
+                                      <span className="font-semibold text-slate-800">{c.score.toFixed(1)} / {c.maxScore}đ</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* PDPD Privacy Notice */}
+                      <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl text-xs text-amber-800 leading-relaxed flex items-start gap-2">
+                        <span className="text-base shrink-0">🛡️</span>
+                        <span>
+                          <strong>Bảo vệ dữ liệu (PDPD):</strong> Theo Nghị định 13/2023/NĐ-CP, chi tiết doanh thu từ sản phẩm mới (C33) và kinh phí R&D nội bộ (C15) được bảo mật đối với người xem công chúng. Chỉ chủ sở hữu và cán bộ Sở KH&CN phụ trách địa bàn mới có quyền khai thác số liệu chi tiết.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* TAB: PRODUCTS (SẢN PHẨM & CÔNG NGHỆ CHÀO BÁN CỦA DOANH NGHIỆP) */}
             {activeTab === "products" && (
               <div className="space-y-6">
