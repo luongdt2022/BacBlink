@@ -602,3 +602,261 @@ Migration `20260929140000_MakeExpertIdentityCardOptional` chỉ `ALTER ... DROP 
 - Backend Invariants: Viết Unit tests cho `UpdateProfileDetails` và tính toán `Completeness` (đạt 100% các ngưỡng điểm).
 - Frontend Vitest: Viết Component tests cho trang `edit/page.tsx` kiểm chứng render 5 UX states, tương tác form, và lưu thành công.
 
+---
+
+## 16. Plan Delta v16: Không Gian Quản Trị Tài Khoản Chuyên Gia (Account Workspace) [CR-2026-013]
+
+### 16.1. Kiến Trúc Tổng Thể & Bố Cục Thành Phần Frontend (Frontend Component Tree & Clean Architecture)
+
+1. **Điều Hướng Workspace Chuyên Gia (`src/app/portal/layout.tsx`)**:
+   - Tái cấu trúc mảng `expertNavItems` từ 5 items thành 6 items.
+   - Bổ sung Item 1 (Đầu tiên):
+     ```typescript
+     { href: "/portal/expert/account", label: "Tài khoản Chuyên gia", icon: ShieldCheck }
+     ```
+   - Thứ tự 6 navigation items chuẩn hóa:
+     1. `Tài khoản Chuyên gia` (`/portal/expert/account`, `ShieldCheck`) — Bàn làm việc quản trị danh tính & pháp lý.
+     2. `Tổng quan Chuyên gia` (`/portal`, `LayoutDashboard`) — Bảng điều khiển hiệu suất & chỉ số.
+     3. `Hồ sơ LLKH của tôi` (`/portal/expert/profile`, `GraduationCap`) — Xem chi tiết hồ sơ khoa học.
+     4. `Lời mời Tư vấn Doanh nghiệp` (`/portal/opportunities/pipeline?type=consulting`, `ClipboardList`) — Hộp thư tư vấn.
+     5. `Radar Cơ hội Phù hợp (AI)` (`/portal/matching/radar`, `Sparkles`) — Ghép nối nhu cầu công nghệ.
+     6. `Dự án Đồng hành & Hợp tác` (`/portal/opportunities/pipeline`, `Kanban`) — Tiến trình dự án & Deal Room.
+
+2. **Cấu Trúc Trang Quản Trị Tài Khoản (`src/app/portal/expert/account/page.tsx`)**:
+   - Được bảo vệ nghiêm ngặt bằng `<RoleGuard allowedRoles={["VERIFIED_EXPERT"]} portalName="Tài khoản Chuyên gia">`.
+   - Thiết kế bám sát 100% `wireframe_expert_account.html`, chia thành 5 khối chức năng độc lập:
+     - **Header & Hero Banner**: Hiển thị Huy hiệu "ĐÃ XÁC THỰC CẤP SỞ", Mã chuyên gia `EXP-2026-xxxx`, họ tên khoa học.
+     - **Khối 1: Định Danh Khoa Học & Phê Duyệt Cấp Sở**:
+       + Thẻ thông tin Họ tên, Chức danh chuyên môn;
+       + Cơ quan / Đơn vị công tác (Viện/Trường trực thuộc);
+       + Đơn vị thẩm định & Ký duyệt (Sở KH&CN Tỉnh/Thành phố), Số Quyết định công nhận, Ngày duyệt;
+       + Huy hiệu cam kết bảo vệ dữ liệu PDPD (Nghị định 13/2023/NĐ-CP), bảo mật CCCD toàn trình.
+     - **Khối 2: Thiết Lập Sẵn Sàng Tiếp Nhận Tư Vấn Doanh Nghiệp**:
+       + Toggle switch Bật/Tắt tiếp nhận tư vấn (liên kết trường `isAcceptingConsultation`);
+       + Danh sách Lĩnh vực TT17 tiếp nhận chính (nạp từ `expertiseSectors` hiện có);
+       + 3 Hình thức hợp tác mong muốn (R&D dài hạn, Thẩm định Deal Room 1-1, Hội đồng TT17).
+     - **Khối 3: Thước Đo Hoàn Thiện Hồ Sơ (Completeness Engine 5 Trụ Cột)**:
+       + Progress bar tỷ lệ hoàn thiện hồ sơ trên thang 100 điểm (`score/100`);
+       + Chi tiết 5 trụ cột: Định danh (20đ), Văn bằng (20đ), SHTT & Sáng chế (20đ), Đề tài chủ trì (20đ), Kinh nghiệm tư vấn (20đ);
+       + CTA liên kết nhanh dẫn sang `/portal/expert/profile/edit` ("Chỉnh sửa chi tiết LLKH ->").
+     - **Khối 4: Bảo Mật, Phiên Đăng Nhập & Liên Kết Zalo Mini App**:
+       + Thông tin Email đăng nhập (readonly), Số điện thoại bảo vệ PDPD (masked `0912****89`);
+       + Nút chức năng Đổi mật khẩu tài khoản;
+       + Mã QR định danh Zalo Mini App chuyên gia đồng bộ tài khoản;
+       + Bảng quản lý Active Sessions (Thiết bị, IP, Vị trí, Thời gian hoạt động, nút "Hủy phiên", nút "Đăng xuất tất cả thiết bị khác").
+     - **Khối 5: Tùy Chọn Trải Nghiệm & Cấu Hình Thông Báo**:
+       + Tùy chọn Giao diện (Sáng/Tối);
+       + Tùy chọn Cỡ chữ (100% / 110% / 125%);
+       + Cấu hình nhận thông báo Email & ZNS (Lời mời tư vấn mới, Tin nhắn Deal Room);
+       + Cảnh báo SLA Deal Room trước 12h;
+       + Nút [Lưu Thay Đổi Cài Đặt] lưu trữ preferences.
+
+### 16.2. Luồng Dữ Liệu, Hợp Đồng DTO & Tích Hợp 5 UX States qua `<Async>`
+
+1. **Nguồn Dữ Liệu & Hợp Đồng DTO (Reusing Existing Clean Architecture)**:
+   - Dữ liệu định danh cơ bản: `authClient.getUser()` cung cấp `id`, `email`, `fullName`, `role`.
+   - Dữ liệu hồ sơ chuyên sâu: gọi `getMyExpertDetail()` từ `src/lib/expert-detail.ts` (gọi endpoint `GET /api/v1/experts/me/detail`).
+   - Dữ liệu Completeness Engine: gọi `getMyExpertCompleteness()` (gọi endpoint `GET /api/v1/experts/me/completeness`).
+   - Cập nhật trạng thái nhận tư vấn: tái sử dụng `updateMyExpertProfile()` (endpoint `PUT /api/v1/experts/my-profile`) với trường `isAcceptingConsultation: boolean`.
+   - **Zero-DB-Migration Assurance**: Không yêu cầu tạo bảng hoặc thêm cột DB mới. Toàn bộ các thuộc tính (`is_accepting_consultation`, `expertise_sectors`, `completeness`, `status`) đã tồn tại đầy đủ trong Entity `ExpertProfile` và PostgreSQL schema. Preferences người dùng (theme, cỡ chữ, thông báo) được quản lý ở client state hoặc ánh xạ vào cột `preferences (jsonb)` có sẵn.
+
+2. **Quản Lý 5 Trạng Thái UX (`UXState`)**:
+   - `loading`: Hiển thị Skeleton loading các khối thẻ card thông tin khi đang nạp profile và completeness.
+   - `empty`: Hiển thị banner hướng dẫn khởi tạo hồ sơ nếu tài khoản chưa có bản ghi chuyên gia.
+   - `error`: Hiển thị thông báo lỗi thân thiện kèm nút "Thử lại" (Retry action) khi API thất bại hoặc mất kết nối mạng.
+   - `success`: Hiển thị toàn vẹn 5 khối giao diện trực quan theo chuẩn wireframe.
+   - `updating`: Trạng thái spinner/overlay mượt mà khi đang thực thi thao tác lưu thiết lập hoặc chuyển đổi công tắc tiếp nhận tư vấn.
+
+### 16.3. Kế Hoạch Kiểm Thử & Bảo Vệ Hồi Quy (Test Strategy & Invariants)
+
+1. **Frontend Layout Tests (`src/app/portal/layout.test.tsx`)**:
+   - Bổ sung assertion kiểm tra vai trò `VERIFIED_EXPERT` render Item 1 là `Tài khoản Chuyên gia` với href `/portal/expert/account`.
+   - Đảm bảo đủ 6 navigation items cho chuyên gia, không chứa các mục của Seller/Buyer/Admin.
+2. **Component Tests (`src/app/portal/expert/account/page.test.tsx`)**:
+   - Test kiểm tra `RoleGuard` chặn người dùng không mang vai trò `VERIFIED_EXPERT`.
+   - Test kiểm tra render đầy đủ 5 khối chức năng khi API trả dữ liệu thành công.
+   - Test kiểm tra tương tác gạt toggle Sẵn sàng nhận tư vấn gọi đúng API cập nhật.
+   - Test kiểm tra xử lý lỗi khi API thất bại (Error state + Retry).
+3. **Regression Tests**:
+   - Chạy `npm test` để xác nhận 100% test cases của Frontend vượt qua.
+   - Kiểm tra `pnpm build` hoặc `npm run build` không phát sinh lỗi biên dịch TypeScript.
+
+---
+
+## 17. Plan Delta v17 (PO-DEC-20261014-02): Kiến Trúc Bàn Làm Việc Chuyên Gia, Hộp Thư Tư Vấn & Kanban TRL 1-9
+
+### 17.1. Kiến Trúc Điều Hướng & Triệt Tiêu Xung Đột Active Menu (Navigation Architecture)
+
+1. **Tệp Sửa Đổi**: `SourceCode/frontend/src/app/portal/layout.tsx`
+2. **Cấu Hình Mảng Navigation Chuyên Gia (`expertNavItems`)**:
+   Chuẩn hóa cố định 6 mục chức năng tách biệt hoàn toàn với sàn B2B:
+   ```typescript
+   export const expertNavItems: (NavItem & { key: string })[] = [
+     { key: "account", href: "/portal/expert/account", label: "Tài khoản Chuyên gia", icon: ShieldCheck },
+     { key: "profile", href: "/portal/expert/profile", label: "Tổng quan Chuyên gia", icon: LayoutDashboard },
+     { key: "profile-edit", href: "/portal/expert/profile/edit", label: "Hồ sơ LLKH của tôi", icon: GraduationCap },
+     { key: "consultations", href: "/portal/expert/consultations", label: "Hộp Thư Tư Vấn & Kết Nối", icon: Inbox },
+     { key: "radar", href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles },
+     { key: "projects", href: "/portal/expert/projects", label: "Dự án Đồng hành & Hợp tác", icon: Kanban },
+   ];
+   ```
+
+3. **Thuật Toán Phân Giải Active Menu (`resolveExpertActiveMenu`)**:
+   Trích xuất hàm độc lập có khả năng Unit Test cao:
+   ```typescript
+   export function resolveExpertActiveMenu(pathname: string): string {
+     if (pathname === "/portal/expert/account") return "account";
+     if (pathname === "/portal/expert" || pathname === "/portal/expert/profile" || pathname === "/portal") return "profile";
+     if (pathname.startsWith("/portal/expert/profile/edit")) return "profile-edit";
+     if (pathname.startsWith("/portal/expert/consultations")) return "consultations"; // Tuyệt đối độc lập
+     if (pathname.startsWith("/portal/expert/radar") || pathname.startsWith("/portal/matching/radar")) return "radar";
+     if (pathname.startsWith("/portal/expert/projects")) return "projects";           // Tuyệt đối độc lập
+     return "profile";
+   }
+   ```
+   - Cơ chế Active Matching: Khi `isExpert === true`, `isActive = (item.key === resolveExpertActiveMenu(pathname))`.
+   - Kết quả: Khi vào `/portal/expert/consultations`, chỉ item `consultations` active (`key: consultations`). Item `projects` tuyệt đối không bị sáng đèn nhầm.
+
+---
+
+### 17.2. Module Hộp Thư Tư Vấn & Kết Nối (`/portal/expert/consultations`)
+
+1. **Tệp Tạo Mới**: `SourceCode/frontend/src/app/portal/expert/consultations/page.tsx`
+2. **Hợp Đồng Dữ Liệu (DTOs) & Contracts**:
+   ```typescript
+   export type ConsultationSource = "DEPT_ASSIGNED" | "DIRECT_B2B";
+   export type ConsultationStatus = "PENDING" | "SCHEDULED" | "COMPLETED" | "REJECTED" | "SLA_EXPIRED";
+
+   export interface ConsultationTicketDto {
+     id: string;                               // Mã đơn: REQ-CON-2026-xxx
+     source: ConsultationSource;               // Nguồn Sở chỉ định vs DN trực tiếp
+     assignedByDepartment?: string;            // Ví dụ: "Sở KH&CN Hà Nội"
+     enterpriseName: string;                   // Tên công ty yêu cầu tư vấn
+     enterpriseTniScore?: number;              // Điểm TNI ĐMST (ví dụ 86.4)
+     enterpriseRank?: string;                  // Xếp hạng: "Hạng A: Năng lực hấp thụ cao"
+     title: string;                            // Tiêu đề yêu cầu tư vấn
+     description: string;                      // Mô tả bài toán kỹ thuật
+     advisoryFeeVnd?: number;                  // Mức thù lao (ví dụ 15.000.000 VNĐ)
+     feePayer?: string;                        // "Quỹ ĐMST Hà Nội chi trả" hoặc "DN chi trả"
+     location: string;                         // Địa điểm khảo sát hoặc "Trực tuyến"
+     duration: string;                         // "02 buổi làm việc"
+     createdAt: string;                        // ISO DateTime
+     expiresAt: string;                        // Thời điểm hết hạn SLA 48h
+     remainingHours: number;                   // Số giờ còn lại để phản hồi
+     status: ConsultationStatus;
+     meetingUrl?: string;                      // Link Zoom/Meet
+     meetingType?: "ONLINE_ZOOM" | "ONLINE_MEET" | "ON_SITE";
+     scheduledTime?: string;                   // Thời gian chốt họp
+     minutesOfAdvisoryUrl?: string;            // Link tải biên bản MoA
+     reviewScore?: number;                     // Đánh giá 5 sao
+     disbursementStatus?: "PAID" | "AUDITING" | "PENDING"; // Trạng thái quyết toán thù lao
+     preReadAttachments?: Array<{ name: string; url: string; size: string }>;
+   }
+
+   export interface AcceptConsultationPayload {
+     scheduledTime: string;
+     meetingType: "ONLINE_ZOOM" | "ONLINE_MEET" | "ON_SITE";
+     meetingUrl: string;
+     expertNote?: string;
+   }
+
+   export interface RejectConsultationPayload {
+     rejectionReasonCategory: "CONFLICT_SCHEDULE" | "OUT_OF_SPECIALTY" | "CONFLICT_OF_INTEREST" | "OTHER";
+     rejectionNote: string;
+   }
+   ```
+
+3. **Cấu Trúc Giao Diện 3 Tab Nghiệp Vụ**:
+   - Header: Breadcrumb quay lại Dashboard, Họ tên GS.TS kèm Huy hiệu `EXPERT INBOX`, Tab selector 3 nút (`Lời Mời Chờ Xử Lý (03)`, `Lịch Hẹn Sắp Tới (02)`, `Đã Hoàn Thành (14)`).
+   - **Tab 1: Lời Mời Chờ Xử Lý**:
+     + Đồng hồ đếm ngược SLA 48h: nếu `remainingHours <= 24`, hiển thị huy hiệu đỏ cảnh báo `text-red-600 bg-red-50 border-red-200`.
+     + Phân định nguồn: Khiên bảo hộ xanh lam (Cấp Sở) vs Huy hiệu xanh ngọc (DN đặt lịch).
+     + Nút hành động: [Đồng Ý Tư Vấn & Chọn Lịch Hẹn] mở Modal chọn ngày/giờ/link Zoom; [Từ Chối & Nêu Lý Do] mở Modal nhập lý do bắt buộc.
+   - **Tab 2: Lịch Hẹn Sắp Tới**:
+     + Hiển thị thời gian họp nổi bật: `14:00 - 16:00 · Chiều Mai`.
+     + Nút "Vào Phòng Họp": Tính toán chênh lệch thời gian, kích hoạt trạng thái bấm trước 15 phút, trước đó hiển thị thông báo countdown "Mở trước 15 phút".
+     + Lối tắt tải tài liệu pre-read đính kèm.
+   - **Tab 3: Lịch Sử & Nghiệm Thu**:
+     + Thẻ phiên tư vấn hoàn tất, nút tải Biên bản tư vấn MoA có chữ ký 2 chiều.
+     + Trạng thái giải ngân: `ĐÃ QUYẾT TOÁN THÙ LAO (15.000.000 VNĐ)` (Emerald) hoặc `ĐANG ĐỐI SOÁT HỒ SƠ QUỸ ĐMST` (Amber).
+     + Điểm đánh giá 5 sao từ Doanh nghiệp.
+
+---
+
+### 17.3. Module Kanban Dự Án Đồng Hành TRL 1-9 (`/portal/expert/projects`)
+
+1. **Tệp Tạo Mới**: `SourceCode/frontend/src/app/portal/expert/projects/page.tsx`
+2. **Loại Bỏ Hoàn Toàn Nút "Giám Sát Sở KH&CN"**:
+   - Khắc phục triệt để lỗi thẩm quyền.
+   - Thay thế bằng:
+     + Bộ lọc Lĩnh vực TT17 (`SectorFilter`)
+     + Bộ lọc Thang đo TRL (`TrlFilter`: All, TRL 1-3, TRL 4-6, TRL 7-9)
+     + Ô tìm kiếm dự án đối tác
+     + Nút [Xuất Báo Cáo Tiến Độ Đồng Hành] (`Download` / PDF)
+3. **5 Cột Kanban Tiến Trình Đồng Hành**:
+   ```typescript
+   export const EXPERT_PROJECT_STAGES = [
+     { key: "INTAKE_NDA", label: "Tiếp Nhận & Ký NDA", color: "border-blue-500/30 bg-blue-50/50 text-blue-800" },
+     { key: "DEAL_ROOM", label: "Đàm Phán Deal Room 1-1", color: "border-purple-500/30 bg-purple-50/50 text-purple-800" },
+     { key: "TRL_ASSESSMENT", label: "Thẩm Định & Lộ Trình TRL", color: "border-amber-500/30 bg-amber-50/50 text-amber-800" },
+     { key: "MOU_SIGNED", label: "Ký Kết Thỏa Thuận MOU", color: "border-indigo-500/30 bg-indigo-50/50 text-indigo-800" },
+     { key: "TRANSFER_COMPLETED", label: "Đồng Hành & Nghiệm Thu", color: "border-emerald-500/30 bg-emerald-50/50 text-emerald-800" },
+   ];
+   ```
+4. **Cấu Trúc Thẻ Dự Án TRL (`ExpertProjectCard`)**:
+   - Mã dự án: `PRJ-EXP-YYYY-XXXX` (Mono font, badge bo góc).
+   - Huy hiệu bảo mật: `CHỜ KÝ NDA`, `NDA ĐÃ KÝ`, `DỰ THẢO MOU`, `ĐANG NGHIỆM THU`.
+   - Tiêu đề đề tài R&D / Chuyển giao.
+   - Đối tác DN & Lĩnh vực TT17.
+   - **Thang đo TRL kép**: Hiển thị rõ ràng thanh tiến trình từ `TRL hiện tại` sang `TRL mục tiêu` (ví dụ `[TRL 4: Lab] ====> [TRL 6: Prototype]`).
+   - Giá trị R&D ước tính (VNĐ) & Deadline SLA mốc đánh giá.
+   - Nút hành động: [VÀO DEAL ROOM 1-1].
+5. **Chuẩn Hóa 5 Trạng Thái UX States Cho Từng Cột (Triệt Tiêu Chữ "Trống")**:
+   - `loading`: 3 Thẻ Skeleton Card hiệu ứng pulse nhẹ.
+   - `ideal`: Render danh sách thẻ `ExpertProjectCard`.
+   - `empty`: Hộp nét đứt bo tròn `border-dashed border-slate-200 bg-slate-50/50 p-6 text-center space-y-3`:
+     + Icon: `FolderSearch` hoặc `Sparkles` màu xám lam.
+     + Tiêu đề: *"Giai đoạn này chưa có dự án"*
+     + Mô tả: *"Các dự án chuyển giao mới sẽ tự động xuất hiện tại đây khi Doanh nghiệp hoàn tất phiên tư vấn hoặc gửi đề xuất từ Radar AI."*
+     + Nút CTA: [Khám Phá Radar Cơ Hội AI] (`Link` sang `/portal/matching/radar`).
+   - `error`: Card cảnh báo lỗi `AlertCircle` kèm nút [Thử Lại].
+   - `filtered-empty`: Kính lúp rỗng `SearchX` kèm thông điệp *"Không có dự án khớp bộ lọc TRL/Lĩnh vực"* và nút [Đặt Lại Bộ Lọc].
+
+---
+
+### 17.4. Phân Quyền Scoped RBAC & Tích Hợp RoleGuard
+
+1. **Ma Trận Phân Quyền Giữa `EXPERT` và `VERIFIED_EXPERT`**:
+   - Tuyến `/portal/expert/account`: Bắt buộc `VERIFIED_EXPERT`.
+   - Tuyến `/portal/expert/profile` & `/portal/expert/profile/edit`: Cho phép cả `EXPERT` và `VERIFIED_EXPERT`.
+   - Tuyến `/portal/expert/consultations`: Cho phép `VERIFIED_EXPERT`. Với `EXPERT`, hiển thị Banner thông báo: *"Tài khoản đang chờ Cấp Sở phê duyệt. Bạn sẽ được kích hoạt tính năng tiếp nhận tư vấn ngay khi có Quyết định công nhận."*
+   - Tuyến `/portal/expert/projects`: Cho phép `VERIFIED_EXPERT`. Với `EXPERT`, hiển thị Banner tương tự, ngăn tạo hợp đồng MOU chưa có tư cách pháp lý.
+2. **Cấu Hình RoleGuard Trên Từng Tuyến**:
+   - Bọc trang bằng `<RoleGuard allowedRoles={["VERIFIED_EXPERT", "EXPERT"]} portalName="Workspace Chuyên Gia">`.
+   - Cung cấp component phụ trợ `PendingVerificationBanner` cảnh báo trực quan cho `EXPERT`.
+
+---
+
+### 17.5. Kế Hoạch Kiểm Thử Kỹ Thuật (Test Strategy)
+
+1. **Unit Tests Cho Router Helper (`src/app/portal/layout.test.tsx`)**:
+   - Kiểm tra `resolveExpertActiveMenu` trả về đúng key cho từng đường dẫn:
+     + `/portal/expert/account` -> `account`
+     + `/portal/expert/profile` -> `profile`
+     + `/portal/expert/profile/edit` -> `profile-edit`
+     + `/portal/expert/consultations` -> `consultations`
+     + `/portal/expert/projects` -> `projects`
+     + `/portal/matching/radar` -> `radar`
+   - Đảm bảo khi đang ở `/portal/expert/consultations`, `projects` không bị active.
+2. **Component Tests Cho Hộp Thư Tư Vấn (`src/app/portal/expert/consultations/consultations.test.tsx`)**:
+   - Kiểm thử chuyển đổi giữa 3 tab (`pending`, `scheduled`, `completed`).
+   - Kiểm thử hiển thị cảnh báo đỏ khi SLA $\le 24$h.
+   - Kiểm thử mở modal Chấp thuận / Từ chối và validate form.
+3. **Component Tests Cho Kanban Dự Án (`src/app/portal/expert/projects/projects.test.tsx`)**:
+   - Kiểm thử không tồn tại bất kỳ phần tử nào chứa chữ "Giám sát Sở KH&CN".
+   - Kiểm thử không tồn tại bất kỳ cột nào hiển thị chữ "Trống" thô sơ khi rỗng dữ liệu (thay bằng Empty State đạt chuẩn).
+   - Kiểm thử hiển thị 5 cột TRL và thẻ TRL kép.
+   - Kiểm thử bộ lọc TRL và lọc theo Lĩnh vực.
+
+
+

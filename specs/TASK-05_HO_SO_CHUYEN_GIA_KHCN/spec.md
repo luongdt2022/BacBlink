@@ -473,3 +473,131 @@ Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-
 - **BR-EXP-042 (Pending Review State Guard)**: Hồ sơ mang trạng thái `PENDING_REVIEW` bị khóa sửa đổi để bảo toàn tính toàn vẹn trong thẩm định.
 - **BR-EXP-043 (Sector Active Validation)**: Mã lĩnh vực trong `expertiseSectors` bắt buộc phải là mã đang `active` trong bảng taxonomy của hệ thống.
 
+---
+
+## 15. Spec Delta v16: Bàn Làm Việc Quản Trị Tài Khoản Chuyên Gia (Account Workspace) [CR-2026-013]
+
+**Căn cứ pháp lý & Thiết kế cơ sở**: Quyết định phê duyệt PO-DEC-20261014-01, Mục 7 trong Basic Design [`README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md) và Wireframe độc lập [`wireframe_expert_account.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_account.html).
+
+### User Story 19 — Không Gian Quản Trị Tài Khoản Chuyên Gia May Đo Riêng (Priority: P1)
+**User Persona**: Chuyên gia KH&CN đã được Sở KH&CN địa phương thẩm định và phê duyệt tư cách (`VERIFIED_EXPERT`).  
+**Bối cảnh**: Tuyến `/settings` chỉ dành cho người dùng công chúng (`PUBLIC_USER`). Chuyên gia khi đăng nhập vào hệ thống cần một không gian quản trị tài khoản chuyên biệt (`/portal/expert/account`), đặt ở vị trí ưu tiên số 1 trên menu điều hướng, để quản lý định danh pháp lý khoa học, trạng thái sẵn sàng nhận tư vấn, theo dõi điểm số hoàn thiện hồ sơ và bảo mật phiên truy cập.
+
+**Acceptance Scenarios**:
+1. **Given** người dùng đăng nhập với vai trò `VERIFIED_EXPERT`, **When** mở thanh Sidebar của Workspace Chuyên gia, **Then** mục đầu tiên (Item 1/6) là "Tài khoản Chuyên gia" (`/portal/expert/account`) với huy hiệu nhận diện và icon bảo vệ (`ShieldCheck`), trên cả mục "Tổng quan Chuyên gia".
+2. **Given** chuyên gia truy cập tuyến `/portal/expert/account`, **When** trang tải xong, **Then** hệ thống hiển thị đầy đủ 5 khối chức năng theo chuẩn Wireframe:
+   - *Khối 1: Định danh Khoa học & Quyết định Phê duyệt Cấp Sở*: Hiển thị Mã chuyên gia (`EXP-2026-xxxx`), Họ và tên, Chức danh, Cơ quan công tác, Đơn vị thẩm định (Sở KH&CN Tỉnh/Thành phố), Số Quyết định công nhận, Ngày duyệt, và huy hiệu xác nhận bảo vệ dữ liệu PDPD (Nghị định 13/2023/NĐ-CP).
+   - *Khối 2: Thiết lập Sẵn sàng Tiếp nhận Tư vấn Doanh nghiệp*: Công tắc Toggle (On/Off) cho phép doanh nghiệp gửi yêu cầu tư vấn, danh sách lĩnh vực chuyên môn TT17 đang tiếp nhận, và các hình thức hợp tác mong muốn (R&D dài hạn, Thẩm định Deal Room 1-1, Hội đồng TT17).
+   - *Khối 3: Thước đo Hoàn thiện Hồ sơ (Completeness Engine 5 Trụ Cột)*: Hiển thị thanh tiến trình điểm số (Thang 100đ), phân hạng chất lượng, chi tiết 5 trụ cột (Định danh 20đ, Văn bằng 20đ, SHTT 20đ, Đề tài 20đ, Kinh nghiệm tư vấn 20đ), kèm lối tắt chuyển sang trang chỉnh sửa `/portal/expert/profile/edit`.
+   - *Khối 4: Bảo mật, Phiên Đăng nhập & Định danh Zalo Mini App*: Email đăng nhập, Số điện thoại xác thực đã che mặt nạ (masked PDPD), nút Đổi mật khẩu, Mã QR định danh đồng bộ Zalo Mini App, và danh sách Phiên đăng nhập hiện hoạt (Active Sessions) kèm nút Đăng xuất thiết bị khác.
+   - *Khối 5: Tùy chọn Trải nghiệm & Cấu hình Thông báo*: Lựa chọn Giao diện (Sáng/Tối), Cỡ chữ (100%, 110%, 125%), Cấu hình nhận thông báo (Email/ZNS khi có lời mời tư vấn, tin nhắn Deal Room), Cảnh báo SLA Deal Room trước 12h, và nút [Lưu Thay Đổi Cài Đặt].
+3. **Given** chuyên gia thay đổi trạng thái "Cho phép Doanh nghiệp gửi yêu cầu tư vấn" (On -> Off hoặc Off -> On), **When** bấm lưu hoặc gạt toggle, **Then** hệ thống gọi API cập nhật `isAcceptingConsultation` lên máy chủ, lưu trữ thành công và hiển thị thông báo phản hồi tức thì.
+4. **Given** người dùng không có vai trò `VERIFIED_EXPERT` (ví dụ `PUBLIC_USER` hoặc chưa đăng nhập), **When** cố gắng truy cập `/portal/expert/account`, **Then** hệ thống chặn bằng `RoleGuard` và điều hướng về trang phù hợp hoặc hiển thị thông báo từ chối quyền truy cập.
+
+### Yêu Cầu Nghiệp Vụ Bổ Sung (Spec Delta Requirements)
+- **REQ-EXP-ACC-001 (Không gian quản trị tài khoản chuyên gia độc lập)**: Hệ thống cung cấp route `/portal/expert/account` may đo riêng cho vai trò `VERIFIED_EXPERT`, hiển thị ở vị trí Item 1/6 trên Sidebar của Workspace Chuyên gia.
+- **REQ-EXP-ACC-002 (Thiết lập trạng thái tiếp nhận tư vấn On/Off)**: Cho phép chuyên gia chủ động bật/tắt công tắc sẵn sàng tiếp nhận yêu cầu tư vấn từ doanh nghiệp (`isAcceptingConsultation`), cập nhật trực tiếp vào hồ sơ chuyên gia trên máy chủ.
+- **REQ-EXP-ACC-003 (Bảo mật, Active Sessions và Định danh Zalo cá nhân)**: Cung cấp giao diện quản lý phiên đăng nhập hiện hoạt đa thiết bị (Active Sessions) bảo vệ dữ liệu PDPD, kèm mã QR đồng bộ Zalo Mini App chuyên gia để tiếp nhận thông báo ZNS tức thời.
+
+### Quy Tắc Nghiệp Vụ Bổ Sung (Spec Delta Business Rules)
+- **BR-EXP-047 (Quyền truy cập Account Workspace bắt buộc RoleGuard `VERIFIED_EXPERT`)**: Chỉ tài khoản đã được thẩm định cấp Sở và mang vai trò `VERIFIED_EXPERT` mới được cấp quyền truy cập và thao tác tại `/portal/expert/account`. Mọi vai trò khác bị từ chối truy cập.
+- **BR-EXP-048 (Đồng bộ trạng thái nhận tư vấn với bộ lọc Marketplace công khai)**: Khi chuyên gia tắt công tắc nhận tư vấn (`isAcceptingConsultation = false`), hồ sơ chuyên gia sẽ tự động bị loại khỏi danh sách lọc "Đang sẵn sàng nhận tư vấn" trên Marketplace công khai (`/experts`) và thuật toán Matching AI sẽ tạm ngừng đề xuất các bài toán tư vấn trực tiếp cho đến khi chuyên gia kích hoạt trở lại.
+
+---
+
+## 16. Spec Delta v7 (PO-DEC-20261014-02): Chuẩn Hóa 6 Màn Hình Workspace Chuyên Gia, Hộp Thư Tư Vấn 3 Tab, Kanban Dự Án TRL 5 UX States & Scoped RBAC
+
+**Căn cứ pháp lý & Thiết kế cơ sở**:
+- Quyết định phê duyệt PO: `PO-DEC-20261014-02`.
+- Tài liệu Thiết kế Cơ sở: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md).
+- Wireframe tham chiếu: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_quan_ly_yeu_cau_tu_van_chuyen_gia.html).
+
+### User Story 20 — Bàn Làm Việc Chuẩn Hóa 6 Màn Hình & Triệt Tiêu Xung Đột Active Menu (Priority: P1)
+**User Persona**: Chuyên gia KH&CN (`EXPERT` / `VERIFIED_EXPERT`).  
+**Mục tiêu**: Có thanh Sidebar điều hướng 6 màn hình chuyên biệt, không bị nhầm lẫn giữa yêu cầu tư vấn ngắn hạn và dự án hợp tác dài hạn, không bị xung đột active đồng thời 2 menu.
+
+**Acceptance Scenarios**:
+1. **Given** chuyên gia đăng nhập vào Portal, **When** quan sát Sidebar Workspace Chuyên gia, **Then** hệ thống hiển thị chính xác 6 mục chức năng:
+   - Item 1: `Tài khoản Chuyên gia` (`/portal/expert/account`, icon `ShieldCheck`)
+   - Item 2: `Tổng quan Chuyên gia` (`/portal/expert/profile` hoặc `/portal`, icon `LayoutDashboard`)
+   - Item 3: `Hồ sơ LLKH của tôi` (`/portal/expert/profile/edit`, icon `GraduationCap`)
+   - Item 4: `Hộp Thư Tư Vấn & Kết Nối` (`/portal/expert/consultations`, icon `Inbox` hoặc `ClipboardList`)
+   - Item 5: `Radar Cơ hội Phù hợp (AI)` (`/portal/expert/radar` hoặc `/portal/matching/radar`, icon `Sparkles`)
+   - Item 6: `Dự án Đồng hành & Hợp tác` (`/portal/expert/projects`, icon `Kanban`)
+2. **Given** chuyên gia điều hướng tới `/portal/expert/consultations`, **When** kiểm tra thanh Sidebar, **Then** chỉ mục "Hộp Thư Tư Vấn & Kết Nối" sáng trạng thái active; mục "Dự án Đồng hành & Hợp tác" tuyệt đối không bị active nhầm.
+3. **Given** chuyên gia điều hướng tới `/portal/expert/projects`, **When** kiểm tra thanh Sidebar, **Then** chỉ mục "Dự án Đồng hành & Hợp tác" sáng trạng thái active.
+
+---
+
+### User Story 21 — Quản Lý Hộp Thư Tư Vấn Doanh Nghiệp 3 Tab Nghiệp Vụ (Priority: P1)
+**User Persona**: Chuyên gia KH&CN đã được xác thực (`VERIFIED_EXPERT`).  
+**Mục tiêu**: Quản trị tập trung các yêu cầu tư vấn 1-1 từ doanh nghiệp và từ Sở KH&CN, phản hồi theo SLA 48h, tham gia phòng họp trực tuyến và ký nghiệm thu thù lao khoa học.
+
+**Acceptance Scenarios**:
+1. **Given** chuyên gia truy cập `/portal/expert/consultations`, **When** trang tải xong, **Then** hệ thống hiển thị thanh điều hướng 3 Tab kèm Badge đếm số lượng:
+   - *Tab 1: Lời Mời Chờ Xử Lý*: Danh sách yêu cầu mới với đồng hồ đếm ngược SLA 48 giờ. Phân định rõ nguồn: `Sở KH&CN Chỉ Định Kết Nối 1-1` (thù lao Quỹ ĐMST chi trả) hoặc `Doanh Nghiệp Đặt Lịch Trực Tiếp Qua Portal` kèm Điểm Năng lực ĐMST (TNI).
+   - *Tab 2: Lịch Hẹn Sắp Tới*: Danh sách các buổi tư vấn trực tuyến đã chốt lịch, kèm link Zoom/Meet, nút "Vào Phòng Họp" (kích hoạt trước giờ họp 15 phút) và tệp đính kèm pre-read.
+   - *Tab 3: Lịch Sử Nghiệm Thu & Đánh Giá*: Danh sách các buổi tư vấn đã hoàn thành, biên bản tư vấn MoA 2 chiều, đánh giá 5 sao và trạng thái giải ngân thù lao (`ĐÃ QUYẾT TOÁN THÙ LAO` / `ĐANG ĐỐI SOÁT HỒ SƠ`).
+2. **Given** một yêu cầu tư vấn ở Tab 1, **When** chuyên gia nhấn "Đồng ý tư vấn & Chọn lịch hẹn", **Then** hiển thị Modal chọn ngày giờ, phương thức họp (Zoom/Meet/Trực tiếp) và gửi yêu cầu `POST /api/v1/expert/consultations/{id}/accept`, chuyển đơn sang Tab 2.
+3. **Given** chuyên gia không thể tiếp nhận yêu cầu, **When** nhấn "Từ chối & Nêu lý do", **Then** hiển thị Modal bắt buộc chọn lý do từ chối (Trùng lịch, Không đúng chuyên môn, Xung đột lợi ích...) và gọi `POST /api/v1/expert/consultations/{id}/reject`.
+
+---
+
+### User Story 22 — Quản Lý Dự Án Đồng Hành & Hợp Tác Dài Hạn Theo Chuẩn TRL (Priority: P1)
+**User Persona**: Chuyên gia KH&CN (`VERIFIED_EXPERT`).  
+**Mục tiêu**: Quản trị tiến trình các dự án R&D, chuyển giao công nghệ dài hạn trên giao diện Kanban 5 cột chuẩn TRL, bảo đảm không xuất hiện các chức năng sai thẩm quyền.
+
+**Acceptance Scenarios**:
+1. **Given** chuyên gia truy cập `/portal/expert/projects`, **When** trang tải xong, **Then** hệ thống hiển thị Bảng Kanban 5 cột theo quy trình chuẩn:
+   - Cột 1: `Tiếp nhận & Ký NDA` (Intake & NDA Signing)
+   - Cột 2: `Đàm phán Deal Room 1-1` (Technical Scoping & Deal Room)
+   - Cột 3: `Thẩm định TRL & Lộ trình Tech` (TRL Assessment & Roadmap)
+   - Cột 4: `Ký kết Thỏa thuận MOU` (MOU & Contract Finalized)
+   - Cột 5: `Đồng hành Chuyển giao & Nghiệm thu` (Transfer & Milestones Completed)
+2. **Given** màn hình `/portal/expert/projects`, **When** kiểm tra các nút hành động, **Then** tuyệt đối KHÔNG hiển thị nút "Giám sát Sở KH&CN". Thay vào đó là bộ lọc Lĩnh vực TT17, bộ lọc Thang đo TRL (TRL 1-3, TRL 4-6, TRL 7-9) và nút "Xuất Báo Cáo Tiến Độ Đồng Hành".
+3. **Given** một cột Kanban không có dự án nào, **When** quan sát giao diện cột, **Then** tuyệt đối KHÔNG hiển thị chữ "Trống" thô sơ; cột phải hiển thị chuẩn Empty State với thông điệp hướng dẫn và nút CTA "Khám Phá Radar Cơ Hội AI" dẫn về `/portal/matching/radar`.
+4. **Given** thẻ dự án trên cột Kanban, **When** hiển thị thông tin, **Then** bao gồm: Mã dự án `PRJ-EXP-YYYY-XXXX`, trạng thái NDA/MOU, Thang đo TRL kép (`[TRL Hiện tại] -> [TRL Mục tiêu]`), Tên doanh nghiệp đối tác, Dự toán kinh phí R&D, và hạn chót phản hồi mốc tiếp theo.
+
+---
+
+### User Story 23 — Scoped RBAC và Bảo Vệ Dữ Liệu Cá Nhân PDPD (Priority: P1)
+**User Persona**: Chuyên gia đăng ký mới (`EXPERT`) vs Chuyên gia đã được phê duyệt cấp Sở (`VERIFIED_EXPERT`).  
+**Mục tiêu**: Áp dụng phân quyền chặt chẽ theo vai trò và bảo vệ tuyệt đối danh tính khoa học theo Nghị định 13/2023/NĐ-CP.
+
+**Acceptance Scenarios**:
+1. **Given** tài khoản mang vai trò `EXPERT` (hồ sơ đang chờ duyệt cấp Sở), **When** truy cập `/portal/expert/consultations` hoặc `/portal/expert/projects`, **Then** hệ thống hiển thị giao diện thông báo trạng thái hồ sơ đang thẩm định, chưa cấp quyền mở hộp thư tiếp nhận tư vấn hoặc ký kết MOU.
+2. **Given** tài khoản mang vai trò `VERIFIED_EXPERT`, **When** truy cập bất kỳ route nào trong 6 màn hình Workspace Chuyên gia, **Then** hệ thống cấp toàn quyền truy cập tác nghiệp.
+3. **Given** doanh nghiệp duyệt danh bạ chuyên gia công khai, **When** xem thông tin chuyên gia, **Then** hệ thống che dấu hoàn toàn Số điện thoại cá nhân và Email cá nhân (PDPD PII Protection). Thông tin liên hệ chỉ được hiển thị khi chuyên gia đã chủ động chấp thuận yêu cầu tư vấn tại Tab 2.
+
+---
+
+### Yêu Cầu Nghiệp Vụ Bổ Sung (Spec Delta Requirements: REQ-EXP-UI-007 .. REQ-EXP-UI-010)
+
+- **REQ-EXP-UI-007 (Chuẩn hóa 6 Màn hình & Thuật toán Active Menu độc lập)**:
+  Thanh Sidebar Workspace Chuyên gia bắt buộc cấu hình 6 mục chức năng cố định với đường dẫn chuyên biệt. Áp dụng thuật toán `resolveExpertActiveMenu(pathname)` để phân giải chính xác active menu key (`account`, `profile`, `profile-edit`, `consultations`, `radar`, `projects`), bảo đảm ranh giới tuyệt đối độc lập giữa `/portal/expert/consultations` và `/portal/expert/projects`.
+- **REQ-EXP-UI-008 (Hộp thư Tư vấn & Kết nối 3 Tab Nghiệp vụ)**:
+  Cung cấp route chuyên trách `/portal/expert/consultations` chia thành 3 Tab: Tab 1 (Lời mời chờ xử lý với SLA đếm ngược 48h, modal chấp thuận/từ chối); Tab 2 (Lịch hẹn sắp tới với phòng họp Zoom/Meet mở trước 15 phút, tài liệu pre-read); Tab 3 (Lịch sử nghiệm thu biên bản MoA 2 chiều và tình trạng quyết toán thù lao).
+- **REQ-EXP-UI-009 (Bảng Kanban Dự án Đồng hành TRL 1-9 & Loại bỏ Nút Giám sát Sở)**:
+  Cung cấp route chuyên trách `/portal/expert/projects` tổ chức theo 5 cột tiến trình TRL (Tiếp nhận NDA -> Deal Room 1-1 -> Thẩm định TRL -> Ký MOU -> Đồng hành nghiệm thu). Loại bỏ hoàn toàn nút "Giám sát Sở KH&CN" khỏi giao diện chuyên gia; bổ sung bộ lọc TT17/TRL và nút xuất báo cáo tiến độ.
+- **REQ-EXP-UI-010 (Chuẩn hóa 5 Trạng Thái UX States Cho Kanban & Hộp Thư)**:
+  Triệt tiêu 100% chữ "Trống" thô thiển trên các cột Kanban và danh sách bảng. Áp dụng chuẩn Enterprise UX với đầy đủ 5 trạng thái: `Loading` (Skeleton Shimmer), `Ideal` (Thẻ Deal TRL / Card Lời mời), `Empty` (Minh họa nét đứt + CTA dẫn sang Radar AI), `Error` (Icon cảnh báo + Nút Retry), `Filtered Empty` (Kính lúp rỗng + Nút Reset bộ lọc).
+
+---
+
+### Quy Tắc Nghiệp Vụ Bổ Sung (Spec Delta Business Rules: BR-EXP-011 .. BR-EXP-014)
+
+- **BR-EXP-011 (Quy tắc Quản lý Thời Gian Phản Hồi SLA 48h)**:
+  Mỗi yêu cầu tư vấn gửi đến chuyên gia được kích hoạt đồng hồ đếm ngược 48 giờ kể từ `created_at`. Khi thời gian còn $\le 24$h, hiển thị cảnh báo đỏ (`text-red-600 bg-red-50`). Khi hết 48h mà chuyên gia chưa phản hồi, trạng thái đơn tự động chuyển thành `SLA_EXPIRED`, hệ thống điều phối lại cho Cán bộ Sở hoặc thông báo hoàn trả cho Doanh nghiệp, đồng thời ghi nhận vào chỉ số phản hồi của chuyên gia.
+- **BR-EXP-012 (Phân loại Minh Bạch Nguồn Yêu Cầu Tư Vấn & Thù Lao)**:
+  Phân biệt rõ 2 luồng yêu cầu tư vấn:
+  1. *Chỉ định Cấp Sở KH&CN*: Huy hiệu khiên bảo hộ màu xanh lam, thù lao được Quỹ ĐMST / Ngân sách Nhà nước bảo trợ chi trả;
+  2. *Doanh nghiệp Đặt Trực Tiếp*: Huy hiệu màu xanh ngọc kèm Điểm Năng lực ĐMST (TNI), thù lao thỏa thuận hoặc chi trả theo biểu phí công bố của chuyên gia.
+- **BR-EXP-013 (Triệt Tiêu Nút Giám Sát Nhà Nước Khỏi Workspace Chuyên Gia)**:
+  Tuyệt đối không hiển thị nút hoặc chức năng "Giám sát Sở KH&CN" trên bàn làm việc của Chuyên gia (`/portal/expert/*`). Thẩm quyền giám sát thị trường và thanh tra thuộc độc quyền của Cán bộ Quản trị Nhà nước trên Cổng Quản lý Nhà nước (`TASK-07` / GOV Portal).
+- **BR-EXP-014 (Scoped RBAC & Bảo Mật Dữ Liệu PDPD NĐ 13/2023)**:
+  - Tài khoản mang role `EXPERT` (đang chờ duyệt cấp Sở) chỉ được phép xem thông tin tổng quan và chỉnh sửa bổ sung hồ sơ LLKH.
+  - Chỉ tài khoản được cấp role `VERIFIED_EXPERT` mới được cấp quyền tiếp nhận lời mời tư vấn (`/portal/expert/consultations`), vào phòng đàm phán Deal Room 1-1 và ký kết MOU (`/portal/expert/projects`).
+  - Dữ liệu PII (SĐT, Email cá nhân) của chuyên gia được che giấu toàn diện trên toàn hệ thống công khai; chỉ mở khi chuyên gia đã chấp thuận phiên tư vấn.
+
+
+
