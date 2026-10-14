@@ -31,6 +31,32 @@ internal sealed class EnterpriseConfiguration : IEntityTypeConfiguration<Domain.
         b.HasMany(x => x.Identifiers).WithOne().HasForeignKey(x => x.EnterpriseId);
         b.HasMany(x => x.InnovationProjects).WithOne().HasForeignKey(x => x.EnterpriseId);
         b.HasMany(x => x.IntellectualProperties).WithOne().HasForeignKey(x => x.EnterpriseId);
+        b.HasMany(x => x.InnovationEvaluations).WithOne().HasForeignKey(x => x.EnterpriseId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class EnterpriseInnovationEvaluationConfiguration : IEntityTypeConfiguration<EnterpriseInnovationEvaluation>
+{
+    public void Configure(EntityTypeBuilder<EnterpriseInnovationEvaluation> b)
+    {
+        b.ToTable("innovation_evaluations", "enterprise");
+        b.HasKey(x => x.Id);
+
+        b.Property(x => x.TaxCode).HasMaxLength(20).IsRequired();
+        b.Property(x => x.CriteriaVersion).HasMaxLength(20).HasDefaultValue("v1.0");
+        b.Property(x => x.TotalScore).HasPrecision(5, 2).HasDefaultValue(0.0m);
+        b.Property(x => x.Classification).HasMaxLength(30).HasDefaultValue("UNRATED");
+        b.Property(x => x.Status).HasMaxLength(30).HasDefaultValue("DRAFT_CALCULATED");
+        b.Property(x => x.ReviewedBy).HasMaxLength(150);
+
+        b.Property(x => x.GroupScoresJson).HasColumnType("jsonb").HasDefaultValue("{}");
+        b.Property(x => x.CriteriaDetailsJson).HasColumnType("jsonb").HasDefaultValue("[]");
+
+        b.HasIndex(x => x.EnterpriseId);
+        b.HasIndex(x => x.TaxCode);
+        b.HasIndex(x => x.Classification);
+        b.HasIndex(x => x.Status);
+        b.HasIndex(x => new { x.EnterpriseId, x.EvaluationYear, x.CriteriaVersion }).IsUnique();
     }
 }
 
