@@ -1,0 +1,2471 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin</title>
+
+<style>
+/* Modern Base Styling */
+:root {
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --slate-900: #0f172a;
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+  --slate-600: #475569;
+  --slate-500: #64748b;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+  --slate-50: #f8fafc;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; max-width: 1060px; margin: 30px auto; padding: 0 24px; color: var(--slate-800); background: #f8fafc; }
+h1, h2, h3, h4 { color: var(--slate-900); }
+h1 { border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-top: 20px; }
+h2 { border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-top: 36px; }
+img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin: 16px 0; }
+pre, code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; font-family: monospace; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
+th { background: #e0f2fe; color: #0369a1; font-weight: 700; }
+
+/* Sticky Filter Toolbar */
+.filter-toolbar-sticky {
+  position: relative;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  padding: 18px 20px;
+  margin: 28px 0 36px 0;
+  transition: all 0.2s ease;
+}
+.filter-toolbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.filter-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.filter-header-icon {
+  font-size: 26px;
+  background: #e0f2fe;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid #bae6fd;
+}
+.filter-main-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+}
+.filter-sub-title {
+  font-size: 12.5px;
+  color: #64748b;
+  margin-top: 2px;
+}
+.filter-top-actions {
+  display: flex;
+  gap: 8px;
+}
+.action-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: white;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.action-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+.btn-print {
+  background: #0284c7;
+  color: white;
+  border-color: #0284c7;
+}
+.btn-print:hover {
+  background: #0369a1;
+  border-color: #0369a1;
+}
+.btn-reset {
+  color: #334155;
+}
+
+/* Scroller and Role Tabs */
+.filter-tabs-scroller {
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+}
+.role-tabs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.role-tab {
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+  color: #334155;
+  white-space: nowrap;
+}
+.role-tab:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+.role-tab.active {
+  background: var(--tab-active-color, #0f172a) !important;
+  color: white !important;
+  border-color: var(--tab-active-color, #0f172a) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+.tab-icon {
+  font-size: 14px;
+}
+.tab-badge {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.role-tab.active .tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+/* Search bar */
+.filter-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.search-box-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 280px;
+}
+.search-input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 14px;
+}
+.screen-search-input {
+  width: 100%;
+  padding: 9px 36px 9px 36px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13.5px;
+  background: #f8fafc;
+  color: #1e293b;
+  transition: all 0.15s ease;
+}
+.screen-search-input:focus {
+  outline: none;
+  border-color: #0284c7;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #cbd5e1;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.clear-search-btn:hover {
+  background: #94a3b8;
+  color: white;
+}
+.search-status-counter {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Active Role Hero Banner */
+.active-role-hero {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+.hero-top-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.hero-role-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-role-icon {
+  font-size: 26px;
+}
+.hero-role-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #065f46;
+}
+.hero-role-desc {
+  font-size: 12.5px;
+  color: #047857;
+  margin-top: 2px;
+}
+.hero-stat-pill {
+  background: #059669;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+.hero-shortcuts-wrapper {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(5, 150, 105, 0.3);
+}
+.hero-shortcuts-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #065f46;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.hero-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.hero-screen-chip {
+  background: white;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hero-screen-chip:hover {
+  background: #059669;
+  color: white;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+/* Module Section & Header */
+.module-section {
+  margin-top: 36px;
+  transition: opacity 0.2s ease;
+}
+.module-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #0284c7;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.module-header-row h2 {
+  border-bottom: none;
+  margin-top: 0;
+  padding-bottom: 0;
+  font-size: 19px;
+}
+.module-screen-counter {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+/* Screen Card */
+.screen-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+.screen-card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+.screen-card.hidden {
+  display: none !important;
+}
+.screen-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.screen-id-badge {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0284c7;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.screen-roles-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.screen-role-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.screen-card h3 {
+  margin-top: 8px;
+  margin-bottom: 12px;
+  color: #0f172a;
+  font-size: 18px;
+}
+.screen-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12px;
+  color: #64748b;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.back-to-filter-link {
+  color: #0284c7;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f0f9ff;
+  border: 1px solid #e0f2fe;
+}
+.back-to-filter-link:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Empty State */
+.no-results-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: white;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  margin: 32px 0;
+}
+.empty-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+.empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.empty-desc {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 8px 0 16px 0;
+}
+.btn-reset-empty {
+  background: #0284c7;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+.btn-reset-empty:hover {
+  background: #0369a1;
+}
+
+/* TOC Items */
+.toc-item.dimmed {
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+
+/* Print Friendly Stylesheet */
+@media print {
+  .filter-toolbar-sticky, .back-to-filter-link, .filter-top-actions, .no-print {
+    display: none !important;
+  }
+  body {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    background: white !important;
+    color: black !important;
+  }
+  .screen-card {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin: 16px 0 !important;
+    padding: 16px !important;
+  }
+  .module-section {
+    page-break-before: auto;
+  }
+}
+
+/* Floating Slim Filter Button */
+.floating-role-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+.floating-role-button:hover {
+  background: #0284c7;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(2, 132, 199, 0.4);
+}
+.floating-role-badge {
+  background: #38bdf8;
+  color: #0f172a;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+</style>
+
+</head>
+<body>
+<h1 id="tai-lieu-huong-dan-su-dung-va-ban-giao-toan-trinh-he-thong-nacentwin-nacentech">TÀI LIỆU HƯỚNG DẪN SỬ DỤNG VÀ BÀN GIAO TOÀN TRÌNH HỆ THỐNG NACENTWIN (NACENTECH)</h1>
+<h3 id="phien-ban-v40-ay-u-48-man-hinh-thuc-te-phan-inh-ro-vai-tro-thuc-hien-role-based">PHIÊN BẢN V4.0 — ĐẦY ĐỦ 48 MÀN HÌNH THỰC TẾ &amp; PHÂN ĐỊNH RÕ VAI TRÒ THỰC HIỆN (ROLE-BASED)</h3>
+<blockquote>
+<p><strong>Mã tài liệu</strong>: <code>HDSD-NACENTWIN-2026-V4.0-ROLE-BASED</code><br />
+<strong>Dự án</strong>: Nền tảng Đổi Mới Sáng Tạo &amp; Kết Nối Cung Cầu Công Nghệ Nacentwin<br />
+<strong>Cơ quan chủ quản</strong>: Viện Ứng Dụng Công Nghệ (NacenTech) / Bộ Khoa học và Công nghệ<br />
+<strong>Đặc tả tác nhân</strong>: 100% Các màn hình được gắn nhãn định danh vai trò thực hiện (<code>Role</code>), phạm vi thẩm quyền (<code>Scope</code>) và quyền năng thao tác (<code>Permission</code>).<br />
+<strong>Nguồn ảnh minh họa</strong>: 100% Ảnh chụp giao diện Web thực tế từ máy chủ Next.js 15 App Router (<code>http://localhost:3000</code>).<br />
+<strong>Tài liệu bàn giao</strong>:
+- Bản Web HTML trực quan: <a href="Specification/HUONG_DAN_SU_DUNG_CHI_TIET_NACENTWIN.html"><code>Specification/HUONG_DAN_SU_DUNG_CHI_TIET_NACENTWIN.html</code></a>
+- Bản Markdown gốc: <a href="Specification/HUONG_DAN_SU_DUNG_CHI_TIET_NACENTWIN.md"><code>Specification/HUONG_DAN_SU_DUNG_CHI_TIET_NACENTWIN.md</code></a>
+- Thư mục ảnh chụp màn hình độ phân giải cao: <a href="images/user_guide/"><code>Specification/images/user_guide/</code></a></p>
+</blockquote>
+<hr />
+<h2 id="bang-ma-tran-10-vai-tro-pham-vi-thuc-hien-3d-scoped-rbac">BẢNG MA TRẬN 10 VAI TRÒ &amp; PHẠM VI THỰC HIỆN (3D SCOPED RBAC)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Mã Vai Trò</th>
+<th style="text-align: left;">Tên Tiếng Việt</th>
+<th style="text-align: left;">Phạm Vi Tác Nghiệp (Scope)</th>
+<th style="text-align: left;">Trách Nhiệm &amp; Quyền Năng Cốt Lõi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>PUBLIC_USER</code></strong></td>
+<td style="text-align: left;"><strong>Người Dùng Đại Chúng</strong></td>
+<td style="text-align: left;">Toàn quốc (Không đăng nhập / Thành viên mới)</td>
+<td style="text-align: left;">Tra cứu danh bạ, xem sàn chào bán/nhu cầu, đăng ký tài khoản, đăng ký vé tham quan Techmart.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>BUYER</code></strong></td>
+<td style="text-align: left;"><strong>Bên Mua (Doanh Nghiệp)</strong></td>
+<td style="text-align: left;">Phạm vi doanh nghiệp</td>
+<td style="text-align: left;">Kê khai phiếu khảo sát sâu DNNVV, đăng bài toán nhu cầu, chấm điểm TNI, tham gia phòng Deal Room.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>SELLER</code></strong></td>
+<td style="text-align: left;"><strong>Bên Bán (Nguồn Cung)</strong></td>
+<td style="text-align: left;">Phạm vi đơn vị chào bán</td>
+<td style="text-align: left;">Tạo hồ sơ chào bán công nghệ, khai báo Bộ tứ SHTT/TRL, chọn Sở thẩm định, quản lý kho công nghệ.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>VERIFIED_EXPERT</code></strong></td>
+<td style="text-align: left;"><strong>Chuyên Gia KH&amp;CN</strong></td>
+<td style="text-align: left;">Cá nhân chuyên gia đã xác thực</td>
+<td style="text-align: left;">Quản lý Sổ tay chuyên gia, nhận lời mời tư vấn, tham gia thẩm định và hỗ trợ đàm phán trong Deal Room.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>INNOVATION_ENTITY</code></strong></td>
+<td style="text-align: left;"><strong>Doanh Nghiệp ĐMST</strong></td>
+<td style="text-align: left;">Hồ sơ doanh nghiệp sở hữu</td>
+<td style="text-align: left;">Tự quản trị 10 nhóm trường, bổ sung bằng sáng chế, kê khai đánh giá năng lực công nghệ TT17.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>PROVINCIAL_ADMIN</code></strong></td>
+<td style="text-align: left;"><strong>Cán Bộ Sở KH&amp;CN Tỉnh</strong></td>
+<td style="text-align: left;">Phạm vi địa bàn Tỉnh/Thành (<code>ScopeId</code>)</td>
+<td style="text-align: left;">Thẩm định hồ sơ công nghệ, phê duyệt chuyên gia địa phương, giám sát kết nối cung cầu (SLA 48h).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>CLUSTER_ADMIN</code></strong></td>
+<td style="text-align: left;"><strong>Quản Lý Cụm Liên Kết Vùng</strong></td>
+<td style="text-align: left;">Cụm vùng (Bắc - Trung - Nam)</td>
+<td style="text-align: left;">Điều phối kết nối cung cầu liên tỉnh, giám sát sàn giao dịch vùng.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>DEPARTMENT_ADMIN</code></strong></td>
+<td style="text-align: left;"><strong>Quản Trị Phòng Ban</strong></td>
+<td style="text-align: left;">Phòng ban nghiệp vụ Bộ KH&amp;CN</td>
+<td style="text-align: left;">Thẩm định các chương trình KH&amp;CN cấp Nhà nước, quản lý chuyên ngành.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>SUPER_ADMIN</code></strong></td>
+<td style="text-align: left;"><strong>Quản Trị Tối Cao</strong></td>
+<td style="text-align: left;">Toàn hệ thống quốc gia</td>
+<td style="text-align: left;">Phân quyền 10 Roles 3D Scoped RBAC, vận hành cây hành chính, quản trị danh mục ngành, hậu kiểm &amp; thu hồi.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>AUDITOR</code></strong></td>
+<td style="text-align: left;"><strong>Kiểm Toán Viên Độc Lập</strong></td>
+<td style="text-align: left;">Toàn hệ thống (Chỉ đọc)</td>
+<td style="text-align: left;">Tra cứu nhật ký tác nghiệp bất biến (Audit Trail), đối soát tuân thủ an toàn dữ liệu PDPD.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="muc-luc-11-phan-he-48-man-hinh-thuc-te">MỤC LỤC 11 PHÂN HỆ — 48 MÀN HÌNH THỰC TẾ</h2>
+<ol>
+<li class="toc-item" data-toc-module="1"><a href="#phân-hệ-1-xác-thực-danh-tính--tài-khoản-cá-nhân">Phân Hệ 1: Xác Thực Danh Tính &amp; Tài Khoản Cá Nhân (3 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="2"><a href="#phân-hệ-2-cổng-thông-tin-công-cộng--triển-lãm-techmart">Phân Hệ 2: Cổng Thông Tin Công Cộng &amp; Triển Lãm Techmart (4 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="3"><a href="#phân-hệ-3-doanh-nghiệp-đổi-mới-sáng-tạo">Phân Hệ 3: Doanh Nghiệp Đổi Mới Sáng Tạo (4 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="4"><a href="#phân-hệ-4-bên-mua--khảo-sát-nhu-cầu-đổi-mới-công-nghệ">Phân Hệ 4: Bên Mua &amp; Khảo Sát Nhu Cầu Đổi Mới Công Nghệ (4 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="5"><a href="#phân-hệ-5-bên-bán--chào-bán-công-nghệ-shtt">Phân Hệ 5: Bên Bán &amp; Chào Bán Công Nghệ SHTT (5 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="6"><a href="#phân-hệ-6-mạng-lưới-chuyên-gia-khcn--ai-scan-llkh">Phân Hệ 6: Mạng Lưới Chuyên Gia KH&amp;CN &amp; AI Scan LLKH (5 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="7"><a href="#phân-hệ-7-danh-mục-ngành--ma-trận-lv-cn">Phân Hệ 7: Danh Mục Ngành &amp; Ma Trận LV-CN (2 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="8"><a href="#phân-hệ-8-ghép-nối-ai-cungcầu--phòng-đàm-phán-deal-room-1-1">Phân Hệ 8: Ghép Nối AI Cung–Cầu &amp; Phòng Đàm Phán Deal Room 1-1 (4 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="9"><a href="#phân-hệ-9-đánh-giá-năng-lực-công-nghệ-theo-tt172019tt-bkhcn">Phân Hệ 9: Đánh Giá Năng Lực Công Nghệ Theo TT17/2019/TT-BKHCN (4 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="10"><a href="#phân-hệ-10-quản-trị-hệ-thống-tối-cao---super-admin-console">Phân Hệ 10: Quản Trị Hệ Thống Tối Cao - Super Admin Console (5 Màn Hình)</a></li>
+<li class="toc-item" data-toc-module="11"><a href="#phân-hệ-11-cổng-công-vụ-cấp-sở-khcn---provincial-gov-console">Phân Hệ 11: Cổng Công Vụ Cấp Sở KH&amp;CN - Provincial Gov Console (7 Màn Hình)</a></li>
+<li><a href="#12-quy-chuẩn-an-toàn-dữ-liệu--hướng-dẫn-vận-hành-hệ-thống">Quy Chuẩn An Toàn Dữ Liệu &amp; Hướng Dẫn Vận Hành Hệ Thống</a></li>
+</ol>
+<hr />
+
+
+<!-- INTERACTIVE ROLE FILTER BAR -->
+<div id="role-filter-toolbar" class="filter-toolbar-sticky">
+  <div class="filter-toolbar-header">
+    <div class="filter-title-wrap">
+      <div class="filter-header-icon">🔍</div>
+      <div>
+        <div class="filter-main-title">BỘ LỌC TƯƠNG TÁC THEO VAI TRÒ (ROLE-BASED FILTER)</div>
+        <div class="filter-sub-title">Chọn vai trò bên dưới để lọc chính xác các màn hình và quyền hạn tương ứng trong 47 màn hình hệ thống Nacentwin.</div>
+      </div>
+    </div>
+    <div class="filter-top-actions">
+      <button type="button" class="action-btn btn-print" onclick="window.print()" title="In ra giấy hoặc lưu thành tệp PDF các màn hình đang được lọc">🖨️ In / Lưu PDF theo vai trò</button>
+      <button type="button" class="action-btn btn-reset" onclick="resetFilter()" title="Khôi phục hiển thị toàn bộ 47 màn hình">🔄 Xem tất cả (47)</button>
+    </div>
+  </div>
+
+  <div class="filter-tabs-scroller">
+    <div class="role-tabs-list">
+      <button type="button" class="role-tab active" data-role="ALL" onclick="selectRole('ALL')" style="--tab-active-color:#0f172a">
+      <span class="tab-icon">🌟</span>
+      <span class="tab-label">Tất Cả Màn Hình</span>
+      <span class="tab-badge" id="badge-count-ALL">48</span>
+    </button>
+    <button type="button" class="role-tab" data-role="PUBLIC_USER" onclick="selectRole('PUBLIC_USER')" style="--tab-active-color:#2563eb">
+      <span class="tab-icon">🌐</span>
+      <span class="tab-label">Người Dùng Đại Chúng</span>
+      <span class="tab-badge" id="badge-count-PUBLIC_USER">15</span>
+    </button>
+    <button type="button" class="role-tab" data-role="BUYER" onclick="selectRole('BUYER')" style="--tab-active-color:#059669">
+      <span class="tab-icon">🛒</span>
+      <span class="tab-label">Bên Mua (Doanh Nghiệp / DNNVV)</span>
+      <span class="tab-badge" id="badge-count-BUYER">18</span>
+    </button>
+    <button type="button" class="role-tab" data-role="SELLER" onclick="selectRole('SELLER')" style="--tab-active-color:#d97706">
+      <span class="tab-icon">🏭</span>
+      <span class="tab-label">Bên Bán (Nguồn Cung Công Nghệ)</span>
+      <span class="tab-badge" id="badge-count-SELLER">14</span>
+    </button>
+    <button type="button" class="role-tab" data-role="VERIFIED_EXPERT" onclick="selectRole('VERIFIED_EXPERT')" style="--tab-active-color:#7c3aed">
+      <span class="tab-icon">🎓</span>
+      <span class="tab-label">Chuyên Gia KH&CN</span>
+      <span class="tab-badge" id="badge-count-VERIFIED_EXPERT">9</span>
+    </button>
+    <button type="button" class="role-tab" data-role="INNOVATION_ENTITY" onclick="selectRole('INNOVATION_ENTITY')" style="--tab-active-color:#0284c7">
+      <span class="tab-icon">💡</span>
+      <span class="tab-label">Doanh Nghiệp ĐMST</span>
+      <span class="tab-badge" id="badge-count-INNOVATION_ENTITY">8</span>
+    </button>
+    <button type="button" class="role-tab" data-role="PROVINCIAL_ADMIN" onclick="selectRole('PROVINCIAL_ADMIN')" style="--tab-active-color:#e11d48">
+      <span class="tab-icon">🏛️</span>
+      <span class="tab-label">Cán Bộ Sở KH&CN Tỉnh</span>
+      <span class="tab-badge" id="badge-count-PROVINCIAL_ADMIN">12</span>
+    </button>
+    <button type="button" class="role-tab" data-role="SUPER_ADMIN" onclick="selectRole('SUPER_ADMIN')" style="--tab-active-color:#4338ca">
+      <span class="tab-icon">👑</span>
+      <span class="tab-label">Quản Trị Tối Cao</span>
+      <span class="tab-badge" id="badge-count-SUPER_ADMIN">8</span>
+    </button>
+    <button type="button" class="role-tab" data-role="AUDITOR" onclick="selectRole('AUDITOR')" style="--tab-active-color:#475569">
+      <span class="tab-icon">📋</span>
+      <span class="tab-label">Kiểm Toán Viên Độc Lập</span>
+      <span class="tab-badge" id="badge-count-AUDITOR">3</span>
+    </button>
+    </div>
+  </div>
+
+  <div class="filter-search-bar">
+    <div class="search-box-wrapper">
+      <span class="search-input-icon">🔎</span>
+      <input type="text" id="screenSearchInput" class="screen-search-input" placeholder="Tìm kiếm nhanh tên màn hình, địa chỉ URL (/portal, /gov, /admin...), chức năng hoặc từ khóa nghiệp vụ..." oninput="handleSearch(this.value)" />
+      <button type="button" id="clearSearchBtn" class="clear-search-btn" onclick="clearSearch()" title="Xóa tìm kiếm" style="display:none;">✕</button>
+    </div>
+    <div class="search-status-counter" id="searchStatusCounter">
+      Hiển thị <strong>48 / 48</strong> màn hình
+    </div>
+  </div>
+
+  <!-- Dynamic Active Role Hero Banner -->
+  <div id="activeRoleHero" class="active-role-hero" style="display:none;">
+    <div class="hero-top-info">
+      <div class="hero-role-identity">
+        <span class="hero-role-icon" id="heroRoleIcon">👤</span>
+        <div>
+          <div class="hero-role-name" id="heroRoleName">Tên Vai Trò</div>
+          <div class="hero-role-desc" id="heroRoleDesc">Mô tả thẩm quyền & phạm vi</div>
+        </div>
+      </div>
+      <div class="hero-stat-pill" id="heroStatPill">
+        0 Màn hình khả dụng
+      </div>
+    </div>
+    <div class="hero-shortcuts-wrapper">
+      <div class="hero-shortcuts-label">📌 Lối tắt truy cập nhanh màn hình của vai trò này (Click để nhảy tới màn hình):</div>
+      <div class="hero-chips-container" id="heroChipsContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EMPTY STATE BOX WHEN NO SCREEN MATCHES -->
+<div id="noResultsState" class="no-results-state" style="display:none;">
+  <div class="empty-icon">📂</div>
+  <div class="empty-title">Không tìm thấy màn hình nào phù hợp</div>
+  <div class="empty-desc">Không có màn hình nào đáp ứng tiêu chí lọc theo vai trò và từ khóa tìm kiếm hiện tại.</div>
+  <button type="button" class="btn-reset-empty" onclick="resetFilter()">🔄 Đặt lại bộ lọc (Xem tất cả 48 màn hình)</button>
+</div>
+
+
+    <section class="module-section" id="module-1" data-module="1">
+      <div class="module-header-row">
+        <h2 id="phan-he-1-xac-thuc-danh-tinh-tai-khoan-ca-nhan">PHÂN HỆ 1: XÁC THỰC DANH TÍNH &amp; TÀI KHOẢN CÁ NHÂN</h2>
+        <span class="module-screen-counter" id="mod-counter-1">3 / 3 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-1-1" data-screen-num="1.1" data-roles="PUBLIC_USER BUYER SELLER VERIFIED_EXPERT INNOVATION_ENTITY PROVINCIAL_ADMIN SUPER_ADMIN AUDITOR" data-module="1">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 1.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span> <span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span> <span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span> <span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span> <span class="screen-role-tag" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0">📋 Kiểm Toán Viên Độc Lập</span></div>
+          </div>
+          <h3 id="11-ang-nhap-he-thong">1.1. Đăng Nhập Hệ Thống</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/login</code></li>
+<li><strong>Mục đích</strong>: Xác thực người dùng bằng Email/Mật khẩu hoặc thông qua SSO, chuyển tiếp phiên làm việc vào đúng Workspace tương ứng theo vai trò.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>TẤT CẢ VAI TRÒ</code> (<code>PUBLIC_USER</code>, <code>BUYER</code>, <code>SELLER</code>, <code>VERIFIED_EXPERT</code>, <code>INNOVATION_ENTITY</code>, <code>PROVINCIAL_ADMIN</code>, <code>SUPER_ADMIN</code>)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Toàn hệ thống</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc &amp; Khởi tạo phiên làm việc (Session Initialization)</li>
+</ul>
+<p><img alt="Màn hình 1.1: Đăng Nhập Hệ Thống" src="images/user_guide/31_dang_nhap.png" /></p>
+<h4 id="cac-buoc-thao-tac">Các bước thao tác:</h4>
+<ol>
+<li>Nhập địa chỉ Email và Mật khẩu tài khoản đã đăng ký.</li>
+<li>Tích chọn "Ghi nhớ đăng nhập" nếu sử dụng thiết bị cá nhân an toàn.</li>
+<li>Bấm <strong>"Đăng nhập"</strong> $\rightarrow$ Hệ thống tự động chuyển tiếp về Workspace phù hợp theo vai trò (Buyer, Seller, Expert, Gov, Admin).</li>
+<li>Nếu quên mật khẩu: Nhấp "Quên mật khẩu?" để nhận liên kết khôi phục qua email.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 1 &bull; Màn hình 1.1: Đăng Nhập Hệ Thống</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-1-2" data-screen-num="1.2" data-roles="PUBLIC_USER" data-module="1">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 1.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span></div>
+          </div>
+          <h3 id="12-ang-ky-tai-khoan-moi">1.2. Đăng Ký Tài Khoản Mới</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/register</code></li>
+<li><strong>Mục đích</strong>: Đăng ký tài khoản người dùng đại chúng (<code>PUBLIC_USER</code>), tự kích hoạt tài khoản mà không yêu cầu phê duyệt thủ công ban đầu.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code> (Khách vãng lai / Thành viên mới)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Tạo mới tài khoản người dùng</li>
+</ul>
+<p><img alt="Màn hình 1.2: Đăng Ký Tài Khoản Mới" src="images/user_guide/32_dang_ky.png" /></p>
+<h4 id="cac-buoc-thao-tac_1">Các bước thao tác:</h4>
+<ol>
+<li>Điền thông tin cá nhân: Họ và tên, Email, Số điện thoại di động, Mật khẩu và Xác nhận mật khẩu.</li>
+<li>Tích chọn đồng ý với Điều khoản dịch vụ và Chính sách bảo vệ dữ liệu PDPD (Nghị định 13/2023/NĐ-CP).</li>
+<li>Bấm <strong>"Tạo tài khoản"</strong> $\rightarrow$ Hệ thống tự kích hoạt tài khoản và chuyển về trang đăng nhập.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 1 &bull; Màn hình 1.2: Đăng Ký Tài Khoản Mới</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-1-3" data-screen-num="1.3" data-roles="PUBLIC_USER" data-module="1">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 1.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span></div>
+          </div>
+          <h3 id="13-cai-at-tai-khoan-he-thong-giao-dien">1.3. Cài Đặt Tài Khoản Thành Viên Đại Chúng (PUBLIC_USER)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/settings</code> <em>(Lưu ý: <code>/profile</code> là route alias tự động chuyển hướng về đây đối với người dùng đại chúng)</em></li>
+<li><strong>Mục đích</strong>: Cung cấp giao diện cấu hình trải nghiệm cá nhân cho người dùng đại chúng (<code>PUBLIC_USER</code>), xem thông tin tài khoản, chuyển đổi theme Sáng/Tối, cỡ chữ và các tùy chọn nâng cấp vai trò lên Chuyên gia hoặc Doanh nghiệp. <em>(Lưu ý quan trọng: Các vai trò đã xác thực như Chuyên gia KH&amp;CN <code>VERIFIED_EXPERT</code> sử dụng bàn làm việc tài khoản chuyên biệt may đo riêng tại <code>/portal/expert/account</code>)</em>.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code> (Thành viên đại chúng / Người dùng mới)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Tài khoản cá nhân công chúng</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc &amp; Cập nhật cấu hình trải nghiệm cá nhân, kích hoạt lộ trình nâng hạng</li>
+</ul>
+<p><img alt="Màn hình 1.3: Cài Đặt Tài Khoản Thành Viên Đại Chúng" src="images/user_guide/34_cai_dat_he_thong.png" /></p>
+<h4 id="cac-buoc-thao-tac_2">Các bước thao tác:</h4>
+<ol>
+<li><strong>Thông tin định danh</strong>: Xem Họ tên, Email, Vai trò (<code>Role: PUBLIC_USER</code>) và Phạm vi địa bàn (<code>Scope: TOÀN QUỐC</code>).</li>
+<li><strong>Nâng hạng tài khoản</strong>: Nhấp vào liên kết nâng cấp để mở Hub nâng hạng (<code>/profile/upgrade</code>) lựa chọn nâng cấp thành Chuyên gia KH&amp;CN (<code>/profile/upgrade/expert</code>) hoặc Doanh nghiệp ĐMST (<code>/profile/upgrade/enterprise</code>).</li>
+<li><strong>Tùy chỉnh giao diện</strong>: Chuyển đổi Theme Sáng/Tối, cỡ chữ (100% / 110% / 125%) và ngôn ngữ (VI/EN).</li>
+<li><strong>Đăng xuất</strong>: Bấm "Đăng xuất" &rarr; Xác nhận để xóa sạch token và session lưu cục bộ.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 1 &bull; Màn hình 1.3: Cài Đặt Tài Khoản Thành Viên Đại Chúng (PUBLIC_USER)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-2" data-module="2">
+      <div class="module-header-row">
+        <h2 id="phan-he-2-cong-thong-tin-cong-cong-trien-lam-techmart">PHÂN HỆ 2: CỔNG THÔNG TIN CÔNG CỘNG &amp; TRIỂN LÃM TECHMART</h2>
+        <span class="module-screen-counter" id="mod-counter-2">4 / 4 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-2-1" data-screen-num="2.1" data-roles="PUBLIC_USER" data-module="2">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 2.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span></div>
+          </div>
+          <h3 id="21-trang-chu-portal-nacentwin">2.1. Trang Chủ Portal Nacentwin</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/</code></li>
+<li><strong>Mục đích</strong>: Cửa ngõ trung tâm kết nối toàn bộ 7 phân hệ, hiển thị số liệu thống kê thời gian thực từ CSDL thật (Zero-Mock) và Trợ lý AI NacentTwin.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code> (Đại chúng, Doanh nghiệp, Nhà khoa học)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc công khai &amp; Tương tác Trợ lý ảo AI</li>
+</ul>
+<p><img alt="Màn hình 2.1: Trang Chủ Portal Nacentwin" src="images/user_guide/01_trang_chu_portal.png" /></p>
+<h4 id="cac-buoc-thao-tac_3">Các bước thao tác:</h4>
+<ol>
+<li><strong>Mega-Menu Điều Hướng</strong>: Nhấp vào menu đầu trang để điều hướng tới: Giới thiệu, Chào bán, Nhu cầu, DN ĐMST, Sự kiện Techmart, Chuyên gia, Dịch vụ, Wireframes.</li>
+<li><strong>Thanh Tìm Kiếm Nhanh</strong>: Nhập từ khóa công nghệ hoặc MST doanh nghiệp để tra cứu chéo toàn hệ thống (Gợi ý nhanh: AI thị giác máy, Năng lượng xanh, Tự động hóa, Vật liệu Nano).</li>
+<li><strong>Chỉ Số Hoạt Động Thời Gian Thực</strong>: Xem tổng số công nghệ chào bán (12+), số nhu cầu đặt hàng (315+), số tỉnh thành kết nối (34) và tổng số doanh nghiệp tham gia (304).</li>
+<li><strong>Trợ Lý AI NacentTwin</strong>: Bấm vào biểu tượng widget nổi góc dưới bên phải để mở hộp thoại tư vấn gợi ý ghép cặp hoặc giải đáp quy trình.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 2 &bull; Màn hình 2.1: Trang Chủ Portal Nacentwin</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-2-2" data-screen-num="2.2" data-roles="PUBLIC_USER BUYER SELLER" data-module="2">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 2.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span></div>
+          </div>
+          <h3 id="22-san-su-kien-techmart-phien-chao-gia">2.2. Sàn Sự Kiện Techmart &amp; Phiên Chào Giá</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/trien-lam</code></li>
+<li><strong>Mục đích</strong>: Tra cứu lịch diễn ra các kỳ Techmart, Chợ công nghệ và thiết bị, xem phiên chào giá trực tiếp và các gian hàng tiêu biểu.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>SELLER</code> (đăng ký gian hàng), <code>BUYER</code> (tìm kiếm)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc &amp; Đăng ký tham gia sự kiện</li>
+</ul>
+<p><img alt="Màn hình 2.2: Sàn Sự Kiện Techmart &amp; Phiên Chào Giá" src="images/user_guide/02_su_kien_techmart.png" /></p>
+<h4 id="cac-buoc-thao-tac_4">Các bước thao tác:</h4>
+<ol>
+<li><strong>Lọc Sự Kiện</strong>: Lọc theo khu vực (Hà Nội, TP.HCM, Đà Nẵng...), thời gian hoặc hình thức (Trực tiếp / Trực tuyến).</li>
+<li><strong>Xem Danh Sách Gian Hàng</strong>: Xem các công nghệ tiêu biểu được trưng bày tại từng kỳ sự kiện.</li>
+<li><strong>Đăng Ký Tham Quan</strong>: Nhấp <strong>"Đăng ký tham quan"</strong> để mở form cấp vé điện tử.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 2 &bull; Màn hình 2.2: Sàn Sự Kiện Techmart &amp; Phiên Chào Giá</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-2-3" data-screen-num="2.3" data-roles="PUBLIC_USER" data-module="2">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 2.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span></div>
+          </div>
+          <h3 id="23-ang-ky-ve-tham-quan-techmart">2.3. Đăng Ký Vé Tham Quan Techmart</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/trien-lam/dang-ky-tham-quan</code></li>
+<li><strong>Mục đích</strong>: Người tham dự cá nhân hoặc đoàn doanh nghiệp đăng ký nhận vé điện tử QR Code tham dự triển lãm Techmart.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code> (Cá nhân hoặc Doanh nghiệp tham quan)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đăng ký nhận vé điện tử</li>
+</ul>
+<p><img alt="Màn hình 2.3: Đăng Ký Vé Tham Quan Techmart" src="images/user_guide/02b_dang_ky_tham_quan.png" /></p>
+<h4 id="cac-buoc-thao-tac_5">Các bước thao tác:</h4>
+<ol>
+<li>Điền thông tin cá nhân: Họ và tên, Email, Số điện thoại, Đơn vị công tác, Chức vụ.</li>
+<li>Chọn kỳ sự kiện Techmart muốn tham dự.</li>
+<li>Bấm <strong>"Xác nhận đăng ký"</strong> $\rightarrow$ Hệ thống tự cấp vé điện tử và gửi xác nhận qua Email.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 2 &bull; Màn hình 2.3: Đăng Ký Vé Tham Quan Techmart</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-2-4" data-screen-num="2.4" data-roles="SUPER_ADMIN AUDITOR" data-module="2">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 2.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span> <span class="screen-role-tag" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0">📋 Kiểm Toán Viên Độc Lập</span></div>
+          </div>
+          <h3 id="24-trung-tam-tra-cuu-wireframes-noi-bo">2.4. Trung Tâm Tra Cứu Wireframes Nội Bộ</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/wireframes</code></li>
+<li><strong>Mục đích</strong>: Dành cho Quản trị viên, BA và Tester đối soát nhanh liên kết giữa giao diện thực tế và các bản thiết kế cơ sở Basic Design gốc.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>DEVELOPER</code>, <code>BA</code>, <code>AUDITOR</code>, <code>SUPER_ADMIN</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Nội bộ đội ngũ kỹ thuật</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đối soát kiến trúc &amp; Traceability</li>
+</ul>
+<p><img alt="Màn hình 2.4: Trung Tâm Tra Cứu Wireframes Nội Bộ" src="images/user_guide/50_trung_tam_wireframes.png" /></p>
+<h4 id="cac-buoc-thao-tac_6">Các bước thao tác:</h4>
+<ol>
+<li>Xem danh mục toàn bộ các màn hình theo từng mã Task (TASK-00 đến TASK-09).</li>
+<li>Nhấp vào từng liên kết để mở bản wireframe đối soát chi tiết.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 2 &bull; Màn hình 2.4: Trung Tâm Tra Cứu Wireframes Nội Bộ</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-3" data-module="3">
+      <div class="module-header-row">
+        <h2 id="phan-he-3-doanh-nghiep-oi-moi-sang-tao">PHÂN HỆ 3: DOANH NGHIỆP ĐỔI MỚI SÁNG TẠO</h2>
+        <span class="module-screen-counter" id="mod-counter-3">4 / 4 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-3-1" data-screen-num="3.1" data-roles="PUBLIC_USER BUYER SELLER PROVINCIAL_ADMIN" data-module="3">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 3.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="31-danh-ba-304-doanh-nghiep-mst-toan-quoc">3.1. Danh Bạ 304 Doanh Nghiệp ĐMST Toàn Quốc</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/doanh-nghiep-dmst</code> <em>(hoặc <code>/enterprises</code>)</em></li>
+<li><strong>Mục đích</strong>: Tra cứu danh bạ 304 doanh nghiệp ĐMST trọng điểm tại 34 tỉnh/thành với các thẻ hồ sơ 5 tầng thông tin chuẩn hóa.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>BUYER</code>, <code>SELLER</code>, <code>PROVINCIAL_ADMIN</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc, Tìm kiếm, Lọc đa tiêu chí &amp; Đề xuất hợp tác</li>
+</ul>
+<p><img alt="Màn hình 3.1: Danh Bạ 304 Doanh Nghiệp ĐMST Toàn Quốc" src="images/user_guide/03_danh_ba_dn_dmst.png" /></p>
+<h4 id="cac-buoc-thao-tac_7">Các bước thao tác:</h4>
+<ol>
+<li><strong>Bộ Lọc Đa Tiêu Chí (Sidebar)</strong>: Lọc theo 34 Tỉnh/Thành trọng điểm, 18 Ngành công nghiệp, Chứng nhận DN KH&amp;CN, Có bằng sáng chế.</li>
+<li><strong>Sorting Đa Hướng</strong>: Sắp xếp theo: Nhu cầu cấp thiết nhất (<code>tni_desc</code>), Sở hữu trí tuệ nhiều nhất (<code>ip_desc</code>), Tên A-Z (<code>name_asc</code>), Mới cập nhật (<code>recent</code>).</li>
+<li><strong>Tương tác Thẻ Hồ Sơ</strong>: Nhận diện Monogram &amp; Icon ngành qua <code>EnterpriseAvatar</code>, bấm <strong>"Xem chi tiết"</strong> hoặc <strong>"Đề xuất kết nối"</strong>.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 3 &bull; Màn hình 3.1: Danh Bạ 304 Doanh Nghiệp ĐMST Toàn Quốc</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-3-2" data-screen-num="3.2" data-roles="PUBLIC_USER BUYER SELLER" data-module="3">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 3.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span></div>
+          </div>
+          <h3 id="32-ho-so-doanh-nghiep-mst-cong-khai">3.2. Hồ Sơ Doanh Nghiệp ĐMST Công Khai</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/enterprises/0101426732</code></li>
+<li><strong>Mục đích</strong>: Xem bức tranh năng lực toàn diện của một doanh nghiệp ĐMST đã được xác thực: Giấy chứng nhận KH&amp;CN, bằng độc quyền sáng chế, sản phẩm công nghệ đang chào bán.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>BUYER</code>, <code>SELLER</code> (Người xem hồ sơ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc thông tin unmasked &amp; Gửi đề xuất làm việc</li>
+</ul>
+<p><img alt="Màn hình 3.2: Hồ Sơ Doanh Nghiệp ĐMST Công Khai" src="images/user_guide/04_ho_so_cong_khai_dn.png" /></p>
+<h4 id="cac-buoc-thao-tac_8">Các bước thao tác:</h4>
+<ol>
+<li>Xem huy hiệu <code>Verified Enterprise Badge</code>, thông tin pháp lý và cơ sở R&amp;D.</li>
+<li>Duyệt danh mục bằng sáng chế đã được Cục SHTT cấp văn bằng bảo hộ.</li>
+<li>Nhấp <strong>"Đề xuất hợp tác"</strong> để gửi lời mời làm việc trực tiếp tới doanh nghiệp.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 3 &bull; Màn hình 3.2: Hồ Sơ Doanh Nghiệp ĐMST Công Khai</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-3-3" data-screen-num="3.3" data-roles="INNOVATION_ENTITY" data-module="3">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 3.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span></div>
+          </div>
+          <h3 id="33-ban-lam-viec-doanh-nghiep-trong-portal">3.3. Bàn Làm Việc Doanh Nghiệp Trong Portal</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/enterprise/profile</code></li>
+<li><strong>Mục đích</strong>: Bàn làm việc tổng quan của đại diện doanh nghiệp: xem tóm tắt thông tin hồ sơ, việc cần làm và các yêu cầu kết nối gửi tới.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>INNOVATION_ENTITY</code> (Đại diện Doanh nghiệp ĐMST)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Không gian nội bộ của doanh nghiệp</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc &amp; Quản lý hồ sơ chủ thể</li>
+</ul>
+<p><img alt="Màn hình 3.3: Bàn Làm Việc Doanh Nghiệp Trong Portal" src="images/user_guide/37_portal_enterprise_profile.png" /></p>
+<h4 id="cac-buoc-thao-tac_9">Các bước thao tác:</h4>
+<ol>
+<li>Xem chỉ số hoàn thiện hồ sơ doanh nghiệp.</li>
+<li>Nhấp nút <strong>"Chỉnh sửa hồ sơ"</strong> để cập nhật thông tin năng lực mới.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 3 &bull; Màn hình 3.3: Bàn Làm Việc Doanh Nghiệp Trong Portal</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-3-4" data-screen-num="3.4" data-roles="INNOVATION_ENTITY" data-module="3">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 3.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span></div>
+          </div>
+          <h3 id="34-tu-quan-tri-chinh-sua-ho-so-dn">3.4. Tự Quản Trị &amp; Chỉnh Sửa Hồ Sơ DN</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/enterprise/profile/edit</code></li>
+<li><strong>Mục đích</strong>: Doanh nghiệp tự cập nhật 10 nhóm trường thông tin, đính kèm minh chứng ĐKKD, bằng sáng chế mới và nộp phê duyệt lại sang Sở KH&amp;CN.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>INNOVATION_ENTITY</code> (Quản trị viên Doanh nghiệp ĐMST)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Hồ sơ doanh nghiệp sở hữu</li>
+<li>🔑 <strong>Quyền hạn</strong>: Ghi &amp; Nộp yêu cầu thẩm định Cấp 2</li>
+</ul>
+<p><img alt="Màn hình 3.4: Tự Quản Trị &amp; Chỉnh Sửa Hồ Sơ DN" src="images/user_guide/05_chinh_sua_ho_so_dn.png" /></p>
+<h4 id="cac-buoc-thao-tac_10">Các bước thao tác:</h4>
+<ol>
+<li>Chuyển đổi giữa các tab: Thông tin chung, Năng lực tài chính, Nhân lực R&amp;D, Bằng sáng chế, Chứng chỉ ISO.</li>
+<li>Thêm bằng sáng chế mới: Nhập số bằng, ngày cấp và tải file scan văn bằng (.PDF).</li>
+<li>Bấm <strong>"Lưu nháp"</strong> hoặc <strong>"Nộp phê duyệt lại"</strong>.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 3 &bull; Màn hình 3.4: Tự Quản Trị &amp; Chỉnh Sửa Hồ Sơ DN</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-4" data-module="4">
+      <div class="module-header-row">
+        <h2 id="phan-he-4-ben-mua-khao-sat-nhu-cau-oi-moi-cong-nghe">PHÂN HỆ 4: BÊN MUA &amp; KHẢO SÁT NHU CẦU ĐỔI MỚI CÔNG NGHỆ</h2>
+        <span class="module-screen-counter" id="mod-counter-4">4 / 4 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-4-1" data-screen-num="4.1" data-roles="BUYER" data-module="4">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 4.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span></div>
+          </div>
+          <h3 id="41-phieu-khao-sat-sau-nhu-cau-dnnvv-7-phan-a-rightarrow-g">4.1. Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần (A $\rightarrow$ G)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/khao-sat-nhu-cau</code></li>
+<li><strong>Mục đích</strong>: Doanh nghiệp nhỏ và vừa (DNNVV) kê khai toàn diện hiện trạng máy móc, 17 điểm nghẽn kỹ thuật, năng lực tiếp nhận TAR và bài toán công nghệ cần tìm kiếm. Hệ thống tự động tính điểm chỉ số cấp thiết công nghệ (TNI) thời gian thực.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>BUYER</code> (Đại diện DNNVV có nhu cầu công nghệ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Doanh nghiệp Bên Mua</li>
+<li>🔑 <strong>Quyền hạn</strong>: Kê khai, Tự động lưu Draft &amp; Phát hành bài toán nhu cầu</li>
+</ul>
+<p><img alt="Màn hình 4.1: Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần" src="images/user_guide/07_khao_sat_sau_dnnvv.png" /></p>
+<h4 id="cac-buoc-thao-tac_11">Các bước thao tác:</h4>
+<ol>
+<li><strong>Phần A</strong>: Thông tin doanh nghiệp (14 trường thông tin chuẩn hóa).</li>
+<li><strong>Phần B</strong>: Hiện trạng thiết bị máy móc &amp; tự chấm 8 tiêu chí hiện trạng (1-5 điểm).</li>
+<li><strong>Phần C</strong>: Tích chọn tối đa <strong>5 điểm nghẽn kỹ thuật lớn nhất</strong> trong 17 điểm nghẽn tiêu chuẩn.</li>
+<li><strong>Phần D</strong>: Đánh giá năng lực tiếp nhận công nghệ TAR (9 tiêu chí kỹ sư + 7 câu quản trị).</li>
+<li><strong>Phần E</strong>: Khai báo bài toán công nghệ cụ thể &amp; <strong>Bộ tính điểm TNI tự động tính điểm 0-100 thời gian thực</strong>.</li>
+<li><strong>Phần F &amp; G</strong>: Chọn định hướng hỗ trợ, ký xác nhận đại diện và cam kết bảo vệ dữ liệu PDPD $\rightarrow$ Bấm <strong>"Gửi phiếu khảo sát"</strong>.<blockquote>
+<p><em>Lưu ý</em>: Dữ liệu tự động lưu nháp vào trình duyệt (<code>LocalStorage</code>), không lo mất dữ liệu khi mất kết nối.</p>
+</blockquote>
+</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 4 &bull; Màn hình 4.1: Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần (A $\rightarrow$ G)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-4-2" data-screen-num="4.2" data-roles="PUBLIC_USER SELLER VERIFIED_EXPERT" data-module="4">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 4.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="42-san-niem-yet-nhu-cau-mua-cong-nghe">4.2. Sàn Niêm Yết Nhu Cầu Mua Công Nghệ</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/nhu-cau-cong-nghe</code></li>
+<li><strong>Mục đích</strong>: Niêm yết công khai các bài toán kỹ thuật của Bên Mua (đã che thông tin nhạy cảm theo PDPD) để các Viện trường, Chuyên gia và Seller vào đề xuất giải pháp.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>SELLER</code>, <code>VERIFIED_EXPERT</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc bài toán masked &amp; Gửi hồ sơ chào giải pháp</li>
+</ul>
+<p><img alt="Màn hình 4.2: Sàn Niêm Yết Nhu Cầu Mua Công Nghệ" src="images/user_guide/08_san_nhu_cau_buyer.png" /></p>
+<h4 id="cac-buoc-thao-tac_12">Các bước thao tác:</h4>
+<ol>
+<li><strong>Bộ Lọc TNI</strong>: Lọc theo 4 mức ưu tiên: Cực kỳ cấp thiết (TNI $\ge 80$), Rất cấp thiết (60–79), Cấp thiết (40–59), Bình thường (&lt; 40).</li>
+<li><strong>Lọc Ngân Sách</strong>: Lọc theo 7 khoảng ngân sách dự kiến.</li>
+<li>Nhấp vào bài toán để xem chi tiết hoặc bấm <strong>"Tôi có giải pháp phù hợp"</strong>.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 4 &bull; Màn hình 4.2: Sàn Niêm Yết Nhu Cầu Mua Công Nghệ</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-4-3" data-screen-num="4.3" data-roles="SELLER VERIFIED_EXPERT" data-module="4">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 4.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="43-chi-tiet-bai-toan-nhu-cau-ky-thuat-pdpd-masked">4.3. Chi Tiết Bài Toán Nhu Cầu Kỹ Thuật (PDPD Masked)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/nhu-cau-cong-nghe/01928001-0000-7000-8000-000000000001</code></li>
+<li><strong>Mục đích</strong>: Xem chi tiết yêu cầu kỹ thuật, thông số đầu vào/đầu ra, môi trường lắp đặt và ngân sách dự kiến của Bên Mua.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SELLER</code>, <code>VERIFIED_EXPERT</code> (Nhà cung ứng / Chuyên gia)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai (Dữ liệu danh tính đã được che theo PDPD)</li>
+<li>🔑 <strong>Quyền hạn</strong>: Xem bài toán &amp; Gửi đề xuất kỹ thuật</li>
+</ul>
+<p><img alt="Màn hình 4.3: Chi Tiết Bài Toán Nhu Cầu Kỹ Thuật" src="images/user_guide/08b_chi_tiet_nhu_cau.png" /></p>
+<h4 id="cac-buoc-thao-tac_13">Các bước thao tác:</h4>
+<ol>
+<li>Xem thông số kỹ thuật mong muốn, thời hạn hoàn thành dự kiến.</li>
+<li>Bấm <strong>"Đề xuất giải pháp kỹ thuật"</strong> để gửi phương án giải quyết tới Bên Mua.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 4 &bull; Màn hình 4.3: Chi Tiết Bài Toán Nhu Cầu Kỹ Thuật (PDPD Masked)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-4-4" data-screen-num="4.4" data-roles="BUYER" data-module="4">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 4.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span></div>
+          </div>
+          <h3 id="44-ban-lam-viec-quan-ly-ve-nhu-cau-cua-buyer">4.4. Bàn Làm Việc Quản Lý Vé Nhu Cầu Của Buyer</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/buyer/demands</code></li>
+<li><strong>Mục đích</strong>: Dành riêng cho Bên Mua quản lý vòng đời các bài toán đã đăng ký, tiếp nhận và đánh giá các hồ sơ giải pháp từ Bên Bán gửi tới.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>BUYER</code> (Chủ sở hữu bài toán nhu cầu)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Không gian tác nghiệp Bên Mua</li>
+<li>🔑 <strong>Quyền hạn</strong>: Quản lý vé, Duyệt giải pháp &amp; Đồng ý mở phòng đàm phán</li>
+</ul>
+<p><img alt="Màn hình 4.4: Bàn Làm Việc Quản Lý Vé Nhu Cầu Của Buyer" src="images/user_guide/09_quan_ly_nhu_cau_buyer.png" /></p>
+<h4 id="cac-buoc-thao-tac_14">Các bước thao tác:</h4>
+<ol>
+<li>Theo dõi tiến độ vé: <code>Đang tìm kiếm</code>, <code>Đã có đề xuất</code>, <code>Đang đàm phán</code>, <code>Đã đóng</code>.</li>
+<li>Mở ngăn kéo (Drawer) đọc hồ sơ giải pháp và bấm <strong>"Đồng ý mở liên hệ"</strong> để chuyển sang Deal Room 1-1.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 4 &bull; Màn hình 4.4: Bàn Làm Việc Quản Lý Vé Nhu Cầu Của Buyer</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-5" data-module="5">
+      <div class="module-header-row">
+        <h2 id="phan-he-5-ben-ban-chao-ban-cong-nghe-shtt">PHÂN HỆ 5: BÊN BÁN &amp; CHÀO BÁN CÔNG NGHỆ SHTT</h2>
+        <span class="module-screen-counter" id="mod-counter-5">5 / 5 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-5-1" data-screen-num="5.1" data-roles="PUBLIC_USER BUYER" data-module="5">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 5.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span></div>
+          </div>
+          <h3 id="51-san-chao-ban-cong-nghe-18-nganh">5.1. Sàn Chào Bán Công Nghệ 18 Ngành</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/chao-ban-cong-nghe</code></li>
+<li><strong>Mục đích</strong>: Marketplace quy mô lớn chứa hàng ngàn công nghệ, thiết bị, dây chuyền với bộ lọc 1,479 quy tắc cho 18 nhóm ngành công nghiệp.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>BUYER</code> (Khách tìm kiếm công nghệ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc, Tìm kiếm, Lọc TRL/SHTT &amp; Gửi yêu cầu tư vấn</li>
+</ul>
+<p><img alt="Màn hình 5.1: Sàn Chào Bán Công Nghệ 18 Ngành" src="images/user_guide/10_san_chao_ban_cong_nghe.png" /></p>
+<h4 id="cac-buoc-thao-tac_15">Các bước thao tác:</h4>
+<ol>
+<li><strong>Lọc Theo 18 Ngành (Sidebar)</strong>: Chọn ngành công nghiệp để xem phân nhóm chuyên sâu.</li>
+<li><strong>Lọc Theo Mức Độ TRL</strong>: Tìm công nghệ sẵn sàng chuyển giao (TRL 7–9) hoặc công nghệ tìm đối tác đồng phát triển (TRL 4–6).</li>
+<li><strong>Lọc Có Bằng Sáng Chế</strong>: Tích chọn chỉ hiển thị công nghệ đã được cấp văn bằng độc quyền sáng chế.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 5 &bull; Màn hình 5.1: Sàn Chào Bán Công Nghệ 18 Ngành</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-5-2" data-screen-num="5.2" data-roles="PUBLIC_USER BUYER" data-module="5">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 5.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span></div>
+          </div>
+          <h3 id="52-chi-tiet-ho-so-chao-ban-bo-tu-shtttrl">5.2. Chi Tiết Hồ Sơ Chào Bán &amp; Bộ Tứ SHTT/TRL</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/chao-ban-cong-nghe/01928002-0000-7000-8000-000000000008</code></li>
+<li><strong>Mục đích</strong>: Xem chi tiết thông số công nghệ, thước đo TRL 1-9, hồ sơ SHTT và dấu chứng thực thẩm định cấp Sở KH&amp;CN.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>BUYER</code> (Khách hàng quan tâm công nghệ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai</li>
+<li>🔑 <strong>Quyền hạn</strong>: Xem chi tiết kỹ thuật &amp; Khởi tạo yêu cầu kết nối</li>
+</ul>
+<p><img alt="Màn hình 5.2: Chi Tiết Hồ Sơ Chào Bán &amp; Bộ Tứ SHTT/TRL" src="images/user_guide/11_chi_tiet_chao_ban_cong_nghe.png" /></p>
+<h4 id="cac-buoc-thao-tac_16">Các bước thao tác:</h4>
+<ol>
+<li>Xem thông số vận hành, ưu điểm cạnh tranh và video trình diễn kỹ thuật.</li>
+<li>Xem dấu xác nhận <code>Đã được Sở KH&amp;CN thẩm định</code>.</li>
+<li>Nhấp <strong>"Yêu cầu tư vấn &amp; Báo giá"</strong> để gửi yêu cầu kết nối với Bên Bán.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 5 &bull; Màn hình 5.2: Chi Tiết Hồ Sơ Chào Bán &amp; Bộ Tứ SHTT/TRL</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-5-3" data-screen-num="5.3" data-roles="SELLER" data-module="5">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 5.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span></div>
+          </div>
+          <h3 id="53-ban-lam-viec-quan-ly-kho-cong-nghe-seller">5.3. Bàn Làm Việc Quản Lý Kho Công Nghệ Seller</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/seller/technologies</code></li>
+<li><strong>Mục đích</strong>: Quản lý kho công nghệ của đơn vị mình, theo dõi số lượt xem, trạng thái phê duyệt của Sở và chỉnh sửa thông tin.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SELLER</code> (Chủ sở hữu nguồn cung công nghệ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Không gian tác nghiệp Bên Bán</li>
+<li>🔑 <strong>Quyền hạn</strong>: Quản lý danh mục, Ẩn/Hiện sản phẩm &amp; Điều hướng sửa đổi</li>
+</ul>
+<p><img alt="Màn hình 5.3: Bàn Làm Việc Quản Lý Kho Công Nghệ Seller" src="images/user_guide/13_quan_ly_kho_cong_nghe.png" /></p>
+<h4 id="cac-buoc-thao-tac_17">Các bước thao tác:</h4>
+<ol>
+<li>Theo dõi trạng thái: <code>PENDING</code> (Chờ Sở duyệt), <code>APPROVED</code> (Đang niêm yết), <code>REJECTED</code> (Bị từ chối kèm lý do).</li>
+<li>Tạm ngừng niêm yết (Ẩn công nghệ) hoặc bấm Chỉnh sửa.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 5 &bull; Màn hình 5.3: Bàn Làm Việc Quản Lý Kho Công Nghệ Seller</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-5-4" data-screen-num="5.4" data-roles="SELLER" data-module="5">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 5.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span></div>
+          </div>
+          <h3 id="54-tao-ho-so-chao-ban-moi-chon-so-tiep-nhan">5.4. Tạo Hồ Sơ Chào Bán Mới &amp; Chọn Sở Tiếp Nhận</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/seller/technologies/create</code></li>
+<li><strong>Mục đích</strong>: Bên Bán đăng ký công nghệ mới lên sàn, bắt buộc chọn Sở KH&amp;CN địa phương tiếp nhận thẩm định và khai báo Bộ tứ SHTT/TRL.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SELLER</code> (Đơn vị chào bán công nghệ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Bên Bán $\rightarrow$ Sở KH&amp;CN địa bàn</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đăng ký niêm yết &amp; Nộp hồ sơ thẩm định Cấp 2</li>
+</ul>
+<p><img alt="Màn hình 5.4: Tạo Hồ Sơ Chào Bán Mới &amp; Chọn Sở Tiếp Nhận" src="images/user_guide/12_tao_chao_ban_cong_nghe.png" /></p>
+<h4 id="cac-buoc-thao-tac_18">Các bước thao tác:</h4>
+<ol>
+<li>Chọn Sở KH&amp;CN trực thuộc tiếp nhận thẩm định (danh sách 63 tỉnh/thành).</li>
+<li>Khai báo Bộ tứ thuộc tính: Mức độ TRL (1–9), Tình trạng SHTT, Hình thức chuyển giao, Trạng thái thương mại hóa.</li>
+<li>Ký cam kết pháp lý không tranh chấp $\rightarrow$ Bấm <strong>"Gửi hồ sơ thẩm định"</strong> (<code>PENDING_REVIEW</code>).</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 5 &bull; Màn hình 5.4: Tạo Hồ Sơ Chào Bán Mới &amp; Chọn Sở Tiếp Nhận</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-5-5" data-screen-num="5.5" data-roles="SELLER" data-module="5">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 5.5</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span></div>
+          </div>
+          <h3 id="55-chinh-sua-ho-so-chao-ban-a-niem-yet">5.5. Chỉnh Sửa Hồ Sơ Chào Bán Đã Niêm Yết</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/seller/technologies/01928002-0000-7000-8000-000000000008/edit</code></li>
+<li><strong>Mục đích</strong>: Cập nhật thông số kỹ thuật hoặc nâng cấp TRL. Hệ thống tự động chuyển trạng thái về <code>PENDING_REAUDIT</code> khi sửa đổi thông tin nhạy cảm.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SELLER</code> (Chủ sở hữu công nghệ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Hồ sơ công nghệ đang sở hữu</li>
+<li>🔑 <strong>Quyền hạn</strong>: Cập nhật thông số &amp; Kích hoạt quy trình tái duyệt</li>
+</ul>
+<p><img alt="Màn hình 5.5: Chỉnh Sửa Hồ Sơ Chào Bán Đã Niêm Yết" src="images/user_guide/38_sua_chao_ban_seller.png" /></p>
+<h4 id="cac-buoc-thao-tac_19">Các bước thao tác:</h4>
+<ol>
+<li>Cập nhật thông số mới, đính kèm kết quả thử nghiệm pilot mới.</li>
+<li>Bấm <strong>"Lưu và gửi thẩm định lại"</strong>.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 5 &bull; Màn hình 5.5: Chỉnh Sửa Hồ Sơ Chào Bán Đã Niêm Yết</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-6" data-module="6">
+      <div class="module-header-row">
+        <h2 id="phan-he-6-mang-luoi-chuyen-gia-khcn-ai-scan-llkh">PHÂN HỆ 6: MẠNG LƯỚI CHUYÊN GIA KH&amp;CN &amp; AI SCAN LLKH</h2>
+        <span class="module-screen-counter" id="mod-counter-6">6 / 6 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-6-1" data-screen-num="6.1" data-roles="PUBLIC_USER BUYER INNOVATION_ENTITY" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span></div>
+          </div>
+          <h3 id="61-danh-ba-chuyen-gia-khcn-cong-khai">6.1. Danh Bạ Chuyên Gia KH&amp;CN Công Khai</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/experts</code></li>
+<li><strong>Mục đích</strong>: Tra cứu mạng lưới chuyên gia theo 10 lĩnh vực chuẩn TT17, học hàm học vị (GS, PGS, TS) và địa bàn 34 tỉnh trọng điểm.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>BUYER</code>, <code>INNOVATION_ENTITY</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Tìm kiếm, Lọc hồ sơ chuyên gia &amp; Gửi lời mời tư vấn</li>
+</ul>
+<p><img alt="Màn hình 6.1: Danh Bạ Chuyên Gia KH&amp;CN Công Khai" src="images/user_guide/14_danh_ba_chuyen_gia.png" /></p>
+<h4 id="cac-buoc-thao-tac_20">Các bước thao tác:</h4>
+<ol>
+<li>Lọc theo lĩnh vực chuyên môn và học vị.</li>
+<li>Xem thẻ năng lực tóm tắt (số bài báo Scopus, số sáng chế).</li>
+<li>Nhấp <strong>"Mời tư vấn"</strong> để gửi yêu cầu kết nối với chuyên gia.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.1: Danh Bạ Chuyên Gia KH&amp;CN Công Khai</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-2" data-screen-num="6.2" data-roles="PUBLIC_USER BUYER" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span></div>
+          </div>
+          <h3 id="62-so-tay-chuyen-gia-profile-chi-tiet">6.2. Sổ Tay Chuyên Gia Profile Chi Tiết</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/experts/CG-NACEN-DEMO001</code></li>
+<li><strong>Mục đích</strong>: Xem chi tiết lý lịch khoa học, danh mục công trình nghiên cứu, bằng sáng chế làm chủ (bảo vệ thông tin PII theo NĐ 13/2023).</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>BUYER</code> (Người xem hồ sơ)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai</li>
+<li>🔑 <strong>Quyền hạn</strong>: Xem hồ sơ khoa học &amp; Đặt lịch làm việc</li>
+</ul>
+<p><img alt="Màn hình 6.2: Sổ Tay Chuyên Gia Profile Chi Tiết" src="images/user_guide/15_so_tay_chuyen_gia.png" /></p>
+<h4 id="cac-buoc-thao-tac_21">Các bước thao tác:</h4>
+<ol>
+<li>Xem biểu đồ công bố khoa học và các đề tài cấp Nhà nước/cấp Bộ đã chủ trì.</li>
+<li>Nhấp <strong>"Đặt lịch làm việc"</strong> để gửi đề xuất thời gian họp tư vấn.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.2: Sổ Tay Chuyên Gia Profile Chi Tiết</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-3" data-screen-num="6.3" data-roles="PUBLIC_USER" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span></div>
+          </div>
+          <h3 id="63-form-nang-hang-chuyen-gia-3-buoc">6.3. Form Nâng Hạng Chuyên Gia 3 Bước</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/profile/upgrade/expert</code> <em>(Lưu ý: <code>/profile/upgrade</code> tự động điều hướng sang đây)</em></li>
+<li><strong>Mục đích</strong>: Người dùng đăng ký nâng hạng lên danh vị <code>VERIFIED_EXPERT</code> được công nhận chính thức bởi cơ quan quản lý.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>USER</code> / <code>PUBLIC_USER</code> (Nhà khoa học đăng ký nâng hạng)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Cá nhân nhà khoa học $\rightarrow$ Sở KH&amp;CN tiếp nhận</li>
+<li>🔑 <strong>Quyền hạn</strong>: Nộp hồ sơ xét duyệt cấp danh vị chuyên gia</li>
+</ul>
+<p><img alt="Màn hình 6.3: Form Nâng Hạng Chuyên Gia 3 Bước" src="images/user_guide/16_nang_cap_chuyen_gia.png" /></p>
+<h4 id="cac-buoc-thao-tac_22">Các bước thao tác:</h4>
+<ol>
+<li><strong>Bước 1</strong>: Khai báo học hàm/học vị, cơ quan Viện/Trường công tác.</li>
+<li><strong>Bước 2</strong>: Chọn Sở KH&amp;CN tiếp nhận thẩm định LLKH.</li>
+<li><strong>Bước 3</strong>: Ký cam kết tính trung thực của hồ sơ $\rightarrow$ Bấm <strong>"Gửi hồ sơ xét duyệt"</strong>.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.3: Form Nâng Hạng Chuyên Gia 3 Bước</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-4" data-screen-num="6.4" data-roles="VERIFIED_EXPERT" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="64-ban-lam-viec-dashboard-chuyen-gia">6.4. Bàn Làm Việc Dashboard Chuyên Gia</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/expert/profile</code></li>
+<li><strong>Mục đích</strong>: Bàn làm việc trung tâm của chuyên gia: theo dõi các lời mời tư vấn từ doanh nghiệp, nhắc nhở cập nhật hồ sơ và bài toán gợi ý phù hợp.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>VERIFIED_EXPERT</code> (Chuyên gia KH&amp;CN đã xác thực)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Không gian tác nghiệp Chuyên gia</li>
+<li>🔑 <strong>Quyền hạn</strong>: Quản lý lịch hẹn, Xử lý lời mời tư vấn</li>
+</ul>
+<p><img alt="Màn hình 6.4: Bàn Làm Việc Dashboard Chuyên Gia" src="images/user_guide/18_dashboard_chuyen_gia.png" /></p>
+<h4 id="cac-buoc-thao-tac_23">Các bước thao tác:</h4>
+<ol>
+<li>Theo dõi thanh tiến độ hoàn thiện hồ sơ theo 5 trụ cột của Bộ KH&amp;CN.</li>
+<li>Xử lý hộp thư yêu cầu tư vấn: Chấp thuận hoặc Từ chối kèm lý do.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.4: Bàn Làm Việc Dashboard Chuyên Gia</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-5" data-screen-num="6.5" data-roles="VERIFIED_EXPERT" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.5</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="65-chinh-sua-ho-so-chuyen-gia-completeness-engine">6.5. Chỉnh Sửa Hồ Sơ Chuyên Gia &amp; Completeness Engine</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/expert/profile/edit</code></li>
+<li><strong>Mục đích</strong>: Chuyên gia tự cập nhật LLKH, học hàm/học vị, bổ sung đề tài nghiên cứu mới và theo dõi thang đo hoàn thiện 5 trụ cột của Bộ KH&amp;CN.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>VERIFIED_EXPERT</code> (Chuyên gia KH&amp;CN)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Hồ sơ LLKH cá nhân</li>
+<li>🔑 <strong>Quyền hạn</strong>: Cập nhật thông tin khoa học &amp; Đo lường Completeness</li>
+</ul>
+<p><img alt="Màn hình 6.5: Chỉnh Sửa Hồ Sơ Chuyên Gia &amp; Completeness Engine" src="images/user_guide/17_chinh_sua_ho_so_chuyen_gia.png" /></p>
+<h4 id="cac-buoc-thao-tac_24">Các bước thao tác:</h4>
+<ol>
+<li>Cập nhật các nhóm thông tin: Học vị, Đề tài KH&amp;CN, Sáng chế, Bài báo Scopus.</li>
+<li>Bấm <strong>"Lưu hồ sơ"</strong> để cập nhật thông tin lên danh bạ công khai.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.5: Chỉnh Sửa Hồ Sơ Chuyên Gia &amp; Completeness Engine</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-6" data-screen-num="6.6" data-roles="VERIFIED_EXPERT" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.6</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="66-tai-khoan-chuyen-gia-khcn-portal-expert-account">6.6. Màn Hình Tài Khoản Chuyên Gia KH&CN (/portal/expert/account)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/expert/account</code></li>
+<li><strong>Mục đích</strong>: Bàn làm việc quản trị tài khoản chuyên biệt may đo riêng cho Chuyên gia KH&amp;CN đã được Sở KH&amp;CN phê duyệt (<code>VERIFIED_EXPERT</code>). Đây là vị trí <strong>Item 1/6</strong> trên Sidebar Workspace, quản trị toàn diện tư cách định danh pháp lý cấp Sở, thiết lập sẵn sàng tiếp nhận tư vấn từ DNNVV, đo lường điểm số hoàn thiện hồ sơ 5 trụ cột, giám sát an toàn phiên đăng nhập và liên kết Zalo Mini App.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>VERIFIED_EXPERT</code> (Chuyên gia KH&amp;CN đã được cấp thẩm quyền)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Không gian tác nghiệp Chuyên gia</li>
+<li>🔑 <strong>Quyền hạn</strong>: Quản trị định danh khoa học, Bật/Tắt tiếp nhận tư vấn, Đo lường Completeness, Bảo mật tài khoản &amp; Cấu hình cảnh báo SLA</li>
+</ul>
+<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:16px; margin:16px 0; font-size:13px; line-height:1.6;">
+  <div style="font-weight:bold; color:#0f172a; margin-bottom:8px;">🎨 Wireframe Tương Tác Sống (SSOT Basic Design):</div>
+  <div>Truy cập trực tiếp bản dựng độc lập tại: <a href="02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_account.html" target="_blank" style="color:#0284c7; font-weight:bold; text-decoration:underline;">wireframe_expert_account.html</a> (Item 1/6 trên Sidebar Workspace Chuyên Gia).</div>
+</div>
+<h4 id="cac-buoc-thao-tac_66">5 Khối thao tác may đo chi tiết:</h4>
+<ol>
+<li><strong>Khối 1: Định danh khoa học &amp; Phê duyệt cấp Sở</strong>: Đối soát mã định danh quốc gia <code>EXP-2026-XXXX</code>, họ tên học hàm/học vị (GS/TS), cơ quan công tác Viện/Trường; kiểm tra đơn vị thẩm định Sở KH&amp;CN Tỉnh/Thành, Số QĐ công nhận, Ngày duyệt và cơ chế bảo vệ dữ liệu PDPD (NĐ 13/2023/NĐ-CP) mã hóa CCCD toàn trình.</li>
+<li><strong>Khối 2: Thiết lập sẵn sàng tiếp nhận tư vấn Doanh nghiệp</strong>: Toggle bật/tắt nhận lời mời tư vấn (bật để hiện huy hiệu trên danh bạ công khai và kích hoạt gợi ý Matching AI; tắt khi bận nghiên cứu để tạm ngừng nhận yêu cầu mới); chọn 1-5 lĩnh vực tư vấn trọng tâm chuẩn TT17; cấu hình kênh liên hệ ẩn danh bảo vệ PII; chọn 3 hình thức hợp tác mong muốn (R&amp;D dài hạn, Thẩm định Deal Room 1-1, Hội đồng TT17).</li>
+<li><strong>Khối 3: Thước đo hoàn thiện hồ sơ (Completeness Engine 5 trụ cột)</strong>: Theo dõi điểm số định lượng trên thang điểm 100đ và thanh Progress Bar (Định danh 20đ, Văn bằng 20đ, SHTT 20đ, Đề tài 20đ, Tư vấn 20đ); nhấp nút lối tắt CTA <em>"Chỉnh sửa chi tiết LLKH &rarr;"</em> để chuyển sang màn hình 6.5 chỉnh sửa hồ sơ.</li>
+<li><strong>Khối 4: Bảo mật &amp; Liên kết Zalo Mini App</strong>: Quản lý Email đăng nhập, Số điện thoại PDPD masked; đổi mật khẩu tài khoản; quét mã QR cá nhân hóa bằng app Zalo để kích hoạt Zalo Mini App nhận thông báo ZNS tức thời; quản lý danh sách Phiên đăng nhập hiện hoạt (Active Sessions) với nút hủy phiên đơn lẻ và đăng xuất tất cả thiết bị khác.</li>
+<li><strong>Khối 5: Tùy chọn trải nghiệm &amp; Cấu hình thông báo</strong>: Chuyển đổi Theme Sáng/Tối; tùy chỉnh cỡ chữ hiển thị 100% / 110% / 125%; cấu hình nhận email và ZNS khi có lời mời tư vấn mới; bật cảnh báo SLA Deal Room trước 12h (SLA 48h); nhấp <em>"Lưu Thay Đổi Cài Đặt"</em> để hoàn tất.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.6: Màn Hình Tài Khoản Chuyên Gia KH&CN (/portal/expert/account)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-7" data-module="7">
+      <div class="module-header-row">
+        <h2 id="phan-he-7-danh-muc-nganh-ma-tran-lv-cn">PHÂN HỆ 7: DANH MỤC NGÀNH &amp; MA TRẬN LV-CN</h2>
+        <span class="module-screen-counter" id="mod-counter-7">2 / 2 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-7-1" data-screen-num="7.1" data-roles="PUBLIC_USER BUYER SELLER VERIFIED_EXPERT" data-module="7">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 7.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="71-ban-o-kham-pha-ma-tran-linh-vuc-cong-nghe">7.1. Bản Đồ Khám Phá Ma Trận Lĩnh Vực - Công Nghệ</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/matrix</code></li>
+<li><strong>Mục đích</strong>: Trực quan hóa ma trận liên kết giữa 15 Lĩnh vực nghiên cứu và 18 Nhóm công nghệ ứng dụng theo chuẩn TT17 phục vụ nghiên cứu và hoạch định.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>BUYER</code>, <code>SELLER</code>, <code>VERIFIED_EXPERT</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Công khai</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc &amp; Tra cứu giao thoa liên ngành</li>
+</ul>
+<p><img alt="Màn hình 7.1: Bản Đồ Khám Phá Ma Trận Lĩnh Vực - Công Nghệ" src="images/user_guide/19_kham_pha_ma_tran.png" /></p>
+<h4 id="cac-buoc-thao-tac_25">Các bước thao tác:</h4>
+<ol>
+<li>Nhấp vào một ô giao thoa (ví dụ: <code>LV01 Nông nghiệp</code> $\times$ <code>CN04 Tự động hóa</code>).</li>
+<li>Hệ thống mở ngăn kéo hiển thị toàn bộ công nghệ chào bán và chuyên gia trong phân khúc đó.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 7 &bull; Màn hình 7.1: Bản Đồ Khám Phá Ma Trận Lĩnh Vực - Công Nghệ</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-7-2" data-screen-num="7.2" data-roles="SUPER_ADMIN" data-module="7">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 7.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span></div>
+          </div>
+          <h3 id="72-quan-tri-danh-muc-nganh-trong-so-matching">7.2. Quản Trị Danh Mục Ngành &amp; Trọng Số Matching</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/admin/sectors</code> <em>(Lưu ý: <code>/admin/master-data</code> chuyển hướng về đây)</em></li>
+<li><strong>Mục đích</strong>: Quản trị viên hệ thống điều chỉnh trọng số ghép nối (Matching Weight) 1-5 sao của từng cặp Lĩnh vực - Công nghệ.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SUPER_ADMIN</code> (Quản trị viên tối cao)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Toàn hệ thống (Master Data)</li>
+<li>🔑 <strong>Quyền hạn</strong>: Ghi &amp; Điều chỉnh trọng số thuật toán AI</li>
+</ul>
+<p><img alt="Màn hình 7.2: Quản Trị Danh Mục Ngành &amp; Trọng Số Matching" src="images/user_guide/20_quan_tri_danh_muc_nganh.png" /></p>
+<h4 id="cac-buoc-thao-tac_26">Các bước thao tác:</h4>
+<ol>
+<li>Nhấp trực tiếp vào số sao trên Heatmap để điều chỉnh độ ưu tiên thuật toán matching AI.</li>
+<li>Quản lý cây taxonomy 3 cấp (<code>LV01..LV17</code>, <code>C.10..C.32</code>) lưu trữ trực tiếp vào PostgreSQL thật.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 7 &bull; Màn hình 7.2: Quản Trị Danh Mục Ngành &amp; Trọng Số Matching</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-8" data-module="8">
+      <div class="module-header-row">
+        <h2 id="phan-he-8-ghep-noi-ai-cungcau-phong-am-phan-deal-room-1-1">PHÂN HỆ 8: GHÉP NỐI AI CUNG–CẦU &amp; PHÒNG ĐÀM PHÁN DEAL ROOM 1-1</h2>
+        <span class="module-screen-counter" id="mod-counter-8">4 / 4 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-8-1" data-screen-num="8.1" data-roles="BUYER SELLER VERIFIED_EXPERT INNOVATION_ENTITY" data-module="8">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 8.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span> <span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span></div>
+          </div>
+          <h3 id="81-khong-gian-portal-hub-ieu-huong-vai-tro">8.1. Không Gian Portal Hub Điều Hướng Vai Trò</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal</code></li>
+<li><strong>Mục đích</strong>: Cửa ngõ điều phối tác nghiệp cá nhân hóa theo vai trò đang đăng nhập (Buyer, Seller, Expert, Entity) kèm các lối tắt 1-click về Console Quản trị.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>BUYER</code>, <code>SELLER</code>, <code>VERIFIED_EXPERT</code>, <code>INNOVATION_ENTITY</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Portal Hub người dùng</li>
+<li>🔑 <strong>Quyền hạn</strong>: Điều hướng tác nghiệp đa vai trò</li>
+</ul>
+<p><img alt="Màn hình 8.1: Không Gian Portal Hub Điều Hướng Vai Trò" src="images/user_guide/39_portal_hub_chinh.png" /></p>
+<h4 id="cac-buoc-thao-tac_27">Các bước thao tác:</h4>
+<ol>
+<li>Xem các widget tổng quan: Số cơ hội đang đàm phán, số yêu cầu kết nối mới.</li>
+<li>Chuyển đổi nhanh giữa các phân hệ tác nghiệp trên thanh điều hướng bên trái.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 8 &bull; Màn hình 8.1: Không Gian Portal Hub Điều Hướng Vai Trò</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-8-2" data-screen-num="8.2" data-roles="BUYER SELLER" data-module="8">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 8.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span></div>
+          </div>
+          <h3 id="82-radar-ghep-noi-cung-cau-ai-2-chieu">8.2. Radar Ghép Nối Cung Cầu AI 2 Chiều</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/matching/radar</code></li>
+<li><strong>Mục đích</strong>: Hệ thống tự động tính điểm tương thích giữa Nhu cầu (Buyer) và Giải pháp (Seller) theo công thức 4 thành phần:
+  $$\text{Match Score} = 40\% \text{ (LV-CN)} + 30\% \text{ (TRL)} + 15\% \text{ (TNI)} + 15\% \text{ (SHTT)}$$</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>BUYER</code>, <code>SELLER</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Phân hệ kết nối cung cầu</li>
+<li>🔑 <strong>Quyền hạn</strong>: Xem điểm tương thích Match Score &amp; Khởi tạo cơ hội</li>
+</ul>
+<p><img alt="Màn hình 8.2: Radar Ghép Nối Cung Cầu AI 2 Chiều" src="images/user_guide/21_radar_matching.png" /></p>
+<h4 id="cac-buoc-thao-tac_28">Các bước thao tác:</h4>
+<ol>
+<li>Xem biểu đồ mạng nhện đối soát độ trùng khớp về thông số, địa bàn và ngân sách.</li>
+<li>Nhấp <strong>"Khởi tạo cơ hội hợp tác"</strong> để đưa bài toán vào quy trình đàm phán.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 8 &bull; Màn hình 8.2: Radar Ghép Nối Cung Cầu AI 2 Chiều</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-8-3" data-screen-num="8.3" data-roles="BUYER SELLER PROVINCIAL_ADMIN" data-module="8">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 8.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="83-bang-kanban-5-buoc-quan-ly-pipeline-co-hoi">8.3. Bảng Kanban 5 Bước Quản Lý Pipeline Cơ Hội</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/opportunities/pipeline</code></li>
+<li><strong>Mục đích</strong>: Quản lý vòng đời cơ hội hợp tác cung cầu theo mô hình Kanban 5 bước trực quan kèm cảnh báo SLA 48h.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>BUYER</code>, <code>SELLER</code>, <code>PROVINCIAL_ADMIN</code> (Giám sát)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Quy trình đàm phán hợp tác</li>
+<li>🔑 <strong>Quyền hạn</strong>: Kéo thả trạng thái &amp; Quản trị Pipeline</li>
+</ul>
+<p><img alt="Màn hình 8.3: Bảng Kanban 5 Bước Quản Lý Pipeline Cơ Hội" src="images/user_guide/22_pipeline_kanban.png" /></p>
+<h4 id="cac-buoc-thao-tac_29">Các bước thao tác:</h4>
+<ol>
+<li>Kéo thả thẻ cơ hội qua 5 cột trạng thái: <code>Gợi ý tự động</code> $\rightarrow$ <code>Đã gửi đề xuất</code> $\rightarrow$ <code>Đã chấp thuận</code> $\rightarrow$ <code>Đang trong Deal Room</code> $\rightarrow$ <code>Ký MOU thành công</code>.</li>
+<li>Nhấp vào thẻ để mở phòng đàm phán Deal Room 1-1.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 8 &bull; Màn hình 8.3: Bảng Kanban 5 Bước Quản Lý Pipeline Cơ Hội</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-8-4" data-screen-num="8.4" data-roles="BUYER SELLER VERIFIED_EXPERT" data-module="8">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 8.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a">🏭 Bên Bán (Nguồn Cung Công Nghệ)</span> <span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="84-phong-hop-tac-deal-room-1-1-soan-thao-mou">8.4. Phòng Hợp Tác Deal Room 1-1 &amp; Soạn Thảo MOU</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/opportunities/OPP-001/deal-room</code></li>
+<li><strong>Mục đích</strong>: Không gian làm việc số khép kín, an toàn giữa 3 bên (Bên Mua - Bên Bán - Chuyên gia tư vấn) để trao đổi tài liệu mật, giải mã danh tính PDPD và ký kết thỏa thuận nguyên tắc.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>BUYER</code> và <code>SELLER</code> (Hai bên đối tác chính), <code>VERIFIED_EXPERT</code> (Tư vấn kỹ thuật)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Phòng đàm phán 1-1 riêng tư</li>
+<li>🔑 <strong>Quyền hạn</strong>: Giải mã PDPD, Trao đổi tài liệu mật &amp; Xuất biên bản MOU</li>
+</ul>
+<p><img alt="Màn hình 8.4: Phòng Hợp Tác Deal Room 1-1 &amp; Soạn Thảo MOU" src="images/user_guide/23_deal_room_dam_phan_mou.png" /></p>
+<h4 id="cac-buoc-thao-tac_30">Các bước thao tác:</h4>
+<ol>
+<li>Sau khi cả hai bên cùng bấm "Đồng ý hợp tác", hệ thống giải mã thông tin liên hệ của hai bên.</li>
+<li>Tải lên và trao đổi tài liệu kỹ thuật có gắn hình mờ (Watermark) bảo mật.</li>
+<li>Bấm <strong>"Xuất biên bản ghi nhớ MOU (.PDF)"</strong> để hai bên ký kết hợp tác.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 8 &bull; Màn hình 8.4: Phòng Hợp Tác Deal Room 1-1 &amp; Soạn Thảo MOU</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-9" data-module="9">
+      <div class="module-header-row">
+        <h2 id="phan-he-9-anh-gia-nang-luc-cong-nghe-theo-tt172019tt-bkhcn">PHÂN HỆ 9: ĐÁNH GIÁ NĂNG LỰC CÔNG NGHỆ THEO TT17/2019/TT-BKHCN</h2>
+        <span class="module-screen-counter" id="mod-counter-9">4 / 4 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-9-1" data-screen-num="9.1" data-roles="BUYER INNOVATION_ENTITY" data-module="9">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 9.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span></div>
+          </div>
+          <h3 id="91-wizard-ke-khai-26-tieu-chi-5-nhom-t-e-o-r-i-tt17">9.1. Wizard Kê Khai 26 Tiêu Chí 5 Nhóm T-E-O-R-I (TT17)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/assessments/tt17/wizard</code></li>
+<li><strong>Mục đích</strong>: Số hóa toàn trình Thông tư 17/2019/TT-BKHCN của Bộ KH&amp;CN, hỗ trợ doanh nghiệp tự đánh giá và Sở KH&amp;CN thẩm định trình độ công nghệ qua 26 tiêu chí thuộc 5 nhóm cốt lõi (T, E, O, R, I).</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>INNOVATION_ENTITY</code>, <code>BUYER</code> (Doanh nghiệp tự chấm điểm)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Doanh nghiệp đề nghị đánh giá</li>
+<li>🔑 <strong>Quyền hạn</strong>: Nhập số liệu &amp; Tính điểm tự động Điều 9 TT17</li>
+</ul>
+<p><img alt="Màn hình 9.1: Wizard Kê Khai 26 Tiêu Chí TT17" src="images/user_guide/29_wizard_26_tieu_chi_tt17.png" /></p>
+<h4 id="cac-buoc-thao-tac_31">Các bước thao tác:</h4>
+<ol>
+<li>Nhập số liệu và chọn thang điểm cho từng tiêu chí của 5 nhóm T-E-O-R-I.</li>
+<li>Hệ thống tự động tính <strong>Tổng điểm hiện trạng</strong>: $\tau = \sum (T + E + O + R + I)$ và <strong>Hệ số đồng bộ</strong>:
+   $$T_{ĐB} = \left( \frac{T}{30} \times \frac{E}{20} \times \frac{O}{20} \times \frac{R}{18} \times \frac{I}{12} \right)^{1/5}$$</li>
+<li>Bấm <strong>"Hoàn thành và tính kết quả"</strong> để tạo báo cáo đánh giá.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 9 &bull; Màn hình 9.1: Wizard Kê Khai 26 Tiêu Chí 5 Nhóm T-E-O-R-I (TT17)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-9-2" data-screen-num="9.2" data-roles="BUYER INNOVATION_ENTITY PROVINCIAL_ADMIN" data-module="9">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 9.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span> <span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span> <span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="92-bao-cao-anh-gia-trinh-o-cong-nghe-tt17-radar-chart">9.2. Báo Cáo Đánh Giá Trình Độ Công Nghệ TT17 &amp; Radar Chart</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/assessments/tt17</code></li>
+<li><strong>Mục đích</strong>: Báo cáo phân loại trình độ công nghệ theo 4 nhóm (Lạc hậu, Trung bình, Tiên tiến, Hiện đại), vẽ biểu đồ Radar SVG 5 chiều và liên thông điểm nghẽn sang Sàn nhu cầu TASK-03.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>INNOVATION_ENTITY</code>, <code>BUYER</code>, <code>PROVINCIAL_ADMIN</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Báo cáo kết quả đánh giá</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc kết quả phân loại &amp; Đẩy bài toán sang Sàn nhu cầu</li>
+</ul>
+<p><img alt="Màn hình 9.2: Báo Cáo Đánh Giá Trình Độ Công Nghệ TT17" src="images/user_guide/30_bao_cao_danh_gia_tt17.png" /></p>
+<h4 id="cac-buoc-thao-tac_32">Các bước thao tác:</h4>
+<ol>
+<li>Xem xếp hạng trình độ công nghệ và biểu đồ Radar 5 chiều.</li>
+<li>Bấm <strong>"Đăng bài toán khắc phục điểm nghẽn"</strong> để tự động đẩy dữ liệu sang Phiếu nhu cầu Buyer.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 9 &bull; Màn hình 9.2: Báo Cáo Đánh Giá Trình Độ Công Nghệ TT17 &amp; Radar Chart</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-9-3" data-screen-num="9.3" data-roles="INNOVATION_ENTITY PROVINCIAL_ADMIN" data-module="9">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 9.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd">💡 Doanh Nghiệp ĐMST</span> <span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="93-bao-cao-xuat-ban-chi-tiet-phu-luc-ii-iv">9.3. Báo Cáo Xuất Bản Chi Tiết Phụ Lục II &amp; IV</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/assessments/tt17/01928003-0000-7000-8000-000000000001/report</code></li>
+<li><strong>Mục đích</strong>: Bản in chi tiết đầy đủ 26 tiêu chí kèm biên bản đối soát giữa Doanh nghiệp tự chấm và Cán bộ Sở/Hội đồng thẩm định theo Phụ lục II/IV TT17.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>INNOVATION_ENTITY</code>, <code>PROVINCIAL_ADMIN</code> (Cán bộ Sở thẩm định)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Hồ sơ đánh giá chính thức</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc, Đối soát 2 cột điểm &amp; Xuất bản PDF</li>
+</ul>
+<p><img alt="Màn hình 9.3: Báo Cáo Xuất Bản Chi Tiết Phụ Lục II &amp; IV" src="images/user_guide/40_xuat_ban_bao_cao_tt17_chi_tiet.png" /></p>
+<h4 id="cac-buoc-thao-tac_33">Các bước thao tác:</h4>
+<ol>
+<li>Kiểm tra đối soát bảng điểm hai cột (DN tự chấm vs Hội đồng chấm).</li>
+<li>Nhấp <strong>"Xuất file PDF chính thức"</strong> phục vụ công tác thanh tra hoặc xin cấp vốn NATIF.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 9 &bull; Màn hình 9.3: Báo Cáo Xuất Bản Chi Tiết Phụ Lục II &amp; IV</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-9-4" data-screen-num="9.4" data-roles="BUYER" data-module="9">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 9.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0">🛒 Bên Mua (Doanh Nghiệp / DNNVV)</span></div>
+          </div>
+          <h3 id="94-khao-sat-anh-gia-nang-luc-tiep-nhan-buyer">9.4. Khảo Sát Đánh Giá Năng Lực Tiếp Nhận Buyer</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/assessments/buyer</code></li>
+<li><strong>Mục đích</strong>: Công cụ đo lường mức độ sẵn sàng hấp thụ công nghệ mới của Bên Mua trước khi ký hợp đồng chuyển giao.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>BUYER</code> (Doanh nghiệp Bên Mua)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Đánh giá năng lực nội bộ</li>
+<li>🔑 <strong>Quyền hạn</strong>: Kê khai &amp; Nhận chỉ số TAR Score</li>
+</ul>
+<p><img alt="Màn hình 9.4: Khảo Sát Đánh Giá Năng Lực Tiếp Nhận Buyer" src="images/user_guide/41_danh_gia_buyer_tni.png" /></p>
+<h4 id="cac-buoc-thao-tac_34">Các bước thao tác:</h4>
+<ol>
+<li>Trả lời các câu hỏi về hạ tầng nhà xưởng, tay nghề kỹ sư và ngân sách dự phòng.</li>
+<li>Nhận kết quả đánh giá năng lực tiếp nhận (TAR Score).</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 9 &bull; Màn hình 9.4: Khảo Sát Đánh Giá Năng Lực Tiếp Nhận Buyer</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-10" data-module="10">
+      <div class="module-header-row">
+        <h2 id="phan-he-10-quan-tri-he-thong-toi-cao-super-admin-console">PHÂN HỆ 10: QUẢN TRỊ HỆ THỐNG TỐI CAO - SUPER ADMIN CONSOLE</h2>
+        <span class="module-screen-counter" id="mod-counter-10">5 / 5 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-10-1" data-screen-num="10.1" data-roles="SUPER_ADMIN" data-module="10">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 10.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span></div>
+          </div>
+          <h3 id="101-tong-quan-trung-tam-ieu-hanh-quan-tri">10.1. Tổng Quan Trung Tâm Điều Hành Quản Trị</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/admin</code></li>
+<li><strong>Mục đích</strong>: Bảng điều khiển tối cao của Quản trị viên Trung ương (<code>SUPER_ADMIN</code>): Thống kê toàn quốc, số lượng hồ sơ chờ duyệt và trạng thái vận hành.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SUPER_ADMIN</code> (Quản trị viên tối cao)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Toàn hệ thống</li>
+<li>🔑 <strong>Quyền hạn</strong>: Toàn quyền giám sát &amp; Điều hành</li>
+</ul>
+<p><img alt="Màn hình 10.1: Tổng Quan Trung Tâm Điều Hành Quản Trị" src="images/user_guide/42_admin_tong_quan.png" /></p>
+<h4 id="cac-buoc-thao-tac_35">Các bước thao tác:</h4>
+<ol>
+<li>Xem tổng số hồ sơ chờ xử lý tại các tỉnh/thành.</li>
+<li>Truy cập nhanh vào các phân hệ quản trị chuyên sâu qua sidebar bên trái.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 10 &bull; Màn hình 10.1: Tổng Quan Trung Tâm Điều Hành Quản Trị</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-10-2" data-screen-num="10.2" data-roles="SUPER_ADMIN" data-module="10">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 10.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span></div>
+          </div>
+          <h3 id="102-trung-tam-kiem-duyet-5-luong-admin-toan-quoc">10.2. Trung Tâm Kiểm Duyệt 5 Luồng Admin Toàn Quốc</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/admin/approvals</code></li>
+<li><strong>Mục đích</strong>: Kiểm duyệt tập trung 5 luồng: Doanh nghiệp, Công nghệ, Chuyên gia, Nhu cầu và thực hiện quyền Hậu kiểm Trung ương &amp; Thu hồi (Revoke).</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SUPER_ADMIN</code> (Quản trị viên tối cao)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Hàng đợi toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Hậu kiểm, Phê duyệt tối cao &amp; Thu hồi (Revoke - BR-ADM-007)</li>
+</ul>
+<p><img alt="Màn hình 10.2: Trung Tâm Kiểm Duyệt 5 Luồng Admin Toàn Quốc" src="images/user_guide/24_trung_tam_kiem_duyet_admin.png" /></p>
+<h4 id="cac-buoc-thao-tac_36">Các bước thao tác:</h4>
+<ol>
+<li>Duyệt qua 5 tab hồ sơ chờ thẩm định.</li>
+<li>Xem tài liệu minh chứng và bấm <strong>"Phê duyệt"</strong> hoặc <strong>"Từ chối"</strong> kèm lý do.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 10 &bull; Màn hình 10.2: Trung Tâm Kiểm Duyệt 5 Luồng Admin Toàn Quốc</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-10-3" data-screen-num="10.3" data-roles="SUPER_ADMIN" data-module="10">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 10.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span></div>
+          </div>
+          <h3 id="103-quan-ly-ma-tran-vai-tro-nguoi-dung-quyen-nang">10.3. Quản Lý Ma Trận Vai Trò, Người Dùng &amp; Quyền Năng</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/admin/roles</code> <em>(Lưu ý: <code>/admin/users</code> chuyển hướng về đây)</em></li>
+<li><strong>Mục đích</strong>: Quản lý tài khoản toàn hệ thống, gán vai trò theo phạm vi 3 chiều: Vai trò (<code>Role</code>) $\times$ Địa bàn Tỉnh/Thành (<code>ScopeId</code>) $\times$ Lĩnh vực chuyên ngành (<code>SectorScope</code>).</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SUPER_ADMIN</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Toàn bộ tài khoản người dùng</li>
+<li>🔑 <strong>Quyền hạn</strong>: Phân quyền 10 Roles 3D Scoped RBAC, Khóa/Mở khóa tài khoản</li>
+</ul>
+<p><img alt="Màn hình 10.3: Quản Lý Ma Trận Vai Trò &amp; Danh Sách Vai Trò" src="images/user_guide/26_quan_ly_vai_tro_roles.png" /></p>
+<h4 id="cac-buoc-thao-tac_37">Các bước thao tác:</h4>
+<ol>
+<li>Xem chi tiết quyền hạn: Đọc, Ghi, Duyệt, Hậu kiểm, Xóa cho từng vai trò.</li>
+<li>Gán vai trò cho cán bộ kèm mã tỉnh trực thuộc (<code>ScopeId</code>). Ngăn chặn cán bộ tỉnh này can thiệp tỉnh khác.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 10 &bull; Màn hình 10.3: Quản Lý Ma Trận Vai Trò, Người Dùng &amp; Quyền Năng</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-10-4" data-screen-num="10.4" data-roles="SUPER_ADMIN" data-module="10">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 10.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span></div>
+          </div>
+          <h3 id="104-quan-ly-cay-hanh-chinh-3-cap-to-chuc">10.4. Quản Lý Cây Hành Chính 3 Cấp Tổ Chức</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/admin/org-tree</code></li>
+<li><strong>Mục đích</strong>: Vận hành cây hành chính 3 cấp (Trung ương $\rightarrow$ Tỉnh/Thành $\rightarrow$ Quận/Huyện/Viện liên kết) kết nối trực tiếp bảng <code>identity.organization_units</code> trong PostgreSQL.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SUPER_ADMIN</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Cơ cấu tổ chức toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Thêm, Sửa, Vô hiệu hóa đơn vị (Cưỡng chế chặn xóa BR-TREE-003)</li>
+</ul>
+<p><img alt="Màn hình 10.4: Quản Lý Cây Hành Chính 3 Cấp Tổ Chức" src="images/user_guide/27_quan_ly_cay_34_tinh.png" /></p>
+<h4 id="cac-buoc-thao-tac_38">Các bước thao tác:</h4>
+<ol>
+<li>Duyệt cấu trúc cây phân cấp các Sở KH&amp;CN và Trung tâm ĐMST.</li>
+<li>Thêm mới đơn vị hoặc chỉnh sửa thông tin liên hệ.</li>
+<li>Cưỡng chế quy tắc ràng buộc <code>BR-TREE-003</code> (Chặn xóa đơn vị cha nếu còn đơn vị con đang active).</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 10 &bull; Màn hình 10.4: Quản Lý Cây Hành Chính 3 Cấp Tổ Chức</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-10-5" data-screen-num="10.5" data-roles="SUPER_ADMIN AUDITOR" data-module="10">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 10.5</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe">👑 Quản Trị Tối Cao</span> <span class="screen-role-tag" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0">📋 Kiểm Toán Viên Độc Lập</span></div>
+          </div>
+          <h3 id="105-dashboard-thong-ke-csdl-304-doanh-nghiep">10.5. Dashboard Thống Kê CSDL 304 Doanh Nghiệp</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/admin/enterprises/dashboard</code></li>
+<li><strong>Mục đích</strong>: Báo cáo tổng thể phân bổ địa lý 3 miền và cơ cấu ngành của 304 DN ĐMST có MST thật phục vụ công tác quy hoạch.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>SUPER_ADMIN</code>, <code>AUDITOR</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Báo cáo phân tích toàn quốc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Đọc &amp; Xuất báo cáo thống kê</li>
+</ul>
+<p><img alt="Màn hình 10.5: Dashboard Thống Kê CSDL 304 Doanh Nghiệp" src="images/user_guide/06_dashboard_304_dn.png" /></p>
+<h4 id="cac-buoc-thao-tac_39">Các bước thao tác:</h4>
+<ol>
+<li>Lọc xem theo vùng miền (Bắc/Trung/Nam) và nhóm ngành công nghệ cao.</li>
+<li>Xuất báo cáo thống kê ra file Excel/PDF.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 10 &bull; Màn hình 10.5: Dashboard Thống Kê CSDL 304 Doanh Nghiệp</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+
+    <section class="module-section" id="module-11" data-module="11">
+      <div class="module-header-row">
+        <h2 id="phan-he-11-cong-cong-vu-cap-so-khcn-provincial-gov-console">PHÂN HỆ 11: CỔNG CÔNG VỤ CẤP SỞ KH&amp;CN - PROVINCIAL GOV CONSOLE</h2>
+        <span class="module-screen-counter" id="mod-counter-11">7 / 7 màn hình</span>
+      </div>
+      <div class="module-screens-container">
+        
+        <article class="screen-card" id="screen-11-1" data-screen-num="11.1" data-roles="PROVINCIAL_ADMIN" data-module="11">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 11.1</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="111-cong-tac-nghiep-cap-so-khcn-ia-ban">11.1. Cổng Tác Nghiệp Cấp Sở KH&amp;CN Địa Bàn</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/gov</code></li>
+<li><strong>Mục đích</strong>: Bàn làm việc dành riêng cho Cán bộ Sở KH&amp;CN tỉnh/thành (<code>PROVINCIAL_ADMIN</code>), tự động lọc dữ liệu theo địa bàn được phân quyền (ví dụ: Sở Hà Nội chỉ quản lý hồ sơ Hà Nội).</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PROVINCIAL_ADMIN</code> (Cán bộ Sở KH&amp;CN cấp Tỉnh)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Phạm vi địa bàn Tỉnh/Thành được phân công</li>
+<li>🔑 <strong>Quyền hạn</strong>: Giám sát &amp; Điều hành tác nghiệp Cấp 2</li>
+</ul>
+<p><img alt="Màn hình 11.1: Cổng Tác Nghiệp Cấp Sở KH&amp;CN Địa Bàn" src="images/user_guide/28_cong_tac_nghiep_cap_so.png" /></p>
+<h4 id="cac-buoc-thao-tac_40">Các bước thao tác:</h4>
+<ol>
+<li>Theo dõi tổng quan các chỉ số trên địa bàn: Số hồ sơ công nghệ chờ duyệt, số chuyên gia địa phương, số cơ hội kết nối đang triển khai.</li>
+<li>Truy cập nhanh vào các tính năng công vụ của Sở qua thanh menu.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 11 &bull; Màn hình 11.1: Cổng Tác Nghiệp Cấp Sở KH&amp;CN Địa Bàn</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-11-2" data-screen-num="11.2" data-roles="PROVINCIAL_ADMIN" data-module="11">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 11.2</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="112-trung-tam-kiem-duyet-ho-so-cap-so">11.2. Trung Tâm Kiểm Duyệt Hồ Sơ Cấp Sở</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/gov/approvals</code></li>
+<li><strong>Mục đích</strong>: Cán bộ Sở thẩm định hồ sơ công nghệ chào bán và hồ sơ chuyên gia thuộc địa bàn tỉnh quản lý trước khi niêm yết lên sàn quốc gia.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PROVINCIAL_ADMIN</code> (Cán bộ Sở KH&amp;CN)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Địa bàn Tỉnh trực thuộc</li>
+<li>🔑 <strong>Quyền hạn</strong>: Thẩm định &amp; Phê duyệt Cấp 2</li>
+</ul>
+<p><img alt="Màn hình 11.2: Trung Tâm Kiểm Duyệt Hồ Sơ Cấp Sở" src="images/user_guide/44_gov_kiem_duyet_so.png" /></p>
+<h4 id="cac-buoc-thao-tac_41">Các bước thao tác:</h4>
+<ol>
+<li>Mở hồ sơ công nghệ chờ duyệt để đối soát tính xác thực của Bằng sáng chế và mức TRL.</li>
+<li>Bấm <strong>"Phê duyệt"</strong> (công nghệ được niêm yết công khai) hoặc <strong>"Từ chối"</strong> kèm biên bản ghi rõ lý do.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 11 &bull; Màn hình 11.2: Trung Tâm Kiểm Duyệt Hồ Sơ Cấp Sở</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-11-3" data-screen-num="11.3" data-roles="PROVINCIAL_ADMIN" data-module="11">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 11.3</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="113-tham-inh-ho-so-doanh-nghiep-thuoc-tinh">11.3. Thẩm Định Hồ Sơ Doanh Nghiệp Thuộc Tỉnh</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/gov/approvals/enterprises</code></li>
+<li><strong>Mục đích</strong>: Cán bộ Sở thẩm định tính hợp lệ của hồ sơ Doanh nghiệp ĐMST trên địa bàn để cấp huy hiệu <code>Verified Enterprise Badge</code>.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PROVINCIAL_ADMIN</code> (Cán bộ Sở KH&amp;CN)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Doanh nghiệp trên địa bàn tỉnh</li>
+<li>🔑 <strong>Quyền hạn</strong>: Xác thực &amp; Cấp huy hiệu DN ĐMST</li>
+</ul>
+<p><img alt="Màn hình 11.3: Thẩm Định Hồ Sơ Doanh Nghiệp Thuộc Tỉnh" src="images/user_guide/45_gov_tham_dinh_dn.png" /></p>
+<h4 id="cac-buoc-thao-tac_42">Các bước thao tác:</h4>
+<ol>
+<li>Đối soát thông tin ĐKKD, giấy chứng nhận Doanh nghiệp KH&amp;CN.</li>
+<li>Xác nhận thẩm định và cấp huy hiệu xác thực.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 11 &bull; Màn hình 11.3: Thẩm Định Hồ Sơ Doanh Nghiệp Thuộc Tỉnh</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-11-4" data-screen-num="11.4" data-roles="PROVINCIAL_ADMIN" data-module="11">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 11.4</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="114-giam-sat-bai-toan-nhu-cau-tren-ia-ban-tinh">11.4. Giám Sát Bài Toán Nhu Cầu Trên Địa Bàn Tỉnh</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/gov/demands</code></li>
+<li><strong>Mục đích</strong>: Cơ quan quản lý theo dõi các điểm nghẽn kỹ thuật và nhu cầu công nghệ của các DNNVV trên địa bàn tỉnh để xây dựng chính sách hỗ trợ.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PROVINCIAL_ADMIN</code> (Cán bộ Sở KH&amp;CN)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Toàn bộ DNNVV trong tỉnh</li>
+<li>🔑 <strong>Quyền hạn</strong>: Giám sát nhu cầu &amp; Đề xuất chính sách hỗ trợ</li>
+</ul>
+<p><img alt="Màn hình 11.4: Giám Sát Bài Toán Nhu Cầu Trên Địa Bàn Tỉnh" src="images/user_guide/46_gov_giam_sat_nhu_cau.png" /></p>
+<h4 id="cac-buoc-thao-tac_43">Các bước thao tác:</h4>
+<ol>
+<li>Lọc các bài toán theo huyện/thị xã và nhóm ngành công nghiệp trọng điểm.</li>
+<li>Đề xuất gói hỗ trợ đổi mới công nghệ từ ngân sách địa phương.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 11 &bull; Màn hình 11.4: Giám Sát Bài Toán Nhu Cầu Trên Địa Bàn Tỉnh</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-11-5" data-screen-num="11.5" data-roles="PROVINCIAL_ADMIN" data-module="11">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 11.5</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="115-giam-sat-co-hoi-hop-tac-ia-ban-sla-48h">11.5. Giám Sát Cơ Hội Hợp Tác Địa Bàn (SLA 48h)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/gov/opportunities</code></li>
+<li><strong>Mục đích</strong>: Giám sát tiến độ đàm phán cung cầu giữa các doanh nghiệp trong tỉnh, phát hiện các cơ hội bị tắc quá 48h (SLA cảnh báo) để can thiệp hỗ trợ.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PROVINCIAL_ADMIN</code> (Cán bộ Sở KH&amp;CN)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Các phiên đàm phán trên địa bàn tỉnh</li>
+<li>🔑 <strong>Quyền hạn</strong>: Giám sát SLA &amp; Hỗ trợ điều phối kết nối</li>
+</ul>
+<p><img alt="Màn hình 11.5: Giám Sát Cơ Hội Hợp Tác Địa Bàn" src="images/user_guide/47_gov_giam_sat_co_hoi.png" /></p>
+<h4 id="cac-buoc-thao-tac_44">Các bước thao tác:</h4>
+<ol>
+<li>Xem danh sách cơ hội có cờ cảnh báo quá hạn phản hồi (SLA 48h).</li>
+<li>Điều phối cán bộ liên hệ hỗ trợ hai bên tháo gỡ vướng mắc.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 11 &bull; Màn hình 11.5: Giám Sát Cơ Hội Hợp Tác Địa Bàn (SLA 48h)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-11-6" data-screen-num="11.6" data-roles="PROVINCIAL_ADMIN" data-module="11">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 11.6</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="116-tham-inh-anh-gia-cong-nghe-tt17-cap-so">11.6. Thẩm Định Đánh Giá Công Nghệ TT17 Cấp Sở</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/gov/assessments/tt17</code></li>
+<li><strong>Mục đích</strong>: Hội đồng khoa học của Sở chấm thẩm định 26 tiêu chí TT17 cho các doanh nghiệp nộp hồ sơ xin đánh giá trình độ công nghệ.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PROVINCIAL_ADMIN</code> (Hội đồng thẩm định Sở KH&amp;CN)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Doanh nghiệp xin cấp chứng nhận trong tỉnh</li>
+<li>🔑 <strong>Quyền hạn</strong>: Chấm điểm thẩm định Phụ lục IV TT17 &amp; Phê duyệt kết quả</li>
+</ul>
+<p><img alt="Màn hình 11.6: Thẩm Định Đánh Giá Công Nghệ TT17 Cấp Sở" src="images/user_guide/48_gov_tham_dinh_tt17.png" /></p>
+<h4 id="cac-buoc-thao-tac_45">Các bước thao tác:</h4>
+<ol>
+<li>Xem điểm doanh nghiệp tự chấm ở cột bên trái.</li>
+<li>Nhập điểm thẩm định của Hội đồng ở cột bên phải theo Phụ lục IV TT17.</li>
+<li>Ký duyệt biên bản thẩm định chính thức.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 11 &bull; Màn hình 11.6: Thẩm Định Đánh Giá Công Nghệ TT17 Cấp Sở</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-11-7" data-screen-num="11.7" data-roles="PROVINCIAL_ADMIN" data-module="11">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 11.7</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3">🏛️ Cán Bộ Sở KH&CN Tỉnh</span></div>
+          </div>
+          <h3 id="117-phan-cong-can-bo-so-tac-nghiep">11.7. Phân Công Cán Bộ Sở Tác Nghiệp</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/gov/settings/staff</code></li>
+<li><strong>Mục đích</strong>: Lãnh đạo Sở KH&amp;CN phân công nhiệm vụ phụ trách thẩm định cho từng chuyên viên theo lĩnh vực (Nông nghiệp, Y dược, Công nghệ thông tin...).</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PROVINCIAL_ADMIN</code> (Lãnh đạo Sở KH&amp;CN)</li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Nội bộ cơ quan Sở KH&amp;CN</li>
+<li>🔑 <strong>Quyền hạn</strong>: Phân công &amp; Quản lý nhiệm vụ chuyên viên</li>
+</ul>
+<p><img alt="Màn hình 11.7: Phân Công Cán Bộ Sở Tác Nghiệp" src="images/user_guide/49_gov_phan_cong_can_bo.png" /></p>
+<h4 id="cac-buoc-thao-tac_46">Các bước thao tác:</h4>
+<ol>
+<li>Xem danh sách chuyên viên trực thuộc Sở.</li>
+<li>Gán phân nhóm lĩnh vực chuyên môn phụ trách thẩm định hồ sơ.</li>
+</ol>
+
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 11 &bull; Màn hình 11.7: Phân Công Cán Bộ Sở Tác Nghiệp</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+<h2 id="12-quy-chuan-an-toan-du-lieu-huong-dan-van-hanh-he-thong">12. QUY CHUẨN AN TOÀN DỮ LIỆU &amp; HƯỚNG DẪN VẬN HÀNH HỆ THỐNG</h2>
+<h3 id="1-ky-luat-bao-mat-du-lieu-ca-nhan-pdpd-compliance">1. Kỷ Luật Bảo Mật Dữ Liệu Cá Nhân (PDPD Compliance):</h3>
+<ul>
+<li>Toàn bộ các thông tin định danh cá nhân (Số CMND/CCCD, địa chỉ nhà riêng, số điện thoại cá nhân) <strong>tuyệt đối không hiển thị công khai</strong> trên các trang Marketplace hay Danh bạ.</li>
+<li>Hồ sơ Buyer và Seller khi niêm yết trên sàn công cộng bắt buộc qua cơ chế <strong>PDPD Masking</strong> tự động. Thông tin liên hệ trực tiếp chỉ được mở trong phòng Deal Room 1-1 sau khi cả hai bên đã ký thỏa thuận đồng ý tiếp nhận.</li>
+</ul>
+<h3 id="2-ky-luat-van-hanh-phan-cap-hau-kiem">2. Kỷ Luật Vận Hành Phân Cấp &amp; Hậu Kiểm:</h3>
+<ul>
+<li>Cán bộ Sở KH&amp;CN cấp Tỉnh (<code>PROVINCIAL_ADMIN</code>) có toàn quyền thẩm định công nghệ và chuyên gia trên địa bàn được phân công.</li>
+<li>Quản trị viên Trung ương (<code>SUPER_ADMIN</code>) vận hành theo cơ chế hậu kiểm (Post-Audit); chỉ thực hiện hành động thu hồi (<code>REVOKE</code>) khi phát hiện vi phạm bản quyền hoặc có khiếu nại pháp lý, kèm theo việc ghi nhận nhật ký bất biến (Audit Log).</li>
+</ul>
+<h3 id="3-quy-chuan-ky-thuat-khi-trien-khai-deployment-checklist">3. Quy Chuẩn Kỹ Thuật Khi Triển Khai (Deployment Checklist):</h3>
+<ul>
+<li><strong>Cơ sở dữ liệu</strong>: Đảm bảo toàn bộ migrations trên PostgreSQL thật đã được áp dụng đầy đủ. Không sử dụng dữ liệu tĩnh (mock).</li>
+<li><strong>Frontend</strong>: Ứng dụng Next.js 15 App Router hỗ trợ đầy đủ 5 trạng thái UX qua component chuẩn <code>&lt;Async&gt;</code> (<code>Loading</code>, <code>Empty</code>, <code>Error</code>, <code>Success</code>, <code>Partial</code>).</li>
+<li><strong>Kiểm thử tự động</strong>: Định kỳ chạy <code>./Agent/scripts/guard-rails.sh</code> để kiểm tra độ nguyên vẹn của mã nguồn, compiler và các invariants kiểm thử trước khi bàn giao các bản cập nhật mới.</li>
+</ul>
+<hr />
+<p><em>Tài liệu được phê duyệt và ban hành bởi Product Owner kiêm Project Manager (PO/PM) dự án NacenTech.</em></p>
+
+<script>
+// Data Registry of Roles and Screens
+const ROLE_CONFIGS = {"PUBLIC_USER": {"code": "PUBLIC_USER", "title": "Người Dùng Đại Chúng", "icon": "🌐", "color": "#2563eb", "bg": "#eff6ff", "border": "#bfdbfe", "desc": "Khách vãng lai và thành viên mới. Xem sàn chào bán/nhu cầu, tra cứu danh bạ DN & Chuyên gia, đăng ký tài khoản, đăng ký vé Techmart."}, "BUYER": {"code": "BUYER", "title": "Bên Mua (Doanh Nghiệp / DNNVV)", "icon": "🛒", "color": "#059669", "bg": "#ecfdf5", "border": "#a7f3d0", "desc": "DNNVV có nhu cầu công nghệ. Khảo sát sâu 7 phần A-G, đăng bài toán nhu cầu, chấm điểm TNI, quản lý vé nhu cầu và đàm phán trong Deal Room."}, "SELLER": {"code": "SELLER", "title": "Bên Bán (Nguồn Cung Công Nghệ)", "icon": "🏭", "color": "#d97706", "bg": "#fffbeb", "border": "#fde68a", "desc": "Viện, trường, doanh nghiệp cung ứng công nghệ. Đăng hồ sơ chào bán, bộ tứ SHTT/TRL, chọn Sở tiếp nhận thẩm định, quản lý kho công nghệ, đàm phán MOU."}, "VERIFIED_EXPERT": {"code": "VERIFIED_EXPERT", "title": "Chuyên Gia KH&CN", "icon": "🎓", "color": "#7c3aed", "bg": "#f5f3ff", "border": "#ddd6fe", "desc": "Nhà khoa học, chuyên gia đã xác thực. Quản lý Sổ tay LLKH, scan CV bằng AI, tư vấn kỹ thuật, tham gia Deal Room và hỗ trợ định giá chuyển giao."}, "INNOVATION_ENTITY": {"code": "INNOVATION_ENTITY", "title": "Doanh Nghiệp ĐMST", "icon": "💡", "color": "#0284c7", "bg": "#f0f9ff", "border": "#bae6fd", "desc": "Chủ thể ĐMST được định danh. Quản lý hồ sơ 10 nhóm trường, bổ sung bằng sáng chế SHTT, tự đánh giá 26 tiêu chí TT17."}, "PROVINCIAL_ADMIN": {"code": "PROVINCIAL_ADMIN", "title": "Cán Bộ Sở KH&CN Tỉnh", "icon": "🏛️", "color": "#e11d48", "bg": "#fff1f2", "border": "#fecdd3", "desc": "Cơ quan quản lý địa phương (Scope Tỉnh/Thành). Thẩm định hồ sơ công nghệ, duyệt chuyên gia địa bàn, giám sát kết nối cung cầu (SLA 48h), chấm TT17."}, "SUPER_ADMIN": {"code": "SUPER_ADMIN", "title": "Quản Trị Tối Cao", "icon": "👑", "color": "#4338ca", "bg": "#eef2ff", "border": "#c7d2fe", "desc": "Quản trị viên hệ thống quốc gia. Vận hành phân quyền 10 Roles 3D Scoped RBAC, quản lý người dùng, cây hành chính 3 cấp, hậu kiểm & thu hồi."}, "AUDITOR": {"code": "AUDITOR", "title": "Kiểm Toán Viên Độc Lập", "icon": "📋", "color": "#475569", "bg": "#f8fafc", "border": "#e2e8f0", "desc": "Cán bộ giám sát độc lập. Tra cứu nhật ký tác nghiệp bất biến (Audit Trail), kiểm tra tuân thủ an toàn dữ liệu PDPD."}};
+const ALL_SCREENS = [{"num":"1.1","id":"11-ang-nhap-he-thong","title":"Đăng Nhập Hệ Thống","module":1,"roles":["PUBLIC_USER","BUYER","SELLER","VERIFIED_EXPERT","INNOVATION_ENTITY","PROVINCIAL_ADMIN","SUPER_ADMIN","AUDITOR"]},{"num":"1.2","id":"12-ang-ky-tai-khoan-moi","title":"Đăng Ký Tài Khoản Mới","module":1,"roles":["PUBLIC_USER"]},{"num":"1.3","id":"13-cai-at-tai-khoan-he-thong-giao-dien","title":"Cài Đặt Tài Khoản Thành Viên Đại Chúng (PUBLIC_USER)","module":1,"roles":["PUBLIC_USER"]},{"num":"2.1","id":"21-trang-chu-portal-nacentwin","title":"Trang Chủ Portal Nacentwin","module":2,"roles":["PUBLIC_USER"]},{"num":"2.2","id":"22-san-su-kien-techmart-phien-chao-gia","title":"Sàn Sự Kiện Techmart &amp; Phiên Chào Giá","module":2,"roles":["PUBLIC_USER","BUYER","SELLER"]},{"num":"2.3","id":"23-ang-ky-ve-tham-quan-techmart","title":"Đăng Ký Vé Tham Quan Techmart","module":2,"roles":["PUBLIC_USER"]},{"num":"2.4","id":"24-trung-tam-tra-cuu-wireframes-noi-bo","title":"Trung Tâm Tra Cứu Wireframes Nội Bộ","module":2,"roles":["SUPER_ADMIN","AUDITOR"]},{"num":"3.1","id":"31-danh-ba-304-doanh-nghiep-mst-toan-quoc","title":"Danh Bạ 304 Doanh Nghiệp ĐMST Toàn Quốc","module":3,"roles":["PUBLIC_USER","BUYER","SELLER","PROVINCIAL_ADMIN"]},{"num":"3.2","id":"32-ho-so-doanh-nghiep-mst-cong-khai","title":"Hồ Sơ Doanh Nghiệp ĐMST Công Khai","module":3,"roles":["PUBLIC_USER","BUYER","SELLER"]},{"num":"3.3","id":"33-ban-lam-viec-doanh-nghiep-trong-portal","title":"Bàn Làm Việc Doanh Nghiệp Trong Portal","module":3,"roles":["INNOVATION_ENTITY"]},{"num":"3.4","id":"34-tu-quan-tri-chinh-sua-ho-so-dn","title":"Tự Quản Trị &amp; Chỉnh Sửa Hồ Sơ DN","module":3,"roles":["INNOVATION_ENTITY"]},{"num":"4.1","id":"41-phieu-khao-sat-sau-nhu-cau-dnnvv-7-phan-a-rightarrow-g","title":"Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần (A $\\rightarrow$ G)","module":4,"roles":["BUYER"]},{"num":"4.2","id":"42-san-niem-yet-nhu-cau-mua-cong-nghe","title":"Sàn Niêm Yết Nhu Cầu Mua Công Nghệ","module":4,"roles":["PUBLIC_USER","SELLER","VERIFIED_EXPERT"]},{"num":"4.3","id":"43-chi-tiet-bai-toan-nhu-cau-ky-thuat-pdpd-masked","title":"Chi Tiết Bài Toán Nhu Cầu Kỹ Thuật (PDPD Masked)","module":4,"roles":["SELLER","VERIFIED_EXPERT"]},{"num":"4.4","id":"44-ban-lam-viec-quan-ly-ve-nhu-cau-cua-buyer","title":"Bàn Làm Việc Quản Lý Vé Nhu Cầu Của Buyer","module":4,"roles":["BUYER"]},{"num":"5.1","id":"51-san-chao-ban-cong-nghe-18-nganh","title":"Sàn Chào Bán Công Nghệ 18 Ngành","module":5,"roles":["PUBLIC_USER","BUYER"]},{"num":"5.2","id":"52-chi-tiet-ho-so-chao-ban-bo-tu-shtttrl","title":"Chi Tiết Hồ Sơ Chào Bán &amp; Bộ Tứ SHTT/TRL","module":5,"roles":["PUBLIC_USER","BUYER"]},{"num":"5.3","id":"53-ban-lam-viec-quan-ly-kho-cong-nghe-seller","title":"Bàn Làm Việc Quản Lý Kho Công Nghệ Seller","module":5,"roles":["SELLER"]},{"num":"5.4","id":"54-tao-ho-so-chao-ban-moi-chon-so-tiep-nhan","title":"Tạo Hồ Sơ Chào Bán Mới &amp; Chọn Sở Tiếp Nhận","module":5,"roles":["SELLER"]},{"num":"5.5","id":"55-chinh-sua-ho-so-chao-ban-a-niem-yet","title":"Chỉnh Sửa Hồ Sơ Chào Bán Đã Niêm Yết","module":5,"roles":["SELLER"]},{"num":"6.1","id":"61-danh-ba-chuyen-gia-khcn-cong-khai","title":"Danh Bạ Chuyên Gia KH&amp;CN Công Khai","module":6,"roles":["PUBLIC_USER","BUYER","INNOVATION_ENTITY"]},{"num":"6.2","id":"62-so-tay-chuyen-gia-profile-chi-tiet","title":"Sổ Tay Chuyên Gia Profile Chi Tiết","module":6,"roles":["PUBLIC_USER","BUYER"]},{"num":"6.3","id":"63-form-nang-hang-chuyen-gia-3-buoc","title":"Form Nâng Hạng Chuyên Gia 3 Bước","module":6,"roles":["PUBLIC_USER"]},{"num":"6.4","id":"64-ban-lam-viec-dashboard-chuyen-gia","title":"Bàn Làm Việc Dashboard Chuyên Gia","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.5","id":"65-chinh-sua-ho-so-chuyen-gia-completeness-engine","title":"Chỉnh Sửa Hồ Sơ Chuyên Gia &amp; Completeness Engine","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.6","id":"screen-6-6","title":"Tài Khoản Chuyên Gia KH&CN (/portal/expert/account)","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"7.1","id":"71-ban-o-kham-pha-ma-tran-linh-vuc-cong-nghe","title":"Bản Đồ Khám Phá Ma Trận Lĩnh Vực - Công Nghệ","module":7,"roles":["PUBLIC_USER","BUYER","SELLER","VERIFIED_EXPERT"]},{"num":"7.2","id":"72-quan-tri-danh-muc-nganh-trong-so-matching","title":"Quản Trị Danh Mục Ngành &amp; Trọng Số Matching","module":7,"roles":["SUPER_ADMIN"]},{"num":"8.1","id":"81-khong-gian-portal-hub-ieu-huong-vai-tro","title":"Không Gian Portal Hub Điều Hướng Vai Trò","module":8,"roles":["BUYER","SELLER","VERIFIED_EXPERT","INNOVATION_ENTITY"]},{"num":"8.2","id":"82-radar-ghep-noi-cung-cau-ai-2-chieu","title":"Radar Ghép Nối Cung Cầu AI 2 Chiều","module":8,"roles":["BUYER","SELLER"]},{"num":"8.3","id":"83-bang-kanban-5-buoc-quan-ly-pipeline-co-hoi","title":"Bảng Kanban 5 Bước Quản Lý Pipeline Cơ Hội","module":8,"roles":["BUYER","SELLER","PROVINCIAL_ADMIN"]},{"num":"8.4","id":"84-phong-hop-tac-deal-room-1-1-soan-thao-mou","title":"Phòng Hợp Tác Deal Room 1-1 &amp; Soạn Thảo MOU","module":8,"roles":["BUYER","SELLER","VERIFIED_EXPERT"]},{"num":"9.1","id":"91-wizard-ke-khai-26-tieu-chi-5-nhom-t-e-o-r-i-tt17","title":"Wizard Kê Khai 26 Tiêu Chí 5 Nhóm T-E-O-R-I (TT17)","module":9,"roles":["BUYER","INNOVATION_ENTITY"]},{"num":"9.2","id":"92-bao-cao-anh-gia-trinh-o-cong-nghe-tt17-radar-chart","title":"Báo Cáo Đánh Giá Trình Độ Công Nghệ TT17 &amp; Radar Chart","module":9,"roles":["BUYER","INNOVATION_ENTITY","PROVINCIAL_ADMIN"]},{"num":"9.3","id":"93-bao-cao-xuat-ban-chi-tiet-phu-luc-ii-iv","title":"Báo Cáo Xuất Bản Chi Tiết Phụ Lục II &amp; IV","module":9,"roles":["INNOVATION_ENTITY","PROVINCIAL_ADMIN"]},{"num":"9.4","id":"94-khao-sat-anh-gia-nang-luc-tiep-nhan-buyer","title":"Khảo Sát Đánh Giá Năng Lực Tiếp Nhận Buyer","module":9,"roles":["BUYER"]},{"num":"10.1","id":"101-tong-quan-trung-tam-ieu-hanh-quan-tri","title":"Tổng Quan Trung Tâm Điều Hành Quản Trị","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.2","id":"102-trung-tam-kiem-duyet-5-luong-admin-toan-quoc","title":"Trung Tâm Kiểm Duyệt 5 Luồng Admin Toàn Quốc","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.3","id":"103-quan-ly-ma-tran-vai-tro-nguoi-dung-quyen-nang","title":"Quản Lý Ma Trận Vai Trò, Người Dùng &amp; Quyền Năng","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.4","id":"104-quan-ly-cay-hanh-chinh-3-cap-to-chuc","title":"Quản Lý Cây Hành Chính 3 Cấp Tổ Chức","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.5","id":"105-dashboard-thong-ke-csdl-304-doanh-nghiep","title":"Dashboard Thống Kê CSDL 304 Doanh Nghiệp","module":10,"roles":["SUPER_ADMIN","AUDITOR"]},{"num":"11.1","id":"111-cong-tac-nghiep-cap-so-khcn-ia-ban","title":"Cổng Tác Nghiệp Cấp Sở KH&amp;CN Địa Bàn","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.2","id":"112-trung-tam-kiem-duyet-ho-so-cap-so","title":"Trung Tâm Kiểm Duyệt Hồ Sơ Cấp Sở","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.3","id":"113-tham-inh-ho-so-doanh-nghiep-thuoc-tinh","title":"Thẩm Định Hồ Sơ Doanh Nghiệp Thuộc Tỉnh","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.4","id":"114-giam-sat-bai-toan-nhu-cau-tren-ia-ban-tinh","title":"Giám Sát Bài Toán Nhu Cầu Trên Địa Bàn Tỉnh","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.5","id":"115-giam-sat-co-hoi-hop-tac-ia-ban-sla-48h","title":"Giám Sát Cơ Hội Hợp Tác Địa Bàn (SLA 48h)","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.6","id":"116-tham-inh-anh-gia-cong-nghe-tt17-cap-so","title":"Thẩm Định Đánh Giá Công Nghệ TT17 Cấp Sở","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.7","id":"117-phan-cong-can-bo-so-tac-nghiep","title":"Phân Công Cán Bộ Sở Tác Nghiệp","module":11,"roles":["PROVINCIAL_ADMIN"]}];
+
+let currentRole = 'ALL';
+let currentSearch = '';
+
+function initFilter() {
+  // Check URL hash, e.g. #role=BUYER or #search=xyz
+  const hash = window.location.hash.replace('#', '');
+  const params = new URLSearchParams(hash);
+  const hashRole = params.get('role');
+  const hashSearch = params.get('q');
+  
+  if (hashRole && (hashRole === 'ALL' || ROLE_CONFIGS[hashRole])) {
+    currentRole = hashRole;
+  }
+  if (hashSearch) {
+    currentSearch = hashSearch;
+    document.getElementById('screenSearchInput').value = hashSearch;
+    document.getElementById('clearSearchBtn').style.display = 'flex';
+  }
+  
+  applyFilter();
+}
+
+function selectRole(roleCode) {
+  currentRole = roleCode;
+  applyFilter();
+  updateUrlHash();
+}
+
+function handleSearch(val) {
+  currentSearch = val.trim();
+  const clearBtn = document.getElementById('clearSearchBtn');
+  if (currentSearch.length > 0) {
+    clearBtn.style.display = 'flex';
+  } else {
+    clearBtn.style.display = 'none';
+  }
+  applyFilter();
+  updateUrlHash();
+}
+
+function clearSearch() {
+  document.getElementById('screenSearchInput').value = '';
+  currentSearch = '';
+  document.getElementById('clearSearchBtn').style.display = 'none';
+  applyFilter();
+  updateUrlHash();
+}
+
+function resetFilter() {
+  currentRole = 'ALL';
+  currentSearch = '';
+  document.getElementById('screenSearchInput').value = '';
+  document.getElementById('clearSearchBtn').style.display = 'none';
+  applyFilter();
+  updateUrlHash();
+}
+
+function scrollToFilter(e) {
+  if (e) e.preventDefault();
+  const tb = document.getElementById('role-filter-toolbar');
+  if (tb) {
+    tb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function updateUrlHash() {
+  const params = new URLSearchParams();
+  if (currentRole !== 'ALL') params.set('role', currentRole);
+  if (currentSearch) params.set('q', currentSearch);
+  const hashStr = params.toString();
+  if (hashStr) {
+    history.replaceState(null, '', '#' + hashStr);
+  } else {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+}
+
+function applyFilter() {
+  // 1. Update Tabs UI
+  const tabs = document.querySelectorAll('.role-tab');
+  tabs.forEach(tab => {
+    const r = tab.getAttribute('data-role');
+    if (r === currentRole) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // 2. Update Active Hero Banner
+  const hero = document.getElementById('activeRoleHero');
+  const heroIcon = document.getElementById('heroRoleIcon');
+  const heroTitle = document.getElementById('heroRoleName');
+  const heroDesc = document.getElementById('heroRoleDesc');
+  const heroStat = document.getElementById('heroStatPill');
+  const chipsContainer = document.getElementById('heroChipsContainer');
+
+  const floatBadge = document.getElementById('floatingRoleName');
+  if (floatBadge) {
+    if (currentRole !== 'ALL' && ROLE_CONFIGS[currentRole]) {
+      floatBadge.textContent = ROLE_CONFIGS[currentRole].code;
+      floatBadge.style.background = ROLE_CONFIGS[currentRole].border;
+      floatBadge.style.color = ROLE_CONFIGS[currentRole].color;
+    } else {
+      floatBadge.textContent = 'TẤT CẢ (48)';
+      floatBadge.style.background = '#38bdf8';
+      floatBadge.style.color = '#0f172a';
+    }
+  }
+
+  if (currentRole !== 'ALL' && ROLE_CONFIGS[currentRole]) {
+    const cfg = ROLE_CONFIGS[currentRole];
+    hero.style.display = 'block';
+    hero.style.background = cfg.bg;
+    hero.style.borderColor = cfg.border;
+    heroIcon.textContent = cfg.icon;
+    heroTitle.textContent = `${cfg.title} (${cfg.code})`;
+    heroTitle.style.color = cfg.color;
+    heroDesc.textContent = cfg.desc;
+    heroDesc.style.color = cfg.color;
+    heroStat.style.background = cfg.color;
+  } else {
+    hero.style.display = 'none';
+  }
+
+  // 3. Filter screen cards
+  const searchLower = currentSearch.toLowerCase();
+  let totalVisibleScreens = 0;
+  const visibleScreensForHero = [];
+  const moduleScreenCounts = {};
+
+  for (let i = 1; i <= 11; i++) {
+    moduleScreenCounts[i] = { visible: 0, total: 0 };
+  }
+
+  const screenCards = document.querySelectorAll('.screen-card');
+  screenCards.forEach(card => {
+    const roles = (card.getAttribute('data-roles') || '').split(' ');
+    const modNum = parseInt(card.getAttribute('data-module'), 10);
+    const screenNum = card.getAttribute('data-screen-num');
+    const textContent = card.innerText.toLowerCase();
+
+    if (moduleScreenCounts[modNum]) {
+      moduleScreenCounts[modNum].total++;
+    }
+
+    // Check Role
+    const roleMatch = (currentRole === 'ALL') || roles.includes(currentRole);
+
+    // Check Search
+    let searchMatch = true;
+    if (searchLower.length > 0) {
+      searchMatch = textContent.includes(searchLower) || (screenNum && screenNum.includes(searchLower));
+    }
+
+    if (roleMatch && searchMatch) {
+      card.style.display = 'block';
+      totalVisibleScreens++;
+      if (moduleScreenCounts[modNum]) {
+        moduleScreenCounts[modNum].visible++;
+      }
+      // Screen title for chip
+      const h3 = card.querySelector('h3');
+      const sTitle = h3 ? h3.innerText.replace(/^\d+\.\d+\.\s*/, '') : '';
+      visibleScreensForHero.push({
+        num: screenNum,
+        title: sTitle,
+        id: card.id
+      });
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // 4. Update Hero Chips
+  if (currentRole !== 'ALL' && chipsContainer) {
+    chipsContainer.innerHTML = '';
+    heroStat.textContent = `${totalVisibleScreens} / ${ALL_SCREENS.length} Màn hình khả dụng`;
+    
+    if (visibleScreensForHero.length === 0) {
+      chipsContainer.innerHTML = '<span style="font-size:12px;color:#64748b;">(Không có màn hình nào thỏa mãn từ khóa tìm kiếm)</span>';
+    } else {
+      visibleScreensForHero.forEach(s => {
+        const chip = document.createElement('a');
+        chip.href = '#' + s.id;
+        chip.className = 'hero-screen-chip';
+        chip.innerHTML = `<strong>${s.num}</strong> ${s.title}`;
+        chip.onclick = function(e) {
+          e.preventDefault();
+          const target = document.getElementById(s.id);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.style.transition = 'box-shadow 0.3s ease';
+            target.style.boxShadow = '0 0 0 4px #0284c7';
+            setTimeout(() => { target.style.boxShadow = ''; }, 1500);
+          }
+        };
+        chipsContainer.appendChild(chip);
+      });
+    }
+  }
+
+  // 5. Update Modules Visibility and Badges
+  for (let mod = 1; mod <= 11; mod++) {
+    const modSection = document.getElementById('module-' + mod);
+    const modCounter = document.getElementById('mod-counter-' + mod);
+    const counts = moduleScreenCounts[mod];
+
+    if (modSection && counts) {
+      if (counts.visible === 0) {
+        modSection.style.display = 'none';
+      } else {
+        modSection.style.display = 'block';
+        if (modCounter) {
+          modCounter.textContent = `${counts.visible} / ${counts.total} màn hình`;
+        }
+      }
+    }
+
+    // Update TOC
+    const tocItem = document.querySelector(`.toc-item[data-toc-module="${mod}"]`);
+    if (tocItem && counts) {
+      if (counts.visible === 0) {
+        tocItem.classList.add('dimmed');
+      } else {
+        tocItem.classList.remove('dimmed');
+      }
+    }
+  }
+
+  // 6. Update Status Counter & Empty State
+  const statusCounter = document.getElementById('searchStatusCounter');
+  if (statusCounter) {
+    statusCounter.innerHTML = `Hiển thị <strong>${totalVisibleScreens} / ${ALL_SCREENS.length}</strong> màn hình`;
+  }
+
+  const emptyState = document.getElementById('noResultsState');
+  if (emptyState) {
+    emptyState.style.display = (totalVisibleScreens === 0) ? 'block' : 'none';
+  }
+}
+
+// Run on page load
+window.addEventListener('DOMContentLoaded', initFilter);
+</script>
+
+
+<!-- FLOATING SLIM QUICK JUMP TO FILTER -->
+<a href="#role-filter-toolbar" class="floating-role-button" onclick="scrollToFilter(event)" title="Bấm để cuộn nhanh lên bộ lọc vai trò">
+  <span>🔍 Đổi vai trò:</span>
+  <span id="floatingRoleName" class="floating-role-badge">TẤT CẢ (48)</span>
+  <span>⬆️</span>
+</a>
+
+</body>
+</html>
