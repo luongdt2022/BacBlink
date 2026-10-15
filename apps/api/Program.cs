@@ -83,7 +83,20 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
         "http://localhost:3000", "http://127.0.0.1:3000",
         "https://h5.zdn.vn", "https://mini.zalo.me",
     ];
-    p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithExposedHeaders("Deprecation", "Sunset", "Link", "ETag");
+    p.WithOrigins(origins)
+     .SetIsOriginAllowed(origin =>
+     {
+         if (builder.Environment.IsDevelopment())
+         {
+             var uri = new Uri(origin);
+             return uri.Host == "localhost" || uri.Host == "127.0.0.1" || uri.Host.StartsWith("192.168.") || uri.Host.StartsWith("10.");
+         }
+         return origins.Contains(origin);
+     })
+     .AllowAnyHeader()
+     .AllowAnyMethod()
+     .AllowCredentials()
+     .WithExposedHeaders("Deprecation", "Sunset", "Link", "ETag");
 }));
 
 builder.Services.AddControllers(o =>
