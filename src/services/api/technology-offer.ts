@@ -5,7 +5,9 @@ import {
   SectorItem,
 } from "@/types/technology-offer";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" ? "" : "http://localhost:5080");
 
 // Danh mục 10 Lĩnh vực công nghệ trọng điểm chuẩn hóa đồng bộ với CSDL (/api/v1/sectors)
 export const SECTORS_18_CATALOG: SectorItem[] = [

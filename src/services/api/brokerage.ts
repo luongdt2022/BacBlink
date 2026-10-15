@@ -8,7 +8,9 @@ import {
   DealDiscussion,
 } from "@/types/brokerage";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" ? "" : "http://localhost:5080");
 
 export const brokerageApi = {
   async getRadarCandidates(params?: {
