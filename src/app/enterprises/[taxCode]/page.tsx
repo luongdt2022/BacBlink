@@ -266,12 +266,12 @@ export default function EnterpriseDetailPage() {
             {activeTab === "innovation" && (
               <div className="space-y-8">
                 {/* Header Summary Banner */}
-                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 md:p-8 shadow-md border border-slate-800 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="relative overflow-hidden bg-brand-700 text-white rounded-2xl p-6 md:p-8 shadow-md border border-brand-800">
+                  <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
 
                   <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-2">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-xs font-semibold text-brand-200 border border-white/10">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-xs font-semibold text-teal-300 border border-white/20">
                         <span>Bộ Tiêu Chí ĐMST Quốc Gia v1.0</span>
                         <span>•</span>
                         <span>Kỳ 2024</span>
@@ -279,43 +279,43 @@ export default function EnterpriseDetailPage() {
                       <h3 className="text-xl md:text-2xl font-extrabold text-white">
                         Hồ Sơ Năng Lực Đổi Mới Sáng Tạo
                       </h3>
-                      <p className="text-xs md:text-sm text-slate-300 max-w-xl leading-relaxed">
+                      <p className="text-xs md:text-sm text-white/85 max-w-xl leading-relaxed">
                         Đánh giá toàn diện trên 8 nhóm năng lực (37 tiêu chí chuẩn hóa, thang 100 điểm) theo Quyết định PO-DEC-20261014-03 của Cục ĐMST và Sở KH&CN.
                       </p>
                     </div>
 
                     {/* Total Score & Tier Badge Card */}
-                    <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shrink-0">
+                    <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shrink-0 shadow-sm">
                       <div className="text-center">
-                        <div className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Tổng Điểm</div>
-                        <div className="text-3xl md:text-4xl font-black text-amber-400">
+                        <div className="text-xs uppercase tracking-wider text-teal-100 font-semibold">Tổng Điểm</div>
+                        <div className="text-3xl md:text-4xl font-black text-amber-300">
                           {innovationRating ? innovationRating.totalScore.toFixed(1) : "--"}
-                          <span className="text-sm font-semibold text-slate-400">/100</span>
+                          <span className="text-sm font-semibold text-white/70">/100</span>
                         </div>
                       </div>
 
                       <div className="w-px h-12 bg-white/20"></div>
 
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-slate-300 font-semibold">Phân Tầng</div>
+                        <div className="text-xs uppercase tracking-wider text-teal-100 font-semibold">Phân Tầng</div>
                         {innovationRating?.classification === "LEADING" ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs mt-1 shadow-sm">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-xs mt-1 shadow-sm">
                             ⭐️ {innovationRating.badgeName || "Huy hiệu Vàng ĐMST"}
                           </div>
                         ) : innovationRating?.classification === "DEVELOPING" ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-200 text-slate-900 font-extrabold text-xs mt-1 shadow-sm">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white text-brand-900 font-extrabold text-xs mt-1 shadow-sm">
                             🥈 {innovationRating.badgeName || "Huy hiệu Bạc ĐMST"}
                           </div>
                         ) : innovationRating?.classification === "POTENTIAL" ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-700 text-white font-extrabold text-xs mt-1 shadow-sm">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-600 text-white font-extrabold text-xs mt-1 shadow-sm">
                             🥉 {innovationRating.badgeName || "Huy hiệu Đồng ĐMST"}
                           </div>
                         ) : (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-700 text-slate-300 font-extrabold text-xs mt-1">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/20 text-white font-extrabold text-xs mt-1 border border-white/30">
                             ⚪ Chưa Đánh Giá
                           </div>
                         )}
-                        <div className="text-xs text-slate-300 mt-0.5">
+                        <div className="text-xs text-white/80 mt-0.5">
                           {innovationRating?.reviewedBy ? `Thẩm định: ${innovationRating.reviewedBy}` : "Tính toán tự động"}
                         </div>
                       </div>
