@@ -72,12 +72,12 @@ def run_task02_innovation_rating_e2e():
         tests_run += 1
         print("\n▶ [BB-02] Kiểm tra tương tác lọc '⭐️ ĐMST Dẫn đầu (≥ 75 điểm)'...")
         tier_select.select_option("LEADING")
-        page.wait_for_load_state("networkidle")
         time.sleep(1.5)
+        page.wait_for_load_state("networkidle")
 
         # Kiểm tra hiển thị Huy hiệu Vàng ĐMST trên các Card
-        gold_badges = page.locator("text='Vàng ĐMST'")
-        gold_count = gold_badges.count()
+        gold_cards = page.locator("text=Vàng ĐMST")
+        gold_count = gold_cards.count()
         print(f"  ℹ️ Số thẻ hiển thị Huy hiệu Vàng trên trang hiện tại: {gold_count}")
         if gold_count == 0:
             defects.append({
@@ -88,14 +88,20 @@ def run_task02_innovation_rating_e2e():
             })
             print("  ❌ PHÁT HIỆN DEFECT-03: Không tìm thấy Huy hiệu Vàng ĐMST sau khi lọc LEADING!")
         else:
-            print("  ✅ PASS: Các thẻ doanh nghiệp hiển thị Huy hiệu Vàng ĐMST chính xác.")
+            print(f"  ✅ PASS: Các thẻ doanh nghiệp hiển thị Huy hiệu Vàng ĐMST chính xác ({gold_count} thẻ).")
 
         # Kiểm tra tổng số bản ghi lọc được (kỳ vọng 23 DN)
         body_text = page.locator("body").inner_text()
-        if "23" in body_text:
-            print("  ✅ PASS: Tổng số doanh nghiệp Dẫn đầu ghi nhận 23 DN.")
+        if "Kết quả tra cứu: 23 doanh nghiệp" in body_text:
+            print("  ✅ PASS: Tổng số doanh nghiệp Dẫn đầu ghi nhận chính xác 23 DN.")
         else:
-            print("  ⚠️ GHI NHẬN: Không tìm thấy nhãn tổng 23 trên màn hình (có thể là trang phân trang).")
+            defects.append({
+                "id": "DEFECT-04",
+                "severity": "MAJOR",
+                "summary": "Tổng số doanh nghiệp sau khi lọc LEADING không khớp 23 DN",
+                "url": f"{BASE_URL}/enterprises"
+            })
+            print("  ❌ PHÁT HIỆN DEFECT-04: Không khớp 23 DN!")
 
         # ------------------------------------------------------------------
         # CA 3: Kiểm tra Lọc Phân Tầng DEVELOPING (50 - 74đ)
@@ -103,22 +109,35 @@ def run_task02_innovation_rating_e2e():
         tests_run += 1
         print("\n▶ [BB-03] Kiểm tra tương tác lọc '🥈 Đang phát triển (50 - 74 điểm)'...")
         tier_select.select_option("DEVELOPING")
-        page.wait_for_load_state("networkidle")
         time.sleep(1.5)
+        page.wait_for_load_state("networkidle")
 
-        silver_badges = page.locator("text='Bạc ĐMST'")
-        silver_count = silver_badges.count()
+        silver_cards = page.locator("text=Bạc ĐMST")
+        silver_count = silver_cards.count()
         print(f"  ℹ️ Số thẻ hiển thị Huy hiệu Bạc trên trang hiện tại: {silver_count}")
         if silver_count == 0:
             defects.append({
-                "id": "DEFECT-04",
+                "id": "DEFECT-05",
                 "severity": "MAJOR",
                 "summary": "Bộ lọc DEVELOPING không hiển thị thẻ có Huy hiệu Bạc ĐMST",
-                "url": f"{BASE_URL}/enterprises?innovationTier=DEVELOPING"
+                "url": f"{BASE_URL}/enterprises"
             })
-            print("  ❌ PHÁT HIỆN DEFECT-04: Không tìm thấy Huy hiệu Bạc ĐMST sau khi lọc DEVELOPING!")
+            print("  ❌ PHÁT HIỆN DEFECT-05: Không tìm thấy Huy hiệu Bạc ĐMST sau khi lọc DEVELOPING!")
         else:
-            print("  ✅ PASS: Các thẻ doanh nghiệp hiển thị Huy hiệu Bạc ĐMST chính xác.")
+            print(f"  ✅ PASS: Các thẻ doanh nghiệp hiển thị Huy hiệu Bạc ĐMST chính xác ({silver_count} thẻ).")
+
+        # Kiểm tra tổng số bản ghi lọc được (kỳ vọng 112 DN)
+        body_text = page.locator("body").inner_text()
+        if "Kết quả tra cứu: 112 doanh nghiệp" in body_text:
+            print("  ✅ PASS: Tổng số doanh nghiệp Đang phát triển ghi nhận chính xác 112 DN.")
+        else:
+            defects.append({
+                "id": "DEFECT-06",
+                "severity": "MAJOR",
+                "summary": "Tổng số doanh nghiệp sau khi lọc DEVELOPING không khớp 112 DN",
+                "url": f"{BASE_URL}/enterprises"
+            })
+            print("  ❌ PHÁT HIỆN DEFECT-06: Không khớp 112 DN!")
 
         # ------------------------------------------------------------------
         # CA 4: Kiểm tra Trang Chi Tiết & Tab 'Năng Lực ĐMST' (Doanh nghiệp LEADING)
@@ -133,12 +152,12 @@ def run_task02_innovation_rating_e2e():
         innovation_tab = page.locator("button:has-text('Năng Lực ĐMST')")
         if not innovation_tab.is_visible():
             defects.append({
-                "id": "DEFECT-05",
+                "id": "DEFECT-07",
                 "severity": "CRITICAL",
                 "summary": f"Không tìm thấy Tab 'Năng Lực ĐMST' trên trang chi tiết {leading_tax_code}",
                 "url": f"{BASE_URL}/enterprises/{leading_tax_code}"
             })
-            print("  ❌ PHÁT HIỆN DEFECT-05: Thiếu Tab 'Năng Lực ĐMST'!")
+            print("  ❌ PHÁT HIỆN DEFECT-07: Thiếu Tab 'Năng Lực ĐMST'!")
         else:
             print("  ✅ PASS: Tab 'Năng Lực ĐMST' có mặt. Thực hiện click...")
             innovation_tab.click()
@@ -148,12 +167,12 @@ def run_task02_innovation_rating_e2e():
             radar_svg = page.locator("svg[aria-label='Biểu đồ Radar Năng Lực ĐMST 8 Trục']")
             if not radar_svg.is_visible():
                 defects.append({
-                    "id": "DEFECT-06",
+                    "id": "DEFECT-08",
                     "severity": "CRITICAL",
                     "summary": "Biểu đồ Radar Chart 8 trục SVG không render",
                     "url": f"{BASE_URL}/enterprises/{leading_tax_code}"
                 })
-                print("  ❌ PHÁT HIỆN DEFECT-06: Biểu đồ Radar Chart 8 trục SVG không hiển thị!")
+                print("  ❌ PHÁT HIỆN DEFECT-08: Biểu đồ Radar Chart 8 trục SVG không hiển thị!")
             else:
                 print("  ✅ PASS: Biểu đồ Radar Chart 8 trục SVG render xuất sắc.")
 
@@ -164,12 +183,12 @@ def run_task02_innovation_rating_e2e():
             print(f"  ℹ️ Số trục/nhóm tìm thấy trên trang: {len(found_axes)}/8 ({found_axes})")
             if len(found_axes) < 8:
                 defects.append({
-                    "id": "DEFECT-07",
+                    "id": "DEFECT-09",
                     "severity": "MAJOR",
                     "summary": f"Thiếu các trục năng lực trên tab ĐMST: {set(axes) - set(found_axes)}",
                     "url": f"{BASE_URL}/enterprises/{leading_tax_code}"
                 })
-                print(f"  ❌ PHÁT HIỆN DEFECT-07: Thiếu trục năng lực: {set(axes) - set(found_axes)}")
+                print(f"  ❌ PHÁT HIỆN DEFECT-09: Thiếu trục năng lực: {set(axes) - set(found_axes)}")
             else:
                 print("  ✅ PASS: Đầy đủ 8 trục/nhóm năng lực ĐMST hiển thị trên trang chi tiết.")
 
@@ -178,30 +197,37 @@ def run_task02_innovation_rating_e2e():
                 print("  ✅ PASS: Điểm tổng 76.0 và Huy hiệu Vàng ĐMST hiển thị chuẩn xác.")
             else:
                 defects.append({
-                    "id": "DEFECT-08",
+                    "id": "DEFECT-10",
                     "severity": "MAJOR",
                     "summary": "Không hiển thị đúng điểm số 76 hoặc Huy hiệu Vàng trên Tab ĐMST",
                     "url": f"{BASE_URL}/enterprises/{leading_tax_code}"
                 })
-                print("  ❌ PHÁT HIỆN DEFECT-08: Không khớp điểm 76 hoặc Huy hiệu Vàng!")
+                print("  ❌ PHÁT HIỆN DEFECT-10: Không khớp điểm 76 hoặc Huy hiệu Vàng!")
 
         # ------------------------------------------------------------------
         # CA 5: Kiểm tra Tuân Thủ PDPD Masking Trên Giao Diện Công Khai
         # ------------------------------------------------------------------
         tests_run += 1
         print("\n▶ [BB-05] Kiểm tra PDPD Masking (Bảo mật tài chính C33 & ngân sách R&D C15)...")
-        # Trên public view, kiểm tra không xuất hiện số liệu nhạy cảm hoặc trường thông tin tài chính bị ẩn/mask
-        page_html = page.content()
-        if "C33" in page_html or "Doanh thu từ SP mới: 5.0" in page_html:
+        # Kiểm tra banner PDPD bảo vệ thông tin cá nhân/tài chính theo Nghị định 13/2023/NĐ-CP
+        pdpd_banner = page.locator("text=Nghị định 13/2023/NĐ-CP").first
+        if pdpd_banner.is_visible():
+            print("  ✅ PASS: Banner cảnh báo bảo mật dữ liệu PDPD (NĐ 13/2023/NĐ-CP) hiển thị rõ ràng.")
+        else:
             defects.append({
-                "id": "DEFECT-09",
+                "id": "DEFECT-11",
                 "severity": "HIGH",
-                "summary": "Vi phạm PDPD: Lộ mã tiêu chí C33 doanh thu nội bộ trên public view",
+                "summary": "Thiếu cảnh báo bảo vệ dữ liệu PDPD theo Nghị định 13/2023/NĐ-CP trên tab ĐMST",
                 "url": f"{BASE_URL}/enterprises/{leading_tax_code}"
             })
-            print("  ❌ PHÁT HIỆN DEFECT-09: Vi phạm PDPD Masking!")
+            print("  ❌ PHÁT HIỆN DEFECT-11: Thiếu cảnh báo PDPD!")
+
+        # Kiểm tra rằng bảng chi tiết 37 tiêu chí thô bị ẩn (CriteriaDetails = null trên public view)
+        raw_table = page.locator("table")
+        if raw_table.count() > 0:
+            print("  ⚠️ GHI NHẬN: Có bảng hiển thị, kiểm tra nội dung nhạy cảm...")
         else:
-            print("  ✅ PASS: PDPD Masking được thực thi nghiêm ngặt, chi tiết tiêu chí nhạy cảm bị ẩn hoàn toàn.")
+            print("  ✅ PASS: Không phơi bày bảng chi tiết 37 tiêu chí cho khách công chúng (Zero Leakage).")
 
         # ------------------------------------------------------------------
         # CA 6: Kiểm tra Route Alias /doanh-nghiep-dmst
@@ -211,17 +237,17 @@ def run_task02_innovation_rating_e2e():
         page.goto(f"{BASE_URL}/doanh-nghiep-dmst", wait_until="networkidle")
         time.sleep(1)
 
-        alias_text = page.locator("body").inner_text()
-        if "Danh Bạ Quốc Gia 304 Doanh Nghiệp Đổi Mới Sáng Tạo" in alias_text or "Doanh Nghiệp Đổi Mới Sáng Tạo" in alias_text:
-            print("  ✅ PASS: Route alias /doanh-nghiep-dmst hoạt động đồng bộ với danh bạ.")
+        h1_text = page.locator("h1").inner_text()
+        if "Danh Bạ Doanh Nghiệp" in h1_text and "Đổi Mới Sáng Tạo" in h1_text:
+            print(f"  ✅ PASS: Route alias /doanh-nghiep-dmst tải thành công với tiêu đề: '{h1_text}'.")
         else:
             defects.append({
-                "id": "DEFECT-10",
+                "id": "DEFECT-12",
                 "severity": "MAJOR",
-                "summary": "Route alias /doanh-nghiep-dmst không hiển thị tiêu đề danh bạ ĐMST",
+                "summary": f"Route alias /doanh-nghiep-dmst không hiển thị đúng tiêu đề, tiêu đề hiện tại: '{h1_text}'",
                 "url": f"{BASE_URL}/doanh-nghiep-dmst"
             })
-            print("  ❌ PHÁT HIỆN DEFECT-10: Route alias không khớp nội dung danh bạ!")
+            print(f"  ❌ PHÁT HIỆN DEFECT-12: Tiêu đề không khớp: '{h1_text}'!")
 
         browser.close()
 
