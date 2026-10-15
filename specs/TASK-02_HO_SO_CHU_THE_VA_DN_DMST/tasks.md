@@ -76,6 +76,6 @@
 - [x] **T-02.48** `[FE]` Tích hợp Tab "Năng Lực ĐMST" tại trang Hồ sơ chi tiết `/enterprises/[taxCode]`: Hiển thị Biểu đồ Radar Chart 8 trục, Thẻ Tổng điểm & Huy hiệu phân tầng (Vàng/Bạc/Đồng), Bảng ma trận 8 nhóm tiêu chí.
 - [x] **T-02.49** `[FE]` Nâng cấp trang Danh bạ `/doanh-nghiep-dmst` và `/enterprises`: Bổ sung Dropdown bộ lọc mức ĐMST (Dẫn đầu / Đang phát triển / Tiềm năng / Chưa đánh giá) và hiển thị nhãn Huy hiệu ĐMST trên từng thẻ Card doanh nghiệp.
 - [x] **T-02.50** `[TEST]` Viết bộ Unit Invariant Tests cho `InnovationRatingEngine`: Kiểm thử độc lập công thức quy đổi điểm 8 nhóm (QT1..QT4, CN1..CN5, SP1..SP5, IP1..IP3, S1..S5, TT1..TT6, NL1..NL3, LK1..LK6), phân tầng điểm (ngưỡng 75, 50), và trường hợp `UNRATED`.
-- [ ] **T-02.51** `[TEST]` Viết kịch bản kiểm thử E2E Playwright: Xác thực hiển thị Tab Năng Lực ĐMST, Biểu đồ Radar Chart 8 trục và tương tác lọc danh bạ theo mức ĐMST tại `/doanh-nghiep-dmst`.
+- [x] **T-02.51** `[TEST]` Viết kịch bản kiểm thử E2E Playwright: Xác thực hiển thị Tab Năng Lực ĐMST, Biểu đồ Radar Chart 8 trục và tương tác lọc danh bạ theo mức ĐMST tại `/doanh-nghiep-dmst`.
 
 
