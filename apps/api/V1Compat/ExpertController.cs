@@ -231,7 +231,9 @@ public sealed class PublicExpertController(IExpertService experts, DbContext db,
         [FromQuery] string? q,
         [FromQuery(Name = "query")] string? query,
         [FromQuery] string? degree,
+        [FromQuery(Name = "degrees")] string[]? degrees,
         [FromQuery] string? sectorCode,
+        [FromQuery(Name = "sectorCodes")] string[]? sectorCodes,
         [FromQuery] string? provinceCode,
         [FromQuery] bool? acceptingConsultation,
         [FromQuery] int page = 1,
@@ -239,8 +241,47 @@ public sealed class PublicExpertController(IExpertService experts, DbContext db,
         CancellationToken ct = default)
     {
         var searchTerm = string.IsNullOrWhiteSpace(q) ? query : q;
-        var result = await experts.GetPublicDirectoryAsync(searchTerm, degree, sectorCode, provinceCode, acceptingConsultation, page, pageSize, ct);
+        var degreeList = ParseMultiValues(degrees, degree);
+        var sectorList = ParseMultiValues(sectorCodes, sectorCode);
+
+        var result = await experts.GetPublicDirectoryAsync(
+            searchTerm,
+            degreeList.Count > 0 ? degreeList : null,
+            sectorList.Count > 0 ? sectorList : null,
+            provinceCode,
+            acceptingConsultation,
+            page,
+            pageSize,
+            ct);
+
         return Ok(new { success = true, data = result });
+    }
+
+    private static List<string> ParseMultiValues(string[]? arrayParams, string? singleCsvParam)
+    {
+        var results = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (arrayParams != null)
+        {
+            foreach (var item in arrayParams)
+            {
+                if (string.IsNullOrWhiteSpace(item)) continue;
+                foreach (var split in item.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    results.Add(split);
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(singleCsvParam))
+        {
+            foreach (var split in singleCsvParam.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                results.Add(split);
+            }
+        }
+
+        return results.ToList();
     }
 
     [HttpGet("{expertCode}")]

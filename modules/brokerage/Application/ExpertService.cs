@@ -136,10 +136,11 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         return profile is null ? null : await ToPublicDetailAsync(profile, ct);
     }
 
+
     public async Task<ExpertPublicDirectoryDto> GetPublicDirectoryAsync(
         string? q,
-        string? degree,
-        string? sectorCode,
+        IReadOnlyList<string>? degrees,
+        IReadOnlyList<string>? sectorCodes,
         string? provinceCode,
         bool? acceptingConsultation,
         int page,
@@ -163,16 +164,22 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
                 p.SpecializedKeywords.Any(tag => tag.ToLower().Contains(keyword)));
         }
 
-        if (!string.IsNullOrWhiteSpace(degree))
+        if (degrees is { Count: > 0 })
         {
-            var deg = degree.Trim();
-            query = query.Where(p => p.Degree == deg || p.AcademicRank == deg);
+            var degList = degrees.Where(d => !string.IsNullOrWhiteSpace(d)).Select(d => d.Trim()).ToList();
+            if (degList.Count > 0)
+            {
+                query = query.Where(p => degList.Contains(p.Degree) || degList.Contains(p.AcademicRank));
+            }
         }
 
-        if (!string.IsNullOrWhiteSpace(sectorCode))
+        if (sectorCodes is { Count: > 0 })
         {
-            var sec = sectorCode.Trim();
-            query = query.Where(p => p.ExpertiseSectors.Contains(sec));
+            var secList = sectorCodes.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList();
+            if (secList.Count > 0)
+            {
+                query = query.Where(p => p.ExpertiseSectors.Any(s => secList.Contains(s)));
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(provinceCode))

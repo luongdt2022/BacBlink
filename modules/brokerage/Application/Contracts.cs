@@ -239,7 +239,7 @@ public interface IExpertService
     Task<ExpertDraftDto> GetDraftAsync(string token, CancellationToken ct);
     Task<QuickExpertIntakeResponse> SubmitQuickIntakeAsync(QuickExpertIntakeRequest request, CancellationToken ct);
     Task<ExpertPublicDetailDto?> GetPublicDetailAsync(string expertCode, CancellationToken ct);
-    Task<ExpertPublicDirectoryDto> GetPublicDirectoryAsync(string? q, string? degree, string? sectorCode, string? provinceCode, bool? acceptingConsultation, int page, int pageSize, CancellationToken ct);
+    Task<ExpertPublicDirectoryDto> GetPublicDirectoryAsync(string? q, IReadOnlyList<string>? degrees, IReadOnlyList<string>? sectorCodes, string? provinceCode, bool? acceptingConsultation, int page, int pageSize, CancellationToken ct);
     Task<ExpertPrivateDetailDto?> GetMyDetailAsync(Guid personId, CancellationToken ct);
     Task<ExpertPrivateDetailDto?> GetAdminDetailAsync(string expertCode, CancellationToken ct);
     Task SetPublicListingAsync(string expertCode, bool isPublic, bool isAcceptingConsultation, string? publicBio, CancellationToken ct);
