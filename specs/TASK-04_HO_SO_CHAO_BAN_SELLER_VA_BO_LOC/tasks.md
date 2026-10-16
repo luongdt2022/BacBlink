@@ -88,3 +88,36 @@
 - [x] T-04.45 [FE] Cập nhật `/chao-ban-cong-nghe/[id]`: bổ sung Card "Đơn vị cung ứng / Doanh nghiệp chào bán" ở sidebar kèm nút CTA "Xem Hồ sơ Năng lực Doanh nghiệp".
 - [x] T-04.46 [FE] Cập nhật `/enterprises/[taxCode]`: hỗ trợ hiển thị Doanh nghiệp thường (`SubjectType = 'ENTERPRISE'`) mượt mà, và bổ sung Tab "Sản phẩm & Giải pháp niêm yết" hiển thị các sản phẩm của chính doanh nghiệp.
 - [x] T-04.47 [TEST] Cập nhật Unit test backend và kiểm thử tương tác frontend đảm bảo không hồi quy và 100% test suites pass.
+
+
+---
+
+## Giai đoạn 7: Delta v5 — Chuẩn Hóa 10 Điểm Form Chào Bán Seller (T-04.48 đến T-04.65)
+
+### Phase 12: Backend Database Schema & Non-Destructive Migrations [BE]
+- [ ] T-04.48 [BE] Mở rộng Domain Entity `SellerTechnologyOffer` (Media, Commercial terms) và tạo 2 Entity con `OfferSpecValue`, `OfferDocument` trong `NacenTech.Modules.Technology.Domain`.
+- [ ] T-04.49 [BE] Cấu hình EF Core `Configurations.cs` và tạo Migration non-destructive `AddDeltaV5SellerOfferSpecsAndDocuments` cho 2 bảng `technology.offer_spec_values`, `technology.offer_documents` và các cột mở rộng trong `technology.seller_technology_offers`.
+
+### Phase 13: Backend Contracts, DTOs & Two-Tier Validation [BE]
+- [ ] T-04.50 [BE] Mở rộng bộ DTOs trong `SellerOfferContracts.cs`: `OfferSpecValueDto`, `OfferDocumentDto`, cập nhật `CreateSellerOfferDto`, `UpdateSellerOfferDto`, `SellerOfferDto` hỗ trợ mảng specs, documents, media và commercial terms.
+- [ ] T-04.51 [BE] Tách biệt logic thẩm định trong `SellerOfferRulesValidator`: phương thức `ValidateDraft` (khi status = DRAFT chỉ yêu cầu Title $\ge 3$ ký tự theo `BR-SELLER-08`) và `ValidatePublish` (kiểm tra đầy đủ `BR-SELLER-01` $\rightarrow$ `BR-SELLER-11`, TRL 1-9, tài liệu an toàn, spec tối đa 50 dòng, cam kết pháp lý).
+- [ ] T-04.52 [BE] Nâng cấp `TechnologyOffersController.cs` tiếp nhận action `SAVE_DRAFT` và `SUBMIT_FOR_REVIEW`, đồng bộ `OffersStore` và PostgreSQL, cascade lưu trữ `OfferSpecValues` và `OfferDocuments`.
+- [ ] T-04.53 [BE] Xây dựng AI Extractor endpoint `POST /api/v1/ai/extract-patent-specs` theo `DD-02-ai-extractor-contracts.md` và `PO-DEC-20261008-07` (Human-in-the-Loop, Zero-dependency Fallback).
+
+### Phase 14: Frontend Core Components & UI Sub-modules [FE]
+- [ ] T-04.54 [FE] Cập nhật TypeScript models trong `src/types/technology-offer.ts` và API service `src/services/api/technology-offer.ts` hỗ trợ DTOs Delta v5 và endpoint AI Extractor.
+- [ ] T-04.55 [FE] Xây dựng component `FormStepper.tsx` hiển thị tiến trình 4 bước chuyên sâu (Bước 1: Cơ bản, Bước 2: Specs 18 ngành, Bước 3: Giá & Thương mại, Bước 4: Minh chứng SHTT/TRL & Quản trị duyệt).
+- [ ] T-04.56 [FE] Xây dựng component `DynamicSpecTable.tsx` nạp bộ mẫu theo 18 ngành TT17, thêm/xóa dòng, sửa spec_name, spec_value, unit, chống trùng lặp.
+- [ ] T-04.57 [FE] Xây dựng component `TrlSelectorGrid.tsx` với dải 9 nút TRL 1-9 chuẩn hóa, 3 dải màu trực quan (R&D, Thử nghiệm, Thương mại) kèm tooltip nghiệp vụ.
+- [ ] T-04.58 [FE] Xây dựng component `MediaUploadSection.tsx` hỗ trợ tải ảnh đại diện 16:9, album ảnh chi tiết, brochure PDF, video demo kèm xem trước trực quan.
+- [ ] T-04.59 [FE] Xây dựng component `EvidenceDocumentSection.tsx` quản lý tệp minh chứng DataRoom, phân quyền `access_scope` (PUBLIC, AFTER_CONNECTION, ADMIN_ONLY).
+- [ ] T-04.60 [FE] Xây dựng component `AiScanAssistantCard.tsx` (Widget Trợ lý AI Khảo sát & Gợi ý) kết nối API AI, tự động đổ bản nháp vào Form Wizard kèm nhãn `✨ AI Gợi ý`.
+
+### Phase 15: Frontend Form Wizard Pages & Surface Integration [FE]
+- [ ] T-04.61 [FE] Tái cấu trúc toàn diện trang Đăng mới `/portal/seller/technologies/create/page.tsx` thành Form Wizard 4 bước tích hợp 10 điểm cải tiến, nút "Lưu nháp" và LocalStorage auto-save.
+- [ ] T-04.62 [FE] Tái cấu trúc trang Chỉnh sửa `/portal/seller/technologies/[id]/edit/page.tsx` đồng bộ Form Wizard 4 bước và nạp dữ liệu cũ đầy đủ.
+- [ ] T-04.63 [FE] Cập nhật trang Chi tiết `/chao-ban-cong-nghe/[id]/page.tsx` kết xuất thông số kỹ thuật động từ `offer_spec_values`, tệp DataRoom kèm khóa bảo mật từ `offer_documents`, điều kiện thương mại và đầu mối TTO có PDPD masking.
+
+### Phase 16: Automated Quality Assurance & Gate 2/3 Verification [TEST][INT]
+- [ ] T-04.64 [TEST] Cập nhật và bổ sung Unit Test Backend xUnit `SellerOfferRulesValidatorTests.cs` kiểm tra 100% kịch bản `ValidateDraft`, `ValidatePublish`, TRL 1-9, specs max 50 dòng, duplicate specs, documents an toàn.
+- [ ] T-04.65 [INT] Thực hiện kiểm thử tích hợp, kiểm tra hồi quy toàn diện qua `Agent/scripts/guard-rails.sh` và đối soát tính nhất quán 3 chiều Gate 2 (speckit-analyze).

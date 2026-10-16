@@ -299,3 +299,130 @@ Authorized admin ──PUT /api/v2/identity/persons/{id}/role-scope──► ato
 - **Success**: Modal feedback / Toast thông báo nộp hồ sơ thành công kèm mã phiếu thẩm định (ví dụ `REQ-INST-*`, `REQ-SHOP-*`).
 - **Error**: Hiển thị thông báo lỗi rõ ràng nếu thiếu trường bắt buộc hoặc vi phạm định dạng MST/tệp đính kèm.
 
+
+
+---
+
+## Plan Delta v10 (CR-2026-TYPO): Kiến Trúc Typography Cổng DVCQG (Nunito Sans & Lora) [PO-DEC-20261015-01]
+
+### 1. Bối Cảnh & Mục Tiêu Kỹ Thuật (Architecture Context & Objectives)
+- Căn cứ Quyết định PO: **`PO-DEC-20261015-01`** và Mục 10 Spec Delta v2 tại `spec.md`.
+- Thay thế hoàn toàn cơ chế nạp font local `be-vietnam-pro` đơn điệu bằng **Kiến Trúc Font Song Hành (Dual Font Architecture)** chuẩn Cổng DVCQG và Cổng Đổi Mới Sáng Tạo Quốc Gia:
+  1. **Nunito Sans** (`--font-sans`): Dành cho toàn bộ thân văn bản (Body), điều khiển tương tác (Controls), bảng số liệu (Data Grid), thẻ (Cards), biểu mẫu (Forms). Tiết kiệm 8% - 12% bề ngang ký tự, chống tràn dòng trên màn hình laptop 1024px - 1366px.
+  2. **Lora** (`--font-heading`, `--font-serif`): Dành riêng cho Quốc hiệu, Tiêu ngữ, Header Viện/Bộ, Banner quốc gia, Khẩu hiệu Slogan Hero và Tiêu đề phân hệ lớn. Đảm bảo tính uy nghiêm, hàn lâm của cơ quan nhà nước.
+
+---
+
+### 2. Kiến Trúc Tải Font Tối Ưu (Next.js 15 `next/font/google` Zero CLS)
+
+#### 2.1. Cấu hình Nạp Font trong `src/app/layout.tsx`
+Khởi tạo 2 font instances từ gói tích hợp `next/font/google`:
+
+```typescript
+import { Nunito_Sans, Lora } from "next/font/google";
+
+export const nunitoSans = Nunito_Sans({
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-sans",
+  adjustFontFallback: true,
+});
+
+export const lora = Lora({
+  subsets: ["vietnamese", "latin"],
+  weight: ["600", "700"],
+  display: "swap",
+  variable: "--font-heading",
+  adjustFontFallback: true,
+});
+```
+
+#### 2.2. Cơ chế Zero CLS (Cumulative Layout Shift = 0)
+- **Tự động Preload & Tự lưu trữ tĩnh (Build-time Self-hosting)**: Next.js 15 tự động tải file font WOFF2 về thư mục static build tại thời điểm biên dịch (`next build`). Khi runtime phục vụ người dùng, font được nạp trực tiếp từ domain nội bộ, không phụ thuộc kết nối ngoài tới máy chủ Google, triệt tiêu nguy cơ nghẽn mạng hay rủi ro bảo mật dữ liệu công quyền.
+- **Tự động Override Font Metrics**: Thuộc tính `adjustFontFallback: true` tự động tính toán `size-adjust`, `ascent-override`, `descent-override`, `line-gap-override` cho font fallback hệ thống (`ui-sans-serif, system-ui` và `ui-serif, Georgia, serif`), triệt tiêu 100% hiện tượng nhảy giật layout (layout shift) khi font đang tải.
+
+#### 2.3. Tích Hợp Thẻ Gốc HTML
+```tsx
+<html
+  lang="vi"
+  className={`${nunitoSans.variable} ${lora.variable}`}
+  suppressHydrationWarning
+>
+  <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
+    ...
+  </body>
+</html>
+```
+
+---
+
+### 3. Ánh Xạ Design Tokens Trong Tailwind v4 `@theme` (`src/app/globals.css`)
+
+#### 3.1. Cấu hình Tokens Typography
+```css
+@theme {
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: var(--font-heading), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-serif: var(--font-heading), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  /* Backward-compatibility fallback */
+  --font-be-vietnam-pro: var(--font-sans);
+}
+```
+
+#### 3.2. Quy Tắc Ánh Xạ Phân Bổ 10 Thành Phần UI Cốt Lõi
+1. **Quốc Hiệu, Tiêu Ngữ & Header Viện/Bộ**: `font-heading font-bold` (`Lora`, 20px - 24px, line-height 1.3).
+2. **Banner Quốc Gia, Slogan Hero & Display Title**: `font-heading font-bold` (`Lora`, 36px - 44px / 28px - 32px mobile, line-height 1.2).
+3. **Menu Điều Hướng Cấp 1 & Dropdown Menu**: `font-sans font-semibold` (`Nunito Sans`, 14px - 15px, line-height 1.4).
+4. **Buttons & CTA Controls**: `font-sans font-semibold` (`Nunito Sans`, 14px - 15px, min-height 44px).
+5. **Form Inputs, Labels & Helpers**: `font-sans` (`Nunito Sans`, 14px, Label: Medium 500, Input: Regular 400).
+6. **Data Grid & Bảng Dữ Liệu Số Liệu**: `font-sans` (`Nunito Sans`, 13px - 14px, Header: SemiBold 600, Cell: Regular 400).
+7. **Cards & Sub-Headings**: `font-sans font-semibold` (`Nunito Sans`, 16px - 18px).
+8. **Modals & Dialogs**: `font-sans` (`Nunito Sans`, Header: 18px - 20px 600, Body: 14px - 15px 400).
+9. **Status Badges, Chips & Micro-Copy**: `font-sans font-semibold` (`Nunito Sans`, 11px - 12px, line-height 1.2).
+10. **Footer & Thông Tin Pháp Lý**: `font-sans` (`Nunito Sans`, 13px - 14px, Regular 400 / Medium 500).
+
+---
+
+### 4. Cơ Chế Kiểm Soát Text Scaling A-/A/A+ Bảo Vệ Bố Cục (WCAG 2.1 AA)
+
+#### 4.1. Cấu hình Quy Chuẩn Tỉ Lệ Co Giãn
+```css
+@layer base {
+  /* Nấc A- (Thu nhỏ 92.5%): Tăng mật độ dữ liệu bảng/chuyên gia */
+  html[data-text-scale="sm"] {
+    font-size: 92.5%;
+  }
+
+  /* Nấc A (Mặc định 100%): 1rem = 16px */
+  html[data-text-scale="base"],
+  html[data-text-scale="md"] {
+    font-size: 100%;
+  }
+
+  /* Nấc A+ (Phóng to 110%): Hỗ trợ cán bộ cao tuổi & tiếp cận dịch vụ công */
+  html[data-text-scale="lg"] {
+    font-size: 110%;
+  }
+}
+```
+
+#### 4.2. Ràng Buộc Kỹ Thuật Bảo Vệ Bố Cục (Zero Horizontal Overflow)
+- **Đơn vị tương đối**: Tuyệt đối sử dụng `rem`, `em`, `%`, `dvw/dvh` cho margin, padding, gap, font-size và container dimensions. Không gán cứng chiều rộng cố định bằng pixel (`width: 1200px`) trên các container chính.
+- **Ràng buộc kiểm thử A+ (110%)**:
+  1. `window.scrollX === 0` trên mọi dải phân giải viewport từ 320px đến 4K (ngoại trừ các container bảng `overflow-x: auto` được thiết kế có chủ đích).
+  2. Không xảy ra hiện tượng chồng chéo ký tự (overlapping text) hay che khuất nội dung.
+  3. Header Navigation tự động ngắt dòng hợp lý hoặc co giãn padding thông minh nhờ font `Nunito Sans` gọn hơn 10%.
+- **Vùng chạm tối thiểu**: Duy trì kích thước tương tác $\ge 44 \times 44\text{px}$ cho toàn bộ Buttons, Form Controls và Toggles.
+
+---
+
+### 5. Thẩm Định Gate 2: Rủi Ro & Chiến Lược Kiểm Thử (Gate 2 Architecture Review)
+
+| Hạng Mục | Rủi Ro Kỹ Thuật | Giải Pháp Kiểm Soát Kiến Trúc |
+|:---|:---|:---|
+| **Hồi quy giao diện (UI Regression)** | Thành phần cũ gọi font cũ hoặc biến cũ bị lỗi font hiển thị | Khai báo alias fallback `--font-be-vietnam-pro: var(--font-sans)` song song trong `@theme`. |
+| **Ký tự Tiếng Việt đặc biệt** | Thiếu glyphs tiếng Việt có dấu kép (`ẩ`, `ễ`, `ợ`, `Đ`) dẫn đến lỗi chân dấu | Chỉ định rõ `subsets: ['vietnamese', 'latin']` trên cả 2 cấu hình `Nunito_Sans` và `Lora`. |
+| **Tràn viền màn hình khi scale A+** | Header menu hoặc Data Grid bị vỡ nát khi phóng to 110% | Quy chuẩn `overflow-x: clip` trên `html`, `body`; bảng dữ liệu bọc trong wrapper `overflow-x: auto`. |
+| **Vi phạm Design Rules** | Vô tình sử dụng lại utility classes blue/indigo/purple hoặc font nhỏ < 12px | Giữ vững hàng rào bảo vệ tự động bằng `src/test/design-rules.test.ts`. |

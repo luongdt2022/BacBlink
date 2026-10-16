@@ -860,3 +860,332 @@ Migration `20260929140000_MakeExpertIdentityCardOptional` chỉ `ALTER ... DROP 
 
 
 
+
+---
+
+## 18. Plan Delta v17: Tối Ưu Hóa UI/UX Danh Bạ Chuyên Gia & Bộ Lọc Đa Tiêu Chí [CR-2026-016]
+
+### 18.1. Bối Cảnh Kỹ Thuật & Thẩm Định Kiến Trúc (Architectural Assessment)
+
+Căn cứ Quyết định phê duyệt sản phẩm `PO-DEC-20261016-03` và Đặc tả yêu cầu Spec Delta v17 tại `SourceCode/specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN/spec.md`, TechLead/SA tiến hành thẩm định kiến trúc và xác lập kế hoạch triển khai kỹ thuật cho phân hệ Danh bạ Chuyên gia KH&CN (`/experts` và `/chuyen-gia`).
+
+```
+                              KIẾN TRÚC TỔNG THỂ DELTA v17
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │                         Next.js 15 App Router Frontend                      │
+ │                                                                             │
+ │  ┌────────────────────────┐  ┌───────────────────────┐  ┌────────────────┐  │
+ │  │ Tech Label Resolver    │  │ Conditional Stats     │  │ Multi-Select   │  │
+ │  │ - Map 18 mã chuẩn TT17 │  │ - Hide 0 values       │  │ Checkbox Filter│  │
+ │  │ - Fallback Title Case  │  │ - Hide block if sum=0 │  │ - Sync URL     │  │
+ │  └────────────────────────┘  └───────────────────────┘  └────────────────┘  │
+ │                                                                             │
+ │  ┌────────────────────────────────────────────────────────────────────────┐ │
+ │  │ 34 Sở KH&CN Trọng Điểm (<optgroup> 3 Miền Bắc - Trung - Nam)          │ │
+ │  └────────────────────────────────────────────────────────────────────────┘ │
+ └──────────────────────────────────────┬──────────────────────────────────────┘
+                                        │ HTTP GET (degrees, sectorCodes, provinceCode)
+                                        ▼
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │                           ASP.NET Core Web API                              │
+ │                                                                             │
+ │  ┌────────────────────────────────────────────────────────────────────────┐ │
+ │  │ PublicExpertController: GET /api/v1/public/experts                     │ │
+ │  │ - Parse repeated params (degrees=GS&degrees=PGS)                       │ │
+ │  │ - Parse CSV params (degrees=GS,PGS & sectorCodes=LV01,LV05)            │ │
+ │  │ - Backward compatibility (đơn trị degree=GS & sectorCode=LV01)         │ │
+ │  └───────────────────────────────────┬────────────────────────────────────┘ │
+ │                                      ▼                                      │
+ │  ┌────────────────────────────────────────────────────────────────────────┐ │
+ │  │ ExpertService.GetPublicDirectoryAsync                                  │ │
+ │  │ - Intra-group logic: OR (degree ∈ selectedDegrees || rank ∈ degrees)  │ │
+ │  │ - Intra-group logic: OR (p.ExpertiseSectors ∩ selectedSectors ≠ ∅)     │ │
+ │  │ - Inter-group logic: AND (Degrees AND Sectors AND Province AND Scope)  │ │
+ │  └───────────────────────────────────┬────────────────────────────────────┘ │
+ └──────────────────────────────────────┼──────────────────────────────────────┘
+                                        ▼
+ ┌─────────────────────────────────────────────────────────────────────────────┐
+ │                  PostgreSQL Database & Master Data Projection               │
+ │  - Zero-Mock: Lấy Master Data thật từ /api/v1/sectors & public-provinces    │
+ │  - Non-Destructive: Không can thiệp cấu trúc bảng hoặc migration DB cũ     │
+ └─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 18.2. Thiết Kế Chi Tiết API Contract Backend (Multi-Filter & Backward Compatibility)
+
+#### 1. Contract Endpoint: `GET /api/v1/public/experts`
+- **Tương thích ngược (Backward Compatibility)**: Giữ nguyên khả năng nhận tham số đơn trị cũ từ các client bên ngoài hoặc Zalo Mini App (`degree`, `sectorCode`).
+- **Mở rộng Đa chọn (Multi-Select Extension)**:
+  - Bổ sung tiếp nhận tham số mảng hoặc chuỗi phân tách dấu phẩy:
+    * `degrees`: `string[]` hoặc `string` (ví dụ `degrees=GS,PGS` hoặc `degrees=GS&degrees=PGS` hoặc `degree=GS`).
+    * `sectorCodes`: `string[]` hoặc `string` (ví dụ `sectorCodes=LV01,LV05` hoặc `sectorCodes=LV01&sectorCodes=LV05` hoặc `sectorCode=LV01`).
+- **Cài đặt trong `PublicExpertController.cs`**:
+  ```csharp
+  [HttpGet]
+  [AllowAnonymous]
+  public async Task<IActionResult> GetDirectory(
+      [FromQuery] string? q,
+      [FromQuery(Name = "query")] string? query,
+      [FromQuery] string? degree,
+      [FromQuery(Name = "degrees")] string[]? degrees,
+      [FromQuery] string? sectorCode,
+      [FromQuery(Name = "sectorCodes")] string[]? sectorCodes,
+      [FromQuery] string? provinceCode,
+      [FromQuery] bool? acceptingConsultation,
+      [FromQuery] int page = 1,
+      [FromQuery] int pageSize = 9,
+      CancellationToken ct = default)
+  {
+      var searchTerm = string.IsNullOrWhiteSpace(q) ? query : q;
+
+      // Chuẩn hóa mảng học vị từ cả dạng lặp query param, dạng CSV và tham số đơn cũ
+      var degreeList = ParseMultiValues(degrees, degree);
+
+      // Chuẩn hóa mảng lĩnh vực từ cả dạng lặp query param, dạng CSV và tham số đơn cũ
+      var sectorList = ParseMultiValues(sectorCodes, sectorCode);
+
+      var result = await experts.GetPublicDirectoryAsync(
+          searchTerm,
+          degreeList,
+          sectorList,
+          provinceCode,
+          acceptingConsultation,
+          page,
+          pageSize,
+          ct);
+
+      return Ok(new { success = true, data = result });
+  }
+
+  private static List<string> ParseMultiValues(string[]? arrayParams, string? singleCsvParam)
+  {
+      var results = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+      if (arrayParams != null)
+      {
+          foreach (var item in arrayParams)
+          {
+              if (string.IsNullOrWhiteSpace(item)) continue;
+              foreach (var split in item.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+              {
+                  results.Add(split);
+              }
+          }
+      }
+
+      if (!string.IsNullOrWhiteSpace(singleCsvParam))
+      {
+          foreach (var split in singleCsvParam.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+          {
+              results.Add(split);
+          }
+      }
+
+      return results.ToList();
+  }
+  ```
+
+#### 2. Nâng cấp Service & Query Logic (`ExpertService.cs`)
+- Mở rộng phương thức `GetPublicDirectoryAsync`:
+  ```csharp
+  public async Task<ExpertPublicDirectoryDto> GetPublicDirectoryAsync(
+      string? q,
+      IReadOnlyList<string>? degrees,
+      IReadOnlyList<string>? sectorCodes,
+      string? provinceCode,
+      bool? acceptingConsultation,
+      int page,
+      int pageSize,
+      CancellationToken ct)
+  ```
+- **Xử lý Logic OR nội bộ & AND liên nhóm**:
+  ```csharp
+  // 1. Phối hợp tiêu chí Học hàm & Học vị: Logic OR nội bộ nhóm
+  if (degrees is { Count: > 0 })
+  {
+      query = query.Where(p => degrees.Contains(p.Degree) || degrees.Contains(p.AcademicRank));
+  }
+
+  // 2. Phối hợp tiêu chí Lĩnh vực chuyên môn: Logic OR nội bộ nhóm (giao tập hợp sector)
+  if (sectorCodes is { Count: > 0 })
+  {
+      query = query.Where(p => p.ExpertiseSectors.Any(s => sectorCodes.Contains(s)));
+  }
+
+  // 3. Phối hợp Địa bàn thẩm quyền cấp Sở: Logic AND liên nhóm
+  if (!string.IsNullOrWhiteSpace(provinceCode))
+  {
+      var province = provinceCode.Trim().ToUpperInvariant();
+      var scopedPersonIds = await provinceScopes.GetPersonIdsInProvinceAsync(province, ct);
+      query = query.Where(p => p.PersonId != null && scopedPersonIds.Contains(p.PersonId.Value));
+  }
+
+  // 4. Phối hợp Trạng thái tiếp nhận tư vấn: Logic AND liên nhóm
+  if (acceptingConsultation == true)
+  {
+      query = query.Where(p => p.IsAcceptingConsultation);
+  }
+
+  // 5. Tìm kiếm từ khóa: Logic AND liên nhóm
+  if (!string.IsNullOrWhiteSpace(q))
+  {
+      var keyword = q.Trim().ToLower();
+      query = query.Where(p =>
+          p.FullName.ToLower().Contains(keyword) ||
+          p.OrganizationName.ToLower().Contains(keyword) ||
+          (p.ConsultingSummary != null && p.ConsultingSummary.ToLower().Contains(keyword)) ||
+          p.MasteredTechCodes.Any(code => code.ToLower().Contains(keyword)) ||
+          p.SpecializedKeywords.Any(tag => tag.ToLower().Contains(keyword)));
+  }
+  ```
+
+---
+
+### 18.3. Thiết Kế Chi Tiết Frontend (Component & State Management)
+
+#### 1. Technology Label Resolver Utility (`src/lib/tech-label-resolver.ts`)
+- **Vị trí**: Tạo mới tại `SourceCode/frontend/src/lib/tech-label-resolver.ts`.
+- **Mục tiêu**: Loại trừ dứt điểm chuỗi mã thô và font monospace trên Thẻ Chuyên gia.
+- **Từ điển ánh xạ (18 mã Master Data)**:
+  ```typescript
+  export const TECH_LABEL_DICTIONARY: Record<string, string> = {
+    "TECH-SUPERCRITICAL-CO2": "Chiết xuất CO2 siêu tới hạn",
+    "TECH-NANO-EXTRACTION": "Chiết xuất công nghệ Nano",
+    "TECH-BIOACTIVE-COMPOUNDS": "Phân lập hoạt chất sinh học",
+    "TECH-AI-VISION": "Thị giác máy tính AI",
+    "TECH-EDGE-COMPUTING": "Điện toán biên (Edge Computing)",
+    "TECH-SMART-FACTORY": "Nhà máy thông minh (Smart Factory)",
+    "TECH-CNC-5AXIS": "Gia công CNC 5 trục",
+    "TECH-INDUSTRIAL-ROBOT": "Robot công nghiệp",
+    "TECH-PRESSURE-DIE-CASTING": "Đúc áp lực cao",
+    "TECH-ASIC-DESIGN": "Thiết kế vi mạch ASIC",
+    "TECH-FPGA-ACCEL": "Tăng tốc phần cứng FPGA",
+    "TECH-IOT-GATEWAY": "Cổng kết nối IoT Gateway",
+    "TECH-POSTHARVEST-PRESERVATION": "Bảo quản sau thu hoạch",
+    "TECH-BIO-COATING": "Màng bao sinh học",
+    "TECH-COLD-PLASMA": "Công nghệ Plasma lạnh",
+    "TECH-GRAPHENE-NANO": "Vật liệu Nano Graphene",
+    "TECH-ANTI-CORROSION": "Sơn phủ chống ăn mòn",
+    "TECH-RECYCLED-COMPOSITE": "Vật liệu Composite tái chế",
+  };
+
+  export function resolveTechLabel(techCode: string): string {
+    if (!techCode) return "";
+    const cleanCode = techCode.trim();
+    if (TECH_LABEL_DICTIONARY[cleanCode]) {
+      return TECH_LABEL_DICTIONARY[cleanCode];
+    }
+    // Fallback: Loại bỏ tiền tố TECH-, chuyển "-" thành khoảng trắng và định dạng Title Case
+    return cleanCode
+      .replace(/^TECH[-_]/i, "")
+      .replace(/[-_]+/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+  ```
+
+#### 2. Khối Chỉ Số Thành Tựu Thông Minh (Conditional Rendering & Zero-Elimination)
+- **Quy tắc**: "Cái gì đẹp show ra, không có thì ẩn đi".
+- **Cài đặt trên Thẻ Chuyên Gia (`ExpertCard`)**:
+  ```tsx
+  {/* Khối Chỉ Số Thành Tựu: Chỉ render khi tổng số liệu > 0 */}
+  {((expert.publicationCount > 0) || (expert.patentCount > 0) || (expert.projectCount > 0)) && (
+    <div className="mt-3 flex flex-wrap gap-1.5 py-1.5" data-testid="expert-achievements-block">
+      {expert.publicationCount > 0 && (
+        <span className="px-2 py-0.5 rounded-md text-caption font-semibold bg-sky-50 text-sky-800 border border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 flex items-center gap-1">
+          <BookOpen className="w-3 h-3 text-sky-600" />
+          {expert.publicationCount}+ Công bố quốc tế
+        </span>
+      )}
+      {expert.patentCount > 0 && (
+        <span className="px-2 py-0.5 rounded-md text-caption font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 flex items-center gap-1">
+          <Award className="w-3 h-3 text-amber-600" />
+          {expert.patentCount} Bằng sáng chế
+        </span>
+      )}
+      {expert.projectCount > 0 && (
+        <span className="px-2 py-0.5 rounded-md text-caption font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 flex items-center gap-1">
+          <Layers className="w-3 h-3 text-emerald-600" />
+          {expert.projectCount} Đề tài KH
+        </span>
+      )}
+    </div>
+  )}
+  ```
+
+#### 3. Bộ Lọc Checkbox Đa Tiêu Chí & URL Params Synchronization
+- **Quản lý State tại `ExpertsDirectoryPage`**:
+  * `selectedDegrees: string[]` (mặc định `[]`).
+  * `selectedSectors: string[]` (mặc định `[]`).
+  * `selectedProvince: string` (mặc định `""`).
+  * `acceptingConsultation: boolean` (mặc định `false`).
+  * `searchTerm: string` (mặc định `""`).
+- **Đồng bộ hóa 2 chiều với URL Search Parameters**:
+  * Khi trang tải lần đầu: Khôi phục state từ URL (`degrees=GS,PGS`, `sectorCodes=LV01,LV05`, `province=HN`, `q=...`, `consultation=true`).
+  * Khi người dùng thay đổi checkbox: Cập nhật URL qua `window.history.replaceState` hoặc `next/navigation` router, đảm bảo người dùng có thể chia sẻ link hoặc refresh trang không mất tiêu chí.
+- **Active Filter Chips Bar**:
+  * Nằm trực tiếp dưới thanh thông tin kết quả.
+  * Hiển thị Chip riêng cho từng học vị, từng lĩnh vực, địa bàn, từ khóa và tư vấn.
+  * Nút `×` gỡ bỏ độc lập từng tiêu chí.
+  * Nút `[Đặt lại bộ lọc]` trên thanh Chips và đầu Sidebar đặt lại toàn bộ về mặc định.
+
+#### 4. Phân Nhóm 34 Sở KH&CN Trọng Điểm (<optgroup> 3 Miền)
+- Nguồn dữ liệu từ `GET /api/v1/governance/org-units/public-provinces`.
+- Cấu trúc `<select>` với 3 nhóm miền địa lý:
+  ```tsx
+  <select
+    value={selectedProvince}
+    onChange={(e) => { setCurrentPage(1); setSelectedProvince(e.target.value); }}
+    className="form-control w-full text-caption"
+    data-testid="province-filter-select"
+  >
+    <option value="">Tất cả địa bàn (34 Sở KH&CN)</option>
+    <optgroup label="Miền Bắc (12 Tỉnh/TP)">
+      {provinces.filter(p => p.region === "NORTH").map(p => (
+        <option key={p.code} value={p.code}>{p.name}</option>
+      ))}
+    </optgroup>
+    <optgroup label="Miền Trung & Tây Nguyên (10 Tỉnh/TP)">
+      {provinces.filter(p => p.region === "CENTRAL").map(p => (
+        <option key={p.code} value={p.code}>{p.name}</option>
+      ))}
+    </optgroup>
+    <optgroup label="Miền Nam (12 Tỉnh/TP)">
+      {provinces.filter(p => p.region === "SOUTH").map(p => (
+        <option key={p.code} value={p.code}>{p.name}</option>
+      ))}
+    </optgroup>
+  </select>
+  ```
+
+---
+
+### 18.4. Thẩm Định Tính Phi Phá Hủy & Tương Thích Ngược (Non-Destructive Proof)
+
+1. **Database Persistence**:
+   - Delta v17 hoàn toàn KHÔNG thực hiện thay đổi nào trên Database Schema (không thêm bảng, không sửa cột, không xóa cột).
+   - Dữ liệu chuyên gia, danh mục taxonomy và phân quyền Sở KH&CN được duy trì nguyên vẹn 100%.
+2. **API Backward Compatibility**:
+   - Mở rộng query parameter `degrees` và `sectorCodes` dưới dạng mảng/CSV song song với việc tiếp tục hỗ trợ tham số đơn `degree` và `sectorCode` hiện hữu.
+   - Các hợp đồng API Zalo Mini App (`/api/v1/public/experts/quick-intake`) và các tích hợp cũ hoàn toàn không bị ảnh hưởng.
+3. **UX Resilience & Single Source of Truth**:
+   - Master Data địa bàn 34 tỉnh và lĩnh vực ngành nghề được lấy từ Single Source of Truth (API hệ thống thật, Zero-Mock).
+   - Bảo toàn 5 UX States (Loading, Ideal, Empty, Error, Updating) bảo đảm độ tin cậy trải nghiệm người dùng cao cấp.
+
+---
+
+### 18.5. Kế Hoạch Kiểm Thử Kỹ Thuật (Test Strategy)
+
+1. **Unit Tests Backend**:
+   - `ExpertPublicDirectoryFilterTests`: Kiểm tra xử lý query parameter đa trị (lặp, CSV, đơn trị).
+   - Kiểm tra logic kết hợp OR nội bộ nhóm (nhiều học vị, nhiều sector) và AND liên nhóm.
+2. **Unit Tests Frontend**:
+   - `tech-label-resolver.test.ts`: Kiểm tra giải mã 18 mã chuẩn TT17 và cơ chế fallback Title Case cho mã mới.
+3. **Component Tests Frontend**:
+   - Kiểm thử Thẻ Chuyên gia: Không hiển thị bất kỳ nhãn `TECH-*` thô hay font-mono; kiểm thử ẩn tuyệt đối chỉ số bằng 0; kiểm thử ẩn cả khối khi cả 3 chỉ số bằng 0.
+   - Kiểm thử Sidebar Filter: Tích chọn nhiều checkbox Học vị và Lĩnh vực; kiểm thử phân nhóm 3 miền `<optgroup>`.
+   - Kiểm thử Active Filter Chips: Bỏ từng chip và kiểm tra state cập nhật chính xác.
+4. **End-to-End Blackbox Test**:
+   - Bổ sung test case E2E kiểm chứng luồng lọc đa tiêu chí thực tế trên browser.

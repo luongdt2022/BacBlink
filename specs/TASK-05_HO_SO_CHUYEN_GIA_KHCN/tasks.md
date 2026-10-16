@@ -320,3 +320,99 @@
 
 
 
+
+---
+
+## Giai Đoạn Delta v17: Tối Ưu Hóa UI/UX Danh Bạ Chuyên Gia & Bộ Lọc Đa Tiêu Chí [CR-2026-016]
+
+- [x] `T136` **[BE-TASK-05-DELTA-v17-01][BE][API][REQ-EXP-DIR-MULTI-SELECT][BR-EXP-DIR-MULTI-FILTER] Mở rộng API GET /api/v1/public/experts hỗ trợ multi-filter (degrees, sectorCodes)**
+  - **Mục tiêu**: Nâng cấp API công khai danh bạ chuyên gia hỗ trợ nhận lọc đa tiêu chí linh hoạt, giữ vững tính tương thích ngược hoàn toàn.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/backend/apps/api/V1Compat/ExpertController.cs` (`PublicExpertController`): Bổ sung tiếp nhận `degrees` và `sectorCodes` (hỗ trợ cả mảng query param lặp `degrees=GS&degrees=PGS` và chuỗi CSV `degrees=GS,PGS`), đồng thời duy trì tiếp nhận tham số đơn trị cũ `degree` và `sectorCode`.
+    + Trong `SourceCode/backend/modules/brokerage/Application/ExpertService.cs` (`GetPublicDirectoryAsync`): Cập nhật query handler để áp dụng logic OR trong cùng nhóm tiêu chí (`degrees.Contains(Degree) || degrees.Contains(AcademicRank)` và `ExpertiseSectors.Any(s => sectorCodes.Contains(s))`), đồng thời áp dụng logic AND giữa các nhóm tiêu chí khác nhau (`Degrees`, `Sectors`, `ProvinceCode`, `AcceptingConsultation`, `Keyword`).
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Gọi `GET /api/v1/public/experts?degrees=GS,PGS`: Trả về chuyên gia có học hàm GS hoặc PGS (OR).
+    + Gọi `GET /api/v1/public/experts?sectorCodes=LV01,LV05`: Trả về chuyên gia thuộc ngành LV01 hoặc LV05 (OR).
+    + Gọi `GET /api/v1/public/experts?degree=GS`: Tương thích ngược thành công, trả về các GS.
+    + Kết hợp `degrees=GS,PGS&sectorCodes=LV01&provinceCode=HN`: Trả về chuyên gia thỏa mãn đồng thời tất cả các nhóm tiêu chí (AND).
+
+- [x] `T137` **[FE-TASK-05-DELTA-v17-01][FE][UI][REQ-EXP-DIR-TECH-LABEL][UI-EXP-DIR-CARD-POLISH] Xây dựng Technology Label Resolver & Tinh chỉnh Thẻ Chuyên Gia**
+  - **Mục tiêu**: Xóa bỏ hoàn toàn chuỗi mã kỹ thuật thô (`TECH-...`) và font-mono trên Thẻ Chuyên gia; thay thế bằng nhãn tiếng Việt rõ nghĩa và font-sans trang nhã.
+  - **Hành động kỹ thuật**:
+    + Tạo mới tệp `SourceCode/frontend/src/lib/tech-label-resolver.ts` chứa từ điển 18 mã công nghệ Master Data tiếng Việt thân thiện (ví dụ `TECH-SUPERCRITICAL-CO2` $\rightarrow$ *"Chiết xuất CO2 siêu tới hạn"*, `TECH-AI-VISION` $\rightarrow$ *"Thị giác máy tính AI"*...) và hàm fallback chuyển đổi Title Case cho mã mới phát sinh ngoài từ điển.
+    + Cập nhật component render thẻ chuyên gia trong `SourceCode/frontend/src/app/experts/page.tsx`: Sử dụng `resolveTechLabel(code)` để hiển thị nhãn công nghệ, thay thế `font-mono` bằng `font-sans` với badge style bo góc nhẹ (`bg-slate-100 text-slate-700 border border-slate-200`).
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Không xuất hiện bất kỳ chuỗi mã thô nào bắt đầu bằng `TECH-` trên thẻ chuyên gia.
+    + Không có bất kỳ thẻ tag công nghệ nào sử dụng class `font-mono`.
+    + Mã lạ chưa có trong từ điển tự động hiển thị dạng Title Case sạch đẹp.
+
+- [x] `T138` **[FE-TASK-05-DELTA-v17-02][FE][UI][REQ-EXP-DIR-STATS-DISPLAY][BR-EXP-DIR-HIDE-ZERO-METRICS][UI-EXP-DIR-CARD-POLISH] Thiết kế Khối Chỉ Số Thành Tựu Thông Minh (Ẩn toàn bộ số 0)**
+  - **Mục tiêu**: Triệt tiêu toàn bộ các ô hiển thị số liệu 0 xám xịt trên Thẻ Chuyên gia theo triết lý "Cái gì đẹp show ra, không có thì ẩn đi".
+  - **Hành động kỹ thuật**:
+    + Cập nhật logic render khối thống kê trong `SourceCode/frontend/src/app/experts/page.tsx`.
+    + Loại bỏ layout cố định grid 3 cột đếm số cũ.
+    + Chỉ hiển thị các Badge/Chip thành tựu cho các chỉ số có giá trị $> 0$ (`publicationCount > 0`, `patentCount > 0`, `projectCount > 0`).
+    + Trường hợp chuyên gia chưa có chỉ số nào $> 0$ ($\sum = 0$): Ẩn hoàn toàn toàn bộ container khối chỉ số khỏi DOM, không để lại khoảng trống layout bất thường.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Tuyệt đối không xuất hiện con số "0" trong phần thành tựu trên bất kỳ thẻ chuyên gia nào.
+    + Chuyên gia có $\sum = 0$ có layout thẻ gọn gàng, liền mạch với phần CTA footer bên dưới.
+    + Chuyên gia có chỉ số $> 0$ hiển thị các Chip nổi bật kèm icon nhận diện chuyên ngành.
+
+- [x] `T139` **[FE-TASK-05-DELTA-v17-03][FE][UI][REQ-EXP-DIR-MULTI-SELECT][BR-EXP-DIR-MULTI-FILTER][UI-EXP-DIR-FILTER-CHECKBOX] Chuyển đổi Bộ Lọc Học Vị & Lĩnh Vực sang Checkbox Đa Chọn và Đồng bộ URL**
+  - **Mục tiêu**: Cho phép người dùng chọn cùng lúc nhiều học vị và nhiều ngành nghề, đồng bộ trạng thái 2 chiều với URL Search Parameters.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/app/experts/page.tsx`: Chuyển đổi radio button sang Checkbox cho 2 trục "Học hàm & Học vị" và "Lĩnh vực chuyên môn".
+    + Quản lý state `selectedDegrees: string[]` và `selectedSectors: string[]`.
+    + Hiển thị số lượng mục đang được chọn trên tiêu đề nhóm lọc: `Học hàm & Học vị (N)` và `Lĩnh vực chuyên môn (N)`.
+    + Tích hợp ô tìm kiếm nhanh ngành nghề `sectorSearch` và giới hạn khung cuộn `max-h-52`.
+    + Đồng bộ hóa 2 chiều state với URL Search Parameters (`degrees=...`, `sectorCodes=...`), đảm bảo F5 hoặc chia sẻ link giữ nguyên trạng thái lọc.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Có thể tích chọn đồng thời nhiều checkbox (ví dụ cả GS và PGS).
+    + Tìm kiếm nhanh ngành nghề trong danh sách mượt mà.
+    + URL cập nhật tham số tương ứng mỗi khi thay đổi checkbox.
+    + Tải lại trang (F5) khôi phục chính xác các checkbox đã tích chọn trước đó.
+
+- [x] `T140` **[FE-TASK-05-DELTA-v17-04][FE][UI][REQ-EXP-DIR-PROVINCE-SCOPE][BR-EXP-DIR-PROVINCE-GOV-SCOPE] Chuẩn hóa Dropdown Địa Bàn về 34 Sở KH&CN Trọng Điểm (<optgroup> 3 Miền)**
+  - **Mục tiêu**: Thu hẹp và chuẩn hóa danh mục địa bàn về đúng 34 Sở KH&CN trọng điểm thuộc mạng lưới liên thông NacenTech, phân chia trực quan theo 3 miền.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/app/experts/page.tsx`: Cập nhật cấu trúc `<select>` địa bàn với 3 nhóm `<optgroup>` dựa trên thuộc tính `region` (`NORTH`, `CENTRAL`, `SOUTH`) trả về từ API `GET /api/v1/governance/org-units/public-provinces`.
+    + Ba nhóm miền: `Miền Bắc (12 Tỉnh/TP)`, `Miền Trung & Tây Nguyên (10 Tỉnh/TP)`, `Miền Nam (12 Tỉnh/TP)`.
+    + Tùy chọn mặc định: `Tất cả địa bàn (34 Sở KH&CN)`.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Dropdown hiển thị rõ ràng 3 phân nhóm `<optgroup>` với đúng số lượng tỉnh thành chuẩn hóa.
+    + Chọn một tỉnh (ví dụ Hà Nội) gửi đúng `provinceCode=HN` lên API và trả về đúng chuyên gia được gán scope địa bàn tương ứng.
+
+- [x] `T141` **[FE-TASK-05-DELTA-v17-05][FE][UI][UI-EXP-DIR-FILTER-CHECKBOX] Cài đặt Thanh Active Filter Chips & Hoàn thiện 5 UX States**
+  - **Mục tiêu**: Nâng cao tính tiện dụng với các Chip tiêu chí đang chọn có thể gỡ nhanh độc lập và bảo đảm hoàn hảo 5 trạng thái UX Enterprise.
+  - **Hành động kỹ thuật**:
+    + Xây dựng thanh Active Filter Chips nằm dưới thông tin số lượng kết quả: hiển thị từng Chip cho từ khóa tìm kiếm, từng học vị đã chọn, từng ngành đã chọn, địa bàn và trạng thái tư vấn.
+    + Bấm `×` trên từng chip gỡ bỏ chính xác tiêu chí đó và tự động nạp lại danh bạ.
+    + Nút `[Đặt lại bộ lọc]` trên thanh Chips và đầu Sidebar xóa sạch mọi tiêu chí về mặc định.
+    + Đảm bảo 5 UX States: Loading (6 Skeleton Shimmer Cards), Ideal (Lưới Thẻ Chuyên gia 3 cột), Empty State (Hộp nét đứt thẩm mỹ có CTA Đặt lại bộ lọc), Error State (Card cảnh báo đỏ kèm CTA Thử lại), Updating transition mượt mà.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Bấm `×` trên một Chip học vị (ví dụ GS) chỉ bỏ chọn GS, giữ nguyên các học vị hoặc ngành nghề khác đang chọn.
+    + Bấm `[Đặt lại bộ lọc]` xóa sạch URL query và khôi phục giao diện mặc định.
+    + Mất mạng hoặc API lỗi hiển thị Error State đạt chuẩn kèm nút Thử lại.
+
+- [x] `T142` **[TEST-TASK-05-DELTA-v17-01][TEST][BE] Unit tests Backend cho Multi-Filter Directory Query**
+  - **Mục tiêu**: Kiểm thử tự động hóa logic kết hợp điều kiện OR và AND trên API và query handler.
+  - **Hành động kỹ thuật**:
+    + Viết test cases trong `SourceCode/backend/tests/integration/ExpertPublicDirectoryMultiFilterTests.cs`.
+    + Kiểm tra parser nhận query dạng lặp, CSV và tham số đơn.
+    + Kiểm tra kết quả truy vấn khớp logic OR nội bộ nhóm (nhiều degrees, nhiều sectorCodes) và AND liên nhóm.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Chạy `dotnet test` trong backend vượt qua 100% test cases mới.
+
+- [x] `T143` **[TEST-TASK-05-DELTA-v17-02][TEST][FE] Unit & Component tests Frontend cho Resolver, Stats và Multi-Filter Checkbox**
+  - **Mục tiêu**: Ngăn ngừa lỗi hồi quy UI/UX, bảo đảm không lộ mã thô, không render ô số 0 và kiểm thử đồng bộ trạng thái Checkbox.
+  - **Hành động kỹ thuật**:
+    + Viết unit test `SourceCode/frontend/src/lib/tech-label-resolver.test.ts` kiểm thử toàn diện từ điển 18 mã TT17 và fallback Title Case.
+    + Cập nhật/Bổ sung component tests trong `SourceCode/frontend/src/app/experts/page.test.tsx` kiểm thử:
+      * Không xuất hiện chuỗi `TECH-` trên thẻ.
+      * Không xuất hiện thẻ đếm mang giá trị "0".
+      * Thẻ của chuyên gia có $\sum = 0$ không render khối thành tựu.
+      * Tích chọn nhiều checkbox cập nhật danh sách filter chips.
+      * Dropdown địa bàn chứa đủ 3 `<optgroup>`.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Chạy `npm test` trong frontend vượt qua 100% test suites (0 fail).
+    + Chạy `pnpm build` hoặc `npm run build` không phát sinh lỗi TypeScript.

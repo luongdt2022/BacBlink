@@ -601,3 +601,244 @@ Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-
 
 
 
+
+
+---
+
+## 17. Spec Delta v17 (PO-DEC-20261016-03): Tối Ưu Hóa UI/UX Danh Bạ Chuyên Gia & Bộ Lọc Đa Tiêu Chí [CR-2026-016]
+
+**Căn cứ pháp lý & Quyết định Sản phẩm**:
+- **Quyết định phê duyệt PO**: `PO-DEC-20261016-03` ngày 16/10/2026 về tinh gọn và tối ưu hóa trải nghiệm người dùng Danh bạ Chuyên gia KH&CN (`/experts` và `/chuyen-gia`).
+- **Nguồn dữ liệu & Tài liệu liên quan**:
+  + Basic Design v2.7 [`wireframe_danh_ba_chuyen_gia.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_danh_ba_chuyen_gia.html).
+  + Danh mục 34 Sở KH&CN trọng điểm 3 miền tại `GovernanceControllers.cs` (`KeyProvinces34`).
+  + Dữ liệu thực nghiệm chuyên gia và nhóm công nghệ tại `cleanup_and_seed_real_market_data.sql`.
+
+---
+
+### 17.1. Bối Cảnh & Quyết Định Sản Phẩm (PO Decisions & UX Insights)
+
+Từ kết quả rà soát thực tế và phản hồi của người dùng (Doanh nghiệp tìm chuyên gia và Nhà khoa học):
+1. **Thẻ Chuyên gia (Expert Card) [CONFIRMED]**: Hiện tại thẻ chuyên gia đang render các chuỗi mã kỹ thuật thô như `TECH-SUPERCRITICAL-CO2`, `TECH-CNC-5AXIS`... dạng font monospace gây cảm giác khô cứng, khó hiểu đối với doanh nghiệp và nhà quản trị. Quyết định PO: Thay thế mã thô bằng nhãn hiển thị thân thiện, rõ nghĩa tiếng Việt (Friendly Technology Labels), dùng font chữ giao diện mềm mại, trang nhã.
+2. **Khối Chỉ Số Thành Tựu Khoa Học [CONFIRMED]**: Hiện tại thẻ chuyên gia hiển thị cố định 3 ô vuông đếm số: Công bố, Sáng chế, Đề tài KH kể cả khi mang giá trị 0. Quyết định PO: Áp dụng triết lý *"Cái gì đẹp show ra, không có thì ẩn đi"*. Chỉ số nào có giá trị $> 0$ thì hiển thị dạng Badge/Chip thành tựu nổi bật; chỉ số $= 0$ phải ẩn đi. Nếu chuyên gia chưa có chỉ số nào $> 0$, ẩn hoàn toàn toàn bộ khối thống kê, tuyệt đối không để 3 ô số 0 trống rỗng làm giảm uy tín của chuyên gia.
+3. **Bộ Lọc Chuyên Sâu (Sidebar Filter) [CONFIRMED]**: Hiện tại Học vị và Lĩnh vực đang sử dụng nút Radio (đơn chọn), gây cản trở khi người dùng muốn tìm kiếm chuyên gia đa ngành hoặc nhiều học vị (ví dụ: vừa chọn GS vừa chọn PGS). Quyết định PO: Chuyển đổi toàn diện sang Checkbox (đa chọn - multi-select). Quy định rõ thuật toán kết hợp điều kiện: Trong cùng một tiêu chí (nhiều học vị hoặc nhiều ngành) áp dụng toán tử logic **OR**; giữa các tiêu chí khác nhau áp dụng toán tử logic **AND**.
+4. **Địa Bàn Sở KH&CN [CONFIRMED]**: Dropdown địa bàn hiện tại chứa quá nhiều tỉnh thành (danh sách 63 tỉnh), nhiều tỉnh chưa có dữ liệu tham gia dẫn đến kết quả lọc bị rỗng. Quyết định PO: Quy hoạch và chuẩn hóa dropdown về đúng danh sách 34 Tỉnh/Thành phố trọng điểm thuộc phạm vi quản trị/liên thông của dự án NacenTech (phân theo 3 miền Bắc - Trung - Nam), loại bỏ sự dàn trải ngoài phạm vi.
+
+---
+
+### 17.2. User Stories & Acceptance Scenarios (Gherkin Format)
+
+#### User Story 24 — Trải Nghiệm Thẻ Chuyên Gia Thân Thiện & Nhãn Công Nghệ Trực Quan (Priority: P1)
+**User Persona**: Doanh nghiệp ĐMST (Buyer) hoặc Khách vãng lai truy cập Danh bạ Chuyên gia.  
+**Mục tiêu**: Nhanh chóng nhận diện năng lực chuyên môn và công nghệ làm chủ của chuyên gia bằng ngôn ngữ thân thiện, dễ hiểu; nắm bắt ngay các thành tựu nổi bật mà không bị phân tâm bởi các số liệu 0 trống rỗng.
+
+**Acceptance Scenarios**:
+1. **Given** người dùng duyệt danh sách chuyên gia tại `/experts`, **When** quan sát từng Thẻ chuyên gia (Expert Card), **Then** hệ thống hiển thị nhãn công nghệ làm chủ bằng tiếng Việt rõ nghĩa (Ví dụ: `Chiết xuất CO2 siêu tới hạn`, `Gia công CNC 5 trục`, `Thị giác máy tính AI`, `Điện toán biên`...) thay vì hiển thị các mã định danh kỹ thuật thô (`TECH-...`) font monospace.
+2. **Given** chuyên gia có thành tựu khoa học đã được kiểm chứng (Công bố $> 0$, Sáng chế $> 0$ hoặc Đề tài KH $> 0$), **When** hiển thị khối thành tựu trên thẻ, **Then** hệ thống hiển thị các huy hiệu/chip nổi bật (Ví dụ: `140+ Công bố quốc tế`, `8 Bằng sáng chế`, `5 Đề tài KH`), ẩn đi bất kỳ chỉ số nào có giá trị $= 0$.
+3. **Given** chuyên gia là nhà tư vấn thực chiến chưa có công bố hay sáng chế ($\text{publicationCount} = 0$, $\text{patentCount} = 0$, $\text{projectCount} = 0$), **When** hiển thị thẻ chuyên gia, **Then** hệ thống ẩn hoàn toàn toàn bộ khối thống kê chỉ số, không hiển thị 3 ô số 0 xám trống rỗng; bố cục thẻ tự động co giãn hài hòa, liền mạch.
+4. **Given** dữ liệu công nghệ chứa một mã mới chưa có trong từ điển nhãn Master Data, **When** render thẻ, **Then** hệ thống kích hoạt cơ chế chuẩn hóa nhãn dự phòng (Fallback Resolver): loại bỏ tiền tố `TECH-`, thay thế dấu gạch ngang bằng khoảng trắng và viết hoa đầu từ (Title Case), bảo đảm không bao giờ để lộ chuỗi mã lỗi thời dạng debug.
+
+---
+
+#### User Story 25 — Lọc Đa Tiêu Chí Độc Lập Với Checkbox & Phối Hợp Logic OR / AND (Priority: P1)
+**User Persona**: Doanh nghiệp hoặc Viện/Trường cần tìm kiếm tổ hợp chuyên gia phù hợp với bài toán phức hợp.  
+**Mục tiêu**: Có thể tích chọn nhiều học vị và nhiều lĩnh vực chuyên môn cùng lúc, nhận kết quả tìm kiếm chính xác theo cơ chế logic OR nội bộ và AND liên tiêu chí.
+
+**Acceptance Scenarios**:
+1. **Given** người dùng mở Sidebar Bộ Lọc Chuyên Sâu, **When** quan sát mục "Học hàm & Học vị" và "Lĩnh vực chuyên môn", **Then** hệ thống hiển thị dưới dạng Checkbox (đa chọn), cho phép tích chọn nhiều ô đồng thời.
+2. **Given** người dùng tích chọn đồng thời `Giáo sư (GS)` và `Phó Giáo sư (PGS)`, **When** áp dụng bộ lọc, **Then** hệ thống trả về tất cả chuyên gia có học hàm/học vị là GS **HOẶC** PGS (Toán tử OR nội bộ).
+3. **Given** người dùng tích chọn đồng thời `Nông nghiệp công nghệ cao (LV01)` và `Công nghệ chế biến & Dược liệu (LV05)`, **When** áp dụng bộ lọc, **Then** hệ thống trả về các chuyên gia có năng lực thuộc ngành LV01 **HOẶC** LV05 (Toán tử OR nội bộ).
+4. **Given** người dùng kết hợp nhiều tiêu chí: Chọn Học vị = [GS, PGS] AND Chọn Lĩnh vực = [LV01] AND Chọn Địa bàn = [Hà Nội] AND Tích "Sẵn sàng nhận tư vấn", **When** áp dụng bộ lọc, **Then** hệ thống trả về danh sách chuyên gia thỏa mãn **ĐỒNG THỜI** tất cả các nhóm tiêu chí trên (Toán tử AND liên tiêu chí).
+5. **Given** người dùng đã chọn nhiều tiêu chí lọc, **When** quan sát khu vực phía trên lưới kết quả, **Then** hệ thống hiển thị danh sách các Thẻ tiêu chí đang chọn (Filter Chips), cho phép bấm dấu `×` trên từng chip để gỡ bỏ tiêu chí đơn lẻ hoặc bấm [Đặt lại bộ lọc] để xóa toàn bộ về mặc định.
+
+---
+
+#### User Story 26 — Thu Hẹp & Chuẩn Hóa Địa Bàn Về Các Sở KH&CN Trọng Điểm NacenTech (Priority: P1)
+**User Persona**: Doanh nghiệp hoặc Cán bộ quản lý cần tìm chuyên gia theo phạm vi địa phương.  
+**Mục tiêu**: Tra cứu chuyên gia gắn với địa bàn Sở KH&CN tham gia chính thức vào mạng lưới NacenTech, tránh việc chọn các tỉnh không có dữ liệu thực tế.
+
+**Acceptance Scenarios**:
+1. **Given** người dùng mở dropdown "Địa bàn Tỉnh / Thành phố", **When** quan sát danh sách tùy chọn, **Then** hệ thống hiển thị danh mục chuẩn hóa 34 Sở KH&CN trọng điểm được phân nhóm rõ ràng theo 3 miền:
+   - *Miền Bắc (12 Tỉnh/TP)*: Hà Nội, Hải Phòng, Quảng Ninh, Bắc Ninh, Vĩnh Phúc, Thái Nguyên, Hải Dương, Hưng Yên, Nam Định, Phú Thọ, Ninh Bình, Bắc Giang.
+   - *Miền Trung & Tây Nguyên (10 Tỉnh/TP)*: Đà Nẵng, Thanh Hóa, Nghệ An, Thừa Thiên Huế, Quảng Nam, Quảng Ngãi, Bình Định, Khánh Hòa, Đắk Lắk, Lâm Đồng.
+   - *Miền Nam (12 Tỉnh/TP)*: TP. Hồ Chí Minh, Bình Dương, Đồng Nai, Bà Rịa - Vũng Tàu, Cần Thơ, Long An, Tiền Giang, An Giang, Đồng Tháp, Kiên Giang, Tây Ninh, Cà Mau.
+2. **Given** người dùng chọn địa bàn `Sở KH&CN TP. Hà Nội (HN)`, **When** bộ lọc thực thi, **Then** hệ thống lọc chính xác các chuyên gia có hồ sơ được Sở KH&CN Hà Nội thẩm định và phân quyền (`ScopeType = PROVINCE`, `ScopeId = HN`).
+
+---
+
+### 17.3. Yêu Cầu Chức Năng Bổ Sung (Spec Delta Functional Requirements)
+
+- **`REQ-EXP-DIR-TECH-LABEL` (Hiển thị nhãn công nghệ thân thiện rõ nghĩa tiếng Việt)** [CONFIRMED]:
+  + Hệ thống hiển thị tên công nghệ làm chủ rõ nghĩa thay cho mã định danh kỹ thuật thô (`TECH-...`).
+  + Frontend và Backend áp dụng bộ giải mã nhãn công nghệ (Technology Label Resolver) ánh xạ từ mã định danh chuẩn sang nhãn tiếng Việt hiển thị theo Master Data:
+    * `TECH-SUPERCRITICAL-CO2` $\rightarrow$ *"Chiết xuất CO2 siêu tới hạn"*
+    * `TECH-NANO-EXTRACTION` $\rightarrow$ *"Chiết xuất công nghệ Nano"*
+    * `TECH-BIOACTIVE-COMPOUNDS` $\rightarrow$ *"Phân lập hoạt chất sinh học"*
+    * `TECH-AI-VISION` $\rightarrow$ *"Thị giác máy tính AI"*
+    * `TECH-EDGE-COMPUTING` $\rightarrow$ *"Điện toán biên (Edge Computing)"*
+    * `TECH-SMART-FACTORY` $\rightarrow$ *"Nhà máy thông minh (Smart Factory)"*
+    * `TECH-CNC-5AXIS` $\rightarrow$ *"Gia công CNC 5 trục"*
+    * `TECH-INDUSTRIAL-ROBOT` $\rightarrow$ *"Robot công nghiệp"*
+    * `TECH-PRESSURE-DIE-CASTING` $\rightarrow$ *"Đúc áp lực cao"*
+    * `TECH-ASIC-DESIGN` $\rightarrow$ *"Thiết kế vi mạch ASIC"*
+    * `TECH-FPGA-ACCEL` $\rightarrow$ *"Tăng tốc phần cứng FPGA"*
+    * `TECH-IOT-GATEWAY` $\rightarrow$ *"Cổng kết nối IoT Gateway"*
+    * `TECH-POSTHARVEST-PRESERVATION` $\rightarrow$ *"Bảo quản sau thu hoạch"*
+    * `TECH-BIO-COATING` $\rightarrow$ *"Màng bao sinh học"*
+    * `TECH-COLD-PLASMA` $\rightarrow$ *"Công nghệ Plasma lạnh"*
+    * `TECH-GRAPHENE-NANO` $\rightarrow$ *"Vật liệu Nano Graphene"*
+    * `TECH-ANTI-CORROSION` $\rightarrow$ *"Sơn phủ chống ăn mòn"*
+    * `TECH-RECYCLED-COMPOSITE` $\rightarrow$ *"Vật liệu Composite tái chế"*
+  + Triệt tiêu hoàn toàn font chữ `font-mono` kỹ thuật trên thẻ chuyên gia; sử dụng font giao diện chuẩn `font-sans` với kiểu dáng tag mềm mại, màu sắc nhã nhặn.
+  + Cung cấp cơ chế fallback thông minh: nếu gặp mã chưa được định nghĩa trong từ điển, tự động chuẩn hóa nhãn bằng cách loại bỏ tiền tố `TECH-` và chuyển sang Title Case.
+
+- **`REQ-EXP-DIR-STATS-DISPLAY` (Khối chỉ số thành tựu thông minh — Ẩn giá trị 0)** [CONFIRMED]:
+  + Khối thống kê thành tựu trên thẻ chuyên gia chỉ hiển thị các chỉ số có giá trị $> 0$ (`publicationCount > 0`, `patentCount > 0`, `projectCount > 0`).
+  + Các chỉ số $> 0$ được hiển thị dưới dạng Badge/Chip thành tựu nổi bật kèm icon nhận diện chuyên ngành:
+    * Công bố khoa học: `N+ Công bố` (hoặc `N Bài báo ISI/Scopus`)
+    * Sáng chế / GPHI: `N Sáng chế`
+    * Đề tài KH&CN: `N Đề tài KH`
+  + Bất kỳ chỉ số nào mang giá trị $\le 0$ đều bị ẩn hoàn toàn, không render ô số 0.
+  + Trường hợp chuyên gia chưa có bất kỳ chỉ số nào $> 0$ ($\sum = 0$), hệ thống ẩn hoàn toàn toàn bộ khối chỉ số thành tựu, không để lại khoảng trống layout bất thường.
+
+- **`REQ-EXP-DIR-MULTI-SELECT` (Bộ lọc Checkbox đa chọn Học vị & Lĩnh vực)** [CONFIRMED]:
+  + Thay thế bộ chọn đơn dạng Radio button thành Checkbox đa chọn (multi-select) cho hai trục: "Học hàm & Học vị" và "Lĩnh vực chuyên môn".
+  + Cho phép người dùng chọn không giới hạn số lượng mục trong mỗi nhóm tiêu chí.
+  + Hỗ trợ bộ lọc nhanh (Search filter) trong danh sách Lĩnh vực chuyên môn khi số lượng mục lớn; hiển thị số lượng tiêu chí đang được chọn trên tiêu đề nhóm lọc.
+  + Đồng bộ hóa trạng thái tiêu chí đã chọn lên thanh Active Filter Chips và URL Query Parameters để hỗ trợ chia sẻ đường dẫn tìm kiếm hoặc tải lại trang không mất bộ lọc.
+
+- **`REQ-EXP-DIR-PROVINCE-SCOPE` (Chuẩn hóa danh mục địa bàn Sở KH&CN trọng điểm)** [CONFIRMED]:
+  + Thu hẹp danh mục địa bàn Tỉnh/Thành phố về đúng 34 Tỉnh/Thành phố trọng điểm theo quy hoạch của dự án NacenTech (`KeyProvinces34`), phân chia theo 3 nhóm vùng địa lý: Miền Bắc (12 Tỉnh/TP), Miền Trung & Tây Nguyên (10 Tỉnh/TP), Miền Nam (12 Tỉnh/TP).
+  + Nguồn dữ liệu danh mục lấy trực tiếp từ API hệ thống `GET /api/v1/governance/org-units/public-provinces`.
+  + Loại bỏ danh sách 63 tỉnh thành dàn trải ngoài phạm vi nhằm bảo đảm mọi tùy chọn địa bàn đều gắn liền với đơn vị quản trị Nhà nước cấp Sở đã liên thông trong hệ thống.
+
+---
+
+### 17.4. Quy Tắc Nghiệp Vụ Bổ Sung (Spec Delta Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Điều Kiện Kích Hoạt & Logic Xử Lý | Mã Lỗi / Phản Ứng |
+| :--- | :--- | :--- | :--- |
+| **`BR-EXP-DIR-MULTI-FILTER`** | **Logic Phối Hợp Bộ Lọc Đa Tiêu Chí (OR nội bộ, AND liên nhóm)** | - **Nội bộ cùng nhóm tiêu chí (Intra-criteria)**: Áp dụng điều kiện **OR**. Chuyên gia được giữ lại nếu thỏa mãn ít nhất một giá trị được chọn trong mảng (Ví dụ: `Degree ∈ selectedDegrees` hoặc `ExpertiseSectors ∩ selectedSectors ≠ ∅`).<br>- **Liên nhóm tiêu chí (Inter-criteria)**: Áp dụng điều kiện **AND**. Chuyên gia chỉ xuất hiện trong kết quả khi thỏa mãn đồng thời tất cả các nhóm tiêu chí có kích hoạt: `(Degrees OR) AND (Sectors OR) AND (Province) AND (AcceptingConsultation) AND (SearchKeyword)`.<br>- **Tương thích API**: `GET /api/v1/public/experts` hỗ trợ nhận query parameter mảng hoặc chuỗi phân tách dấu phẩy: `degrees=GS,PGS` (hoặc lặp `degree=GS&degree=PGS`) và `sectorCodes=LV01,LV05` (hoặc lặp `sectorCode=LV01&sectorCode=LV05`). Vẫn tương thích ngược với tham số đơn trị cũ. | Trả kết quả rỗng (Empty State) nếu không có bản ghi nào thỏa mãn điều kiện AND |
+| **`BR-EXP-DIR-HIDE-ZERO-METRICS`** | **Ẩn Toàn Bộ Chỉ Số Số Liệu Bằng 0 ("Cái gì đẹp show ra, không có thì ẩn đi")** | - Chỉ số thành tựu `publicationCount`, `patentCount`, `projectCount` chỉ được render khi giá trị $> 0$.<br>- Mọi giá trị $\le 0$ bị loại trừ khỏi DOM hiển thị.<br>- Khi cả 3 chỉ số đều $= 0$, khối container thống kê bị ẩn hoàn toàn (`display: none` hoặc không render component). Tuyệt đối không hiển thị ô đếm có giá trị "0". | Ẩn phần tử giao diện tự động |
+| **`BR-EXP-DIR-PROVINCE-GOV-SCOPE`** | **Phạm Vi Thẩm Quyền Địa Bàn Trọng Điểm NacenTech** | - Lọc địa bàn chỉ áp dụng trên mã Tỉnh/Thành phố thuộc danh mục 34 Sở KH&CN trọng điểm (`KeyProvinces34`).<br>- Hồ sơ chuyên gia được xác định địa bàn thông qua liên kết tài khoản đã phê duyệt (`ScopeType = 'PROVINCE'` và `ScopeId = provinceCode`).<br>- Hồ sơ không có liên kết địa bàn hoặc có địa bàn ngoài danh mục 34 tỉnh sẽ không xuất hiện khi người dùng kích hoạt bộ lọc theo tỉnh cụ thể; hồ sơ này vẫn hiển thị đầy đủ khi chọn "Tất cả địa bàn". | Loại trừ bản ghi không khớp scope |
+
+---
+
+### 17.5. Đặc Tả Giao Diện & Trạng Thái UX (UI/UX Specifications)
+
+#### `UI-EXP-DIR-CARD-POLISH` — Tinh Chỉnh Thẻ Chuyên Gia Doanh Nghiệp (Expert Card Polish) [CONFIRMED]
+1. **Cấu trúc Thẻ Chuyên Gia (3 tầng)**:
+   - **Tầng 1 (Định danh & Thẩm quyền)**:
+     * Avatar chuyên gia với chữ cái đầu viết tắt trên nền gradient nhận diện thương hiệu NacenTech (`bg-brand-700`).
+     * Huy hiệu xác thực tích xanh cấp Sở (`ShieldCheck`) gắn góc avatar cho chuyên gia đã được duyệt.
+     * Huy hiệu Học hàm & Học vị: Phân màu trực quan theo cấp bậc (GS: Viền tím đậm/Nền tím nhạt; PGS: Viền xanh navy/Nền xanh nhạt; TS: Viền xanh ngọc/Nền xanh ngọc nhạt).
+     * Huy hiệu Đã xác thực cấp Sở: Nền xanh lá nhạt (`bg-emerald-50 text-emerald-800 border-emerald-200`) với biểu tượng `ShieldCheck`.
+     * Họ tên chuyên gia: Font bold, cỡ chữ tiêu đề card, giới hạn tối đa 2 dòng kèm tooltip họ tên đầy đủ, hiệu ứng hover đổi màu thương hiệu.
+     * Cơ quan công tác: Icon `Building2`, chữ xám nhạt, cắt ngắn (truncate) khi quá dài kèm tooltip.
+   - **Tầng 2 (Lĩnh vực & Công nghệ làm chủ)**:
+     * Ngành chuyên môn chính: Badge bo góc nhẹ, màu nền thương hiệu dịu (`bg-brand-50 text-brand-800 border border-brand-200`).
+     * Danh mục Công nghệ làm chủ:
+       - Hiển thị tối đa 2 nhãn công nghệ thân thiện bằng tiếng Việt (font chữ sans-serif thường, nền `bg-slate-100 text-slate-700 border border-slate-200`).
+       - Tuyệt đối KHÔNG sử dụng font `font-mono` kỹ thuật hoặc hiển thị mã thô dạng `TECH-SUPERCRITICAL-CO2`.
+       - Nếu có từ 3 công nghệ trở lên, hiển thị badge đếm `+N` công nghệ để người dùng click mở xem thêm.
+   - **Tầng 3 (Khối Thành tựu Nổi bật & Hành động)**:
+     * Khối Thành tựu Nổi bật (Conditional Rendering):
+       - Chỉ hiển thị khi $\sum(\text{publicationCount}, \text{patentCount}, \text{projectCount}) > 0$.
+       - Bố cục flex wrap gồm các Chip thành tựu viền bo tròn nhẹ:
+         + `N+ Công bố quốc tế` (Nền xanh lam nhạt, chữ xanh lam đậm)
+         + `N Bằng sáng chế` (Nền hổ phách/cam nhạt, chữ hổ phách đậm)
+         + `N Đề tài KH` (Nền xanh ngọc nhạt, chữ xanh ngọc đậm)
+       - Nếu cả 3 chỉ số đều $= 0$: Ẩn hoàn toàn khối này, không để khoảng trống thừa.
+     * Nút Hành động (CTA Footer):
+       - Nút chính: `[Xem hồ sơ chi tiết]` (Full-width hoặc 75% chiều rộng, style Secondary Brand, dẫn sang `/experts/[expertCode]`).
+       - Nút phụ: `[Kết nối]` (Icon `MessageSquarePlus`, mở modal gửi yêu cầu hợp tác công nghệ 1-1).
+
+#### `UI-EXP-DIR-FILTER-CHECKBOX` — Thanh Bộ Lọc Chuyên Sâu Đa Tiêu Chí (Sidebar Filter Polish) [CONFIRMED]
+1. **Thiết kế Bộ Lọc 4 Trục**:
+   - **Trục 1 (Học hàm & Học vị)**: Nhóm Checkbox đa chọn gồm 4 tùy chọn chuẩn:
+     * `[ ] Giáo sư (GS)`
+     * `[ ] Phó Giáo sư (PGS)`
+     * `[ ] Tiến sĩ (TS / TSKH)`
+     * `[ ] Thạc sĩ / Kỹ sư chính`
+     * Hiển thị số lượng học vị đang được chọn cạnh tiêu đề nhóm: `Học hàm & Học vị (2)`.
+   - **Trục 2 (Lĩnh vực chuyên môn)**: Nhóm Checkbox đa chọn đọc từ taxonomy active (`GET /api/v1/sectors`):
+     * Ô tìm kiếm nhanh với biểu tượng kính lúp để lọc danh sách khi có nhiều ngành nghề.
+     * Khung cuộn tối đa chiều cao `max-h-52` với scrollbar thanh mảnh.
+     * Mỗi mục là 1 checkbox kèm tên ngành đầy đủ, tự động xuống dòng khi tên dài.
+     * Hiển thị badge số lượng ngành đang chọn: `Lĩnh vực chuyên môn (3)`.
+   - **Trục 3 (Địa bàn Tỉnh / Thành phố)**: Dropdown chuẩn hóa phân nhóm theo 3 miền với `<optgroup>`:
+     * `Tất cả địa bàn`
+     * `[Optgroup: Miền Bắc (12 Tỉnh/TP)]`: Hà Nội, Hải Phòng, Quảng Ninh, Bắc Ninh, Vĩnh Phúc, Thái Nguyên, Hải Dương, Hưng Yên, Nam Định, Phú Thọ, Ninh Bình, Bắc Giang.
+     * `[Optgroup: Miền Trung & Tây Nguyên (10 Tỉnh/TP)]`: Đà Nẵng, Thanh Hóa, Nghệ An, Thừa Thiên Huế, Quảng Nam, Quảng Ngãi, Bình Định, Khánh Hòa, Đắk Lắk, Lâm Đồng.
+     * `[Optgroup: Miền Nam (12 Tỉnh/TP)]`: TP. Hồ Chí Minh, Bình Dương, Đồng Nai, Bà Rịa - Vũng Tàu, Cần Thơ, Long An, Tiền Giang, An Giang, Đồng Tháp, Kiên Giang, Tây Ninh, Cà Mau.
+   - **Trục 4 (Trạng thái chuyên gia)**:
+     * Checkbox: `[ ] Sẵn sàng tiếp nhận tư vấn` (Lọc chuyên gia có `isAcceptingConsultation = true`).
+2. **Khu Vực Thẻ Tiêu Chí Đang Chọn (Active Filter Chips)**:
+   - Nằm ngay dưới thanh thông tin số lượng kết quả tìm thấy.
+   - Tự động sinh ra các Chip tròn bo góc đại diện cho từng tiêu chí được chọn:
+     * Chip từ khóa: `Tìm kiếm: "nano" ×`
+     * Chip học vị: `Học vị: GS ×`, `Học vị: PGS ×`
+     * Chip ngành: `Ngành: Tự động hóa ×`
+     * Chip địa bàn: `Địa bàn: TP. Hà Nội ×`
+     * Chip tư vấn: `Sẵn sàng nhận tư vấn ×`
+   - Bấm vào `×` để gỡ bỏ riêng tiêu chí đó và tự động làm mới kết quả.
+   - Nút `[Đặt lại bộ lọc]` trên đầu Sidebar và cạnh danh sách Chips để xóa sạch mọi tiêu chí về mặc định chỉ với 1 cú click.
+3. **Bao Phủ Trọn Vẹn 5 Trạng Thái UX (Enterprise 5 UX States)**:
+   - **Loading**: Hiển thị lưới 6 Skeleton Cards hiệu ứng Shimmer mượt mà, giữ nguyên khung Sidebar không giật lag.
+   - **Success (Ideal)**: Lưới thẻ chuyên gia 3 cột (Desktop) / 2 cột (Tablet) / 1 cột (Mobile) với đầy đủ thông tin trực quan.
+   - **Empty State**: Khi không có chuyên gia thỏa mãn bộ lọc, hiển thị hình minh họa nét đứt, thông điệp *"Không tìm thấy chuyên gia phù hợp với tiêu chí lọc"*, kèm gợi ý nới lỏng bộ lọc và nút CTA lớn `[Đặt lại bộ lọc]`.
+   - **Error State**: Khi mất kết nối API, hiển thị biểu tượng cảnh báo màu đỏ, thông báo lỗi trung thực và nút `[Thử lại]`.
+   - **Updating Transition**: Khi người dùng thay đổi checkbox, hiển thị trạng thái mờ nhẹ (opacity 0.7) trong tích tắc trước khi nạp dữ liệu mới, không gây giật cuộn trang.
+
+---
+
+### 17.6. Bảng Ánh Xạ Nhãn Công Nghệ Chuẩn Hóa (Technology Label Dictionary) [VERIFIED]
+
+| Mã Kỹ Thuật Gốc (`techCode`) | Nhãn Hiển Thị Thân Thiện Tiếng Việt (`techLabel`) | Lĩnh Vực Liên Quan (TT17) |
+| :--- | :--- | :--- |
+| `TECH-SUPERCRITICAL-CO2` | Chiết xuất CO2 siêu tới hạn | Hóa học & Dược phẩm (LV05) |
+| `TECH-NANO-EXTRACTION` | Chiết xuất công nghệ Nano | Hóa học & Dược liệu (LV05) |
+| `TECH-BIOACTIVE-COMPOUNDS` | Phân lập hoạt chất sinh học | Công nghệ sinh học & Dược (LV01/LV05) |
+| `TECH-AI-VISION` | Thị giác máy tính AI | Công nghệ thông tin & Tự động hóa (LV16) |
+| `TECH-EDGE-COMPUTING` | Điện toán biên (Edge Computing) | Công nghệ thông tin (LV16) |
+| `TECH-SMART-FACTORY` | Nhà máy thông minh (Smart Factory) | Cơ khí & Tự động hóa (LV07/LV08) |
+| `TECH-CNC-5AXIS` | Gia công CNC 5 trục | Cơ khí chế tạo chính xác (LV07) |
+| `TECH-INDUSTRIAL-ROBOT` | Robot công nghiệp | Cơ khí & Tự động hóa (LV07) |
+| `TECH-PRESSURE-DIE-CASTING` | Đúc áp lực cao | Luyện kim & Đúc kim loại (LV14) |
+| `TECH-ASIC-DESIGN` | Thiết kế vi mạch ASIC | Điện tử & Bán dẫn (LV08) |
+| `TECH-FPGA-ACCEL` | Tăng tốc phần cứng FPGA | Điện tử & Vi điện tử (LV08) |
+| `TECH-IOT-GATEWAY` | Cổng kết nối IoT Gateway | Viễn thông & IoT (LV16) |
+| `TECH-POSTHARVEST-PRESERVATION` | Bảo quản sau thu hoạch | Nông nghiệp CNC & Thực phẩm (LV01/LV11) |
+| `TECH-BIO-COATING` | Màng bao sinh học | Công nghệ thực phẩm (LV11) |
+| `TECH-COLD-PLASMA` | Công nghệ Plasma lạnh | Chế biến nông sản & Dược (LV01) |
+| `TECH-GRAPHENE-NANO` | Vật liệu Nano Graphene | Vật liệu mới & Nanotech (LV12) |
+| `TECH-ANTI-CORROSION` | Sơn phủ chống ăn mòn | Vật liệu mới & Hóa chất (LV12) |
+| `TECH-RECYCLED-COMPOSITE` | Vật liệu Composite tái chế | Vật liệu mới & Môi trường (LV12/LV17) |
+
+*Ghi chú*: Trường hợp hệ thống ghi nhận mã mới ngoài bảng tra cứu trên, thuật toán tự động chuẩn hóa: bỏ tiền tố `TECH-`, chuyển sang Title Case để hiển thị thân thiện với người dùng.
+
+---
+
+### 17.7. Danh Sách 34 Sở KH&CN Trọng Điểm Quy Hoạch NacenTech [VERIFIED]
+
+| Vùng Địa Lý | Số Lượng | Danh Sách Tỉnh / Thành Phố (Mã - Tên Đơn Vị) |
+| :--- | :--- | :--- |
+| **Miền Bắc** | 12 | `HN` - TP. Hà Nội, `HP` - TP. Hải Phòng, `QN` - Tỉnh Quảng Ninh, `BN` - Tỉnh Bắc Ninh, `VP` - Tỉnh Vĩnh Phúc, `TN` - Tỉnh Thái Nguyên, `HD` - Tỉnh Hải Dương, `HY` - Tỉnh Hưng Yên, `ND` - Tỉnh Nam Định, `PT` - Tỉnh Phú Thọ, `NB` - Tỉnh Ninh Bình, `BG` - Tỉnh Bắc Giang |
+| **Miền Trung & Tây Nguyên** | 10 | `DN` - TP. Đà Nẵng, `TH` - Tỉnh Thanh Hóa, `NA` - Tỉnh Nghệ An, `TTH` - Tỉnh Thừa Thiên Huế, `QNA` - Tỉnh Quảng Nam, `QNG` - Tỉnh Quảng Ngãi, `BD` - Tỉnh Bình Định, `KH` - Tỉnh Khánh Hòa, `DL` - Tỉnh Đắk Lắk, `LD` - Tỉnh Lâm Đồng |
+| **Miền Nam** | 12 | `SG` - TP. Hồ Chí Minh, `BDG` - Tỉnh Bình Dương, `DNA` - Tỉnh Đồng Nai, `BRVT` - Tỉnh Bà Rịa - Vũng Tàu, `CT` - TP. Cần Thơ, `LA` - Tỉnh Long An, `TG` - Tỉnh Tiền Giang, `AG` - Tỉnh An Giang, `DT` - Tỉnh Đồng Tháp, `KG` - Tỉnh Kiên Giang, `TNH` - Tỉnh Tây Ninh, `CM` - Tỉnh Cà Mau |
+
+---
+
+### 17.8. Ma Trận Truy Vết Nghiệp Vụ (Traceability Matrix)
+
+| Mã Định Danh | Loại Yêu Cầu | Tên Quy Chuẩn | Mô Tả & Căn Cứ Kiểm Thử | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-EXP-DIR-TECH-LABEL`** | Functional Req | Hiển thị Nhãn Công Nghệ Thân Thiện | Chuyển đổi mã kỹ thuật thô (`TECH-...`) sang nhãn tiếng Việt rõ nghĩa; loại bỏ font-mono | `[CONFIRMED]` |
+| **`REQ-EXP-DIR-STATS-DISPLAY`** | Functional Req | Khối Chỉ Số Thành Tựu Thông Minh | Chỉ hiển thị các chỉ số $> 0$; ẩn toàn bộ số 0; ẩn cả khối khi $\sum = 0$ | `[CONFIRMED]` |
+| **`REQ-EXP-DIR-MULTI-SELECT`** | Functional Req | Bộ Lọc Checkbox Đa Tiêu Chí | Chuyển đổi Radio sang Checkbox cho Học vị và Lĩnh vực chuyên môn | `[CONFIRMED]` |
+| **`REQ-EXP-DIR-PROVINCE-SCOPE`** | Functional Req | Chuẩn Hóa Phạm Vi Địa Bàn Trọng Điểm | Quy hoạch dropdown địa bàn về 34 Sở KH&CN trọng điểm phân nhóm 3 miền | `[CONFIRMED]` |
+| **`BR-EXP-DIR-MULTI-FILTER`** | Business Rule | Phối Hợp Logic Bộ Lọc (OR / AND) | OR trong cùng nhóm tiêu chí, AND giữa các nhóm tiêu chí khác nhau | `[CONFIRMED]` |
+| **`BR-EXP-DIR-HIDE-ZERO-METRICS`** | Business Rule | Ẩn Tuyệt Đối Các Chỉ Số Bằng 0 | Loại trừ khỏi DOM hiển thị mọi số liệu $\le 0$; không để ô trống vô nghĩa | `[CONFIRMED]` |
+| **`BR-EXP-DIR-PROVINCE-GOV-SCOPE`** | Business Rule | Thẩm Quyền Địa Bàn 34 Sở Trọng Điểm | Chỉ áp dụng lọc trên các Sở KH&CN thuộc phạm vi liên thông NacenTech | `[CONFIRMED]` |
+| **`UI-EXP-DIR-CARD-POLISH`** | UI/UX Spec | Thiết Kế Thẻ Chuyên Gia Doanh Nghiệp | Tinh chỉnh giao diện thẻ: Nhãn tiếng Việt, chip thành tựu, nút xem & kết nối | `[CONFIRMED]` |
+| **`UI-EXP-DIR-FILTER-CHECKBOX`** | UI/UX Spec | Giao Diện Bộ Lọc Checkbox & 5 UX States | Giao diện Checkbox đa chọn, thanh Active Chips, bao phủ 5 UX states | `[CONFIRMED]` |

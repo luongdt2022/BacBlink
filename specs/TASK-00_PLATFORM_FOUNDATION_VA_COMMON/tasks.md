@@ -140,3 +140,33 @@
 
 
 
+
+
+---
+
+## Giai đoạn 14: Delta v10 (CR-2026-TYPO) — Chuẩn Hóa Typography Cổng DVCQG (Nunito Sans & Lora) [`[FE-TYPO]`]
+
+- [x] `FE-DELTA-01` **[FE][TYPOGRAPHY]** Cấu hình nạp Google Fonts `Nunito_Sans` & `Lora` trong `src/app/layout.tsx`:
+  - [x] Nhập `Nunito_Sans` và `Lora` từ `next/font/google` với subsets `['vietnamese', 'latin']`, display `'swap'`, zero CLS (`adjustFontFallback: true`).
+  - [x] Khai báo biến CSS `--font-sans` cho `Nunito_Sans` (weights: `400, 500, 600, 700`) và `--font-heading` cho `Lora` (weights: `600, 700`).
+  - [x] Nhúng các biến font vào `className` của thẻ `<html>` và loại bỏ cấu hình font local `beVietnamPro`.
+  - [x] Đảm bảo thẻ `<body>` kế thừa `font-sans antialiased`.
+
+- [x] `FE-DELTA-02` **[FE][DESIGN-TOKENS]** Cập nhật Design Tokens typography trong `src/app/globals.css`:
+  - [x] Cập nhật `@theme`: gán `--font-sans` trỏ `var(--font-sans)` kèm system fallbacks; thêm `--font-heading` và `--font-serif` trỏ `var(--font-heading)` kèm serif system fallbacks.
+  - [x] Khai báo fallback `--font-be-vietnam-pro: var(--font-sans)` bảo đảm tương thích ngược cho các component hiện có.
+  - [x] Đồng bộ hóa các rules Text Scaling trong `@layer base`:
+    - [x] `html[data-text-scale="sm"] { font-size: 92.5%; }`
+    - [x] `html[data-text-scale="base"]`, `html[data-text-scale="md"] { font-size: 100%; }`
+    - [x] `html[data-text-scale="lg"] { font-size: 110%; }`
+  - [x] Cập nhật các class tiện ích tiêu đề: `.type-hero`, `.type-section-title`, `.type-page-title` kế thừa font trang trọng `var(--font-heading)`.
+
+- [x] `FE-DELTA-03` **[FE][DESIGN-SYSTEM]** Cập nhật `DESIGN_SYSTEM.md` và `src/components/ui/design-system.tsx`:
+  - [x] Cập nhật tài liệu `DESIGN_SYSTEM.md` Mục 4 phản ánh kiến trúc Dual Font (Nunito Sans cho UI/Body/Data Grid và Lora cho Quốc hiệu/Banner/Tiêu đề trang trọng) cùng bảng ánh xạ 10 nhóm thành phần UI.
+  - [x] Cập nhật component `SectionHeading` trong `src/components/ui/design-system.tsx` sử dụng `font-heading font-bold` cho tiêu đề `title`.
+  - [x] Rà soát `AppButton`, `AppLink` đảm bảo tuân thủ vùng tương tác tối thiểu $\ge 44\text{px}$ và font `Nunito Sans`.
+
+- [x] `TEST-DELTA-01` **[TEST][QUALITY-GATE]** Chạy kiểm thử tự động `src/test/design-rules.test.ts` và test suite:
+  - [x] Chạy `pnpm vitest run src/test/design-rules.test.ts` kiểm tra và khắc phục triệt để các vi phạm bảng màu retired (blue/indigo/purple) hoặc font cỡ nhỏ < 12px.
+  - [x] Kiểm tra tính toàn vẹn của logic điều khiển cỡ chữ tại `src/components/common/fontsize-control.tsx`.
+  - [x] Chạy `pnpm build` tại `SourceCode/frontend` xác nhận biên dịch Next.js 15 đạt 100% thành công (Exit code 0, 0 linter/type errors).
