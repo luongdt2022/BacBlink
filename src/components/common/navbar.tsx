@@ -73,6 +73,7 @@ export function Navbar() {
     { href: "/doanh-nghiep-dmst", label: t("innovative_enterprises") },
     { href: "/trien-lam", label: "Sự kiện Techmart" },
     { href: "/chuyen-gia", label: t("experts") },
+    { href: "/huong-dan", label: t("user_guide") || "Hướng dẫn" },
     { href: "/dich-vu-khac", label: t("services") },
     { href: "/wireframes", label: t("wireframes") || "Wireframes" },
   ];
@@ -109,10 +110,10 @@ export function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`focus-ring rounded-control px-2 py-1.5 2xl:px-2.5 2xl:py-2 text-xs 2xl:text-sm font-semibold whitespace-nowrap transition ${
+                    className={`focus-ring rounded-control px-2 py-1.5 2xl:px-2.5 2xl:py-2 text-[13px] 2xl:text-sm font-semibold whitespace-nowrap transition ${
                       isActive
-                        ? "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200"
-                        : "text-slate-600 hover:bg-brand-50 hover:text-brand-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                        ? "bg-brand-50 text-brand-800 font-bold dark:bg-brand-950/70 dark:text-brand-200"
+                        : "text-slate-700 hover:bg-brand-50 hover:text-brand-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                     }`}
                   >
                     {link.label}
@@ -191,7 +192,7 @@ export function Navbar() {
                 <div className="hidden items-center gap-1.5 sm:flex">
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-1 rounded-control border border-border-default px-2.5 2xl:px-3 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                    className="inline-flex items-center gap-1 rounded-control border border-border-default px-2.5 2xl:px-3 py-1.5 2xl:py-2 text-[13px] 2xl:text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     <LogIn className="w-3.5 h-3.5 text-text-secondary" />
                     <span>{t("login")}</span>
@@ -199,7 +200,7 @@ export function Navbar() {
 
                   <Link
                     href="/register"
-                    className="focus-ring inline-flex items-center gap-1.5 rounded-control bg-nacen-green-500 px-3 2xl:px-4 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-white shadow-sm transition hover:bg-nacen-green-600 whitespace-nowrap"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-control bg-nacen-green-500 px-3 2xl:px-4 py-1.5 2xl:py-2 text-[13px] 2xl:text-sm font-semibold text-white shadow-sm transition hover:bg-nacen-green-600 whitespace-nowrap"
                   >
                     <UserPlus className="w-3.5 h-3.5 shrink-0" />
                     <span>{t("register")}</span>

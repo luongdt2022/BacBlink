@@ -45,6 +45,7 @@ export function Footer() {
               <h4 className="font-semibold text-text-primary dark:text-white">Liên kết nhanh</h4>
               <ul className="space-y-3 text-text-secondary dark:text-slate-400">
                 <li><Link href="/" className="focus-ring rounded-sm text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-200 dark:hover:text-white">{t("home")}</Link></li>
+                <li><Link href="/huong-dan" className="focus-ring rounded-sm text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-200 dark:hover:text-white">Hướng dẫn sử dụng</Link></li>
                 <li><Link href="/profile/upgrade" className="focus-ring rounded-sm text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-200 dark:hover:text-white">{t("expert_upgrade")}</Link></li>
                 <li><Link href="/login" className="focus-ring rounded-sm text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-200 dark:hover:text-white">{t("login")}</Link></li>
                 <li><Link href="/register" className="focus-ring rounded-sm text-brand-700 transition hover:text-brand-800 hover:underline dark:text-brand-200 dark:hover:text-white">{t("register")}</Link></li>

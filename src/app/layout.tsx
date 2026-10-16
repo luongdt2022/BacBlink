@@ -1,5 +1,6 @@
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Nunito_Sans, Lora } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import { I18nProvider } from "@/components/common/i18n-provider";
@@ -9,15 +10,17 @@ import { Footer } from "@/components/common/footer";
 import { AIAssistantWidget } from "@/components/home/AIAssistantWidget";
 import { NavigationProgress } from "@/components/common/navigation-progress";
 
-const beVietnamPro = localFont({
-  src: [
-    { path: "../../public/fonts/be-vietnam-pro/400.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/be-vietnam-pro/500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/be-vietnam-pro/600.ttf", weight: "600", style: "normal" },
-    { path: "../../public/fonts/be-vietnam-pro/700.ttf", weight: "700", style: "normal" },
-    { path: "../../public/fonts/be-vietnam-pro/800.ttf", weight: "800", style: "normal" },
-  ],
-  variable: "--font-be-vietnam-pro",
+const nunitoSans = Nunito_Sans({
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-nunito-sans",
+  display: "swap",
+});
+
+const lora = Lora({
+  subsets: ["vietnamese", "latin"],
+  weight: ["600", "700"],
+  variable: "--font-lora",
   display: "swap",
 });
 
@@ -32,12 +35,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={beVietnamPro.variable} suppressHydrationWarning>
+    <html lang="vi" className={`${nunitoSans.variable} ${lora.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
         <ThemeProvider>
           <I18nProvider>
             <ToastProvider>
-              <NavigationProgress />
+              <Suspense fallback={null}>
+                <NavigationProgress />
+              </Suspense>
               <Navbar />
               <main className="flex-1 animate-page-enter">{children}</main>
               <Footer />

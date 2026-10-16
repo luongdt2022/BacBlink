@@ -12,7 +12,7 @@ const buttonClasses: Record<ButtonVariant, string> = {
   danger: "bg-status-danger text-white shadow-sm hover:bg-rose-700",
 };
 
-const buttonBase = "focus-ring inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-control px-4 py-2 text-label font-semibold transition disabled:pointer-events-none disabled:opacity-50";
+const buttonBase = "focus-ring inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-control px-4 py-2 text-label font-semibold font-sans transition disabled:pointer-events-none disabled:opacity-50";
 
 export function AppLink({ className, variant = "primary", ...props }: React.ComponentProps<typeof Link> & { variant?: ButtonVariant }) {
   return <Link className={cn(buttonBase, buttonClasses[variant], className)} {...props} />;
@@ -40,16 +40,20 @@ export function SectionHeading({
   title,
   description,
   align = "left",
+  font = "heading",
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   align?: "left" | "center";
+  font?: "heading" | "sans";
 }) {
   return (
     <div className={cn("max-w-2xl", align === "center" && "mx-auto text-center")}>
       {eyebrow && <p className="text-xs font-bold uppercase tracking-[0.14em] text-innovation-600">{eyebrow}</p>}
-      <h2 className="mt-2 type-section-title text-text-primary dark:text-white">{title}</h2>
+      <h2 className={cn("mt-2 type-section-title font-heading font-bold text-text-primary dark:text-white", font === "sans" && "font-sans")}>
+        {title}
+      </h2>
       {description && <p className="mt-3 text-body text-text-secondary dark:text-slate-300">{description}</p>}
     </div>
   );

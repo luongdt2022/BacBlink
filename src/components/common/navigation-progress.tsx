@@ -8,7 +8,7 @@ import { usePathname, useSearchParams } from "next/navigation";
  * Kích hoạt tức thì khi người dùng click vào các liên kết nội bộ,
  * tạo cảm giác phản hồi nhanh <100ms chuẩn phong cách SaaS hiện đại.
  */
-export function NavigationProgress() {
+function NavigationProgressInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [progress, setProgress] = useState(0);
@@ -107,5 +107,13 @@ export function NavigationProgress() {
         }}
       />
     </div>
+  );
+}
+
+export function NavigationProgress() {
+  return (
+    <React.Suspense fallback={null}>
+      <NavigationProgressInner />
+    </React.Suspense>
   );
 }

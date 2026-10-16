@@ -7,6 +7,7 @@ import { FormEvent, useEffect, useState } from "react";
 import {
   ArrowRight,
   Award,
+  BookOpen,
   Bot,
   Building2,
   Calendar,
@@ -14,6 +15,7 @@ import {
   ClipboardCheck,
   Clock,
   Cpu,
+  FileDown,
   FileSearch,
   FileSignature,
   GraduationCap,
@@ -316,6 +318,13 @@ export default function HomePage() {
               >
                 <Sparkles className="size-3.5" /> Sàn Sự Kiện Techmart &rarr;
               </Link>
+              <span className="hidden sm:inline text-white/30">|</span>
+              <Link
+                href="/huong-dan"
+                className="inline-flex items-center gap-1 font-semibold text-emerald-300 hover:text-emerald-200 transition ml-1"
+              >
+                <BookOpen className="size-3.5" /> Hướng dẫn cho người mới &rarr;
+              </Link>
             </div>
           </div>
 
@@ -403,6 +412,148 @@ export default function HomePage() {
       </section>
 
       <main>
+        {/* DÀNH CHO NGƯỜI DÙNG MỚI: HƯỚNG DẪN BẮT ĐẦU */}
+        <section className="bg-gradient-to-b from-brand-50/60 via-slate-50/40 to-white py-12 sm:py-16 dark:from-slate-950 dark:via-slate-900/60 dark:to-slate-950 border-b border-border-default/60 dark:border-slate-800">
+          <div className="page-container">
+            <div className="mx-auto max-w-3xl text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-nacen-green-50 px-3 py-1 text-xs font-bold text-nacen-green-700 border border-nacen-green-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                <BookOpen className="size-3.5" />
+                Dành Cho Người Dùng Mới
+              </span>
+              <h2 className="mt-3.5 type-section-title text-text-primary dark:text-white">
+                Khám Phá Hệ Thống Theo Vai Trò Của Bạn
+              </h2>
+              <p className="mt-3 text-base text-text-secondary dark:text-slate-300">
+                Hệ sinh thái NacenTwin được thiết kế chuyên biệt cho từng tác nhân. Chọn vai trò của bạn để xem quy trình và màn hình hướng dẫn tương ứng:
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Card 1: Bên Mua */}
+              <div className="group flex flex-col justify-between rounded-2xl border border-border-default bg-white p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div>
+                  <div className="flex size-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-300">
+                    <Building2 className="size-5" />
+                  </div>
+                  <h3 className="mt-4 text-base font-bold text-text-primary dark:text-white">
+                    Bên Mua (Buyer)
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
+                    Doanh nghiệp khảo sát nhu cầu ĐMST 7 phần, đăng bài toán kỹ thuật, nhận gợi ý AI matching và đàm phán hợp đồng chuyển giao.
+                  </p>
+                </div>
+                <Link
+                  href="/huong-dan#role=BUYER"
+                  className="focus-ring mt-5 inline-flex items-center gap-1 text-xs font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 group-hover:translate-x-0.5 transition"
+                >
+                  <span>Xem hướng dẫn Bên Mua</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+
+              {/* Card 2: Bên Bán */}
+              <div className="group flex flex-col justify-between rounded-2xl border border-border-default bg-white p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div>
+                  <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                    <Rocket className="size-5" />
+                  </div>
+                  <h3 className="mt-4 text-base font-bold text-text-primary dark:text-white">
+                    Bên Bán (Seller)
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
+                    Viện nghiên cứu, trường ĐH &amp; doanh nghiệp tạo hồ sơ chào bán công nghệ, thẩm định TRL 1-9 &amp; tình trạng sở hữu trí tuệ.
+                  </p>
+                </div>
+                <Link
+                  href="/huong-dan#role=SELLER"
+                  className="focus-ring mt-5 inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 group-hover:translate-x-0.5 transition"
+                >
+                  <span>Xem hướng dẫn Bên Bán</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+
+              {/* Card 3: Chuyên Gia */}
+              <div className="group flex flex-col justify-between rounded-2xl border border-border-default bg-white p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div>
+                  <div className="flex size-11 items-center justify-center rounded-xl bg-innovation-50 text-innovation-600 dark:bg-cyan-950/70 dark:text-cyan-300">
+                    <GraduationCap className="size-5" />
+                  </div>
+                  <h3 className="mt-4 text-base font-bold text-text-primary dark:text-white">
+                    Chuyên Gia KH&amp;CN
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
+                    Nhà khoa học đăng ký nâng hạng, quét tự động CV bằng AI Parser, tham gia thẩm định năng lực TT17 và tư vấn kỹ thuật.
+                  </p>
+                </div>
+                <Link
+                  href="/huong-dan#role=EXPERT"
+                  className="focus-ring mt-5 inline-flex items-center gap-1 text-xs font-bold text-innovation-600 hover:text-innovation-700 dark:text-cyan-400 group-hover:translate-x-0.5 transition"
+                >
+                  <span>Xem hướng dẫn Chuyên Gia</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+
+              {/* Card 4: Sở KH&CN */}
+              <div className="group flex flex-col justify-between rounded-2xl border border-border-default bg-white p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div>
+                  <div className="flex size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
+                    <ShieldCheck className="size-5" />
+                  </div>
+                  <h3 className="mt-4 text-base font-bold text-text-primary dark:text-white">
+                    Cán Bộ Sở KH&amp;CN
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
+                    Cổng công vụ cấp tỉnh: phê duyệt công nghệ chào bán, quản lý danh bạ 304 DN ĐMST và tổ chức gian hàng Techmart.
+                  </p>
+                </div>
+                <Link
+                  href="/huong-dan#role=GOV"
+                  className="focus-ring mt-5 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-400 group-hover:translate-x-0.5 transition"
+                >
+                  <span>Xem hướng dẫn Sở KH&amp;CN</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Banner Khám Phá Toàn Diện & Tải PDF */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-brand-900 via-slate-900 to-brand-950 p-6 text-white shadow-md">
+              <div className="flex items-center gap-3.5">
+                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-nacen-green-500 text-white shadow-sm">
+                  <BookOpen className="size-6" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white">
+                    Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết (11 Phân Hệ · 48 Màn Hình Thực Tế)
+                  </h3>
+                  <p className="mt-0.5 text-xs text-slate-300">
+                    Minh họa đầy đủ giao diện thực tế, các bước thao tác, bộ lọc phân quyền và liên kết đối soát mã nguồn.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto">
+                <Link
+                  href="/huong-dan"
+                  className="focus-ring flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl bg-nacen-green-500 hover:bg-nacen-green-600 px-4 py-2.5 text-xs font-bold text-white transition shadow-sm cursor-pointer"
+                >
+                  <span>Mở Cẩm Nang Trực Quan</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+                <a
+                  href="/huong-dan-su-dung.pdf"
+                  download="Huong_Dan_Su_Dung_NacenTwin.pdf"
+                  className="focus-ring flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 px-3.5 py-2.5 text-xs font-bold text-white transition cursor-pointer"
+                >
+                  <FileDown className="size-3.5" />
+                  <span>Tải PDF (2.4 MB)</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* VÌ SAO CHỌN NACENTWIN */}
         <section className="page-container py-16 sm:py-20">
           <div className="mx-auto max-w-2xl text-center">

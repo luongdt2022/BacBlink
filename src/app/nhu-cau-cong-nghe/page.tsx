@@ -268,10 +268,10 @@ export default function PublicDemandsPage() {
               onChange={(e) => setFilterSector(e.target.value)}
               className="form-control text-sm font-semibold max-w-[260px]"
             >
-              <option value="">Tất cả Lĩnh vực TT17</option>
+              <option value="">Tất cả Lĩnh vực</option>
               {sectors.map((sec) => (
                 <option key={sec.code} value={sec.code}>
-                  {sec.code} — {sec.name}
+                  {sec.name}
                 </option>
               ))}
             </select>

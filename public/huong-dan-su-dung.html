@@ -2288,6 +2288,11 @@ function updateUrlHash() {
   } else {
     history.replaceState(null, '', window.location.pathname + window.location.search);
   }
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'USER_GUIDE_HASH_CHANGED', hash: hashStr ? '#' + hashStr : '' }, '*');
+    }
+  } catch (e) {}
 }
 
 function applyFilter() {
@@ -2455,8 +2460,9 @@ function applyFilter() {
   }
 }
 
-// Run on page load
+// Run on page load and hash change
 window.addEventListener('DOMContentLoaded', initFilter);
+window.addEventListener('hashchange', initFilter);
 </script>
 
 

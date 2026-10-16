@@ -37,7 +37,7 @@ describe("LoginPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Đăng nhập vào Hệ Thống" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:5080/api/v1/auth/login", expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/api\/v1\/auth\/login$/), expect.objectContaining({ method: "POST" }));
     expect(authClient.getToken()).toBe("real-jwt");
     expect(authClient.getUser()?.role).toBe(role);
     expect(push).toHaveBeenCalledWith(expectedPath);

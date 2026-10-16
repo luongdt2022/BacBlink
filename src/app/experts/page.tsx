@@ -18,10 +18,12 @@ import {
   RefreshCw,
   MessageSquarePlus,
   AlertCircle,
+  BookOpen,
 } from "lucide-react";
 import { AppLink, AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
 import { getPublicExpertFilterOptions, type MasterDataOption } from "@/lib/master-data-client";
+import { resolveTechLabel } from "@/lib/tech-label-resolver";
 
 interface ExpertCardItem {
   expertCode: string;
@@ -60,8 +62,8 @@ const DEGREE_OPTIONS = [
 
 export default function ExpertsDirectoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDegree, setSelectedDegree] = useState<string>("");
-  const [selectedSector, setSelectedSector] = useState<string>("");
+  const [selectedDegrees, setSelectedDegrees] = useState<string[]>([]);
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [selectedProvince, setSelectedProvince] = useState<string>("");
   const [acceptingConsultation, setAcceptingConsultation] = useState(false);
   const [sectorOptions, setSectorOptions] = useState<MasterDataOption[]>([]);
@@ -95,12 +97,75 @@ export default function ExpertsDirectoryPage() {
   const [modalError, setModalError] = useState<string | null>(null);
 
   const directoryRequest = useRef<AbortController | null>(null);
+  const isInitialMount = useRef(true);
+
   useEffect(() => () => directoryRequest.current?.abort(), []);
+
+  // 1. Phục hồi state từ URL Parameters khi tải trang lần đầu
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const qParam = params.get("q") || params.get("query");
+    if (qParam) setSearchTerm(qParam);
+
+    // Parse degrees (hỗ trợ degrees=GS,PGS, mảng lặp hoặc degree=GS)
+    const degs = params.getAll("degrees");
+    const singleDeg = params.get("degree");
+    const allDegs: string[] = [];
+    if (degs.length > 0) {
+      degs.forEach((d) => d.split(",").forEach((x) => { if (x.trim()) allDegs.push(x.trim()); }));
+    } else if (singleDeg) {
+      singleDeg.split(",").forEach((x) => { if (x.trim()) allDegs.push(x.trim()); });
+    }
+    if (allDegs.length > 0) setSelectedDegrees(Array.from(new Set(allDegs)));
+
+    // Parse sectorCodes (hỗ trợ sectorCodes=LV01,LV05, mảng lặp hoặc sectorCode=LV01 hoặc sector=LV01)
+    const secs = params.getAll("sectorCodes");
+    const singleSec = params.get("sectorCode") || params.get("sector");
+    const allSecs: string[] = [];
+    if (secs.length > 0) {
+      secs.forEach((s) => s.split(",").forEach((x) => { if (x.trim()) allSecs.push(x.trim()); }));
+    } else if (singleSec) {
+      singleSec.split(",").forEach((x) => { if (x.trim()) allSecs.push(x.trim()); });
+    }
+    if (allSecs.length > 0) setSelectedSectors(Array.from(new Set(allSecs)));
+
+    const prov = params.get("provinceCode") || params.get("province");
+    if (prov) setSelectedProvince(prov);
+
+    const consult = params.get("acceptingConsultation") || params.get("consultation");
+    if (consult === "true") setAcceptingConsultation(true);
+
+    const pageParam = params.get("page");
+    if (pageParam && !isNaN(parseInt(pageParam))) {
+      setCurrentPage(Math.max(1, parseInt(pageParam)));
+    }
+  }, []);
+
+  // 2. Đồng bộ URL Search Parameters khi state bộ lọc thay đổi
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) params.set("q", searchTerm.trim());
+    if (selectedDegrees.length > 0) params.set("degrees", selectedDegrees.join(","));
+    if (selectedSectors.length > 0) params.set("sectorCodes", selectedSectors.join(","));
+    if (selectedProvince) params.set("provinceCode", selectedProvince);
+    if (acceptingConsultation) params.set("acceptingConsultation", "true");
+    if (currentPage > 1) params.set("page", currentPage.toString());
+
+    const searchString = params.toString();
+    const newUrl = searchString ? `${window.location.pathname}?${searchString}` : window.location.pathname;
+    window.history.replaceState(null, "", newUrl);
+  }, [searchTerm, selectedDegrees, selectedSectors, selectedProvince, acceptingConsultation, currentPage]);
 
   const fetchDirectory = async (
     overrideQ?: string,
-    overrideDegree?: string,
-    overrideSector?: string,
+    overrideDegrees?: string[],
+    overrideSectors?: string[],
     overrideProvince?: string,
     overridePage?: number
   ) => {
@@ -111,15 +176,15 @@ export default function ExpertsDirectoryPage() {
     setError(null);
     try {
       const qVal = overrideQ !== undefined ? overrideQ : searchTerm;
-      const degVal = overrideDegree !== undefined ? overrideDegree : selectedDegree;
-      const secVal = overrideSector !== undefined ? overrideSector : selectedSector;
+      const degVal = overrideDegrees !== undefined ? overrideDegrees : selectedDegrees;
+      const secVal = overrideSectors !== undefined ? overrideSectors : selectedSectors;
       const provVal = overrideProvince !== undefined ? overrideProvince : selectedProvince;
       const pageVal = overridePage !== undefined ? overridePage : currentPage;
 
       const params = new URLSearchParams();
       if (qVal.trim()) params.set("q", qVal.trim());
-      if (degVal) params.set("degree", degVal);
-      if (secVal) params.set("sectorCode", secVal);
+      if (degVal.length > 0) params.set("degrees", degVal.join(","));
+      if (secVal.length > 0) params.set("sectorCodes", secVal.join(","));
       if (provVal) params.set("provinceCode", provVal);
       if (acceptingConsultation) params.set("acceptingConsultation", "true");
       params.set("page", pageVal.toString());
@@ -146,13 +211,8 @@ export default function ExpertsDirectoryPage() {
   };
 
   useEffect(() => {
-    const requestedSector = new URLSearchParams(window.location.search).get("sector");
-    if (requestedSector) setSelectedSector(requestedSector);
-  }, []);
-
-  useEffect(() => {
     fetchDirectory();
-  }, [currentPage, selectedDegree, selectedSector, selectedProvince, acceptingConsultation]);
+  }, [currentPage, selectedDegrees, selectedSectors, selectedProvince, acceptingConsultation]);
 
   const loadFilterData = async () => {
     setFilterDataError(null);
@@ -172,7 +232,7 @@ export default function ExpertsDirectoryPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setCurrentPage(1);
-      fetchDirectory(searchTerm, selectedDegree, selectedSector, selectedProvince, 1);
+      fetchDirectory(searchTerm, selectedDegrees, selectedSectors, selectedProvince, 1);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -180,13 +240,13 @@ export default function ExpertsDirectoryPage() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchDirectory(searchTerm, selectedDegree, selectedSector, selectedProvince, 1);
+    fetchDirectory(searchTerm, selectedDegrees, selectedSectors, selectedProvince, 1);
   };
 
   const handleResetFilters = () => {
     setSearchTerm("");
-    setSelectedDegree("");
-    setSelectedSector("");
+    setSelectedDegrees([]);
+    setSelectedSectors([]);
     setSelectedProvince("");
     setSectorSearch("");
     setAcceptingConsultation(false);
@@ -312,7 +372,7 @@ export default function ExpertsDirectoryPage() {
                     const term = tag.replace("#", "");
                     setSearchTerm(term);
                     setCurrentPage(1);
-                    fetchDirectory(term, selectedDegree, selectedSector, selectedProvince, 1);
+                    fetchDirectory(term, selectedDegrees, selectedSectors, selectedProvince, 1);
                   }}
                   className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition text-caption"
                 >
@@ -407,42 +467,62 @@ export default function ExpertsDirectoryPage() {
             </div>
 
             <div className="divide-y divide-slate-100 text-body dark:divide-slate-800">
-              {/* Trục 1: Học vị */}
+              {/* Trục 1: Học vị đa chọn */}
               <div className="py-4">
-                <label className="block text-caption font-bold uppercase tracking-wider text-slate-500 mb-2.5 dark:text-slate-400">
-                  Học hàm & Học vị
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
-                    <input
-                      type="radio"
-                      name="degree"
-                      checked={selectedDegree === ""}
-                  onChange={() => { setCurrentPage(1); setSelectedDegree(""); }}
-                      className="text-brand-700 focus:ring-brand-500"
-                    />
-                    <span>Tất cả học vị</span>
+                <div className="flex items-center justify-between mb-2.5">
+                  <label className="text-caption font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Học hàm & Học vị{selectedDegrees.length > 0 ? ` (${selectedDegrees.length})` : ""}
                   </label>
-                  {DEGREE_OPTIONS.map((deg) => (
-                    <label key={deg.value} className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
-                      <input
-                        type="radio"
-                        name="degree"
-                        checked={selectedDegree === deg.value}
-                        onChange={() => { setCurrentPage(1); setSelectedDegree(deg.value); }}
-                        className="text-brand-700 focus:ring-brand-500"
-                      />
-                      <span>{deg.label}</span>
-                    </label>
-                  ))}
+                  {selectedDegrees.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedDegrees([]); setCurrentPage(1); }}
+                      className="text-xs text-brand-700 hover:underline dark:text-brand-300 font-semibold"
+                    >
+                      Bỏ chọn
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {DEGREE_OPTIONS.map((deg) => {
+                    const checked = selectedDegrees.includes(deg.value);
+                    return (
+                      <label key={deg.value} className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
+                        <input
+                          type="checkbox"
+                          name="degree"
+                          checked={checked}
+                          onChange={() => {
+                            setCurrentPage(1);
+                            setSelectedDegrees((prev) =>
+                              prev.includes(deg.value) ? prev.filter((v) => v !== deg.value) : [...prev, deg.value]
+                            );
+                          }}
+                          className="w-4 h-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500"
+                        />
+                        <span>{deg.label}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Taxonomy SECTOR từ API/DB */}
+              {/* Taxonomy SECTOR từ API/DB đa chọn */}
               <div className="py-4">
-                <label className="block text-caption font-bold uppercase tracking-wider text-slate-500 mb-2.5 dark:text-slate-400">
-                  Lĩnh vực chuyên môn{filterDataLoaded ? ` (${sectorOptions.length})` : ""}
-                </label>
+                <div className="flex items-center justify-between mb-2.5">
+                  <label className="text-caption font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Lĩnh vực chuyên môn{selectedSectors.length > 0 ? ` (${selectedSectors.length})` : filterDataLoaded ? ` (${sectorOptions.length})` : ""}
+                  </label>
+                  {selectedSectors.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedSectors([]); setCurrentPage(1); }}
+                      className="text-xs text-brand-700 hover:underline dark:text-brand-300 font-semibold"
+                    >
+                      Bỏ chọn
+                    </button>
+                  )}
+                </div>
                 {sectorOptions.length > 3 && (
                   <div className="relative mb-2">
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -455,35 +535,33 @@ export default function ExpertsDirectoryPage() {
                     />
                   </div>
                 )}
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                  <label className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
-                    <input
-                      type="radio"
-                      name="sector"
-                      checked={selectedSector === ""}
-                      onChange={() => { setCurrentPage(1); setSelectedSector(""); }}
-                      className="text-brand-700 focus:ring-brand-500"
-                    />
-                    <span>Tất cả ngành nghề</span>
-                  </label>
+                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                   {sectorOptions
                     .filter((sec) => sec.name.toLowerCase().includes(sectorSearch.toLowerCase().trim()))
-                    .map((sec) => (
-                      <label key={sec.code} className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
-                        <input
-                          type="radio"
-                          name="sector"
-                          checked={selectedSector === sec.code}
-                          onChange={() => { setCurrentPage(1); setSelectedSector(sec.code); }}
-                          className="text-brand-700 focus:ring-brand-500"
-                        />
-                        <span className="min-w-0 whitespace-normal">{sec.name}</span>
-                      </label>
-                    ))}
+                    .map((sec) => {
+                      const checked = selectedSectors.includes(sec.code);
+                      return (
+                        <label key={sec.code} className="flex items-center gap-2.5 text-caption text-slate-700 cursor-pointer dark:text-slate-300">
+                          <input
+                            type="checkbox"
+                            name="sector"
+                            checked={checked}
+                            onChange={() => {
+                              setCurrentPage(1);
+                              setSelectedSectors((prev) =>
+                                prev.includes(sec.code) ? prev.filter((v) => v !== sec.code) : [...prev, sec.code]
+                              );
+                            }}
+                            className="w-4 h-4 rounded border-slate-300 text-brand-700 focus:ring-brand-500"
+                          />
+                          <span className="min-w-0 whitespace-normal">{sec.name}</span>
+                        </label>
+                      );
+                    })}
                 </div>
               </div>
 
-              {/* Trục 3: Địa bàn Sở Tỉnh */}
+              {/* Trục 3: Địa bàn Sở Tỉnh chuẩn hóa 34 Sở KH&CN theo 3 miền */}
               <div className="py-4">
                 <label className="block text-caption font-bold uppercase tracking-wider text-slate-500 mb-2.5 dark:text-slate-400">
                   Địa bàn Tỉnh / Thành phố
@@ -491,14 +569,31 @@ export default function ExpertsDirectoryPage() {
                 <select
                   value={selectedProvince}
                   onChange={(e) => { setCurrentPage(1); setSelectedProvince(e.target.value); }}
-                  className="form-control w-full"
+                  className="form-control w-full text-caption"
+                  data-testid="province-filter-select"
                 >
-                  <option value="">Tất cả địa bàn</option>
-                  {provinceOptions.map((prov) => (
-                    <option key={prov.code} value={prov.code}>
-                      {prov.name}
-                    </option>
-                  ))}
+                  <option value="">Tất cả địa bàn (34 Sở KH&CN)</option>
+                  <optgroup label="Miền Bắc (12 Tỉnh/TP)">
+                    {provinceOptions.filter((p) => p.region === "NORTH").map((prov) => (
+                      <option key={prov.code} value={prov.code}>
+                        {prov.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Miền Trung & Tây Nguyên (10 Tỉnh/TP)">
+                    {provinceOptions.filter((p) => p.region === "CENTRAL").map((prov) => (
+                      <option key={prov.code} value={prov.code}>
+                        {prov.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Miền Nam (12 Tỉnh/TP)">
+                    {provinceOptions.filter((p) => p.region === "SOUTH").map((prov) => (
+                      <option key={prov.code} value={prov.code}>
+                        {prov.name}
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
 
@@ -541,19 +636,90 @@ export default function ExpertsDirectoryPage() {
               <span className="text-caption text-slate-500 dark:text-slate-400">Ưu tiên học hàm, sau đó cập nhật gần nhất</span>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-3" aria-label="Tiêu chí đang chọn">
-              {[
-                { key: "q", value: searchTerm, label: searchTerm, clear: () => setSearchTerm("") },
-                { key: "degree", value: selectedDegree, label: DEGREE_OPTIONS.find(x => x.value === selectedDegree)?.label || selectedDegree, clear: () => setSelectedDegree("") },
-                { key: "sector", value: selectedSector, label: sectorOptions.find(x => x.code === selectedSector)?.name || selectedSector, clear: () => setSelectedSector("") },
-                { key: "province", value: selectedProvince, label: provinceOptions.find(x => x.code === selectedProvince)?.name || selectedProvince, clear: () => setSelectedProvince("") },
-                { key: "consultation", value: acceptingConsultation ? "yes" : "", label: "Nhận tư vấn", clear: () => setAcceptingConsultation(false) },
-              ].filter(x => x.value).map(x => (
-                <button key={x.key} type="button" aria-label={`Bỏ tiêu chí ${x.label}`} onClick={() => { x.clear(); setCurrentPage(1); }} className="min-h-11 px-3 inline-flex items-center gap-2 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption">
-                  {x.label}<span aria-hidden="true">×</span>
+            {/* Active Filter Chips Bar (T141) */}
+            {(Boolean(searchTerm.trim()) || selectedDegrees.length > 0 || selectedSectors.length > 0 || Boolean(selectedProvince) || acceptingConsultation) && (
+              <div className="flex flex-wrap items-center gap-2 mb-3" aria-label="Tiêu chí đang chọn">
+                <span className="text-caption font-semibold text-slate-500 dark:text-slate-400">Đang lọc:</span>
+                {searchTerm.trim() && (
+                  <span className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption font-medium dark:bg-brand-950/70 dark:border-brand-800 dark:text-brand-300">
+                    <span>Tìm kiếm: &ldquo;{searchTerm}&rdquo;</span>
+                    <button
+                      type="button"
+                      aria-label="Xóa từ khóa tìm kiếm"
+                      onClick={() => { setSearchTerm(""); setCurrentPage(1); }}
+                      className="hover:text-brand-900 rounded-full p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                )}
+                {selectedDegrees.map((deg) => (
+                  <span key={deg} className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption font-medium dark:bg-brand-950/70 dark:border-brand-800 dark:text-brand-300">
+                    <span>Học vị: {DEGREE_OPTIONS.find((x) => x.value === deg)?.label || deg}</span>
+                    <button
+                      type="button"
+                      aria-label={`Bỏ chọn học vị ${deg}`}
+                      onClick={() => {
+                        setSelectedDegrees((prev) => prev.filter((v) => v !== deg));
+                        setCurrentPage(1);
+                      }}
+                      className="hover:text-brand-900 rounded-full p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+                {selectedSectors.map((sec) => (
+                  <span key={sec} className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption font-medium dark:bg-brand-950/70 dark:border-brand-800 dark:text-brand-300">
+                    <span>Ngành: {sectorOptions.find((x) => x.code === sec)?.name || sec}</span>
+                    <button
+                      type="button"
+                      aria-label={`Bỏ chọn ngành ${sec}`}
+                      onClick={() => {
+                        setSelectedSectors((prev) => prev.filter((v) => v !== sec));
+                        setCurrentPage(1);
+                      }}
+                      className="hover:text-brand-900 rounded-full p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                ))}
+                {selectedProvince && (
+                  <span className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption font-medium dark:bg-brand-950/70 dark:border-brand-800 dark:text-brand-300">
+                    <span>Địa bàn: {provinceOptions.find((x) => x.code === selectedProvince)?.name || selectedProvince}</span>
+                    <button
+                      type="button"
+                      aria-label="Bỏ chọn địa bàn"
+                      onClick={() => { setSelectedProvince(""); setCurrentPage(1); }}
+                      className="hover:text-brand-900 rounded-full p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                )}
+                {acceptingConsultation && (
+                  <span className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-caption font-medium dark:bg-emerald-950/70 dark:border-emerald-800 dark:text-emerald-300">
+                    <span>Sẵn sàng nhận tư vấn</span>
+                    <button
+                      type="button"
+                      aria-label="Bỏ lọc sẵn sàng nhận tư vấn"
+                      onClick={() => { setAcceptingConsultation(false); setCurrentPage(1); }}
+                      className="hover:text-emerald-900 rounded-full p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-caption font-bold text-brand-700 hover:text-brand-800 underline ml-1 dark:text-brand-300"
+                >
+                  [Đặt lại bộ lọc]
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
 
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start" data-testid="expert-loading-grid">
@@ -655,46 +821,55 @@ export default function ExpertsDirectoryPage() {
                               "Công nghệ chủ chốt"}
                           </span>
 
-                          <div className="mt-2 flex items-center gap-1.5 h-6">
+                          <div className="mt-2 flex items-center gap-1.5 flex-wrap min-h-6">
                             {expert.masteredTechCodes && expert.masteredTechCodes.length > 0 ? (
                               <>
-                                {expert.masteredTechCodes.slice(0, 2).map((code) => (
-                                  <span key={code} className="px-2 py-0.5 rounded text-caption bg-slate-100 text-slate-600 font-mono truncate max-w-[120px] dark:bg-slate-800 dark:text-slate-300">
-                                    {code}
-                                  </span>
-                                ))}
+                                {expert.masteredTechCodes.slice(0, 2).map((code) => {
+                                  const label = resolveTechLabel(code);
+                                  return (
+                                    <span
+                                      key={code}
+                                      className="px-2 py-0.5 rounded text-caption font-sans bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[160px] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                                      title={label}
+                                    >
+                                      {label}
+                                    </span>
+                                  );
+                                })}
                                 {expert.masteredTechCodes.length > 2 && (
-                                  <span className="text-caption text-slate-500 font-semibold">
+                                  <span className="text-caption text-slate-500 font-semibold font-sans">
                                     +{expert.masteredTechCodes.length - 2}
                                   </span>
                                 )}
                               </>
                             ) : (
-                              <span className="text-caption text-slate-400 italic">Đang cập nhật mã CN</span>
+                              <span className="text-caption text-slate-400 italic font-sans">Đang cập nhật công nghệ</span>
                             )}
                           </div>
                         </div>
 
-                        <div className="mt-3 grid grid-cols-3 gap-2 py-2 px-3 bg-slate-50 rounded-xl text-center dark:bg-slate-800/60">
-                          <div>
-                            <div className="text-caption font-extrabold text-slate-800 font-mono dark:text-slate-200">
-                              {expert.publicationCount > 0 ? `${expert.publicationCount}+` : "0"}
-                            </div>
-                            <div className="text-caption text-slate-500 dark:text-slate-400">Công bố</div>
+                        {((expert.publicationCount > 0) || (expert.patentCount > 0) || (expert.projectCount > 0)) && (
+                          <div className="mt-3 flex flex-wrap gap-1.5 py-1.5" data-testid="expert-achievements-block">
+                            {expert.publicationCount > 0 && (
+                              <span className="px-2 py-0.5 rounded-md text-caption font-semibold bg-sky-50 text-sky-800 border border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 flex items-center gap-1">
+                                <BookOpen className="w-3 h-3 text-sky-600" />
+                                {expert.publicationCount}+ Công bố quốc tế
+                              </span>
+                            )}
+                            {expert.patentCount > 0 && (
+                              <span className="px-2 py-0.5 rounded-md text-caption font-semibold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 flex items-center gap-1">
+                                <Award className="w-3 h-3 text-amber-600" />
+                                {expert.patentCount} Bằng sáng chế
+                              </span>
+                            )}
+                            {expert.projectCount > 0 && (
+                              <span className="px-2 py-0.5 rounded-md text-caption font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 flex items-center gap-1">
+                                <Layers className="w-3 h-3 text-emerald-600" />
+                                {expert.projectCount} Đề tài KH
+                              </span>
+                            )}
                           </div>
-                          <div>
-                            <div className="text-caption font-extrabold text-slate-800 font-mono dark:text-slate-200">
-                              {expert.patentCount > 0 ? expert.patentCount : "0"}
-                            </div>
-                            <div className="text-caption text-slate-500 dark:text-slate-400">Sáng chế</div>
-                          </div>
-                          <div>
-                            <div className="text-caption font-extrabold text-brand-700 font-mono dark:text-brand-200">
-                              {expert.projectCount > 0 ? expert.projectCount : "0"}
-                            </div>
-                            <div className="text-caption text-slate-500 dark:text-slate-400">Đề tài KH</div>
-                          </div>
-                        </div>
+                        )}
                       </div>
 
                       <div className="mt-auto pt-3 border-t border-slate-100 flex items-center gap-2 dark:border-slate-800">

@@ -49,27 +49,35 @@ Luôn ưu tiên `AppButton` từ `src/components/ui/design-system.tsx`:
 
 ## 4. Typography và khoảng cách
 
-Font UI: **Be Vietnam Pro**, lưu trong `public/fonts/be-vietnam-pro/`, tải bằng `next/font/local` (400/500/600/700/800, `display: swap`). `--font-sans` trỏ tới font này; fallback system sans-serif chỉ dùng trong lúc tải. Không chỉ khai báo tên font trong CSS hoặc tự ghi đè `font-sans`. Giấy phép OFL đi kèm tài sản font.
+Hệ thống áp dụng **Kiến Trúc Font Song Hành (Dual Font Architecture)** chuẩn Cổng Dịch Vụ Công Quốc Gia và Cổng Đổi Mới Sáng Tạo Quốc Gia (theo Quyết định PO `PO-DEC-20261015-01`):
+1. **Nunito Sans** (`--font-sans`): Tải qua `next/font/google` (weights: 400/500/600/700/800, `subsets: ['vietnamese', 'latin']`, `display: swap`). Sử dụng cho toàn bộ nội dung thân văn bản (Body), điều khiển tương tác (Buttons, Controls), bảng số liệu (Data Grid), biểu mẫu (Forms), thẻ (Cards) và footer. Cắt giảm 8%–12% bề ngang ký tự, chống tràn dòng trên laptop 1024px–1366px.
+2. **Lora** (`--font-heading`, `--font-serif`): Tải qua `next/font/google` (weights: 600/700, `subsets: ['vietnamese', 'latin']`, `display: swap`). Dành riêng cho Quốc hiệu, Tiêu ngữ, Header Viện/Bộ, Banner quốc gia, Khẩu hiệu Slogan Hero và Tiêu đề phân hệ lớn (`type-hero`, `type-page-title`, `type-section-title`).
+3. **Tương thích ngược**: CSS token `--font-be-vietnam-pro: var(--font-sans)` được duy trì để đảm bảo các component hiện có không bị lỗi font.
 
-| Vai trò | Desktop | Mobile | Trọng số / line-height |
-| --- | --- | --- | --- |
-| Hero H1 (`type-hero`) | 48px / 56px | 32px / 40px | 700 |
-| Page H1 (`type-page-title`) | 36px / 44px | 30px / 40px | 700 |
-| Section H2 (`type-section-title`) | 30px / 38px | 24px / 32px | 700 |
-| Card H3 (`text-card-title`) | 18px / 27px | 18px / 27px | 700 |
-| Body lớn (`text-body-lg`) | 18px / 30px | Dùng `text-body` | 400–500 |
-| Body (`text-body`) | 16px / 26px | 16px / 26px | 400 |
-| Label/button (`text-label`) | 14px / 21px | 14px / 21px | 600 |
-| Caption/meta (`text-caption`) | 12px / 18px | 12px / 18px | 500 |
+### Bảng Ánh Xạ 10 Nhóm Thành Phần UI Cốt Lõi
 
-Các cặp trên là cỡ chữ / giãn dòng ở mức A (root 16px). Token thực tế dùng rem; breakpoint heading 640px. Dùng `text-wrap: balance` cho tiêu đề; chỉ ngắt dòng thủ công ở desktop nếu cần. Input tìm kiếm dùng 16px để dễ đọc trên điện thoại.
+| STT | Nhóm Thành Phần UI | Token / Class | Font Family | Kích Thước (Desktop / Mobile) | Weight & Line Height | Mục Đích Sử Dụng |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | **Quốc Hiệu, Tiêu Ngữ & Header Viện/Bộ** | `font-heading` | Lora | 20px–24px / 18px–20px | 700 / 1.3 | Header Quốc gia, tên cơ quan chủ quản |
+| 2 | **Banner Quốc Gia, Slogan Hero & Display Title** | `type-hero font-heading` | Lora | 44px–48px / 32px | 700 / 1.15–1.2 | Khẩu hiệu Hero Banner Cổng Quốc Gia, Tiêu đề lớn Trang Chủ |
+| 3 | **Tiêu Đề Trang Chính & Phân Hệ** | `type-page-title` / `type-section-title` | Lora | 30px–36px / 24px–28px | 700 / 1.25–1.33 | Tiêu đề trang chính, Tiêu đề Section |
+| 4 | **Menu Điều Hướng & Dropdown** | `text-label font-sans` | Nunito Sans | 14px–15px / 14px | 600 / 1.4 | Menu Header cấp 1, Dropdown links, Nav links |
+| 5 | **Buttons & CTA Controls (`AppButton`, `AppLink`)** | `text-label font-sans min-h-11` | Nunito Sans | 14px–15px / 14px | 600 / min-height 44px | Nút bấm thao tác, CTA chuyển đổi |
+| 6 | **Form Inputs, Labels & Helpers** | `form-control font-sans` | Nunito Sans | 14px / 14px (Input: 16px mobile) | Label: 500, Input: 400 | Trường nhập liệu biểu mẫu, Select, Textarea |
+| 7 | **Data Grid & Bảng Dữ Liệu Số Liệu** | `text-xs / text-sm font-sans` | Nunito Sans | 13px–14px / 12px | Header: 600, Cell: 400 | Danh bạ công nghệ, chuyên gia, giao dịch |
+| 8 | **Cards & Sub-Headings** | `text-card-title font-sans` | Nunito Sans | 16px–18px / 16px | 600–700 / 1.35 | Tiêu đề Card giải pháp, Nhu cầu, Bước wizard |
+| 9 | **Status Badges, Chips & Micro-Copy** | `text-caption font-sans` | Nunito Sans | 11px–12px / 11px | 600 / 1.2 | Huy hiệu trạng thái, Tag lĩnh vực TT17, TRL |
+| 10 | **Footer & Thông Tin Pháp Lý** | `text-caption / text-label font-sans` | Nunito Sans | 13px–14px / 12px | 400–500 / 1.5 | Thông tin bản quyền, liên hệ, chính sách |
 
-Nút A−/A/A+ đặt `data-text-scale` trên **html**: 92.5% / 100% / 110%, lưu lựa chọn. Không đổi riêng `body.fontSize` vì không tác động tới rem. Không khóa chiều cao khối chứa văn bản; cho phép xuống dòng khi phóng to.
+### Quy Chuẩn Cỡ Chữ và Text Scaling (WCAG 2.1 AA)
 
-- Không dùng body nhỏ hơn 14px, trừ caption/meta 12px.
-- Button/common và vùng chạm tối thiểu cao 44px ở mức A; CTA/form chính 44–48px. Không giảm chữ button dưới 14px.
-- Khoảng cách section: 64–80px desktop, 48–64px mobile. Khoảng cách card: 16–24px.
-- Radius: control 10px (`rounded-control`); card 14px (`rounded-surface`); CTA lớn 24–28px.
+- Cụm điều khiển tiếp cận tại Header kích hoạt thuộc tính `data-text-scale` trên thẻ `<html>`:
+  - **Nấc A- (Thu nhỏ 92.5%)**: `html[data-text-scale="sm"] { font-size: 92.5%; }` — Phục vụ chuyên gia phân tích và quản trị viên tăng mật độ thông tin.
+  - **Nấc A (Chuẩn 100%)**: `html[data-text-scale="base"]`, `html[data-text-scale="md"] { font-size: 100%; }` — Cỡ chữ chuẩn mực ($1\text{rem} = 16\text{px}$).
+  - **Nấc A+ (Phóng to 110%)**: `html[data-text-scale="lg"] { font-size: 110%; }` — Hỗ trợ cán bộ cao tuổi, nhà khoa học theo chuẩn tiếp cận công vụ.
+- **Ràng buộc Zero Horizontal Overflow**: Tuyệt đối không xuất hiện cuộn ngang (`window.scrollX === 0` từ 320px đến 4K) khi scale A+. Dùng `rem`, `%`, `dvw` cho kích thước container.
+- **Vùng chạm tối thiểu**: Tối thiểu $44 \times 44\text{px}$ cho toàn bộ các nút bấm và phần tử tương tác (`min-h-11 min-w-11`).
+- **Hỗ trợ Tiếng Việt trọn vẹn**: Cả hai font nhúng tập ký tự `vietnamese`, bảo toàn các dấu tầng kép (`ẩ`, `ẫ`, `ệ`, `ỗ`, `ợ`, `Đ`).
 
 ## 5. Common components bắt buộc
 

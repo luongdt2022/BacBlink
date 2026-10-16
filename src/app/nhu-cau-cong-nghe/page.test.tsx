@@ -96,9 +96,9 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     render(<PublicDemandsPage />);
 
     await waitFor(() => {
-      // Phải có option LV08 từ API
+      // Phải có option lĩnh vực từ API hiển thị tên ngành thân thiện (không chứa tiền tố mã kỹ thuật LV..)
       expect(
-        screen.getByRole("option", { name: /LV08 — Điện – điện tử – tự động hóa/i })
+        screen.getByRole("option", { name: /^Điện – điện tử – tự động hóa$/i })
       ).toBeInTheDocument();
     });
   });
@@ -114,8 +114,8 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     });
 
     // Tuyệt đối không hiển thị mã hash cộc lốc DMD-202610-0FF52B làm tiêu đề to
-    // Thay vào đó hiển thị tên ngành tiếng Việt chuẩn hóa
-    expect(screen.getByText("Điện – điện tử – tự động hóa")).toBeInTheDocument();
+    // Thay vào đó hiển thị tên ngành tiếng Việt chuẩn hóa (xuất hiện ở thẻ bài toán và option lọc)
+    expect(screen.getAllByText("Điện – điện tử – tự động hóa").length).toBeGreaterThanOrEqual(2);
 
     // Hiển thị định danh doanh nghiệp ẩn danh theo chuẩn PDPD Masking
     expect(screen.getByText(/\[DN Điện – điện tử – tự động hóa - Bắc Ninh\]/i)).toBeInTheDocument();
