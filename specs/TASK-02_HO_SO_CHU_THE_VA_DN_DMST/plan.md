@@ -495,4 +495,185 @@ public sealed record InnovationEvaluationDto(
 }
 ```
 
+---
+
+## 6. DELTA CR-2026-015: KIẾN TRÚC DOANH NGHIỆP THỐNG NHẤT (SSOT), XỬ LÝ MST NULLABLE & NĂNG LỰC ĐA TẦNG (PROGRESSIVE CAPABILITY TIERS)
+
+> **Mã thay đổi**: `CR-2026-015`  
+> **Căn cứ**: Yêu cầu Gate 2 từ PO, Đặc tả `spec.md` Mục 8 (`REQ-02-014`..`016`, `BR-02-006`, `BR-02-013`, `BR-02-014`, `AC-02-013`..`015`).  
+> **Mục tiêu**:
+> 1. Xóa bỏ triệt để lỗi HTTP 500 do xung đột Unique Constraint `ix_enterprises_tax_code` khi tạo/cập nhật hồ sơ có MST trống.
+> 2. Thiết lập cơ chế ánh xạ SSOT liên kết tài khoản định danh Demo với Pháp nhân thật trong CSDL PostgreSQL.
+> 3. Cung cấp kiến trúc mở rộng Năng lực Đa tầng (Basic $\rightarrow$ Buyer / Seller $\rightarrow$ Dual Mode) và Bộ chuyển đổi vai trò (Role Switcher).
+
+---
+
+### 6.1 Thiết Kế CSDL & Entity Framework Core Migration
+
+#### 1. Nguyên Tắc Bất Biến Về Mã Số Thuế (TaxCode Invariant)
+- **Vấn đề cốt lõi**: PostgreSQL coi các chuỗi rỗng `""` là giống nhau trên Unique Constraint, dẫn tới lỗi `23505 duplicate key value violates unique constraint "ix_enterprises_tax_code"` khi người dùng thứ hai tạo hồ sơ nháp (`DRAFT`). Ngược lại, chuẩn SQL coi các giá trị `NULL` là không xác định và không trùng lặp nhau.
+- **Giải pháp Kiến trúc**:
+  1. Cột `tax_code` trong bảng `enterprise.enterprises` chuyển thành `character varying(20) NULL` (cho phép `NULL`).
+  2. Dọn dẹp dữ liệu cũ: Chuẩn hóa mọi giá trị rỗng `""` hoặc khoảng trắng thành `NULL`:
+     ```sql
+     UPDATE enterprise.enterprises 
+     SET tax_code = NULL 
+     WHERE tax_code IS NULL OR TRIM(tax_code) = '';
+     ```
+  3. Xóa bỏ Unique Index / Constraint vô điều kiện cũ (nếu có) và tạo **Partial Unique Index**:
+     ```sql
+     DROP INDEX IF EXISTS enterprise.ix_enterprises_tax_code;
+     CREATE UNIQUE INDEX ix_enterprises_tax_code_unique 
+         ON enterprise.enterprises(tax_code) 
+         WHERE tax_code IS NOT NULL;
+     ```
+  4. Cấu hình Fluent API trong `EnterpriseConfiguration.cs`:
+     ```csharp
+     b.Property(x => x.TaxCode)
+      .HasMaxLength(20)
+      .IsRequired(false);
+
+     b.HasIndex(x => x.TaxCode)
+      .IsUnique()
+      .HasFilter("tax_code IS NOT NULL")
+      .HasDatabaseName("ix_enterprises_tax_code_unique");
+     ```
+
+#### 2. Bổ Sung Các Cột Quản Lý Năng Lực Đa Tầng (Capability Tiers Schema)
+Thực hiện thêm các cột quản lý năng lực vào bảng `enterprise.enterprises` (Migration phi phá hủy):
+```sql
+ALTER TABLE enterprise.enterprises
+    ADD COLUMN IF NOT EXISTS capability_tier text DEFAULT 'BASIC',
+    ADD COLUMN IF NOT EXISTS is_buyer boolean DEFAULT false,
+    ADD COLUMN IF NOT EXISTS is_seller boolean DEFAULT false,
+    ADD COLUMN IF NOT EXISTS active_role text DEFAULT 'BUYER',
+    ADD COLUMN IF NOT EXISTS owner_person_id uuid NULL;
+
+CREATE INDEX IF NOT EXISTS ix_enterprises_capability_tier ON enterprise.enterprises(capability_tier);
+CREATE INDEX IF NOT EXISTS ix_enterprises_owner_person_id ON enterprise.enterprises(owner_person_id);
+```
+
+---
+
+### 6.2 Mô Hình Hóa Domain & Logic Ứng Dụng (Clean Architecture)
+
+#### 1. Domain Aggregate Root `Enterprise.cs`
+- Chuẩn hóa thuộc tính `TaxCode` tự động chuyển đổi chuỗi rỗng sang `null`:
+```csharp
+private string? _taxCode;
+public string? TaxCode
+{
+    get => _taxCode;
+    set => _taxCode = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+public string CapabilityTier { get; set; } = "BASIC"; // "BASIC", "BUYER", "SELLER", "DUAL"
+public bool IsBuyer { get; set; } = false;
+public bool IsSeller { get; set; } = false;
+public string ActiveRole { get; set; } = "BUYER";     // "BUYER", "SELLER"
+public Guid? OwnerPersonId { get; set; }
+
+public void ActivateCapability(string capability)
+{
+    var capUpper = capability.Trim().ToUpperInvariant();
+    if (capUpper == "BUYER") IsBuyer = true;
+    else if (capUpper == "SELLER") IsSeller = true;
+    else throw new ArgumentException($"Năng lực '{capability}' không hợp lệ. Chỉ chấp nhận BUYER hoặc SELLER.");
+
+    // Cập nhật bậc năng lực tự động
+    if (IsBuyer && IsSeller)
+    {
+        CapabilityTier = "DUAL";
+    }
+    else if (IsBuyer)
+    {
+        CapabilityTier = "BUYER";
+        ActiveRole = "BUYER";
+    }
+    else if (IsSeller)
+    {
+        CapabilityTier = "SELLER";
+        ActiveRole = "SELLER";
+    }
+
+    Touch();
+}
+
+public void SwitchActiveRole(string targetRole)
+{
+    var roleUpper = targetRole.Trim().ToUpperInvariant();
+    if (roleUpper == "BUYER" && !IsBuyer)
+        throw new InvalidOperationException("BR-02-014: Doanh nghiệp chưa kích hoạt năng lực Bên Mua.");
+    if (roleUpper == "SELLER" && !IsSeller)
+        throw new InvalidOperationException("BR-02-014: Doanh nghiệp chưa kích hoạt năng lực Bên Bán.");
+
+    ActiveRole = roleUpper;
+    Touch();
+}
+```
+
+#### 2. Cơ Chế Ánh Xạ SSOT Đa Chiến Lược (Multi-Strategy Entity Resolution)
+Trong `EnterpriseService.GetOwnerProfileAsync(Guid personId, string? email, CancellationToken ct)`:
+1. **Chiến lược 1 (Direct ID)**: Tìm kiếm theo `ent.Id == personId`.
+2. **Chiến lược 2 (Owner Person ID)**: Tìm kiếm theo `ent.OwnerPersonId == personId`.
+3. **Chiến lược 3 (Enterprise Identifier)**: Tìm kiếm bản ghi trong `enterprise.enterprise_identifiers` có `type = 'USER_ID' AND value = personId.ToString()`.
+4. **Chiến lược 4 (Account Email Fallback)**: Tìm kiếm theo `LOWER(ent.ContactEmail) == LOWER(email)`.
+
+#### 3. Chống Trùng Lặp MST (Duplicate Tax Code Guard `BR-02-006`)
+Trong `EnterpriseService.UpsertProfileAsync`:
+- Nếu `request.TaxCode` được truyền vào và khác `null`:
+  - Thực hiện chuẩn hóa `cleanTax = request.TaxCode.Trim()`.
+  - Kiểm tra `await _repository.ExistsByTaxCodeAsync(cleanTax, excludeId: enterpriseId, ct)`.
+  - Nếu đã tồn tại trên doanh nghiệp khác $\rightarrow$ Trả về ngoại lệ `DuplicateTaxCodeException` dẫn tới HTTP `409 Conflict` kèm thông điệp nghiệp vụ rõ ràng: *"Mã số thuế này đã được đăng ký trong hệ thống."* (Triệt tiêu hoàn toàn lỗi HTTP 500).
+
+---
+
+### 6.3 Hợp Đồng DTO & API Endpoints
+
+#### 1. Danh Sách Endpoints Mới & Nâng Cấp
+
+| Mã API | Endpoint | Quyền | Chức năng |
+| :--- | :--- | :--- | :--- |
+| **`API-02-003`** | `GET /api/v1/portal/enterprise/profile` | `BUYER`, `SELLER`, `INNOVATION_ENTITY` | Nạp hồ sơ SSOT của doanh nghiệp gắn với tài khoản đang đăng nhập (kèm trạng thái Năng lực & Active Role). |
+| **`API-02-004`** | `PUT /api/v1/portal/enterprise/profile` | Doanh nghiệp Owner | Cập nhật hồ sơ; kiểm tra MST duy nhất `409 Conflict`, cho phép lưu `tax_code = NULL`. |
+| **`API-02-009`** | `POST /api/v1/portal/enterprise/capabilities/activate` | Doanh nghiệp Owner | Kích hoạt thêm năng lực Mua (`BUYER`) hoặc Bán (`SELLER`). Tự động nâng hạng lên `DUAL`. |
+| **`API-02-010`** | `POST /api/v1/portal/enterprise/capabilities/switch-role` | Doanh nghiệp Owner | Chuyển đổi ngữ cảnh làm việc tích cực (`BUYER` $\leftrightarrow$ `SELLER`). |
+
+#### 2. DTO `EnterpriseProfileFullDto` Mở Rộng:
+```json
+{
+  "id": "1a6d4b00-770b-4ece-8e47-9821caeff592",
+  "name": "CÔNG TY TNHH TRƯỜNG HOAN",
+  "taxCode": "0100255428",
+  "provinceCity": "Hà Nội",
+  "capabilityTier": "DUAL",
+  "isBuyer": true,
+  "isSeller": true,
+  "activeRole": "BUYER",
+  "contactPerson": "Trần Trường Hoan",
+  "contactEmail": "buyer.user@demo.nacentech.vn",
+  "contactPhone": "0988123456",
+  "mainSectorName": "Khác",
+  "workforceScale": "Dưới 10 người",
+  "revenueRange": "Từ 10 đến dưới 50 tỷ đồng"
+}
+```
+
+---
+
+### 6.4 Thiết Kế Kịch Bản Dữ Liệu Demo Chuẩn (Data Seeding Script)
+
+Script `seed_identity_demo_accounts.sql` đảm bảo 100% tính sẵn sàng cho 2 tài khoản demo:
+1. **Tài khoản Bên Mua (`buyer.user@demo.nacentech.vn` / `Demo@2026`)**:
+   - Gắn với `enterprise_id = '1a6d4b00-770b-4ece-8e47-9821caeff592'`.
+   - Pháp nhân: **CÔNG TY TNHH TRƯỜNG HOAN** (MST: `0100255428`, Hà Nội).
+   - `capability_tier = 'BUYER'`, `is_buyer = true`, `is_seller = false`, `active_role = 'BUYER'`.
+2. **Tài khoản Bên Bán (`seller.user@demo.nacentech.vn` / `Demo@2026`)**:
+   - Gắn với `enterprise_id = '2b7e5c11-881c-4fdf-9f58-0932dbfaa603'`.
+   - Pháp nhân: **CÔNG TY CỔ PHẦN CƠ ĐIỆN & TỰ ĐỘNG HÓA TÂN TIẾN** (MST: `0108992134`, Hà Nội).
+   - Địa chỉ: Cụm CN vừa và nhỏ Từ Liêm, Minh Khai, Bắc Từ Liêm, Hà Nội.
+   - `capability_tier = 'SELLER'`, `is_buyer = false`, `is_seller = true`, `active_role = 'SELLER'`.
+3. Cả 2 tài khoản đều được cấp mật khẩu bcrypt tương thích với `Demo@2026` và thiết lập khóa ngoại liên kết vững chắc.
+
+
 

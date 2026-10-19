@@ -173,5 +173,16 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | Kê khai 10 nhóm trường, nộp Maker-Checker | `REQ-02-004..009`, `BR-02-003` | T-02.08–T-02.09 | `EnterpriseInvariants.cs`, `/portal/enterprise/profile` | Invariant check `ValidateSubmissionReadiness`; Pass |
 | Dashboard 304 DN, phân tích TNI, rào cản | `REQ-02-011` | T-02.10, T-02.18 | `EnterpriseController.cs`, `/admin/enterprises/dashboard` | API Stats trả đúng 304 records, phân bổ 34 tỉnh/ngành; Pass |
 | Cổng Thẩm định cấp Sở, 3D Scoped RBAC | `REQ-02-012`, `BR-02-005` | T-02.11, T-02.19 | `EnterpriseController.cs`, `/gov/approvals/enterprises` | Invariant scope check, Playwright E2E UI cấp Sở; Pass |
-| Danh bạ 5 màn hình Next.js 15, 5 UX States | `REQ-02-010`, `UI-02-001..005` | T-02.14–T-02.19 | `src/app/enterprises/`, `src/services/enterpriseApi.ts` | Vitest + Playwright Black-box test `test_task02_enterprises_blackbox.py` Pass 100% |
 | **Delta v3: Bộ Tiêu Chí ĐMST 8 Nhóm (100đ, 37 tiêu chí), Radar Chart 8 Trục & Phân Tầng Vàng/Bạc/Đồng (CR-2026-012)** | `REQ-02-020..023`, `BR-02-010..011`, `AC-02-010..012` | T-02.39–T-02.51 | `InnovationRatingEngine.cs`, `EnterpriseInnovationEvaluation.cs`, `EnterpriseController.cs`, `RadarChart.tsx`, `/enterprises/[taxCode]`, `/doanh-nghiep-dmst` | Unit Invariants (11/11 + 115/115 tests Pass); DB Integration 305 DN (23 LEADING, 112 DEVELOPING, 169 POTENTIAL, 1 UNRATED); Playwright E2E `test_task02_innovation_rating_e2e.py` 6/6 Pass 100% |
+
+---
+
+## 14. TASK-02 / TASK-03: CR-2026-015 & CR-2026-016 — Chủ Thể Doanh Nghiệp Thống Nhất & Kích Hoạt Năng Lực Đa Tầng (Buyer / Seller / Dual Mode)
+
+| Yêu Cầu / Quy Tắc | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Bản sắc DN Thống nhất SSOT & MST Nullable** | `REQ-02-015` (`REQ-02-025`), `BR-02-006` (`BR-02-012`), `BR-02-013`, `AC-02-014` | T-02.52–T-02.54, T-02.59 | `enterprise.enterprises`, `Enterprise.cs`, `EnterpriseConfiguration.cs`, `EnterpriseService.cs` | DB Migration Partial Unique Index `tax_code IS NOT NULL`; Unit Test lưu NULL thành công, chặn duplicate MST trả về 409 Conflict |
+| **Kích hoạt Năng lực Đa tầng & Role Switcher** | `REQ-02-014` (`REQ-02-024`), `BR-02-014`, `AC-02-013` | T-02.55–T-02.57, T-02.59 | `role-switcher.tsx`, `navbar.tsx`, `portal/layout.tsx`, `EnterpriseController.cs` | E2E Switcher chuyển vai trò $< 300\text{ms}$, bảo toàn phiên đăng nhập và định danh pháp nhân |
+| **Định danh Cặp tài khoản Demo Chuẩn hóa** | `REQ-02-016` (`REQ-02-026`), `FR-Delta-16`, `AC-02-015`, `AC-03-07` | T-02.58, T-02.60 | `seed_identity_demo_accounts.sql`, `EnterpriseService.cs`, `EnterpriseController.cs` | Login `buyer.user@demo.nacentech.vn` $\rightarrow$ TRƯỜNG HOAN (0100255428); Login `seller.user@demo.nacentech.vn` $\rightarrow$ TÂN TIẾN (0108992134); API trả 200 OK |
+| **Bắt buộc Tự động điền 100% Hồ sơ Khảo sát** | `FR-Delta-15`, `BR-03-005`, `BR-03-006`, `AC-03-06` | T-03.54–T-03.57 | `src/app/khao-sat-nhu-cau/page.tsx`, `page.test.tsx`, `enterprise-client.ts` | Vitest + Playwright E2E nạp 100% dữ liệu pháp nhân khi đã đăng nhập; Zero-friction sang Bước 2; Hỗ trợ đồng bộ 2 chiều |
+

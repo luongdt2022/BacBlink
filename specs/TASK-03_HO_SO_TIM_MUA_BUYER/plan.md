@@ -316,3 +316,93 @@ Mọi màn hình và bảng danh sách đều được bọc qua `<Async>` compo
   - Hộp thoại `ConfirmModal` khi đóng bài toán kèm toast feedback.
   - Thêm filter tab `Đã đóng` (`CLOSED`) bên cạnh `Tất cả`, `Đang mở tìm cung`, `Chờ thẩm định`.
 
+---
+
+## 8. DELTA V7 (CR-2026-016): BẮT BUỘC TỰ ĐỘNG NẠP 100% HỒ SƠ DOANH NGHIỆP ĐÃ ĐĂNG NHẬP & ĐỒNG BỘ DEMO BUYER
+
+> **Mã thay đổi**: `CR-2026-016`  
+> **Căn cứ**: Yêu cầu Gate 2 từ PO, Đặc tả `spec.md` Mục 9 (`FR-Delta-15`, `FR-Delta-16`, `BR-03-005`, `BR-03-006`, `AC-03-06`, `AC-03-07`).  
+> **Mục tiêu**:
+> 1. Triệt tiêu 100% ma sát nhập liệu tại Bước 1 (Phần A) đối với người dùng doanh nghiệp đã đăng nhập.
+> 2. Đảm bảo tài khoản Demo Buyer `buyer.user@demo.nacentech.vn` tự động nạp chính xác dữ liệu của **CÔNG TY TNHH TRƯỜNG HOAN** (MST: `0100255428`).
+> 3. Cơ chế đồng bộ 2 chiều (Bi-directional Sync) giữa Form Khảo Sát và Hồ Sơ Doanh Nghiệp Cốt Lõi (`enterprise.enterprises`).
+
+---
+
+### 8.1 Kiến Trúc Tự Động Nạp Dữ Liệu (Auto-Prefill Lifecycle & State Management)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Doanh nghiệp (Buyer)
+    participant UI as Form Khảo Sát (/khao-sat-nhu-cau)
+    participant Auth as AuthClient (Local Session)
+    participant API as Backend (EnterpriseController)
+    participant DB as PostgreSQL (enterprise.enterprises)
+
+    User->>UI: Mở trang /khao-sat-nhu-cau
+    UI->>Auth: getStoredSession()
+    alt Chưa đăng nhập (Khách vãng lai / Triển lãm)
+        Auth-->>UI: null
+        UI-->>User: Hiển thị Form trắng + Nút tra cứu MST VietQR
+    else Đã đăng nhập (Authenticated)
+        Auth-->>UI: { accessToken, user }
+        UI->>API: GET /api/v1/portal/enterprise/profile
+        API->>DB: Query enterprise by Owner/User ID
+        DB-->>API: Enterprise Record (Trường Hoan)
+        API-->>UI: 200 OK (Full EnterpriseProfileDto)
+        UI->>UI: Nạp 100% vào state Bước 1 (A)
+        UI->>UI: Đánh dấu Step 1 Valid & Hiển thị Alert Banner
+        UI-->>User: Sẵn sàng bấm "Tiếp tục" chuyển thẳng Bước 2
+    end
+```
+
+#### 1. Quy Trình Nạp Dữ Liệu Chi Tiết Bước 1 (11 Trường Thông Tin Cốt Lõi)
+Khi `fetchMyEnterpriseProfile()` trả về thành công:
+1. `companyName`: `profile.name || profile.legalName`
+2. `taxCode`: `profile.taxCode`
+3. `province`: `profile.provinceCity`
+4. `address`: `profile.addressDetail`
+5. `contactName`: `profile.contactPerson`
+6. `contactPosition`: `profile.contactPosition || 'Đại diện Doanh nghiệp'`
+7. `contactPhone`: `profile.contactPhone`
+8. `contactEmail`: `profile.contactEmail || session.user.email`
+9. `companyType`: `profile.ownershipType || 'Công ty TNHH'`
+10. `mainIndustry`: `profile.sectorCode || profile.mainSectorName`
+11. `employeeScale`: `profile.workforceScale`
+12. `revenueRange3y`: `profile.revenueRange && profile.revenueRange !== '[BẢO MẬT]' ? profile.revenueRange : ''`
+
+#### 2. Trạng Thái Giao Diện & UX Banner
+- **Alert Banner**: Hiển thị trên đầu Bước 1 với thiết kế nổi bật:
+  > **🎉 Dữ liệu đã được nạp tự động từ Hồ sơ Doanh nghiệp!**  
+  > Toàn bộ thông tin pháp nhân và người đại diện của **{companyName}** đã được điền sẵn. Quý DN có thể bấm **"Tiếp tục sang Bước 2"** để bắt đầu kê khai bài toán kỹ thuật ngay lập tức.
+- **Validation Bypass**: Hàm kiểm tra hợp lệ `validateStep(1)` ngay lập tức trả về `true` khi các trường bắt buộc đã được nạp đầy đủ từ profile, cho phép người dùng nhấp trực tiếp vào Stepper Bước 2 trên thanh điều hướng.
+
+---
+
+### 8.2 Kiến Trúc Đồng Bộ Hai Chiều (Bi-directional Sync Invariant `BR-03-006`)
+
+Khi doanh nghiệp đã đăng nhập chủ động chỉnh sửa thông tin tại Bước 1 và nộp phiếu ở Bước 7:
+1. Form khảo sát phát hiện sự sai khác (`diff`) giữa thông tin gửi đi và hồ sơ gốc trong `profile`.
+2. Nếu có thay đổi, hệ thống mở Modal xác nhận:
+   *"Bạn đã điều chỉnh thông tin người liên hệ / địa chỉ so với Hồ sơ Doanh nghiệp gốc. Bạn có muốn đồng bộ cập nhật vào Hồ sơ Doanh nghiệp chính thức không?"*
+3. Nếu người dùng chọn **"Đồng ý đồng bộ"**:
+   - Hệ thống thực hiện đồng thời `POST /api/v1/demands/surveys` để lưu phiếu khảo sát và `PUT /api/v1/portal/enterprise/profile` để cập nhật hồ sơ doanh nghiệp tại bảng `enterprise.enterprises`.
+   - Đảm bảo nguyên tắc Bản sắc Doanh nghiệp Duy nhất (SSOT) toàn hệ thống.
+
+---
+
+### 8.3 Kịch Bản Kiểm Thử & Xác Nhận Tài Khoản Demo Buyer
+
+1. **Đăng nhập**: Email `buyer.user@demo.nacentech.vn` / Mật khẩu `Demo@2026`.
+2. **Mở URL**: `/khao-sat-nhu-cau`.
+3. **Kỳ vọng hiển thị**:
+   - MST: `0100255428`
+   - Tên DN: `CÔNG TY TNHH TRƯỜNG HOAN`
+   - Tỉnh/thành: `Hà Nội`
+   - Người liên hệ: `Trần Trường Hoan`
+   - Email: `buyer.user@demo.nacentech.vn`
+   - SĐT: `0988123456`
+   - Quy mô: `Dưới 10 người`
+   - Nút "Tiếp tục sang Bước 2" sẵn sàng bấm chuyển bước.
+

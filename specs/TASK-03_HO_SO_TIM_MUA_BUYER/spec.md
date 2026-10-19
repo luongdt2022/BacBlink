@@ -266,3 +266,62 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
   - Chỉ bắt buộc dữ liệu tại Bước 1 (Thông tin liên hệ & pháp nhân) và Bước 2 (Tối thiểu 1 bài toán kỹ thuật có đầy đủ vấn đề & mục tiêu).
   - Các Bước 3, 4, 5, 6 hoàn toàn là dữ liệu mở rộng tùy chọn. Người dùng có thể nhấn "Tiếp tục" qua các bước này mà không bị chặn lỗi kể cả khi không điền bất kỳ trường nào.
   - Người dùng sau khi hoàn tất Bước 1 và Bước 2 có thể điều hướng thẳng đến Bước 7 để ký xác nhận và nộp phiếu ngay lập tức.
+
+---
+
+## 9. DELTA V7 (CR-2026-016): BẮT BUỘC TỰ ĐỘNG ĐIỀN 100% THÔNG TIN HỒ SƠ DOANH NGHIỆP ĐÃ ĐĂNG NHẬP & LIÊN KẾT TÀI KHOẢN DEMO BUYER
+
+> **Mã thay đổi**: `CR-2026-016`  
+> **Căn cứ thay đổi**: 
+> 1. Quyết định PO về Nguyên tắc Bất biến Tự động điền dữ liệu (Auto-Prefill Invariant) và Định danh tài khoản Demo.
+> 2. Triết lý Barbara Minto Pyramid: Loại bỏ ma sát nhập liệu, tối ưu hóa hành trình người dùng (User Journey) từ tài khoản đã xác thực đến việc gửi bài toán kỹ thuật.
+> 3. Kế thừa Bản sắc Doanh nghiệp Thống nhất SSOT (`TASK-02_HO_SO_CHU_THE_VA_DN_DMST`).
+
+### 9.1 User Stories Cho Bên Mua Đã Xác Thực
+
+- **Là** một Đại diện Doanh nghiệp đã đăng nhập vào hệ thống Nacentwin, **Tôi muốn** khi mở Form Khảo sát Nhu cầu Công nghệ (`/khao-sat-nhu-cau`), toàn bộ thông tin pháp nhân và người liên hệ đã được nạp sẵn 100% vào Bước 1 (Phần A) **Để** tôi có thể tiến thẳng vào Bước 2 kê khai bài toán kỹ thuật mà không phải gõ lại bất kỳ thông tin cơ bản nào.
+  - *Acceptance Scenario:* Given người dùng đã đăng nhập với tài khoản doanh nghiệp có hồ sơ hợp lệ tại `enterprise.enterprises`, When truy cập `/khao-sat-nhu-cau`, Then Bước 1 tự động hiển thị đầy đủ Tên DN, MST, Tỉnh/thành, Địa chỉ, Người liên hệ, SĐT, Email, Ngành nghề, Quy mô và Doanh thu kèm biểu trưng "Dữ liệu nạp từ Hồ sơ Doanh nghiệp".
+
+### 9.2 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+
+- **`FR-Delta-15` [Tự Động Nạp Toàn Diện 100% Dữ Liệu Hồ Sơ Doanh Nghiệp Vào Form Khảo Sát (`SC-03-01`)]**:
+  - Khi trang `/khao-sat-nhu-cau` được nạp, hệ thống kiểm tra phiên đăng nhập:
+    - Nếu đã đăng nhập (`isAuthenticated = true`) và có liên kết với doanh nghiệp: Hệ thống gọi API `GET /api/v1/portal/enterprise/profile` hoặc lấy thông tin từ Claims/Context của người dùng.
+    - Tự động điền toàn bộ 100% các trường thông tin Bước 1 (Phần A):
+      1. Tên doanh nghiệp (`enterprise_name`)
+      2. Mã số thuế (`tax_code`)
+      3. Tỉnh/Thành phố (`province_city`)
+      4. Địa chỉ trụ sở chính (`headquarters_address`)
+      5. Họ tên người liên hệ (`contact_person_name`)
+      6. Chức vụ người liên hệ (`contact_person_role`)
+      7. Số điện thoại (`contact_phone`)
+      8. Email (`contact_email`)
+      9. Ngành hoạt động chính (`main_sector_name`)
+      10. Quy mô lao động (`employee_scale_range`)
+      11. Dải doanh thu (`revenue_range`)
+    - Hiển thị Alert Banner trang trọng: *"Dữ liệu pháp nhân & liên hệ đã được tự động nạp từ Hồ sơ Doanh nghiệp của bạn. Bạn có thể nhấn Tiếp tục để điền bài toán kỹ thuật."*
+    - Tự động đánh dấu Bước 1 là Hợp lệ (Valid), cho phép người dùng click trực tiếp vào Bước 2 (hoặc Stepper Bước 2) ngay lập tức.
+- **`FR-Delta-16` [Liên Kết Dữ Liệu Demo Buyer Tài Khoản Trường Hoan]**:
+  - Đối với tài khoản kiểm thử tiêu chuẩn `buyer.user@demo.nacentech.vn`: Khi mở form khảo sát, hệ thống tự động nạp chính xác thông tin pháp nhân của **CÔNG TY TNHH TRƯỜNG HOAN** (MST: `0100255428`, Hà Nội).
+
+### 9.3 Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+
+- **`BR-03-005` [Quy Tắc Bất Biến Tự Động Nạp Hồ Sơ Doanh Nghiệp Đã Đăng Nhập (Auto-Prefill Invariant)]**:
+  *(Quy tắc bổ sung bắt buộc từ PO)*
+  - Bất kỳ tài khoản Doanh nghiệp nào đã đăng nhập khi mở Form Khảo sát Nhu cầu Công nghệ DNNVV (`SC-03-01`) **bắt buộc phải được tự động nạp 100% thông tin Doanh nghiệp và Người liên hệ** từ hồ sơ đã liên kết trong CSDL `enterprise.enterprises`.
+  - Tuyệt đối CẤM hiển thị Form trắng hoặc bắt buộc người dùng gõ lại MST, Tên doanh nghiệp, Tỉnh/thành hay SĐT/Email khi phiên đăng nhập đã hợp lệ.
+  - Trường hợp tài khoản mới chưa cập nhật đầy đủ hồ sơ, hệ thống nạp các trường đã có và chỉ yêu cầu điền bổ sung các trường còn khuyết.
+- **`BR-03-006` [Đồng Bộ Ngược Hồ Sơ Pháp Nhân Khi Có Thay Đổi (Bi-directional Sync Invariant)]**:
+  - Nếu Doanh nghiệp đã đăng nhập chủ động chỉnh sửa thông tin pháp nhân hoặc người liên hệ tại Bước 1 của Form Khảo sát và hoàn tất nộp phiếu: Hệ thống hiển thị hộp thoại xác nhận đồng bộ: *"Bạn có muốn cập nhật các thay đổi này vào Hồ sơ Doanh nghiệp chính thức không?"*. Nếu đồng ý, bản ghi tại `enterprise.enterprises` được cập nhật đồng thời, đảm bảo tính toàn vẹn SSOT.
+
+### 9.4 Tiêu Chí Nghiệm Thu Bổ Sung (Acceptance Criteria)
+
+- **`AC-03-06` (AC-PREFILL-01 — Tự Động Nạp 100% Khi Đã Đăng Nhập)**:
+  - Given người dùng đã đăng nhập với tài khoản Doanh nghiệp hợp lệ,
+  - When truy cập vào đường dẫn `/khao-sat-nhu-cau`,
+  - Then Bước 1 (Phần A) hiển thị 100% dữ liệu pháp nhân đã điền sẵn, không có bất kỳ ô bắt buộc nào bị bỏ trống, và nút "Tiếp tục sang Bước 2" sẵn sàng kích hoạt.
+- **`AC-03-07` (AC-PREFILL-02 — Kiểm Thử Với Tài Khoản Demo Buyer)**:
+  - Given đăng nhập với tài khoản `buyer.user@demo.nacentech.vn` (Mật khẩu: `Demo@2026`),
+  - When mở trang `/khao-sat-nhu-cau`,
+  - Then ô MST hiển thị đúng `0100255428`, ô Tên Doanh nghiệp hiển thị đúng `CÔNG TY TNHH TRƯỜNG HOAN`, Tỉnh/thành phố hiển thị đúng `Hà Nội`.
+

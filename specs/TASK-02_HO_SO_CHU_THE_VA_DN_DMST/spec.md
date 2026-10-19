@@ -167,4 +167,97 @@
 - **`AC-02-011`**: Given người dùng truy cập trang `/enterprises/[taxCode]`, When mở tab "Năng Lực ĐMST", Then hiển thị Radar Chart 8 trục với đầy đủ 8 đỉnh năng lực và nhãn Huy hiệu tương ứng.
 - **`AC-02-012`**: Given người dùng trên trang `/doanh-nghiep-dmst`, When chọn bộ lọc "Dẫn đầu", Then danh sách chỉ hiển thị các doanh nghiệp có điểm $\ge 75$.
 
+---
+
+## 8. SPEC DELTA V4 (CR-2026-015): CHỦ THỂ DOANH NGHIỆP THỐNG NHẤT & KÍCH HOẠT NĂNG LỰC ĐA TẦNG (UNIFIED ENTERPRISE & PROGRESSIVE CAPABILITY TIERS: BUYER / SELLER / DUAL MODE)
+
+> **Mã thay đổi**: `CR-2026-015`  
+> **Căn cứ nghiệp vụ**: 
+> 1. Quyết định PO về Bản sắc Doanh nghiệp Thống nhất & Nâng cấp năng lực linh hoạt (Progressive Capability Tiers).
+> 2. Triết lý Chuỗi Giá Trị Chiến Lược (Michael Porter Strategic Value Chain): Mỗi Doanh nghiệp là một Chủ thể Pháp nhân Duy nhất (Single Legal Entity) tham gia đồng thời cả 2 chuỗi hoạt động Cung ứng Đầu ra (Seller / Outbound Logistics & Operations) và Tiếp nhận Đầu vào (Buyer / Inbound Logistics & Procurement).
+> 3. Nguyên tắc Kim Tự Tháp Barbara Minto: Quy hoạch năng lực từ tổng quan đến chi tiết, liên kết chặt chẽ các tầng năng lực Level 0 $\rightarrow$ Level 1 $\rightarrow$ Level 2.
+> 4. Hiến pháp NacenTech về Tính toàn vẹn dữ liệu SSOT và Non-destructive Delta.
+
+### 8.1 User Stories & Khung Năng Lực Đa Tầng (Progressive Capability Levels)
+
+- **Là** một Chủ Doanh nghiệp (Enterprise Owner), **Tôi muốn** chỉ cần duy trì DUY NHẤT một Hồ sơ Doanh nghiệp pháp nhân trên toàn sàn Nacentwin **Để** loại bỏ hoàn toàn việc phải đăng ký hay khai báo thông tin trùng lặp khi tham gia các vai trò khác nhau.
+  - *Acceptance Scenario:* Given Doanh nghiệp đã có hồ sơ tại bảng `enterprise.enterprises`, When Doanh nghiệp đăng ký mở rộng năng lực Bên Mua (Buyer) hoặc Bên Bán (Seller), Then hệ thống tự động kế thừa 100% thông tin pháp nhân và liên hệ hiện có mà không sinh thêm bản ghi doanh nghiệp mới.
+
+- **Là** một Doanh nghiệp Đổi mới sáng tạo toàn diện (Dual Mode Enterprise), **Tôi muốn** chuyển đổi qua lại giữa Bàn làm việc Bên Mua (`/portal/buyer/demands`) và Bàn làm việc Bên Bán (`/portal/seller/dashboard`) thông qua Bộ chuyển đổi ngữ cảnh (Context/Role Switcher) trên thanh điều hướng **Để** vừa quản trị các bài toán kỹ thuật cần giải quyết, vừa quản lý danh mục công nghệ và giải pháp chào bán ra thị trường trong cùng một phiên làm việc.
+  - *Acceptance Scenario:* Given tài khoản sở hữu cả 2 năng lực Buyer và Seller, When người dùng click chuyển đổi vai trò trên Role Switcher, Then giao diện điều hướng ngay lập tức đến Workspace tương ứng với đầy đủ quyền hạn mà không yêu cầu đăng xuất hoặc xác thực lại.
+
+- **Là** Cán bộ Kiểm thử & Đánh giá (QA / PO / Giám khảo Đề tài), **Tôi muốn** đăng nhập vào 2 tài khoản demo định danh chuẩn hóa (`buyer.user@demo.nacentech.vn` và `seller.user@demo.nacentech.vn`) **Để** trực tiếp kiểm tra và nghiệm thu các luồng nghiệp vụ tương tác thực tế giữa 2 doanh nghiệp thật trong CSDL 304 DN.
+  - *Acceptance Scenario:* Given đăng nhập bằng `buyer.user@demo.nacentech.vn`, When vào trang thông tin cá nhân hoặc khảo sát, Then hệ thống hiển thị chính xác Doanh nghiệp CÔNG TY TNHH TRƯỜNG HOAN (MST: `0100255428`, Hà Nội). Given đăng nhập bằng `seller.user@demo.nacentech.vn`, Then hiển thị CÔNG TY CỔ PHẦN CƠ ĐIỆN & TỰ ĐỘNG HÓA TÂN TIẾN (MST: `0108992134`, Hà Nội).
+
+### 8.2 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+
+- **`REQ-02-014` [Kích Hoạt Năng Lực Đa Tầng & Bộ Chuyển Đổi Vai Trò (Progressive Capability Tiers & Context Switcher)]**:
+  *(Mã tiếp nối hệ thống: `REQ-02-024` | PO Ref: `REQ-02-014`)*
+  - Hệ thống hỗ trợ mô hình Nâng cấp Năng lực Tiến triển 3 cấp bậc cho Chủ thể Doanh nghiệp:
+    1. **Level 0 (Basic Enterprise — Doanh Nghiệp Cơ Bản)**: Doanh nghiệp có hồ sơ pháp nhân cơ bản trong hệ thống. Có quyền tra cứu danh bạ, xem sàn nhu cầu và sàn chào bán công khai; chưa kích hoạt Bàn làm việc chuyên biệt.
+    2. **Level 1 Buyer (Năng Lực Bên Mua)**: Kích hoạt khi doanh nghiệp nộp phiếu khảo sát nhu cầu, đăng bài toán kỹ thuật, hoặc nhấn "Kích hoạt vai trò Mua". Cấp quyền truy cập Bàn làm việc Bên Mua (`/portal/buyer/demands`), quản trị bài toán và nhận kết nối giải pháp.
+    3. **Level 1 Seller (Năng Lực Bên Bán)**: Kích hoạt khi doanh nghiệp đăng tải hồ sơ chào bán công nghệ/thiết bị, hoặc nhấn "Kích hoạt vai trò Bán". Cấp quyền truy cập Bàn làm việc Bên Bán (`/portal/seller/dashboard`), quản trị danh mục công nghệ và SHTT.
+    4. **Level 2 Dual Mode (Năng Lực Kép — ĐMST Toàn Diện)**: Kích hoạt khi doanh nghiệp thỏa mãn đồng thời cả 2 năng lực Buyer và Seller.
+  - Trên giao diện Header và thanh điều hướng Bàn làm việc của Doanh nghiệp Level 2 Dual Mode, bắt buộc hiển thị **Bộ chuyển đổi ngữ cảnh (Context/Role Switcher Dropdown)** cho phép chuyển đổi 1-click giữa `[Bàn làm việc Bên Mua]` và `[Bàn làm việc Bên Bán]` mượt mà, lưu trạng thái vai trò tích cực (`active_role`) vào session/client-state.
+
+- **`REQ-02-015` [Bản Sắc Doanh Nghiệp Thống Nhất SSOT & Xử Lý Kỹ Thuật MST Nullable]**:
+  *(Mã tiếp nối hệ thống: `REQ-02-025` | PO Ref: `REQ-02-015`)*
+  - Thực thể Doanh nghiệp được quy tụ DUY NHẤT tại bảng `enterprise.enterprises`. Tất cả các phân hệ liên quan (Tìm mua `TASK-03`, Chào bán `TASK-04`, Đánh giá ĐMST `TASK-02`, Kết nối `TASK-08`) đều liên kết khóa ngoại/tham chiếu đến `enterprise_id` hoặc `tax_code` của bảng này.
+  - Thông tin định danh pháp nhân cốt lõi (MST, Tên doanh nghiệp, Tỉnh/thành phố, Địa chỉ chi tiết, Người đại diện/liên hệ, SĐT, Email, Ngành nghề chính, Quy mô) là duy nhất và nhất quán trên toàn hệ sinh thái.
+  - **Kỹ thuật MST Nullability**: 
+    - Cho phép tạo hồ sơ nháp (`DRAFT`) hoặc đăng ký sơ bộ khi doanh nghiệp chưa kịp bổ sung MST. Trường `tax_code` chấp nhận giá trị `NULL`.
+    - Backend và Database áp dụng ràng buộc **Unique Constraint / Unique Partial Index** trên cột `tax_code` với điều kiện `tax_code IS NOT NULL`. Đảm bảo mọi MST khi đã được điền là DUY NHẤT trên toàn hệ thống, không bị xung đột khi có nhiều bản ghi `NULL`.
+
+- **`REQ-02-016` [Định Danh & Ánh Xạ Cặp Tài Khoản Demo Buyer / Seller]**:
+  *(Mã tiếp nối hệ thống: `REQ-02-026` | PO Ref: `REQ-02-016`)*
+  - Hệ thống cấu hình cố định cơ chế ánh xạ dữ liệu (Seeding & Data Mapping) cho 2 tài khoản demo tiêu chuẩn:
+    1. Tài khoản Demo Bên Mua:
+       - Email: `buyer.user@demo.nacentech.vn`
+       - Mật khẩu mặc định: `Demo@2026`
+       - Gắn kết pháp nhân: **CÔNG TY TNHH TRƯỜNG HOAN**
+       - Mã số thuế (MST): `0100255428`
+       - Địa bàn: **Hà Nội**
+       - Trạng thái năng lực khởi tạo: `BUYER` (Level 1 Buyer, sẵn sàng kích hoạt Dual Mode).
+    2. Tài khoản Demo Bên Bán:
+       - Email: `seller.user@demo.nacentech.vn`
+       - Mật khẩu mặc định: `Demo@2026`
+       - Gắn kết pháp nhân: **CÔNG TY CỔ PHẦN CƠ ĐIỆN & TỰ ĐỘNG HÓA TÂN TIẾN**
+       - Mã số thuế (MST): `0108992134`
+       - Địa bàn: **Hà Nội**
+       - Trạng thái năng lực khởi tạo: `SELLER` (Level 1 Seller, sẵn sàng kích hoạt Dual Mode).
+
+### 8.3 Quy Tắc Nghiệp Vụ Mới (Business Rules)
+
+- **`BR-02-006` [Quy Tắc Quản Lý Tính Duy Nhất Của Mã Số Thuế (TaxCode Nullability Invariant)]**:
+  *(Mã tiếp nối hệ thống: `BR-02-012` | PO Ref: `BR-02-006`)*
+  - Khi lưu trữ hồ sơ doanh nghiệp vào bảng `enterprise.enterprises`:
+    - Nếu người dùng để trống hoặc truyền chuỗi rỗng (`""`), chuỗi chỉ chứa khoảng trắng (`"   "`), Backend Domain Service / Model Binder bắt buộc phải chuẩn hóa và chuyển thành `NULL` trước khi ghi vào Database.
+    - CẤM lưu chuỗi rỗng `""` vào cột `tax_code` để tránh vi phạm lỗi Duplicate Key trên SQL Unique Constraint.
+    - Khi `tax_code` khác `NULL`, hệ thống kích hoạt kiểm tra tính duy nhất. Nếu MST đã tồn tại trên một bản ghi khác, hệ thống chặn giao dịch và trả về lỗi `409 Conflict` kèm thông báo: *"Mã số thuế này đã được đăng ký trong hệ thống."*
+- **`BR-02-013` [Nguyên Tắc Pháp Nhân Duy Nhất Trong Chuỗi Giá Trị (Single Legal Entity SSOT)]**:
+  - Mỗi pháp nhân Doanh nghiệp chỉ có 1 bản ghi duy nhất tại `enterprise.enterprises`. Mọi hành động kích hoạt năng lực Bên Mua, Bên Bán, hay chỉnh sửa thông tin liên hệ đều tham chiếu và cập nhật vào chính bản ghi này, không tạo thêm bản ghi doanh nghiệp trùng lặp.
+- **`BR-02-014` [Bảo Toàn Trạng Thái Ngữ Cảnh Vai Trò Kép (Dual-Role Context Invariant)]**:
+  - Đối với tài khoản Doanh nghiệp đạt Level 2 Dual Mode, việc chuyển đổi giữa vai trò Mua và Bán chỉ thay đổi ngữ cảnh giao diện và phân quyền thao tác (Buyer Workspace vs Seller Workspace), không làm thay đổi định danh pháp nhân hay quyền sở hữu dữ liệu của Doanh nghiệp.
+
+### 8.4 Tiêu Chuẩn Chấp Thuận Định Lượng (Acceptance Criteria)
+
+- **`AC-02-013` (AC-TIER-01 — Chuyển Đổi Vai Trò Kép Mượt Mà)**:
+  - Given tài khoản đã kích hoạt cả 2 năng lực Buyer và Seller (Level 2 Dual Mode),
+  - When người dùng bấm chuyển đổi vai trò trên Context Switcher Header,
+  - Then giao diện điều hướng ngay lập tức đến Workspace tương ứng trong thời gian $< 300\text{ms}$ mà không phát sinh phiên đăng nhập mới.
+- **`AC-02-014` (AC-TIER-02 — Toàn Vẹn Ràng Buộc MST Nullable)**:
+  - Given hệ thống cho phép tạo nhiều bản ghi hồ sơ nháp có `tax_code = NULL`,
+  - When tạo bản ghi mới với `tax_code = ""` hoặc `"  "`,
+  - Then CSDL lưu trữ giá trị `NULL` thành công.
+  - When cập nhật hoặc tạo bản ghi mới với `tax_code` trùng với một MST đã có trong CSDL,
+  - Then hệ thống từ chối và báo lỗi 409 Conflict chống trùng lặp.
+- **`AC-02-015` (AC-TIER-03 — Xác Thực Ánh Xạ Tài Khoản Demo Chuẩn)**:
+  - Given đăng nhập bằng tài khoản `buyer.user@demo.nacentech.vn`,
+  - When kiểm tra thông tin pháp nhân liên kết,
+  - Then hệ thống trả về đúng CÔNG TY TNHH TRƯỜNG HOAN (MST: `0100255428`).
+  - Given đăng nhập bằng tài khoản `seller.user@demo.nacentech.vn`,
+  - When kiểm tra thông tin pháp nhân liên kết,
+  - Then hệ thống trả về đúng CÔNG TY CỔ PHẦN CƠ ĐIỆN & TỰ ĐỘNG HÓA TÂN TIẾN (MST: `0108992134`).
+
+
 

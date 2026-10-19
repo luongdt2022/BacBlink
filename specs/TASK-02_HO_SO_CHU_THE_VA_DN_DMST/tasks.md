@@ -78,4 +78,18 @@
 - [x] **T-02.50** `[TEST]` Viết bộ Unit Invariant Tests cho `InnovationRatingEngine`: Kiểm thử độc lập công thức quy đổi điểm 8 nhóm (QT1..QT4, CN1..CN5, SP1..SP5, IP1..IP3, S1..S5, TT1..TT6, NL1..NL3, LK1..LK6), phân tầng điểm (ngưỡng 75, 50), và trường hợp `UNRATED`.
 - [x] **T-02.51** `[TEST]` Viết kịch bản kiểm thử E2E Playwright: Xác thực hiển thị Tab Năng Lực ĐMST, Biểu đồ Radar Chart 8 trục và tương tác lọc danh bạ theo mức ĐMST tại `/doanh-nghiep-dmst`.
 
+---
+
+## Giai đoạn 6: Delta CR-2026-015 — Kiến Trúc Doanh Nghiệp Thống Nhất SSOT, MST Nullable & Năng Lực Đa Tầng
+
+- [ ] **T-02.52** `[BE]` `[DOMAIN]` Chuẩn hóa thuộc tính `TaxCode` trong `Enterprise.cs` thành `string?`, tự động chuyển đổi chuỗi rỗng `""` và khoảng trắng thành `null`; bổ sung các trường năng lực `CapabilityTier`, `IsBuyer`, `IsSeller`, `ActiveRole`, `OwnerPersonId` và domain methods `ActivateCapability(...)`, `SwitchActiveRole(...)`.
+- [ ] **T-02.53** `[BE]` `[PERSISTENCE]` Tạo EF Core Migration phi phá hủy `20261019080000_MakeTaxCodeNullableWithPartialUniqueIndex.cs`: Cập nhật `tax_code = NULL` cho các bản ghi rỗng, tạo Partial Unique Index `ix_enterprises_tax_code_unique` ON `enterprise.enterprises(tax_code) WHERE tax_code IS NOT NULL;` và thêm các cột năng lực.
+- [ ] **T-02.54** `[BE]` `[APPLICATION]` Cập nhật `EnterpriseService` và `EnterpriseController`: Cài đặt logic Multi-Strategy Resolution (Direct ID, OwnerPersonId, Identifier, ContactEmail); bổ sung kiểm tra chống trùng lặp MST `BR-02-006` trả về `409 Conflict`; mở rộng `UpsertEnterpriseProfileRequest` và `EnterpriseProfileFullDto`.
+- [ ] **T-02.55** `[BE]` `[API]` Xây dựng endpoints quản lý năng lực `POST /api/v1/portal/enterprise/capabilities/activate` và `POST /api/v1/portal/enterprise/capabilities/switch-role` trong `EnterpriseController.cs` kèm ghi nhật ký `system_audit_logs`.
+- [ ] **T-02.56** `[FE]` `[COMPONENT]` Xây dựng Component `RoleSwitcher.tsx` (`src/components/common/role-switcher.tsx`): Dropdown / Pill Toggle chuyển đổi 1-click giữa Bên Mua và Bên Bán cho tài khoản Dual Mode, lưu `nacentwin_active_role` vào client-state, điều hướng mượt mà `< 300ms`.
+- [ ] **T-02.57** `[FE]` `[INTEGRATION]` Tích hợp `RoleSwitcher` vào Header chung (`src/components/common/navbar.tsx`) và Thanh điều hướng Portal (`src/app/portal/layout.tsx`).
+- [ ] **T-02.58** `[BE]` `[SEED]` Xây dựng/Cập nhật SQL Seeding Script `seed_identity_demo_accounts.sql`: Ánh xạ tài khoản `buyer.user@demo.nacentech.vn` với CÔNG TY TNHH TRƯỜNG HOAN (MST: `0100255428`), `seller.user@demo.nacentech.vn` với CÔNG TY CP CƠ ĐIỆN & TỰ ĐỘNG HÓA TÂN TIẾN (MST: `0108992134`), mật khẩu `Demo@2026`.
+- [ ] **T-02.59** `[TEST]` Viết bộ Unit Invariant Tests `EnterpriseCapabilityInvariantsTests.cs` kiểm chứng: Khởi tạo MST rỗng lưu `NULL`, Chặn trùng MST trả lỗi 409, Kích hoạt năng lực đa tầng và chuyển đổi vai trò kép.
+- [ ] **T-02.60** `[TEST]` Viết kiểm thử tích hợp API `GET /api/v1/portal/enterprise/profile` kiểm chứng trả về `200 OK` với đầy đủ thông tin pháp nhân cho cả 2 tài khoản demo `buyer.user` và `seller.user`.
+
 
