@@ -65,6 +65,26 @@ public sealed class SellerTechnologyOfferConfiguration : IEntityTypeConfiguratio
         b.Property(x => x.PaymentTerms);
         b.Property(x => x.InstallationSupport).HasDefaultValue(true);
 
+        // Delta v6 extensions
+        b.Property(x => x.ModelCode).HasMaxLength(100);
+        b.Property(x => x.Manufacturer).HasMaxLength(255);
+        b.Property(x => x.OriginCountry).HasMaxLength(100);
+        b.Property(x => x.EquipmentStatus).HasMaxLength(50).HasDefaultValue("NEW");
+        b.Property(x => x.ManufacturingYear);
+        b.Property(x => x.CapacityScale).HasMaxLength(255);
+        b.Property(x => x.EnergyConsumption).HasMaxLength(255);
+        b.Property(x => x.AutomationLevel).HasMaxLength(100);
+        b.Property(x => x.OperatingPrinciple);
+        b.Property(x => x.DeploymentConditions);
+
+        b.Property(x => x.TransferPriorityMethod).HasMaxLength(100);
+        b.Property(x => x.PriceIncludes);
+        b.Property(x => x.TaxAndExtraCosts);
+        b.Property(x => x.TechnicalSupportMethod).HasMaxLength(255);
+
+        b.Property(x => x.IpIssueDate);
+        b.Property(x => x.LegalCommitmentConfirmed).HasDefaultValue(false);
+
         b.HasMany(x => x.SpecValues).WithOne().HasForeignKey(x => x.OfferId).OnDelete(DeleteBehavior.Cascade);
         b.Navigation(x => x.SpecValues).UsePropertyAccessMode(PropertyAccessMode.Field);
 
@@ -89,9 +109,11 @@ public sealed class OfferSpecValueConfiguration : IEntityTypeConfiguration<Offer
         b.Property(x => x.SpecName).HasMaxLength(255).IsRequired();
         b.Property(x => x.SpecValue).IsRequired();
         b.Property(x => x.Unit).HasMaxLength(50);
+        b.Property(x => x.SpecCategory).HasMaxLength(50).HasDefaultValue("TIER_3_CUSTOM");
 
         b.HasIndex(x => x.OfferId);
         b.HasIndex(x => x.SpecCode);
+        b.HasIndex(x => new { x.OfferId, x.SpecCategory });
     }
 }
 

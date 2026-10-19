@@ -288,9 +288,24 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         WarrantyTerms: x.WarrantyTerms,
         SupplyScope: x.SupplyScope,
         PaymentTerms: x.PaymentTerms,
-        InstallationSupport: x.InstallationSupport,
-        SpecValues: x.SpecValues?.Select(s => new OfferSpecValueDto(s.Id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit)).ToList(),
-        Documents: x.Documents?.Select(d => new OfferDocumentDto(d.Id, d.DocumentType, d.FileName, d.FileUrl, d.FileSizeBytes, d.AccessScope)).ToList()
+        SpecValues: x.SpecValues?.Select(s => new OfferSpecValueDto(s.Id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit, s.SpecCategory)).ToList(),
+        Documents: x.Documents?.Select(d => new OfferDocumentDto(d.Id, d.DocumentType, d.FileName, d.FileUrl, d.FileSizeBytes, d.AccessScope)).ToList(),
+        ModelCode: x.ModelCode,
+        Manufacturer: x.Manufacturer,
+        OriginCountry: x.OriginCountry,
+        EquipmentStatus: x.EquipmentStatus,
+        ManufacturingYear: x.ManufacturingYear,
+        CapacityScale: x.CapacityScale,
+        EnergyConsumption: x.EnergyConsumption,
+        AutomationLevel: x.AutomationLevel,
+        OperatingPrinciple: x.OperatingPrinciple,
+        DeploymentConditions: x.DeploymentConditions,
+        TransferPriorityMethod: x.TransferPriorityMethod,
+        PriceIncludes: x.PriceIncludes,
+        TaxAndExtraCosts: x.TaxAndExtraCosts,
+        TechnicalSupportMethod: x.TechnicalSupportMethod,
+        IpIssueDate: x.IpIssueDate,
+        LegalCommitmentConfirmed: x.LegalCommitmentConfirmed
     );
 
     [HttpGet]
@@ -576,13 +591,21 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         var offerCode = $"OFF-{DateTime.UtcNow:yyyyMMdd}-{(totalDbOffers + 1):D5}-{Guid.NewGuid().ToString("N")[..4].ToUpperInvariant()}";
         var status = isDraft ? "DRAFT" : "PENDING";
 
+        var scopeId = dto.ManagingAuthorityId;
+        var scopeName = dto.ManagingAuthorityName;
+        if (string.IsNullOrWhiteSpace(scopeId))
+        {
+            scopeId = "VN-HN";
+            scopeName = "Sở Khoa học và Công nghệ TP. Hà Nội";
+        }
+
         var newOffer = new SellerOfferDto(
             Id: id,
             OfferCode: offerCode,
             OfferType: dto.OfferType?.ToUpperInvariant() ?? "PRODUCT",
             HasTechTransfer: dto.HasTechTransfer,
             Title: dto.Title,
-            Summary: dto.Summary ?? "",
+            Summary: !string.IsNullOrWhiteSpace(dto.Summary) ? dto.Summary : (dto.ShortDescription ?? ""),
             ProblemSolved: dto.ProblemSolved ?? "",
             SectorCode: dto.SectorCode?.ToUpperInvariant() ?? "OTHER",
             SectorName: MapSectorName(dto.SectorCode ?? "OTHER"),
@@ -605,10 +628,10 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             ReviewCount: 0,
             CreatedAt: DateTimeOffset.UtcNow,
             PublishedAt: null,
-            ManagingAuthorityId: dto.ManagingAuthorityId ?? "VN-HN",
-            ManagingAuthorityName: dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
+            ManagingAuthorityId: scopeId,
+            ManagingAuthorityName: scopeName,
             ScopeType: dto.ScopeType ?? "PROVINCE",
-            ScopeId: dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
+            ScopeId: dto.ScopeId ?? scopeId,
             EnterpriseTaxCode: dto.EnterpriseTaxCode,
             EnterpriseName: dto.EnterpriseName,
             MainImageUrl: dto.MainImageUrl,
@@ -622,7 +645,23 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             Documents: dto.Documents,
             ContactName: dto.ContactName,
             ContactEmail: dto.ContactEmail,
-            ContactPhone: dto.ContactPhone
+            ContactPhone: dto.ContactPhone,
+            ModelCode: dto.ModelCode,
+            Manufacturer: dto.Manufacturer,
+            OriginCountry: dto.OriginCountry,
+            EquipmentStatus: dto.EquipmentStatus ?? "NEW",
+            ManufacturingYear: dto.ManufacturingYear,
+            CapacityScale: dto.CapacityScale,
+            EnergyConsumption: dto.EnergyConsumption,
+            AutomationLevel: dto.AutomationLevel,
+            OperatingPrinciple: dto.OperatingPrinciple,
+            DeploymentConditions: dto.DeploymentConditions,
+            TransferPriorityMethod: dto.TransferPriorityMethod,
+            PriceIncludes: dto.PriceIncludes,
+            TaxAndExtraCosts: dto.TaxAndExtraCosts,
+            TechnicalSupportMethod: dto.TechnicalSupportMethod,
+            IpIssueDate: dto.IpIssueDate,
+            LegalCommitmentConfirmed: dto.LegalCommitmentConfirmed
         );
 
         // Lưu thực thể lâu dài vào CSDL PostgreSQL
@@ -632,7 +671,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             dto.OfferType?.ToUpperInvariant() ?? "PRODUCT",
             dto.HasTechTransfer,
             dto.Title,
-            dto.Summary ?? "",
+            !string.IsNullOrWhiteSpace(dto.Summary) ? dto.Summary : (dto.ShortDescription ?? ""),
             dto.ProblemSolved ?? "",
             dto.SectorCode?.ToUpperInvariant() ?? "OTHER",
             MapSectorName(dto.SectorCode ?? "OTHER"),
@@ -650,10 +689,10 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             dto.CommercialStatus,
             dto.ContactPointRole,
             status,
-            dto.ManagingAuthorityId ?? "VN-HN",
-            dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
+            scopeId,
+            scopeName,
             dto.ScopeType ?? "PROVINCE",
-            dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
+            dto.ScopeId ?? scopeId,
             dto.LegalConsent,
             null,
             null,
@@ -665,14 +704,30 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             dto.WarrantyTerms,
             dto.SupplyScope,
             dto.PaymentTerms,
-            dto.InstallationSupport
+            dto.InstallationSupport,
+            modelCode: dto.ModelCode,
+            manufacturer: dto.Manufacturer,
+            originCountry: dto.OriginCountry,
+            equipmentStatus: dto.EquipmentStatus ?? "NEW",
+            manufacturingYear: dto.ManufacturingYear,
+            capacityScale: dto.CapacityScale,
+            energyConsumption: dto.EnergyConsumption,
+            automationLevel: dto.AutomationLevel,
+            operatingPrinciple: dto.OperatingPrinciple,
+            deploymentConditions: dto.DeploymentConditions,
+            transferPriorityMethod: dto.TransferPriorityMethod,
+            priceIncludes: dto.PriceIncludes,
+            taxAndExtraCosts: dto.TaxAndExtraCosts,
+            technicalSupportMethod: dto.TechnicalSupportMethod,
+            ipIssueDate: dto.IpIssueDate,
+            legalCommitmentConfirmed: dto.LegalCommitmentConfirmed
         );
 
         if (dto.SpecValues != null)
         {
             foreach (var s in dto.SpecValues)
             {
-                entity.AddSpecValue(new OfferSpecValue(id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit));
+                entity.AddSpecValue(new OfferSpecValue(id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit, s.SpecCategory));
             }
         }
 
@@ -871,7 +926,23 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             Documents: dto.Documents,
             ContactName: dto.ContactName,
             ContactEmail: dto.ContactEmail,
-            ContactPhone: dto.ContactPhone
+            ContactPhone: dto.ContactPhone,
+            ModelCode: dto.ModelCode ?? entity?.ModelCode,
+            Manufacturer: dto.Manufacturer ?? entity?.Manufacturer,
+            OriginCountry: dto.OriginCountry ?? entity?.OriginCountry,
+            EquipmentStatus: dto.EquipmentStatus ?? entity?.EquipmentStatus ?? "NEW",
+            ManufacturingYear: dto.ManufacturingYear ?? entity?.ManufacturingYear,
+            CapacityScale: dto.CapacityScale ?? entity?.CapacityScale,
+            EnergyConsumption: dto.EnergyConsumption ?? entity?.EnergyConsumption,
+            AutomationLevel: dto.AutomationLevel ?? entity?.AutomationLevel,
+            OperatingPrinciple: dto.OperatingPrinciple ?? entity?.OperatingPrinciple,
+            DeploymentConditions: dto.DeploymentConditions ?? entity?.DeploymentConditions,
+            TransferPriorityMethod: dto.TransferPriorityMethod ?? entity?.TransferPriorityMethod,
+            PriceIncludes: dto.PriceIncludes ?? entity?.PriceIncludes,
+            TaxAndExtraCosts: dto.TaxAndExtraCosts ?? entity?.TaxAndExtraCosts,
+            TechnicalSupportMethod: dto.TechnicalSupportMethod ?? entity?.TechnicalSupportMethod,
+            IpIssueDate: dto.IpIssueDate ?? entity?.IpIssueDate,
+            LegalCommitmentConfirmed: dto.LegalCommitmentConfirmed
         );
 
         if (entity != null)
@@ -880,7 +951,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 dto.OfferType.ToUpperInvariant(),
                 dto.HasTechTransfer,
                 dto.Title,
-                dto.Summary ?? "",
+                !string.IsNullOrWhiteSpace(dto.Summary) ? dto.Summary : (dto.ShortDescription ?? ""),
                 dto.ProblemSolved ?? "",
                 dto.SectorCode.ToUpperInvariant(),
                 MapSectorName(dto.SectorCode),
@@ -909,7 +980,23 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 dto.WarrantyTerms,
                 dto.SupplyScope,
                 dto.PaymentTerms,
-                dto.InstallationSupport
+                dto.InstallationSupport,
+                modelCode: dto.ModelCode,
+                manufacturer: dto.Manufacturer,
+                originCountry: dto.OriginCountry,
+                equipmentStatus: dto.EquipmentStatus,
+                manufacturingYear: dto.ManufacturingYear,
+                capacityScale: dto.CapacityScale,
+                energyConsumption: dto.EnergyConsumption,
+                automationLevel: dto.AutomationLevel,
+                operatingPrinciple: dto.OperatingPrinciple,
+                deploymentConditions: dto.DeploymentConditions,
+                transferPriorityMethod: dto.TransferPriorityMethod,
+                priceIncludes: dto.PriceIncludes,
+                taxAndExtraCosts: dto.TaxAndExtraCosts,
+                technicalSupportMethod: dto.TechnicalSupportMethod,
+                ipIssueDate: dto.IpIssueDate,
+                legalCommitmentConfirmed: dto.LegalCommitmentConfirmed
             );
 
             entity.SetStatus(newStatus);
@@ -921,7 +1008,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             {
                 foreach (var s in dto.SpecValues)
                 {
-                    db.Set<OfferSpecValue>().Add(new OfferSpecValue(id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit));
+                    db.Set<OfferSpecValue>().Add(new OfferSpecValue(id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit, s.SpecCategory));
                 }
             }
 

@@ -224,7 +224,8 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
             var empty = await enterpriseService.UpsertProfileAsync(PersonId, new UpsertEnterpriseProfileRequest
             {
                 Name = Actor.Email ?? "Doanh nghiệp mới",
-                ContactEmail = Actor.Email
+                ContactEmail = Actor.Email,
+                TaxCode = null
             }, ct);
             await uow.CommitAsync(ct);
             return Ok(Ok200(empty));

@@ -50,7 +50,23 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         string? warrantyTerms = null,
         string? supplyScope = null,
         string? paymentTerms = null,
-        bool installationSupport = true)
+        bool installationSupport = true,
+        string? modelCode = null,
+        string? manufacturer = null,
+        string? originCountry = null,
+        string? equipmentStatus = "NEW",
+        int? manufacturingYear = null,
+        string? capacityScale = null,
+        string? energyConsumption = null,
+        string? automationLevel = null,
+        string? operatingPrinciple = null,
+        string? deploymentConditions = null,
+        string? transferPriorityMethod = null,
+        string? priceIncludes = null,
+        string? taxAndExtraCosts = null,
+        string? technicalSupportMethod = null,
+        DateOnly? ipIssueDate = null,
+        bool legalCommitmentConfirmed = false)
     {
         Id = id;
         OfferCode = offerCode;
@@ -91,6 +107,22 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         SupplyScope = supplyScope;
         PaymentTerms = paymentTerms;
         InstallationSupport = installationSupport;
+        ModelCode = modelCode;
+        Manufacturer = manufacturer;
+        OriginCountry = originCountry;
+        EquipmentStatus = equipmentStatus ?? "NEW";
+        ManufacturingYear = manufacturingYear;
+        CapacityScale = capacityScale;
+        EnergyConsumption = energyConsumption;
+        AutomationLevel = automationLevel;
+        OperatingPrinciple = operatingPrinciple;
+        DeploymentConditions = deploymentConditions;
+        TransferPriorityMethod = transferPriorityMethod;
+        PriceIncludes = priceIncludes;
+        TaxAndExtraCosts = taxAndExtraCosts;
+        TechnicalSupportMethod = technicalSupportMethod;
+        IpIssueDate = ipIssueDate;
+        LegalCommitmentConfirmed = legalCommitmentConfirmed;
         SuccessfulConnections = 0;
         RatingScore = 5.0m;
         ReviewCount = 0;
@@ -142,6 +174,28 @@ public sealed class SellerTechnologyOffer : AggregateRoot
     public string? PaymentTerms { get; private set; }
     public bool InstallationSupport { get; private set; } = true;
 
+    // Delta v6 Extensions: Lớp 2 (Kỹ thuật chung)
+    public string? ModelCode { get; private set; }
+    public string? Manufacturer { get; private set; }
+    public string? OriginCountry { get; private set; }
+    public string EquipmentStatus { get; private set; } = "NEW";
+    public int? ManufacturingYear { get; private set; }
+    public string? CapacityScale { get; private set; }
+    public string? EnergyConsumption { get; private set; }
+    public string? AutomationLevel { get; private set; }
+    public string? OperatingPrinciple { get; private set; }
+    public string? DeploymentConditions { get; private set; }
+
+    // Delta v6 Extensions: Lớp 4 (Thương mại chi tiết)
+    public string? TransferPriorityMethod { get; private set; }
+    public string? PriceIncludes { get; private set; }
+    public string? TaxAndExtraCosts { get; private set; }
+    public string? TechnicalSupportMethod { get; private set; }
+
+    // Delta v6 Extensions: Pháp lý & SHTT
+    public DateOnly? IpIssueDate { get; private set; }
+    public bool LegalCommitmentConfirmed { get; private set; } = false;
+
     public IReadOnlyCollection<OfferSpecValue> SpecValues => _specValues.AsReadOnly();
     public IReadOnlyCollection<OfferDocument> Documents => _documents.AsReadOnly();
 
@@ -170,10 +224,76 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         Touch();
     }
 
+    public void UpdateTier2Details(
+        string? modelCode,
+        string? manufacturer,
+        string? originCountry,
+        string? equipmentStatus,
+        int? manufacturingYear,
+        string? capacityScale,
+        string? energyConsumption,
+        string? automationLevel,
+        string? operatingPrinciple,
+        string? deploymentConditions)
+    {
+        ModelCode = modelCode;
+        Manufacturer = manufacturer;
+        OriginCountry = originCountry;
+        if (!string.IsNullOrWhiteSpace(equipmentStatus)) EquipmentStatus = equipmentStatus;
+        ManufacturingYear = manufacturingYear;
+        CapacityScale = capacityScale;
+        EnergyConsumption = energyConsumption;
+        AutomationLevel = automationLevel;
+        OperatingPrinciple = operatingPrinciple;
+        DeploymentConditions = deploymentConditions;
+        Touch();
+    }
+
+    public void UpdateTier4Commercial(
+        string? transferPriorityMethod,
+        string? priceIncludes,
+        string? taxAndExtraCosts,
+        string? technicalSupportMethod,
+        string? supplyScope,
+        string? deliveryTimeline,
+        string? paymentTerms,
+        string? warrantyTerms,
+        bool? installationSupport)
+    {
+        TransferPriorityMethod = transferPriorityMethod;
+        PriceIncludes = priceIncludes;
+        TaxAndExtraCosts = taxAndExtraCosts;
+        TechnicalSupportMethod = technicalSupportMethod;
+        if (supplyScope != null) SupplyScope = supplyScope;
+        if (deliveryTimeline != null) DeliveryTimeline = deliveryTimeline;
+        if (paymentTerms != null) PaymentTerms = paymentTerms;
+        if (warrantyTerms != null) WarrantyTerms = warrantyTerms;
+        if (installationSupport.HasValue) InstallationSupport = installationSupport.Value;
+        Touch();
+    }
+
+    public void UpdateIpAndCommitment(
+        DateOnly? ipIssueDate,
+        bool legalCommitmentConfirmed)
+    {
+        IpIssueDate = ipIssueDate;
+        LegalCommitmentConfirmed = legalCommitmentConfirmed;
+        Touch();
+    }
+
     public void SetEnterpriseLink(string? taxCode, string? name)
     {
         EnterpriseTaxCode = taxCode;
         EnterpriseName = name;
+        Touch();
+    }
+
+    public void SetManagingAuthority(string? scopeId, string? authorityName)
+    {
+        ScopeId = scopeId;
+        ScopeType = "PROVINCE";
+        ManagingAuthorityId = scopeId;
+        ManagingAuthorityName = authorityName;
         Touch();
     }
 
@@ -246,7 +366,23 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         string? warrantyTerms = null,
         string? supplyScope = null,
         string? paymentTerms = null,
-        bool? installationSupport = null)
+        bool? installationSupport = null,
+        string? modelCode = null,
+        string? manufacturer = null,
+        string? originCountry = null,
+        string? equipmentStatus = null,
+        int? manufacturingYear = null,
+        string? capacityScale = null,
+        string? energyConsumption = null,
+        string? automationLevel = null,
+        string? operatingPrinciple = null,
+        string? deploymentConditions = null,
+        string? transferPriorityMethod = null,
+        string? priceIncludes = null,
+        string? taxAndExtraCosts = null,
+        string? technicalSupportMethod = null,
+        DateOnly? ipIssueDate = null,
+        bool? legalCommitmentConfirmed = null)
     {
         // BR-SELLER-07: Nếu hasTechTransfer và có sự thay đổi các trường cốt lõi (TRL, IP, TransferMethod)
         // Hệ thống tự động chuyển về PENDING để Sở KH&CN thẩm định lại trước khi tái xuất bản
@@ -291,6 +427,24 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         if (supplyScope != null) SupplyScope = supplyScope;
         if (paymentTerms != null) PaymentTerms = paymentTerms;
         if (installationSupport.HasValue) InstallationSupport = installationSupport.Value;
+
+        if (modelCode != null) ModelCode = modelCode;
+        if (manufacturer != null) Manufacturer = manufacturer;
+        if (originCountry != null) OriginCountry = originCountry;
+        if (!string.IsNullOrWhiteSpace(equipmentStatus)) EquipmentStatus = equipmentStatus;
+        if (manufacturingYear.HasValue) ManufacturingYear = manufacturingYear;
+        if (capacityScale != null) CapacityScale = capacityScale;
+        if (energyConsumption != null) EnergyConsumption = energyConsumption;
+        if (automationLevel != null) AutomationLevel = automationLevel;
+        if (operatingPrinciple != null) OperatingPrinciple = operatingPrinciple;
+        if (deploymentConditions != null) DeploymentConditions = deploymentConditions;
+
+        if (transferPriorityMethod != null) TransferPriorityMethod = transferPriorityMethod;
+        if (priceIncludes != null) PriceIncludes = priceIncludes;
+        if (taxAndExtraCosts != null) TaxAndExtraCosts = taxAndExtraCosts;
+        if (technicalSupportMethod != null) TechnicalSupportMethod = technicalSupportMethod;
+        if (ipIssueDate.HasValue) IpIssueDate = ipIssueDate;
+        if (legalCommitmentConfirmed.HasValue) LegalCommitmentConfirmed = legalCommitmentConfirmed.Value;
 
         if (coreIpChanged && Status == "APPROVED")
         {

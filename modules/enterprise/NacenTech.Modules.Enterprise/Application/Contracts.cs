@@ -26,7 +26,8 @@ public sealed record EnterprisePublicDirectoryItemDto(
     IReadOnlyList<string>? SupportNeeds = null,
     decimal? InnovationScore = null,
     string? InnovationTier = null,
-    string? InnovationBadge = null
+    string? InnovationBadge = null,
+    string? Website = null
 );
 
 public sealed record InnovationCriteriaDetailDto(
@@ -225,6 +226,11 @@ public sealed class UpsertEnterpriseProfileRequest
     public List<string>? TopBottlenecks { get; set; }
     public List<string>? SupportNeeds { get; set; }
     public string? ProfileDetailsJson { get; set; }
+    public string? CapabilityTier { get; set; }
+    public bool? IsBuyer { get; set; }
+    public bool? IsSeller { get; set; }
+    public string? ActiveRole { get; set; }
+    public Guid? OwnerPersonId { get; set; }
 }
 
 public sealed class ApproveEnterpriseRequest

@@ -84,7 +84,8 @@ public class EnterpriseService : IEnterpriseService
                 SupportNeeds: SafeParseStringList(x.SupportNeedsJson),
                 InnovationScore: x.LatestInnovationScore,
                 InnovationTier: x.LatestInnovationTier,
-                InnovationBadge: GetInnovationBadgeName(x.LatestInnovationTier)
+                InnovationBadge: GetInnovationBadgeName(x.LatestInnovationTier),
+                Website: x.Website
             )).ToList();
 
             return new EnterprisePublicDirectoryDto(dtoItems, totalCount, query.Page, pageSize, totalPages);
@@ -272,6 +273,20 @@ public class EnterpriseService : IEnterpriseService
             ent.SupportNeedsJson = JsonSerializer.Serialize(request.SupportNeeds);
         if (!string.IsNullOrWhiteSpace(request.ProfileDetailsJson))
             ent.ProfileDetailsJson = request.ProfileDetailsJson;
+
+        if (request.OwnerPersonId.HasValue)
+            ent.OwnerPersonId = request.OwnerPersonId.Value;
+        else if (isNew && ent.OwnerPersonId == null)
+            ent.OwnerPersonId = enterpriseId;
+
+        if (!string.IsNullOrWhiteSpace(request.CapabilityTier))
+            ent.CapabilityTier = request.CapabilityTier;
+        if (request.IsBuyer.HasValue)
+            ent.IsBuyer = request.IsBuyer.Value;
+        if (request.IsSeller.HasValue)
+            ent.IsSeller = request.IsSeller.Value;
+        if (!string.IsNullOrWhiteSpace(request.ActiveRole))
+            ent.ActiveRole = request.ActiveRole;
 
         ent.TouchEntity();
         if (isNew)

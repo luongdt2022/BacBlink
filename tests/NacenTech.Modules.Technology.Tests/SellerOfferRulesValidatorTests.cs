@@ -489,4 +489,182 @@ public class SellerOfferRulesValidatorTests
         Assert.True(result.IsValid);
         Assert.Empty(result.Errors);
     }
+
+    #region Delta v6 - 3-Mode Validation Tests (T-04.84)
+
+    [Fact]
+    public void ValidateDraft_WithLessThan3Chars_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with { Title = "Ab" };
+        var result = SellerOfferRulesValidator.ValidateDraft(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(dto.Title)));
+    }
+
+    [Fact]
+    public void ValidateDraft_WithValidTitle_ShouldPassEvenIfOtherFieldsEmpty()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            Title = "Công nghệ sấy mới",
+            OfferType = "",
+            Summary = "",
+            ProblemSolved = "",
+            SectorCode = "",
+            PricingType = ""
+        };
+
+        var result = SellerOfferRulesValidator.ValidateDraft(dto);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void ValidateFastTrackStep1_ValidStep1Only_ShouldPassWithoutStep2To4()
+    {
+        // Step 1 filled validly, Step 2-4 (developer, IP, managing authority, legal consent) are null/false
+        var dto = CreateValidBaseDto() with
+        {
+            OfferType = "SOLUTION",
+            HasTechTransfer = false,
+            Title = "Hệ thống quản lý chuỗi cung ứng thông minh",
+            Summary = "Tối ưu hóa logistic",
+            ProblemSolved = "Giảm thời gian xử lý đơn hàng",
+            SectorCode = "FOOD",
+            PricingType = "CONTACT",
+            ManagingAuthorityId = null, // Step 4 not filled yet
+            LegalConsent = false,        // Step 4 not confirmed yet
+            CurrentStep = 1
+        };
+
+        var result = SellerOfferRulesValidator.ValidateFastTrackStep1(dto);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+
+        // Also test dispatch through Validate() with CurrentStep = 1
+        var dispatchResult = SellerOfferRulesValidator.Validate(dto);
+        Assert.True(dispatchResult.IsValid);
+    }
+
+    [Fact]
+    public void ValidateFastTrackStep1_HasTechTransferTrue_WithoutTrl_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            OfferType = "DEVICE",
+            HasTechTransfer = true,
+            Title = "Cánh tay robot hàn tự động",
+            Summary = "Tự động hóa hàn",
+            ProblemSolved = "Nâng cao năng suất sản xuất",
+            SectorCode = "MECH",
+            PricingType = "CONTACT",
+            TrlLevel = null,
+            CurrentStep = 1
+        };
+
+        var result = SellerOfferRulesValidator.ValidateFastTrackStep1(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(dto.TrlLevel)));
+    }
+
+    [Fact]
+    public void ValidateFastTrackStep1_HasTechTransferTrue_WithValidTrl_ShouldPass()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            OfferType = "DEVICE",
+            HasTechTransfer = true,
+            Title = "Cánh tay robot hàn tự động",
+            Summary = "Tự động hóa hàn",
+            ProblemSolved = "Nâng cao năng suất sản xuất",
+            SectorCode = "MECH",
+            PricingType = "CONTACT",
+            TrlLevel = 6,
+            CurrentStep = 1
+        };
+
+        var result = SellerOfferRulesValidator.ValidateFastTrackStep1(dto);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void ValidateFastTrackStep1_MissingCoreFields_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            OfferType = "",
+            HasTechTransfer = false,
+            Title = "",
+            Summary = "",
+            ProblemSolved = "",
+            SectorCode = "",
+            PricingType = "",
+            CurrentStep = 1
+        };
+
+        var result = SellerOfferRulesValidator.ValidateFastTrackStep1(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(dto.Title)));
+        Assert.True(result.Errors.ContainsKey(nameof(dto.Summary)));
+        Assert.True(result.Errors.ContainsKey(nameof(dto.ProblemSolved)));
+        Assert.True(result.Errors.ContainsKey(nameof(dto.OfferType)));
+        Assert.True(result.Errors.ContainsKey(nameof(dto.SectorCode)));
+        Assert.True(result.Errors.ContainsKey(nameof(dto.PricingType)));
+    }
+
+    [Fact]
+    public void ValidateFull4Steps_MissingStep4Consent_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            LegalConsent = false,
+            LegalCommitmentConfirmed = false,
+            CurrentStep = 4
+        };
+
+        var result = SellerOfferRulesValidator.ValidateFull4Steps(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(dto.LegalConsent)));
+    }
+
+    [Fact]
+    public void ValidateFull4Steps_MissingManagingAuthority_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            ManagingAuthorityId = null,
+            CurrentStep = 4
+        };
+
+        var result = SellerOfferRulesValidator.ValidateFull4Steps(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(dto.ManagingAuthorityId)));
+    }
+
+    [Fact]
+    public void ValidateFull4Steps_LegalCommitmentConfirmed_AcceptsEitherConsentOrCommitment()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            LegalConsent = false,
+            LegalCommitmentConfirmed = true,
+            CurrentStep = 4
+        };
+
+        var result = SellerOfferRulesValidator.ValidateFull4Steps(dto);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    #endregion
 }
