@@ -1,9 +1,13 @@
 // Khi chạy trên browser (CSR), nếu không có env base url rõ ràng hoặc truy cập qua LAN IP,
 // dùng chuỗi rỗng "" để browser gọi relative URL (/api/v1/...) qua Next.js rewrite proxy,
 // giúp các máy trong mạng LAN (192.168.x.x) gọi backend trơn tru không bị kẹt localhost hay CORS.
+const envBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  (typeof window !== "undefined" ? "" : "http://localhost:5080");
+  envBase && envBase.length > 0
+    ? envBase
+    : typeof window !== "undefined"
+      ? ""
+      : "http://localhost:5080";
 
 export async function readApiError(response: Response, fallback: string): Promise<string> {
   const payload = await response.json().catch(() => null);

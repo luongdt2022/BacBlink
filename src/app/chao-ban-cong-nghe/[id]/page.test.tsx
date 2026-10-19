@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ChiTietChaoBanPage from "./page";
 import { TechnologyOffer } from "@/types/technology-offer";
+import { fetchOfferById } from "@/services/api/technology-offer";
 
 const mockOffer: TechnologyOffer = {
   id: "01928002-0000-7000-8000-000000000008",
@@ -203,5 +204,83 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
     await waitFor(() => {
       expect(screen.getByText(/DMD-20261012-341205/i)).toBeInTheDocument();
     });
+  });
+
+  it("T-04.63: Render dynamic specValues, DataRoom access control, commercial terms, and PDPD TTO contact", async () => {
+    const deltaV5Offer: TechnologyOffer = {
+      ...mockOffer,
+      specValues: [
+        {
+          specCode: "ENERGY_REDUCTION",
+          specName: "Tỷ lệ tiết kiệm năng lượng",
+          specValue: "15%",
+          unit: "%",
+        },
+        {
+          specCode: "RESPONSE_TIME",
+          specName: "Thời gian phản hồi cảm biến",
+          specValue: "50",
+          unit: "ms",
+        },
+      ],
+      documents: [
+        {
+          id: "doc-1",
+          fileName: "Chung_Chi_Kiem_Dinh_Bo_Cong_Thuong.pdf",
+          fileUrl: "/docs/test.pdf",
+          fileSizeBytes: 1048576,
+          documentType: "TRL_EVIDENCE",
+          accessScope: "PUBLIC",
+        },
+        {
+          id: "doc-2",
+          fileName: "Thiet_Ke_Chi_Tiet_Va_Ma_Nguon.pdf",
+          fileUrl: "/docs/source.pdf",
+          fileSizeBytes: 2097152,
+          documentType: "CATALOGUE",
+          accessScope: "AFTER_CONNECTION",
+        },
+      ],
+      deliveryTimeline: "30 ngày kể từ khi ký kết",
+      warrantyTerms: "12 tháng bảo hành phần mềm 24/7",
+      paymentTerms: "Thanh toán 3 đợt: 30% - 40% - 30%",
+      installationSupport: true,
+      supplyScope: "Gói chuyển giao mã nguồn và tài liệu kiến trúc",
+    };
+
+    (fetchOfferById as any).mockResolvedValueOnce(deltaV5Offer);
+
+    render(<ChiTietChaoBanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("OFF-202610-LV16-08")).toBeInTheDocument();
+    });
+
+    // 1. Kiểm tra PDPD TTO contact block
+    expect(screen.getByText(/NĐ 13\/2023 \(PDPD\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Đầu Mối TTO Chuyển Giao/i)).toBeInTheDocument();
+
+    // 2. Kiểm tra tab Specs hiển thị dynamic specValues và Điều kiện thương mại
+    const specsTab = screen.getByRole("button", { name: /Thông Số Kỹ Thuật/i });
+    fireEvent.click(specsTab);
+
+    expect(screen.getByText("Tỷ lệ tiết kiệm năng lượng")).toBeInTheDocument();
+    expect(screen.getByText("15%")).toBeInTheDocument();
+    expect(screen.getByText("Thời gian phản hồi cảm biến")).toBeInTheDocument();
+    expect(screen.getByText("50")).toBeInTheDocument();
+
+    expect(screen.getByText(/Điều Kiện Thương Mại & Phạm Vi Hỗ Trợ Chuyển Giao/i)).toBeInTheDocument();
+    expect(screen.getByText("30 ngày kể từ khi ký kết")).toBeInTheDocument();
+    expect(screen.getByText("12 tháng bảo hành phần mềm 24/7")).toBeInTheDocument();
+    expect(screen.getByText("Thanh toán 3 đợt: 30% - 40% - 30%")).toBeInTheDocument();
+    expect(screen.getByText(/Có hỗ trợ chuyên gia lắp đặt/i)).toBeInTheDocument();
+
+    // 3. Kiểm tra tab DataRoom hiển thị danh mục tệp và access control
+    const dataRoomTab = screen.getByRole("button", { name: /Hồ Sơ DataRoom & Tài Liệu/i });
+    fireEvent.click(dataRoomTab);
+
+    expect(screen.getByText("Chung_Chi_Kiem_Dinh_Bo_Cong_Thuong.pdf")).toBeInTheDocument();
+    expect(screen.getByText("Thiet_Ke_Chi_Tiet_Va_Ma_Nguon.pdf")).toBeInTheDocument();
+    expect(screen.getByText(/Cần cấp quyền \(Ký NDA\)/i)).toBeInTheDocument();
   });
 });

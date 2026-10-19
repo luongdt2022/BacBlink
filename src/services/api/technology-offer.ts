@@ -3,25 +3,22 @@ import {
   CreateSellerOfferPayload,
   SellerKpi,
   SectorItem,
+  TechTransferDraftDto,
+  TT17_SECTORS,
 } from "@/types/technology-offer";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   (typeof window !== "undefined" ? "" : "http://localhost:5080");
 
-// Danh mục 10 Lĩnh vực công nghệ trọng điểm chuẩn hóa đồng bộ với CSDL (/api/v1/sectors)
+// Danh mục 18 Lĩnh vực công nghệ TT17 chuẩn hóa đồng bộ
 export const SECTORS_18_CATALOG: SectorItem[] = [
   { code: "ALL", name: "Tất cả lĩnh vực", count: 0 },
-  { code: "LV01", name: "Nông nghiệp", count: 0 },
-  { code: "LV05", name: "Chế biến thực phẩm – đồ uống", count: 0 },
-  { code: "LV07", name: "Cơ khí – chế tạo – công nghiệp hỗ trợ", count: 0 },
-  { code: "LV08", name: "Điện – điện tử – tự động hóa", count: 0 },
-  { code: "LV11", name: "Nước – môi trường – chất thải", count: 0 },
-  { code: "LV12", name: "Xây dựng – vật liệu – hạ tầng", count: 0 },
-  { code: "LV14", name: "Logistics – vận tải – kho bãi", count: 0 },
-  { code: "LV15", name: "Du lịch – khách sạn – nhà hàng", count: 0 },
-  { code: "LV16", name: "CNTT – viễn thông – chuyển đổi số", count: 0 },
-  { code: "LV17", name: "Khoa học – công nghệ – đổi mới sáng tạo", count: 0 },
+  ...TT17_SECTORS.map((s) => ({
+    code: s.code,
+    name: s.name,
+    count: 0,
+  })),
 ];
 
 export async function fetchPublicOffers(params?: {
@@ -110,6 +107,7 @@ export async function fetchSellerWorkspace(): Promise<{
           totalOffers: items.length,
           publishedOffers: items.filter((x: TechnologyOffer) => x.status === "APPROVED").length,
           pendingOffers: items.filter((x: TechnologyOffer) => x.status === "PENDING").length,
+          draftOffers: items.filter((x: TechnologyOffer) => x.status === "DRAFT").length,
           successfulConnections: items.reduce(
             (acc: number, cur: TechnologyOffer) => acc + (cur.successfulConnections || 0),
             0
@@ -127,6 +125,7 @@ export async function fetchSellerWorkspace(): Promise<{
       totalOffers: 0,
       publishedOffers: 0,
       pendingOffers: 0,
+      draftOffers: 0,
       successfulConnections: 0,
     },
     data: [],
@@ -144,7 +143,7 @@ export async function createSellerOffer(
     });
     if (res.ok) {
       const json = await res.json();
-      return { success: true, data: json.data };
+      return { success: true, data: json.data, message: json.message };
     }
     const errJson = await res.json().catch(() => null);
     return {
@@ -260,6 +259,23 @@ export async function togglePublishOffer(
   }
 }
 
+export async function extractPatentSpecs(file: File): Promise<TechTransferDraftDto> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE}/api/v1/ai/extract-patent-specs`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.message || `Lỗi AI trích xuất (Status ${res.status})`);
+  }
+
+  return await res.json();
+}
+
 export interface CreateQuickDemandPayload {
   stageName?: string;
   technicalProblem: string;
@@ -310,4 +326,3 @@ export async function submitQuickDemand(payload: CreateQuickDemandPayload): Prom
     };
   }
 }
-

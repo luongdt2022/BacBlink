@@ -232,45 +232,10 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
       target: { value: 'hanam@tech.vn' }
     });
 
-    // Step 1 -> Step 2
+    // Step 1 -> Step 2 (E. Nhu Cầu & TNI)
     fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
 
-    // Step 2: Fill equipment details
-    await waitFor(() => screen.getByText('Danh Mục Thiết Bị & Dây Chuyền Sản Xuất Chủ Lực'));
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Đúc phôi, Tiện CNC/i), {
-      target: { value: 'Đúc phôi' }
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Tên máy, model/i), {
-      target: { value: 'Máy đúc áp lực 500T' }
-    });
-
-    // Step 2 -> Step 3
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 3/i));
-
-    // Step 3: Pick a bottleneck and specify hardest stage
-    await waitFor(() => screen.getByText(/Nhận Diện Điểm Nghẽn Kỹ Thuật/i));
-    const bottleneckCheckboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(bottleneckCheckboxes[0]);
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Kiểm tra chất lượng \(QC\)/i), {
-      target: { value: 'Kiểm tra bọt khí phôi đúc' }
-    });
-
-    // Step 3 -> Step 4
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 4/i));
-
-    // Step 4: Verify D.1, D.2, D.3
-    await waitFor(() => screen.getByText('Thống Kê Đội Ngũ Nhân Lực Kỹ Thuật'));
-    expect(screen.getByText('Cơ Chế Quản Lý & Đổi Mới Công Nghệ Hiện Có Tại Doanh Nghiệp')).toBeInTheDocument();
-    expect(screen.getByText('PHẦN D.3 • NĂNG LỰC HẤP THỤ CÔNG NGHỆ (TAR)')).toBeInTheDocument();
-
-    // Fill personnel count
-    const techInputs = screen.getAllByPlaceholderText('0');
-    fireEvent.change(techInputs[0], { target: { value: '8' } });
-
-    // Step 4 -> Step 5
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 5/i));
-
-    // Step 5: Fill demand item
+    // Step 2: Fill demand item (E. Nhu Cầu & TNI)
     await waitFor(() => screen.getByText(/Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết/i));
     fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Đóng gói dán nhãn/i), {
       target: { value: 'Kiểm định phôi đúc' }
@@ -282,10 +247,45 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
       target: { value: 'Giảm tỷ lệ lỗi xuống dưới 0.5%' }
     });
 
-    // Step 5 -> Step 6
+    // Step 2 -> Step 3 (B. Hiện Trạng)
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 3/i));
+
+    // Step 3: Fill equipment details
+    await waitFor(() => screen.getByText('Danh Mục Thiết Bị & Dây Chuyền Sản Xuất Chủ Lực'));
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Đúc phôi, Tiện CNC/i), {
+      target: { value: 'Đúc phôi' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Tên máy, model/i), {
+      target: { value: 'Máy đúc áp lực 500T' }
+    });
+
+    // Step 3 -> Step 4 (C. Điểm Nghẽn)
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 4/i));
+
+    // Step 4: Pick a bottleneck and specify hardest stage
+    await waitFor(() => screen.getByText(/Nhận Diện Điểm Nghẽn Kỹ Thuật/i));
+    const bottleneckCheckboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(bottleneckCheckboxes[0]);
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Kiểm tra chất lượng \(QC\)/i), {
+      target: { value: 'Kiểm tra bọt khí phôi đúc' }
+    });
+
+    // Step 4 -> Step 5 (D. Năng Lực TAR)
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 5/i));
+
+    // Step 5: Verify D.1, D.2, D.3
+    await waitFor(() => screen.getByText('Thống Kê Đội Ngũ Nhân Lực Kỹ Thuật'));
+    expect(screen.getByText('Cơ Chế Quản Lý & Đổi Mới Công Nghệ Hiện Có Tại Doanh Nghiệp')).toBeInTheDocument();
+    expect(screen.getByText('PHẦN D.3 • NĂNG LỰC HẤP THỤ CÔNG NGHỆ (TAR)')).toBeInTheDocument();
+
+    // Fill personnel count
+    const techInputs = screen.getAllByPlaceholderText('0');
+    fireEvent.change(techInputs[0], { target: { value: '8' } });
+
+    // Step 5 -> Step 6 (F. Định Hướng)
     fireEvent.click(screen.getByText(/Tiếp tục Bước 6/i));
 
-    // Step 6 -> Step 7
+    // Step 6 -> Step 7 (G. Xác Nhận)
     await waitFor(() => screen.getByText('Nhu Cầu Tiếp Cận Công Nghệ Tiên Tiến Trong 3 Năm Tới'));
     fireEvent.click(screen.getByText(/Tiếp tục Bước 7/i));
 
@@ -310,6 +310,69 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     await waitFor(() => {
       expect(screen.getByText('Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!')).toBeInTheDocument();
       expect(screen.getByText('SUR-20261012-7A9B1C')).toBeInTheDocument();
+    });
+  });
+
+  it('enforces mandatory Step 1 and Step 2 while allowing optional Steps 3-6 to be skipped directly to Step 7 (CR-006)', async () => {
+    setupFetch();
+    render(<DeepSurveyPage />);
+
+    // Step 1: Fill required fields
+    fireEvent.change(screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i), {
+      target: { value: 'Công ty Công Nghệ Nhanh' }
+    });
+    fireEvent.change(screen.getByDisplayValue('-- Chọn Tỉnh / Thành phố --'), {
+      target: { value: 'Hà Nội' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Họ và tên người đại diện/i), {
+      target: { value: 'Trần Thị Mai' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/0912 xxx xxx/i), {
+      target: { value: '0987654321' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/contact@company.com.vn/i), {
+      target: { value: 'mai.tt@quicktech.vn' }
+    });
+
+    // Navigate to Step 2
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
+
+    // Step 2 is E. Nhu Cầu & TNI: Must have at least 1 demand item
+    await waitFor(() => screen.getByText(/Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết/i));
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Đóng gói dán nhãn/i), {
+      target: { value: 'Tự động hóa phân loại hàng' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố/i), {
+      target: { value: 'Phân loại thủ công chậm và sai sót' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Giảm 40% chi phí điện năng/i), {
+      target: { value: 'Tăng tốc độ phân loại lên 300%' }
+    });
+
+    // Skip optional steps 3-6 directly to Step 7 using shortcut button
+    const skipBtn = screen.getByRole('button', { name: /Bỏ qua bước tùy chọn & Đến nộp phiếu/i });
+    expect(skipBtn).toBeInTheDocument();
+    fireEvent.click(skipBtn);
+
+    // Verify reached Step 7 directly without error
+    await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
+
+    // Fill signature & PDPD consent
+    fireEvent.change(screen.getByPlaceholderText(/Người ký xác nhận/i), {
+      target: { value: 'Trần Thị Mai' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Chức vụ người ký/i), {
+      target: { value: 'Tổng Giám đốc' }
+    });
+    const consentCheckbox = screen.getByRole('checkbox');
+    fireEvent.click(consentCheckbox);
+
+    // Submit successfully
+    const submitBtn = screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!')).toBeInTheDocument();
     });
   });
 

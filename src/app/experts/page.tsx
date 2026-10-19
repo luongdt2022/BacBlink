@@ -295,9 +295,9 @@ export default function ExpertsDirectoryPage() {
   };
 
   const getRankBadge = (rank: string, degree: string) => {
-    if (rank === "GS") return { label: "Giáo sư (GS)", cls: "bg-brand-50 text-brand-800 border-brand-200" };
-    if (rank === "PGS") return { label: "Phó Giáo sư (PGS)", cls: "bg-brand-50 text-brand-800 border-brand-200" };
-    if (degree === "DOCTOR") return { label: "Tiến sĩ (TS)", cls: "bg-emerald-50 text-emerald-800 border-emerald-200" };
+    if (rank === "GS" || rank === "PROFESSOR") return { label: "Giáo sư (GS)", cls: "bg-brand-50 text-brand-800 border-brand-200" };
+    if (rank === "PGS" || rank === "ASSOCIATE_PROFESSOR") return { label: "Phó Giáo sư (PGS)", cls: "bg-brand-50 text-brand-800 border-brand-200" };
+    if (degree === "DOCTOR" || degree === "TS") return { label: "Tiến sĩ (TS)", cls: "bg-emerald-50 text-emerald-800 border-emerald-200" };
     return { label: "Thạc sĩ / KS", cls: "bg-slate-100 text-slate-800 border-slate-200" };
   };
 

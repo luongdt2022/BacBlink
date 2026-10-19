@@ -23,11 +23,33 @@ import {
   Bookmark,
   Check,
   Loader2,
+  Video,
 } from "lucide-react";
 import { useToast } from "@/components/common/toast";
 import { fetchOfferById, submitQuickDemand } from "@/services/api/technology-offer";
 import { TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyGallery } from "@/lib/technology-media";
+
+function formatDocSize(bytes?: number): string {
+  if (!bytes || bytes <= 0) return "1.2 MB";
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getDocumentTypeBadge(type: string): { label: string; color: string } {
+  switch (type) {
+    case "PATENT":
+      return { label: "Văn bằng SHTT", color: "bg-blue-50 text-blue-700 border-blue-200" };
+    case "TESTING_REPORT":
+      return { label: "Kiểm định / Thử nghiệm", color: "bg-emerald-50 text-emerald-700 border-emerald-200" };
+    case "TECH_SPEC":
+      return { label: "Thuyết minh kỹ thuật", color: "bg-purple-50 text-purple-700 border-purple-200" };
+    case "FINANCIAL_PROJECTION":
+      return { label: "Tài chính / Thị trường", color: "bg-amber-50 text-amber-700 border-amber-200" };
+    default:
+      return { label: "Hồ sơ đính kèm", color: "bg-slate-50 text-slate-700 border-slate-200" };
+  }
+}
 
 export default function ChiTietChaoBanPage() {
   const params = useParams();
@@ -197,7 +219,11 @@ export default function ChiTietChaoBanPage() {
       <section className="bg-white border-b border-slate-200 py-6 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           {(() => {
-            const gallery = getTechnologyGallery(offer.sectorCode, offer.title);
+            const customGallery = [
+              ...(offer.mainImageUrl ? [offer.mainImageUrl] : []),
+              ...(offer.galleryImageUrls || []),
+            ].filter(Boolean);
+            const gallery = customGallery.length > 0 ? customGallery : getTechnologyGallery(offer.sectorCode, offer.title);
             const activeImageUrl = gallery[selectedImage] || gallery[0];
 
             return (
@@ -255,6 +281,19 @@ export default function ChiTietChaoBanPage() {
                         ))}
                       </div>
                     </div>
+
+                    {offer.videoDemoUrl && (
+                      <div className="mt-3 text-center">
+                        <a
+                          href={offer.videoDemoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition"
+                        >
+                          <Video className="w-3.5 h-3.5" /> Xem Video Demo Thực Tế ↗
+                        </a>
+                      </div>
+                    )}
 
                     <p className="mt-4 text-xs text-slate-500 text-center flex items-center justify-center gap-1">
                       <Lock className="w-3 h-3 text-slate-400 inline" />
@@ -564,87 +603,177 @@ export default function ChiTietChaoBanPage() {
               )}
 
               {activeTab === "specs" && (
-                <div className="space-y-4">
-                  <div className="border-b border-slate-100 pb-3">
-                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
-                      Bảng Thông Số Kỹ Thuật & Chỉ Tiêu Hiệu Quả
-                    </h4>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Đặc tính kỹ thuật và năng lực giải quyết bài toán theo chuẩn hóa Hội đồng KH&CN NacenTwin
-                    </p>
+                <div className="space-y-6">
+                  {/* BẢNG CHỈ TIÊU KỸ THUẬT ĐỘNG (NẾU CÓ SPEC VALUES) */}
+                  {offer.specValues && offer.specValues.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="border-b border-slate-100 pb-2 flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                            Chỉ Tiêu & Thông Số Kỹ Thuật Chi Tiết ({offer.specValues.length} chỉ tiêu)
+                          </h4>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            Dữ liệu đo kiểm chuẩn hóa theo danh mục nhóm ngành {offer.sectorCode} - {offer.sectorName}
+                          </p>
+                        </div>
+                        <span className="text-[11px] font-bold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-full border border-brand-200">
+                          Chuẩn TT17
+                        </span>
+                      </div>
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                            <tr>
+                              <th className="py-2.5 px-3 w-1/4">Mã chỉ tiêu</th>
+                              <th className="py-2.5 px-3 w-2/5">Tên chỉ tiêu / Thông số</th>
+                              <th className="py-2.5 px-3">Giá trị kỹ thuật</th>
+                              <th className="py-2.5 px-3">Đơn vị</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {offer.specValues.map((spec, idx) => (
+                              <tr key={idx} className="hover:bg-slate-50/60 transition">
+                                <td className="py-2.5 px-3 font-mono font-semibold text-slate-500">{spec.specCode || `SPEC-${idx + 1}`}</td>
+                                <td className="py-2.5 px-3 font-bold text-slate-800">{spec.specName}</td>
+                                <td className="py-2.5 px-3 text-emerald-800 font-bold">{spec.specValue}</td>
+                                <td className="py-2.5 px-3 text-slate-600 font-medium">{spec.unit || "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* THÔNG TIN CHUNG VÀ PHÁP LÝ SHTT */}
+                  <div className="space-y-3">
+                    <div className="border-b border-slate-100 pb-2">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                        Bảng Thông Số Kỹ Thuật & Chỉ Tiêu Hiệu Quả
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Đặc tính kỹ thuật và năng lực giải quyết bài toán theo chuẩn hóa Hội đồng KH&CN NacenTwin
+                      </p>
+                    </div>
+                    <table className="w-full text-xs text-left">
+                      <tbody className="divide-y divide-slate-100">
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600 w-1/3">Loại hình giải pháp:</td>
+                          <td className="py-2.5 text-slate-900 font-medium">
+                            {offer.offerType === "SOFTWARE"
+                              ? "Phần mềm số hóa & Nền tảng điều khiển"
+                              : offer.offerType === "SOLUTION"
+                              ? "Giải pháp công nghệ tích hợp"
+                              : offer.offerType === "PROCESS"
+                              ? "Quy trình công nghệ chế tạo"
+                              : "Thiết bị / Máy móc công nghiệp"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600">Lĩnh vực ứng dụng:</td>
+                          <td className="py-2.5 text-slate-900 font-medium">
+                            {offer.sectorName} ({offer.sectorCode})
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600">Mức độ sẵn sàng công nghệ:</td>
+                          <td className="py-2.5 text-slate-900 font-medium">
+                            TRL {offer.trlLevel || 7}/9 — {getTrlDescription(offer.trlLevel)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600">Quy cách & Đơn vị chuyển giao:</td>
+                          <td className="py-2.5 text-slate-900 font-medium">
+                            {offer.unit || "Theo gói giải pháp chuyển giao và đào tạo tích hợp"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600">Bảo hộ Sở hữu trí tuệ:</td>
+                          <td className="py-2.5 text-slate-900 font-medium">
+                            {offer.ipRegistrationNumber
+                              ? `Số văn bằng: ${offer.ipRegistrationNumber} (${
+                                  offer.ipStatus === "COPYRIGHT_REGISTERED" || offer.ipStatus === "SOFTWARE_COPYRIGHT"
+                                    ? "Đăng ký bản quyền phần mềm"
+                                    : offer.ipStatus === "PATENT_GRANTED"
+                                    ? "Bằng độc quyền sáng chế"
+                                    : "Chứng nhận bảo hộ SHTT"
+                                })`
+                              : "Đã thẩm định hồ sơ SHTT hợp pháp"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600">Hình thức chuyển giao:</td>
+                          <td className="py-2.5 text-slate-900 font-medium">
+                            {offer.transferMethod === "EXCLUSIVE_LICENSE"
+                              ? "Li-xăng độc quyền (Exclusive License)"
+                              : offer.transferMethod === "NON_EXCLUSIVE_LICENSE"
+                              ? "Li-xăng không độc quyền (Non-exclusive License)"
+                              : offer.transferMethod === "ASSIGNMENT_SALE"
+                              ? "Chuyển nhượng toàn bộ quyền sở hữu"
+                              : "Thỏa thuận chuyển giao song phương"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600">Chỉ tiêu kỹ thuật đạt được:</td>
+                          <td className="py-2.5 text-emerald-800 font-semibold bg-emerald-50/60 p-2.5 rounded-lg">
+                            {offer.problemSolved}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 font-bold text-slate-600">Đơn vị chủ trì nghiên cứu:</td>
+                          <td className="py-2.5 text-slate-900 font-medium">
+                            {offer.developerOrigin || "Đang cập nhật"}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <table className="w-full text-xs text-left">
-                    <tbody className="divide-y divide-slate-100">
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600 w-1/3">Loại hình giải pháp:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">
-                          {offer.offerType === "SOFTWARE"
-                            ? "Phần mềm số hóa & Nền tảng điều khiển"
-                            : offer.offerType === "SOLUTION"
-                            ? "Giải pháp công nghệ tích hợp"
-                            : offer.offerType === "PROCESS"
-                            ? "Quy trình công nghệ chế tạo"
-                            : "Thiết bị / Máy móc công nghiệp"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Lĩnh vực ứng dụng:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">
-                          {offer.sectorName} ({offer.sectorCode})
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Mức độ sẵn sàng công nghệ:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">
-                          TRL {offer.trlLevel || 7}/9 — {getTrlDescription(offer.trlLevel)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Quy cách & Đơn vị chuyển giao:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">
-                          {offer.unit || "Theo gói giải pháp chuyển giao và đào tạo tích hợp"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Bảo hộ Sở hữu trí tuệ:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">
-                          {offer.ipRegistrationNumber
-                            ? `Số văn bằng: ${offer.ipRegistrationNumber} (${
-                                offer.ipStatus === "COPYRIGHT_REGISTERED" || offer.ipStatus === "SOFTWARE_COPYRIGHT"
-                                  ? "Đăng ký bản quyền phần mềm"
-                                  : offer.ipStatus === "PATENT_GRANTED"
-                                  ? "Bằng độc quyền sáng chế"
-                                  : "Chứng nhận bảo hộ SHTT"
-                              })`
-                            : "Đã thẩm định hồ sơ SHTT hợp pháp"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Hình thức chuyển giao:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">
-                          {offer.transferMethod === "EXCLUSIVE_LICENSE"
-                            ? "Li-xăng độc quyền (Exclusive License)"
-                            : offer.transferMethod === "NON_EXCLUSIVE_LICENSE"
-                            ? "Li-xăng không độc quyền (Non-exclusive License)"
-                            : offer.transferMethod === "ASSIGNMENT_SALE"
-                            ? "Chuyển nhượng toàn bộ quyền sở hữu"
-                            : "Thỏa thuận chuyển giao song phương"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Chỉ tiêu kỹ thuật đạt được:</td>
-                        <td className="py-2.5 text-emerald-800 font-semibold bg-emerald-50/60 p-2.5 rounded-lg">
-                          {offer.problemSolved}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2.5 font-bold text-slate-600">Đơn vị chủ trì nghiên cứu:</td>
-                        <td className="py-2.5 text-slate-900 font-medium">
-                          {offer.developerOrigin || "Đang cập nhật"}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+
+                  {/* KHỐI ĐIỀU KIỆN THƯƠNG MẠI & PHẠM VI HỖ TRỢ */}
+                  {(offer.deliveryTimeline || offer.warrantyTerms || offer.supplyScope || offer.paymentTerms || offer.installationSupport) && (
+                    <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 space-y-3">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-950 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-blue-600" />
+                        Điều Kiện Thương Mại & Phạm Vi Hỗ Trợ Chuyển Giao
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        {offer.deliveryTimeline && (
+                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                            <span className="text-slate-400 font-bold block mb-0.5">Thời gian bàn giao / triển khai:</span>
+                            <span className="text-slate-800 font-semibold">{offer.deliveryTimeline}</span>
+                          </div>
+                        )}
+                        {offer.warrantyTerms && (
+                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                            <span className="text-slate-400 font-bold block mb-0.5">Bảo hành & bảo trì:</span>
+                            <span className="text-slate-800 font-semibold">{offer.warrantyTerms}</span>
+                          </div>
+                        )}
+                        {offer.paymentTerms && (
+                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                            <span className="text-slate-400 font-bold block mb-0.5">Phương thức thanh toán:</span>
+                            <span className="text-slate-800 font-semibold">{offer.paymentTerms}</span>
+                          </div>
+                        )}
+                        {offer.installationSupport && (
+                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                            <span className="text-slate-400 font-bold block mb-0.5">Hỗ trợ lắp đặt & chuyển giao:</span>
+                            <span className="text-slate-800 font-semibold">
+                              {typeof offer.installationSupport === "string"
+                                ? offer.installationSupport
+                                : "Có hỗ trợ chuyên gia lắp đặt & đào tạo trực tiếp"}
+                            </span>
+                          </div>
+                        )}
+                        {offer.supplyScope && (
+                          <div className="bg-white p-3 rounded-lg border border-blue-100 sm:col-span-2">
+                            <span className="text-slate-400 font-bold block mb-0.5">Phạm vi cung cấp:</span>
+                            <span className="text-slate-800 font-medium">{offer.supplyScope}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -665,54 +794,101 @@ export default function ChiTietChaoBanPage() {
                   </div>
 
                   <div className="space-y-2">
-                    {[
-                      {
-                        name: `${offer.offerCode}_Teaser_Tom_Tat_Giai_Phap.pdf`,
-                        size: "2.4 MB",
-                        isPublic: true,
-                        desc: "Bản tóm tắt giải pháp công nghệ, tính năng và phạm vi ứng dụng",
-                      },
-                      {
-                        name: `${offer.offerCode}_Ho_So_SHTT_${offer.ipRegistrationNumber || "Hop_Le"}.pdf`,
-                        size: "1.8 MB",
-                        isPublic: false,
-                        desc: "Hồ sơ xác nhận văn bằng độc quyền sáng chế / bản quyền phần mềm",
-                      },
-                      {
-                        name: `${offer.offerCode}_Ket_Qua_Kiem_Dinh_TRL${offer.trlLevel || 8}.pdf`,
-                        size: "3.6 MB",
-                        isPublic: false,
-                        desc: "Biên bản thử nghiệm hiện trường và chứng chỉ kiểm định chất lượng",
-                      },
-                    ].map((doc, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-5 h-5 text-slate-500 shrink-0" />
-                          <div>
-                            <p className="text-xs font-bold text-slate-800">{doc.name}</p>
-                            <p className="text-xs text-slate-500">{doc.desc}</p>
-                            <span className="mono text-xs text-slate-400 font-semibold">{doc.size}</span>
-                          </div>
-                        </div>
-
-                        {doc.isPublic ? (
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadDoc(doc.name)}
-                            className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-white hover:bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg transition shadow-sm"
+                    {offer.documents && offer.documents.length > 0 ? (
+                      offer.documents.map((doc, idx) => {
+                        const typeBadge = getDocumentTypeBadge(doc.documentType);
+                        return (
+                          <div
+                            key={doc.id || idx}
+                            className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition"
                           >
-                            <Download className="w-3.5 h-3.5" /> Tải về
-                          </button>
-                        ) : (
-                          <span className="text-xs font-bold text-slate-400 flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg">
-                            <Lock className="w-3 h-3" /> Cần cấp quyền
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-5 h-5 text-slate-500 shrink-0" />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs font-bold text-slate-800">{doc.fileName}</p>
+                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${typeBadge.color}`}>
+                                    {typeBadge.label}
+                                  </span>
+                                </div>
+                                <span className="mono text-xs text-slate-400 font-semibold">{formatDocSize(doc.fileSizeBytes)}</span>
+                              </div>
+                            </div>
+
+                            {doc.accessScope === "PUBLIC" ? (
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadDoc(doc.fileName)}
+                                className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-white hover:bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg transition shadow-sm"
+                              >
+                                <Download className="w-3.5 h-3.5" /> Tải về
+                              </button>
+                            ) : doc.accessScope === "AFTER_CONNECTION" ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowConnectModal(true)}
+                                className="text-xs font-bold text-amber-800 hover:text-amber-900 flex items-center gap-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition"
+                              >
+                                <Lock className="w-3 h-3 text-amber-600" /> Cần cấp quyền (Ký NDA)
+                              </button>
+                            ) : (
+                              <span className="text-xs font-bold text-slate-400 flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                <Lock className="w-3 h-3" /> Bảo mật nội bộ
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      [
+                        {
+                          name: `${offer.offerCode}_Teaser_Tom_Tat_Giai_Phap.pdf`,
+                          size: "2.4 MB",
+                          isPublic: true,
+                          desc: "Bản tóm tắt giải pháp công nghệ, tính năng và phạm vi ứng dụng",
+                        },
+                        {
+                          name: `${offer.offerCode}_Ho_So_SHTT_${offer.ipRegistrationNumber || "Hop_Le"}.pdf`,
+                          size: "1.8 MB",
+                          isPublic: false,
+                          desc: "Hồ sơ xác nhận văn bằng độc quyền sáng chế / bản quyền phần mềm",
+                        },
+                        {
+                          name: `${offer.offerCode}_Ket_Qua_Kiem_Dinh_TRL${offer.trlLevel || 8}.pdf`,
+                          size: "3.6 MB",
+                          isPublic: false,
+                          desc: "Biên bản thử nghiệm hiện trường và chứng chỉ kiểm định chất lượng",
+                        },
+                      ].map((doc, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition"
+                        >
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-5 h-5 text-slate-500 shrink-0" />
+                            <div>
+                              <p className="text-xs font-bold text-slate-800">{doc.name}</p>
+                              <p className="text-xs text-slate-500">{doc.desc}</p>
+                              <span className="mono text-xs text-slate-400 font-semibold">{doc.size}</span>
+                            </div>
+                          </div>
+
+                          {doc.isPublic ? (
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadDoc(doc.name)}
+                              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-white hover:bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg transition shadow-sm"
+                            >
+                              <Download className="w-3.5 h-3.5" /> Tải về
+                            </button>
+                          ) : (
+                            <span className="text-xs font-bold text-slate-400 flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg">
+                              <Lock className="w-3 h-3" /> Cần cấp quyền
+                            </span>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -806,6 +982,38 @@ export default function ChiTietChaoBanPage() {
                   Hồ sơ đang liên kết thẩm định
                 </div>
               )}
+            </div>
+
+            {/* KHỐI ĐẦU MỐI TTO & BẢO VỆ DỮ LIỆU CÁ NHÂN (PDPD NĐ 13/2023) */}
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-emerald-600" /> Đầu Mối TTO Chuyển Giao
+                </span>
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3" /> NĐ 13/2023 (PDPD)
+                </span>
+              </div>
+
+              <div className="text-xs space-y-1.5 bg-white p-3 rounded-lg border border-slate-200/80">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Đại diện TTO:</span>
+                  <span className="font-semibold text-slate-900">{offer.contactPointRole || "Ban Chuyển giao KH&CN"}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Hotline TTO:</span>
+                  <span className="font-mono font-bold text-slate-700">
+                    {offer.enterpriseTaxCode ? "098***" + offer.enterpriseTaxCode.slice(-4) : "0912***678"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Email tiếp nhận:</span>
+                  <span className="font-mono font-bold text-slate-700">tto-co******@nacentech.vn</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 italic leading-tight">
+                * Số điện thoại và email cá nhân được ẩn để bảo vệ quyền riêng tư theo NĐ 13/2023/NĐ-CP. Gửi yêu cầu chuyển giao để nhận thông tin liên hệ trực tiếp.
+              </p>
             </div>
 
             {/* Thông tin hỗ trợ sàn & Cơ quan quản lý */}

@@ -616,27 +616,6 @@ export default function DeepSurveyPage() {
       }
     }
     if (step === 2) {
-      if (equipments.length === 0) {
-        toast.error('Vui lòng thêm ít nhất 1 dòng máy móc / thiết bị.', 'Thiếu thông tin thiết bị');
-        return false;
-      }
-      const hasEmptyEq = equipments.some(e => !e.machineName.trim() || !e.stageName.trim());
-      if (hasEmptyEq) {
-        toast.error('Vui lòng điền đầy đủ Tên máy móc và Công đoạn cho thiết bị.', 'Thiếu thông tin thiết bị');
-        return false;
-      }
-    }
-    if (step === 3) {
-      if (selectedBottlenecks.length === 0) {
-        toast.error('Vui lòng chọn ít nhất 1 điểm nghẽn kỹ thuật (tối đa 5).', 'Chưa chọn điểm nghẽn');
-        return false;
-      }
-      if (!hardestStage.trim()) {
-        toast.error('Vui lòng nêu rõ công đoạn gây khó khăn lớn nhất.', 'Thiếu công đoạn khó nhất');
-        return false;
-      }
-    }
-    if (step === 5) {
       if (demandItems.length === 0) {
         toast.error('Phiếu khảo sát cần có ít nhất 1 bài toán kỹ thuật.', 'Thiếu bài toán');
         return false;
@@ -647,6 +626,16 @@ export default function DeepSurveyPage() {
         return false;
       }
     }
+    if (step === 3) {
+      if (equipments.length > 0) {
+        const hasEmptyEq = equipments.some(e => !e.machineName.trim() || !e.stageName.trim());
+        if (hasEmptyEq) {
+          toast.error('Vui lòng điền đầy đủ Tên máy móc và Công đoạn cho thiết bị đã thêm.', 'Thiếu thông tin thiết bị');
+          return false;
+        }
+      }
+    }
+    // Bước 4 (Điểm nghẽn), Bước 5 (Năng lực TAR), Bước 6 (Định hướng) là hoàn toàn tùy chọn, không chặn chuyển bước
     if (step === 7) {
       if (!confirmName.trim()) {
         toast.error('Vui lòng nhập Họ tên người đại diện xác nhận.', 'Chưa ký xác nhận');
@@ -677,7 +666,7 @@ export default function DeepSurveyPage() {
   // -------------------------------------------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateStep(7)) return;
+    if (!validateStep(1) || !validateStep(2) || !validateStep(7)) return;
 
     setIsSubmitting(true);
     try {
@@ -964,12 +953,12 @@ export default function DeepSurveyPage() {
           <div className="flex items-center justify-between mb-2 text-xs font-bold">
             <span className="text-brand-700 dark:text-cyan-400">
               Bước {currentStep}/7: {[
-                'A. Thông Tin Doanh Nghiệp',
-                'B. Hiện Trạng & 8 Tiêu Chí',
-                'C. Điểm Nghẽn Kỹ Thuật',
-                'D. Năng Lực Tiếp Nhận (TAR)',
-                'E. Dòng Nhu Cầu & Thuật Toán TNI',
-                'F. Định Hướng & Hỗ Trợ',
+                'A. Thông Tin Doanh Nghiệp (Bắt buộc)',
+                'E. Dòng Nhu Cầu & Thuật Toán TNI (Bắt buộc)',
+                'B. Hiện Trạng & 8 Tiêu Chí (Tùy chọn)',
+                'C. Điểm Nghẽn Kỹ Thuật (Tùy chọn)',
+                'D. Năng Lực Tiếp Nhận (TAR) (Tùy chọn)',
+                'F. Định Hướng & Hỗ Trợ (Tùy chọn)',
                 'G. Rà Soát & Xác Nhận PDPD'
               ][currentStep - 1]}
             </span>
@@ -989,10 +978,10 @@ export default function DeepSurveyPage() {
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
             {[
               { num: 1, label: 'A. Doanh Nghiệp' },
-              { num: 2, label: 'B. Hiện Trạng' },
-              { num: 3, label: 'C. Điểm Nghẽn' },
-              { num: 4, label: 'D. Năng Lực TAR' },
-              { num: 5, label: 'E. Nhu Cầu & TNI' },
+              { num: 2, label: 'E. Nhu Cầu & TNI' },
+              { num: 3, label: 'B. Hiện Trạng' },
+              { num: 4, label: 'C. Điểm Nghẽn' },
+              { num: 5, label: 'D. Năng Lực TAR' },
               { num: 6, label: 'F. Định Hướng' },
               { num: 7, label: 'G. Xác Nhận' }
             ].map((step) => {
@@ -1309,539 +1298,15 @@ export default function DeepSurveyPage() {
           )}
 
           {/* =========================================================================
-              BƯỚC 2: PHẦN B — HIỆN TRẠNG & 8 TIÊU CHÍ
+              BƯỚC 2: PHẦN E — DÒNG NHU CẦU & THUẬT TOÁN TNI (BẮT BUỘC)
              ========================================================================= */}
           {currentStep === 2 && (
-            <section className="space-y-6">
-              {/* B.1: DANH MỤC DÂY CHUYỀN / MÁY MÓC */}
-              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <div>
-                    <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                      PHẦN B.1 • THIẾT BỊ SẢN XUẤT
-                    </span>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                      Danh Mục Thiết Bị & Dây Chuyền Sản Xuất Chủ Lực
-                    </h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddEquipment}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 self-start"
-                  >
-                    <Plus className="w-4 h-4" /> Thêm máy móc / dây chuyền
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {equipments.map((eq, idx) => (
-                    <div key={eq.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 relative space-y-3">
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-brand-700 dark:text-cyan-400 font-mono">
-                          #Thiết bị {idx + 1}
-                        </span>
-                        {equipments.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveEquipment(eq.id)}
-                            className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1 font-semibold"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> Xóa dòng
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                        <div>
-                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                            Công đoạn sản xuất <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={eq.stageName}
-                            onChange={e => handleUpdateEquipment(eq.id, 'stageName', e.target.value)}
-                            placeholder="Ví dụ: Đúc phôi, Tiện CNC, Sơn tĩnh điện..."
-                            className="form-control w-full px-3 py-1.5 text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                            Tên thiết bị / máy móc chủ lực <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={eq.machineName}
-                            onChange={e => handleUpdateEquipment(eq.id, 'machineName', e.target.value)}
-                            placeholder="Tên máy, model..."
-                            className="form-control w-full px-3 py-1.5 text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                            Sản phẩm đầu ra
-                          </label>
-                          <input
-                            type="text"
-                            value={eq.productOutput}
-                            onChange={e => handleUpdateEquipment(eq.id, 'productOutput', e.target.value)}
-                            placeholder="Sản phẩm làm ra..."
-                            className="form-control w-full px-3 py-1.5 text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                            Năm đầu tư vận hành
-                          </label>
-                          <input
-                            type="number"
-                            value={eq.investmentYear}
-                            onChange={e => handleUpdateEquipment(eq.id, 'investmentYear', Number(e.target.value))}
-                            className="form-control w-full px-3 py-1.5 text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                            Xuất xứ công nghệ
-                          </label>
-                          <select
-                            value={eq.techOrigin}
-                            onChange={e => handleUpdateEquipment(eq.id, 'techOrigin', e.target.value)}
-                            className="form-control w-full px-3 py-1.5 text-xs"
-                          >
-                            <option value="">-- Chọn xuất xứ --</option>
-                            <option value="Việt Nam">Việt Nam</option>
-                            <option value="Nhật Bản / G7">Nhật Bản / G7 / EU</option>
-                            <option value="Hàn Quốc / Đài Loan">Hàn Quốc / Đài Loan</option>
-                            <option value="Trung Quốc">Trung Quốc</option>
-                            <option value="Khác">Khác</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                            Tình trạng khấu hao / vận hành
-                          </label>
-                          <select
-                            value={eq.depreciationStatus}
-                            onChange={e => handleUpdateEquipment(eq.id, 'depreciationStatus', e.target.value)}
-                            className="form-control w-full px-3 py-1.5 text-xs"
-                          >
-                            <option value="">-- Chọn tình trạng khấu hao --</option>
-                            <option value="Mới >80%">Mới &gt;80% (Vận hành tối ưu)</option>
-                            <option value="Đang hoạt động tốt (50–80%)">Đang hoạt động tốt (50–80%)</option>
-                            <option value="Hao mòn nhiều (<50%)">Hao mòn nhiều (&lt;50%)</option>
-                            <option value="Cũ, hay hỏng, cần thay thế">Cũ, hay hỏng, cần thay thế</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* B.2: TỰ ĐÁNH GIÁ 8 TIÊU CHÍ HIỆN TRẠNG */}
-              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN B.2 • TỰ ĐÁNH GIÁ 8 TIÊU CHÍ
-                  </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                    Đánh Giá Hiện Trạng Trình Độ Công Nghệ (Thang 1–5)
-                  </h2>
-                  <p className="text-slate-500 text-xs mt-1">
-                    (1 = Rất lạc hậu / Chưa có; 3 = Trung bình so với ngành; 5 = Tiên tiến, hiện đại hàng đầu)
-                  </p>
-                </div>
-
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {CRITERIA_8_LIST.map((crit, idx) => (
-                    <div key={idx} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 sm:max-w-md">
-                        {idx + 1}. {crit}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {[1, 2, 3, 4, 5].map(score => (
-                          <label
-                            key={score}
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer font-bold border transition text-xs ${
-                              criteria8[idx] === score
-                                ? 'bg-brand-700 text-white border-brand-800 shadow-sm'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-500'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={`criteria_${idx}`}
-                              value={score}
-                              checked={criteria8[idx] === score}
-                              onChange={() => setCriteria8({ ...criteria8, [idx]: score })}
-                              className="sr-only"
-                            />
-                            {score}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* =========================================================================
-              BƯỚC 3: PHẦN C — ĐIỂM NGHẼN SẢN XUẤT (MAX 5)
-             ========================================================================= */}
-          {currentStep === 3 && (
-            <section className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
-              <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN C • VẤN ĐỀ & ĐIỂM NGHẼN
-                  </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                    Nhận Diện Điểm Nghẽn Kỹ Thuật (Chọn tối đa 5 điểm)
-                  </h2>
-                </div>
-                <span className={`text-xs font-black px-3 py-1 rounded-full border ${
-                  selectedBottlenecks.length === 5
-                    ? 'bg-amber-500/15 text-amber-600 border-amber-400/40'
-                    : 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-cyan-300 border-brand-200'
-                }`}>
-                  Đã chọn: {selectedBottlenecks.length}/5 điểm nghẽn
-                </span>
-              </div>
-
-              {/* Lưới 17 điểm nghẽn */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
-                {BOTTLENECK_17_LIST.map((item, idx) => {
-                  const isChecked = selectedBottlenecks.includes(item);
-                  return (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-2xl border transition flex items-start gap-3 ${
-                        isChecked
-                          ? 'bg-amber-500/10 border-amber-400/50 dark:bg-amber-950/20'
-                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handleToggleBottleneck(item)}
-                        className="w-4 h-4 mt-0.5 text-brand-600 rounded focus:ring-brand-500 shrink-0 cursor-pointer"
-                      />
-                      <div className="flex-1 space-y-2">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                          {idx + 1}. {item}
-                        </span>
-
-                        {isChecked && (
-                          <div className="flex items-center gap-2 pt-1 border-t border-amber-200 dark:border-amber-900/40">
-                            <span className="text-xs text-slate-500">Mức độ nghiêm trọng:</span>
-                            <div className="flex items-center gap-1">
-                              {[1, 2, 3, 4, 5].map(lvl => (
-                                <button
-                                  key={lvl}
-                                  type="button"
-                                  onClick={() => setBottleneckSeverity({ ...bottleneckSeverity, [item]: lvl })}
-                                  className={`w-5 h-5 rounded-md text-xs font-black transition ${
-                                    bottleneckSeverity[item] === lvl
-                                      ? 'bg-amber-600 text-white'
-                                      : 'bg-white dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-700'
-                                  }`}
-                                >
-                                  {lvl}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* 2 trường công đoạn khó nhất & nguyên nhân */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Công đoạn sản xuất gây khó khăn lớn nhất <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={hardestStage}
-                    onChange={e => setHardestStage(e.target.value)}
-                    placeholder="Ví dụ: Kiểm tra chất lượng (QC), Ép khuôn, Gia công bề mặt..."
-                    className="form-control w-full px-3 py-2 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Nguyên nhân chủ yếu được xác định
-                  </label>
-                  <input
-                    type="text"
-                    value={primaryCause}
-                    onChange={e => setPrimaryCause(e.target.value)}
-                    placeholder="Ví dụ: Thiếu thiết bị đo lường chuẩn, thợ phụ thuộc kinh nghiệm..."
-                    className="form-control w-full px-3 py-2 text-xs"
-                  />
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* =========================================================================
-              BƯỚC 4: PHẦN D — NĂNG LỰC TIẾP NHẬN (TAR)
-             ========================================================================= */}
-          {currentStep === 4 && (
-            <section className="space-y-6">
-              {/* D.1: CƠ CẤU NHÂN LỰC KỸ THUẬT */}
-              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN D.1 • CƠ CẤU NHÂN LỰC
-                  </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                    Thống Kê Đội Ngũ Nhân Lực Kỹ Thuật
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
-                  <div>
-                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Kỹ thuật viên / Thợ giỏi
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={techPersonnel.technicians === 0 ? '' : techPersonnel.technicians}
-                      placeholder="0"
-                      onChange={e => setTechPersonnel({
-                        ...techPersonnel,
-                        technicians: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
-                      })}
-                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Kỹ sư / Cử nhân kỹ thuật
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={techPersonnel.engineers === 0 ? '' : techPersonnel.engineers}
-                      placeholder="0"
-                      onChange={e => setTechPersonnel({
-                        ...techPersonnel,
-                        engineers: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
-                      })}
-                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Nhân sự CNTT
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={techPersonnel.it === 0 ? '' : techPersonnel.it}
-                      placeholder="0"
-                      onChange={e => setTechPersonnel({
-                        ...techPersonnel,
-                        it: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
-                      })}
-                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Nhân sự Tự động hóa
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={techPersonnel.automation === 0 ? '' : techPersonnel.automation}
-                      placeholder="0"
-                      onChange={e => setTechPersonnel({
-                        ...techPersonnel,
-                        automation: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
-                      })}
-                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Nhân sự R&D
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={techPersonnel.rd === 0 ? '' : techPersonnel.rd}
-                      placeholder="0"
-                      onChange={e => setTechPersonnel({
-                        ...techPersonnel,
-                        rd: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
-                      })}
-                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                      Quản lý chất lượng (QA/QC)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={techPersonnel.quality === 0 ? '' : techPersonnel.quality}
-                      placeholder="0"
-                      onChange={e => setTechPersonnel({
-                        ...techPersonnel,
-                        quality: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
-                      })}
-                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 text-xs">
-                  <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                    Ghi chú người kiêm nhiệm / cách tính nhân sự
-                  </label>
-                  <input
-                    type="text"
-                    value={techPersonnel.notes}
-                    placeholder="Ví dụ: Kỹ sư cơ điện kiêm nhiệm bảo trì hệ thống PLC..."
-                    onChange={e => setTechPersonnel({ ...techPersonnel, notes: e.target.value })}
-                    className="form-control w-full px-3 py-1.5 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* D.2: CƠ CHẾ QUẢN LÝ CÔNG NGHỆ HIỆN CÓ */}
-              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN D.2 • CƠ CHẾ QUẢN LÝ CÔNG NGHỆ
-                  </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                    Cơ Chế Quản Lý & Đổi Mới Công Nghệ Hiện Có Tại Doanh Nghiệp
-                  </h2>
-                  <p className="text-slate-500 text-xs mt-1">
-                    Đánh giá các hoạt động quản trị, quy trình và hợp tác công nghệ tại đơn vị.
-                  </p>
-                </div>
-
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {MANAGEMENT_7_LIST.map((item, idx) => {
-                    const status = managementStatus[idx];
-                    return (
-                      <div key={idx} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 sm:max-w-md">
-                          {idx + 1}. {item}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setManagementStatus({ ...managementStatus, [idx]: true })}
-                            className={`px-3 py-1 rounded-xl font-bold transition border ${
-                              status === true
-                                ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-500'
-                            }`}
-                          >
-                            Có
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setManagementStatus({ ...managementStatus, [idx]: false })}
-                            className={`px-3 py-1 rounded-xl font-bold transition border ${
-                              status === false
-                                ? 'bg-slate-700 text-white border-slate-800 shadow-sm'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-500'
-                            }`}
-                          >
-                            Không
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* D.3: 9 TIÊU CHÍ NĂNG LỰC HẤP THỤ */}
-              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN D.3 • NĂNG LỰC HẤP THỤ CÔNG NGHỆ (TAR)
-                  </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                    Đánh Giá Khả Năng Tiếp Nhận & Làm Chủ Công Nghệ Mới (Thang 1–5)
-                  </h2>
-                </div>
-
-                <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {TAR_READINESS_9_LIST.map((crit, idx) => (
-                    <div key={idx} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 sm:max-w-md">
-                        {idx + 1}. {crit}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {[1, 2, 3, 4, 5].map(score => (
-                          <label
-                            key={score}
-                            className={`w-7 h-7 rounded-xl flex items-center justify-center cursor-pointer font-bold border transition text-xs ${
-                              tarReadiness[idx] === score
-                                ? 'bg-brand-700 text-white border-brand-800 shadow-sm'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-500'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name={`tar_${idx}`}
-                              value={score}
-                              checked={tarReadiness[idx] === score}
-                              onChange={() => setTarReadiness({ ...tarReadiness, [idx]: score })}
-                              className="sr-only"
-                            />
-                            {score}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* =========================================================================
-              BƯỚC 5: PHẦN E — DÒNG NHU CẦU & THUẬT TOÁN TNI
-             ========================================================================= */}
-          {currentStep === 5 && (
             <section className="space-y-6">
               {/* E.1: NGUỒN VỐN & HÌNH THỨC TIẾP NHẬN */}
               <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN E.1 • NGUỒN VỐN & HÌNH THỨC
+                    PHẦN E.1 (BƯỚC 2) • NGUỒN VỐN & HÌNH THỨC
                   </span>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                     Phương Thức Tiếp Nhận & Cơ Cấu Vốn Dự Kiến
@@ -2181,6 +1646,535 @@ export default function DeepSurveyPage() {
             </section>
           )}
 
+
+
+          {/* =========================================================================
+              BƯỚC 3: PHẦN B — HIỆN TRẠNG & 8 TIÊU CHÍ (TÙY CHỌN)
+             ========================================================================= */}
+          {currentStep === 3 && (
+            <section className="space-y-6">
+              {/* B.1: DANH MỤC DÂY CHUYỀN / MÁY MÓC */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <div>
+                    <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                      PHẦN B.1 (BƯỚC 3) • THIẾT BỊ SẢN XUẤT (TÙY CHỌN)
+                    </span>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                      Danh Mục Thiết Bị & Dây Chuyền Sản Xuất Chủ Lực
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddEquipment}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 self-start"
+                  >
+                    <Plus className="w-4 h-4" /> Thêm máy móc / dây chuyền
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {equipments.map((eq, idx) => (
+                    <div key={eq.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 relative space-y-3">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className="text-brand-700 dark:text-cyan-400 font-mono">
+                          #Thiết bị {idx + 1}
+                        </span>
+                        {equipments.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveEquipment(eq.id)}
+                            className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1 font-semibold"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Xóa dòng
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div>
+                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                            Công đoạn sản xuất <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={eq.stageName}
+                            onChange={e => handleUpdateEquipment(eq.id, 'stageName', e.target.value)}
+                            placeholder="Ví dụ: Đúc phôi, Tiện CNC, Sơn tĩnh điện..."
+                            className="form-control w-full px-3 py-1.5 text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                            Tên thiết bị / máy móc chủ lực <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={eq.machineName}
+                            onChange={e => handleUpdateEquipment(eq.id, 'machineName', e.target.value)}
+                            placeholder="Tên máy, model..."
+                            className="form-control w-full px-3 py-1.5 text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                            Sản phẩm đầu ra
+                          </label>
+                          <input
+                            type="text"
+                            value={eq.productOutput}
+                            onChange={e => handleUpdateEquipment(eq.id, 'productOutput', e.target.value)}
+                            placeholder="Sản phẩm làm ra..."
+                            className="form-control w-full px-3 py-1.5 text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                            Năm đầu tư vận hành
+                          </label>
+                          <input
+                            type="number"
+                            value={eq.investmentYear}
+                            onChange={e => handleUpdateEquipment(eq.id, 'investmentYear', Number(e.target.value))}
+                            className="form-control w-full px-3 py-1.5 text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                            Xuất xứ công nghệ
+                          </label>
+                          <select
+                            value={eq.techOrigin}
+                            onChange={e => handleUpdateEquipment(eq.id, 'techOrigin', e.target.value)}
+                            className="form-control w-full px-3 py-1.5 text-xs"
+                          >
+                            <option value="">-- Chọn xuất xứ --</option>
+                            <option value="Việt Nam">Việt Nam</option>
+                            <option value="Nhật Bản / G7">Nhật Bản / G7 / EU</option>
+                            <option value="Hàn Quốc / Đài Loan">Hàn Quốc / Đài Loan</option>
+                            <option value="Trung Quốc">Trung Quốc</option>
+                            <option value="Khác">Khác</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                            Tình trạng khấu hao / vận hành
+                          </label>
+                          <select
+                            value={eq.depreciationStatus}
+                            onChange={e => handleUpdateEquipment(eq.id, 'depreciationStatus', e.target.value)}
+                            className="form-control w-full px-3 py-1.5 text-xs"
+                          >
+                            <option value="">-- Chọn tình trạng khấu hao --</option>
+                            <option value="Mới >80%">Mới &gt;80% (Vận hành tối ưu)</option>
+                            <option value="Đang hoạt động tốt (50–80%)">Đang hoạt động tốt (50–80%)</option>
+                            <option value="Hao mòn nhiều (<50%)">Hao mòn nhiều (&lt;50%)</option>
+                            <option value="Cũ, hay hỏng, cần thay thế">Cũ, hay hỏng, cần thay thế</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* B.2: TỰ ĐÁNH GIÁ 8 TIÊU CHÍ HIỆN TRẠNG */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                    PHẦN B.2 • TỰ ĐÁNH GIÁ 8 TIÊU CHÍ
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Đánh Giá Hiện Trạng Trình Độ Công Nghệ (Thang 1–5)
+                  </h2>
+                  <p className="text-slate-500 text-xs mt-1">
+                    (1 = Rất lạc hậu / Chưa có; 3 = Trung bình so với ngành; 5 = Tiên tiến, hiện đại hàng đầu)
+                  </p>
+                </div>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {CRITERIA_8_LIST.map((crit, idx) => (
+                    <div key={idx} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 sm:max-w-md">
+                        {idx + 1}. {crit}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {[1, 2, 3, 4, 5].map(score => (
+                          <label
+                            key={score}
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer font-bold border transition text-xs ${
+                              criteria8[idx] === score
+                                ? 'bg-brand-700 text-white border-brand-800 shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-500'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`criteria_${idx}`}
+                              value={score}
+                              checked={criteria8[idx] === score}
+                              onChange={() => setCriteria8({ ...criteria8, [idx]: score })}
+                              className="sr-only"
+                            />
+                            {score}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+
+          {/* =========================================================================
+              BƯỚC 4: PHẦN C — ĐIỂM NGHẼN SẢN XUẤT (TÙY CHỌN)
+             ========================================================================= */}
+          {currentStep === 4 && (
+            <section className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                    PHẦN C • VẤN ĐỀ & ĐIỂM NGHẼN
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Nhận Diện Điểm Nghẽn Kỹ Thuật (Chọn tối đa 5 điểm)
+                  </h2>
+                </div>
+                <span className={`text-xs font-black px-3 py-1 rounded-full border ${
+                  selectedBottlenecks.length === 5
+                    ? 'bg-amber-500/15 text-amber-600 border-amber-400/40'
+                    : 'bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-cyan-300 border-brand-200'
+                }`}>
+                  Đã chọn: {selectedBottlenecks.length}/5 điểm nghẽn
+                </span>
+              </div>
+
+              {/* Lưới 17 điểm nghẽn */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                {BOTTLENECK_17_LIST.map((item, idx) => {
+                  const isChecked = selectedBottlenecks.includes(item);
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-3 rounded-2xl border transition flex items-start gap-3 ${
+                        isChecked
+                          ? 'bg-amber-500/10 border-amber-400/50 dark:bg-amber-950/20'
+                          : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleBottleneck(item)}
+                        className="w-4 h-4 mt-0.5 text-brand-600 rounded focus:ring-brand-500 shrink-0 cursor-pointer"
+                      />
+                      <div className="flex-1 space-y-2">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 block">
+                          {idx + 1}. {item}
+                        </span>
+
+                        {isChecked && (
+                          <div className="flex items-center gap-2 pt-1 border-t border-amber-200 dark:border-amber-900/40">
+                            <span className="text-xs text-slate-500">Mức độ nghiêm trọng:</span>
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map(lvl => (
+                                <button
+                                  key={lvl}
+                                  type="button"
+                                  onClick={() => setBottleneckSeverity({ ...bottleneckSeverity, [item]: lvl })}
+                                  className={`w-5 h-5 rounded-md text-xs font-black transition ${
+                                    bottleneckSeverity[item] === lvl
+                                      ? 'bg-amber-600 text-white'
+                                      : 'bg-white dark:bg-slate-800 text-slate-600 border border-slate-200 dark:border-slate-700'
+                                  }`}
+                                >
+                                  {lvl}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 2 trường công đoạn khó nhất & nguyên nhân */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Công đoạn sản xuất gây khó khăn lớn nhất <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={hardestStage}
+                    onChange={e => setHardestStage(e.target.value)}
+                    placeholder="Ví dụ: Kiểm tra chất lượng (QC), Ép khuôn, Gia công bề mặt..."
+                    className="form-control w-full px-3 py-2 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Nguyên nhân chủ yếu được xác định
+                  </label>
+                  <input
+                    type="text"
+                    value={primaryCause}
+                    onChange={e => setPrimaryCause(e.target.value)}
+                    placeholder="Ví dụ: Thiếu thiết bị đo lường chuẩn, thợ phụ thuộc kinh nghiệm..."
+                    className="form-control w-full px-3 py-2 text-xs"
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+
+          {/* =========================================================================
+              BƯỚC 5: PHẦN D — NĂNG LỰC TIẾP NHẬN (TAR) (TÙY CHỌN)
+             ========================================================================= */}
+          {currentStep === 5 && (
+            <section className="space-y-6">
+              {/* D.1: CƠ CẤU NHÂN LỰC KỸ THUẬT */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                    PHẦN D.1 • CƠ CẤU NHÂN LỰC
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Thống Kê Đội Ngũ Nhân Lực Kỹ Thuật
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+                  <div>
+                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Kỹ thuật viên / Thợ giỏi
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={techPersonnel.technicians === 0 ? '' : techPersonnel.technicians}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        technicians: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
+                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Kỹ sư / Cử nhân kỹ thuật
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={techPersonnel.engineers === 0 ? '' : techPersonnel.engineers}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        engineers: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
+                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Nhân sự CNTT
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={techPersonnel.it === 0 ? '' : techPersonnel.it}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        it: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
+                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Nhân sự Tự động hóa
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={techPersonnel.automation === 0 ? '' : techPersonnel.automation}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        automation: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
+                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Nhân sự R&D
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={techPersonnel.rd === 0 ? '' : techPersonnel.rd}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        rd: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
+                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                      Quản lý chất lượng (QA/QC)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={techPersonnel.quality === 0 ? '' : techPersonnel.quality}
+                      placeholder="0"
+                      onChange={e => setTechPersonnel({
+                        ...techPersonnel,
+                        quality: e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0)
+                      })}
+                      className="form-control w-full px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 text-xs">
+                  <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                    Ghi chú người kiêm nhiệm / cách tính nhân sự
+                  </label>
+                  <input
+                    type="text"
+                    value={techPersonnel.notes}
+                    placeholder="Ví dụ: Kỹ sư cơ điện kiêm nhiệm bảo trì hệ thống PLC..."
+                    onChange={e => setTechPersonnel({ ...techPersonnel, notes: e.target.value })}
+                    className="form-control w-full px-3 py-1.5 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* D.2: CƠ CHẾ QUẢN LÝ CÔNG NGHỆ HIỆN CÓ */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                    PHẦN D.2 • CƠ CHẾ QUẢN LÝ CÔNG NGHỆ
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Cơ Chế Quản Lý & Đổi Mới Công Nghệ Hiện Có Tại Doanh Nghiệp
+                  </h2>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Đánh giá các hoạt động quản trị, quy trình và hợp tác công nghệ tại đơn vị.
+                  </p>
+                </div>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {MANAGEMENT_7_LIST.map((item, idx) => {
+                    const status = managementStatus[idx];
+                    return (
+                      <div key={idx} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 sm:max-w-md">
+                          {idx + 1}. {item}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setManagementStatus({ ...managementStatus, [idx]: true })}
+                            className={`px-3 py-1 rounded-xl font-bold transition border ${
+                              status === true
+                                ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-500'
+                            }`}
+                          >
+                            Có
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setManagementStatus({ ...managementStatus, [idx]: false })}
+                            className={`px-3 py-1 rounded-xl font-bold transition border ${
+                              status === false
+                                ? 'bg-slate-700 text-white border-slate-800 shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-500'
+                            }`}
+                          >
+                            Không
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* D.3: 9 TIÊU CHÍ NĂNG LỰC HẤP THỤ */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                    PHẦN D.3 • NĂNG LỰC HẤP THỤ CÔNG NGHỆ (TAR)
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Đánh Giá Khả Năng Tiếp Nhận & Làm Chủ Công Nghệ Mới (Thang 1–5)
+                  </h2>
+                </div>
+
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {TAR_READINESS_9_LIST.map((crit, idx) => (
+                    <div key={idx} className="py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 sm:max-w-md">
+                        {idx + 1}. {crit}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {[1, 2, 3, 4, 5].map(score => (
+                          <label
+                            key={score}
+                            className={`w-7 h-7 rounded-xl flex items-center justify-center cursor-pointer font-bold border transition text-xs ${
+                              tarReadiness[idx] === score
+                                ? 'bg-brand-700 text-white border-brand-800 shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-brand-500'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`tar_${idx}`}
+                              value={score}
+                              checked={tarReadiness[idx] === score}
+                              onChange={() => setTarReadiness({ ...tarReadiness, [idx]: score })}
+                              className="sr-only"
+                            />
+                            {score}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+
           {/* =========================================================================
               BƯỚC 6: PHẦN F — ĐỊNH HƯỚNG & HỖ TRỢ
              ========================================================================= */}
@@ -2482,6 +2476,22 @@ export default function DeepSurveyPage() {
               >
                 <Save className="w-4 h-4" /> Lưu nháp
               </button>
+
+              {currentStep >= 2 && currentStep < 7 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (validateStep(currentStep)) {
+                      setCurrentStep(7);
+                      window.scrollTo({ top: 200, behavior: 'smooth' });
+                    }
+                  }}
+                  className="hidden md:inline-flex border border-brand-200 dark:border-brand-800 text-brand-700 dark:text-cyan-400 bg-brand-50/50 dark:bg-brand-950/30 hover:bg-brand-100/50 px-4 py-2.5 rounded-xl font-bold text-xs transition items-center gap-1.5"
+                  title="Bỏ qua các bước tùy chọn và chuyển thẳng sang Bước 7 để ký & nộp"
+                >
+                  Bỏ qua bước tùy chọn & Đến nộp phiếu ⏩
+                </button>
+              )}
 
               {currentStep < 7 && (
                 <button

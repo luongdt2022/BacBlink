@@ -12,8 +12,8 @@ const mockOffers: TechnologyOffer[] = [
     title: "Nền tảng Digital Twin mô phỏng nhiệt lò nung",
     summary: "Song sinh kỹ thuật số tối ưu hóa nhiệt độ lò công nghiệp",
     problemSolved: "Cắt giảm khí đốt và cảnh báo thủng lò",
-    sectorCode: "LV16",
-    sectorName: "CNTT – viễn thông – chuyển đổi số",
+    sectorCode: "IT",
+    sectorName: "Công nghệ thông tin, Phần mềm & IoT",
     pricingType: "RANGE",
     priceMin: 1800000000,
     priceMax: 2800000000,
@@ -38,8 +38,8 @@ const mockOffers: TechnologyOffer[] = [
     title: "Robot hàn laser 6 trục siêu chính xác",
     summary: "Hệ thống hàn laser tự động tích hợp AI thị giác",
     problemSolved: "Tăng tốc độ hàn 3.5 lần",
-    sectorCode: "LV08",
-    sectorName: "Điện – điện tử – tự động hóa",
+    sectorCode: "ELEC",
+    sectorName: "Điện tử, Bán dẫn & Viễn thông",
     pricingType: "FIXED",
     priceAmount: 850000000,
     currency: "VND",
@@ -63,8 +63,8 @@ const mockOffers: TechnologyOffer[] = [
     title: "Bộ điều khiển tưới nhỏ giọt thông minh",
     summary: "Thiết bị nông nghiệp chính xác điều khiển qua 4G",
     problemSolved: "Tiết kiệm 50% nước tưới",
-    sectorCode: "LV01",
-    sectorName: "Nông nghiệp",
+    sectorCode: "AG",
+    sectorName: "Nông nghiệp, Lâm nghiệp & Thủy sản",
     pricingType: "CONTACT",
     currency: "VND",
     status: "APPROVED",
@@ -145,15 +145,15 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
 
     // All sectors button with non-zero badge
     expect(screen.getByText("Tất cả lĩnh vực")).toBeInTheDocument();
-    expect(screen.getAllByText("Điện – điện tử – tự động hóa")[0]).toBeInTheDocument();
-    expect(screen.getAllByText("CNTT – viễn thông – chuyển đổi số")[0]).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Điện tử, Bán dẫn & Viễn thông/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Công nghệ thông tin, Phần mềm & IoT/i })).toBeInTheDocument();
   });
 
   it("filters by sector when clicked and displays active filter chips", async () => {
     render(<ChaoBanCongNghePage />);
     await screen.findByText("Nền tảng Digital Twin mô phỏng nhiệt lò nung");
 
-    const sectorBtn = screen.getAllByText("Điện – điện tử – tự động hóa")[0];
+    const sectorBtn = screen.getByRole("button", { name: /Điện tử, Bán dẫn & Viễn thông/i });
     fireEvent.click(sectorBtn);
 
     await waitFor(() => {
