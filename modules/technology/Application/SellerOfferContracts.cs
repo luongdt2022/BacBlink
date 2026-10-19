@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using NacenTech.Kernel.Application;
 
@@ -54,6 +58,43 @@ public static class PricingTypes
     public static readonly string[] All = [Fixed, Range, Contact];
 }
 
+public static class DocumentTypes
+{
+    public const string Catalogue = "CATALOGUE";
+    public const string PatentCert = "PATENT_CERT";
+    public const string TrlEvidence = "TRL_EVIDENCE";
+    public const string Video = "VIDEO";
+    public const string Other = "OTHER";
+
+    public static readonly string[] All = [Catalogue, PatentCert, TrlEvidence, Video, Other];
+}
+
+public static class AccessScopes
+{
+    public const string Public = "PUBLIC";
+    public const string AfterConnection = "AFTER_CONNECTION";
+    public const string AdminOnly = "ADMIN_ONLY";
+
+    public static readonly string[] All = [Public, AfterConnection, AdminOnly];
+}
+
+public sealed record OfferSpecValueDto(
+    Guid? Id,
+    string? SpecCode,
+    string SpecName,
+    string SpecValue,
+    string? Unit
+);
+
+public sealed record OfferDocumentDto(
+    Guid? Id,
+    string DocumentType, // CATALOGUE | PATENT_CERT | TRL_EVIDENCE | VIDEO | OTHER
+    string FileName,
+    string FileUrl,
+    long FileSizeBytes,
+    string AccessScope // PUBLIC | AFTER_CONNECTION | ADMIN_ONLY
+);
+
 public sealed record CreateSellerOfferDto(
     string OfferType,
     bool HasTechTransfer,
@@ -80,7 +121,21 @@ public sealed record CreateSellerOfferDto(
     string? ScopeId = "VN-HN",
     bool LegalConsent = true,
     string? EnterpriseTaxCode = null,
-    string? EnterpriseName = null
+    string? EnterpriseName = null,
+    // Delta v5 extensions
+    string? MainImageUrl = null,
+    IReadOnlyList<string>? GalleryImageUrls = null,
+    string? DeliveryTimeline = null,
+    string? WarrantyTerms = null,
+    string? SupplyScope = null,
+    string? PaymentTerms = null,
+    bool InstallationSupport = true,
+    IReadOnlyList<OfferSpecValueDto>? SpecValues = null,
+    IReadOnlyList<OfferDocumentDto>? Documents = null,
+    string? Action = "SUBMIT_FOR_REVIEW", // SAVE_DRAFT | SUBMIT_FOR_REVIEW
+    string? ContactName = null,
+    string? ContactEmail = null,
+    string? ContactPhone = null
 );
 
 public sealed record UpdateSellerOfferDto(
@@ -108,7 +163,21 @@ public sealed record UpdateSellerOfferDto(
     string? ScopeType = "PROVINCE",
     string? ScopeId = "VN-HN",
     string? EnterpriseTaxCode = null,
-    string? EnterpriseName = null
+    string? EnterpriseName = null,
+    // Delta v5 extensions
+    string? MainImageUrl = null,
+    IReadOnlyList<string>? GalleryImageUrls = null,
+    string? DeliveryTimeline = null,
+    string? WarrantyTerms = null,
+    string? SupplyScope = null,
+    string? PaymentTerms = null,
+    bool InstallationSupport = true,
+    IReadOnlyList<OfferSpecValueDto>? SpecValues = null,
+    IReadOnlyList<OfferDocumentDto>? Documents = null,
+    string? Action = "SUBMIT_FOR_REVIEW",
+    string? ContactName = null,
+    string? ContactEmail = null,
+    string? ContactPhone = null
 );
 
 public sealed record SellerOfferDto(
@@ -145,12 +214,62 @@ public sealed record SellerOfferDto(
     string? ScopeType = "PROVINCE",
     string? ScopeId = "VN-HN",
     string? EnterpriseTaxCode = null,
-    string? EnterpriseName = null
+    string? EnterpriseName = null,
+    // Delta v5 extensions
+    string? MainImageUrl = null,
+    IReadOnlyList<string>? GalleryImageUrls = null,
+    string? DeliveryTimeline = null,
+    string? WarrantyTerms = null,
+    string? SupplyScope = null,
+    string? PaymentTerms = null,
+    bool InstallationSupport = true,
+    IReadOnlyList<OfferSpecValueDto>? SpecValues = null,
+    IReadOnlyList<OfferDocumentDto>? Documents = null,
+    string? ContactName = null,
+    string? ContactEmail = null,
+    string? ContactPhone = null
 );
 
 public sealed record ReviewOfferDto(
     string Action,
     string? ReviewNote = null
+);
+
+// AI Extractor DTOs (DD-02-ai-extractor-contracts.md)
+public sealed record TechTransferDraftDto(
+    bool Success,
+    string ExtractionId,
+    double ConfidenceScore,
+    TechTransferDraftData Data,
+    TechTransferExtractionMetadata? ExtractionMetadata = null
+);
+
+public sealed record TechTransferDraftData(
+    string? Title,
+    string? TechnicalSummary,
+    string? ProblemSolved,
+    string? TargetSectorCode,
+    string? TechGroupCode,
+    IpQuadDraftData? IpQuad,
+    string? OriginDeveloper,
+    string? SuggestedPriceRange,
+    IReadOnlyList<OfferSpecValueDto>? SuggestedSpecs = null
+);
+
+public sealed record IpQuadDraftData(
+    int? TrlLevel,
+    string? TrlEvidenceSummary,
+    string? IpStatus,
+    string? PatentNumber,
+    string? PatentOwner,
+    string? TransferMethod,
+    string? CommercialReadiness
+);
+
+public sealed record TechTransferExtractionMetadata(
+    string? ModelUsed,
+    int? ProcessingTimeMs,
+    IReadOnlyList<string>? HighlightFields
 );
 
 public sealed class CreateSellerOfferValidationResult
@@ -167,7 +286,34 @@ public sealed class CreateSellerOfferValidationResult
 
 public static class SellerOfferRulesValidator
 {
-    public static CreateSellerOfferValidationResult Validate(CreateSellerOfferDto dto)
+    private static readonly HashSet<string> AllowedDocExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".pdf", ".jpg", ".jpeg", ".png", ".docx", ".xlsx", ".mp4"
+    };
+
+    /// <summary>
+    /// BR-SELLER-08: Thẩm định trạng thái lưu nháp DRAFT (nới lỏng, chỉ yêu cầu Title >= 3 ký tự)
+    /// </summary>
+    public static CreateSellerOfferValidationResult ValidateDraft(CreateSellerOfferDto dto)
+    {
+        var result = new CreateSellerOfferValidationResult();
+
+        if (string.IsNullOrWhiteSpace(dto.Title) || dto.Title.Trim().Length < 3)
+        {
+            result.AddError(nameof(dto.Title), "Tiêu đề hồ sơ chào bán tối thiểu phải có 3 ký tự khi lưu nháp.");
+        }
+        else if (dto.Title.Trim().Length > 255)
+        {
+            result.AddError(nameof(dto.Title), "Tên sản phẩm/công nghệ không được vượt quá 255 ký tự.");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Thẩm định đầy đủ khi nộp phê duyệt: BR-SELLER-01..11, TRL 1-9, tài liệu an toàn, specs tối đa 50 dòng, cam kết pháp lý.
+    /// </summary>
+    public static CreateSellerOfferValidationResult ValidatePublish(CreateSellerOfferDto dto)
     {
         var result = new CreateSellerOfferValidationResult();
 
@@ -217,17 +363,42 @@ public static class SellerOfferRulesValidator
             }
         }
 
-        // BR-SELLER-02: Ràng buộc điều kiện Bộ Tứ SHTT (Conditional IP Quad)
+        // BR-SELLER-02 & BR-SELLER-09: Ràng buộc điều kiện Bộ Tứ SHTT & Thang đo TRL 9 nấc
         if (dto.HasTechTransfer)
         {
             if (string.IsNullOrWhiteSpace(dto.DeveloperOrigin))
                 result.AddError(nameof(dto.DeveloperOrigin), "Khi có chuyển giao công nghệ, bắt buộc khai báo đơn vị nghiên cứu (DeveloperOrigin).");
 
-            // BR-SELLER-03: Khoảng giá trị thang đo TRL (1 - 9)
+            // BR-SELLER-03 & BR-SELLER-09: Khoảng giá trị thang đo TRL (1 - 9)
             if (!dto.TrlLevel.HasValue)
+            {
                 result.AddError(nameof(dto.TrlLevel), "Khi có chuyển giao công nghệ, bắt buộc chọn mức TRL (1 - 9).");
+            }
             else if (dto.TrlLevel.Value < 1 || dto.TrlLevel.Value > 9)
+            {
                 result.AddError(nameof(dto.TrlLevel), "Mức TRL phải nằm trong khoảng từ 1 đến 9.");
+            }
+            else
+            {
+                // Cấp độ 1..3: Bắt buộc khai báo đơn vị nghiên cứu
+                if (dto.TrlLevel.Value >= 1 && dto.TrlLevel.Value <= 3)
+                {
+                    if (string.IsNullOrWhiteSpace(dto.DeveloperOrigin))
+                        result.AddError(nameof(dto.DeveloperOrigin), "Với mức TRL 1-3, bắt buộc khai báo đơn vị nghiên cứu phát triển.");
+                }
+                // Cấp độ 7..9: Yêu cầu số văn bằng SHTT hoặc minh chứng kiểm định
+                if (dto.TrlLevel.Value >= 7 && dto.TrlLevel.Value <= 9)
+                {
+                    bool hasIpReg = !string.IsNullOrWhiteSpace(dto.IpRegistrationNumber);
+                    bool hasTrlDoc = dto.Documents != null && dto.Documents.Any(d =>
+                        d.DocumentType == DocumentTypes.TrlEvidence || d.DocumentType == DocumentTypes.PatentCert);
+                    if (!hasIpReg && !hasTrlDoc)
+                    {
+                        result.AddError(nameof(dto.IpRegistrationNumber),
+                            "Với mức TRL 7-9 (Vận hành & Thương mại), bắt buộc khai báo Số văn bằng SHTT hoặc đính kèm tài liệu minh chứng kiểm định / bằng sáng chế.");
+                    }
+                }
+            }
 
             if (string.IsNullOrWhiteSpace(dto.IpStatus) || !IntellectualPropertyStatuses.All.Contains(dto.IpStatus.ToUpperInvariant()))
                 result.AddError(nameof(dto.IpStatus), "Khi có chuyển giao công nghệ, bắt buộc chọn Tình trạng SHTT hợp lệ.");
@@ -245,12 +416,121 @@ public static class SellerOfferRulesValidator
             result.AddError(nameof(dto.LegalConsent), "Doanh nghiệp bắt buộc cam kết trách nhiệm pháp lý trước khi nộp hồ sơ thẩm định.");
         }
 
+        if (string.IsNullOrWhiteSpace(dto.ManagingAuthorityId))
+        {
+            result.AddError(nameof(dto.ManagingAuthorityId), "Bắt buộc chọn Sở KH&CN tiếp nhận thẩm định hồ sơ.");
+        }
+
+        // BR-SELLER-10: Kiểm tra an toàn tài liệu (OfferDocuments)
+        if (dto.Documents != null && dto.Documents.Count > 0)
+        {
+            for (int i = 0; i < dto.Documents.Count; i++)
+            {
+                var doc = dto.Documents[i];
+                var prefix = $"Documents[{i}]";
+
+                if (string.IsNullOrWhiteSpace(doc.FileName))
+                {
+                    result.AddError($"{prefix}.FileName", "Tên tệp không được để trống.");
+                }
+                else
+                {
+                    var ext = Path.GetExtension(doc.FileName);
+                    if (string.IsNullOrEmpty(ext) || !AllowedDocExtensions.Contains(ext))
+                    {
+                        result.AddError($"{prefix}.FileName", $"Định dạng tệp '{doc.FileName}' không được hỗ trợ. Chỉ chấp nhận .pdf, .jpg, .jpeg, .png, .docx, .xlsx, .mp4.");
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(doc.FileUrl))
+                {
+                    result.AddError($"{prefix}.FileUrl", "Đường dẫn tệp không được để trống.");
+                }
+
+                if (!DocumentTypes.All.Contains(doc.DocumentType?.ToUpperInvariant() ?? ""))
+                {
+                    result.AddError($"{prefix}.DocumentType", $"Loại tài liệu '{doc.DocumentType}' không hợp lệ.");
+                }
+
+                if (!AccessScopes.All.Contains(doc.AccessScope?.ToUpperInvariant() ?? ""))
+                {
+                    result.AddError($"{prefix}.AccessScope", $"Phân quyền tài liệu '{doc.AccessScope}' không hợp lệ. Phải là PUBLIC, AFTER_CONNECTION hoặc ADMIN_ONLY.");
+                }
+
+                // File size check: 25MB for docs, 50MB for video
+                var isVideo = string.Equals(doc.DocumentType, DocumentTypes.Video, StringComparison.OrdinalIgnoreCase)
+                    || doc.FileName?.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) == true;
+                long maxSize = isVideo ? 52_428_800L : 26_214_400L;
+                if (doc.FileSizeBytes > maxSize)
+                {
+                    result.AddError($"{prefix}.FileSizeBytes", $"Dung lượng tệp vượt quá giới hạn cho phép ({maxSize / (1024 * 1024)}MB).");
+                }
+            }
+        }
+
+        // BR-SELLER-11: Kiểm tra thông số kỹ thuật động (OfferSpecValues)
+        if (dto.SpecValues != null && dto.SpecValues.Count > 0)
+        {
+            if (dto.SpecValues.Count > 50)
+            {
+                result.AddError(nameof(dto.SpecValues), "Số lượng dòng thông số kỹ thuật tối đa cho mỗi hồ sơ là 50 dòng.");
+            }
+
+            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < dto.SpecValues.Count; i++)
+            {
+                var spec = dto.SpecValues[i];
+                var prefix = $"SpecValues[{i}]";
+
+                if (string.IsNullOrWhiteSpace(spec.SpecName))
+                {
+                    result.AddError($"{prefix}.SpecName", "Tên thông số kỹ thuật không được để trống.");
+                }
+                else
+                {
+                    var cleanName = spec.SpecName.Trim();
+                    if (cleanName.Length < 2 || cleanName.Length > 255)
+                    {
+                        result.AddError($"{prefix}.SpecName", "Tên thông số kỹ thuật phải từ 2 đến 255 ký tự.");
+                    }
+                    else if (!seenNames.Add(cleanName))
+                    {
+                        result.AddError($"{prefix}.SpecName", $"Thông số '{cleanName}' bị trùng lặp trong hồ sơ.");
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(spec.SpecValue))
+                {
+                    result.AddError($"{prefix}.SpecValue", "Giá trị thông số kỹ thuật không được để trống.");
+                }
+                else if (spec.SpecValue.Length > 2000)
+                {
+                    result.AddError($"{prefix}.SpecValue", "Giá trị thông số kỹ thuật không được vượt quá 2000 ký tự.");
+                }
+
+                if (!string.IsNullOrWhiteSpace(spec.Unit) && spec.Unit.Length > 50)
+                {
+                    result.AddError($"{prefix}.Unit", "Đơn vị đo không được vượt quá 50 ký tự.");
+                }
+            }
+        }
+
         return result;
+    }
+
+    public static CreateSellerOfferValidationResult Validate(CreateSellerOfferDto dto)
+    {
+        if (string.Equals(dto.Action, "SAVE_DRAFT", StringComparison.OrdinalIgnoreCase))
+        {
+            return ValidateDraft(dto);
+        }
+
+        return ValidatePublish(dto);
     }
 
     public static CreateSellerOfferValidationResult ValidateUpdate(UpdateSellerOfferDto dto)
     {
-        return Validate(new CreateSellerOfferDto(
+        var createDto = new CreateSellerOfferDto(
             dto.OfferType,
             dto.HasTechTransfer,
             dto.Title,
@@ -274,7 +554,24 @@ public static class SellerOfferRulesValidator
             dto.ManagingAuthorityName,
             dto.ScopeType,
             dto.ScopeId,
-            LegalConsent: true
-        ));
+            LegalConsent: true,
+            EnterpriseTaxCode: dto.EnterpriseTaxCode,
+            EnterpriseName: dto.EnterpriseName,
+            MainImageUrl: dto.MainImageUrl,
+            GalleryImageUrls: dto.GalleryImageUrls,
+            DeliveryTimeline: dto.DeliveryTimeline,
+            WarrantyTerms: dto.WarrantyTerms,
+            SupplyScope: dto.SupplyScope,
+            PaymentTerms: dto.PaymentTerms,
+            InstallationSupport: dto.InstallationSupport,
+            SpecValues: dto.SpecValues,
+            Documents: dto.Documents,
+            Action: dto.Action,
+            ContactName: dto.ContactName,
+            ContactEmail: dto.ContactEmail,
+            ContactPhone: dto.ContactPhone
+        );
+
+        return Validate(createDto);
     }
 }

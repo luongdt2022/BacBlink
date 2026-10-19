@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
 using NacenTech.Kernel.Domain;
 
 namespace NacenTech.Modules.Technology.Domain;
 
 public sealed class SellerTechnologyOffer : AggregateRoot
 {
+    private readonly List<OfferSpecValue> _specValues = [];
+    private readonly List<OfferDocument> _documents = [];
+
     private SellerTechnologyOffer() { }
 
     public SellerTechnologyOffer(
@@ -39,7 +43,14 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         Guid? createdBy = null,
         DateTimeOffset? publishedAt = null,
         string? enterpriseTaxCode = null,
-        string? enterpriseName = null)
+        string? enterpriseName = null,
+        string? mainImageUrl = null,
+        List<string>? galleryImageUrls = null,
+        string? deliveryTimeline = null,
+        string? warrantyTerms = null,
+        string? supplyScope = null,
+        string? paymentTerms = null,
+        bool installationSupport = true)
     {
         Id = id;
         OfferCode = offerCode;
@@ -73,6 +84,13 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         PublishedAt = publishedAt;
         EnterpriseTaxCode = enterpriseTaxCode;
         EnterpriseName = enterpriseName;
+        MainImageUrl = mainImageUrl;
+        GalleryImageUrls = galleryImageUrls;
+        DeliveryTimeline = deliveryTimeline;
+        WarrantyTerms = warrantyTerms;
+        SupplyScope = supplyScope;
+        PaymentTerms = paymentTerms;
+        InstallationSupport = installationSupport;
         SuccessfulConnections = 0;
         RatingScore = 5.0m;
         ReviewCount = 0;
@@ -115,10 +133,61 @@ public sealed class SellerTechnologyOffer : AggregateRoot
     public string? EnterpriseTaxCode { get; private set; }
     public string? EnterpriseName { get; private set; }
 
+    // Delta v5 Extensions
+    public string? MainImageUrl { get; private set; }
+    public List<string>? GalleryImageUrls { get; private set; }
+    public string? DeliveryTimeline { get; private set; }
+    public string? WarrantyTerms { get; private set; }
+    public string? SupplyScope { get; private set; }
+    public string? PaymentTerms { get; private set; }
+    public bool InstallationSupport { get; private set; } = true;
+
+    public IReadOnlyCollection<OfferSpecValue> SpecValues => _specValues.AsReadOnly();
+    public IReadOnlyCollection<OfferDocument> Documents => _documents.AsReadOnly();
+
+    public void AddSpecValue(OfferSpecValue spec) => _specValues.Add(spec);
+    public void ClearSpecValues() => _specValues.Clear();
+
+    public void AddDocument(OfferDocument doc) => _documents.Add(doc);
+    public void ClearDocuments() => _documents.Clear();
+
+    public void SetMediaAndCommercial(
+        string? mainImageUrl,
+        List<string>? galleryImageUrls,
+        string? deliveryTimeline,
+        string? warrantyTerms,
+        string? supplyScope,
+        string? paymentTerms,
+        bool installationSupport)
+    {
+        MainImageUrl = mainImageUrl;
+        GalleryImageUrls = galleryImageUrls;
+        DeliveryTimeline = deliveryTimeline;
+        WarrantyTerms = warrantyTerms;
+        SupplyScope = supplyScope;
+        PaymentTerms = paymentTerms;
+        InstallationSupport = installationSupport;
+        Touch();
+    }
+
     public void SetEnterpriseLink(string? taxCode, string? name)
     {
         EnterpriseTaxCode = taxCode;
         EnterpriseName = name;
+        Touch();
+    }
+
+    public void SetStatus(string status)
+    {
+        Status = status;
+        if (status == "APPROVED" && PublishedAt == null)
+        {
+            PublishedAt = DateTimeOffset.UtcNow;
+        }
+        else if (status != "APPROVED")
+        {
+            PublishedAt = null;
+        }
         Touch();
     }
 
@@ -132,9 +201,11 @@ public sealed class SellerTechnologyOffer : AggregateRoot
                 break;
             case "REJECT":
                 Status = "REJECTED";
+                PublishedAt = null;
                 break;
             case "REQUEST_CHANGES":
                 Status = "CHANGES_REQUESTED";
+                PublishedAt = null;
                 break;
             default:
                 throw new ArgumentException($"Hành động thẩm định không hợp lệ: {action}");
@@ -168,7 +239,14 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         string? scopeType,
         string? scopeId,
         string? enterpriseTaxCode = null,
-        string? enterpriseName = null)
+        string? enterpriseName = null,
+        string? mainImageUrl = null,
+        List<string>? galleryImageUrls = null,
+        string? deliveryTimeline = null,
+        string? warrantyTerms = null,
+        string? supplyScope = null,
+        string? paymentTerms = null,
+        bool? installationSupport = null)
     {
         // BR-SELLER-07: Nếu hasTechTransfer và có sự thay đổi các trường cốt lõi (TRL, IP, TransferMethod)
         // Hệ thống tự động chuyển về PENDING để Sở KH&CN thẩm định lại trước khi tái xuất bản
@@ -206,7 +284,15 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         if (!string.IsNullOrWhiteSpace(enterpriseTaxCode)) EnterpriseTaxCode = enterpriseTaxCode;
         if (!string.IsNullOrWhiteSpace(enterpriseName)) EnterpriseName = enterpriseName;
 
-        if (coreIpChanged)
+        if (mainImageUrl != null) MainImageUrl = mainImageUrl;
+        if (galleryImageUrls != null) GalleryImageUrls = galleryImageUrls;
+        if (deliveryTimeline != null) DeliveryTimeline = deliveryTimeline;
+        if (warrantyTerms != null) WarrantyTerms = warrantyTerms;
+        if (supplyScope != null) SupplyScope = supplyScope;
+        if (paymentTerms != null) PaymentTerms = paymentTerms;
+        if (installationSupport.HasValue) InstallationSupport = installationSupport.Value;
+
+        if (coreIpChanged && Status == "APPROVED")
         {
             Status = "PENDING";
             PublishedAt = null;

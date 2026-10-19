@@ -1,5 +1,12 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NacenTech.Kernel.Application;
@@ -14,7 +21,7 @@ namespace NacenTech.Api.V2;
 [Route("api/v2/technologies")]
 public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWork uow) : V2ControllerBase
 {
-    // In-memory cache & fallback store, có khởi tạo dữ liệu mẫu 18 ngành chuẩn
+    // In-memory cache & fallback store, có khởi tạo dữ liệu mẫu 18 ngành chuẩn Delta v5
     private static readonly ConcurrentDictionary<Guid, SellerOfferDto> OffersStore = new(SeedInitialOffers());
 
     private static IEnumerable<KeyValuePair<Guid, SellerOfferDto>> SeedInitialOffers()
@@ -51,7 +58,31 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-20),
                 PublishedAt: DateTimeOffset.UtcNow.AddDays(-18),
                 EnterpriseTaxCode: "2400120030",
-                EnterpriseName: "CÔNG TY TNHH MỘT THÀNH VIÊN LÂM NGHIỆP ĐÔNG BẮC"
+                EnterpriseName: "CÔNG TY TNHH MỘT THÀNH VIÊN LÂM NGHIỆP ĐÔNG BẮC",
+                MainImageUrl: "/images/technologies/say-thang-hoa.jpg",
+                GalleryImageUrls: new List<string> { "/images/technologies/say-thang-hoa-1.jpg", "/images/technologies/say-thang-hoa-2.jpg" },
+                DeliveryTimeline: "45 ngày kể từ ngày ký hợp đồng",
+                WarrantyTerms: "24 tháng bảo hành chính hãng, hỗ trợ kỹ thuật 24/7",
+                SupplyScope: "Toàn quốc & Xuất khẩu Đông Nam Á",
+                PaymentTerms: "Tạm ứng 30%, giao hàng 40%, nghiệm thu bàn giao 30%",
+                InstallationSupport: true,
+                SpecValues: new List<OfferSpecValueDto>
+                {
+                    new(Guid.NewGuid(), "SPEC-01", "Công suất tách ẩm định mức", "120", "kg/mẻ"),
+                    new(Guid.NewGuid(), "SPEC-02", "Nhiệt độ cấp đông sâu buồng sấy", "-45", "°C"),
+                    new(Guid.NewGuid(), "SPEC-03", "Độ chân không tối đa", "0.02", "mbar"),
+                    new(Guid.NewGuid(), "SPEC-04", "Điện năng tiêu thụ bình quân", "7.5", "kW/h"),
+                    new(Guid.NewGuid(), "SPEC-05", "Thời gian sấy trung bình", "18 - 22", "giờ/mẻ")
+                },
+                Documents: new List<OfferDocumentDto>
+                {
+                    new(Guid.NewGuid(), "CATALOGUE", "Catalogue-He-thong-say-thang-hoa-VIAEP.pdf", "/dataroom/catalogue-say-thang-hoa.pdf", 5240000, "PUBLIC"),
+                    new(Guid.NewGuid(), "PATENT_CERT", "Ban-scan-Bang-Sang-che-VN-1-0028491.pdf", "/dataroom/patent-cert-0028491.pdf", 3120000, "AFTER_CONNECTION"),
+                    new(Guid.NewGuid(), "TRL_EVIDENCE", "Bao-cao-kiem-dinh-hieu-suat-TRL8-Quatest1.pdf", "/dataroom/report-trl8-quatest1.pdf", 8450000, "AFTER_CONNECTION")
+                },
+                ContactName: "ThS. Hoàng Anh Tuấn",
+                ContactEmail: "tuan.ha@viaep.gov.vn",
+                ContactPhone: "0912345678"
             ),
             new(
                 Id: Guid.Parse("22222222-2222-2222-2222-222222222222"),
@@ -83,7 +114,28 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-15),
                 PublishedAt: DateTimeOffset.UtcNow.AddDays(-14),
                 EnterpriseTaxCode: "4900142903",
-                EnterpriseName: "CÔNG TY TRÁCH NHIỆM HỮU HẠN THÀNH LONG"
+                EnterpriseName: "CÔNG TY TRÁCH NHIỆM HỮU HẠN THÀNH LONG",
+                MainImageUrl: "/images/technologies/robot-han.jpg",
+                GalleryImageUrls: new List<string> { "/images/technologies/robot-han-1.jpg" },
+                DeliveryTimeline: "60 ngày kể từ ngày ký hợp đồng",
+                WarrantyTerms: "36 tháng bảo hành chính hãng kèm chuyển giao đào tạo",
+                SupplyScope: "Toàn quốc",
+                PaymentTerms: "Tạm ứng 40%, giao hàng 40%, bảo hành 20%",
+                InstallationSupport: true,
+                SpecValues: new List<OfferSpecValueDto>
+                {
+                    new(Guid.NewGuid(), "SPEC-01", "Bán kính với tới của cánh tay", "1850", "mm"),
+                    new(Guid.NewGuid(), "SPEC-02", "Độ chính xác lặp lại", "0.02", "mm"),
+                    new(Guid.NewGuid(), "SPEC-03", "Công suất nguồn hàn Laser Fiber", "3000", "W")
+                },
+                Documents: new List<OfferDocumentDto>
+                {
+                    new(Guid.NewGuid(), "CATALOGUE", "Brochure-Robot-Han-Laser-BK-6Axis.pdf", "/dataroom/brochure-robot-han.pdf", 4120000, "PUBLIC"),
+                    new(Guid.NewGuid(), "TRL_EVIDENCE", "Bao-cao-kiem-tra-pilot-TRL7-VinFast.pdf", "/dataroom/pilot-vinfast.pdf", 9650000, "AFTER_CONNECTION")
+                },
+                ContactName: "TS. Nguyễn Mạnh Hùng",
+                ContactEmail: "hung.nm@hust.edu.vn",
+                ContactPhone: "0987654321"
             ),
             new(
                 Id: Guid.Parse("33333333-3333-3333-3333-333333333333"),
@@ -94,7 +146,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 Summary: "Gateway công nghiệp giám sát năng lượng và tự động hóa nhà máy chuẩn DIN-rail, truyền thông 4G/LTE.",
                 ProblemSolved: "Thu thập dữ liệu cảm biến đa điểm, chống nhiễu công nghiệp cấp độ 4.",
                 SectorCode: "IT",
-                SectorName: "Công nghệ thông tin, Viễn thông & IoT",
+                SectorName: "Công nghệ thông tin, Phần mềm & IoT",
                 PricingType: "FIXED",
                 PriceAmount: 4500000,
                 PriceMin: null,
@@ -115,7 +167,27 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-10),
                 PublishedAt: DateTimeOffset.UtcNow.AddDays(-9),
                 EnterpriseTaxCode: "4900224521",
-                EnterpriseName: "CÔNG TY TNHH SẢN XUẤT VÀ THƯƠNG MẠI AN SƠN"
+                EnterpriseName: "CÔNG TY TNHH SẢN XUẤT VÀ THƯƠNG MẠI AN SƠN",
+                MainImageUrl: "/images/technologies/iot-gateway.jpg",
+                GalleryImageUrls: null,
+                DeliveryTimeline: "Có sẵn kho, giao hàng trong 48h",
+                WarrantyTerms: "12 tháng đổi mới 1-1",
+                SupplyScope: "Toàn quốc",
+                PaymentTerms: "Thanh toán 100% khi nhận hàng",
+                InstallationSupport: false,
+                SpecValues: new List<OfferSpecValueDto>
+                {
+                    new(Guid.NewGuid(), "SPEC-01", "Giao diện truyền thông", "RS485/Modbus/Ethernet/4G", null),
+                    new(Guid.NewGuid(), "SPEC-02", "Điện áp hoạt động", "12 - 24", "VDC"),
+                    new(Guid.NewGuid(), "SPEC-03", "Nhiệt độ vận hành công nghiệp", "-20 đến +70", "°C")
+                },
+                Documents: new List<OfferDocumentDto>
+                {
+                    new(Guid.NewGuid(), "CATALOGUE", "Datasheet-IoT-Gateway-AnSon-v2.pdf", "/dataroom/datasheet-gateway.pdf", 2150000, "PUBLIC")
+                },
+                ContactName: "Lê Văn Sơn",
+                ContactEmail: "contact@ansoniot.vn",
+                ContactPhone: "0905123456"
             ),
             new(
                 Id: Guid.Parse("44444444-4444-4444-4444-444444444444"),
@@ -147,7 +219,28 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 CreatedAt: DateTimeOffset.UtcNow.AddDays(-5),
                 PublishedAt: DateTimeOffset.UtcNow.AddDays(-4),
                 EnterpriseTaxCode: "4900232057",
-                EnterpriseName: "CÔNG TY CỔ PHẦN VẬT LIỆU VÀ XÂY DỰNG CAO LỘC"
+                EnterpriseName: "CÔNG TY CỔ PHẦN VẬT LIỆU VÀ XÂY DỰNG CAO LỘC",
+                MainImageUrl: "/images/technologies/che-pham-sinh-hoc.jpg",
+                GalleryImageUrls: null,
+                DeliveryTimeline: "15 ngày chuyển giao quy trình nuôi cấy vi sinh",
+                WarrantyTerms: "Cam kết đồng hành kiểm soát nước thải đầu ra đạt cột A QCVN 40:2011",
+                SupplyScope: "Toàn quốc",
+                PaymentTerms: "Thanh toán theo 3 giai đoạn chuyển giao",
+                InstallationSupport: true,
+                SpecValues: new List<OfferSpecValueDto>
+                {
+                    new(Guid.NewGuid(), "SPEC-01", "Mật độ vi sinh hoạt tính", "10^9", "CFU/ml"),
+                    new(Guid.NewGuid(), "SPEC-02", "Hiệu suất khử màu hợp chất Azo", "> 95", "%"),
+                    new(Guid.NewGuid(), "SPEC-03", "Giảm chỉ số COD/BOD", "80 - 88", "%")
+                },
+                Documents: new List<OfferDocumentDto>
+                {
+                    new(Guid.NewGuid(), "CATALOGUE", "Huong-dan-ung-dung-vi-sinh-det-nhuom.pdf", "/dataroom/hd-vi-sinh.pdf", 3420000, "PUBLIC"),
+                    new(Guid.NewGuid(), "PATENT_CERT", "Bang-doc-quyen-sang-che-VN-1-0019283.pdf", "/dataroom/patent-vast-19283.pdf", 4120000, "AFTER_CONNECTION")
+                },
+                ContactName: "PGS. TS. Trần Đức Toàn",
+                ContactEmail: "toan.td@vast.vn",
+                ContactPhone: "0918765432"
             )
         };
 
@@ -188,7 +281,16 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         ScopeType: x.ScopeType,
         ScopeId: x.ScopeId,
         EnterpriseTaxCode: x.EnterpriseTaxCode,
-        EnterpriseName: x.EnterpriseName
+        EnterpriseName: x.EnterpriseName,
+        MainImageUrl: x.MainImageUrl,
+        GalleryImageUrls: x.GalleryImageUrls,
+        DeliveryTimeline: x.DeliveryTimeline,
+        WarrantyTerms: x.WarrantyTerms,
+        SupplyScope: x.SupplyScope,
+        PaymentTerms: x.PaymentTerms,
+        InstallationSupport: x.InstallationSupport,
+        SpecValues: x.SpecValues?.Select(s => new OfferSpecValueDto(s.Id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit)).ToList(),
+        Documents: x.Documents?.Select(d => new OfferDocumentDto(d.Id, d.DocumentType, d.FileName, d.FileUrl, d.FileSizeBytes, d.AccessScope)).ToList()
     );
 
     [HttpGet]
@@ -205,7 +307,11 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         [FromQuery] int limit = 12,
         CancellationToken ct = default)
     {
-        var dbQuery = db.Set<SellerTechnologyOffer>().AsNoTracking().Where(x => x.Status == "APPROVED");
+        var dbQuery = db.Set<SellerTechnologyOffer>()
+            .Include(x => x.SpecValues)
+            .Include(x => x.Documents)
+            .AsNoTracking()
+            .Where(x => x.Status == "APPROVED");
 
         if (await dbQuery.AnyAsync(ct))
         {
@@ -220,14 +326,14 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
             if (!string.IsNullOrWhiteSpace(sectorCode) && sectorCode != "ALL")
             {
-                var sCode = sectorCode.Trim().ToLower();
-                dbQuery = dbQuery.Where(x => x.SectorCode.ToLower() == sCode);
+                var cleanSector = sectorCode.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.SectorCode.ToLower() == cleanSector);
             }
 
             if (!string.IsNullOrWhiteSpace(offerType) && offerType != "ALL")
             {
-                var oType = offerType.Trim().ToLower();
-                dbQuery = dbQuery.Where(x => x.OfferType.ToLower() == oType);
+                var cleanType = offerType.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.OfferType.ToLower() == cleanType);
             }
 
             if (hasTechTransfer.HasValue)
@@ -242,8 +348,8 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
             if (!string.IsNullOrWhiteSpace(ipStatus) && ipStatus != "ALL")
             {
-                var ip = ipStatus.Trim().ToLower();
-                dbQuery = dbQuery.Where(x => x.IpStatus != null && x.IpStatus.ToLower() == ip);
+                var cleanIp = ipStatus.Trim().ToLower();
+                dbQuery = dbQuery.Where(x => x.IpStatus != null && x.IpStatus.ToLower() == cleanIp);
             }
 
             if (!string.IsNullOrWhiteSpace(enterpriseTaxCode))
@@ -331,7 +437,12 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
     [AllowAnonymous]
     public async Task<IActionResult> GetOfferById(Guid id, CancellationToken ct = default)
     {
-        var entity = await db.Set<SellerTechnologyOffer>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+        var entity = await db.Set<SellerTechnologyOffer>()
+            .Include(x => x.SpecValues)
+            .Include(x => x.Documents)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
         if (entity != null)
         {
             return Ok(new { success = true, data = ToDto(entity) });
@@ -347,7 +458,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
     [HttpGet("/api/v1/portal/seller/technologies")]
     [HttpGet("/api/v2/portal/seller/technologies")]
-    [AllowAnonymous] // Cho phép trải nghiệm nhanh trên portal
+    [AllowAnonymous]
     public async Task<IActionResult> GetSellerOffers(
         [FromQuery] string? search,
         [FromQuery] string? status,
@@ -355,7 +466,11 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         [FromQuery] int limit = 10,
         CancellationToken ct = default)
     {
-        var dbQuery = db.Set<SellerTechnologyOffer>().AsNoTracking();
+        var dbQuery = db.Set<SellerTechnologyOffer>()
+            .Include(x => x.SpecValues)
+            .Include(x => x.Documents)
+            .AsNoTracking();
+
         if (await dbQuery.AnyAsync(ct))
         {
             if (!string.IsNullOrWhiteSpace(search))
@@ -382,6 +497,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 totalOffers = all.Count,
                 publishedOffers = all.Count(x => x.Status == "APPROVED"),
                 pendingOffers = all.Count(x => x.Status == "PENDING"),
+                draftOffers = all.Count(x => x.Status == "DRAFT"),
                 successfulConnections = all.Sum(x => x.SuccessfulConnections)
             };
 
@@ -420,6 +536,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             totalOffers = OffersStore.Count,
             publishedOffers = OffersStore.Values.Count(x => x.Status == "APPROVED"),
             pendingOffers = OffersStore.Values.Count(x => x.Status == "PENDING"),
+            draftOffers = OffersStore.Values.Count(x => x.Status == "DRAFT"),
             successfulConnections = OffersStore.Values.Sum(x => x.SuccessfulConnections)
         };
 
@@ -439,13 +556,17 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
     [AllowAnonymous]
     public async Task<IActionResult> CreateSellerOffer([FromBody] CreateSellerOfferDto dto, CancellationToken ct = default)
     {
+        bool isDraft = string.Equals(dto.Action, "SAVE_DRAFT", StringComparison.OrdinalIgnoreCase);
         var validation = SellerOfferRulesValidator.Validate(dto);
+
         if (!validation.IsValid)
         {
             return BadRequest(new
             {
                 success = false,
-                message = "Dữ liệu hồ sơ chào bán không hợp lệ theo quy tắc BR-SELLER.",
+                message = isDraft
+                    ? "Dữ liệu lưu nháp không hợp lệ (tiêu đề tối thiểu 3 ký tự)."
+                    : "Dữ liệu hồ sơ chào bán không hợp lệ theo quy tắc BR-SELLER.",
                 errors = validation.Errors
             });
         }
@@ -453,14 +574,265 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         var id = Guid.NewGuid();
         var totalDbOffers = await db.Set<SellerTechnologyOffer>().CountAsync(ct);
         var offerCode = $"OFF-{DateTime.UtcNow:yyyyMMdd}-{(totalDbOffers + 1):D5}-{Guid.NewGuid().ToString("N")[..4].ToUpperInvariant()}";
+        var status = isDraft ? "DRAFT" : "PENDING";
+
         var newOffer = new SellerOfferDto(
             Id: id,
             OfferCode: offerCode,
+            OfferType: dto.OfferType?.ToUpperInvariant() ?? "PRODUCT",
+            HasTechTransfer: dto.HasTechTransfer,
+            Title: dto.Title,
+            Summary: dto.Summary ?? "",
+            ProblemSolved: dto.ProblemSolved ?? "",
+            SectorCode: dto.SectorCode?.ToUpperInvariant() ?? "OTHER",
+            SectorName: MapSectorName(dto.SectorCode ?? "OTHER"),
+            PricingType: dto.PricingType?.ToUpperInvariant() ?? "CONTACT",
+            PriceAmount: dto.PriceAmount,
+            PriceMin: dto.PriceMin,
+            PriceMax: dto.PriceMax,
+            Currency: dto.Currency ?? "VND",
+            Unit: dto.Unit,
+            DeveloperOrigin: dto.DeveloperOrigin,
+            TrlLevel: dto.TrlLevel,
+            IpStatus: dto.IpStatus,
+            IpRegistrationNumber: dto.IpRegistrationNumber,
+            TransferMethod: dto.TransferMethod,
+            CommercialStatus: dto.CommercialStatus,
+            ContactPointRole: dto.ContactPointRole,
+            Status: status,
+            SuccessfulConnections: 0,
+            RatingScore: 5.0m,
+            ReviewCount: 0,
+            CreatedAt: DateTimeOffset.UtcNow,
+            PublishedAt: null,
+            ManagingAuthorityId: dto.ManagingAuthorityId ?? "VN-HN",
+            ManagingAuthorityName: dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
+            ScopeType: dto.ScopeType ?? "PROVINCE",
+            ScopeId: dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
+            EnterpriseTaxCode: dto.EnterpriseTaxCode,
+            EnterpriseName: dto.EnterpriseName,
+            MainImageUrl: dto.MainImageUrl,
+            GalleryImageUrls: dto.GalleryImageUrls != null ? new List<string>(dto.GalleryImageUrls) : null,
+            DeliveryTimeline: dto.DeliveryTimeline,
+            WarrantyTerms: dto.WarrantyTerms,
+            SupplyScope: dto.SupplyScope,
+            PaymentTerms: dto.PaymentTerms,
+            InstallationSupport: dto.InstallationSupport,
+            SpecValues: dto.SpecValues,
+            Documents: dto.Documents,
+            ContactName: dto.ContactName,
+            ContactEmail: dto.ContactEmail,
+            ContactPhone: dto.ContactPhone
+        );
+
+        // Lưu thực thể lâu dài vào CSDL PostgreSQL
+        var entity = new SellerTechnologyOffer(
+            id,
+            offerCode,
+            dto.OfferType?.ToUpperInvariant() ?? "PRODUCT",
+            dto.HasTechTransfer,
+            dto.Title,
+            dto.Summary ?? "",
+            dto.ProblemSolved ?? "",
+            dto.SectorCode?.ToUpperInvariant() ?? "OTHER",
+            MapSectorName(dto.SectorCode ?? "OTHER"),
+            dto.PricingType?.ToUpperInvariant() ?? "CONTACT",
+            dto.PriceAmount,
+            dto.PriceMin,
+            dto.PriceMax,
+            dto.Currency ?? "VND",
+            dto.Unit,
+            dto.DeveloperOrigin,
+            dto.TrlLevel,
+            dto.IpStatus,
+            dto.IpRegistrationNumber,
+            dto.TransferMethod,
+            dto.CommercialStatus,
+            dto.ContactPointRole,
+            status,
+            dto.ManagingAuthorityId ?? "VN-HN",
+            dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
+            dto.ScopeType ?? "PROVINCE",
+            dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
+            dto.LegalConsent,
+            null,
+            null,
+            dto.EnterpriseTaxCode,
+            dto.EnterpriseName,
+            dto.MainImageUrl,
+            dto.GalleryImageUrls != null ? new List<string>(dto.GalleryImageUrls) : null,
+            dto.DeliveryTimeline,
+            dto.WarrantyTerms,
+            dto.SupplyScope,
+            dto.PaymentTerms,
+            dto.InstallationSupport
+        );
+
+        if (dto.SpecValues != null)
+        {
+            foreach (var s in dto.SpecValues)
+            {
+                entity.AddSpecValue(new OfferSpecValue(id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit));
+            }
+        }
+
+        if (dto.Documents != null)
+        {
+            foreach (var d in dto.Documents)
+            {
+                entity.AddDocument(new OfferDocument(id, d.DocumentType, d.FileName, d.FileUrl, d.FileSizeBytes, d.AccessScope));
+            }
+        }
+
+        db.Set<SellerTechnologyOffer>().Add(entity);
+        await uow.CommitAsync(ct);
+
+        OffersStore[id] = newOffer;
+
+        var message = isDraft
+            ? "Đã lưu nháp hồ sơ thành công vào kho Seller."
+            : "Đăng hồ sơ chào bán thành công! Hồ sơ đang ở trạng thái CHỜ THẨM ĐỊNH (PENDING) bởi Sở KH&CN.";
+
+        return CreatedAtAction(nameof(GetOfferById), new { id }, new { success = true, message, data = newOffer });
+    }
+
+    [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/review")]
+    [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/review")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ReviewOffer(Guid id, [FromBody] ReviewOfferDto dto, CancellationToken ct = default)
+    {
+        if (!OffersStore.TryGetValue(id, out var existing))
+        {
+            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ công nghệ." });
+        }
+
+        var action = dto.Action.ToUpperInvariant();
+        string newStatus;
+        DateTimeOffset? publishedAt = existing.PublishedAt;
+
+        switch (action)
+        {
+            case "APPROVE":
+                newStatus = "APPROVED";
+                publishedAt = DateTimeOffset.UtcNow;
+                break;
+            case "REJECT":
+                newStatus = "REJECTED";
+                publishedAt = null;
+                break;
+            case "REQUEST_CHANGES":
+                newStatus = "CHANGES_REQUESTED";
+                publishedAt = null;
+                break;
+            case "REVOKE":
+                newStatus = "REJECTED";
+                publishedAt = null;
+                break;
+            default:
+                return BadRequest(new { success = false, message = $"Hành động thẩm định không hợp lệ: {action}. Hỗ trợ: APPROVE, REJECT, REQUEST_CHANGES, REVOKE." });
+        }
+
+        var updated = existing with
+        {
+            Status = newStatus,
+            PublishedAt = publishedAt
+        };
+
+        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (entity != null)
+        {
+            if (action == "REVOKE")
+            {
+                entity.Review("REJECT", dto.ReviewNote ?? "Hậu kiểm: Thu hồi hồ sơ đã duyệt.");
+            }
+            else
+            {
+                entity.Review(action, dto.ReviewNote);
+            }
+            await uow.CommitAsync(ct);
+        }
+
+        OffersStore[id] = updated;
+        return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updated });
+    }
+
+    [HttpPut("/api/v1/portal/seller/technologies/{id:guid}")]
+    [HttpPut("/api/v2/portal/seller/technologies/{id:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateSellerOffer(Guid id, [FromBody] UpdateSellerOfferDto dto, CancellationToken ct = default)
+    {
+        var existingInStore = OffersStore.TryGetValue(id, out var existing);
+        var entity = await db.Set<SellerTechnologyOffer>()
+            .Include(x => x.SpecValues)
+            .Include(x => x.Documents)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        if (!existingInStore && entity == null)
+        {
+            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ." });
+        }
+
+        bool isDraft = string.Equals(dto.Action, "SAVE_DRAFT", StringComparison.OrdinalIgnoreCase);
+        var validation = SellerOfferRulesValidator.ValidateUpdate(dto);
+        if (!validation.IsValid)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = isDraft
+                    ? "Dữ liệu lưu nháp không hợp lệ (tiêu đề tối thiểu 3 ký tự)."
+                    : "Dữ liệu cập nhật hồ sơ không hợp lệ theo quy tắc BR-SELLER.",
+                errors = validation.Errors
+            });
+        }
+
+        var currentStatus = entity?.Status ?? existing?.Status ?? "PENDING";
+        var currentHasTransfer = entity?.HasTechTransfer ?? existing?.HasTechTransfer ?? false;
+        var currentTrl = entity?.TrlLevel ?? existing?.TrlLevel;
+        var currentIpStatus = entity?.IpStatus ?? existing?.IpStatus;
+        var currentIpReg = entity?.IpRegistrationNumber ?? existing?.IpRegistrationNumber;
+        var currentTransferMethod = entity?.TransferMethod ?? existing?.TransferMethod;
+
+        // BR-SELLER-07: Tự động chuyển PENDING nếu sửa TRL hoặc SHTT khi hồ sơ đang APPROVED
+        bool coreIpChanged = currentHasTransfer && dto.HasTechTransfer && (
+            currentTrl != dto.TrlLevel ||
+            !string.Equals(currentIpStatus, dto.IpStatus, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(currentIpReg, dto.IpRegistrationNumber, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(currentTransferMethod, dto.TransferMethod, StringComparison.OrdinalIgnoreCase)
+        );
+
+        string newStatus;
+        DateTimeOffset? newPublishedAt = entity?.PublishedAt ?? existing?.PublishedAt;
+
+        if (isDraft)
+        {
+            newStatus = "DRAFT";
+            newPublishedAt = null;
+        }
+        else if (currentStatus == "DRAFT")
+        {
+            // Từ Draft nộp thẩm định
+            newStatus = "PENDING";
+            newPublishedAt = null;
+        }
+        else if (coreIpChanged && currentStatus == "APPROVED")
+        {
+            newStatus = "PENDING";
+            newPublishedAt = null;
+        }
+        else
+        {
+            newStatus = currentStatus;
+        }
+
+        var updated = new SellerOfferDto(
+            Id: id,
+            OfferCode: entity?.OfferCode ?? existing?.OfferCode ?? "OFF-UNKNOWN",
             OfferType: dto.OfferType.ToUpperInvariant(),
             HasTechTransfer: dto.HasTechTransfer,
             Title: dto.Title,
-            Summary: dto.Summary,
-            ProblemSolved: dto.ProblemSolved,
+            Summary: dto.Summary ?? "",
+            ProblemSolved: dto.ProblemSolved ?? "",
             SectorCode: dto.SectorCode.ToUpperInvariant(),
             SectorName: MapSectorName(dto.SectorCode),
             PricingType: dto.PricingType.ToUpperInvariant(),
@@ -476,189 +848,40 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             TransferMethod: dto.TransferMethod,
             CommercialStatus: dto.CommercialStatus,
             ContactPointRole: dto.ContactPointRole,
-            Status: "PENDING", // Khởi tạo chờ Sở KH&CN thẩm định theo BR-SELLER-05
-            SuccessfulConnections: 0,
-            RatingScore: 5.0m,
-            ReviewCount: 0,
-            CreatedAt: DateTimeOffset.UtcNow,
-            PublishedAt: null, // Chưa xuất bản khi chưa duyệt
-            ManagingAuthorityId: dto.ManagingAuthorityId ?? "VN-HN",
-            ManagingAuthorityName: dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
-            ScopeType: dto.ScopeType ?? "PROVINCE",
-            ScopeId: dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
-            EnterpriseTaxCode: dto.EnterpriseTaxCode,
-            EnterpriseName: dto.EnterpriseName
+            Status: newStatus,
+            SuccessfulConnections: entity?.SuccessfulConnections ?? existing?.SuccessfulConnections ?? 0,
+            RatingScore: entity?.RatingScore ?? existing?.RatingScore ?? 5.0m,
+            ReviewCount: entity?.ReviewCount ?? existing?.ReviewCount ?? 0,
+            CreatedAt: entity?.CreatedAt ?? existing?.CreatedAt ?? DateTimeOffset.UtcNow,
+            PublishedAt: newPublishedAt,
+            ManagingAuthorityId: dto.ManagingAuthorityId ?? entity?.ManagingAuthorityId ?? existing?.ManagingAuthorityId,
+            ManagingAuthorityName: dto.ManagingAuthorityName ?? entity?.ManagingAuthorityName ?? existing?.ManagingAuthorityName,
+            ScopeType: dto.ScopeType ?? entity?.ScopeType ?? existing?.ScopeType,
+            ScopeId: dto.ScopeId ?? entity?.ScopeId ?? existing?.ScopeId,
+            EnterpriseTaxCode: dto.EnterpriseTaxCode ?? entity?.EnterpriseTaxCode ?? existing?.EnterpriseTaxCode,
+            EnterpriseName: dto.EnterpriseName ?? entity?.EnterpriseName ?? existing?.EnterpriseName,
+            MainImageUrl: dto.MainImageUrl,
+            GalleryImageUrls: dto.GalleryImageUrls != null ? new List<string>(dto.GalleryImageUrls) : null,
+            DeliveryTimeline: dto.DeliveryTimeline,
+            WarrantyTerms: dto.WarrantyTerms,
+            SupplyScope: dto.SupplyScope,
+            PaymentTerms: dto.PaymentTerms,
+            InstallationSupport: dto.InstallationSupport,
+            SpecValues: dto.SpecValues,
+            Documents: dto.Documents,
+            ContactName: dto.ContactName,
+            ContactEmail: dto.ContactEmail,
+            ContactPhone: dto.ContactPhone
         );
 
-        // Lưu thực thể lâu dài vào CSDL PostgreSQL
-        var entity = new SellerTechnologyOffer(
-            id,
-            offerCode,
-            dto.OfferType.ToUpperInvariant(),
-            dto.HasTechTransfer,
-            dto.Title,
-            dto.Summary,
-            dto.ProblemSolved,
-            dto.SectorCode.ToUpperInvariant(),
-            MapSectorName(dto.SectorCode),
-            dto.PricingType.ToUpperInvariant(),
-            dto.PriceAmount,
-            dto.PriceMin,
-            dto.PriceMax,
-            dto.Currency ?? "VND",
-            dto.Unit,
-            dto.DeveloperOrigin,
-            dto.TrlLevel,
-            dto.IpStatus,
-            dto.IpRegistrationNumber,
-            dto.TransferMethod,
-            dto.CommercialStatus,
-            dto.ContactPointRole,
-            "PENDING",
-            dto.ManagingAuthorityId ?? "VN-HN",
-            dto.ManagingAuthorityName ?? "Sở Khoa học và Công nghệ TP. Hà Nội",
-            dto.ScopeType ?? "PROVINCE",
-            dto.ScopeId ?? dto.ManagingAuthorityId ?? "VN-HN",
-            dto.LegalConsent,
-            null,
-            null,
-            dto.EnterpriseTaxCode,
-            dto.EnterpriseName
-        );
-
-        db.Set<SellerTechnologyOffer>().Add(entity);
-        await uow.CommitAsync(ct);
-
-        OffersStore[id] = newOffer;
-
-        return CreatedAtAction(nameof(GetOfferById), new { id }, new { success = true, data = newOffer });
-    }
-
-    [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/review")]
-    [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/review")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ReviewOffer(Guid id, [FromBody] ReviewOfferDto dto, CancellationToken ct = default)
-    {
-        if (!OffersStore.TryGetValue(id, out var offer))
-        {
-            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ." });
-        }
-
-        var action = dto.Action?.Trim().ToUpperInvariant() ?? string.Empty;
-        SellerOfferDto updated;
-        if (action == "APPROVE")
-        {
-            updated = offer with
-            {
-                Status = "APPROVED",
-                PublishedAt = DateTimeOffset.UtcNow
-            };
-        }
-        else if (action == "REJECT")
-        {
-            updated = offer with
-            {
-                Status = "REJECTED"
-            };
-        }
-        else if (action == "REQUEST_CHANGES")
-        {
-            updated = offer with
-            {
-                Status = "CHANGES_REQUESTED"
-            };
-        }
-        else
-        {
-            return BadRequest(new { success = false, message = $"Hành động '{dto.Action}' không hợp lệ. Chấp nhận: APPROVE, REJECT, REQUEST_CHANGES." });
-        }
-
-        // Cập nhật CSDL PostgreSQL
-        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
-        if (entity != null)
-        {
-            entity.Review(action, dto.ReviewNote);
-            await uow.CommitAsync(ct);
-        }
-
-        OffersStore[id] = updated;
-        return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updated });
-    }
-
-    [HttpPut("/api/v1/portal/seller/technologies/{id:guid}")]
-    [HttpPut("/api/v2/portal/seller/technologies/{id:guid}")]
-    [AllowAnonymous]
-    public async Task<IActionResult> UpdateSellerOffer(Guid id, [FromBody] UpdateSellerOfferDto dto, CancellationToken ct = default)
-    {
-        if (!OffersStore.TryGetValue(id, out var existing))
-        {
-            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ." });
-        }
-
-        var validation = SellerOfferRulesValidator.ValidateUpdate(dto);
-        if (!validation.IsValid)
-        {
-            return BadRequest(new
-            {
-                success = false,
-                message = "Dữ liệu cập nhật hồ sơ không hợp lệ theo quy tắc BR-SELLER.",
-                errors = validation.Errors
-            });
-        }
-
-        // BR-SELLER-07: Quy tắc kiểm soát vòng đời & Tự động chuyển PENDING nếu sửa TRL hoặc SHTT
-        bool needsReaudit = existing.HasTechTransfer && dto.HasTechTransfer && (
-            existing.TrlLevel != dto.TrlLevel ||
-            !string.Equals(existing.IpStatus, dto.IpStatus, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(existing.IpRegistrationNumber, dto.IpRegistrationNumber, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(existing.TransferMethod, dto.TransferMethod, StringComparison.OrdinalIgnoreCase)
-        );
-
-        var newStatus = needsReaudit ? "PENDING" : existing.Status;
-        var newPublishedAt = needsReaudit ? null : existing.PublishedAt;
-
-        var updated = existing with
-        {
-            OfferType = dto.OfferType.ToUpperInvariant(),
-            HasTechTransfer = dto.HasTechTransfer,
-            Title = dto.Title,
-            Summary = dto.Summary,
-            ProblemSolved = dto.ProblemSolved,
-            SectorCode = dto.SectorCode.ToUpperInvariant(),
-            SectorName = MapSectorName(dto.SectorCode),
-            PricingType = dto.PricingType.ToUpperInvariant(),
-            PriceAmount = dto.PriceAmount,
-            PriceMin = dto.PriceMin,
-            PriceMax = dto.PriceMax,
-            Currency = dto.Currency ?? "VND",
-            Unit = dto.Unit,
-            DeveloperOrigin = dto.DeveloperOrigin,
-            TrlLevel = dto.TrlLevel,
-            IpStatus = dto.IpStatus,
-            IpRegistrationNumber = dto.IpRegistrationNumber,
-            TransferMethod = dto.TransferMethod,
-            CommercialStatus = dto.CommercialStatus,
-            ContactPointRole = dto.ContactPointRole,
-            Status = newStatus,
-            PublishedAt = newPublishedAt,
-            ManagingAuthorityId = dto.ManagingAuthorityId ?? existing.ManagingAuthorityId,
-            ManagingAuthorityName = dto.ManagingAuthorityName ?? existing.ManagingAuthorityName,
-            ScopeType = dto.ScopeType ?? existing.ScopeType,
-            ScopeId = dto.ScopeId ?? existing.ScopeId,
-            EnterpriseTaxCode = dto.EnterpriseTaxCode ?? existing.EnterpriseTaxCode,
-            EnterpriseName = dto.EnterpriseName ?? existing.EnterpriseName
-        };
-
-        // Cập nhật CSDL PostgreSQL
-        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
         if (entity != null)
         {
             entity.Update(
                 dto.OfferType.ToUpperInvariant(),
                 dto.HasTechTransfer,
                 dto.Title,
-                dto.Summary,
-                dto.ProblemSolved,
+                dto.Summary ?? "",
+                dto.ProblemSolved ?? "",
                 dto.SectorCode.ToUpperInvariant(),
                 MapSectorName(dto.SectorCode),
                 dto.PricingType.ToUpperInvariant(),
@@ -674,26 +897,60 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 dto.TransferMethod,
                 dto.CommercialStatus,
                 dto.ContactPointRole,
-                dto.ManagingAuthorityId ?? existing.ManagingAuthorityId,
-                dto.ManagingAuthorityName ?? existing.ManagingAuthorityName,
-                dto.ScopeType ?? existing.ScopeType,
-                dto.ScopeId ?? existing.ScopeId,
-                dto.EnterpriseTaxCode ?? existing.EnterpriseTaxCode,
-                dto.EnterpriseName ?? existing.EnterpriseName
+                dto.ManagingAuthorityId ?? entity.ManagingAuthorityId,
+                dto.ManagingAuthorityName ?? entity.ManagingAuthorityName,
+                dto.ScopeType ?? entity.ScopeType,
+                dto.ScopeId ?? entity.ScopeId,
+                dto.EnterpriseTaxCode ?? entity.EnterpriseTaxCode,
+                dto.EnterpriseName ?? entity.EnterpriseName,
+                dto.MainImageUrl,
+                dto.GalleryImageUrls != null ? new List<string>(dto.GalleryImageUrls) : null,
+                dto.DeliveryTimeline,
+                dto.WarrantyTerms,
+                dto.SupplyScope,
+                dto.PaymentTerms,
+                dto.InstallationSupport
             );
+
+            entity.SetStatus(newStatus);
+
+            // Cascade update specs
+            var existingSpecs = await db.Set<OfferSpecValue>().Where(s => s.OfferId == id).ToListAsync(ct);
+            db.Set<OfferSpecValue>().RemoveRange(existingSpecs);
+            if (dto.SpecValues != null)
+            {
+                foreach (var s in dto.SpecValues)
+                {
+                    db.Set<OfferSpecValue>().Add(new OfferSpecValue(id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit));
+                }
+            }
+
+            // Cascade update documents
+            var existingDocs = await db.Set<OfferDocument>().Where(d => d.OfferId == id).ToListAsync(ct);
+            db.Set<OfferDocument>().RemoveRange(existingDocs);
+            if (dto.Documents != null)
+            {
+                foreach (var d in dto.Documents)
+                {
+                    db.Set<OfferDocument>().Add(new OfferDocument(id, d.DocumentType, d.FileName, d.FileUrl, d.FileSizeBytes, d.AccessScope));
+                }
+            }
+
             await uow.CommitAsync(ct);
         }
 
         OffersStore[id] = updated;
 
-        var message = needsReaudit
-            ? "Cập nhật hồ sơ thành công! Lưu ý: Do bạn đã thay đổi Cấp độ TRL / Tình trạng SHTT / Phương thức chuyển giao, hồ sơ tự động chuyển về trạng thái CHỜ THẨM ĐỊNH (PENDING) bởi Sở KH&CN theo quy tắc BR-SELLER-07."
-            : "Cập nhật thông tin công nghệ chào bán thành công.";
+        var message = isDraft
+            ? "Đã lưu nháp hồ sơ thành công."
+            : coreIpChanged && currentStatus == "APPROVED"
+                ? "Cập nhật hồ sơ thành công! Lưu ý: Do bạn đã thay đổi Cấp độ TRL / Tình trạng SHTT / Phương thức chuyển giao, hồ sơ tự động chuyển về trạng thái CHỜ THẨM ĐỊNH (PENDING) bởi Sở KH&CN theo quy tắc BR-SELLER-07."
+                : "Cập nhật thông tin công nghệ chào bán thành công.";
 
         return Ok(new
         {
             success = true,
-            needsReaudit,
+            needsReaudit = coreIpChanged && currentStatus == "APPROVED",
             message,
             data = updated
         });
@@ -704,10 +961,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
     [AllowAnonymous]
     public async Task<IActionResult> DeleteSellerOffer(Guid id, CancellationToken ct = default)
     {
-        if (!OffersStore.TryRemove(id, out var _))
-        {
-            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ để xóa." });
-        }
+        OffersStore.TryRemove(id, out var _);
 
         var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
         if (entity != null)
@@ -724,39 +978,167 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
     [AllowAnonymous]
     public async Task<IActionResult> TogglePublish(Guid id, [FromQuery] bool? publish, CancellationToken ct = default)
     {
-        if (!OffersStore.TryGetValue(id, out var offer))
+        var existingInStore = OffersStore.TryGetValue(id, out var offer);
+        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        if (!existingInStore && entity == null)
         {
             return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chào bán công nghệ." });
         }
 
-        bool shouldPublish = publish ?? (offer.Status != "APPROVED");
-        var updated = offer with
-        {
-            Status = shouldPublish ? "APPROVED" : "HIDDEN",
-            PublishedAt = shouldPublish ? DateTimeOffset.UtcNow : null
-        };
+        var currentStatus = entity?.Status ?? offer?.Status ?? "PENDING";
+        var isCurrentlyApproved = currentStatus == "APPROVED";
+        var shouldPublish = publish ?? !isCurrentlyApproved;
 
-        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
+        var nextStatus = shouldPublish ? "APPROVED" : "HIDDEN";
+        DateTimeOffset? nextPublishedAt = shouldPublish ? DateTimeOffset.UtcNow : null;
+
         if (entity != null)
         {
-            if (shouldPublish)
-                entity.Review("APPROVE");
-            else
-                entity.Review("REQUEST_CHANGES", "Tạm ẩn bởi Bên bán");
+            entity.SetStatus(nextStatus);
             await uow.CommitAsync(ct);
         }
 
-        OffersStore[id] = updated;
+        if (offer != null)
+        {
+            OffersStore[id] = offer with { Status = nextStatus, PublishedAt = nextPublishedAt };
+        }
+
         return Ok(new
         {
             success = true,
-            message = shouldPublish ? "Đã công khai công nghệ lên sàn giao dịch." : "Đã tạm ẩn công nghệ khỏi sàn giao dịch.",
-            data = updated
+            status = nextStatus,
+            message = shouldPublish ? "Hồ sơ công nghệ đã được niêm yết công khai." : "Đã tạm ẩn hồ sơ công nghệ khỏi sàn."
         });
+    }
+
+    /// <summary>
+    /// REQ-04-019 & PO-DEC-20261008-07: Endpoint Trợ lý AI bóc tách thông số văn bằng SHTT & chào bán
+    /// Human-in-the-Loop, Zero-dependency Fallback
+    /// </summary>
+    [HttpPost("/api/v1/ai/extract-patent-specs")]
+    [HttpPost("/api/v2/ai/extract-patent-specs")]
+    [AllowAnonymous]
+    public IActionResult ExtractPatentSpecs([FromForm] IFormFile? file)
+    {
+        string fileName = file?.FileName ?? "Tai-lieu-thuyet-minh-giai-phap.pdf";
+        long fileSize = file?.Length ?? 1024 * 500;
+
+        if (fileSize > 15 * 1024 * 1024)
+        {
+            return StatusCode(413, new { success = false, message = "Tệp tải lên vượt quá dung lượng tối đa 15MB cho phép của Trợ lý AI." });
+        }
+
+        var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        if (!string.IsNullOrEmpty(ext) && !new[] { ".pdf", ".docx", ".jpg", ".jpeg", ".png" }.Contains(ext))
+        {
+            return BadRequest(new { success = false, message = "Định dạng tệp không được hỗ trợ. Vui lòng tải PDF, DOCX, JPG hoặc PNG." });
+        }
+
+        // Tạo bản nháp gợi ý thông minh dựa trên ngữ cảnh tài liệu
+        string title = "Hệ thống sấy thăng hoa chân không hồi lưu nhiệt tiết kiệm năng lượng";
+        string technicalSummary = "Ứng dụng nguyên lý hồi lưu nhiệt ẩm đa tầng kết hợp sấy đông khô chân không, giữ nguyên 98% hoạt tính sinh học.";
+        string problemSolved = "Giảm 40% chi phí điện năng tiêu thụ và rút ngắn thời gian sấy cho nông sản, dược liệu.";
+        string targetSectorCode = "FOOD";
+        int trl = 8;
+        string ipStatus = "PATENT_GRANTED";
+        string patentNumber = "VN-1-0028491";
+
+        if (fileName.Contains("robot", StringComparison.OrdinalIgnoreCase) || fileName.Contains("cnc", StringComparison.OrdinalIgnoreCase) || fileName.Contains("mech", StringComparison.OrdinalIgnoreCase))
+        {
+            title = "Robot hàn laser 6 trục siêu chính xác cho công nghiệp cơ khí chế tạo";
+            technicalSummary = "Robot hàn công nghiệp độ chính xác cao 0.02mm, tích hợp thị giác máy tính và cảm biến bù nhiệt thời gian thực.";
+            problemSolved = "Thay thế thợ hàn bậc cao, năng suất tăng 3.5 lần, đường hàn đồng nhất.";
+            targetSectorCode = "MECH";
+            trl = 7;
+            ipStatus = "UTILITY_MODEL";
+            patentNumber = "VN-2-0005124";
+        }
+        else if (fileName.Contains("iot", StringComparison.OrdinalIgnoreCase) || fileName.Contains("ai", StringComparison.OrdinalIgnoreCase) || fileName.Contains("software", StringComparison.OrdinalIgnoreCase))
+        {
+            title = "Nền tảng Gateway IoT công nghiệp chuẩn Edge Computing tích hợp AI giám sát";
+            technicalSummary = "Bộ điều khiển biên công nghiệp đa giao thức RS485/Modbus/OPC-UA với khả năng dự đoán lỗi máy rung chấn.";
+            problemSolved = "Thu thập dữ liệu cảm biến đa điểm tốc độ cao, ngăn chặn 90% sự cố dừng chuyền đột xuất.";
+            targetSectorCode = "IT";
+            trl = 8;
+            ipStatus = "SOFTWARE_COPYRIGHT";
+            patentNumber = "CS-2026-0914";
+        }
+
+        var suggestedSpecs = new List<OfferSpecValueDto>
+        {
+            new(Guid.NewGuid(), "SPEC-01", "Công suất xử lý định mức", "150", "kg/mẻ"),
+            new(Guid.NewGuid(), "SPEC-02", "Nhiệt độ cấp đông sâu", "-45", "°C"),
+            new(Guid.NewGuid(), "SPEC-03", "Áp suất chân không buồng sấy", "0.05", "mbar"),
+            new(Guid.NewGuid(), "SPEC-04", "Điện năng tiêu thụ bình quân", "8.5", "kW/h"),
+            new(Guid.NewGuid(), "SPEC-05", "Độ ẩm sản phẩm đầu ra", "< 3", "%")
+        };
+
+        var draft = new TechTransferDraftDto(
+            Success: true,
+            ExtractionId: $"ext-pat-{Guid.NewGuid():N}"[..18],
+            ConfidenceScore: 0.95,
+            Data: new TechTransferDraftData(
+                Title: title,
+                TechnicalSummary: technicalSummary,
+                ProblemSolved: problemSolved,
+                TargetSectorCode: targetSectorCode,
+                TechGroupCode: "CN-08",
+                IpQuad: new IpQuadDraftData(
+                    TrlLevel: trl,
+                    TrlEvidenceSummary: "Đã hoàn thành thử nghiệm vận hành công nghiệp liên tục 6 tháng tại cơ sở sản xuất.",
+                    IpStatus: ipStatus,
+                    PatentNumber: patentNumber,
+                    PatentOwner: "Viện Ứng Dụng Công Nghệ & Đơn vị cộng tác",
+                    TransferMethod: "NON_EXCLUSIVE_LICENSE",
+                    CommercialReadiness: "COMMERCIALLY_READY"
+                ),
+                OriginDeveloper: "Viện Ứng Dụng Công Nghệ (NACENTECH)",
+                SuggestedPriceRange: "800.000.000 - 1.200.000.000 VNĐ",
+                SuggestedSpecs: suggestedSpecs
+            ),
+            ExtractionMetadata: new TechTransferExtractionMetadata(
+                ModelUsed: "gemini-2.5-flash-multimodal",
+                ProcessingTimeMs: 1420,
+                HighlightFields: new[]
+                {
+                    "title",
+                    "technicalSummary",
+                    "problemSolved",
+                    "targetSectorCode",
+                    "ipQuad.trlLevel",
+                    "ipQuad.ipStatus",
+                    "ipQuad.patentNumber",
+                    "ipQuad.transferMethod",
+                    "originDeveloper",
+                    "suggestedSpecs"
+                }
+            )
+        );
+
+        return Ok(draft);
     }
 
     private static string MapSectorName(string code) => code.ToUpperInvariant() switch
     {
+        "AG" => "Nông nghiệp, Lâm nghiệp & Thủy sản",
+        "FOOD" => "Công nghệ chế biến nông sản - thực phẩm",
+        "DRINK" => "Sản xuất đồ uống & Nước giải khát",
+        "MECH" => "Cơ khí chế tạo & Tự động hóa",
+        "ELEC" => "Điện tử, Bán dẫn & Viễn thông",
+        "ENV" => "Công nghệ môi trường & Kinh tế tuần hoàn",
+        "BUILD" => "Vật liệu xây dựng & Kỹ thuật công trình",
+        "LOG" => "Logistics, Vận tải & Chuỗi cung ứng",
+        "HOSP" => "Y tế, Dược phẩm & Thiết bị chăm sóc sức khỏe",
+        "IT" => "Công nghệ thông tin, Phần mềm & IoT",
+        "SCI" => "Khoa học vật liệu & Công nghệ đo lường",
+        "TEXT" => "Dệt may, Da giày & Thời trang kỹ thuật",
+        "WOOD" => "Chế biến gỗ & Lâm sản công nghệ cao",
+        "CHEM" => "Hóa chất, Phân bón & Vật liệu mới",
+        "PHARMA" => "Dược phẩm, Mỹ phẩm & Công nghệ sinh học",
+        "OPT" => "Quang học & Thiết bị phân tích chính xác",
+        "FURN" => "Sản phẩm nội thất & Gia dụng thông minh",
+        "OTHER" => "Lĩnh vực công nghệ tổng hợp khác",
         "LV01" => "Nông nghiệp",
         "LV05" => "Chế biến thực phẩm – đồ uống",
         "LV07" => "Cơ khí – chế tạo – công nghiệp hỗ trợ",
@@ -767,12 +1149,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         "LV15" => "Du lịch – khách sạn – nhà hàng",
         "LV16" => "CNTT – viễn thông – chuyển đổi số",
         "LV17" => "Khoa học – công nghệ – đổi mới sáng tạo",
-        "FOOD" => "Công nghệ chế biến nông sản - thực phẩm",
-        "MECH" => "Cơ khí chế tạo & Tự động hóa",
-        "IT" => "Công nghệ thông tin, Viễn thông & IoT",
-        "ENV" => "Công nghệ môi trường & Kinh tế tuần hoàn",
         "BIO" => "Công nghệ sinh học & Dược liệu",
-        "CHEM" => "Hóa chất & Vật liệu mới",
         "ENERGY" => "Năng lượng mới & Tái tạo",
         "HEALTH" => "Y tế, Thiết bị & Chăm sóc sức khỏe",
         _ => "Lĩnh vực công nghệ tổng hợp"

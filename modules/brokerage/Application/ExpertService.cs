@@ -169,7 +169,37 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             var degList = degrees.Where(d => !string.IsNullOrWhiteSpace(d)).Select(d => d.Trim()).ToList();
             if (degList.Count > 0)
             {
-                query = query.Where(p => degList.Contains(p.Degree) || degList.Contains(p.AcademicRank));
+                var expandedDegs = new HashSet<string>(degList, StringComparer.OrdinalIgnoreCase);
+                foreach (var deg in degList)
+                {
+                    if (string.Equals(deg, "GS", StringComparison.OrdinalIgnoreCase) || string.Equals(deg, "PROFESSOR", StringComparison.OrdinalIgnoreCase))
+                    {
+                        expandedDegs.Add("GS");
+                        expandedDegs.Add("PROFESSOR");
+                    }
+                    else if (string.Equals(deg, "PGS", StringComparison.OrdinalIgnoreCase) || string.Equals(deg, "ASSOCIATE_PROFESSOR", StringComparison.OrdinalIgnoreCase))
+                    {
+                        expandedDegs.Add("PGS");
+                        expandedDegs.Add("ASSOCIATE_PROFESSOR");
+                    }
+                    else if (string.Equals(deg, "DOCTOR", StringComparison.OrdinalIgnoreCase) || string.Equals(deg, "TS", StringComparison.OrdinalIgnoreCase) || string.Equals(deg, "TSKH", StringComparison.OrdinalIgnoreCase))
+                    {
+                        expandedDegs.Add("DOCTOR");
+                        expandedDegs.Add("TS");
+                        expandedDegs.Add("TSKH");
+                    }
+                    else if (string.Equals(deg, "MASTER", StringComparison.OrdinalIgnoreCase) || string.Equals(deg, "ThS", StringComparison.OrdinalIgnoreCase))
+                    {
+                        expandedDegs.Add("MASTER");
+                        expandedDegs.Add("ThS");
+                        expandedDegs.Add("ENGINEER");
+                        expandedDegs.Add("BACHELOR");
+                        expandedDegs.Add("KS");
+                        expandedDegs.Add("CN");
+                    }
+                }
+                var expandedList = expandedDegs.ToList();
+                query = query.Where(p => expandedList.Contains(p.Degree) || expandedList.Contains(p.AcademicRank));
             }
         }
 

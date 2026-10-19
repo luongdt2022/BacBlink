@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using NacenTech.Modules.Technology.Application;
+using NacenTech.Modules.Technology.Domain;
 using Xunit;
 
 namespace NacenTech.Modules.Technology.Tests;
@@ -24,7 +27,12 @@ public class SellerOfferRulesValidatorTests
         IpRegistrationNumber: null,
         TransferMethod: null,
         CommercialStatus: null,
-        ContactPointRole: null
+        ContactPointRole: null,
+        ManagingAuthorityId: "VN-HN",
+        ManagingAuthorityName: "Sở Khoa học và Công nghệ TP. Hà Nội",
+        ScopeType: "PROVINCE",
+        ScopeId: "VN-HN",
+        LegalConsent: true
     );
 
     [Fact]
@@ -99,9 +107,10 @@ public class SellerOfferRulesValidatorTests
         var dto = CreateValidBaseDto() with
         {
             HasTechTransfer = true,
-            DeveloperOrigin = "Viện Khoa Học Nông Nghiệp",
+            DeveloperOrigin = "Viện Cơ Điện Nông Nghiệp",
             TrlLevel = invalidTrl,
             IpStatus = "PATENT_GRANTED",
+            IpRegistrationNumber = "VN-1-0028491",
             TransferMethod = "EXCLUSIVE_LICENSE",
             CommercialStatus = "COMMERCIALLY_READY"
         };
@@ -125,6 +134,7 @@ public class SellerOfferRulesValidatorTests
             DeveloperOrigin = "Viện Khoa Học Nông Nghiệp",
             TrlLevel = validTrl,
             IpStatus = "PATENT_GRANTED",
+            IpRegistrationNumber = "VN-1-0028491",
             TransferMethod = "EXCLUSIVE_LICENSE",
             CommercialStatus = "COMMERCIALLY_READY"
         };
@@ -235,7 +245,7 @@ public class SellerOfferRulesValidatorTests
     [Fact]
     public void BR_SELLER_07_WhenCoreIpOrTrlChanges_EntityShouldResetToPending()
     {
-        var offer = new NacenTech.Modules.Technology.Domain.SellerTechnologyOffer(
+        var offer = new SellerTechnologyOffer(
             id: Guid.NewGuid(),
             offerCode: "OFF-20261011-00001",
             offerType: "DEVICE",
@@ -301,5 +311,182 @@ public class SellerOfferRulesValidatorTests
         // BR-SELLER-07 asserts status must be PENDING and PublishedAt null
         Assert.Equal("PENDING", offer.Status);
         Assert.Null(offer.PublishedAt);
+    }
+
+    // --- DELTA V5 UNIT TESTS (BR-SELLER-08 to BR-SELLER-11) ---
+
+    [Fact]
+    public void BR_SELLER_08_ValidateDraft_WithOnlyTitleMin3Chars_ShouldPass()
+    {
+        var draftDto = new CreateSellerOfferDto(
+            OfferType: "",
+            HasTechTransfer: true,
+            Title: "Hệ thống sấy AI",
+            Summary: "",
+            ProblemSolved: "",
+            SectorCode: "",
+            PricingType: "",
+            PriceAmount: null,
+            PriceMin: null,
+            PriceMax: null,
+            Currency: "VND",
+            Unit: null,
+            DeveloperOrigin: null,
+            TrlLevel: null,
+            IpStatus: null,
+            IpRegistrationNumber: null,
+            TransferMethod: null,
+            CommercialStatus: null,
+            ContactPointRole: null,
+            ManagingAuthorityId: null,
+            LegalConsent: false,
+            Action: "SAVE_DRAFT"
+        );
+
+        var result = SellerOfferRulesValidator.ValidateDraft(draftDto);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void BR_SELLER_08_ValidateDraft_WithTitleUnder3Chars_ShouldFail()
+    {
+        var draftDto = new CreateSellerOfferDto(
+            OfferType: "",
+            HasTechTransfer: false,
+            Title: "AI",
+            Summary: "",
+            ProblemSolved: "",
+            SectorCode: "",
+            PricingType: "",
+            PriceAmount: null,
+            PriceMin: null,
+            PriceMax: null,
+            Currency: "VND",
+            Unit: null,
+            DeveloperOrigin: null,
+            TrlLevel: null,
+            IpStatus: null,
+            IpRegistrationNumber: null,
+            TransferMethod: null,
+            CommercialStatus: null,
+            ContactPointRole: null,
+            Action: "SAVE_DRAFT"
+        );
+
+        var result = SellerOfferRulesValidator.ValidateDraft(draftDto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(draftDto.Title)));
+    }
+
+    [Fact]
+    public void BR_SELLER_10_DocumentValidation_InvalidExtension_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            Documents = new List<OfferDocumentDto>
+            {
+                new(null, "CATALOGUE", "trojan_file.exe", "https://cdn.example.com/trojan.exe", 1024, "PUBLIC")
+            }
+        };
+
+        var result = SellerOfferRulesValidator.ValidatePublish(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey("Documents[0].FileName"));
+    }
+
+    [Fact]
+    public void BR_SELLER_10_DocumentValidation_InvalidAccessScope_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            Documents = new List<OfferDocumentDto>
+            {
+                new(null, "CATALOGUE", "catalogue.pdf", "https://cdn.example.com/cat.pdf", 1024, "SECRET_FORBIDDEN")
+            }
+        };
+
+        var result = SellerOfferRulesValidator.ValidatePublish(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey("Documents[0].AccessScope"));
+    }
+
+    [Fact]
+    public void BR_SELLER_10_DocumentValidation_FileSizeExceeded_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            Documents = new List<OfferDocumentDto>
+            {
+                new(null, "CATALOGUE", "heavy.pdf", "https://cdn.example.com/heavy.pdf", 30 * 1024 * 1024, "PUBLIC") // 30MB > 25MB
+            }
+        };
+
+        var result = SellerOfferRulesValidator.ValidatePublish(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey("Documents[0].FileSizeBytes"));
+    }
+
+    [Fact]
+    public void BR_SELLER_11_DynamicSpecs_DuplicateSpecName_ShouldFail()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            SpecValues = new List<OfferSpecValueDto>
+            {
+                new(null, "SPEC-1", "Công suất sấy", "100", "kg/h"),
+                new(null, "SPEC-2", "  công suất sấy  ", "200", "kg/h") // Duplicate
+            }
+        };
+
+        var result = SellerOfferRulesValidator.ValidatePublish(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey("SpecValues[1].SpecName"));
+    }
+
+    [Fact]
+    public void BR_SELLER_11_DynamicSpecs_Exceeds50Rows_ShouldFail()
+    {
+        var specs = new List<OfferSpecValueDto>();
+        for (int i = 0; i < 51; i++)
+        {
+            specs.Add(new OfferSpecValueDto(null, $"SPEC-{i}", $"Thông số thứ {i}", $"{i * 10}", "kW"));
+        }
+
+        var dto = CreateValidBaseDto() with { SpecValues = specs };
+        var result = SellerOfferRulesValidator.ValidatePublish(dto);
+
+        Assert.False(result.IsValid);
+        Assert.True(result.Errors.ContainsKey(nameof(dto.SpecValues)));
+    }
+
+    [Fact]
+    public void BR_SELLER_11_DynamicSpecs_ValidSpecs_ShouldPass()
+    {
+        var dto = CreateValidBaseDto() with
+        {
+            SpecValues = new List<OfferSpecValueDto>
+            {
+                new(null, "SPEC-1", "Công suất sấy", "100", "kg/h"),
+                new(null, "SPEC-2", "Nhiệt độ cấp đông", "-45", "°C"),
+                new(null, "SPEC-3", "Độ chân không buồng sấy", "0.02", "mbar")
+            },
+            Documents = new List<OfferDocumentDto>
+            {
+                new(null, "CATALOGUE", "catalogue.pdf", "https://cdn.example.com/cat.pdf", 5 * 1024 * 1024, "PUBLIC"),
+                new(null, "VIDEO", "demo-clip.mp4", "https://cdn.example.com/demo.mp4", 45 * 1024 * 1024, "AFTER_CONNECTION")
+            }
+        };
+
+        var result = SellerOfferRulesValidator.ValidatePublish(dto);
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
     }
 }
