@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AppButton } from "@/components/ui/design-system";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,12 @@ export function Dialog({
   className,
   maxWidth = "md",
 }: DialogProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -50,9 +57,9 @@ export function Dialog({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
@@ -95,6 +102,7 @@ export function Dialog({
 
         <div>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

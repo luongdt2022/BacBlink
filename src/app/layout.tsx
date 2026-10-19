@@ -44,7 +44,7 @@ export default function RootLayout({
                 <NavigationProgress />
               </Suspense>
               <Navbar />
-              <main className="flex-1 animate-page-enter">{children}</main>
+              <main className="flex-1">{children}</main>
               <Footer />
               {/* Trợ lý ảo AI NacentTwin nổi toàn hệ thống trên tất cả các màn hình */}
               <AIAssistantWidget />

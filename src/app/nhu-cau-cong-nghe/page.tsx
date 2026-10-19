@@ -154,6 +154,7 @@ export default function PublicDemandsPage() {
     const role = (user.role || "").toUpperCase();
     if (
       role === ROLES.BUYER ||
+      role === ROLES.SELLER ||
       role === ROLES.INNOVATION_ENTITY ||
       role === ROLES.ADMIN ||
       role === ROLES.SUPER_ADMIN
@@ -161,7 +162,7 @@ export default function PublicDemandsPage() {
       setIsModalOpen(true);
     } else {
       toast.warning(
-        `Tài khoản của bạn đang có vai trò [${user.role}]. Chỉ Bên Mua (Buyer) hoặc Doanh nghiệp ĐMST mới có quyền đăng bài toán kỹ thuật.`,
+        `Tài khoản của bạn đang có vai trò [${user.role}]. Chỉ Doanh nghiệp (Bên Mua, Bên Bán hoặc Doanh nghiệp ĐMST) mới có quyền đăng bài toán kỹ thuật.`,
         "Chưa Đủ Thẩm Quyền"
       );
     }

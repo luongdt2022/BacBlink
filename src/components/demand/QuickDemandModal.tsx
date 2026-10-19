@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   PlusCircle,
@@ -16,6 +17,11 @@ import { useToast } from '@/components/common/toast';
 import { authClient } from '@/lib/auth-client';
 import { getActiveSectors, SectorOption } from '@/lib/master-data-client';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
+import {
+  TECH_GROUP_OPTIONS,
+  DEMAND_TYPE_OPTIONS,
+  BUDGET_RANGES_7
+} from '@/app/khao-sat-nhu-cau/types';
 
 interface QuickDemandModalProps {
   isOpen: boolean;
@@ -25,7 +31,12 @@ interface QuickDemandModalProps {
 
 export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDemandModalProps) {
   const toast = useToast();
+  const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [sectors, setSectors] = useState<SectorOption[]>(
     SECTORS_18_CATALOG.filter((s) => s.code !== 'ALL')
   );
@@ -40,24 +51,38 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
       .catch(() => {});
   }, []);
 
-  const [formData, setFormData] = useState({
-    stageName: 'Đúc và Nhiệt luyện kim loại',
-    technicalProblem: 'Khắc phục hiện tượng nứt chân chim và co ngót khi đúc phôi hợp kim chịu nhiệt',
-    desiredSolution: 'Giải pháp biến tính hạt kim loại và công nghệ làm nguội tuần hoàn',
-    needConsulting: true,
-    expectedGoal: 'Giảm tỷ lệ phế phẩm đúc từ 7.5% xuống dưới 1.2%, tiết kiệm 800 triệu/năm.',
+  const initialFormData = {
+    // 1. Tên công nghệ/ thiết bị
+    technologyName: '',
+    // 2. Mô tả chi tiết thêm về nhu cầu
+    solutionDetail: '',
+    // 3. Ngân sách
+    budgetRange: BUDGET_RANGES_7[3] || '500 triệu–1 tỷ đồng',
+    // 4. Lĩnh vực
     sectorCode: 'LV01',
+    // 5. Nhóm công nghệ
     techGroupCode: 'CN01',
+    // 6. Công đoạn sản xuất có sự cố
+    stageName: '',
+    // 7. Mô tả cụ thể vấn đề kỹ thuật / điểm nghẽn *
+    technicalProblem: '',
+    // 8. Mục tiêu kỹ thuật và kinh tế kỳ vọng sau khi có công nghệ/ thiết bị
+    expectedGoal: '',
+    // 9. Cần chuyên gia tư vấn
+    needConsulting: false,
+    // 10. Loại hình tiếp nhận
     demandTypeCode: 'NC01',
-    budgetRange: '500 triệu – 1 tỷ VNĐ'
-  });
+  };
 
-  const [tniValues, setTniValues] = useState<TniValues>({
-    urgency: 4,
-    impact: 4,
+  const initialTniValues: TniValues = {
+    urgency: 3,
+    impact: 3,
     investment: 3,
-    readiness: 4
-  });
+    readiness: 3,
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+  const [tniValues, setTniValues] = useState<TniValues>(initialTniValues);
 
   // Handle ESC key and backdrop scroll lock
   useEffect(() => {
@@ -78,19 +103,24 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      const desiredSolutionCombined = formData.solutionDetail
+        ? `${formData.technologyName} — ${formData.solutionDetail}`
+        : formData.technologyName;
+
       const payload = {
         stageName: formData.stageName,
         technicalProblem: formData.technicalProblem,
-        desiredSolution: formData.desiredSolution,
+        desiredSolution: desiredSolutionCombined,
         needConsulting: formData.needConsulting,
         expectedGoal: formData.expectedGoal,
+        applicationScale: formData.solutionDetail || '',
         sectorCode: formData.sectorCode,
         techGroupCode: formData.techGroupCode,
         demandTypeCode: formData.demandTypeCode,
@@ -113,6 +143,8 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
       if (res.ok) {
         const data = await res.json();
         toast.success(`Đã đăng ký bài toán kỹ thuật ${data.itemCode} thành công!`, 'Tạo Thành Công');
+        setFormData(initialFormData);
+        setTniValues(initialTniValues);
         onSuccess(data);
         onClose();
       } else {
@@ -126,9 +158,9 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-hidden bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
@@ -141,7 +173,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
       />
 
       {/* Dialog Surface Card - Desktop-first layout */}
-      <div className="relative w-full max-w-5xl xl:max-w-6xl max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 overflow-hidden z-10 animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-5xl xl:max-w-6xl max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 overflow-hidden z-10 animate-in zoom-in-95 duration-200 my-auto">
         {/* Sticky Header Bar - Never scrolls out of view */}
         <div className="shrink-0 px-6 py-4 sm:px-8 sm:py-5 border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-4 z-10">
           <div className="flex items-center gap-3.5 min-w-0">
@@ -183,132 +215,191 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
           <div className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-7">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
               {/* Left Column: Form Info (6 cols) */}
-              <div className="lg:col-span-6 space-y-4">
+              <div className="lg:col-span-6 space-y-3.5">
                 <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="w-7 h-7 rounded-lg bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-cyan-400 flex items-center justify-center font-bold text-xs">
                     <FileText className="w-4 h-4" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    1. Chi Tiết Bài Toán Kỹ Thuật
-                  </h4>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      1. Chi Tiết Bài Toán Kỹ Thuật
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      B. Khảo sát nhu cầu công nghệ / Vấn đề cần giải quyết (10 tiêu chí)
+                    </p>
+                  </div>
                 </div>
 
-                {/* Field 1: Stage Name */}
+                {/* 1. Tên công nghệ/ thiết bị */}
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                    Công đoạn sản xuất có sự cố <span className="text-rose-500">*</span>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    1. Tên công nghệ / thiết bị <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.technologyName}
+                    onChange={(e) => setFormData({ ...formData, technologyName: e.target.value })}
+                    placeholder="Ví dụ: Ứng dụng KH&CN xây dựng mô hình thâm canh cây na rải vụ..."
+                    className="form-control w-full text-xs font-medium"
+                  />
+                </div>
+
+                {/* 2. Mô tả chi tiết thêm về nhu cầu */}
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    2. Mô tả chi tiết thêm về nhu cầu
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formData.solutionDetail}
+                    onChange={(e) => setFormData({ ...formData, solutionDetail: e.target.value })}
+                    placeholder="Mô tả cụ thể các yêu cầu kỹ thuật, giải pháp mong muốn tiếp nhận..."
+                    className="form-control w-full p-2.5 text-xs leading-relaxed"
+                  />
+                </div>
+
+                {/* Hàng 3 trường: 3. Ngân sách - 4. Lĩnh vực - 5. Nhóm công nghệ */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {/* 3. Ngân sách */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      3. Ngân sách
+                    </label>
+                    <select
+                      value={formData.budgetRange}
+                      onChange={(e) => setFormData({ ...formData, budgetRange: e.target.value })}
+                      className="form-control w-full text-xs font-medium"
+                    >
+                      {BUDGET_RANGES_7.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 4. Lĩnh vực */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1 truncate" title="Lĩnh vực">
+                      4. Lĩnh vực <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={formData.sectorCode}
+                      onChange={(e) => setFormData({ ...formData, sectorCode: e.target.value })}
+                      className="form-control w-full text-xs font-medium"
+                    >
+                      {sectors.map((sec) => (
+                        <option key={sec.code} value={sec.code}>
+                          {sec.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 5. Nhóm công nghệ */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1 truncate" title="Nhóm công nghệ">
+                      5. Nhóm công nghệ
+                    </label>
+                    <select
+                      value={formData.techGroupCode}
+                      onChange={(e) => setFormData({ ...formData, techGroupCode: e.target.value })}
+                      className="form-control w-full text-xs font-medium"
+                    >
+                      {TECH_GROUP_OPTIONS.map((tg) => (
+                        <option key={tg.code} value={tg.code}>
+                          [{tg.code}] {tg.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* 6. Công đoạn sản xuất có sự cố */}
+                <div>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    6. Công đoạn sản xuất có sự cố <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.stageName}
                     onChange={(e) => setFormData({ ...formData, stageName: e.target.value })}
-                    placeholder="Ví dụ: Đúc và Nhiệt luyện kim loại, Dập nguội..."
-                    className="form-control w-full text-xs sm:text-sm font-medium"
+                    placeholder="Ví dụ: Đúc và Nhiệt luyện kim loại, Dập nguội, Thu hoạch & Đóng gói..."
+                    className="form-control w-full text-xs font-medium"
                   />
-                  <p className="text-xs text-slate-400 mt-1">
-                    Chỉ rõ phân xưởng hoặc công đoạn gặp điểm nghẽn kỹ thuật.
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Chỉ rõ phân xưởng hoặc quy trình sản xuất đang gặp khó khăn.
                   </p>
                 </div>
 
-                {/* Field 2: Problem Description */}
+                {/* 7. Mô tả cụ thể vấn đề kỹ thuật / điểm nghẽn * */}
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                    Mô tả bài toán kỹ thuật / Điểm nghẽn sản xuất <span className="text-rose-500">*</span>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    7. Mô tả cụ thể vấn đề kỹ thuật / điểm nghẽn <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     required
-                    rows={3}
+                    rows={2}
                     value={formData.technicalProblem}
                     onChange={(e) => setFormData({ ...formData, technicalProblem: e.target.value })}
-                    placeholder="Mô tả chi tiết triệu chứng lỗi, tỷ lệ phế phẩm hoặc thông số kỹ thuật chưa đạt..."
-                    className="form-control w-full p-3 text-xs sm:text-sm leading-relaxed"
+                    placeholder="Mô tả cụ thể sự cố, tỷ lệ phế phẩm hoặc thông số kỹ thuật chưa đạt cần khắc phục..."
+                    className="form-control w-full p-2.5 text-xs leading-relaxed"
                   />
                 </div>
 
-                {/* Field 3 & 4: 2 Columns for Sector & Budget */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                      Lĩnh vực theo TT17/2019/TT-BKHCN <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={formData.sectorCode}
-                      onChange={(e) => setFormData({ ...formData, sectorCode: e.target.value })}
-                      className="form-control w-full text-xs sm:text-sm font-medium"
-                    >
-                      {sectors.map((sec) => (
-                        <option key={sec.code} value={sec.code}>
-                          {sec.code} — {sec.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                      Khung ngân sách dự kiến
-                    </label>
-                    <select
-                      value={formData.budgetRange}
-                      onChange={(e) => setFormData({ ...formData, budgetRange: e.target.value })}
-                      className="form-control w-full text-xs sm:text-sm font-medium"
-                    >
-                      <option value="Dưới 500 triệu VNĐ">Dưới 500 triệu VNĐ</option>
-                      <option value="500 triệu – 1 tỷ VNĐ">500 triệu – 1 tỷ VNĐ</option>
-                      <option value="1 – 2 tỷ VNĐ">1 – 2 tỷ VNĐ</option>
-                      <option value="2 – 5 tỷ VNĐ">2 – 5 tỷ VNĐ</option>
-                      <option value="Trên 5 tỷ VNĐ">Trên 5 tỷ VNĐ</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Field 5: Desired Solution */}
+                {/* 8. Mục tiêu kỹ thuật và kinh tế kỳ vọng sau khi có công nghệ/ thiết bị */}
                 <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                    Giải pháp công nghệ mong muốn
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.desiredSolution}
-                    onChange={(e) => setFormData({ ...formData, desiredSolution: e.target.value })}
-                    placeholder="Ví dụ: Công nghệ biến tính hạt kim loại, tự động hóa cấp phôi..."
-                    className="form-control w-full text-xs sm:text-sm"
-                  />
-                </div>
-
-                {/* Field 6: Expected Goal */}
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                    Mục tiêu kinh tế / kỹ thuật kỳ vọng
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    8. Mục tiêu kỹ thuật và kinh tế kỳ vọng sau khi có công nghệ/ thiết bị
                   </label>
                   <input
                     type="text"
                     value={formData.expectedGoal}
                     onChange={(e) => setFormData({ ...formData, expectedGoal: e.target.value })}
-                    placeholder="Ví dụ: Giảm tỷ lệ phế phẩm đúc từ 7.5% xuống dưới 1.2%..."
-                    className="form-control w-full text-xs sm:text-sm"
+                    placeholder="Ví dụ: Giảm tỷ lệ phế phẩm đúc từ 7.5% xuống dưới 1.2%, tiết kiệm 800 triệu/năm..."
+                    className="form-control w-full text-xs font-medium"
                   />
                 </div>
 
-                {/* Checkbox: Need Consulting */}
-                <div className="pt-2">
-                  <label className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800/70 transition">
-                    <input
-                      type="checkbox"
-                      checked={formData.needConsulting}
-                      onChange={(e) => setFormData({ ...formData, needConsulting: e.target.checked })}
-                      className="w-4 h-4 mt-0.5 rounded accent-brand-700 cursor-pointer"
-                    />
-                    <div className="text-xs">
-                      <span className="font-bold text-slate-900 dark:text-white block">
-                        Yêu cầu Chuyên gia tư vấn 1-1
+                {/* Hàng 2 trường: 9. Cần chuyên gia tư vấn & 10. Loại hình tiếp nhận */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                  {/* 9. Cần chuyên gia tư vấn */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      9. Cần chuyên gia tư vấn
+                    </label>
+                    <label className="flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800/70 transition h-11">
+                      <input
+                        type="checkbox"
+                        checked={formData.needConsulting}
+                        onChange={(e) => setFormData({ ...formData, needConsulting: e.target.checked })}
+                        className="w-4 h-4 rounded accent-brand-700 cursor-pointer"
+                      />
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        Có nhu cầu tư vấn 1-1 từ chuyên gia
                       </span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        Được chuyên gia trong Mạng lưới ĐMST NacenTwin hỗ trợ làm rõ đề bài và kết nối giải pháp.
-                      </span>
-                    </div>
-                  </label>
+                    </label>
+                  </div>
+
+                  {/* 10. Loại hình tiếp nhận */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      10. Loại hình tiếp nhận
+                    </label>
+                    <select
+                      value={formData.demandTypeCode}
+                      onChange={(e) => setFormData({ ...formData, demandTypeCode: e.target.value })}
+                      className="form-control w-full text-xs font-medium"
+                    >
+                      {DEMAND_TYPE_OPTIONS.map((dt) => (
+                        <option key={dt.code} value={dt.code}>
+                          [{dt.code}] {dt.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -370,6 +461,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

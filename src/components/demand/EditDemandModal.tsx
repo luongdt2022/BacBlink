@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Sparkles,
@@ -48,10 +49,15 @@ interface EditDemandModalProps {
 
 export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: EditDemandModalProps) {
   const toast = useToast();
+  const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sectors, setSectors] = useState<SectorOption[]>(
     SECTORS_18_CATALOG.filter((s) => s.code !== 'ALL')
   );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     getActiveSectors()
@@ -122,7 +128,7 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !demand) return null;
+  if (!isOpen || !demand || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,7 +186,7 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
       onClick={(e) => {
@@ -240,7 +246,7 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
                 >
                   {sectors.map((sec) => (
                     <option key={sec.code} value={sec.code}>
-                      [{sec.code}] {sec.name}
+                      {sec.name}
                     </option>
                   ))}
                 </select>
@@ -374,6 +380,7 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

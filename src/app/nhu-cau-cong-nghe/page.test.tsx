@@ -137,8 +137,22 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     authClient.setSession("test-token", {
       id: "u-buyer-01",
       email: "buyer@dn.vn",
-      fullName: "Đại diện Doanh Nghiệp",
+      fullName: "Đại diện Doanh Nghiệp Mua",
       role: ROLES.BUYER,
+    });
+
+    fireEvent.click(postButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
+    });
+
+    // 3. Khi đăng nhập vai trò SELLER: bấm nút cũng mở modal bình thường
+    authClient.setSession("test-token-seller", {
+      id: "u-seller-01",
+      email: "seller@dn.vn",
+      fullName: "Đại diện Doanh Nghiệp Bán",
+      role: ROLES.SELLER,
     });
 
     fireEvent.click(postButton);
@@ -148,3 +162,4 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     });
   });
 });
+
