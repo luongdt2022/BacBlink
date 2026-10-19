@@ -107,3 +107,13 @@
 - [x] **T-03.47** `[FE]` Cập nhật `src/app/portal/buyer/demands/page.tsx`: Cột Thao tác hiển thị nút [Sửa] (khi `PENDING`), nút [Đóng bài toán] (khi chưa đóng), tích hợp `ConfirmModal` và tab bộ lọc bài toán `CLOSED`.
 - [x] **T-03.48** `[TEST]` Bổ sung kiểm thử Unit Test cho `DemandItem` methods và test cases giao diện kiểm chứng hành vi Sửa và Đóng bài toán.
 
+---
+
+## Phase 12: Delta v6 (CR-006) — Tái Cấu Trúc Thứ Tự Tab Khảo Sát & Ràng Buộc Validation
+
+- [x] **T-03.49** `[SPEC]` Ghi nhận Delta CR-006 vào `spec.md` và đồng bộ tài liệu kiến trúc.
+- [x] **T-03.50** `[FE]` Tái cấu trúc Stepper Navigation và Form Sections trong `SourceCode/frontend/src/app/khao-sat-nhu-cau/page.tsx`: Đưa Tab E (Nhu Cầu & TNI) lên Bước 2; xếp Tab B, C, D vào các Bước 3, 4, 5.
+- [x] **T-03.51** `[FE]` Cập nhật logic `validateStep`: Bắt buộc hoàn tất Bước 1 và Bước 2 (ít nhất 1 bài toán có nội dung); các Bước 3, 4, 5, 6 chuyển thành Optional (cho phép bỏ qua).
+- [x] **T-03.52** `[FE]` Hỗ trợ nộp nhanh khảo sát sau khi hoàn thành Bước 1 và Bước 2, cho phép chuyển thẳng sang Bước 7 để ký và nộp.
+- [x] **T-03.53** `[TEST]` Cập nhật và bổ sung Vitest trong `page.test.tsx` kiểm chứng thứ tự 7 bước mới, validation bắt buộc Bước 1 & 2, chuyển bước tùy chọn không bị chặn.
+

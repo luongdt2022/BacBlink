@@ -244,3 +244,25 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 ### 3. Quy tắc Nghiệp vụ Bổ Sung (BR-Delta-09 -> BR-Delta-10)
 - **BR-Delta-09 (Immutable Locked State for Verified Demands)**: Bài toán khi đã được Sở duyệt niêm yết (`VERIFIED`) hoặc đã đóng (`CLOSED`) thì nút [Chỉnh sửa] sẽ bị ẩn hoặc disabled. Doanh nghiệp chỉ có thể đóng bài toán chứ không thể sửa đổi thông số kỹ thuật đã thẩm định.
 - **BR-Delta-10 (Soft Close Invariant)**: Hành động đóng bài toán chỉ cập nhật `Status = 'CLOSED'` và gỡ niêm yết công khai (`IsPublicListed = false`). Tuyệt đối cấm xóa cứng (Hard Delete) bản ghi khỏi CSDL nhằm phục vụ lưu trữ lịch sử và thống kê phân tích.
+
+---
+
+## 8. DELTA V6 (CR-006) — TÁI CẤU TRÚC THỨ TỰ TAB KHẢO SÁT & CHUẨN HÓA RÀNG BUỘC VALIDATION
+
+> **Căn cứ**: Yêu cầu thay đổi `CR-006 [TASK-03]` từ Backlog ngày 17/10/2026.  
+> **Mục tiêu**: Giảm thiểu ma sát (Friction) cho doanh nghiệp khi tham gia khảo sát nhu cầu, ưu tiên thu thập ngay bài toán công nghệ sau thông tin pháp nhân.
+
+### 1. Cấu Trúc 7 Bước Mới (Reordered Stepper Structure)
+1. **Bước 1 (Phần A — Thông tin chung doanh nghiệp)**: Tên DN, MST, Tỉnh/Thành phố, Địa chỉ, Người liên hệ, SĐT, Email. **[BẮT BUỘC / MANDATORY]**
+2. **Bước 2 (Phần E — Nhu Cầu Đổi Mới Công Nghệ & TNI Calculator)**: Đưa từ Bước 5 lên Bước 2. Nhập bài toán kỹ thuật, công đoạn, mục tiêu kỳ vọng, phân loại danh mục (Lĩnh vực, Nhóm CN, Loại nhu cầu), ngân sách và tự chấm 4 chỉ số $K, L, N, O$ tính điểm TNI. Yêu cầu có ít nhất 1 bài toán. **[BẮT BUỘC / MANDATORY]**
+3. **Bước 3 (Phần B — Hiện trạng công nghệ & 8 Tiêu chí)**: Danh mục máy móc, xuất xứ, năm đầu tư và tự chấm 8 tiêu chí hiện trạng. **[TÙY CHỌN / OPTIONAL]**
+4. **Bước 4 (Phần C — Điểm nghẽn sản xuất)**: Điểm nghẽn kỹ thuật và công đoạn khó nhất. **[TÙY CHỌN / OPTIONAL]**
+5. **Bước 5 (Phần D — Năng lực tiếp nhận công nghệ TAR)**: Nhân lực kỹ thuật và mức độ sẵn sàng hấp thụ công nghệ. **[TÙY CHỌN / OPTIONAL]**
+6. **Bước 6 (Phần F — Định hướng công nghệ & Đề xuất hỗ trợ)**: Tự động hóa, chuyển đổi số, công nghệ xanh và nhu cầu hỗ trợ. **[TÙY CHỌN / OPTIONAL]**
+7. **Bước 7 (Phần G — Ký xác nhận & Cam kết bảo mật PDPD)**: Họ tên người đại diện xác nhận và đồng thuận PDPD. **[BẮT BUỘC KHI NỘP / MANDATORY ON SUBMIT]**
+
+### 2. Quy Tắc Validation (BR-Delta-11)
+- **BR-Delta-11 (Mandatory Core + Optional Extension)**:
+  - Chỉ bắt buộc dữ liệu tại Bước 1 (Thông tin liên hệ & pháp nhân) và Bước 2 (Tối thiểu 1 bài toán kỹ thuật có đầy đủ vấn đề & mục tiêu).
+  - Các Bước 3, 4, 5, 6 hoàn toàn là dữ liệu mở rộng tùy chọn. Người dùng có thể nhấn "Tiếp tục" qua các bước này mà không bị chặn lỗi kể cả khi không điền bất kỳ trường nào.
+  - Người dùng sau khi hoàn tất Bước 1 và Bước 2 có thể điều hướng thẳng đến Bước 7 để ký xác nhận và nộp phiếu ngay lập tức.
