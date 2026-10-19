@@ -272,3 +272,353 @@ Khắc phục toàn diện các khoảng trống giữa mã nguồn nguyên mẫ
 - **`AC-04-017`**: Các điều kiện thương mại chi tiết (bàn giao, bảo hành, lắp đặt, phạm vi) được lưu và hiển thị chi tiết trên trang hồ sơ công nghệ.
 - **`AC-04-018`**: Seller bấm nút "Lưu nháp" khi mới chỉ điền tiêu đề công nghệ; hồ sơ được lưu thành công với status `DRAFT`, không sinh phiếu duyệt Sở KH&CN và không lộ trên sàn công khai. LocalStorage tự động khôi phục dữ liệu nếu reload trang.
 - **`AC-04-019`**: Khi tải tài liệu vào Widget Trợ lý AI, hệ thống bóc tách và đổ gợi ý vào Form Wizard kèm nhãn `✨ AI Gợi ý`; Seller xác nhận và nộp thành công; nếu dịch vụ AI ngoại tuyến, form nhập tay vẫn hoạt động 100%.
+
+---
+
+## 11. ĐẶC TẢ DELTA V6: TÁI CẤU TRÚC FORM TẠO/SỬA HỒ SƠ CHÀO BÁN SELLER ĐỒNG BỘ 100% WIREFRAME GỐC & 4 LỚP TRƯỜNG EXCEL MASTER (SPEC KIT DELTA V6)
+
+### 11.1. Bối Cảnh Chiến Lược & Triết Lý Thiết Kế Kết Hợp (Phương Án 1 + 2)
+
+#### 11.1.1. Bối Cảnh Kỹ Thuật & Nghiệp Vụ
+- **Căn cứ**: Quyết định PO ngày 2026-10-19; Wireframe Basic Design gốc `wireframe_tao_ho_so_chao_ban.html` (Màn hình 20 trong bộ thiết kế cơ sở); Báo cáo chuẩn hóa 4 lớp trường `BAO_CAO_DANH_MUC_TRUONG_PHAN_CUNG_SELLER.html` trích xuất từ 2 sheet nguồn Master `C.bán SP` (89 dòng, 33 cột) và `Bo_loc_Cban` (1,483 dòng, 21 cột).
+- **Vấn đề tồn tại**:
+  1. *Friction cao trong tiếp nhận hồ sơ*: Quy trình tạo hồ sơ cũ buộc người dùng phải đi qua lần lượt cả 4 bước để có thể nộp duyệt, tạo rào cản lớn đối với các Viện/Trường/Doanh nghiệp chỉ muốn niêm yết nhanh công nghệ (Fast-track Onboarding).
+  2. *Thiếu đồng bộ với Wireframe gốc*: Wireframe gốc đã bố trí cụm **Hình thức công bố giá** và **Khung chọn TRL (1–9) màu vàng** ngay tại Bước 1, nhưng các phiên bản trước đây lại tách rời hoặc đẩy sang bước sau.
+  3. *Thông số kỹ thuật tự chế*: Bước 2 hiện đang sử dụng 4 dòng thông số preset cứng tự chế, chưa gắn kết với cấu trúc Lớp 2 (Kỹ thuật chung theo loại) và Lớp 3 (Đặc thù 18 nhóm ngành công nghiệp) của Sheet Master `Bo_loc_Cban`.
+  4. *Thiếu hụt trường thương mại & minh chứng chuẩn*: Các trường nghiệp vụ cốt lõi của Lớp 4 (Hình thức chuyển giao ưu tiên KT-66, Nội dung bao gồm trong giá GIA-74, Thuế & chi phí phát sinh GIA-75, Phạm vi cung cấp GIA-76, Điều kiện thanh toán GIA-78, Bảo hành GIA-80, Hỗ trợ kỹ thuật GIA-81) chưa được chuẩn hóa thành các trường input chuyên biệt.
+
+#### 11.1.2. Triết Lý Thiết Kế Kết Hợp (Hybrid Model: Phương Án 1 + Phương Án 2)
+Áp dụng nguyên lý Chuỗi Giá Trị Chiến Lược của Michael Porter (Inbound Value Chain Optimization) và Kim Tự Tháp Barbara Minto (Kim chỉ nam: Kết luận/Hành động đi trước, Chi tiết bổ sung theo sau):
+- **Trục 1: Tối Giản MVP Theo Wireframe Gốc (Phương Án 1 - Fast Track)**:
+  - Giữ đúng 100% bố cục và hành vi của Wireframe Basic Design gốc tại Bước 1.
+  - Gom toàn bộ các trường cốt lõi tối thiểu để hình thành một hồ sơ chào bán có nghĩa vào Bước 1: 6 trường định danh cơ bản + Cụm hình thức công bố giá + Khung chọn TRL 9 cấp độ (tự động bung ra khi chọn Có chuyển giao).
+  - Tự động nạp thông tin chủ thể từ hồ sơ DN liên kết (`TASK-02`).
+  - **QUY TẮC ĐỘT PHÁ UX**: Hoàn tất Bước 1 là ĐỦ ĐIỀU KIỆN bấm nút **"Gửi chờ duyệt hồ sơ" (Submit for Review)** ngay lập tức. Hệ thống tuyệt đối KHÔNG CHẶN người dùng nếu họ chưa hoàn thành các Bước 2, 3, 4.
+- **Trục 2: Hành Lang Bổ Sung Chuyên Sâu 4 Lớp Trường Excel Master (Phương Án 2 - Optional Deep Enrichment)**:
+  - Các Bước 2, 3, 4 đóng vai trò là "Thông tin bổ sung sau (không chặn đăng hồ sơ)" giúp gia tăng điểm tin cậy và khả năng khớp nối (Matching Accuracy) với Bên Mua.
+  - Cung cấp nút chuyển tiếp: *"Tiếp tục: Thông số kỹ thuật (Tùy chọn) →"* cho phép Seller sang Bước 2 nếu muốn bổ sung chi tiết.
+  - Tái cấu trúc toàn diện Bước 2 (Lớp 2 + Lớp 3 + Key-Value tự do), Bước 3 (Lớp 4 Điều kiện thương mại & Chuyển giao), Bước 4 (Pháp lý SHTT, Minh chứng DataRoom & Cổng tiếp nhận Sở KH&CN).
+
+```mermaid
+flowchart TD
+    subgraph Step1 ["BƯỚC 1: THÔNG TIN BẮT BUỘC & TRA CỨU (MVP)"]
+        S1_Core["6 Trường Lõi Bắt Buộc<br/>(Loại, Ngành, Chuyển giao, Tên, Mô tả, Bài toán)"]
+        S1_Org["Thông Tin Chủ Thể Cung Cấp<br/>(Tự động nạp từ Hồ sơ DN)"]
+        S1_Price["Cụm Hình Thức Công Bố Giá<br/>(Giá cụ thể / Khoảng giá / Liên hệ; ĐVT; Tiền tệ)"]
+        S1_TRL{"Có Chuyển Giao Công Nghệ?"}
+        S1_TRL_Box["Khung TRL 9 Nấc Màu Vàng (Bắt buộc chọn 1-9)"]
+        S1_Core --> S1_Org --> S1_Price --> S1_TRL
+        S1_TRL -- Có --> S1_TRL_Box
+        S1_TRL -- Không --> S1_Ready["ĐỦ ĐIỀU KIỆN NỘP BƯỚC 1"]
+        S1_TRL_Box --> S1_Ready
+    end
+
+    subgraph FastAction ["LỐI THOÁT NHANH (FAST-TRACK)"]
+        SubmitBtn["NÚT: GỬI CHỜ DUYỆT HỒ SƠ<br/>(Tạo ApprovalRequest gửi Sở KH&CN)"]
+        S1_Ready ==>|Đột phá UX: Không bị chặn| SubmitBtn
+    end
+
+    subgraph OptionalSteps ["HÀNH LANG LÀM GIÀU DỮ LIỆU TÙY CHỌN (OPTIONAL)"]
+        Step2["BƯỚC 2: THÔNG SỐ KỸ THUẬT & 18 NGÀNH<br/>- Lớp 2: Kỹ thuật chung theo loại (TB/SP/GP)<br/>- Lớp 3: Thông số chuẩn 18 ngành (Bo_loc_Cban)<br/>- Bảng Key-Value tự do"]
+        Step3["BƯỚC 3: ĐIỀU KIỆN THƯƠNG MẠI & CHUYỂN GIAO<br/>- Lớp 4 Excel: KT-66, GIA-74..78, GIA-80..81"]
+        Step4["BƯỚC 4: PHÁP LÝ SHTT, MINH CHỨNG & DATAROOM<br/>- Bộ tứ SHTT (Số, Ngày, File Scan)<br/>- Minh chứng: TL-104, TL-105, TL-109, CHUNG-42<br/>- Quyền DataRoom 3 cấp & Cổng Sở KH&CN"]
+    end
+
+    S1_Ready -->|Nút: Tiếp tục Thông số (Tùy chọn) →| Step2
+    Step2 --> Step3
+    Step3 --> Step4
+    Step4 --> SubmitBtn
+```
+
+---
+
+### 11.2. Danh Sách 13 Yêu Cầu Chức Năng Chuẩn Hóa (REQ-04-010 Đến REQ-04-022)
+
+| Mã Yêu Cầu | Tên Yêu Cầu Chức Năng | Phân Tầng Dữ Liệu & Mô Tả Chi Tiết Kỹ Thuật | Thành Phần Giao Diện / API |
+| :--- | :--- | :--- | :--- |
+| **`REQ-04-010`** | Triết Lý Form 4 Bước Kết Hợp & Cổng Gửi Duyệt Bước 1 | Cung cấp Form Wizard 4 bước kết hợp, trong đó Bước 1 là điều kiện tiên quyết duy nhất để kích hoạt trạng thái "Đủ điều kiện nộp" (`isSubmissionReady = true`). Cho phép Seller bấm "Gửi chờ duyệt" ngay tại Bước 1 mà không bị bắt buộc hoàn thành các bước sau. Nút "Tiếp tục: Thông số kỹ thuật (Tùy chọn) →" cho phép chuyển bước tuần tự hoặc click trực tiếp trên Stepper để làm giàu dữ liệu. | `TechnologyCreateWizard`, `TechnologyEditWizard`, `FormStepper` |
+| **`REQ-04-011`** | Bước 1 - Cụm 6 Trường Lõi Bắt Buộc & SearchableCombobox Ngành | Cung cấp 6 trường nhập bắt buộc tại Bước 1: (1) Loại chào bán `offer_type` (`PRODUCT` / `DEVICE` / `SOLUTION`); (2) Ngành công nghiệp `sector_code` (SearchableCombobox 18 ngành, hiển thị tên ngành trực quan, ẩn tiền tố mã `LV..`); (3) Có chuyển giao công nghệ `has_tech_transfer` (Nút chuyển trạng thái Không/Có); (4) Tên sản phẩm/công nghệ `title` (Tối thiểu 5 ký tự); (5) Mô tả ngắn `short_description` (Tối thiểu 20 ký tự); (6) Công dụng / Bài toán giải quyết `problem_solved` (Tối thiểu 20 ký tự). | `Step1CoreFields`, `SearchableCombobox` (18 Sectors) |
+| **`REQ-04-012`** | Bước 1 - Tự Động Nạp Chủ Thể Doanh Nghiệp (SSOT Enterprise Identity) | Tại Bước 1, hệ thống tự động trích xuất thông tin đơn vị chào bán từ tài khoản phiên làm việc (`TASK-02`): Tên doanh nghiệp/tổ chức, Người đại diện, Số điện thoại, Email liên hệ, Địa bàn tỉnh/thành. Áp dụng PDPD NĐ 13/2023: Hiển thị minh bạch cho Seller xem trước, thông báo rõ SĐT/Email sẽ được bảo mật và chỉ mở cho Buyer sau khi kết nối. | `SellerIdentityCard`, PDPD Privacy Note |
+| **`REQ-04-013`** | Bước 1 - Nhúng Cụm Hình Thức Công Bố Giá Sẵn Sàng | Nhúng trực tiếp cụm khai báo giá vào Bước 1 theo Wireframe gốc: 3 lựa chọn hình thức giá `pricing_type`: `FIXED` (Giá cụ thể), `RANGE` (Khoảng giá), `CONTACT` (Liên hệ báo giá). Khi chọn `FIXED` hoặc `RANGE`: Hiển thị input giá tiền, dropdown loại tiền tệ `currency` (`VND`, `USD`), ô nhập đơn vị tính `unit` (gợi ý: *bộ, chiếc, hệ thống, dây chuyền, gói chuyển giao, quy trình, li-xăng/năm*). | `InlinePricingCard`, `PricingTypeRadioGroup` |
+| **`REQ-04-014`** | Bước 1 - Khung Tương Tác Chọn TRL Màu Vàng Bung Tự Động | Khi `has_tech_transfer = true`, giao diện ngay lập tức bung mở Khung TRL màu vàng (`trl-panel` viền `border-amber-200`, nền `bg-amber-50`). Khung hiển thị dải 9 nấc TRL (1–9) chuẩn quốc tế; Seller bắt buộc phải chọn 1 cấp độ TRL thì Bước 1 mới đạt trạng thái hợp lệ. Khi `has_tech_transfer = false`, khung tự động thu gọn và reset giá trị. | `ReactiveYellowTrlPanel`, `TrlRadioGrid` |
+| **`REQ-04-015`** | Bước 2 - Thông Số Kỹ Thuật Lớp 2 Kỹ Thuật Chung Theo Loại | Tại Bước 2 (Thông số kỹ thuật), hiển thị nhóm trường Lớp 2 tương ứng với `offer_type`: (A) Nếu là **Thiết bị / Sản phẩm**: Model (`model_code`), Hãng sản xuất (`manufacturer`), Xuất xứ (`origin_country`), Tình trạng thiết bị (`equipment_status`: *Mới 100%, Đã qua sử dụng, Refurbished*), Năm sản xuất (`manufacturing_year`), Công suất / Quy mô (`capacity_scale`), Mức tiêu hao năng lượng (`energy_consumption`), Mức độ tự động hóa (`automation_level`); (B) Nếu là **Giải pháp công nghệ**: Nguyên lý hoạt động (`operating_principle`), Trạng thái thương mại hóa (`commercial_status`), Điều kiện triển khai/hạ tầng yêu cầu (`deployment_conditions`). | `Tier2CommonTechnicalForm` |
+| **`REQ-04-016`** | Bước 2 - Danh Mục Thông Số Đặc Thù 18 Nhóm Ngành Lớp 3 (`Bo_loc_Cban`) | Tự động tải và hiển thị danh mục các trường thông số kỹ thuật chuẩn của ngành đã chọn từ Sheet `Bo_loc_Cban` (ví dụ: Cơ khí có *Hành trình trục X/Y/Z, Tốc độ trục chính, Độ chính xác lặp lại*; Nông nghiệp có *Năng suất thu hoạch, Tỷ lệ hao hụt, Tiêu chuẩn VietGAP/GlobalGAP*...). Các trường được hiển thị dưới dạng form nhập có sẵn nhãn, đơn vị đo tiêu chuẩn và gợi ý giá trị. | `Tier3SectorDynamicForm`, Taxonomy Loader |
+| **`REQ-04-017`** | Bước 2 - Bảng Thêm Thông Số Động Tự Do (Key-Value Dynamic Table) | Phía dưới các thông số chuẩn, cung cấp Bảng thông số kỹ thuật tự do: Cho phép Seller bấm `+ Thêm thông số mới` để nhập các chỉ tiêu kỹ thuật chuyên biệt chưa có trong danh mục mẫu. Hỗ trợ 4 cột: Tên thông số (`spec_name`), Giá trị (`spec_value`), Đơn vị đo (`unit`), Nút xóa dòng. Tối đa 50 dòng thông số, không cho phép trùng lặp tên. | `DynamicSpecKeyValueTable` |
+| **`REQ-04-018`** | Bước 3 - Điều Kiện Thương Mại & Chuyển Giao Lớp 4 Excel Master | Tại Bước 3, hiển thị đầy đủ các trường thương mại chuyên sâu kế thừa từ Sheet `C.bán SP`: (1) Hình thức chuyển giao ưu tiên (`transfer_priority_method` / `KT-66`: *Chuyển giao quyền sở hữu, Chuyển quyền sử dụng li-xăng, Hợp tác R&D tiếp tục, Góp vốn bằng công nghệ*); (2) Nội dung bao gồm trong giá (`price_includes` / `GIA-74`); (3) Thuế và chi phí phát sinh (`tax_and_extra_costs` / `GIA-75`); (4) Phạm vi cung cấp (`supply_scope` / `GIA-76`: *Toàn quốc, Miền Bắc/Trung/Nam, Xuất khẩu*); (5) Thời gian giao hàng / triển khai (`delivery_timeline` / `GIA-77`); (6) Điều kiện thanh toán (`payment_terms` / `GIA-78`); (7) Thời gian bảo hành (`warranty_terms` / `GIA-80`); (8) Hình thức hỗ trợ kỹ thuật (`technical_support_method` / `GIA-81`). | `Tier4CommercialForm`, `CommercialFieldsGroup` |
+| **`REQ-04-019`** | Bước 4 - Số Hóa Hồ Sơ Bộ Tứ SHTT (IP Quad Digitization) | Tại Bước 4, cung cấp cụm khai báo pháp lý SHTT: (1) Tình trạng văn bằng SHTT (`ip_status`: *Đã cấp bằng độc quyền, Đã có quyết định chấp nhận đơn hợp lệ, Đang thẩm định nội dung, Bí quyết công nghệ chưa nộp đơn*); (2) Số văn bằng / Số đơn (`ip_registration_number`); (3) Ngày cấp / Ngày nộp đơn (`ip_issue_date`); (4) Tải tệp scan văn bằng (`ip_certificate_file` / `TL-106`). | `IpQuadDigitizationCard`, File Upload |
+| **`REQ-04-020`** | Bước 4 - Minh Chứng Đa Phương Tiện & Phân Quyền DataRoom 3 Cấp Độ | Cung cấp khu vực tải lên các minh chứng: Chứng nhận / kiểm định (`TL-105`), Hồ sơ ứng dụng thực tế / Hợp đồng tương tự (`TL-109`), Brochure / Catalogue kỹ thuật (`TL-104`), Video demo giải pháp (`CHUNG-42`). Mỗi tài liệu cho phép thiết lập quyền DataRoom `access_scope`: `PUBLIC` (Công khai), `AFTER_CONNECTION` (Chỉ mở tải cho Bên Mua sau khi kết nối hợp lệ), `ADMIN_ONLY` (Chỉ dành cho Cán bộ Sở KH&CN thẩm định). | `DataRoomFileManager`, `AccessScopeBadge` |
+| **`REQ-04-021`** | Bước 4 - Chọn Cơ Quan Tiếp Nhận Thẩm Định Cấp 2 & Cam Kết Pháp Lý | Form yêu cầu Seller chọn Sở KH&CN phụ trách tiếp nhận thẩm định (`managing_authority_id`, `scope_id` theo 63 tỉnh/thành) và tích chọn ô Cam kết tính xác thực, chịu hoàn toàn trách nhiệm pháp lý về quyền sở hữu trí tuệ (`legal_commitment_confirmed = true`). Hệ thống kiểm tra điều kiện này khi Seller nộp hồ sơ từ Bước 4. | `ProvincialGovAuthoritySelect`, `LegalCommitmentCheckbox` |
+| **`REQ-04-022`** | Lưu Nháp DRAFT, Tự Động Lưu LocalStorage & Widget Trợ Lý AI | (1) Nút "Lưu nháp" luôn hiển thị tại header và action bar cho phép lưu tạm ở mọi bước chỉ với điều kiện `title >= 3 ký tự`; (2) Cơ chế LocalStorage tự động lưu bản nháp mỗi 30 giây giúp phục hồi form khi refresh; (3) Widget Trợ lý AI kết nối `POST /api/v1/ai/extract-patent-specs` hỗ trợ đọc Catalogue/Bằng sáng chế để điền gợi ý tự động (Human-in-the-Loop, Zero-Dependency Fallback). | `DraftManager`, `LocalStorageSync`, `AiAssistantCard` |
+
+---
+
+### 11.3. Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules BR-SELLER-08 Đến BR-SELLER-14)
+
+- **`BR-SELLER-08`**: **Quy Tắc Đột Phá UX - Đủ Điều Kiện Nộp Ngay Tại Bước 1 (Step 1 Minimum Viable Submission Gate)**:
+  1. *Nguyên tắc thẩm quyền nộp*: Hồ sơ chào bán được xem là **Hợp lệ tối thiểu để gửi thẩm định** (`IsMinimumViableForReview`) ngay khi và chỉ khi hoàn thành đầy đủ các trường tại Bước 1:
+     - `offer_type` thuộc `{ 'PRODUCT', 'DEVICE', 'SOLUTION' }`.
+     - `sector_code` không rỗng và thuộc 18 ngành TT17.
+     - `has_tech_transfer` đã được xác định (`true` hoặc `false`).
+     - `title` có độ dài từ 5 đến 255 ký tự.
+     - `short_description` có độ dài tối thiểu 20 ký tự.
+     - `problem_solved` có độ dài tối thiểu 20 ký tự.
+     - `pricing_type` thuộc `{ 'FIXED', 'RANGE', 'CONTACT' }` và thỏa mãn các ràng buộc giá tương ứng theo `BR-SELLER-04`.
+     - Nếu `has_tech_transfer = true`: Bắt buộc phải chọn `trl_level` thuộc $\{1..9\}$ theo `BR-SELLER-09`.
+  2. *Hành vi giao diện*: Nút "Gửi chờ duyệt" trên thanh công cụ và chân trang lập tức chuyển sang trạng thái khả dụng (Enabled). Seller có thể bấm gửi duyệt ngay mà không bắt buộc phải bấm sang Bước 2, 3, hoặc 4.
+  3. *Hành lang tùy chọn (Non-blocking Optional)*: Toàn bộ dữ liệu tại Bước 2 (Thông số kỹ thuật), Bước 3 (Điều kiện thương mại), và Bước 4 (Minh chứng chi tiết) được xử lý là trường tùy chọn làm giàu (`Optional Enrichment`). Nếu Seller không nhập, hệ thống tự động gán giá trị mặc định an toàn hoặc danh sách rỗng (`[]`).
+  4. *Chọn Sở KH&CN khi nộp nhanh*: Nếu Seller bấm "Gửi chờ duyệt" ngay từ Bước 1 mà chưa qua Bước 4 để chọn Sở KH&CN, hệ thống tự động kế thừa `scope_id` (Tỉnh/Thành phố) từ Hồ sơ Doanh nghiệp liên kết (`TASK-02`) và hiển thị Modal xác nhận nhanh kèm cam kết pháp lý trong 1 click.
+
+- **`BR-SELLER-09`**: **Quy Tắc Bắt Buộc Khai Mức TRL Khi Có Chuyển Giao Công Nghệ (Mandatory Reactive TRL on Tech Transfer)**:
+  1. Khi người dùng thiết lập `has_tech_transfer = true`:
+     - Khung chọn mức TRL màu vàng (`trl-panel`) bắt buộc phải bung mở ngay lập tức (Reactive Expansion).
+     - Trường `trl_level` chuyển từ tùy chọn thành **Bắt buộc (Required)**. Giá trị bắt buộc là một số nguyên thuộc tập hợp $\{1, 2, 3, 4, 5, 6, 7, 8, 9\}$.
+     - Hệ thống chặn việc nộp hồ sơ (cả nộp nhanh Bước 1 lẫn nộp cuối Bước 4) nếu chưa chọn mức TRL.
+  2. Khi người dùng thiết lập `has_tech_transfer = false`:
+     - Khung chọn mức TRL màu vàng tự động đóng lại (Collapsed).
+     - Giá trị `trl_level` được đặt về `null`.
+     - Hồ sơ được định danh là Hàng hóa / Thiết bị thương mại thông thường.
+
+- **`BR-SELLER-10`**: **Quy Tắc Phân Tách Schema Kỹ Thuật Lớp 2 Theo Đối Tượng Chào Bán (Offer Type Dynamic Technical Fields)**:
+  1. Giao diện Bước 2 tự động điều chỉnh các trường Lớp 2 dựa trên giá trị `offer_type` đã chọn ở Bước 1:
+     - Nếu `offer_type IN ('PRODUCT', 'DEVICE')`: Hiển thị 8 trường vật lý thiết bị: Model (`model_code`), Hãng sản xuất (`manufacturer`), Xuất xứ (`origin_country`), Tình trạng thiết bị (`equipment_status`: Mới 100% / Đã qua sử dụng / Refurbished), Năm sản xuất (`manufacturing_year`), Công suất / Quy mô (`capacity_scale`), Mức tiêu hao năng lượng (`energy_consumption`), Mức độ tự động hóa (`automation_level`).
+     - Nếu `offer_type = 'SOLUTION'`: Hiển thị 3 trường giải pháp số / quy trình: Nguyên lý hoạt động (`operating_principle`), Trạng thái thương mại hóa (`commercial_status`), Điều kiện triển khai (`deployment_conditions`).
+  2. Toàn bộ các trường Lớp 2 đều là trường tùy chọn (Optional), không làm gián đoạn tiến trình nộp hồ sơ.
+
+- **`BR-SELLER-11`**: **Quy Tắc Kế Thừa Danh Mục Thông Số Đặc Thù 18 Ngành Lớp 3 từ Excel Master (`Bo_loc_Cban`)**:
+  1. Khi người dùng chọn mã ngành `sector_code`, hệ thống tự động ánh xạ và nạp tập hợp các trường thông số kỹ thuật tương ứng từ danh mục chuẩn `Bo_loc_Cban`.
+  2. Mỗi trường kỹ thuật chuẩn có cấu trúc: `{ spec_code, spec_name, data_type, default_unit, is_filter_key }`.
+  3. Khi Seller nhập giá trị vào các trường này, hệ thống sẽ lưu trữ vào bảng `technology.offer_spec_values` với cờ phân loại `spec_category = 'TIER_3_SECTOR'`.
+  4. Nếu Seller chuyển đổi sang ngành khác ở Bước 1: Hệ thống hiển thị cảnh báo xác nhận trước khi làm mới danh mục thông số Bước 2.
+
+- **`BR-SELLER-12`**: **Quy Chuẩn Điều Kiện Thương Mại & Cấu Trúc Báo Giá Lớp 4 Excel Master**:
+  1. Các trường Lớp 4 (Bước 3) đại diện cho các điều khoản giao dịch chuẩn của Sàn KH&CN:
+     - `transfer_priority_method` (KT-66): Hình thức chuyển giao ưu tiên (Bắt buộc nếu `has_tech_transfer = true` và Seller muốn tối ưu điểm kết nối).
+     - `price_includes` (GIA-74): Nội dung cấu thành giá (ví dụ: *Đã bao gồm chi phí chuyển giao tài liệu, đào tạo 3 ngày, vận chuyển nội địa*).
+     - `tax_and_extra_costs` (GIA-75): Thuế và chi phí phát sinh (ví dụ: *Giá chưa bao gồm VAT 10%, chưa gồm thuế nhập khẩu linh kiện*).
+     - `supply_scope` (GIA-76): Phạm vi cung cấp (Toàn quốc, Khu vực cụ thể, Xuất khẩu).
+     - `delivery_timeline` (GIA-77): Thời gian hoàn thành giao hàng / chuyển giao công nghệ.
+     - `payment_terms` (GIA-78): Tiến độ thanh toán (ví dụ: *Tạm ứng 30% khi ký hợp đồng, 40% khi giao hàng, 30% sau nghiệm thu*).
+     - `warranty_terms` (GIA-80): Thời hạn bảo hành và cam kết hỗ trợ sửa chữa.
+     - `technical_support_method` (GIA-81): Hình thức hỗ trợ kỹ thuật (Trực tiếp tại hiện trường, Hỗ trợ từ xa 24/7 qua video call/hotline).
+  2. Mọi trường Lớp 4 đều là tùy chọn bổ sung, Seller có thể cập nhật sau khi hồ sơ đã được duyệt niêm yết.
+
+- **`BR-SELLER-13`**: **Quy Tắc Toàn Vẹn Hồ Sơ SHTT & Phân Quyền DataRoom 3 Cấp Độ (IP Evidence & DataRoom Confidentiality)**:
+  1. *Quy tắc minh chứng SHTT*: Nếu Seller khai báo tình trạng SHTT là `GRANTED` (Đã được cấp bằng), khuyến nghị đính kèm file scan văn bằng (`PATENT_CERT` / `TL-106`).
+  2. *Quy tắc bảo mật DataRoom 3 Phân cấp*:
+     - Mọi tệp tải lên (`offer_documents`) phải được gán `access_scope`:
+       * `PUBLIC`: Hiển thị công khai, mọi đối tượng xem sàn đều được tải trực tiếp (áp dụng cho Brochure TL-104, Ảnh CHUNG-40/41, Video CHUNG-42).
+       * `AFTER_CONNECTION`: Mặc định cho tài liệu kỹ thuật chuyên sâu (TL-109, Thuyết minh sáng chế). Chỉ mở quyền tải sau khi Yêu cầu kết nối (`ConnectionRequest`) giữa Buyer và Seller được chấp thuận.
+       * `ADMIN_ONLY`: Tài liệu bảo mật pháp lý hoặc bí mật công nghệ chỉ dành riêng cho Cán bộ Sở KH&CN thẩm định tại Cổng Cấp 2 `/gov/approvals`.
+  3. Định dạng tệp cho phép: `.pdf`, `.jpg`, `.jpeg`, `.png`, `.docx`, `.xlsx`, `.mp4`. Kích thước tệp: $\le 25\text{MB}$ (Văn bản/Hình ảnh), $\le 50\text{MB}$ (Video).
+
+- **`BR-SELLER-14`**: **Quy Tắc Nạp Tự Động Chủ Thể Doanh Nghiệp & Bảo Mật Dữ Liệu PDPD (Auto-Fill & Privacy Shield)**:
+  1. Khi người dùng có vai trò `SELLER` hoặc `ENTERPRISE` tạo hồ sơ chào bán, hệ thống tự động truy vấn thông tin định danh pháp nhân từ module `TASK-02`:
+     - Tên tổ chức / Viện / Trường / Doanh nghiệp (`organization_name`).
+     - Mã số thuế / Mã định danh (`tax_code`).
+     - Họ tên cán bộ đầu mối liên hệ (`contact_name`).
+     - Số điện thoại (`contact_phone`) và Email (`contact_email`).
+  2. Áp dụng Nghị định 13/2023/NĐ-CP (PDPD) về bảo vệ dữ liệu cá nhân:
+     - Trên màn hình công khai (`/chao-ban-cong-nghe/[id]`), `contact_phone` và `contact_email` mặc định được ẩn dưới dạng `[BẢO MẬT - KẾT NỐI ĐỂ XEM]`.
+     - Chỉ khi Bên Mua gửi yêu cầu kết nối chính thức và được Seller chấp thuận hoặc hệ thống môi giới xác nhận, thông tin liên lạc mới được giải mã hiển thị.
+
+---
+
+### 11.4. Đặc Tả Giao Diện & Trải Nghiệm Người Dùng 4 Bước (UI-04-020 Đến UI-04-026)
+
+- **`UI-04-020`**: **Thanh Stepper Tiến Trình & Action Bar Không Chặn (Non-Blocking Stepper & Action Bar)**:
+  - Cột điều hướng bên trái (Desktop: 260px; Mobile: Header stepper) hiển thị trực quan 4 bước:
+    * `1. Thông tin bắt buộc`: Badge xanh lá báo số trường đã điền `Đã điền X / 6`.
+    * `2. Thông số & ngành`: Nhãn phụ *(Tùy chọn)*.
+    * `3. Giá & thương mại`: Nhãn phụ *(Tùy chọn)*.
+    * `4. Minh chứng & gửi duyệt`: Nhãn phụ *(Tùy chọn)*.
+  - Action Bar luôn hiển thị 2 nút chính tại góc trên bên phải và chân trang:
+    * Nút **"Lưu nháp"** (`variant="outline"`, icon `Save`): Luôn kích hoạt.
+    * Nút **"Gửi chờ duyệt"** (`variant="primary"`, icon `Send`): Tự động đổi màu từ xám mờ sang xanh đậm Navy và kích hoạt ngay khi Bước 1 hợp lệ, bất kể người dùng đang đứng ở bước nào.
+
+- **`UI-04-021`**: **SearchableCombobox Chọn 18 Nhóm Ngành (Ẩn Mã Nội Bộ LV)**:
+  - Trường Ngành công nghiệp hiển thị dạng ô tìm kiếm kết hợp thả xuống (Combobox).
+  - Danh sách hiển thị trực quan 18 ngành bằng Tên tiếng Việt rõ nghĩa (ví dụ: *Cơ khí chế tạo, Chế biến thực phẩm, Công nghệ thông tin & Giải pháp số...*).
+  - Tuyệt đối ẩn các tiền tố mã nội bộ như `LV01`, `LV04` để mang lại trải nghiệm chuyên nghiệp, trực quan theo wireframe.
+
+- **`UI-04-022`**: **Khung Chọn TRL Màu Vàng Tương Tác Phản Hồi (Reactive Yellow TRL Container)**:
+  - Vị trí: Đặt ngay bên dưới nút chọn "Có chuyển giao công nghệ?" tại Bước 1.
+  - Kiểu dáng: Khung bo góc `rounded-xl`, viền vàng hổ phách `border-amber-200`, nền `bg-amber-50`, tiêu đề có icon `FlaskConical` màu `amber-700` kèm dòng phụ chú: *"Bắt buộc vì hồ sơ có chuyển giao công nghệ; minh chứng có thể bổ sung sau."*
+  - Bố cục 9 nút bấm: Grid 9 cột trên desktop (hoặc 3x3 trên mobile), mỗi nút hiển thị số TRL to đậm kèm tooltip giải nghĩa khi hover hoặc focus. Nút được chọn có viền `border-amber-600`, nền trắng và bóng đổ nổi bật.
+
+- **`UI-04-023`**: **Cụm Hình Thức Công Bố Giá Nhúng Tại Bước 1**:
+  - Khối xám nhạt `bg-slate-50 border-slate-200` nhúng ngay trong Bước 1.
+  - Nhóm 3 Radio Button bo tròn: *Giá cụ thể*, *Khoảng giá*, *Liên hệ báo giá*.
+  - Khi chọn *Giá cụ thể*: Hiển thị ô nhập số tiền, dropdown loại tiền `VND / USD`, ô nhập đơn vị tính `Đơn vị: bộ, chiếc...`.
+  - Khi chọn *Khoảng giá*: Hiển thị 2 ô nhập *Giá từ* - *Giá đến*, loại tiền, đơn vị tính.
+  - Khi chọn *Liên hệ báo giá*: Tự động ẩn các ô nhập số tiền, hiển thị thông điệp *"Giá sẽ được thương lượng theo yêu cầu kỹ thuật cụ thể của bên mua"*.
+
+- **`UI-04-024`**: **Màn Hình Bước 2: Thông Số Kỹ Thuật Lớp 2 & Lớp 3 18 Ngành**:
+  - Phần trên: Thẻ nhóm trường Lớp 2 Kỹ thuật chung theo loại (Thiết bị/Sản phẩm hoặc Giải pháp).
+  - Phần giữa: Thẻ nhóm trường Lớp 3 Thông số chuẩn của 18 ngành kế thừa từ `Bo_loc_Cban`.
+  - Phần dưới: Bảng Key-Value thêm dòng tự do với nút `+ Thêm thông số mới` (viền đứt nét `border-dashed`).
+
+- **`UI-04-025`**: **Màn Hình Bước 3: Điều Kiện Thương Mại & Chuyển Giao Lớp 4**:
+  - Bố cục lưới 2 cột trực quan:
+    * Cột 1 (Chính sách giá & Thanh toán): Hình thức chuyển giao ưu tiên (Dropdown), Nội dung bao gồm trong giá (Textarea), Thuế và chi phí phát sinh (Textarea), Điều kiện thanh toán (Textarea).
+    * Cột 2 (Vận hành & Hỗ trợ): Phạm vi cung cấp (Dropdown), Thời gian giao hàng / triển khai (Input), Thời hạn bảo hành (Input), Hình thức hỗ trợ kỹ thuật (Input).
+
+- **`UI-04-026`**: **Màn Hình Bước 4: Pháp Lý SHTT, Minh Chứng DataRoom & Cổng Thẩm Định Sở**:
+  - Khối 1: Bộ tứ SHTT (Tình trạng, Số bằng, Ngày cấp, Tải scan bằng SHTT).
+  - Khối 2: Danh mục Media & Minh chứng DataRoom (Ảnh đại diện, Catalogue PDF, Video demo, Báo cáo kiểm định) kèm dropdown chọn quyền xem 3 cấp độ (Công khai / Sau kết nối / Chỉ Sở KH&CN).
+  - Khối 3: Cổng Sở KH&CN tiếp nhận (Dropdown 63 tỉnh/thành) và Checkbox Cam kết pháp lý.
+
+---
+
+### 11.5. Thiết Kế Mở Rộng CSDL & Hợp Đồng DTO (Data Model & API Contracts)
+
+#### 11.5.1. Bổ Sung Schema CSDL PostgreSQL (DB-04-002)
+
+```sql
+-- 1. Bổ sung các cột Lớp 2 và Lớp 4 vào bảng chính
+ALTER TABLE technology.seller_technology_offers
+    -- Lớp 2: Kỹ thuật chung theo loại
+    ADD COLUMN IF NOT EXISTS model_code VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS manufacturer VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS origin_country VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS equipment_status VARCHAR(50) DEFAULT 'NEW', -- NEW, USED, REFURBISHED
+    ADD COLUMN IF NOT EXISTS manufacturing_year INTEGER,
+    ADD COLUMN IF NOT EXISTS capacity_scale VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS energy_consumption VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS automation_level VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS operating_principle TEXT,
+    ADD COLUMN IF NOT EXISTS deployment_conditions TEXT,
+
+    -- Lớp 4: Điều kiện thương mại & Chuyển giao Excel Master
+    ADD COLUMN IF NOT EXISTS transfer_priority_method VARCHAR(100), -- KT-66
+    ADD COLUMN IF NOT EXISTS price_includes TEXT,                    -- GIA-74
+    ADD COLUMN IF NOT EXISTS tax_and_extra_costs TEXT,              -- GIA-75
+    ADD COLUMN IF NOT EXISTS technical_support_method VARCHAR(255), -- GIA-81
+    
+    -- Pháp lý SHTT & Cơ quan quản lý
+    ADD COLUMN IF NOT EXISTS ip_issue_date DATE,
+    ADD COLUMN IF NOT EXISTS legal_commitment_confirmed BOOLEAN DEFAULT FALSE;
+
+-- 2. Bổ sung phân loại danh mục thông số vào bảng offer_spec_values
+ALTER TABLE technology.offer_spec_values
+    ADD COLUMN IF NOT EXISTS spec_category VARCHAR(50) DEFAULT 'TIER_3_CUSTOM'; 
+    -- 'TIER_2_COMMON', 'TIER_3_SECTOR', 'TIER_3_CUSTOM'
+```
+
+#### 11.5.2. Mở Rộng Hợp Đồng DTO & API Endpoints (API-04-002)
+
+- **`POST /api/v1/portal/seller/technologies`** (Tạo mới hồ sơ chào bán):
+- **`PUT /api/v1/portal/seller/technologies/{id}`** (Cập nhật hồ sơ chào bán):
+  - Request Payload (`CreateUpdateTechnologyOfferDto`):
+    ```json
+    {
+      "action": "SUBMIT_FOR_REVIEW", // hoặc "SAVE_DRAFT"
+      "currentStep": 1,
+      // Bước 1: 6 trường lõi + Giá + TRL
+      "offerType": "DEVICE",
+      "sectorCode": "MECH",
+      "hasTechTransfer": true,
+      "title": "Máy phay CNC 5 trục tích hợp robot nạp phôi tự động",
+      "shortDescription": "Hệ thống gia công cơ khí chính xác độ cứng cao...",
+      "problemSolved": "Tự động hóa hoàn toàn khâu nạp phôi và gia công chi tiết phức tạp",
+      "pricingType": "FIXED",
+      "priceAmount": 850000000,
+      "priceMin": null,
+      "priceMax": null,
+      "currency": "VND",
+      "unit": "bộ",
+      "trlLevel": 8,
+
+      // Bước 2: Lớp 2 & Lớp 3 (Tùy chọn)
+      "modelCode": "CNC-5X-PRO",
+      "manufacturer": "Nacen Precision",
+      "originCountry": "Việt Nam",
+      "equipmentStatus": "NEW",
+      "manufacturingYear": 2026,
+      "capacityScale": "15 kW, tốc độ trục 24,000 rpm",
+      "energyConsumption": "12 kWh/giờ",
+      "automationLevel": "Bán tự động / Tự động hóa tích hợp Robot",
+      "operatingPrinciple": null,
+      "deploymentConditions": "Điện 3 pha 380V, nền xưởng bê tông chịu tải 5 tấn/m2",
+      "specValues": [
+        { "specCode": "MECH_AXIS_TRAVEL", "specName": "Hành trình trục X/Y/Z", "specValue": "800 x 600 x 500 mm", "unit": "mm", "specCategory": "TIER_3_SECTOR" },
+        { "specCode": "CUSTOM_ACCURACY", "specName": "Độ chính xác lặp lại", "specValue": "±0.003 mm", "unit": "mm", "specCategory": "TIER_3_CUSTOM" }
+      ],
+
+      // Bước 3: Lớp 4 Thương mại & Chuyển giao (Tùy chọn)
+      "transferPriorityMethod": "CHUYEN_GIAO_TOAN_BO",
+      "priceIncludes": "Bao gồm chi phí lắp đặt, căn chỉnh và chuyển giao tài liệu kỹ thuật",
+      "taxAndExtraCosts": "Giá chưa bao gồm VAT 10%",
+      "supplyScope": "Toàn quốc",
+      "deliveryTimeline": "45 ngày làm việc",
+      "paymentTerms": "Tạm ứng 30%, 40% khi nhận máy, 30% sau nghiệm thu",
+      "warrantyTerms": "24 tháng bảo hành chính hãng",
+      "technicalSupportMethod": "Kỹ sư hỗ trợ trực tiếp tại nhà máy trong 7 ngày đầu",
+      "installationSupport": true,
+
+      // Bước 4: SHTT & Minh chứng (Tùy chọn khi nộp nhanh Bước 1)
+      "ipStatus": "GRANTED",
+      "ipRegistrationNumber": "VN-1-0023456",
+      "ipIssueDate": "2025-06-15",
+      "managingAuthorityId": "01", // Tỉnh/thành Sở KH&CN
+      "legalCommitmentConfirmed": true,
+      "documents": [
+        { "documentType": "PATENT_CERT", "fileName": "bang_doc_quyen_sang_che.pdf", "fileUrl": "https://...", "fileSizeBytes": 2048576, "accessScope": "AFTER_CONNECTION" },
+        { "documentType": "CATALOGUE", "fileName": "brochure_cnc_5x.pdf", "fileUrl": "https://...", "fileSizeBytes": 4512000, "accessScope": "PUBLIC" }
+      ]
+    }
+    ```
+
+---
+
+### 11.6. Tiêu Chí Nghiệm Thu Mở Rộng Delta v6 (Acceptance Criteria AC-04-020 Đến AC-04-030)
+
+- **`AC-04-020`**: **Kiểm thử Cổng Nộp Nhanh Bước 1 (Fast-Track Submission)**:
+  - Seller đăng nhập, mở form `/portal/seller/technologies/create`.
+  - Seller chỉ điền đầy đủ các trường tại Bước 1 (Loại chào bán, Ngành, Có chuyển giao = Có, Tên, Mô tả, Bài toán, Giá cụ thể, TRL = 7).
+  - Nút "Gửi chờ duyệt" lập tức chuyển sang trạng thái khả dụng.
+  - Bấm "Gửi chờ duyệt": Hệ thống mở Modal xác nhận nhanh điều khoản pháp lý và gửi duyệt thành công với trạng thái `PENDING`, tự động kế thừa `scope_id` của Doanh nghiệp liên kết mà không hề bị chặn bởi việc chưa điền Bước 2, 3, 4.
+
+- **`AC-04-021`**: **Kiểm thử Hành Vi Khung Chọn TRL Màu Vàng**:
+  - Khi `has_tech_transfer = false`: Khung TRL màu vàng ẩn hoàn toàn, không yêu cầu chọn TRL.
+  - Khi chuyển `has_tech_transfer = true`: Khung TRL màu vàng bung mở mượt mà; nếu chưa chọn nấc TRL nào, nút "Gửi chờ duyệt" vẫn ở trạng thái vô hiệu hóa (Disabled) và hiển thị tooltip cảnh báo *"Vui lòng chọn mức TRL"*.
+  - Bấm chọn 1 nấc TRL (ví dụ TRL 8): Khung TRL hiển thị viền nổi bật, nút "Gửi chờ duyệt" được kích hoạt ngay.
+
+- **`AC-04-022`**: **Kiểm thử SearchableCombobox 18 Ngành Công Nghiệp**:
+  - Ô chọn Ngành hỗ trợ gõ tìm kiếm từ khóa (ví dụ gõ "Cơ khí" hoặc "Thực phẩm").
+  - Danh sách hiển thị tên ngành trực quan tiếng Việt, tuyệt đối không xuất hiện các mã nội bộ như `LV01`, `LV04` trên nhãn hiển thị.
+
+- **`AC-04-023`**: **Kiểm thử Nạp Thông Tin Chủ Thể Doanh Nghiệp Tự Động**:
+  - Mở Bước 1, thẻ "Bên cung cấp công nghệ" hiển thị chính xác Tên DN, Người liên hệ, SĐT, Email từ hồ sơ DN liên kết (`TASK-02`).
+  - Dòng thông báo PDPD hiển thị rõ ràng giải thích số điện thoại/email sẽ được bảo mật với khách vãng lai.
+
+- **`AC-04-024`**: **Kiểm thử Nhóm Trường Lớp 2 Kỹ Thuật Chung Theo Loại**:
+  - Chọn Loại chào bán là "Thiết bị" hoặc "Sản phẩm": Sang Bước 2 hiển thị đúng 8 trường vật lý thiết bị (Model, Hãng SX, Xuất xứ, Tình trạng thiết bị, Năm SX, Công suất, Tiêu hao năng lượng, Mức tự động hóa).
+  - Chọn Loại chào bán là "Giải pháp": Sang Bước 2 hiển thị đúng 3 trường giải pháp (Nguyên lý hoạt động, Trạng thái thương mại hóa, Điều kiện triển khai).
+
+- **`AC-04-025`**: **Kiểm thử Đọc Danh Mục Thông Số Chuẩn 18 Ngành Lớp 3 (`Bo_loc_Cban`)**:
+  - Chọn ngành "Cơ khí chế tạo" (MECH): Bước 2 nạp đúng danh mục thông số chuyên môn của ngành cơ khí từ `Bo_loc_Cban`.
+  - Thay đổi ngành sang "Nông nghiệp" (AG): Hệ thống hiển thị modal xác nhận chuyển đổi ngành và làm mới danh mục thông số theo ngành Nông nghiệp.
+
+- **`AC-04-026`**: **Kiểm thử Bảng Key-Value Thêm Thông Số Kỹ Thuật Tự Do**:
+  - Tại Bước 2, Seller bấm `+ Thêm thông số mới`: Bảng bổ sung 1 dòng mới.
+  - Seller nhập tên thông số, giá trị, đơn vị đo; lưu hồ sơ và kiểm tra trong DB `technology.offer_spec_values` lưu trữ đúng với `spec_category = 'TIER_3_CUSTOM'`.
+  - Kiểm tra chặn trùng lặp tên thông số kỹ thuật.
+
+- **`AC-04-027`**: **Kiểm thử Điều Kiện Thương Mại & Chuyển Giao Lớp 4**:
+  - Tại Bước 3, Seller điền các trường KT-66, GIA-74, GIA-75, GIA-76, GIA-77, GIA-78, GIA-80, GIA-81.
+  - Dữ liệu lưu thành công vào các cột tương ứng trong bảng `seller_technology_offers` và hiển thị đầy đủ trên trang chi tiết công nghệ `/chao-ban-cong-nghe/[id]`.
+
+- **`AC-04-028`**: **Kiểm thử Phân Quyền Minh Chứng DataRoom 3 Phân Cấp**:
+  - Tại Bước 4, Seller tải lên tài liệu và chọn `access_scope = 'AFTER_CONNECTION'`.
+  - Khách vãng lai xem trang chi tiết: File hiển thị trạng thái khóa kèm nút *"Kết nối để xem tài liệu"*.
+  - Cán bộ Sở KH&CN đăng nhập Cổng Cấp 2 `/gov`: Được phép tải file trực tiếp để thẩm định.
+
+- **`AC-04-029`**: **Kiểm thử Năng Lực Lưu Nháp & Tự Động Phục Hồi Dữ Liệu**:
+  - Seller mới chỉ nhập tên sản phẩm $\ge 3$ ký tự ở Bước 1, bấm "Lưu nháp".
+  - Hồ sơ được lưu với trạng thái `DRAFT` thành công, không tạo phiếu duyệt gửi Sở.
+  - Mở lại form hoặc reload trang: LocalStorage tự động khôi phục toàn bộ các trường đã nhập.
+
+- **`AC-04-030`**: **Kiểm thử Màn Hình Chỉnh Sửa Hồ Sơ (`[id]/edit`)**:
+  - Seller vào màn hình chỉnh sửa một hồ sơ đã có: Toàn bộ dữ liệu 4 lớp trường (Bước 1, 2, 3, 4) được nạp đầy đủ vào form.
+  - Các quy tắc kích hoạt tái thẩm định (`BR-SELLER-07`) hoạt động chính xác khi thay đổi các trường SHTT cốt lõi.
+

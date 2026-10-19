@@ -259,5 +259,14 @@
   - When kiểm tra thông tin pháp nhân liên kết,
   - Then hệ thống trả về đúng CÔNG TY CỔ PHẦN CƠ ĐIỆN & TỰ ĐỘNG HÓA TÂN TIẾN (MST: `0108992134`).
 
+---
 
+## 9. DELTA CR-2026-019 / CR-008 — SEARCHABLE AUTOCOMPLETE COMBOBOX TỈNH THÀNH
 
+- **Mục tiêu**: Chuyển đổi combobox/select địa bàn hoạt động (tỉnh/thành phố) từ dropdown tĩnh sang Searchable Autocomplete (Popover + Search input), hỗ trợ tìm kiếm gõ ký tự tiếng Việt có dấu/không dấu (diacritics-insensitive).
+- **Phạm vi tác động**:
+  1. `src/components/common/searchable-province-combobox.tsx`: Component dùng chung.
+  2. `src/app/enterprises/page.tsx`: Bộ lọc Danh bạ Doanh nghiệp ĐMST và route alias `/doanh-nghiep-dmst`.
+  3. `src/app/portal/enterprise/profile/page.tsx`: Biểu mẫu cập nhật hồ sơ doanh nghiệp.
+- **Acceptance Criteria**:
+  - `AC-02-016`: Gõ ký tự không dấu (ví dụ: "ha noi", "da nang") tự động lọc và gợi ý chính xác "Hà Nội", "Đà Nẵng". Chọn mục cập nhật state và kích hoạt tìm kiếm danh bạ tức thì.

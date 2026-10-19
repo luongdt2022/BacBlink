@@ -121,8 +121,8 @@
 
 ## Phase 13: Delta v7 (CR-2026-016) — Tự Động Nạp 100% Hồ Sơ Doanh Nghiệp & Đồng Bộ Demo Buyer
 
-- [ ] **T-03.54** `[FE]` `[INTEGRATION]` Hoàn thiện cơ chế Auto-Prefill 100% trong `src/app/khao-sat-nhu-cau/page.tsx`: Nạp toàn bộ 11 trường thông tin pháp nhân và người liên hệ từ `fetchMyEnterpriseProfile()` khi có session; hiển thị Alert Banner UX trang trọng; tự động bypass validation Bước 1 cho phép chuyển ngay sang Bước 2.
-- [ ] **T-03.55** `[FE]` `[COMPONENT]` Cài đặt cơ chế kiểm tra sai khác và hộp thoại xác nhận Đồng bộ ngược 2 chiều (Bi-directional Sync Modal) `BR-03-006`: Cho phép doanh nghiệp cập nhật các thay đổi tại Bước 1 vào hồ sơ gốc `enterprise.enterprises` khi nộp phiếu.
-- [ ] **T-03.56** `[TEST]` Bổ sung Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` kiểm chứng: 100% dữ liệu pháp nhân được nạp đầy đủ khi đã đăng nhập, hiển thị Banner nạp hồ sơ, Bước 1 hợp lệ ngay lập tức và sẵn sàng chuyển Bước 2.
-- [ ] **T-03.57** `[TEST]` `[E2E]` Viết kịch bản kiểm thử E2E Playwright `test_task03_buyer_prefill_and_demo_e2e.py`: Đăng nhập bằng `buyer.user@demo.nacentech.vn` (mật khẩu `Demo@2026`), mở `/khao-sat-nhu-cau`, xác nhận tự động điền đúng 100% thông tin CÔNG TY TNHH TRƯỜNG HOAN (MST `0100255428`, Hà Nội).
+- [x] **T-03.54** `[FE]` `[INTEGRATION]` Hoàn thiện cơ chế Auto-Prefill 100% trong `src/app/khao-sat-nhu-cau/page.tsx`: Nạp toàn bộ 11 trường thông tin pháp nhân và người liên hệ từ `fetchMyEnterpriseProfile()` khi có session; hiển thị Alert Banner UX trang trọng; tự động bypass validation Bước 1 cho phép chuyển ngay sang Bước 2.
+- [x] **T-03.55** `[FE]` `[COMPONENT]` Cài đặt cơ chế kiểm tra sai khác và hộp thoại xác nhận Đồng bộ ngược 2 chiều (Bi-directional Sync Modal) `BR-03-006`: Cho phép doanh nghiệp cập nhật các thay đổi tại Bước 1 vào hồ sơ gốc `enterprise.enterprises` khi nộp phiếu.
+- [x] **T-03.56** `[TEST]` Bổ sung Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` kiểm chứng: 100% dữ liệu pháp nhân được nạp đầy đủ khi đã đăng nhập, hiển thị Banner nạp hồ sơ, Bước 1 hợp lệ ngay lập tức và sẵn sàng chuyển Bước 2.
+- [x] **T-03.57** `[TEST]` `[E2E]` Viết kịch bản kiểm thử E2E Playwright `test_task03_buyer_prefill_and_demo_e2e.py`: Đăng nhập bằng `buyer.user@demo.nacentech.vn` (mật khẩu `Demo@2026`), mở `/khao-sat-nhu-cau`, xác nhận tự động điền đúng 100% thông tin CÔNG TY TNHH TRƯỜNG HOAN (MST `0100255428`, Hà Nội).
 

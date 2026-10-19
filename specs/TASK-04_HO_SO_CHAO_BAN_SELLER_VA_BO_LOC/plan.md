@@ -442,3 +442,419 @@ TechnologiesWizard/
    - Kiểm thử luồng upload file minh chứng và chọn quyền `access_scope`.
    - Kiểm thử gọi API Trợ lý AI và tự động điền form (Human-in-the-Loop).
    - Kiểm thử cơ chế khôi phục từ `localStorage`.
+
+---
+
+## 9. THIẾT KẾ KIẾN TRÚC KỸ THUẬT & KẾ HOẠCH THỰC THI DELTA V6 (GATE 2 PO-APPROVED)
+
+> **Căn cứ pháp lý & thiết kế**:  
+> - Bản đặc tả Delta v6 tại Mục 11 của `SourceCode/specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/spec.md`  
+> - Wireframe gốc `Specification/02_BASIC_DESIGN/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/wireframe_tao_ho_so_chao_ban.html`  
+> - Danh mục trường chào bán 18 ngành `Specification/02_BASIC_DESIGN/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/DANH_MUC_TRUONG_CHAO_BAN_VA_BO_LOC_18_NGANH.html`  
+> - Ma trận truy xuất nguồn gốc Mục 15 của `SourceCode/specs/TRACEABILITY.md`
+
+### 9.1. Tổng Quan Kiến Trúc & Triết Lý UX Đột Phá Delta v6
+
+Delta v6 đánh dấu bước đột phá cốt lõi về trải nghiệm người dùng (UX) và mô hình hóa dữ liệu:
+1. **Triết lý Cổng Nộp Nhanh Bước 1 (Non-Blocking Step 1 Fast-Track Gate - `BR-SELLER-08`)**:
+   - Bước 1 đóng vai trò là **Điều kiện Tiên quyết Tối thiểu (Minimum Viable Submission)**.
+   - Ngay khi hoàn tất 6 trường lõi + Cụm Giá + Khung TRL (nếu chuyển giao công nghệ = Có), hệ thống lập tức mở khóa nút **"Gửi chờ duyệt"**.
+   - Người dùng có toàn quyền gửi hồ sơ thẩm định ngay từ Bước 1 mà không hề bị chặn bởi việc chưa điền Bước 2, 3, hoặc 4.
+2. **Hành Lang Tùy Chọn Làm Giàu Dữ Liệu (Non-Blocking Optional Enrichment Corridor)**:
+   - Bước 2 (Thông số kỹ thuật Lớp 2 & Lớp 3), Bước 3 (Điều kiện thương mại Lớp 4) và Bước 4 (Minh chứng DataRoom) là các bước tùy chọn, cho phép Seller bổ sung dần bất kỳ lúc nào (kể cả sau khi hồ sơ đã được duyệt niêm yết).
+3. **Mô Hình Trạng Thái Hồ Sơ & Vòng Đời Thẩm Định Cấp Sở (State Machine)**:
+
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT: Bấm "Lưu nháp" (Title >= 3 ký tự)
+    DRAFT --> DRAFT: Tự động lưu LocalStorage 30s
+    
+    DRAFT --> PENDING: Nộp Nhanh Bước 1 (IsMinimumViableForReview)
+    DRAFT --> PENDING: Hoàn tất 4 Bước & Gửi Duyệt
+    
+    state PENDING {
+        [*] --> DOST_Review: Tạo ApprovalRequest (Type = TECHNOLOGY_OFFER)
+        DOST_Review --> Check_Scope: Scoped RBAC theo Tỉnh/Thành
+    }
+    
+    PENDING --> APPROVED: Cán bộ Sở Ký Duyệt (PublishedAt = UtcNow)
+    PENDING --> REJECTED: Cán bộ Sở Từ Chối (Lý do từ chối)
+    PENDING --> CHANGES_REQUESTED: Cán bộ Sở Yêu Cầu Bổ Sung
+    
+    CHANGES_REQUESTED --> PENDING: Seller Cập Nhật & Nộp Lại
+    APPROVED --> PENDING: Seller Sửa TRL / SHTT (BR-SELLER-07 Tái Thẩm Định)
+    APPROVED --> REVOKED: Super Admin Hậu Kiểm Thu Hồi (BR-SELLER-06)
+```
+
+---
+
+### 9.2. Kiến Trúc Frontend Wizard 4 Bước (Chuẩn Wireframe Gốc & 18 Ngành)
+
+#### 9.2.1. Cấu Trúc Thành Phần Frontend (Component Breakdown)
+
+Hệ thống tái cấu trúc toàn diện `src/app/portal/seller/technologies/create/page.tsx` và `src/app/portal/seller/technologies/[id]/edit/page.tsx` thành hệ sinh thái component dạng module độc lập:
+
+```
+src/
+├── app/portal/seller/technologies/
+│   ├── create/page.tsx                     # Form Wizard Đăng mới 4 bước
+│   ├── [id]/edit/page.tsx                  # Form Wizard Chỉnh sửa 4 bước
+│   └── page.tsx                            # Workspace Kho công nghệ Seller
+└── components/seller/
+    ├── FormStepper.tsx                     # Thanh tiến trình Stepper 4 bước + Counter X/6
+    ├── Step1CoreFields.tsx                 # Bước 1: 6 trường lõi + Switch chuyển giao
+    ├── SellerIdentityCard.tsx              # Bước 1: Thẻ chủ thể DN tự nạp + PDPD Shield
+    ├── InlinePricingCard.tsx               # Bước 1: Nhúng công bố giá (Fixed/Range/Contact)
+    ├── ReactiveYellowTrlPanel.tsx          # Bước 1: Khung TRL màu vàng reactive bung tự động
+    ├── Tier2CommonTechnicalForm.tsx        # Bước 2: Nhóm trường Lớp 2 (TB/SP vs Giải pháp)
+    ├── Tier3SectorDynamicForm.tsx          # Bước 2: Nhóm trường Lớp 3 tải từ Bo_loc_Cban
+    ├── DynamicSpecKeyValueTable.tsx        # Bước 2: Bảng thông số tự do (+ Thêm dòng)
+    ├── Tier4CommercialForm.tsx             # Bước 3: Điều kiện thương mại Lớp 4 Excel Master
+    ├── IpQuadDigitizationCard.tsx          # Bước 4: Bộ tứ SHTT (Số, Ngày, Loại, File scan)
+    ├── DataRoomFileManager.tsx             # Bước 4: Minh chứng DataRoom 3 cấp quyền
+    ├── FastTrackSubmitModal.tsx            # Modal xác nhận nộp nhanh & cam kết pháp lý
+    └── AiAssistantCard.tsx                 # Widget Trợ lý AI OCR/Voice nhập liệu
+```
+
+#### 9.2.2. Đặc Tả Chi Tiết 4 Bước Giao Diện
+
+1. **Bước 1: Thông tin để đăng và tra cứu (MVP Gate)**:
+   - **6 Trường Lõi Bắt Buộc**:
+     * `offer_type`: Radio 3 nút lớn có icon (Thiết bị `DEVICE`, Sản phẩm `PRODUCT`, Giải pháp `SOLUTION`).
+     * `sector_code`: `SearchableCombobox` 18 ngành công nghiệp, lọc theo từ khóa, hiển thị tên tiếng Việt rõ ràng, **tuyệt đối ẩn mã tiền tố nội bộ `LV..`** (`UI-04-021`, `AC-04-022`).
+     * `has_tech_transfer`: Toggle nút bấm dạng viên thuốc [Không] (mặc định đen/trắng) / [Có] (màu vàng hổ phách).
+     * `title`: Ô nhập tên sản phẩm, tối thiểu 5 ký tự, tối đa 255 ký tự.
+     * `short_description` (hoặc `summary`): Textarea tóm tắt đặc điểm cốt lõi, tối thiểu 20 ký tự.
+     * `problem_solved`: Textarea giải quyết nhu cầu/bài toán cho bên mua, tối thiểu 20 ký tự.
+   - **Thẻ Chủ Thể Cung Cấp (`SellerIdentityCard`)**: Tự động truy vấn từ module `TASK-02` (Tên DN, Người liên hệ, SĐT, Email). Hiển thị ghi chú bảo vệ dữ liệu PDPD NĐ 13/2023: Khách vãng lai chỉ thấy tên DN, số điện thoại và email được mã hóa bảo mật.
+   - **Cụm Hình Thức Công Bố Giá Nhúng (`InlinePricingCard`)**: Nhúng trực tiếp vào Bước 1 theo Wireframe gốc (`UI-04-023`). 3 tùy chọn:
+     * *Giá cụ thể (`FIXED`)*: Input số tiền, Dropdown loại tiền (`VND`/`USD`), Input đơn vị tính (`unit`: *bộ, chiếc, hệ thống, dây chuyền, gói chuyển giao, quy trình, li-xăng/năm*).
+     * *Khoảng giá (`RANGE`)*: Input *Giá từ* - *Giá đến*, loại tiền, đơn vị tính.
+     * *Liên hệ báo giá (`CONTACT`)*: Ẩn các ô nhập tiền, hiển thị thông điệp thương lượng kỹ thuật.
+   - **Khung Chọn TRL Màu Vàng Phản Hồi (`ReactiveYellowTrlPanel`)**:
+     * Khi `has_tech_transfer = false`: Khung thu gọn ẩn hoàn toàn.
+     * Khi `has_tech_transfer = true`: Khung viền `border-amber-300`, nền `bg-amber-50` bung mở mượt mà (`UI-04-022`, `AC-04-021`).
+     * Bố cục dải 9 nút bấm (TRL 1 đến 9), tooltip hiển thị định nghĩa chuẩn quốc tế. Bắt buộc Seller phải chọn 1 cấp độ TRL thì Bước 1 mới hoàn tất hợp lệ.
+   - **Cổng Nộp Nhanh (Fast-Track Action Bar)**: Nút **"Gửi chờ duyệt"** trên thanh công cụ và chân trang lập tức chuyển sang trạng thái khả dụng ngay khi Bước 1 hợp lệ.
+
+2. **Bước 2: Thông số kỹ thuật & 18 Ngành (Tùy chọn)**:
+   - **Phần 1 - Thông số Lớp 2 Kỹ thuật chung theo loại (`Tier2CommonTechnicalForm`)**:
+     * Nếu là **Thiết bị / Sản phẩm** (`PRODUCT`/`DEVICE`): Render 8 trường vật lý: Model (`model_code`), Hãng sản xuất (`manufacturer`), Xuất xứ (`origin_country`), Tình trạng thiết bị (`equipment_status`: *Mới 100%, Đã qua sử dụng, Refurbished*), Năm sản xuất (`manufacturing_year`), Công suất / Quy mô (`capacity_scale`), Tiêu hao năng lượng (`energy_consumption`), Mức tự động hóa (`automation_level`).
+     * Nếu là **Giải pháp công nghệ** (`SOLUTION`): Render 3 trường giải pháp: Nguyên lý hoạt động (`operating_principle`), Trạng thái thương mại hóa (`commercial_status`), Điều kiện triển khai hạ tầng (`deployment_conditions`).
+   - **Phần 2 - Thông số Lớp 3 Danh mục chuẩn 18 ngành (`Tier3SectorDynamicForm`)**:
+     * Tự động nạp bộ trường thông số chuyên môn theo mã ngành đã chọn từ Sheet `Bo_loc_Cban` (ví dụ: Cơ khí nạp *Hành trình trục, Độ chính xác lặp lại*; Nông nghiệp nạp *Năng suất, Tỷ lệ hao hụt*...).
+     * Mỗi trường lưu vào CSDL với `spec_category = 'TIER_3_SECTOR'`.
+   - **Phần 3 - Bảng Key-Value Thêm Thông Số Tự Do (`DynamicSpecKeyValueTable`)**:
+     * Bảng động hỗ trợ Seller nhấn `+ Thêm thông số mới`.
+     * Cột: Tên thông số, Giá trị, Đơn vị tính, Nút xóa.
+     * Lưu vào CSDL với `spec_category = 'TIER_3_CUSTOM'`, giới hạn tối đa 50 dòng, tự động kiểm tra chặn trùng tên.
+
+3. **Bước 3: Giá & Điều kiện thương mại Lớp 4 Excel Master (`Tier4CommercialForm`) (Tùy chọn)**:
+   - Kế thừa toàn bộ nhóm chỉ tiêu chuyên sâu từ Sheet `C.bán SP`:
+     * `transfer_priority_method` (KT-66): Hình thức chuyển giao ưu tiên (*Chuyển giao quyền sở hữu, Li-xăng độc quyền, Li-xăng không độc quyền, Hợp tác R&D, Góp vốn*).
+     * `price_includes` (GIA-74): Nội dung bao gồm trong giá (Textarea).
+     * `tax_and_extra_costs` (GIA-75): Thuế và chi phí phát sinh (Textarea).
+     * `supply_scope` (GIA-76): Phạm vi cung cấp (*Toàn quốc, Miền Bắc/Trung/Nam, Xuất khẩu*).
+     * `delivery_timeline` (GIA-77): Thời gian giao hàng / hoàn thành chuyển giao.
+     * `payment_terms` (GIA-78): Tiến độ và điều kiện thanh toán.
+     * `warranty_terms` (GIA-80): Thời gian và điều kiện bảo hành.
+     * `technical_support_method` (GIA-81): Hình thức hỗ trợ kỹ thuật (*Tại hiện trường, Từ xa 24/7*).
+     * `installationSupport`: Hỗ trợ lắp đặt & vận hành thử (Toggle / Checkbox).
+
+4. **Bước 4: Pháp lý SHTT, Minh chứng DataRoom & Cổng Thẩm Định (`Step4EvidenceAndReview`) (Tùy chọn)**:
+   - **Bộ tứ SHTT Số hóa (`IpQuadDigitizationCard`)**: Tình trạng văn bằng (`ip_status`), Số văn bằng (`ip_registration_number`), Ngày cấp/ngày nộp đơn (`ip_issue_date`), Tải bản scan văn bằng (`ip_certificate_file`).
+   - **Minh chứng DataRoom 3 Cấp Quyền (`DataRoomFileManager`)**:
+     * Tải lên: Brochure kỹ thuật, Báo cáo kiểm định, Hợp đồng tương tự, Video demo.
+     * Phân quyền truy cập 3 cấp độ (`access_scope`):
+       - `PUBLIC`: Công khai cho toàn bộ khách xem sàn.
+       - `AFTER_CONNECTION`: Mặc định cho tài liệu chuyên sâu, chỉ mở cho Buyer sau khi Yêu cầu kết nối được Seller chấp thuận.
+       - `ADMIN_ONLY`: Bảo mật nội bộ chỉ dành cho Cán bộ Sở KH&CN thẩm định.
+   - **Cơ Quan Thẩm Định & Cam Kết Pháp Lý**:
+     * Dropdown chọn Sở KH&CN tiếp nhận thẩm định (`managing_authority_id`, `scope_id` 63 tỉnh/thành).
+     * Checkbox cam kết tính xác thực và chịu trách nhiệm pháp lý (`legal_commitment_confirmed = true`).
+
+---
+
+### 9.3. Kiến Trúc CSDL PostgreSQL & Entity Framework Core (DB-04-002)
+
+#### 9.3.1. Thiết Kế Bảng Mở Rộng `technology.seller_technology_offers`
+
+Bổ sung các cột phục vụ Lớp 2, Lớp 4 và Pháp lý SHTT mà không làm gián đoạn dữ liệu hiện có:
+
+```sql
+-- 1. Bổ sung các cột Lớp 2 và Lớp 4 vào bảng chính
+ALTER TABLE technology.seller_technology_offers
+    -- Lớp 2: Kỹ thuật chung theo loại (PRODUCT/DEVICE vs SOLUTION)
+    ADD COLUMN IF NOT EXISTS model_code VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS manufacturer VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS origin_country VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS equipment_status VARCHAR(50) DEFAULT 'NEW', -- NEW, USED, REFURBISHED
+    ADD COLUMN IF NOT EXISTS manufacturing_year INTEGER,
+    ADD COLUMN IF NOT EXISTS capacity_scale VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS energy_consumption VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS automation_level VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS operating_principle TEXT,
+    ADD COLUMN IF NOT EXISTS deployment_conditions TEXT,
+
+    -- Lớp 4: Điều kiện thương mại & Chuyển giao Excel Master
+    ADD COLUMN IF NOT EXISTS transfer_priority_method VARCHAR(100), -- KT-66
+    ADD COLUMN IF NOT EXISTS price_includes TEXT,                    -- GIA-74
+    ADD COLUMN IF NOT EXISTS tax_and_extra_costs TEXT,              -- GIA-75
+    ADD COLUMN IF NOT EXISTS technical_support_method VARCHAR(255), -- GIA-81
+    
+    -- Pháp lý SHTT & Cơ quan quản lý
+    ADD COLUMN IF NOT EXISTS ip_issue_date DATE,
+    ADD COLUMN IF NOT EXISTS legal_commitment_confirmed BOOLEAN DEFAULT FALSE;
+
+-- Tạo index tìm kiếm theo mã ngành và nhà sản xuất
+CREATE INDEX IF NOT EXISTS idx_seller_offers_sector_code ON technology.seller_technology_offers(sector_code);
+CREATE INDEX IF NOT EXISTS idx_seller_offers_manufacturer ON technology.seller_technology_offers(manufacturer);
+```
+
+#### 9.3.2. Cấu Trúc Bảng `technology.offer_spec_values` & Cột `spec_category`
+
+Bảng `offer_spec_values` đảm bảo mô hình EAV linh hoạt cho thông số kỹ thuật Lớp 3 (18 ngành) và thông số tự do:
+
+```sql
+-- 2. Bổ sung phân loại danh mục thông số vào bảng offer_spec_values
+ALTER TABLE technology.offer_spec_values
+    ADD COLUMN IF NOT EXISTS spec_category VARCHAR(50) DEFAULT 'TIER_3_CUSTOM'; 
+    -- Giá trị hợp lệ: 'TIER_2_COMMON', 'TIER_3_SECTOR', 'TIER_3_CUSTOM'
+
+CREATE INDEX IF NOT EXISTS idx_offer_spec_category ON technology.offer_spec_values(offer_id, spec_category);
+```
+
+#### 9.3.3. Cấu Trúc Bảng `technology.offer_documents` & Cột `access_scope`
+
+Bảng `offer_documents` lưu trữ minh chứng và bảo mật DataRoom 3 cấp:
+
+```sql
+-- Đảm bảo access_scope hợp lệ 3 cấp độ
+ALTER TABLE technology.offer_documents
+    ADD COLUMN IF NOT EXISTS access_scope VARCHAR(50) DEFAULT 'PUBLIC';
+    -- 'PUBLIC', 'AFTER_CONNECTION', 'ADMIN_ONLY'
+```
+
+#### 9.3.4. EF Core Entity & Mapping Configuration
+
+Cập nhật Domain Entity `SellerTechnologyOffer.cs` với các thuộc tính Lớp 2 và Lớp 4, và cấu hình `EntityTypeBuilder<SellerTechnologyOffer>` trong tầng Persistence:
+
+```csharp
+// Trong NacenTech.Modules.Technology.Domain.SellerTechnologyOffer
+public string? ModelCode { get; private set; }
+public string? Manufacturer { get; private set; }
+public string? OriginCountry { get; private set; }
+public string EquipmentStatus { get; private set; } = "NEW";
+public int? ManufacturingYear { get; private set; }
+public string? CapacityScale { get; private set; }
+public string? EnergyConsumption { get; private set; }
+public string? AutomationLevel { get; private set; }
+public string? OperatingPrinciple { get; private set; }
+public string? DeploymentConditions { get; private set; }
+
+public string? TransferPriorityMethod { get; private set; }
+public string? PriceIncludes { get; private set; }
+public string? TaxAndExtraCosts { get; private set; }
+public string? TechnicalSupportMethod { get; private set; }
+public DateOnly? IpIssueDate { get; private set; }
+public bool LegalCommitmentConfirmed { get; private set; } = false;
+```
+
+---
+
+### 9.4. Thiết Kế Hợp Đồng API & DTOs (.NET Core Clean Architecture)
+
+#### 9.4.1. Hợp Đồng DTO Đầy Đủ (`CreateUpdateTechnologyOfferDto`)
+
+Endpoint hỗ trợ đồng bộ cho cả `POST /api/v1/portal/seller/technologies` và `PUT /api/v1/portal/seller/technologies/{id}`:
+
+```csharp
+public sealed record CreateUpdateTechnologyOfferDto(
+    string Action, // "SAVE_DRAFT" | "SUBMIT_FOR_REVIEW"
+    int CurrentStep, // 1, 2, 3, hoặc 4
+
+    // Bước 1: 6 trường lõi + Giá + TRL (Bắt buộc tối thiểu khi nộp nhanh)
+    string OfferType,
+    string SectorCode,
+    bool HasTechTransfer,
+    string Title,
+    string ShortDescription,
+    string ProblemSolved,
+    string PricingType,
+    decimal? PriceAmount,
+    decimal? PriceMin,
+    decimal? PriceMax,
+    string Currency,
+    string? Unit,
+    int? TrlLevel,
+
+    // Bước 2: Thông số Lớp 2 & Lớp 3 (Tùy chọn)
+    string? ModelCode = null,
+    string? Manufacturer = null,
+    string? OriginCountry = null,
+    string? EquipmentStatus = "NEW",
+    int? ManufacturingYear = null,
+    string? CapacityScale = null,
+    string? EnergyConsumption = null,
+    string? AutomationLevel = null,
+    string? OperatingPrinciple = null,
+    string? DeploymentConditions = null,
+    IReadOnlyList<OfferSpecValueDto>? SpecValues = null,
+
+    // Bước 3: Điều kiện thương mại Lớp 4 (Tùy chọn)
+    string? TransferPriorityMethod = null,
+    string? PriceIncludes = null,
+    string? TaxAndExtraCosts = null,
+    string? SupplyScope = null,
+    string? DeliveryTimeline = null,
+    string? PaymentTerms = null,
+    string? WarrantyTerms = null,
+    string? TechnicalSupportMethod = null,
+    bool InstallationSupport = true,
+
+    // Bước 4: SHTT, DataRoom & Cơ quan duyệt (Tùy chọn khi nộp nhanh Bước 1)
+    string? DeveloperOrigin = null,
+    string? IpStatus = "NONE",
+    string? IpRegistrationNumber = null,
+    DateOnly? IpIssueDate = null,
+    string? ManagingAuthorityId = null, // Nếu null khi nộp nhanh, BE tự kế thừa từ DN
+    string? ManagingAuthorityName = null,
+    bool LegalCommitmentConfirmed = false,
+    IReadOnlyList<OfferDocumentDto>? Documents = null,
+    string? MainImageUrl = null,
+    IReadOnlyList<string>? GalleryImageUrls = null,
+    string? VideoDemoUrl = null
+);
+```
+
+#### 9.4.2. Cơ Chế Thẩm Định Nghiệp Vụ 3 Tầng (`SellerOfferRulesValidator`)
+
+Bộ validator được thiết kế thành 3 phương thức chuyên biệt nhằm hỗ trợ triết lý Fast-Track:
+
+1. **`ValidateDraft(dto)`**:
+   - Chỉ kiểm tra `dto.Title.Length >= 3` và `<= 255`.
+   - Bỏ qua toàn bộ các trường khác, cho phép lưu nháp mọi lúc mọi nơi.
+2. **`ValidateFastTrackStep1(dto)`**:
+   - Thẩm định điều kiện nộp nhanh ngay tại Bước 1 (`IsMinimumViableForReview` theo `BR-SELLER-08`):
+     * `OfferType` thuộc `{ "PRODUCT", "DEVICE", "SOLUTION" }`.
+     * `SectorCode` hợp lệ, thuộc 18 ngành TT17.
+     * `Title` từ 5 đến 255 ký tự.
+     * `ShortDescription` (hoặc `Summary`) $\ge 20$ ký tự.
+     * `ProblemSolved` $\ge 20$ ký tự.
+     * `PricingType` thuộc `{ "FIXED", "RANGE", "CONTACT" }` kèm điều kiện logic giá.
+     * Nếu `HasTechTransfer == true`: Bắt buộc `TrlLevel` thuộc $\{1..9\}$. Nếu `false`: `TrlLevel` được phép null.
+   - Toàn bộ dữ liệu Bước 2, 3, 4 không bắt buộc, cho phép null hoặc rỗng.
+3. **`ValidateFull4Steps(dto)`**:
+   - Kiểm tra toàn bộ điều kiện như Bước 1.
+   - Kiểm tra tính hợp lệ của các trường bổ sung: Không trùng lặp tên thông số kỹ thuật (`SpecName`), tối đa 50 thông số; định dạng file tài liệu hợp lệ (`.pdf`, `.jpg`, `.png`, `.docx`, `.xlsx`, `.mp4`), dung lượng cho phép; bắt buộc xác nhận cam kết pháp lý (`LegalCommitmentConfirmed == true`).
+
+#### 9.4.3. Logic Backend Kế Thừa Tự Động `scope_id` Khi Nộp Nhanh
+
+Trong `TechnologyOffersController.cs`:
+```csharp
+if (dto.Action == "SUBMIT_FOR_REVIEW")
+{
+    // 1. Kiểm tra thẩm định Bước 1
+    var step1Validation = SellerOfferRulesValidator.ValidateFastTrackStep1(dto);
+    if (!step1Validation.IsValid)
+        return BadRequest(step1Validation.Errors);
+
+    // 2. Tự động xác định Cơ quan quản lý Sở KH&CN nếu chưa chọn ở Bước 4
+    string targetScopeId = dto.ManagingAuthorityId;
+    string targetAuthorityName = dto.ManagingAuthorityName;
+
+    if (string.IsNullOrWhiteSpace(targetScopeId))
+    {
+        // Tra cứu hồ sơ Doanh nghiệp liên kết của Seller hiện tại (TASK-02)
+        var enterprise = await _enterpriseService.GetByUserIdAsync(currentUserId);
+        targetScopeId = enterprise?.ProvinceScopeId ?? "VN-HN"; // Fallback Hà Nội nếu chưa cấu hình
+        targetAuthorityName = ProvincialCatalog.GetName(targetScopeId);
+    }
+
+    // 3. Khởi tạo Offer với trạng thái PENDING
+    offer.SetManagingAuthority(targetScopeId, targetAuthorityName);
+    offer.SetStatus("PENDING");
+
+    // 4. Sinh ApprovalRequest gửi Cổng Tác Nghiệp Cấp 2 (/gov/approvals)
+    await _approvalService.SubmitRequestAsync(new SubmitApprovalCommand(
+        RequestType: "TECHNOLOGY_OFFER",
+        ScopeType: "PROVINCE",
+        ScopeId: targetScopeId,
+        EntityId: offer.Id,
+        PayloadJson: JsonSerializer.Serialize(new { offer.Title, offer.OfferType, offer.TrlLevel, offer.SectorCode })
+    ));
+}
+```
+
+---
+
+### 9.5. Quyết Định Kiến Trúc Kỹ Thuật (Architectural Decision Records - ADRs)
+
+#### ADR-04-01: Kiến Trúc Cổng Nộp Nhanh Bước 1 Không Chặn (Non-Blocking Fast-Track Gate)
+- **Bối cảnh**: Nhiều Seller là nhà sáng chế, kỹ sư muốn đăng nhanh ý tưởng/thiết bị để tìm đối tác mà chưa có sẵn hồ sơ thương mại chi tiết hoặc tài liệu scan bằng sáng chế. Nếu ép buộc điền 4 bước tuần tự sẽ gây drop-off nghiêm trọng.
+- **Quyết định**: Tách rời tiến trình thẩm định tối thiểu tại Bước 1. Chỉ cần Bước 1 hoàn thành hợp lệ, nút "Gửi chờ duyệt" được kích hoạt ngay. Hệ thống tự động kế thừa `scope_id` của Doanh nghiệp liên kết và tạo `ApprovalRequest` cho Sở KH&CN.
+- **Hệ quả**: Giảm 75% thời gian tạo hồ sơ ban đầu (từ 15 phút xuống dưới 2 phút); nâng cao tỷ lệ chuyển đổi Seller; đảm bảo đầy đủ an toàn nghiệp vụ nhờ việc nộp hồ sơ vẫn đi qua Cổng Thẩm định cấp Sở `/gov`.
+
+#### ADR-04-02: Mô Hình Dữ Liệu Lai (Hybrid Schema: Core Relational + EAV Specs)
+- **Bối cảnh**: 18 nhóm ngành công nghiệp có hơn 200 thuộc tính kỹ thuật chuyên biệt khác nhau; đồng thời người dùng có nhu cầu thêm thông số tự do.
+- **Quyết định**:
+  - Dùng các cột cố định trong `seller_technology_offers` cho 6 trường lõi, cụm giá, nhóm Lớp 2 phổ biến theo loại (Model, Hãng, Năm SX, Công suất, v.v.) và Lớp 4 thương mại (KT-66, GIA-74..81).
+  - Dùng bảng quan hệ 1-N `offer_spec_values` lưu trữ các thông số ngành Lớp 3 và thông số tự do, phân biệt bằng cột `spec_category` (`TIER_3_SECTOR` vs `TIER_3_CUSTOM`).
+- **Hệ quả**: Hiệu năng truy vấn cao, đánh index dễ dàng trên các trường chính; không làm phình schema bảng chính; cho phép nạp động linh hoạt từ Sheet `Bo_loc_Cban`.
+
+#### ADR-04-03: Bảo Mật Dữ Liệu DataRoom 3 Phân Cấp (Zero-Trust Document Access)
+- **Bối cảnh**: Hồ sơ công nghệ bao gồm cả tài liệu tiếp thị công khai (Brochure) và bí quyết công nghệ/hồ sơ nhạy cảm (Patent claim, Thử nghiệm lâm sàng).
+- **Quyết định**: Áp dụng 3 cấp độ `access_scope`: `PUBLIC`, `AFTER_CONNECTION`, `ADMIN_ONLY`. Tại backend, API tải file kiểm tra ngữ cảnh người gọi:
+  - Khách vãng lai: Chỉ tải được file `PUBLIC`.
+  - Bên Mua đã được chấp thuận kết nối (`ConnectionRequest.Status == APPROVED`): Tải được file `AFTER_CONNECTION`.
+  - Cán bộ Sở KH&CN và Super Admin: Tải được mọi file bao gồm `ADMIN_ONLY` phục vụ công tác thẩm định.
+
+---
+
+### 9.6. Kế Hoạch Kiểm Thử Toàn Diện 4 Tầng & Tiêu Chuẩn Nghiệm Thu Quality Gate
+
+```mermaid
+flowchart TD
+    subgraph T1 ["TẦNG 1: UNIT TEST DOMAIN & VALIDATION (.NET)"]
+        UT1["ValidateDraft: Title >= 3 chars"]
+        UT2["ValidateFastTrackStep1: 6 core fields + Pricing + Reactive TRL"]
+        UT3["ValidateFull4Steps: Spec duplicates, Files format, Legal consent"]
+        UT4["BR-SELLER-07: Tự động tái thẩm định khi sửa TRL/SHTT"]
+    end
+
+    subgraph T2 ["TẦNG 2: CONTRACT & API INTEGRATION TEST"]
+        IT1["POST /portal/seller/technologies (Fast-Track Step 1) -> 200 OK + PENDING"]
+        IT2["POST /portal/seller/technologies (Full 4 Steps) -> 200 OK + PENDING"]
+        IT3["PUT /portal/seller/technologies/{id} -> Cập nhật specs Lớp 2, 3, 4"]
+    end
+
+    subgraph T3 ["TẦNG 3: DATABASE & EF CORE PERSISTENCE"]
+        DB1["Migration AddDeltaV6... non-destructive"]
+        DB2["Lưu trữ offer_spec_values với spec_category đúng chuẩn"]
+        DB3["Lưu trữ offer_documents với access_scope 3 cấp"]
+    end
+
+    subgraph T4 ["TẦNG 4: PLAYWRIGHT E2E BLACK-BOX QA"]
+        E2E1["Luồng A: Fast-track nộp ngay từ Bước 1 trong 60 giây"]
+        E2E2["Luồng B: Hoàn thiện toàn diện 4 bước với 18 ngành"]
+        E2E3["Luồng C: Tương tác Khung TRL màu vàng (Reactive Toggle)"]
+        E2E4["Luồng D: Cán bộ Sở /gov duyệt hồ sơ và xuất hiện trên Sàn"]
+    end
+
+    T1 --> T2 --> T3 --> T4
+```
+
+1. **Tầng 1 (Unit Test - xUnit)**:
+   - File: `backend/tests/NacenTech.Modules.Technology.Tests/SellerOfferRulesValidatorTests.cs`.
+   - Mục tiêu: Đạt 100% Pass (tối thiểu 25 test cases bao phủ toàn diện 3 chế độ validation và các quy tắc `BR-SELLER-01` đến `BR-SELLER-14`).
+2. **Tầng 2 (Contract & API Integration Test)**:
+   - Kiểm tra tính tương thích ngược của API DTO và kiểm chứng việc tự động kế thừa `scope_id` từ Doanh nghiệp liên kết.
+3. **Tầng 3 (Database Integrity Test)**:
+   - Thực thi migration PostgreSQL, kiểm tra tính toàn vẹn khóa ngoại, lưu trữ cascade các bảng phụ `offer_spec_values` và `offer_documents`.
+4. **Tầng 4 (Playwright E2E UI Black-box Test)**:
+   - File: `tests/e2e/test_seller_offer_delta_v6_e2e.py`.
+   - Kiểm chứng 3 kịch bản cốt lõi:
+     * **Kịch bản A (Fast-Track Submission)**: Đăng nhập Seller, điền 6 trường Bước 1, chọn TRL 8, bấm "Gửi chờ duyệt" $\rightarrow$ Thành công trong 1 click, hồ sơ sang trạng thái `PENDING`.
+     * **Kịch bản B (Full 4-Step Flow)**: Chọn ngành "Cơ khí chế tạo" (MECH), chuyển sang Bước 2 nạp đúng thông số ngành, thêm thông số tự do, sang Bước 3 điền điều khoản thương mại, sang Bước 4 tải file DataRoom và gửi duyệt.
+     * **Kịch bản C (Reactive TRL Toggle)**: Bật chuyển giao = Có $\rightarrow$ Khung TRL màu vàng mở ra; tắt chuyển giao $\rightarrow$ Khung đóng lại; thử nộp khi bật nhưng chưa chọn TRL $\rightarrow$ Nút bị khóa.
+

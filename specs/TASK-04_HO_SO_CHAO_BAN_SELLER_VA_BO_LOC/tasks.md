@@ -121,3 +121,45 @@
 ### Phase 16: Automated Quality Assurance & Gate 2/3 Verification [TEST][INT]
 - [x] T-04.64 [TEST] Cập nhật và bổ sung Unit Test Backend xUnit `SellerOfferRulesValidatorTests.cs` kiểm tra 100% kịch bản `ValidateDraft`, `ValidatePublish`, TRL 1-9, specs max 50 dòng, duplicate specs, documents an toàn.
 - [x] T-04.65 [INT] Thực hiện kiểm thử tích hợp, kiểm tra hồi quy toàn diện qua `Agent/scripts/guard-rails.sh` và đối soát tính nhất quán 3 chiều Gate 2 (speckit-analyze).
+
+---
+
+## Giai đoạn 8: Delta v6 — Tái Cấu Trúc Form Chào Bán Seller 4 Bước Chuẩn Wireframe Gốc & 18 Ngành Excel Master (T-04.66 đến T-04.86)
+
+### Phase 17: Backend Database Migration, Entities & Fast-Track Contracts [BE]
+- [x] T-04.66 [BE] Tạo EF Core Migration `AddDeltaV6SellerOfferTier2Tier4AndSpecCategory` bổ sung các cột Lớp 2 (`model_code`, `manufacturer`, `origin_country`, `equipment_status`, `manufacturing_year`, `capacity_scale`, `energy_consumption`, `automation_level`, `operating_principle`, `deployment_conditions`), Lớp 4 (`transfer_priority_method`, `price_includes`, `tax_and_extra_costs`, `technical_support_method`), Pháp lý (`ip_issue_date`, `legal_commitment_confirmed`) vào `technology.seller_technology_offers`; cột `spec_category` vào `technology.offer_spec_values`; và cột `access_scope` vào `technology.offer_documents`.
+- [x] T-04.67 [BE] Mở rộng Domain Entity `SellerTechnologyOffer.cs`, `OfferSpecValue.cs`, `OfferDocument.cs` với các trường Lớp 2, Lớp 4, phương thức `UpdateTier2Details`, `UpdateTier4Commercial`, và các Value Objects liên quan.
+- [x] T-04.68 [BE] Cập nhật Contracts & DTOs trong `SellerOfferContracts.cs`: Chuẩn hóa `CreateUpdateTechnologyOfferDto`, `OfferSpecValueDto` (bổ sung `specCategory`), `OfferDocumentDto` (bổ sung `accessScope`), `SellerOfferDetailDto`.
+- [x] T-04.69 [BE] Nâng cấp `SellerOfferRulesValidator.cs` với 3 chế độ thẩm định tách biệt:
+  * `ValidateDraft`: Nới lỏng, chỉ yêu cầu Title $\ge 3$ ký tự (`BR-SELLER-08`).
+  * `ValidateFastTrackStep1`: Kiểm tra nghiêm ngặt 6 trường lõi + Cụm giá + Bắt buộc TRL 1-9 khi `has_tech_transfer = true` (`BR-SELLER-08`, `BR-SELLER-09`), cho phép Bước 2, 3, 4 rỗng.
+  * `ValidateFull4Steps`: Kiểm tra toàn diện khi nộp từ Bước 4, rà soát cam kết pháp lý, định dạng tài liệu DataRoom và chống trùng lặp tên thông số kỹ thuật.
+- [x] T-04.70 [BE] Nâng cấp `TechnologyOffersController.cs` tiếp nhận action `SAVE_DRAFT` và `SUBMIT_FOR_REVIEW`. Khi nộp nhanh từ Bước 1, tự động kế thừa `scope_id` từ Doanh nghiệp liên kết (`TASK-02`) nếu chưa chọn ở Bước 4, chuyển trạng thái `PENDING` và tạo `ApprovalRequest` gửi Sở KH&CN.
+
+### Phase 18: Frontend Bước 1 Chuẩn Wireframe Gốc & Fast-Track Submission [FE]
+- [x] T-04.71 [FE] Xây dựng component `Step1CoreFields.tsx`: 6 trường lõi (`offerType`, `sectorCode`, `hasTechTransfer`, `title`, `shortDescription`, `problemSolved`) kèm `SearchableCombobox` 18 ngành tiếng Việt trực quan, ẩn tiền tố mã `LV..` (`REQ-04-011`, `UI-04-021`, `AC-04-022`).
+- [x] T-04.72 [FE] Xây dựng component `SellerIdentityCard.tsx`: Tự động nạp thông tin Doanh nghiệp liên kết từ phiên làm việc (`TASK-02`) gồm Tên DN, Người liên hệ, SĐT, Email; hiển thị ghi chú bảo vệ dữ liệu PDPD NĐ 13/2023 (`REQ-04-012`, `BR-SELLER-14`, `AC-04-023`).
+- [x] T-04.73 [FE] Xây dựng component `InlinePricingCard.tsx`: Nhúng trực tiếp vào Bước 1 theo Wireframe gốc (`REQ-04-013`, `UI-04-023`), hỗ trợ 3 hình thức (Giá cụ thể, Khoảng giá, Liên hệ báo giá) kèm dropdown VND/USD và đơn vị tính gợi ý.
+- [x] T-04.74 [FE] Xây dựng component `ReactiveYellowTrlPanel.tsx`: Khung TRL màu vàng reactive bo góc viền vàng hổ phách `border-amber-300 bg-amber-50`, bung mở mượt mà khi `has_tech_transfer = true`, grid 9 nấc TRL kèm tooltip giải nghĩa (`REQ-04-014`, `BR-SELLER-09`, `UI-04-022`, `AC-04-021`).
+- [x] T-04.75 [FE] Cập nhật `FormStepper.tsx` & Action Bar: Hiển thị bộ đếm tiến trình `Đã điền X / 6` tại Bước 1, nhãn *(Tùy chọn)* tại Bước 2, 3, 4; nút "Gửi chờ duyệt" lập tức khả dụng khi Bước 1 hợp lệ; tích hợp `FastTrackSubmitModal.tsx` xác nhận cam kết pháp lý trong 1 click (`REQ-04-010`, `BR-SELLER-08`, `UI-04-020`, `AC-04-020`).
+
+### Phase 19: Frontend Bước 2 & Bước 3 Lớp 2, Lớp 3, Lớp 4 [FE]
+- [x] T-04.76 [FE] Xây dựng component `Tier2CommonTechnicalForm.tsx`: Render nhóm trường Lớp 2 kỹ thuật chung dựa theo `offerType` (8 trường vật lý thiết bị nếu là TB/SP vs 3 trường giải pháp số nếu là Giải pháp) (`REQ-04-015`, `BR-SELLER-10`, `UI-04-024`, `AC-04-024`).
+- [x] T-04.77 [FE] Xây dựng component `Tier3SectorDynamicForm.tsx`: Tự động đọc và kết xuất danh mục trường thông số kỹ thuật chuẩn của 18 ngành từ Sheet `Bo_loc_Cban` theo ngành đã chọn; hiển thị modal xác nhận chuyển đổi ngành (`REQ-04-016`, `BR-SELLER-11`, `UI-04-024`, `AC-04-025`).
+- [x] T-04.78 [FE] Xây dựng component `DynamicSpecKeyValueTable.tsx`: Bảng thông số tự do (+ Thêm mới, tên, giá trị, đơn vị, nút xóa); gán `specCategory = 'TIER_3_CUSTOM'`, giới hạn tối đa 50 dòng, chống trùng tên (`REQ-04-017`, `UI-04-024`, `AC-04-026`).
+- [x] T-04.79 [FE] Xây dựng component `Tier4CommercialForm.tsx`: Bố cục 2 cột hiển thị đầy đủ các điều kiện thương mại và chuyển giao Lớp 4 Excel Master (KT-66, GIA-74, GIA-75, GIA-76, GIA-77, GIA-78, GIA-80, GIA-81) (`REQ-04-018`, `BR-SELLER-12`, `UI-04-025`, `AC-04-027`).
+
+### Phase 20: Frontend Bước 4 Pháp Lý SHTT, DataRoom 3 Cấp & Tích Hợp Wizard [FE]
+- [x] T-04.80 [FE] Xây dựng component `IpQuadDigitizationCard.tsx`: Khai báo hồ sơ bộ tứ SHTT số hóa (Tình trạng văn bằng, Số hiệu văn bằng/đơn, Ngày cấp/nộp, Tải tệp scan bằng sáng chế) (`REQ-04-019`, `BR-SELLER-13`, `UI-04-026`).
+- [x] T-04.81 [FE] Xây dựng component `DataRoomFileManager.tsx`: Quản lý tài liệu minh chứng đa phương tiện (Catalogue, Báo cáo kiểm định, Hợp đồng, Video) kèm cấu hình quyền DataRoom 3 cấp độ (PUBLIC, AFTER_CONNECTION, ADMIN_ONLY) (`REQ-04-020`, `BR-SELLER-13`, `AC-04-028`).
+- [x] T-04.82 [FE] Tích hợp toàn diện trang Đăng mới `/portal/seller/technologies/create/page.tsx` và Chỉnh sửa `/portal/seller/technologies/[id]/edit/page.tsx` khớp 100% Wireframe gốc.
+- [x] T-04.83 [FE] Nâng cấp Widget Trợ lý AI `AiAssistantCard.tsx` (OCR/Voice) và Quản lý nháp `DraftManager.tsx` (LocalStorage resilience tự động lưu 30s) (`REQ-04-022`, `AC-04-029`).
+
+### Phase 21: Kiểm Thử Toàn Diện & Verification Code [TEST][QC]
+- [x] T-04.84 [TEST] Unit tests xUnit `SellerOfferRulesValidatorTests.cs`: Kiểm thử toàn diện 3 chế độ validation (`ValidateDraft`, `ValidateFastTrackStep1`, `ValidateFull4Steps`), kiểm tra tính ràng buộc của TRL, ngăn chặn trùng lặp thông số, giới hạn 50 spec, PDPD mask (37 test cases đạt 100% Pass).
+- [x] T-04.85 [TEST] API & Integration tests: Kiểm thử endpoint `POST /api/v1/portal/seller/technologies` với Fast-Track payload (chỉ có Bước 1) trả về `200 OK`, tự gán `scope_id`, lưu DB trạng thái `PENDING`; và kiểm thử Full 4-step payload lưu đầy đủ Lớp 2, Lớp 3, Lớp 4.
+- [x] T-04.86 [TEST] E2E Playwright tests & Direct DB Verification (`tests/qc_gate4_delta_v6_verification.py` - 15/15 Pass):
+  * Kịch bản 1: Luồng Fast-track nộp ngay từ Bước 1 hoàn thành dưới 60 giây, nạp Seller TÂN TIẾN, PDPD mask, tự gán scope VN-HN, trạng thái PENDING.
+  * Kịch bản 2: Luồng tương tác reactive Khung TRL màu vàng (mở/đóng theo switch chuyển giao), kiểm tra BR-SELLER-09 chặn 400 Bad Request.
+  * Kịch bản 3: Luồng hoàn thiện tuần tự 4 bước nạp đúng thông số ngành Cơ khí (TIER_3_SECTOR), custom spec (TIER_3_CUSTOM), thương mại Lớp 4 và DataRoom 3 cấp quyền.
+

@@ -186,3 +186,25 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Định danh Cặp tài khoản Demo Chuẩn hóa** | `REQ-02-016` (`REQ-02-026`), `FR-Delta-16`, `AC-02-015`, `AC-03-07` | T-02.58, T-02.60 | `seed_identity_demo_accounts.sql`, `EnterpriseService.cs`, `EnterpriseController.cs` | Login `buyer.user@demo.nacentech.vn` $\rightarrow$ TRƯỜNG HOAN (0100255428); Login `seller.user@demo.nacentech.vn` $\rightarrow$ TÂN TIẾN (0108992134); API trả 200 OK |
 | **Bắt buộc Tự động điền 100% Hồ sơ Khảo sát** | `FR-Delta-15`, `BR-03-005`, `BR-03-006`, `AC-03-06` | T-03.54–T-03.57 | `src/app/khao-sat-nhu-cau/page.tsx`, `page.test.tsx`, `enterprise-client.ts` | Vitest + Playwright E2E nạp 100% dữ liệu pháp nhân khi đã đăng nhập; Zero-friction sang Bước 2; Hỗ trợ đồng bộ 2 chiều |
 
+---
+
+## 15. TASK-04 Delta v6: Tái Cấu Trúc Form Tạo/Sửa Hồ Sơ Chào Bán Seller Đồng Bộ Wireframe Gốc & 4 Lớp Trường Excel Master
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Triết lý Form 4 bước & Cổng nộp nhanh Bước 1** | `REQ-04-010`, `BR-SELLER-08`, `AC-04-020` | T-04.69, T-04.70, T-04.75 | `TechnologyOffersController.cs`, `FormStepper.tsx`, `FastTrackSubmitModal.tsx` | UI Action Bar kích hoạt nút Submit ngay Bước 1, kiểm thử Fast-track Pass |
+| **Bước 1: 6 Trường lõi & Combobox 18 Ngành (Ẩn mã LV)** | `REQ-04-011`, `UI-04-021`, `AC-04-022` | T-04.71 | `Step1CoreFields.tsx`, `SearchableCombobox.tsx` | Kiểm thử ẩn mã LV.., hiển thị trực quan 18 ngành tiếng Việt |
+| **Bước 1: Nạp chủ thể DN & PDPD Data Masking** | `REQ-04-012`, `BR-SELLER-14`, `AC-04-023` | T-04.72 | `SellerIdentityCard.tsx`, `enterprise-client.ts` | Tự động điền 100% thông tin pháp nhân; che SĐT/Email đối với công khai |
+| **Bước 1: Nhúng công bố giá (Fixed, Range, Contact)** | `REQ-04-013`, `BR-SELLER-04`, `UI-04-023` | T-04.73 | `InlinePricingCard.tsx` | Validate giá cụ thể > 0, khoảng giá min-max, loại tiền VND/USD, ĐVT |
+| **Bước 1: Khung tương tác TRL vàng 9 cấp (Reactive)** | `REQ-04-014`, `BR-SELLER-09`, `UI-04-022`, `AC-04-021` | T-04.74 | `ReactiveYellowTrlPanel.tsx`, `TrlRadioGrid.tsx` | Tự động bung mở khi chuyển giao = Có; bắt buộc chọn TRL 1-9 mới cho nộp |
+| **Bước 2: Lớp 2 Kỹ thuật chung theo loại (TB/SP vs GP)** | `REQ-04-015`, `BR-SELLER-10`, `UI-04-024`, `AC-04-024` | T-04.66, T-04.67, T-04.76 | `Tier2CommonTechnicalForm.tsx`, `SellerTechnologyOffer.cs` | Render đúng 8 trường vật lý thiết bị hoặc 3 trường giải pháp số |
+| **Bước 2: Lớp 3 Thông số 18 ngành Excel Master** | `REQ-04-016`, `BR-SELLER-11`, `UI-04-024`, `AC-04-025` | T-04.66, T-04.77 | `Tier3SectorDynamicForm.tsx`, `Bo_loc_Cban` | Tự động nạp danh mục thông số chuẩn theo ngành đã chọn |
+| **Bước 2: Bảng Key-Value thêm thông số tự do** | `REQ-04-017`, `UI-04-024`, `DB-04-002`, `AC-04-026` | T-04.66, T-04.78 | `DynamicSpecKeyValueTable.tsx`, `offer_spec_values` | Thêm/xóa dòng, chặn trùng lặp, lưu `TIER_3_CUSTOM` thành công |
+| **Bước 3: Lớp 4 Điều kiện thương mại & Chuyển giao** | `REQ-04-018`, `BR-SELLER-12`, `UI-04-025`, `AC-04-027` | T-04.66, T-04.67, T-04.79 | `Tier4CommercialForm.tsx`, `seller_technology_offers` | Lưu KT-66, GIA-74..78, GIA-80..81 vào DB; hiển thị trang chi tiết |
+| **Bước 4: Pháp lý Bộ tứ SHTT & Minh chứng DataRoom** | `REQ-04-019`, `REQ-04-020`, `BR-SELLER-13`, `AC-04-028` | T-04.66, T-04.80, T-04.81 | `IpQuadDigitizationCard.tsx`, `DataRoomFileManager.tsx` | Quyền xem 3 cấp (PUBLIC, AFTER_CONNECTION, ADMIN_ONLY); chặn tải trái phép |
+| **Bước 4: Chọn Sở KH&CN Cấp 2 & Cam kết pháp lý** | `REQ-04-021`, `BR-SELLER-05`, `UI-04-026` | T-04.70, T-04.75 | `ProvincialGovAuthoritySelect.tsx`, `ApprovalRequest.cs` | Bắt buộc chọn Sở và cam kết pháp lý; sinh phiếu duyệt Cổng Cấp 2 `/gov` |
+| **Cơ chế Lưu nháp DRAFT, LocalStorage & Trợ lý AI** | `REQ-04-022`, `BR-SELLER-08`, `AC-04-029` | T-04.82, T-04.83 | `DraftManager.tsx`, `AiAssistantCard.tsx` | Lưu nháp chỉ cần title >= 3 ký tự; phục hồi form 30s; AI suggester fallback |
+| **Kiểm thử Toàn diện & Quality Gate Delta v6** | `AC-04-020..030`, `QC-4-TIERS` | T-04.84–T-04.86 | `SellerOfferRulesValidatorTests.cs`, `page.test.tsx`, `tests/qc_gate4_delta_v6_verification.py` | 100% xUnit Pass (37 tests), Vitest 3/3 Pass, Direct DB Verification & Playwright 3 kịch bản Pass (15/15 tests) |
+
+
+
