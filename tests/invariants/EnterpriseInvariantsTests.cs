@@ -39,6 +39,24 @@ public sealed class EnterpriseInvariantsTests
             return Task.FromResult(item);
         }
 
+        public Task<Enterprise?> GetByOwnerPersonIdAsync(Guid personId, CancellationToken ct = default)
+        {
+            var item = _enterprises.FirstOrDefault(x => x.OwnerPersonId == personId);
+            return Task.FromResult(item);
+        }
+
+        public Task<Enterprise?> GetByIdentifierAsync(string type, string value, CancellationToken ct = default)
+        {
+            var item = _enterprises.FirstOrDefault(x => x.Identifiers.Any(i => i.Type == type && i.Value == value));
+            return Task.FromResult(item);
+        }
+
+        public Task<Enterprise?> GetByContactEmailAsync(string email, CancellationToken ct = default)
+        {
+            var item = _enterprises.FirstOrDefault(x => x.ContactEmail != null && string.Equals(x.ContactEmail.Trim(), email.Trim(), StringComparison.OrdinalIgnoreCase));
+            return Task.FromResult(item);
+        }
+
         public Task AddAsync(Enterprise enterprise, CancellationToken ct = default)
         {
             _enterprises.Add(enterprise);
@@ -56,7 +74,7 @@ public sealed class EnterpriseInvariantsTests
             if (!string.IsNullOrWhiteSpace(query.Q))
             {
                 var q = query.Q.ToLower();
-                qry = qry.Where(x => x.Name.ToLower().Contains(q) || x.TaxCode.Contains(q) || x.ProvinceCity.ToLower().Contains(q));
+                qry = qry.Where(x => x.Name.ToLower().Contains(q) || (x.TaxCode != null && x.TaxCode.Contains(q)) || x.ProvinceCity.ToLower().Contains(q));
             }
             if (!string.IsNullOrWhiteSpace(query.Province))
             {

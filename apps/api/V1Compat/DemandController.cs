@@ -381,7 +381,7 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             query = query.Where(i => i.TniClassification == tniClassification);
         }
 
-        var items = await query.OrderByDescending(i => i.TniScore).Take(20).ToListAsync(ct);
+        var items = await query.OrderByDescending(i => i.CreatedAt).Take(50).ToListAsync(ct);
 
         // Map sang DTO công khai (Ẩn PII, ẩn ngân sách chi tiết nếu cần)
         var result = items.Select(i => new

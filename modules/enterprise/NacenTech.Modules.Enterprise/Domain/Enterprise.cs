@@ -12,7 +12,12 @@ public class Enterprise : AggregateRoot
     public string SubjectType { get; set; } = "ENTERPRISE";
     public string LegalName { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-    public string TaxCode { get; set; } = string.Empty;
+    private string? _taxCode;
+    public string? TaxCode
+    {
+        get => _taxCode;
+        set => _taxCode = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
     public string ProvinceCity { get; set; } = string.Empty;
     public string MainSectorName { get; set; } = string.Empty;
     public string? SectorCode { get; set; }
@@ -21,6 +26,12 @@ public class Enterprise : AggregateRoot
     public string? RevenueRange { get; set; }
     public string? OperatingZone { get; set; }
     public string? HighQualificationRatio { get; set; }
+    
+    public string CapabilityTier { get; set; } = "BASIC"; // "BASIC", "BUYER", "SELLER", "DUAL"
+    public bool IsBuyer { get; set; } = false;
+    public bool IsSeller { get; set; } = false;
+    public string ActiveRole { get; set; } = "BUYER";     // "BUYER", "SELLER"
+    public Guid? OwnerPersonId { get; set; }
     
     public string Status { get; set; } = "ACTIVE";
     public string VerificationStatus { get; set; } = "DRAFT"; // DRAFT, SUBMITTED, VERIFIED, REJECTED
@@ -94,6 +105,50 @@ public class Enterprise : AggregateRoot
     {
         VerificationStatus = "REJECTED";
         IsVerified = false;
+        Touch();
+    }
+
+    public void ActivateCapability(string capability)
+    {
+        if (string.IsNullOrWhiteSpace(capability))
+            throw new ArgumentException("Năng lực không được để trống.", nameof(capability));
+
+        var capUpper = capability.Trim().ToUpperInvariant();
+        if (capUpper == "BUYER") IsBuyer = true;
+        else if (capUpper == "SELLER") IsSeller = true;
+        else throw new ArgumentException($"Năng lực '{capability}' không hợp lệ. Chỉ chấp nhận BUYER hoặc SELLER.", nameof(capability));
+
+        // Cập nhật bậc năng lực tự động
+        if (IsBuyer && IsSeller)
+        {
+            CapabilityTier = "DUAL";
+        }
+        else if (IsBuyer)
+        {
+            CapabilityTier = "BUYER";
+            ActiveRole = "BUYER";
+        }
+        else if (IsSeller)
+        {
+            CapabilityTier = "SELLER";
+            ActiveRole = "SELLER";
+        }
+
+        Touch();
+    }
+
+    public void SwitchActiveRole(string targetRole)
+    {
+        if (string.IsNullOrWhiteSpace(targetRole))
+            throw new ArgumentException("Vai trò mục tiêu không được để trống.", nameof(targetRole));
+
+        var roleUpper = targetRole.Trim().ToUpperInvariant();
+        if (roleUpper == "BUYER" && !IsBuyer)
+            throw new InvalidOperationException("BR-02-014: Doanh nghiệp chưa kích hoạt năng lực Bên Mua.");
+        if (roleUpper == "SELLER" && !IsSeller)
+            throw new InvalidOperationException("BR-02-014: Doanh nghiệp chưa kích hoạt năng lực Bên Bán.");
+
+        ActiveRole = roleUpper;
         Touch();
     }
 }

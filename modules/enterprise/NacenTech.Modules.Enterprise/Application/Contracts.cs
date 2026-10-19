@@ -6,7 +6,7 @@ namespace NacenTech.Modules.Enterprise.Application;
 public sealed record EnterprisePublicDirectoryItemDto(
     Guid Id,
     string Name,
-    string TaxCode,
+    string? TaxCode,
     string SubjectType,
     string ProvinceCity,
     string MainSectorName,
@@ -98,7 +98,7 @@ public sealed record EnterpriseIpDto(
 public sealed record EnterprisePublicDetailDto(
     Guid Id,
     string Name,
-    string TaxCode,
+    string? TaxCode,
     string SubjectType,
     string? EstablishedDate,
     string ProvinceCity,
@@ -127,7 +127,7 @@ public sealed record EnterprisePublicDetailDto(
 public sealed record EnterpriseProfileFullDto(
     Guid Id,
     string Name,
-    string TaxCode,
+    string? TaxCode,
     string SubjectType,
     string? EstablishedDate,
     string ProvinceCity,
@@ -159,7 +159,12 @@ public sealed record EnterpriseProfileFullDto(
     IReadOnlyList<string> SupportNeeds,
     IReadOnlyList<EnterpriseProjectDto> Projects,
     IReadOnlyList<EnterpriseIpDto> IntellectualProperties,
-    string ProfileDetailsJson
+    string ProfileDetailsJson,
+    string CapabilityTier = "BASIC",
+    bool IsBuyer = false,
+    bool IsSeller = false,
+    string ActiveRole = "BUYER",
+    Guid? OwnerPersonId = null
 );
 
 public sealed record ProvinceCountDto(string Province, int Count);
@@ -192,6 +197,8 @@ public sealed class EnterpriseSearchQuery
 public sealed class UpsertEnterpriseProfileRequest
 {
     public string? Name { get; set; }
+    public string? LegalName { get; set; }
+    public string? TaxCode { get; set; }
     public string? SubjectType { get; set; }
     public string? EstablishedDate { get; set; }
     public string? ProvinceCity { get; set; }
@@ -224,3 +231,8 @@ public sealed class ApproveEnterpriseRequest
 {
     public string? Notes { get; set; }
 }
+
+public sealed record ActivateCapabilityRequest(string Capability);
+public sealed record SwitchRoleRequest(string TargetRole);
+
+public class DuplicateTaxCodeException(string message) : Exception(message);

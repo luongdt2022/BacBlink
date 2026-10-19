@@ -24,6 +24,21 @@ public class FakeRepository : IEnterpriseRepository
         return Task.FromResult<EnterpriseEntity?>(null);
     }
 
+    public Task<EnterpriseEntity?> GetByOwnerPersonIdAsync(Guid personId, System.Threading.CancellationToken ct = default)
+    {
+        return Task.FromResult<EnterpriseEntity?>(null);
+    }
+
+    public Task<EnterpriseEntity?> GetByIdentifierAsync(string type, string value, System.Threading.CancellationToken ct = default)
+    {
+        return Task.FromResult<EnterpriseEntity?>(null);
+    }
+
+    public Task<EnterpriseEntity?> GetByContactEmailAsync(string email, System.Threading.CancellationToken ct = default)
+    {
+        return Task.FromResult<EnterpriseEntity?>(null);
+    }
+
     public Task AddAsync(EnterpriseEntity enterprise, System.Threading.CancellationToken ct = default)
     {
         return Task.CompletedTask;

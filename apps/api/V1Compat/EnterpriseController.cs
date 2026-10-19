@@ -217,7 +217,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
     [Authorize]
     public async Task<IActionResult> GetMyProfile(CancellationToken ct = default)
     {
-        var result = await enterpriseService.GetOwnerProfileAsync(PersonId, ct);
+        var result = await enterpriseService.GetOwnerProfileAsync(PersonId, Actor.Email, ct);
         if (result is null)
         {
             // Tự khởi tạo hồ sơ rỗng cho tài khoản
@@ -237,14 +237,79 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
     [Authorize]
     public async Task<IActionResult> UpdateProfile([FromBody] UpsertEnterpriseProfileRequest request, CancellationToken ct = default)
     {
-        var updated = await enterpriseService.UpsertProfileAsync(PersonId, request, ct);
-        await uow.CommitAsync(ct);
-        audit.Append(new AuditEntry(
-            PersonId, Actor.PlatformRole, "ENTERPRISE_PROFILE_UPDATE", "Enterprise", PersonId,
-            null, "Owner update 10 groups", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, updated.TaxCode
-        ));
+        try
+        {
+            var updated = await enterpriseService.UpsertProfileAsync(PersonId, request, ct);
+            await uow.CommitAsync(ct);
+            audit.Append(new AuditEntry(
+                PersonId, Actor.PlatformRole, "ENTERPRISE_PROFILE_UPDATE", "Enterprise", PersonId,
+                null, "Owner update 10 groups", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, updated.TaxCode
+            ));
 
-        return Ok(Ok200(updated));
+            return Ok(Ok200(updated));
+        }
+        catch (DuplicateTaxCodeException ex)
+        {
+            return Conflict(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("/api/v1/portal/enterprise/capabilities/activate")]
+    [Authorize]
+    public async Task<IActionResult> ActivateCapability([FromBody] ActivateCapabilityRequest request, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(request?.Capability))
+            return BadRequest(new { message = "Năng lực cần kích hoạt không được để trống." });
+
+        try
+        {
+            var updated = await enterpriseService.ActivateCapabilityAsync(PersonId, request.Capability, ct);
+            await uow.CommitAsync(ct);
+
+            audit.Append(new AuditEntry(
+                PersonId, Actor.PlatformRole, "ENTERPRISE_CAPABILITY_ACTIVATE", "Enterprise", updated.Id,
+                null, $"Activate capability: {request.Capability}", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, updated.TaxCode
+            ));
+
+            return Ok(Ok200(updated));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("/api/v1/portal/enterprise/capabilities/switch-role")]
+    [Authorize]
+    public async Task<IActionResult> SwitchActiveRole([FromBody] SwitchRoleRequest request, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(request?.TargetRole))
+            return BadRequest(new { message = "Vai trò mục tiêu không được để trống." });
+
+        try
+        {
+            var updated = await enterpriseService.SwitchActiveRoleAsync(PersonId, request.TargetRole, ct);
+            await uow.CommitAsync(ct);
+
+            audit.Append(new AuditEntry(
+                PersonId, Actor.PlatformRole, "ENTERPRISE_ROLE_SWITCH", "Enterprise", updated.Id,
+                null, $"Switch active role to: {request.TargetRole}", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, updated.TaxCode
+            ));
+
+            return Ok(Ok200(updated));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPost("/api/v1/portal/enterprise/submit-verification")]

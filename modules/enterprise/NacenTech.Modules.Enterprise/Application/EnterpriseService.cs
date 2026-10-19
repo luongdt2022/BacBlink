@@ -13,6 +13,9 @@ public interface IEnterpriseRepository
     Task<bool> ExistsByTaxCodeAsync(string taxCode, Guid? excludeId = null, CancellationToken ct = default);
     Task<Domain.Enterprise?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<Domain.Enterprise?> GetByTaxCodeAsync(string taxCode, CancellationToken ct = default);
+    Task<Domain.Enterprise?> GetByOwnerPersonIdAsync(Guid personId, CancellationToken ct = default);
+    Task<Domain.Enterprise?> GetByIdentifierAsync(string type, string value, CancellationToken ct = default);
+    Task<Domain.Enterprise?> GetByContactEmailAsync(string email, CancellationToken ct = default);
     Task AddAsync(Domain.Enterprise enterprise, CancellationToken ct = default);
     Task UpdateAsync(Domain.Enterprise enterprise, CancellationToken ct = default);
     Task<(IReadOnlyList<Domain.Enterprise> Items, int TotalCount)> SearchAsync(EnterpriseSearchQuery query, CancellationToken ct = default);
@@ -28,8 +31,10 @@ public interface IEnterpriseService
 {
     Task<EnterprisePublicDirectoryDto> GetPublicDirectoryAsync(EnterpriseSearchQuery query, CancellationToken ct = default);
     Task<EnterprisePublicDetailDto?> GetPublicDetailAsync(string taxCode, bool isPrivileged = false, CancellationToken ct = default);
-    Task<EnterpriseProfileFullDto?> GetOwnerProfileAsync(Guid enterpriseId, CancellationToken ct = default);
+    Task<EnterpriseProfileFullDto?> GetOwnerProfileAsync(Guid personId, string? email = null, CancellationToken ct = default);
     Task<EnterpriseProfileFullDto> UpsertProfileAsync(Guid enterpriseId, UpsertEnterpriseProfileRequest request, CancellationToken ct = default);
+    Task<EnterpriseProfileFullDto> ActivateCapabilityAsync(Guid personId, string capability, CancellationToken ct = default);
+    Task<EnterpriseProfileFullDto> SwitchActiveRoleAsync(Guid personId, string targetRole, CancellationToken ct = default);
     Task SubmitVerificationAsync(Guid enterpriseId, CancellationToken ct = default);
     Task ApproveEnterpriseAsync(Guid enterpriseId, string approvedBy, string? adminScopeId = null, CancellationToken ct = default);
     Task RejectEnterpriseAsync(Guid enterpriseId, string reason, string? adminScopeId = null, CancellationToken ct = default);
@@ -143,59 +148,58 @@ public class EnterpriseService : IEnterpriseService
         );
     }
 
-    public async Task<EnterpriseProfileFullDto?> GetOwnerProfileAsync(Guid enterpriseId, CancellationToken ct = default)
+    public async Task<EnterpriseProfileFullDto?> GetOwnerProfileAsync(Guid personId, string? email = null, CancellationToken ct = default)
     {
-        var ent = await _repository.GetByIdAsync(enterpriseId, ct);
+        var ent = await ResolveEnterpriseByPersonAsync(personId, email, ct);
         if (ent is null) return null;
 
-        var bottlenecks = SafeParseStringList(ent.TopBottlenecksJson);
-        var supportNeeds = SafeParseStringList(ent.SupportNeedsJson);
+        return MapToFullDto(ent);
+    }
 
-        var projects = (ent.InnovationProjects ?? [])
-            .Select(p => new EnterpriseProjectDto(p.Id, p.Title, p.Description, p.Status, p.Partners))
-            .ToList();
+    public async Task<EnterpriseProfileFullDto> ActivateCapabilityAsync(Guid personId, string capability, CancellationToken ct = default)
+    {
+        var ent = await ResolveEnterpriseByPersonAsync(personId, null, ct);
+        if (ent is null)
+            throw new InvalidOperationException("Không tìm thấy hồ sơ doanh nghiệp tương ứng để kích hoạt năng lực.");
 
-        var ips = (ent.IntellectualProperties ?? [])
-            .Select(ip => new EnterpriseIpDto(ip.Id, ip.Type, ip.Title, ip.RegistrationNumber))
-            .ToList();
+        ent.ActivateCapability(capability);
+        await _repository.UpdateAsync(ent, ct);
+        return MapToFullDto(ent);
+    }
 
-        return new EnterpriseProfileFullDto(
-            Id: ent.Id,
-            Name: string.IsNullOrWhiteSpace(ent.Name) ? ent.LegalName : ent.Name,
-            TaxCode: ent.TaxCode,
-            SubjectType: ent.SubjectType,
-            EstablishedDate: ent.EstablishedDate,
-            ProvinceCity: ent.ProvinceCity,
-            AddressDetail: ent.AddressDetail,
-            Website: ent.Website,
-            Description: ent.Description,
-            IsVerified: ent.IsVerified,
-            VerificationStatus: ent.VerificationStatus,
-            ContactPerson: ent.ContactPerson,
-            ContactPhone: ent.ContactPhone,
-            ContactEmail: ent.ContactEmail,
-            IsContactPublic: ent.IsContactPublic,
-            MainSectorName: ent.MainSectorName,
-            SectorCode: ent.SectorCode,
-            OwnershipType: ent.OwnershipType,
-            WorkforceScale: ent.WorkforceScale,
-            RevenueRange: ent.RevenueRange,
-            OperatingZone: ent.OperatingZone,
-            HighQualificationRatio: ent.HighQualificationRatio,
-            TniScore: ent.TniScore,
-            TniClassification: ent.TniClassification,
-            HasRdUnit: ent.HasRdUnit,
-            HasRdBudget: ent.HasRdBudget,
-            RdBudgetAmount: ent.RdBudgetAmount,
-            RdPersonnelCount: ent.RdPersonnelCount,
-            IsExporting: ent.IsExporting,
-            InValueChain: ent.InValueChain,
-            TopBottlenecks: bottlenecks,
-            SupportNeeds: supportNeeds,
-            Projects: projects,
-            IntellectualProperties: ips,
-            ProfileDetailsJson: ent.ProfileDetailsJson
-        );
+    public async Task<EnterpriseProfileFullDto> SwitchActiveRoleAsync(Guid personId, string targetRole, CancellationToken ct = default)
+    {
+        var ent = await ResolveEnterpriseByPersonAsync(personId, null, ct);
+        if (ent is null)
+            throw new InvalidOperationException("Không tìm thấy hồ sơ doanh nghiệp tương ứng để chuyển vai trò.");
+
+        ent.SwitchActiveRole(targetRole);
+        await _repository.UpdateAsync(ent, ct);
+        return MapToFullDto(ent);
+    }
+
+    private async Task<Domain.Enterprise?> ResolveEnterpriseByPersonAsync(Guid personId, string? email = null, CancellationToken ct = default)
+    {
+        // Chiến lược 1 (Direct ID): Tìm kiếm theo ent.Id == personId
+        var ent = await _repository.GetByIdAsync(personId, ct);
+        if (ent != null) return ent;
+
+        // Chiến lược 2 (Owner Person ID): Tìm kiếm theo ent.OwnerPersonId == personId
+        ent = await _repository.GetByOwnerPersonIdAsync(personId, ct);
+        if (ent != null) return ent;
+
+        // Chiến lược 3 (Enterprise Identifier): Tìm kiếm bản ghi có type = 'USER_ID' AND value = personId.ToString()
+        ent = await _repository.GetByIdentifierAsync("USER_ID", personId.ToString(), ct);
+        if (ent != null) return ent;
+
+        // Chiến lược 4 (Account Email Fallback): Tìm kiếm theo LOWER(ent.ContactEmail) == LOWER(email)
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            ent = await _repository.GetByContactEmailAsync(email, ct);
+            if (ent != null) return ent;
+        }
+
+        return null;
     }
 
     public async Task<EnterpriseProfileFullDto> UpsertProfileAsync(Guid enterpriseId, UpsertEnterpriseProfileRequest request, CancellationToken ct = default)
@@ -207,10 +211,32 @@ public class EnterpriseService : IEnterpriseService
             ent = new Domain.Enterprise(enterpriseId);
         }
 
+        // BR-02-006: Kiểm tra tính duy nhất của Mã Số Thuế
+        if (!string.IsNullOrWhiteSpace(request.TaxCode))
+        {
+            var cleanTax = request.TaxCode.Trim();
+            var isDuplicate = await _repository.ExistsByTaxCodeAsync(cleanTax, excludeId: ent!.Id, ct);
+            if (isDuplicate)
+            {
+                throw new DuplicateTaxCodeException($"BR-02-006: Mã số thuế '{cleanTax}' đã được đăng ký trong hệ thống.");
+            }
+            ent.TaxCode = cleanTax;
+        }
+        else if (request.TaxCode is not null)
+        {
+            ent!.TaxCode = null;
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Name))
         {
             ent!.Name = request.Name;
-            ent.LegalName = request.Name;
+            if (string.IsNullOrWhiteSpace(ent.LegalName)) ent.LegalName = request.Name;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.LegalName))
+        {
+            ent!.LegalName = request.LegalName;
+            if (string.IsNullOrWhiteSpace(ent.Name)) ent.Name = request.LegalName;
         }
 
         if (!string.IsNullOrWhiteSpace(request.SubjectType)) ent!.SubjectType = request.SubjectType;
@@ -257,7 +283,64 @@ public class EnterpriseService : IEnterpriseService
             await _repository.UpdateAsync(ent, ct);
         }
 
-        return (await GetOwnerProfileAsync(ent.Id, ct))!;
+        return MapToFullDto(ent);
+    }
+
+    private static EnterpriseProfileFullDto MapToFullDto(Domain.Enterprise ent)
+    {
+        var bottlenecks = SafeParseStringList(ent.TopBottlenecksJson);
+        var supportNeeds = SafeParseStringList(ent.SupportNeedsJson);
+
+        var projects = (ent.InnovationProjects ?? [])
+            .Select(p => new EnterpriseProjectDto(p.Id, p.Title, p.Description, p.Status, p.Partners))
+            .ToList();
+
+        var ips = (ent.IntellectualProperties ?? [])
+            .Select(ip => new EnterpriseIpDto(ip.Id, ip.Type, ip.Title, ip.RegistrationNumber))
+            .ToList();
+
+        return new EnterpriseProfileFullDto(
+            Id: ent.Id,
+            Name: string.IsNullOrWhiteSpace(ent.Name) ? ent.LegalName : ent.Name,
+            TaxCode: ent.TaxCode,
+            SubjectType: ent.SubjectType,
+            EstablishedDate: ent.EstablishedDate,
+            ProvinceCity: ent.ProvinceCity,
+            AddressDetail: ent.AddressDetail,
+            Website: ent.Website,
+            Description: ent.Description,
+            IsVerified: ent.IsVerified,
+            VerificationStatus: ent.VerificationStatus,
+            ContactPerson: ent.ContactPerson,
+            ContactPhone: ent.ContactPhone,
+            ContactEmail: ent.ContactEmail,
+            IsContactPublic: ent.IsContactPublic,
+            MainSectorName: ent.MainSectorName,
+            SectorCode: ent.SectorCode,
+            OwnershipType: ent.OwnershipType,
+            WorkforceScale: ent.WorkforceScale,
+            RevenueRange: ent.RevenueRange,
+            OperatingZone: ent.OperatingZone,
+            HighQualificationRatio: ent.HighQualificationRatio,
+            TniScore: ent.TniScore,
+            TniClassification: ent.TniClassification,
+            HasRdUnit: ent.HasRdUnit,
+            HasRdBudget: ent.HasRdBudget,
+            RdBudgetAmount: ent.RdBudgetAmount,
+            RdPersonnelCount: ent.RdPersonnelCount,
+            IsExporting: ent.IsExporting,
+            InValueChain: ent.InValueChain,
+            TopBottlenecks: bottlenecks,
+            SupportNeeds: supportNeeds,
+            Projects: projects,
+            IntellectualProperties: ips,
+            ProfileDetailsJson: ent.ProfileDetailsJson,
+            CapabilityTier: ent.CapabilityTier,
+            IsBuyer: ent.IsBuyer,
+            IsSeller: ent.IsSeller,
+            ActiveRole: ent.ActiveRole,
+            OwnerPersonId: ent.OwnerPersonId
+        );
     }
 
     public async Task SubmitVerificationAsync(Guid enterpriseId, CancellationToken ct = default)
@@ -362,17 +445,18 @@ public class EnterpriseService : IEnterpriseService
         var ent = await _repository.GetByTaxCodeAsync(taxCode.Trim(), ct);
         if (ent is null) return null;
 
-        var eval = await _repository.GetInnovationEvaluationAsync(ent.TaxCode, 2024, ct);
+        var safeTaxCode = ent.TaxCode ?? taxCode.Trim();
+        var eval = await _repository.GetInnovationEvaluationAsync(safeTaxCode, 2024, ct);
         if (eval is null)
         {
             // Tự động tính toán sơ bộ từ dữ liệu khảo sát 304 DN nếu chưa có bản ghi đánh giá
-            var (surveyJson, hasMachinery, hasTraining) = await _repository.GetSurveyAnswersAsync(ent.Id, ent.TaxCode, ct);
+            var (surveyJson, hasMachinery, hasTraining) = await _repository.GetSurveyAnswersAsync(ent.Id, safeTaxCode, ct);
             var calc = InnovationRatingEngine.Calculate(ent, surveyJson, hasMachinery, hasTraining);
 
             eval = new EnterpriseInnovationEvaluation(Guid.NewGuid())
             {
                 EnterpriseId = ent.Id,
-                TaxCode = ent.TaxCode,
+                TaxCode = safeTaxCode,
                 EvaluationYear = 2024,
                 CriteriaVersion = "v1.0",
                 TotalScore = calc.TotalScore,
@@ -479,6 +563,8 @@ public class EnterpriseService : IEnterpriseService
         int count = 0;
         foreach (var ent in allEnterprises)
         {
+            if (string.IsNullOrWhiteSpace(ent.TaxCode)) continue;
+
             var (surveyJson, hasMachinery, hasTraining) = await _repository.GetSurveyAnswersAsync(ent.Id, ent.TaxCode, ct);
             var calc = InnovationRatingEngine.Calculate(ent, surveyJson, hasMachinery, hasTraining);
 

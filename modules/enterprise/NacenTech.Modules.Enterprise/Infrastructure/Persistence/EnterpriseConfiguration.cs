@@ -12,17 +12,21 @@ internal sealed class EnterpriseConfiguration : IEntityTypeConfiguration<Domain.
         b.HasKey(x => x.Id);
         
         b.Property(x => x.Name).HasMaxLength(255);
-        b.Property(x => x.TaxCode).HasMaxLength(20);
+        b.Property(x => x.TaxCode).HasMaxLength(20).IsRequired(false);
         b.Property(x => x.ProvinceCity).HasMaxLength(100);
         b.Property(x => x.MainSectorName).HasMaxLength(255);
         b.Property(x => x.SectorCode).HasMaxLength(20);
+        b.Property(x => x.CapabilityTier).HasMaxLength(30).HasDefaultValue("BASIC");
+        b.Property(x => x.ActiveRole).HasMaxLength(30).HasDefaultValue("BUYER");
         
         b.Property(x => x.AddressInfoJson).HasColumnType("jsonb");
         b.Property(x => x.ProfileDetailsJson).HasColumnType("jsonb");
         b.Property(x => x.TopBottlenecksJson).HasColumnType("jsonb");
         b.Property(x => x.SupportNeedsJson).HasColumnType("jsonb");
         
-        b.HasIndex(x => x.TaxCode);
+        b.HasIndex(x => x.TaxCode).IsUnique().HasFilter("tax_code IS NOT NULL").HasDatabaseName("ix_enterprises_tax_code_unique");
+        b.HasIndex(x => x.CapabilityTier);
+        b.HasIndex(x => x.OwnerPersonId);
         b.HasIndex(x => x.ProvinceCity);
         b.HasIndex(x => x.SectorCode);
         b.HasIndex(x => x.Status);

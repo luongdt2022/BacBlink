@@ -42,6 +42,35 @@ public class EfEnterpriseRepository : IEnterpriseRepository
             .FirstOrDefaultAsync(x => x.TaxCode == taxCode, ct);
     }
 
+    public async Task<Domain.Enterprise?> GetByOwnerPersonIdAsync(Guid personId, CancellationToken ct = default)
+    {
+        return await _db.Set<Domain.Enterprise>()
+            .Include(x => x.InnovationProjects)
+            .Include(x => x.IntellectualProperties)
+            .Include(x => x.Identifiers)
+            .FirstOrDefaultAsync(x => x.OwnerPersonId == personId, ct);
+    }
+
+    public async Task<Domain.Enterprise?> GetByIdentifierAsync(string type, string value, CancellationToken ct = default)
+    {
+        return await _db.Set<Domain.Enterprise>()
+            .Include(x => x.InnovationProjects)
+            .Include(x => x.IntellectualProperties)
+            .Include(x => x.Identifiers)
+            .FirstOrDefaultAsync(x => x.Identifiers.Any(i => i.Type == type && i.Value == value), ct);
+    }
+
+    public async Task<Domain.Enterprise?> GetByContactEmailAsync(string email, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return null;
+        var cleanEmail = email.Trim().ToLower();
+        return await _db.Set<Domain.Enterprise>()
+            .Include(x => x.InnovationProjects)
+            .Include(x => x.IntellectualProperties)
+            .Include(x => x.Identifiers)
+            .FirstOrDefaultAsync(x => x.ContactEmail != null && x.ContactEmail.Trim().ToLower() == cleanEmail, ct);
+    }
+
     public Task AddAsync(Domain.Enterprise enterprise, CancellationToken ct = default)
     {
         _db.Set<Domain.Enterprise>().Add(enterprise);
@@ -63,7 +92,7 @@ public class EfEnterpriseRepository : IEnterpriseRepository
             var q = query.Q.Trim().ToLower();
             qry = qry.Where(x => x.Name.ToLower().Contains(q) || 
                                  x.LegalName.ToLower().Contains(q) || 
-                                 x.TaxCode.Contains(q) || 
+                                 (x.TaxCode != null && x.TaxCode.Contains(q)) || 
                                  x.ProvinceCity.ToLower().Contains(q) || 
                                  x.MainSectorName.ToLower().Contains(q));
         }
