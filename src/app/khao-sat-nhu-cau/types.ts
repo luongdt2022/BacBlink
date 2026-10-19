@@ -16,20 +16,77 @@ export const PROVINCES_34 = [
 
 export const PROVINCES_63 = PROVINCES_34; // Đồng bộ toàn bộ dự án về 34 tỉnh thành trọng điểm
 
-export const TECH_GROUP_OPTIONS = [
-  { code: 'CN01', name: 'Tự động hóa dây chuyền & Cánh tay Robot' },
-  { code: 'CN02', name: 'AI, Thị giác máy tính (Machine Vision) & OCR' },
-  { code: 'CN03', name: 'Cảm biến thông minh & Internet vạn vật (IoT)' },
-  { code: 'CN04', name: 'Công nghệ sinh học, vi sinh & lên men' },
-  { code: 'CN05', name: 'Công nghệ chiết xuất, tinh chế & hóa dược' },
-  { code: 'CN06', name: 'Công nghệ bảo quản sau thu hoạch & sấy lạnh' },
-  { code: 'CN07', name: 'Vật liệu mới, vật liệu Nano & Polymer composite' },
-  { code: 'CN08', name: 'Gia công CNC chính xác & Khuôn mẫu' },
-  { code: 'CN09', name: 'Hệ thống năng lượng mặt trời, ESS & Tiết kiệm điện' },
-  { code: 'CN10', name: 'Xử lý nước thải công nghiệp & Tái tuần hoàn nước' },
-  { code: 'CN11', name: 'Xử lý khí thải, bụi & Giảm phát thải CO2' },
-  { code: 'CN12', name: 'Phần mềm ERP/MES điều hành sản xuất thông minh' }
+export interface TechGroupOption {
+  code: string;
+  name: string;
+  relatedSectors: string[];
+}
+
+/**
+ * Danh mục Nhóm Công Nghệ chuẩn và Ma trận tương thích Lĩnh vực (LV01-LV18) <-> Nhóm Công Nghệ
+ * Căn cứ: Sheet 10 `Ma trận Lĩnh vực-Công nghệ` (Nacentwin_20260924_bo_loc_da_sua.xlsx) & MasterDataControllers.cs
+ */
+export const TECH_GROUP_OPTIONS: TechGroupOption[] = [
+  { code: 'CN01', name: 'Tự động hóa dây chuyền & Cánh tay Robot', relatedSectors: ['LV07', 'LV08', 'LV03', 'LV04', 'LV13', 'LV18'] },
+  { code: 'CN02', name: 'AI, Thị giác máy tính (Machine Vision) & OCR', relatedSectors: ['LV01', 'LV05', 'LV07', 'LV08', 'LV14', 'LV15', 'LV16', 'LV17', 'LV10'] },
+  { code: 'CN03', name: 'Cảm biến thông minh & Internet vạn vật (IoT)', relatedSectors: ['LV01', 'LV05', 'LV08', 'LV11', 'LV12', 'LV13', 'LV14', 'LV16'] },
+  { code: 'CN04', name: 'Công nghệ sinh học, vi sinh & lên men', relatedSectors: ['LV01', 'LV02', 'LV05', 'LV09', 'LV11', 'LV15', 'LV17'] },
+  { code: 'CN05', name: 'Công nghệ chiết xuất, tinh chế & hóa dược', relatedSectors: ['LV01', 'LV02', 'LV05', 'LV06', 'LV09', 'LV15'] },
+  { code: 'CN06', name: 'Công nghệ bảo quản sau thu hoạch & sấy lạnh', relatedSectors: ['LV01', 'LV02', 'LV04', 'LV05'] },
+  { code: 'CN07', name: 'Vật liệu mới, vật liệu Nano & Polymer composite', relatedSectors: ['LV03', 'LV06', 'LV07', 'LV12', 'LV13', 'LV17'] },
+  { code: 'CN08', name: 'Gia công CNC chính xác, In 3D & Khuôn mẫu', relatedSectors: ['LV04', 'LV07', 'LV08', 'LV10', 'LV12', 'LV13', 'LV17'] },
+  { code: 'CN09', name: 'Hệ thống năng lượng mặt trời, ESS & Tiết kiệm điện', relatedSectors: ['LV01', 'LV05', 'LV07', 'LV11', 'LV12', 'LV18'] },
+  { code: 'CN10', name: 'Xử lý nước thải công nghiệp & Tái tuần hoàn nước', relatedSectors: ['LV01', 'LV02', 'LV03', 'LV05', 'LV06', 'LV11'] },
+  { code: 'CN11', name: 'Xử lý khí thải, bụi & Giảm phát thải CO2 (Sản xuất xanh)', relatedSectors: ['LV01', 'LV05', 'LV06', 'LV07', 'LV11', 'LV12', 'LV17'] },
+  { code: 'CN12', name: 'Phần mềm ERP/MES, Big Data, Cloud & Truy xuất nguồn gốc', relatedSectors: ['LV01', 'LV02', 'LV05', 'LV08', 'LV14', 'LV15', 'LV16', 'LV18'] },
+  { code: 'CN13', name: 'Bản đồ số GIS, Viễn thám & Thiết bị bay UAV (Drone)', relatedSectors: ['LV01', 'LV11', 'LV12', 'LV14', 'LV15', 'LV16'] },
+  { code: 'CN14', name: 'Đo lường, Kiểm định chính xác & Thiết bị quang học', relatedSectors: ['LV07', 'LV08', 'LV09', 'LV10', 'LV15', 'LV17'] },
+  { code: 'CN15', name: 'An toàn thông tin & Bảo mật mạng công nghiệp (Cybersecurity)', relatedSectors: ['LV08', 'LV14', 'LV15', 'LV16'] }
 ];
+
+/**
+ * Trả về danh sách Nhóm công nghệ đã được phân nhóm theo Lĩnh vực đang chọn:
+ * - Nhóm 1: Các nhóm công nghệ phù hợp trực tiếp với Lĩnh vực (5★ theo Ma trận Lĩnh vực - Công nghệ)
+ * - Nhóm 2: Các nhóm công nghệ liên ngành khác (để người dùng vẫn có thể chọn nếu bài toán giao thoa)
+ */
+export function getTechGroupsBySector(sectorCode?: string) {
+  if (!sectorCode || sectorCode === 'ALL') {
+    return {
+      recommended: TECH_GROUP_OPTIONS,
+      others: [] as TechGroupOption[],
+      allSorted: TECH_GROUP_OPTIONS.map((tg) => ({
+        ...tg,
+        isRecommended: true,
+        groupLabel: 'Tất cả nhóm công nghệ'
+      }))
+    };
+  }
+
+  const normalizedSector = sectorCode.trim().toUpperCase();
+  const recommended = TECH_GROUP_OPTIONS.filter((tg) =>
+    tg.relatedSectors.includes(normalizedSector)
+  );
+  const others = TECH_GROUP_OPTIONS.filter(
+    (tg) => !tg.relatedSectors.includes(normalizedSector)
+  );
+
+  return {
+    recommended,
+    others,
+    allSorted: [
+      ...recommended.map((tg) => ({
+        ...tg,
+        isRecommended: true,
+        groupLabel: 'Nhóm công nghệ phù hợp với lĩnh vực đã chọn (Gợi ý 5★)'
+      })),
+      ...others.map((tg) => ({
+        ...tg,
+        isRecommended: false,
+        groupLabel: 'Nhóm công nghệ liên ngành khác'
+      }))
+    ]
+  };
+}
 
 export const DEMAND_TYPE_OPTIONS = [
   { code: 'NC01', name: 'Mua sắm dây chuyền / máy móc thiết bị mới hoàn toàn' },
@@ -239,6 +296,7 @@ export interface DemandItemForm {
   stageName: string;
   technicalProblem: string;
   desiredSolution: string;
+  solutionDetail?: string;
   needConsulting: boolean;
   expectedGoal: string;
   budgetRange: string;
@@ -247,3 +305,4 @@ export interface DemandItemForm {
   investment: number;  // N (20%)
   readiness: number;   // O (15%)
 }
+

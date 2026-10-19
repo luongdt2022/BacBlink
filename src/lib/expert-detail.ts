@@ -6,7 +6,7 @@ export type Achievement = { type: string; title: string; meta?: string | null; d
 
 export type ExpertPublicDetail = {
   expertCode: string; fullName: string; academicRank: string; degree: string; birthYear: number; gender: string;
-  organizationName: string; positionTitle?: string | null; publicBio?: string | null;
+  organizationName: string; positionTitle?: string | null; publicBio?: string | null; avatarUrl?: string | null;
   expertiseSectors: string[]; specializedKeywords?: string[]; masteredTechCodes: string[]; isVerified: boolean; isAcceptingConsultation: boolean;
   training: Timeline[]; employment: Timeline[]; patents: Achievement[]; researchProjects: Achievement[];
   publications: Achievement[]; practicalProjects: Achievement[]; awards: Achievement[];

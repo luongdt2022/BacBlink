@@ -107,7 +107,7 @@ export const TrlSelectorGrid: React.FC<TrlSelectorGridProps> = ({
           <FlaskConical className="h-4 w-4 text-amber-600" />
           Mức độ sẵn sàng công nghệ (TRL 1–9) <span className="text-rose-500">*</span>
         </label>
-        <span className="text-[11px] font-semibold text-slate-500">
+        <span className="text-xs font-semibold text-slate-500">
           Chọn cấp độ phản ánh đúng thực tế trưởng thành kỹ thuật
         </span>
       </div>
@@ -121,9 +121,9 @@ export const TrlSelectorGrid: React.FC<TrlSelectorGridProps> = ({
           let badgeColor = "";
           if (trl.band === "RD") {
             colorStyles = isSelected
-              ? "border-blue-600 bg-blue-600 text-white shadow-md ring-2 ring-blue-300"
-              : "border-blue-200 bg-blue-50/60 text-blue-900 hover:border-blue-400 hover:bg-blue-100";
-            badgeColor = isSelected ? "bg-blue-700 text-white" : "text-blue-700";
+              ? "border-brand-600 bg-brand-600 text-white shadow-md ring-2 ring-brand-200"
+              : "border-brand-200 bg-brand-50/60 text-brand-900 hover:border-brand-500 hover:bg-brand-100";
+            badgeColor = isSelected ? "bg-brand-700 text-white" : "text-brand-700";
           } else if (trl.band === "PILOT") {
             colorStyles = isSelected
               ? "border-amber-600 bg-amber-600 text-white shadow-md ring-2 ring-amber-300"
@@ -146,7 +146,7 @@ export const TrlSelectorGrid: React.FC<TrlSelectorGridProps> = ({
               className={`flex flex-col items-center justify-center rounded-xl border-2 p-2 text-center transition-all ${colorStyles}`}
             >
               <div className="text-lg font-black">{trl.level}</div>
-              <div className={`mt-0.5 truncate text-[10px] font-bold ${badgeColor}`}>
+              <div className={`mt-0.5 truncate text-xs font-bold ${badgeColor}`}>
                 {trl.band === "RD" ? "R&D" : trl.band === "PILOT" ? "Pilot" : "Live"}
               </div>
             </button>
@@ -159,7 +159,7 @@ export const TrlSelectorGrid: React.FC<TrlSelectorGridProps> = ({
         <div
           className={`flex items-start gap-3 rounded-xl border p-3 text-xs ${
             selectedDef.band === "RD"
-              ? "border-blue-200 bg-blue-50/70 text-blue-950"
+              ? "border-brand-200 bg-brand-50/70 text-brand-950"
               : selectedDef.band === "PILOT"
               ? "border-amber-200 bg-amber-50/70 text-amber-950"
               : "border-emerald-200 bg-emerald-50/70 text-emerald-950"
@@ -167,7 +167,7 @@ export const TrlSelectorGrid: React.FC<TrlSelectorGridProps> = ({
         >
           <div className="mt-0.5 shrink-0">
             {selectedDef.band === "RD" ? (
-              <FlaskConical className="h-4 w-4 text-blue-700" />
+              <FlaskConical className="h-4 w-4 text-brand-700" />
             ) : selectedDef.band === "PILOT" ? (
               <Award className="h-4 w-4 text-amber-700" />
             ) : (
@@ -179,10 +179,10 @@ export const TrlSelectorGrid: React.FC<TrlSelectorGridProps> = ({
               TRL {selectedDef.level} · {selectedDef.name}{" "}
               <span className="font-normal opacity-75">({selectedDef.bandName})</span>
             </div>
-            <div className="mt-0.5 text-[11px] leading-relaxed opacity-90">
+            <div className="mt-0.5 text-xs leading-relaxed opacity-90">
               {selectedDef.description}
             </div>
-            <div className="mt-1 text-[11px] font-semibold opacity-80">
+            <div className="mt-1 text-xs font-semibold opacity-80">
               📌 Minh chứng khuyến nghị: {selectedDef.evidenceHint}
             </div>
           </div>

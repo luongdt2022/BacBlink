@@ -27,16 +27,20 @@ import {
   Search,
   Loader2,
   KeyRound,
-  LogIn
+  LogIn,
+  FileText
 } from 'lucide-react';
 import { useToast } from '@/components/common/toast';
+import TniRealtimeCalculator, { TniValues } from '@/components/demand/TniRealtimeCalculator';
+import SearchableCombobox from '@/components/ui/searchable-combobox';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
-import { lookupTaxCode, fetchMyEnterpriseProfile } from '@/lib/enterprise-client';
+import { lookupTaxCode, fetchMyEnterpriseProfile, updateMyEnterpriseProfile } from '@/lib/enterprise-client';
 import { getStoredSession } from '@/lib/auth-client';
 
 import {
   PROVINCES_63,
   TECH_GROUP_OPTIONS,
+  getTechGroupsBySector,
   DEMAND_TYPE_OPTIONS,
   BUDGET_RANGES_7,
   CRITERIA_8_LIST,
@@ -66,6 +70,9 @@ export default function DeepSurveyPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLookingUpTax, setIsLookingUpTax] = useState<boolean>(false);
   const [isPrefilledFromSession, setIsPrefilledFromSession] = useState<boolean>(false);
+  const [initialProfile, setInitialProfile] = useState<any>(null);
+  const [showSyncModal, setShowSyncModal] = useState<boolean>(false);
+  const [syncConfirmed, setSyncConfirmed] = useState<boolean>(false);
   const [submitResult, setSubmitResult] = useState<{
     surveyCode: string;
     createdTickets: string[];
@@ -147,19 +154,20 @@ export default function DeepSurveyPage() {
   const [demandItems, setDemandItems] = useState<DemandItemForm[]>([
     {
       id: 'dmd-1',
-      sectorCode: '',
+      sectorCode: 'LV01',
       techGroupCode: 'CN01',
       demandTypeCode: 'NC01',
       stageName: '',
       technicalProblem: '',
       desiredSolution: '',
-      needConsulting: true,
+      solutionDetail: '',
+      needConsulting: false,
       expectedGoal: '',
-      budgetRange: '',
-      urgency: 0,
-      impact: 0,
-      investment: 0,
-      readiness: 0
+      budgetRange: BUDGET_RANGES_7[3] || '500 triệu–1 tỷ đồng',
+      urgency: 3,
+      impact: 3,
+      investment: 3,
+      readiness: 3
     }
   ]);
 
@@ -236,22 +244,32 @@ export default function DeepSurveyPage() {
     if (session?.accessToken) {
       fetchMyEnterpriseProfile()
         .then((profile) => {
-          if (profile && (profile.name || profile.taxCode)) {
+          if (profile && (profile.name || profile.taxCode || profile.legalName)) {
+            setInitialProfile(profile);
             setIsPrefilledFromSession(true);
-            setCompanyName(prev => prev || profile.name || '');
-            setTaxCode(prev => prev || profile.taxCode || '');
-            if (profile.provinceCity) setProvince(prev => prev || profile.provinceCity);
-            if (profile.addressDetail) setAddress(prev => prev || profile.addressDetail);
-            if (profile.contactPerson) setContactName(prev => prev || profile.contactPerson);
-            if (profile.contactPhone) setContactPhone(prev => prev || profile.contactPhone);
-            if (profile.contactEmail) setContactEmail(prev => prev || profile.contactEmail);
-            if (profile.sectorCode) setMainIndustry(prev => prev || profile.sectorCode);
-            if (profile.workforceScale) setEmployeeScale(prev => prev || profile.workforceScale);
-            if (profile.revenueRange && profile.revenueRange !== '[BẢO MẬT]') {
-              setRevenueRange3y(prev => prev || profile.revenueRange);
+            setCompanyName(profile.name || profile.legalName || '');
+            setTaxCode(profile.taxCode || '');
+            if (profile.provinceCity) setProvince(profile.provinceCity);
+            if (profile.addressDetail) setAddress(profile.addressDetail);
+            if (profile.contactPerson) setContactName(profile.contactPerson);
+            if (profile.contactPhone) setContactPhone(profile.contactPhone);
+            if (profile.contactEmail) setContactEmail(profile.contactEmail);
+            if (profile.contactPosition) setContactPosition(profile.contactPosition);
+            else setContactPosition('Đại diện Doanh nghiệp');
+            if (profile.ownershipType) setCompanyType(profile.ownershipType);
+            if (profile.sectorCode || profile.mainSectorName) {
+              setMainIndustry(profile.sectorCode || profile.mainSectorName || '');
             }
+            if (profile.workforceScale) setEmployeeScale(profile.workforceScale);
+            if (profile.revenueRange && profile.revenueRange !== '[BẢO MẬT]') {
+              setRevenueRange3y(profile.revenueRange);
+            }
+            if (profile.contactPerson) setConfirmName(profile.contactPerson);
+            if (profile.contactPosition) setConfirmPosition(profile.contactPosition);
+            else setConfirmPosition('Đại diện Doanh nghiệp');
+
             toast.success(
-              `Đã tự động nạp hồ sơ doanh nghiệp "${profile.name || 'Đã đăng ký'}".`,
+              `Đã tự động nạp hồ sơ doanh nghiệp "${profile.name || profile.legalName || 'Đã đăng ký'}".`,
               'Đồng bộ hồ sơ DN'
             );
           }
@@ -389,19 +407,20 @@ export default function DeepSurveyPage() {
     setDemandItems([
       {
         id: 'dmd-1',
-        sectorCode: '',
+        sectorCode: 'LV01',
         techGroupCode: 'CN01',
         demandTypeCode: 'NC01',
         stageName: '',
         technicalProblem: '',
         desiredSolution: '',
-        needConsulting: true,
+        solutionDetail: '',
+        needConsulting: false,
         expectedGoal: '',
-        budgetRange: '',
-        urgency: 0,
-        impact: 0,
-        investment: 0,
-        readiness: 0
+        budgetRange: BUDGET_RANGES_7[3] || '500 triệu–1 tỷ đồng',
+        urgency: 3,
+        impact: 3,
+        investment: 3,
+        readiness: 3
       }
     ]);
     setAutomationSelected([]);
@@ -483,6 +502,7 @@ export default function DeepSurveyPage() {
         stageName: 'Gia công & Lắp ráp chi tiết',
         technicalProblem: 'Tự động hóa phát hiện khuyết tật bề mặt mối hàn bằng AI Vision',
         desiredSolution: 'Cánh tay Robot gắn Camera quang học 3D kèm phần mềm AI Deep Learning',
+        solutionDetail: 'Tích hợp hệ thống camera công nghiệp 3D với băng tải kiểm định tự động tốc độ cao',
         needConsulting: true,
         expectedGoal: 'Giảm tỷ lệ lỗi phế phẩm từ 4.5% xuống dưới 0.3%, tiết kiệm 3 nhân công',
         budgetRange: '1–5 tỷ đồng',
@@ -565,21 +585,26 @@ export default function DeepSurveyPage() {
   };
 
   const handleAddDemandItem = () => {
+    const defaultSector = mainIndustry || 'LV01';
+    const { recommended } = getTechGroupsBySector(defaultSector);
+    const defaultTechGroup = recommended[0]?.code || 'CN01';
+
     const newItem: DemandItemForm = {
       id: `dmd-${Date.now()}`,
-      sectorCode: mainIndustry || '',
-      techGroupCode: 'CN01',
+      sectorCode: defaultSector,
+      techGroupCode: defaultTechGroup,
       demandTypeCode: 'NC01',
       stageName: '',
       technicalProblem: '',
       desiredSolution: '',
-      needConsulting: true,
+      solutionDetail: '',
+      needConsulting: false,
       expectedGoal: '',
-      budgetRange: '',
-      urgency: 0,
-      impact: 0,
-      investment: 0,
-      readiness: 0
+      budgetRange: BUDGET_RANGES_7[3] || '500 triệu–1 tỷ đồng',
+      urgency: 3,
+      impact: 3,
+      investment: 3,
+      readiness: 3
     };
     setDemandItems([...demandItems, newItem]);
     toast.success(`Đã thêm bài toán kỹ thuật #${demandItems.length + 1}.`, 'Thêm bài toán');
@@ -594,14 +619,46 @@ export default function DeepSurveyPage() {
   };
 
   const handleUpdateDemandItem = (id: string, field: keyof DemandItemForm, value: any) => {
-    setDemandItems(demandItems.map(d => d.id === id ? { ...d, [field]: value } : d));
+    setDemandItems(demandItems.map(d => {
+      if (d.id !== id) return d;
+      if (field === 'sectorCode') {
+        const { recommended } = getTechGroupsBySector(value);
+        const isCurrentStillRecommended = recommended.some(tg => tg.code === d.techGroupCode);
+        const nextTechGroup = isCurrentStillRecommended
+          ? d.techGroupCode
+          : (recommended[0]?.code || d.techGroupCode);
+        return { ...d, sectorCode: value, techGroupCode: nextTechGroup };
+      }
+      return { ...d, [field]: value };
+    }));
+  };
+
+  const handleUpdateDemandItemTni = (id: string, tniValues: TniValues) => {
+    setDemandItems(demandItems.map(d => d.id === id ? {
+      ...d,
+      urgency: tniValues.urgency,
+      impact: tniValues.impact,
+      investment: tniValues.investment,
+      readiness: tniValues.readiness
+    } : d));
   };
 
   // -------------------------------------------------------------
-  // VALIDATION TRƯỚC KHI CHUYỂN BƯỚC
+  // VALIDATION TRƯỚC KHI CHUYỂN BƯỚC (BƯỚC 1 = NHU CẦU, BƯỚC 2 = DOANH NGHIỆP)
   // -------------------------------------------------------------
   const validateStep = (step: number): boolean => {
     if (step === 1) {
+      if (demandItems.length === 0) {
+        toast.error('Phiếu khảo sát cần có ít nhất 1 bài toán kỹ thuật.', 'Thiếu bài toán');
+        return false;
+      }
+      const hasInvalidItem = demandItems.some(d => !d.technicalProblem.trim() || !d.stageName.trim());
+      if (hasInvalidItem) {
+        toast.error('Vui lòng nhập Công đoạn sản xuất có sự cố và Mô tả cụ thể vấn đề kỹ thuật / điểm nghẽn.', 'Thiếu nội dung bài toán');
+        return false;
+      }
+    }
+    if (step === 2) {
       if (!companyName.trim()) {
         toast.error('Vui lòng nhập Tên Doanh nghiệp.', 'Thiếu thông tin');
         return false;
@@ -612,17 +669,6 @@ export default function DeepSurveyPage() {
       }
       if (!contactName.trim() || !contactPhone.trim() || !contactEmail.trim()) {
         toast.error('Vui lòng điền đầy đủ Người liên hệ, Số điện thoại và Email.', 'Thiếu thông tin liên hệ');
-        return false;
-      }
-    }
-    if (step === 2) {
-      if (demandItems.length === 0) {
-        toast.error('Phiếu khảo sát cần có ít nhất 1 bài toán kỹ thuật.', 'Thiếu bài toán');
-        return false;
-      }
-      const hasInvalidItem = demandItems.some(d => !d.technicalProblem.trim() || !d.expectedGoal.trim());
-      if (hasInvalidItem) {
-        toast.error('Vui lòng mô tả cụ thể Vấn đề kỹ thuật và Mục tiêu kỳ vọng cho từng bài toán.', 'Thiếu nội dung bài toán');
         return false;
       }
     }
@@ -661,13 +707,22 @@ export default function DeepSurveyPage() {
     window.scrollTo({ top: 200, behavior: 'smooth' });
   };
 
+  const hasStep1Changes = useMemo(() => {
+    if (!initialProfile) return false;
+    return Boolean(
+      (companyName && companyName !== initialProfile.name && companyName !== initialProfile.legalName) ||
+      (province && province !== initialProfile.provinceCity) ||
+      (address && address !== initialProfile.addressDetail) ||
+      (contactName && contactName !== initialProfile.contactPerson) ||
+      (contactPhone && contactPhone !== initialProfile.contactPhone) ||
+      (contactEmail && contactEmail !== initialProfile.contactEmail)
+    );
+  }, [initialProfile, companyName, province, address, contactName, contactPhone, contactEmail]);
+
   // -------------------------------------------------------------
   // SUBMIT API TO BACKEND POST /api/v1/demands/surveys
   // -------------------------------------------------------------
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateStep(1) || !validateStep(2) || !validateStep(7)) return;
-
+  const executeSubmission = async () => {
     setIsSubmitting(true);
     try {
       const payload = {
@@ -734,22 +789,27 @@ export default function DeepSurveyPage() {
         supportNeeds: supportRatings,
         desiredPartners: partnersSelected,
 
-        demandItems: demandItems.map(d => ({
-          stageName: d.stageName || 'Sản xuất chính',
-          technicalProblem: d.technicalProblem,
-          desiredSolution: d.desiredSolution || undefined,
-          needConsulting: d.needConsulting,
-          expectedGoal: d.expectedGoal,
-          applicationScale: 'Nhà máy sản xuất',
-          sectorCode: d.sectorCode || 'LV07',
-          techGroupCode: d.techGroupCode || 'CN01',
-          demandTypeCode: d.demandTypeCode || 'NC01',
-          budgetRange: d.budgetRange,
-          urgencyScore: d.urgency,
-          impactScore: d.impact,
-          investmentCapacity: d.investment,
-          adoptionReadiness: d.readiness
-        }))
+        demandItems: demandItems.map(d => {
+          const desiredSolutionCombined = d.solutionDetail
+            ? (d.desiredSolution ? `${d.desiredSolution} — ${d.solutionDetail}` : d.solutionDetail)
+            : (d.desiredSolution || undefined);
+          return {
+            stageName: d.stageName || 'Sản xuất chính',
+            technicalProblem: d.technicalProblem,
+            desiredSolution: desiredSolutionCombined,
+            needConsulting: d.needConsulting,
+            expectedGoal: d.expectedGoal,
+            applicationScale: d.solutionDetail || 'Nhà máy sản xuất',
+            sectorCode: d.sectorCode || 'LV07',
+            techGroupCode: d.techGroupCode || 'CN01',
+            demandTypeCode: d.demandTypeCode || 'NC01',
+            budgetRange: d.budgetRange,
+            urgencyScore: d.urgency,
+            impactScore: d.impact,
+            investmentCapacity: d.investment,
+            adoptionReadiness: d.readiness
+          };
+        })
       };
 
       const res = await fetch('/api/v1/demands/surveys', {
@@ -778,6 +838,43 @@ export default function DeepSurveyPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateStep(1) || !validateStep(2) || !validateStep(7)) return;
+
+    if (hasStep1Changes && !syncConfirmed) {
+      setShowSyncModal(true);
+      return;
+    }
+
+    await executeSubmission();
+  };
+
+  const handleConfirmSync = async (shouldSync: boolean) => {
+    setShowSyncModal(false);
+    setSyncConfirmed(true);
+    if (shouldSync) {
+      try {
+        await updateMyEnterpriseProfile({
+          name: companyName,
+          provinceCity: province,
+          addressDetail: address,
+          contactPerson: contactName,
+          contactPhone,
+          contactEmail,
+          ownershipType: companyType || undefined,
+          sectorCode: mainIndustry || undefined,
+          workforceScale: employeeScale || undefined,
+          revenueRange: revenueRange3y || undefined
+        });
+        toast.success('Đã đồng bộ thông tin thay đổi vào Hồ sơ Doanh nghiệp gốc (SSOT).', 'Đồng bộ SSOT thành công');
+      } catch (err: any) {
+        toast.warning(err.message || 'Không thể đồng bộ hồ sơ gốc, vẫn tiếp tục nộp khảo sát.', 'Cảnh báo');
+      }
+    }
+    await executeSubmission();
   };
 
   // -------------------------------------------------------------
@@ -947,14 +1044,14 @@ export default function DeepSurveyPage() {
         </div>
       </section>
 
-      {/* STEPPER NAVIGATION BAR (7 PHẦN A -> G) */}
+      {/* STEPPER NAVIGATION BAR (7 PHẦN: NHU CẦU LÊN ĐẦU -> DOANH NGHIỆP THỨ 2 -> CÁC BƯỚC TÙY CHỌN -> XÁC NHẬN) */}
       <div className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between mb-2 text-xs font-bold">
             <span className="text-brand-700 dark:text-cyan-400">
               Bước {currentStep}/7: {[
-                'A. Thông Tin Doanh Nghiệp (Bắt buộc)',
                 'E. Dòng Nhu Cầu & Thuật Toán TNI (Bắt buộc)',
+                'A. Thông Tin Doanh Nghiệp (Bắt buộc)',
                 'B. Hiện Trạng & 8 Tiêu Chí (Tùy chọn)',
                 'C. Điểm Nghẽn Kỹ Thuật (Tùy chọn)',
                 'D. Năng Lực Tiếp Nhận (TAR) (Tùy chọn)',
@@ -977,8 +1074,8 @@ export default function DeepSurveyPage() {
           {/* Stepper Buttons (Responsive Horizontal Scroll) */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
             {[
-              { num: 1, label: 'A. Doanh Nghiệp' },
-              { num: 2, label: 'E. Nhu Cầu & TNI' },
+              { num: 1, label: 'E. Nhu Cầu & TNI' },
+              { num: 2, label: 'A. Doanh Nghiệp' },
               { num: 3, label: 'B. Hiện Trạng' },
               { num: 4, label: 'C. Điểm Nghẽn' },
               { num: 5, label: 'D. Năng Lực TAR' },
@@ -1022,14 +1119,369 @@ export default function DeepSurveyPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
 
           {/* =========================================================================
-              BƯỚC 1: PHẦN A — THÔNG TIN DOANH NGHIỆP
+              BƯỚC 1: PHẦN E — DÒNG NHU CẦU & THUẬT TOÁN TNI (ĐỒNG BỘ FORM ĐĂNG NHANH)
              ========================================================================= */}
           {currentStep === 1 && (
+            <section className="space-y-6">
+              {/* E.1: DANH SÁCH BÀI TOÁN KỸ THUẬT (ĐỒNG BỘ 10 TIÊU CHÍ + TNI REALTIME CALCULATOR TỪ QUICK DEMAND MODAL) */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <div>
+                    <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                      PHẦN E.1 (BƯỚC 1) • DEMAND TICKETS & TNI ENGINE
+                    </span>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                      Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết ({demandItems.length} Bài toán)
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Khảo sát điểm nghẽn sản xuất, tính toán chỉ số cấp thiết TNI và tự động ghép nối với bên chào bán công nghệ.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddDemandItem}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 self-start shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" /> Thêm bài toán kỹ thuật
+                  </button>
+                </div>
+
+                {isPrefilledFromSession && (
+                  <div className="p-3.5 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <Building2 className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                      <span className="text-teal-800 dark:text-teal-200">
+                        <strong>Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký:</strong> Đã nạp sẵn thông tin <strong>{companyName}</strong> (MST: {taxCode || 'Đã liên kết'}) ở Bước 2.
+                      </span>
+                    </div>
+                    <span className="text-teal-700 dark:text-teal-300 font-bold shrink-0 hidden sm:inline">
+                      Sẵn sàng ở Bước 2 ✓
+                    </span>
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {demandItems.map((item, idx) => (
+                    <div key={item.id} className="p-5 sm:p-6 rounded-2xl bg-slate-50/70 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-5">
+                      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-brand-700 text-white text-xs font-black flex items-center justify-center">
+                            {idx + 1}
+                          </span>
+                          <span className="font-black text-sm text-slate-900 dark:text-white">
+                            Bài Toán Nhu Cầu #{idx + 1} (Demand Ticket)
+                          </span>
+                        </div>
+
+                        {demandItems.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDemandItem(item.id)}
+                            className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Xóa bài toán này
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Bố cục 2 cột giống hệt Form Đăng Nhanh Nhu Cầu (QuickDemandModal) */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                        {/* Cột trái: 1. Chi Tiết Bài Toán Kỹ Thuật (10 tiêu chí) */}
+                        <div className="lg:col-span-6 space-y-3.5">
+                          <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+                            <div className="w-7 h-7 rounded-lg bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-cyan-400 flex items-center justify-center font-bold text-xs">
+                              <FileText className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                1. Chi Tiết Bài Toán Kỹ Thuật
+                              </h4>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                Khảo sát nhu cầu công nghệ / Vấn đề cần giải quyết (10 tiêu chí)
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* 1. Tên công nghệ / thiết bị */}
+                          <div>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                              1. Tên công nghệ / thiết bị <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={item.desiredSolution}
+                              onChange={e => handleUpdateDemandItem(item.id, 'desiredSolution', e.target.value)}
+                              placeholder="Ví dụ: Ứng dụng KH&CN xây dựng mô hình thâm canh cây na rải vụ..."
+                              className="form-control w-full text-xs font-medium"
+                            />
+                          </div>
+
+                          {/* 2. Mô tả chi tiết thêm về nhu cầu */}
+                          <div>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                              2. Mô tả chi tiết thêm về nhu cầu
+                            </label>
+                            <textarea
+                              rows={2}
+                              value={item.solutionDetail || ''}
+                              onChange={e => handleUpdateDemandItem(item.id, 'solutionDetail', e.target.value)}
+                              placeholder="Mô tả cụ thể các yêu cầu kỹ thuật, giải pháp mong muốn tiếp nhận..."
+                              className="form-control w-full p-2.5 text-xs leading-relaxed"
+                            />
+                          </div>
+
+                          {/* Hàng 3 trường: 3. Ngân sách - 4. Lĩnh vực - 5. Nhóm công nghệ */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            {/* 3. Ngân sách */}
+                            <div>
+                              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                                3. Ngân sách
+                              </label>
+                              <select
+                                value={item.budgetRange}
+                                onChange={e => handleUpdateDemandItem(item.id, 'budgetRange', e.target.value)}
+                                className="form-control w-full text-xs font-medium"
+                              >
+                                {BUDGET_RANGES_7.map(b => (
+                                  <option key={b} value={b}>
+                                    {b}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* 4. Lĩnh vực */}
+                            <div>
+                              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1 truncate" title="Lĩnh vực">
+                                4. Lĩnh vực <span className="text-rose-500">*</span>
+                              </label>
+                              <SearchableCombobox
+                                value={item.sectorCode}
+                                onChange={(val) => handleUpdateDemandItem(item.id, 'sectorCode', val)}
+                                ariaLabel="4. Lĩnh vực"
+                                searchPlaceholder="Tìm lĩnh vực (VD: Cơ khí, Công nghệ thông tin...)"
+                                options={SECTORS_18_CATALOG.filter(s => s.code !== 'ALL').map(sec => ({
+                                  value: sec.code,
+                                  code: sec.code,
+                                  label: sec.name
+                                }))}
+                              />
+                            </div>
+
+                            {/* 5. Nhóm công nghệ (Tự động lọc ưu tiên theo Lĩnh vực) */}
+                            <div>
+                              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1 truncate" title="Nhóm công nghệ">
+                                5. Nhóm công nghệ
+                              </label>
+                              <SearchableCombobox
+                                value={item.techGroupCode}
+                                onChange={(val) => handleUpdateDemandItem(item.id, 'techGroupCode', val)}
+                                ariaLabel="5. Nhóm công nghệ"
+                                searchPlaceholder="Tìm nhóm công nghệ (VD: Robot, AI, Tự động hóa...)"
+                                options={getTechGroupsBySector(item.sectorCode).allSorted.map(tg => ({
+                                  value: tg.code,
+                                  code: tg.code,
+                                  label: tg.name,
+                                  group: tg.groupLabel,
+                                  recommended: tg.isRecommended,
+                                  badge: tg.isRecommended ? '★ Phù hợp cao với lĩnh vực đã chọn' : undefined
+                                }))}
+                              />
+                            </div>
+                          </div>
+
+                          {/* 6. Công đoạn sản xuất có sự cố */}
+                          <div>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                              6. Công đoạn sản xuất có sự cố <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={item.stageName}
+                              onChange={e => handleUpdateDemandItem(item.id, 'stageName', e.target.value)}
+                              placeholder="Ví dụ: Đúc và Nhiệt luyện kim loại, Dập nguội, Thu hoạch & Đóng gói..."
+                              className="form-control w-full text-xs font-medium"
+                            />
+                            <p className="text-xs text-slate-400 mt-0.5">
+                              Chỉ rõ phân xưởng hoặc quy trình sản xuất đang gặp khó khăn.
+                            </p>
+                          </div>
+
+                          {/* 7. Mô tả cụ thể vấn đề kỹ thuật / điểm nghẽn */}
+                          <div>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                              7. Mô tả cụ thể vấn đề kỹ thuật / điểm nghẽn <span className="text-rose-500">*</span>
+                            </label>
+                            <textarea
+                              required
+                              rows={2}
+                              value={item.technicalProblem}
+                              onChange={e => handleUpdateDemandItem(item.id, 'technicalProblem', e.target.value)}
+                              placeholder="Mô tả cụ thể sự cố, tỷ lệ phế phẩm hoặc thông số kỹ thuật chưa đạt cần khắc phục..."
+                              className="form-control w-full p-2.5 text-xs leading-relaxed"
+                            />
+                          </div>
+
+                          {/* 8. Mục tiêu kỹ thuật và kinh tế kỳ vọng sau khi có công nghệ/ thiết bị */}
+                          <div>
+                            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                              8. Mục tiêu kỹ thuật và kinh tế kỳ vọng sau khi có công nghệ/ thiết bị
+                            </label>
+                            <input
+                              type="text"
+                              value={item.expectedGoal}
+                              onChange={e => handleUpdateDemandItem(item.id, 'expectedGoal', e.target.value)}
+                              placeholder="Ví dụ: Giảm tỷ lệ phế phẩm đúc từ 7.5% xuống dưới 1.2%, tiết kiệm 800 triệu/năm..."
+                              className="form-control w-full text-xs font-medium"
+                            />
+                          </div>
+
+                          {/* Hàng 2 trường: 9. Cần chuyên gia tư vấn & 10. Loại hình tiếp nhận */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                            {/* 9. Cần chuyên gia tư vấn */}
+                            <div>
+                              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                                9. Cần chuyên gia tư vấn
+                              </label>
+                              <label className="flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition h-11">
+                                <input
+                                  type="checkbox"
+                                  checked={item.needConsulting}
+                                  onChange={e => handleUpdateDemandItem(item.id, 'needConsulting', e.target.checked)}
+                                  className="w-4 h-4 rounded accent-brand-700 cursor-pointer"
+                                />
+                                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                                  Có nhu cầu tư vấn 1-1 từ chuyên gia
+                                </span>
+                              </label>
+                            </div>
+
+                            {/* 10. Loại hình tiếp nhận */}
+                            <div>
+                              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                                10. Loại hình tiếp nhận
+                              </label>
+                              <SearchableCombobox
+                                value={item.demandTypeCode}
+                                onChange={(val) => handleUpdateDemandItem(item.id, 'demandTypeCode', val)}
+                                ariaLabel="10. Loại hình tiếp nhận"
+                                searchPlaceholder="Tìm loại hình tiếp nhận..."
+                                options={DEMAND_TYPE_OPTIONS.map(dt => ({
+                                  value: dt.code,
+                                  code: dt.code,
+                                  label: dt.name
+                                }))}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cột phải: 2. Chỉ Số Nhu Cầu Đổi Mới (TNI) */}
+                        <div className="lg:col-span-6 space-y-4">
+                          <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+                            <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs">
+                              <Wrench className="w-4 h-4" />
+                            </div>
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                              2. Chỉ Số Nhu Cầu Đổi Mới (TNI)
+                            </h4>
+                          </div>
+
+                          <TniRealtimeCalculator
+                            values={{
+                              urgency: item.urgency || 3,
+                              impact: item.impact || 3,
+                              investment: item.investment || 3,
+                              readiness: item.readiness || 3
+                            }}
+                            onChange={(newVals) => handleUpdateDemandItemTni(item.id, newVals)}
+                            compact={false}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* E.2: NGUỒN VỐN & HÌNH THỨC TIẾP NHẬN */}
+              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
+                    PHẦN E.2 (BƯỚC 1) • NGUỒN VỐN & HÌNH THỨC (TÙY CHỌN)
+                  </span>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Phương Thức Tiếp Nhận & Cơ Cấu Vốn Dự Kiến
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-2">
+                      Nguồn vốn dự kiến đầu tư cho đổi mới công nghệ:
+                    </label>
+                    <div className="space-y-2">
+                      {FUNDING_SOURCES.map((f, idx) => {
+                        const checked = fundingSourcesSelected.includes(f);
+                        return (
+                          <label key={idx} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                setFundingSourcesSelected(
+                                  checked ? fundingSourcesSelected.filter(x => x !== f) : [...fundingSourcesSelected, f]
+                                );
+                              }}
+                              className="w-4 h-4 text-brand-600 rounded"
+                            />
+                            <span>{f}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-2">
+                      Hình thức tiếp nhận công nghệ mong muốn:
+                    </label>
+                    <div className="space-y-2">
+                      {RECEIPT_FORMATS.slice(0, 6).map((r, idx) => {
+                        const checked = receiptFormatsSelected.includes(r);
+                        return (
+                          <label key={idx} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                setReceiptFormatsSelected(
+                                  checked ? receiptFormatsSelected.filter(x => x !== r) : [...receiptFormatsSelected, r]
+                                );
+                              }}
+                              className="w-4 h-4 text-brand-600 rounded"
+                            />
+                            <span>{r}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* =========================================================================
+              BƯỚC 2: PHẦN A — THÔNG TIN DOANH NGHIỆP (BẮT BUỘC)
+             ========================================================================= */}
+          {currentStep === 2 && (
             <section className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN A • THÔNG TIN CHUNG
+                    PHẦN A (BƯỚC 2) • THÔNG TIN CHUNG
                   </span>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                     Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất
@@ -1048,7 +1500,7 @@ export default function DeepSurveyPage() {
                       Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký
                     </h4>
                     <p className="text-xs text-teal-700 dark:text-teal-300 mt-0.5">
-                      Hệ thống đã tự động nhận diện và điền sẵn các thông tin hồ sơ của doanh nghiệp bạn. Quý DN có thể bổ sung các thông tin khảo sát chuyên sâu mà không cần nhập lại từ đầu.
+                      Hệ thống đã tự động nhận diện và điền sẵn các thông tin hồ sơ của doanh nghiệp bạn. Quý DN có thể kiểm tra nhanh hoặc bấm &quot;Bỏ qua bước tùy chọn &amp; Đến nộp phiếu&quot; để hoàn tất.
                     </p>
                   </div>
                 </div>
@@ -1240,7 +1692,7 @@ export default function DeepSurveyPage() {
                     <option value="">-- Chọn lĩnh vực sản xuất chính --</option>
                     {SECTORS_18_CATALOG.filter(s => s.code !== 'ALL').map(sec => (
                       <option key={sec.code} value={sec.code}>
-                        [{sec.code}] {sec.name}
+                        {sec.name}
                       </option>
                     ))}
                   </select>
@@ -1292,355 +1744,6 @@ export default function DeepSurveyPage() {
                     <option value="100-300 tỷ VNĐ">100 – 300 tỷ VNĐ</option>
                     <option value="Trên 300 tỷ VNĐ">Trên 300 tỷ VNĐ</option>
                   </select>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* =========================================================================
-              BƯỚC 2: PHẦN E — DÒNG NHU CẦU & THUẬT TOÁN TNI (BẮT BUỘC)
-             ========================================================================= */}
-          {currentStep === 2 && (
-            <section className="space-y-6">
-              {/* E.1: NGUỒN VỐN & HÌNH THỨC TIẾP NHẬN */}
-              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN E.1 (BƯỚC 2) • NGUỒN VỐN & HÌNH THỨC
-                  </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                    Phương Thức Tiếp Nhận & Cơ Cấu Vốn Dự Kiến
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-2">
-                      Nguồn vốn dự kiến đầu tư cho đổi mới công nghệ:
-                    </label>
-                    <div className="space-y-2">
-                      {FUNDING_SOURCES.map((f, idx) => {
-                        const checked = fundingSourcesSelected.includes(f);
-                        return (
-                          <label key={idx} className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => {
-                                setFundingSourcesSelected(
-                                  checked ? fundingSourcesSelected.filter(x => x !== f) : [...fundingSourcesSelected, f]
-                                );
-                              }}
-                              className="w-4 h-4 text-brand-600 rounded"
-                            />
-                            <span>{f}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-2">
-                      Hình thức tiếp nhận công nghệ mong muốn:
-                    </label>
-                    <div className="space-y-2">
-                      {RECEIPT_FORMATS.slice(0, 6).map((r, idx) => {
-                        const checked = receiptFormatsSelected.includes(r);
-                        return (
-                          <label key={idx} className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => {
-                                setReceiptFormatsSelected(
-                                  checked ? receiptFormatsSelected.filter(x => x !== r) : [...receiptFormatsSelected, r]
-                                );
-                              }}
-                              className="w-4 h-4 text-brand-600 rounded"
-                            />
-                            <span>{r}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* E.2: DANH SÁCH BÀI TOÁN KỸ THUẬT (DEMAND ITEMS) */}
-              <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <div>
-                    <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                      PHẦN E.2 • DEMAND TICKETS & TNI ENGINE
-                    </span>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                      Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết ({demandItems.length} Bài toán)
-                    </h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddDemandItem}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 self-start"
-                  >
-                    <Plus className="w-4 h-4" /> Thêm bài toán kỹ thuật
-                  </button>
-                </div>
-
-                <div className="space-y-6">
-                  {demandItems.map((item, idx) => {
-                    const score = calculateTniScore(item.urgency, item.impact, item.investment, item.readiness);
-                    const badge = getTniBadge(score);
-
-                    return (
-                      <div key={item.id} className="p-5 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                          <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-brand-700 text-white text-xs font-black flex items-center justify-center">
-                              {idx + 1}
-                            </span>
-                            <span className="font-black text-sm text-slate-900 dark:text-white">
-                              Bài Toán Nhu Cầu #{idx + 1} (Demand Ticket)
-                            </span>
-                          </div>
-
-                          {demandItems.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveDemandItem(item.id)}
-                              className="text-red-500 hover:text-red-700 text-xs font-bold flex items-center gap-1"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" /> Xóa bài toán này
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                          <div>
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Lĩnh vực ứng dụng (Thông tư 17) <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={item.sectorCode}
-                              onChange={e => handleUpdateDemandItem(item.id, 'sectorCode', e.target.value)}
-                              className="form-control w-full px-3 py-1.5 text-xs"
-                            >
-                              <option value="">-- Chọn lĩnh vực ứng dụng --</option>
-                              {SECTORS_18_CATALOG.filter(s => s.code !== 'ALL').map(sec => (
-                                <option key={sec.code} value={sec.code}>
-                                  [{sec.code}] {sec.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Nhóm công nghệ kỹ thuật <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={item.techGroupCode}
-                              onChange={e => handleUpdateDemandItem(item.id, 'techGroupCode', e.target.value)}
-                              className="form-control w-full px-3 py-1.5 text-xs"
-                            >
-                              {TECH_GROUP_OPTIONS.map(tg => (
-                                <option key={tg.code} value={tg.code}>
-                                  [{tg.code}] {tg.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Loại hình nhu cầu tiếp nhận <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={item.demandTypeCode}
-                              onChange={e => handleUpdateDemandItem(item.id, 'demandTypeCode', e.target.value)}
-                              className="form-control w-full px-3 py-1.5 text-xs"
-                            >
-                              {DEMAND_TYPE_OPTIONS.map(dt => (
-                                <option key={dt.code} value={dt.code}>
-                                  [{dt.code}] {dt.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="col-span-full">
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Công đoạn sản xuất có nhu cầu <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={item.stageName}
-                              onChange={e => handleUpdateDemandItem(item.id, 'stageName', e.target.value)}
-                              placeholder="Ví dụ: Đóng gói dán nhãn, Hàn cấu kiện, Kiểm định chất lượng..."
-                              className="form-control w-full px-3 py-1.5 text-xs"
-                            />
-                          </div>
-
-                          <div className="col-span-full">
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Mô tả cụ thể vấn đề kỹ thuật / điểm nghẽn <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                              rows={2}
-                              required
-                              value={item.technicalProblem}
-                              onChange={e => handleUpdateDemandItem(item.id, 'technicalProblem', e.target.value)}
-                              placeholder="Mô tả cụ thể sự cố, tỷ lệ khuyết tật hoặc hao phí hiện tại cần khắc phục..."
-                              className="form-control w-full p-2.5 text-xs"
-                            />
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Công nghệ / Thiết bị tìm mua mong muốn
-                            </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={item.desiredSolution}
-                                onChange={e => handleUpdateDemandItem(item.id, 'desiredSolution', e.target.value)}
-                                placeholder="Tên công nghệ, giải pháp..."
-                                className="form-control flex-1 px-3 py-1.5 text-xs"
-                              />
-                              <label className="flex items-center gap-1.5 shrink-0 px-3 bg-slate-200 dark:bg-slate-800 rounded-xl cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={item.needConsulting}
-                                  onChange={e => handleUpdateDemandItem(item.id, 'needConsulting', e.target.checked)}
-                                  className="w-3.5 h-3.5"
-                                />
-                                <span className="text-xs font-bold">Cần tư vấn</span>
-                              </label>
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Dự toán ngân sách đầu tư
-                            </label>
-                            <select
-                              value={item.budgetRange}
-                              onChange={e => handleUpdateDemandItem(item.id, 'budgetRange', e.target.value)}
-                              className="form-control w-full px-3 py-1.5 text-xs"
-                            >
-                              <option value="">-- Chọn dự toán ngân sách --</option>
-                              {BUDGET_RANGES_7.map(b => (
-                                <option key={b} value={b}>{b}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="col-span-full">
-                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">
-                              Mục tiêu kỹ thuật & kinh tế kỳ vọng sau khi đổi mới <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={item.expectedGoal}
-                              onChange={e => handleUpdateDemandItem(item.id, 'expectedGoal', e.target.value)}
-                              placeholder="Ví dụ: Giảm 40% chi phí điện năng, tăng 50% sản lượng xuất khẩu..."
-                              className="form-control w-full px-3 py-1.5 text-xs"
-                            />
-                          </div>
-                        </div>
-
-                        {/* WIDGET CHẤM ĐIỂM TNI 4 CHIỀU CHO TỪNG BÀI TOÁN */}
-                        <div className="p-4 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5 text-xs font-black">
-                              <Flame className="w-4 h-4 text-amber-500" />
-                              <span>Thuật Toán TNI (Technology Need Index) — Quyết định PO-DEC-20261008-01</span>
-                            </div>
-                            <span className={`text-xs font-black px-2.5 py-0.5 rounded-full border ${badge.className}`}>
-                              TNI: {score}/100 • {badge.label}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                            <div>
-                              <span className="block text-xs font-semibold text-slate-500 mb-1">
-                                K — Cấp thiết (35%)
-                              </span>
-                              <select
-                                value={item.urgency}
-                                onChange={e => handleUpdateDemandItem(item.id, 'urgency', Number(e.target.value))}
-                                className="form-control w-full px-2 py-1 text-xs font-bold"
-                              >
-                                <option value={0}>-- Chọn mức --</option>
-                                <option value={1}>1: Sau &gt;= 36 tháng</option>
-                                <option value={2}>2: Trong 24-36 tháng</option>
-                                <option value={3}>3: Trong 12-24 tháng</option>
-                                <option value={4}>4: Trong 6-12 tháng</option>
-                                <option value={5}>5: Khẩn cấp &lt;= 6 tháng</option>
-                              </select>
-                            </div>
-
-                            <div>
-                              <span className="block text-xs font-semibold text-slate-500 mb-1">
-                                L — Tác động (30%)
-                              </span>
-                              <select
-                                value={item.impact}
-                                onChange={e => handleUpdateDemandItem(item.id, 'impact', Number(e.target.value))}
-                                className="form-control w-full px-2 py-1 text-xs font-bold"
-                              >
-                                <option value={0}>-- Chọn mức --</option>
-                                <option value={1}>1: Cải thiện nhỏ</option>
-                                <option value={2}>2: Cải thiện rõ rệt</option>
-                                <option value={3}>3: Tác động đáng kể</option>
-                                <option value={4}>4: Chuyển biến lớn</option>
-                                <option value={5}>5: Bước nhảy vọt cạnh tranh</option>
-                              </select>
-                            </div>
-
-                            <div>
-                              <span className="block text-xs font-semibold text-slate-500 mb-1">
-                                N — Vốn đầu tư (20%)
-                              </span>
-                              <select
-                                value={item.investment}
-                                onChange={e => handleUpdateDemandItem(item.id, 'investment', Number(e.target.value))}
-                                className="form-control w-full px-2 py-1 text-xs font-bold"
-                              >
-                                <option value={0}>-- Chọn mức --</option>
-                                <option value={1}>1: Cần hỗ trợ 100%</option>
-                                <option value={2}>2: Tự bố trí &lt; 30%</option>
-                                <option value={3}>3: Tự bố trí 30-50%</option>
-                                <option value={4}>4: Tự bố trí 50-80%</option>
-                                <option value={5}>5: Chủ động &gt;= 80% vốn</option>
-                              </select>
-                            </div>
-
-                            <div>
-                              <span className="block text-xs font-semibold text-slate-500 mb-1">
-                                O — Sẵn sàng TAR (15%)
-                              </span>
-                              <select
-                                value={item.readiness}
-                                onChange={e => handleUpdateDemandItem(item.id, 'readiness', Number(e.target.value))}
-                                className="form-control w-full px-2 py-1 text-xs font-bold"
-                              >
-                                <option value={0}>-- Chọn mức --</option>
-                                <option value={1}>1: Chưa có kế hoạch</option>
-                                <option value={2}>2: Tìm hiểu sơ bộ</option>
-                                <option value={3}>3: Đang chuẩn bị nhân lực</option>
-                                <option value={4}>4: Đã có kế hoạch chi tiết</option>
-                                <option value={5}>5: Sẵn sàng triển khai ngay</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
             </section>
@@ -2526,6 +2629,45 @@ export default function DeepSurveyPage() {
             </div>
           </div>
         </form>
+
+        {/* MODAL XÁC NHẬN ĐỒNG BỘ NGƯỢC HỒ SƠ DOANH NGHIỆP (BR-03-006) */}
+        {showSyncModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
+                <Sparkles className="w-6 h-6 shrink-0" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Xác Nhận Đồng Bộ Ngược Hồ Sơ (BR-03-006)
+                </h3>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Hệ thống phát hiện bạn đã chỉnh sửa thông tin doanh nghiệp ở Bước 1 so với hồ sơ đăng ký ban đầu. 
+                Bạn có muốn cập nhật đồng bộ các thông tin này vào Hồ sơ Doanh nghiệp chính (SSOT) của bạn không?
+              </p>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                <div><strong>Tên DN:</strong> {companyName}</div>
+                <div><strong>Địa chỉ:</strong> {address}, {province}</div>
+                <div><strong>Người liên hệ:</strong> {contactName} ({contactPhone} - {contactEmail})</div>
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleConfirmSync(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  Chỉ dùng cho khảo sát này
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleConfirmSync(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-500/20 transition flex items-center gap-1.5"
+                >
+                  <Save className="w-4 h-4" /> Đồng bộ & Hoàn tất
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

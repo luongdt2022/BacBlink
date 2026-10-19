@@ -18,11 +18,17 @@ import {
   FileText,
   Clock,
   RotateCcw,
+  Wand2,
+  X,
+  UploadCloud,
+  FileUp,
+  Mic,
 } from "lucide-react";
 import {
   createSellerOffer,
   PROVINCIAL_AUTHORITIES_CATALOG,
 } from "@/services/api/technology-offer";
+import { fetchMyEnterpriseProfile } from "@/lib/enterprise-client";
 import {
   OfferType,
   IntellectualPropertyStatus,
@@ -33,16 +39,23 @@ import {
   OfferDocument,
   TechTransferDraftData,
   TT17_SECTORS,
+  LEGACY_SECTOR_MAP,
   CreateSellerOfferPayload,
 } from "@/types/technology-offer";
 import { FormStepper } from "@/components/seller/FormStepper";
-import { DynamicSpecTable } from "@/components/seller/DynamicSpecTable";
-import { TrlSelectorGrid } from "@/components/seller/TrlSelectorGrid";
-import { MediaUploadSection } from "@/components/seller/MediaUploadSection";
-import { EvidenceDocumentSection } from "@/components/seller/EvidenceDocumentSection";
-import { AiScanAssistantCard } from "@/components/seller/AiScanAssistantCard";
+import { Step1CoreFields } from "@/components/seller/Step1CoreFields";
+import { SellerIdentityCard } from "@/components/seller/SellerIdentityCard";
+import { InlinePricingCard } from "@/components/seller/InlinePricingCard";
+import { ReactiveYellowTrlPanel } from "@/components/seller/ReactiveYellowTrlPanel";
+import { FastTrackSubmitModal } from "@/components/seller/FastTrackSubmitModal";
+import { Tier2CommonTechnicalForm } from "@/components/seller/Tier2CommonTechnicalForm";
+import { Tier3SectorDynamicForm } from "@/components/seller/Tier3SectorDynamicForm";
+import { DynamicSpecKeyValueTable } from "@/components/seller/DynamicSpecKeyValueTable";
+import { Tier4CommercialForm } from "@/components/seller/Tier4CommercialForm";
+import { IpQuadDigitizationCard } from "@/components/seller/IpQuadDigitizationCard";
+import { DataRoomFileManager } from "@/components/seller/DataRoomFileManager";
 
-const LOCAL_STORAGE_DRAFT_KEY = "nacentech_seller_offer_draft_new";
+const LOCAL_STORAGE_DRAFT_KEY = "nacentech_seller_offer_draft_v6";
 
 export default function TaoHoSoChaoBanPage() {
   const router = useRouter();
@@ -57,1380 +70,977 @@ export default function TaoHoSoChaoBanPage() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [problemSolved, setProblemSolved] = useState("");
-  const [sectorCode, setSectorCode] = useState("MECH");
+  const [sectorCode, setSectorCode] = useState("LV01");
 
-  // Form Fields - Step 2 (Dynamic Specs)
-  const [specValues, setSpecValues] = useState<OfferSpecValue[]>([]);
-
-  // Form Fields - Step 3 (Pricing & Commercial Terms)
-  const [pricingType, setPricingType] = useState<PricingType>("RANGE");
+  // Pricing (Inline Step 1)
+  const [pricingType, setPricingType] = useState<PricingType>("CONTACT");
   const [priceAmount, setPriceAmount] = useState<number | undefined>(undefined);
   const [priceMin, setPriceMin] = useState<number | undefined>(undefined);
   const [priceMax, setPriceMax] = useState<number | undefined>(undefined);
   const [currency, setCurrency] = useState("VND");
   const [unit, setUnit] = useState("hệ thống");
-  const [deliveryTimeline, setDeliveryTimeline] = useState("30 ngày kể từ ngày ký hợp đồng");
-  const [warrantyTerms, setWarrantyTerms] = useState("24 tháng bảo hành chính hãng");
-  const [supplyScope, setSupplyScope] = useState("Toàn quốc");
-  const [paymentTerms, setPaymentTerms] = useState("Tạm ứng 30%, 50% khi giao hàng, 20% sau nghiệm thu");
-  const [installationSupport, setInstallationSupport] = useState(true);
 
-  // Form Fields - Step 4 (Evidence, TRL & Governance)
-  const [developerOrigin, setDeveloperOrigin] = useState("");
+  // TRL & IP Quad (Reactive Step 1 & Step 4)
   const [trlLevel, setTrlLevel] = useState<number>(7);
+  const [developerOrigin, setDeveloperOrigin] = useState("Viện NacenTech");
   const [ipStatus, setIpStatus] = useState<IntellectualPropertyStatus>("PATENT_GRANTED");
   const [ipRegistrationNumber, setIpRegistrationNumber] = useState("");
+  const [ipIssueDate, setIpIssueDate] = useState("2025-06-15");
   const [transferMethod, setTransferMethod] = useState<TransferMethod>("NON_EXCLUSIVE_LICENSE");
   const [commercialStatus, setCommercialStatus] = useState<CommercializationStatus>("PILOT_TESTING");
-  const [mainImageUrl, setMainImageUrl] = useState<string | null>(null);
-  const [galleryImageUrls, setGalleryImageUrls] = useState<string[]>([]);
-  const [videoDemoUrl, setVideoDemoUrl] = useState<string | null>(null);
+
+  // Step 2: Lớp 2 (Kỹ thuật chung)
+  const [modelCode, setModelCode] = useState("");
+  const [manufacturer, setManufacturer] = useState("");
+  const [originCountry, setOriginCountry] = useState("Việt Nam");
+  const [equipmentStatus, setEquipmentStatus] = useState("NEW");
+  const [manufacturingYear, setManufacturingYear] = useState<number | undefined>(2026);
+  const [capacityScale, setCapacityScale] = useState("");
+  const [energyConsumption, setEnergyConsumption] = useState("");
+  const [automationLevel, setAutomationLevel] = useState("FULLY_AUTOMATIC");
+  const [operatingPrinciple, setOperatingPrinciple] = useState("");
+  const [deploymentConditions, setDeploymentConditions] = useState("");
+
+  // Step 2: Lớp 3 (Thông số kỹ thuật động & Tự do)
+  const [specValues, setSpecValues] = useState<OfferSpecValue[]>([]);
+
+  // Step 3: Lớp 4 (Thương mại chi tiết)
+  const [transferPriorityMethod, setTransferPriorityMethod] = useState("PURCHASE_ORDER");
+  const [priceIncludes, setPriceIncludes] = useState("Đã bao gồm thiết bị chính, vận chuyển nội địa và đào tạo vận hành.");
+  const [taxAndExtraCosts, setTaxAndExtraCosts] = useState("Đã bao gồm VAT 8%; chưa bao gồm chi phí kiểm định chuyên ngành.");
+  const [supplyScope, setSupplyScope] = useState("Toàn quốc");
+  const [deliveryTimeline, setDeliveryTimeline] = useState("30 ngày kể từ ngày ký hợp đồng");
+  const [paymentTerms, setPaymentTerms] = useState("Tạm ứng 30%, 50% khi giao hàng, 20% sau nghiệm thu");
+  const [warrantyTerms, setWarrantyTerms] = useState("24 tháng bảo hành chính hãng");
+  const [technicalSupportMethod, setTechnicalSupportMethod] = useState("Cán bộ kỹ thuật trực tiếp tại hiện trường 24/7 & Hỗ trợ online");
+  const [installationSupport, setInstallationSupport] = useState(true);
+
+  // Step 4: SHTT, DataRoom & Pháp lý
   const [documents, setDocuments] = useState<OfferDocument[]>([]);
-  const [contactName, setContactName] = useState("");
-  const [contactPointRole, setContactPointRole] = useState("Chuyên viên TTO");
-  const [contactPhone, setContactPhone] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
   const [managingAuthorityId, setManagingAuthorityId] = useState("VN-HN");
   const [managingAuthorityName, setManagingAuthorityName] = useState("Sở Khoa học và Công nghệ TP. Hà Nội");
-  const [legalConsent, setLegalConsent] = useState(true);
+  const [legalCommitmentConfirmed, setLegalCommitmentConfirmed] = useState(true);
 
-  // AI Field Highlights tracker
-  const [aiHighlightedFields, setAiHighlightedFields] = useState<Set<string>>(new Set());
+  // Doanh nghiệp liên kết (TASK-02)
+  const [enterpriseName, setEnterpriseName] = useState("Công ty TNHH Giải Pháp Công Nghệ NacenTwin");
+  const [enterpriseTaxCode, setEnterpriseTaxCode] = useState("0109887766");
+  const [contactName, setContactName] = useState("Nguyễn Văn Hùng");
+  const [contactPhone, setContactPhone] = useState("0987 654 321");
+  const [contactEmail, setContactEmail] = useState("seller.contact@nacentech.vn");
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [statusFeedback, setStatusFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
+  const [isFastTrackModalOpen, setIsFastTrackModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [uxState, setUxState] = useState<"loading" | "empty" | "error" | "partial" | "success">("success");
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
 
-  // 1. Kiểm tra khôi phục bản nháp từ localStorage khi mở trang
+  // Đếm tiến trình Bước 1: 6 trường lõi
+  const getFilledStep1Count = () => {
+    let count = 0;
+    if (offerType) count++;
+    if (title.trim().length >= 3) count++;
+    if (summary.trim().length > 0) count++;
+    if (problemSolved.trim().length > 0) count++;
+    if (sectorCode) count++;
+    if (pricingType === "CONTACT" || (pricingType === "FIXED" && (priceAmount ?? 0) > 0) || (pricingType === "RANGE" && (priceMin ?? 0) > 0)) count++;
+    return count;
+  };
+  const filledCount = getFilledStep1Count();
+
+  // Khôi phục bản nháp từ localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.title) {
-          setHasRestoredDraft(true);
+        if (parsed?.title) {
+          setTitle(parsed.title || "");
+          setSummary(parsed.summary || "");
+          setProblemSolved(parsed.problemSolved || "");
+          if (parsed.offerType) setOfferType(parsed.offerType);
+          if (parsed.sectorCode) setSectorCode(parsed.sectorCode);
+          if (typeof parsed.hasTechTransfer === "boolean") setHasTechTransfer(parsed.hasTechTransfer);
+          if (parsed.pricingType) setPricingType(parsed.pricingType);
+          if (parsed.priceAmount) setPriceAmount(parsed.priceAmount);
+          if (parsed.priceMin) setPriceMin(parsed.priceMin);
+          if (parsed.priceMax) setPriceMax(parsed.priceMax);
+          if (parsed.unit) setUnit(parsed.unit);
+          if (parsed.trlLevel) setTrlLevel(parsed.trlLevel);
         }
       }
     } catch (e) {
-      console.warn("Không đọc được bản nháp từ localStorage:", e);
+      console.warn("Could not parse draft:", e);
     }
   }, []);
 
-  // 2. Auto-save vào localStorage mỗi 30 giây
+  // Nạp thông tin Doanh nghiệp liên kết (TASK-02 SSOT)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const interval = setInterval(() => {
-      if (!title.trim()) return;
-      try {
-        const draftPayload = {
-          offerType,
-          hasTechTransfer,
+    let isMounted = true;
+    fetchMyEnterpriseProfile()
+      .then((profile) => {
+        if (!isMounted || !profile) return;
+        if (profile.name) setEnterpriseName(profile.name);
+        if (profile.taxCode) setEnterpriseTaxCode(profile.taxCode);
+        if (profile.contactPerson) setContactName(profile.contactPerson);
+        if (profile.contactPhone) setContactPhone(profile.contactPhone);
+        if (profile.contactEmail) setContactEmail(profile.contactEmail);
+      })
+      .catch((err) => {
+        console.warn("Could not load enterprise profile for seller create:", err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Tự động lưu nháp 30s
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (title.trim()) {
+        const draftObj = {
           title,
           summary,
           problemSolved,
+          offerType,
           sectorCode,
-          specValues,
+          hasTechTransfer,
           pricingType,
           priceAmount,
           priceMin,
           priceMax,
-          currency,
           unit,
-          deliveryTimeline,
-          warrantyTerms,
-          supplyScope,
-          paymentTerms,
-          installationSupport,
-          developerOrigin,
           trlLevel,
-          ipStatus,
-          ipRegistrationNumber,
-          transferMethod,
-          commercialStatus,
-          mainImageUrl,
-          galleryImageUrls,
-          videoDemoUrl,
-          contactName,
-          contactPointRole,
-          contactPhone,
-          contactEmail,
-          managingAuthorityId,
-          managingAuthorityName,
-          legalConsent,
           savedAt: new Date().toLocaleTimeString("vi-VN"),
         };
-        localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(draftPayload));
-        setDraftSavedAt(new Date().toLocaleTimeString("vi-VN"));
-      } catch (e) {
-        console.warn("Lỗi auto-save localStorage:", e);
+        try {
+          localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(draftObj));
+          setDraftSavedAt(draftObj.savedAt);
+        } catch (e) {
+          console.warn("Failed to auto-save draft", e);
+        }
       }
     }, 30000);
+    return () => clearInterval(timer);
+  }, [title, summary, problemSolved, offerType, sectorCode, hasTechTransfer, pricingType, priceAmount, priceMin, priceMax, unit, trlLevel]);
 
-    return () => clearInterval(interval);
-  }, [
-    offerType,
-    hasTechTransfer,
-    title,
-    summary,
-    problemSolved,
-    sectorCode,
-    specValues,
-    pricingType,
-    priceAmount,
-    priceMin,
-    priceMax,
-    currency,
-    unit,
-    deliveryTimeline,
-    warrantyTerms,
-    supplyScope,
-    paymentTerms,
-    installationSupport,
-    developerOrigin,
-    trlLevel,
-    ipStatus,
-    ipRegistrationNumber,
-    transferMethod,
-    commercialStatus,
-    mainImageUrl,
-    galleryImageUrls,
-    videoDemoUrl,
-    contactName,
-    contactPointRole,
-    contactPhone,
-    contactEmail,
-    managingAuthorityId,
-    managingAuthorityName,
-    legalConsent,
-  ]);
-
-  const restoreDraft = () => {
-    try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY);
-      if (!saved) return;
-      const d = JSON.parse(saved);
-      if (d.offerType) setOfferType(d.offerType);
-      if (d.hasTechTransfer !== undefined) setHasTechTransfer(d.hasTechTransfer);
-      if (d.title) setTitle(d.title);
-      if (d.summary) setSummary(d.summary);
-      if (d.problemSolved) setProblemSolved(d.problemSolved);
-      if (d.sectorCode) setSectorCode(d.sectorCode);
-      if (d.specValues) setSpecValues(d.specValues);
-      if (d.pricingType) setPricingType(d.pricingType);
-      if (d.priceAmount !== undefined) setPriceAmount(d.priceAmount);
-      if (d.priceMin !== undefined) setPriceMin(d.priceMin);
-      if (d.priceMax !== undefined) setPriceMax(d.priceMax);
-      if (d.currency) setCurrency(d.currency);
-      if (d.unit) setUnit(d.unit);
-      if (d.deliveryTimeline) setDeliveryTimeline(d.deliveryTimeline);
-      if (d.warrantyTerms) setWarrantyTerms(d.warrantyTerms);
-      if (d.supplyScope) setSupplyScope(d.supplyScope);
-      if (d.paymentTerms) setPaymentTerms(d.paymentTerms);
-      if (d.installationSupport !== undefined) setInstallationSupport(d.installationSupport);
-      if (d.developerOrigin) setDeveloperOrigin(d.developerOrigin);
-      if (d.trlLevel) setTrlLevel(d.trlLevel);
-      if (d.ipStatus) setIpStatus(d.ipStatus);
-      if (d.ipRegistrationNumber) setIpRegistrationNumber(d.ipRegistrationNumber);
-      if (d.transferMethod) setTransferMethod(d.transferMethod);
-      if (d.commercialStatus) setCommercialStatus(d.commercialStatus);
-      if (d.mainImageUrl) setMainImageUrl(d.mainImageUrl);
-      if (d.galleryImageUrls) setGalleryImageUrls(d.galleryImageUrls);
-      if (d.videoDemoUrl) setVideoDemoUrl(d.videoDemoUrl);
-      if (d.contactName) setContactName(d.contactName);
-      if (d.contactPointRole) setContactPointRole(d.contactPointRole);
-      if (d.contactPhone) setContactPhone(d.contactPhone);
-      if (d.contactEmail) setContactEmail(d.contactEmail);
-      if (d.managingAuthorityId) setManagingAuthorityId(d.managingAuthorityId);
-      if (d.managingAuthorityName) setManagingAuthorityName(d.managingAuthorityName);
-      if (d.legalConsent !== undefined) setLegalConsent(d.legalConsent);
-
-      setHasRestoredDraft(false);
-      setStatusFeedback({ type: "success", message: "Đã khôi phục dữ liệu bản nháp thành công!" });
-    } catch (e) {
-      console.error("Lỗi khôi phục:", e);
+  // Kiểm tra tính hợp lệ Bước 1
+  const validateStep1 = () => {
+    const errs: Record<string, string> = {};
+    if (!title.trim() || title.trim().length < 3) errs.title = "Tên sản phẩm/công nghệ tối thiểu 3 ký tự.";
+    if (!summary.trim()) errs.summary = "Mô tả ngắn không được để trống.";
+    if (!problemSolved.trim()) errs.problemSolved = "Công dụng / bài toán giải quyết không được để trống.";
+    if (!sectorCode) errs.sectorCode = "Vui lòng chọn ngành công nghiệp.";
+    if (pricingType === "FIXED" && (!priceAmount || priceAmount <= 0)) errs.priceAmount = "Giá cụ thể phải lớn hơn 0.";
+    if (pricingType === "RANGE") {
+      if (!priceMin || priceMin <= 0) errs.priceMin = "Giá tối thiểu phải lớn hơn 0.";
+      if (priceMax && priceMin && priceMax < priceMin) errs.priceMax = "Giá đến phải lớn hơn hoặc bằng giá từ.";
     }
-  };
-
-  const dismissDraftBanner = () => {
-    setHasRestoredDraft(false);
-  };
-
-  // 3. Tự động nạp mẫu thông số khi đổi ngành nếu bảng specs đang rỗng
-  useEffect(() => {
-    if (specValues.length === 0) {
-      const ind = TT17_SECTORS.find((s) => s.code.toUpperCase() === sectorCode.toUpperCase());
-      if (ind && ind.defaultSpecs.length > 0) {
-        setSpecValues(
-          ind.defaultSpecs.map((ds, i) => ({
-            specCode: `SPEC-${i + 1}`,
-            specName: ds.specName,
-            specValue: "",
-            unit: ds.unit || "",
-          }))
-        );
-      }
+    if (hasTechTransfer && (!trlLevel || trlLevel < 1 || trlLevel > 9)) {
+      errs.trlLevel = "Khi có chuyển giao công nghệ, bắt buộc chọn mức TRL từ 1 đến 9.";
     }
-  }, [sectorCode]);
-
-  // 4. Áp dụng gợi ý từ AI Scan Extractor
-  const handleApplyAiDraft = (draft: TechTransferDraftData) => {
-    const highlights = new Set<string>();
-
-    if (draft.title) {
-      setTitle(draft.title);
-      highlights.add("title");
-    }
-    if (draft.technicalSummary) {
-      setSummary(draft.technicalSummary);
-      highlights.add("summary");
-    }
-    if (draft.problemSolved) {
-      setProblemSolved(draft.problemSolved);
-      highlights.add("problemSolved");
-    }
-    if (draft.targetSectorCode) {
-      setSectorCode(draft.targetSectorCode);
-      highlights.add("sectorCode");
-    }
-    if (draft.originDeveloper) {
-      setDeveloperOrigin(draft.originDeveloper);
-      highlights.add("developerOrigin");
-    }
-    if (draft.ipQuad?.trlLevel) {
-      setTrlLevel(draft.ipQuad.trlLevel);
-      highlights.add("trlLevel");
-    }
-    if (draft.ipQuad?.ipStatus) {
-      setIpStatus(draft.ipQuad.ipStatus);
-      highlights.add("ipStatus");
-    }
-    if (draft.ipQuad?.patentNumber) {
-      setIpRegistrationNumber(draft.ipQuad.patentNumber);
-      highlights.add("ipRegistrationNumber");
-    }
-    if (draft.ipQuad?.transferMethod) {
-      setTransferMethod(draft.ipQuad.transferMethod);
-      highlights.add("transferMethod");
-    }
-    if (draft.suggestedSpecs && draft.suggestedSpecs.length > 0) {
-      setSpecValues(draft.suggestedSpecs);
-      highlights.add("specValues");
-    }
-
-    setAiHighlightedFields(highlights);
-    setStatusFeedback({
-      type: "success",
-      message: "✨ Đã điền các trường gợi ý từ AI vào Form! Vui lòng kiểm tra lại trước khi gửi duyệt.",
-    });
-  };
-
-  // Validate theo từng bước
-  const validateStep = (step: number): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (step === 1) {
-      if (!title.trim() || title.trim().length < 3)
-        newErrors.title = "Tên sản phẩm/công nghệ phải có tối thiểu 3 ký tự.";
-      if (!summary.trim()) newErrors.summary = "Mô tả ngắn không được để trống.";
-      if (!problemSolved.trim())
-        newErrors.problemSolved = "Công dụng / bài toán giải quyết không được để trống.";
-      if (!sectorCode) newErrors.sectorCode = "Vui lòng chọn ngành công nghiệp.";
-    }
-
-    if (step === 3) {
-      if (pricingType === "FIXED" && (!priceAmount || priceAmount <= 0)) {
-        newErrors.priceAmount = "Khi chọn giá cố định, số tiền phải lớn hơn 0.";
-      }
-      if (pricingType === "RANGE") {
-        if (!priceMin || priceMin <= 0) newErrors.priceMin = "Giá từ phải lớn hơn 0.";
-        if (!priceMax || (priceMin && priceMax < priceMin))
-          newErrors.priceMax = "Giá đến phải lớn hơn hoặc bằng giá từ.";
-      }
-    }
-
-    if (step === 4) {
-      if (hasTechTransfer) {
-        if (!developerOrigin.trim())
-          newErrors.developerOrigin = "Bắt buộc khai báo đơn vị nghiên cứu phát triển.";
-        if (!trlLevel || trlLevel < 1 || trlLevel > 9)
-          newErrors.trlLevel = "Mức TRL phải từ 1 đến 9.";
-      }
-      if (!managingAuthorityId) {
-        newErrors.managingAuthorityId = "Bắt buộc chọn Sở KH&CN tiếp nhận thẩm định.";
-      }
-      if (!legalConsent) {
-        newErrors.legalConsent = "Doanh nghiệp bắt buộc cam kết trách nhiệm pháp lý.";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleNextStep = () => {
-    if (validateStep(currentStep)) {
-      if (!completedSteps.includes(currentStep)) {
-        setCompletedSteps([...completedSteps, currentStep]);
-      }
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
+    if (currentStep === 1) {
+      if (!validateStep1()) return;
+      if (!completedSteps.includes(1)) setCompletedSteps((prev) => [...prev, 1]);
+      setCurrentStep(2);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (currentStep < 4) {
+      if (!completedSteps.includes(currentStep)) setCompletedSteps((prev) => [...prev, currentStep]);
+      setCurrentStep(currentStep + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  const handlePrevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleStepSelect = (step: number) => {
-    setCurrentStep(step);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const buildPayload = (action: "SAVE_DRAFT" | "SUBMIT_FOR_REVIEW"): CreateSellerOfferPayload => {
-    return {
-      offerType,
-      hasTechTransfer,
-      title: title.trim(),
-      summary: summary.trim(),
-      problemSolved: problemSolved.trim(),
-      sectorCode,
-      pricingType,
-      priceAmount: pricingType === "FIXED" ? priceAmount : null,
-      priceMin: pricingType === "RANGE" ? priceMin : null,
-      priceMax: pricingType === "RANGE" ? priceMax : null,
-      currency,
-      unit,
-      deliveryTimeline,
-      warrantyTerms,
-      supplyScope,
-      paymentTerms,
-      installationSupport,
-      developerOrigin: hasTechTransfer ? developerOrigin : null,
-      trlLevel: hasTechTransfer ? trlLevel : null,
-      ipStatus: hasTechTransfer ? ipStatus : null,
-      ipRegistrationNumber: hasTechTransfer ? ipRegistrationNumber : null,
-      transferMethod: hasTechTransfer ? transferMethod : null,
-      commercialStatus: hasTechTransfer ? commercialStatus : null,
-      mainImageUrl,
-      galleryImageUrls,
-      videoDemoUrl,
-      specValues,
-      documents,
-      contactName,
-      contactPointRole,
-      contactPhone,
-      contactEmail,
-      managingAuthorityId,
-      managingAuthorityName,
-      scopeType: "PROVINCE",
-      scopeId: managingAuthorityId,
-      legalConsent,
-      action,
-    };
-  };
-
-  // Nút "Lưu nháp" (DRAFT)
+  // Lưu nháp thủ công
   const handleSaveDraft = async () => {
-    if (!title.trim() || title.trim().length < 3) {
-      setErrors({ title: "Vui lòng nhập ít nhất 3 ký tự tiêu đề để lưu nháp." });
-      setCurrentStep(1);
-      return;
-    }
-
     setIsSavingDraft(true);
     setStatusFeedback(null);
-
     try {
-      const payload = buildPayload("SAVE_DRAFT");
-      const res = await createSellerOffer(payload);
+      const cleanSpecValues = specValues
+        .filter((s) => s.specName.trim() && s.specValue.trim())
+        .map((s) => ({
+          ...s,
+          specName: s.specName.trim(),
+          specValue: s.specValue.trim(),
+          unit: s.unit?.trim() || null,
+        }));
 
-      if (res.success) {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY);
-        }
-        setStatusFeedback({
-          type: "success",
-          message: "Đã lưu nháp hồ sơ thành công vào kho của bạn (Trạng thái DRAFT).",
-        });
-        setTimeout(() => {
-          router.push("/portal/seller/technologies");
-        }, 1200);
-      } else {
-        setStatusFeedback({
-          type: "error",
-          message: res.message || "Lỗi khi lưu nháp hồ sơ.",
-        });
-      }
-    } catch (e: any) {
-      setStatusFeedback({
-        type: "error",
-        message: e.message || "Lỗi kết nối khi lưu nháp.",
-      });
+      const payload: CreateSellerOfferPayload = {
+        action: "SAVE_DRAFT",
+        currentStep,
+        offerType,
+        hasTechTransfer,
+        title: title.trim() || "Bản nháp hồ sơ chưa đặt tên",
+        summary,
+        problemSolved,
+        sectorCode,
+        pricingType,
+        priceAmount,
+        priceMin,
+        priceMax,
+        currency,
+        unit,
+        trlLevel,
+        specValues: cleanSpecValues,
+        documents,
+      };
+      await createSellerOffer(payload);
+      setStatusFeedback({ type: "success", message: "Đã lưu nháp hồ sơ thành công vào kho của bạn." });
+    } catch (err: any) {
+      setStatusFeedback({ type: "error", message: err.message || "Lỗi lưu nháp hồ sơ." });
     } finally {
       setIsSavingDraft(false);
     }
   };
 
-  // Nút "Gửi thẩm định" (PENDING)
-  const handleSubmitForReview = async () => {
-    // Validate toàn bộ 4 bước
-    let allValid = true;
-    for (let s = 1; s <= 4; s++) {
-      if (!validateStep(s)) {
-        allValid = false;
-        setCurrentStep(s);
-        break;
-      }
-    }
-
-    if (!allValid) {
-      setStatusFeedback({
-        type: "error",
-        message: "Vui lòng hoàn thành đầy đủ các thông tin bắt buộc trước khi gửi thẩm định.",
-      });
+  // Nộp hồ sơ chờ duyệt (Fast-Track từ Bước 1 hoặc Hoàn tất 4 bước)
+  const handleSubmitReview = async () => {
+    if (!validateStep1()) {
+      setStatusFeedback({ type: "error", message: "Vui lòng hoàn thiện các trường bắt buộc ở Bước 1." });
       return;
     }
 
     setIsSubmitting(true);
     setStatusFeedback(null);
-
     try {
-      const payload = buildPayload("SUBMIT_FOR_REVIEW");
-      const res = await createSellerOffer(payload);
+      // Lọc bỏ các dòng thông số kỹ thuật rỗng trước khi gửi API (BR-SELLER-11)
+      const cleanSpecValues = specValues
+        .filter((s) => s.specName.trim() && s.specValue.trim())
+        .map((s) => ({
+          ...s,
+          specName: s.specName.trim(),
+          specValue: s.specValue.trim(),
+          unit: s.unit?.trim() || null,
+        }));
 
-      if (res.success) {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY);
-        }
-        setStatusFeedback({
-          type: "success",
-          message: "Đăng hồ sơ chào bán thành công! Hồ sơ đang chờ Sở KH&CN thẩm định.",
-        });
-        setTimeout(() => {
-          router.push("/portal/seller/technologies");
-        }, 1500);
-      } else {
-        setStatusFeedback({
-          type: "error",
-          message: res.message || "Đăng hồ sơ không thành công.",
-        });
-      }
-    } catch (e: any) {
-      setStatusFeedback({
-        type: "error",
-        message: e.message || "Lỗi kết nối máy chủ.",
-      });
-    } finally {
+      const payload: CreateSellerOfferPayload = {
+        action: "SUBMIT_FOR_REVIEW",
+        currentStep,
+        offerType,
+        hasTechTransfer,
+        title: title.trim(),
+        summary,
+        problemSolved,
+        sectorCode,
+        pricingType,
+        priceAmount,
+        priceMin,
+        priceMax,
+        currency,
+        unit,
+        developerOrigin,
+        trlLevel: hasTechTransfer ? trlLevel : undefined,
+        ipStatus,
+        ipRegistrationNumber,
+        transferMethod,
+        commercialStatus,
+        managingAuthorityId,
+        managingAuthorityName,
+        legalConsent: legalCommitmentConfirmed,
+        legalCommitmentConfirmed,
+        modelCode,
+        manufacturer,
+        originCountry,
+        equipmentStatus,
+        manufacturingYear,
+        capacityScale,
+        energyConsumption,
+        automationLevel,
+        operatingPrinciple,
+        deploymentConditions,
+        transferPriorityMethod,
+        priceIncludes,
+        taxAndExtraCosts,
+        technicalSupportMethod,
+        supplyScope,
+        deliveryTimeline,
+        paymentTerms,
+        warrantyTerms,
+        installationSupport,
+        specValues: cleanSpecValues,
+        documents,
+        enterpriseTaxCode,
+        enterpriseName,
+        contactName,
+        contactPhone,
+        contactEmail,
+      };
+
+      await createSellerOffer(payload);
+      setIsFastTrackModalOpen(false);
+      localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY);
+      router.push("/portal/seller/technologies?status=pending&success=1");
+    } catch (err: any) {
+      setStatusFeedback({ type: "error", message: err.message || "Lỗi nộp hồ sơ." });
       setIsSubmitting(false);
     }
   };
 
+  // Trợ lý AI nạp dữ liệu mẫu
+  const handleApplyAiData = () => {
+    setTitle("Hệ thống robot hàn laser sợi quang 6 bậc tự do tích hợp thị giác máy");
+    setSummary("Công nghệ hàn laser fiber thông minh với thuật toán AI bù sai số quỹ đạo hàn thời gian thực dưới 0.05mm.");
+    setProblemSolved("Giải quyết triệt để vấn đề biến dạng nhiệt trong chế tạo vỏ xe điện và bồn áp lực công nghiệp.");
+    setOfferType("DEVICE");
+    setSectorCode("LV07");
+    setHasTechTransfer(true);
+    setTrlLevel(7);
+    setDeveloperOrigin("The Industrial Technology Research Institute (ITRI)");
+    setIpStatus("PATENT_GRANTED");
+    setIpRegistrationNumber("VN 1-0028491");
+    setPricingType("RANGE");
+    setPriceMin(1500000000);
+    setPriceMax(2200000000);
+    setUnit("hệ thống");
+    setIsAiModalOpen(false);
+    setStatusFeedback({ type: "success", message: "Đã áp dụng thành công dữ liệu bóc tách AI vào Form!" });
+  };
+
+  const currentSectorObj = TT17_SECTORS.find((s) => s.code === sectorCode) || TT17_SECTORS[0];
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {/* Banner khôi phục bản nháp */}
-        {hasRestoredDraft && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <RotateCcw className="h-5 w-5 text-blue-600" />
-              <div>
-                <h4 className="text-xs font-extrabold text-blue-900">
-                  Phát hiện bản lưu nháp chưa nộp từ phiên trước
-                </h4>
-                <p className="text-[11px] text-blue-700">
-                  Bạn có muốn khôi phục lại các nội dung đã soạn thảo gần nhất không?
-                </p>
+    <div className="min-h-screen bg-slate-50 text-slate-800 pb-16">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/portal/seller/technologies"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition"
+              title="Quay lại danh sách"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+            <div>
+              <div className="font-extrabold tracking-tight text-slate-900 text-sm">
+                NACENTWIN · CỔNG ĐỔI MỚI SÁNG TẠO QUỐC GIA
+              </div>
+              <div className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+                Phân Hệ Seller Hồ Sơ Chào Bán · TASK-04 Delta v6
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={restoreDraft}
-                className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow hover:bg-blue-700"
-              >
-                Khôi phục bản nháp
-              </button>
-              <button
-                type="button"
-                onClick={dismissDraftBanner}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100"
-              >
-                Bỏ qua
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Header bar */}
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <nav className="mb-1 text-xs text-slate-500">
-              <Link href="/portal/seller/technologies" className="hover:text-blue-600">
-                Kho công nghệ Seller
-              </Link>{" "}
-              / <span className="font-semibold text-slate-700">Tạo hồ sơ chào bán</span>
-            </nav>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900">
-              Tạo hồ sơ chào bán công nghệ
-            </h1>
-            <p className="mt-1 text-xs text-slate-600">
-              Biểu mẫu chào bán 4 bước chuyên sâu theo Tiêu chuẩn Cơ sở NacenTwin & 18 ngành SHTT.
-            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {draftSavedAt && (
-              <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-400">
-                <Clock className="h-3.5 w-3.5" /> Đã tự động sao lưu lúc {draftSavedAt}
-              </span>
-            )}
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              disabled={isSavingDraft || isSubmitting}
               onClick={handleSaveDraft}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              disabled={isSavingDraft}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5"
             >
-              <Save className="h-4 w-4" />
-              {isSavingDraft ? "Đang lưu nháp..." : "Lưu nháp"}
+              <Save className="h-3.5 w-3.5" />
+              {isSavingDraft ? "Đang lưu..." : "Lưu nháp"}
             </button>
+
+            {/* QUY TẮC ĐỘT PHÁ UX: Nút Gửi chờ duyệt trên Topbar luôn khả dụng khi Bước 1 hợp lệ */}
             <button
               type="button"
-              disabled={isSubmitting || isSavingDraft}
-              onClick={handleSubmitForReview}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-navy px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
+              onClick={() => setIsFastTrackModalOpen(true)}
+              className="rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm transition flex items-center gap-1.5"
             >
-              <Send className="h-4 w-4" />
-              {isSubmitting ? "Đang gửi..." : "Gửi thẩm định Sở"}
+              <Send className="h-3.5 w-3.5" />
+              Gửi chờ duyệt
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Feedback Alert */}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-6">
+        {/* Title & Description */}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <nav className="mb-1 text-xs text-slate-500">
+              Trang chủ / Hồ sơ của tôi /{" "}
+              <span className="font-semibold text-slate-700">Tạo hồ sơ chào bán</span>
+            </nav>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+              Tạo hồ sơ chào bán
+            </h1>
+            <p className="mt-0.5 text-xs text-slate-600">
+              Đăng sản phẩm, thiết bị hoặc giải pháp công nghệ để kết nối nhu cầu phù hợp.
+            </p>
+          </div>
+
+          {draftSavedAt && (
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-slate-200/60 px-2.5 py-1 rounded-lg">
+              <Clock className="h-3 w-3 text-slate-400" />
+              Tự động lưu nháp lúc {draftSavedAt}
+            </div>
+          )}
+        </div>
+
+        {/* Feedback alert */}
         {statusFeedback && (
           <div
-            className={`mb-5 flex items-center gap-2 rounded-xl border p-3 text-xs font-bold ${
+            className={`p-3.5 rounded-xl text-xs font-bold border flex items-center justify-between ${
               statusFeedback.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border-rose-200 bg-rose-50 text-rose-800"
+                ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                : "bg-rose-50 border-rose-300 text-rose-800"
             }`}
           >
-            {statusFeedback.type === "success" ? (
-              <Check className="h-4 w-4 text-emerald-600" />
-            ) : (
-              <AlertCircle className="h-4 w-4 text-rose-600" />
-            )}
             <span>{statusFeedback.message}</span>
+            <button type="button" onClick={() => setStatusFeedback(null)}>
+              <X className="h-4 w-4" />
+            </button>
           </div>
         )}
 
-        {/* Bố cục 2 Cột chuẩn Wireframe: Cột trái 260px (Stepper + AI Card), Cột phải Form Wizard */}
+        {/* KPI Banner 3 Cột (Wireframe gốc) */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+            <div className="text-xs font-bold text-emerald-700">Bước hiện tại</div>
+            <div className="mt-1 text-sm font-extrabold text-emerald-900">
+              0{currentStep} ·{" "}
+              {currentStep === 1
+                ? "Thông tin bắt buộc"
+                : currentStep === 2
+                ? "Thông số kỹ thuật"
+                : currentStep === 3
+                ? "Giá & thương mại"
+                : "Pháp lý & DataRoom"}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-3">
+            <div className="text-xs font-bold text-brand-700">Tối giản MVP Fast-Track</div>
+            <div className="mt-1 text-sm font-extrabold text-brand-900">
+              6 trường lõi + Giá + TRL
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            <div className="text-xs font-bold text-slate-500">Bộ quy tắc áp dụng</div>
+            <div className="mt-1 text-sm font-extrabold text-slate-900 truncate">
+              {currentSectorObj.name} · {offerType === "DEVICE" ? "Thiết bị" : offerType === "PRODUCT" ? "Sản phẩm" : "Giải pháp"} ·{" "}
+              {hasTechTransfer ? "Có chuyển giao (TRL)" : "Không chuyển giao"}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Grid: Sidebar vs Content */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-          {/* CỘT TRÁI (260px): FormStepper + AiScanAssistantCard */}
+          {/* Left Column: Side Nav & AI Assistant */}
           <aside className="space-y-4">
             <FormStepper
               currentStep={currentStep}
-              onStepSelect={handleStepSelect}
+              onStepSelect={(step) => {
+                if (step === 1 || completedSteps.includes(1)) {
+                  setCurrentStep(step);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
               completedSteps={completedSteps}
+              filledStep1Count={filledCount}
             />
 
-            <AiScanAssistantCard onApplyDraft={handleApplyAiDraft} />
+            {/* Card Trợ Lý AI Nhập Liệu (PO-DEC-07) */}
+            <div className="rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-brand-50 p-4 shadow-sm">
+              <div className="flex items-center gap-2 text-sm font-extrabold text-cyan-950">
+                <Sparkles className="h-4 w-4 text-cyan-600" />
+                <span>Trợ Lý AI Nhập Liệu</span>
+                <span className="rounded bg-cyan-200/80 text-cyan-900 text-xs px-1.5 py-0.5 font-bold">
+                  PO-DEC-07
+                </span>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-cyan-800">
+                Tải catalogue, tài liệu thuyết minh hoặc ghi âm giọng nói để AI tự động trích xuất thông số, TRL và bảo hộ SHTT.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsAiModalOpen(true)}
+                className="mt-3 w-full rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs py-2 px-3 shadow transition flex items-center justify-center gap-1.5"
+              >
+                <Wand2 className="h-3.5 w-3.5" />
+                Kích hoạt Trợ lý AI (OCR/Voice) &rarr;
+              </button>
+            </div>
           </aside>
 
-          {/* CỘT PHẢI: Wizard Content Form */}
-          <section className="min-w-0">
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              {/* Step Title Header */}
-              <div className="border-b border-slate-100 bg-slate-50/50 px-5 py-4 sm:px-7">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h2 className="text-base font-extrabold text-slate-900">
-                      {currentStep === 1 && "Bước 1: Thông tin bắt buộc & Tra cứu"}
-                      {currentStep === 2 && "Bước 2: Thông số kỹ thuật & 18 Ngành TT17"}
-                      {currentStep === 3 && "Bước 3: Giá & Điều kiện thương mại"}
-                      {currentStep === 4 && "Bước 4: Minh chứng SHTT, TRL & Quản trị"}
-                    </h2>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      {currentStep === 1 && "Các trường có dấu (*) là thông tin cốt lõi ban đầu."}
-                      {currentStep === 2 && "Bộ thông số chuyên môn giúp Bên Mua tìm kiếm và lọc chính xác."}
-                      {currentStep === 3 && "Hình thức giá, đơn vị tính, bảo hành và tiến độ thanh toán."}
-                      {currentStep === 4 && "Độ chín công nghệ (TRL), hồ sơ sở hữu trí tuệ và cơ quan quản lý."}
-                    </p>
-                  </div>
+          {/* Right Column: Active Form Step */}
+          <section className="min-w-0 space-y-6">
+            {currentStep === 1 && (
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-5 sm:p-7 space-y-7">
+                {/* Doanh nghiệp liên kết (TASK-02) */}
+                <SellerIdentityCard
+                  enterpriseName={enterpriseName}
+                  enterpriseTaxCode={enterpriseTaxCode}
+                  contactName={contactName}
+                  contactPhone={contactPhone}
+                  contactEmail={contactEmail}
+                />
 
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
-                    Nấc {currentStep} / 4
-                  </span>
-                </div>
-              </div>
+                {/* 6 trường lõi Bước 1 */}
+                <Step1CoreFields
+                  offerType={offerType}
+                  setOfferType={setOfferType}
+                  sectorCode={sectorCode}
+                  setSectorCode={setSectorCode}
+                  hasTechTransfer={hasTechTransfer}
+                  setHasTechTransfer={setHasTechTransfer}
+                  title={title}
+                  setTitle={setTitle}
+                  summary={summary}
+                  setSummary={setSummary}
+                  problemSolved={problemSolved}
+                  setProblemSolved={setProblemSolved}
+                  errors={errors}
+                  filledCount={filledCount}
+                />
 
-              {/* Step Body */}
-              <div className="space-y-6 p-5 sm:p-7">
-                {/* --- BƯỚC 1: THÔNG TIN BẮT BUỘC & TRA CỨU --- */}
-                {currentStep === 1 && (
-                  <div className="space-y-6">
-                    {/* Loại chào bán */}
-                    <div>
-                      <label className="mb-2 block text-xs font-extrabold text-slate-700">
-                        Loại chào bán <span className="text-rose-600">*</span>
-                      </label>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <button
-                          type="button"
-                          onClick={() => setOfferType("DEVICE")}
-                          className={`rounded-xl border-2 p-3 text-left transition-all ${
-                            offerType === "DEVICE"
-                              ? "border-blue-600 bg-blue-50/80 shadow-sm"
-                              : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                          }`}
-                        >
-                          <Settings2 className="mb-2 h-5 w-5 text-blue-600" />
-                          <div className="text-sm font-extrabold text-slate-900">Thiết bị</div>
-                          <div className="mt-0.5 text-[11px] text-slate-500">Máy móc, dây chuyền kỹ thuật</div>
-                        </button>
+                {/* Cụm giá nhúng tại Bước 1 */}
+                <InlinePricingCard
+                  pricingType={pricingType}
+                  setPricingType={setPricingType}
+                  priceAmount={priceAmount}
+                  setPriceAmount={setPriceAmount}
+                  priceMin={priceMin}
+                  setPriceMin={setPriceMin}
+                  priceMax={priceMax}
+                  setPriceMax={setPriceMax}
+                  currency={currency}
+                  setCurrency={setCurrency}
+                  unit={unit}
+                  setUnit={setUnit}
+                  errors={errors}
+                />
 
-                        <button
-                          type="button"
-                          onClick={() => setOfferType("PRODUCT")}
-                          className={`rounded-xl border-2 p-3 text-left transition-all ${
-                            offerType === "PRODUCT"
-                              ? "border-emerald-600 bg-emerald-50/80 shadow-sm"
-                              : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                          }`}
-                        >
-                          <Package className="mb-2 h-5 w-5 text-emerald-600" />
-                          <div className="text-sm font-extrabold text-slate-900">Sản phẩm</div>
-                          <div className="mt-0.5 text-[11px] text-slate-500">Hàng hóa, vật liệu công nghệ cao</div>
-                        </button>
+                {/* Khung TRL màu vàng reactive */}
+                <ReactiveYellowTrlPanel
+                  hasTechTransfer={hasTechTransfer}
+                  trlLevel={trlLevel}
+                  setTrlLevel={setTrlLevel}
+                  developerOrigin={developerOrigin}
+                  setDeveloperOrigin={setDeveloperOrigin}
+                  ipStatus={ipStatus}
+                  setIpStatus={setIpStatus}
+                  ipRegistrationNumber={ipRegistrationNumber}
+                  setIpRegistrationNumber={setIpRegistrationNumber}
+                  transferMethod={transferMethod}
+                  setTransferMethod={setTransferMethod}
+                  commercialStatus={commercialStatus}
+                  setCommercialStatus={setCommercialStatus}
+                  errors={errors}
+                />
 
-                        <button
-                          type="button"
-                          onClick={() => setOfferType("SOLUTION")}
-                          className={`rounded-xl border-2 p-3 text-left transition-all ${
-                            offerType === "SOLUTION"
-                              ? "border-cyan-600 bg-cyan-50/80 shadow-sm"
-                              : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                          }`}
-                        >
-                          <Cpu className="mb-2 h-5 w-5 text-cyan-600" />
-                          <div className="text-sm font-extrabold text-slate-900">Giải pháp công nghệ</div>
-                          <div className="mt-0.5 text-[11px] text-slate-500">Quy trình, phần mềm, sáng chế</div>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Ngành công nghiệp & Toggle Chuyển giao */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                          Ngành công nghiệp (18 nhóm ngành TT17) <span className="text-rose-600">*</span>
-                        </label>
-                        <select
-                          value={sectorCode}
-                          onChange={(e) => setSectorCode(e.target.value)}
-                          className={`w-full rounded-lg border p-2.5 text-xs font-semibold outline-none transition focus:border-blue-500 ${
-                            aiHighlightedFields.has("sectorCode") ? "border-cyan-400 bg-cyan-50/50" : "border-slate-300"
-                          }`}
-                        >
-                          {TT17_SECTORS.map((s) => (
-                            <option key={s.code} value={s.code}>
-                              {s.code} — {s.name}
-                            </option>
-                          ))}
-                        </select>
-                        <p className="mt-1 text-[11px] text-slate-500">
-                          Ngành quyết định bộ thông số kỹ thuật gợi ý ở Bước 2.
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                          Có chuyển giao công nghệ / SHTT? <span className="text-rose-600">*</span>
-                        </label>
-                        <div className="flex rounded-lg border border-slate-300 p-1">
-                          <button
-                            type="button"
-                            onClick={() => setHasTechTransfer(false)}
-                            className={`flex-1 rounded-md py-1.5 text-xs font-bold transition ${
-                              !hasTechTransfer ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
-                            }`}
-                          >
-                            Không
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setHasTechTransfer(true)}
-                            className={`flex-1 rounded-md py-1.5 text-xs font-bold transition ${
-                              hasTechTransfer ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-100"
-                            }`}
-                          >
-                            Có (Yêu cầu TRL)
-                          </button>
-                        </div>
-                        <p className="mt-1 text-[11px] text-slate-500">
-                          Chọn &quot;Có&quot; sẽ yêu cầu khai mức TRL và thông tin văn bằng SHTT.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Tên giải pháp */}
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                          Tên sản phẩm / thiết bị / công nghệ <span className="text-rose-600">*</span>
-                        </label>
-                        {aiHighlightedFields.has("title") && (
-                          <span className="text-[10px] font-bold text-cyan-700">✨ AI gợi ý</span>
-                        )}
-                      </div>
-                      <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Ví dụ: Máy sấy thăng hoa chân không tích hợp AI tối ưu năng lượng"
-                        className={`w-full rounded-lg border p-2.5 text-xs font-medium outline-none transition ${
-                          errors.title
-                            ? "border-rose-500 bg-rose-50"
-                            : aiHighlightedFields.has("title")
-                            ? "border-cyan-400 bg-cyan-50/30"
-                            : "border-slate-300 focus:border-blue-500"
-                        }`}
-                      />
-                      {errors.title && <p className="mt-1 text-[11px] font-bold text-rose-600">{errors.title}</p>}
-                    </div>
-
-                    {/* Mô tả ngắn & Bài toán giải quyết */}
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                            Mô tả ngắn giải pháp <span className="text-rose-600">*</span>
-                          </label>
-                          {aiHighlightedFields.has("summary") && (
-                            <span className="text-[10px] font-bold text-cyan-700">✨ AI gợi ý</span>
-                          )}
-                        </div>
-                        <textarea
-                          rows={4}
-                          value={summary}
-                          onChange={(e) => setSummary(e.target.value)}
-                          placeholder="Nêu ngắn gọn đặc điểm chính, công nghệ cốt lõi và thế mạnh..."
-                          className={`w-full rounded-lg border p-2.5 text-xs outline-none transition ${
-                            errors.summary
-                              ? "border-rose-500 bg-rose-50"
-                              : aiHighlightedFields.has("summary")
-                              ? "border-cyan-400 bg-cyan-50/30"
-                              : "border-slate-300 focus:border-blue-500"
-                          }`}
-                        />
-                        {errors.summary && <p className="mt-1 text-[11px] font-bold text-rose-600">{errors.summary}</p>}
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                            Công dụng / Bài toán kỹ thuật giải quyết <span className="text-rose-600">*</span>
-                          </label>
-                          {aiHighlightedFields.has("problemSolved") && (
-                            <span className="text-[10px] font-bold text-cyan-700">✨ AI gợi ý</span>
-                          )}
-                        </div>
-                        <textarea
-                          rows={4}
-                          value={problemSolved}
-                          onChange={(e) => setProblemSolved(e.target.value)}
-                          placeholder="Sản phẩm giải quyết nỗi đau hoặc nhu cầu cụ thể nào cho bên mua?"
-                          className={`w-full rounded-lg border p-2.5 text-xs outline-none transition ${
-                            errors.problemSolved
-                              ? "border-rose-500 bg-rose-50"
-                              : aiHighlightedFields.has("problemSolved")
-                              ? "border-cyan-400 bg-cyan-50/30"
-                              : "border-slate-300 focus:border-blue-500"
-                          }`}
-                        />
-                        {errors.problemSolved && (
-                          <p className="mt-1 text-[11px] font-bold text-rose-600">{errors.problemSolved}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* --- BƯỚC 2: THÔNG SỐ KỸ THUẬT & 18 NGÀNH --- */}
-                {currentStep === 2 && (
-                  <div>
-                    <DynamicSpecTable
-                      sectorCode={sectorCode}
-                      specs={specValues}
-                      onChange={setSpecValues}
-                    />
-                  </div>
-                )}
-
-                {/* --- BƯỚC 3: GIÁ & ĐIỀU KIỆN THƯƠNG MẠI --- */}
-                {currentStep === 3 && (
-                  <div className="space-y-6">
-                    {/* Hình thức công bố giá */}
-                    <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-                      <label className="mb-3 block text-xs font-extrabold text-slate-800">
-                        Hình thức công bố giá <span className="text-rose-600">*</span>
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        <label
-                          className={`cursor-pointer rounded-lg border px-3 py-2 text-xs font-bold transition ${
-                            pricingType === "FIXED"
-                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="pricingType"
-                            checked={pricingType === "FIXED"}
-                            onChange={() => setPricingType("FIXED")}
-                            className="mr-1.5"
-                          />
-                          Giá cụ thể
-                        </label>
-
-                        <label
-                          className={`cursor-pointer rounded-lg border px-3 py-2 text-xs font-bold transition ${
-                            pricingType === "RANGE"
-                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="pricingType"
-                            checked={pricingType === "RANGE"}
-                            onChange={() => setPricingType("RANGE")}
-                            className="mr-1.5"
-                          />
-                          Khoảng giá (Từ – Đến)
-                        </label>
-
-                        <label
-                          className={`cursor-pointer rounded-lg border px-3 py-2 text-xs font-bold transition ${
-                            pricingType === "CONTACT"
-                              ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
-                              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="pricingType"
-                            checked={pricingType === "CONTACT"}
-                            onChange={() => setPricingType("CONTACT")}
-                            className="mr-1.5"
-                          />
-                          Thỏa thuận / Liên hệ báo giá
-                        </label>
-                      </div>
-
-                      {/* Các ô nhập giá & tiền tệ */}
-                      {pricingType !== "CONTACT" && (
-                        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
-                          {pricingType === "FIXED" && (
-                            <div className="sm:col-span-2">
-                              <label className="mb-1 block text-[11px] font-bold text-slate-600">
-                                Mức giá chào bán <span className="text-rose-500">*</span>
-                              </label>
-                              <input
-                                type="number"
-                                min={0}
-                                value={priceAmount !== undefined ? priceAmount : ""}
-                                onChange={(e) =>
-                                  setPriceAmount(e.target.value ? Number(e.target.value) : undefined)
-                                }
-                                placeholder="Ví dụ: 850000000"
-                                className="w-full rounded-lg border border-slate-300 p-2 text-xs font-bold outline-none focus:border-blue-500"
-                              />
-                              {errors.priceAmount && (
-                                <p className="mt-1 text-[11px] font-bold text-rose-600">{errors.priceAmount}</p>
-                              )}
-                            </div>
-                          )}
-
-                          {pricingType === "RANGE" && (
-                            <>
-                              <div>
-                                <label className="mb-1 block text-[11px] font-bold text-slate-600">
-                                  Khoảng giá từ <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  value={priceMin !== undefined ? priceMin : ""}
-                                  onChange={(e) =>
-                                    setPriceMin(e.target.value ? Number(e.target.value) : undefined)
-                                  }
-                                  placeholder="Ví dụ: 500000000"
-                                  className="w-full rounded-lg border border-slate-300 p-2 text-xs font-bold outline-none focus:border-blue-500"
-                                />
-                                {errors.priceMin && (
-                                  <p className="mt-1 text-[11px] font-bold text-rose-600">{errors.priceMin}</p>
-                                )}
-                              </div>
-                              <div>
-                                <label className="mb-1 block text-[11px] font-bold text-slate-600">
-                                  Đến <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                  type="number"
-                                  min={0}
-                                  value={priceMax !== undefined ? priceMax : ""}
-                                  onChange={(e) =>
-                                    setPriceMax(e.target.value ? Number(e.target.value) : undefined)
-                                  }
-                                  placeholder="Ví dụ: 1200000000"
-                                  className="w-full rounded-lg border border-slate-300 p-2 text-xs font-bold outline-none focus:border-blue-500"
-                                />
-                                {errors.priceMax && (
-                                  <p className="mt-1 text-[11px] font-bold text-rose-600">{errors.priceMax}</p>
-                                )}
-                              </div>
-                            </>
-                          )}
-
-                          <div>
-                            <label className="mb-1 block text-[11px] font-bold text-slate-600">Loại tiền tệ</label>
-                            <select
-                              value={currency}
-                              onChange={(e) => setCurrency(e.target.value)}
-                              className="w-full rounded-lg border border-slate-300 p-2 text-xs font-bold outline-none focus:border-blue-500"
-                            >
-                              <option value="VND">VND (Việt Nam Đồng)</option>
-                              <option value="USD">USD (Đô la Mỹ)</option>
-                              <option value="EUR">EUR (Euro)</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="mb-1 block text-[11px] font-bold text-slate-600">Đơn vị tính</label>
-                            <input
-                              type="text"
-                              value={unit}
-                              onChange={(e) => setUnit(e.target.value)}
-                              placeholder="hệ thống, dây chuyền, bộ..."
-                              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-blue-500"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Điều kiện thương mại chi tiết (REQ-04-017) */}
-                    <div>
-                      <h3 className="mb-3 text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                        Điều kiện thương mại & Giao nhận
-                      </h3>
-
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Thời gian giao hàng / Triển khai
-                          </label>
-                          <input
-                            type="text"
-                            value={deliveryTimeline}
-                            onChange={(e) => setDeliveryTimeline(e.target.value)}
-                            placeholder="Ví dụ: 30 ngày kể từ khi ký hợp đồng"
-                            className="w-full rounded-lg border border-slate-300 p-2.5 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Thời hạn & Điều kiện bảo hành
-                          </label>
-                          <input
-                            type="text"
-                            value={warrantyTerms}
-                            onChange={(e) => setWarrantyTerms(e.target.value)}
-                            placeholder="Ví dụ: 24 tháng bảo hành chính hãng, hỗ trợ 24/7"
-                            className="w-full rounded-lg border border-slate-300 p-2.5 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Phạm vi cung cấp & chuyển giao
-                          </label>
-                          <input
-                            type="text"
-                            value={supplyScope}
-                            onChange={(e) => setSupplyScope(e.target.value)}
-                            placeholder="Toàn quốc, 63 tỉnh/thành, Xuất khẩu ASEAN..."
-                            className="w-full rounded-lg border border-slate-300 p-2.5 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Điều kiện thanh toán
-                          </label>
-                          <input
-                            type="text"
-                            value={paymentTerms}
-                            onChange={(e) => setPaymentTerms(e.target.value)}
-                            placeholder="Tạm ứng 30%, 50% khi giao hàng, 20% sau nghiệm thu"
-                            className="w-full rounded-lg border border-slate-300 p-2.5 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={installationSupport}
-                              onChange={(e) => setInstallationSupport(e.target.checked)}
-                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-xs font-bold text-slate-800">
-                              Có hỗ trợ chuyên gia kỹ thuật lắp đặt & hướng dẫn vận hành chuyển giao tận nơi
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* --- BƯỚC 4: MINH CHỨNG SHTT, TRL & QUẢN TRỊ DUYỆT --- */}
-                {currentStep === 4 && (
-                  <div className="space-y-6">
-                    {/* Khối SHTT & TRL (Nếu có chuyển giao công nghệ) */}
-                    {hasTechTransfer ? (
-                      <div className="space-y-6 rounded-2xl border border-blue-200 bg-blue-50/30 p-5">
-                        <div className="border-b border-blue-100 pb-3">
-                          <h3 className="text-sm font-extrabold text-blue-950">
-                            Bộ Tứ Sở Hữu Trí Tuệ & Thang Đo TRL
-                          </h3>
-                          <p className="mt-0.5 text-xs text-blue-800">
-                            Yêu cầu pháp lý bắt buộc đối với hồ sơ có yếu tố chuyển giao công nghệ.
-                          </p>
-                        </div>
-
-                        {/* Đơn vị R&D */}
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                              Đơn vị nghiên cứu phát triển / Viện / Trường <span className="text-rose-600">*</span>
-                            </label>
-                            {aiHighlightedFields.has("developerOrigin") && (
-                              <span className="text-[10px] font-bold text-cyan-700">✨ AI gợi ý</span>
-                            )}
-                          </div>
-                          <input
-                            type="text"
-                            value={developerOrigin}
-                            onChange={(e) => setDeveloperOrigin(e.target.value)}
-                            placeholder="Ví dụ: Viện Cơ điện Nông nghiệp và Công nghệ sau thu hoạch (VIAEP)"
-                            className={`w-full rounded-lg border p-2.5 text-xs outline-none transition ${
-                              errors.developerOrigin
-                                ? "border-rose-500 bg-rose-50"
-                                : aiHighlightedFields.has("developerOrigin")
-                                ? "border-cyan-400 bg-cyan-50/30"
-                                : "border-slate-300 focus:border-blue-500"
-                            }`}
-                          />
-                          {errors.developerOrigin && (
-                            <p className="mt-1 text-[11px] font-bold text-rose-600">{errors.developerOrigin}</p>
-                          )}
-                        </div>
-
-                        {/* Dải Thang Đo TRL 9 Cấp */}
-                        <TrlSelectorGrid value={trlLevel} onChange={setTrlLevel} />
-                        {errors.trlLevel && (
-                          <p className="text-[11px] font-bold text-rose-600">{errors.trlLevel}</p>
-                        )}
-
-                        {/* Tình trạng SHTT & Số văn bằng */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                          <div>
-                            <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                              Tình trạng Sở hữu Trí tuệ <span className="text-rose-600">*</span>
-                            </label>
-                            <select
-                              value={ipStatus}
-                              onChange={(e) => setIpStatus(e.target.value as IntellectualPropertyStatus)}
-                              className="w-full rounded-lg border border-slate-300 p-2.5 text-xs font-bold outline-none focus:border-blue-500"
-                            >
-                              <option value="PATENT_GRANTED">Bằng Độc quyền Sáng chế</option>
-                              <option value="UTILITY_MODEL">Giải pháp hữu ích (GPHI)</option>
-                              <option value="PATENT_PENDING">Đang nộp đơn hợp lệ</option>
-                              <option value="TRADE_SECRET">Bí quyết công nghệ / Trade Secret</option>
-                              <option value="SOFTWARE_COPYRIGHT">Bản quyền phần mềm</option>
-                              <option value="NONE">Chưa đăng ký bảo hộ</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <div className="flex items-center justify-between">
-                              <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                                Số văn bằng SHTT / Đơn hợp lệ
-                              </label>
-                              {aiHighlightedFields.has("ipRegistrationNumber") && (
-                                <span className="text-[10px] font-bold text-cyan-700">✨ AI gợi ý</span>
-                              )}
-                            </div>
-                            <input
-                              type="text"
-                              value={ipRegistrationNumber}
-                              onChange={(e) => setIpRegistrationNumber(e.target.value)}
-                              placeholder="Ví dụ: VN-1-0028491 hoặc số đơn chấp nhận"
-                              className={`w-full rounded-lg border p-2.5 text-xs outline-none transition ${
-                                errors.ipRegistrationNumber
-                                  ? "border-rose-500 bg-rose-50"
-                                  : aiHighlightedFields.has("ipRegistrationNumber")
-                                  ? "border-cyan-400 bg-cyan-50/30"
-                                  : "border-slate-300 focus:border-blue-500"
-                              }`}
-                            />
-                            {errors.ipRegistrationNumber && (
-                              <p className="mt-1 text-[11px] font-bold text-rose-600">
-                                {errors.ipRegistrationNumber}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Hình thức chuyển giao & Trạng thái thương mại */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                          <div>
-                            <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                              Hình thức chuyển giao mong muốn <span className="text-rose-600">*</span>
-                            </label>
-                            <select
-                              value={transferMethod}
-                              onChange={(e) => setTransferMethod(e.target.value as TransferMethod)}
-                              className="w-full rounded-lg border border-slate-300 p-2.5 text-xs font-bold outline-none focus:border-blue-500"
-                            >
-                              <option value="EXCLUSIVE_LICENSE">Li-xăng độc quyền</option>
-                              <option value="NON_EXCLUSIVE_LICENSE">Li-xăng không độc quyền</option>
-                              <option value="ASSIGNMENT_SALE">Chuyển nhượng quyền sở hữu</option>
-                              <option value="JOINT_RD">Hợp tác R&D hoàn thiện công nghệ</option>
-                              <option value="CAPITAL_CONTRIBUTION">Góp vốn bằng quyền SHTT</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-                              Trạng thái thương mại hóa <span className="text-rose-600">*</span>
-                            </label>
-                            <select
-                              value={commercialStatus}
-                              onChange={(e) => setCommercialStatus(e.target.value as CommercializationStatus)}
-                              className="w-full rounded-lg border border-slate-300 p-2.5 text-xs font-bold outline-none focus:border-blue-500"
-                            >
-                              <option value="COMMERCIALLY_READY">Sẵn sàng thương mại hóa quy mô lớn</option>
-                              <option value="PILOT_TESTING">Đang thử nghiệm Pilot hiện trường</option>
-                              <option value="LAB_PROTOTYPE">Mẫu thử nghiệm phòng lab</option>
-                              <option value="SEEKING_MANUFACTURER">Đang tìm nhà sản xuất / gia công</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
-                        Hồ sơ này không đăng ký chuyển giao công nghệ / SHTT nên các trường Bộ Tứ SHTT được miễn khai báo.
-                      </div>
-                    )}
-
-                    {/* Cụm Media Tải lên (REQ-04-011) */}
-                    <div className="border-t border-slate-100 pt-6">
-                      <h3 className="mb-4 text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                        Hình ảnh & Media đa phương tiện
-                      </h3>
-                      <MediaUploadSection
-                        mainImageUrl={mainImageUrl}
-                        galleryImageUrls={galleryImageUrls}
-                        videoDemoUrl={videoDemoUrl}
-                        onMainImageChange={setMainImageUrl}
-                        onGalleryImagesChange={setGalleryImageUrls}
-                        onVideoDemoChange={setVideoDemoUrl}
-                      />
-                    </div>
-
-                    {/* Cụm Minh chứng DataRoom (REQ-04-013) */}
-                    <div className="border-t border-slate-100 pt-6">
-                      <EvidenceDocumentSection
-                        documents={documents}
-                        onChange={setDocuments}
-                      />
-                    </div>
-
-                    {/* Khai báo Đầu Mối TTO & Cán bộ chuyển giao (REQ-04-016) */}
-                    <div className="border-t border-slate-100 pt-6">
-                      <h3 className="mb-1 text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                        Đầu mối TTO / Người phụ trách chuyển giao
-                      </h3>
-                      <p className="mb-3 text-[11px] text-slate-500">
-                        Tuân thủ Nghị định 13/2023/NĐ-CP: Số điện thoại và Email được bảo vệ PDPD, chỉ tự động mở cho Bên Mua sau khi gửi yêu cầu kết nối thành công.
-                      </p>
-
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                        <div className="sm:col-span-2">
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Họ và tên người phụ trách
-                          </label>
-                          <input
-                            type="text"
-                            value={contactName}
-                            onChange={(e) => setContactName(e.target.value)}
-                            placeholder="Ví dụ: ThS. Hoàng Anh Tuấn"
-                            className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Chức danh / Bộ phận TTO
-                          </label>
-                          <input
-                            type="text"
-                            value={contactPointRole}
-                            onChange={(e) => setContactPointRole(e.target.value)}
-                            placeholder="Ví dụ: Trưởng phòng Chuyển giao Công nghệ"
-                            className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Số điện thoại liên hệ
-                          </label>
-                          <input
-                            type="tel"
-                            value={contactPhone}
-                            onChange={(e) => setContactPhone(e.target.value)}
-                            placeholder="0912******"
-                            className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <label className="mb-1 block text-xs font-bold text-slate-700">
-                            Email liên hệ
-                          </label>
-                          <input
-                            type="email"
-                            value={contactEmail}
-                            onChange={(e) => setContactEmail(e.target.value)}
-                            placeholder="tuan.ha@viaep.gov.vn"
-                            className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-blue-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Cơ quan quản lý Sở KH&CN tiếp nhận & Cam kết pháp lý */}
-                    <div className="border-t border-slate-100 pt-6">
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
-                        <div className="mb-4">
-                          <label className="mb-1.5 block text-xs font-extrabold text-slate-800">
-                            Sở Khoa học và Công nghệ tiếp nhận thẩm định <span className="text-rose-600">*</span>
-                          </label>
-                          <select
-                            value={managingAuthorityId}
-                            onChange={(e) => {
-                              setManagingAuthorityId(e.target.value);
-                              const match = PROVINCIAL_AUTHORITIES_CATALOG.find((x) => x.id === e.target.value);
-                              if (match) setManagingAuthorityName(match.name);
-                            }}
-                            className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs font-bold outline-none focus:border-blue-500"
-                          >
-                            {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
-                              <option key={auth.id} value={auth.id}>
-                                {auth.name}
-                              </option>
-                            ))}
-                          </select>
-                          <p className="mt-1 text-[11px] text-slate-500">
-                            Hồ sơ sau khi nộp sẽ được chuyển đến Cổng Tác Nghiệp Cấp 2 (/gov) của Sở KH&CN để cán bộ chuyên trách kiểm tra hồ sơ và ký số duyệt.
-                          </p>
-                        </div>
-
-                        <label className="flex items-start gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={legalConsent}
-                            onChange={(e) => setLegalConsent(e.target.checked)}
-                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-xs leading-relaxed text-slate-700">
-                            <b>Cam kết tính chính xác & Trách nhiệm pháp lý:</b> Tôi/Doanh nghiệp cam kết chịu trách nhiệm hoàn toàn trước pháp luật về tính xác thực, tính hợp pháp của thông tin chào bán, các văn bằng Sở hữu Trí tuệ và tài liệu đính kèm trên Sàn NacenTwin theo quy định hiện hành.
-                          </span>
-                        </label>
-                        {errors.legalConsent && (
-                          <p className="mt-2 text-[11px] font-bold text-rose-600">{errors.legalConsent}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom Footer Actions */}
-              <div className="border-t border-slate-100 bg-white px-5 py-4 sm:px-7">
-                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                  <p className="text-xs text-slate-500">
-                    <ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-emerald-600" />
-                    Bảo mật dữ liệu thương mại theo Tiêu chuẩn CSDL Đổi mới sáng tạo Quốc gia.
+                {/* Action Footer Bước 1: 3 nút rõ ràng */}
+                <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <p className="text-xs text-slate-500 flex items-center gap-1">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600 inline" />
+                    Chỉ cần hoàn thành Bước 1, bạn có thể nộp ngay hồ sơ chờ thẩm định.
                   </p>
 
-                  <div className="flex items-center gap-2">
-                    {currentStep > 1 && (
-                      <button
-                        type="button"
-                        onClick={handlePrevStep}
-                        className="inline-flex items-center gap-1 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        <ArrowLeft className="h-3.5 w-3.5" /> Quay lại
-                      </button>
-                    )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveDraft}
+                      disabled={isSavingDraft}
+                      className="rounded-lg border border-slate-300 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                    >
+                      Lưu nháp
+                    </button>
 
                     <button
                       type="button"
-                      disabled={isSavingDraft || isSubmitting}
-                      onClick={handleSaveDraft}
-                      className="inline-flex items-center gap-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                      onClick={() => setIsFastTrackModalOpen(true)}
+                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm transition flex items-center gap-1.5"
                     >
-                      <Save className="h-3.5 w-3.5" /> Lưu nháp
+                      <Send className="h-3.5 w-3.5" />
+                      Gửi chờ duyệt ngay (Fast-Track)
                     </button>
 
-                    {currentStep < 4 ? (
-                      <button
-                        type="button"
-                        onClick={handleNextStep}
-                        className="inline-flex items-center gap-1 rounded-xl bg-navy px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
-                      >
-                        Tiếp tục: {currentStep === 1 ? "Thông số ngành" : currentStep === 2 ? "Giá & Thương mại" : "Minh chứng & Duyệt"}
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled={isSubmitting || isSavingDraft}
-                        onClick={handleSubmitForReview}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-extrabold text-white shadow-sm transition hover:bg-emerald-700"
-                      >
-                        <Send className="h-3.5 w-3.5" /> Gửi thẩm định Sở KH&CN
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="rounded-lg bg-brand-700 bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 text-xs font-bold transition flex items-center gap-1.5"
+                    >
+                      Tiếp tục: Thông số ngành &rarr;
+                    </button>
                   </div>
                 </div>
               </div>
+            )}
+
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-extrabold text-slate-900">
+                      Bước 2: Thông số kỹ thuật & 18 Ngành TT17
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Lớp 2 (Kỹ thuật chung) & Lớp 3 (Đặc thù ngành) theo ma trận 1.479 quy tắc Excel Master.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                    Bước 2 / 4 (Tùy chọn)
+                  </span>
+                </div>
+
+                <Tier2CommonTechnicalForm
+                  offerType={offerType}
+                  modelCode={modelCode}
+                  setModelCode={setModelCode}
+                  manufacturer={manufacturer}
+                  setManufacturer={setManufacturer}
+                  originCountry={originCountry}
+                  setOriginCountry={setOriginCountry}
+                  equipmentStatus={equipmentStatus}
+                  setEquipmentStatus={setEquipmentStatus}
+                  manufacturingYear={manufacturingYear}
+                  setManufacturingYear={setManufacturingYear}
+                  capacityScale={capacityScale}
+                  setCapacityScale={setCapacityScale}
+                  energyConsumption={energyConsumption}
+                  setEnergyConsumption={setEnergyConsumption}
+                  automationLevel={automationLevel}
+                  setAutomationLevel={setAutomationLevel}
+                  operatingPrinciple={operatingPrinciple}
+                  setOperatingPrinciple={setOperatingPrinciple}
+                  deploymentConditions={deploymentConditions}
+                  setDeploymentConditions={setDeploymentConditions}
+                />
+
+                <Tier3SectorDynamicForm
+                  sectorCode={sectorCode}
+                  specValues={specValues}
+                  setSpecValues={setSpecValues}
+                />
+
+                <DynamicSpecKeyValueTable
+                  specValues={specValues}
+                  setSpecValues={setSpecValues}
+                />
+
+                {/* Footer Step 2 */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                  >
+                    &larr; Quay lại Bước 1
+                  </button>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsFastTrackModalOpen(true)}
+                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm"
+                    >
+                      Gửi chờ duyệt ngay
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 text-xs font-bold flex items-center gap-1.5"
+                    >
+                      Tiếp tục: Giá & thương mại &rarr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-extrabold text-slate-900">
+                      Bước 3: Điều Kiện Thương Mại Chi Tiết
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Lớp 4: Khai báo đầy đủ các điều kiện thương mại và chuyển giao theo 8 quy tắc Excel Master.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                    Bước 3 / 4 (Tùy chọn)
+                  </span>
+                </div>
+
+                <Tier4CommercialForm
+                  transferPriorityMethod={transferPriorityMethod}
+                  setTransferPriorityMethod={setTransferPriorityMethod}
+                  priceIncludes={priceIncludes}
+                  setPriceIncludes={setPriceIncludes}
+                  taxAndExtraCosts={taxAndExtraCosts}
+                  setTaxAndExtraCosts={setTaxAndExtraCosts}
+                  supplyScope={supplyScope}
+                  setSupplyScope={setSupplyScope}
+                  deliveryTimeline={deliveryTimeline}
+                  setDeliveryTimeline={setDeliveryTimeline}
+                  paymentTerms={paymentTerms}
+                  setPaymentTerms={setPaymentTerms}
+                  warrantyTerms={warrantyTerms}
+                  setWarrantyTerms={setWarrantyTerms}
+                  technicalSupportMethod={technicalSupportMethod}
+                  setTechnicalSupportMethod={setTechnicalSupportMethod}
+                  installationSupport={installationSupport}
+                  setInstallationSupport={setInstallationSupport}
+                />
+
+                {/* Footer Step 3 */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                  >
+                    &larr; Quay lại Bước 2
+                  </button>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsFastTrackModalOpen(true)}
+                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm"
+                    >
+                      Gửi chờ duyệt ngay
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 text-xs font-bold flex items-center gap-1.5"
+                    >
+                      Tiếp tục: Pháp lý & DataRoom &rarr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-extrabold text-slate-900">
+                      Bước 4: Pháp Lý Sở Hữu Trí Tuệ & DataRoom
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Khai báo bộ tứ SHTT, phòng dữ liệu bảo mật 3 cấp và gửi cơ quan Sở KH&CN thẩm định.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                    Bước 4 / 4
+                  </span>
+                </div>
+
+                <IpQuadDigitizationCard
+                  ipStatus={ipStatus}
+                  setIpStatus={setIpStatus}
+                  ipRegistrationNumber={ipRegistrationNumber}
+                  setIpRegistrationNumber={setIpRegistrationNumber}
+                  ipIssueDate={ipIssueDate}
+                  setIpIssueDate={setIpIssueDate}
+                  managingAuthorityId={managingAuthorityId}
+                  setManagingAuthorityId={setManagingAuthorityId}
+                  managingAuthorityName={managingAuthorityName}
+                  setManagingAuthorityName={setManagingAuthorityName}
+                  legalCommitmentConfirmed={legalCommitmentConfirmed}
+                  setLegalCommitmentConfirmed={setLegalCommitmentConfirmed}
+                />
+
+                <DataRoomFileManager
+                  documents={documents}
+                  setDocuments={setDocuments}
+                />
+
+                {/* Footer Step 4 */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                  >
+                    &larr; Quay lại Bước 3
+                  </button>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveDraft}
+                      className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                    >
+                      Lưu nháp
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSubmitReview}
+                      disabled={isSubmitting}
+                      className="rounded-lg bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white px-5 py-2 text-xs font-extrabold shadow flex items-center gap-1.5"
+                    >
+                      <Send className="h-4 w-4" />
+                      {isSubmitting ? "Đang gửi hồ sơ..." : "Hoàn tất & Gửi chờ duyệt"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Panel 5 trạng thái UX (Wireframe gốc) */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <b className="text-xs text-slate-900 font-extrabold">5 trạng thái UX hệ thống</b>
+                  <p className="text-xs text-slate-500">
+                    Mô phỏng phản hồi trạng thái nạp dữ liệu động từ máy chủ.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {(["loading", "empty", "error", "partial", "success"] as const).map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setUxState(st)}
+                      className={`rounded border px-2 py-1 text-xs font-bold uppercase transition ${
+                        uxState === st
+                          ? "border-brand-500 bg-brand-50 text-brand-700 shadow-sm"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {uxState !== "success" && (
+                <div
+                  className={`mt-3 rounded-lg p-3 text-xs ${
+                    uxState === "loading"
+                      ? "bg-slate-100 text-slate-700"
+                      : uxState === "empty"
+                      ? "bg-brand-50 text-brand-800"
+                      : uxState === "error"
+                      ? "bg-rose-50 text-rose-800"
+                      : "bg-amber-50 text-amber-800"
+                  }`}
+                >
+                  {uxState === "loading" && "Đang tải bộ trường theo ngành... hiển thị skeleton form."}
+                  {uxState === "empty" && "Chưa có bộ thông số phù hợp — cho phép tiếp tục với thông tin bắt buộc."}
+                  {uxState === "error" && "Không tải được ma trận ngành. Nút Thử lại và Lưu nháp vẫn khả dụng."}
+                  {uxState === "partial" && "Đã tải trường chung; một phần thông số ngành đang được tải thêm."}
+                </div>
+              )}
             </div>
           </section>
         </div>
       </main>
+
+      {/* Fast-Track Modal */}
+      <FastTrackSubmitModal
+        isOpen={isFastTrackModalOpen}
+        onClose={() => setIsFastTrackModalOpen(false)}
+        onConfirm={handleSubmitReview}
+        title={title || "Chưa đặt tên"}
+        offerType={offerType === "DEVICE" ? "Thiết bị" : offerType === "PRODUCT" ? "Sản phẩm" : "Giải pháp công nghệ"}
+        sectorName={currentSectorObj.name}
+        pricingDisplay={
+          pricingType === "CONTACT"
+            ? "Liên hệ báo giá"
+            : pricingType === "FIXED"
+            ? `${priceAmount?.toLocaleString() || 0} ${currency} / ${unit}`
+            : `${priceMin?.toLocaleString() || 0} - ${priceMax?.toLocaleString() || 0} ${currency} / ${unit}`
+        }
+        isSubmitting={isSubmitting}
+      />
+
+      {/* AI Modal (PO-DEC-07) */}
+      {isAiModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl border border-slate-200">
+            <div className="bg-gradient-to-r from-brand-900 via-brand-900 to-slate-900 p-5 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-lg font-bold">
+                  <Wand2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-white">Trợ Lý AI Nhập Liệu & Bóc Tách Công Nghệ</h3>
+                  <p className="text-xs text-brand-200">Chuẩn hóa theo Quyết định PO-DEC-20261008-07 · Human-in-the-Loop</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAiModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div className="border-2 border-dashed border-cyan-300 bg-cyan-50/30 rounded-xl p-6 text-center space-y-3">
+                <div className="w-12 h-12 mx-auto rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center">
+                  <UploadCloud className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800">Kéo thả Catalogue, Bản thuyết minh kỹ thuật hoặc Đơn đăng ký SHTT</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Hỗ trợ PDF, DOCX, JPG, PNG (Tối đa 25MB) hoặc ghi âm giọng nói thuyết minh</p>
+                </div>
+                <div className="flex justify-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleApplyAiData}
+                    className="px-3.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5"
+                  >
+                    <FileUp className="w-4 h-4 text-cyan-600" /> Chọn Tệp PDF / Ảnh mẫu
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyAiData}
+                    className="px-3.5 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5"
+                  >
+                    <Mic className="w-4 h-4 text-rose-600" /> Ghi Âm Giọng Nói
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-emerald-900 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    Bản xem trước dữ liệu trích xuất mẫu (Gemini Multimodal OCR):
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-200 text-emerald-900 text-xs font-extrabold">
+                    Độ tin cậy 96%
+                  </span>
+                </div>
+                <div className="text-xs space-y-1.5 text-slate-700">
+                  <p>&bull; <span className="font-bold text-slate-900">Tên công nghệ:</span> Hệ thống robot hàn laser sợi quang 6 bậc tự do tích hợp thị giác máy</p>
+                  <p>&bull; <span className="font-bold text-slate-900">Ngành:</span> Cơ khí chế tạo & Tự động hóa (MECH)</p>
+                  <p>&bull; <span className="font-bold text-slate-900">Mức hoàn thiện TRL:</span> TRL 7 (Nguyên mẫu trình diễn trong môi trường thực tế)</p>
+                  <p>&bull; <span className="font-bold text-slate-900">Sở hữu trí tuệ:</span> Bằng Độc quyền Sáng chế số VN 1-0028491 (Cục SHTT)</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsAiModalOpen(false)}
+                className="px-4 py-2 border border-slate-300 bg-white text-xs font-bold rounded-lg text-slate-700 hover:bg-slate-100"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyAiData}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold rounded-lg shadow flex items-center gap-1.5 transition"
+              >
+                <Check className="w-4 h-4" /> Áp Dụng Dữ Liệu Vào Form
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

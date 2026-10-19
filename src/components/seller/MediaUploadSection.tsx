@@ -84,7 +84,7 @@ export const MediaUploadSection: React.FC<MediaUploadSectionProps> = ({
               type="button"
               disabled={disabled}
               onClick={() => onMainImageChange(null)}
-              className="text-[11px] font-bold text-rose-600 hover:underline"
+              className="text-xs font-bold text-rose-600 hover:underline"
             >
               Gỡ ảnh đại diện
             </button>
@@ -122,15 +122,15 @@ export const MediaUploadSection: React.FC<MediaUploadSectionProps> = ({
             type="button"
             disabled={disabled}
             onClick={() => mainInputRef.current?.click()}
-            className="flex aspect-video max-h-56 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-blue-400 hover:bg-blue-50/40 sm:w-80"
+            className="flex aspect-video max-h-56 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 transition hover:border-brand-500 hover:bg-brand-50/40 sm:w-80"
           >
             <div className="rounded-full bg-white p-3 shadow-sm">
-              <Upload className="h-5 w-5 text-blue-600" />
+              <Upload className="h-5 w-5 text-brand-600" />
             </div>
             <span className="mt-2 text-xs font-bold text-slate-700">
               Nhấp để tải ảnh đại diện
             </span>
-            <span className="mt-0.5 text-[10px] text-slate-400">
+            <span className="mt-0.5 text-xs text-slate-400">
               Khuyến nghị độ phân giải 1280x720px
             </span>
           </button>
@@ -143,7 +143,7 @@ export const MediaUploadSection: React.FC<MediaUploadSectionProps> = ({
           <label className="text-xs font-extrabold text-slate-800">
             Thư viện ảnh chi tiết (Tối đa 6 ảnh cấu tạo, nguyên mẫu, ứng dụng)
           </label>
-          <span className="text-[11px] font-semibold text-slate-400">
+          <span className="text-xs font-semibold text-slate-400">
             {(galleryImageUrls || []).length} / 6 ảnh
           </span>
         </div>
@@ -185,10 +185,10 @@ export const MediaUploadSection: React.FC<MediaUploadSectionProps> = ({
               type="button"
               disabled={disabled}
               onClick={() => galleryInputRef.current?.click()}
-              className="flex aspect-square flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition hover:border-blue-400 hover:bg-blue-50/50"
+              className="flex aspect-square flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 transition hover:border-brand-500 hover:bg-brand-50/50"
             >
               <Plus className="h-4 w-4 text-slate-500" />
-              <span className="mt-1 text-[11px] font-bold text-slate-600">+ Thêm ảnh</span>
+              <span className="mt-1 text-xs font-bold text-slate-600">+ Thêm ảnh</span>
             </button>
           )}
         </div>
@@ -200,7 +200,7 @@ export const MediaUploadSection: React.FC<MediaUploadSectionProps> = ({
           <label className="mb-1.5 block text-xs font-extrabold text-slate-800">
             Liên kết Video Demo / Giới thiệu giải pháp (YouTube, Vimeo hoặc MP4)
           </label>
-          <div className="flex rounded-lg border border-slate-300 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+          <div className="flex rounded-lg border border-slate-300 shadow-sm focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500">
             <span className="flex items-center px-3 text-slate-400">
               <Video className="h-4 w-4" />
             </span>
@@ -213,7 +213,7 @@ export const MediaUploadSection: React.FC<MediaUploadSectionProps> = ({
               className="w-full rounded-r-lg py-2 pr-3 text-xs outline-none"
             />
           </div>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-xs text-slate-400">
             Video trực quan giúp tăng 300% tỷ lệ kết nối thành công từ các doanh nghiệp mua.
           </p>
         </div>

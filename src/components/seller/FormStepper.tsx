@@ -7,31 +7,36 @@ export interface FormStepperProps {
   currentStep: number;
   onStepSelect?: (step: number) => void;
   completedSteps?: number[];
+  filledStep1Count?: number;
 }
 
 export const FORM_STEPS = [
   {
     step: 1,
     title: "Thông tin bắt buộc",
-    subtitle: "Tên, loại hình, bài toán, ngành",
+    badge: "Bắt buộc",
+    subtitle: "6 trường lõi + Cụm giá + TRL",
     icon: FileText,
   },
   {
     step: 2,
-    title: "Thông số & ngành",
-    subtitle: "Bảng 18 ngành TT17 động",
+    title: "Thông số kỹ thuật",
+    badge: "Tùy chọn",
+    subtitle: "Lớp 2 (Chung) & Lớp 3 (18 ngành)",
     icon: Sliders,
   },
   {
     step: 3,
     title: "Giá & thương mại",
-    subtitle: "Hình thức giá, bảo hành, giao nhận",
+    badge: "Tùy chọn",
+    subtitle: "Lớp 4 điều kiện thương mại chi tiết",
     icon: DollarSign,
   },
   {
     step: 4,
-    title: "Minh chứng & duyệt",
-    subtitle: "TRL 1-9, SHTT, Media, Sở KH&CN",
+    title: "Pháp lý & DataRoom",
+    badge: "Tùy chọn",
+    subtitle: "Văn bằng SHTT & Minh chứng 3 cấp",
     icon: ShieldCheck,
   },
 ];
@@ -40,18 +45,25 @@ export const FormStepper: React.FC<FormStepperProps> = ({
   currentStep,
   onStepSelect,
   completedSteps = [],
+  filledStep1Count,
 }) => {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-      <p className="px-2 pb-2 text-caption font-extrabold uppercase tracking-widest text-slate-400">
-        Tiến trình hồ sơ
-      </p>
+      <div className="flex items-center justify-between px-2 pb-2">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-slate-400">
+          Tiến trình hồ sơ
+        </p>
+        {typeof filledStep1Count === "number" && currentStep === 1 && (
+          <span className="text-xs font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full">
+            {filledStep1Count} / 6
+          </span>
+        )}
+      </div>
 
       <div className="space-y-1.5">
         {FORM_STEPS.map((s) => {
           const isActive = currentStep === s.step;
           const isDone = completedSteps.includes(s.step) && !isActive;
-          const Icon = s.icon;
 
           return (
             <button
@@ -79,14 +91,25 @@ export const FormStepper: React.FC<FormStepperProps> = ({
               </div>
 
               <div className="min-w-0 flex-1">
-                <div
-                  className={`text-xs font-bold ${
-                    isActive ? "text-brand-900" : isDone ? "text-slate-800" : "text-slate-600"
-                  }`}
-                >
-                  {s.title}
+                <div className="flex items-center justify-between gap-1">
+                  <span
+                    className={`text-xs font-bold ${
+                      isActive ? "text-brand-900" : isDone ? "text-slate-800" : "text-slate-600"
+                    }`}
+                  >
+                    {s.title}
+                  </span>
+                  <span
+                    className={`text-xs font-extrabold px-1.5 py-0.2 rounded ${
+                      s.step === 1
+                        ? "bg-rose-100 text-rose-700"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {s.badge}
+                  </span>
                 </div>
-                <div className="truncate text-caption text-slate-400">{s.subtitle}</div>
+                <div className="truncate text-xs text-slate-400 mt-0.5">{s.subtitle}</div>
               </div>
             </button>
           );

@@ -39,11 +39,11 @@ function formatDocSize(bytes?: number): string {
 function getDocumentTypeBadge(type: string): { label: string; color: string } {
   switch (type) {
     case "PATENT":
-      return { label: "Văn bằng SHTT", color: "bg-blue-50 text-blue-700 border-blue-200" };
+      return { label: "Văn bằng SHTT", color: "bg-brand-50 text-brand-700 border-brand-200" };
     case "TESTING_REPORT":
       return { label: "Kiểm định / Thử nghiệm", color: "bg-emerald-50 text-emerald-700 border-emerald-200" };
     case "TECH_SPEC":
-      return { label: "Thuyết minh kỹ thuật", color: "bg-purple-50 text-purple-700 border-purple-200" };
+      return { label: "Thuyết minh kỹ thuật", color: "bg-brand-50 text-brand-700 border-brand-200" };
     case "FINANCIAL_PROJECTION":
       return { label: "Tài chính / Thị trường", color: "bg-amber-50 text-amber-700 border-amber-200" };
     default:
@@ -616,7 +616,7 @@ export default function ChiTietChaoBanPage() {
                             Dữ liệu đo kiểm chuẩn hóa theo danh mục nhóm ngành {offer.sectorCode} - {offer.sectorName}
                           </p>
                         </div>
-                        <span className="text-[11px] font-bold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-full border border-brand-200">
+                        <span className="text-xs font-bold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-full border border-brand-200">
                           Chuẩn TT17
                         </span>
                       </div>
@@ -731,32 +731,32 @@ export default function ChiTietChaoBanPage() {
 
                   {/* KHỐI ĐIỀU KIỆN THƯƠNG MẠI & PHẠM VI HỖ TRỢ */}
                   {(offer.deliveryTimeline || offer.warrantyTerms || offer.supplyScope || offer.paymentTerms || offer.installationSupport) && (
-                    <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-4 space-y-3">
-                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-blue-950 flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-blue-600" />
+                    <div className="rounded-xl border border-brand-200 bg-brand-50/40 p-4 space-y-3">
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-brand-950 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-brand-600" />
                         Điều Kiện Thương Mại & Phạm Vi Hỗ Trợ Chuyển Giao
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         {offer.deliveryTimeline && (
-                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                          <div className="bg-white p-3 rounded-lg border border-brand-100">
                             <span className="text-slate-400 font-bold block mb-0.5">Thời gian bàn giao / triển khai:</span>
                             <span className="text-slate-800 font-semibold">{offer.deliveryTimeline}</span>
                           </div>
                         )}
                         {offer.warrantyTerms && (
-                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                          <div className="bg-white p-3 rounded-lg border border-brand-100">
                             <span className="text-slate-400 font-bold block mb-0.5">Bảo hành & bảo trì:</span>
                             <span className="text-slate-800 font-semibold">{offer.warrantyTerms}</span>
                           </div>
                         )}
                         {offer.paymentTerms && (
-                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                          <div className="bg-white p-3 rounded-lg border border-brand-100">
                             <span className="text-slate-400 font-bold block mb-0.5">Phương thức thanh toán:</span>
                             <span className="text-slate-800 font-semibold">{offer.paymentTerms}</span>
                           </div>
                         )}
                         {offer.installationSupport && (
-                          <div className="bg-white p-3 rounded-lg border border-blue-100">
+                          <div className="bg-white p-3 rounded-lg border border-brand-100">
                             <span className="text-slate-400 font-bold block mb-0.5">Hỗ trợ lắp đặt & chuyển giao:</span>
                             <span className="text-slate-800 font-semibold">
                               {typeof offer.installationSupport === "string"
@@ -766,7 +766,7 @@ export default function ChiTietChaoBanPage() {
                           </div>
                         )}
                         {offer.supplyScope && (
-                          <div className="bg-white p-3 rounded-lg border border-blue-100 sm:col-span-2">
+                          <div className="bg-white p-3 rounded-lg border border-brand-100 sm:col-span-2">
                             <span className="text-slate-400 font-bold block mb-0.5">Phạm vi cung cấp:</span>
                             <span className="text-slate-800 font-medium">{offer.supplyScope}</span>
                           </div>
@@ -807,7 +807,7 @@ export default function ChiTietChaoBanPage() {
                               <div>
                                 <div className="flex items-center gap-2">
                                   <p className="text-xs font-bold text-slate-800">{doc.fileName}</p>
-                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${typeBadge.color}`}>
+                                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded border ${typeBadge.color}`}>
                                     {typeBadge.label}
                                   </span>
                                 </div>
@@ -990,7 +990,7 @@ export default function ChiTietChaoBanPage() {
                 <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5 text-emerald-600" /> Đầu Mối TTO Chuyển Giao
                 </span>
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded flex items-center gap-1">
+                <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> NĐ 13/2023 (PDPD)
                 </span>
               </div>
@@ -1011,7 +1011,7 @@ export default function ChiTietChaoBanPage() {
                   <span className="font-mono font-bold text-slate-700">tto-co******@nacentech.vn</span>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-400 italic leading-tight">
+              <p className="text-xs text-slate-400 italic leading-tight">
                 * Số điện thoại và email cá nhân được ẩn để bảo vệ quyền riêng tư theo NĐ 13/2023/NĐ-CP. Gửi yêu cầu chuyển giao để nhận thông tin liên hệ trực tiếp.
               </p>
             </div>

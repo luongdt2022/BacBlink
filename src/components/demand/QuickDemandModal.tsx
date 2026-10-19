@@ -13,12 +13,14 @@ import {
   HelpCircle
 } from 'lucide-react';
 import TniRealtimeCalculator, { TniValues } from '@/components/demand/TniRealtimeCalculator';
+import SearchableCombobox from '@/components/ui/searchable-combobox';
 import { useToast } from '@/components/common/toast';
 import { authClient } from '@/lib/auth-client';
 import { getActiveSectors, SectorOption } from '@/lib/master-data-client';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
 import {
   TECH_GROUP_OPTIONS,
+  getTechGroupsBySector,
   DEMAND_TYPE_OPTIONS,
   BUDGET_RANGES_7
 } from '@/app/khao-sat-nhu-cau/types';
@@ -284,17 +286,30 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1 truncate" title="Lĩnh vực">
                       4. Lĩnh vực <span className="text-rose-500">*</span>
                     </label>
-                    <select
+                    <SearchableCombobox
                       value={formData.sectorCode}
-                      onChange={(e) => setFormData({ ...formData, sectorCode: e.target.value })}
-                      className="form-control w-full text-xs font-medium"
-                    >
-                      {sectors.map((sec) => (
-                        <option key={sec.code} value={sec.code}>
-                          {sec.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(newSector) => {
+                        const { recommended } = getTechGroupsBySector(newSector);
+                        const isCurrentStillRecommended = recommended.some(
+                          (tg) => tg.code === formData.techGroupCode
+                        );
+                        const nextTechGroup = isCurrentStillRecommended
+                          ? formData.techGroupCode
+                          : recommended[0]?.code || formData.techGroupCode;
+                        setFormData({
+                          ...formData,
+                          sectorCode: newSector,
+                          techGroupCode: nextTechGroup
+                        });
+                      }}
+                      ariaLabel="4. Lĩnh vực"
+                      searchPlaceholder="Tìm lĩnh vực (VD: Cơ khí, Công nghệ thông tin...)"
+                      options={sectors.map((sec) => ({
+                        value: sec.code,
+                        code: sec.code,
+                        label: sec.name
+                      }))}
+                    />
                   </div>
 
                   {/* 5. Nhóm công nghệ */}
@@ -302,17 +317,20 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1 truncate" title="Nhóm công nghệ">
                       5. Nhóm công nghệ
                     </label>
-                    <select
+                    <SearchableCombobox
                       value={formData.techGroupCode}
-                      onChange={(e) => setFormData({ ...formData, techGroupCode: e.target.value })}
-                      className="form-control w-full text-xs font-medium"
-                    >
-                      {TECH_GROUP_OPTIONS.map((tg) => (
-                        <option key={tg.code} value={tg.code}>
-                          [{tg.code}] {tg.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, techGroupCode: val })}
+                      ariaLabel="5. Nhóm công nghệ"
+                      searchPlaceholder="Tìm nhóm công nghệ (VD: Robot, AI, Tự động hóa...)"
+                      options={getTechGroupsBySector(formData.sectorCode).allSorted.map((tg) => ({
+                        value: tg.code,
+                        code: tg.code,
+                        label: tg.name,
+                        group: tg.groupLabel,
+                        recommended: tg.isRecommended,
+                        badge: tg.isRecommended ? '★ Phù hợp cao với lĩnh vực đã chọn' : undefined
+                      }))}
+                    />
                   </div>
                 </div>
 
@@ -388,17 +406,17 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                       10. Loại hình tiếp nhận
                     </label>
-                    <select
+                    <SearchableCombobox
                       value={formData.demandTypeCode}
-                      onChange={(e) => setFormData({ ...formData, demandTypeCode: e.target.value })}
-                      className="form-control w-full text-xs font-medium"
-                    >
-                      {DEMAND_TYPE_OPTIONS.map((dt) => (
-                        <option key={dt.code} value={dt.code}>
-                          [{dt.code}] {dt.name}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, demandTypeCode: val })}
+                      ariaLabel="10. Loại hình tiếp nhận"
+                      searchPlaceholder="Tìm loại hình tiếp nhận..."
+                      options={DEMAND_TYPE_OPTIONS.map((dt) => ({
+                        value: dt.code,
+                        code: dt.code,
+                        label: dt.name
+                      }))}
+                    />
                   </div>
                 </div>
               </div>

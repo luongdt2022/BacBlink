@@ -12,10 +12,12 @@ import {
   Edit3
 } from 'lucide-react';
 import TniRealtimeCalculator, { TniValues } from '@/components/demand/TniRealtimeCalculator';
+import SearchableCombobox from '@/components/ui/searchable-combobox';
 import { useToast } from '@/components/common/toast';
 import { authClient } from '@/lib/auth-client';
 import { getActiveSectors, SectorOption } from '@/lib/master-data-client';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
+import { getTechGroupsBySector } from '@/app/khao-sat-nhu-cau/types';
 
 export interface DemandItemData {
   id?: string;
@@ -233,23 +235,55 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
               <Wrench className="w-4 h-4" /> 1. Thông Tin Chi Tiết Bài Toán Kỹ Thuật
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-bold text-text-primary dark:text-slate-200 mb-1.5">
                   Lĩnh Vực Công Nghệ <span className="text-rose-500">*</span>
                 </label>
-                <select
+                <SearchableCombobox
                   value={formData.sectorCode}
-                  onChange={(e) => setFormData({ ...formData, sectorCode: e.target.value })}
-                  className="w-full text-xs font-medium rounded-xl border border-border-default dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  required
-                >
-                  {sectors.map((sec) => (
-                    <option key={sec.code} value={sec.code}>
-                      {sec.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(newSector) => {
+                    const { recommended } = getTechGroupsBySector(newSector);
+                    const isCurrentStillRecommended = recommended.some(
+                      (tg) => tg.code === formData.techGroupCode
+                    );
+                    const nextTechGroup = isCurrentStillRecommended
+                      ? formData.techGroupCode
+                      : recommended[0]?.code || formData.techGroupCode;
+                    setFormData({
+                      ...formData,
+                      sectorCode: newSector,
+                      techGroupCode: nextTechGroup
+                    });
+                  }}
+                  ariaLabel="Lĩnh Vực Công Nghệ"
+                  searchPlaceholder="Tìm lĩnh vực (VD: Cơ khí, Công nghệ thông tin...)"
+                  options={sectors.map((sec) => ({
+                    value: sec.code,
+                    code: sec.code,
+                    label: sec.name
+                  }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-text-primary dark:text-slate-200 mb-1.5">
+                  Nhóm Công Nghệ
+                </label>
+                <SearchableCombobox
+                  value={formData.techGroupCode}
+                  onChange={(val) => setFormData({ ...formData, techGroupCode: val })}
+                  ariaLabel="Nhóm Công Nghệ"
+                  searchPlaceholder="Tìm nhóm công nghệ (VD: Robot, AI, Tự động hóa...)"
+                  options={getTechGroupsBySector(formData.sectorCode).allSorted.map((tg) => ({
+                    value: tg.code,
+                    code: tg.code,
+                    label: tg.name,
+                    group: tg.groupLabel,
+                    recommended: tg.isRecommended,
+                    badge: tg.isRecommended ? '★ Phù hợp cao với lĩnh vực đã chọn' : undefined
+                  }))}
+                />
               </div>
 
               <div>

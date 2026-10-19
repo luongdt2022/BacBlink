@@ -9,6 +9,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { ConfirmModal } from "./confirm-modal";
 import { useToast } from "./toast";
 import { FontsizeControl } from "./fontsize-control";
+import { RoleSwitcher } from "./role-switcher";
 import {
   LogOut,
   LogIn,
@@ -135,6 +136,7 @@ export function Navbar() {
               {/* User Session */}
               {user ? (
                 <div className="hidden items-center gap-2 sm:flex">
+                  <RoleSwitcher compact={true} />
                   <div ref={accountMenuRef} className="relative">
                     <button
                       type="button"

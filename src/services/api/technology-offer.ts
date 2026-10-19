@@ -5,7 +5,10 @@ import {
   SectorItem,
   TechTransferDraftDto,
   TT17_SECTORS,
+  IntellectualPropertyStatus,
 } from "@/types/technology-offer";
+
+export type { IntellectualPropertyStatus };
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -160,19 +163,19 @@ export async function createSellerOffer(
 }
 
 export const PROVINCIAL_AUTHORITIES_CATALOG = [
-  { id: "VN-HN", name: "Sở Khoa học và Công nghệ TP. Hà Nội" },
-  { id: "VN-SG", name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh" },
-  { id: "VN-DN", name: "Sở Khoa học và Công nghệ TP. Đà Nẵng" },
-  { id: "VN-HP", name: "Sở Khoa học và Công nghệ TP. Hải Phòng" },
-  { id: "VN-CT", name: "Sở Khoa học và Công nghệ TP. Cần Thơ" },
-  { id: "VN-BD", name: "Sở Khoa học và Công nghệ tỉnh Bình Dương" },
-  { id: "VN-DNA", name: "Sở Khoa học và Công nghệ tỉnh Đồng Nai" },
-  { id: "VN-BN", name: "Sở Khoa học và Công nghệ tỉnh Bắc Ninh" },
-  { id: "VN-QN", name: "Sở Khoa học và Công nghệ tỉnh Quảng Ninh" },
-  { id: "VN-KH", name: "Sở Khoa học và Công nghệ tỉnh Khánh Hòa" },
-  { id: "VN-LD", name: "Sở Khoa học và Công nghệ tỉnh Lâm Đồng" },
-  { id: "VN-TG", name: "Sở Khoa học và Công nghệ tỉnh Tiền Giang" },
-  { id: "VN-34", name: "Các Sở KH&CN khác thuộc 34 tỉnh thành trọng điểm..." },
+  { id: "VN-HN", name: "Sở Khoa học và Công nghệ TP. Hà Nội", scopeType: "Sở Tỉnh" },
+  { id: "VN-SG", name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh", scopeType: "Sở Tỉnh" },
+  { id: "VN-DN", name: "Sở Khoa học và Công nghệ TP. Đà Nẵng", scopeType: "Sở Tỉnh" },
+  { id: "VN-HP", name: "Sở Khoa học và Công nghệ TP. Hải Phòng", scopeType: "Sở Tỉnh" },
+  { id: "VN-CT", name: "Sở Khoa học và Công nghệ TP. Cần Thơ", scopeType: "Sở Tỉnh" },
+  { id: "VN-BD", name: "Sở Khoa học và Công nghệ tỉnh Bình Dương", scopeType: "Sở Tỉnh" },
+  { id: "VN-DNA", name: "Sở Khoa học và Công nghệ tỉnh Đồng Nai", scopeType: "Sở Tỉnh" },
+  { id: "VN-BN", name: "Sở Khoa học và Công nghệ tỉnh Bắc Ninh", scopeType: "Sở Tỉnh" },
+  { id: "VN-QN", name: "Sở Khoa học và Công nghệ tỉnh Quảng Ninh", scopeType: "Sở Tỉnh" },
+  { id: "VN-KH", name: "Sở Khoa học và Công nghệ tỉnh Khánh Hòa", scopeType: "Sở Tỉnh" },
+  { id: "VN-LD", name: "Sở Khoa học và Công nghệ tỉnh Lâm Đồng", scopeType: "Sở Tỉnh" },
+  { id: "VN-TG", name: "Sở Khoa học và Công nghệ tỉnh Tiền Giang", scopeType: "Sở Tỉnh" },
+  { id: "VN-34", name: "Các Sở KH&CN khác thuộc 34 tỉnh thành trọng điểm...", scopeType: "Sở Tỉnh" },
 ];
 
 export async function reviewOffer(

@@ -25,6 +25,7 @@ export interface EnterpriseDirectoryItem {
   innovationScore?: number;
   innovationTier?: string;
   innovationBadge?: string;
+  website?: string;
 }
 
 export interface InnovationCriteriaDetail {
@@ -338,3 +339,41 @@ export async function fetchInnovationRating(taxCode: string): Promise<Innovation
 }
 
 export const getInnovationRating = fetchInnovationRating;
+
+export async function activateEnterpriseCapability(capability: string): Promise<any> {
+  const session = getStoredSession();
+  if (!session?.accessToken) throw new Error("Chưa đăng nhập.");
+
+  const res = await fetch(`${API_BASE}/api/v1/portal/enterprise/capabilities/activate`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ capability })
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res, "Kích hoạt năng lực thất bại."));
+  }
+  const body = await res.json();
+  return body.data || body;
+}
+
+export async function switchEnterpriseActiveRole(targetRole: string): Promise<any> {
+  const session = getStoredSession();
+  if (!session?.accessToken) throw new Error("Chưa đăng nhập.");
+
+  const res = await fetch(`${API_BASE}/api/v1/portal/enterprise/capabilities/switch-role`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ targetRole })
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res, "Chuyển vai trò thất bại."));
+  }
+  const body = await res.json();
+  return body.data || body;
+}

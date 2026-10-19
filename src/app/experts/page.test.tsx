@@ -288,4 +288,21 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     expect(screen.getByText("Chuyên gia Tiêu biểu & Nổi bật")).toBeDefined();
     expect(screen.getByTestId("expert-card-grid")).toBeDefined();
   });
+
+  it("renders friendly expert avatars on cards with fallback support", async () => {
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+    });
+
+    const avatarContainers = screen.getAllByTestId("expert-avatar-container");
+    expect(avatarContainers.length).toBeGreaterThanOrEqual(2);
+    // Verified badges exist on avatars
+    const verifiedBadges = screen.getAllByTestId("expert-avatar-verified-badge");
+    expect(verifiedBadges.length).toBeGreaterThanOrEqual(1);
+  });
 });
+

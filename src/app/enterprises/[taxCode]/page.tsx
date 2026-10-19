@@ -13,6 +13,7 @@ import { fetchPublicOffers } from "@/services/api/technology-offer";
 import { TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyImage } from "@/lib/technology-media";
 import RadarChart from "@/components/RadarChart";
+import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
 
 export default function EnterpriseDetailPage() {
   const params = useParams();
@@ -123,57 +124,66 @@ export default function EnterpriseDetailPage() {
         </nav>
 
         {/* Hero Card */}
-        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
-                {data.subjectType || "DN ĐMST"}
-              </span>
-              {data.isVerified ? (
-                <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                  ✓ Đã kiểm chứng (Sở KH&CN)
-                </span>
-              ) : (
-                <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
-                  Chờ thẩm định
-                </span>
-              )}
-              {data.tniClassification && (
+        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-start justify-between gap-6">
+          <div className="flex items-start gap-5 flex-1 min-w-0">
+            <EnterpriseAvatar
+              name={data.name}
+              sectorName={data.mainSectorName}
+              sectorCode={data.sectorCode}
+              website={data.website}
+              size="lg"
+            />
+            <div className="space-y-3 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
-                  TNI: {data.tniClassification} ({data.tniScore?.toFixed(1) || "N/A"})
+                  {data.subjectType || "DN ĐMST"}
                 </span>
-              )}
-            </div>
-
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-snug">
-              {data.name}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-sm text-slate-600">
-              <div>
-                <span className="text-slate-400">MST:</span> <strong className="text-slate-800">{data.taxCode}</strong>
+                {data.isVerified ? (
+                  <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                    ✓ Đã kiểm chứng (Sở KH&CN)
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+                    Chờ thẩm định
+                  </span>
+                )}
+                {data.tniClassification && (
+                  <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
+                    TNI: {data.tniClassification} ({data.tniScore?.toFixed(1) || "N/A"})
+                  </span>
+                )}
               </div>
-              <div>
-                <span className="text-slate-400">Tỉnh/Thành:</span> <strong className="text-slate-800">{data.provinceCity}</strong>
+
+              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-snug">
+                {data.name}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-sm text-slate-600">
+                <div>
+                  <span className="text-slate-400">MST:</span> <strong className="text-slate-800">{data.taxCode}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400">Tỉnh/Thành:</span> <strong className="text-slate-800">{data.provinceCity}</strong>
+                </div>
+                {data.addressDetail && (
+                  <div>
+                    <span className="text-slate-400">Địa chỉ:</span> <span className="text-slate-800">{data.addressDetail}</span>
+                  </div>
+                )}
+                {data.website && (
+                  <div>
+                    <span className="text-slate-400">Website:</span>{" "}
+                    <a
+                      href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-brand-600 hover:underline"
+                    >
+                      {data.website}
+                    </a>
+                  </div>
+                )}
               </div>
-              {data.addressDetail && (
-                <div>
-                  <span className="text-slate-400">Địa chỉ:</span> <span className="text-slate-800">{data.addressDetail}</span>
-                </div>
-              )}
-              {data.website && (
-                <div>
-                  <span className="text-slate-400">Website:</span>{" "}
-                  <a
-                    href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-brand-600 hover:underline"
-                  >
-                    {data.website}
-                  </a>
-                </div>
-              )}
             </div>
           </div>
 

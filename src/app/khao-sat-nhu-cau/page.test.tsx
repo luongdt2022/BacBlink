@@ -78,19 +78,21 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     localStorage.clear();
   });
 
-  it('renders Step 1 with clean blank defaults and header action buttons', () => {
+  it('renders Step 1 (Nhu Cầu & TNI) with 10-field QuickDemand layout and header action buttons', () => {
     render(<DeepSurveyPage />);
 
     // Header and Step 1 title
     expect(screen.getByText('Khảo Sát Nhu Cầu Đổi Mới Công Nghệ & Điểm Nghẽn Kỹ Thuật')).toBeInTheDocument();
-    expect(screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất')).toBeInTheDocument();
+    expect(screen.getByText(/Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết/i)).toBeInTheDocument();
+    expect(screen.getByText('1. Chi Tiết Bài Toán Kỹ Thuật')).toBeInTheDocument();
+    expect(screen.getByText('2. Chỉ Số Nhu Cầu Đổi Mới (TNI)')).toBeInTheDocument();
 
     // Check Stepper buttons
+    expect(screen.getByText('E. Nhu Cầu & TNI')).toBeInTheDocument();
     expect(screen.getByText('A. Doanh Nghiệp')).toBeInTheDocument();
     expect(screen.getByText('B. Hiện Trạng')).toBeInTheDocument();
     expect(screen.getByText('C. Điểm Nghẽn')).toBeInTheDocument();
     expect(screen.getByText('D. Năng Lực TAR')).toBeInTheDocument();
-    expect(screen.getByText('E. Nhu Cầu & TNI')).toBeInTheDocument();
     expect(screen.getByText('F. Định Hướng')).toBeInTheDocument();
     expect(screen.getByText('G. Xác Nhận')).toBeInTheDocument();
 
@@ -98,15 +100,11 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(screen.getByRole('button', { name: /Điền dữ liệu mẫu \(Demo\)/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Làm mới \/ Xóa nháp/i })).toBeInTheDocument();
 
-    // Verify fields start 100% BLANK
-    const companyInput = screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i) as HTMLInputElement;
-    const taxInput = screen.getByPlaceholderText(/0108992134/i) as HTMLInputElement;
-    expect(companyInput.value).toBe('');
-    expect(taxInput.value).toBe('');
-
-    // Province starts unselected
-    const provinceSelect = screen.getByDisplayValue('-- Chọn Tỉnh / Thành phố --') as HTMLSelectElement;
-    expect(provinceSelect.value).toBe('');
+    // Verify demand fields start BLANK
+    const stageInput = screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i) as HTMLInputElement;
+    const problemInput = screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i) as HTMLTextAreaElement;
+    expect(stageInput.value).toBe('');
+    expect(problemInput.value).toBe('');
   });
 
   it('calculates TNI score correctly and handles unrated dimensions (<=0)', () => {
@@ -132,15 +130,15 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(getTniBadge(60).label).toContain('Nhu cầu trung bình');
   });
 
-  it('validates Step 1 required fields before allowing navigation to Step 2', () => {
+  it('validates Step 1 required demand fields before allowing navigation to Step 2', () => {
     render(<DeepSurveyPage />);
 
-    // Attempt to proceed without filling fields
+    // Attempt to proceed without filling demand fields
     const nextBtn = screen.getByText(/Tiếp tục Bước 2/i);
     fireEvent.click(nextBtn);
 
     // Should stay on Step 1
-    expect(screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất')).toBeInTheDocument();
+    expect(screen.getByText(/Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết/i)).toBeInTheDocument();
   });
 
   it('fills sample data when clicking "Điền dữ liệu mẫu (Demo)" and can reset with "Làm mới / Xóa nháp"', () => {
@@ -149,20 +147,20 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     const demoBtn = screen.getByRole('button', { name: /Điền dữ liệu mẫu \(Demo\)/i });
     fireEvent.click(demoBtn);
 
-    // Check that sample company info was populated
-    const companyInput = screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i) as HTMLInputElement;
-    expect(companyInput.value).toBe('Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh');
+    // Check that sample demand info was populated on Step 1
+    const stageInput = screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i) as HTMLInputElement;
+    expect(stageInput.value).toBe('Gia công & Lắp ráp chi tiết');
 
-    const taxInput = screen.getByPlaceholderText(/0108992134/i) as HTMLInputElement;
-    expect(taxInput.value).toBe('0108992134');
+    const problemInput = screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i) as HTMLTextAreaElement;
+    expect(problemInput.value).toBe('Tự động hóa phát hiện khuyết tật bề mặt mối hàn bằng AI Vision');
 
     // Reset via "Làm mới / Xóa nháp"
     const clearBtn = screen.getByRole('button', { name: /Làm mới \/ Xóa nháp/i });
     fireEvent.click(clearBtn);
 
     // Verify fields are blank again
-    expect(companyInput.value).toBe('');
-    expect(taxInput.value).toBe('');
+    expect(stageInput.value).toBe('');
+    expect(problemInput.value).toBe('');
   });
 
   it('navigates through all 7 steps using "Điền dữ liệu mẫu (Demo)" and submits successfully', async () => {
@@ -212,7 +210,22 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     setupFetch();
     render(<DeepSurveyPage />);
 
-    // Step 1: Fill required fields
+    // Step 1: Fill demand item (E. Nhu Cầu & TNI)
+    fireEvent.change(screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i), {
+      target: { value: 'Kiểm định phôi đúc' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i), {
+      target: { value: 'Tỷ lệ phôi rỗ khí vượt mức 4%' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Giảm tỷ lệ phế phẩm đúc/i), {
+      target: { value: 'Giảm tỷ lệ lỗi xuống dưới 0.5%' }
+    });
+
+    // Step 1 -> Step 2 (A. Doanh Nghiệp)
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
+
+    // Step 2: Fill required enterprise fields
+    await waitFor(() => screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất'));
     fireEvent.change(screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i), {
       target: { value: 'Công ty Cơ Khí Chế Tạo Hà Nam' }
     });
@@ -230,21 +243,6 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     });
     fireEvent.change(screen.getByPlaceholderText(/contact@company.com.vn/i), {
       target: { value: 'hanam@tech.vn' }
-    });
-
-    // Step 1 -> Step 2 (E. Nhu Cầu & TNI)
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
-
-    // Step 2: Fill demand item (E. Nhu Cầu & TNI)
-    await waitFor(() => screen.getByText(/Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết/i));
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Đóng gói dán nhãn/i), {
-      target: { value: 'Kiểm định phôi đúc' }
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố/i), {
-      target: { value: 'Tỷ lệ phôi rỗ khí vượt mức 4%' }
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Giảm 40% chi phí điện năng/i), {
-      target: { value: 'Giảm tỷ lệ lỗi xuống dưới 0.5%' }
     });
 
     // Step 2 -> Step 3 (B. Hiện Trạng)
@@ -317,7 +315,22 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     setupFetch();
     render(<DeepSurveyPage />);
 
-    // Step 1: Fill required fields
+    // Step 1 is E. Nhu Cầu & TNI: Must have at least 1 demand item
+    fireEvent.change(screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i), {
+      target: { value: 'Tự động hóa phân loại hàng' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i), {
+      target: { value: 'Phân loại thủ công chậm và sai sót' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Giảm tỷ lệ phế phẩm đúc/i), {
+      target: { value: 'Tăng tốc độ phân loại lên 300%' }
+    });
+
+    // Navigate to Step 2
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
+
+    // Step 2: Fill required enterprise fields
+    await waitFor(() => screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất'));
     fireEvent.change(screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i), {
       target: { value: 'Công ty Công Nghệ Nhanh' }
     });
@@ -332,21 +345,6 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     });
     fireEvent.change(screen.getByPlaceholderText(/contact@company.com.vn/i), {
       target: { value: 'mai.tt@quicktech.vn' }
-    });
-
-    // Navigate to Step 2
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
-
-    // Step 2 is E. Nhu Cầu & TNI: Must have at least 1 demand item
-    await waitFor(() => screen.getByText(/Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết/i));
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Đóng gói dán nhãn/i), {
-      target: { value: 'Tự động hóa phân loại hàng' }
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố/i), {
-      target: { value: 'Phân loại thủ công chậm và sai sót' }
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Giảm 40% chi phí điện năng/i), {
-      target: { value: 'Tăng tốc độ phân loại lên 300%' }
     });
 
     // Skip optional steps 3-6 directly to Step 7 using shortcut button
@@ -376,9 +374,20 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     });
   });
 
-  it('handles auto MST lookup and fills enterprise name, province, address (T-03.40)', async () => {
+  it('handles auto MST lookup and fills enterprise name, province, address on Step 2 (T-03.40)', async () => {
     setupFetch();
     render(<DeepSurveyPage />);
+
+    // Fill Step 1 demand item and go to Step 2
+    fireEvent.change(screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i), {
+      target: { value: 'Gia công CNC' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i), {
+      target: { value: 'Sai số gia công cao' }
+    });
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
+
+    await waitFor(() => screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất'));
 
     // Enter tax code
     const taxInput = screen.getByPlaceholderText(/0108992134/i) as HTMLInputElement;
@@ -401,7 +410,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(addressInput.value).toBe('Lô CN-08 KCN Nam Từ Liêm, Hà Nội');
   });
 
-  it('handles smart pre-fill for logged-in enterprises and displays sync banner (T-03.41)', async () => {
+  it('handles smart pre-fill for logged-in enterprises and displays sync banner on Step 1 & Step 2 (T-03.41)', async () => {
     setupFetch();
     authClient.setSession('fake-buyer-token', {
       id: 'usr-1',
@@ -412,12 +421,22 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
 
     render(<DeepSurveyPage />);
 
-    // Verify sync banner appears
+    // Verify sync notice appears on Step 1
     await waitFor(() => {
-      expect(screen.getByText('Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký')).toBeInTheDocument();
+      expect(screen.getByText(/Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký/i)).toBeInTheDocument();
     });
 
-    // Verify inputs auto-populated from enterprise profile
+    // Fill Step 1 and go to Step 2
+    fireEvent.change(screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i), {
+      target: { value: 'Hàn tự động' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i), {
+      target: { value: 'Mối hàn không đồng đều' }
+    });
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
+
+    // Verify inputs auto-populated on Step 2 from enterprise profile
+    await waitFor(() => screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất'));
     const companyInput = screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i) as HTMLInputElement;
     expect(companyInput.value).toBe('Công ty Cổ phần Thiết bị Công nghệ Nacentwin');
 
@@ -468,5 +487,76 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
       expect(screen.getByRole('link', { name: /Đăng Nhập Ngay Vào Hệ Thống/i })).toBeInTheDocument();
     });
   });
+
+  it('pre-fills 100% of 11 enterprise fields on Step 2 after completing Step 1 demand item (T-03.56)', async () => {
+    setupFetch({
+      profileResponse: {
+        code: 200,
+        data: {
+          name: 'CÔNG TY TNHH TRƯỜNG HOAN',
+          taxCode: '0100255428',
+          provinceCity: 'Hà Nội',
+          addressDetail: 'Số 15, Phố Định Công, Phường Định Công, Quận Hoàng Mai, Hà Nội',
+          contactPerson: 'Nguyễn Văn Hoan',
+          contactPhone: '0912 345 678',
+          contactEmail: 'buyer.user@demo.nacentech.vn',
+          contactPosition: 'Giám đốc Điều hành',
+          ownershipType: 'Tư nhân',
+          sectorCode: 'LV01',
+          workforceScale: 'Dưới 10 người',
+          revenueRange: 'Từ 10 đến dưới 50 tỷ đồng'
+        }
+      }
+    });
+    authClient.setSession('fake-buyer-token', {
+      id: 'fbc7b482-4cdd-4f5e-80dc-5fdc5944cc76',
+      email: 'buyer.user@demo.nacentech.vn',
+      fullName: 'Nguyễn Văn Hoan',
+      role: 'BUYER'
+    });
+
+    render(<DeepSurveyPage />);
+
+    // 1. Verify alert banner is displayed on Step 1
+    await waitFor(() => {
+      expect(screen.getByText(/Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký/i)).toBeInTheDocument();
+    });
+
+    // 2. Fill Step 1 demand item and move to Step 2
+    fireEvent.change(screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i), {
+      target: { value: 'Dây chuyền đóng gói tự động' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i), {
+      target: { value: 'Đóng gói thủ công tốn nhiều nhân công' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Tiếp tục Bước 2/i }));
+
+    // 3. Verify all core fields are 100% prefilled on Step 2
+    await waitFor(() => {
+      expect(screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất')).toBeInTheDocument();
+    });
+
+    const companyInput = screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i) as HTMLInputElement;
+    expect(companyInput.value).toBe('CÔNG TY TNHH TRƯỜNG HOAN');
+
+    const taxInput = screen.getByPlaceholderText(/0108992134/i) as HTMLInputElement;
+    expect(taxInput.value).toBe('0100255428');
+
+    const provinceSelect = screen.getByDisplayValue('Hà Nội') as HTMLSelectElement;
+    expect(provinceSelect.value).toBe('Hà Nội');
+
+    const addressInput = screen.getByPlaceholderText(/Số nhà, đường, phường\/xã/i) as HTMLInputElement;
+    expect(addressInput.value).toBe('Số 15, Phố Định Công, Phường Định Công, Quận Hoàng Mai, Hà Nội');
+
+    const contactInput = screen.getByPlaceholderText(/Họ và tên người đại diện/i) as HTMLInputElement;
+    expect(contactInput.value).toBe('Nguyễn Văn Hoan');
+
+    const phoneInput = screen.getByPlaceholderText(/0912 xxx xxx/i) as HTMLInputElement;
+    expect(phoneInput.value).toBe('0912 345 678');
+
+    const emailInput = screen.getByPlaceholderText(/contact@company\.com\.vn/i) as HTMLInputElement;
+    expect(emailInput.value).toBe('buyer.user@demo.nacentech.vn');
+  });
 });
+
 

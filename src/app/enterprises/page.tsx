@@ -35,6 +35,7 @@ import {
   type EnterpriseDirectoryResponse
 } from "@/lib/enterprise-client";
 import { PROVINCES_34 } from "../khao-sat-nhu-cau/types";
+import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
 
 // 11 Lĩnh vực công nghệ trọng điểm theo Thông tư 17/2019/TT-BKHCN
 const SECTORS_TT17 = [
@@ -75,92 +76,6 @@ const INNOVATION_TIERS = [
   { code: "UNRATED", label: "⚪ Chưa đánh giá" },
 ];
 
-/**
- * Trích xuất monogram viết tắt đặc trưng từ tên doanh nghiệp
- */
-function getEnterpriseInitial(name: string): string {
-  if (!name) return "DN";
-  const clean = name
-    .replace(/^(công ty|cty|chi nhánh|doanh nghiệp|hợp tác xã)\s+(tnhh|cp|cổ phần|mtv|tư nhân)?\s*/i, "")
-    .trim();
-  const words = clean.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return name.charAt(0).toUpperCase();
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
-}
-
-/**
- * Xác định giao diện avatar, gradient và icon theo ngành nghề công nghệ
- */
-function getSectorTheme(sectorName?: string, sectorCode?: string) {
-  const s = (sectorName || "").toLowerCase();
-  const c = sectorCode || "";
-  if (c === "LV01" || s.includes("chế biến") || s.includes("chế tạo") || s.includes("cơ khí")) {
-    return {
-      gradient: "from-amber-500 to-orange-600",
-      icon: Wrench,
-      label: "Cơ khí & Chế tạo"
-    };
-  }
-  if (c === "LV05" || s.includes("nông nghiệp") || s.includes("thực phẩm") || s.includes("sinh học")) {
-    return {
-      gradient: "from-emerald-500 to-teal-600",
-      icon: Sprout,
-      label: "Nông nghiệp & Sinh học"
-    };
-  }
-  if (c === "LV07" || s.includes("y tế") || s.includes("dược") || s.includes("hóa chất")) {
-    return {
-      gradient: "from-rose-500 to-pink-600",
-      icon: FlaskConical,
-      label: "Y Dược & Hóa chất"
-    };
-  }
-  if (c === "LV08" || c === "LV14" || s.includes("thông tin") || s.includes("điện tử") || s.includes("số")) {
-    return {
-      gradient: "from-brand-600 to-teal-700",
-      icon: Cpu,
-      label: "CNTT & Điện tử"
-    };
-  }
-  if (c === "LV12" || s.includes("năng lượng") || s.includes("môi trường")) {
-    return {
-      gradient: "from-cyan-600 to-teal-600",
-      icon: Zap,
-      label: "Năng lượng & Môi trường"
-    };
-  }
-  return {
-    gradient: "from-slate-700 to-slate-900",
-    icon: Building2,
-    label: "Doanh nghiệp"
-  };
-}
-
-/**
- * Component Avatar nhận diện doanh nghiệp với Monogram và Icon công nghệ
- */
-function EnterpriseAvatar({ name, sectorName, sectorCode }: { name: string; sectorName?: string; sectorCode?: string }) {
-  const monogram = getEnterpriseInitial(name);
-  const theme = getSectorTheme(sectorName, sectorCode);
-  const IconComp = theme.icon;
-
-  return (
-    <div className="relative shrink-0">
-      <div
-        className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${theme.gradient} flex items-center justify-center text-white font-extrabold text-base tracking-wider shadow-md shadow-slate-200/50 dark:shadow-none border border-white/20 select-none`}
-      >
-        {monogram}
-      </div>
-      <div
-        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center"
-        title={theme.label}
-      >
-        <IconComp className="w-3 h-3 text-slate-700 dark:text-slate-300" />
-      </div>
-    </div>
-  );
-}
 
 /**
  * Hàm sinh danh sách các trang phân trang động kèm dấu ba chấm
@@ -585,6 +500,7 @@ export default function EnterprisesDirectoryPage() {
                           name={ent.name}
                           sectorName={ent.mainSectorName}
                           sectorCode={ent.sectorCode}
+                          website={ent.website}
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap mb-1">

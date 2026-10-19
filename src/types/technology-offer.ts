@@ -46,6 +46,7 @@ export interface OfferSpecValue {
   specName: string;
   specValue: string;
   unit?: string | null;
+  specCategory?: "TIER_2_COMMON" | "TIER_3_SECTOR" | "TIER_3_CUSTOM";
 }
 
 export interface OfferDocument {
@@ -107,6 +108,23 @@ export interface TechnologyOffer {
   contactName?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
+  // Delta v6 extensions
+  modelCode?: string | null;
+  manufacturer?: string | null;
+  originCountry?: string | null;
+  equipmentStatus?: string | null;
+  manufacturingYear?: number | null;
+  capacityScale?: string | null;
+  energyConsumption?: string | null;
+  automationLevel?: string | null;
+  operatingPrinciple?: string | null;
+  deploymentConditions?: string | null;
+  transferPriorityMethod?: string | null;
+  priceIncludes?: string | null;
+  taxAndExtraCosts?: string | null;
+  technicalSupportMethod?: string | null;
+  ipIssueDate?: string | null;
+  legalCommitmentConfirmed?: boolean;
 }
 
 export interface CreateSellerOfferPayload {
@@ -114,6 +132,7 @@ export interface CreateSellerOfferPayload {
   hasTechTransfer: boolean;
   title: string;
   summary: string;
+  shortDescription?: string;
   problemSolved: string;
   sectorCode: string;
   pricingType: PricingType;
@@ -151,6 +170,24 @@ export interface CreateSellerOfferPayload {
   contactName?: string | null;
   contactEmail?: string | null;
   contactPhone?: string | null;
+  // Delta v6 extensions
+  currentStep?: number;
+  modelCode?: string | null;
+  manufacturer?: string | null;
+  originCountry?: string | null;
+  equipmentStatus?: string | null;
+  manufacturingYear?: number | null;
+  capacityScale?: string | null;
+  energyConsumption?: string | null;
+  automationLevel?: string | null;
+  operatingPrinciple?: string | null;
+  deploymentConditions?: string | null;
+  transferPriorityMethod?: string | null;
+  priceIncludes?: string | null;
+  taxAndExtraCosts?: string | null;
+  technicalSupportMethod?: string | null;
+  ipIssueDate?: string | null;
+  legalCommitmentConfirmed?: boolean;
 }
 
 export interface UpdateSellerOfferPayload extends CreateSellerOfferPayload {}

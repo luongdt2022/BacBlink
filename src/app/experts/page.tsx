@@ -24,6 +24,7 @@ import { AppLink, AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
 import { getPublicExpertFilterOptions, type MasterDataOption } from "@/lib/master-data-client";
 import { resolveTechLabel } from "@/lib/tech-label-resolver";
+import { ExpertAvatar } from "@/components/expert-detail/expert-avatar";
 
 interface ExpertCardItem {
   expertCode: string;
@@ -43,6 +44,7 @@ interface ExpertCardItem {
   projectCount: number;
   isVerified: boolean;
   isAcceptingConsultation: boolean;
+  avatarUrl?: string | null;
 }
 
 interface DirectoryResponse {
@@ -406,9 +408,13 @@ export default function ExpertsDirectoryPage() {
                   key={`spotlight-${feat.expertCode}`}
                   className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-brand-600 p-3 shadow-2xs hover:shadow-sm transition-shadow flex items-center gap-3 dark:bg-slate-900 dark:border-slate-800 dark:border-l-brand-500"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-brand-50 text-brand-800 font-extrabold text-caption flex items-center justify-center shrink-0 dark:bg-brand-950/80 dark:text-brand-200">
-                    {getInitials(feat.fullName)}
-                  </div>
+                  <ExpertAvatar
+                    fullName={feat.fullName}
+                    avatarUrl={feat.avatarUrl}
+                    expertCode={feat.expertCode}
+                    size="sm"
+                    isVerified={false}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`px-1.5 py-0.2 rounded text-xs font-bold border ${featBadge.cls}`}>
@@ -780,19 +786,13 @@ export default function ExpertsDirectoryPage() {
                     >
                       <div className="flex-1 flex flex-col">
                         <div className="flex items-start gap-3">
-                          <div className="relative shrink-0">
-                            <div className="w-11 h-11 rounded-xl bg-brand-700 flex items-center justify-center text-white font-extrabold text-body">
-                              {getInitials(expert.fullName)}
-                            </div>
-                            {expert.isVerified && (
-                              <span
-                                className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-white"
-                                title="Đã xác thực"
-                              >
-                                <Check className="w-2.5 h-2.5 stroke-[3]" />
-                              </span>
-                            )}
-                          </div>
+                          <ExpertAvatar
+                            fullName={expert.fullName}
+                            avatarUrl={expert.avatarUrl}
+                            expertCode={expert.expertCode}
+                            size="md"
+                            isVerified={expert.isVerified}
+                          />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className={`px-2 py-0.5 rounded text-caption font-bold border ${badge.cls}`}>

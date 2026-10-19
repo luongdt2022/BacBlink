@@ -118,7 +118,7 @@ export const EvidenceDocumentSection: React.FC<EvidenceDocumentSectionProps> = (
           type="button"
           disabled={disabled}
           onClick={() => fileInputRef.current?.click()}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-navy px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-brand-800"
         >
           <Upload className="h-3.5 w-3.5" /> Tải tài liệu lên
         </button>

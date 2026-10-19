@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { resolveExpertActiveMenu } from "@/lib/expert-nav";
+import { RoleSwitcher } from "@/components/common/role-switcher";
 
 interface NavItem {
   href: string;
@@ -176,6 +177,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               {workspaceTitle}
             </h3>
           </div>
+
+          <RoleSwitcher className="mb-4" />
 
           {/* Quick link card to Admin / Gov Consoles if user has elevated privileges */}
           {isAdmin && (
