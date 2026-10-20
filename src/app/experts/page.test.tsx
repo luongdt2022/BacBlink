@@ -206,6 +206,44 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     expect(optgroups[2].label).toBe("Miền Nam (12 Tỉnh/TP)");
   });
 
+  it("supports searchable multi-select province combobox with checkboxes (TASK-05-CR144)", async () => {
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("province-filter-combobox")).toBeDefined();
+    });
+
+    // 1. Click trigger để mở combobox
+    const trigger = screen.getByTestId("province-filter-combobox");
+    fireEvent.click(trigger);
+
+    // 2. Ô tìm kiếm xuất hiện
+    const searchInput = screen.getByTestId("province-search-input");
+    expect(searchInput).toBeDefined();
+
+    // 3. Tích chọn checkbox Hà Nội (HN) và Đà Nẵng (DN)
+    const hnCheckbox = screen.getByTestId("province-checkbox-HN");
+    const dnCheckbox = screen.getByTestId("province-checkbox-DN");
+    fireEvent.click(hnCheckbox);
+    fireEvent.click(dnCheckbox);
+
+    // 4. Trigger hiển thị số lượng đã chọn
+    expect(screen.getByText(/Đã chọn \(2 Tỉnh\/TP\)/i)).toBeDefined();
+
+    // 5. Active chips xuất hiện cho cả 2 tỉnh
+    await waitFor(() => {
+      expect(screen.getByText(/Địa bàn: Sở KH&CN TP. Hà Nội/i)).toBeDefined();
+      expect(screen.getByText(/Địa bàn: Sở KH&CN TP. Đà Nẵng/i)).toBeDefined();
+    });
+
+    // 6. Nhập từ khóa tìm kiếm lọc danh sách tỉnh
+    fireEvent.change(searchInput, { target: { value: "Hải Phòng" } });
+    expect(screen.getByTestId("province-checkbox-HP")).toBeDefined();
+    expect(screen.queryByTestId("province-checkbox-SG")).toBeNull();
+  });
+
   it("allows removing filter chips independently and reset all with one click (T141)", async () => {
     setupFetch();
 

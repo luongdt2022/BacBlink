@@ -518,39 +518,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Banner Khám Phá Toàn Diện & Tải PDF */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-brand-900 via-slate-900 to-brand-950 p-6 text-white shadow-md">
-              <div className="flex items-center gap-3.5">
-                <div className="grid size-12 shrink-0 place-items-center rounded-xl bg-nacen-green-500 text-white shadow-sm">
-                  <BookOpen className="size-6" />
-                </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white">
-                    Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết (11 Phân Hệ · 48 Màn Hình Thực Tế)
-                  </h3>
-                  <p className="mt-0.5 text-xs text-slate-300">
-                    Minh họa đầy đủ giao diện thực tế, các bước thao tác, bộ lọc phân quyền và liên kết đối soát mã nguồn.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto">
-                <Link
-                  href="/huong-dan"
-                  className="focus-ring flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl bg-nacen-green-500 hover:bg-nacen-green-600 px-4 py-2.5 text-xs font-bold text-white transition shadow-sm cursor-pointer"
-                >
-                  <span>Mở Cẩm Nang Trực Quan</span>
-                  <ArrowRight className="size-3.5" />
-                </Link>
-                <a
-                  href="/huong-dan-su-dung.pdf"
-                  download="Huong_Dan_Su_Dung_NacenTwin.pdf"
-                  className="focus-ring flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 px-3.5 py-2.5 text-xs font-bold text-white transition cursor-pointer"
-                >
-                  <FileDown className="size-3.5" />
-                  <span>Tải PDF (2.4 MB)</span>
-                </a>
-              </div>
-            </div>
+            {/* [TASK-01-CR19] Đã gỡ bỏ Banner Cẩm Nang Hướng Dẫn Chi Tiết khỏi Trang Chủ theo yêu cầu PO */}
           </div>
         </section>
 

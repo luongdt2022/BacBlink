@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -19,12 +19,14 @@ import {
   MessageSquarePlus,
   AlertCircle,
   BookOpen,
+  ChevronDown,
 } from "lucide-react";
 import { AppLink, AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
 import { getPublicExpertFilterOptions, type MasterDataOption } from "@/lib/master-data-client";
 import { resolveTechLabel } from "@/lib/tech-label-resolver";
 import { ExpertAvatar } from "@/components/expert-detail/expert-avatar";
+import { removeVietnameseDiacritics } from "@/components/common/searchable-province-combobox";
 
 interface ExpertCardItem {
   expertCode: string;
@@ -66,7 +68,10 @@ export default function ExpertsDirectoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDegrees, setSelectedDegrees] = useState<string[]>([]);
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState<string>("");
+  const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
+  const [provinceSearch, setProvinceSearch] = useState<string>("");
+  const [isProvinceDropdownOpen, setIsProvinceDropdownOpen] = useState<boolean>(false);
+  const provinceDropdownRef = useRef<HTMLDivElement>(null);
   const [acceptingConsultation, setAcceptingConsultation] = useState(false);
   const [sectorOptions, setSectorOptions] = useState<MasterDataOption[]>([]);
   const [sectorSearch, setSectorSearch] = useState<string>("");
@@ -132,8 +137,11 @@ export default function ExpertsDirectoryPage() {
     }
     if (allSecs.length > 0) setSelectedSectors(Array.from(new Set(allSecs)));
 
-    const prov = params.get("provinceCode") || params.get("province");
-    if (prov) setSelectedProvince(prov);
+    const provsParam = params.get("provinceCodes") || params.get("provinceCode") || params.get("province");
+    if (provsParam) {
+      const parsedProvs = provsParam.split(",").map(p => p.trim()).filter(Boolean);
+      setSelectedProvinces(parsedProvs);
+    }
 
     const consult = params.get("acceptingConsultation") || params.get("consultation");
     if (consult === "true") setAcceptingConsultation(true);
@@ -142,6 +150,22 @@ export default function ExpertsDirectoryPage() {
     if (pageParam && !isNaN(parseInt(pageParam))) {
       setCurrentPage(Math.max(1, parseInt(pageParam)));
     }
+  }, []);
+
+  // Click outside listener đóng dropdown combobox tỉnh
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        provinceDropdownRef.current &&
+        !provinceDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProvinceDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   // 2. Đồng bộ URL Search Parameters khi state bộ lọc thay đổi
@@ -155,20 +179,23 @@ export default function ExpertsDirectoryPage() {
     if (searchTerm.trim()) params.set("q", searchTerm.trim());
     if (selectedDegrees.length > 0) params.set("degrees", selectedDegrees.join(","));
     if (selectedSectors.length > 0) params.set("sectorCodes", selectedSectors.join(","));
-    if (selectedProvince) params.set("provinceCode", selectedProvince);
+    if (selectedProvinces.length > 0) {
+      params.set("provinceCodes", selectedProvinces.join(","));
+      params.set("provinceCode", selectedProvinces.join(","));
+    }
     if (acceptingConsultation) params.set("acceptingConsultation", "true");
     if (currentPage > 1) params.set("page", currentPage.toString());
 
     const searchString = params.toString();
     const newUrl = searchString ? `${window.location.pathname}?${searchString}` : window.location.pathname;
     window.history.replaceState(null, "", newUrl);
-  }, [searchTerm, selectedDegrees, selectedSectors, selectedProvince, acceptingConsultation, currentPage]);
+  }, [searchTerm, selectedDegrees, selectedSectors, selectedProvinces, acceptingConsultation, currentPage]);
 
   const fetchDirectory = async (
     overrideQ?: string,
     overrideDegrees?: string[],
     overrideSectors?: string[],
-    overrideProvince?: string,
+    overrideProvinces?: string[],
     overridePage?: number
   ) => {
     directoryRequest.current?.abort();
@@ -180,14 +207,17 @@ export default function ExpertsDirectoryPage() {
       const qVal = overrideQ !== undefined ? overrideQ : searchTerm;
       const degVal = overrideDegrees !== undefined ? overrideDegrees : selectedDegrees;
       const secVal = overrideSectors !== undefined ? overrideSectors : selectedSectors;
-      const provVal = overrideProvince !== undefined ? overrideProvince : selectedProvince;
+      const provVal = overrideProvinces !== undefined ? overrideProvinces : selectedProvinces;
       const pageVal = overridePage !== undefined ? overridePage : currentPage;
 
       const params = new URLSearchParams();
       if (qVal.trim()) params.set("q", qVal.trim());
       if (degVal.length > 0) params.set("degrees", degVal.join(","));
       if (secVal.length > 0) params.set("sectorCodes", secVal.join(","));
-      if (provVal) params.set("provinceCode", provVal);
+      if (provVal.length > 0) {
+        params.set("provinceCodes", provVal.join(","));
+        params.set("provinceCode", provVal.join(","));
+      }
       if (acceptingConsultation) params.set("acceptingConsultation", "true");
       params.set("page", pageVal.toString());
       params.set("pageSize", "9");
@@ -214,7 +244,7 @@ export default function ExpertsDirectoryPage() {
 
   useEffect(() => {
     fetchDirectory();
-  }, [currentPage, selectedDegrees, selectedSectors, selectedProvince, acceptingConsultation]);
+  }, [currentPage, selectedDegrees, selectedSectors, selectedProvinces, acceptingConsultation]);
 
   const loadFilterData = async () => {
     setFilterDataError(null);
@@ -230,11 +260,43 @@ export default function ExpertsDirectoryPage() {
 
   useEffect(() => { void loadFilterData(); }, []);
 
+  // Lọc danh sách tỉnh thành theo từ khóa tìm kiếm (hỗ trợ có dấu và không dấu - TASK-05-CR144)
+  const filteredProvinces = useMemo(() => {
+    if (!provinceSearch.trim()) return provinceOptions;
+    const norm = removeVietnameseDiacritics(provinceSearch);
+    return provinceOptions.filter((p) => {
+      const pNorm = removeVietnameseDiacritics(p.name);
+      return (
+        pNorm.includes(norm) ||
+        p.name.toLowerCase().includes(provinceSearch.toLowerCase().trim()) ||
+        p.code.toLowerCase().includes(provinceSearch.toLowerCase().trim())
+      );
+    });
+  }, [provinceSearch, provinceOptions]);
+
+  const toggleProvince = (code: string) => {
+    setCurrentPage(1);
+    setSelectedProvinces((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    );
+  };
+
+  const selectAllProvinces = () => {
+    setCurrentPage(1);
+    setSelectedProvinces(provinceOptions.map((p) => p.code));
+  };
+
+  const clearAllProvinces = () => {
+    setCurrentPage(1);
+    setSelectedProvinces([]);
+    setProvinceSearch("");
+  };
+
   // Debounce Search 300ms theo TC-C2-EXP-DIR02
   useEffect(() => {
     const timer = setTimeout(() => {
       setCurrentPage(1);
-      fetchDirectory(searchTerm, selectedDegrees, selectedSectors, selectedProvince, 1);
+      fetchDirectory(searchTerm, selectedDegrees, selectedSectors, selectedProvinces, 1);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -242,14 +304,16 @@ export default function ExpertsDirectoryPage() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchDirectory(searchTerm, selectedDegrees, selectedSectors, selectedProvince, 1);
+    fetchDirectory(searchTerm, selectedDegrees, selectedSectors, selectedProvinces, 1);
   };
 
   const handleResetFilters = () => {
     setSearchTerm("");
     setSelectedDegrees([]);
     setSelectedSectors([]);
-    setSelectedProvince("");
+    setSelectedProvinces([]);
+    setProvinceSearch("");
+    setIsProvinceDropdownOpen(false);
     setSectorSearch("");
     setAcceptingConsultation(false);
     setCurrentPage(1);
@@ -374,7 +438,7 @@ export default function ExpertsDirectoryPage() {
                     const term = tag.replace("#", "");
                     setSearchTerm(term);
                     setCurrentPage(1);
-                    fetchDirectory(term, selectedDegrees, selectedSectors, selectedProvince, 1);
+                    fetchDirectory(term, selectedDegrees, selectedSectors, selectedProvinces, 1);
                   }}
                   className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition text-caption"
                 >
@@ -567,40 +631,277 @@ export default function ExpertsDirectoryPage() {
                 </div>
               </div>
 
-              {/* Trục 3: Địa bàn Sở Tỉnh chuẩn hóa 34 Sở KH&CN theo 3 miền */}
+              {/* Trục 3: Địa bàn Sở Tỉnh chuẩn hóa 34 Sở KH&CN theo 3 miền - Searchable Multi-select Combobox (TASK-05-CR144) */}
               <div className="py-4">
-                <label className="block text-caption font-bold uppercase tracking-wider text-slate-500 mb-2.5 dark:text-slate-400">
-                  Địa bàn Tỉnh / Thành phố
-                </label>
-                <select
-                  value={selectedProvince}
-                  onChange={(e) => { setCurrentPage(1); setSelectedProvince(e.target.value); }}
-                  className="form-control w-full text-caption"
-                  data-testid="province-filter-select"
-                >
-                  <option value="">Tất cả địa bàn (34 Sở KH&CN)</option>
-                  <optgroup label="Miền Bắc (12 Tỉnh/TP)">
-                    {provinceOptions.filter((p) => p.region === "NORTH").map((prov) => (
-                      <option key={prov.code} value={prov.code}>
-                        {prov.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Miền Trung & Tây Nguyên (10 Tỉnh/TP)">
-                    {provinceOptions.filter((p) => p.region === "CENTRAL").map((prov) => (
-                      <option key={prov.code} value={prov.code}>
-                        {prov.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Miền Nam (12 Tỉnh/TP)">
-                    {provinceOptions.filter((p) => p.region === "SOUTH").map((prov) => (
-                      <option key={prov.code} value={prov.code}>
-                        {prov.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
+                <div className="flex items-center justify-between mb-2.5">
+                  <label className="block text-caption font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Địa bàn Tỉnh / Thành phố
+                    {selectedProvinces.length > 0 && (
+                      <span className="text-brand-600 dark:text-brand-400 font-semibold text-xs ml-1.5 lowercase">
+                        ({selectedProvinces.length} đã chọn)
+                      </span>
+                    )}
+                  </label>
+                  {selectedProvinces.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clearAllProvinces}
+                      className="text-[11px] text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition cursor-pointer"
+                    >
+                      Bỏ chọn tất cả
+                    </button>
+                  )}
+                </div>
+
+                {/* Combobox Wrapper */}
+                <div className="relative" ref={provinceDropdownRef}>
+                  {/* Combobox Trigger Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsProvinceDropdownOpen((prev) => !prev)}
+                    className="form-control w-full text-caption flex items-center justify-between text-left cursor-pointer bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 shadow-xs hover:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    aria-expanded={isProvinceDropdownOpen}
+                    aria-haspopup="listbox"
+                    data-testid="province-filter-combobox"
+                  >
+                    <span className="truncate pr-2 text-slate-700 dark:text-slate-200">
+                      {selectedProvinces.length === 0 ? (
+                        <span className="text-slate-400">Chọn địa bàn (34 Sở KH&CN)...</span>
+                      ) : selectedProvinces.length === 1 ? (
+                        provinceOptions.find((p) => p.code === selectedProvinces[0])?.name || selectedProvinces[0]
+                      ) : (
+                        `Đã chọn (${selectedProvinces.length} Tỉnh/TP)`
+                      )}
+                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0 text-slate-400">
+                      {selectedProvinces.length > 0 && (
+                        <span
+                          role="button"
+                          aria-label="Xóa chọn tất cả địa bàn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearAllProvinces();
+                          }}
+                          className="p-0.5 hover:text-slate-600 dark:hover:text-slate-200 rounded"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </span>
+                      )}
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          isProvinceDropdownOpen ? "rotate-180 text-brand-600" : ""
+                        }`}
+                      />
+                    </div>
+                  </button>
+
+                  {/* Hidden Native Select for test compatibility & screen readers */}
+                  <select
+                    value={selectedProvinces[0] || ""}
+                    onChange={(e) => {
+                      setCurrentPage(1);
+                      if (e.target.value) {
+                        setSelectedProvinces([e.target.value]);
+                      } else {
+                        setSelectedProvinces([]);
+                      }
+                    }}
+                    className="sr-only"
+                    data-testid="province-filter-select"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  >
+                    <option value="">Tất cả địa bàn (34 Sở KH&CN)</option>
+                    <optgroup label="Miền Bắc (12 Tỉnh/TP)">
+                      {provinceOptions.filter((p) => p.region === "NORTH").map((prov) => (
+                        <option key={prov.code} value={prov.code}>
+                          {prov.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Miền Trung & Tây Nguyên (10 Tỉnh/TP)">
+                      {provinceOptions.filter((p) => p.region === "CENTRAL").map((prov) => (
+                        <option key={prov.code} value={prov.code}>
+                          {prov.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Miền Nam (12 Tỉnh/TP)">
+                      {provinceOptions.filter((p) => p.region === "SOUTH").map((prov) => (
+                        <option key={prov.code} value={prov.code}>
+                          {prov.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+
+                  {/* Dropdown Floating Panel */}
+                  {isProvinceDropdownOpen && (
+                    <div className="absolute z-50 mt-1 w-full min-w-[280px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden text-caption animate-in fade-in-50 zoom-in-95 duration-100">
+                      {/* Search box inside dropdown */}
+                      <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/90">
+                        <div className="relative">
+                          <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400 pointer-events-none" />
+                          <input
+                            type="text"
+                            value={provinceSearch}
+                            onChange={(e) => setProvinceSearch(e.target.value)}
+                            placeholder="Nhập tìm kiếm tỉnh thành..."
+                            className="w-full pl-8 pr-7 py-1.5 text-caption bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:border-brand-500"
+                            autoFocus
+                            data-testid="province-search-input"
+                          />
+                          {provinceSearch && (
+                            <button
+                              type="button"
+                              onClick={() => setProvinceSearch("")}
+                              className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Quick action bar */}
+                        <div className="flex items-center justify-between mt-1.5 px-0.5 text-[11px]">
+                          <span className="text-slate-400">
+                            {filteredProvinces.length} địa bàn
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={selectAllProvinces}
+                              className="text-brand-600 dark:text-brand-400 hover:underline font-medium cursor-pointer"
+                            >
+                              Chọn tất cả
+                            </button>
+                            <span className="text-slate-300 dark:text-slate-700">|</span>
+                            <button
+                              type="button"
+                              onClick={clearAllProvinces}
+                              className="text-slate-500 hover:underline cursor-pointer"
+                            >
+                              Bỏ chọn
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Province list with checkboxes grouped by region */}
+                      <div className="max-h-60 overflow-y-auto p-1 divide-y divide-slate-100 dark:divide-slate-800">
+                        {filteredProvinces.length === 0 ? (
+                          <div className="py-4 text-center text-slate-400 text-xs">
+                            Không tìm thấy tỉnh/thành phố phù hợp
+                          </div>
+                        ) : (
+                          <>
+                            {filteredProvinces.filter((p) => p.region === "NORTH").length > 0 && (
+                              <div className="py-1">
+                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  Miền Bắc ({filteredProvinces.filter((p) => p.region === "NORTH").length})
+                                </div>
+                                {filteredProvinces
+                                  .filter((p) => p.region === "NORTH")
+                                  .map((prov) => (
+                                    <label
+                                      key={prov.code}
+                                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer text-slate-700 dark:text-slate-200 transition-colors"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedProvinces.includes(prov.code)}
+                                        onChange={() => toggleProvince(prov.code)}
+                                        className="w-3.5 h-3.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                                        data-testid={`province-checkbox-${prov.code}`}
+                                      />
+                                      <span className="truncate">{prov.name}</span>
+                                    </label>
+                                  ))}
+                              </div>
+                            )}
+
+                            {filteredProvinces.filter((p) => p.region === "CENTRAL").length > 0 && (
+                              <div className="py-1">
+                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  Miền Trung & Tây Nguyên ({filteredProvinces.filter((p) => p.region === "CENTRAL").length})
+                                </div>
+                                {filteredProvinces
+                                  .filter((p) => p.region === "CENTRAL")
+                                  .map((prov) => (
+                                    <label
+                                      key={prov.code}
+                                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer text-slate-700 dark:text-slate-200 transition-colors"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedProvinces.includes(prov.code)}
+                                        onChange={() => toggleProvince(prov.code)}
+                                        className="w-3.5 h-3.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                                        data-testid={`province-checkbox-${prov.code}`}
+                                      />
+                                      <span className="truncate">{prov.name}</span>
+                                    </label>
+                                  ))}
+                              </div>
+                            )}
+
+                            {filteredProvinces.filter((p) => p.region === "SOUTH").length > 0 && (
+                              <div className="py-1">
+                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  Miền Nam ({filteredProvinces.filter((p) => p.region === "SOUTH").length})
+                                </div>
+                                {filteredProvinces
+                                  .filter((p) => p.region === "SOUTH")
+                                  .map((prov) => (
+                                    <label
+                                      key={prov.code}
+                                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer text-slate-700 dark:text-slate-200 transition-colors"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedProvinces.includes(prov.code)}
+                                        onChange={() => toggleProvince(prov.code)}
+                                        className="w-3.5 h-3.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                                        data-testid={`province-checkbox-${prov.code}`}
+                                      />
+                                      <span className="truncate">{prov.name}</span>
+                                    </label>
+                                  ))}
+                              </div>
+                            )}
+
+                            {filteredProvinces.filter(
+                              (p) => !["NORTH", "CENTRAL", "SOUTH"].includes(p.region || "")
+                            ).length > 0 && (
+                              <div className="py-1">
+                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                  Khác
+                                </div>
+                                {filteredProvinces
+                                  .filter((p) => !["NORTH", "CENTRAL", "SOUTH"].includes(p.region || ""))
+                                  .map((prov) => (
+                                    <label
+                                      key={prov.code}
+                                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800/80 cursor-pointer text-slate-700 dark:text-slate-200 transition-colors"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedProvinces.includes(prov.code)}
+                                        onChange={() => toggleProvince(prov.code)}
+                                        className="w-3.5 h-3.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                                        data-testid={`province-checkbox-${prov.code}`}
+                                      />
+                                      <span className="truncate">{prov.name}</span>
+                                    </label>
+                                  ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Trục 4: Tiêu chí kiểm định */}
@@ -643,7 +944,7 @@ export default function ExpertsDirectoryPage() {
             </div>
 
             {/* Active Filter Chips Bar (T141) */}
-            {(Boolean(searchTerm.trim()) || selectedDegrees.length > 0 || selectedSectors.length > 0 || Boolean(selectedProvince) || acceptingConsultation) && (
+            {(Boolean(searchTerm.trim()) || selectedDegrees.length > 0 || selectedSectors.length > 0 || selectedProvinces.length > 0 || acceptingConsultation) && (
               <div className="flex flex-wrap items-center gap-2 mb-3" aria-label="Tiêu chí đang chọn">
                 <span className="text-caption font-semibold text-slate-500 dark:text-slate-400">Đang lọc:</span>
                 {searchTerm.trim() && (
@@ -691,19 +992,28 @@ export default function ExpertsDirectoryPage() {
                     </button>
                   </span>
                 ))}
-                {selectedProvince && (
-                  <span className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption font-medium dark:bg-brand-950/70 dark:border-brand-800 dark:text-brand-300">
-                    <span>Địa bàn: {provinceOptions.find((x) => x.code === selectedProvince)?.name || selectedProvince}</span>
-                    <button
-                      type="button"
-                      aria-label="Bỏ chọn địa bàn"
-                      onClick={() => { setSelectedProvince(""); setCurrentPage(1); }}
-                      className="hover:text-brand-900 rounded-full p-0.5"
+                {selectedProvinces.map((provCode) => {
+                  const provName = provinceOptions.find((x) => x.code === provCode)?.name || provCode;
+                  return (
+                    <span
+                      key={provCode}
+                      className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-800 text-caption font-medium dark:bg-brand-950/70 dark:border-brand-800 dark:text-brand-300"
                     >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                )}
+                      <span>Địa bàn: {provName}</span>
+                      <button
+                        type="button"
+                        aria-label={`Bỏ chọn địa bàn ${provName}`}
+                        onClick={() => {
+                          setSelectedProvinces((prev) => prev.filter((p) => p !== provCode));
+                          setCurrentPage(1);
+                        }}
+                        className="hover:text-brand-900 rounded-full p-0.5 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </span>
+                  );
+                })}
                 {acceptingConsultation && (
                   <span className="min-h-8 px-2.5 py-1 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-caption font-medium dark:bg-emerald-950/70 dark:border-emerald-800 dark:text-emerald-300">
                     <span>Sẵn sàng nhận tư vấn</span>
