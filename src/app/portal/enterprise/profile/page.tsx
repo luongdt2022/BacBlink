@@ -8,6 +8,7 @@ import {
   submitEnterpriseVerification,
   UpsertEnterpriseRequest,
 } from "../../../../lib/enterprise-client";
+import { SearchableProvinceCombobox } from "@/components/common/searchable-province-combobox";
 
 const TABS = [
   { id: "legal", label: "1. Pháp lý & Định danh" },
@@ -348,12 +349,10 @@ export default function EnterpriseOwnerProfilePage() {
                   </div>
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Tỉnh / Thành phố *</label>
-                    <input
-                      type="text"
+                    <SearchableProvinceCombobox
                       value={formData.provinceCity || ""}
-                      onChange={(e) => setFormData({ ...formData, provinceCity: e.target.value })}
-                      placeholder="VD: Hà Nội, TP Hồ Chí Minh, Đà Nẵng..."
-                      className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800"
+                      onChange={(val) => setFormData({ ...formData, provinceCity: val })}
+                      placeholder="Chọn Tỉnh / Thành phố..."
                     />
                   </div>
                   <div>

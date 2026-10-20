@@ -36,6 +36,7 @@ import {
 } from "@/lib/enterprise-client";
 import { PROVINCES_34 } from "../khao-sat-nhu-cau/types";
 import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
+import { SearchableProvinceCombobox } from "@/components/common/searchable-province-combobox";
 
 // 11 Lĩnh vực công nghệ trọng điểm theo Thông tư 17/2019/TT-BKHCN
 const SECTORS_TT17 = [
@@ -300,16 +301,11 @@ export default function EnterprisesDirectoryPage() {
                 <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                   Địa Bàn Hoạt Động (Tỉnh/Thành)
                 </label>
-                <select
+                <SearchableProvinceCombobox
                   value={province}
-                  onChange={(e) => setProvince(e.target.value)}
-                  className="form-control w-full"
-                >
-                  <option value="">Tất cả Tỉnh / Thành phố</option>
-                  {PROVINCES_34.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setProvince(val)}
+                  placeholder="Tất cả Tỉnh / Thành phố"
+                />
               </div>
 
               {/* Lọc Lĩnh Vực TT17 */}

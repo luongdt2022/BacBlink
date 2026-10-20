@@ -131,6 +131,18 @@ export function Navbar() {
               {/* Dark/Light Theme Toggle */}
               <ThemeToggle />
 
+              {/* Agent Dashboard Link (Direct link to Orchestrator) */}
+              <a
+                href="http://127.0.0.1:8420"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="focus-ring hidden md:inline-flex items-center gap-1.5 rounded-full bg-cyan-950/80 border border-cyan-800 px-3 py-1 text-xs font-bold text-cyan-300 hover:bg-cyan-900 transition shadow hover:border-cyan-600"
+                title="Mở Bàn Điều Khiển AI Agent & Task Orchestrator (http://127.0.0.1:8420)"
+              >
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span>Agent Dashboard</span>
+              </a>
+
               <div className="mx-1 hidden h-6 w-px bg-slate-200 dark:bg-slate-800 sm:block" />
 
               {/* User Session */}
@@ -242,6 +254,16 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <a
+              href="http://127.0.0.1:8420"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 rounded-control px-3 py-2.5 text-label font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800"
+            >
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+              Agent Orchestrator Dashboard
+            </a>
             {!user ? (
               <div className="flex flex-wrap gap-3 border-t border-border-default py-3 sm:hidden">
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="focus-ring rounded-control border border-border-default px-4 py-3 text-label font-semibold text-brand-700 dark:text-brand-200">{t("login")}</Link>
