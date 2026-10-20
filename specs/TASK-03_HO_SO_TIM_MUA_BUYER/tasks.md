@@ -126,3 +126,8 @@
 - [x] **T-03.56** `[TEST]` Bổ sung Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` kiểm chứng: 100% dữ liệu pháp nhân được nạp đầy đủ khi đã đăng nhập, hiển thị Banner nạp hồ sơ, Bước 1 hợp lệ ngay lập tức và sẵn sàng chuyển Bước 2.
 - [x] **T-03.57** `[TEST]` `[E2E]` Viết kịch bản kiểm thử E2E Playwright `test_task03_buyer_prefill_and_demo_e2e.py`: Đăng nhập bằng `buyer.user@demo.nacentech.vn` (mật khẩu `Demo@2026`), mở `/khao-sat-nhu-cau`, xác nhận tự động điền đúng 100% thông tin CÔNG TY TNHH TRƯỜNG HOAN (MST `0100255428`, Hà Nội).
 
+
+- [ ] `TASK-03-CR58` **[CR]** [P1] Test CR Tab 5 TNI — Kiem thu tao CR tu Dashboard
+- [x] `TASK-03-CR59` **[CR]** [P1] Sửa nội dung tab form nhập nhu cầu — Các tab khác của nhu cầu , ngoài tab nhu cầu và thồn tin doanh nghiệp, có thể ghộp vào thành tab bổ sung và k bắt buộc, cho doanh nghiệp k điền cũng được
+
+- [ ] `TASK-03-CR60` **[CR]** [P1] (Người gửi: Trần Thị B (BA Lead)) Cải tiến giao diện hiển thị tổng mức đầu tư bài toán — Bổ sung tooltip giải thích cơ cấu vốn đầu tư công nghệ cho bài toán nhu cầu

@@ -106,7 +106,7 @@
 ---
 
 ### Phase 8: Delta CR-2026-019 / CR-008 — Sửa Combobox Tỉnh Thành DN ĐMST Thành Searchable Autocomplete [FE][INT][TEST]
-- [ ] **T-02.67** `[FE]` **[BƯỚC 1 - LÀM TRƯỚC] Tạo ô chọn Tỉnh/Thành thông minh (gõ chữ tìm nhanh, hỗ trợ tiếng Việt không dấu)**: Xây dựng ô chọn mới có kính lúp tìm kiếm (gõ "ha noi" tự ra "Hà Nội", "da nang" ra "Đà Nẵng", hỗ trợ phím mũi tên lên/xuống và Enter để chọn nhanh).
-- [ ] **T-02.68** `[FE]` **[BƯỚC 2 - SAU BƯỚC 1] Gắn ô tìm kiếm tỉnh vào Bộ lọc trang Danh bạ Doanh nghiệp ngoài sàn**: Thay ô chọn cũ ở trang Danh bạ Doanh nghiệp (`/enterprises`) bằng ô tìm kiếm thông minh; khi người dùng chọn tỉnh nào thì hệ thống tự lọc danh sách công ty ở tỉnh đó.
-- [ ] **T-02.69** `[FE]` **[BƯỚC 3 - SAU BƯỚC 1] Gắn ô tìm kiếm tỉnh vào Form Khai báo & Sửa hồ sơ Doanh nghiệp**: Thay ô nhập tỉnh ở trang quản lý hồ sơ (`/portal/enterprise/profile`) bằng ô thông minh, giúp doanh nghiệp chọn chuẩn tên tỉnh/thành phố trụ sở, tránh gõ sai chính tả.
-- [ ] **T-02.70** `[TEST]` **[BƯỚC 4 - LÀM CUỐI CÙNG] Kiểm tra tự động toàn diện tìm kiếm tỉnh và lọc dữ liệu**: Kiểm tra tự động toàn trình: gõ tiếng Việt không dấu, bấm chọn tỉnh, xác nhận danh sách doanh nghiệp lọc ra chính xác 100% trước khi xuất xưởng.
+- [x] **T-02.67** `[FE]` **[BƯỚC 1 - LÀM TRƯỚC] Tạo ô chọn Tỉnh/Thành thông minh (gõ chữ tìm nhanh, hỗ trợ tiếng Việt không dấu)**: Xây dựng ô chọn mới có kính lúp tìm kiếm (gõ "ha noi" tự ra "Hà Nội", "da nang" ra "Đà Nẵng", hỗ trợ phím mũi tên lên/xuống và Enter để chọn nhanh).
+- [x] **T-02.68** `[FE]` **[BƯỚC 2 - SAU BƯỚC 1] Gắn ô tìm kiếm tỉnh vào Bộ lọc trang Danh bạ Doanh nghiệp ngoài sàn**: Thay ô chọn cũ ở trang Danh bạ Doanh nghiệp (`/enterprises`) bằng ô tìm kiếm thông minh; khi người dùng chọn tỉnh nào thì hệ thống tự lọc danh sách công ty ở tỉnh đó.
+- [x] **T-02.69** `[FE]` **[BƯỚC 3 - SAU BƯỚC 1] Gắn ô tìm kiếm tỉnh vào Form Khai báo & Sửa hồ sơ Doanh nghiệp**: Thay ô nhập tỉnh ở trang quản lý hồ sơ (`/portal/enterprise/profile`) bằng ô thông minh, giúp doanh nghiệp chọn chuẩn tên tỉnh/thành phố trụ sở, tránh gõ sai chính tả.
+- [x] **T-02.70** `[TEST]` **[BƯỚC 4 - LÀM CUỐI CÙNG] Kiểm tra tự động toàn diện tìm kiếm tỉnh và lọc dữ liệu**: Kiểm tra tự động toàn trình: gõ tiếng Việt không dấu, bấm chọn tỉnh, xác nhận danh sách doanh nghiệp lọc ra chính xác 100% trước khi xuất xưởng.
