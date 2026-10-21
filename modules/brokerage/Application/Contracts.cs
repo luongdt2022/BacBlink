@@ -223,7 +223,8 @@ public sealed record ExpertPublicCardDto(
     int ProjectCount,
     bool IsVerified,
     bool IsAcceptingConsultation,
-    IReadOnlyList<string>? SpecializedKeywords = null);
+    IReadOnlyList<string>? SpecializedKeywords = null,
+    int ConnectionCount = 0);
 
 public sealed record ExpertPublicDirectoryDto(
     IReadOnlyList<ExpertPublicCardDto> Items,

@@ -214,9 +214,23 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
 
         if (!string.IsNullOrWhiteSpace(provinceCode))
         {
-            var province = provinceCode.Trim().ToUpperInvariant();
-            var scopedPersonIds = await provinceScopes.GetPersonIdsInProvinceAsync(province, ct);
-            query = query.Where(p => p.PersonId != null && scopedPersonIds.Contains(p.PersonId.Value));
+            var provinces = provinceCode.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                       .Select(p => p.ToUpperInvariant()).ToList();
+            if (provinces.Count == 1)
+            {
+                var scopedPersonIds = await provinceScopes.GetPersonIdsInProvinceAsync(provinces[0], ct);
+                query = query.Where(p => p.PersonId != null && scopedPersonIds.Contains(p.PersonId.Value));
+            }
+            else if (provinces.Count > 1)
+            {
+                var allScopedIds = new HashSet<Guid>();
+                foreach (var prov in provinces)
+                {
+                    var ids = await provinceScopes.GetPersonIdsInProvinceAsync(prov, ct);
+                    foreach (var id in ids) allScopedIds.Add(id);
+                }
+                query = query.Where(p => p.PersonId != null && allScopedIds.Contains(p.PersonId.Value));
+            }
         }
 
         if (acceptingConsultation == true)
@@ -273,7 +287,8 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             ProjectCount: projCounts.GetValueOrDefault(p.Id, 0),
             IsVerified: p.Status == ExpertStatuses.Approved,
             IsAcceptingConsultation: p.IsAcceptingConsultation,
-            SpecializedKeywords: p.SpecializedKeywords
+            SpecializedKeywords: p.SpecializedKeywords,
+            ConnectionCount: p.ConnectionCount
         )).ToList();
 
         return new ExpertPublicDirectoryDto(items, totalCount, page, pageSize, totalPages);

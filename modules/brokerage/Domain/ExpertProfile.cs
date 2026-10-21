@@ -110,6 +110,7 @@ public sealed class ExpertProfile : AggregateRoot
     public string? MagicLinkToken { get; private set; }
     public DateTimeOffset? MagicLinkExpiresAtUtc { get; private set; }
     public string? ReviewerNote { get; private set; }
+    public int ConnectionCount { get; private set; } = 0;
 
     public static ExpertProfile CreateQuickIntake(
         string fullName,
@@ -177,6 +178,19 @@ public sealed class ExpertProfile : AggregateRoot
     {
         Status = ExpertStatuses.Approved;
         ReviewerNote = note;
+        Touch();
+    }
+
+    public void SetConnectionCount(int count)
+    {
+        if (count < 0) throw new ValidationException("Số lượt kết nối không được là số âm.");
+        ConnectionCount = count;
+        Touch();
+    }
+
+    public void IncrementConnectionCount()
+    {
+        ConnectionCount++;
         Touch();
     }
 

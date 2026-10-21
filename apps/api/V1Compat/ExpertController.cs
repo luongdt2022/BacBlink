@@ -235,6 +235,7 @@ public sealed class PublicExpertController(IExpertService experts, DbContext db,
         [FromQuery] string? sectorCode,
         [FromQuery(Name = "sectorCodes")] string[]? sectorCodes,
         [FromQuery] string? provinceCode,
+        [FromQuery(Name = "provinceCodes")] string[]? provinceCodes,
         [FromQuery] bool? acceptingConsultation,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 9,
@@ -243,12 +244,13 @@ public sealed class PublicExpertController(IExpertService experts, DbContext db,
         var searchTerm = string.IsNullOrWhiteSpace(q) ? query : q;
         var degreeList = ParseMultiValues(degrees, degree);
         var sectorList = ParseMultiValues(sectorCodes, sectorCode);
+        var provinceList = ParseMultiValues(provinceCodes, provinceCode);
 
         var result = await experts.GetPublicDirectoryAsync(
             searchTerm,
             degreeList.Count > 0 ? degreeList : null,
             sectorList.Count > 0 ? sectorList : null,
-            provinceCode,
+            provinceList.Count > 0 ? string.Join(",", provinceList) : null,
             acceptingConsultation,
             page,
             pageSize,

@@ -59,6 +59,7 @@ public sealed class ExpertProfileConfiguration : IEntityTypeConfiguration<Expert
         b.Property(x => x.DraftSource).HasMaxLength(30).IsRequired().HasDefaultValue("PORTAL");
         b.Property(x => x.MagicLinkToken).HasMaxLength(255);
         b.Property(x => x.Status).HasMaxLength(30).IsRequired();
+        b.Property(x => x.ConnectionCount).HasColumnName("connection_count").HasDefaultValue(0).IsRequired();
         b.Property(x => x.LegalOath).IsRequired().HasDefaultValue(false);
         b.HasIndex(x => x.PersonId).IsUnique();
         b.HasIndex(x => x.MagicLinkToken);

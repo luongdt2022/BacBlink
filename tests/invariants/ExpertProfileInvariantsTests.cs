@@ -414,5 +414,61 @@ public sealed class ExpertProfileInvariantsTests
         missing2.Count.ShouldBe(0);
         suggestions2.Count.ShouldBe(0);
     }
+
+    [Fact]
+    public void Connection_count_defaults_to_zero_and_rejects_negative_value()
+    {
+        var profile = new ExpertProfile(
+            Guid.NewGuid(), "TS. Nguyễn Văn Tuấn", 1980, "male", null, null, "PGS", 2018,
+            "DOCTOR", 2015, "ĐHBK Hà Nội", null, null, null, [], null, null, null, null, false, false, DateTimeOffset.UtcNow, legalOath: true);
+
+        profile.ConnectionCount.ShouldBe(0);
+
+        // Reject negative count
+        var ex = Should.Throw<ValidationException>(() => profile.SetConnectionCount(-1));
+        ex.Message.ShouldContain("không được là số âm");
+
+        // Allow zero or positive
+        profile.SetConnectionCount(0);
+        profile.ConnectionCount.ShouldBe(0);
+
+        profile.SetConnectionCount(12);
+        profile.ConnectionCount.ShouldBe(12);
+
+        // Increment
+        profile.IncrementConnectionCount();
+        profile.ConnectionCount.ShouldBe(13);
+    }
+
+    [Fact]
+    public void Public_directory_card_dto_includes_connection_count_without_exposing_pii()
+    {
+        var card = new ExpertPublicCardDto(
+            ExpertCode: "CG-NACEN-E2E001",
+            FullName: "GS.TS. Trần Văn B",
+            AcademicRank: "GS",
+            Degree: "DOCTOR",
+            OrganizationName: "Viện Hàn Lâm",
+            PositionTitle: "Viện sĩ",
+            PrimarySectorCode: "03",
+            PrimarySectorName: "03. Điện tử & CNTT",
+            ExpertiseSectors: ["03"],
+            MasteredTechCodes: ["TECH-AI"],
+            ProvinceCode: "HN",
+            ProvinceName: "Hà Nội",
+            PublicationCount: 10,
+            PatentCount: 2,
+            ProjectCount: 5,
+            IsVerified: true,
+            IsAcceptingConsultation: true,
+            ConnectionCount: 15);
+
+        card.ConnectionCount.ShouldBe(15);
+        var json = JsonSerializer.Serialize(card, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        json.ShouldContain("\"connectionCount\":15");
+        json.ShouldNotContain("phone");
+        json.ShouldNotContain("email");
+        json.ShouldNotContain("idCard");
+    }
 }
 
