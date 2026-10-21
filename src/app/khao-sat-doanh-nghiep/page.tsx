@@ -854,29 +854,14 @@ export default function EnterpriseSurveyPage() {
           )}
 
           <div className="flex flex-wrap justify-center gap-3 pt-3">
-            {submitResult.accountProvisioned ? (
-              <Link
-                href="/login"
-                className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
-              >
-                <LogIn className="w-4 h-4" /> Đăng Nhập Ngay Vào Hệ Thống
-              </Link>
-            ) : (
-              <Link
-                href="/portal/buyer/demands"
-                className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
-              >
-                Đến Bàn Làm Việc Buyer Workspace <ArrowRight className="w-4 h-4" />
-              </Link>
-            )}
             <button
               onClick={() => {
                 setSubmitResult(null);
                 setCurrentStep(1);
               }}
-              className="border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold text-xs transition"
+              className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
             >
-              Kê khai phiếu khảo sát khác
+              <RotateCcw className="w-4 h-4" /> Kê khai phiếu khảo sát khác
             </button>
           </div>
         </div>
