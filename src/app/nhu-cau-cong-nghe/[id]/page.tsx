@@ -15,12 +15,14 @@ import {
   AlertCircle,
   HelpCircle,
   Clock,
-  Sparkles
+  Sparkles,
+  Kanban,
+  ArrowRight
 } from "lucide-react";
 import { Async, AsyncState } from "@/components/ui/async";
 import { getTniClassification } from "@/components/demand/TniRealtimeCalculator";
 import { useToast } from "@/components/common/toast";
-import { authClient } from "@/lib/auth-client";
+import { authClient, UserContext } from "@/lib/auth-client";
 import { SECTORS_18_CATALOG } from "@/services/api/technology-offer";
 
 export default function PublicDemandDetailPage() {
@@ -45,6 +47,9 @@ export default function PublicDemandDetailPage() {
   const [sellerName, setSellerName] = useState("");
   const [sellerEmail, setSellerEmail] = useState("");
   const [sellerPhone, setSellerPhone] = useState("");
+  const [createdOppCode, setCreatedOppCode] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
+  const [autoFilled, setAutoFilled] = useState(false);
 
   const loadItem = async () => {
     if (!id) return;
@@ -70,7 +75,50 @@ export default function PublicDemandDetailPage() {
 
   useEffect(() => {
     loadItem();
+    const user = authClient.getUser();
+    if (user) {
+      setCurrentUser(user);
+    }
   }, [id]);
+
+  // Tự động điền thông tin người chào bán khi người dùng bắt đầu gõ tên công nghệ / giải pháp
+  const handleSolutionTitleChange = (val: string) => {
+    setSolutionTitle(val);
+    if (val.trim().length > 0) {
+      const user = currentUser || authClient.getUser();
+      if (user) {
+        let changed = false;
+        if (!sellerName) {
+          setSellerName(user.organizationName || user.fullName || "Đơn vị Đổi mới sáng tạo");
+          changed = true;
+        }
+        if (!sellerEmail) {
+          setSellerEmail(user.email || "");
+          changed = true;
+        }
+        if (!sellerPhone) {
+          setSellerPhone(user.phone || user.phoneNumber || "0912345678");
+          changed = true;
+        }
+        if (changed) {
+          setAutoFilled(true);
+        }
+      }
+    }
+  };
+
+  const handleManualAutoFill = () => {
+    const user = currentUser || authClient.getUser();
+    if (!user) {
+      toast.warning("Bạn chưa đăng nhập tài khoản.", "Chưa đăng nhập");
+      return;
+    }
+    setSellerName(user.organizationName || user.fullName || "Đơn vị Đổi mới sáng tạo");
+    setSellerEmail(user.email || "");
+    setSellerPhone(user.phone || user.phoneNumber || "0912345678");
+    setAutoFilled(true);
+    toast.info("Đã điền thông tin tài khoản vào form.", "Tự động điền");
+  };
 
   const handleSendOffer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +142,8 @@ export default function PublicDemandDetailPage() {
       });
 
       if (res.ok) {
+        const resData = await res.json().catch(() => ({}));
+        setCreatedOppCode(resData.opportunityCode || null);
         setOfferSent(true);
         toast.success(
           "Đề xuất giải pháp của Quý đơn vị đã được gửi tới Ban thẩm định NacenTwin.",
@@ -260,23 +310,72 @@ export default function PublicDemandDetailPage() {
                   </div>
 
                   {offerSent ? (
-                    <div className="p-6 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-center space-y-3">
-                      <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                      <h4 className="font-extrabold text-emerald-900 dark:text-emerald-200 text-sm">
-                        Đã Gửi Đề Xuất Thành Công!
-                      </h4>
-                      <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                        Chuyên gia phụ trách bài toán sẽ phản hồi tới Quý đơn vị trong vòng 24 giờ làm việc.
-                      </p>
-                      <button
-                        onClick={() => setOfferSent(false)}
-                        className="text-xs text-brand-700 dark:text-cyan-400 font-bold underline pt-2 block mx-auto"
-                      >
-                        Gửi thêm đề xuất khác
-                      </button>
+                    <div className="p-6 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-center space-y-4">
+                      <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+                      <div className="space-y-1">
+                        <h4 className="font-extrabold text-emerald-900 dark:text-emerald-200 text-base">
+                          Đã Gửi Đề Xuất Thành Công!
+                        </h4>
+                        {createdOppCode && (
+                          <div className="inline-block bg-white dark:bg-slate-900 px-3 py-1 rounded-full text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700">
+                            Mã cơ hội: {createdOppCode}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed text-left bg-white/80 dark:bg-slate-900/70 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 space-y-2">
+                        <p className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                          <span>📌</span> Nơi kiểm tra thông báo & tiến trình xử lý:
+                        </p>
+                        <p>
+                          1. <strong>Tiến trình Hợp tác (Pipeline)</strong>: Đề xuất đã được ghi nhận tự động vào quy trình kết nối. Quý đơn vị có thể theo dõi trạng thái thẩm định sơ bộ, kết nối 3 bên và tiến độ ký kết MOU tại mục <strong>Tiến trình Chuyển giao & MOU</strong> trong Bàn làm việc (Portal).
+                        </p>
+                        <p>
+                          2. <strong>Cán bộ Sở KH&CN phụ trách</strong>: Sau khi đối soát năng lực kỹ thuật phù hợp với bài toán của doanh nghiệp, chuyên viên quản lý sẽ liên hệ trực tiếp qua Email hoặc SĐT mà Quý đơn vị đã đăng ký.
+                        </p>
+                      </div>
+
+                      <div className="pt-2 space-y-2">
+                        <Link
+                          href="/portal/opportunities/pipeline"
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition text-xs"
+                        >
+                          <Kanban className="w-4 h-4" />
+                          Xem Tiến Trình Hợp Tác Trong Pipeline
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+
+                        <button
+                          onClick={() => {
+                            setOfferSent(false);
+                            setSolutionTitle("");
+                            setAutoFilled(false);
+                          }}
+                          className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-semibold py-1.5 block mx-auto transition"
+                        >
+                          Gửi thêm đề xuất giải pháp khác
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <form onSubmit={handleSendOffer} className="space-y-4 text-xs">
+                      {/* Trạng thái tài khoản & Hỗ trợ tự động điền */}
+                      {currentUser ? (
+                        <div className="flex items-center justify-between bg-brand-50/70 dark:bg-brand-950/40 p-2.5 rounded-xl border border-brand-200/60 dark:border-brand-800 text-[11px] text-brand-800 dark:text-cyan-300">
+                          <div className="flex items-center gap-1.5 font-medium truncate mr-2">
+                            <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-cyan-400 shrink-0" />
+                            <span className="truncate">Đang đăng nhập: <strong>{currentUser.fullName}</strong></span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleManualAutoFill}
+                            className="text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline shrink-0"
+                          >
+                            Tự động điền
+                          </button>
+                        </div>
+                      ) : null}
+
                       <div>
                         <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
                           Tên công nghệ / giải pháp đề xuất *
@@ -285,11 +384,18 @@ export default function PublicDemandDetailPage() {
                           required
                           rows={3}
                           value={solutionTitle}
-                          onChange={(e) => setSolutionTitle(e.target.value)}
+                          onChange={(e) => handleSolutionTitleChange(e.target.value)}
                           placeholder="Ví dụ: Thiết bị kiểm định thị giác AI tích hợp thuật toán xử lý ảnh tốc độ cao..."
                           className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs focus:ring-2 focus:ring-brand-500 outline-none transition"
                         />
                       </div>
+
+                      {autoFilled && (
+                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>Đã tự động điền đơn vị, email và SĐT từ tài khoản đăng nhập. Bạn có thể chỉnh sửa nếu cần.</span>
+                        </div>
+                      )}
 
                       <div>
                         <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">

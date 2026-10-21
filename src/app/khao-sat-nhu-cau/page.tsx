@@ -1053,7 +1053,7 @@ export default function DeepSurveyPage() {
       </section>
 
       {/* STEPPER NAVIGATION BAR (4 TABS TINH GỌN: NHU CẦU -> DOANH NGHIỆP -> THÔNG TIN BỔ SUNG -> XÁC NHẬN) */}
-      <div className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="sticky top-[68px] z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between mb-2 text-xs font-bold">
             <span className="text-brand-700 dark:text-cyan-400">

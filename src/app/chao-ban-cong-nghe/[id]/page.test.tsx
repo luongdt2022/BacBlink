@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ChiTietChaoBanPage from "./page";
 import { TechnologyOffer } from "@/types/technology-offer";
 import { fetchOfferById } from "@/services/api/technology-offer";
+import { authClient, ROLES } from "@/lib/auth-client";
 
 const mockOffer: TechnologyOffer = {
   id: "01928002-0000-7000-8000-000000000008",
@@ -59,10 +60,12 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    authClient.clearSession();
   });
 
   afterEach(() => {
     cleanup();
+    authClient.clearSession();
   });
 
   it("T-04.37: Hiển thị đúng dữ liệu thật từ DB trên Quick Specs (Unit, Rating, Connections)", async () => {
@@ -282,5 +285,46 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
     expect(screen.getByText("Chung_Chi_Kiem_Dinh_Bo_Cong_Thuong.pdf")).toBeInTheDocument();
     expect(screen.getByText("Thiet_Ke_Chi_Tiet_Va_Ma_Nguon.pdf")).toBeInTheDocument();
     expect(screen.getByText(/Cần cấp quyền \(Ký NDA\)/i)).toBeInTheDocument();
+  });
+
+  it("tự động điền dữ liệu người dùng đã đăng nhập vào Quick Demand Modal khi mở hoặc gõ bài toán", async () => {
+    authClient.setSession("buyer-token", {
+      id: "u-buyer-99",
+      email: "director@nongnghiep-xanh.vn",
+      fullName: "Đặng Thị Thảo",
+      role: ROLES.BUYER,
+      organizationName: "Công ty TNHH Nông Nghiệp Xanh Việt Nam",
+      phone: "0934567890",
+    });
+
+    render(<ChiTietChaoBanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("OFF-202610-LV16-08")).toBeInTheDocument();
+    });
+
+    // Mở Modal
+    const openModalBtn = screen.getByRole("button", {
+      name: /Gửi yêu cầu li-xăng \/ chuyển giao/i,
+    });
+    fireEvent.click(openModalBtn);
+
+    expect(screen.getByText(/Tạo Nhanh Nhu Cầu & Kết Nối Chuyển Giao/i)).toBeInTheDocument();
+
+    // Kiểm tra các trường đã được tự động điền từ tài khoản đăng nhập
+    const companyInput = screen.getByPlaceholderText(/Công ty CP Nông Sản Sạch/i) as HTMLInputElement;
+    const contactInput = screen.getByPlaceholderText(/Nguyễn Văn A/i) as HTMLInputElement;
+    const phoneInput = screen.getByPlaceholderText(/0912 345 678/i) as HTMLInputElement;
+    const emailInput = screen.getByPlaceholderText(/contact@doanhnghiep.vn/i) as HTMLInputElement;
+
+    expect(companyInput.value).toBe("Công ty TNHH Nông Nghiệp Xanh Việt Nam");
+    expect(contactInput.value).toBe("Đặng Thị Thảo");
+    expect(phoneInput.value).toBe("0934567890");
+    expect(emailInput.value).toBe("director@nongnghiep-xanh.vn");
+
+    // Kiểm tra hiển thị banner tài khoản và huy hiệu tự động điền
+    expect(screen.getByText(/Đang đăng nhập:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Đặng Thị Thảo/i)).toBeInTheDocument();
+    expect(screen.getByText(/Đã tự động điền đơn vị, người liên hệ, email và SĐT từ tài khoản đăng nhập/i)).toBeInTheDocument();
   });
 });

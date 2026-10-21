@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { RoleGuard } from "@/components/auth/role-guard";
 import {
   LayoutDashboard,
@@ -111,6 +111,8 @@ const PORTAL_ALLOWED_ROLES = [
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams?.get("tab") || "";
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -215,13 +217,23 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {navItems.map((item) => {
               const Icon = item.icon;
               const basePath = item.href.split("?")[0];
+              const itemQuery = item.href.includes("?") ? new URLSearchParams(item.href.split("?")[1]) : null;
               const activeExpertKey = isExpert ? resolveExpertActiveMenu(pathname) : null;
-              const isActive =
-                isExpert && item.key
-                  ? item.key === activeExpertKey
-                  : basePath === "/portal"
-                    ? pathname === "/portal"
-                    : pathname === basePath || pathname?.startsWith(basePath + "/");
+
+              let isActive = false;
+              if (isExpert && item.key) {
+                isActive = item.key === activeExpertKey;
+              } else if (basePath === "/portal") {
+                isActive = pathname === "/portal";
+              } else if (pathname === basePath || pathname?.startsWith(basePath + "/")) {
+                if (itemQuery && itemQuery.has("tab")) {
+                  isActive = currentTab === itemQuery.get("tab");
+                } else if (basePath === "/portal/opportunities/pipeline") {
+                  isActive = currentTab !== "inbound";
+                } else {
+                  isActive = true;
+                }
+              }
               return (
                 <React.Fragment key={item.href + item.label}>
                   {item.section && (

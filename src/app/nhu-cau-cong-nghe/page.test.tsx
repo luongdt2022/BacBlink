@@ -65,6 +65,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     authClient.clearSession();
+    window.scrollTo = vi.fn();
   });
 
   afterEach(() => {
@@ -120,6 +121,14 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     // Hiển thị định danh doanh nghiệp ẩn danh theo chuẩn PDPD Masking
     expect(screen.getByText(/\[DN Điện – điện tử – tự động hóa - Bắc Ninh\]/i)).toBeInTheDocument();
     expect(screen.getByText(/\[DN Y - Dược, Sinh học & Thiết bị y tế - Hải Phòng\]/i)).toBeInTheDocument();
+
+    // Kiểm tra các thành phần Banner đại diện và nội dung nguyên bản:
+    // 1. Công đoạn và Giải pháp mong muốn
+    expect(screen.getAllByText(/Công đoạn:/i).length).toBe(2);
+    expect(screen.getAllByText(/Giải pháp mong muốn:/i).length).toBe(2);
+
+    // 2. Icon bảo vệ danh tính PDPD (đã thu gọn không còn text thừa)
+    expect(screen.getAllByTitle(/Bảo vệ danh tính \(PDPD\)/i).length).toBe(2);
   });
 
   it("guards 'Đăng Nhanh Bài Toán' button based on user authentication and role", async () => {
@@ -160,6 +169,63 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     await waitFor(() => {
       expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
     });
+  });
+
+  it("handles client-side pagination (9 items per page) and page navigation correctly", async () => {
+    // Tạo 12 items giả lập để chia thành 2 trang (Trang 1: 9 items, Trang 2: 3 items)
+    const manyDemands = Array.from({ length: 12 }, (_, index) => ({
+      id: `dem-bulk-${index + 1}`,
+      itemCode: `DMD-202610-${String(index + 1).padStart(3, "0")}`,
+      stageName: `Công đoạn số ${index + 1}`,
+      technicalProblem: `Bài toán kỹ thuật kiểm thử phân trang số ${index + 1}`,
+      sectorCode: "LV08",
+      techGroupCode: "CN01",
+      budgetRange: "1 - 2 tỷ đồng",
+      tniScore: 80,
+      tniClassification: "VERY_HIGH",
+      expectedGoal: `Mục tiêu ${index + 1}`,
+      desiredSolution: `Giải pháp ${index + 1}`,
+      province: "Hà Nội",
+    }));
+
+    vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/v1/sectors")) {
+        return {
+          ok: true,
+          json: async () => ({ success: true, data: mockSectors }),
+        } as Response;
+      }
+      if (url.includes("/api/v1/public/demands")) {
+        return {
+          ok: true,
+          json: async () => manyDemands,
+        } as Response;
+      }
+      return { ok: true, json: async () => ({}) } as Response;
+    });
+
+    render(<PublicDemandsPage />);
+
+    // Chờ danh sách tải xong: Trang 1 hiển thị 9 items đầu tiên
+    await waitFor(() => {
+      expect(screen.getByText("Bài toán kỹ thuật kiểm thử phân trang số 1")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Bài toán kỹ thuật kiểm thử phân trang số 9")).toBeInTheDocument();
+    // Item thứ 10 không nằm trên Trang 1
+    expect(screen.queryByText("Bài toán kỹ thuật kiểm thử phân trang số 10")).not.toBeInTheDocument();
+
+    // Kiểm tra controls phân trang hiển thị đúng 2 trang
+    const page2Button = screen.getByRole("button", { name: "2" });
+    expect(page2Button).toBeInTheDocument();
+
+    // Chuyển sang Trang 2
+    fireEvent.click(page2Button);
+
+    // Trang 2 hiển thị các items 10, 11, 12 và không còn hiển thị item 1
+    expect(screen.getByText("Bài toán kỹ thuật kiểm thử phân trang số 10")).toBeInTheDocument();
+    expect(screen.getByText("Bài toán kỹ thuật kiểm thử phân trang số 12")).toBeInTheDocument();
+    expect(screen.queryByText("Bài toán kỹ thuật kiểm thử phân trang số 1")).not.toBeInTheDocument();
   });
 });
 

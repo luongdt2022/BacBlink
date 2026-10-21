@@ -10,6 +10,9 @@ export interface UserContext {
   role: string;
   scopeType?: string;
   scopeId?: string;
+  organizationName?: string;
+  phone?: string;
+  phoneNumber?: string;
 }
 
 export const ROLES = {

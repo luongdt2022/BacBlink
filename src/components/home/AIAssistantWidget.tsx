@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Bot, X, Send, Sparkles, ArrowRight, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import { portalClient, AiQuickAssistResponse, AiSuggestionItem } from "@/lib/portal-client";
 
@@ -72,6 +73,7 @@ function renderFormattedMessage(text: string, onLinkClick: () => void): React.Re
 }
 
 export function AIAssistantWidget() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -155,6 +157,10 @@ export function AIAssistantWidget() {
       setLoading(false);
     }
   };
+
+  if (pathname?.startsWith("/khao-sat-doanh-nghiep") || pathname?.startsWith("/khao-sat-cong-nghe")) {
+    return null;
+  }
 
   return (
     <>

@@ -2,11 +2,35 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useI18n } from "./i18n-provider";
 import { Globe2, Mail, MapPin, Play } from "lucide-react";
 
 export function Footer() {
   const { t } = useI18n();
+  const pathname = usePathname();
+
+  const isDedicatedSurvey =
+    pathname?.startsWith("/khao-sat-doanh-nghiep") ||
+    pathname?.startsWith("/khao-sat-cong-nghe");
+
+  if (isDedicatedSurvey) {
+    return (
+      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-6 text-center text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <img src="/NACENTECH_Main-Logo-G.png" alt="NacenTwin Logo" className="h-6 w-auto object-contain" />
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              Nền Tảng Khảo Sát Nhu Cầu & Đổi Mới Công Nghệ Quốc Gia NacenTwin
+            </span>
+          </div>
+          <div>
+            © {new Date().getFullYear()} NacenTech — Viện Đổi Mới Sáng Tạo Quốc Gia (Bộ Khoa học & Công nghệ)
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="border-t border-border-default bg-surface-subtle text-sm text-slate-600 transition-colors dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">

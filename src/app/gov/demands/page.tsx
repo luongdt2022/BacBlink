@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   ShieldCheck,
@@ -12,7 +12,11 @@ import {
   ExternalLink,
   AlertCircle,
   Building2,
-  FileQuestion
+  FileQuestion,
+  Search,
+  X,
+  ArrowUpDown,
+  Sparkles
 } from 'lucide-react';
 import { Async, AsyncState } from '@/components/ui/async';
 import { useToast } from '@/components/common/toast';
@@ -24,13 +28,15 @@ export default function GovDemandsPage() {
   const [asyncState, setAsyncState] = useState<AsyncState>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [filterTab, setFilterTab] = useState<'ALL' | 'PENDING' | 'VERIFIED'>('ALL');
+  const [sortBy, setSortBy] = useState<'latest' | 'tni'>('latest');
+  const [searchQuery, setSearchQuery] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const fetchDemands = async () => {
     setAsyncState('loading');
     setErrorMessage('');
     try {
-      const res = await fetch('/api/v1/gov/demands');
+      const res = await fetch(`/api/v1/gov/demands?sort=${sortBy}`);
       if (res.ok) {
         const data = await res.json();
         const list = Array.isArray(data) ? data : [];
@@ -52,7 +58,7 @@ export default function GovDemandsPage() {
 
   useEffect(() => {
     fetchDemands();
-  }, []);
+  }, [sortBy]);
 
   const handleVerify = async (id: string, itemCode: string) => {
     setProcessingId(id);
@@ -94,10 +100,28 @@ export default function GovDemandsPage() {
     }
   };
 
-  const filteredDemands = demands.filter((d) => {
-    if (filterTab === 'ALL') return true;
-    return d.status === filterTab;
-  });
+  const filteredDemands = useMemo(() => {
+    let result = demands.filter((d) => {
+      if (filterTab !== 'ALL' && d.status !== filterTab) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchCode = d.itemCode?.toLowerCase().includes(q);
+        const matchProblem = d.technicalProblem?.toLowerCase().includes(q);
+        const matchStage = d.stageName?.toLowerCase().includes(q);
+        const matchSolution = d.desiredSolution?.toLowerCase().includes(q);
+        return matchCode || matchProblem || matchStage || matchSolution;
+      }
+      return true;
+    });
+
+    if (sortBy === 'tni') {
+      result.sort((a, b) => (b.tniScore || 0) - (a.tniScore || 0));
+    } else {
+      result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    }
+
+    return result;
+  }, [demands, filterTab, searchQuery, sortBy]);
 
   const pendingCount = demands.filter(d => d.status === 'PENDING').length;
   const verifiedCount = demands.filter(d => d.status === 'VERIFIED').length;
@@ -180,43 +204,107 @@ export default function GovDemandsPage() {
           </div>
         </div>
 
-        {/* FILTER TABS */}
-        <div className="surface-card p-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-            <button
-              onClick={() => setFilterTab('ALL')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                filterTab === 'ALL'
-                  ? 'bg-white dark:bg-slate-700 text-brand-700 dark:text-white shadow-sm'
-                  : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
-              }`}
-            >
-              Tất cả hồ sơ ({demands.length})
-            </button>
-            <button
-              onClick={() => setFilterTab('PENDING')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                filterTab === 'PENDING'
-                  ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-sm'
-                  : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
-              }`}
-            >
-              Chờ thẩm định ({pendingCount})
-            </button>
-            <button
-              onClick={() => setFilterTab('VERIFIED')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                filterTab === 'VERIFIED'
-                  ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm'
-                  : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
-              }`}
-            >
-              Đã niêm yết ({verifiedCount})
-            </button>
+        {/* FILTER & SEARCH BAR */}
+        <div className="surface-card p-4 space-y-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold shrink-0">
+              <button
+                onClick={() => setFilterTab('ALL')}
+                className={`px-3 py-1.5 rounded-lg transition ${
+                  filterTab === 'ALL'
+                    ? 'bg-white dark:bg-slate-700 text-brand-700 dark:text-white shadow-sm'
+                    : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
+                }`}
+              >
+                Tất cả hồ sơ ({demands.length})
+              </button>
+              <button
+                onClick={() => setFilterTab('PENDING')}
+                className={`px-3 py-1.5 rounded-lg transition ${
+                  filterTab === 'PENDING'
+                    ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-sm'
+                    : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
+                }`}
+              >
+                Chờ thẩm định ({pendingCount})
+              </button>
+              <button
+                onClick={() => setFilterTab('VERIFIED')}
+                className={`px-3 py-1.5 rounded-lg transition ${
+                  filterTab === 'VERIFIED'
+                    ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm'
+                    : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
+                }`}
+              >
+                Đã niêm yết ({verifiedCount})
+              </button>
+            </div>
+
+            {/* Search Box */}
+            <div className="relative flex-1 min-w-[240px] max-w-md">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm mã DMD, bài toán, công đoạn..."
+                className="w-full pl-9 pr-8 py-2 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Sort Switcher */}
+            <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary dark:text-slate-400 shrink-0">
+              <span className="text-[11px] shrink-0">Sắp xếp:</span>
+              <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setSortBy('latest')}
+                  className={`px-2.5 py-1 text-xs rounded-lg font-bold transition ${
+                    sortBy === 'latest'
+                      ? 'bg-white dark:bg-slate-700 text-brand-700 dark:text-white shadow-sm'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
+                  Mới gửi nhất
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSortBy('tni')}
+                  className={`px-2.5 py-1 text-xs rounded-lg font-bold transition ${
+                    sortBy === 'tni'
+                      ? 'bg-white dark:bg-slate-700 text-brand-700 dark:text-white shadow-sm'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
+                  Điểm TNI cao nhất
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="text-xs text-text-secondary dark:text-slate-400">
-            Hiển thị <strong>{filteredDemands.length}</strong> bài toán thuộc thẩm quyền quản lý
+          <div className="text-xs text-text-secondary dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <span>
+              Hiển thị <strong>{filteredDemands.length}</strong> bài toán {searchQuery ? `khớp với từ khóa "${searchQuery}"` : 'thuộc thẩm quyền quản lý'}
+            </span>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-brand-600 dark:text-brand-400 hover:underline font-medium text-[11px]"
+              >
+                Xóa bộ lọc tìm kiếm
+              </button>
+            )}
           </div>
         </div>
 
@@ -260,14 +348,24 @@ export default function GovDemandsPage() {
                   {filteredDemands.map((item) => {
                     const tniMeta = getTniClassification(item.tniScore || 70);
                     const isProcessing = processingId === item.id;
+                    const isRecent = item.createdAt && (Date.now() - new Date(item.createdAt).getTime() < 24 * 3600 * 1000);
 
                     return (
                       <tr
                         key={item.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition"
+                        className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition ${
+                          isRecent ? 'bg-blue-50/30 dark:bg-blue-950/20' : ''
+                        }`}
                       >
                         <td className="px-6 py-4 font-mono font-bold text-slate-700 dark:text-slate-300">
-                          {item.itemCode}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span>{item.itemCode}</span>
+                            {isRecent && (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                <Sparkles className="w-2.5 h-2.5" /> Mới
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 max-w-md">
                           <p className="font-bold text-text-primary dark:text-white line-clamp-1">

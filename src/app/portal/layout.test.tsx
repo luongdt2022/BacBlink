@@ -5,9 +5,11 @@ import PortalLayout from "./layout";
 import { authClient } from "@/lib/auth-client";
 
 let mockPathname = "/portal";
+let mockSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
+  useSearchParams: () => mockSearchParams,
   useRouter: () => ({ push: vi.fn() }),
 }));
 
@@ -224,5 +226,53 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByText("Về Tổng Hành Dinh Quản Trị")).toBeInTheDocument();
     expect(screen.getByText("Kho Chào bán Toàn sàn")).toBeInTheDocument();
     expect(screen.getByText("Bài toán Nhu cầu Toàn sàn")).toBeInTheDocument();
+  });
+
+  it("activates only 'Tiến trình Chuyển giao & MOU' when on /portal/opportunities/pipeline without query", () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u2",
+      email: "seller@example.com",
+      fullName: "Trần Văn Seller",
+      role: "SELLER",
+    });
+    mockPathname = "/portal/opportunities/pipeline";
+    mockSearchParams = new URLSearchParams("");
+
+    render(
+      <PortalLayout>
+        <div>Content</div>
+      </PortalLayout>
+    );
+
+    const pipelineLink = screen.getByRole("link", { name: /Tiến trình Chuyển giao & MOU/i });
+    const inboundLink = screen.getByRole("link", { name: /Yêu cầu Kết nối Nhận được/i });
+
+    expect(pipelineLink.className).toContain("bg-brand-700");
+    expect(pipelineLink.className).toContain("text-white");
+    expect(inboundLink.className).not.toContain("bg-brand-700");
+  });
+
+  it("activates only 'Yêu cầu Kết nối Nhận được' when on /portal/opportunities/pipeline?tab=inbound", () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u2",
+      email: "seller@example.com",
+      fullName: "Trần Văn Seller",
+      role: "SELLER",
+    });
+    mockPathname = "/portal/opportunities/pipeline";
+    mockSearchParams = new URLSearchParams("tab=inbound");
+
+    render(
+      <PortalLayout>
+        <div>Content</div>
+      </PortalLayout>
+    );
+
+    const pipelineLink = screen.getByRole("link", { name: /Tiến trình Chuyển giao & MOU/i });
+    const inboundLink = screen.getByRole("link", { name: /Yêu cầu Kết nối Nhận được/i });
+
+    expect(inboundLink.className).toContain("bg-brand-700");
+    expect(inboundLink.className).toContain("text-white");
+    expect(pipelineLink.className).not.toContain("bg-brand-700");
   });
 });

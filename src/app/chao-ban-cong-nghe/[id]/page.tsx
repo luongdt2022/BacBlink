@@ -29,6 +29,7 @@ import { useToast } from "@/components/common/toast";
 import { fetchOfferById, submitQuickDemand } from "@/services/api/technology-offer";
 import { TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyGallery } from "@/lib/technology-media";
+import { authClient, UserContext } from "@/lib/auth-client";
 
 function formatDocSize(bytes?: number): string {
   if (!bytes || bytes <= 0) return "1.2 MB";
@@ -78,6 +79,82 @@ export default function ChiTietChaoBanPage() {
   const [demandTimeline, setDemandTimeline] = useState("1_3M");
   const [demandMethod, setDemandMethod] = useState("TRANSFER");
   const [demandNotes, setDemandNotes] = useState("");
+  const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
+  const [autoFilled, setAutoFilled] = useState(false);
+
+  useEffect(() => {
+    const user = authClient.getUser();
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
+
+  const handleOpenConnectModal = () => {
+    const user = authClient.getUser();
+    if (user) {
+      setCurrentUser(user);
+      let changed = false;
+      if (!demandCompany) {
+        setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+        changed = true;
+      }
+      if (!demandContact) {
+        setDemandContact(user.fullName || "");
+        changed = true;
+      }
+      if (!demandPhone) {
+        setDemandPhone(user.phone || user.phoneNumber || "0912345678");
+        changed = true;
+      }
+      if (!demandEmail) {
+        setDemandEmail(user.email || "");
+        changed = true;
+      }
+      if (changed) setAutoFilled(true);
+    }
+    setShowConnectModal(true);
+  };
+
+  const handleAutoFillUser = () => {
+    const user = currentUser || authClient.getUser();
+    if (!user) {
+      toast.warning("Bạn chưa đăng nhập tài khoản.", "Chưa đăng nhập");
+      return;
+    }
+    setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+    setDemandContact(user.fullName || "");
+    setDemandPhone(user.phone || user.phoneNumber || "0912345678");
+    setDemandEmail(user.email || "");
+    setAutoFilled(true);
+    toast.info("Đã điền thông tin tài khoản vào form.", "Tự động điền");
+  };
+
+  const handleProblemChange = (val: string) => {
+    setDemandProblem(val);
+    if (val.trim().length > 0) {
+      const user = currentUser || authClient.getUser();
+      if (user) {
+        let changed = false;
+        if (!demandCompany) {
+          setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+          changed = true;
+        }
+        if (!demandContact) {
+          setDemandContact(user.fullName || "");
+          changed = true;
+        }
+        if (!demandPhone) {
+          setDemandPhone(user.phone || user.phoneNumber || "0912345678");
+          changed = true;
+        }
+        if (!demandEmail) {
+          setDemandEmail(user.email || "");
+          changed = true;
+        }
+        if (changed) setAutoFilled(true);
+      }
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -412,7 +489,7 @@ export default function ChiTietChaoBanPage() {
                       <div className="flex flex-col sm:flex-row gap-3">
                         <button
                           type="button"
-                          onClick={() => setShowConnectModal(true)}
+                          onClick={handleOpenConnectModal}
                           className="flex-1 rounded-xl bg-brand-700 hover:bg-brand-800 text-white px-5 py-3 text-sm font-bold shadow-md shadow-brand-900/15 transition flex items-center justify-center gap-2"
                         >
                           <Mail className="w-4 h-4" />
@@ -826,7 +903,7 @@ export default function ChiTietChaoBanPage() {
                             ) : doc.accessScope === "AFTER_CONNECTION" ? (
                               <button
                                 type="button"
-                                onClick={() => setShowConnectModal(true)}
+                                onClick={handleOpenConnectModal}
                                 className="text-xs font-bold text-amber-800 hover:text-amber-900 flex items-center gap-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition"
                               >
                                 <Lock className="w-3 h-3 text-amber-600" /> Cần cấp quyền (Ký NDA)
@@ -923,7 +1000,7 @@ export default function ChiTietChaoBanPage() {
 
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <button
-                onClick={() => setShowConnectModal(true)}
+                onClick={handleOpenConnectModal}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-xs font-extrabold transition shadow-md shadow-emerald-950/20 flex items-center justify-center gap-2"
               >
                 <Mail className="w-4 h-4" />
@@ -1122,6 +1199,32 @@ export default function ChiTietChaoBanPage() {
                   <span>Kết nối trực tiếp tới: <b>{offer.title}</b> ({offer.offerCode})</span>
                 </div>
 
+                {/* Banner tài khoản & Nút tự động điền */}
+                {currentUser && (
+                  <div className="flex items-center justify-between bg-brand-50/80 dark:bg-brand-950/40 p-2.5 rounded-xl border border-brand-200/80 dark:border-brand-800 text-xs text-brand-900 dark:text-cyan-300">
+                    <div className="flex items-center gap-1.5 font-medium truncate mr-2">
+                      <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-cyan-400 shrink-0" />
+                      <span className="truncate">
+                        Đang đăng nhập: <strong>{currentUser.fullName}</strong>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAutoFillUser}
+                      className="text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline shrink-0"
+                    >
+                      Tự động điền
+                    </button>
+                  </div>
+                )}
+
+                {autoFilled && (
+                  <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Đã tự động điền đơn vị, người liên hệ, email và SĐT từ tài khoản đăng nhập. Bạn có thể chỉnh sửa nếu cần.</span>
+                  </div>
+                )}
+
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">
                     Tiêu đề bài toán / Yêu cầu công nghệ: <span className="text-red-500">*</span>
@@ -1130,7 +1233,7 @@ export default function ChiTietChaoBanPage() {
                     type="text"
                     required
                     value={demandProblem}
-                    onChange={(e) => setDemandProblem(e.target.value)}
+                    onChange={(e) => handleProblemChange(e.target.value)}
                     placeholder="VD: Cần chuyển giao dây chuyền sấy thăng hoa cho nhà máy chế biến nông sản"
                     className="form-control w-full"
                   />

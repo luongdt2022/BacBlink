@@ -80,6 +80,41 @@ export function Navbar() {
 
   const isActiveLink = (href: string) => href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
+  const isDedicatedSurvey =
+    pathname?.startsWith("/khao-sat-doanh-nghiep") ||
+    pathname?.startsWith("/khao-sat-cong-nghe");
+
+  if (isDedicatedSurvey) {
+    return (
+      <header className="sticky top-0 z-40 w-full border-b border-border-default/90 bg-white/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex min-h-[64px] items-center justify-between py-2.5">
+            {/* Brand Logo only for dedicated survey */}
+            <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ NacenTwin">
+              <img
+                src="/NACENTECH_Main-Logo-G.png"
+                alt="NacenTech Emblem"
+                className="h-10 w-auto object-contain"
+              />
+              <div className="flex flex-col text-left">
+                <span className="text-base font-extrabold tracking-tight text-text-primary dark:text-white leading-none">
+                  NacenTwin
+                </span>
+                <span className="mt-0.5 text-xs font-semibold leading-tight text-nacen-green-700 dark:text-nacen-green-200">
+                  Viện Đổi Mới Sáng Tạo Quốc Gia · Bộ Khoa Học & Công Nghệ
+                </span>
+              </div>
+            </Link>
+
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-border-default/90 bg-white/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95">
