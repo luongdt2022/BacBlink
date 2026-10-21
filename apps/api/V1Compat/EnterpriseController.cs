@@ -220,15 +220,25 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
         var result = await enterpriseService.GetOwnerProfileAsync(PersonId, Actor.Email, ct);
         if (result is null)
         {
-            // Tự khởi tạo hồ sơ rỗng cho tài khoản
-            var empty = await enterpriseService.UpsertProfileAsync(PersonId, new UpsertEnterpriseProfileRequest
+            try
             {
-                Name = Actor.Email ?? "Doanh nghiệp mới",
-                ContactEmail = Actor.Email,
-                TaxCode = null
-            }, ct);
-            await uow.CommitAsync(ct);
-            return Ok(Ok200(empty));
+                // Tự khởi tạo hồ sơ rỗng cho tài khoản
+                var empty = await enterpriseService.UpsertProfileAsync(PersonId, new UpsertEnterpriseProfileRequest
+                {
+                    Name = Actor.Email ?? "Doanh nghiệp mới",
+                    ContactEmail = Actor.Email,
+                    TaxCode = null
+                }, ct);
+                await uow.CommitAsync(ct);
+                return Ok(Ok200(empty));
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+            {
+                // Xử lý race condition khi có 2 requests đồng thời khởi tạo hồ sơ
+                var existing = await enterpriseService.GetOwnerProfileAsync(PersonId, Actor.Email, ct);
+                if (existing != null) return Ok(Ok200(existing));
+                throw;
+            }
         }
 
         return Ok(Ok200(result));
