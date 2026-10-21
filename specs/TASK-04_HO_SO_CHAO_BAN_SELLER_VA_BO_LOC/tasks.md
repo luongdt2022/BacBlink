@@ -163,3 +163,54 @@
   * Kịch bản 2: Luồng tương tác reactive Khung TRL màu vàng (mở/đóng theo switch chuyển giao), kiểm tra BR-SELLER-09 chặn 400 Bad Request.
   * Kịch bản 3: Luồng hoàn thiện tuần tự 4 bước nạp đúng thông số ngành Cơ khí (TIER_3_SECTOR), custom spec (TIER_3_CUSTOM), thương mại Lớp 4 và DataRoom 3 cấp quyền.
 
+---
+
+## Giai đoạn 9: Delta v7 — Nâng Cấp Trực Quan Thị Giác & Ngữ Nghĩa Card Chào Bán Công Nghệ (T-04.87 đến T-04.91)
+
+### Phase 22: Refactor Layout & Trực Quan Hóa Card Chào Bán [FE]
+- [x] T-04.87 [FE] Tái cấu trúc DOM Layout và Thumbnail Overlay của Card chào bán trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx` (`REQ-DELTA-01`, `BR-OFFER-CARD-01`, `UI-CARD-01`, `AC-04-031`, `AC-04-032`):
+  * Dời mã hồ sơ `offerCode` khỏi góc trên thumbnail.
+  * Thêm nhãn caption định danh `Mã: {offer.offerCode}` ngay phía trên tiêu đề bài viết với font monospace và icon Tag.
+  * Góc trên bên trái thumbnail: Hiển thị badge Giá trị Thương mại (`"Sẵn sàng chuyển giao"` màu xanh ngọc Emerald kèm icon Sparkles khi `hasTechTransfer = true`, hoặc `"Thương phẩm sẵn có"` màu Slate khi `hasTechTransfer = false`).
+  * Góc trên bên phải thumbnail: Hiển thị badge Loại hình chào bán (`offerTypeLabel`).
+
+- [x] T-04.88 [FE] Nâng cấp Khối Pháp Lý SHTT & Ngữ Nghĩa Xác Thực Cục SHTT trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx` (`REQ-DELTA-02`, `BR-OFFER-CARD-01`, `UI-CARD-01`, `AC-04-033`):
+  * Bổ sung nhãn ngữ nghĩa `"Số bằng SHTT:"` đứng trước mã số văn bằng `ipRegistrationNumber`.
+  * Bổ sung Huy hiệu bảo chứng `"Xác thực Cục SHTT"` (`CheckCircle2` icon, tone xanh ngọc `bg-emerald-100 text-emerald-800 border-emerald-300`) khi hồ sơ có văn bằng SHTT hoặc `ipStatus = 'PATENT_GRANTED'` / `'UTILITY_MODEL'`.
+
+### Phase 23: Kiểm Thử Đơn Vị, Tương Tác & Quality Gate [TEST][GATE]
+- [x] T-04.89 [TEST] Cập nhật và bổ sung bộ kiểm thử Unit/Component trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx` (`AC-04-031`, `AC-04-032`, `AC-04-033`):
+  * Kiểm tra hiển thị caption `Mã: OFF-202610-LV16-08`.
+  * Kiểm tra badge `"Sẵn sàng chuyển giao"` và `"Thương phẩm sẵn có"`.
+  * Kiểm tra nhãn `"Số bằng SHTT:"` và Huy hiệu `"Xác thực Cục SHTT"`.
+- [x] T-04.90 [GATE] Kiểm tra tính nhất quán đối kháng Gate 2 (`speckit-analyze` / cross-artifact consistency) giữa `spec.md`, `plan.md`, `tasks.md`, đảm bảo 100% khớp các mã `REQ-DELTA-*`, `BR-OFFER-CARD-01`, `UI-CARD-01`, `AC-04-031..034` và không phát sinh mã mồ côi.
+- [x] T-04.91 [GATE] Kiểm tra TypeScript compiler (`tsc --noEmit`), chạy toàn bộ test suite (`npm test`) và kiểm tra visual responsive không vỡ khung (`AC-04-034`).
+
+---
+
+## Giai đoạn 10: Delta v8 — Tinh Gọn Diện Mạo Trực Quan & Tối Ưu Hóa Chiều Cao Card Chào Bán Công Nghệ (T-04.92 đến T-04.95)
+
+### Phase 24: Refactor Ultra-compact Card & Trực Quan Hóa Tinh Gọn [FE]
+- [x] T-04.92 [FE] Tái cấu trúc Thumbnail Overlay & Thu nhỏ Mã hồ sơ trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx` (`REQ-DELTA-03`, `REQ-DELTA-06`, `BR-OFFER-CARD-02`, `UI-CARD-02`, `AC-04-035`, `AC-04-037`):
+  * Xóa bỏ hoàn toàn badge góc trên bên trái ảnh Thumbnail ("Sẵn sàng chuyển giao" và "Thương phẩm sẵn có").
+  * Giữ duy nhất 01 badge góc trên bên phải hiển thị loại hình chào bán (`offerTypeLabel`).
+  * Thu nhỏ mã hồ sơ `offerCode` (`text-[11px] font-mono text-slate-400 dark:text-slate-500 uppercase`), loại bỏ icon Tag, nén khoảng cách lề `mb-0.5`.
+
+- [x] T-04.93 [FE] Tối ưu hóa Khối SHTT Đơn Dòng & Thu Gọn Padding Thẻ trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx` (`REQ-DELTA-04`, `REQ-DELTA-05`, `BR-OFFER-CARD-02`, `UI-CARD-02`, `AC-04-035`, `AC-04-036`):
+  * Xóa bỏ hoàn toàn huy hiệu "Xác thực Cục SHTT".
+  * Gom khối SHTT thành đúng 1 dòng duy nhất: `[ShieldCheck]` + Tên trạng thái bảo hộ + `• Số: {ipRegistrationNumber}` kèm thuộc tính `truncate` bảo vệ layout.
+  * Tinh gọn Đơn vị chào bán thành 1 dòng thanh mảnh với MST / Tên đơn vị.
+  * Rút bớt padding thân thẻ từ `p-4 sm:p-5` xuống `p-3.5 sm:p-4`, khoảng cách `space-y-2` đến `space-y-2.5`, giảm chiều cao thẻ ~40-50px.
+
+### Phase 25: Kiểm Thử Đơn Vị, Tương Tác & Quality Gate [TEST][GATE]
+- [x] T-04.94 [TEST] Cập nhật bộ kiểm thử Unit/Component trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx` (`AC-04-035`, `AC-04-036`, `AC-04-037`):
+  * Thẩm định phủ định (Negative Assertion): `queryByText("Sẵn sàng chuyển giao")`, `queryByText("Thương phẩm sẵn có")`, `queryByText("Xác thực Cục SHTT")` đều trả về `null`.
+  * Thẩm định cấu trúc đơn dòng: Kiểm tra số văn bằng kèm tiền tố `• Số:` trong cùng khối SHTT.
+  * Thẩm định mã hồ sơ: Kiểm tra hiển thị mã hồ sơ tinh gọn.
+- [x] T-04.95 [GATE] Thẩm định chất lượng toán học tĩnh & Hội tụ:
+  * TypeScript compiler (`tsc --noEmit`) đạt 0 lỗi type.
+  * Chạy test suite `npm test` đạt 100% Pass.
+  * Đối soát đối kháng `speckit-analyze` Gate 2 đảm bảo 100% nhất quán `REQ-DELTA-03..06` $\leftrightarrow$ `BR-OFFER-CARD-02` $\leftrightarrow$ `UI-CARD-02` $\leftrightarrow$ `AC-04-035..037` $\leftrightarrow$ `T-04.92..95`.
+
+
+

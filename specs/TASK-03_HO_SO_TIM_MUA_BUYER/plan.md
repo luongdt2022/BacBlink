@@ -406,3 +406,153 @@ Khi doanh nghiệp đã đăng nhập chủ động chỉnh sửa thông tin t�
    - Quy mô: `Dưới 10 người`
    - Nút "Tiếp tục sang Bước 2" sẵn sàng bấm chuyển bước.
 
+
+---
+
+## 9. DELTA V8 (CR-2026-017 / TASK-03-CR59): TÁI CẤU TRÚC FORM KHẢO SÁT NHU CẦU 4 TAB TINH GỌN (LEAN 4-STEP WIZARD)
+
+> **Mã thay đổi**: `CR-2026-017` / `TASK-03-CR59` / `PLAN-DELTA-V8`  
+> **Căn cứ**: Yêu cầu Gate 2 từ PO, Đặc tả `spec.md` Section 10 (`FR-NEW-03-01`, `BR-NEW-03-01`, `AC-NEW-03-01` -> `AC-NEW-03-06`).  
+> **Tư tưởng kiến trúc**: Martin Fowler (Refactoring towards Pragmatism) & Werner Vogels (Frictionless Customer-Obsessed Flow).  
+> **Mục tiêu**:
+> 1. Tối ưu tỷ lệ chuyển đổi (Conversion Rate) của khảo sát nhu cầu chuyển giao công nghệ bằng cách thu gọn từ 7 bước dàn trải xuống **4 tab tinh gọn**.
+> 2. Phân định dứt khoát ranh giới giữa **Trọng tâm bắt buộc (Core Mandatory: Nhu cầu kỹ thuật, Pháp nhân)** và **Mở rộng tùy chọn (Optional Extensions: Hiện trạng, Điểm nghẽn, TAR, Định hướng)**.
+> 3. Tuyệt đối bảo toàn tính phi phá hủy (**Non-destructive Contract**): Giữ nguyên 100% schema backend `POST /api/v1/demands/surveys`, không sinh EF Core migration mới, không ảnh hưởng CSDL `demand.demand_surveys`.
+
+---
+
+### 9.1 Kiến Trúc 4-Step Wizard & State Machine Transitions
+
+#### 1. Mô Hình Chuyển Đổi Tab
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Tab1: Mở form khảo sát
+
+    state "Tab 1: Nhu Cầu & TNI\n(Bắt buộc - currentStep=1)" as Tab1
+    state "Tab 2: Doanh Nghiệp\n(Bắt buộc - currentStep=2)" as Tab2
+    state "Tab 3: Thông Tin Bổ Sung\n(Tùy chọn - Gộp B, C, D, F - currentStep=3)" as Tab3
+    state "Tab 4: Xác Nhận & PDPD\n(Bắt buộc - currentStep=4)" as Tab4
+    state "Nộp Phiếu Thành Công\n(Success View: SUR-XXXXX)" as Success
+
+    Tab1 --> Tab2: Tiếp tục (validate: min 1 bài toán)
+    Tab2 --> Tab3: Tiếp tục (validate: thông tin DN hợp lệ)
+    Tab2 --> Tab4: Bỏ qua bước tùy chọn (Fast-track Skip)
+    Tab3 --> Tab4: Tiếp tục (KHÔNG CHẶN, cho phép để trống)
+    Tab3 --> Tab2: Quay lại Bước 2
+    Tab4 --> Tab3: Quay lại Bước 3
+    Tab4 --> Success: Hoàn Tất & Nộp Khảo Sát (Validate 3 tầng)
+
+    note right of Tab1: Free-click: Cho phép click trực tiếp bất kỳ Tab 1..4 trên Stepper
+```
+
+#### 2. Định Nghĩa 4 Tab Cốt Lõi
+
+| Tab Index (`currentStep`) | Tên Tab Stepper | Tính Chất | Phân Mục Nghiệp Vụ Chứa Đựng | Quy Tắc Validation Chuyển Bước |
+| :---: | :--- | :---: | :--- | :--- |
+| **1** | `E. Nhu Cầu & TNI` | **Bắt buộc** | Danh mục bài toán kỹ thuật (Demand Tickets) & Widget Realtime TNI Calculator ($K, L, N, O$). | Có ít nhất 1 bài toán; đã điền `stageName` và `technicalProblem`. |
+| **2** | `A. Doanh Nghiệp` | **Bắt buộc** | Thông tin định danh pháp nhân, địa chỉ nhà máy, người liên hệ, hỗ trợ Auto-Lookup MST và Smart Pre-fill 100% hồ sơ đã đăng nhập. | Bắt buộc `companyName`, `province`, `contactName`, `contactPhone`, `contactEmail`. Hỗ trợ 2 nút CTA: Tiếp tục sang Tab 3 hoặc Bỏ qua sang Tab 4. |
+| **3** | `Thông Tin Bổ Sung` | **Tùy chọn** | Hợp nhất 4 phân mục:<br>• **B**: Thiết bị & 8 tiêu chí hiện trạng<br>• **C**: Điểm nghẽn sản xuất (max 5)<br>• **D**: Năng lực tiếp nhận TAR & Nhân lực<br>• **F**: Định hướng 3 năm & Hỗ trợ | **Không chặn**: Người dùng có thể để trống toàn bộ và bấm "Tiếp tục sang Bước 4" trơn tru. |
+| **4** | `G. Xác Nhận` | **Bắt buộc** | Bảng tổng hợp tóm tắt (Review Summary), Thông tin người ký (`confirmName`, `confirmPosition`) và Checkbox PDPD Consent. | Bắt buộc `confirmName` và `pdpdConsent = true`. Kích hoạt validation 3 tầng toàn diện trước khi gọi API. |
+
+#### 3. Thanh Chỉ Báo Hoàn Thành (Progress Bar Indicator)
+
+- Công thức tiến độ cập nhật thành: `(currentStep / 4) * 100%`:
+  * Tab 1: **25% Hoàn thành** (`Bước 1/4: E. Nhu Cầu & Thuật Toán TNI (Bắt buộc)`)
+  * Tab 2: **50% Hoàn thành** (`Bước 2/4: A. Thông Tin Doanh Nghiệp (Bắt buộc)`)
+  * Tab 3: **75% Hoàn thành** (`Bước 3/4: Thông Tin Bổ Sung / Hiện Trạng & Năng Lực (Tùy chọn)`)
+  * Tab 4: **100% Hoàn thành** (`Bước 4/4: G. Rà Soát & Xác Nhận PDPD`)
+
+---
+
+### 9.2 Thiết Kế Giao Diện Tab 3: Unified Supplementary Container
+
+Nhằm ngăn chặn đứt gãy UX khi hợp nhất 4 phân mục lớn, Tab 3 được tổ chức thành **Unified Supplementary Container** gồm 4 Card chuyên đề có cấu trúc thị giác phân cấp rõ ràng:
+
+1. **Card 1 — Phân mục B: Hiện Trạng Máy Móc Thiết Bị & 8 Tiêu Chí Tự Đánh Giá**:
+   - Header Card: Badge màu lam `Phân mục B (Tùy chọn)`, tiêu đề *"Hiện trạng dây chuyền, máy móc thiết bị chủ lực & Tự đánh giá 8 tiêu chí"*.
+   - Cho phép thêm/xóa dòng thiết bị, bảng tự chấm điểm 8 tiêu chí (thang điểm 1–5).
+2. **Card 2 — Phân mục C: Nhận Diện Điểm Nghẽn Kỹ Thuật Sản Xuất**:
+   - Header Card: Badge màu cam `Phân mục C (Tùy chọn)`, tiêu đề *"Điểm nghẽn công nghệ & Khâu sản xuất nan giải nhất"*.
+   - Grid chọn tối đa 5 điểm nghẽn nghiêm trọng, mức độ nghiêm trọng (1–5), công đoạn khó nhất & nguyên nhân chính.
+3. **Card 3 — Phân mục D: Năng Lực Tiếp Nhận Công Nghệ (TAR) & Đội Ngũ Nhân Lực**:
+   - Header Card: Badge màu tím `Phân mục D (Tùy chọn)`, tiêu đề *"Năng lực hấp thụ công nghệ & Thống kê nhân lực kỹ thuật"*.
+   - Form thống kê số lượng kỹ sư/kỹ thuật viên, bảng sẵn sàng TAR 9 tiêu chí và trạng thái quản trị hệ thống.
+4. **Card 4 — Phân mục F: Định Hướng Đổi Mới Sáng Tạo 3 Năm Tới & Nhu Cầu Hỗ Trợ**:
+   - Header Card: Badge màu lục `Phân mục F (Tùy chọn)`, tiêu đề *"Định hướng công nghệ giai đoạn 2026–2028 & Đề xuất hỗ trợ từ Nhà nước"*.
+   - Nhóm checkbox công nghệ tự động hóa, chuyển đổi số, công nghệ xanh, đối tác mong muốn và mức độ cần hỗ trợ.
+
+**Thanh Điều Hướng Cuối Tab 3**:
+- Nút phụ: `← Quay lại Bước 2 (Doanh Nghiệp)`
+- Nút chính: `Tiếp tục sang Bước 4 (Rà soát & Nộp phiếu) →` (Thực thi chuyển bước ngay lập tức, không báo lỗi nếu để trống).
+
+---
+
+### 9.3 Phân Tích Tính Phi Phá Hủy & API/DTO Compatibility (Non-destructive Invariant)
+
+Kiến trúc backend giữ nguyên tắc bảo toàn hoàn toàn giao ước API:
+
+```mermaid
+flowchart TD
+    subgraph Frontend["Frontend Client (4 Tabs)"]
+        Tab1Data["Tab 1: demandItems (TNI)"]
+        Tab2Data["Tab 2: companyName, taxCode, contact..."]
+        Tab3Data["Tab 3: equipments, criteria8, bottlenecks, tar, f... (Hoặc Null/Rỗng)"]
+        Tab4Data["Tab 4: confirmName, pdpdConsent"]
+        SubmitPayload["JSON Payload (SubmitDeepSurveyRequest)"]
+    end
+
+    subgraph BackendAPI["Backend Controller (V1Compat/DemandController.cs)"]
+        Endpoint["POST /api/v1/demands/surveys"]
+        DTOValidation["DTO Model Validation"]
+        Service["DemandSurveyService"]
+    end
+
+    subgraph Database["PostgreSQL (NacenTwin DB)"]
+        DBTable["demand.demand_surveys (JSONB survey_details)"]
+        DemandTickets["demand.demand_items"]
+    end
+
+    Tab1Data --> SubmitPayload
+    Tab2Data --> SubmitPayload
+    Tab3Data --> SubmitPayload
+    Tab4Data --> SubmitPayload
+
+    SubmitPayload -->|JSON không đổi cấu trúc| Endpoint
+    Endpoint --> DTOValidation
+    DTOValidation --> Service
+    Service --> DBTable
+    Service --> DemandTickets
+```
+
+- **Tính tương thích DTO**:
+  - DTO `SubmitDeepSurveyRequest` tại backend nhận các thuộc tính:
+    * `currentEquipments`: Nếu để trống $\rightarrow$ map `[]`
+    * `criteria8`: Nếu để trống $\rightarrow$ map `null`
+    * `topBottlenecks`: Nếu để trống $\rightarrow$ map `[]`
+    * `techPersonnel`: Nếu để trống $\rightarrow$ map `null`
+    * `tarReadiness`: Nếu để trống $\rightarrow$ map `null`
+    * `automationNeeds`, `digitalNeeds`, `greenNeeds`: Nếu để trống $\rightarrow$ map `[]`
+  - Backend đã hỗ trợ nullable/empty array cho toàn bộ các trường này trong `jsonb survey_details`.
+  - **Kết luận**: Khẳng định **100% Non-destructive**, không thay đổi schema CSDL, không tạo thêm migration EF Core.
+
+---
+
+### 9.4 Chiến Lược Kiểm Thử Hồi Quy & Đảm Bảo Chất Lượng (Test Strategy)
+
+#### 1. Vitest Unit Test (`frontend/src/app/khao-sat-nhu-cau/page.test.tsx`)
+Cập nhật toàn bộ các test cases hiện tại từ mô hình 7 bước sang 4 bước:
+- **Test 1**: Render ban đầu đúng Tab 1/4 (`E. Nhu Cầu & TNI`), thanh tiến độ hiển thị đúng `Bước 1/4`, Stepper hiển thị chính xác 4 tab: `E. Nhu Cầu & TNI`, `A. Doanh Nghiệp`, `Thông Tin Bổ Sung`, `G. Xác Nhận`.
+- **Test 2**: Validation Tab 1: Không cho phép chuyển bước khi chưa nhập bài toán kỹ thuật; điền đầy đủ chuyển sang Tab 2 thành công.
+- **Test 3**: Validation Tab 2: Chặn chuyển bước nếu thiếu thông tin doanh nghiệp bắt buộc.
+- **Test 4**: Fast-track Skip từ Tab 2: Sau khi Tab 2 hợp lệ, click "Bỏ qua bước tùy chọn & Đến nộp phiếu" nhảy thẳng sang Tab 4 (G. Xác Nhận).
+- **Test 5**: Tab 3 hợp nhất: Kiểm tra sự hiện diện của cả 4 phân mục (B, C, D, F); người dùng không nhập gì bấm "Tiếp tục sang Bước 4" thành công mà không có lỗi.
+- **Test 6**: Free-click Stepper: Click trực tiếp vào Tab 3 hoặc Tab 4 từ Stepper chuyển view tức thì.
+- **Test 7**: Submit toàn trình tại Tab 4: Yêu cầu ký tên và PDPD; submit gọi đúng `POST /api/v1/demands/surveys`, chuyển sang Success View (`SUR-XXXXX`).
+
+#### 2. E2E Playwright Regression Verification
+- Chạy kiểm thử tự động xác minh:
+  * Quy trình 4 tab thông thường (1 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ Submit).
+  * Quy trình fast-track bỏ qua Tab 3 (1 $\rightarrow$ 2 $\rightarrow$ 4 $\rightarrow$ Submit).
+  * Đảm bảo tính tương thích với tính năng Auto-Prefill của tài khoản Demo Buyer Trường Hoan (`AC-03-07`).

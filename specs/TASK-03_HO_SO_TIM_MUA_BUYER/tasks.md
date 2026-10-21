@@ -127,7 +127,19 @@
 - [x] **T-03.57** `[TEST]` `[E2E]` Viết kịch bản kiểm thử E2E Playwright `test_task03_buyer_prefill_and_demo_e2e.py`: Đăng nhập bằng `buyer.user@demo.nacentech.vn` (mật khẩu `Demo@2026`), mở `/khao-sat-nhu-cau`, xác nhận tự động điền đúng 100% thông tin CÔNG TY TNHH TRƯỜNG HOAN (MST `0100255428`, Hà Nội).
 
 
-- [ ] `TASK-03-CR58` **[CR]** [P1] Test CR Tab 5 TNI — Kiem thu tao CR tu Dashboard
+- [x] `TASK-03-CR58` **[CR]** [P1] Test CR Tab 5 TNI — Kiem thu tao CR tu Dashboard
 - [x] `TASK-03-CR59` **[CR]** [P1] Sửa nội dung tab form nhập nhu cầu — Các tab khác của nhu cầu , ngoài tab nhu cầu và thồn tin doanh nghiệp, có thể ghộp vào thành tab bổ sung và k bắt buộc, cho doanh nghiệp k điền cũng được
 
-- [ ] `TASK-03-CR60` **[CR]** [P1] (Người gửi: Trần Thị B (BA Lead)) Cải tiến giao diện hiển thị tổng mức đầu tư bài toán — Bổ sung tooltip giải thích cơ cấu vốn đầu tư công nghệ cho bài toán nhu cầu
+- [x] `TASK-03-CR60` **[CR]** [P1] (Người gửi: Trần Thị B (BA Lead)) Cải tiến giao diện hiển thị tổng mức đầu tư bài toán — Bổ sung tooltip giải thích cơ cấu vốn đầu tư công nghệ cho bài toán nhu cầu
+
+- [ ] `TASK-03-CR61` **[CR]** [P2] (Người gửi: Tester) Test kết nối CR từ Web Portal — Kiểm tra proxy CR qua cổng 3000
+
+---
+
+## Phase 14: Delta v8 (CR-2026-017 / TASK-03-CR59) — Tái Cấu Trúc Form Khảo Sát Nhu Cầu 4 Tab Tinh Gọn
+
+- [x] **T-03.58** `[FE]` `[UI/UX]` Tái cấu trúc Stepper Navigation Bar từ 7 bước xuống 4 tabs tinh gọn: Tab 1 (E. Nhu Cầu & TNI), Tab 2 (A. Doanh Nghiệp), Tab 3 (Thông Tin Bổ Sung), Tab 4 (G. Xác Nhận); cập nhật thanh tiến độ theo công thức `(currentStep / 4) * 100%`, cho phép click tự do giữa 4 tabs.
+- [x] **T-03.59** `[FE]` `[COMPONENT]` Hợp nhất 4 phân mục B (Hiện trạng & 8 tiêu chí), C (Điểm nghẽn kỹ thuật), D (Năng lực TAR), F (Định hướng & Hỗ trợ) thành các khối chuyên đề rõ ràng trong Tab 3 (`currentStep === 3`), không làm đứt gãy UX và bảo toàn 100% các trường nhập liệu.
+- [x] **T-03.60** `[FE]` `[LOGIC]` Chuẩn hóa logic Navigation & Validation cho 4 bước: Validation bắt buộc tại Tab 1 (ít nhất 1 bài toán), Tab 2 (pháp nhân hợp lệ) và Tab 4 (ký tên & PDPD); Tab 3 hoàn toàn tùy chọn; bổ sung nút fast-track tại Tab 2 chuyển thẳng sang Tab 4; khi submit thất bại tự động focus/cuộn về đúng tab bị thiếu.
+- [x] **T-03.61** `[TEST]` Cập nhật bộ kiểm thử Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` sang mô hình 4 tabs: kiểm tra tiêu đề và stepper 4 bước, kiểm thử validation Tab 1 & Tab 2, kiểm thử Tab 3 tùy chọn không chặn submit, kiểm thử fast-track từ Tab 2 sang Tab 4, kiểm thử free-click stepper, kiểm thử luồng submit toàn trình.
+- [x] **T-03.62** `[TEST]` `[E2E]` Cập nhật kịch bản kiểm thử E2E Playwright `test_task03_buyer_deep_survey_blackbox.py` tương thích hoàn toàn với luồng 4 tabs.

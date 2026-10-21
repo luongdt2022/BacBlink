@@ -1189,3 +1189,257 @@ Căn cứ Quyết định phê duyệt sản phẩm `PO-DEC-20261016-03` và Đ�
    - Kiểm thử Active Filter Chips: Bỏ từng chip và kiểm tra state cập nhật chính xác.
 4. **End-to-End Blackbox Test**:
    - Bổ sung test case E2E kiểm chứng luồng lọc đa tiêu chí thực tế trên browser.
+
+---
+
+## Plan Delta v2: Kiến trúc Kỹ thuật Tinh chỉnh Thẻ & Social Proof Chuyên gia
+
+### 19.1. Bối Cảnh & Thẩm Định Kiến Trúc (Architectural Assessment)
+
+Căn cứ Quyết định PO Orchestrator và Đặc tả yêu cầu Spec Delta v2 (`spec.md` Mục 18), TechLead/SA xác lập phương án kiến trúc chi tiết, tuân thủ nguyên tắc thực dụng của Martin Fowler và Werner Vogels:
+- **Clean Architecture & Separation of Concerns**: Không rò rỉ `DbContext` ra khỏi tầng Infrastructure/Persistence. Nghiệp vụ tính toán và dữ liệu hồ sơ chỉ đi qua Application Service và DTOs phân tầng rõ ràng.
+- **Zero Regression & Backward Compatibility**: Đảm bảo 100% tương thích ngược với API hiện hành và dữ liệu lịch sử. Khách hàng sử dụng phiên bản API cũ hoặc Zalo Mini App không bị gãy vỡ contract.
+- **Non-Destructive Schema Evolution**: Schema delta chỉ thêm cột `connection_count` kiểu `integer NOT NULL DEFAULT 0` vào bảng `brokerage.expert_profiles`. Không xóa, sửa hay can thiệp vào các cột hiện hữu.
+
+```mermaid
+flowchart TD
+    subgraph Persistence [PostgreSQL & EF Core]
+        DB[(brokerage.expert_profiles)] -->|Thêm cột connection_count DEFAULT 0| EP[ExpertProfile Entity]
+    end
+
+    subgraph Domain [Domain Layer]
+        EP -->|Property ConnectionCount & Setter/Increment| EP
+    end
+
+    subgraph Application [Application Layer]
+        EP -->|Query AsNoTracking| ES[ExpertService.GetPublicDirectoryAsync]
+        ES -->|Map DTO ConnectionCount = p.ConnectionCount| DTO[ExpertPublicCardDto]
+    end
+
+    subgraph Presentation [Frontend Next.js 15]
+        DTO -->|GET /api/v1/public/experts| FE[experts/page.tsx]
+        FE --> SR[Spotlight Rail: Badge Ngành + 2 Chips Tech]
+        FE --> EC[Expert Card: Pill Badge +N công nghệ]
+        FE --> SP["Social Proof: Badge [N lượt kết nối] (chỉ khi ConnectionCount > 0)"]
+    end
+```
+
+---
+
+### 19.2. Thiết Kế Cơ Sở Dữ Liệu (Database Schema Delta)
+
+#### 1. SQL DDL Migration (Non-Destructive)
+Bổ sung cột `connection_count` vào bảng `brokerage.expert_profiles` với giá trị mặc định là 0:
+
+```sql
+-- Migration: AddExpertConnectionCount
+ALTER TABLE brokerage.expert_profiles 
+    ADD COLUMN IF NOT EXISTS connection_count INTEGER NOT NULL DEFAULT 0;
+
+COMMENT ON COLUMN brokerage.expert_profiles.connection_count 
+    IS 'Số lượt kết nối / tư vấn thành công đã ghi nhận của chuyên gia KH&CN phục vụ Social Proof';
+```
+
+#### 2. EF Core Migration Specification
+- **Tên Migration**: `20261021100000_AddExpertConnectionCount`
+- **File**: `SourceCode/backend/packages/persistence/Migrations/20261021100000_AddExpertConnectionCount.cs`
+- **Phương thức `Up`**:
+  ```csharp
+  migrationBuilder.AddColumn<int>(
+      name: "connection_count",
+      schema: "brokerage",
+      table: "expert_profiles",
+      type: "integer",
+      nullable: false,
+      defaultValue: 0);
+  ```
+- **Phương thức `Down`**:
+  ```csharp
+  migrationBuilder.DropColumn(
+      name: "connection_count",
+      schema: "brokerage",
+      table: "expert_profiles");
+  ```
+- **EF Core Mapping (`Configurations.cs`)**:
+  Cập nhật `ExpertProfileConfiguration`:
+  ```csharp
+  b.Property(x => x.ConnectionCount).HasColumnName("connection_count").HasDefaultValue(0).IsRequired();
+  ```
+
+---
+
+### 19.3. Thiết Kế Domain Entity & Business Invariants
+
+#### 1. Cập nhật `ExpertProfile.cs`
+- Bổ sung property:
+  ```csharp
+  public int ConnectionCount { get; private set; } = 0;
+  ```
+- Bổ sung các phương thức nghiệp vụ đóng gói:
+  ```csharp
+  /// <summary>
+  /// Cập nhật số lượt kết nối thành công (Social Proof).
+  /// Đảm bảo giá trị không âm.
+  /// </summary>
+  public void SetConnectionCount(int count)
+  {
+      if (count < 0) throw new ValidationException("Số lượt kết nối không được âm.");
+      ConnectionCount = count;
+      Touch();
+  }
+
+  /// <summary>
+  /// Tăng số lượt kết nối thành công khi hoàn thành một phiên tư vấn/chuyển giao.
+  /// </summary>
+  public void IncrementConnectionCount()
+  {
+      ConnectionCount++;
+      Touch();
+  }
+  ```
+- Bảo đảm constructor chính và phương thức `CreateQuickIntake` giữ nguyên giá trị mặc định `ConnectionCount = 0`, không gây phá vỡ khởi tạo thực thể cũ.
+
+---
+
+### 19.4. Hợp Đồng API & DTOs (Contracts)
+
+#### 1. Mở rộng `ExpertPublicCardDto` trong `Contracts.cs`
+Cập nhật record `ExpertPublicCardDto`:
+```csharp
+public sealed record ExpertPublicCardDto(
+    string ExpertCode,
+    string FullName,
+    string AcademicRank,
+    string Degree,
+    string OrganizationName,
+    string? PositionTitle,
+    string? PrimarySectorCode,
+    string? PrimarySectorName,
+    IReadOnlyList<string> ExpertiseSectors,
+    IReadOnlyList<string> MasteredTechCodes,
+    string? ProvinceCode,
+    string? ProvinceName,
+    int PublicationCount,
+    int PatentCount,
+    int ProjectCount,
+    bool IsVerified,
+    bool IsAcceptingConsultation,
+    IReadOnlyList<string>? SpecializedKeywords = null,
+    int ConnectionCount = 0);
+```
+- Khởi tạo với default value `int ConnectionCount = 0` đảm bảo bất kỳ call-site nào trong mã nguồn backend chưa truyền tham số này vẫn biên dịch sạch và tương thích 100%.
+- Không trả dữ liệu PII liên quan đến đối tác doanh nghiệp kết nối (tuân thủ `BR-DELTA-04` và PDPD NĐ 13/2023).
+
+#### 2. Cập nhật Application Service (`ExpertService.cs`)
+Trong phương thức `GetPublicDirectoryAsync`, ánh xạ thuộc tính `ConnectionCount: p.ConnectionCount` từ thực thể `ExpertProfile` sang `ExpertPublicCardDto`:
+```csharp
+var items = profiles.Select(p => new ExpertPublicCardDto(
+    ExpertCode: p.ExpertCode,
+    FullName: p.FullName,
+    AcademicRank: p.AcademicRank,
+    Degree: p.Degree,
+    OrganizationName: p.OrganizationName,
+    PositionTitle: p.PositionTitle,
+    PrimarySectorCode: p.ExpertiseSectors.FirstOrDefault(),
+    PrimarySectorName: p.ExpertiseSectors.FirstOrDefault(),
+    ExpertiseSectors: p.ExpertiseSectors,
+    MasteredTechCodes: p.MasteredTechCodes,
+    ProvinceCode: p.PersonId is Guid personId && provinceByPerson.TryGetValue(personId, out var code) ? code : null,
+    ProvinceName: null,
+    PublicationCount: pubCounts.GetValueOrDefault(p.Id, 0),
+    PatentCount: patCounts.GetValueOrDefault(p.Id, 0),
+    ProjectCount: projCounts.GetValueOrDefault(p.Id, 0),
+    IsVerified: p.Status == ExpertStatuses.Approved,
+    IsAcceptingConsultation: p.IsAcceptingConsultation,
+    SpecializedKeywords: p.SpecializedKeywords,
+    ConnectionCount: p.ConnectionCount
+)).ToList();
+```
+
+---
+
+### 19.5. Thiết Kế Frontend UI/UX (`experts/page.tsx`)
+
+#### 1. Cập nhật Interface `ExpertCardItem`
+Bổ sung `connectionCount?: number` vào interface dữ liệu của frontend:
+```typescript
+interface ExpertCardItem {
+  expertCode: string;
+  fullName: string;
+  academicRank: string;
+  degree: string;
+  organizationName: string;
+  positionTitle?: string | null;
+  primarySectorCode?: string | null;
+  primarySectorName?: string | null;
+  expertiseSectors: string[];
+  masteredTechCodes: string[];
+  provinceCode?: string | null;
+  provinceName?: string | null;
+  publicationCount: number;
+  patentCount: number;
+  projectCount: number;
+  isVerified: boolean;
+  isAcceptingConsultation: boolean;
+  avatarUrl?: string | null;
+  connectionCount?: number;
+}
+```
+
+#### 2. Cải Tiến Spotlight Rail (`data-testid="featured-experts-rail"`)
+Tích hợp hiển thị Badge Ngành và Chip Công nghệ cho từng item:
+- **Badge Ngành chuyên môn chính**: Render badge nhỏ gọn từ `primarySectorName` hoặc `sectorOptions.find(s => s.code === feat.primarySectorCode)?.name`:
+  `bg-brand-50 text-brand-800 border border-brand-200 text-xs px-2 py-0.5 rounded font-semibold dark:bg-brand-950/70 dark:text-brand-200 dark:border-brand-800`
+- **Chip Công nghệ làm chủ**: Hiển thị tối đa 2 chip công nghệ qua `resolveTechLabel(code)`:
+  `bg-slate-100 text-slate-700 border border-slate-200 text-xs px-1.5 py-0.5 rounded truncate max-w-[130px] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700`
+- Cấu trúc layout flex-col trong khối thông tin, giữ min-height ổn định và không làm tràn viền trên mobile/desktop.
+
+#### 3. Chuẩn Hóa Expert Card & Triệt Tiêu Số `+1` Lơ Lửng
+- **Thay thế text `+{expert.masteredTechCodes.length - 2}`**:
+  Sử dụng Pill Badge chuẩn thiết kế:
+  ```tsx
+  {expert.masteredTechCodes.length > 2 && (
+    <span
+      className="bg-slate-100 text-slate-600 border border-slate-200 text-xs px-2 py-0.5 rounded-full font-medium dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 shrink-0"
+      data-testid="expert-overflow-tech-pill"
+    >
+      +{expert.masteredTechCodes.length - 2} công nghệ
+    </span>
+  )}
+  ```
+- **Cân Bằng Nhịp Điệu Thị Giác (Visual Rhythm)**:
+  + Họ tên chuyên gia: `min-h-[44px]` với `line-clamp-2`
+  + Cơ quan công tác: `truncate min-h-[20px]`
+  + Khối Ngành & Chip công nghệ: `min-h-[64px]`
+  + Nút CTA ghim chắc chắn ở chân thẻ (`mt-auto`)
+
+#### 4. Social Proof Badge (Lượt kết nối thành công)
+- **Điều kiện hiển thị nghiêm ngặt (`BR-DELTA-01`)**:
+  Chỉ render khi `expert.connectionCount !== undefined && expert.connectionCount > 0`.
+- **Cài đặt component**:
+  ```tsx
+  {expert.connectionCount !== undefined && expert.connectionCount > 0 && (
+    <span
+      className="px-2 py-0.5 rounded text-caption font-bold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800"
+      data-testid="expert-social-proof-badge"
+    >
+      <Users className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+      🤝 {expert.connectionCount} lượt kết nối
+    </span>
+  )}
+  ```
+- **Zero-Suppression**: Khi `connectionCount == 0`, `null` hoặc `undefined`, tuyệt đối không render bất kỳ phần tử DOM nào.
+
+---
+
+### 19.6. Thẩm Định Gate 2 (Design Approval Checklist)
+
+| Tiêu Chí Thẩm Định | Đánh Giá Của SA / TechLead | Kết Quả |
+| :--- | :--- | :---: |
+| **Tính Phi Phá Hủy (Non-Destructive)** | Cột `connection_count` được thêm mới với `DEFAULT 0`. Mọi bản ghi cũ tự động nhận giá trị 0 an toàn. Không khóa bảng lâu, không làm gián đoạn hệ thống. | **PASS** |
+| **Bảo Vệ PII & Quyền Riêng Tư** | Dữ liệu `connection_count` chỉ là số nguyên tổng hợp, không chứa ID doanh nghiệp, nội dung hay chi tiết hợp đồng, tuân thủ Nghị định 13/2023/NĐ-CP (PDPD). | **PASS** |
+| **Không Rò Rỉ DbContext** | Toàn bộ truy vấn danh bạ thực hiện qua `ExpertService.GetPublicDirectoryAsync`, sử dụng `AsNoTracking` tối ưu bộ nhớ. | **PASS** |
+| **Tương Thích Ngược 100% (Zero Regression)** | DTO `ExpertPublicCardDto` sử dụng default parameter `ConnectionCount = 0`. Client cũ không bị ảnh hưởng. | **PASS** |
+| **Bảo Toàn 5 Trạng Thái UX** | Giữ trọn vẹn Loading Shimmer, Empty State, Error Retry, Success Grid, Updating mượt mà. | **PASS** |
+| **Phê Duyệt Thiết Kế Gate 2** | **ĐỦ ĐIỀU KIỆN PHÊ DUYỆT ĐỂ BƯỚC VÀO TRIỂN KHAI CHI TIẾT** | **APPROVED** |
+

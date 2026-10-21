@@ -622,3 +622,219 @@ ALTER TABLE technology.offer_spec_values
   - Seller vào màn hình chỉnh sửa một hồ sơ đã có: Toàn bộ dữ liệu 4 lớp trường (Bước 1, 2, 3, 4) được nạp đầy đủ vào form.
   - Các quy tắc kích hoạt tái thẩm định (`BR-SELLER-07`) hoạt động chính xác khi thay đổi các trường SHTT cốt lõi.
 
+
+
+---
+
+## 12. ĐẶC TẢ DELTA V7: NÂNG CẤP TRỰC QUAN THỊ GIÁC & NGỮ NGHĨA CARD CHÀO BÁN CÔNG NGHỆ (SPEC KIT DELTA V7)
+
+### 12.1. Bối Cảnh & Căn Cứ Nghiệp Vụ (Context & Rationale)
+
+- **Căn cứ phê duyệt**: Quyết định PO/PM ngày 2026-10-21 đối với Đề xuất cải tiến giao diện Sàn Giao Dịch Công Nghệ (`/chao-ban-cong-nghe`).
+- **Vấn đề nhận diện từ thực tế vận hành**:
+  1. *Xung đột thị giác trên ảnh Thumbnail*: Mã hồ sơ `offerCode` (ví dụ `OFF-202610-LV16-08`) hiển thị đè ở góc trên ảnh làm phân tán sự chú ý vào hình ảnh công nghệ/thiết bị, trong khi mã hồ sơ là thông tin định danh tra cứu chứ không phản ánh giá trị thương mại hay cấp độ chuyển giao.
+  2. *Thiếu hụt nhãn giá trị thương mại nổi bật*: Khách thăm sàn (Buyer, Nhà đầu tư) khi duyệt nhanh qua danh mục cần nhận diện ngay lập tức công nghệ nào "Sẵn sàng chuyển giao" (có Bộ tứ SHTT và TRL) so với các thiết bị thương mại thông thường.
+  3. *Ngữ nghĩa số bằng SHTT chưa minh bạch*: Số bằng bảo hộ (ví dụ `VN-1-0028812`) hiện hiển thị dưới dạng chuỗi mã trần trong khung nhỏ mà không có nhãn chỉ dẫn ngữ nghĩa ("Số bằng SHTT:") và chưa có nhãn bảo chứng xác thực của cơ quan quản lý chuyên ngành (Cục Sở hữu trí tuệ - Bộ KH&CN), làm giảm mức độ tin cậy pháp lý (IP Trust Index) đối với Bên mua.
+
+---
+
+### 12.2. Cross-Surface Impact Matrix (Ma Trận Đánh Giá Tác Động Đa Bề Mặt)
+
+Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Propagation Rule):
+
+| Bề Mặt Hệ Thống | Mức Độ Tác Động | Phạm Vi & Chi Tiết Ảnh Hưởng | Biện Pháp Kiểm Soát & Đồng Bộ |
+| :--- | :---: | :--- | :--- |
+| **1. Basic Design / Wireframe** | Thấp | Cập nhật layout Card công nghệ tại wireframe catalog `/chao-ban-cong-nghe`. | Đồng bộ phân vị badge trên Thumbnail và bổ sung nhãn caption mã hồ sơ. |
+| **2. Detail Spec (`spec.md`)** | Cao | Bổ sung Mục 12 (Delta V7) theo nguyên tắc Append-only. | Bổ sung `REQ-DELTA-01`, `REQ-DELTA-02`, `UI-CARD-01`, `BR-OFFER-CARD-01`, `AC-04-031`..`034`. |
+| **3. API & DTO Contracts** | Không | Giữ nguyên 100% hợp đồng API và DTO (`TechnologyOfferDto`). | Các trường `offerCode`, `hasTechTransfer`, `offerType`, `ipRegistrationNumber`, `ipStatus` đã sẵn có trong DTO hiện tại. |
+| **4. Domain & Business Rules** | Vừa | Bổ sung quy tắc trình bày `BR-OFFER-CARD-01`. | Xác định ánh xạ badge trạng thái thương mại và logic format nhãn SHTT. |
+| **5. Database & Migrations** | Không | Không thay đổi schema CSDL PostgreSQL. | Dữ liệu lưu trữ không đổi, thay đổi hoàn toàn thuộc tầng Presentation / Semantic UI. |
+| **6. Web Frontend** | Cao | Cập nhật component Card tại `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`. | Thay đổi cấu trúc DOM Card, styling TailwindCSS cho badge và caption metadata. |
+| **7. Test Suites & Verification** | Vừa | Cập nhật Unit/Component test tại `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx`. | Điều chỉnh matcher test kiểm tra chuỗi `Số bằng SHTT:` và `Xác thực Cục SHTT`, chạy Playwright E2E Visual QA. |
+
+---
+
+### 12.3. Danh Sách Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+
+| Mã Yêu Cầu | Tên Yêu Cầu Chức Năng | Mô Tả Kỹ Thuật & Chi Tiết Nghiệp Vụ | Thành Phần Giao Diện / Code |
+| :--- | :--- | :--- | :--- |
+| **`REQ-DELTA-01`** | Tái Cấu Trúc Trực Quan Định Danh Hồ Sơ & Trạng Thái Thương Mại | 1. Dời mã hồ sơ `offerCode` khỏi góc trên ảnh Thumbnail.<br>2. Chuyển mã hồ sơ xuống dạng nhãn caption nhỏ gọn phía trên tiêu đề bài viết trong Card Body (`Mã: OFF-...`) với font monospace tinh gọn.<br>3. Chuyển góc trên ảnh Thumbnail thành vị trí ưu tiên cho Badge trạng thái giá trị thương mại: hiển thị `"Sẵn sàng chuyển giao"` (khi `hasTechTransfer = true`) hoặc `"Thương phẩm sẵn có"` (khi `hasTechTransfer = false`), đi kèm Badge loại hình chào bán (`offerType`: Sản phẩm / Thiết bị / Giải pháp). | `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`, `TechnologyCard` |
+| **`REQ-DELTA-02`** | Chuẩn Hóa Nhãn Ngữ Nghĩa Số Bằng SHTT & Nhãn Xác Thực Cục SHTT | 1. Bổ sung nhãn ngữ nghĩa minh bạch `"Số bằng SHTT: "` đứng trước mã số đăng ký văn bằng (`ipRegistrationNumber`).<br>2. Đối với hồ sơ công nghệ đã có văn bằng bảo hộ được duyệt (`ipStatus = 'PATENT_GRANTED'` hoặc `'UTILITY_MODEL'`), hiển thị kèm Huy hiệu bảo chứng: `"Xác thực Cục SHTT"` với icon `ShieldCheck` hoặc `CheckCircle2` để gia tăng chỉ số tin cậy pháp lý cho Bên mua. | `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`, SHTT Info Badge |
+
+---
+
+### 12.4. Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules)
+
+- **`BR-OFFER-CARD-01`**: **Quy Tắc Kết Xuất Trực Quan Card Chào Bán Công Nghệ (Card Presentation Logic)**:
+  1. **Huy hiệu Giá trị Thương mại (Top-Left Thumbnail Overlay)**:
+     - Nếu `offer.hasTechTransfer === true`: Bắt buộc kết xuất badge nổi bật với nội dung `"Sẵn sàng chuyển giao"`, sử dụng tone xanh ngọc Emerald (`bg-emerald-600/90 text-white font-bold backdrop-blur-md shadow-sm`), kết hợp icon `Sparkles` hoặc `ShieldCheck`.
+     - Nếu `offer.hasTechTransfer === false`: Kết xuất badge trung tính `"Thương phẩm sẵn có"`, sử dụng tone xanh Navy hoặc Slate (`bg-slate-900/80 text-slate-100 font-bold backdrop-blur-md shadow-sm`).
+  2. **Huy hiệu Loại hình Chào bán (Top-Right Thumbnail Overlay)**:
+     - Ánh xạ từ `offer.offerType`:
+       * `PRODUCT`: `"Sản phẩm"`
+       * `DEVICE` / `EQUIPMENT`: `"Thiết bị"`
+       * `SOLUTION`: `"Giải pháp"`
+       * `SOFTWARE`: `"Phần mềm"`
+       * Khác: `"Dịch vụ KH&CN"`
+     - Định dạng: `bg-slate-900/85 backdrop-blur-md text-white px-2 py-0.5 rounded font-bold shadow-sm`.
+  3. **Nhãn Caption Mã Hồ Sơ (Card Body Metadata)**:
+     - Đặt ngay phía trên tiêu đề `title` của công nghệ.
+     - Cấu trúc hiển thị: `Mã: {offer.offerCode}`.
+     - Quy chuẩn kiểu chữ: `font-mono text-caption text-slate-500 dark:text-slate-400 font-semibold tracking-wider uppercase`.
+  4. **Khối Pháp Lý SHTT & Nhãn Xác Thực (IP Semantic Representation)**:
+     - Khi `offer.hasTechTransfer === true`:
+       * Dòng 1: Icon `ShieldCheck` kèm nhãn trạng thái SHTT `getIpStatusLabel(offer.ipStatus)`.
+       * Dòng 2 (khi có `offer.ipRegistrationNumber`):
+         + Nhãn số văn bằng rõ nghĩa: `Số bằng SHTT: ` kèm mã `{offer.ipRegistrationNumber}` trong khung monospace (`font-mono text-caption font-bold bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800`).
+         + Nhãn bảo chứng cơ quan thẩm định: Huy hiệu `"Xác thực Cục SHTT"` (`inline-flex items-center gap-1 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-700`).
+
+---
+
+### 12.5. Đặc Tả Giao Diện Chi Tiết (UI/UX Specification)
+
+- **`UI-CARD-01`**: **Cấu Trúc Lớp & Bố Cục Thẻ Công Nghệ Chuẩn Hóa (`TechnologyCard`)**:
+  - **Khu vực Media Thumbnail (Tỷ lệ 16:9 / 16:10)**:
+    * Lớp phủ góc trên (`Top Overlay`):
+      - Trái: Badge Giá trị Thương mại (`"Sẵn sàng chuyển giao"` / `"Thương phẩm sẵn có"`).
+      - Phải: Badge Loại hình chào bán (`offerTypeLabel`).
+    * Lớp phủ góc dưới (`Bottom Overlay`):
+      - Trái: Tên ngành kinh tế 18 nhóm ngành TT17 (`offer.sectorName`).
+      - Phải: Huy hiệu mức độ hoàn thiện công nghệ TRL (`TRL X/9` khi `hasTechTransfer = true`).
+  - **Khu vực Nội dung Thân Thẻ (`Card Content Body`)**:
+    * Dòng định danh: Nhãn caption monospace `Mã: {offer.offerCode}` kèm icon `Tag` hoặc dot chỉ dấu.
+    * Tiêu đề công nghệ: `offer.title`, font `text-sm sm:text-base font-extrabold`, giới hạn 2 dòng (`line-clamp-2`), hover chuyển màu `text-emerald-600`.
+    * Tóm tắt giải pháp: `offer.summary`, font `text-xs text-slate-600 dark:text-slate-300`, giới hạn 2 dòng (`line-clamp-2`).
+    * Khối bảo chứng SHTT & Bên bán (`Trust & Credibility Box`):
+      - Hàng 1 (SHTT): Trạng thái bảo hộ + Nhãn `Số bằng SHTT: {ipRegistrationNumber}` + Badge `Xác thực Cục SHTT`.
+      - Hàng 2 (Chủ thể): Tên Đơn vị nghiên cứu / Doanh nghiệp chào bán kèm MST và hyperlink dẫn tới `/enterprises/{taxCode}`.
+  - **Khu vực Chân Thẻ (`Card Footer`)**:
+    * Bên trái: Nhãn "Hình thức thương mại" và Giá niêm yết format chuẩn tiền tệ VND/USD (`formatPrice(offer)`).
+    * Bên phải: Nút CTA `Chi tiết hồ sơ →` dẫn tới `/chao-ban-cong-nghe/{id}`.
+
+---
+
+### 12.6. Tiêu Chí Nghiệm Thu Mở Rộng Delta v7 (Acceptance Criteria)
+
+- **`AC-04-031`**: **Kiểm thử Dời Vị Trí Mã Hồ Sơ Sang Caption**:
+  - Truy cập `/chao-ban-cong-nghe`, kiểm tra toàn bộ các Card công nghệ.
+  - Mã hồ sơ (ví dụ `OFF-202610-LV16-08`) tuyệt đối không còn nằm ở góc trên của ảnh thumbnail.
+  - Mã hồ sơ hiển thị dạng caption `Mã: OFF-...` ngay phía trên tiêu đề bài viết với font monospace và căn lề hài hòa.
+
+- **`AC-04-032`**: **Kiểm thử Badge Trạng Thái Giá Trị Thương Mại Trên Thumbnail**:
+  - Với công nghệ có `hasTechTransfer = true`: Góc trên bên trái ảnh thumbnail hiển thị badge `"Sẵn sàng chuyển giao"` màu xanh ngọc Emerald nổi bật.
+  - Với công nghệ có `hasTechTransfer = false`: Góc trên bên trái hiển thị badge `"Thương phẩm sẵn có"`.
+  - Góc trên bên phải hiển thị rõ ràng loại hình chào bán (Sản phẩm / Thiết bị / Giải pháp).
+
+- **`AC-04-033`**: **Kiểm thử Nhãn Ngữ Nghĩa Số Bằng SHTT & Xác Thực Cục SHTT**:
+  - Với công nghệ có `ipRegistrationNumber` (ví dụ `VN-1-0028812`): Hiển thị đầy đủ nhãn `"Số bằng SHTT: VN-1-0028812"`.
+  - Hiển thị badge bảo chứng `"Xác thực Cục SHTT"` kèm icon nhận diện bên cạnh số bằng, mang lại độ tin cậy trực quan cao.
+
+- **`AC-04-034`**: **Kiểm thử Tương Thích & Responsive Visual QA**:
+  - Kiểm tra hiển thị trên 3 kích thước màn hình: Mobile (375px), Tablet (768px), Desktop (1280px).
+  - Khối thumbnail, badge và nhãn caption không bị tràn viền (overflow), không bị che khuất văn bản và đảm bảo tính tương phản màu sắc theo chuẩn WCAG 2.1 AA.
+
+
+---
+
+## 13. ĐẶC TẢ DELTA V8: TINH GỌN DIỆN MẠO TRỰC QUAN & TỐI ƯU HÓA CHIỀU CAO CARD CHÀO BÁN CÔNG NGHỆ (SPEC KIT DELTA V8)
+
+### 13.1. Bối Cảnh & Căn Cứ Nghiệp Vụ (Context & Rationale)
+
+- **Căn cứ tiếp thu**: Phản hồi trực tiếp từ Product Owner (PO) / Người dùng ngày 2026-10-21 sau khi đánh giá trực quan bản thử nghiệm Delta V7:
+  > *"như hiện tại thì k ok lắm, card của mỗi chào bán lại thành to hơn, phần mã thu nhỏ lại, dòng chữ Sẵn sàng chuyển giao có cần k? giờ item nào cũng có, xác thực Cục SHTT nhìn cũng hơi vô duyên, bỏ đi"*
+- **Phân tích nguyên nhân gốc rễ (Root Cause Analysis)**:
+  1. *Thẻ công nghệ bị phình to (Card Bloating)*: Việc tách mã hồ sơ `offerCode` thành một hàng riêng biệt phía trên tiêu đề, cộng với khối bảo chứng SHTT phân bổ thành 2 dòng (dòng tên trạng thái + dòng số bằng & huy hiệu xác thực) khiến chiều cao thẻ tăng đáng kể (~40-60px), làm giảm mật độ hiển thị thông tin (Information Density) trên màn hình máy tính và thiết bị bảng.
+  2. *Nhiễu thị giác do nhãn lặp lại (Visual Noise & Redundancy)*: Badge "Sẵn sàng chuyển giao" / "Thương phẩm sẵn có" phủ góc trên ảnh thumbnail xuất hiện trên 100% các thẻ, gây cảm giác trùng lặp nhàm chán (banner blindness) và che khuất một phần lớn góc ảnh công nghệ.
+  3. *Huy hiệu "Xác thực Cục SHTT" thiếu tự nhiên (Cluttered Endorsement Badge)*: Nhãn xác thực màu xanh lá đậm bên cạnh số văn bằng tạo cảm giác gượng ép, chiếm diện tích và làm phân tán sự tập trung vào thông tin cốt lõi (Tên sáng chế và Số văn bằng bảo hộ).
+- **Mục tiêu cải tiến Delta V8**:
+  - Triệt để tinh gọn (Ultra-compact Card Design): Giữ nguyên thông tin pháp lý quan trọng nhưng nén bố cục, tối ưu chiều cao thẻ.
+  - Loại bỏ các thành phần gây nhiễu, đưa card về diện mạo thanh lịch, chuyên nghiệp, tập trung vào hình ảnh, tên công nghệ, thông tin SHTT súc tích và giá trị giao dịch.
+
+---
+
+### 13.2. Cross-Surface Impact Matrix (Ma Trận Đánh Giá Tác Động Đa Bề Mặt)
+
+Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Propagation Rule):
+
+| Bề Mặt Hệ Thống | Mức Độ Tác Động | Phạm Vi & Chi Tiết Ảnh Hưởng | Biện Pháp Kiểm Soát & Đồng Bộ |
+| :--- | :---: | :--- | :--- |
+| **1. Basic Design / Wireframe** | Thấp | Cập nhật cấu trúc hiển thị Card công nghệ tại catalog `/chao-ban-cong-nghe`. | Tinh gọn thẻ, bỏ badge góc trên thumbnail, gộp dòng SHTT. |
+| **2. Detail Spec (`spec.md`)** | Cao | Bổ sung Mục 13 (Delta V8) theo nguyên tắc Append-only. | Bổ sung `REQ-DELTA-03` $\rightarrow$ `REQ-DELTA-06`, `BR-OFFER-CARD-02`, `UI-CARD-02`, `AC-04-035` $\rightarrow$ `AC-04-037`. |
+| **3. API & DTO Contracts** | Không | Không thay đổi API hay cấu trúc DTO (`TechnologyOfferDto`). | Các trường dữ liệu `offerCode`, `ipStatus`, `ipRegistrationNumber` được tái cấu trúc hiển thị ở tầng Presentation. |
+| **4. Domain & Business Rules** | Vừa | Thay thế quy tắc trình bày `BR-OFFER-CARD-01` bằng `BR-OFFER-CARD-02`. | Chuẩn hóa quy tắc kết xuất 1 dòng SHTT và vị trí mã hồ sơ thu nhỏ. |
+| **5. Database & Migrations** | Không | Không tác động đến CSDL PostgreSQL. | Dữ liệu gốc giữ nguyên toàn vẹn 100%. |
+| **6. Web Frontend** | Cao | Cập nhật component Card tại `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`. | Tinh chỉnh DOM: xóa badge thumbnail góc trái, xóa huy hiệu xác thực, gộp SHTT 1 dòng, thu nhỏ `offerCode`. |
+| **7. Test Suites & Verification** | Vừa | Cập nhật bộ test tại `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx`. | Điều chỉnh assert kiểm tra loại bỏ badge thumbnail/xác thực, xác minh cấu trúc 1 dòng SHTT và mã thu nhỏ. |
+
+---
+
+### 13.3. Danh Sách Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+
+| Mã Yêu Cầu | Tên Yêu Cầu Chức Năng | Mô Tả Kỹ Thuật & Chi Tiết Nghiệp Vụ | Thành Phần Giao Diện / Code |
+| :--- | :--- | :--- | :--- |
+| **`REQ-DELTA-03`** | Loại Bỏ Hoàn Toàn Badge Trạng Thái Thương Mại Trên Thumbnail | 1. Xóa bỏ hoàn toàn việc kết xuất badge `"Sẵn sàng chuyển giao"` và `"Thương phẩm sẵn có"` ở góc trên bên trái ảnh Thumbnail.<br>2. Giữ lại duy nhất Badge phân loại hình thức chào bán (`offerType`: Sản phẩm / Thiết bị / Giải pháp / Phần mềm...) ở góc trên bên phải để khách hàng dễ dàng phân biệt tính chất công nghệ mà không bị nhiễu thị giác. | `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`, Media Thumbnail Overlay |
+| **`REQ-DELTA-04`** | Loại Bỏ Huy Hiệu "Xác Thực Cục SHTT" | 1. Xóa bỏ hoàn toàn badge/huy hiệu `"Xác thực Cục SHTT"` bên trong khối thông tin Sở hữu trí tuệ.<br>2. Giữ lại giá trị cốt lõi là Số bằng đăng ký hợp lệ (`ipRegistrationNumber`) để đảm bảo tính ngắn gọn, trực diện và chuyên nghiệp. | `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`, SHTT Info Badge |
+| **`REQ-DELTA-05`** | Tối Ưu Hóa Khối SHTT Thành 1 Dòng Duy Nhất Gọn Gàng | 1. Tái cấu trúc toàn bộ khối thông tin SHTT (`hasTechTransfer = true`) về hiển thị trên **đúng 1 dòng duy nhất** dạng inline flex: `[Icon Shield] [Tên bảo hộ SHTT] [• Số: VN-1-...]`.<br>2. Cấu trúc hiển thị chuẩn hóa: Khi có số văn bằng `ipRegistrationNumber`, ghép trực tiếp vào sau tên trạng thái SHTT (ví dụ: `Bằng Độc Quyền Sáng Chế • Số: VN-1-0028812` hoặc trong ngoặc đơn), dùng dấu cách hoặc dot phân tách thanh mảnh, thu nhỏ padding bao ngoài khối, giảm chiều cao tối đa. | `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`, SHTT Single-line Container |
+| **`REQ-DELTA-06`** | Thu Nhỏ & Tích Hợp Gọn Gàng Mã Hồ Sơ (`offerCode`) | 1. Tuyệt đối không tách mã hồ sơ `offerCode` thành một khối dòng riêng biệt có margin/padding lớn gây lãng phí chiều cao thẻ.<br>2. Thu nhỏ font size (`text-[11px]` hoặc `text-xs`), sử dụng font monospace mờ nhẹ (`text-slate-400 dark:text-slate-500`), tích hợp liền mạch vào đầu thẻ (hoặc đặt inline cùng metadata một cách tinh gọn), giúp tổng thể Card vừa vặn, chuẩn compact design. | `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`, Card Header / Title Row |
+
+---
+
+### 13.4. Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules)
+
+- **`BR-OFFER-CARD-02`**: **Quy Chuẩn Bố Cục Tinh Gọn Thẻ Công Nghệ (Compact Card Presentation Rules)**:
+  1. **Khu vực Thumbnail Overlay (Media Layer)**:
+     - **Góc trên (Top Overlay)**:
+       * KHÔNG kết xuất bất kỳ badge thương mại nào ("Sẵn sàng chuyển giao" / "Thương phẩm sẵn có") ở góc trên bên trái.
+       * Chỉ kết xuất 01 badge duy nhất ở góc trên bên phải: Nhãn loại hình công nghệ `getOfferTypeLabel(offer.offerType)` (`bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold px-2 py-0.5 rounded shadow-sm`).
+     - **Góc dưới (Bottom Overlay)**:
+       * Góc trái: Tên ngành kinh tế 18 nhóm ngành TT17 (`offer.sectorName`) dạng viên thuốc tối giản (`bg-black/50 backdrop-blur-md text-white text-[11px] px-2 py-0.5 rounded border border-white/20 line-clamp-1 max-w-[65%]`).
+       * Góc phải: Mức độ sẵn sàng TRL (`TRL X/9` khi `hasTechTransfer = true` và có `trlLevel`).
+  2. **Định danh Mã Hồ Sơ Tinh Gọn (Inline / Compact Identifier)**:
+     - Mã hồ sơ `offer.offerCode` được hiển thị ở kích thước nhỏ (`text-[11px] font-mono text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase`), không dùng icon rườm rà, không chiếm khoảng cách dọc lớn (margin tối thiểu `mb-1`).
+  3. **Khối Pháp Lý SHTT Đơn Dòng (Single-line IP Representation)**:
+     - Chỉ hiển thị khi `offer.hasTechTransfer === true`.
+     - Toàn bộ khối SHTT bắt buộc gói gọn trong **1 dòng duy nhất** (`flex items-center gap-1.5 text-xs truncate py-1.5 px-2.5 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-lg border border-emerald-100 dark:border-emerald-800/60`):
+       * Icon: `ShieldCheck` kích thước `w-3.5 h-3.5 text-emerald-600 shrink-0`.
+       * Nội dung: Nhãn trạng thái SHTT `getIpStatusLabel(offer.ipStatus)` kết hợp số văn bằng `{offer.ipRegistrationNumber ? `• Số: ${offer.ipRegistrationNumber}` : ''}`.
+       * TUYỆT ĐỐI KHÔNG hiển thị huy hiệu `"Xác thực Cục SHTT"`.
+  4. **Khối Chủ Thể Chào Bán**:
+     - Nằm ngay dưới khối SHTT, hiển thị 1 dòng gọn gàng: Icon `Building2` + Tên doanh nghiệp/đơn vị chào bán (kèm liên kết MST nếu có).
+
+---
+
+### 13.5. Đặc Tả Giao Diện Chi Tiết (UI/UX Specification)
+
+- **`UI-CARD-02`**: **Cấu Trúc Khối & Kích Thước Thẻ Tinh Gọn (`CompactTechnologyCard`)**:
+  - **Tỷ lệ Thumbnail**: Giữ tỷ lệ `aspect-[16/10]` trên mobile và `aspect-[16/9]` trên desktop để giữ nét thẩm mỹ ảnh thiết bị.
+  - **Khoảng cách đệm (Card Body Spacing)**:
+    * Padding thân thẻ: Giảm từ `p-5` xuống `p-4` để tiết kiệm không gian.
+    * Khoảng cách giữa các thành phần (`space-y-2` hoặc `space-y-2.5`), loại bỏ khoảng hở thừa.
+  - **Tiêu đề & Tóm tắt**:
+    * Tiêu đề `offer.title`: `text-sm sm:text-base font-extrabold line-clamp-2 leading-snug`.
+    * Tóm tắt `offer.summary`: `text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed`.
+  - **Khối Thông Tin Bổ Trợ (Credibility Compact Box)**:
+    * Hàng SHTT (1 dòng): `[Shield] Bằng Độc Quyền Sáng Chế • Số: VN-1-0028812`.
+    * Hàng Đơn vị (1 dòng): `[Building] Viện Hàn lâm KH&CN Việt Nam • MST: 0100107...`.
+  - **Chân Thẻ (Card Footer)**:
+    * Giá niêm yết: Căn trái, font chữ đậm màu ngọc (`text-emerald-700 dark:text-emerald-400 font-extrabold text-sm`).
+    * Nút CTA `Chi tiết hồ sơ →`: Căn phải, thiết kế dạng ghost/subtle button tinh tế.
+
+---
+
+### 13.6. Tiêu Chí Nghiệm Thu Mở Rộng Delta V8 (Acceptance Criteria)
+
+- **`AC-04-035`**: **Kiểm Thử Loại Bỏ Badge Lặp Lại Trên Thumbnail & Huy Hiệu Xác Thực Cục SHTT**:
+  - Truy cập `/chao-ban-cong-nghe`, duyệt qua toàn bộ danh sách các thẻ công nghệ.
+  - Xác nhận trên toàn bộ các thumbnail: KHÔNG CÒN xuất hiện dòng chữ `"Sẵn sàng chuyển giao"` hay `"Thương phẩm sẵn có"`.
+  - Góc trên bên phải thumbnail chỉ hiển thị nhãn loại hình chào bán (`Sản phẩm`, `Thiết bị`, `Giải pháp`...).
+  - Xác nhận trong khối thông tin SHTT: KHÔNG CÒN xuất hiện huy hiệu `"Xác thực Cục SHTT"`.
+
+- **`AC-04-036`**: **Kiểm Thử Khối Thông Tin SHTT Rút Gọn Đúng 1 Dòng Duy Nhất**:
+  - Với các hồ sơ có chuyển giao công nghệ (`hasTechTransfer = true`) và có số văn bằng `ipRegistrationNumber`:
+    * Thông tin SHTT hiển thị liền mạch trên đúng **1 dòng duy nhất**: Icon `ShieldCheck` + Tên trạng thái bảo hộ + `• Số: {ipRegistrationNumber}` (ví dụ: `[Shield] Bằng Độc Quyền Sáng Chế • Số: VN-1-0028812`).
+    * Chuỗi hiển thị không bị ngắt xuống dòng thứ 2 gây phình thẻ (có thuộc tính `truncate` bảo vệ khi co giãn màn hình hẹp).
+
+- **`AC-04-037`**: **Kiểm Thử Thu Nhỏ Mã Hồ Sơ & Chiều Cao Thẻ Compact**:
+  - Mã hồ sơ `offerCode` hiển thị với kích thước nhỏ gọn (`text-[11px]`), font monospace tinh tế, không chiếm một dòng riêng biệt với khoảng đệm lớn.
+  - Tổng thể chiều cao của mỗi thẻ công nghệ giảm rõ rệt so với phiên bản Delta V7 (tiết kiệm ít nhất 40px chiều cao).
+  - Bố cục lưới (Grid) 2 cột trên Desktop (1280px) và 1 cột trên Mobile (375px) hiển thị đồng đều, cân đối, sạch sẽ, không bị lệch chiều cao giữa các thẻ.

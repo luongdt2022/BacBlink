@@ -858,3 +858,345 @@ flowchart TD
      * **Kịch bản B (Full 4-Step Flow)**: Chọn ngành "Cơ khí chế tạo" (MECH), chuyển sang Bước 2 nạp đúng thông số ngành, thêm thông số tự do, sang Bước 3 điền điều khoản thương mại, sang Bước 4 tải file DataRoom và gửi duyệt.
      * **Kịch bản C (Reactive TRL Toggle)**: Bật chuyển giao = Có $\rightarrow$ Khung TRL màu vàng mở ra; tắt chuyển giao $\rightarrow$ Khung đóng lại; thử nộp khi bật nhưng chưa chọn TRL $\rightarrow$ Nút bị khóa.
 
+---
+
+## 10. KẾ HOẠCH KỸ THUẬT DELTA V7: NÂNG CẤP TRỰC QUAN THỊ GIÁC & NGỮ NGHĨA CARD CHÀO BÁN (PLAN DELTA V7)
+
+### 10.1. Đánh Giá Khả Thi Kỹ Thuật & Tính Tương Thích Ngược (Technical Feasibility & Compatibility)
+
+- **Nguyên tắc cốt lõi**: Non-destructive, Zero-Backend-Change, Zero-DB-Migration.
+- **Thẩm định tác động kiến trúc**:
+  1. *Backend Services & API Controllers*:
+     - **Tác động = 0**. Endpoint `GET /api/v1/technologies` giữ nguyên 100% hợp đồng API và logic truy vấn.
+     - DTO `TechnologyOfferDto` đã trả về đầy đủ các trường: `offerCode`, `hasTechTransfer`, `offerType`, `ipStatus`, `ipRegistrationNumber`, `sectorName`, `trlLevel`, `title`, `summary`, `enterpriseTaxCode`, `enterpriseName`, `developerOrigin`.
+  2. *Database Schema & Migrations*:
+     - **Tác động = 0**. Không có bất kỳ thay đổi bảng, cột hay chỉ mục nào trong CSDL PostgreSQL.
+  3. *Frontend TypeScript Contracts*:
+     - Model `TechnologyOffer` trong `src/types/technology-offer.ts` đã khai báo đầy đủ các thuộc tính, không cần sửa đổi interface.
+  4. *Presentation Layer (Web Frontend)*:
+     - Tái cấu trúc DOM và CSS TailwindCSS tập trung tại component `TechnologyCard` bên trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`.
+     - Cập nhật test matchers tương ứng trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx`.
+
+---
+
+### 10.2. Kiến Trúc Giao Diện & Tái Cấu Trúc DOM Tree (`TechnologyCard`)
+
+```mermaid
+flowchart TD
+    subgraph OLD ["CẤU TRÚC HIỆN TẠI (V6)"]
+        O_THUMB["Thumbnail Media Container"]
+        O_TOP["Top Overlay: [offerCode] + [offerType]"]
+        O_BOT["Bottom Overlay: [sectorName] + [TRL]"]
+        O_BODY["Card Body"]
+        O_TITLE["Title (line-clamp-2)"]
+        O_SUM["Summary (line-clamp-2)"]
+        O_IP["IP Box: [ipStatus] + [ipRegNumber] (Thiếu nhãn ngữ nghĩa)"]
+        O_SELLER["Seller Info Link"]
+        O_FOOTER["Footer: Pricing + CTA Button"]
+        
+        O_THUMB --> O_TOP
+        O_THUMB --> O_BOT
+        O_BODY --> O_TITLE --> O_SUM --> O_IP --> O_SELLER
+    end
+
+    subgraph NEW ["CẤU TRÚC NÂNG CẤP DELTA V7"]
+        N_THUMB["Thumbnail Media Container (16:10 / 16:9)"]
+        N_TOP["Top Overlay: [Huy hiệu Giá trị Thương mại] + [Huy hiệu Loại hình]"]
+        N_COMM["hasTechTransfer ? 'Sẵn sàng chuyển giao' (Emerald) : 'Thương phẩm sẵn có' (Slate)"]
+        N_TYPE["getOfferTypeLabel(offer.offerType)"]
+        N_BOT["Bottom Overlay: [sectorName] + [TRL X/9]"]
+        
+        N_BODY["Card Body (Padding 4/5)"]
+        N_CODE["Caption Định danh: Mã: {offer.offerCode} (Font Mono, uppercase)"]
+        N_TITLE["Title (line-clamp-2, hover:text-emerald-600)"]
+        N_SUM["Summary (line-clamp-2)"]
+        N_IP["Khối Bảo Chứng SHTT Minh Bạch:"]
+        N_IP_R1["Hàng 1: ShieldCheck + getIpStatusLabel(ipStatus)"]
+        N_IP_R2["Hàng 2: 'Số bằng SHTT:' + [ipRegistrationNumber] + Huy hiệu 'Xác thực Cục SHTT'"]
+        N_SELLER["Hàng 3: Đơn vị chào bán / Doanh nghiệp link"]
+        N_FOOTER["Footer: Pricing + CTA Button"]
+        
+        N_THUMB --> N_TOP
+        N_TOP --> N_COMM
+        N_TOP --> N_TYPE
+        N_THUMB --> N_BOT
+        N_BODY --> N_CODE --> N_TITLE --> N_SUM --> N_IP
+        N_IP --> N_IP_R1
+        N_IP --> N_IP_R2
+        N_IP --> N_SELLER
+    end
+```
+
+---
+
+### 10.3. Chi Tiết Kỹ Thuật Styling TailwindCSS & Design Tokens
+
+1. **Huy hiệu Giá trị Thương mại (Top-Left Thumbnail Overlay)**:
+   - Khi `hasTechTransfer === true`:
+     ```tsx
+     <span className="inline-flex items-center gap-1 text-caption bg-emerald-600/95 backdrop-blur-md text-white px-2.5 py-0.5 rounded font-extrabold shadow-sm">
+       <Sparkles className="w-3 h-3 text-emerald-200" />
+       Sẵn sàng chuyển giao
+     </span>
+     ```
+   - Khi `hasTechTransfer === false`:
+     ```tsx
+     <span className="inline-flex items-center gap-1 text-caption bg-slate-900/85 backdrop-blur-md text-slate-100 px-2 py-0.5 rounded font-bold shadow-sm">
+       <Box className="w-3 h-3 text-slate-300" />
+       Thương phẩm sẵn có
+     </span>
+     ```
+
+2. **Huy hiệu Loại hình Chào bán (Top-Right Thumbnail Overlay)**:
+   ```tsx
+   <span className="text-caption bg-slate-900/85 backdrop-blur-md text-white px-2 py-0.5 rounded font-bold shadow-sm">
+     {getOfferTypeLabel(offer.offerType)}
+   </span>
+   ```
+
+3. **Nhãn Caption Mã Hồ Sơ (Card Body Metadata)**:
+   - Đặt ngay trên thẻ `<Link>` của `title`:
+   ```tsx
+   <div className="flex items-center gap-1.5 text-caption font-mono font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+     <Tag className="w-3 h-3 text-slate-400" />
+     <span>Mã: {offer.offerCode}</span>
+   </div>
+   ```
+
+4. **Khối Pháp Lý SHTT & Nhãn Ngữ Nghĩa (IP Credibility Box)**:
+   ```tsx
+   {offer.hasTechTransfer && (
+     <div className="space-y-1.5">
+       <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+         <span className="truncate">{getIpStatusLabel(offer.ipStatus)}</span>
+       </div>
+       {offer.ipRegistrationNumber && (
+         <div className="flex items-center gap-1.5 flex-wrap">
+           <span className="text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">
+             Số bằng SHTT:
+           </span>
+           <span className="mono text-caption font-bold bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shrink-0 text-slate-800 dark:text-slate-200">
+             {offer.ipRegistrationNumber}
+           </span>
+           {(offer.ipStatus === "PATENT_GRANTED" || offer.ipStatus === "UTILITY_MODEL" || offer.ipRegistrationNumber) && (
+             <span className="inline-flex items-center gap-1 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 shrink-0">
+               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+               Xác thực Cục SHTT
+             </span>
+           )}
+         </div>
+       )}
+     </div>
+   )}
+   ```
+
+---
+
+### 10.4. Kế Hoạch Kiểm Thử Tương Tác & Đối Soát Chất Lượng (Quality Gate 4)
+
+1. **Vitest Unit Test (`page.test.tsx`)**:
+   - Kiểm tra mã hồ sơ hiển thị dạng caption `Mã: OFF-...` và không xuất hiện đơn độc trong thumbnail overlay cũ.
+   - Kiểm tra badge `"Sẵn sàng chuyển giao"` xuất hiện cho offer có `hasTechTransfer: true` (`off-01`, `off-02`).
+   - Kiểm tra badge `"Thương phẩm sẵn có"` xuất hiện cho offer có `hasTechTransfer: false` (`off-03`).
+   - Kiểm tra nhãn `"Số bằng SHTT:"` xuất hiện cùng với số văn bằng.
+   - Kiểm tra huy hiệu `"Xác thực Cục SHTT"` xuất hiện với offer đã được cấp bằng độc quyền sáng chế.
+2. **Quality Gate Checks**:
+   - `tsc --noEmit`: 0 lỗi type.
+   - `npm test`: 100% test suites pass.
+   - Đối soát đối kháng `speckit-analyze` Gate 2 đảm bảo 100% nhất quán `REQ-DELTA-*` $\leftrightarrow$ `BR-OFFER-CARD-01` $\leftrightarrow$ `UI-CARD-01` $\leftrightarrow$ `AC-04-031..034` $\leftrightarrow$ `T-04.87..91`.
+
+
+---
+
+## 11. KẾ HOẠCH KỸ THUẬT DELTA V8: TINH GỌN DIỆN MẠO TRỰC QUAN & TỐI ƯU HÓA CHIỀU CAO CARD CHÀO BÁN (PLAN DELTA V8)
+
+### 11.1. Thẩm Định Khả Thi Kỹ Thuật & Tính Tương Thích Ngược (Technical Feasibility & Non-Destructive Impact)
+
+- **Nguyên tắc kỹ thuật tối cao**: Non-destructive, Zero-Backend-Change, Zero-DB-Migration.
+- **Thẩm định phân tầng Clean Architecture**:
+  1. *Backend Services & API Controllers*:
+     - **Tác động = 0**. Endpoint `GET /api/v1/technologies` giữ nguyên 100% hợp đồng API và logic truy vấn.
+     - DTO `TechnologyOfferDto` không thay đổi bất kỳ trường nào.
+  2. *Database Schema & Migrations*:
+     - **Tác động = 0**. Không có bất kỳ thay đổi bảng, cột hay migration nào trong CSDL PostgreSQL.
+  3. *Frontend Types & Contracts*:
+     - Giữ nguyên toàn bộ TypeScript interface `TechnologyOffer`.
+  4. *Presentation Layer (Web Frontend)*:
+     - Tái cấu trúc DOM và tinh gọn CSS TailwindCSS tập trung tại component `TechnologyCard` bên trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`.
+     - Cập nhật test matcher tương ứng trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx`.
+
+---
+
+### 11.2. Phân Tích Kiến Trúc Giao Diện Ultra-Compact Card (`CompactTechnologyCard`)
+
+```mermaid
+flowchart TD
+    subgraph DELTA_V7 ["BỐ CỤC DELTA V7 (BỊ PHÌNH THẺ)"]
+        V7_THUMB["Thumbnail 16:9"]
+        V7_TOP["Top Overlay: [Sẵn sàng chuyển giao] + [Loại hình]"]
+        V7_BOT["Bottom Overlay: [Ngành TT17] + [TRL]"]
+        V7_BODY["Card Body (p-4 sm:p-5, space-y-3)"]
+        V7_CODE["Dòng 1: Caption riêng 'Mã: OFF-...' + Icon Tag (Chiếm 1 dòng)"]
+        V7_TITLE["Dòng 2: Tiêu đề 2 dòng"]
+        V7_SUM["Dòng 3: Tóm tắt 2 dòng"]
+        V7_IP["Khối SHTT 2 dòng:"]
+        V7_IP1["Hàng 1: ShieldCheck + Tên bảo hộ"]
+        V7_IP2["Hàng 2: 'Số bằng SHTT:' + Số bằng + Huy hiệu 'Xác thực Cục SHTT'"]
+        V7_SELLER["Hàng 3: Đơn vị chào bán"]
+        V7_FOOTER["Footer: Giá + CTA"]
+        
+        V7_THUMB --> V7_TOP
+        V7_THUMB --> V7_BOT
+        V7_BODY --> V7_CODE --> V7_TITLE --> V7_SUM --> V7_IP
+        V7_IP --> V7_IP1 --> V7_IP2 --> V7_SELLER
+    end
+
+    subgraph DELTA_V8 ["BỐ CỤC ULTRA-COMPACT DELTA V8 (TINH GỌN)"]
+        V8_THUMB["Thumbnail (16:10 / 16:9)"]
+        V8_TOP["Top Overlay: CHỈ CÒN [Loại hình chào bán] (Góc trên phải)"]
+        V8_DEL1["LOẠI BỎ: Badge 'Sẵn sàng chuyển giao' / 'Thương phẩm sẵn có'"]
+        V8_BOT["Bottom Overlay: [Ngành TT17] + [TRL] (Giữ nguyên)"]
+        
+        V8_BODY["Card Body Tinh Gọn (p-3.5 sm:p-4, space-y-2)"]
+        V8_CODE["Caption Mã Hồ Sơ Thu Nhỏ: text-[11px] font-mono text-slate-400 (Không chiếm dòng to)"]
+        V8_TITLE["Tiêu đề 2 dòng (leading-snug)"]
+        V8_SUM["Tóm tắt 2 dòng (leading-relaxed)"]
+        V8_IP["Khối SHTT Gói Gọn 1 Dòng Duy Nhất:"]
+        V8_IP_LINE["[ShieldCheck] Tên bảo hộ • Số: VN-1-... (truncate)"]
+        V8_DEL2["LOẠI BỎ: Huy hiệu 'Xác thực Cục SHTT'"]
+        V8_SELLER["Đơn vị chào bán (1 dòng thanh mảnh)"]
+        V8_FOOTER["Footer: Giá + CTA (Tối ưu padding)"]
+        
+        V8_THUMB --> V8_TOP
+        V8_TOP -.-> V8_DEL1
+        V8_THUMB --> V8_BOT
+        V8_BODY --> V8_CODE --> V8_TITLE --> V8_SUM --> V8_IP
+        V8_IP --> V8_IP_LINE
+        V8_IP -.-> V8_DEL2
+        V8_IP --> V8_SELLER
+    end
+```
+
+---
+
+### 11.3. Chi Tiết Kỹ Thuật Styling TailwindCSS & DOM Diff
+
+#### 1. Thumbnail Top Overlay (Loại bỏ badge thương mại lặp lại):
+- **Trước (Delta V7)**:
+  ```tsx
+  <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
+    {offer.hasTechTransfer ? (
+      <span className="inline-flex items-center gap-1 text-caption bg-emerald-600/95 backdrop-blur-md text-white px-2.5 py-0.5 rounded font-extrabold shadow-sm">
+        <Sparkles className="w-3 h-3 text-emerald-200" />
+        Sẵn sàng chuyển giao
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1 text-caption bg-slate-900/85 backdrop-blur-md text-slate-100 px-2 py-0.5 rounded font-bold shadow-sm">
+        <Box className="w-3 h-3 text-slate-300" />
+        Thương phẩm sẵn có
+      </span>
+    )}
+    <span className="text-caption bg-slate-900/85 backdrop-blur-md text-white px-2 py-0.5 rounded font-bold shadow-sm">
+      {getOfferTypeLabel(offer.offerType)}
+    </span>
+  </div>
+  ```
+- **Sau (Delta V8)**:
+  ```tsx
+  <div className="absolute top-2.5 right-2.5">
+    <span className="text-[11px] bg-slate-900/80 backdrop-blur-md text-white px-2 py-0.5 rounded font-bold shadow-sm">
+      {getOfferTypeLabel(offer.offerType)}
+    </span>
+  </div>
+  ```
+
+#### 2. Định danh Mã Hồ Sơ Thu Nhỏ (Compact Identifier):
+- **Trước (Delta V7)**:
+  ```tsx
+  <div className="flex items-center gap-1.5 text-caption font-mono font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase">
+    <Tag className="w-3 h-3 text-slate-400" />
+    <span>Mã: {offer.offerCode}</span>
+  </div>
+  ```
+- **Sau (Delta V8)**:
+  ```tsx
+  <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase">
+    {offer.offerCode}
+  </div>
+  ```
+
+#### 3. Khối SHTT Đơn Dòng (Single-line SHTT Box & Xóa huy hiệu Xác thực):
+- **Trước (Delta V7)**:
+  ```tsx
+  <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60 rounded-xl p-2.5 space-y-1.5">
+    {offer.hasTechTransfer && (
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span className="truncate">{getIpStatusLabel(offer.ipStatus)}</span>
+        </div>
+        {offer.ipRegistrationNumber && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-caption text-emerald-800 dark:text-emerald-300 font-medium">Số bằng SHTT:</span>
+            <span className="mono text-caption font-bold bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shrink-0 text-slate-800 dark:text-slate-200">{offer.ipRegistrationNumber}</span>
+            <span className="inline-flex items-center gap-1 text-caption font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-700 shrink-0">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Xác thực Cục SHTT
+            </span>
+          </div>
+        )}
+      </div>
+    )}
+    ...
+  </div>
+  ```
+- **Sau (Delta V8)**:
+  ```tsx
+  <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/50 rounded-lg p-2 space-y-1 text-xs">
+    {offer.hasTechTransfer && (
+      <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-semibold truncate">
+        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+        <span className="truncate">
+          {getIpStatusLabel(offer.ipStatus)}
+          {offer.ipRegistrationNumber && (
+            <span className="ml-1 font-mono font-bold text-[11px] text-emerald-700 dark:text-emerald-300">
+              • Số: {offer.ipRegistrationNumber}
+            </span>
+          )}
+        </span>
+      </div>
+    )}
+
+    {/* Đơn vị chào bán 1 dòng */}
+    {offer.enterpriseTaxCode ? (
+      <Link
+        href={`/enterprises/${offer.enterpriseTaxCode}`}
+        className="flex items-center gap-1.5 text-[11px] text-brand-700 dark:text-brand-400 hover:text-brand-900 font-medium group/seller truncate"
+      >
+        <Building2 className="w-3 h-3 text-brand-600 shrink-0" />
+        <span className="truncate group-hover/seller:underline">
+          {offer.enterpriseName || offer.developerOrigin || `MST: ${offer.enterpriseTaxCode}`}
+        </span>
+      </Link>
+    ) : null}
+  </div>
+  ```
+
+#### 4. Thân Card Padding & Tối Ưu Chiều Cao:
+- Thân thẻ: `p-3.5 sm:p-4 space-y-2` (thay vì `p-4 sm:p-5 space-y-3`).
+- Giảm tổng chiều cao card ~40-50px, giúp màn hình hiển thị được nhiều công nghệ hơn trong tầm mắt người dùng.
+
+---
+
+### 11.4. Kế Hoạch Kiểm Thử Tương Tác & Quality Gate (Gate 4 Verification)
+
+1. **Vitest Unit Test (`page.test.tsx`)**:
+   - Kiểm tra phủ định (Negative Assertion): Tuyệt đối không còn văn bản `"Sẵn sàng chuyển giao"`, `"Thương phẩm sẵn có"`, và `"Xác thực Cục SHTT"`.
+   - Kiểm tra cấu trúc SHTT 1 dòng: Xác minh chuỗi `• Số: VN-1-0028812` xuất hiện trong cùng block SHTT.
+   - Kiểm tra mã hồ sơ: Xác minh `OFF-202610-LV16-08` hiển thị ở định dạng gọn gàng.
+2. **Quality Gate Checks**:
+   - `tsc --noEmit`: 0 lỗi type.
+   - `npm test`: 100% test suites pass.
+   - Đối soát đối kháng `speckit-analyze` Gate 2 đảm bảo 100% nhất quán `REQ-DELTA-03..06` $\leftrightarrow$ `BR-OFFER-CARD-02` $\leftrightarrow$ `UI-CARD-02` $\leftrightarrow$ `AC-04-035..037` $\leftrightarrow$ `T-04.92..95`.
+
+

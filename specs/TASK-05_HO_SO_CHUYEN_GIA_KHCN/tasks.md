@@ -416,3 +416,69 @@
   - **Tiêu chí kiểm chứng (Dev & QC)**:
     + Chạy `npm test` trong frontend vượt qua 100% test suites (0 fail).
     + Chạy `pnpm build` hoặc `npm run build` không phát sinh lỗi TypeScript.
+
+- [x] `TASK-05-CR144` **[CR]** [P1] (Người gửi: a Lượng) Điều chỉnh combobox tỉnh — Mục filter : ĐỊa bàn tỉnh/ Thành phố, sửa thành  combobox có thể  nhập vào tìm kiếm để filter và checkbox có thể chọn được nhiều tỉnh
+
+---
+
+## Giai đoạn 9: Delta v2 — Tinh chỉnh Thẻ Chuyên gia & Social Proof Kết nối
+
+- [x] `T145` **[BE-TASK-05-DELTA-v2-01][BE][DB][DOMAIN] Cập nhật Domain Entity ExpertProfile & Migration EF Core non-destructive cho connection_count**
+  - **Mục tiêu**: Bổ sung trường `ConnectionCount` vào thực thể `ExpertProfile` và tạo migration cơ sở dữ liệu phi phá hủy.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/backend/modules/brokerage/Domain/ExpertProfile.cs`: Bổ sung thuộc tính `public int ConnectionCount { get; private set; } = 0;`, thêm các phương thức domain `SetConnectionCount(int count)` và `IncrementConnectionCount()`, đảm bảo giá trị không âm và tính đóng gói AggregateRoot.
+    + Trong `SourceCode/backend/modules/brokerage/Infrastructure/Persistence/Configurations.cs`: Cập nhật `ExpertProfileConfiguration` ánh xạ cột `connection_count` kiểu `integer NOT NULL DEFAULT 0`.
+    + Tạo migration EF Core mới `SourceCode/backend/packages/persistence/Migrations/20261021100000_AddExpertConnectionCount.cs` với `AddColumn` có `defaultValue: 0` và method `Down` an toàn.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Áp dụng migration vào cơ sở dữ liệu PostgreSQL thành công, không làm mất hoặc thay đổi dữ liệu của bất kỳ hồ sơ chuyên gia cũ nào.
+    + Mọi bản ghi `expert_profiles` hiện hữu đều có `connection_count = 0`.
+
+- [x] `T146` **[BE-TASK-05-DELTA-v2-02][BE][API][CONTRACT] Cập nhật Contracts.cs (ExpertPublicCardDto) và ExpertService.cs ánh xạ ConnectionCount**
+  - **Mục tiêu**: Mở rộng DTO trả về cho danh bạ công khai và ánh xạ trường `ConnectionCount` tại Application Service, bảo đảm 100% tương thích ngược và bảo vệ dữ liệu PDPD.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/backend/modules/brokerage/Application/Contracts.cs`: Mở rộng record `ExpertPublicCardDto` thêm tham số `int ConnectionCount = 0` (mặc định 0).
+    + Trong `SourceCode/backend/modules/brokerage/Application/ExpertService.cs`: Trong phương thức `GetPublicDirectoryAsync`, gán `ConnectionCount: p.ConnectionCount` khi khởi tạo `ExpertPublicCardDto`.
+    + Tuân thủ nguyên tắc Clean Architecture: không rò rỉ `DbContext` ra khỏi tầng Service/Repository, chỉ expose DTOs qua API endpoint `GET /api/v1/public/experts`.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Gọi API `GET /api/v1/public/experts` trả về JSON chứa trường `connectionCount` dạng số nguyên cho từng phần tử thẻ chuyên gia.
+    + Không phát sinh bất kỳ lỗi biên dịch nào ở các consumer gọi `ExpertPublicCardDto` trước đó.
+
+- [x] `T147` **[FE-TASK-05-DELTA-v2-01][FE][UI][FR-DELTA-01] Cập nhật interface ExpertCardItem và Spotlight Rail trên Danh bạ Chuyên gia**
+  - **Mục tiêu**: Bổ sung thông tin Ngành chuyên môn chính và tối đa 2 Chip công nghệ làm chủ cho từng chuyên gia trên Băng chuyền Chuyên gia Tiêu biểu & Nổi bật (Spotlight Rail).
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/app/experts/page.tsx`: Cập nhật interface `ExpertCardItem` bổ sung trường tùy chọn `connectionCount?: number`.
+    + Cập nhật component Spotlight Rail (`featured-experts-rail`):
+      * Thêm Badge Ngành chuyên môn chính (`primarySectorName` hoặc từ `primarySectorCode` qua `sectorOptions`) với style `bg-brand-50 text-brand-800 border-brand-200 text-xs px-2 py-0.5 rounded font-semibold`.
+      * Thêm tối đa 02 Chip công nghệ (`masteredTechCodes`) được giải mã tiếng Việt thân thiện qua `resolveTechLabel(code)` với style `bg-slate-100 text-slate-700 border-slate-200 text-xs px-1.5 py-0.5 rounded truncate max-w-[130px]`.
+      * Tinh chỉnh cấu trúc layout của thẻ Spotlight để không bị vỡ giao diện trên màn hình nhỏ.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Thẻ Spotlight hiển thị đầy đủ Ngành chuyên môn và tối đa 2 Chip công nghệ có nhãn tiếng Việt rõ nghĩa.
+    + Không bị vỡ khung hình, không tràn chữ trên cả Desktop (1440px) và Mobile (390px).
+
+- [x] `T148` **[FE-TASK-05-DELTA-v2-02][FE][UI][FR-DELTA-02][FR-DELTA-03][BR-DELTA-01] Cập nhật Thẻ Chuyên gia: Pill Badge +N công nghệ, chuẩn hóa min-height và Social Proof Badge**
+  - **Mục tiêu**: Chuẩn hóa thẩm mỹ Thẻ Chuyên gia (Expert Card), thay thế số `+1` text trần bằng Pill Badge chuẩn, cân bằng nhịp điệu thị giác và bổ sung Badge Social Proof theo điều kiện nghiêm ngặt.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/app/experts/page.tsx`:
+      * Thay thế phần tử text trần `+{expert.masteredTechCodes.length - 2}` bằng Pill Badge chuẩn thiết kế: `bg-slate-100 text-slate-600 border border-slate-200 text-xs px-2 py-0.5 rounded-full font-medium dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700` hiển thị chuỗi `+{expert.masteredTechCodes.length - 2} công nghệ`.
+      * Cố định nhịp điệu thị giác: Họ tên chuyên gia `min-h-[44px]` với `line-clamp-2`; Cơ quan công tác `min-h-[20px]` `truncate`; Khối Ngành & Chip công nghệ `min-h-[64px]`; Nút CTA ghim ở đáy thẻ (`mt-auto`).
+      * Cài đặt Social Proof Badge: Hiển thị `🤝 {expert.connectionCount} lượt kết nối` (kèm icon `Users`) với style `bg-blue-50 text-blue-700 border-blue-200 text-caption font-bold px-2 py-0.5 rounded`.
+      * Cưỡng chế quy tắc `BR-DELTA-01`: CHỈ render badge Social Proof khi `expert.connectionCount !== undefined && expert.connectionCount > 0`. Tuyệt đối ẩn khỏi DOM khi `= 0` hoặc rỗng/undefined.
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Thẻ có $> 2$ công nghệ hiển thị Pill Badge `+N công nghệ` bo tròn, không còn số lơ lửng text trần.
+    + Các thẻ cạnh nhau trong cùng hàng có chiều cao đồng đều, nút CTA thẳng hàng ngang.
+    + Chuyên gia có `connectionCount > 0` hiển thị Badge xanh dương uy tín; chuyên gia có `connectionCount == 0` hoàn toàn không có badge này trong DOM (không xuất hiện chữ "0 lượt kết nối").
+
+- [x] `T149` **[TEST-TASK-05-DELTA-v2-01][TEST][BE][FE] Bộ kiểm thử Unit Test & Vitest Regression Tests bảo vệ 3 tính năng Delta v2**
+  - **Mục tiêu**: Xây dựng bộ kiểm thử tự động toàn diện từ Backend Domain đến Frontend UI Component, bảo vệ hệ thống trước lỗi hồi quy.
+  - **Hành động kỹ thuật**:
+    + Backend xUnit: Bổ sung test cases trong `SourceCode/backend/tests/invariants/ExpertProfileInvariantsTests.cs` kiểm tra domain property `ConnectionCount`, phương thức `SetConnectionCount` (chặn số âm), `IncrementConnectionCount`, và ánh xạ DTO trong `ExpertService`.
+    + Frontend Vitest: Cập nhật `SourceCode/frontend/src/app/experts/page.test.tsx`:
+      * Test Spotlight Rail hiển thị badge ngành và chip công nghệ giải mã tiếng Việt.
+      * Test thẻ chuyên gia hiển thị Pill Badge `+N công nghệ` khi danh sách công nghệ $> 2$.
+      * Test chuyên gia có `connectionCount > 0` hiển thị Social Proof Badge.
+      * Test chuyên gia có `connectionCount = 0` hoặc `undefined` KHÔNG render badge và không có text "0 lượt kết nối".
+  - **Tiêu chí kiểm chứng (Dev & QC)**:
+    + Chạy `dotnet test` trong Backend: 100% tests pass.
+    + Chạy `npm test` trong Frontend: 100% tests pass (0 fail).
+    + Chạy `pnpm build` hoặc `npm run build`: biên dịch sạch 0 lỗi TypeScript.
+

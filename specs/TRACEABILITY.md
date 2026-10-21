@@ -13,7 +13,7 @@
 | **`TASK-00`** | Platform Foundation & Common | Hiến pháp kỹ thuật, Clean Architecture | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | `ARCH-*`, `DB-INIT-*`, `API-BASE-*`, `FR-COMM-*`, `FR-RBAC-*` | 🟡 Foundation shipped; vòng đời account 10 role mở |
 | **`TASK-01`** | Tổng quan & Kiến trúc Home | Sheet `HOME1` + `Giới thiệu` (60 dòng) | [`specs/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/) | `REQ-HOME-*`, `BR-HOME-*`, `API-PORTAL-*`, `UI-LANDING-*`, `UI-TECHMART-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-02`** | Hồ sơ Doanh nghiệp ĐMST & 304 DN Thật | Sheet `DN ĐMST` (225 dòng dữ liệu) + 304 DN thật | [`specs/TASK-02_HO_SO_CHU_THE_VA_DN_DMST`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) | `REQ-02-*`, `BR-02-*`, `DB-ENT-*`, `API-ENT-*`, `UI-ENT-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
-| **`TASK-03`** | Hồ sơ Tìm Mua (Buyer) | Sheet `T.mua SP` (356 dòng dữ liệu) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | `REQ-BUY-*`, `BR-SURVEY-*`, `DB-DEMAND-*` | ⚪ Dự kiến |
+| **`TASK-03`** | Hồ sơ Tìm Mua (Buyer) | Sheet `T.mua SP` (356 dòng dữ liệu) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | `REQ-BUY-*`, `BR-SURVEY-*`, `DB-DEMAND-*` | ✅ Hoàn thành (Delta v8 Shipped) |
 | **`TASK-04`** | Hồ sơ Chào Bán & Bộ Lọc | Sheet `C.bán SP` + `Bo_loc_Cban` (1,568 dòng) | [`specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`](./TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/) | `REQ-04-*`, `BR-SELLER-*`, `API-04-*`, `UI-04-*` | ✅ Hoàn tất (Gate 4 Pass) |
 | **`TASK-05`** | Hồ sơ Chuyên gia KH&CN & AI Scan LLKH | Sheet `C.gia` (94 dòng dữ liệu) | [`specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`](./TASK-05_HO_SO_CHUYEN_GIA_KHCN/) | `REQ-EXP-*`, `BR-EXP-*`, `API-EXP-*`, `UI-EXP-*` | ✅ Delta v12 Hoàn tất (Gate 4/5 Pass) |
 | **`TASK-06`** | Danh Mục Ngành & Ma Trận | Sheet `Ngành` + `Ma trận LV-CN` (161 dòng) | [`specs/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN`](./TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/) | `REQ-SEC-*`, `BR-SEC-*`, `API-MASTER-*`, `UI-MASTER-*` | 🟡 Đã đặc tả (Ready) |
@@ -205,6 +205,29 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Bước 4: Chọn Sở KH&CN Cấp 2 & Cam kết pháp lý** | `REQ-04-021`, `BR-SELLER-05`, `UI-04-026` | T-04.70, T-04.75 | `ProvincialGovAuthoritySelect.tsx`, `ApprovalRequest.cs` | Bắt buộc chọn Sở và cam kết pháp lý; sinh phiếu duyệt Cổng Cấp 2 `/gov` |
 | **Cơ chế Lưu nháp DRAFT, LocalStorage & Trợ lý AI** | `REQ-04-022`, `BR-SELLER-08`, `AC-04-029` | T-04.82, T-04.83 | `DraftManager.tsx`, `AiAssistantCard.tsx` | Lưu nháp chỉ cần title >= 3 ký tự; phục hồi form 30s; AI suggester fallback |
 | **Kiểm thử Toàn diện & Quality Gate Delta v6** | `AC-04-020..030`, `QC-4-TIERS` | T-04.84–T-04.86 | `SellerOfferRulesValidatorTests.cs`, `page.test.tsx`, `tests/qc_gate4_delta_v6_verification.py` | 100% xUnit Pass (37 tests), Vitest 3/3 Pass, Direct DB Verification & Playwright 3 kịch bản Pass (15/15 tests) |
+
+---
+
+## 16. TASK-03 Delta v8 (CR-2026-017 / TASK-03-CR59): Tái Cấu Trúc Form Khảo Sát Nhu Cầu 4 Tab Tinh Gọn (Lean 4-Step Wizard)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tái cấu trúc Stepper 4 Tabs tinh gọn & Free-click** | `FR-NEW-03-01`, `BR-NEW-03-01`, `AC-NEW-03-01`, `AC-NEW-03-05` | T-03.58 | `src/app/khao-sat-nhu-cau/page.tsx` | Stepper 4 tabs, hiển thị tiến độ (currentStep/4)*100%, cho phép click tự do không chặn |
+| **Gộp 4 phân mục B, C, D, F vào Tab 3 (Unified Supplementary)** | `FR-NEW-03-01`, `BR-NEW-03-01`, `AC-NEW-03-03` | T-03.59 | `src/app/khao-sat-nhu-cau/page.tsx` | 4 Cards chuyên đề có nhãn trực quan, bảo toàn 100% trường dữ liệu, bỏ required chặn submit |
+| **Navigation, Fast-track Skip Tab 2 $\rightarrow$ 4 & 3-Tier Validation** | `BR-NEW-03-01`, `AC-NEW-03-02`, `AC-NEW-03-04`, `AC-NEW-03-06` | T-03.60 | `src/app/khao-sat-nhu-cau/page.tsx` | Nút Fast-track chuyển thẳng Tab 4; validate khi submit tự cuộn về đúng tab thiếu dữ liệu |
+| **Bộ kiểm thử Vitest Unit/Component Tests** | `AC-NEW-03-01..06` | T-03.61 | `src/app/khao-sat-nhu-cau/page.test.tsx` | 14/14 tests pass 100% (bao gồm 6 kịch bản mới về 4 tabs, fast-track, free-click, 3-tier validation) |
+---
+
+## 17. TASK-04 Delta v8: Tinh Gọn Diện Mạo Trực Quan & Tối Ưu Hóa Chiều Cao Card Chào Bán Công Nghệ
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Xóa bỏ badge lặp lại trên Thumbnail & Giữ 01 Badge Loại hình** | `REQ-DELTA-03`, `BR-OFFER-CARD-02`, `UI-CARD-02`, `AC-04-035` | T-04.92 | `src/app/chao-ban-cong-nghe/page.tsx` | Triệt tiêu hoàn toàn badge "Sẵn sàng chuyển giao" và "Thương phẩm sẵn có" trên thumbnail; chỉ giữ 01 badge góc trên bên phải hiển thị loại hình chào bán |
+| **Gộp thông tin Pháp lý SHTT trên đúng 1 dòng duy nhất** | `REQ-DELTA-04`, `REQ-DELTA-05`, `BR-OFFER-CARD-02`, `UI-CARD-02`, `AC-04-035`, `AC-04-036` | T-04.93 | `src/app/chao-ban-cong-nghe/page.tsx` | Xóa bỏ huy hiệu "Xác thực Cục SHTT"; gộp hiển thị 1 dòng `[ShieldCheck] [Tên bảo hộ] • Số: {ipRegistrationNumber}` có `truncate` |
+| **Thu nhỏ Mã hồ sơ & Tối ưu chiều cao Card (~20-25%)** | `REQ-DELTA-06`, `BR-OFFER-CARD-02`, `UI-CARD-02`, `AC-04-037` | T-04.92, T-04.93 | `src/app/chao-ban-cong-nghe/page.tsx` | Thu nhỏ `offerCode` (`text-[11px] font-mono text-slate-400 dark:text-slate-500 uppercase`); giảm padding từ `p-4 sm:p-5` xuống `p-3.5 sm:p-4`; nén card tiết kiệm ~40-50px chiều cao |
+| **Bộ kiểm thử Vitest Unit/Component Tests Delta V8** | `AC-04-035..037` | T-04.94 | `src/app/chao-ban-cong-nghe/page.test.tsx` | 9/9 tests pass 100% (bao gồm Negative assertions: `queryByText("Sẵn sàng chuyển giao") === null`, `queryByText("Xác thực Cục SHTT") === null`, single-line IP, compact offerCode) |
+| **Thẩm định Chất lượng Toán học tĩnh & Gate 4 Pass** | `AC-04-034..037`, `QC-4-TIERS` | T-04.95 | `src/test/qc-gate4-typography.test.ts`, TypeScript compiler | 13/13 tests Typography pass, `tsc --noEmit` 0 errors, layout responsive trên mọi viewport |
+
 
 
 

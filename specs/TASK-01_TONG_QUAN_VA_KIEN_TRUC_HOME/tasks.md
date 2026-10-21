@@ -37,3 +37,5 @@
 - [x] **T-01.16** `[TEST]` Viết Vitest cho component Mega-menu, Floating AI Widget và Event Card.
 - [x] **T-01.17** `[QC]` Bàn giao QC thực thi bộ kiểm thử Playwright Visual QA & E2E cho 2 màn hình trên Desktop và Mobile.
 - [x] **T-01.18** `[GATE]` Thẩm định Gate 3 SA (`guard-rails.sh`), đối soát Gate 5 Definition of Done và đóng Epic Shipped trong `ROADMAP.md`.
+
+- [x] `TASK-01-CR19` **[CR]** [P1] (Người gửi: a  Lượng) bỏ cho a phần nội dung ở trang chủ : Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết (11 Phân Hệ · 48 Màn Hình Thực Tế) — không cần hiển thị phần chỉ dẫn này ở trang chủ

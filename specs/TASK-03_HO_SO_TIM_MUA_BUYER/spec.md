@@ -325,3 +325,143 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
   - When mở trang `/khao-sat-nhu-cau`,
   - Then ô MST hiển thị đúng `0100255428`, ô Tên Doanh nghiệp hiển thị đúng `CÔNG TY TNHH TRƯỜNG HOAN`, Tỉnh/thành phố hiển thị đúng `Hà Nội`.
 
+
+
+---
+
+## 10. SPEC DELTA V2 (CR-2026-017): TÁI CẤU TRÚC FORM KHẢO SÁT NHU CẦU 4 TAB TINH GỌN (LEAN 4-STEP WIZARD)
+
+> **Mã thay đổi**: `CR-2026-017` / `SPEC-DELTA-V2-TASK03`  
+> **Căn cứ thay đổi**: 
+> 1. Chỉ đạo của PO/PM về tối ưu hóa tỷ lệ hoàn tất (Form Conversion Rate) phiếu khảo sát nhu cầu chuyển giao công nghệ.
+> 2. Khung phân tích Michael Porter: Định vị trọng tâm giá trị vào **Nhu cầu công nghệ thực tế (Demand Tickets)** và **Năng lực tài chính/pháp nhân**, loại bỏ sự cồng kềnh hành chính của quy trình 7 bước dàn trải.
+> 3. Nguyên lý Kim tự tháp Barbara Minto (Pyramid Principle): Gom cụm thông tin theo nhóm chủ đề logic (Gộp B, C, D, F thành cụm Hiện trạng & Năng lực mở rộng), tạo cấu trúc 4 bước rõ ràng: **Nhu Cầu $\rightarrow$ Doanh Nghiệp $\rightarrow$ Thông Tin Bổ Sung $\rightarrow$ Xác Nhận**.
+
+### 10.1 Bối Cảnh & Căn Cứ Thay Đổi
+
+- **Thực trạng**: Phiếu khảo sát sâu DNNVV (`SC-03-01`) theo thiết kế cũ trải dài trên 7 bước riêng biệt (A, E, B, C, D, F, G). Quy trình 7 bước tạo ra rào cản tâm lý lớn cho doanh nghiệp vừa và nhỏ (SMEs), làm tăng tỷ lệ bỏ cuộc giữa chừng (drop-off rate) và khiến trải nghiệm người dùng trở nên nặng nề.
+- **Giải pháp tinh gọn**: Rút gọn cấu trúc Stepper từ **7 tab xuống 4 tab**, trong đó phân định dứt khoát giữa **Phần Bắt Buộc Cốt Lõi (Mandatory Core)** và **Phần Bổ Sung Tùy Chọn (Optional Extension)**:
+  - **Tab 1 [Bắt buộc]**: `E. Nhu Cầu & Thuật Toán TNI` — Thu thập ngay bài toán kỹ thuật, mục tiêu kỳ vọng và bộ 4 tham số $K, L, N, O$ để tính điểm TNI thời gian thực.
+  - **Tab 2 [Bắt buộc]**: `A. Thông Tin Doanh Nghiệp` — Thu thập thông tin định danh pháp nhân, người liên hệ, hỗ trợ Auto-Lookup MST và Smart Pre-fill 100% hồ sơ đã đăng nhập.
+  - **Tab 3 [Tùy chọn]**: `Thông Tin Bổ Sung / Hiện Trạng & Năng Lực` — Hợp nhất 4 phân mục sâu:
+    1. *Phân mục B*: Hiện trạng máy móc thiết bị & Tự chấm 8 tiêu chí.
+    2. *Phân mục C*: Nhận diện điểm nghẽn kỹ thuật & Công đoạn khó nhất.
+    3. *Phân mục D*: Năng lực tiếp nhận công nghệ (TAR) & Đội ngũ nhân lực kỹ thuật.
+    4. *Phân mục F*: Định hướng đổi mới sáng tạo 3 năm tới & Đề xuất hỗ trợ từ Nhà nước.
+  - **Tab 4 [Bắt buộc]**: `G. Rà Soát & Xác Nhận PDPD` — Bảng tổng hợp tóm tắt toàn bộ thông tin khảo sát, thông tin người ký và cam kết bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP.
+
+---
+
+### 10.2 Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt / Màn Hình | File Path | Hiện Trạng (7 Bước) | Thay Đổi Cần Làm (4 Tabs Tinh Gọn) |
+| :--- | :--- | :--- | :--- |
+| **SC-03-01: Form Khảo Sát Sâu** | `frontend/src/app/khao-sat-nhu-cau/page.tsx` | Stepper 7 bước (`currentStep` từ 1..7). Tiến độ tính theo `(currentStep / 7) * 100%`. Có 7 khối điều kiện rendering riêng. | - Tái cấu trúc thành 4 bước (`currentStep` từ 1..4).<br>- Tiến độ tính theo `(currentStep / 4) * 100%`.<br>- Gom 4 phân mục B, C, D, F vào Tab 3 thành các card phân nhóm mạch lạc.<br>- Cho phép click tự do vào bất kỳ Tab nào trên Stepper.<br>- Tab 2 có lối tắt "Bỏ qua bước tùy chọn & Đến nộp phiếu" nhảy thẳng sang Tab 4. |
+| **Frontend Test Suite** | `frontend/src/app/khao-sat-nhu-cau/page.test.tsx` | 12 Vitest tests kiểm thử luồng 7 bước (`Bước 1/7..7/7`, nút `Tiếp tục Bước 2..7`). | - Cập nhật assertions tương thích với Stepper 4 bước (`Bước 1/4..4/4`).<br>- Cập nhật luồng chuyển bước (Next từ 1 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 4 và Skip từ 2 $\rightarrow$ 4).<br>- Bổ sung test kiểm chứng Tab 3 chứa đủ 4 phân mục B, C, D, F và không chặn submit khi để trống. |
+| **E2E & QC Gate Verification** | `tests/qc_gate4_independent_verification.py` | Kiểm tra hành vi prefill và chuyển tiếp từ form khảo sát. | Bảo toàn các bộ định vị input và luồng điều hướng hợp lệ của Bước 1 & Bước 2. |
+| **Backend API Contract** | `backend/apps/api/V1Compat/DemandController.cs` | Endpoint `POST /api/v1/demands/surveys` nhận DTO `SubmitDeepSurveyRequest` đầy đủ các trường của 7 phân mục. | **Giữ nguyên 100% không đổi**: Payload DTO đã có cấu trúc phẳng và hỗ trợ đầy đủ các trường tùy chọn của phân mục B, C, D, F. Không phát sinh breaking changes tại Backend/CSDL. |
+
+---
+
+### 10.3 Yêu Cầu Chức Năng Mới (FR-NEW-03-01)
+
+- **`FR-NEW-03-01` [Tái Cấu Trúc Form Khảo Sát Nhu Cầu Thành 4 Tab Tinh Gọn]**:
+  1. **Cấu Trúc Stepper 4 Bước**:
+     - Stepper hiển thị chính xác 4 tab:
+       * **Tab 1**: `E. Nhu Cầu & TNI` (Bắt buộc)
+       * **Tab 2**: `A. Doanh Nghiệp` (Bắt buộc)
+       * **Tab 3**: `Thông Tin Bổ Sung` (Tùy chọn)
+       * **Tab 4**: `G. Xác Nhận` (Bắt buộc)
+     - Thanh chỉ báo hoàn thành tính theo tỷ lệ phần trăm: `(currentStep / 4) * 100%` (25%, 50%, 75%, 100%).
+  2. **Chi Tiết Nội Dung Từng Tab**:
+     - **Tab 1 (`currentStep === 1`)**:
+       * Kế thừa toàn bộ giao diện Danh mục bài toán kỹ thuật (Demand Tickets) và Widget Realtime TNI Calculator ($K, L, N, O$).
+       * Cho phép Thêm bài toán mới, Xóa bài toán (giữ lại tối thiểu 1).
+     - **Tab 2 (`currentStep === 2`)**:
+       * Kế thừa toàn bộ khối Thông tin Doanh nghiệp & Quy mô sản xuất.
+       * Tích hợp tính năng Tra cứu tự động MST (`lookup-tax`) và Tự động nạp 100% hồ sơ Doanh nghiệp đã đăng nhập (`isPrefilledFromSession`).
+       * Hiển thị nút bấm lối tắt hành động kép: **"Tiếp tục Bước 3 (Điền thông tin bổ sung)"** và **"Bỏ qua bước tùy chọn & Đến nộp phiếu"** (Chuyển thẳng sang Tab 4).
+     - **Tab 3 (`currentStep === 3`)**:
+       * Khối giao diện hợp nhất (Unified Supplementary Container) hiển thị tuần tự 4 phân mục dưới dạng các thẻ nghiệp vụ chuyên đề có nhãn "Tùy chọn":
+         - **Phân mục B**: Danh mục thiết bị, dây chuyền chủ lực & Bảng tự đánh giá 8 tiêu chí hiện trạng (1–5).
+         - **Phân mục C**: Bảng nhận diện điểm nghẽn kỹ thuật (tối đa 5 điểm) & Công đoạn khó nhất, nguyên nhân chính.
+         - **Phân mục D**: Thống kê đội ngũ nhân lực kỹ thuật, cơ chế R&D hiện có & Năng lực hấp thụ công nghệ (TAR).
+         - **Phân mục F**: Nhu cầu tiếp cận công nghệ tiên tiến trong 3 năm tới & Nhu cầu đề xuất hỗ trợ từ Nhà nước.
+       * Tại cuối Tab 3, cung cấp 2 nút điều hướng: **"Quay lại Bước 2"** và **"Tiếp tục sang Bước 4 (Rà soát & Nộp phiếu)"**.
+     - **Tab 4 (`currentStep === 4`)**:
+       * Bản tóm tắt phiếu khảo sát (Summary Review): Hiển thị số lượng bài toán kỹ thuật đã kê khai, tên doanh nghiệp, MST, trạng thái thông tin bổ sung (Đã điền / Để trống).
+       * Họ tên người ký xác nhận, Chức vụ người ký, Ngày lập phiếu.
+       * Checkbox cam kết tính xác thực & Chấp thuận điều khoản bảo vệ dữ liệu cá nhân (PDPD NĐ 13/2023/NĐ-CP).
+       * Nút nộp phiếu: **"Hoàn Tất & Nộp Khảo Sát"**.
+
+---
+
+### 10.4 Quy Tắc Nghiệp Vụ Bổ Sung (BR-NEW-03-01)
+
+- **`BR-NEW-03-01` [Quy Tắc Vận Hành Stepper 4 Bước, Tùy Chọn Mở Rộng & Validation Phân Tầng]**:
+  1. **Quy Tắc Điều Hướng Tự Do (Free-click Tab Navigation Invariant)**:
+     - Người dùng có quyền click trực tiếp vào bất kỳ tab nào (1, 2, 3 hoặc 4) trên thanh Stepper Navigation ở bất kỳ thời điểm nào để xem trước cấu trúc hoặc bổ sung thông tin mà không bị hệ thống chặn chuyển view.
+  2. **Quy Tắc Ràng Buộc Tuần Tự (Step-by-Step Guard Invariant)**:
+     - Khi người dùng sử dụng nút **"Tiếp tục"** ở chân trang:
+       * *Từ Bước 1 sang Bước 2*: Bắt buộc người dùng phải nhập tối thiểu 1 bài toán kỹ thuật hợp lệ (có công đoạn, vấn đề kỹ thuật và mục tiêu kỳ vọng). Nếu chưa điền, hệ thống giữ nguyên tại Bước 1 và cuộn đến vị trí trường lỗi.
+       * *Từ Bước 2 sang Bước 3*: Bắt buộc người dùng phải điền đầy đủ các thông tin pháp nhân cốt lõi (Tên doanh nghiệp, MST, Tỉnh/thành phố, Họ tên người liên hệ, SĐT, Email).
+       * *Từ Bước 3 sang Bước 4*: **Tuyệt đối KHÔNG chặn**. Người dùng có thể nhấn "Tiếp tục sang Bước 4" kể cả khi không điền bất kỳ thông tin nào trong cả 4 phân mục B, C, D, F.
+  3. **Quy Tắc Lối Tắt Fast-Track (Skip Optional Step Invariant)**:
+     - Tại Bước 2, sau khi đã hoàn tất thông tin doanh nghiệp, người dùng được cung cấp nút **"Bỏ qua bước tùy chọn & Đến nộp phiếu"** để đi thẳng đến Bước 4 (Tab G) mà không cần phải duyệt qua Bước 3.
+  4. **Quy Tắc Thẩm Định Nghiệm Thu Khi Nộp Phiếu (Final Submission Gatekeeping Invariant)**:
+     - Khi người dùng bấm **"Hoàn Tất & Nộp Khảo Sát"** tại Bước 4, hệ thống kích hoạt cơ chế Validation toàn diện 3 tầng:
+       * *Tầng 1 (Bài toán - Bước 1)*: Có ít nhất 1 bài toán hợp lệ. Nếu vi phạm $\rightarrow$ Báo lỗi và điều hướng về Bước 1.
+       * *Tầng 2 (Doanh nghiệp - Bước 2)*: Đầy đủ Tên DN, MST, Tỉnh/thành, Người liên hệ, SĐT, Email hợp lệ. Nếu vi phạm $\rightarrow$ Báo lỗi và điều hướng về Bước 2.
+       * *Tầng 3 (Xác nhận - Bước 4)*: Đã nhập Họ tên người ký, Chức vụ và đã tick chọn checkbox đồng thuận PDPD.
+     - Dữ liệu tại Bước 3 (B, C, D, F) hoàn toàn không bắt buộc; các trường không điền sẽ được gửi dưới dạng `null` hoặc mảng rỗng `[]` lên API, backend tiếp nhận an toàn và không gây lỗi validation.
+
+---
+
+### 10.5 Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-NEW-03-01` [Cấu Trúc 4 Tab & Stepper Navigation Bar]**:
+  - **Given** người dùng truy cập vào trang `/khao-sat-nhu-cau`,
+  - **When** trang tải hoàn tất,
+  - **Then** Stepper Navigation Bar hiển thị chính xác 4 nút tab:
+    1. `E. Nhu Cầu & TNI` (Bước 1/4)
+    2. `A. Doanh Nghiệp` (Bước 2/4)
+    3. `Thông Tin Bổ Sung` (Bước 3/4)
+    4. `G. Xác Nhận` (Bước 4/4)
+  - **And** chỉ số tiến độ hiển thị đúng `Bước 1/4: E. Nhu Cầu & Thuật Toán TNI (Bắt buộc)` kèm thanh tiến độ 25%.
+
+- **`AC-NEW-03-02` [Validation Chuyển Bước Tại Tab 1]**:
+  - **Given** người dùng đang ở Tab 1 với form bài toán để trống,
+  - **When** người dùng bấm nút "Tiếp tục Bước 2",
+  - **Then** hệ thống không chuyển bước, giữ nguyên tại Tab 1 và hiển thị cảnh báo yêu cầu điền đầy đủ thông tin bài toán kỹ thuật.
+  - **When** người dùng điền đầy đủ Công đoạn, Mô tả vấn đề, Mục tiêu kỳ vọng và bấm lại "Tiếp tục Bước 2",
+  - **Then** hệ thống chuyển thành công sang Tab 2 (A. Doanh Nghiệp).
+
+- **`AC-NEW-03-03` [Validation Chuyển Bước & Lối Tắt Fast-Track Tại Tab 2]**:
+  - **Given** người dùng đang ở Tab 2 với các trường thông tin doanh nghiệp chưa điền,
+  - **When** bấm "Tiếp tục Bước 3",
+  - **Then** hệ thống báo lỗi các trường bắt buộc (Tên DN, MST, Tỉnh/thành, Đại diện, SĐT, Email) và không cho chuyển bước.
+  - **When** thông tin doanh nghiệp đã được nạp đầy đủ (bằng tay hoặc qua Auto-Prefill),
+  - **Then** người dùng có thể bấm "Tiếp tục Bước 3" để sang Tab 3, HOẶC bấm "Bỏ qua bước tùy chọn & Đến nộp phiếu" để nhảy thẳng sang Tab 4 (G. Xác Nhận).
+
+- **`AC-NEW-03-04` [Tab 3 Hợp Nhất 4 Phân Mục Tùy Chọn & Không Bị Chặn]**:
+  - **Given** người dùng chuyển vào Tab 3,
+  - **When** quan sát giao diện,
+  - **Then** Tab 3 hiển thị đầy đủ 4 phân mục:
+    * Phân mục B: Thiết bị & 8 tiêu chí hiện trạng
+    * Phân mục C: Điểm nghẽn sản xuất
+    * Phân mục D: Năng lực tiếp nhận TAR
+    * Phân mục F: Định hướng công nghệ & Hỗ trợ
+  - **When** người dùng không điền bất kỳ thông tin nào trong Tab 3 và bấm nút "Tiếp tục sang Bước 4",
+  - **Then** hệ thống cho phép chuyển mượt mà sang Tab 4 mà không hiển thị bất kỳ lỗi nào.
+
+- **`AC-NEW-03-05` [Tab 4 Rà Soát, Cam Kết PDPD & Nộp Phiếu Thành Công]**:
+  - **Given** người dùng đã hoàn thành hợp lệ Tab 1 và Tab 2, đang ở Tab 4,
+  - **When** bấm "Hoàn Tất & Nộp Khảo Sát" nhưng chưa nhập người ký hoặc chưa tick cam kết PDPD,
+  - **Then** hệ thống hiển thị thông báo lỗi yêu cầu hoàn tất xác nhận.
+  - **When** người dùng nhập đầy đủ Người ký, Chức vụ và tick chọn cam kết bảo mật PDPD, sau đó bấm "Hoàn Tất & Nộp Khảo Sát",
+  - **Then** hệ thống gửi yêu cầu `POST /api/v1/demands/surveys` thành công, chuyển sang màn hình Success View hiển thị mã phiếu `SUR-XXXXX` và mã bài toán `DMD-XXXXX`.
+
+- **`AC-NEW-03-06` [Điều Hướng Tự Do Bằng Click Stepper (Free-Click Navigation)]**:
+  - **Given** người dùng ở bất kỳ bước nào trong 4 tab,
+  - **When** người dùng click chuột trực tiếp vào nút Tab 3 trên thanh Stepper Navigation,
+  - **Then** giao diện chuyển ngay sang hiển thị nội dung Tab 3 mà không đòi hỏi dữ liệu của các tab trước đó phải được submit.

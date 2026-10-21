@@ -842,3 +842,87 @@ Từ kết quả rà soát thực tế và phản hồi của người dùng (Do
 | **`BR-EXP-DIR-PROVINCE-GOV-SCOPE`** | Business Rule | Thẩm Quyền Địa Bàn 34 Sở Trọng Điểm | Chỉ áp dụng lọc trên các Sở KH&CN thuộc phạm vi liên thông NacenTech | `[CONFIRMED]` |
 | **`UI-EXP-DIR-CARD-POLISH`** | UI/UX Spec | Thiết Kế Thẻ Chuyên Gia Doanh Nghiệp | Tinh chỉnh giao diện thẻ: Nhãn tiếng Việt, chip thành tựu, nút xem & kết nối | `[CONFIRMED]` |
 | **`UI-EXP-DIR-FILTER-CHECKBOX`** | UI/UX Spec | Giao Diện Bộ Lọc Checkbox & 5 UX States | Giao diện Checkbox đa chọn, thanh Active Chips, bao phủ 5 UX states | `[CONFIRMED]` |
+
+
+---
+
+## Spec Delta v2: Tinh chỉnh Thẻ Chuyên gia & Bổ sung Social Proof (Lượt kết nối)
+
+### 18.1. Bối Cảnh & Căn Cứ Quyết Định PO (Context & PO Rationale)
+
+- **Căn cứ chỉ đạo**: Quyết định PO Orchestrator ngày 21/10/2026 về việc chuẩn hóa trải nghiệm thẩm mỹ thị giác và gia tăng tỷ lệ chuyển đổi kết nối (Conversion Rate) trên Danh bạ Chuyên gia KH&CN (`/experts`).
+- **Phản hồi từ User Testing & Phân tích khoảng cách (Gap Analysis)**:
+  1. **Khối Spotlight Rail (Chuyên gia Tiêu biểu & Nổi bật)**: Hiện chỉ hiển thị Avatar, Học hàm/Học vị, Họ tên và Cơ quan công tác. Doanh nghiệp khi lướt nhanh không nắm bắt được lĩnh vực thế mạnh hay công nghệ làm chủ của chuyên gia nổi bật, làm giảm hiệu quả đề xuất kết nối.
+  2. **Bố cục Thẻ Chuyên gia (Expert Card)**: Thẻ chuyên gia gặp lỗi hiển thị số `+1` (hoặc `+N`) lơ lửng dạng text thô không viền, không khối, tách rời khỏi các chip công nghệ. Các khối thông tin có chiều cao co giãn bất thường dẫn đến thẻ trong cùng hàng có chiều cao so le, phá vỡ nhịp điệu thị giác (visual rhythm) của lưới 3 cột.
+  3. **Yếu tố Thúc đẩy Niềm tin (Social Proof)**: Doanh nghiệp tìm kiếm chuyên gia cần chỉ số bằng chứng thực tế về năng lực chuyển giao thành công. Chỉ số "Lượt kết nối / Tư vấn thành công" (`ConnectionCount`) đóng vai trò là huy hiệu tín nhiệm mạnh mẽ thúc đẩy gửi yêu cầu hợp tác.
+  4. **Triết lý sản phẩm NacenTech**: Giữ vững nguyên tắc *"Cái gì đẹp show ra, không có thì ẩn đi"*. Tuyệt đối không để số 0 hiển thị trên thẻ làm giảm uy tín của chuyên gia mới gia nhập mạng lưới.
+
+---
+
+### 18.2. Yêu Cầu Chức Năng Mới (Functional Requirements)
+
+- **`FR-DELTA-01` — Bổ Sung Ngành Chuyên Môn & Chip Công Nghệ Trên Spotlight Rail**:
+  + Tích hợp hiển thị Tên ngành chuyên môn chính (`primarySectorName`) dưới dạng Badge nhỏ gọn bo góc nhẹ, màu sắc thương hiệu dịu (`bg-brand-50 text-brand-800 border-brand-200`).
+  + Hiển thị tối đa 02 Chip công nghệ tiêu biểu (`masteredTechCodes`) được giải mã sang nhãn tiếng Việt rõ nghĩa qua `resolveTechLabel()`.
+  + Tối ưu không gian thẻ Spotlight để không gây tràn layout hoặc phá vỡ cấu trúc flex/grid trên các kích thước màn hình từ Desktop đến Mobile.
+
+- **`FR-DELTA-02` — Chuẩn Hóa Bố Cục Thẻ Chuyên Gia & Triệt Tiêu Số `+1` Lơ Lửng**:
+  + **Loại bỏ triệt để số `+1` text trần**: Khi danh sách công nghệ làm chủ $> 2$, phần tử đếm số dư (`+{length - 2}`) phải được đóng gói thành Pill Badge chuẩn thiết kế (`px-2 py-0.5 rounded text-caption font-semibold bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700`).
+  + **Cân bằng nhịp điệu thị giác (Visual Rhythm) & Min-height đồng bộ**:
+    * Tiêu đề họ tên chuyên gia: Cố định khoảng không gian hiển thị (`min-h-[44px]` với `line-clamp-2`), đảm bảo thẻ 1 dòng hay 2 dòng họ tên đều có cùng vị trí bắt đầu cho phần cơ quan.
+    * Cơ quan công tác: `truncate min-h-[20px]`.
+    * Khối Ngành & Chip công nghệ: Đặt `min-h-[64px]` để cố định chiều cao khối năng lực công nghệ, triệt tiêu hiện tượng thẻ bị thụt lề khi chuyên gia có ít chip hơn.
+    * Khối Thành tựu: Giữ nguyên quy tắc conditional rendering, đồng thời đảm bảo khoảng cách đệm (padding/margin) co giãn tự nhiên xuống chân thẻ (`mt-auto`).
+
+- **`FR-DELTA-03` — Bổ Sung Badge Lượt Kết Nối / Tư Vấn Thành Công (Social Proof Badge)**:
+  + Bổ sung trường dữ liệu `ConnectionCount` vào DTO thẻ công khai (`ExpertPublicCardDto`).
+  + Hiển thị Badge Social Proof: `[N Lượt kết nối]` hoặc `[N Tư vấn thành công]` với icon nhận diện (`MessageSquarePlus` hoặc `Users`), phong cách tươi sáng, uy tín (`bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800`).
+  + Vị trí hiển thị: Nằm trong cụm thông tin định danh hoặc gắn liền với thanh chỉ số uy tín của thẻ chuyên gia.
+
+---
+
+### 18.3. Quy Tắc Nghiệp Vụ (Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Logic Nghiệp Vụ & Ràng Buộc Kỹ Thuật |
+| :--- | :--- | :--- |
+| **`BR-DELTA-01`** | **Nguyên Tắc Hiển Thị Social Proof Có Điều Kiện** | - **Chỉ hiển thị khi `ConnectionCount > 0`**: Badge Lượt kết nối chỉ được render khi chuyên gia có ít nhất 1 lượt kết nối thành công (`ConnectionCount >= 1`).<br>- **Tuyệt đối ẩn khi `= 0` hoặc rỗng**: Trường hợp chuyên gia chưa có lượt kết nối nào (`ConnectionCount == 0`, `null` hoặc `undefined`), hệ thống ẩn hoàn toàn Badge khỏi DOM. Tuyệt đối KHÔNG hiển thị "0 Lượt kết nối". |
+| **`BR-DELTA-02`** | **Chuẩn Hóa Nhãn Công Nghệ Trên Mọi Bề Mặt** | Toàn bộ mã công nghệ (`TECH-...`) hiển thị trên Spotlight Rail và Thẻ chuyên gia bắt buộc phải đi qua bộ giải mã nhãn Master Data (`resolveTechLabel`). Không để lộ mã kỹ thuật thô. |
+| **`BR-DELTA-03`** | **Pill Badge Nhất Quán Cho Đếm Công Nghệ Dư** | Phần tử đếm công nghệ vượt quá giới hạn 2 tag (`+N`) bắt buộc phải áp dụng chung token giao diện của hệ thống design system, không dùng text trần font serif/sans đơn lẻ. |
+| **`BR-DELTA-04`** | **Tuân Thủ Bảo Vệ Dữ Liệu Cá Nhân (PDPD NĐ 13/2023)** | Dữ liệu `ConnectionCount` chỉ là số lượng tổng hợp vô danh (Aggregated count), tuyệt đối không tiết lộ danh tính doanh nghiệp đối tác, số hợp đồng hay thông tin bảo mật của phiên tư vấn. |
+
+---
+
+### 18.4. Tiêu Chí Chấp Thuận (Acceptance Criteria - Gherkin Format)
+
+#### `AC-DELTA-01`: Hiển Thị Ngành & Công Nghệ Trên Spotlight Rail
+- **Given** người dùng truy cập trang Danh bạ Chuyên gia `/experts`,
+- **When** quan sát từng thẻ chuyên gia trên Băng chuyền Chuyên gia Tiêu biểu & Nổi bật (Spotlight Rail),
+- **Then** hệ thống hiển thị:
+  + Tên ngành chuyên môn chính (ví dụ: `03. Điện tử & CNTT` hoặc `Nông nghiệp công nghệ cao`).
+  + Tối đa 2 Chip công nghệ làm chủ tiêu biểu với nhãn tiếng Việt thân thiện (ví dụ: `Thị giác máy tính AI`, `Chiết xuất CO2 siêu tới hạn`).
+  + Bố cục thẻ Spotlight cân đối, không bị xô lệch trên mọi độ phân giải.
+
+#### `AC-DELTA-02`: Chuẩn Hóa Bố Cục Thẻ & Loại Bỏ Số `+1` Lơ Lửng
+- **Given** chuyên gia trong danh bạ có nhiều hơn 2 công nghệ làm chủ (ví dụ: 3 công nghệ),
+- **When** thẻ chuyên gia được hiển thị trong lưới kết quả,
+- **Then**:
+  + Hệ thống hiển thị 2 chip công nghệ đầu tiên kèm theo 1 Pill Badge định dạng chuẩn `+1` (có màu nền, viền bo góc tròn mềm mại), tuyệt đối không xuất hiện chữ số `+1` text trần không viền.
+  + Các thẻ chuyên gia cạnh nhau trong cùng một hàng lưới duy trì nhịp điệu thị giác hài hòa, các khu vực Tiêu đề họ tên, Cơ quan, và Khối công nghệ có `min-height` nhất quán, nút CTA ghim thẳng hàng ở đáy thẻ (`mt-auto`).
+
+#### `AC-DELTA-03`: Badge Lượt Kết Nối / Tư Vấn Thành Công (Conditional Social Proof)
+- **Given** chuyên gia A có `ConnectionCount = 12` và chuyên gia B có `ConnectionCount = 0`,
+- **When** hệ thống nạp dữ liệu và render thẻ chuyên gia tại `/experts`,
+- **Then**:
+  + Thẻ của chuyên gia A hiển thị Badge `12 lượt kết nối` (kèm icon nhận diện).
+  + Thẻ của chuyên gia B hoàn toàn không hiển thị Badge kết nối, không render bất kỳ phần tử DOM nào chứa số 0, và bố cục thẻ chuyên gia B vẫn lấp đầy tự nhiên, chỉn chu.
+
+---
+
+### 18.5. Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt Kỹ Thuật (Surface) | Vị Trí Tệp Mã Nguồn / Schema | Bản Chất Tác Động | Chi Tiết Thay Đổi Cần Thực Hiện |
+| :--- | :--- | :--- | :--- |
+| **Web Public Directory** | `SourceCode/frontend/src/app/experts/page.tsx`<br>`page.test.tsx` | UI Component & View Logic | - Bổ sung Ngành chuyên môn & 2 Chip công nghệ cho từng item trên Spotlight Rail.<br>- Thay thế text `+{expert.masteredTechCodes.length - 2}` bằng Pill Badge chuẩn.<br>- Bổ sung Badge Social Proof `[N lượt kết nối]` có điều kiện `expert.connectionCount > 0`.<br>- Bổ sung các lớp `min-h-[...]` để cố định nhịp điệu thị giác lưới thẻ.<br>- Cập nhật Vitest tests bao phủ 3 tiêu chí chấp thuận. |
+| **Mobile / Zalo Mini App** | `SourceCode/frontend/src/app/experts/zalo-preview/page.tsx`<br>`SourceCode/ZaloMiniApp/` | Mobile UX Preview & Channel Sync | - Cập nhật giả lập giao diện mobile đồng bộ huy hiệu Social Proof và hiển thị nhãn công nghệ thân thiện.<br>- Đảm bảo form thu thập sơ bộ Zalo không bị ảnh hưởng và tuân thủ PDPD (không thu thập PII trái phép). |
+| **API DTO & Application Service** | `backend/modules/brokerage/Application/Contracts.cs`<br>`backend/modules/brokerage/Application/ExpertService.cs` | Backend API Contract & DTO Projection | - Bổ sung trường `int ConnectionCount = 0` vào `ExpertPublicCardDto` (tương thích ngược với default value).<br>- `ExpertService.GetPublicDirectoryAsync` gán giá trị `ConnectionCount` từ thực thể hồ sơ hoặc tổng hợp liên kết.<br>- Cập nhật các mock/test fixture liên quan trong backend. |
+| **Database & Persistence** | `backend/modules/brokerage/Domain/ExpertProfile.cs`<br>`packages/persistence/Configurations.cs`<br>`packages/persistence/Migrations/` | Domain Entity & Relational Schema | - Domain: Thêm property `ConnectionCount` trong `ExpertProfile.cs` (default 0).<br>- EF Core: Cấu hình ánh xạ cột `connection_count` trong bảng `brokerage.expert_profiles`.<br>- Migration: Tạo migration thêm cột `connection_count` kiểu `integer NOT NULL DEFAULT 0`.<br>- Seed data: Cập nhật seed data thực nghiệm để một số chuyên gia có lượt kết nối $> 0$ và số khác $= 0$. |
