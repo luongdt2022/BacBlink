@@ -385,7 +385,7 @@ export default function ChiTietChaoBanPage() {
                         </div>
 
                         <div>
-                          <div className="text-xs font-bold uppercase text-slate-400">Tình trạng SHTT</div>
+                          <div className="text-xs font-bold uppercase text-slate-400">Sở Hữu Trí Tuệ (SHTT)</div>
                           <div className="mt-1 text-sm font-extrabold text-emerald-700 truncate">
                             {offer.ipRegistrationNumber || "Đã thẩm định"}
                           </div>
@@ -496,7 +496,7 @@ export default function ChiTietChaoBanPage() {
                 {/* 2. Tình trạng SHTT */}
                 <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm space-y-1.5">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    2. Bản Quyền & SHTT
+                    2. Sở Hữu Trí Tuệ & Bản Quyền
                   </span>
                   <p className="text-xs font-extrabold text-slate-900">
                     {offer.ipStatus === "PATENT_GRANTED" && "Bằng Độc Quyền Sáng Chế"}
@@ -504,7 +504,7 @@ export default function ChiTietChaoBanPage() {
                     {offer.ipStatus === "TRADE_SECRET" && "Bí Quyết Công Nghệ (Know-how)"}
                     {(offer.ipStatus === "COPYRIGHT_REGISTERED" || offer.ipStatus === "SOFTWARE_COPYRIGHT") && "Bản Quyền Đã Đăng Ký"}
                     {(offer.ipStatus === "PATENT_APPLICATION" || offer.ipStatus === "PATENT_PENDING") && "Đơn Đăng Ký Sáng Chế Hợp Lệ"}
-                    {offer.ipStatus === "NONE" && "Chưa Đăng Ký SHTT"}
+                    {offer.ipStatus === "NONE" && "Chưa Đăng Ký Sở Hữu Trí Tuệ"}
                     {!offer.ipStatus && "Chưa xác định"}
                   </p>
                   {offer.ipRegistrationNumber && (
@@ -567,7 +567,7 @@ export default function ChiTietChaoBanPage() {
                     : "border-transparent text-slate-500 hover:text-slate-900"
                 }`}
               >
-                Thông Số Kỹ Thuật (10 Lĩnh Vực TT17)
+                Thông Số Kỹ Thuật (18 Lĩnh Vực)
               </button>
               <button
                 onClick={() => setActiveTab("dataroom")}

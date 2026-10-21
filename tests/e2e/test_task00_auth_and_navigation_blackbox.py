@@ -155,7 +155,7 @@ def run_task00_blackbox_suite():
                 "password": "Password@123",
                 "target_url": f"{BASE_WEB_URL}/portal",
                 "expected_menu": "Hồ sơ LLKH của tôi",
-                "secondary_menu": "Lời mời Tư vấn Doanh nghiệp"
+                "secondary_menu": "Hộp Thư Tư Vấn & Kết Nối"
             },
             {
                 "role": "SUPER_ADMIN",

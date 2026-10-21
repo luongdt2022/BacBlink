@@ -18,7 +18,7 @@ const mockExpertsData = {
         primarySectorCode: "03",
         primarySectorName: "03. Điện tử & CNTT",
         expertiseSectors: ["03", "04"],
-        masteredTechCodes: ["TECH-AI-VISION", "TECH-SUPERCRITICAL-CO2"],
+        masteredTechCodes: ["TECH-AI-VISION", "TECH-SUPERCRITICAL-CO2", "TECH-IOT-GATEWAY"],
         provinceCode: "HN",
         provinceName: "Hà Nội",
         publicationCount: 45,
@@ -26,6 +26,7 @@ const mockExpertsData = {
         projectCount: 12,
         isVerified: true,
         isAcceptingConsultation: true,
+        connectionCount: 12,
       },
       {
         expertCode: "CG-NACEN-ZERO",
@@ -45,9 +46,29 @@ const mockExpertsData = {
         projectCount: 0,
         isVerified: true,
         isAcceptingConsultation: true,
+        connectionCount: 0,
+      },
+      {
+        expertCode: "CG-NACEN-NOCOUNT",
+        fullName: "KS. Lê Hoàng Long",
+        academicRank: "NONE",
+        degree: "ENGINEER",
+        organizationName: "Viện Tự Động Hóa",
+        positionTitle: "Kỹ sư trưởng",
+        primarySectorCode: "03",
+        primarySectorName: "03. Điện tử & CNTT",
+        expertiseSectors: ["03"],
+        masteredTechCodes: ["TECH-AI-VISION"],
+        provinceCode: "HN",
+        provinceName: "Hà Nội",
+        publicationCount: 0,
+        patentCount: 0,
+        projectCount: 0,
+        isVerified: true,
+        isAcceptingConsultation: true,
       },
     ],
-    totalCount: 2,
+    totalCount: 3,
     page: 1,
     pageSize: 9,
     totalPages: 1,
@@ -115,22 +136,24 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
       expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
     });
 
-    // Thẻ chuyên gia 1 có TECH-AI-VISION và TECH-SUPERCRITICAL-CO2
-    expect(screen.getByText("Thị giác máy tính AI")).toBeDefined();
-    expect(screen.getByText("Chiết xuất CO2 siêu tới hạn")).toBeDefined();
+    // Thẻ chuyên gia 1 có TECH-AI-VISION và TECH-SUPERCRITICAL-CO2 (xuất hiện ở Spotlight Rail và Thẻ kết quả)
+    expect(screen.getAllByText("Thị giác máy tính AI").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Chiết xuất CO2 siêu tới hạn").length).toBeGreaterThanOrEqual(1);
 
     // Thẻ chuyên gia 2 có TECH-IOT-GATEWAY
-    expect(screen.getByText("Cổng kết nối IoT Gateway")).toBeDefined();
+    expect(screen.getAllByText("Cổng kết nối IoT Gateway").length).toBeGreaterThanOrEqual(1);
 
     // Khẳng định KHÔNG xuất hiện chuỗi mã thô nào bắt đầu bằng TECH-
     expect(screen.queryByText(/TECH-AI-VISION/i)).toBeNull();
     expect(screen.queryByText(/TECH-SUPERCRITICAL-CO2/i)).toBeNull();
     expect(screen.queryByText(/TECH-IOT-GATEWAY/i)).toBeNull();
 
-    // Khẳng định nhãn công nghệ không mang class font-mono
-    const aiBadge = screen.getByText("Thị giác máy tính AI");
-    expect(aiBadge.className).not.toContain("font-mono");
-    expect(aiBadge.className).toContain("font-sans");
+    // Khẳng định nhãn công nghệ trên card không mang class font-mono
+    const aiBadges = screen.getAllByText("Thị giác máy tính AI");
+    const cardBadge = aiBadges.find((el) => el.className.includes("font-sans"));
+    expect(cardBadge).toBeDefined();
+    expect(cardBadge?.className).not.toContain("font-mono");
+    expect(cardBadge?.className).toContain("font-sans");
   });
 
   it("smart achievements block: hides 0-valued metrics and hides entire block when sum = 0 (T138)", async () => {
@@ -341,6 +364,63 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     // Verified badges exist on avatars
     const verifiedBadges = screen.getAllByTestId("expert-avatar-verified-badge");
     expect(verifiedBadges.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders primary sector badge and up to 2 tech chips on Spotlight Rail (T147)", async () => {
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("featured-experts-rail")).toBeDefined();
+    });
+
+    const rail = screen.getByTestId("featured-experts-rail");
+    // Spotlight rail hiển thị badge ngành chuyên môn chính
+    expect(rail.textContent).toContain("03. Điện tử & CNTT");
+    // Spotlight rail hiển thị chip công nghệ tiêu biểu qua resolveTechLabel
+    expect(rail.textContent).toContain("Thị giác máy tính AI");
+    expect(rail.textContent).toContain("Chiết xuất CO2 siêu tới hạn");
+  });
+
+  it("replaces naked +N text with standardized Pill Badge '+{count} công nghệ' (T148)", async () => {
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+    });
+
+    // Chuyên gia 1 có 3 công nghệ -> hiển thị Pill Badge "+1 công nghệ"
+    const pillBadge = screen.getByTestId("expert-tech-pill-badge");
+    expect(pillBadge).toBeDefined();
+    expect(pillBadge.textContent).toBe("+1 công nghệ");
+    expect(pillBadge.className).toContain("rounded-full");
+    expect(pillBadge.className).toContain("bg-slate-100");
+
+    // Khẳng định KHÔNG còn text trần "+1" không viền không khối
+    const nakedText = screen.queryByText(/^\+1$/);
+    expect(nakedText).toBeNull();
+  });
+
+  it("renders Social Proof Badge when connectionCount > 0 and strictly hides when 0 or undefined (BR-DELTA-01, T148)", async () => {
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+    });
+
+    // Chuyên gia 1 có connectionCount = 12 -> hiển thị Social Proof Badge
+    const connectionBadges = screen.getAllByTestId("expert-connection-badge");
+    expect(connectionBadges.length).toBe(1);
+    expect(connectionBadges[0].textContent).toContain("12 lượt kết nối");
+    expect(connectionBadges[0].textContent).toContain("🤝");
+
+    // Chuyên gia 2 (connectionCount = 0) và Chuyên gia 3 (undefined) -> TUYỆT ĐỐI KHÔNG hiển thị badge
+    expect(screen.queryByText(/0 lượt kết nối/i)).toBeNull();
   });
 });
 

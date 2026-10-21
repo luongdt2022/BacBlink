@@ -42,11 +42,11 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     const searchInput = screen.getByPlaceholderText(/Tìm ngành công nghiệp/i);
     fireEvent.change(searchInput, { target: { value: "Cơ khí" } });
 
-    const mechOption = screen.getByRole("option", { name: /Cơ khí chế tạo/i });
+    const mechOption = screen.getByRole("option", { name: /Cơ khí/i });
     expect(mechOption.textContent).not.toContain("LV07");
     fireEvent.click(mechOption);
 
-    expect(sectorTrigger.textContent).toContain("Cơ khí chế tạo");
+    expect(sectorTrigger.textContent).toContain("Cơ khí");
     expect(sectorTrigger.textContent).not.toContain("LV07");
 
     // Verify "Tiếp tục: Thông số ngành" button is visible and uses bg-brand-700
@@ -108,5 +108,30 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     // Verify modal action button is enabled (since agreed is true by default)
     const submitConfirmBtn = screen.getByRole("button", { name: /Xác nhận & Nộp hồ sơ chờ duyệt/i });
     expect(submitConfirmBtn).not.toBeDisabled();
+  });
+
+  it("allows clicking freely on any step in FormStepper without being locked, and confirms 5 UX states panel is removed", () => {
+    const { container } = render(<TaoHoSoChaoBanPage />);
+
+    // Get stepper buttons container
+    const stepperTitle = screen.getByText(/Tiến trình hồ sơ/i);
+    const stepperContainer = stepperTitle.closest("div")?.parentElement!;
+    const stepButtons = stepperContainer.querySelectorAll("button");
+
+    // Click directly on Step 2 in FormStepper
+    fireEvent.click(stepButtons[0]); // Step 1
+    fireEvent.click(stepButtons[1]); // Step 2
+    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & 18 Ngành TT17/i)).toBeInTheDocument();
+
+    // Click directly on Step 3 in FormStepper
+    fireEvent.click(stepButtons[2]); // Step 3
+    expect(screen.getByText(/Bước 3: Điều Kiện Thương Mại Chi Tiết/i)).toBeInTheDocument();
+
+    // Click directly on Step 4 in FormStepper
+    fireEvent.click(stepButtons[3]); // Step 4
+    expect(screen.getByText(/Bước 4: Pháp Lý Sở Hữu Trí Tuệ & DataRoom/i)).toBeInTheDocument();
+
+    // Verify 5 UX states debug panel is removed
+    expect(screen.queryByText(/5 trạng thái UX hệ thống/i)).toBeNull();
   });
 });

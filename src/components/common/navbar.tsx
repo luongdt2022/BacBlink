@@ -9,11 +9,9 @@ import { ThemeToggle } from "./theme-toggle";
 import { ConfirmModal } from "./confirm-modal";
 import { useToast } from "./toast";
 import { FontsizeControl } from "./fontsize-control";
-import { RoleSwitcher } from "./role-switcher";
 import {
   LogOut,
   LogIn,
-  UserPlus,
   Menu,
   X,
   ChevronDown,
@@ -77,6 +75,7 @@ export function Navbar() {
     { href: "/huong-dan", label: t("user_guide") || "Hướng dẫn" },
     { href: "/dich-vu-khac", label: t("services") },
     { href: "/wireframes", label: t("wireframes") || "Wireframes" },
+    { href: "/dashboard", label: "Dashboard & CR" },
   ];
 
   const isActiveLink = (href: string) => href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -131,24 +130,11 @@ export function Navbar() {
               {/* Dark/Light Theme Toggle */}
               <ThemeToggle />
 
-              {/* Agent Dashboard Link (Direct link to Orchestrator) */}
-              <a
-                href="http://127.0.0.1:8420"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="focus-ring hidden md:inline-flex items-center gap-1.5 rounded-full bg-cyan-950/80 border border-cyan-800 px-3 py-1 text-xs font-bold text-cyan-300 hover:bg-cyan-900 transition shadow hover:border-cyan-600"
-                title="Mở Bàn Điều Khiển AI Agent & Task Orchestrator (http://127.0.0.1:8420)"
-              >
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                <span>Agent Dashboard</span>
-              </a>
-
               <div className="mx-1 hidden h-6 w-px bg-slate-200 dark:bg-slate-800 sm:block" />
 
               {/* User Session */}
               {user ? (
                 <div className="hidden items-center gap-2 sm:flex">
-                  <RoleSwitcher compact={true} />
                   <div ref={accountMenuRef} className="relative">
                     <button
                       type="button"
@@ -203,21 +189,13 @@ export function Navbar() {
 
                 </div>
               ) : (
-                <div className="hidden items-center gap-1.5 sm:flex">
+                <div className="hidden items-center sm:flex">
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-1 rounded-control border border-border-default px-2.5 2xl:px-3 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-control bg-nacen-green-500 hover:bg-nacen-green-600 px-3.5 2xl:px-4 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-white shadow-xs transition whitespace-nowrap"
                   >
-                    <LogIn className="w-3.5 h-3.5 text-text-secondary" />
+                    <LogIn className="w-3.5 h-3.5" />
                     <span>{t("login")}</span>
-                  </Link>
-
-                  <Link
-                    href="/register"
-                    className="focus-ring inline-flex items-center gap-1.5 rounded-control bg-nacen-green-500 px-3 2xl:px-4 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-white shadow-sm transition hover:bg-nacen-green-600 whitespace-nowrap"
-                  >
-                    <UserPlus className="w-3.5 h-3.5 shrink-0" />
-                    <span>{t("register")}</span>
                   </Link>
                 </div>
               )}
@@ -254,20 +232,16 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <a
-              href="http://127.0.0.1:8420"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 rounded-control px-3 py-2.5 text-label font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800"
-            >
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-              Agent Orchestrator Dashboard
-            </a>
             {!user ? (
-              <div className="flex flex-wrap gap-3 border-t border-border-default py-3 sm:hidden">
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="focus-ring rounded-control border border-border-default px-4 py-3 text-label font-semibold text-brand-700 dark:text-brand-200">{t("login")}</Link>
-                <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="focus-ring rounded-control bg-nacen-green-500 px-4 py-3 text-label font-semibold text-white hover:bg-nacen-green-600">{t("register")}</Link>
+              <div className="border-t border-border-default pt-3 pb-1 sm:hidden">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="focus-ring rounded-control bg-nacen-green-500 hover:bg-nacen-green-600 px-4 py-2.5 text-label font-semibold text-white flex items-center justify-center gap-2 w-full"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>{t("login")}</span>
+                </Link>
               </div>
             ) : (
               <div className="flex flex-wrap gap-3 border-t border-border-default py-3 sm:hidden">

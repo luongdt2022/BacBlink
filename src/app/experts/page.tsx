@@ -20,6 +20,7 @@ import {
   AlertCircle,
   BookOpen,
   ChevronDown,
+  Users,
 } from "lucide-react";
 import { AppLink, AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
@@ -47,6 +48,7 @@ interface ExpertCardItem {
   isVerified: boolean;
   isAcceptingConsultation: boolean;
   avatarUrl?: string | null;
+  connectionCount?: number;
 }
 
 interface DirectoryResponse {
@@ -467,10 +469,14 @@ export default function ExpertsDirectoryPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {directoryData.items.slice(0, 3).map((feat) => {
               const featBadge = getRankBadge(feat.academicRank, feat.degree);
+              const sectorName =
+                sectorOptions.find((s) => s.code === feat.primarySectorCode)?.name ||
+                feat.primarySectorName ||
+                "Công nghệ chủ chốt";
               return (
                 <div
                   key={`spotlight-${feat.expertCode}`}
-                  className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-brand-600 p-3 shadow-2xs hover:shadow-sm transition-shadow flex items-center gap-3 dark:bg-slate-900 dark:border-slate-800 dark:border-l-brand-500"
+                  className="bg-white rounded-xl border border-slate-200 border-l-4 border-l-brand-600 p-3 shadow-2xs hover:shadow-sm transition-shadow flex items-start gap-3 dark:bg-slate-900 dark:border-slate-800 dark:border-l-brand-500"
                 >
                   <ExpertAvatar
                     fullName={feat.fullName}
@@ -498,6 +504,27 @@ export default function ExpertsDirectoryPage() {
                     <p className="text-xs text-slate-500 truncate dark:text-slate-400" title={feat.organizationName}>
                       {feat.organizationName ? `Đơn vị: ${feat.organizationName}` : ""}
                     </p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                      <span
+                        className="bg-brand-50 text-brand-800 border border-brand-200 text-xs px-2 py-0.5 rounded font-semibold truncate max-w-[180px] dark:bg-brand-950/70 dark:text-brand-200 dark:border-brand-800"
+                        title={sectorName}
+                      >
+                        {sectorName}
+                      </span>
+                      {feat.masteredTechCodes &&
+                        feat.masteredTechCodes.slice(0, 2).map((code) => {
+                          const label = resolveTechLabel(code);
+                          return (
+                            <span
+                              key={code}
+                              className="bg-slate-100 text-slate-700 border border-slate-200 text-xs px-1.5 py-0.5 rounded truncate max-w-[130px] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                              title={label}
+                            >
+                              {label}
+                            </span>
+                          );
+                        })}
+                    </div>
                   </div>
                   <Link
                     href={`/experts/${feat.expertCode}`}
@@ -646,7 +673,7 @@ export default function ExpertsDirectoryPage() {
                     <button
                       type="button"
                       onClick={clearAllProvinces}
-                      className="text-[11px] text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition cursor-pointer"
+                      className="text-caption text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 transition cursor-pointer"
                     >
                       Bỏ chọn tất cả
                     </button>
@@ -763,7 +790,7 @@ export default function ExpertsDirectoryPage() {
                         </div>
 
                         {/* Quick action bar */}
-                        <div className="flex items-center justify-between mt-1.5 px-0.5 text-[11px]">
+                        <div className="flex items-center justify-between mt-1.5 px-0.5 text-caption">
                           <span className="text-slate-400">
                             {filteredProvinces.length} địa bàn
                           </span>
@@ -797,7 +824,7 @@ export default function ExpertsDirectoryPage() {
                           <>
                             {filteredProvinces.filter((p) => p.region === "NORTH").length > 0 && (
                               <div className="py-1">
-                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <div className="px-2.5 py-1 text-caption font-bold text-slate-400 uppercase tracking-wider">
                                   Miền Bắc ({filteredProvinces.filter((p) => p.region === "NORTH").length})
                                 </div>
                                 {filteredProvinces
@@ -822,7 +849,7 @@ export default function ExpertsDirectoryPage() {
 
                             {filteredProvinces.filter((p) => p.region === "CENTRAL").length > 0 && (
                               <div className="py-1">
-                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <div className="px-2.5 py-1 text-caption font-bold text-slate-400 uppercase tracking-wider">
                                   Miền Trung & Tây Nguyên ({filteredProvinces.filter((p) => p.region === "CENTRAL").length})
                                 </div>
                                 {filteredProvinces
@@ -847,7 +874,7 @@ export default function ExpertsDirectoryPage() {
 
                             {filteredProvinces.filter((p) => p.region === "SOUTH").length > 0 && (
                               <div className="py-1">
-                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <div className="px-2.5 py-1 text-caption font-bold text-slate-400 uppercase tracking-wider">
                                   Miền Nam ({filteredProvinces.filter((p) => p.region === "SOUTH").length})
                                 </div>
                                 {filteredProvinces
@@ -874,7 +901,7 @@ export default function ExpertsDirectoryPage() {
                               (p) => !["NORTH", "CENTRAL", "SOUTH"].includes(p.region || "")
                             ).length > 0 && (
                               <div className="py-1">
-                                <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                <div className="px-2.5 py-1 text-caption font-bold text-slate-400 uppercase tracking-wider">
                                   Khác
                                 </div>
                                 {filteredProvinces
@@ -1111,17 +1138,26 @@ export default function ExpertsDirectoryPage() {
                               <span className="px-2 py-0.5 rounded text-caption font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
                                 <ShieldCheck className="w-3 h-3" /> Đã xác thực
                               </span>
+                              {Boolean(expert.connectionCount && expert.connectionCount > 0) && (
+                                <span
+                                  data-testid="expert-connection-badge"
+                                  className="px-2 py-0.5 rounded text-caption font-bold bg-brand-50 text-brand-700 border border-brand-200 flex items-center gap-1 dark:bg-brand-950/60 dark:text-brand-300 dark:border-brand-800"
+                                >
+                                  <Users className="w-3 h-3" />
+                                  <span>🤝 {expert.connectionCount} lượt kết nối</span>
+                                </span>
+                              )}
                             </div>
                             <h3 className="text-body font-extrabold text-slate-900 mt-1 line-clamp-2 min-h-[44px] flex items-center group-hover:text-brand-700 transition break-words dark:text-white dark:group-hover:text-brand-200">
                               <Link href={`/experts/${expert.expertCode}`}>{expert.fullName}</Link>
                             </h3>
-                            <p className="text-caption text-slate-500 truncate mt-0.5 dark:text-slate-400" title={expert.organizationName}>
+                            <p className="text-caption text-slate-500 truncate min-h-[20px] mt-0.5 dark:text-slate-400" title={expert.organizationName}>
                               {expert.organizationName}
                             </p>
                           </div>
                         </div>
 
-                        <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800 min-h-[64px]">
                           <div className="text-caption font-semibold text-slate-500 uppercase tracking-wider mb-1 dark:text-slate-400">
                             Ngành chuyên môn:
                           </div>
@@ -1147,8 +1183,11 @@ export default function ExpertsDirectoryPage() {
                                   );
                                 })}
                                 {expert.masteredTechCodes.length > 2 && (
-                                  <span className="text-caption text-slate-500 font-semibold font-sans">
-                                    +{expert.masteredTechCodes.length - 2}
+                                  <span
+                                    data-testid="expert-tech-pill-badge"
+                                    className="bg-slate-100 text-slate-600 border border-slate-200 text-xs px-2 py-0.5 rounded-full font-medium dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                                  >
+                                    +{expert.masteredTechCodes.length - 2} công nghệ
                                   </span>
                                 )}
                               </>

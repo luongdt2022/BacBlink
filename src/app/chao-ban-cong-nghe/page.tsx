@@ -13,8 +13,6 @@ import {
   ArrowRight,
   Sparkles,
   Building2,
-  Tag,
-  CheckCircle2,
   RefreshCw,
   PlusCircle,
   X,
@@ -487,7 +485,7 @@ function ChaoBanCongNgheContent() {
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                 <Filter className="w-4 h-4 text-emerald-600" />
-                10 Lĩnh Vực Trọng Điểm (TT17)
+                18 Lĩnh Vực Công Nghệ
               </h3>
               {selectedSector !== "ALL" && (
                 <button
@@ -564,10 +562,15 @@ function ChaoBanCongNgheContent() {
 
           {/* Lọc Tình trạng Bảo hộ SHTT (Mapping đầy đủ chuẩn CSDL) */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-3">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-brand-600" />
-              Tình Trạng SHTT
-            </h3>
+            <div>
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-brand-600" />
+                Tình Trạng Sở Hữu Trí Tuệ (SHTT)
+              </h3>
+              <p className="mt-1 text-caption text-slate-500 dark:text-slate-400">
+                Tình trạng bảo hộ pháp lý: Sáng chế, giải pháp hữu ích, bí quyết hoặc bản quyền
+              </p>
+            </div>
             <div className="space-y-1.5">
               {[
                 { code: "ALL", label: "Tất cả tình trạng" },
@@ -674,7 +677,7 @@ function ChaoBanCongNgheContent() {
 
               {selectedIp !== "ALL" && (
                 <span className="inline-flex items-center gap-1 bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-bold">
-                  SHTT: {getIpStatusLabel(selectedIp)}
+                  Sở Hữu Trí Tuệ: {getIpStatusLabel(selectedIp)}
                   <button onClick={() => handleIpChange("ALL")} className="hover:text-teal-950">
                     <X className="w-3 h-3" />
                   </button>
@@ -775,10 +778,7 @@ function ChaoBanCongNgheContent() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
                         {/* Top Overlay Badges */}
-                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
-                          <span className="mono text-caption font-bold text-slate-800 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded shadow-sm">
-                            {offer.offerCode}
-                          </span>
+                        <div className="absolute top-2.5 right-2.5">
                           <span className="text-caption bg-slate-900/85 backdrop-blur-md text-white px-2 py-0.5 rounded font-bold shadow-sm">
                             {getOfferTypeLabel(offer.offerType)}
                           </span>
@@ -803,7 +803,12 @@ function ChaoBanCongNgheContent() {
                       </div>
 
                       {/* Card Content Body */}
-                      <div className="p-4 sm:p-5 space-y-3">
+                      <div className="p-3.5 sm:p-4 space-y-2.5">
+                        {/* Compact Offer Code */}
+                        <div className="text-caption font-mono text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase">
+                          Mã: {offer.offerCode}
+                        </div>
+
                         {/* Title */}
                         <Link
                           href={`/chao-ban-cong-nghe/${offer.id}`}
@@ -818,14 +823,14 @@ function ChaoBanCongNgheContent() {
                         </p>
 
                         {/* SHTT & Đơn vị chào bán Info Badge */}
-                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60 rounded-xl p-2.5 space-y-1.5">
+                        <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800/50 rounded-lg p-2 space-y-1.5 text-xs">
                           {offer.hasTechTransfer && (
-                            <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+                            <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 text-xs font-bold truncate">
                               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                               <span className="truncate">{getIpStatusLabel(offer.ipStatus)}</span>
                               {offer.ipRegistrationNumber && (
-                                <span className="mono text-caption bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 shrink-0">
-                                  {offer.ipRegistrationNumber}
+                                <span className="text-caption font-semibold text-emerald-700 dark:text-emerald-300 shrink-0">
+                                  • Số: {offer.ipRegistrationNumber}
                                 </span>
                               )}
                             </div>
@@ -835,19 +840,16 @@ function ChaoBanCongNgheContent() {
                           {offer.enterpriseTaxCode ? (
                             <Link
                               href={`/enterprises/${offer.enterpriseTaxCode}`}
-                              className="flex items-center gap-1.5 text-caption text-brand-700 dark:text-brand-400 hover:text-brand-900 font-semibold group/seller"
+                              className="flex items-center gap-1.5 text-caption text-brand-700 dark:text-brand-400 hover:text-brand-900 font-medium group/seller truncate"
                               title={`Xem hồ sơ doanh nghiệp: ${offer.enterpriseName || offer.developerOrigin || "Xem chi tiết"}`}
                             >
                               <Building2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
                               <span className="truncate group-hover/seller:underline">
-                                {offer.enterpriseName || offer.developerOrigin || `Doanh nghiệp MST: ${offer.enterpriseTaxCode}`}
-                              </span>
-                              <span className="text-xs bg-brand-100 dark:bg-brand-900/60 text-brand-800 dark:text-brand-300 px-1 py-0.2 rounded font-bold ml-auto shrink-0">
-                                Xem hồ sơ →
+                                {offer.enterpriseName || offer.developerOrigin || `MST: ${offer.enterpriseTaxCode}`}
                               </span>
                             </Link>
                           ) : offer.developerOrigin ? (
-                            <div className="flex items-center gap-1.5 text-caption text-slate-600 dark:text-slate-400">
+                            <div className="flex items-center gap-1.5 text-caption text-slate-600 dark:text-slate-400 truncate">
                               <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
                               <span className="truncate">{offer.developerOrigin}</span>
                             </div>
@@ -857,7 +859,7 @@ function ChaoBanCongNgheContent() {
                     </div>
 
                     {/* Card Footer: Pricing & Action */}
-                    <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                    <div className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-caption text-slate-400 font-medium">Hình thức thương mại</p>
                         <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">

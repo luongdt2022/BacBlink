@@ -249,7 +249,7 @@ export interface IndustryDefinition {
 export const TT17_SECTORS: IndustryDefinition[] = [
   {
     code: "LV01",
-    name: "Nông nghiệp, Lâm nghiệp & Thủy sản",
+    name: "Nông nghiệp",
     defaultSpecs: [
       { specName: "Công suất canh tác / thu hoạch", unit: "ha/ngày", placeholder: "Ví dụ: 5 - 10" },
       { specName: "Tỷ lệ tiết kiệm nước tưới", unit: "%", placeholder: "Ví dụ: 35" },
@@ -258,39 +258,67 @@ export const TT17_SECTORS: IndustryDefinition[] = [
     ]
   },
   {
-    code: "LV05",
-    name: "Chế biến thực phẩm – đồ uống (Công nghệ chế biến nông sản - thực phẩm)",
+    code: "LV02",
+    name: "Lâm nghiệp",
     defaultSpecs: [
-      { specName: "Công suất tách ẩm định mức", unit: "kg/mẻ", placeholder: "Ví dụ: 120" },
-      { specName: "Nhiệt độ cấp đông sâu buồng sấy", unit: "°C", placeholder: "Ví dụ: -45" },
-      { specName: "Độ chân không tối đa", unit: "mbar", placeholder: "Ví dụ: 0.02" },
-      { specName: "Điện năng tiêu thụ bình quân", unit: "kW/h", placeholder: "Ví dụ: 7.5" },
+      { specName: "Trữ lượng gỗ / sinh khối ước tính", unit: "m³/ha", placeholder: "Ví dụ: 120" },
+      { specName: "Tỷ lệ che phủ / sống sót cây trồng", unit: "%", placeholder: "Ví dụ: 90" },
+      { specName: "Chu kỳ khai thác / luân canh", unit: "năm", placeholder: "Ví dụ: 5 - 7" }
+    ]
+  },
+  {
+    code: "LV03",
+    name: "Thủy sản",
+    defaultSpecs: [
+      { specName: "Mật độ nuôi thả an toàn", unit: "con/m²", placeholder: "Ví dụ: 80 - 100" },
+      { specName: "Hệ số chuyển đổi thức ăn (FCR)", unit: "", placeholder: "Ví dụ: 1.1 - 1.2" },
+      { specName: "Tỷ lệ sống đến thu hoạch", unit: "%", placeholder: "Ví dụ: > 85" },
+      { specName: "Công suất xử lý nước ao nuôi", unit: "m³/giờ", placeholder: "Ví dụ: 150" }
+    ]
+  },
+  {
+    code: "LV04",
+    name: "Khai khoáng",
+    defaultSpecs: [
+      { specName: "Công suất khai thác định mức", unit: "tấn/ngày", placeholder: "Ví dụ: 500" },
+      { specName: "Hàm lượng thu hồi tinh quặng", unit: "%", placeholder: "Ví dụ: > 75" },
+      { specName: "Tiêu hao năng lượng trên tấn sản phẩm", unit: "kWh/tấn", placeholder: "Ví dụ: 35" }
+    ]
+  },
+  {
+    code: "LV05",
+    name: "Chế biến thực phẩm – đồ uống",
+    defaultSpecs: [
+      { specName: "Công suất chế biến định mức", unit: "tấn/ngày", placeholder: "Ví dụ: 20" },
+      { specName: "Nhiệt độ cấp đông sâu / bảo quản", unit: "°C", placeholder: "Ví dụ: -45" },
+      { specName: "Tỷ lệ thất thoát nguyên liệu", unit: "%", placeholder: "Ví dụ: < 0.5" },
+      { specName: "Tiêu chuẩn vệ sinh an toàn", unit: "", placeholder: "HACCP, ISO 22000" },
       { specName: "Độ ẩm sản phẩm sau chế biến", unit: "%", placeholder: "Ví dụ: < 3" }
     ]
   },
   {
-    code: "LV02",
-    name: "Sản xuất đồ uống & Nước giải khát",
+    code: "LV06",
+    name: "Dệt may – da giày – thời trang",
     defaultSpecs: [
-      { specName: "Công suất chiết rót định mức", unit: "chai/giờ", placeholder: "Ví dụ: 3000" },
-      { specName: "Áp suất tiệt trùng chuẩn", unit: "bar", placeholder: "Ví dụ: 2.5" },
-      { specName: "Tỷ lệ thất thoát nguyên liệu", unit: "%", placeholder: "Ví dụ: < 0.5" },
-      { specName: "Tiêu chuẩn vệ sinh an toàn", unit: "", placeholder: "HACCP, ISO 22000" }
+      { specName: "Độ bền kéo đứt sợi / vải", unit: "N", placeholder: "Ví dụ: 450" },
+      { specName: "Độ bền màu khi giặt", unit: "cấp", placeholder: "Ví dụ: Cấp 4-5" },
+      { specName: "Khả năng chống thấm / thoát khí", unit: "mm H2O", placeholder: "Ví dụ: > 10.000" },
+      { specName: "Tiêu chuẩn thân thiện môi trường", unit: "", placeholder: "OEKO-TEX Standard 100" }
     ]
   },
   {
     code: "LV07",
-    name: "Cơ khí chế tạo & Tự động hóa",
+    name: "Cơ khí – chế tạo – công nghiệp hỗ trợ",
     defaultSpecs: [
-      { specName: "Độ chính xác lặp lại", unit: "mm", placeholder: "Ví dụ: 0.02" },
-      { specName: "Bán kính với tới làm việc", unit: "mm", placeholder: "Ví dụ: 1850" },
-      { specName: "Công suất nguồn hàn / gia công", unit: "W", placeholder: "Ví dụ: 3000" },
-      { specName: "Tải trọng nâng định mức", unit: "kg", placeholder: "Ví dụ: 50" }
+      { specName: "Độ chính xác gia công lặp lại", unit: "mm", placeholder: "Ví dụ: ± 0.005" },
+      { specName: "Bán kính với tới / hành trình làm việc", unit: "mm", placeholder: "Ví dụ: 1850" },
+      { specName: "Công suất nguồn gia công / cắt hàn", unit: "kW", placeholder: "Ví dụ: 15" },
+      { specName: "Tải trọng nâng / kẹp định mức", unit: "kg", placeholder: "Ví dụ: 50" }
     ]
   },
   {
     code: "LV08",
-    name: "Điện tử, Bán dẫn & Viễn thông",
+    name: "Điện – điện tử – tự động hóa",
     defaultSpecs: [
       { specName: "Điện áp hoạt động định mức", unit: "V", placeholder: "Ví dụ: 220VAC / 24VDC" },
       { specName: "Dải tần số hoạt động", unit: "GHz", placeholder: "Ví dụ: 2.4 - 5.8" },
@@ -299,18 +327,38 @@ export const TT17_SECTORS: IndustryDefinition[] = [
     ]
   },
   {
-    code: "LV11",
-    name: "Công nghệ môi trường & Kinh tế tuần hoàn",
+    code: "LV09",
+    name: "Hóa chất – dược phẩm – vật liệu",
     defaultSpecs: [
-      { specName: "Hiệu suất khử màu hợp chất", unit: "%", placeholder: "Ví dụ: > 95" },
-      { specName: "Tỷ lệ giảm phát thải COD/BOD", unit: "%", placeholder: "Ví dụ: 80 - 88" },
-      { specName: "Công suất xử lý nước thải", unit: "m³/ngày", placeholder: "Ví dụ: 500" },
-      { specName: "Mật độ vi sinh hoạt tính", unit: "CFU/ml", placeholder: "Ví dụ: 10^9" }
+      { specName: "Hàm lượng hoạt chất chính", unit: "%", placeholder: "Ví dụ: ≥ 98.5" },
+      { specName: "Độ tinh khiết dược dụng / công nghiệp", unit: "%", placeholder: "Ví dụ: 99.9" },
+      { specName: "Thời hạn ổn định hoạt tính", unit: "tháng", placeholder: "Ví dụ: 36" },
+      { specName: "Tiêu chuẩn sản xuất áp dụng", unit: "", placeholder: "GMP-WHO, ISO 9001" }
+    ]
+  },
+  {
+    code: "LV10",
+    name: "Năng lượng",
+    defaultSpecs: [
+      { specName: "Công suất phát / chuyển đổi định mức", unit: "kWp", placeholder: "Ví dụ: 250" },
+      { specName: "Hiệu suất chuyển đổi năng lượng", unit: "%", placeholder: "Ví dụ: > 21.5" },
+      { specName: "Dung lượng lưu trữ điện", unit: "kWh", placeholder: "Ví dụ: 100" },
+      { specName: "Tuổi thọ module / cell", unit: "năm", placeholder: "Ví dụ: 25" }
+    ]
+  },
+  {
+    code: "LV11",
+    name: "Nước – môi trường – chất thải",
+    defaultSpecs: [
+      { specName: "Hiệu suất khử màu / xử lý ô nhiễm", unit: "%", placeholder: "Ví dụ: > 95" },
+      { specName: "Tỷ lệ giảm phát thải COD / BOD", unit: "%", placeholder: "Ví dụ: 80 - 88" },
+      { specName: "Công suất xử lý nước / chất thải", unit: "m³/ngày", placeholder: "Ví dụ: 500" },
+      { specName: "Quy chuẩn môi trường đạt được", unit: "", placeholder: "QCVN 40:2011/BTNMT Cột A" }
     ]
   },
   {
     code: "LV12",
-    name: "Vật liệu xây dựng & Kỹ thuật công trình",
+    name: "Xây dựng – vật liệu – hạ tầng",
     defaultSpecs: [
       { specName: "Cường độ chịu nén", unit: "MPa", placeholder: "Ví dụ: 40" },
       { specName: "Độ hút nước của vật liệu", unit: "%", placeholder: "Ví dụ: < 5" },
@@ -319,27 +367,36 @@ export const TT17_SECTORS: IndustryDefinition[] = [
     ]
   },
   {
+    code: "LV13",
+    name: "Thương mại – phân phối",
+    defaultSpecs: [
+      { specName: "Khả năng xử lý đơn hàng đồng thời", unit: "đơn/phút", placeholder: "Ví dụ: 5000" },
+      { specName: "Tỷ lệ tự động hóa đối soát tồn kho", unit: "%", placeholder: "Ví dụ: 99.5" },
+      { specName: "Thời gian đồng bộ đa kênh (Omnichannel)", unit: "giây", placeholder: "Ví dụ: < 3" }
+    ]
+  },
+  {
     code: "LV14",
-    name: "Logistics, Vận tải & Chuỗi cung ứng",
+    name: "Logistics – vận tải – kho bãi",
     defaultSpecs: [
       { specName: "Tốc độ phân loại kiện hàng", unit: "kiện/giờ", placeholder: "Ví dụ: 4000" },
       { specName: "Độ chính xác nhận diện mã vạch/RFID", unit: "%", placeholder: "Ví dụ: 99.9" },
-      { specName: "Tải trọng kiện hàng tối đa", unit: "kg", placeholder: "Ví dụ: 30" }
+      { specName: "Tải trọng kiện hàng tối đa", unit: "kg", placeholder: "Ví dụ: 30" },
+      { specName: "Tỷ lệ tối ưu hóa tuyến đường", unit: "%", placeholder: "Ví dụ: 25" }
     ]
   },
   {
     code: "LV15",
-    name: "Y tế, Dược phẩm & Thiết bị chăm sóc sức khỏe",
+    name: "Du lịch – khách sạn – nhà hàng",
     defaultSpecs: [
-      { specName: "Độ nhạy phát hiện chẩn đoán", unit: "%", placeholder: "Ví dụ: 98.5" },
-      { specName: "Độ đặc hiệu lâm sàng", unit: "%", placeholder: "Ví dụ: 99.1" },
-      { specName: "Thời gian cho kết quả", unit: "phút", placeholder: "Ví dụ: 15" },
-      { specName: "Cấp độ phân loại trang thiết bị y tế", unit: "", placeholder: "Loại B theo Nghị định 98" }
+      { specName: "Công suất phục vụ khách / lượt", unit: "khách/ngày", placeholder: "Ví dụ: 1000" },
+      { specName: "Tỷ lệ tự động hóa check-in / check-out", unit: "%", placeholder: "Ví dụ: 80" },
+      { specName: "Thời gian xử lý giao dịch đặt chỗ", unit: "giây", placeholder: "Ví dụ: < 2" }
     ]
   },
   {
     code: "LV16",
-    name: "Công nghệ thông tin, Phần mềm & IoT",
+    name: "CNTT – viễn thông – chuyển đổi số",
     defaultSpecs: [
       { specName: "Giao thức truyền thông hỗ trợ", unit: "", placeholder: "MQTT, HTTP/REST, Modbus TCP" },
       { specName: "Thời gian phản hồi bình quân (Latency)", unit: "ms", placeholder: "Ví dụ: < 50" },
@@ -349,74 +406,20 @@ export const TT17_SECTORS: IndustryDefinition[] = [
   },
   {
     code: "LV17",
-    name: "Khoa học vật liệu & Công nghệ đo lường",
+    name: "Khoa học – công nghệ – đổi mới sáng tạo",
     defaultSpecs: [
-      { specName: "Dải đo lường tiêu chuẩn", unit: "", placeholder: "0.001 - 1000 mm" },
-      { specName: "Sai số phép đo cho phép", unit: "%", placeholder: "Ví dụ: ± 0.1" },
-      { specName: "Nhiệt độ môi trường hoạt động", unit: "°C", placeholder: "Ví dụ: -10 đến +55" }
-    ]
-  },
-  {
-    code: "LV03",
-    name: "Dệt may, Da giày & Thời trang kỹ thuật",
-    defaultSpecs: [
-      { specName: "Độ bền kéo đứt sợi/vải", unit: "N", placeholder: "Ví dụ: 450" },
-      { specName: "Độ bền màu khi giặt", unit: "cấp", placeholder: "Ví dụ: Cấp 4-5" },
-      { specName: "Khả năng chống thấm nước", unit: "mm H2O", placeholder: "Ví dụ: > 10.000" }
-    ]
-  },
-  {
-    code: "LV04",
-    name: "Chế biến gỗ & Lâm sản công nghệ cao",
-    defaultSpecs: [
-      { specName: "Độ ẩm gỗ thành phẩm", unit: "%", placeholder: "Ví dụ: 8 - 12" },
-      { specName: "Tốc độ đưa phôi tự động", unit: "m/phút", placeholder: "Ví dụ: 25" },
-      { specName: "Tiêu chuẩn phát thải Formaldehyde", unit: "", placeholder: "Chuẩn E0 / CARB P2" }
-    ]
-  },
-  {
-    code: "LV06",
-    name: "Hóa chất, Phân bón & Vật liệu mới",
-    defaultSpecs: [
-      { specName: "Hàm lượng hoạt chất chính", unit: "%", placeholder: "Ví dụ: ≥ 98.5" },
-      { specName: "Độ pH dung dịch 1%", unit: "pH", placeholder: "Ví dụ: 6.5 - 7.5" },
-      { specName: "Độ hòa tan trong nước", unit: "g/L", placeholder: "Ví dụ: Hoàn toàn" }
-    ]
-  },
-  {
-    code: "LV09",
-    name: "Dược phẩm, Mỹ phẩm & Công nghệ sinh học",
-    defaultSpecs: [
-      { specName: "Hàm lượng dược chất chiết xuất", unit: "%", placeholder: "Ví dụ: ≥ 95" },
-      { specName: "Thời hạn ổn định hoạt tính", unit: "tháng", placeholder: "Ví dụ: 36" },
-      { specName: "Tiêu chuẩn xưởng sản xuất", unit: "", placeholder: "GMP-WHO, ISO 22716" }
-    ]
-  },
-  {
-    code: "LV10",
-    name: "Quang học & Thiết bị phân tích chính xác",
-    defaultSpecs: [
-      { specName: "Dải bước sóng quang phổ", unit: "nm", placeholder: "Ví dụ: 190 - 1100" },
-      { specName: "Độ phân giải cảm biến quang", unit: "Megapixel", placeholder: "Ví dụ: 20" },
-      { specName: "Độ chính xác bước sóng", unit: "nm", placeholder: "Ví dụ: ± 0.3" }
-    ]
-  },
-  {
-    code: "LV13",
-    name: "Sản phẩm nội thất & Gia dụng thông minh",
-    defaultSpecs: [
-      { specName: "Tải trọng chịu lực tĩnh", unit: "kg", placeholder: "Ví dụ: 250" },
-      { specName: "Độ bền chu kỳ đóng mở", unit: "lần", placeholder: "Ví dụ: 100.000" },
-      { specName: "Tiêu chuẩn kết nối điều khiển", unit: "", placeholder: "Zigbee 3.0 / Bluetooth Mesh" }
+      { specName: "Cấp độ hoàn thiện công nghệ (TRL)", unit: "TRL", placeholder: "Ví dụ: TRL 6 - 9" },
+      { specName: "Tình trạng xác lập quyền SHTT", unit: "", placeholder: "Bằng sáng chế / GPHI" },
+      { specName: "Hiệu quả kinh tế - kỹ thuật dự kiến", unit: "%", placeholder: "Ví dụ: Tiết kiệm chi phí 30%" }
     ]
   },
   {
     code: "LV18",
-    name: "Lĩnh vực công nghệ tổng hợp khác",
+    name: "Dịch vụ chuyên môn và dịch vụ khác",
     defaultSpecs: [
-      { specName: "Công suất thiết kế định mức", unit: "", placeholder: "Theo tài liệu kỹ thuật" },
-      { specName: "Hiệu suất vận hành", unit: "%", placeholder: "Ví dụ: > 92" },
-      { specName: "Tiêu chuẩn kỹ thuật áp dụng", unit: "", placeholder: "TCVN, IEC, ISO" }
+      { specName: "Năng lực chuyên môn thẩm định / tư vấn", unit: "", placeholder: "Theo hồ sơ chuyên gia" },
+      { specName: "Tiêu chuẩn quy trình cung cấp dịch vụ", unit: "", placeholder: "ISO 9001 / Quy chuẩn ngành" },
+      { specName: "Thời gian hoàn thành cam kết (SLA)", unit: "ngày", placeholder: "Ví dụ: 15" }
     ]
   }
 ];

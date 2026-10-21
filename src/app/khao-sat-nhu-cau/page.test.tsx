@@ -87,14 +87,15 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(screen.getByText('1. Chi Tiết Bài Toán Kỹ Thuật')).toBeInTheDocument();
     expect(screen.getByText('2. Chỉ Số Nhu Cầu Đổi Mới (TNI)')).toBeInTheDocument();
 
-    // Check Stepper buttons
+    // Check Stepper 4 buttons
     expect(screen.getByText('E. Nhu Cầu & TNI')).toBeInTheDocument();
     expect(screen.getByText('A. Doanh Nghiệp')).toBeInTheDocument();
-    expect(screen.getByText('B. Hiện Trạng')).toBeInTheDocument();
-    expect(screen.getByText('C. Điểm Nghẽn')).toBeInTheDocument();
-    expect(screen.getByText('D. Năng Lực TAR')).toBeInTheDocument();
-    expect(screen.getByText('F. Định Hướng')).toBeInTheDocument();
+    expect(screen.getByText('Thông Tin Bổ Sung')).toBeInTheDocument();
     expect(screen.getByText('G. Xác Nhận')).toBeInTheDocument();
+
+    // Check Progress indicator
+    expect(screen.getByText(/Bước 1\/4: E\. Nhu Cầu & Thuật Toán TNI/i)).toBeInTheDocument();
+    expect(screen.getByText(/25% Hoàn thành/i)).toBeInTheDocument();
 
     // Action buttons in header
     expect(screen.getByRole('button', { name: /Điền dữ liệu mẫu \(Demo\)/i })).toBeInTheDocument();
@@ -130,15 +131,43 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(getTniBadge(60).label).toContain('Nhu cầu trung bình');
   });
 
-  it('validates Step 1 required demand fields before allowing navigation to Step 2', () => {
+  it('validates Step 1 required demand fields before allowing navigation to Step 2 via Next button', () => {
     render(<DeepSurveyPage />);
 
-    // Attempt to proceed without filling demand fields
+    // Attempt to proceed without filling demand fields via Next button
     const nextBtn = screen.getByText(/Tiếp tục Bước 2/i);
     fireEvent.click(nextBtn);
 
     // Should stay on Step 1
     expect(screen.getByText(/Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết/i)).toBeInTheDocument();
+  });
+
+  it('allows clicking to view any tab directly without restriction', () => {
+    render(<DeepSurveyPage />);
+
+    // Click on Tab 3 (Thông Tin Bổ Sung) directly from empty Step 1
+    const tab3 = screen.getByRole('button', { name: /Thông Tin Bổ Sung/i });
+    fireEvent.click(tab3);
+
+    // Should switch to Step 3 view
+    expect(screen.getByText(/Bước 3\/4: Thông Tin Bổ Sung/i)).toBeInTheDocument();
+    expect(screen.getByText(/75% Hoàn thành/i)).toBeInTheDocument();
+    expect(screen.getByText(/Phân mục B \(Tùy chọn\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Phân mục C \(Tùy chọn\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Phân mục D \(Tùy chọn\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Phân mục F \(Tùy chọn\)/i)).toBeInTheDocument();
+
+    // Click on Tab 2 (A. Doanh Nghiệp)
+    const tab2 = screen.getByRole('button', { name: /A\. Doanh Nghiệp/i });
+    fireEvent.click(tab2);
+    expect(screen.getByText(/Bước 2\/4: A\. Thông Tin Doanh Nghiệp/i)).toBeInTheDocument();
+    expect(screen.getByText(/50% Hoàn thành/i)).toBeInTheDocument();
+
+    // Click on Tab 4 (G. Xác Nhận)
+    const tab4 = screen.getByRole('button', { name: /G\. Xác Nhận/i });
+    fireEvent.click(tab4);
+    expect(screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i)).toBeInTheDocument();
+    expect(screen.getByText(/100% Hoàn thành/i)).toBeInTheDocument();
   });
 
   it('fills sample data when clicking "Điền dữ liệu mẫu (Demo)" and can reset with "Làm mới / Xóa nháp"', () => {
@@ -163,7 +192,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(problemInput.value).toBe('');
   });
 
-  it('navigates through all 7 steps using "Điền dữ liệu mẫu (Demo)" and submits successfully', async () => {
+  it('navigates through all 4 steps using "Điền dữ liệu mẫu (Demo)" and submits successfully', async () => {
     setupFetch();
     render(<DeepSurveyPage />);
 
@@ -181,19 +210,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     await waitFor(() => screen.getByText(/Tiếp tục Bước 4/i));
     fireEvent.click(screen.getByText(/Tiếp tục Bước 4/i));
 
-    // Step 4 -> Step 5
-    await waitFor(() => screen.getByText(/Tiếp tục Bước 5/i));
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 5/i));
-
-    // Step 5 -> Step 6
-    await waitFor(() => screen.getByText(/Tiếp tục Bước 6/i));
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 6/i));
-
-    // Step 6 -> Step 7
-    await waitFor(() => screen.getByText(/Tiếp tục Bước 7/i));
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 7/i));
-
-    // Step 7: Submit
+    // Step 4: Submit
     await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
     const submitBtn = screen.getByText(/Hoàn Tất & Nộp Khảo Sát/i);
     fireEvent.click(submitBtn);
@@ -245,10 +262,10 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
       target: { value: 'hanam@tech.vn' }
     });
 
-    // Step 2 -> Step 3 (B. Hiện Trạng)
+    // Step 2 -> Step 3 (Thông Tin Bổ Sung)
     fireEvent.click(screen.getByText(/Tiếp tục Bước 3/i));
 
-    // Step 3: Fill equipment details
+    // Step 3: Fill equipment details in unified Tab 3
     await waitFor(() => screen.getByText('Danh Mục Thiết Bị & Dây Chuyền Sản Xuất Chủ Lực'));
     fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Đúc phôi, Tiện CNC/i), {
       target: { value: 'Đúc phôi' }
@@ -257,37 +274,18 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
       target: { value: 'Máy đúc áp lực 500T' }
     });
 
-    // Step 3 -> Step 4 (C. Điểm Nghẽn)
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 4/i));
-
-    // Step 4: Pick a bottleneck and specify hardest stage
-    await waitFor(() => screen.getByText(/Nhận Diện Điểm Nghẽn Kỹ Thuật/i));
+    // Pick a bottleneck
     const bottleneckCheckboxes = screen.getAllByRole('checkbox');
     fireEvent.click(bottleneckCheckboxes[0]);
-    fireEvent.change(screen.getByPlaceholderText(/Ví dụ: Kiểm tra chất lượng \(QC\)/i), {
-      target: { value: 'Kiểm tra bọt khí phôi đúc' }
-    });
-
-    // Step 4 -> Step 5 (D. Năng Lực TAR)
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 5/i));
-
-    // Step 5: Verify D.1, D.2, D.3
-    await waitFor(() => screen.getByText('Thống Kê Đội Ngũ Nhân Lực Kỹ Thuật'));
-    expect(screen.getByText('Cơ Chế Quản Lý & Đổi Mới Công Nghệ Hiện Có Tại Doanh Nghiệp')).toBeInTheDocument();
-    expect(screen.getByText('PHẦN D.3 • NĂNG LỰC HẤP THỤ CÔNG NGHỆ (TAR)')).toBeInTheDocument();
 
     // Fill personnel count
     const techInputs = screen.getAllByPlaceholderText('0');
     fireEvent.change(techInputs[0], { target: { value: '8' } });
 
-    // Step 5 -> Step 6 (F. Định Hướng)
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 6/i));
+    // Step 3 -> Step 4 (G. Xác Nhận)
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 4/i));
 
-    // Step 6 -> Step 7 (G. Xác Nhận)
-    await waitFor(() => screen.getByText('Nhu Cầu Tiếp Cận Công Nghệ Tiên Tiến Trong 3 Năm Tới'));
-    fireEvent.click(screen.getByText(/Tiếp tục Bước 7/i));
-
-    // Step 7: Sign and consent
+    // Step 4: Sign and consent
     await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
     fireEvent.change(screen.getByPlaceholderText(/Người ký xác nhận/i), {
       target: { value: 'Lê Văn Nam' }
@@ -311,7 +309,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     });
   });
 
-  it('enforces mandatory Step 1 and Step 2 while allowing optional Steps 3-6 to be skipped directly to Step 7 (CR-006)', async () => {
+  it('enforces mandatory Step 1 and Step 2 while allowing optional Step 3 to be skipped directly to Step 4 (CR-2026-017 / TASK-03-CR59)', async () => {
     setupFetch();
     render(<DeepSurveyPage />);
 
@@ -347,12 +345,12 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
       target: { value: 'mai.tt@quicktech.vn' }
     });
 
-    // Skip optional steps 3-6 directly to Step 7 using shortcut button
+    // Skip optional step 3 directly to Step 4 using shortcut button
     const skipBtn = screen.getByRole('button', { name: /Bỏ qua bước tùy chọn & Đến nộp phiếu/i });
     expect(skipBtn).toBeInTheDocument();
     fireEvent.click(skipBtn);
 
-    // Verify reached Step 7 directly without error
+    // Verify reached Step 4 directly without error
     await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
 
     // Fill signature & PDPD consent
@@ -368,6 +366,67 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     // Submit successfully
     const submitBtn = screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i });
     fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!')).toBeInTheDocument();
+    });
+  });
+
+  it('allows proceeding through Step 3 without filling any optional fields (CR-2026-017 / T-03.60)', async () => {
+    setupFetch();
+    render(<DeepSurveyPage />);
+
+    // Step 1: Valid demand item
+    fireEvent.change(screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i), {
+      target: { value: 'Sơn tự động' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i), {
+      target: { value: 'Sơn không đồng màu' }
+    });
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 2/i));
+
+    // Step 2: Valid enterprise info
+    await waitFor(() => screen.getByText('Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất'));
+    fireEvent.change(screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i), {
+      target: { value: 'Công ty TNHH Quang Minh' }
+    });
+    fireEvent.change(screen.getByDisplayValue('-- Chọn Tỉnh / Thành phố --'), {
+      target: { value: 'Hải Phòng' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Họ và tên người đại diện/i), {
+      target: { value: 'Vũ Văn Quang' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/0912 xxx xxx/i), {
+      target: { value: '0904111222' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/contact@company.com.vn/i), {
+      target: { value: 'quang@quangminh.vn' }
+    });
+
+    // Step 2 -> Step 3
+    fireEvent.click(screen.getByText(/Tiếp tục Bước 3/i));
+
+    // Step 3: Do NOT fill anything! Just click "Tiếp tục Bước 4"
+    await waitFor(() => screen.getByText(/Bước 3\/4: Thông Tin Bổ Sung/i));
+    const nextBtn = screen.getByRole('button', { name: /Tiếp tục Bước 4/i });
+    fireEvent.click(nextBtn);
+
+    // Must reach Step 4 smoothly
+    await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
+    expect(screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i)).toBeInTheDocument();
+
+    // Sign and consent
+    fireEvent.change(screen.getByPlaceholderText(/Người ký xác nhận/i), {
+      target: { value: 'Vũ Văn Quang' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Chức vụ người ký/i), {
+      target: { value: 'Giám đốc' }
+    });
+    const consentCheckbox = screen.getByRole('checkbox');
+    fireEvent.click(consentCheckbox);
+
+    // Submit successfully
+    fireEvent.click(screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!')).toBeInTheDocument();
@@ -556,6 +615,79 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
 
     const emailInput = screen.getByPlaceholderText(/contact@company\.com\.vn/i) as HTMLInputElement;
     expect(emailInput.value).toBe('buyer.user@demo.nacentech.vn');
+  });
+
+  it('enforces comprehensive 3-tier validation on final submit: redirects to Step 1 if demand is missing, or Step 2 if enterprise info is missing (BR-NEW-03-01)', async () => {
+    setupFetch();
+    render(<DeepSurveyPage />);
+
+    // 1. Direct free-click jump to Step 4 from empty state
+    fireEvent.click(screen.getByRole('button', { name: /G\. Xác Nhận/i }));
+    await waitFor(() => screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i));
+
+    // Fill signature & PDPD to simulate submitting on Step 4
+    fireEvent.change(screen.getByPlaceholderText(/Người ký xác nhận/i), {
+      target: { value: 'Trần Văn Ký' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Chức vụ người ký/i), {
+      target: { value: 'Giám đốc' }
+    });
+    const consentCheckbox = screen.getByRole('checkbox');
+    fireEvent.click(consentCheckbox);
+
+    // Attempt to submit: Tier 1 check should fail (missing demand items in Step 1)
+    const submitBtn = screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i });
+    fireEvent.click(submitBtn);
+
+    // Should redirect back to Step 1
+    await waitFor(() => {
+      expect(screen.getByText(/Bước 1\/4: E\. Nhu Cầu & Thuật Toán TNI/i)).toBeInTheDocument();
+    });
+
+    // 2. Fill Step 1 demand item
+    fireEvent.change(screen.getByPlaceholderText(/Đúc và Nhiệt luyện kim loại/i), {
+      target: { value: 'Công đoạn ép khuôn' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Mô tả cụ thể sự cố, tỷ lệ phế phẩm/i), {
+      target: { value: 'Khuôn ép bị xước bề mặt' }
+    });
+
+    // Jump back to Step 4 and attempt submit again: Tier 2 check should fail (missing enterprise info in Step 2)
+    fireEvent.click(screen.getByRole('button', { name: /G\. Xác Nhận/i }));
+    await waitFor(() => screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i));
+    fireEvent.click(screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i }));
+
+    // Should redirect back to Step 2
+    await waitFor(() => {
+      expect(screen.getByText(/Bước 2\/4: A\. Thông Tin Doanh Nghiệp/i)).toBeInTheDocument();
+    });
+
+    // 3. Fill Step 2 enterprise info
+    fireEvent.change(screen.getByPlaceholderText(/Công ty Cổ phần Cơ điện/i), {
+      target: { value: 'Công ty Cơ Khí Đạt Chuẩn' }
+    });
+    fireEvent.change(screen.getByDisplayValue('-- Chọn Tỉnh / Thành phố --'), {
+      target: { value: 'Hà Nội' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Họ và tên người đại diện/i), {
+      target: { value: 'Trần Văn Ký' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/0912 xxx xxx/i), {
+      target: { value: '0912333444' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/contact@company.com.vn/i), {
+      target: { value: 'ky.tv@datchuan.vn' }
+    });
+
+    // Jump to Step 4 and submit successfully
+    fireEvent.click(screen.getByRole('button', { name: /G\. Xác Nhận/i }));
+    await waitFor(() => screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i));
+    fireEvent.click(screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i }));
+
+    // Verified: Submission succeeds
+    await waitFor(() => {
+      expect(screen.getByText('Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!')).toBeInTheDocument();
+    });
   });
 });
 

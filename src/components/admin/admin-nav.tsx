@@ -8,7 +8,8 @@ import {
   ShieldCheck,
   Network,
   Layers,
-  ArrowLeft
+  ArrowLeft,
+  Workflow
 } from "lucide-react";
 
 export function AdminNav() {
@@ -38,6 +39,12 @@ export function AdminNav() {
       label: "Danh Mục Lĩnh Vực & TT17",
       icon: Layers,
       badge: "Danh mục ngành",
+    },
+    {
+      href: "/dashboard",
+      label: "Agent Orchestrator & CR",
+      icon: Workflow,
+      badge: "Realtime",
     },
   ];
 

@@ -27,6 +27,14 @@ const lora = Lora({
 export const metadata: Metadata = {
   title: "NacenTwin — Nền Tảng Đổi Mới Sáng Tạo & Kết Nối Cung Cầu Công Nghệ",
   description: "Cổng dữ liệu số Quốc gia thuộc Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech - Bộ KH&CN)",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/NACENTECH_Main-Logo-G.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon.png",
+    apple: "/NACENTECH_Main-Logo-G.png",
+  },
 };
 
 export default function RootLayout({

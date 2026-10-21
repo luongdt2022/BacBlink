@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-KỊCH BẢN KIỂM THỬ PLAYWRIGHT E2E BLACK-BOX TOÀN TRÌNH: TASK-03 KHẢO SÁT NHU CẦU ĐMST (DEEP SURVEY 7 PHẦN A-G)
+KỊCH BẢN KIỂM THỬ PLAYWRIGHT E2E BLACK-BOX TOÀN TRÌNH: TASK-03 KHẢO SÁT NHU CẦU ĐMST (DEEP SURVEY 4 BƯỚC TINH GỌN)
 Nguyên tắc bất biến:
 - Black-box thuần túy, Zero-Mock.
 - Truy cập /khao-sat-nhu-cau, nạp bộ dữ liệu chuẩn doanh nghiệp cơ khí chế tạo.
-- Hoàn tất qua 7 bước Wizard (Phần A -> Phần G).
+- Hoàn tất qua 4 bước Wizard (Tabs 1-4).
 - Ký tên xác nhận, tích PDPD và nộp phiếu khảo sát.
 - Deep DB State Verification:
   + Truy vấn PostgreSQL đối soát bản ghi mới trong bảng demand.demand_surveys (khớp survey_code, company_name, tax_code).
@@ -54,7 +54,7 @@ def cleanup_survey_in_db(survey_code: str):
 
 def main():
     print("======================================================================")
-    print("🎯 KIỂM THỬ PLAYWRIGHT E2E BLACK-BOX: TASK-03 BUYER DEEP SURVEY (7 PHẦN)")
+    print("🎯 KIỂM THỬ PLAYWRIGHT E2E BLACK-BOX: TASK-03 BUYER DEEP SURVEY (4 BƯỚC)")
     print("======================================================================")
 
     created_survey_code = None
@@ -68,7 +68,7 @@ def main():
         print("\n▶ [STEP 1] Mở Form Khảo sát Nhu cầu Công nghệ (/khao-sat-nhu-cau)...")
         page.goto(f"{BASE_WEB_URL}/khao-sat-nhu-cau", timeout=30000)
         page.wait_for_selector("h1", timeout=15000)
-        print("  ✅ Form khảo sát chuyên sâu tải thành công, đầy đủ 7 bước Wizard (A-G).")
+        print("  ✅ Form khảo sát chuyên sâu tải thành công, đầy đủ 4 bước Wizard tinh gọn.")
 
         # STEP 2: Nạp bộ dữ liệu thử nghiệm chuẩn qua nút 'Nạp dữ liệu mẫu'
         print("\n▶ [STEP 2] Kích hoạt nạp bộ dữ liệu chuẩn doanh nghiệp cơ khí...")
@@ -77,16 +77,16 @@ def main():
         time.sleep(1)
         print("  ✅ Đã nạp thành công bộ dữ liệu khảo sát hoàn chỉnh.")
 
-        # STEP 3: Di chuyển tuần tự qua 7 bước Wizard để kiểm tra tương tác
-        print("\n▶ [STEP 3] Duyệt toàn trình qua 7 bước Wizard...")
-        for step in range(1, 7):
+        # STEP 3: Di chuyển tuần tự qua 4 bước Wizard để kiểm tra tương tác
+        print("\n▶ [STEP 3] Duyệt toàn trình qua 4 bước Wizard...")
+        for step in range(1, 4):
             print(f"  👉 Chuyển tiếp từ Bước {step} sang Bước {step + 1}...")
             next_btn = page.locator("button:has-text('Tiếp tục Bước')").first
             next_btn.click()
             time.sleep(0.5)
 
-        # STEP 4: Tại Bước 7 (Phần G: Cam kết & Gửi phiếu), xác nhận tích cam kết PDPD
-        print("\n▶ [STEP 4] Kiểm tra Bước 7 (Phần G): Ký tên đại diện & Cam kết PDPD...")
+        # STEP 4: Tại Bước 4 (Phần G: Cam kết & Gửi phiếu), xác nhận tích cam kết PDPD
+        print("\n▶ [STEP 4] Kiểm tra Bước 4 (Phần G): Ký tên đại diện & Cam kết PDPD...")
         page.wait_for_selector("text=Cam kết bảo vệ dữ liệu cá nhân", timeout=5000)
         pdpd_checkbox = page.locator("input[type='checkbox']").last
         if not pdpd_checkbox.is_checked():

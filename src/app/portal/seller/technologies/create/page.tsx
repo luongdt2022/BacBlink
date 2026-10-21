@@ -135,7 +135,6 @@ export default function TaoHoSoChaoBanPage() {
   const [statusFeedback, setStatusFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isFastTrackModalOpen, setIsFastTrackModalOpen] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [uxState, setUxState] = useState<"loading" | "empty" | "error" | "partial" | "success">("success");
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
 
   // Đếm tiến trình Bước 1: 6 trường lõi
@@ -466,7 +465,7 @@ export default function TaoHoSoChaoBanPage() {
               Tạo hồ sơ chào bán
             </h1>
             <p className="mt-0.5 text-xs text-slate-600">
-              Đăng sản phẩm, thiết bị hoặc giải pháp công nghệ để kết nối nhu cầu phù hợp.
+              Biểu Mẫu Chào Bán & Chuyển Giao SHTT — Đăng sản phẩm, thiết bị hoặc giải pháp công nghệ để kết nối nhu cầu phù hợp.
             </p>
           </div>
 
@@ -494,38 +493,6 @@ export default function TaoHoSoChaoBanPage() {
           </div>
         )}
 
-        {/* KPI Banner 3 Cột (Wireframe gốc) */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-            <div className="text-xs font-bold text-emerald-700">Bước hiện tại</div>
-            <div className="mt-1 text-sm font-extrabold text-emerald-900">
-              0{currentStep} ·{" "}
-              {currentStep === 1
-                ? "Thông tin bắt buộc"
-                : currentStep === 2
-                ? "Thông số kỹ thuật"
-                : currentStep === 3
-                ? "Giá & thương mại"
-                : "Pháp lý & DataRoom"}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-brand-200 bg-brand-50 p-3">
-            <div className="text-xs font-bold text-brand-700">Tối giản MVP Fast-Track</div>
-            <div className="mt-1 text-sm font-extrabold text-brand-900">
-              6 trường lõi + Giá + TRL
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-3">
-            <div className="text-xs font-bold text-slate-500">Bộ quy tắc áp dụng</div>
-            <div className="mt-1 text-sm font-extrabold text-slate-900 truncate">
-              {currentSectorObj.name} · {offerType === "DEVICE" ? "Thiết bị" : offerType === "PRODUCT" ? "Sản phẩm" : "Giải pháp"} ·{" "}
-              {hasTechTransfer ? "Có chuyển giao (TRL)" : "Không chuyển giao"}
-            </div>
-          </div>
-        </div>
-
         {/* Main Grid: Sidebar vs Content */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
           {/* Left Column: Side Nav & AI Assistant */}
@@ -533,10 +500,8 @@ export default function TaoHoSoChaoBanPage() {
             <FormStepper
               currentStep={currentStep}
               onStepSelect={(step) => {
-                if (step === 1 || completedSteps.includes(1)) {
-                  setCurrentStep(step);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }
+                setCurrentStep(step);
+                window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               completedSteps={completedSteps}
               filledStep1Count={filledCount}
@@ -631,39 +596,41 @@ export default function TaoHoSoChaoBanPage() {
                   errors={errors}
                 />
 
-                {/* Action Footer Bước 1: 3 nút rõ ràng */}
-                <div className="border-t border-slate-100 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <p className="text-xs text-slate-500 flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600 inline" />
-                    Chỉ cần hoàn thành Bước 1, bạn có thể nộp ngay hồ sơ chờ thẩm định.
-                  </p>
+                {/* Action Footer Bước 1 */}
+                <div className="border-t border-slate-100 pt-5 space-y-3">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span>Chỉ cần hoàn thành Bước 1, bạn có thể nộp ngay hồ sơ chờ thẩm định.</span>
+                  </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
                     <button
                       type="button"
                       onClick={handleSaveDraft}
                       disabled={isSavingDraft}
-                      className="rounded-lg border border-slate-300 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                      className="w-full sm:w-auto rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition text-center"
                     >
                       Lưu nháp
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setIsFastTrackModalOpen(true)}
-                      className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm transition flex items-center gap-1.5"
-                    >
-                      <Send className="h-3.5 w-3.5" />
-                      Gửi chờ duyệt ngay (Fast-Track)
-                    </button>
+                    <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => setIsFastTrackModalOpen(true)}
+                        className="w-full sm:w-auto rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-extrabold shadow-sm transition flex items-center justify-center gap-1.5"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                        Gửi chờ duyệt ngay (Fast-Track)
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={handleNextStep}
-                      className="rounded-lg bg-brand-700 bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 text-xs font-bold transition flex items-center gap-1.5"
-                    >
-                      Tiếp tục: Thông số ngành &rarr;
-                    </button>
+                      <button
+                        type="button"
+                        onClick={handleNextStep}
+                        className="w-full sm:w-auto rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-4 py-2 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
+                      >
+                        Tiếp tục: Thông số ngành &rarr;
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -884,53 +851,6 @@ export default function TaoHoSoChaoBanPage() {
                 </div>
               </div>
             )}
-
-            {/* Panel 5 trạng thái UX (Wireframe gốc) */}
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <b className="text-xs text-slate-900 font-extrabold">5 trạng thái UX hệ thống</b>
-                  <p className="text-xs text-slate-500">
-                    Mô phỏng phản hồi trạng thái nạp dữ liệu động từ máy chủ.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {(["loading", "empty", "error", "partial", "success"] as const).map((st) => (
-                    <button
-                      key={st}
-                      type="button"
-                      onClick={() => setUxState(st)}
-                      className={`rounded border px-2 py-1 text-xs font-bold uppercase transition ${
-                        uxState === st
-                          ? "border-brand-500 bg-brand-50 text-brand-700 shadow-sm"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {st}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {uxState !== "success" && (
-                <div
-                  className={`mt-3 rounded-lg p-3 text-xs ${
-                    uxState === "loading"
-                      ? "bg-slate-100 text-slate-700"
-                      : uxState === "empty"
-                      ? "bg-brand-50 text-brand-800"
-                      : uxState === "error"
-                      ? "bg-rose-50 text-rose-800"
-                      : "bg-amber-50 text-amber-800"
-                  }`}
-                >
-                  {uxState === "loading" && "Đang tải bộ trường theo ngành... hiển thị skeleton form."}
-                  {uxState === "empty" && "Chưa có bộ thông số phù hợp — cho phép tiếp tục với thông tin bắt buộc."}
-                  {uxState === "error" && "Không tải được ma trận ngành. Nút Thử lại và Lưu nháp vẫn khả dụng."}
-                  {uxState === "partial" && "Đã tải trường chung; một phần thông số ngành đang được tải thêm."}
-                </div>
-              )}
-            </div>
           </section>
         </div>
       </main>

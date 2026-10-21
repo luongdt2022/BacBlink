@@ -70,12 +70,12 @@ export const FormStepper: React.FC<FormStepperProps> = ({
               key={s.step}
               type="button"
               onClick={() => onStepSelect && onStepSelect(s.step)}
-              className={`group flex w-full items-start gap-3 rounded-xl border p-2.5 text-left transition-all ${
+              className={`group flex w-full items-start gap-3 rounded-xl border p-2.5 text-left transition-all cursor-pointer ${
                 isActive
                   ? "border-brand-200 bg-brand-50/80 text-brand-900 shadow-sm"
                   : isDone
                   ? "border-transparent bg-slate-50/60 text-slate-800 hover:border-slate-200 hover:bg-slate-100"
-                  : "border-transparent text-slate-500 hover:bg-slate-50"
+                  : "border-transparent text-slate-600 hover:bg-slate-100/70 hover:text-slate-900"
               }`}
             >
               <div

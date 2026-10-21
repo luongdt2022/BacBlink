@@ -136,7 +136,43 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
       await screen.findByText("Nền tảng Digital Twin mô phỏng nhiệt lò nung")
     ).toBeInTheDocument();
     expect(screen.getByText("Đã Đăng Ký Bản Quyền")).toBeInTheDocument();
-    expect(screen.getByText("VN-CP-2025-0089")).toBeInTheDocument();
+    expect(screen.getByText("• Số: VN-CP-2025-0089")).toBeInTheDocument();
+  });
+
+  it("removes repetitive commercial badges on thumbnail and renders compact offer code (AC-04-035, AC-04-037)", async () => {
+    render(<ChaoBanCongNghePage />);
+    await screen.findByText("Nền tảng Digital Twin mô phỏng nhiệt lò nung");
+
+    // Negative assertions: No repetitive commercial badges on thumbnail
+    expect(screen.queryByText("Sẵn sàng chuyển giao")).toBeNull();
+    expect(screen.queryByText("Thương phẩm sẵn có")).toBeNull();
+
+    // Compact offer code without big Tag icon
+    expect(screen.getByText("Mã: OFF-202610-LV16-08")).toBeInTheDocument();
+    expect(screen.getByText("Mã: OFF-202610-LV08-01")).toBeInTheDocument();
+    expect(screen.getByText("Mã: OFF-202610-LV01-02")).toBeInTheDocument();
+
+    // Single badge on top-right of thumbnail: offer type
+    expect(screen.getAllByText("Phần mềm").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Giải pháp").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Thiết bị / Dây chuyền").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("removes agency endorsement badge and displays single-line IP representation (AC-04-035, AC-04-036)", async () => {
+    render(<ChaoBanCongNghePage />);
+    await screen.findByText("Nền tảng Digital Twin mô phỏng nhiệt lò nung");
+
+    // Negative assertions: No endorsement badge or old multi-line label
+    expect(screen.queryByText("Xác thực Cục SHTT")).toBeNull();
+    expect(screen.queryByText("Số bằng SHTT:")).toBeNull();
+
+    // Single-line IP representation with bullet prefix
+    expect(screen.getByText("• Số: VN-CP-2025-0089")).toBeInTheDocument();
+    expect(screen.getByText("• Số: VN-1-0028812")).toBeInTheDocument();
+
+    // IP status titles
+    expect(screen.getByText("Đã Đăng Ký Bản Quyền")).toBeInTheDocument();
+    expect(screen.getByText("Bằng Độc Quyền Sáng Chế")).toBeInTheDocument();
   });
 
   it("renders dynamic sector counts avoiding hardcoded 0 badges", async () => {
@@ -145,15 +181,15 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
 
     // All sectors button with non-zero badge
     expect(screen.getByText("Tất cả lĩnh vực")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Điện tử, Bán dẫn & Viễn thông/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Công nghệ thông tin, Phần mềm & IoT/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Điện – điện tử – tự động hóa/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /CNTT – viễn thông – chuyển đổi số/i })).toBeInTheDocument();
   });
 
   it("filters by sector when clicked and displays active filter chips", async () => {
     render(<ChaoBanCongNghePage />);
     await screen.findByText("Nền tảng Digital Twin mô phỏng nhiệt lò nung");
 
-    const sectorBtn = screen.getByRole("button", { name: /Điện tử, Bán dẫn & Viễn thông/i });
+    const sectorBtn = screen.getByRole("button", { name: /Điện – điện tử – tự động hóa/i });
     fireEvent.click(sectorBtn);
 
     await waitFor(() => {
@@ -185,4 +221,21 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
       expect(mockReplace).toHaveBeenCalled();
     });
   });
+
+  it("satisfies responsive thumbnail container and non-overflow attributes (AC-04-034)", async () => {
+    const { container } = render(<ChaoBanCongNghePage />);
+    await screen.findByText("Nền tảng Digital Twin mô phỏng nhiệt lò nung");
+
+    // Aspect ratio responsive container check
+    const thumbnailContainers = container.querySelectorAll(".aspect-\\[16\\/10\\]");
+    expect(thumbnailContainers.length).toBeGreaterThanOrEqual(3);
+
+    // Responsive images with proper sizes prop for mobile & desktop viewports
+    const images = screen.getAllByRole("img");
+    expect(images.length).toBeGreaterThanOrEqual(3);
+    images.forEach((img) => {
+      expect(img).toHaveAttribute("sizes", "(max-width: 768px) 100vw, 50vw");
+    });
+  });
 });
+

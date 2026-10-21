@@ -271,7 +271,7 @@ export const SearchableProvinceCombobox: React.FC<SearchableProvinceComboboxProp
                 );
               })
             ) : (
-              <li className="px-3 py-4 text-center text-slate-400 dark:text-slate-500 italic text-[11px]">
+              <li className="px-3 py-4 text-center text-slate-400 dark:text-slate-500 italic text-caption">
                 Không tìm thấy tỉnh thành nào khớp với &quot;{searchTerm}&quot;
               </li>
             )}

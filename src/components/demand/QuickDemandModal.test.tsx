@@ -68,12 +68,12 @@ describe("QuickDemandModal — 10 Fields Section B & TNI", () => {
 
     fireEvent.click(sectorTrigger);
 
-    // Search for "Công nghệ thông tin" inside the combobox search input
+    // Search for "CNTT" inside the combobox search input
     const searchInput = screen.getByPlaceholderText(/Tìm lĩnh vực/i);
-    fireEvent.change(searchInput, { target: { value: "Công nghệ thông tin" } });
+    fireEvent.change(searchInput, { target: { value: "CNTT" } });
 
     // Select option and verify LV16 is not shown in the option text
-    const lv16Option = screen.getByRole("option", { name: /Công nghệ thông tin/i });
+    const lv16Option = screen.getByRole("option", { name: /CNTT/i });
     expect(lv16Option.textContent).not.toContain("LV16");
     fireEvent.click(lv16Option);
 
