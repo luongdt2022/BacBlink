@@ -243,7 +243,7 @@ export function CommercialProfile({
                 className="bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-sm"
               >
                 <Handshake className="w-4 h-4 text-emerald-400" />
-                <span>Liên Hệ Giao Thương</span>
+                <span>Đề xuất kết nối</span>
               </button>
 
               <button

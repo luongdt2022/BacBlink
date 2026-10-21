@@ -124,7 +124,11 @@ export default function EnterpriseDetailPage() {
   // Determine active layout
   const isInnovativeLayout =
     viewMode === "INNOVATIVE" ||
-    (viewMode === "AUTO" && data?.subjectType === "INNOVATIVE_ENTERPRISE");
+    (viewMode === "AUTO" &&
+      (data?.subjectType === "INNOVATIVE_ENTERPRISE" ||
+       data?.tniScore != null ||
+       data?.tniClassification != null ||
+       data?.hasRdUnit === true));
 
   // RFQ Modal open helper
   const handleOpenRfqModal = (targetProduct = "Yêu cầu báo giá chung") => {
@@ -516,7 +520,7 @@ export default function EnterpriseDetailPage() {
                 <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-xl">
                   ✓
                 </div>
-                <h4 className="font-bold text-base text-slate-900">Đã gửi thông điệp giao thương thành công!</h4>
+                <h4 className="font-bold text-base text-slate-900">Yêu cầu đã được gửi thành công!</h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
                   Đại diện kinh doanh của <strong>{data.name}</strong> sẽ phản hồi quý đơn vị qua thông báo trên sàn hoặc email tiếp nhận trong thời gian sớm nhất.
                 </p>
@@ -580,7 +584,7 @@ export default function EnterpriseDetailPage() {
                     type="submit"
                     className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-2 rounded-xl transition shadow-sm"
                   >
-                    Gửi Thông Điệp
+                    Gửi đề xuất
                   </button>
                 </div>
               </form>
