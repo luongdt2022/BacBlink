@@ -121,6 +121,7 @@ def run_task00_blackbox_suite():
         log_pass("T3.1: RoleGuard chặn Guest truy cập /admin, hiển thị Card yêu cầu đăng nhập.")
 
         # 3.2 Khách vãng lai truy cập trái phép vào /portal
+        page.evaluate("localStorage.clear()")
         page.goto(f"{BASE_WEB_URL}/portal")
         page.wait_for_timeout(1500)
         expect(page.locator("text=Yêu cầu Đăng nhập")).to_be_visible(timeout=5000)
