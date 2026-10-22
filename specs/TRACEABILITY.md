@@ -256,6 +256,21 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Bộ kiểm thử Vitest Unit/Component Tests Delta v10** | `AC-04-042..046` | T-04.113 | `src/app/chao-ban-cong-nghe/[id]/page.test.tsx` | 17/17 tests pass 100% (bao gồm 5 test cases Delta v10: kiểm tra 14 controls, Negative Assertions không li-xăng/TTO/chuyển giao trên hàng hóa, và Zero Regression cho hồ sơ R&D) |
 | **Thẩm định Chất lượng Toán học tĩnh & Gate 4/5 Pass** | `AC-04-042..046`, `QC-4-TIERS` | T-04.114 | `src/app/chao-ban-cong-nghe/[id]/page.tsx`, `pnpm build` | `tsc --noEmit` 0 errors, Next.js 15 build tĩnh 63/63 routes pass 100%, đối soát truy vết 100% khép kín 114/114 tasks hoàn tất |
 
+---
+
+## 20. TASK-01 Delta v2: Tươi Mới & Đa Dạng Hóa Cung - Cầu Trang Chủ (Zero Key Warning & Interleaved Rotation)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Dọn dẹp CSDL & Đánh chỉ mục truy vấn Home** | `REQ-01-DELTA-02`, `BR-01-DELTA-02` | T-01.19 | `demand.demand_items`, `technology.seller_technology_offers` | `UPDATE is_public_listed = false` cho 5 bài toán test trùng lặp; chỉ mục composite `ix_demand_items_home`, `ix_seller_offers_home`; CSDL 100% độc bản |
+| **Xoay tua xác định theo ngày & Bốc luân phiên đa ngành Cầu** | `REQ-01-DELTA-01`, `BR-01-DELTA-01`, `API-01-DELTA-01` | T-01.20 | `DemandController.cs`, `InterleavedRotation.cs` | Tham số `rotate=true`, `limit=6`, Deterministic Daily Rotation (`seed = yyyyMMdd`), DistinctBy `TechnicalProblem`, tối đa 2 items/ngành |
+| **Xoay tua xác định theo ngày & Bốc luân phiên đa ngành Cung** | `REQ-01-DELTA-01`, `BR-01-DELTA-01`, `API-01-DELTA-02` | T-01.21 | `TechnologyOffersController.cs`, `InterleavedRotation.cs` | Tham số `rotate=true`, DistinctBy `Title`, Interleaved Sector Selection cho cả PostgreSQL và In-memory fallback |
+| **Mở rộng Media Map đa ngành 17 Lĩnh vực chuẩn KH&CN** | `REQ-01-DELTA-03`, `BR-01-DELTA-04` | T-01.22 | `technology-media.ts` | Phủ kín 17 mã ngành `LV01`–`LV17`, 4 bậc fallback hình ảnh (Ảnh thật -> Ngành -> Từ khóa tiếng Việt -> Default) kèm gallery 4 ảnh |
+| **Nâng cấp SDK Client SDK** | `REQ-01-DELTA-01`, `API-01-DELTA-01..02` | T-01.23 | `portal-client.ts`, `technology-offer.ts` | Hỗ trợ query params `{ rotate?: boolean, limit?: number }` đồng bộ |
+| **Refactor UI Trang Chủ, triệt tiêu React Key Collision** | `REQ-01-DELTA-04`, `UI-01-DELTA-01..02` | T-01.24 | `src/app/page.tsx` | Khóa render độc nhất `key={`${item.type}-${item.id || item.itemCode || idx}-${idx}`}`, lọc Client-side Set deduplication, gọi API `rotate=true&limit=6` |
+| **Bộ kiểm thử toàn diện 4 tầng Gate 4** | `SC-DELTA-01..04`, `QC-4-TIERS` | T-01.25 | Invariants, Vitest, E2E | Invariants 5/5 pass, Vitest 6/6 pass, Playwright E2E 5/5 ca pass 100%, 0 duplicate titles, 0 console key warnings |
+
+
 
 
 

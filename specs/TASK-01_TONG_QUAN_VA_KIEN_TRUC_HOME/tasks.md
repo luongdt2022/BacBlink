@@ -39,3 +39,44 @@
 - [x] **T-01.18** `[GATE]` Thẩm định Gate 3 SA (`guard-rails.sh`), đối soát Gate 5 Definition of Done và đóng Epic Shipped trong `ROADMAP.md`.
 
 - [x] `TASK-01-CR19` **[CR]** [P1] (Người gửi: a  Lượng) bỏ cho a phần nội dung ở trang chủ : Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết (11 Phân Hệ · 48 Màn Hình Thực Tế) — không cần hiển thị phần chỉ dẫn này ở trang chủ
+
+---
+
+## Giai đoạn 4: Triển khai Delta v2 — Tươi mới & Đa dạng hóa Cung - Cầu
+
+- [x] **T-01.19** `[DB]` Rà soát và cập nhật dữ liệu test trùng lặp (Data Sanitization): Chuyển cờ `is_public_listed = false` cho các bản ghi demand/offer trùng lặp tiêu đề do quá trình test trước đó, đảm bảo dữ liệu phân bổ tối thiểu 10-15 ngành nghề; bổ sung chỉ mục tối ưu truy vấn cho Trang chủ (`ix_demand_items_home`, `ix_seller_offers_home`).
+  - Tiêu chí kiểm chứng:
+    - [x] Không có bản ghi bài toán trùng lặp tiêu đề nào có `is_public_listed = true`.
+    - [x] Không làm phá vỡ schema PostgreSQL (Non-destructive migration).
+    - [x] Các chỉ mục tối ưu truy vấn được cấu hình thành công nếu chưa tồn tại.
+- [x] **T-01.20** `[BE]` Cập nhật API Demand (`GET /api/v1/public/demands` tại `DemandController.cs`): Bổ sung tham số `rotate` (bool, default `false`) và `limit` (int, default `50`); cài đặt cơ chế DistinctBy `TechnicalProblem` và thuật toán Deterministic Daily Rotation + Interleaved Sector Selection (giới hạn tối đa 2 item/ngành khi `rotate=true`).
+  - Tiêu chí kiểm chứng:
+    - [x] Gọi `GET /api/v1/public/demands?rotate=true&limit=6` trả về danh sách không quá 6 bài toán, 100% không trùng lặp tiêu đề.
+    - [x] Không có ngành nào chiếm quá 2/6 bài toán khi DB có nhiều ngành.
+    - [x] Tương thích ngược: Khi không truyền `rotate`, API trả về danh sách theo thứ tự thông thường.
+- [x] **T-01.21** `[BE]` Cập nhật API Technology Offers (`GET /api/v1/technologies` & `GET /api/v2/technologies` tại `TechnologyOffersController.cs`): Bổ sung tham số `rotate` (bool, default `false`); áp dụng DistinctBy `Title` và thuật toán Deterministic Daily Rotation + Interleaved Sector Selection.
+  - Tiêu chí kiểm chứng:
+    - [x] Gọi `GET /api/v1/technologies?rotate=true&limit=6` trả về tối đa 6 công nghệ với tiêu đề phân biệt hoàn toàn.
+    - [x] Danh sách ưu tiên đan xen nhiều ngành khác nhau, tối đa 2 công nghệ/ngành.
+    - [x] Kết quả ổn định trong cùng một ngày và tự động luân phiên sang ngày mới dựa trên seed `yyyyMMdd`.
+- [x] **T-01.22** `[FE]` Mở rộng thư viện đồ họa đa ngành `SourceCode/frontend/src/lib/technology-media.ts`: Thiết lập ánh xạ đủ 17 mã ngành chuẩn KH&CN `LV01`–`LV17` trong `SECTOR_IMAGE_MAP`, hoàn thiện bộ gallery 4 ảnh cho mỗi ngành và thứ tự fallback 4 bậc.
+  - Tiêu chí kiểm chứng:
+    - [x] `SECTOR_IMAGE_MAP` có đủ 17 entries từ `LV01` đến `LV17`.
+    - [x] Ưu tiên ảnh thật `customImageUrl` -> ảnh ngành `SECTOR_IMAGE_MAP` -> fallback từ khóa tiêu đề -> `/tech-ai-vision.png`.
+    - [x] Không xảy ra lỗi crash khi `sectorCode` không tồn tại hoặc `null`.
+- [x] **T-01.23** `[FE]` Nâng cấp API Client SDK (`technology-offer.ts` & `portal-client.ts`): Bổ sung tham số `rotate?: boolean` vào `fetchPublicOffers` và `portalClient.getPublicDemands`.
+  - Tiêu chí kiểm chứng:
+    - [x] `fetchPublicOffers({ rotate: true, limit: 6 })` sinh đúng query param `rotate=true&limit=6`.
+    - [x] `portalClient.getPublicDemands({ rotate: true, limit: 6 })` hỗ trợ query params linh hoạt.
+    - [x] Type check TypeScript vượt qua 100%.
+- [x] **T-01.24** `[FE]` Refactor Trang Chủ (`SourceCode/frontend/src/app/page.tsx`): Fix triệt để React key warning, tích hợp Client-Side Deduplication, fetch dữ liệu với `rotate=true&limit=6`, kiểm soát hiển thị tối đa 6 Cung / 6 Cầu.
+  - Tiêu chí kiểm chứng:
+    - [x] Khóa render `key={`${item.type}-${item.id || item.itemCode || idx}-${idx}`}` loại bỏ 100% cảnh báo duplicate key trên Console trình duyệt.
+    - [x] Bộ lọc `Set` phía client loại bỏ mọi item trùng tiêu đề phòng thủ.
+    - [x] Trang chủ nạp dữ liệu mượt mà, chuyển đổi giữa 2 tab Chào bán & Nhu cầu phản hồi tức thì.
+- [x] **T-01.25** `[TEST]` Kiểm thử tự động (Unit & Integration): Viết test kiểm tra thuật toán xáo trộn theo ngày, tính khử trùng lặp và xác nhận 0% warning React key trên Playwright.
+  - Tiêu chí kiểm chứng:
+    - [x] Unit test cho hàm khử trùng lặp và xoay tua ngành: Verify tính ngẫu nhiên xác định với cùng một seed ngày.
+    - [x] Vitest kiểm thử component `technology-media.ts`: Đạt 100% độ phủ 17 mã ngành.
+    - [x] Playwright E2E kiểm thử Trang chủ: Không phát hiện duplicate key warning và không có 2 thẻ trùng tiêu đề.
+

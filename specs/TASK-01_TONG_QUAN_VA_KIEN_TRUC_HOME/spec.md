@@ -108,3 +108,141 @@
 - **`SC-002`**: API `GET /api/v1/portal/stats` phản hồi trong thời gian $< 200\text{ms}$ ở p95 nhờ bộ nhớ đệm cache.
 - **`SC-003`**: Luồng đăng ký tham gia sự kiện Techmart lưu trữ thành công vào CSDL PostgreSQL và thông báo mã xác nhận cho người dùng.
 - **`SC-004`**: Đạt 100% Pass bộ kiểm thử tự động Playwright E2E cho cả 2 màn hình trên Desktop (1440×900) và Mobile (390×844).
+
+---
+
+## PHẦN BỔ SUNG DELTA v2: TƯƠI MỚI & ĐA DẠNG HÓA CUNG - CẦU TRANG CHỦ
+
+> **Phiên bản**: `Delta v2.0 (Post-MVP Quality & Freshness Enhancement)`  
+> **Ngày phê duyệt dự kiến**: `2026-10-22`  
+> **Mục tiêu**: Khắc phục dứt điểm hiện tượng danh sách Cung - Cầu trên Trang chủ (`/`) bị lặp dữ liệu cũ, trùng lặp tiêu đề do seed/test, ảnh minh họa đơn điệu chỉ có 4 mẫu hình công nghệ số/AI, và cảnh báo xung đột React key `key={item.title}` gây mất ổn định giao diện.
+
+---
+
+### I. CROSS-SURFACE IMPACT MATRIX (MA TRẬN TÁC ĐỘNG ĐA TẦNG)
+
+| Tầng Hệ Thống (Surface) | Tập Tin & Thành Phần Tác Động | Loại Thay Đổi | Mô Tả Tác Động & Trách Nhiệm Kỹ Thuật |
+| :--- | :--- | :--- | :--- |
+| **Frontend UI/UX** | `SourceCode/frontend/src/app/page.tsx` | *Refactor & Bug Fix* | • **Fix React Key Collision**: Thay đổi `key={item.title}` thành `key={`${item.type}-${item.id || item.itemCode || idx}`}`.<br>• **Client-Side Deduplication**: Lọc bỏ các phần tử trùng lặp tiêu đề chuẩn hóa (`trim().toLowerCase()`) trước khi render danh sách.<br>• **Dynamic Data Binding**: Bổ sung query param `rotate=true` / `limit=6` khi gọi fetch Cung - Cầu. |
+| **Frontend UI/UX** | `SourceCode/frontend/src/lib/technology-media.ts` | *Feature Enhancement* | • **Đa dạng hóa Media 17 Ngành**: Mở rộng `SECTOR_IMAGE_MAP` phủ trọn 17 mã ngành chuẩn Bộ KH&CN (`LV01` đến `LV17`).<br>• Bổ sung kho hình ảnh chất lượng cao chuyên biệt cho Nông nghiệp, Y tế, Năng lượng, Cơ khí, Dệt may, Hóa chất, Môi trường, CNTT.<br>• Tối ưu hàm bóc tách từ khóa fallback không còn dồn cục về `/tech-ai-vision.png`. |
+| **Frontend API Clients** | `SourceCode/frontend/src/services/api/technology-offer.ts`<br>`SourceCode/frontend/src/lib/portal-client.ts` | *Interface Enhancement* | • Bổ sung tham số `rotate?: boolean`, `seed?: number`, `limit?: number` vào hàm `fetchPublicOffers` và `portalClient.getPublicDemands`.<br>• Chuẩn hóa dữ liệu trả về bảo đảm thuộc tính `id` luôn hiện diện. |
+| **Backend API** | `SourceCode/backend/apps/api/V1Compat/DemandController.cs`<br>(Route: `GET /api/v1/public/demands`) | *Logic & Query Refactor* | • Bổ sung tham số truy vấn: `rotate` (bool), `limit` (int, default=6).<br>• Thực hiện **Deduplication/Distinct** theo `TechnicalProblem` / `ItemCode`.<br>• Áp dụng thuật toán **Daily Seed Rotation** (dựa trên `DateTime.UtcNow.DayOfYear`) hoặc pseudo-random ordering để xoay tua các bài toán doanh nghiệp hiển thị ngoài Trang chủ mà không làm tăng tải DB. |
+| **Backend API** | `SourceCode/backend/apps/api/V2/TechnologyOffersController.cs`<br>(Routes: `GET /api/v1/technologies`, `GET /api/v2/technologies`) | *Logic & Query Refactor* | • Hỗ trợ cờ xoay tua làm tươi mới cho Trang chủ (`rotate=true`).<br>• **Deduplication/Distinct** theo `Title` (loại bỏ các bản ghi trùng lặp do test hoặc seed lặp lại).<br>• Cơ chế **Interleaved Sector Selection**: Ưu tiên chọn mỗi lĩnh vực 1 giải pháp tiêu biểu thay vì dồn toàn bộ vào 1 ngành mới tạo. |
+| **Database & Seed Data** | `demand.demand_items`<br>`technology.seller_technology_offers` | *Data Quality & Constraints* | • Rà soát dọn dẹp (cleanup) các bản ghi rác, trùng lặp tiêu đề.<br>• Đảm bảo dữ liệu thật phân bổ đa dạng tối thiểu 10-15 ngành nghề khác nhau.<br>• Tối ưu Index cho truy vấn Trang chủ: `ix_demand_items_home` (`status`, `is_public_listed`, `sector_code`), `ix_seller_offers_home` (`status`, `sector_code`). |
+
+---
+
+### II. YÊU CẦU CHỨC NĂNG BỔ SUNG (FUNCTIONAL REQUIREMENTS)
+
+- **`REQ-01-DELTA-01` [Tươi Mới & Xoay Tua Danh Sách Cung - Cầu Trang Chủ]**:
+  - Hệ thống Trang chủ không được hiển thị danh sách tĩnh cố định chỉ lấy 3-6 bài mới nhất theo `CreatedAt DESC`.
+  - Cung cấp cơ chế **Daily Shuffling/Rotation** (hoặc Seeded Random theo ngày `yyyyMMdd`): Mỗi ngày người dùng quay trở lại Trang chủ sẽ nhìn thấy các công nghệ chào bán và bài toán nhu cầu tiêu biểu mới được luân phiên giới thiệu.
+  - Hỗ trợ tối đa hiển thị 6 công nghệ chào bán (`offers`) và 6 nhu cầu bài toán (`demands`) trên lưới Trang chủ.
+
+- **`REQ-01-DELTA-02` [Khử Trùng Lặp Tiêu Đề & Nội Dung (Deduplication / Distinct)]**:
+  - **Ở tầng Backend API**: Cả 2 endpoint `GET /api/v1/public/demands` và `GET /api/v1/technologies` bắt buộc phải áp dụng bộ lọc Distinct theo Tiêu đề (`Title` / `TechnicalProblem`). Các bản ghi có tiêu đề giống nhau (sau khi trim và lower-case) chỉ được phép lấy bản ghi có trạng thái duyệt cao nhất hoặc cập nhật gần nhất.
+  - **Ở tầng Frontend (Defense-in-depth)**: Component Trang chủ phải thực thi bộ lọc deduplicate bằng `Set` hoặc `Map` trước khi gán vào state `offers` và `demands` để ngăn ngừa tuyệt đối việc hiển thị các card giống hệt nhau.
+
+- **`REQ-01-DELTA-03` [Chuẩn Hóa Bộ Ảnh Đại Diện Đa Ngành 17 Lĩnh Vực (LV01 - LV17)]**:
+  - Mở rộng thư viện ảnh đại diện tại `technology-media.ts` bảo đảm có tài nguyên đồ họa chất lượng cao tương ứng với toàn bộ 17 mã ngành chuẩn KH&CN:
+    1. `LV01` (Trồng trọt, bảo vệ thực vật) -> `/tech-agri.png`
+    2. `LV02` (Chăn nuôi, thú y) -> `/tech-agri.png`
+    3. `LV03` (Thủy sản, nuôi trồng thủy hải sản) -> `/tech-agri.png`
+    4. `LV04` (Lâm nghiệp) -> `/tech-agri.png`
+    5. `LV05` (Chế biến thực phẩm - đồ uống) -> `/tech-agri.png`
+    6. `LV06` (Dệt may, da giày) -> `/tech-ai-vision.png`
+    7. `LV07` (Cơ khí, chế tạo, công nghiệp hỗ trợ) -> `/tech-solar.png`
+    8. `LV08` (Điện, điện tử, tự động hóa, robot) -> `/tech-ai-vision.png`
+    9. `LV09` (Hóa chất, vật liệu mới, nano) -> `/tech-biotech.png`
+    10. `LV10` (Xây dựng, giao thông, hạ tầng) -> `/tech-solar.png`
+    11. `LV11` (Nước, môi trường, xử lý chất thải) -> `/tech-solar.png`
+    12. `LV12` (Y tế, trang thiết bị y tế) -> `/tech-biotech.png`
+    13. `LV13` (Dược liệu, y dược cổ truyền) -> `/tech-biotech.png`
+    14. `LV14` (Công nghệ sinh học) -> `/tech-biotech.png`
+    15. `LV15` (Năng lượng mới, năng lượng tái tạo) -> `/tech-solar.png`
+    16. `LV16` (CNTT, viễn thông, chuyển đổi số) -> `/tech-ai-vision.png`
+    17. `LV17` (Đổi mới sáng tạo & Chuyển giao công nghệ) -> `/innovation-hero-background.png`
+  - Nếu bản ghi có `mainImageUrl` hợp lệ do bên bán/mua tải lên, hệ thống phải ưu tiên sử dụng ảnh thật này thay vì ảnh mặc định của ngành.
+
+- **`REQ-01-DELTA-04` [Triệt Tiêu Hoàn Toàn Lỗi Xung Đột React Key]**:
+  - Loại bỏ hoàn toàn cú pháp `key={item.title}` tại dòng lặp danh sách ListingCard trên `page.tsx`.
+  - Khóa định danh render bắt buộc phải kết hợp tiền tố loại hình, ID duy nhất và chỉ số mảng: `key={`${item.type}-${item.id || item.title}-${index}`}`.
+
+---
+
+### III. NGUYÊN TẮC NGHIỆP VỤ BỔ SUNG (BUSINESS RULES)
+
+- **`BR-01-DELTA-01` [Giới Hạn Hiển Thị & Phân Bổ Ngành Công Bằng (Fair Sector Distribution)]**:
+  - Trang chủ chỉ niêm yết tối đa 6 công nghệ chào bán và 6 bài toán nhu cầu trong một lượt hiển thị.
+  - Thuật toán lựa chọn ưu tiên phân bổ đều (Interleaving): Không hiển thị quá 2 bài toán hoặc 2 công nghệ thuộc cùng 1 lĩnh vực trong cùng một phiên hiển thị, nhằm kích thích kết nối đa ngành.
+
+- **`BR-01-DELTA-02` [Kỷ Luật Zero-Duplicate Tuyệt Đối]**:
+  - Không cho phép bất kỳ 2 thẻ nào trên cùng màn hình Trang chủ có cùng tiêu đề (`title`), cùng mã bài toán (`itemCode` / `offerCode`) hoặc cùng ID kỹ thuật.
+  - Bất kỳ vi phạm trùng lặp nào bị phát hiện trong kiểm thử E2E sẽ bị tính là lỗi nghiêm trọng (Blocker).
+
+- **`BR-01-DELTA-03` [Quy Tắc Xoay Tua Ổn Định Theo Phiên (Deterministic Daily Rotation)]**:
+  - Việc xoay tua (shuffling) trên Trang chủ phải dựa trên seed ngẫu nhiên xác định theo ngày (`Seed = YYYYMMDD`).
+  - *Mục đích*: Bảo đảm khi người dùng F5 tải lại trang trong cùng một ngày, thứ tự các thẻ không bị nhảy loạn xạ gây rối mắt, nhưng bước sang ngày tiếp theo sẽ có một diện mạo mới mẻ.
+
+- **`BR-01-DELTA-04` [Thứ Tự Ưu Tiên Ảnh Minh Họa (Visual Fallback Hierarchy)]**:
+  - Thứ tự xác định ảnh cho mỗi thẻ ListingCard:
+    1. **Bậc 1 (Cao nhất)**: Ảnh thực tế do đơn vị đăng tải (`customImageUrl` / `mainImageUrl`).
+    2. **Bậc 2**: Ảnh định danh theo mã ngành chuẩn (`SECTOR_IMAGE_MAP[sectorCode]`).
+    3. **Bậc 3**: Phân tích từ khóa ngữ nghĩa trong tiêu đề tiếng Việt (nông nghiệp, dược, sinh học, năng lượng, vật liệu...).
+    4. **Bậc 4 (Mặc định)**: Ảnh công nghệ số đa năng `/tech-ai-vision.png`.
+
+---
+
+### IV. THIẾT KẾ ĐẶC TẢ GIAO DIỆN (UI SPECIFICATIONS)
+
+- **`UI-01-DELTA-01` [Cập Nhật Khóa Duy Nhất ListingCard]**:
+  - Sửa đổi component render tại `SourceCode/frontend/src/app/page.tsx`:
+    ```tsx
+    // Chuẩn hóa key chống va chạm và hỗ trợ animation mượt mà
+    listings.map((item, idx) => (
+      <ListingCard key={`${item.type}-${item.id ?? 'item'}-${idx}`} item={item} />
+    ))
+    ```
+- **`UI-01-DELTA-02` [Bộ Lọc Client-Side Deduplication]**:
+  - Xử lý dữ liệu nhận từ API trước khi đưa vào React state:
+    ```typescript
+    const seenTitles = new Set<string>();
+    const uniqueListings = rawListings.filter((item) => {
+      const normalized = (item.title || "").trim().toLowerCase();
+      if (!normalized || seenTitles.has(normalized)) return false;
+      seenTitles.add(normalized);
+      return true;
+    }).slice(0, 6);
+    ```
+
+---
+
+### V. THIẾT KẾ ĐẶC TẢ API (API SPECIFICATIONS)
+
+- **`API-01-DELTA-01` [Cập Nhật Endpoint Demand Public]**:
+  - **Route**: `GET /api/v1/public/demands`
+  - **Tham số bổ sung**:
+    - `rotate` (boolean, optional, mặc định `false`): Bật chế độ xoay tua đa dạng ngành.
+    - `limit` (integer, optional, mặc định `50`, cho phép lấy `6` cho Trang chủ).
+  - **Xử lý Backend**:
+    - Truy vấn các bài toán `Status == VERIFIED` và `IsPublicListed == true`.
+    - Group theo `TechnicalProblem` để loại bỏ trùng tiêu đề.
+    - Sắp xếp ngẫu nhiên xác định theo ngày nếu `rotate=true`.
+
+- **`API-01-DELTA-02` [Cập Nhật Endpoint Technologies Offers]**:
+  - **Route**: `GET /api/v1/technologies` & `GET /api/v2/technologies`
+  - **Tham số bổ sung**:
+    - `rotate` (boolean, optional): Bật chế độ phân bổ đều đa ngành và xoay tua ngày.
+  - **Xử lý Backend**:
+    - Lọc bỏ các offer trùng tiêu đề (Distinct By Title).
+    - Lựa chọn đại diện các ngành khác nhau đưa lên đầu danh sách trả về.
+
+---
+
+### VI. TIÊU CHÍ ĐO LƯỜNG HOÀN THÀNH (SUCCESS CRITERIA DELTA)
+
+- **`SC-DELTA-01`**: 0% cảnh báo lỗi React key (`duplicate key`) trên Console trình duyệt khi người dùng chuyển đổi tab giữa "Công nghệ chào bán" và "Nhu cầu đặt hàng".
+- **`SC-DELTA-02`**: Không có bất kỳ 2 thẻ nào có tiêu đề giống nhau xuất hiện trên Trang chủ trong mọi kịch bản dữ liệu.
+- **`SC-DELTA-03`**: Danh sách Cung - Cầu trên Trang chủ thể hiện ít nhất 3 lĩnh vực công nghệ khác nhau khi cơ sở dữ liệu có từ 3 lĩnh vực trở lên.
+- **`SC-DELTA-04`**: 100% hình ảnh hiển thị trên card công nghệ/nhu cầu đúng ngữ cảnh ngành nghề hoặc có ảnh chụp thực tế từ doanh nghiệp.
+

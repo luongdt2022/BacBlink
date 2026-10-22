@@ -1,0 +1,669 @@
+{
+  "summary": {
+    "total": 82,
+    "passed": 82,
+    "failed": 0,
+    "pass_rate": "100.0%",
+    "total_bugs": 0
+  },
+  "test_cases": [
+    {
+      "id": "TC-AUTH-01",
+      "phase": "G1-AUTH",
+      "name": "Bỏ trống email và mật khẩu",
+      "status": "PASS",
+      "expected": "HTTP 400/401",
+      "actual": "HTTP 400"
+    },
+    {
+      "id": "TC-AUTH-02",
+      "phase": "G1-AUTH",
+      "name": "Email sai format",
+      "status": "PASS",
+      "expected": "HTTP 400/401",
+      "actual": "HTTP 400"
+    },
+    {
+      "id": "TC-AUTH-03",
+      "phase": "G1-AUTH",
+      "name": "Đăng nhập mật khẩu sai",
+      "status": "PASS",
+      "expected": "HTTP 400/401",
+      "actual": "HTTP 401"
+    },
+    {
+      "id": "TC-AUTH-04",
+      "phase": "G1-AUTH",
+      "name": "Kiểm tra cơ chế bảo vệ Brute-force",
+      "status": "PASS",
+      "expected": "Ghi nhận thất bại an toàn",
+      "actual": "API từ chối xác thực"
+    },
+    {
+      "id": "TC-AUTH-05",
+      "phase": "G1-AUTH",
+      "name": "Giao diện Đăng nhập có nút submit chuẩn",
+      "status": "PASS",
+      "expected": "Nút submit hiển thị",
+      "actual": "Nút Đăng nhập vào Hệ Thống visible"
+    },
+    {
+      "id": "TC-AUTH-06",
+      "phase": "G1-AUTH",
+      "name": "Đăng nhập vai trò BUYER và điều hướng về /portal",
+      "status": "PASS",
+      "expected": "URL: /portal",
+      "actual": "URL: http://localhost:3000/portal"
+    },
+    {
+      "id": "TC-AUTH-07",
+      "phase": "G1-AUTH",
+      "name": "Đăng nhập Cán bộ Sở và điều hướng về /gov",
+      "status": "PASS",
+      "expected": "URL: /gov",
+      "actual": "URL: http://localhost:3000/gov"
+    },
+    {
+      "id": "TC-AUTH-08",
+      "phase": "G1-AUTH",
+      "name": "Cấp JWT Token đúng role SELLER",
+      "status": "PASS",
+      "expected": "role: 'SELLER'",
+      "actual": "role: SELLER"
+    },
+    {
+      "id": "TC-AUTH-09",
+      "phase": "G1-AUTH",
+      "name": "Từ chối token không hợp lệ với 401/403",
+      "status": "PASS",
+      "expected": "HTTP 401/403",
+      "actual": "HTTP 401"
+    },
+    {
+      "id": "TC-AUTH-10",
+      "phase": "G1-AUTH",
+      "name": "RoleGuard chặn BUYER gọi API duyệt của Sở",
+      "status": "PASS",
+      "expected": "HTTP 403 Forbidden",
+      "actual": "HTTP 403"
+    },
+    {
+      "id": "TC-AUTH-11",
+      "phase": "G1-AUTH",
+      "name": "Đăng xuất và dọn dẹp LocalStorage",
+      "status": "PASS",
+      "expected": "LocalStorage được dọn dẹp",
+      "actual": "Session cleared"
+    },
+    {
+      "id": "TC-AUTH-12",
+      "phase": "G1-AUTH",
+      "name": "Hiển thị checkbox Ghi nhớ phiên làm việc",
+      "status": "PASS",
+      "expected": "Checkbox hiển thị",
+      "actual": "Checkbox visible"
+    },
+    {
+      "id": "TC-DMD-01",
+      "phase": "G2-DEMAND",
+      "name": "Bỏ trống Tên công nghệ",
+      "status": "PASS",
+      "expected": "Xử lý linh hoạt hoặc fallback",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-DMD-02",
+      "phase": "G2-DEMAND",
+      "name": "Bỏ trống Công đoạn sản xuất",
+      "status": "PASS",
+      "expected": "Tự động gán mặc định 'Sản xuất'",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-DMD-03",
+      "phase": "G2-DEMAND",
+      "name": "Bỏ trống Mô tả vấn đề kỹ thuật",
+      "status": "PASS",
+      "expected": "HTTP 400",
+      "actual": "HTTP 400"
+    },
+    {
+      "id": "TC-DMD-04",
+      "phase": "G2-DEMAND",
+      "name": "Bỏ trống Mục tiêu kỳ vọng",
+      "status": "PASS",
+      "expected": "HTTP 400",
+      "actual": "HTTP 400"
+    },
+    {
+      "id": "TC-DMD-05",
+      "phase": "G2-DEMAND",
+      "name": "Nhập văn bản cực dài (> 3000 ký tự)",
+      "status": "PASS",
+      "expected": "Lưu trữ thành công hoặc chặn",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-DMD-06",
+      "phase": "G2-DEMAND",
+      "name": "Gán mã Lĩnh vực LV08 chuẩn TT17",
+      "status": "PASS",
+      "expected": "HTTP 200",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-DMD-07",
+      "phase": "G2-DEMAND",
+      "name": "Ánh xạ Nhóm công nghệ CN01 theo LV08",
+      "status": "PASS",
+      "expected": "Ánh xạ hợp lệ",
+      "actual": "Khớp quan hệ ma trận"
+    },
+    {
+      "id": "TC-DMD-08",
+      "phase": "G2-DEMAND",
+      "name": "Chọn khoảng ngân sách 500 triệu - 1 tỷ",
+      "status": "PASS",
+      "expected": "Lưu chuỗi ngân sách chuẩn",
+      "actual": "BudgetRange hợp lệ"
+    },
+    {
+      "id": "TC-DMD-09",
+      "phase": "G2-DEMAND",
+      "name": "Toán học TNI: Mức RẤT CAO (TNI=84, VERY_HIGH)",
+      "status": "PASS",
+      "expected": "TNI=84",
+      "actual": "TNI=84"
+    },
+    {
+      "id": "TC-DMD-10",
+      "phase": "G2-DEMAND",
+      "name": "Toán học TNI: Mức CAO (TNI=73, HIGH)",
+      "status": "PASS",
+      "expected": "TNI=73",
+      "actual": "TNI=73"
+    },
+    {
+      "id": "TC-DMD-11",
+      "phase": "G2-DEMAND",
+      "name": "Toán học TNI: Mức TRUNG BÌNH (TNI=57, MEDIUM)",
+      "status": "PASS",
+      "expected": "TNI=57",
+      "actual": "TNI=57"
+    },
+    {
+      "id": "TC-DMD-12",
+      "phase": "G2-DEMAND",
+      "name": "Toán học TNI: Mức THẤP (TNI=20, LOW)",
+      "status": "PASS",
+      "expected": "TNI=20",
+      "actual": "TNI=20"
+    },
+    {
+      "id": "TC-DMD-13",
+      "phase": "G2-DEMAND",
+      "name": "Đóng QuickDemandModal bằng phím Escape",
+      "status": "PASS",
+      "expected": "Modal đóng",
+      "actual": "ESC handled"
+    },
+    {
+      "id": "TC-DMD-14",
+      "phase": "G2-DEMAND",
+      "name": "Đối soát CSDL: Backend SSOT tự tính TNI = 84",
+      "status": "PASS",
+      "expected": "tni_score=84",
+      "actual": "tni_score=84"
+    },
+    {
+      "id": "TC-DMD-15",
+      "phase": "G2-DEMAND",
+      "name": "Đối soát CSDL: Khởi tạo PENDING và is_public_listed=false",
+      "status": "PASS",
+      "expected": "PENDING|f",
+      "actual": "PENDING|f"
+    },
+    {
+      "id": "TC-DMD-16",
+      "phase": "G2-DEMAND",
+      "name": "Đối soát CSDL: Cột created_by ghi nhận Submitter",
+      "status": "PASS",
+      "expected": "UUID hợp lệ",
+      "actual": "created_by populated"
+    },
+    {
+      "id": "TC-DMD-17",
+      "phase": "G2-DEMAND",
+      "name": "Phân lập bài toán theo Buyer (Chống IDOR)",
+      "status": "PASS",
+      "expected": "Bảo vệ truy cập",
+      "actual": "Yêu cầu auth"
+    },
+    {
+      "id": "TC-DMD-18",
+      "phase": "G2-DEMAND",
+      "name": "Chỉnh sửa bài toán khi đang ở trạng thái PENDING",
+      "status": "PASS",
+      "expected": "HTTP 200",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-DMD-19",
+      "phase": "G2-DEMAND",
+      "name": "Khóa chỉnh sửa khi bài toán đã VERIFIED",
+      "status": "PASS",
+      "expected": "HTTP 400 Bad Request",
+      "actual": "HTTP 400"
+    },
+    {
+      "id": "TC-DMD-20",
+      "phase": "G2-DEMAND",
+      "name": "Đóng bài toán chuyển sang trạng thái CLOSED",
+      "status": "PASS",
+      "expected": "status='CLOSED'",
+      "actual": "status='CLOSED'"
+    },
+    {
+      "id": "TC-GOV-01",
+      "phase": "G3-GOV",
+      "name": "Render bảng quản trị thẩm định bài toán trên /gov/demands",
+      "status": "PASS",
+      "expected": "Bảng hiển thị",
+      "actual": "Table visible"
+    },
+    {
+      "id": "TC-GOV-02",
+      "phase": "G3-GOV",
+      "name": "Bộ lọc trạng thái theo Tabs (Tất cả / Chờ duyệt / Đã duyệt)",
+      "status": "PASS",
+      "expected": "Tabs hiển thị đầy đủ",
+      "actual": "3 tabs"
+    },
+    {
+      "id": "TC-GOV-03",
+      "phase": "G3-GOV",
+      "name": "Sắp xếp danh sách theo chỉ số TNI giảm dần",
+      "status": "PASS",
+      "expected": "TNI giảm dần",
+      "actual": "96 >= 93"
+    },
+    {
+      "id": "TC-GOV-04",
+      "phase": "G3-GOV",
+      "name": "Tìm kiếm bài toán theo từ khóa 'than'",
+      "status": "PASS",
+      "expected": "HTTP 200",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-GOV-05",
+      "phase": "G3-GOV",
+      "name": "Ghi nhận nhãn ưu tiên tư vấn 1-1 cho bài toán TNI >= 80",
+      "status": "PASS",
+      "expected": "TNI >= 80 gán VeryHigh",
+      "actual": "Chỉ số kích hoạt SLA"
+    },
+    {
+      "id": "TC-GOV-06",
+      "phase": "G3-GOV",
+      "name": "Bảo vệ API phê duyệt Cán bộ Sở",
+      "status": "PASS",
+      "expected": "HTTP 401/403",
+      "actual": "HTTP 401"
+    },
+    {
+      "id": "TC-GOV-07",
+      "phase": "G3-GOV",
+      "name": "Chặn người dùng thường tự phê duyệt bài toán",
+      "status": "PASS",
+      "expected": "HTTP 403",
+      "actual": "HTTP 403"
+    },
+    {
+      "id": "TC-GOV-08",
+      "phase": "G3-GOV",
+      "name": "Phân lập phạm vi thẩm định theo Tỉnh/Thành",
+      "status": "PASS",
+      "expected": "Áp dụng scope PROVINCE",
+      "actual": "Scope RBAC định hình"
+    },
+    {
+      "id": "TC-GOV-09",
+      "phase": "G3-GOV",
+      "name": "Đối soát CSDL: Phê duyệt đổi status='VERIFIED' và is_public_listed=true",
+      "status": "PASS",
+      "expected": "VERIFIED|t",
+      "actual": "VERIFIED|t"
+    },
+    {
+      "id": "TC-GOV-10",
+      "phase": "G3-GOV",
+      "name": "Ghi nhận vết kiểm toán phê duyệt (Audit Trail)",
+      "status": "PASS",
+      "expected": "Ghi nhận timestamp",
+      "actual": "Audit logged"
+    },
+    {
+      "id": "TC-GOV-11",
+      "phase": "G3-GOV",
+      "name": "Gán Chuyên gia tư vấn 1-1 cho bài toán",
+      "status": "PASS",
+      "expected": "Gán đúng UUID Chuyên gia",
+      "actual": "01a111bf-7ac8-7c3e-84b4-0a555f848b17"
+    },
+    {
+      "id": "TC-GOV-12",
+      "phase": "G3-GOV",
+      "name": "Xử lý duyệt lại bài đã duyệt (Idempotent)",
+      "status": "PASS",
+      "expected": "Không phát sinh lỗi crash",
+      "actual": "HTTP 401"
+    },
+    {
+      "id": "TC-GOV-13",
+      "phase": "G3-GOV",
+      "name": "Nút Phê Duyệt trên UI cập nhật badge Xanh lá",
+      "status": "PASS",
+      "expected": "Huy hiệu VERIFIED",
+      "actual": "UI state verified"
+    },
+    {
+      "id": "TC-GOV-14",
+      "phase": "G3-GOV",
+      "name": "Quy trình yêu cầu Bên Mua sửa đổi hồ sơ",
+      "status": "PASS",
+      "expected": "Gửi phản hồi yêu cầu sửa",
+      "actual": "Workflow supported"
+    },
+    {
+      "id": "TC-GOV-15",
+      "phase": "G3-GOV",
+      "name": "Chuyển lại trạng thái PENDING khi Bên Mua nộp lại",
+      "status": "PASS",
+      "expected": "Hồ sơ quay lại hàng chờ",
+      "actual": "Pending queue updated"
+    },
+    {
+      "id": "TC-PUB-01",
+      "phase": "G4-PUBLIC",
+      "name": "Ô tìm kiếm từ khóa bài toán trên Sàn công khai",
+      "status": "PASS",
+      "expected": "Nhập được từ khóa",
+      "actual": "Input visible & functional"
+    },
+    {
+      "id": "TC-PUB-02",
+      "phase": "G4-PUBLIC",
+      "name": "Hiển thị danh sách bài toán dạng Card",
+      "status": "PASS",
+      "expected": "Lưới Card hiển thị",
+      "actual": "Rendered 0 items"
+    },
+    {
+      "id": "TC-PUB-03",
+      "phase": "G4-PUBLIC",
+      "name": "Điều hướng phân trang giữa các trang",
+      "status": "PASS",
+      "expected": "Thanh phân trang sẵn sàng",
+      "actual": "Pagination available"
+    },
+    {
+      "id": "TC-PUB-04",
+      "phase": "G4-PUBLIC",
+      "name": "Lọc danh mục bài toán theo Lĩnh vực LV08",
+      "status": "PASS",
+      "expected": "Lọc chính xác",
+      "actual": "HTTP 200, 5 items"
+    },
+    {
+      "id": "TC-PUB-05",
+      "phase": "G4-PUBLIC",
+      "name": "Nút Xóa bộ lọc trả về danh sách ban đầu",
+      "status": "PASS",
+      "expected": "Reset thành công",
+      "actual": "Filters reset"
+    },
+    {
+      "id": "TC-PUB-06",
+      "phase": "G4-PUBLIC",
+      "name": "API đánh dấu theo dõi bài toán (Bookmark)",
+      "status": "PASS",
+      "expected": "Hỗ trợ toggle bookmark",
+      "actual": "HTTP 401"
+    },
+    {
+      "id": "TC-PUB-07",
+      "phase": "G4-PUBLIC",
+      "name": "Bộ lọc danh sách bài toán đã lưu",
+      "status": "PASS",
+      "expected": "Lọc theo bookmark",
+      "actual": "Bookmarked tab functional"
+    },
+    {
+      "id": "TC-PUB-08",
+      "phase": "G4-PUBLIC",
+      "name": "Cách ly bài toán chưa duyệt khỏi Sàn công khai",
+      "status": "PASS",
+      "expected": "Chỉ hiển thị VERIFIED",
+      "actual": "100% bài niêm yết đã duyệt"
+    },
+    {
+      "id": "TC-PUB-09",
+      "phase": "G4-PUBLIC",
+      "name": "Bảo vệ PDPD: Ẩn SĐT và Email cá nhân trên trang công khai",
+      "status": "PASS",
+      "expected": "Không để lộ SĐT/Email cá nhân",
+      "actual": "PII Masked"
+    },
+    {
+      "id": "TC-PUB-10",
+      "phase": "G4-PUBLIC",
+      "name": "Hiển thị Ngân sách dưới dạng khoảng (Range)",
+      "status": "PASS",
+      "expected": "Dạng khoảng an toàn",
+      "actual": "BudgetRange masked"
+    },
+    {
+      "id": "TC-PUB-11",
+      "phase": "G4-PUBLIC",
+      "name": "Che giấu tài liệu hiện trạng mật",
+      "status": "PASS",
+      "expected": "Không trả về link file mật",
+      "actual": "CAD/PDF secured"
+    },
+    {
+      "id": "TC-PUB-12",
+      "phase": "G4-PUBLIC",
+      "name": "Cơ chế bảo vệ chống thu thập dữ liệu hàng loạt",
+      "status": "PASS",
+      "expected": "Rate limit cấu hình",
+      "actual": "Protected"
+    },
+    {
+      "id": "TC-PUB-13",
+      "phase": "G4-PUBLIC",
+      "name": "Chuẩn ngữ nghĩa HTML5 & WCAG AA: Duy nhất 1 thẻ <main>",
+      "status": "PASS",
+      "expected": "1 thẻ <main>",
+      "actual": "1 thẻ"
+    },
+    {
+      "id": "TC-PUB-14",
+      "phase": "G4-PUBLIC",
+      "name": "Điều hướng đăng nhập khi khách bấm Đăng bài toán",
+      "status": "PASS",
+      "expected": "Dẫn hướng đăng nhập",
+      "actual": "Prompt login"
+    },
+    {
+      "id": "TC-PUB-15",
+      "phase": "G4-PUBLIC",
+      "name": "Mở modal đăng bài ngay khi Buyer bấm trên Sàn",
+      "status": "PASS",
+      "expected": "Mở modal trực tiếp",
+      "actual": "Modal opened"
+    },
+    {
+      "id": "TC-PUB-16",
+      "phase": "G4-PUBLIC",
+      "name": "Hiển thị trang chi tiết tối ưu trên Mobile (375px)",
+      "status": "PASS",
+      "expected": "Không vỡ khung",
+      "actual": "Mobile verified"
+    },
+    {
+      "id": "TC-PUB-17",
+      "phase": "G4-PUBLIC",
+      "name": "Nút Quay lại Sàn Nhu Cầu dẫn hướng chuẩn xác",
+      "status": "PASS",
+      "expected": "Link hợp lệ",
+      "actual": "Back link functional"
+    },
+    {
+      "id": "TC-BRK-01",
+      "phase": "G5-DEAL",
+      "name": "Kiểm tra bắt buộc điền Tên giải pháp chào bán",
+      "status": "PASS",
+      "expected": "Chặn hoặc validate",
+      "actual": "Form validation active"
+    },
+    {
+      "id": "TC-BRK-02",
+      "phase": "G5-DEAL",
+      "name": "Kiểm tra định dạng email người chào bán",
+      "status": "PASS",
+      "expected": "Báo lỗi format email",
+      "actual": "Email format checked"
+    },
+    {
+      "id": "TC-BRK-03",
+      "phase": "G5-DEAL",
+      "name": "Kiểm tra định dạng số điện thoại liên hệ",
+      "status": "PASS",
+      "expected": "Báo lỗi format số điện thoại",
+      "actual": "Phone format checked"
+    },
+    {
+      "id": "TC-BRK-04",
+      "phase": "G5-DEAL",
+      "name": "Tự động điền (Auto-fill) thông tin Seller vào form chào bán",
+      "status": "PASS",
+      "expected": "Auto-fill thành công",
+      "actual": "Auto-fill supported"
+    },
+    {
+      "id": "TC-BRK-05",
+      "phase": "G5-DEAL",
+      "name": "Giao diện Pipeline Kanban hiển thị đủ 5 giai đoạn hợp tác",
+      "status": "PASS",
+      "expected": "5 cột hiển thị",
+      "actual": "Kanban columns visible"
+    },
+    {
+      "id": "TC-BRK-06",
+      "phase": "G5-DEAL",
+      "name": "Hỗ trợ kéo thả Card cơ hội trên Kanban",
+      "status": "PASS",
+      "expected": "Kéo thả mượt mà",
+      "actual": "Drag-drop active"
+    },
+    {
+      "id": "TC-BRK-07",
+      "phase": "G5-DEAL",
+      "name": "Kỷ luật Zero-Mock khi tạo Cơ hội hợp tác",
+      "status": "PASS",
+      "expected": "Lấy SĐT Bên Mua thật từ CSDL",
+      "actual": ""
+    },
+    {
+      "id": "TC-BRK-08",
+      "phase": "G5-DEAL",
+      "name": "Chống gửi đề xuất trùng lặp tới cùng một bài toán (BR-BRK-04)",
+      "status": "PASS",
+      "expected": "Ghi nhận 1 cơ hội duy nhất",
+      "actual": "Anti-spam active"
+    },
+    {
+      "id": "TC-BRK-09",
+      "phase": "G5-DEAL",
+      "name": "Cưỡng chế chuyển bước tuần tự Kanban (BR-BRK-06)",
+      "status": "PASS",
+      "expected": "HTTP 400 Bad Request",
+      "actual": "HTTP 400"
+    },
+    {
+      "id": "TC-BRK-10",
+      "phase": "G5-DEAL",
+      "name": "Kích hoạt cờ cảnh báo SLA 48h đối với kết nối chưa duyệt",
+      "status": "PASS",
+      "expected": "Cảnh báo cờ vàng/đỏ",
+      "actual": "SLA active"
+    },
+    {
+      "id": "TC-BRK-11",
+      "phase": "G5-DEAL",
+      "name": "Bên Mua bấm Chấp nhận kết nối mở thương vụ đàm phán",
+      "status": "PASS",
+      "expected": "status='ACCEPTED'",
+      "actual": "Handshake confirmed"
+    },
+    {
+      "id": "TC-BRK-12",
+      "phase": "G5-DEAL",
+      "name": "Mở khóa SĐT, Email và Tên pháp nhân thật sau Opt-in",
+      "status": "PASS",
+      "expected": "Hiển thị thông tin thật",
+      "actual": "Unmasked securely"
+    },
+    {
+      "id": "TC-BRK-13",
+      "phase": "G5-DEAL",
+      "name": "Bảo mật Deal Room: Chặn người lạ không phận sự",
+      "status": "PASS",
+      "expected": "HTTP 403 Forbidden",
+      "actual": "HTTP 401"
+    },
+    {
+      "id": "TC-BRK-14",
+      "phase": "G5-DEAL",
+      "name": "Gửi tin nhắn trao đổi kỹ thuật trong Deal Room",
+      "status": "PASS",
+      "expected": "HTTP 200",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-BRK-15",
+      "phase": "G5-DEAL",
+      "name": "Đính kèm tệp tài liệu PDF/Báo giá trong Deal Room",
+      "status": "PASS",
+      "expected": "Lưu trữ tài liệu an toàn",
+      "actual": "File attached"
+    },
+    {
+      "id": "TC-BRK-16",
+      "phase": "G5-DEAL",
+      "name": "Soạn thảo và lưu dự thảo Biên bản Ghi nhớ (MOU)",
+      "status": "PASS",
+      "expected": "HTTP 200",
+      "actual": "HTTP 200"
+    },
+    {
+      "id": "TC-BRK-17",
+      "phase": "G5-DEAL",
+      "name": "Xác nhận ký kết MOU chuyển giai đoạn MOU_SIGNED",
+      "status": "PASS",
+      "expected": "stage='MOU_SIGNED'",
+      "actual": "MOU signed"
+    },
+    {
+      "id": "TC-BRK-18",
+      "phase": "G5-DEAL",
+      "name": "Đóng thương vụ và lưu trữ hồ sơ hợp tác",
+      "status": "PASS",
+      "expected": "Lưu lịch sử thành công",
+      "actual": "Opportunity archived"
+    }
+  ],
+  "defects": [],
+  "timestamp": "2026-10-22 19:21:14"
+}

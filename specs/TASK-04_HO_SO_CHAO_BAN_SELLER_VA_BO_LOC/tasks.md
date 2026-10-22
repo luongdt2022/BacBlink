@@ -319,3 +319,5 @@
   * TypeScript compiler (`tsc --noEmit`) đạt 0 lỗi type.
   * Toàn bộ test suite `npm test` đạt 100% Pass.
   * Đối soát ma trận truy vết khép kín: Đảm bảo 100% các yêu cầu `REQ-DELTA-11` $\rightarrow$ `REQ-DELTA-14`, `BR-OFFER-COMMERCIAL-01` $\rightarrow$ `BR-OFFER-COMMERCIAL-03`, `UI-DELTA-04-05` $\rightarrow$ `UI-DELTA-04-06`, `AC-04-042` $\rightarrow$ `AC-04-046` được ánh xạ đầy đủ sang các tasks `T-04.109` đến `T-04.114`, không phát sinh nợ kỹ thuật và không có task mồ côi.
+
+- [ ] `TASK-04-CR115` **[CR]** [P1] (Người gửi: Lượng) Làm rõ 2 button mua hoặc nhận chuyển giao công nghệ — Vào trang chi tiết sản phẩm/ giải pháp thấy có 2 button mua/ kết nối có vẻ đang bin dublicate, hãy phân tích ý nghĩa và dưa ra giải pháp cải tiến [Đính kèm: ![screenshot_21h22m01_1.png](/static/uploads/TASK-04-CR115_1792678959_1_screenshot_21h22m01_1.png)]
