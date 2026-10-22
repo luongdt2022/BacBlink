@@ -109,3 +109,20 @@ public sealed class DemandItemConfiguration : IEntityTypeConfiguration<DemandIte
     }
 }
 
+public sealed class DemandBookmarkConfiguration : IEntityTypeConfiguration<DemandBookmark>
+{
+    public void Configure(EntityTypeBuilder<DemandBookmark> b)
+    {
+        b.ToTable("demand_bookmarks", DemandModule.SchemaName);
+        b.HasKey(x => x.Id);
+        b.Property(x => x.PersonId).IsRequired();
+        b.Property(x => x.DemandItemId).IsRequired();
+        b.Property(x => x.CreatedAt).IsRequired();
+
+        b.HasIndex(x => new { x.PersonId, x.DemandItemId }).IsUnique();
+        b.HasIndex(x => x.PersonId);
+        b.HasIndex(x => x.DemandItemId);
+    }
+}
+
+

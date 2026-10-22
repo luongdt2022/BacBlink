@@ -448,24 +448,31 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         });
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetOfferById(Guid id, CancellationToken ct = default)
+    public async Task<IActionResult> GetOfferById(string id, CancellationToken ct = default)
     {
+        var isGuid = Guid.TryParse(id, out var guid);
         var entity = await db.Set<SellerTechnologyOffer>()
             .Include(x => x.SpecValues)
             .Include(x => x.Documents)
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, ct);
+            .FirstOrDefaultAsync(x => (isGuid && x.Id == guid) || x.OfferCode == id, ct);
 
         if (entity != null)
         {
             return Ok(new { success = true, data = ToDto(entity) });
         }
 
-        if (OffersStore.TryGetValue(id, out var offer))
+        if (isGuid && OffersStore.TryGetValue(guid, out var offer))
         {
             return Ok(new { success = true, data = offer });
+        }
+
+        var storeOffer = OffersStore.Values.FirstOrDefault(x => string.Equals(x.OfferCode, id, StringComparison.OrdinalIgnoreCase));
+        if (storeOffer != null)
+        {
+            return Ok(new { success = true, data = storeOffer });
         }
 
         return NotFound(new { success = false, message = "Không tìm thấy hồ sơ công nghệ." });

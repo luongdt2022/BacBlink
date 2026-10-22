@@ -433,6 +433,156 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
     }
 
     // =========================================================================
+    // LUỒNG 2B: THEO DÕI & LƯU TRỮ BÀI TOÁN THEO TÀI KHOẢN (CR-DEMAND-BOOKMARK)
+    // =========================================================================
+
+    [HttpPost("demands/{id}/bookmark")]
+    public async Task<IActionResult> ToggleBookmark(Guid id, CancellationToken ct)
+    {
+        if (!Actor.IsAuthenticated || Actor.PersonId is null)
+        {
+            return Unauthorized(new { message = "Quý đơn vị vui lòng đăng nhập tài khoản Doanh nghiệp hoặc Chuyên gia để lưu bài toán vào danh sách theo dõi." });
+        }
+
+        var personId = Actor.PersonId.Value;
+        var demandExists = await db.Set<DemandItem>().AsNoTracking().AnyAsync(i => i.Id == id, ct);
+        if (!demandExists)
+        {
+            return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
+        }
+
+        var existing = await db.Set<DemandBookmark>().FirstOrDefaultAsync(b => b.PersonId == personId && b.DemandItemId == id, ct);
+        bool isBookmarked;
+        string message;
+
+        if (existing is not null)
+        {
+            db.Set<DemandBookmark>().Remove(existing);
+            isBookmarked = false;
+            message = "Đã bỏ lưu bài toán khỏi danh sách theo dõi.";
+        }
+        else
+        {
+            var bookmark = new DemandBookmark(personId, id);
+            db.Set<DemandBookmark>().Add(bookmark);
+            isBookmarked = true;
+            message = "Đã lưu bài toán vào danh sách theo dõi thành công.";
+        }
+
+        await uow.CommitAsync(ct);
+
+        return Ok(new
+        {
+            isBookmarked,
+            message
+        });
+    }
+
+    [HttpGet("demands/bookmarks/ids")]
+    public async Task<IActionResult> GetBookmarkedIds(CancellationToken ct)
+    {
+        if (!Actor.IsAuthenticated || Actor.PersonId is null)
+        {
+            return Unauthorized(new { message = "Vui lòng đăng nhập để xem danh sách bài toán đã lưu." });
+        }
+
+        var personId = Actor.PersonId.Value;
+        var ids = await db.Set<DemandBookmark>()
+            .AsNoTracking()
+            .Where(b => b.PersonId == personId)
+            .Select(b => b.DemandItemId.ToString())
+            .ToListAsync(ct);
+
+        return Ok(ids);
+    }
+
+    [HttpGet("demands/bookmarked")]
+    public async Task<IActionResult> GetBookmarkedDemands(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 20,
+        [FromQuery] string? q = null,
+        CancellationToken ct = default)
+    {
+        if (!Actor.IsAuthenticated || Actor.PersonId is null)
+        {
+            return Unauthorized(new { message = "Vui lòng đăng nhập để xem danh sách bài toán đã lưu." });
+        }
+
+        if (page < 1) page = 1;
+        if (limit < 1 || limit > 100) limit = 20;
+
+        var personId = Actor.PersonId.Value;
+
+        var query = from b in db.Set<DemandBookmark>().AsNoTracking().Where(b => b.PersonId == personId)
+                    join d in db.Set<DemandItem>().AsNoTracking() on b.DemandItemId equals d.Id
+                    select new
+                    {
+                        d.Id,
+                        d.ItemCode,
+                        d.StageName,
+                        d.TechnicalProblem,
+                        d.DesiredSolution,
+                        d.NeedConsulting,
+                        d.ExpectedGoal,
+                        d.SectorCode,
+                        d.TechGroupCode,
+                        d.DemandTypeCode,
+                        d.BudgetRange,
+                        d.TniScore,
+                        d.TniClassification,
+                        d.Status,
+                        d.CreatedAt,
+                        BookmarkedAt = b.CreatedAt
+                    };
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var search = q.Trim().ToLower();
+            query = query.Where(i =>
+                i.ItemCode.ToLower().Contains(search) ||
+                i.TechnicalProblem.ToLower().Contains(search) ||
+                i.ExpectedGoal.ToLower().Contains(search));
+        }
+
+        var total = await query.CountAsync(ct);
+        var items = await query
+            .OrderByDescending(x => x.BookmarkedAt)
+            .Skip((page - 1) * limit)
+            .Take(limit)
+            .ToListAsync(ct);
+
+        var data = items.Select(i => new
+        {
+            id = i.Id,
+            itemCode = i.ItemCode,
+            stageName = i.StageName,
+            technicalProblem = i.TechnicalProblem,
+            desiredSolution = i.DesiredSolution,
+            needConsulting = i.NeedConsulting,
+            expectedGoal = i.ExpectedGoal,
+            sectorCode = i.SectorCode,
+            techGroupCode = i.TechGroupCode,
+            demandTypeCode = i.DemandTypeCode,
+            budgetRange = i.BudgetRange,
+            tniScore = i.TniScore,
+            tniClassification = i.TniClassification,
+            status = i.Status,
+            createdAt = i.CreatedAt,
+            bookmarkedAt = i.BookmarkedAt
+        }).ToList();
+
+        return Ok(new
+        {
+            success = true,
+            data,
+            total,
+            page,
+            limit,
+            totalPages = (int)Math.Ceiling((double)total / limit)
+        });
+    }
+
+    // =========================================================================
     // LUỒNG 3: CỔNG THẨM ĐỊNH SỞ KH&CN & PHÂN LUỒNG TRIAGE (SC-03-05 / WF-03)
     // =========================================================================
 
