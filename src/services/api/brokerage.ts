@@ -1,3 +1,4 @@
+import { authClient } from "@/lib/auth-client";
 import {
   MatchCandidate,
   ConnectionRequest,
@@ -110,6 +111,7 @@ export const brokerageApi = {
 
   async getDealRoomDetails(id: string): Promise<DealRoomData> {
     const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities/${id}/deal-room`, {
+      headers: authClient.getAuthHeaders(),
       cache: "no-store",
     });
     if (!res.ok) throw new Error("Không thể tải thông tin Deal Room.");
@@ -128,7 +130,7 @@ export const brokerageApi = {
   ): Promise<DealDiscussion> {
     const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities/${id}/discussions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authClient.getAuthHeaders(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -151,7 +153,7 @@ export const brokerageApi = {
   ): Promise<MouAgreement> {
     const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities/${id}/mou`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authClient.getAuthHeaders(),
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
