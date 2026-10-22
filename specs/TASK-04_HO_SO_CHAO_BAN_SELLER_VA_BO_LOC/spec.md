@@ -838,3 +838,402 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
   - Mã hồ sơ `offerCode` hiển thị với kích thước nhỏ gọn (`text-[11px]`), font monospace tinh tế, không chiếm một dòng riêng biệt với khoảng đệm lớn.
   - Tổng thể chiều cao của mỗi thẻ công nghệ giảm rõ rệt so với phiên bản Delta V7 (tiết kiệm ít nhất 40px chiều cao).
   - Bố cục lưới (Grid) 2 cột trên Desktop (1280px) và 1 cột trên Mobile (375px) hiển thị đồng đều, cân đối, sạch sẽ, không bị lệch chiều cao giữa các thẻ.
+
+
+---
+
+## 14. ĐẶC TẢ DELTA V9: LINH HOẠT CHỌN SỞ KH&CN TIẾP NHẬN THẨM ĐỊNH FAST-TRACK BƯỚC 1 & TỰ ĐỘNG NHẬN DIỆN ĐỊA BÀN DOANH NGHIỆP (SPEC KIT DELTA V9)
+
+### 14.1. Bối Cảnh & Mục Tiêu Nghiệp Vụ (Context & Business Objectives)
+
+- **Căn cứ phát sinh Change Request**: 
+  - Khảo sát thực tế vận hành Sàn Giao Dịch Công Nghệ NacenTech ngày 2026-10-22 đối với các Doanh nghiệp & Hợp tác xã ngoài địa bàn Hà Nội (điển hình: *Hợp tác xã Chè Thịnh An - Thái Nguyên*).
+  - Quyết định phân cấp thẩm định Cấp 2 (`BR-SELLER-05`) và cơ chế Nộp nhanh Fast-Track (`BR-SELLER-08`).
+- **Vấn đề nhận diện từ thực tế vận hành (Problem Statement)**:
+  1. *Gán cứng địa bàn thẩm định Hà Nội (`VN-HN`)*: Khi người dùng sử dụng tính năng nộp nhanh tại Bước 1 và nhấn nút "Gửi chờ duyệt ngay (Fast-Track)", form tạo mới/chỉnh sửa mặc định khởi tạo `managingAuthorityId = 'VN-HN'` (Sở KH&CN TP. Hà Nội) do trường chọn Sở chỉ nằm ở Bước 4 (`IpQuadDigitizationCard`). Người nộp hồ sơ theo luồng Fast-Track không đi qua Bước 4 nên không có cơ hội chọn cơ quan tiếp nhận.
+  2. *Lệch địa bàn quản lý nhà nước & dồn ứ hồ sơ sai thẩm quyền*: Doanh nghiệp ở các tỉnh thành khác (ví dụ: Chè Thịnh An tại Thái Nguyên) bị gán sai về Sở KH&CN Hà Nội. Hậu quả là phiếu thẩm định `ApprovalRequest` bị đẩy nhầm về Cổng Tác Nghiệp Cấp 2 của cán bộ Hà Nội, trong khi Sở KH&CN tỉnh Thái Nguyên (nơi trực tiếp quản lý doanh nghiệp và nắm rõ hồ sơ sản phẩm) lại không nhận được hồ sơ để thẩm định.
+  3. *Modal Fast-Track thiếu trường xác nhận cơ quan tiếp nhận*: Modal xác nhận nộp nhanh (`FastTrackSubmitModal`) hiện chỉ tóm tắt Tên, Loại hình, Ngành và Giá, chưa hiển thị và không cho phép chỉnh sửa Sở KH&CN tiếp nhận trước khi gửi duyệt.
+  4. *Danh mục Sở KH&CN khuyết thiếu các tỉnh trọng điểm*: Danh mục `PROVINCIAL_AUTHORITIES_CATALOG` chưa có mã định danh và tên của Sở KH&CN tỉnh Thái Nguyên (`VN-TN`) cùng một số địa bàn trọng điểm có nhiều doanh nghiệp ĐMST tham gia sàn.
+- **Mục tiêu giải quyết**:
+  - Đưa trường chọn Sở KH&CN tiếp nhận lên ngay Bước 1 của Form Chào bán.
+  - Tích hợp trường chọn/xác nhận Sở KH&CN trực tiếp trong Modal Fast-Track.
+  - Tự động nhận diện địa bàn Doanh nghiệp từ phiên làm việc (`user.scopeId`, `profile.province`) để gán mặc định thông minh.
+  - Mở rộng danh mục `PROVINCIAL_AUTHORITIES_CATALOG` bổ sung Thái Nguyên (`VN-TN`) và các tỉnh thành trọng điểm.
+  - Thiết lập quy tắc 3 cấp ưu tiên phân bổ địa bàn thẩm định (`BR-DELTA-04-01`).
+
+---
+
+### 14.2. Cross-Surface Impact Matrix (Ma Trận Đánh Giá Tác Động Đa Bề Mặt)
+
+Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Propagation Rule) của NacenTech:
+
+| Bề Mặt Hệ Thống | Mức Độ Tác Động | Phạm Vi & Chi Tiết Ảnh Hưởng | Biện Pháp Kiểm Soát & Đồng Bộ |
+| :--- | :---: | :--- | :--- |
+| **1. Basic Design / Wireframe** | Vừa | Giao diện Form Bước 1 (`wireframe_tao_ho_so_chao_ban.html`) và Modal Fast-Track. | Bổ sung Combobox chọn Sở KH&CN tại Thẻ Chủ thể Bước 1 và trường xác nhận trong FastTrackSubmitModal. |
+| **2. Detail Spec (`spec.md`)** | Cao | Bổ sung Mục 14 (Delta V9) theo nguyên tắc Append-only. | Bổ sung `REQ-DELTA-04-01` $\rightarrow$ `REQ-DELTA-04-04`, `BR-DELTA-04-01`, `AC-DELTA-04-01` $\rightarrow$ `AC-DELTA-04-05`. |
+| **3. API & DTO Contracts** | Vừa | `CreateSellerOfferPayload` & `UpdateSellerOfferPayload` (`technology-offer.ts`). | Đảm bảo `managingAuthorityId` và `managingAuthorityName` được truyền đầy đủ từ Bước 1 và Modal Fast-Track, không bị ghi đè giá trị fallback sai. |
+| **4. Domain & Business Rules** | Cao | Bổ sung quy tắc phân bổ thẩm quyền `BR-DELTA-04-01`. | Xác lập thứ tự 3 cấp ưu tiên: (1) Chọn trực tiếp -> (2) Địa bàn doanh nghiệp -> (3) Fallback trụ sở chính. |
+| **5. Database & Migrations** | Không | Bảng `technology.seller_technology_offers` và `ApprovalRequest`. | Schema đã có sẵn các cột `managing_authority_id`, `managing_authority_name`, `scope_id`, không cần tạo migration mới. |
+| **6. Web Frontend** | Cao | Các file: `create/page.tsx`, `[id]/edit/page.tsx`, `FastTrackSubmitModal.tsx`, `Step1CoreFields.tsx` / `SellerIdentityCard.tsx`, `technology-offer.ts`. | Mở rộng catalog tỉnh, tích hợp State đồng bộ 2 chiều (Bước 1 $\leftrightarrow$ Bước 4 $\leftrightarrow$ Modal), thêm auto-detect từ `profile.province` và `user.scopeId`. |
+| **7. Cổng Gov Cấp 2 (`/gov`)** | Vừa | Luồng tiếp nhận thẩm định của Cán bộ Sở KH&CN (`/gov/approvals`). | Phiếu duyệt `ApprovalRequest` được định tuyến chính xác về Inbox của Sở phụ trách địa bàn (ví dụ: Thái Nguyên `VN-TN`). |
+| **8. Test Suites & Verification** | Cao | Component tests, E2E tests luồng tạo nhanh và định tuyến phân cấp. | Viết test kiểm chứng chọn Sở Bước 1, đổi Sở trong modal, kiểm tra auto-detect và payload gửi đi. |
+
+---
+
+### 14.3. Danh Sách Yêu Cầu Nghiệp Vụ Bổ Sung (Functional Requirements)
+
+| Mã Yêu Cầu | Tên Yêu Cầu Chức Năng | Phân Tầng Dữ Liệu & Mô Tả Chi Tiết Kỹ Thuật | Thành Phần Giao Diện / API |
+| :--- | :--- | :--- | :--- |
+| **`REQ-DELTA-04-01`** | Lựa Chọn Sở KH&CN Tiếp Nhận Thẩm Định Ngay Tại Bước 1 | 1. Bổ sung trường chọn Sở KH&CN tiếp nhận thẩm định (`managingAuthorityId`, `managingAuthorityName`) vào giao diện Bước 1 của Form Tạo mới (`/portal/seller/technologies/create`) và Chỉnh sửa (`[id]/edit/page.tsx`).<br>2. Vị trí đặt: Nằm trong cụm thông tin Đơn vị cung ứng / Chủ thể chào bán (`SellerIdentityCard` hoặc ngay dưới 6 trường lõi `Step1CoreFields`).<br>3. Giao diện: Searchable Dropdown / Select trực quan, hiển thị rõ tên Sở (ví dụ: *Sở Khoa học và Công nghệ tỉnh Thái Nguyên*), kèm ghi chú hướng dẫn: *"Hồ sơ sẽ được chuyển đến Sở KH&CN này để thẩm định tính hợp pháp trước khi niêm yết trên Sàn"*; có thể gõ tìm kiếm theo tên tỉnh/thành.<br>4. Đồng bộ 2 chiều (Bi-directional State Sync): Khi người dùng chọn Sở tại Bước 1, giá trị tự động đồng bộ sang Bước 4 (`IpQuadDigitizationCard`) và ngược lại. | `Step1CoreFields.tsx`, `SellerIdentityCard.tsx`, Form Wizard State |
+| **`REQ-DELTA-04-02`** | Bổ Sung Trường Chọn/Xác Nhận Sở KH&CN Trong Modal Fast-Track | 1. Tái cấu trúc Modal Xác nhận Nộp hồ sơ nhanh (`FastTrackSubmitModal.tsx`): Bổ sung trường chọn/xác nhận Cơ quan quản lý tiếp nhận thẩm định.<br>2. Bố cục: Nằm ngay trong khối tóm tắt thông tin hồ sơ (cùng với Tên công nghệ, Loại hình, Ngành, Giá niêm yết).<br>3. Tương tác: Hiển thị tên Sở đang được gán kèm nút/dropdown cho phép người dùng thay đổi trực tiếp ngay trong Modal mà không cần đóng modal quay lại form.<br>4. Giá trị Sở KH&CN được chọn trong modal sẽ ghi đè vào state form và được đóng gói trực tiếp vào payload API nộp duyệt (`action = 'SUBMIT_FOR_REVIEW'`). | `FastTrackSubmitModal.tsx`, Modal State & Event Handler |
+| **`REQ-DELTA-04-03`** | Tự Động Nhận Diện Địa Bàn / Tỉnh Thành Doanh Nghiệp (Smart Province Auto-Detect) | 1. Khi Seller mở Form tạo mới (hoặc khi form khởi tạo chưa có giá trị lưu từ draft), hệ thống tự động trích xuất thông tin địa bàn/tỉnh thành từ phiên đăng nhập:<br>   - Quét `user.scopeId` / `user.province` từ `UserContext` / JWT Bearer.<br>   - Quét `profile.province` / `profile.address` từ kết quả gọi `fetchMyEnterpriseProfile()` (Module `TASK-02`).<br>2. Thuật toán so khớp thông minh: Chuẩn hóa xâu ký tự (bỏ dấu, chuyển chữ thường) để đối soát với danh mục tỉnh/thành (ví dụ: `"Thái Nguyên"` hoặc `"thai nguyen"` $\rightarrow$ ánh xạ chính xác về mã `VN-TN` - Sở KH&CN tỉnh Thái Nguyên).<br>3. Nếu khớp thành công: Gán mặc định `managingAuthorityId` và `managingAuthorityName` tương ứng, đồng thời hiển thị huy hiệu thông báo nhẹ: *"Đã tự động chọn Sở KH&CN tỉnh [Tên tỉnh] theo địa chỉ doanh nghiệp"*.<br>4. Quyền tự quyết của người dùng: Người dùng vẫn có toàn quyền click đổi sang Sở KH&CN khác nếu có thỏa thuận thẩm định đặc thù. | `create/page.tsx`, `[id]/edit/page.tsx`, `auth-client.ts`, `enterprise-client.ts` |
+| **`REQ-DELTA-04-04`** | Mở Rộng Danh Mục Sở KH&CN Tiếp Nhận (`PROVINCIAL_AUTHORITIES_CATALOG`) | 1. Bổ sung ngay lập tức mã định danh và tên chính thức của **Sở Khoa học và Công nghệ tỉnh Thái Nguyên** (`VN-TN`) vào danh mục chuẩn `PROVINCIAL_AUTHORITIES_CATALOG` tại `services/api/technology-offer.ts`.<br>2. Bổ sung các tỉnh thành trọng điểm ĐMST khu vực phía Bắc và lân cận: Vĩnh Phúc (`VN-VP`), Bắc Giang (`VN-BG`), Phú Thọ (`VN-PT`), Hải Dương (`VN-HD`), Hưng Yên (`VN-HY`), Nam Định (`VN-ND`), Nghệ An (`VN-NA`), Thừa Thiên Huế (`VN-TTH`), v.v., đảm bảo độ phủ địa bàn các cơ sở nghiên cứu và doanh nghiệp công nghệ.<br>3. Đảm bảo cấu trúc phần tử catalog chuẩn: `{ id: string, name: string, scopeType: "Sở Tỉnh" }`. | `services/api/technology-offer.ts`, `PROVINCIAL_AUTHORITIES_CATALOG` |
+
+---
+
+### 14.4. Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules)
+
+- **`BR-DELTA-04-01`**: **Quy Tắc Phân Bổ Địa Bàn Thẩm Định & Thứ Tự Ưu Tiên Gán Sở KH&CN Tiếp Nhận (Authority Allocation Resolution Order)**:
+  1. **Thứ tự 3 cấp ưu tiên giải quyết (Resolution Priority Chain)**:
+     - **Cấp 1 - Lựa Chọn Trực Tiếp Của Người Dùng (Explicit User Choice - Highest Priority)**:
+       * Bất kể doanh nghiệp thuộc địa bàn nào, nếu người dùng chủ động chọn Sở KH&CN trên form Bước 1, Bước 4 hoặc trong Modal Fast-Track, giá trị do người dùng chọn là quyết định cuối cùng và được ưu tiên tuyệt đối.
+     - **Cấp 2 - Tự Động Suy Luận Từ Hồ Sơ Doanh Nghiệp (Enterprise Profile Auto-Inference - Secondary Priority)**:
+       * Nếu người dùng chưa thực hiện thao tác chọn thủ công: Hệ thống tự động phân giải địa bàn từ thông tin hồ sơ doanh nghiệp liên kết (`TASK-02`) theo thứ tự:
+         1. `user.scopeId` nếu có định dạng `VN-XX` hoặc mã tỉnh.
+         2. Tỉnh/thành phố ghi nhận trong `profile.province` từ `fetchMyEnterpriseProfile()`.
+         3. Trích xuất tên tỉnh/thành từ trường địa chỉ trụ sở `profile.address` (sử dụng từ điển so khớp 63 tỉnh/thành Việt Nam).
+       * Gán Sở KH&CN tương ứng làm giá trị mặc định cho `managingAuthorityId` và `managingAuthorityName`.
+     - **Cấp 3 - Giá Trị Dự Phòng Trụ Sở Chính (Headquarters Fallback - Lowest Priority)**:
+       * Chỉ khi tài khoản không có thông tin địa phương hoặc không nhận diện được tỉnh/thành hợp lệ trong catalog: Hệ thống mới sử dụng giá trị Fallback là Sở KH&CN TP. Hà Nội (`VN-HN` - Cơ quan phụ trách Sàn Công nghệ Trung ương).
+  2. **Quy tắc Toàn vẹn Dữ liệu Thẩm định (Integrity & Non-Null Constraint)**:
+     - Khi Seller thực hiện hành động "Gửi chờ duyệt" (`action = 'SUBMIT_FOR_REVIEW'`):
+       * `managingAuthorityId` bắt buộc không được để trống (`NOT NULL` và khác chuỗi rỗng `""`).
+       * `managingAuthorityId` bắt buộc phải tồn tại trong danh mục `PROVINCIAL_AUTHORITIES_CATALOG`.
+     - Khi hệ thống tạo bản ghi thẩm định `ApprovalRequest`:
+       * Trường `ScopeType` bắt buộc gán là `'PROVINCE'`.
+       * Trường `ScopeId` bắt buộc lưu đúng mã `managingAuthorityId` (ví dụ: `'VN-TN'`), đảm bảo phiếu thẩm định hiển thị đúng trong hàng đợi thẩm định của Cán bộ / Lãnh đạo Sở KH&CN tỉnh đó tại `/gov/approvals`.
+
+```mermaid
+flowchart TD
+    Start["Khởi tạo Form Chào Bán (Tạo mới / Sửa)"] --> CheckUser["Kiểm tra: Người dùng đã chọn Sở thủ công?"]
+    CheckUser -- "Có (Đã chọn ở Bước 1/4/Modal)" --> UseUser["Ưu tiên 1: Áp dụng Sở do Người dùng chọn"]
+    CheckUser -- "Chưa chọn" --> CheckProfile["Kiểm tra: Hồ sơ DN có Tỉnh/Thành?<br/>(user.scopeId / profile.province / address)"]
+    CheckProfile -- "Khớp Tỉnh/Thành (VD: Thái Nguyên)" --> MapProvince["Ưu tiên 2: Tự động gán Sở tỉnh tương ứng<br/>(VD: VN-TN - Sở KH&CN tỉnh Thái Nguyên)"]
+    CheckProfile -- "Không xác định được" --> Fallback["Ưu tiên 3: Fallback Sở KH&CN Hà Nội<br/>(VN-HN)"]
+    
+    UseUser --> ConfirmModal["Mở Modal Fast-Track: Hiển thị Sở tiếp nhận & Cho phép đổi"]
+    MapProvince --> ConfirmModal
+    Fallback --> ConfirmModal
+    
+    ConfirmModal --> Submit["Bấm Xác nhận & Nộp hồ sơ"]
+    Submit --> CreateApproval["Tạo ApprovalRequest: ScopeId = managingAuthorityId<br/>Đẩy về Cổng Tác Nghiệp Cấp 2 /gov của Sở tương ứng"]
+```
+
+---
+
+### 14.5. Đặc Tả Giao Diện & Trải Nghiệm Người Dùng (UI/UX Specification)
+
+- **`UI-DELTA-04-01`**: **Cụm Chọn Sở KH&CN Tiếp Nhận Tại Bước 1 (`Step1AuthoritySelector`)**:
+  - **Vị trí**: Đặt tại khu vực thông tin Đơn vị cung ứng (`SellerIdentityCard`) hoặc ngay dưới khối thông tin cơ bản tại Bước 1.
+  - **Thành phần**:
+    * Nhãn tiêu đề: `Sở KH&CN tiếp nhận thẩm định hồ sơ` (kèm dấu hoa thị đỏ `*`).
+    * Dropdown/Combobox tìm kiếm: Cho phép người dùng bấm chọn hoặc gõ tên tỉnh (ví dụ: gõ "Thái Nguyên" để lọc nhanh).
+    * Huy hiệu thông báo thông minh (Smart Badge): Khi được tự động nhận diện từ hồ sơ doanh nghiệp, hiển thị dòng chữ nhỏ màu xanh lam: `✨ Tự động nhận diện từ địa chỉ doanh nghiệp: [Tên tỉnh]`.
+    * Đồng bộ trạng thái: Thay đổi giá trị tại đây sẽ cập nhật `managingAuthorityId` trên toàn bộ form wizard.
+- **`UI-DELTA-04-02`**: **Trường Chọn / Xác Nhận Sở KH&CN Trong Modal Fast-Track (`FastTrackSubmitModal`)**:
+  - **Vị trí**: Nằm trong thẻ tóm tắt hồ sơ (khối nền `bg-brand-50/60` viền `border-brand-100`).
+  - **Hiển thị**:
+    * Dòng thông tin: `Sở KH&CN tiếp nhận:` kèm một combobox/select thu nhỏ hoặc nút "Thay đổi" trực tiếp.
+    * Người dùng có thể click chọn lại Sở KH&CN khác ngay trong modal mà không cần quay ra form chính.
+  - **Cảnh báo trách nhiệm**: Ghi chú rõ ràng: *"Hồ sơ sẽ được chuyển trực tiếp đến Cán bộ Sở KH&CN được chọn để thẩm định trước khi niêm yết công khai trên Sàn."*
+
+---
+
+### 14.6. Tiêu Chí Nghiệm Thu Mở Rộng Delta V9 (Acceptance Criteria)
+
+- **`AC-DELTA-04-01`**: **Kiểm thử Lựa chọn Sở KH&CN ngay tại Bước 1 Form Chào bán**:
+  - Người dùng đăng nhập, truy cập `/portal/seller/technologies/create`.
+  - Tại Bước 1, giao diện hiển thị rõ ràng ô chọn "Sở KH&CN tiếp nhận thẩm định hồ sơ".
+  - Người dùng có thể click chọn bất kỳ Sở KH&CN nào trong danh mục (ví dụ chọn: *Sở Khoa học và Công nghệ tỉnh Thái Nguyên*).
+  - Chuyển sang Bước 4 (nếu muốn làm giàu dữ liệu): Ô chọn Sở tại Bước 4 hiển thị chính xác Sở đã chọn ở Bước 1. Ngược lại, nếu thay đổi ở Bước 4 thì Bước 1 cũng được cập nhật đồng bộ.
+- **`AC-DELTA-04-02`**: **Kiểm thử Xác nhận & Điều chỉnh Sở KH&CN trong Modal Fast-Track**:
+  - Tại Bước 1, sau khi điền đầy đủ 6 trường lõi và giá, bấm nút "Gửi chờ duyệt ngay (Fast-Track)".
+  - Modal `FastTrackSubmitModal` mở ra, hiển thị rõ ràng thông tin Sở KH&CN tiếp nhận đã chọn ở Bước 1.
+  - Người dùng có thể thay đổi Sở tiếp nhận ngay trong Modal (ví dụ chuyển sang Sở khác).
+  - Bấm "Xác nhận & Nộp hồ sơ chờ duyệt": Request gửi lên máy chủ chứa đúng `managingAuthorityId` và `managingAuthorityName` đã chọn trong Modal.
+- **`AC-DELTA-04-03`**: **Kiểm thử Tự Động Nhận Diện Địa Bàn Doanh Nghiệp (Case Chè Thịnh An - Thái Nguyên)**:
+  - Đăng nhập bằng tài khoản doanh nghiệp có địa chỉ tại Thái Nguyên (hoặc mock `profile.province = 'Thái Nguyên'` / `user.scopeId = 'VN-TN'`).
+  - Truy cập form tạo hồ sơ chào bán mới: Hệ thống tự động khởi tạo `managingAuthorityId = 'VN-TN'` và hiển thị nhãn *"Sở Khoa học và Công nghệ tỉnh Thái Nguyên"*, hoàn toàn không bị gán cứng về Hà Nội (`VN-HN`).
+  - Người dùng vẫn có thể click đổi sang Sở khác nếu muốn.
+- **`AC-DELTA-04-04`**: **Kiểm thử Danh Mục PROVINCIAL_AUTHORITIES_CATALOG Có Sở Thái Nguyên**:
+  - Kiểm tra danh mục `PROVINCIAL_AUTHORITIES_CATALOG` trong mã nguồn và giao diện:
+  - Tồn tại item `{ id: "VN-TN", name: "Sở Khoa học và Công nghệ tỉnh Thái Nguyên", scopeType: "Sở Tỉnh" }`.
+  - Ô tìm kiếm Sở KH&CN tại Bước 1 và Modal hỗ trợ gõ từ khóa "Thái Nguyên", "Thai Nguyen" hoặc "TN" để tìm kiếm nhanh.
+- **`AC-DELTA-04-05`**: **Kiểm thử Định Tuyến Đúng Về Cổng Gov Cấp 2 Của Sở Tỉnh Tiếp Nhận**:
+  - Tạo nhanh hồ sơ chào bán với Sở tiếp nhận là Thái Nguyên (`VN-TN`) và nộp thành công.
+  - Kiểm tra bản ghi `ApprovalRequest` sinh ra: Mang đúng `ScopeType = 'PROVINCE'` và `ScopeId = 'VN-TN'`.
+  - Đăng nhập tài khoản Cán bộ Sở KH&CN Thái Nguyên (`PROVINCIAL_ADMIN` với `scopeId = 'VN-TN'`): Hồ sơ xuất hiện trong danh sách chờ duyệt tại `/gov/approvals`.
+  - Cán bộ Sở Hà Nội (`VN-HN`) không nhìn thấy hồ sơ này trong danh sách thẩm định của địa bàn mình, đảm bảo tính phân quyền và ranh giới địa bàn chặt chẽ theo 3D Scoped RBAC.
+
+
+---
+
+## Giai đoạn 11: Spec Delta v9 — Chuẩn Hóa Hiển Thị Trung Thực Theo CSDL (Triệt Phá Mock DataRoom & Technical Specs Dynamic Display)
+
+### 15.1. Bối Cảnh & Phân Tích Nguyên Nhân Gốc Rễ (Context & Root Cause Analysis)
+
+- **Căn cứ phát sinh Change Request**:
+  - Khảo sát thực tế dữ liệu vận hành Sàn Giao Dịch Công Nghệ NacenTech ngày 2026-10-22 đối với các sản phẩm thương mại nông nghiệp, tiêu dùng cơ bản (điển hình: Hồ sơ *"Chè Thịnh AN"* - Mã định danh `OFF-20261022-00025-365E` thuộc Hợp tác xã Chè Thịnh An - Thái Nguyên).
+  - Người bán (Seller) đăng tải sản phẩm thương phẩm nông nghiệp thông thường, không tải lên tài liệu minh chứng nào vào DataRoom, không khai báo văn bằng Sở hữu trí tuệ (SHTT) và không có chuyển giao công nghệ TRL.
+  - Tuy nhiên, giao diện Chi tiết chào bán công nghệ (`/chao-ban-cong-nghe/[id]`) lại tự động hiển thị:
+    1. **3 file PDF ảo trong Tab DataRoom**: `${offerCode}_Teaser_Tom_Tat_Giai_Phap.pdf`, `${offerCode}_Ho_So_SHTT_Hop_Le.pdf`, `${offerCode}_Ket_Qua_Kiem_Dinh_TRL8.pdf` (khi người dùng click tải về sẽ bị lỗi 404 hoặc tải dữ liệu rác).
+    2. **Tự động gán chỉ số TRL cao**: Hiển thị nhãn `TRL 7/9` hoặc `TRL 8/9` kèm diễn giải *"Bán công nghiệp & Đạt chuẩn"* cho sản phẩm nông sản tiêu dùng đóng gói.
+    3. **Tuyên bố pháp lý khống**: Hiển thị dòng chữ *"Đã thẩm định hồ sơ SHTT hợp pháp"* dù sản phẩm chưa đăng ký bảo hộ sáng chế/giải pháp hữu ích.
+    4. **Gán quy cách chuyển giao mặc định sai ngữ cảnh**: Hiển thị chuỗi *"Theo gói giải pháp chuyển giao và đào tạo tích hợp"* thay vì đơn vị tính sản phẩm (Hộp, Gói, Kg...).
+
+- **Phân tích Nguyên nhân Gốc rễ (Root Cause Analysis - 5 Whys)**:
+  - *Why 1*: Tại sao hồ sơ nông sản "Chè Thịnh AN" lại hiển thị 3 file PDF DataRoom và các chỉ số TRL/SHTT chuyên sâu?  
+    $\rightarrow$ Do mã nguồn giao diện `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx` chứa các khối fallback dữ liệu tĩnh (static dummy array & default strings) khi dữ liệu API trả về giá trị rỗng/null.
+  - *Why 2*: Tại sao UI lại sử dụng mảng dữ liệu mẫu fallback tĩnh?  
+    $\rightarrow$ Do trong giai đoạn lập trình giao diện mẫu (prototype/mock UI ban đầu), lập trình viên đã chèn mảng giả lập 3 file PDF trong nhánh `else` của `offer.documents && offer.documents.length > 0` và dùng toán tử `||` để lấp đầy khoảng trống dữ liệu (`offer.trlLevel || 7`, `offer.ipRegistrationNumber || "Đã thẩm định"`, `offer.unit || "Theo gói giải pháp..."`).
+  - *Why 3*: Tại sao việc này vi phạm nghiêm trọng kỷ luật phát triển?  
+    $\rightarrow$ **Vi phạm Kỷ luật Zero-Mock bất biến của Dự án NacenTech**: Hệ thống tuyệt đối không được che giấu dữ liệu thực tế bằng mock ngầm. Việc tự sinh file PDF ảo và gán nhãn TRL/SHTT sai sự thật làm xói mòn tính trung thực của Sàn giao dịch cấp quốc gia, gây rủi ro pháp lý lớn và dẫn dụ sai lệch cho Bên mua (Buyer) cũng như Cán bộ quản lý nhà nước (Sở KH&CN).
+
+- **Mục tiêu kỹ thuật & nghiệp vụ**:
+  - Triệt phá 100% các mảng mock dữ liệu tĩnh và chuỗi default fallback sai sự thật trên giao diện Chi tiết chào bán công nghệ.
+  - Hiển thị DataRoom trung thực 1:1 theo CSDL: Không có tài liệu thì hiển thị Empty State chuẩn UX, có bao nhiêu hiển thị đúng bấy nhiêu.
+  - Hiển thị TRL, SHTT và Quy cách đơn vị động theo đúng thuộc tính thực tế của hồ sơ từ CSDL PostgreSQL.
+
+---
+
+### 15.2. Cross-Surface Impact Matrix (Ma Trận Đánh Giá Tác Động Đa Bề Mặt)
+
+Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Propagation Rule) của NacenTech:
+
+| Bề Mặt Hệ Thống | Mức Độ Tác Động | Phạm Vi & Chi Tiết Ảnh Hưởng | Biện Pháp Kiểm Soát & Đồng Bộ |
+| :--- | :---: | :--- | :--- |
+| **1. Web Chi Tiết Chào Bán (`[id]/page.tsx`)** | **Cao** | - Tab DataRoom (dòng 927–960): Xóa bỏ mảng 3 file PDF dummy.<br>- Khối Header Badges (dòng 400–416): Chuẩn hóa hiển thị TRL và SHTT theo dữ liệu thực.<br>- Khối Metadata Bar (dòng 460–477): Bỏ fallback `"Đã thẩm định"`.<br>- Khối IP Quad (dòng 550–630): Chỉ hiển thị khi có dữ liệu thật hoặc có chuyển giao công nghệ.<br>- Bảng Thông Số Kỹ Thuật (dòng 763–788): Bỏ fallback `|| 7`, `|| "Đã thẩm định..."`, `|| "Theo gói giải pháp..."`. | Thay thế bằng render có điều kiện (conditional rendering) và Component Empty State chuẩn UX (`FolderSearch`, `FileQuestion`). |
+| **2. Web Danh Sách Chào Bán (`/chao-ban-cong-nghe/page.tsx`)** | **Thấp** | Kiểm tra hiển thị TRL và SHTT trên Compact Card để đảm bảo không bị fallback gượng ép. | Đồng bộ quy tắc: Thẻ chỉ hiển thị TRL badge khi `hasTechTransfer === true` và `trlLevel` hợp lệ. |
+| **3. CSDL PostgreSQL** | **Không** | Bảng `technology.seller_technology_offers` và `technology.offer_documents`. | Schema CSDL đã chuẩn hóa đầy đủ (hỗ trợ `NULL` cho `trl_level`, `unit`, `ip_registration_number`; bảng `offer_documents` chứa 0 dòng khi seller không đính kèm file). Không cần chạy migration mới. |
+| **4. API & DTO Contracts** | **Không** | Endpoint `GET /api/v2/technology-offers/{id}` và DTO `SellerOfferDto`. | Backend .NET Core đã trả về đúng dữ liệu thực từ CSDL (`Documents: []`, `TrlLevel: null`). Không thay đổi DTO. |
+| **5. Test Suites & Verification** | **Cao** | `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.test.tsx`. | Cập nhật và bổ sung test cases: Kiểm thử Empty State khi không có document, kiểm thử không fallback TRL 7/8, kiểm thử thông điệp SHTT và Unit trung thực. |
+
+---
+
+### 15.3. Danh Sách Yêu Cầu Nghiệp Vụ Chuẩn Hóa (Functional Requirements)
+
+| Mã Yêu Cầu | Tên Yêu Cầu Chức Năng | Phân Tầng Dữ Liệu & Mô Tả Chi Tiết Kỹ Thuật | Thành Phần Giao Diện / Code Target |
+| :--- | :--- | :--- | :--- |
+| **`REQ-DELTA-07`** | **Hiển Thị DataRoom Trung Thực 1:1 Theo CSDL (Zero-Mock DataRoom)** | 1. Tuyệt đối xóa bỏ mảng 3 file PDF ảo (`Teaser_Tom_Tat_Giai_Phap.pdf`, `Ho_So_SHTT_...pdf`, `Ket_Qua_Kiem_Dinh_TRL...pdf`) trong Tab DataRoom của trang Chi tiết chào bán.<br>2. Nếu `offer.documents` là mảng rỗng (`[]`) hoặc `null`/`undefined`: Bắt buộc kết xuất khối **Empty State chuẩn UX** bao gồm: Icon minh họa `FolderSearch` hoặc `FileQuestion` màu xám nhạt, Tiêu đề: *"Chưa có tài liệu công khai trong DataRoom"*, Mô tả phụ: *"Chủ sở hữu chưa tải lên tài liệu minh chứng công khai cho hồ sơ này. Quý khách có thể gửi yêu cầu kết nối để đề nghị cung cấp hồ sơ chuyên sâu."*.<br>3. Nếu hồ sơ có tài liệu thật: Kết xuất chính xác 100% danh sách tệp đính kèm lấy từ CSDL (tên file, dung lượng, phân quyền truy cập `PUBLIC`, `AFTER_CONNECTION`, `ADMIN_ONLY`). | `[id]/page.tsx`, Tab `dataroom` (dòng 865–960) |
+| **`REQ-DELTA-08`** | **Hiển Thị Thông Số Kỹ Thuật & TRL Động Theo Dữ Liệu Thực Tế** | 1. Tuyệt đối cấm sử dụng toán tử gán mặc định `offer.trlLevel || 7` hoặc `offer.trlLevel || 8` ở mọi vị trí hiển thị trên giao diện.<br>2. Quy tắc phân nhánh hiển thị TRL:<br>   - Nếu hồ sơ **không có chuyển giao công nghệ** (`hasTechTransfer === false`) HOẶC không có chỉ số TRL (`!offer.trlLevel` hoặc `offer.trlLevel <= 0`):<br>     * Trong bảng Thông số kỹ thuật: Hiển thị giá trị: *"Hàng hóa thương mại / Không áp dụng TRL"*.<br>     * Tại khu vực Badges đầu trang và Khối IP Quad: KHÔNG hiển thị badge TRL hoặc ghi rõ *"Thương phẩm sẵn có - Không áp dụng TRL"*.<br>   - Nếu hồ sơ **có chuyển giao công nghệ** (`hasTechTransfer === true`) VÀ có `trlLevel` (từ 1 đến 9): Hiển thị đúng định dạng `TRL {offer.trlLevel}/9 — {getTrlDescription(offer.trlLevel)}`. | `[id]/page.tsx`, Header Badges (dòng 400–404), IP Quad (dòng 569–575), Tech Specs Table (dòng 764–768) |
+| **`REQ-DELTA-09`** | **Hiển Thị Tình Trạng Pháp Lý Sở Hữu Trí Tuệ Trung Thực** | 1. Tuyệt đối cấm gán cứng dòng chữ *"Đã thẩm định hồ sơ SHTT hợp pháp"* hoặc fallback `"Đã thẩm định"` khi hồ sơ không có thông tin xác thực văn bằng.<br>2. Quy tắc phân nhánh hiển thị Pháp lý SHTT:<br>   - Nếu người bán có khai báo số văn bằng `offer.ipRegistrationNumber`: Hiển thị rõ số văn bằng và tên hình thức bảo hộ (Bằng độc quyền sáng chế, Giải pháp hữu ích, Bản quyền phần mềm...) theo `offer.ipStatus`.<br>   - Nếu người bán khai báo `ipStatus === 'TRADE_SECRET'`: Hiển thị *"Bí quyết công nghệ / Bí mật kinh doanh (Không đăng ký văn bằng)"*.<br>   - Nếu hồ sơ không có số văn bằng (`!offer.ipRegistrationNumber`) và không thuộc diện bảo hộ đã cấp: Hiển thị chuẩn xác: *"Chưa đăng ký bảo hộ SHTT hoặc là bí quyết kinh doanh"*, kèm trạng thái thực tế từ CSDL (nếu `ipStatus === 'NONE'` hiển thị *"Chưa đăng ký SHTT"*).<br>3. Tại thanh tóm tắt Metadata Bar: Nếu không có số văn bằng SHTT, hiển thị `"Chưa đăng ký"` hoặc `"Bí quyết kinh doanh"`, tuyệt đối không hiển thị `"Đã thẩm định"`. | `[id]/page.tsx`, Metadata Bar (dòng 475), Tech Specs Table (dòng 776–788), Header Badges (dòng 405–416) |
+| **`REQ-DELTA-10`** | **Quy Cách & Đơn Vị Chuyển Giao Hiển Thị Đúng Giá Trị Thực Tế** | 1. Trường "Quy cách & Đơn vị chuyển giao" phải hiển thị đúng giá trị chuỗi `offer.unit` do người bán nhập vào hệ thống (ví dụ: *"Hộp 500g"*, *"Gói 200g"*, *"Tấn"*, *"Bộ thiết bị"*...).<br>2. Nếu trường `offer.unit` bị rỗng (`null`, `undefined` hoặc khoảng trắng): Hiển thị chuỗi trung tính chuẩn hóa: *"Đang cập nhật quy cách"*.<br>3. Tuyệt đối cấm tự động fallback chuỗi dài sai ngữ cảnh nông sản/thiết bị lẻ: *"Theo gói giải pháp chuyển giao và đào tạo tích hợp"*. | `[id]/page.tsx`, Tech Specs Table (dòng 770–774) |
+
+---
+
+### 15.4. Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules)
+
+- **`BR-OFFER-DATAROOM-01`**: **Quy Tắc Quản Trị Dữ Liệu Phòng Dữ Liệu DataRoom (Zero-Mock DataRoom Policy)**:
+  - 100% dữ liệu hiển thị trong danh mục tài liệu DataRoom phải có nguồn gốc từ bản ghi `technology.offer_documents` trong CSDL PostgreSQL.
+  - Tuyệt đối cấm mã nguồn Frontend tự sinh các tệp giả lập (Fake Mock Documents) với phần mở rộng `.pdf` và dung lượng giả dạng `"2.4 MB"`, `"1.8 MB"`.
+  - Khi hồ sơ không có tài liệu: Bắt buộc kích hoạt giao diện Empty State. Nút "Tải về" chỉ xuất hiện khi tệp tin thực sự tồn tại trên hệ thống lưu trữ Cloud Storage / S3 và có quyền truy cập hợp lệ.
+
+- **`BR-OFFER-SPECS-01`**: **Quy Tắc Hiển Thị Trung Thực Chỉ Số TRL & Quy Cách Sản Phẩm (Dynamic Specs & TRL Rule)**:
+  - Chỉ số TRL (Technology Readiness Level từ 1 đến 9) là thước đo đặc thù dành riêng cho công nghệ / sáng chế R&D. Đối với các sản phẩm thương phẩm thông thường hoặc hồ sơ mà Seller không chọn tính năng chuyển giao công nghệ (`hasTechTransfer === false`), hệ thống coi TRL là không áp dụng (`N/A`).
+  - Hệ thống không được phép suy diễn hoặc gán mức TRL mặc định (Defaulting TRL to 7 or 8) trong bất kỳ tình huống hiển thị nào.
+  - Trường quy cách `unit` phải phản ánh nguyên văn định dạng thương mại của đơn vị bán. Nếu người bán để trống, hệ thống chỉ được phép phản ánh trạng thái thiếu dữ liệu (`"Đang cập nhật quy cách"`), không được tự ý suy đoán loại hình hợp đồng trọn gói.
+
+- **`BR-OFFER-IP-01`**: **Quy Tắc Hiển Thị Tính Pháp Lý Sở Hữu Trí Tuệ (Honest Intellectual Property Rule)**:
+  - Cụm từ "Đã thẩm định hồ sơ SHTT hợp pháp" chỉ được phép xuất hiện khi và chỉ khi hồ sơ đã vượt qua thẩm định Cấp 2 của Cán bộ Sở KH&CN và có số văn bằng hợp lệ được đối soát.
+  - Tuyệt đối cấm gán nhãn thẩm định khống cho các hồ sơ chưa đăng ký SHTT, sản phẩm OCOP, nông sản tiêu dùng hoặc công nghệ dạng bí quyết kinh doanh nội bộ.
+  - Thông tin SHTT phải phân biệt minh bạch giữa 3 nhóm: (1) Đã có văn bằng bảo hộ (kèm số bằng cụ thể); (2) Đang nộp đơn thẩm định hợp lệ; (3) Chưa đăng ký bảo hộ / Bí quyết kinh doanh.
+
+---
+
+### 15.5. Đặc Tả Giao Diện & Trải Nghiệm Người Dùng (UI/UX Specification)
+
+- **`UI-DELTA-04-03`**: **Khối Empty State Tab DataRoom (`DataRoomEmptyState`)**:
+  - **Bố cục**: Căn giữa (centered), padding dọc thoáng đãng (`py-12 px-6`), bo góc mềm mại (`rounded-2xl`), nền trung tính (`bg-slate-50/60 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800`).
+  - **Biểu tượng**: `FolderSearch` hoặc `FileQuestion` kích thước `w-12 h-12` màu xám bạc (`text-slate-400`).
+  - **Nội dung thông điệp**:
+    * Tiêu đề: `Chưa có tài liệu công khai trong DataRoom` (`text-sm font-bold text-slate-700 dark:text-slate-300`).
+    * Mô tả: `Chủ sở hữu công nghệ chưa tải lên tài liệu minh chứng công khai cho hồ sơ này.` (`text-xs text-slate-500 max-w-md mx-auto text-center mt-1`).
+  - **Hành động đề xuất (Action CTA)**: Nút `Yêu cầu cung cấp tài liệu qua Kết nối` (`button` dạng subtle/outline với icon `Send`, mở `ConnectOfferModal`).
+
+- **`UI-DELTA-04-04`**: **Chuẩn Hóa Hiển Thị Bảng Thông Số Kỹ Thuật Khi Khuyết Dữ Liệu**:
+  - Hàng TRL:
+    * Khi `offer.hasTechTransfer && offer.trlLevel`: Render `TRL {offer.trlLevel}/9 — {getTrlDescription(offer.trlLevel)}`.
+    * Khi ngược lại: Render badge nhẹ `Hàng hóa thương mại / Không áp dụng TRL` (`text-slate-500 italic`).
+  - Hàng SHTT:
+    * Khi có `ipRegistrationNumber`: Render `Số văn bằng: {ipRegistrationNumber} ({loại bằng})` (`font-semibold text-emerald-800`).
+    * Khi không có số văn bằng: Render `Chưa đăng ký bảo hộ SHTT hoặc là bí quyết kinh doanh` (`text-slate-500`).
+  - Hàng Quy cách:
+    * Khi có `unit`: Render `{offer.unit}` (`text-slate-900 font-medium`).
+    * Khi `unit` rỗng: Render `Đang cập nhật quy cách` (`text-slate-400 italic`).
+
+---
+
+### 15.6. Tiêu Chí Chấp Nhận & Nghiệm Thu Độc Lập (Acceptance Criteria)
+
+- **`AC-04-038`**: **Kiểm Thử Empty State DataRoom Khi Hồ Sơ Không Đính Kèm Tài Liệu (Loại Bỏ Triệt Để 3 File PDF Ảo)**:
+  - Truy cập chi tiết hồ sơ nông sản / thương mại không có file (ví dụ: `Chè Thịnh AN` - `OFF-20261022-00025-365E`).
+  - Bấm chọn Tab `Hồ Sơ DataRoom & Tài Liệu`.
+  - **Kết quả mong đợi**:
+    * KHÔNG CÒN xuất hiện bất kỳ tệp tin ảo nào trong 3 tệp: `${offerCode}_Teaser_Tom_Tat_Giai_Phap.pdf`, `${offerCode}_Ho_So_SHTT_Hop_Le.pdf`, `${offerCode}_Ket_Qua_Kiem_Dinh_TRL8.pdf`.
+    * Hệ thống hiển thị rõ ràng khối Empty State chuẩn UX với icon `FolderSearch`/`FileQuestion` và tiêu đề: *"Chưa có tài liệu công khai trong DataRoom"*.
+
+- **`AC-04-039`**: **Kiểm Thử Hiển Thị TRL Trung Thực Theo CSDL (Không Fallback TRL 7/8)**:
+  - Với hồ sơ sản phẩm nông sản / thương phẩm tiêu dùng (`hasTechTransfer = false` hoặc `trlLevel = null`):
+    * Kiểm tra khối Header Badges: Không xuất hiện huy hiệu `TRL 7 · Có chuyển giao`.
+    * Kiểm tra bảng Thông số kỹ thuật hàng "Mức độ sẵn sàng công nghệ": Hiển thị giá trị trung thực *"Hàng hóa thương mại / Không áp dụng TRL"*, tuyệt đối không xuất hiện chuỗi *"TRL 7/9"* hay *"TRL 8/9"*.
+
+- **`AC-04-040`**: **Kiểm Thử Hiển Thị Tình Trạng SHTT Trung Thực (Không Tự Xưng Đã Thẩm Định)**:
+  - Với hồ sơ không có số văn bằng bảo hộ (`ipRegistrationNumber = null` hoặc rỗng):
+    * Thanh tóm tắt nhanh Metadata Bar: Hiển thị *"Chưa đăng ký"* (hoặc tên trạng thái khai báo), hoàn toàn biến mất chữ *"Đã thẩm định"*.
+    * Bảng Thông số kỹ thuật hàng "Bảo hộ Sở hữu trí tuệ": Hiển thị rõ *"Chưa đăng ký bảo hộ SHTT hoặc là bí quyết kinh doanh"*, tuyệt đối không hiển thị dòng chữ *"Đã thẩm định hồ sơ SHTT hợp pháp"*.
+
+- **`AC-04-041`**: **Kiểm Thử Hiển Thị Quy Cách & Đơn Vị Theo Giá Trị Thực Tế Của Seller**:
+  - Với hồ sơ có nhập đơn vị (ví dụ `unit = "Hộp 500g"`): Bảng Thông số hiển thị chính xác `"Hộp 500g"`.
+  - Với hồ sơ có `unit = null` hoặc rỗng: Bảng Thông số hiển thị `"Đang cập nhật quy cách"`.
+  - Tuyệt đối không xuất hiện chuỗi mặc định sai lệch *"Theo gói giải pháp chuyển giao và đào tạo tích hợp"*.
+
+
+---
+
+## Giai đoạn 13: Spec Delta v10 — Phân Nhánh Nghiệp Vụ Tường Minh Giữa Sản Phẩm Thương Mại & Công Nghệ Chuyển Giao (Commercial Goods vs Tech Transfer)
+
+### 16.1. Bối Cảnh & Phân Tích Nguyên Nhân Gốc Rễ (Context & Root Cause Analysis)
+
+- **Căn cứ thực tiễn vận hành Sàn Giao Dịch**:
+  - Sàn Giao Dịch NacenTech phục vụ hai dòng luồng đối tượng chủ lực cấu thành hệ sinh thái Đổi mới sáng tạo & Thương mại hóa:
+    1. **Luồng Công nghệ / Chuyển giao Tri thức (Technology Transfer Stream)**: Các viện nghiên cứu, trường đại học, nhà khoa học chào bán bằng sáng chế, giải pháp hữu ích, dây chuyền công nghệ cao, phần mềm bản quyền (`hasTechTransfer = true` hoặc `offerType` thuộc nhóm `SOLUTION`, `PROCESS`, `SOFTWARE`, `PATENT`). Giao dịch đòi hỏi đàm phán hợp đồng li-xăng, ký cam kết bảo mật NDA, chuyển giao tài liệu kỹ thuật chuyên sâu và kiểm định TRL.
+    2. **Luồng Sản phẩm / Hàng hóa Thương phẩm (Commercial Goods Stream)**: Doanh nghiệp ĐMST, Hợp tác xã nông nghiệp công nghệ cao chào bán thành phẩm thương mại sẵn có (`hasTechTransfer = false` hoặc `offerType = 'PRODUCT'`; ví dụ điển hình: Hồ sơ *"Chè Thịnh AN"* - mã `OFF-20261022-00025-365E`, giá niêm yết 1,5 triệu VNĐ/kg).
+- **Vấn đề nhận diện từ trải nghiệm người dùng (UX Friction & Semantic Mismatch)**:
+  - Hiện tại, giao diện Chi tiết chào bán (`/chao-ban-cong-nghe/[id]`) đang áp đặt **100% ngôn từ và luồng hành động chuyển giao công nghệ hàn lâm lên toàn bộ sản phẩm hàng hóa tiêu dùng**.
+  - Người mua nông sản, thiết bị thương mại gặp các rào cản ngữ nghĩa kỳ quặc:
+    * Mua 1kg chè nhưng nút bấm lại ghi: *"Đăng Ký Nhận Chuyển Giao Công Nghệ Ngay"*.
+    * Dòng cam kết bảo mật: *"Bảo mật theo cam kết NDA & Chuyển giao có hợp đồng"* thay vì cam kết chất lượng, mẫu thử và giá sỉ.
+    * Tiêu đề giá: *"Mức Giá Đề Xuất Chuyển Giao"* kèm *"Bao gồm hỗ trợ chuyển giao kỹ thuật"* thay vì giá niêm yết theo quy cách đóng gói (hộp/kg).
+    * Tab DataRoom yêu cầu: *"Yêu Cầu Truy Cập DataRoom (Ký NDA)"* thay vì *"Xem Hồ Sơ Chất Lượng & ATTP"*.
+    * Khối liên hệ: Gán nhãn *"Đầu Mối TTO Chuyển Giao"* (Technology Transfer Office) cho nhân viên bán hàng / kinh doanh của Hợp tác xã.
+    * Modal kết nối: Bắt buộc chọn *"Chuyển giao trọn gói"*, ngân sách tối thiểu *"Dưới 500 triệu"* cho một đơn hàng sản phẩm trị giá vài triệu đồng.
+- **Mục tiêu kỹ thuật & nghiệp vụ**:
+  - Thiết lập cơ chế **phân nhánh nghiệp vụ động (Dynamic Experience Branching)** phân định rành mạch giữa **Sản Phẩm Thương Mại** và **Công Nghệ Chuyển Giao** trên toàn bộ 14 controls giao diện.
+  - Tái cấu trúc Modal Kết nối cung cầu (`ConnectOfferModal`), bổ sung danh mục hình thức hợp tác thương mại và các bậc ngân sách thực tế (<20M, 20-100M, 100-500M) tương thích hộ kinh doanh và doanh nghiệp SME.
+
+---
+
+### 16.2. Ma Trận Đánh Giá Tác Động Đa Bề Mặt Cho 14 Controls (Cross-Surface Impact Matrix)
+
+| STT | Tên Control / Thành Phần Giao Diện | Luồng Sản Phẩm Thương Mại (`hasTechTransfer === false` \|\| `offerType === 'PRODUCT'`) | Luồng Công Nghệ Chuyển Giao (`hasTechTransfer === true` && `offerType !== 'PRODUCT'`) | Vị Trí File & Dòng Code Mã Nguồn |
+| :---: | :--- | :--- | :--- | :--- |
+| **1** | **Badge Loại hình (Header Overlay)** | `Sản phẩm thương mại` (hoặc `Máy móc / Thiết bị` nếu `DEVICE`) | `Giải pháp công nghệ tích hợp` / `Quy trình công nghệ` / `Phần mềm số hóa` | `[id]/page.tsx`, Header Badges (dòng 390–395) |
+| **2** | **Nút CTA Hero Đầu Trang** | `Đặt mua sản phẩm / Kết nối thương mại` (Icon `ShoppingBag` hoặc `Send`) | `Đăng ký nhận chuyển giao công nghệ ngay` (Icon `Sparkles`) | `[id]/page.tsx`, Hero Action Bar (dòng 510–525) |
+| **3** | **Cam kết bảo mật Hero** | `Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất` | `Bảo mật theo cam kết NDA & Chuyển giao có hợp đồng li-xăng` | `[id]/page.tsx`, Hero Security Note (dòng 530–545) |
+| **4** | **Tiêu đề Card Giá Sidebar** | `GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI` | `MỨC GIÁ ĐỀ XUẤT CHUYỂN GIAO` | `[id]/page.tsx`, Sidebar Price Card (dòng 950–960) |
+| **5** | **Ghi chú thành phần giá** | `Đơn giá tiêu chuẩn theo quy cách sản phẩm / Số lượng đặt hàng` | `Bao gồm quyền sở hữu, tài liệu kỹ thuật & hỗ trợ chuyển giao` | `[id]/page.tsx`, Sidebar Pricing Note (dòng 975–990) |
+| **6** | **Nút CTA Chính Sidebar** | `Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ` | `Gửi Yêu Cầu Chuyển Giao Công Nghệ` | `[id]/page.tsx`, Sidebar Action Button (dòng 1000–1015) |
+| **7** | **Nút Phụ DataRoom Sidebar** | `Xem Hồ Sơ Chất Lượng & ATTP` (Icon `ShieldCheck`) | `Yêu Cầu Truy Cập DataRoom` (Icon `FileText`) | `[id]/page.tsx`, Sidebar DataRoom Link (dòng 1020–1035) |
+| **8** | **Đầu mối liên hệ Sidebar** | `Đầu Mối Kinh Doanh & Phân Phối` | `Đầu Mối TTO Chuyển Giao` (Technology Transfer Office) | `[id]/page.tsx`, Sidebar TTO Card (dòng 1050–1080) |
+| **9** | **Tab 1: Tiêu đề Tổng quan** | `Công Dụng & Giá Trị Mang Lại Cho Khách Hàng` | `Bài Toán Kỹ Thuật & Giải Pháp Công Nghệ` | `[id]/page.tsx`, Tab Overview Header (dòng 675–710) |
+| **10** | **Tab 2: Hàng Loại hình (Specs Table)** | `Sản phẩm thương mại hoàn chỉnh` / `Máy móc thiết bị` | `Giải pháp công nghệ` / `Dây chuyền quy trình chế tạo` | `[id]/page.tsx`, Tab Specs Table (dòng 745–756) |
+| **11** | **Tab 2: Hàng Hình thức giao dịch** | `Bán hàng thương phẩm / Hợp đồng cung ứng đại lý` | `Li-xăng độc quyền / Chuyển nhượng toàn bộ quyền` | `[id]/page.tsx`, Tab Specs Table (dòng 790–800) |
+| **12** | **Modal Kết nối: Tiêu đề & Mô tả** | `Gửi Đề Xuất Mua Hàng & Kết Nối Cung Ứng`<br>Mô tả: `Đăng ký nhu cầu mua hàng, yêu cầu mẫu thử hoặc hợp tác phân phối` | `Tạo Nhanh Nhu Cầu & Kết Nối Chuyển Giao`<br>Mô tả: `Đăng ký bài toán công nghệ trong 1 phút để liên kết trực tiếp với Bên bán` | `[id]/page.tsx`, Modal Header (dòng 1138–1143) |
+| **13** | **Modal Kết nối: Dropdown Hình thức hợp tác** | Danh mục thương mại: `PURCHASE_COMMERCIAL`, `SUPPLY_CONTRACT`, `DISTRIBUTION_AGENT`, `SAMPLE_ORDER` | Danh mục công nghệ: `TRANSFER`, `LICENSE`, `DEVICE`, `JOINT_RD` | `[id]/page.tsx`, Modal Method Select (dòng 1340–1350) |
+| **14** | **Modal Kết nối: Bậc Ngân sách** | Mở rộng bổ sung mức: `<20M`, `20M_100M`, `100M_500M`, `500M_1B`, `OVER_1B`, `CONTACT` | Nhóm mức ngân sách R&D: `UNDER_500M`, `500M_1B`, `1B_3B`, `OVER_3B`, `CONTACT` | `[id]/page.tsx`, Modal Budget Select (dòng 1310–1320) |
+
+---
+
+### 16.3. Danh Sách Yêu Cầu Nghiệp Vụ Bổ Sung (Functional Requirements)
+
+| Mã Yêu Cầu | Tên Yêu Cầu Chức Năng | Phân Tầng Dữ Liệu & Mô Tả Chi Tiết Kỹ Thuật | Thành Phần Giao Diện / Code Target |
+| :--- | :--- | :--- | :--- |
+| **`REQ-DELTA-11`** | **Chuẩn Hóa Phân Nhánh Ngữ Nghĩa & CTA Hero / Sidebar Theo Bản Chất Hồ Sơ** | 1. Xây dựng logic phân định biến cờ boolean `isCommercialProduct = !offer.hasTechTransfer \|\| offer.offerType === 'PRODUCT'`.<br>2. Áp dụng phân nhánh ngữ nghĩa cho toàn bộ khu vực Hero và Sidebar:<br>   - Badge loại hình: Nếu là sản phẩm hiển thị *"Sản phẩm thương mại"*, không dùng nhãn chung chung gây hiểu nhầm.<br>   - Nút CTA Hero: Chuyển đổi thành `"Đặt mua sản phẩm / Kết nối thương mại"` khi `isCommercialProduct = true`.<br>   - Cam kết bảo mật Hero: Chuyển thành `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"`.<br>   - Sidebar Thẻ Giá: Tiêu đề `"GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI"`, nút CTA `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`, nút phụ DataRoom `"Xem Hồ Sơ Chất Lượng & ATTP"`.<br>   - Khối Đầu mối liên hệ: Đổi tiêu đề `"Đầu Mối Kinh Doanh & Phân Phối"`, vai trò liên hệ mặc định `"Bộ phận Kinh doanh / Bán hàng"`. | `[id]/page.tsx`, Hero Section, Sidebar Action Cards |
+| **`REQ-DELTA-12`** | **Chuẩn Hóa Bảng Thông Số Kỹ Thuật & Tab Tổng Quan Động Theo Bản Chất Hàng Hóa** | 1. Tại Tab 1 (Tổng quan): Tiêu đề khối mô tả nội dung đổi thành `"Công Dụng & Giá Trị Mang Lại Cho Khách Hàng"` đối với sản phẩm thương mại (thay vì *"Bài toán kỹ thuật giải quyết"*).<br>2. Tại Tab 2 (Thông số kỹ thuật):<br>   - Hàng "Loại hình": Hiển thị `"Sản phẩm thương mại hoàn chỉnh"`.<br>   - Hàng "Hình thức giao dịch": Thay vì hiển thị các thuật ngữ li-xăng / chuyển nhượng sáng chế, hiển thị rõ `"Bán hàng thương phẩm / Hợp đồng cung ứng đại lý"`.<br>   - Hàng "Quy cách & Đơn vị": Giữ nguyên giá trị `offer.unit` do Seller nhập, kèm fallback chuẩn hóa `"Đang cập nhật quy cách"`. | `[id]/page.tsx`, Tab 1 & Tab 2 (dòng 670–815) |
+| **`REQ-DELTA-13`** | **Tái Cấu Trúc Modal Kết Nối Giao Dịch & Danh Mục Hình Thức Hợp Tác Phân Nhánh** | 1. Khi người dùng click nút CTA tại bất kỳ vị trí nào (Hero, Sidebar, DataRoom): Modal `ConnectOfferModal` tự động nhận diện `isCommercialProduct` để render tiêu đề và nội dung phù hợp:<br>   - Tiêu đề modal: `"Gửi Đề Xuất Mua Hàng & Kết Nối Cung Ứng (Commercial Order & Supply Request)"`.<br>   - Nhãn trường bài toán: Đổi từ *"Tiêu đề bài toán / Yêu cầu công nghệ"* thành *"Mục đích đặt hàng / Nhu cầu thu mua thương mại"*, placeholder: *"VD: Đặt mua 500 hộp làm quà tặng doanh nghiệp hoặc đại lý tiêu thụ định kỳ"*. Khởi tạo mặc định: `Nhu cầu đặt mua / kết nối thương phẩm: ${offer.title}`.<br>2. Phân nhánh danh mục Dropdown "Hình thức hợp tác mong muốn" (`demandMethod`):<br>   - Đối với sản phẩm thương mại, cung cấp 4 lựa chọn giao thương:<br>     * `PURCHASE_COMMERCIAL`: Đặt mua thương mại / Đơn hàng số lượng lớn.<br>     * `SUPPLY_CONTRACT`: Ký hợp đồng cung ứng định kỳ dài hạn.<br>     * `DISTRIBUTION_AGENT`: Đăng ký làm đại lý / Nhà phân phối độc quyền theo khu vực.<br>     * `SAMPLE_ORDER`: Đặt mua mẫu thử nghiệm & Thẩm định chất lượng trước khi nhập sỉ.<br>   - Đối với công nghệ chuyển giao, giữ nguyên 4 lựa chọn R&D: `TRANSFER`, `LICENSE`, `DEVICE`, `JOINT_RD`. | `[id]/page.tsx`, Connect Modal (dòng 1130–1360) |
+| **`REQ-DELTA-14`** | **Bổ Sung Các Bậc Ngân Sách Thương Mại & Phù Hợp Doanh Nghiệp Vừa / Nhỏ / Hộ Kinh Doanh** | 1. Mở rộng danh mục trường "Ngân sách dự kiến" (`demandBudget`) trong Modal kết nối, hỗ trợ các quy mô giao dịch linh hoạt từ nhỏ đến lớn:<br>   - `UNDER_20M`: Dưới 20 triệu VNĐ (Đơn hàng thử nghiệm / Đặt mua lẻ).<br>   - `20M_100M`: 20 triệu - 100 triệu VNĐ (Đơn hàng sỉ đại lý / Hộ kinh doanh).<br>   - `100M_500M`: 100 triệu - 500 triệu VNĐ (Hợp đồng cung ứng vừa).<br>   - `500M_1B`: 500 triệu - 1 tỷ VNĐ.<br>   - `1B_3B`: 1 tỷ - 3 tỷ VNĐ.<br>   - `OVER_3B`: Trên 3 tỷ VNĐ.<br>   - `CONTACT`: Thỏa thuận trực tiếp theo báo giá.<br>2. Giá trị ngân sách mặc định khi mở modal sản phẩm thương phẩm: Tự động chọn `UNDER_20M` hoặc `20M_100M` thay vì áp đặt mức lớn `UNDER_500M`. | `[id]/page.tsx`, Modal Budget Select (dòng 1310–1320) |
+
+---
+
+### 16.4. Bộ Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules)
+
+- **`BR-OFFER-COMMERCIAL-01`**: **Quy Tắc Phân Định 2 Luồng Trải Nghiệm Cốt Lõi (Commercial Goods vs Tech Transfer Routing Rule)**:
+  - Hệ thống sử dụng biểu thức xác định luồng duy nhất và nhất quán:
+    $$\text{isCommercialProduct} = (\text{hasTechTransfer} == \text{false}) \lor (\text{offerType} == \text{'PRODUCT'})$$
+  - Khi $\text{isCommercialProduct} == \text{true}$: Toàn bộ giao diện bắt buộc chuyển đổi sang ngữ cảnh giao thương hàng hóa thương mại (Commercial E-Commerce B2B), triệt để loại bỏ từ vựng mang tính học thuật / bản quyền R&D (li-xăng, chuyển giao công nghệ, TTO, NDA nghiên cứu, bài toán khoa học).
+  - Khi $\text{isCommercialProduct} == \text{false}$: Giữ nguyên vẹn 100% ngữ cảnh chuyển giao tri thức và công nghệ chuyên sâu phục vụ viện nghiên cứu, trường đại học và dự án R&D.
+
+- **`BR-OFFER-COMMERCIAL-02`**: **Quy Tắc Ngữ Nghĩa Thương Mại & Trách Nhiệm Thông Tin (Commercial Tone & Semantic Integrity)**:
+  - Đối với sản phẩm nông nghiệp và hàng tiêu dùng thông thường: Khối tài liệu DataRoom được định vị lại về mặt ngữ nghĩa là *"Hồ Sơ Chất Lượng & ATTP"* (Chứng nhận VietGAP, OCOP, Vệ sinh an toàn thực phẩm, Phiếu kiểm nghiệm thành phần).
+  - Nghiêm cấm hiển thị yêu cầu "Ký NDA bảo mật bí quyết công nghệ" đối với việc xem chứng nhận vệ sinh an toàn thực phẩm hoặc phiếu kiểm nghiệm chất lượng sản phẩm công khai.
+
+- **`BR-OFFER-COMMERCIAL-03`**: **Quy Tắc Tương Thích Ngược & Chuyển Đổi Dữ Liệu Kết Nối (Backward Compatibility & Transaction Type Resolution)**:
+  - Khi người dùng gửi đề xuất kết nối cho sản phẩm thương phẩm với các mã hình thức mới (`PURCHASE_COMMERCIAL`, `SUPPLY_CONTRACT`, `DISTRIBUTION_AGENT`, `SAMPLE_ORDER`):
+    * Hệ thống đóng gói vào trường `desiredSolution` của phiếu nhu cầu `QuickDemand` với tiền tố rõ ràng: `[Đề xuất thương mại: {Tên hình thức}]`.
+    * Đảm bảo backend lưu trữ và thông báo về Cổng tác nghiệp quản lý một cách thông suốt mà không gây lỗi phân tích cú pháp hoặc phá vỡ các trường enum sẵn có.
+
+---
+
+### 16.5. Đặc Tả Giao Diện Chi Tiết (UI/UX Specification)
+
+- **`UI-DELTA-04-05`**: **Bố Cục Hero Bar & Sidebar Dành Cho Sản Phẩm Thương Mại**:
+  - Hero CTA Button: `bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold px-6 py-3.5 rounded-xl text-xs shadow-lg flex items-center gap-2`.
+    * Icon: `ShoppingBag` (hoặc `Send`).
+    * Label: `"Đặt Mua Sản Phẩm / Kết Nối Thương Mại"`.
+  - Hero Security Badge: Nền trong suốt hoặc viền xám nhẹ, icon `ShieldCheck` màu xanh ngọc, dòng chữ: `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"`.
+  - Sidebar Card:
+    * Thẻ giá: Nhãn trên `"GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI"`, font chữ `text-[10px] font-mono tracking-wider text-slate-400 font-extrabold uppercase`.
+    * Nút chính: `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`.
+    * Nút phụ: Icon `FileCheck`, nhãn `"Xem Hồ Sơ Chất Lượng & ATTP"`.
+    * Thẻ đầu mối: Tiêu đề `"Đầu Mối Kinh Doanh & Phân Phối"`, icon `Building2`, nhãn vai trò `"Phụ trách kinh doanh / Đại lý"`.
+
+- **`UI-DELTA-04-06`**: **Giao Diện Modal Kết Nối Đặt Hàng & Cung Ứng Thương Mại**:
+  - Banner giới thiệu: Nền `bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300`, icon `ShoppingBag`, text: `Kết nối đặt mua / cung ứng: [Tên sản phẩm] ([Mã hồ sơ])`.
+  - Tiêu đề Form: `"Gửi Đề Xuất Mua Hàng & Kết Nối Cung Ứng"`.
+  - Label ô nhập nội dung: `"Mục đích đặt hàng / Nhu cầu thu mua thương mại"`.
+  - Danh mục hình thức hợp tác: 4 mục thương mại hiển thị rõ ràng, font chữ dễ đọc.
+  - Bộ chọn ngân sách: Mặc định hiển thị nấc `< 20 triệu VNĐ (Đơn hàng thử nghiệm / Đặt lẻ)`.
+
+---
+
+### 16.6. Tiêu Chí Chấp Nhận & Nghiệm Thu Độc Lập (Acceptance Criteria)
+
+- **`AC-04-042`**: **Kiểm Thử Badge Loại Hình Và CTA Hero/Sidebar Phân Nhánh Chuẩn Xác Cho Sản Phẩm Thương Mại**:
+  - Truy cập chi tiết hồ sơ nông sản / thương mại (ví dụ: `Chè Thịnh AN` - `OFF-20261022-00025-365E`).
+  - **Kết quả mong đợi**:
+    * Badge loại hình trên Header hiển thị `"Sản phẩm thương mại"`.
+    * Nút CTA Hero hiển thị đúng văn bản: `"Đặt mua sản phẩm / Kết nối thương mại"`.
+    * Dòng cam kết bảo mật Hero hiển thị: `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"`.
+    * Tuyệt đối không xuất hiện các chuỗi chữ *"Đăng ký nhận chuyển giao công nghệ"* hoặc *"Bảo mật theo cam kết NDA & Chuyển giao"*.
+
+- **`AC-04-043`**: **Kiểm Thử Thẻ Giá, DataRoom Và Đầu Mối Liên Hệ Sidebar Đúng Ngữ Cảnh Thương Mại**:
+  - Tại khu vực Sidebar bên phải của hồ sơ thương mại:
+  - **Kết quả mong đợi**:
+    * Tiêu đề trên giá hiển thị: `"GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI"`.
+    * Ghi chú dưới giá hiển thị: `"Đơn giá tiêu chuẩn theo quy cách sản phẩm / Số lượng đặt hàng"`.
+    * Nút CTA Sidebar hiển thị: `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`.
+    * Nút truy cập tài liệu hiển thị: `"Xem Hồ Sơ Chất Lượng & ATTP"`.
+    * Khối liên hệ hiển thị tiêu đề: `"Đầu Mối Kinh Doanh & Phân Phối"`.
+
+- **`AC-04-044`**: **Kiểm Thử Nội Dung Tab 1 Và Bảng Thông Số Tab 2 Phân Nhánh Cho Hàng Hóa Tiêu Dùng**:
+  - Chuyển giữa Tab 1 và Tab 2 của hồ sơ:
+  - **Kết quả mong đợi**:
+    * Tab 1: Tiêu đề khối mô tả là `"Công Dụng & Giá Trị Mang Lại Cho Khách Hàng"`.
+    * Tab 2: Hàng loại hình là `"Sản phẩm thương mại hoàn chỉnh"`.
+    * Tab 2: Hàng hình thức giao dịch là `"Bán hàng thương phẩm / Hợp đồng cung ứng đại lý"`.
+
+- **`AC-04-045`**: **Kiểm Thử Modal Kết Nối Hiển Thị Đúng Tiêu Đề, Hình Thức Hợp Tác Và Bậc Ngân Sách Thương Mại**:
+  - Click vào nút `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"` hoặc nút Hero:
+  - **Kết quả mong đợi**:
+    * Modal mở ra với tiêu đề: `"Gửi Đề Xuất Mua Hàng & Kết Nối Cung Ứng (Commercial Order & Supply Request)"`.
+    * Dropdown hình thức hợp tác chứa 4 tùy chọn: Đặt mua thương mại, Ký hợp đồng cung ứng định kỳ, Đăng ký làm đại lý, Đặt mua mẫu thử nghiệm.
+    * Dropdown ngân sách dự kiến có các mức nhỏ: `Dưới 20 triệu VNĐ`, `20 triệu - 100 triệu VNĐ`, `100 triệu - 500 triệu VNĐ` và tự động chọn mức phù hợp.
+    * Nhập thông tin và bấm gửi: Phiếu nhu cầu được tạo thành công, ghi nhận mã phiếu vào CSDL.
+
+- **`AC-04-046`**: **Kiểm Thử Hồ Sơ Chuyển Giao Công Nghệ Giữ Nguyên Vẹn 100% Ngữ Cảnh Chuyên Sâu (Zero Regression)**:
+  - Truy cập một hồ sơ công nghệ cao / R&D có `hasTechTransfer = true` và `offerType = 'SOLUTION'` (ví dụ hồ sơ thiết bị cơ điện tử hoặc xử lý nước thải).
+  - **Kết quả mong đợi**:
+    * Nút Hero vẫn là `"Đăng Ký Nhận Chuyển Giao Công Nghệ Ngay"`.
+    * Sidebar hiển thị `"MỨC GIÁ ĐỀ XUẤT CHUYỂN GIAO"` và `"Đầu Mối TTO Chuyển Giao"`.
+    * Tab 1 hiển thị `"Bài Toán Kỹ Thuật & Giải Pháp Công Nghệ"`.
+    * Modal kết nối hiển thị các hình thức li-xăng, chuyển giao trọn gói và mức ngân sách R&D lớn. Toàn bộ kịch bản nghiệp vụ chuyển giao công nghệ giữ nguyên vẹn 100%, không phát sinh lỗi hồi quy.

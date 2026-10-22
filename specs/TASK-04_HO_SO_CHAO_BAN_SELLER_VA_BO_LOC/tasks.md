@@ -214,3 +214,108 @@
 
 
 
+
+- [x] `TASK-04-CR96` **[CR]** [P1] (Người gửi: Lượng) Mở thông tin chi tiết doanh nghiệp — Khi vào chi tiết 1 sản phẩm cháo bán, nhìn thấy thông tin DN bán sản phẩm, click vào doanh nghiệp thì mở ra trang chi tiết DN
+
+
+
+---
+
+## Giai đoạn 11: Delta v9 — Chuẩn Hóa Hiển Thị Trung Thực Theo CSDL (Zero-Mock DataRoom & Dynamic Specs) (T-04.97 đến T-04.102)
+
+### Phase 26: Xây Dựng Component DataRoomEmptyState & Triệt Phá Mock DataRoom [FE]
+- [x] T-04.97 [FE] Triệt phá mảng mock 3 file PDF ảo trong Tab DataRoom của `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx` và xây dựng component/khối hiển thị `DataRoomEmptyState` (`REQ-DELTA-07`, `BR-OFFER-DATAROOM-01`, `UI-DELTA-04-03`, `AC-04-038`):
+  * Xóa bỏ hoàn toàn mảng tĩnh chứa 3 file PDF giả lập (`${offerCode}_Teaser_Tom_Tat_Giai_Phap.pdf`, `${offerCode}_Ho_So_SHTT_...pdf`, `${offerCode}_Ket_Qua_Kiem_Dinh_TRL...pdf`).
+  * Xây dựng giao diện Empty State chuẩn UX khi `offer.documents` rỗng (`[]`) hoặc `null`: Icon `FolderSearch`, tiêu đề *"Chưa có tài liệu công khai trong DataRoom"*, mô tả hướng dẫn và nút CTA *"Yêu cầu tài liệu qua Kết nối chuyển giao"* kích hoạt mở `ConnectOfferModal`.
+  * Đảm bảo khi có tài liệu thật từ CSDL, danh sách tệp đính kèm được hiển thị trung thực 1:1 theo `accessScope` (PUBLIC, AFTER_CONNECTION, ADMIN_ONLY).
+
+### Phase 27: Chuẩn Hóa Hiển Thị TRL, SHTT & Quy Cách Đơn Vị Động Theo CSDL [FE]
+- [x] T-04.98 [FE] Xóa bỏ toàn bộ fallback TRL tĩnh (`offer.trlLevel || 7`, `offer.trlLevel || 8`), chuẩn hóa hiển thị TRL theo CSDL tại Header Badges, IP Quad và Bảng Thông số kỹ thuật (`REQ-DELTA-08`, `BR-OFFER-SPECS-01`, `UI-DELTA-04-04`, `AC-04-039`):
+  * Tại Header Badges (dòng 400–404): Chỉ hiển thị badge TRL khi `offer.hasTechTransfer === true` VÀ có `offer.trlLevel > 0`. Nếu không có chuyển giao hoặc không có TRL, ẩn hoàn toàn badge TRL.
+  * Tại Khối IP Quad (dòng 570): Bỏ fallback `TRL {offer.trlLevel || 8}/9`, hiển thị `TRL {offer.trlLevel}/9` khi có chỉ số, hoặc `"Không áp dụng TRL"` khi không có.
+  * Tại Bảng Thông số kỹ thuật (dòng 766): Kiểm tra điều kiện: Nếu `offer.hasTechTransfer && offer.trlLevel` hiển thị `TRL {offer.trlLevel}/9 — {getTrlDescription(offer.trlLevel)}`; ngược lại hiển thị rõ *"Hàng hóa thương mại / Không áp dụng TRL"*.
+
+- [x] T-04.99 [FE] Chuẩn hóa hiển thị Pháp lý SHTT trung thực, xóa bỏ tự xưng "Đã thẩm định" khống trên Quick Specs và Bảng Thông số kỹ thuật (`REQ-DELTA-09`, `BR-OFFER-IP-01`, `UI-DELTA-04-04`, `AC-04-040`):
+  * Tại Quick Specs Metadata Bar (dòng 475): Xóa bỏ fallback `"Đã thẩm định"`. Nếu có số văn bằng hiển thị `offer.ipRegistrationNumber`; nếu không có số văn bằng hiển thị `"Chưa đăng ký"` (hoặc `"Bí quyết KD"` khi `ipStatus === 'TRADE_SECRET'`).
+  * Tại Header Badges SHTT (dòng 405–416): Xóa bỏ nhãn `"Bản quyền & SHTT hợp pháp"` khi `ipStatus` là `NONE` hoặc chưa đăng ký, thay bằng `"Chưa đăng ký SHTT"`.
+  * Tại Bảng Thông số kỹ thuật (dòng 778–786): Nếu không có `offer.ipRegistrationNumber`, xóa bỏ dòng chữ `"Đã thẩm định hồ sơ SHTT hợp pháp"`, thay bằng thông điệp trung thực: *"Chưa đăng ký bảo hộ SHTT hoặc là bí quyết kinh doanh"*.
+
+- [x] T-04.100 [FE] Chuẩn hóa trường Quy cách & Đơn vị: Hiển thị nguyên văn `offer.unit`, fallback trung tính "Đang cập nhật quy cách", xóa bỏ chuỗi sai ngữ cảnh gói giải pháp (`REQ-DELTA-10`, `BR-OFFER-SPECS-01`, `UI-DELTA-04-04`, `AC-04-041`):
+  * Tại Bảng Thông số kỹ thuật (dòng 772): Xóa bỏ chuỗi fallback `"Theo gói giải pháp chuyển giao và đào tạo tích hợp"`.
+  * Hiển thị nguyên văn `offer.unit` do Seller nhập (ví dụ: *"Hộp 500g"*, *"Kg"*, *"Bộ"*).
+  * Nếu `offer.unit` là null hoặc rỗng: Hiển thị chuỗi trung tính chuẩn hóa: *"Đang cập nhật quy cách"*.
+
+### Phase 28: Kiểm Thử Toàn Diện Zero-Mock & Quality Gate 2 Thẩm Định [TEST][GATE]
+- [x] T-04.101 [TEST] Bổ sung Unit & Integration tests trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.test.tsx` cho 4 kịch bản kiểm thử độc lập ứng với `AC-04-038` đến `AC-04-041`:
+  * Kịch bản 1 (AC-04-038): Test render hồ sơ không có documents $\rightarrow$ Khẳng định không có 3 file PDF mock (`queryByText` trả về null), khẳng định render `DataRoomEmptyState` với text *"Chưa có tài liệu công khai trong DataRoom"*.
+  * Kịch bản 2 (AC-04-039): Test render hồ sơ nông sản (`hasTechTransfer = false`, `trlLevel = null`) $\rightarrow$ Khẳng định không có chuỗi `"TRL 7/9"` hay `"TRL 8/9"`, khẳng định có text *"Hàng hóa thương mại / Không áp dụng TRL"*.
+  * Kịch bản 3 (AC-04-040): Test render hồ sơ không có số văn bằng SHTT $\rightarrow$ Khẳng định không có chữ `"Đã thẩm định"`, khẳng định có text *"Chưa đăng ký bảo hộ SHTT hoặc là bí quyết kinh doanh"*.
+  * Kịch bản 4 (AC-04-041): Test render hồ sơ có `unit = null` $\rightarrow$ Khẳng định không có chuỗi *"Theo gói giải pháp chuyển giao và đào tạo tích hợp"*, khẳng định có text *"Đang cập nhật quy cách"*.
+- [x] T-04.102 [GATE] Thẩm định chất lượng toán học tĩnh & Hội tụ Gate 2:
+  * TypeScript compiler (`tsc --noEmit`) đạt 0 lỗi type.
+  * Toàn bộ test suite `npm test` đạt 100% Pass.
+  * Đối soát ma trận truy vết khép kín: Đảm bảo 100% các yêu cầu `REQ-DELTA-07` $\rightarrow$ `REQ-DELTA-10`, `BR-OFFER-DATAROOM-01`, `BR-OFFER-SPECS-01`, `BR-OFFER-IP-01`, `UI-DELTA-04-03` $\rightarrow$ `UI-DELTA-04-04`, `AC-04-038` $\rightarrow$ `AC-04-041` được ánh xạ đầy đủ sang các tasks `T-04.97` đến `T-04.102`, không phát sinh nợ kỹ thuật và không có task mồ côi.
+
+---
+
+## Giai đoạn 12: Delta v9 — Định Tuyến Thẩm Định Cấp Tỉnh Thông Minh & Lựa Chọn Đơn Vị Tiếp Nhận Bước 1 (T-04.103 đến T-04.108)
+
+### Phase 29: Mở Rộng Danh Mục Sở KH&CN & Helper Nhận Diện Địa Bàn Thông Minh [FE]
+- [x] T-04.103 [FE-01] Mở rộng `PROVINCIAL_AUTHORITIES_CATALOG` trong `SourceCode/frontend/src/services/api/technology-offer.ts` bổ sung `VN-TN` (Sở Khoa học và Công nghệ tỉnh Thái Nguyên) và danh mục 34 tỉnh thành trọng điểm ĐMST (`REQ-DELTA-04-04`, `AC-DELTA-04-04`).
+- [x] T-04.104 [FE-02] Xây dựng helper tự động nhận diện địa bàn `resolveDefaultAuthority(userContext, enterpriseProfile)` theo quy tắc ưu tiên 3 cấp `BR-DELTA-04-01` (`REQ-DELTA-04-03`, `AC-DELTA-04-03`).
+
+### Phase 30: Tích Hợp UI Bước 1, FastTrack Modal & Cơ Chế Đồng Bộ 2 Chiều [FE]
+- [x] T-04.105 [FE-03] Đưa Searchable Combobox chọn Sở KH&CN tiếp nhận lên Bước 1 (`SellerIdentityCard` / `create/page.tsx` và `[id]/edit/page.tsx`), kèm hiển thị Smart Badge khi tự động nhận diện thành công từ địa chỉ DN (`REQ-DELTA-04-01`, `UI-DELTA-04-01`, `AC-DELTA-04-01`).
+- [x] T-04.106 [FE-04] Tích hợp Dropdown/Combobox chọn Sở KH&CN trực tiếp vào `FastTrackSubmitModal.tsx` và binding 2 chiều state giữa Modal, Bước 1 và Bước 4 (`IpQuadDigitizationCard`) (`REQ-DELTA-04-02`, `UI-DELTA-04-02`, `AC-DELTA-04-02`).
+
+### Phase 31: Kiểm Thử Đơn Vị, E2E Black-Box & Quality Gate [TEST][GATE]
+- [x] T-04.107 [TEST-01] Cập nhật và bổ sung Unit Test cho FastTrackSubmitModal & logic nhận diện địa bàn Thái Nguyên trong `create/page.test.tsx` (`AC-DELTA-04-01`, `AC-DELTA-04-02`, `AC-DELTA-04-03`).
+- [x] T-04.108 [E2E-01] Cập nhật kịch bản E2E Playwright `test_task04_seller_tech_offer_blackbox.py` xác thực chọn Sở KH&CN Thái Nguyên (`VN-TN`) và kiểm tra CSDL PostgreSQL lưu đúng `managing_authority_id = 'VN-TN'` (`AC-DELTA-04-05`).
+
+
+
+---
+
+## Giai đoạn 13: Delta v10 — Phân Nhánh Nghiệp Vụ Tường Minh Giữa Sản Phẩm Thương Mại & Công Nghệ Chuyển Giao (T-04.109 đến T-04.114)
+*(Ghi chú kiến trúc: Đánh số tuần tự tiếp nối từ T-04.108 của Giai đoạn 12 để bảo đảm tính duy nhất và không gây xung đột định danh trong Ma trận Truy vết TRACEABILITY.md)*
+
+### Phase 32: Khởi Tạo Helper State & Phân Nhánh Header, Badges & Hero CTA [FE]
+- [x] T-04.109 [FE] Khởi tạo cờ logic `isCommercialProduct` và phân nhánh Header Badges, Hero CTA Button, Hero Security Note trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx` (`REQ-DELTA-11`, `BR-OFFER-COMMERCIAL-01`, `UI-DELTA-04-05`, `AC-04-042`):
+  * Định nghĩa biến logic chuẩn hóa: `const isCommercialProduct = !offer.hasTechTransfer || offer.offerType === 'PRODUCT';`.
+  * Phân nhánh Header Badges: Với sản phẩm thương mại hiển thị `"Sản phẩm thương mại"` (hoặc `"Máy móc / Thiết bị thương phẩm"` nếu là `DEVICE`), không dùng nhãn chung chung gây hiểu nhầm.
+  * Phân nhánh Hero CTA Button: Khi `isCommercialProduct = true`, hiển thị icon `ShoppingBag` kèm văn bản `"Đặt mua sản phẩm / Kết nối thương mại"`; khi `isCommercialProduct = false`, giữ nguyên `"Đăng ký nhận chuyển giao công nghệ"`.
+  * Phân nhánh Hero Security Note: Chuyển đổi thành `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"` đối với sản phẩm thương phẩm.
+
+### Phase 33: Phân Nhánh Toàn Bộ Khu Vực Sidebar & Khối Thông Tin Đầu Mối [FE]
+- [x] T-04.110 [FE] Phân nhánh Thẻ Giá Sidebar, Nút CTA Sidebar, Nút Xem Hồ Sơ Chất Lượng & ATTP, và Khối Đầu Mối Kinh Doanh trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx` (`REQ-DELTA-11`, `BR-OFFER-COMMERCIAL-01`, `BR-OFFER-COMMERCIAL-02`, `UI-DELTA-04-05`, `AC-04-043`):
+  * Thẻ Giá Sidebar: Đổi tiêu đề thành `"GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI"`, đổi ghi chú dưới giá thành `"Đơn giá tiêu chuẩn theo quy cách sản phẩm / Số lượng đặt hàng"`.
+  * Nút CTA Sidebar: Đổi thành `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"` kèm icon `ShoppingBag`.
+  * Nút phụ tài liệu: Đổi từ *"Yêu Cầu Truy Cập DataRoom"* thành `"Xem Hồ Sơ Chất Lượng & ATTP"` kèm icon `ShieldCheck` cho hàng hóa thương mại.
+  * Khối Đầu Mối Liên Hệ: Đổi tiêu đề thành `"Đầu Mối Kinh Doanh & Phân Phối"`, vai trò người liên hệ hiển thị `"Phụ trách kinh doanh / Đại lý"`.
+
+### Phase 34: Phân Nhánh Nội Dung Tab 1 & Bảng Thông Số Tab 2 [FE]
+- [x] T-04.111 [FE] Phân nhánh Tiêu đề khối mô tả Tab 1 và Tab 2 Thông số kỹ thuật trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx` (`REQ-DELTA-12`, `BR-OFFER-COMMERCIAL-01`, `AC-04-044`):
+  * Tab 1 (Tổng quan): Tiêu đề khối mô tả đổi thành `"Công Dụng & Giá Trị Mang Lại Cho Khách Hàng"` đối với sản phẩm thương mại (thay vì *"Bài toán kỹ thuật & Giải pháp"*).
+  * Tab 2 (Thông số kỹ thuật):
+    - Hàng "Loại hình": Hiển thị `"Sản phẩm thương mại hoàn chỉnh"`.
+    - Hàng "Hình thức giao dịch": Hiển thị `"Bán hàng thương phẩm / Hợp đồng cung ứng đại lý"` thay cho các thuật ngữ li-xăng/chuyển nhượng sáng chế.
+
+### Phase 35: Tái Cấu Trúc Modal Kết Nối Cung Cầu Thương Mại & Mở Rộng Bậc Ngân Sách [FE]
+- [x] T-04.112 [FE] Tái cấu trúc Modal `ConnectOfferModal`: Phân nhánh tiêu đề, mô tả, danh mục 4 hình thức hợp tác thương mại và các bậc ngân sách nhỏ linh hoạt (`REQ-DELTA-13`, `REQ-DELTA-14`, `BR-OFFER-COMMERCIAL-03`, `UI-DELTA-04-06`, `AC-04-045`):
+  * Tiêu đề modal: `"Gửi Đề Xuất Mua Hàng & Kết Nối Cung Ứng (Commercial Order & Supply Request)"`, mô tả: `"Đăng ký nhu cầu mua hàng, yêu cầu mẫu thử hoặc hợp tác phân phối"`.
+  * Nhãn trường bài toán: Đổi thành `"Mục đích đặt hàng / Nhu cầu thu mua thương mại"`, placeholder và giá trị khởi tạo phù hợp sản phẩm thương mại.
+  * Dropdown "Hình thức hợp tác mong muốn" (`demandMethod`): Phân nhánh 4 tùy chọn thương mại (`PURCHASE_COMMERCIAL`, `SUPPLY_CONTRACT`, `DISTRIBUTION_AGENT`, `SAMPLE_ORDER`) khi `isCommercialProduct = true`.
+  * Dropdown "Ngân sách dự kiến" (`demandBudget`): Bổ sung các bậc quy mô thực tế (`UNDER_20M`, `20M_100M`, `100M_500M`, `500M_1B`, `1B_3B`, `OVER_3B`, `CONTACT`), tự động khởi tạo mức phù hợp (`UNDER_20M` hoặc `20M_100M`).
+  * Đóng gói payload tương thích ngược: Gắn tiền tố `[Đề xuất thương mại: {Tên hình thức}]` vào `desiredSolution` khi gửi `submitQuickDemand`.
+
+### Phase 36: Kiểm Thử Toàn Diện & Quality Gate 2 Thẩm Định [TEST][GATE]
+- [x] T-04.113 [TEST] Bổ sung trọn bộ 5 test cases trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.test.tsx` bao phủ toàn diện `AC-04-042` đến `AC-04-046`:
+  * Test Case 1 (AC-04-042): Xác thực Badge loại hình, nút CTA Hero, và cam kết thương mại của sản phẩm thương mại; khẳng định không còn chuỗi *"chuyển giao công nghệ"* trên Hero.
+  * Test Case 2 (AC-04-043): Xác thực Sidebar Thẻ Giá, Nút CTA Sidebar, Nút Xem Hồ Sơ Chất Lượng & ATTP, và Khối Đầu Mối Kinh Doanh.
+  * Test Case 3 (AC-04-044): Xác thực Tab 1 và Tab 2 hiển thị đúng ngữ cảnh hàng hóa tiêu dùng.
+  * Test Case 4 (AC-04-045): Xác thực Modal Kết Nối hiển thị đúng tiêu đề thương mại, danh mục 4 hình thức giao thương và các bậc ngân sách nhỏ.
+  * Test Case 5 (AC-04-046 - Zero Regression): Khẳng định hồ sơ công nghệ cao R&D (`hasTechTransfer = true`, `offerType = 'SOLUTION'`) giữ nguyên vẹn 100% ngữ cảnh chuyển giao tri thức chuyên sâu.
+- [x] T-04.114 [GATE] Thẩm định chất lượng toán học tĩnh & Hội tụ Gate 2:
+  * TypeScript compiler (`tsc --noEmit`) đạt 0 lỗi type.
+  * Toàn bộ test suite `npm test` đạt 100% Pass.
+  * Đối soát ma trận truy vết khép kín: Đảm bảo 100% các yêu cầu `REQ-DELTA-11` $\rightarrow$ `REQ-DELTA-14`, `BR-OFFER-COMMERCIAL-01` $\rightarrow$ `BR-OFFER-COMMERCIAL-03`, `UI-DELTA-04-05` $\rightarrow$ `UI-DELTA-04-06`, `AC-04-042` $\rightarrow$ `AC-04-046` được ánh xạ đầy đủ sang các tasks `T-04.109` đến `T-04.114`, không phát sinh nợ kỹ thuật và không có task mồ côi.

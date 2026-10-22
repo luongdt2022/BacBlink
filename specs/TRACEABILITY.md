@@ -228,6 +228,36 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Bộ kiểm thử Vitest Unit/Component Tests Delta V8** | `AC-04-035..037` | T-04.94 | `src/app/chao-ban-cong-nghe/page.test.tsx` | 9/9 tests pass 100% (bao gồm Negative assertions: `queryByText("Sẵn sàng chuyển giao") === null`, `queryByText("Xác thực Cục SHTT") === null`, single-line IP, compact offerCode) |
 | **Thẩm định Chất lượng Toán học tĩnh & Gate 4 Pass** | `AC-04-034..037`, `QC-4-TIERS` | T-04.95 | `src/test/qc-gate4-typography.test.ts`, TypeScript compiler | 13/13 tests Typography pass, `tsc --noEmit` 0 errors, layout responsive trên mọi viewport |
 
+---
+
+## 18. TASK-04 Delta v9: Chuẩn Hóa Hiển Thị Trung Thực Theo CSDL (Zero-Mock DataRoom & Dynamic Specs) & Định Tuyến Thẩm Định Cấp Tỉnh Thông Minh
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Triệt phá Mock DataRoom & Empty State chuẩn UX** | `REQ-DELTA-07`, `BR-OFFER-DATAROOM-01`, `UI-DELTA-04-03`, `AC-04-038` | T-04.97 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Xóa bỏ vĩnh viễn mảng 3 file PDF ảo (`Teaser_Tom_Tat_Giai_Phap.pdf`, `Ho_So_SHTT_...pdf`, `Ket_Qua_Kiem_Dinh_TRL...pdf`); Hiển thị khối Empty State `DataRoomEmptyState` với Icon `FolderSearch`, text "Chưa có tài liệu công khai trong DataRoom" & nút CTA "Yêu cầu tài liệu qua Kết nối chuyển giao" |
+| **Hiển thị TRL trung thực theo CSDL (Zero Fallback)** | `REQ-DELTA-08`, `BR-OFFER-SPECS-01`, `UI-DELTA-04-04`, `AC-04-039` | T-04.98 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Xóa bỏ triệt để các fallback `offer.trlLevel \|\| 7`, `offer.trlLevel \|\| 8`; Nếu `hasTechTransfer = false` hoặc không có TRL hiển thị "Hàng hóa thương mại / Không áp dụng TRL" và ẩn badge TRL; Chỉ hiển thị TRL khi có chuyển giao và `trlLevel` hợp lệ |
+| **Hiển thị trung thực Tình trạng Pháp lý SHTT** | `REQ-DELTA-09`, `BR-OFFER-IP-01`, `UI-DELTA-04-04`, `AC-04-040` | T-04.99 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Xóa bỏ cụm từ tự xưng "Đã thẩm định hồ sơ SHTT hợp pháp" và fallback "Đã thẩm định"; Phân biệt minh bạch: có số văn bằng / `TRADE_SECRET` ("Bí quyết công nghệ / Bí mật kinh doanh") / chưa đăng ký bảo hộ ("Chưa đăng ký bảo hộ SHTT hoặc là bí quyết kinh doanh") |
+| **Quy cách & Đơn vị chuyển giao nguyên văn từ CSDL** | `REQ-DELTA-10`, `BR-OFFER-SPECS-01`, `AC-04-041` | T-04.100 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Hiển thị nguyên văn `offer.unit` do Seller nhập; nếu null/rỗng hiển thị chuỗi trung tính "Đang cập nhật quy cách"; xóa bỏ chuỗi fallback "Theo gói giải pháp chuyển giao và đào tạo tích hợp" |
+| **Bộ kiểm thử Vitest Unit/Component Tests Delta v9** | `AC-04-038..041` | T-04.101 | `src/app/chao-ban-cong-nghe/[id]/page.test.tsx` | 12/12 tests pass 100% (bao gồm Negative assertions: không có 3 file PDF mock, không fallback TRL 7/8, không có text "Đã thẩm định", không fallback gói giải pháp) |
+| **Thẩm định Chất lượng Toán học tĩnh & Gate 4/5 Pass** | `AC-04-038..041`, `QC-4-TIERS` | T-04.102 | `src/app/chao-ban-cong-nghe/[id]/page.tsx`, `pnpm build` | `tsc --noEmit` 0 errors, Next.js 15 build tĩnh 63/63 routes pass 100%, đối soát truy vết 100% khép kín |
+| **Mở rộng Catalog Sở KH&CN & Helper nhận diện địa bàn** | `REQ-DELTA-04-03`, `REQ-DELTA-04-04`, `BR-DELTA-04-01`, `AC-DELTA-04-03`, `AC-DELTA-04-04` | T-04.103, T-04.104 | `services/api/technology-offer.ts` | Bổ sung `VN-TN` (Sở KH&CN tỉnh Thái Nguyên) và 34 tỉnh ĐMST; Xây dựng helper 3 cấp `resolveDefaultAuthority` |
+| **Tích hợp UI Bước 1, FastTrack Modal & Sync 2 chiều** | `REQ-DELTA-04-01`, `REQ-DELTA-04-02`, `UI-DELTA-04-01`, `UI-DELTA-04-02`, `AC-DELTA-04-01`, `AC-DELTA-04-02` | T-04.105, T-04.106 | `SellerIdentityCard.tsx`, `FastTrackSubmitModal.tsx`, `create/page.tsx`, `[id]/edit/page.tsx` | Đưa Combobox chọn Sở lên Bước 1, hiển thị Smart Badge địa bàn; Đồng bộ 2 chiều giữa Bước 1, Bước 4 và FastTrack Modal |
+
+---
+
+## 19. TASK-04 Delta v10: Phân Nhánh Nghiệp Vụ Tường Minh Giữa Sản Phẩm Thương Mại & Công Nghệ Chuyển Giao (14 Business Controls)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Phân nhánh Header Badges, Hero CTA & Cam kết bảo mật** | `REQ-DELTA-11`, `BR-OFFER-COMMERCIAL-01`, `UI-DELTA-04-05`, `AC-04-042` | T-04.109 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Cờ `isCommercialProduct`: Badge "Sản phẩm thương mại", CTA Hero "Đặt mua sản phẩm / Kết nối thương mại" (`ShoppingBag`), Hero Note mở báo giá sỉ; Triệt tiêu chuỗi chuyển giao công nghệ trên Hero |
+| **Phân nhánh Sidebar Thẻ Giá, CTA Sidebar, Nút DataRoom & Đầu mối** | `REQ-DELTA-12`, `BR-OFFER-COMMERCIAL-01`, `UI-DELTA-04-05`, `AC-04-043` | T-04.110 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Tiêu đề "GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI", nút "Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ", nút "Xem Hồ Sơ Chất Lượng & ATTP", đầu mối "Đầu Mối Kinh Doanh & Phân Phối" |
+| **Phân nhánh Nội dung Tab 1 (Tổng quan) & Tab 2 (Thông số kỹ thuật)** | `REQ-DELTA-13`, `BR-OFFER-COMMERCIAL-02`, `UI-DELTA-04-05`, `AC-04-044` | T-04.111 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Tab 1: "Công Dụng & Giá Trị Mang Lại Cho Khách Hàng"; Tab 2: "Sản phẩm thương phẩm thương mại (Không bao gồm chuyển giao công nghệ/quy trình sản xuất)", "Bán hàng thương phẩm / Hợp đồng cung ứng đại lý", "Đơn vị sản xuất / Chế biến" |
+| **Tái cấu trúc Modal Kết nối Đặt hàng B2B & Mở rộng Dải Ngân sách** | `REQ-DELTA-14`, `BR-OFFER-COMMERCIAL-03`, `UI-DELTA-04-06`, `AC-04-045` | T-04.112 | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Tiêu đề "Gửi Yêu Cầu Đặt Mua / Kết Nối Thương Mại", 4 hình thức B2B (`PURCHASE_COMMERCIAL`, `SUPPLY_CONTRACT`, `DISTRIBUTION_AGENT`, `SAMPLE_ORDER`), dải ngân sách nhỏ (`UNDER_20M`, `20M_100M`, `100M_500M`), đóng gói tiền tố `[Đề xuất thương mại: ...]` |
+| **Bộ kiểm thử Vitest Unit/Component Tests Delta v10** | `AC-04-042..046` | T-04.113 | `src/app/chao-ban-cong-nghe/[id]/page.test.tsx` | 17/17 tests pass 100% (bao gồm 5 test cases Delta v10: kiểm tra 14 controls, Negative Assertions không li-xăng/TTO/chuyển giao trên hàng hóa, và Zero Regression cho hồ sơ R&D) |
+| **Thẩm định Chất lượng Toán học tĩnh & Gate 4/5 Pass** | `AC-04-042..046`, `QC-4-TIERS` | T-04.114 | `src/app/chao-ban-cong-nghe/[id]/page.tsx`, `pnpm build` | `tsc --noEmit` 0 errors, Next.js 15 build tĩnh 63/63 routes pass 100%, đối soát truy vết 100% khép kín 114/114 tasks hoàn tất |
+
+
+
 
 
 
