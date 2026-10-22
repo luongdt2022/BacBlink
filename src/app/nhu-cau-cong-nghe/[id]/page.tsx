@@ -24,6 +24,7 @@ import { getTniClassification } from "@/components/demand/TniRealtimeCalculator"
 import { useToast } from "@/components/common/toast";
 import { authClient, UserContext } from "@/lib/auth-client";
 import { SECTORS_18_CATALOG } from "@/services/api/technology-offer";
+import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 
 export default function PublicDemandDetailPage() {
   const params = useParams();
@@ -177,7 +178,7 @@ export default function PublicDemandDetailPage() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
         <Async
           state={asyncState}
           onRetry={loadItem}
@@ -198,7 +199,22 @@ export default function PublicDemandDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* CỘT TRÁI (8 CỘT): CHI TIẾT BÀI TOÁN KỸ THUẬT */}
               <div className="lg:col-span-8 space-y-6">
-                <article className="surface-card p-6 sm:p-8 space-y-6">
+                <article className="surface-card overflow-hidden">
+                  {/* Hero Sector Banner theo Ngành của bài toán */}
+                  <div className="h-32 sm:h-36 bg-brand-700 relative overflow-hidden border-b border-brand-800 p-5 sm:p-6 flex flex-col justify-between text-white">
+                    <SectorBannerBackground sectorCode={item.sectorCode} opacity={0.45} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-950/70 via-transparent to-transparent pointer-events-none" />
+                    <div className="relative z-10 flex items-center justify-between">
+                      <span className="text-xs font-bold px-3 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-teal-200">
+                        {getSectorName(item.sectorCode)}
+                      </span>
+                      <span className="text-xs text-white/80 font-medium">
+                        Mã bài toán: {item.itemCode}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-6 sm:p-8 space-y-6">
                   {/* Meta badges */}
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-5">
                     <div className="flex items-center gap-2">
@@ -280,7 +296,8 @@ export default function PublicDemandDetailPage() {
                       <p className="text-xs mt-0.5">Ưu tiên kết nối chuyển giao trong 15 ngày</p>
                     </div>
                   </div>
-                </article>
+                </div>
+              </article>
 
                 {/* PDPD Privacy Notice Box */}
                 <div className="p-5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-start gap-3 text-xs text-text-secondary dark:text-slate-400">
@@ -361,7 +378,7 @@ export default function PublicDemandDetailPage() {
                     <form onSubmit={handleSendOffer} className="space-y-4 text-xs">
                       {/* Trạng thái tài khoản & Hỗ trợ tự động điền */}
                       {currentUser ? (
-                        <div className="flex items-center justify-between bg-brand-50/70 dark:bg-brand-950/40 p-2.5 rounded-xl border border-brand-200/60 dark:border-brand-800 text-[11px] text-brand-800 dark:text-cyan-300">
+                        <div className="flex items-center justify-between bg-brand-50/70 dark:bg-brand-950/40 p-2.5 rounded-xl border border-brand-200/60 dark:border-brand-800 text-xs text-brand-800 dark:text-cyan-300">
                           <div className="flex items-center gap-1.5 font-medium truncate mr-2">
                             <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-cyan-400 shrink-0" />
                             <span className="truncate">Đang đăng nhập: <strong>{currentUser.fullName}</strong></span>
@@ -391,7 +408,7 @@ export default function PublicDemandDetailPage() {
                       </div>
 
                       {autoFilled && (
-                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <div className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
                           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                           <span>Đã tự động điền đơn vị, email và SĐT từ tài khoản đăng nhập. Bạn có thể chỉnh sửa nếu cần.</span>
                         </div>
@@ -464,7 +481,7 @@ export default function PublicDemandDetailPage() {
             </div>
           )}
         </Async>
-      </main>
+      </div>
     </div>
   );
 }

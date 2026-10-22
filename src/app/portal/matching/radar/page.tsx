@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { MatchCandidate, ConnectionRequest } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
 import ConnectionRequestModal from './ConnectionRequestModal';
+import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 
 export default function MatchingRadarPage() {
   const [activeTab, setActiveTab] = useState<'RADAR' | 'REQUESTS'>('RADAR');
@@ -92,7 +93,9 @@ export default function MatchingRadarPage() {
   return (
     <div className="min-h-screen bg-surface-subtle p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Executive Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl workspace-banner p-6 sm:p-8 text-white shadow-xl shadow-brand-950/10 border border-brand-800/20">
+      <div className="relative overflow-hidden rounded-3xl bg-brand-700 p-6 sm:p-8 text-white shadow-xl shadow-brand-950/10 border border-brand-800/20">
+        <SectorBannerBackground sectorCode="LV17" opacity={0.4} />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-950/60 via-transparent to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-brand-100 text-xs font-bold tracking-wide">

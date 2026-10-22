@@ -38,6 +38,7 @@ import { getTechnologyImage } from "@/lib/technology-media";
 
 type Listing = {
   id?: string;
+  itemCode?: string;
   title: string;
   field: string;
   owner: string;
@@ -144,20 +145,31 @@ export default function HomePage() {
     setListingsLoading(true);
 
     Promise.all([
-      fetchPublicOffers()
+      fetchPublicOffers({ rotate: true, limit: 6 })
         .then((res) => {
           if (!cancelled) {
-            const mapped: Listing[] = (res.data || []).map((o) => ({
-              id: o.id,
-              title: o.title,
-              field: o.sectorName || "Khoa học & Công nghệ",
-              owner: o.developerOrigin || "Chủ sở hữu công nghệ",
-              location: o.managingAuthorityName || "Toàn quốc",
-              trl: o.trlLevel ? `TRL ${o.trlLevel}` : "Đang hoàn thiện",
-              image: getTechnologyImage(o.sectorCode, o.title, o.mainImageUrl),
-              type: "offers",
-            }));
-            setOffers(mapped);
+            const rawOffers = res.data || [];
+            // Defense-in-depth: Deduplication by normalized title using Set
+            const seen = new Set<string>();
+            const uniqueOffers: Listing[] = [];
+            for (const o of rawOffers) {
+              const key = (o.title || "").trim().toLowerCase();
+              if (key && !seen.has(key)) {
+                seen.add(key);
+                uniqueOffers.push({
+                  id: o.id,
+                  itemCode: o.offerCode,
+                  title: o.title,
+                  field: o.sectorName || o.sectorCode || "Khoa học & Công nghệ",
+                  owner: o.enterpriseName || o.developerOrigin || "Chủ sở hữu công nghệ",
+                  location: o.managingAuthorityName || "Toàn quốc",
+                  trl: o.trlLevel ? `TRL ${o.trlLevel}` : "Đang hoàn thiện",
+                  image: getTechnologyImage(o.sectorCode, o.title, o.mainImageUrl),
+                  type: "offers",
+                });
+              }
+            }
+            setOffers(uniqueOffers.slice(0, 6));
           }
         })
         .catch(() => {
@@ -165,20 +177,30 @@ export default function HomePage() {
         }),
 
       portalClient
-        .getPublicDemands()
+        .getPublicDemands({ rotate: true, limit: 6 })
         .then((list) => {
           if (!cancelled && Array.isArray(list)) {
-            const mapped: Listing[] = list.map((d: any) => ({
-              id: d.id,
-              title: d.technicalProblem || d.stageName || "Bài toán công nghệ",
-              field: d.sectorCode || "Nhu cầu ĐMST",
-              owner: d.province || "Doanh nghiệp",
-              location: d.province || "Toàn quốc",
-              trl: d.budgetRange ? `Ngân sách: ${d.budgetRange}` : "Thương lượng",
-              image: getTechnologyImage(d.sectorCode, d.technicalProblem || d.stageName),
-              type: "demands",
-            }));
-            setDemands(mapped);
+            // Defense-in-depth: Deduplication by normalized title using Set
+            const seen = new Set<string>();
+            const uniqueDemands: Listing[] = [];
+            for (const d of list) {
+              const key = (d.technicalProblem || d.stageName || "").trim().toLowerCase();
+              if (key && !seen.has(key)) {
+                seen.add(key);
+                uniqueDemands.push({
+                  id: d.id,
+                  itemCode: d.itemCode,
+                  title: d.technicalProblem || d.stageName || "Bài toán công nghệ",
+                  field: d.sectorCode || "Nhu cầu ĐMST",
+                  owner: d.province || "Doanh nghiệp",
+                  location: d.province || "Toàn quốc",
+                  trl: d.budgetRange ? `Ngân sách: ${d.budgetRange}` : "Thương lượng",
+                  image: getTechnologyImage(d.sectorCode, d.technicalProblem || d.stageName),
+                  type: "demands",
+                });
+              }
+            }
+            setDemands(uniqueDemands.slice(0, 6));
           }
         })
         .catch(() => {
@@ -591,7 +613,9 @@ export default function HomePage() {
                   </p>
                 </div>
               ) : (
-                listings.map((item) => <ListingCard key={item.title} item={item} />)
+                listings.map((item, idx) => (
+                  <ListingCard key={`${item.type}-${item.id || item.itemCode || idx}-${idx}`} item={item} />
+                ))
               )}
             </div>
             <div className="mt-10 flex justify-center">

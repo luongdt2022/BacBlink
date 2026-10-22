@@ -41,11 +41,7 @@ export default function GovDemandsPage() {
         const data = await res.json();
         const list = Array.isArray(data) ? data : [];
         setDemands(list);
-        if (list.length === 0) {
-          setAsyncState('empty');
-        } else {
-          setAsyncState('success');
-        }
+        setAsyncState('success');
       } else {
         setErrorMessage('Không thể tải danh sách bài toán cần thẩm định.');
         setAsyncState('error');
@@ -210,6 +206,7 @@ export default function GovDemandsPage() {
             {/* Filter Tabs */}
             <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold shrink-0">
               <button
+                data-tab="ALL"
                 onClick={() => setFilterTab('ALL')}
                 className={`px-3 py-1.5 rounded-lg transition ${
                   filterTab === 'ALL'
@@ -217,9 +214,10 @@ export default function GovDemandsPage() {
                     : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
                 }`}
               >
-                Tất cả hồ sơ ({demands.length})
+                Tất cả ({demands.length})
               </button>
               <button
+                data-tab="PENDING"
                 onClick={() => setFilterTab('PENDING')}
                 className={`px-3 py-1.5 rounded-lg transition ${
                   filterTab === 'PENDING'
@@ -227,9 +225,10 @@ export default function GovDemandsPage() {
                     : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
                 }`}
               >
-                Chờ thẩm định ({pendingCount})
+                Chờ duyệt ({pendingCount})
               </button>
               <button
+                data-tab="VERIFIED"
                 onClick={() => setFilterTab('VERIFIED')}
                 className={`px-3 py-1.5 rounded-lg transition ${
                   filterTab === 'VERIFIED'
@@ -237,7 +236,7 @@ export default function GovDemandsPage() {
                     : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
                 }`}
               >
-                Đã niêm yết ({verifiedCount})
+                Đã duyệt ({verifiedCount})
               </button>
             </div>
 
@@ -345,7 +344,16 @@ export default function GovDemandsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredDemands.map((item) => {
+                  {filteredDemands.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center text-slate-500">
+                        <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                        <p className="font-bold text-sm text-slate-700 dark:text-slate-300">Không có bài toán nào tồn đọng trong danh sách.</p>
+                        <p className="text-xs text-slate-400 mt-1">Toàn bộ các bài toán kỹ thuật từ doanh nghiệp đã được phân loại và xử lý.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDemands.map((item) => {
                     const tniMeta = getTniClassification(item.tniScore || 70);
                     const isProcessing = processingId === item.id;
                     const isRecent = item.createdAt && (Date.now() - new Date(item.createdAt).getTime() < 24 * 3600 * 1000);
@@ -354,14 +362,14 @@ export default function GovDemandsPage() {
                       <tr
                         key={item.id}
                         className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition ${
-                          isRecent ? 'bg-blue-50/30 dark:bg-blue-950/20' : ''
+                          isRecent ? 'bg-brand-50/30 dark:bg-brand-950/20' : ''
                         }`}
                       >
                         <td className="px-6 py-4 font-mono font-bold text-slate-700 dark:text-slate-300">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span>{item.itemCode}</span>
                             {isRecent && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-extrabold bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-cyan-300 border border-brand-200 dark:border-brand-800">
                                 <Sparkles className="w-2.5 h-2.5" /> Mới
                               </span>
                             )}
@@ -414,7 +422,8 @@ export default function GovDemandsPage() {
                         </td>
                       </tr>
                     );
-                  })}
+                  })
+                )}
                 </tbody>
               </table>
             </div>

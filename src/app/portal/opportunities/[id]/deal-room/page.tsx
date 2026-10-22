@@ -25,6 +25,7 @@ import { useParams } from 'next/navigation';
 import { DealRoomData, DealDiscussion, MouAgreement } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
 import MouModal from './MouModal';
+import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 
 export default function DealRoomPage() {
   const params = useParams();
@@ -115,39 +116,41 @@ export default function DealRoomPage() {
 
   return (
     <div className="min-h-screen bg-surface-subtle p-6 space-y-6">
-      {/* Top Banner */}
-      <div className="bg-surface-card p-6 rounded-2xl border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-caption text-text-muted mb-1">
-            <Link href="/portal/opportunities/pipeline" className="hover:text-text-primary">
+      {/* Top Banner với Watermark bảo chứng chuyển giao công nghệ */}
+      <div className="relative overflow-hidden bg-brand-700 text-white p-6 rounded-2xl border border-brand-800 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <SectorBannerBackground sectorCode={(opportunity as any).sectorCode} opacity={0.4} />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-950/80 via-brand-900/60 to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 text-caption text-teal-200 mb-1">
+            <Link href="/portal/opportunities/pipeline" className="hover:text-white">
               Pipeline Cơ Hội
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-brand-primary font-medium">{opportunity.opportunityCode}</span>
+            <span className="text-white font-bold">{opportunity.opportunityCode}</span>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-text-primary flex items-center gap-2.5">
-            <ShieldCheck className="w-6 h-6 text-emerald-600" />
+          <h1 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2.5">
+            <ShieldCheck className="w-6 h-6 text-emerald-400" />
             Phòng Đàm Phán & Chuyển Giao 1-1 (Secure Deal Room)
           </h1>
-          <p className="text-caption text-text-muted mt-1">
-            Mã cơ hội: <strong className="text-text-primary">{opportunity.opportunityCode}</strong> • Giai đoạn:{' '}
-            <span className="px-2 py-0.5 rounded-full font-bold bg-brand-primary/10 text-brand-primary text-caption">
+          <p className="text-caption text-slate-200 mt-1">
+            Mã cơ hội: <strong className="text-white">{opportunity.opportunityCode}</strong> • Giai đoạn:{' '}
+            <span className="px-2.5 py-0.5 rounded-full font-bold bg-white/20 text-teal-200 text-caption backdrop-blur-sm border border-white/20">
               {opportunity.stage}
             </span>
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="relative z-10 flex items-center gap-3">
           <button
             onClick={() => setIsMouOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-brand-primary text-white hover:bg-brand-primary/90 text-caption font-medium flex items-center gap-2 shadow-sm transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 text-caption font-bold flex items-center gap-2 shadow-sm transition-colors"
           >
             <FileSignature className="w-4 h-4" />
             {mou ? 'Xem & Cập Nhật MOU' : 'Soạn Thảo Biên Bản MOU'}
           </button>
           <Link
             href="/portal/opportunities/pipeline"
-            className="px-4 py-2.5 rounded-xl border border-border bg-surface-card hover:bg-surface-elevated text-text-secondary text-caption font-medium flex items-center gap-2 transition-colors"
+            className="px-4 py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white text-caption font-medium flex items-center gap-2 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Pipeline
           </Link>

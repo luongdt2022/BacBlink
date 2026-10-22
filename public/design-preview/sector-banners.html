@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NacenTech - Thiết Kế Họa Tiết Watermark Background Theo Nhóm Ngành</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090f1d;
+      --card-bg: #111a2e;
+      --border-color: #1e2c4a;
+      --brand-primary: #0284c7;
+      --brand-teal: #0d9488;
+      --brand-green: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      padding: 32px 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header Bar */
+    .header-bar {
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-title h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(13, 148, 136, 0.2);
+      color: #2dd4bf;
+      border: 1px solid rgba(45, 212, 191, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .header-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .opacity-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card-bg);
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .opacity-control input[type="range"] {
+      cursor: pointer;
+      accent-color: #06b6d4;
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+      background: rgba(17, 26, 46, 0.8);
+      padding: 8px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .filter-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    /* Comparison Card */
+    .banner-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 32px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .banner-card:hover {
+      border-color: #2563eb;
+    }
+
+    .card-meta {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-sector-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sector-code {
+      font-family: monospace;
+      font-weight: 800;
+      font-size: 13px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .sector-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .sector-desc {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-pill {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* ========================================================================= */
+    /* THE REAL BANNER CONTAINER (Chuẩn 100% tỷ lệ và màu sắc ảnh gốc)          */
+    /* ========================================================================= */
+    .nacen-banner {
+      position: relative;
+      height: 220px;
+      width: 100%;
+      background: linear-gradient(135deg, #0b2249 0%, #123368 40%, #1b4589 70%, #0e2752 100%);
+      overflow: hidden;
+      border-bottom: 1px solid #1e3a8a;
+    }
+
+    /* Watermark Art Layer */
+    .watermark-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .watermark-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Top Right Badges */
+    .banner-top-right {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .pill-location {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .pill-location svg {
+      color: #5eead4;
+      width: 14px;
+      height: 14px;
+    }
+
+    .pill-trade {
+      background: rgba(16, 185, 129, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .pill-trade svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Bottom Left Avatar Placeholder */
+    .banner-bottom-left {
+      position: absolute;
+      bottom: -40px;
+      left: 32px;
+      z-index: 10;
+    }
+
+    .avatar-box {
+      width: 100px;
+      height: 100px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 6px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 3px solid #ffffff;
+    }
+
+    .avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0284c7, #0d9488);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 26px;
+    }
+
+    .avatar-inner span {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #99f6e4;
+      margin-top: 2px;
+    }
+
+    /* Detail Specs Under Banner */
+    .banner-caption {
+      padding: 16px 24px 20px 148px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0d1526;
+      font-size: 13px;
+    }
+
+    .caption-left {
+      color: #cbd5e1;
+    }
+
+    .caption-left strong {
+      color: #38bdf8;
+    }
+
+    .caption-tags {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tag-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      color: #94a3b8;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    /* Grid layout */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .nacen-banner {
+        height: 180px;
+      }
+      .banner-top-right {
+        top: 10px;
+        right: 12px;
+        transform: scale(0.85);
+        transform-origin: top right;
+      }
+      .banner-bottom-left {
+        bottom: -30px;
+        left: 16px;
+      }
+      .avatar-box {
+        width: 70px;
+        height: 70px;
+      }
+      .avatar-inner {
+        font-size: 18px;
+      }
+      .banner-caption {
+        padding-left: 96px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Top Header Navigation -->
+    <header class="header-bar">
+      <div class="header-title">
+        <h1>
+          <span>Hệ Thống Watermark Background Theo Nhóm Ngành</span>
+          <span class="badge-tag">NacenTech Visual Design System</span>
+        </h1>
+        <p class="header-desc">
+          Bản demo UI/UX đối soát trực quan: Giữ nguyên màu nền xanh Navy đặc trưng, cấu trúc layout & badge, cá nhân hóa logo chìm (vector watermark) sắc nét cho từng ngành nghề.
+        </p>
+      </div>
+
+      <div class="controls-bar">
+        <div class="opacity-control">
+          <span>Độ đậm Watermark:</span>
+          <input type="range" id="opacitySlider" min="10" max="60" value="25" oninput="updateOpacity(this.value)">
+          <span id="opacityVal" style="font-weight: 700; color: #38bdf8; width: 36px;">25%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter Buttons -->
+    <div class="filter-tabs">
+      <button class="filter-btn active" onclick="filterSector('ALL')">Tất Cả 10 Ngành</button>
+      <button class="filter-btn" onclick="filterSector('LV17')">LV17: KH&CN (Hiện tại)</button>
+      <button class="filter-btn" onclick="filterSector('LV01')">LV01: Nông Nghiệp</button>
+      <button class="filter-btn" onclick="filterSector('LV05')">LV05: Thực Phẩm - Đồ Uống</button>
+      <button class="filter-btn" onclick="filterSector('LV07')">LV07: Cơ Khí - Chế Tạo</button>
+      <button class="filter-btn" onclick="filterSector('LV08')">LV08: Điện - Điện Tử - Tự Động Hóa</button>
+      <button class="filter-btn" onclick="filterSector('LV11')">LV11: Môi Trường - Xanh</button>
+      <button class="filter-btn" onclick="filterSector('LV12')">LV12: Xây Dựng - Hạ Tầng</button>
+      <button class="filter-btn" onclick="filterSector('LV14')">LV14: Logistics - Vận Tải</button>
+      <button class="filter-btn" onclick="filterSector('LV15')">LV15: Du Lịch - Thương Mại</button>
+      <button class="filter-btn" onclick="filterSector('LV16')">LV16: CNTT - Viễn Thông - AI</button>
+    </div>
+
+    <!-- Container of all sector cards -->
+    <div class="gallery-grid" id="galleryContainer">
+
+      <!-- ========================================================================= -->
+      <!-- 1. LV17: KHOA HỌC - CÔNG NGHỆ (MẪU HIỆN TẠI ĐỐI SOÁT CHUẨN) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV17">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV17</span>
+            <div>
+              <div class="sector-title">Khoa Học – Công Nghệ – Đổi Mới Sáng Tạo (Mẫu Chuẩn Hiện Tại)</div>
+              <div class="sector-desc">Biểu tượng: Vi mạch CPU đa nhân, chuỗi xoắn kép ADN, mạng lưới lục giác Carbon/Graphene</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">🔬 Vi mạch & Sinh học phân tử</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="glowCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" />
+                  <stop offset="100%" stop-color="#818cf8" />
+                </linearGradient>
+              </defs>
+
+              <!-- CÁNH TRÁI: VI MẠCH CPU & HEXAGONS -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Hexagons cluster -->
+                <polygon points="120,40 145,55 145,85 120,100 95,85 95,55" fill="none" opacity="0.4" />
+                <polygon points="175,70 200,85 200,115 175,130 150,115 150,85" fill="none" opacity="0.3" />
+                <polygon points="120,105 145,120 145,150 120,165 95,150 95,120" fill="none" opacity="0.4" />
+                <polygon points="65,70 90,85 90,115 65,130 40,115 40,85" fill="none" opacity="0.3" />
+
+                <!-- CPU Core -->
+                <rect x="70" y="60" width="60" height="60" rx="8" stroke="#38bdf8" stroke-width="2" fill="none" opacity="0.8"/>
+                <rect x="80" y="70" width="40" height="40" rx="4" stroke="#7dd3fc" stroke-width="1.5" fill="none" opacity="0.6"/>
+                <circle cx="100" cy="90" r="6" fill="#38bdf8" opacity="0.6"/>
+
+                <!-- Circuit traces extending out -->
+                <path d="M70 75 H35 M70 90 H20 M70 105 H30 M20 90 V140 H10" opacity="0.7"/>
+                <path d="M130 75 H165 L180 60 H220" opacity="0.7"/>
+                <path d="M130 90 H175 M130 105 H160 L175 120 H230" opacity="0.7"/>
+                <path d="M85 60 V30 L95 20 V10" opacity="0.7"/>
+                <path d="M100 60 V25 M115 60 V35 L125 25 H160" opacity="0.7"/>
+                <path d="M85 120 V155 L75 165 H30" opacity="0.7"/>
+                <path d="M100 120 V170 M115 120 V155 L130 170 H180" opacity="0.7"/>
+
+                <!-- Terminal nodes -->
+                <circle cx="220" cy="60" r="3" fill="#38bdf8"/>
+                <circle cx="230" cy="120" r="3" fill="#38bdf8"/>
+                <circle cx="180" cy="170" r="3" fill="#38bdf8"/>
+                <circle cx="30" cy="165" r="3" fill="#38bdf8"/>
+                <circle cx="10" cy="140" r="3" fill="#38bdf8"/>
+                <circle cx="160" cy="25" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: CHUỖI XOẮN KÉP ADN & MẠCH VI SINH -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round">
+                <!-- DNA Double Helix curves -->
+                <path d="M1080 20 Q1120 70 1080 120 T1080 220" fill="none" opacity="0.8" stroke-width="2"/>
+                <path d="M1120 20 Q1080 70 1120 120 T1120 220" fill="none" opacity="0.8" stroke-width="2"/>
+
+                <!-- DNA rungs / bridges -->
+                <line x1="1083" y1="35" x2="1117" y2="35" opacity="0.7"/>
+                <line x1="1090" y1="50" x2="1110" y2="50" opacity="0.7"/>
+                <line x1="1100" y1="70" x2="1100" y2="70" stroke-width="4" opacity="0.9"/>
+                <line x1="1090" y1="90" x2="1110" y2="90" opacity="0.7"/>
+                <line x1="1083" y1="105" x2="1117" y2="105" opacity="0.7"/>
+                <line x1="1080" y1="120" x2="1120" y2="120" opacity="0.8"/>
+                <line x1="1083" y1="135" x2="1117" y2="135" opacity="0.7"/>
+                <line x1="1090" y1="150" x2="1110" y2="150" opacity="0.7"/>
+                <line x1="1100" y1="170" x2="1100" y2="170" stroke-width="4" opacity="0.9"/>
+                <line x1="1090" y1="190" x2="1110" y2="190" opacity="0.7"/>
+                <line x1="1083" y1="205" x2="1117" y2="205" opacity="0.7"/>
+
+                <!-- Connected network branching out from DNA -->
+                <path d="M1080 70 H1020 L1000 90 H940" opacity="0.6"/>
+                <path d="M1120 120 H1160 L1180 140" opacity="0.6"/>
+                <path d="M1080 170 H1040 L1020 150 H970" opacity="0.6"/>
+                <circle cx="940" cy="90" r="4" fill="#38bdf8"/>
+                <circle cx="970" cy="150" r="3" fill="#38bdf8"/>
+                <circle cx="1180" cy="140" r="3" fill="#38bdf8"/>
+
+                <!-- Hexagonal lattice around DNA -->
+                <polygon points="1020,160 1040,172 1040,195 1020,207 1000,195 1000,172" fill="none" opacity="0.3" />
+                <polygon points="970,110 990,122 990,145 970,157 950,145 950,122" fill="none" opacity="0.25" />
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Hà Nội</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner">
+                NC
+                <span>COMMERCIAL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Vi mạch điện tử & DNA sinh học phân tử</strong> — Biểu tượng hội tụ công nghệ cao, bán dẫn và R&D đột phá.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">Deep Tech</span>
+            <span class="tag-item">Semiconductor</span>
+            <span class="tag-item">Genetics</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 2. LV01: NÔNG NGHIỆP CÔNG NGHỆ CAO (SMART AGRICULTURE) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV01">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV01</span>
+            <div>
+              <div class="sector-title">Nông Nghiệp Công Nghệ Cao & Chế Biến Sau Thu Hoạch</div>
+              <div class="sector-desc">Biểu tượng: Mầm cây sinh học số hóa, Drone nông nghiệp UAV, nhà màng cảm biến IoT</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">🌱 Smart Agriculture & IoT Farming</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: MẦM CÂY SỐ HÓA & MẠCH NÔNG NGHIỆP THÔNG MINH -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Circular soil sensor / IoT badge -->
+                <circle cx="100" cy="100" r="50" stroke="#38bdf8" stroke-dasharray="4 4" opacity="0.4"/>
+                <circle cx="100" cy="100" r="40" opacity="0.6"/>
+
+                <!-- Sprout / Wheat geometry -->
+                <path d="M100 135 V75" stroke-width="2.5" opacity="0.9"/>
+                <!-- Left Leaf -->
+                <path d="M100 100 C75 100 65 75 80 65 C95 55 100 85 100 100 Z" opacity="0.8" fill="rgba(56, 189, 248, 0.08)"/>
+                <!-- Right Leaf -->
+                <path d="M100 85 C125 85 135 60 120 50 C105 40 100 70 100 85 Z" opacity="0.8" fill="rgba(56, 189, 248, 0.08)"/>
+                <!-- Top Ear / Kernel -->
+                <path d="M100 65 C92 50 100 35 100 35 C100 35 108 50 100 65 Z" opacity="0.9" fill="rgba(56, 189, 248, 0.15)"/>
+
+                <!-- Soil Moisture Sensor Lines -->
+                <path d="M100 135 L80 155 H30 M100 135 L120 155 H180" opacity="0.7"/>
+                <path d="M50 100 H15 M15 100 V60 H5" opacity="0.6"/>
+                <path d="M150 100 H195 L215 80 H250" opacity="0.6"/>
+                <path d="M100 50 V20 H60" opacity="0.5"/>
+
+                <!-- Sensor Nodes -->
+                <circle cx="30" cy="155" r="3" fill="#38bdf8"/>
+                <circle cx="180" cy="155" r="3" fill="#38bdf8"/>
+                <circle cx="250" cy="80" r="3.5" fill="#38bdf8"/>
+                <circle cx="5" cy="60" r="3" fill="#38bdf8"/>
+                <circle cx="60" cy="20" r="3" fill="#38bdf8"/>
+
+                <!-- Hexagonal organic cellular mesh -->
+                <polygon points="170,40 190,52 190,75 170,87 150,75 150,52" opacity="0.3"/>
+                <polygon points="215,60 235,72 235,95 215,107 195,95 195,72" opacity="0.25"/>
+              </g>
+
+              <!-- CÁNH PHẢI: DRONE UAV NÔNG NGHIỆP & NHÀ MÀNG THÔNG MINH -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Smart Agri Drone UAV -->
+                <g transform="translate(1020, 45)">
+                  <!-- Drone Center Body -->
+                  <rect x="-18" y="-12" width="36" height="24" rx="6" stroke-width="2" opacity="0.9" fill="rgba(56, 189, 248, 0.15)"/>
+                  <circle cx="0" cy="0" r="4" fill="#38bdf8"/>
+                  <!-- 4 Arms -->
+                  <line x1="-15" y1="-10" x2="-35" y2="-25" stroke-width="2" opacity="0.8"/>
+                  <line x1="15" y1="-10" x2="35" y2="-25" stroke-width="2" opacity="0.8"/>
+                  <line x1="-15" y1="10" x2="-35" y2="25" stroke-width="2" opacity="0.8"/>
+                  <line x1="15" y1="10" x2="35" y2="25" stroke-width="2" opacity="0.8"/>
+                  <!-- Rotors / Propellers -->
+                  <ellipse cx="-35" cy="-25" rx="14" ry="4" opacity="0.7"/>
+                  <ellipse cx="35" cy="-25" rx="14" ry="4" opacity="0.7"/>
+                  <ellipse cx="-35" cy="25" rx="14" ry="4" opacity="0.7"/>
+                  <ellipse cx="35" cy="25" rx="14" ry="4" opacity="0.7"/>
+                  <!-- Scanning wave cone from drone -->
+                  <path d="M-10 15 L-50 110 M10 15 L50 110" stroke-dasharray="3 3" opacity="0.5"/>
+                  <path d="M-35 80 Q0 90 35 80" stroke-dasharray="2 2" opacity="0.4"/>
+                  <path d="M-50 110 Q0 125 50 110" stroke-dasharray="3 3" opacity="0.6"/>
+                </g>
+
+                <!-- High-tech Greenhouse Geometric Structure (Bên dưới) -->
+                <path d="M960 190 L1020 145 L1080 190 H960 Z" opacity="0.7" stroke-width="1.8"/>
+                <path d="M1020 145 V190 M990 168 V190 M1050 168 V190" opacity="0.5"/>
+                <path d="M960 190 H900 L870 170 H820" opacity="0.5"/>
+                <path d="M1080 190 H1160" opacity="0.5"/>
+                <circle cx="820" cy="170" r="3" fill="#38bdf8"/>
+                <circle cx="1160" cy="190" r="3" fill="#38bdf8"/>
+
+                <!-- Water droplet irrigation sensor -->
+                <path d="M920 120 C910 135 905 145 905 152 C905 162 913 170 923 170 C933 170 941 162 941 152 C941 145 936 135 926 120 Z" opacity="0.6" fill="rgba(56, 189, 248, 0.08)"/>
+                <circle cx="923" cy="155" r="3" fill="#38bdf8" opacity="0.8"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Lâm Đồng</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #059669, #0d9488);">
+                AG
+                <span>AGRI-TECH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Mầm lúa số hóa, Drone viễn thám UAV, Nhà màng cảm biến IoT</strong> — Thể hiện canh tác thông minh, truy xuất nguồn gốc nông sản sạch.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">Smart Farm</span>
+            <span class="tag-item">UAV Drone</span>
+            <span class="tag-item">VietGAP</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 3. LV05: CHẾ BIẾN THỰC PHẨM - ĐỒ UỐNG (FOOD & BEVERAGE) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV05">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV05</span>
+            <div>
+              <div class="sector-title">Chế Biến Thực Phẩm – Đồ Uống & An Toàn Tiệt Trùng</div>
+              <div class="sector-desc">Biểu tượng: Dây chuyền chiết rót tự động, buồng sấy thăng hoa CAS, phân tử enzym hữu cơ</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">🥫 Food Science & HACCP Packaging</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: DÂY CHUYỀN CHIẾT RÓT & HUY HIỆU AN TOÀN -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Conveyor Belt Line -->
+                <path d="M20 140 H220" stroke-width="2" opacity="0.8"/>
+                <line x1="40" y1="140" x2="40" y2="155" opacity="0.6"/>
+                <line x1="80" y1="140" x2="80" y2="155" opacity="0.6"/>
+                <line x1="120" y1="140" x2="120" y2="155" opacity="0.6"/>
+                <line x1="160" y1="140" x2="160" y2="155" opacity="0.6"/>
+                <line x1="200" y1="140" x2="200" y2="155" opacity="0.6"/>
+
+                <!-- Clean Bottle / Package Silhouettes -->
+                <g transform="translate(65, 80)">
+                  <path d="M10 0 H20 V12 L26 20 V55 H4 V20 L10 12 Z" opacity="0.8" fill="rgba(56, 189, 248, 0.1)"/>
+                  <circle cx="15" cy="35" r="4" opacity="0.5"/>
+                </g>
+                <g transform="translate(115, 70)">
+                  <rect x="0" y="0" width="30" height="65" rx="5" opacity="0.9" fill="rgba(56, 189, 248, 0.12)"/>
+                  <line x1="5" y1="20" x2="25" y2="20" opacity="0.5"/>
+                  <line x1="5" y1="35" x2="20" y2="35" opacity="0.5"/>
+                  <!-- Sparkle quality indicator -->
+                  <path d="M15 45 L17 50 L22 52 L17 54 L15 59 L13 54 L8 52 L13 50 Z" fill="#38bdf8" opacity="0.8"/>
+                </g>
+
+                <!-- Quality Shield HACCP / ISO -->
+                <g transform="translate(175, 45)">
+                  <path d="M20 0 L40 8 V25 C40 38 20 48 20 48 C20 48 0 38 0 25 V8 Z" opacity="0.8" fill="rgba(56, 189, 248, 0.08)"/>
+                  <polyline points="12 24 18 30 28 18" stroke-width="2" opacity="0.9"/>
+                </g>
+
+                <!-- Temperature / Sterile Air Sensor Traces -->
+                <path d="M130 65 V35 H180 M130 35 H80 V20" opacity="0.6"/>
+                <circle cx="180" cy="35" r="3" fill="#38bdf8"/>
+                <circle cx="80" cy="20" r="3" fill="#38bdf8"/>
+                <path d="M220 140 L240 120 H280" opacity="0.6"/>
+                <circle cx="280" cy="120" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: PHÂN TỬ ENZYM & BUỒNG SẤY CAS LẠNH -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Organic Molecule Ring (Enzyme / Nutrient) -->
+                <g transform="translate(1000, 60)">
+                  <circle cx="0" cy="0" r="8" fill="rgba(56, 189, 248, 0.2)" stroke-width="2"/>
+                  <line x1="8" y1="0" x2="35" y2="-15" stroke-width="2"/>
+                  <circle cx="35" cy="-15" r="6" fill="#38bdf8" opacity="0.8"/>
+
+                  <line x1="35" y1="-15" x2="65" y2="0" stroke-width="1.5"/>
+                  <circle cx="65" cy="0" r="7" fill="rgba(56, 189, 248, 0.2)" stroke-width="2"/>
+
+                  <line x1="65" y1="0" x2="65" y2="35" stroke-width="2"/>
+                  <circle cx="65" cy="35" r="5" fill="#38bdf8" opacity="0.8"/>
+
+                  <line x1="65" y1="35" x2="35" y2="50" stroke-width="1.5"/>
+                  <circle cx="35" cy="50" r="7" fill="rgba(56, 189, 248, 0.2)" stroke-width="2"/>
+
+                  <line x1="35" y1="50" x2="0" y2="35" stroke-width="2"/>
+                  <circle cx="0" cy="35" r="5" fill="#38bdf8" opacity="0.8"/>
+
+                  <line x1="0" y1="35" x2="0" y2="0" stroke-width="1.5"/>
+
+                  <!-- Secondary Bonds -->
+                  <line x1="35" y1="-15" x2="35" y2="-40"/>
+                  <circle cx="35" cy="-40" r="4" fill="#38bdf8"/>
+                  <line x1="65" y1="35" x2="95" y2="45"/>
+                  <circle cx="95" cy="45" r="4" fill="#38bdf8"/>
+                </g>
+
+                <!-- CAS Cold Crystallization Snowflake Geometry -->
+                <g transform="translate(1120, 150)">
+                  <line x1="-30" y1="0" x2="30" y2="0" stroke-width="2" opacity="0.8"/>
+                  <line x1="0" y1="-30" x2="0" y2="30" stroke-width="2" opacity="0.8"/>
+                  <line x1="-20" y1="-20" x2="20" y2="20" stroke-width="1.5" opacity="0.7"/>
+                  <line x1="-20" y1="20" x2="20" y2="-20" stroke-width="1.5" opacity="0.7"/>
+
+                  <!-- Branch spikes -->
+                  <path d="M-15 -5 L-20 0 L-15 5 M15 -5 L20 0 L15 5" opacity="0.8"/>
+                  <path d="M-5 -15 L0 -20 L5 -15 M-5 15 L0 20 L5 15" opacity="0.8"/>
+                  <circle cx="0" cy="0" r="4" fill="#38bdf8"/>
+                </g>
+
+                <!-- Trace connection to process center -->
+                <path d="M1000 130 L960 170 H890" opacity="0.6"/>
+                <circle cx="890" cy="170" r="3" fill="#38bdf8"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Hưng Yên</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #d97706, #ea580c);">
+                FB
+                <span>FOOD-TECH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Băng chuyền đóng gói tiệt trùng, Phân tử enzym, Tinh thể sấy lạnh CAS</strong> — Khẳng định quy chuẩn HACCP, chế biến sâu giá trị cao.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">HACCP</span>
+            <span class="tag-item">CAS Cold Chain</span>
+            <span class="tag-item">Enzyme Bio</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 4. LV07: CƠ KHÍ - CHẾ TẠO - CÔNG NGHIỆP HỖ TRỢ (MECHANICAL & ROBOTICS) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV07">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV07</span>
+            <div>
+              <div class="sector-title">Cơ Khí – Chế Tạo – Công Nghiệp Hỗ Trợ & Tự Động Hóa</div>
+              <div class="sector-desc">Biểu tượng: Cụm bánh răng cơ khí chính xác, Cánh tay Robot 6 trục hàn laser, Tọa độ CAD/CAM</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">⚙️ Precision Mechanics & Robotics</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: CỤM BÁNH RĂNG CƠ KHÍ & THƯỚC ĐO MICROMET -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Large Interlocking Gear -->
+                <g transform="translate(100, 95)">
+                  <circle cx="0" cy="0" r="45" opacity="0.4" stroke-dasharray="3 3"/>
+                  <circle cx="0" cy="0" r="32" stroke-width="2" opacity="0.8"/>
+                  <circle cx="0" cy="0" r="14" stroke-width="1.5" opacity="0.6"/>
+                  <!-- 8 Gear Teeth -->
+                  <path d="M-8 -46 H8 L6 -34 H-6 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                  <path d="M-8 46 H8 L6 34 H-6 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                  <path d="M-46 -8 V8 L-34 6 V-6 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                  <path d="M46 -8 V8 L34 6 V-6 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                  <path d="M-32 -32 L-20 -20 L-26 -14 L-38 -26 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                  <path d="M32 32 L20 20 L26 14 L38 26 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                  <path d="M32 -32 L20 -20 L14 -26 L26 -38 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                  <path d="M-32 32 L-20 20 L-14 26 L-26 38 Z" fill="rgba(56, 189, 248, 0.2)" opacity="0.9"/>
+                </g>
+
+                <!-- Smaller Intermeshed Gear -->
+                <g transform="translate(165, 145)">
+                  <circle cx="0" cy="0" r="22" stroke-width="1.8" opacity="0.7"/>
+                  <circle cx="0" cy="0" r="9" opacity="0.5"/>
+                  <path d="M-5 -30 H5 L4 -23 H-4 Z" fill="rgba(56, 189, 248, 0.2)"/>
+                  <path d="M-5 30 H5 L4 23 H-4 Z" fill="rgba(56, 189, 248, 0.2)"/>
+                  <path d="M-30 -5 V5 L-23 4 V-4 Z" fill="rgba(56, 189, 248, 0.2)"/>
+                  <path d="M30 -5 V5 L23 4 V-4 Z" fill="rgba(56, 189, 248, 0.2)"/>
+                </g>
+
+                <!-- CNC / CAD Crosshairs & Dimension Lines -->
+                <path d="M100 25 V45 M100 145 V175" opacity="0.6"/>
+                <path d="M25 95 H50 M150 95 H240 L260 75 H290" opacity="0.6"/>
+                <circle cx="290" cy="75" r="3" fill="#38bdf8"/>
+                <path d="M165 175 V200 H220" opacity="0.5"/>
+                <circle cx="220" cy="200" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: CÁNH TAY ROBOT HÀN LASER 6 TRỤC -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Robotic Base -->
+                <rect x="1080" y="180" width="60" height="20" rx="4" opacity="0.8" fill="rgba(56, 189, 248, 0.15)"/>
+                <circle cx="1110" cy="180" r="14" stroke-width="2" opacity="0.9"/>
+
+                <!-- Arm Segment 1 -->
+                <line x1="1110" y1="180" x2="1060" y2="105" stroke-width="3" opacity="0.85"/>
+                <circle cx="1060" cy="105" r="10" stroke-width="2" fill="rgba(56, 189, 248, 0.2)"/>
+
+                <!-- Arm Segment 2 -->
+                <line x1="1060" y1="105" x2="980" y2="85" stroke-width="2.5" opacity="0.85"/>
+                <circle cx="980" cy="85" r="8" stroke-width="2" fill="rgba(56, 189, 248, 0.2)"/>
+
+                <!-- Wrist & Laser End-Effector Tool -->
+                <line x1="980" y1="85" x2="945" y2="115" stroke-width="2" opacity="0.9"/>
+                <polygon points="945,115 935,122 938,130 948,125" fill="#38bdf8" opacity="0.9"/>
+
+                <!-- Laser Welding Beam & Spark Burst -->
+                <line x1="935" y1="125" x2="910" y2="155" stroke-width="2" stroke="#38bdf8" stroke-dasharray="2 2"/>
+                <circle cx="910" cy="155" r="4" fill="#38bdf8"/>
+                <line x1="910" y1="155" x2="900" y2="150" opacity="0.8"/>
+                <line x1="910" y1="155" x2="905" y2="165" opacity="0.8"/>
+                <line x1="910" y1="155" x2="920" y2="162" opacity="0.8"/>
+
+                <!-- Workpiece Coordinate CAD grid -->
+                <path d="M880 165 H960 L975 185 H895 Z" opacity="0.5" fill="rgba(56, 189, 248, 0.08)"/>
+                <path d="M1060 105 L1020 40 H970" opacity="0.5"/>
+                <circle cx="970" cy="40" r="3" fill="#38bdf8"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Bắc Ninh</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
+                MC
+                <span>PRECISION</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Bánh răng ăn khớp chuẩn CAD, Cánh tay robot 6 trục hàn laser</strong> — Đại diện cho cơ khí chế tạo chính xác và công nghiệp phụ trợ cấp 1.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">CNC Machining</span>
+            <span class="tag-item">Robotics 6-Axis</span>
+            <span class="tag-item">CAD/CAM</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 5. LV08: ĐIỆN - ĐIỆN TỬ - TỰ ĐỘNG HÓA (ELECTRONICS & AUTOMATION) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV08">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV08</span>
+            <div>
+              <div class="sector-title">Điện – Điện Tử – Bán Dẫn & Tự Động Hóa Nhà Máy</div>
+              <div class="sector-desc">Biểu tượng: Bo mạch in PCB nhiều lớp, Xung nhịp đồng hồ Clock PWM, Robot tự hành AGV</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">⚡ Electronics & Smart Factory</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: BO MẠCH IN PCB & TỤ ĐIỆN, CỔNG LOGIC -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- SMD IC Package -->
+                <rect x="75" y="70" width="50" height="50" rx="4" stroke-width="2" opacity="0.9" fill="rgba(56, 189, 248, 0.15)"/>
+                <circle cx="85" cy="80" r="3" fill="#38bdf8"/>
+                <!-- Pins -->
+                <line x1="85" y1="64" x2="85" y2="70" stroke-width="2"/>
+                <line x1="100" y1="64" x2="100" y2="70" stroke-width="2"/>
+                <line x1="115" y1="64" x2="115" y2="70" stroke-width="2"/>
+                <line x1="85" y1="120" x2="85" y2="126" stroke-width="2"/>
+                <line x1="100" y1="120" x2="100" y2="126" stroke-width="2"/>
+                <line x1="115" y1="120" x2="115" y2="126" stroke-width="2"/>
+
+                <!-- Bus Traces -->
+                <path d="M100 64 V35 L120 15 H180" opacity="0.7"/>
+                <path d="M115 64 V45 L135 25 H210" opacity="0.7"/>
+                <path d="M125 95 H170 L190 75 H240" opacity="0.7"/>
+                <path d="M75 95 H35 L20 110 H5" opacity="0.7"/>
+                <path d="M100 126 V160 L80 180 H30" opacity="0.7"/>
+                <path d="M115 126 V170 L135 190 H190" opacity="0.7"/>
+
+                <!-- Surface Mount Resistors / Capacitors -->
+                <rect x="170" y="71" width="12" height="8" rx="2" fill="rgba(56, 189, 248, 0.4)"/>
+                <rect x="195" y="21" width="12" height="8" rx="2" fill="rgba(56, 189, 248, 0.4)"/>
+                <rect x="40" y="176" width="12" height="8" rx="2" fill="rgba(56, 189, 248, 0.4)"/>
+
+                <circle cx="180" cy="15" r="3" fill="#38bdf8"/>
+                <circle cx="240" cy="75" r="3" fill="#38bdf8"/>
+                <circle cx="5" cy="110" r="3" fill="#38bdf8"/>
+                <circle cx="30" cy="180" r="3" fill="#38bdf8"/>
+                <circle cx="190" cy="190" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: XUNG ĐIỆN TỬ PWM & SÓNG CAO TẦN -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Square Pulse Train Waveform (PWM clock) -->
+                <path d="M850 160 H880 V120 H910 V160 H940 V120 H970 V160 H1000 V120 H1030 V160 H1060" opacity="0.7" stroke-width="2"/>
+
+                <!-- Oscilloscope / Radar Circle Display -->
+                <g transform="translate(1110, 85)">
+                  <circle cx="0" cy="0" r="45" opacity="0.4" stroke-dasharray="4 4"/>
+                  <circle cx="0" cy="0" r="35" opacity="0.7" stroke-width="1.8"/>
+                  <!-- Sine Wave inside -->
+                  <path d="M-30 0 Q-15 -25 0 0 T30 0" stroke-width="2" opacity="0.9"/>
+                  <!-- Cross axis -->
+                  <line x1="-35" y1="0" x2="35" y2="0" opacity="0.5"/>
+                  <line x1="0" y1="-35" x2="0" y2="35" opacity="0.5"/>
+                </g>
+
+                <path d="M1065 85 H1030 L1010 65 H950" opacity="0.6"/>
+                <circle cx="950" cy="65" r="3" fill="#38bdf8"/>
+                <path d="M1060 160 L1090 190 H1160" opacity="0.6"/>
+                <circle cx="1160" cy="190" r="3" fill="#38bdf8"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Hải Phòng</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #0ea5e9, #6366f1);">
+                EL
+                <span>ELECTRONICS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>IC dán bề mặt SMD, Bus truyền dữ liệu song song, Xung nhịp PWM dao động</strong> — Đại diện cho ngành điện tử, cảm biến và bán dẫn.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">SMD IC</span>
+            <span class="tag-item">PWM Signal</span>
+            <span class="tag-item">PCB Design</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 6. LV11: NƯỚC - MÔI TRƯỜNG - XỬ LÝ CHẤT THẢI (GREEN ENVIRONMENT) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV11">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV11</span>
+            <div>
+              <div class="sector-title">Nước – Môi Trường – Tái Chế & Giảm Phát Thải Net Zero</div>
+              <div class="sector-desc">Biểu tượng: Giọt nước tinh khiết tuần hoàn sinh thái, Tuabin gió, Tháp lọc khí Net-Zero</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">💧 Water & Net-Zero Environment</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: GIỌT NƯỚC & VÒNG TUẦN HOÀN SINH THÁI KHÉP KÍN -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Circular Recycle Loop Arrows -->
+                <g transform="translate(100, 95)">
+                  <!-- Arrow 1 (Top) -->
+                  <path d="M-30 -20 A38 38 0 0 1 30 -20" stroke-width="2" opacity="0.8"/>
+                  <polyline points="22 -28 30 -20 22 -12" stroke-width="2" fill="none"/>
+                  <!-- Arrow 2 (Right to Bottom) -->
+                  <path d="M35 -5 A38 38 0 0 1 0 38" stroke-width="2" opacity="0.8"/>
+                  <polyline points="8 33 0 38 0 30" stroke-width="2" fill="none"/>
+                  <!-- Arrow 3 (Bottom to Left) -->
+                  <path d="M-15 35 A38 38 0 0 1 -35 -5" stroke-width="2" opacity="0.8"/>
+                  <polyline points="-30 -12 -35 -5 -42 -10" stroke-width="2" fill="none"/>
+
+                  <!-- Water droplet center -->
+                  <path d="M0 -15 C-12 5 -15 15 -15 22 C-15 31 -7 38 0 38 C7 38 15 31 15 22 C15 15 12 5 0 -15 Z" fill="rgba(56, 189, 248, 0.15)" stroke-width="1.8" opacity="0.9"/>
+                  <circle cx="0" cy="22" r="3" fill="#38bdf8"/>
+                </g>
+
+                <!-- Nano Membrane Filtration Layers -->
+                <path d="M160 50 V140 M170 50 V140 M180 50 V140" opacity="0.6" stroke-dasharray="2 3"/>
+                <path d="M100 25 V10 H40" opacity="0.6"/>
+                <circle cx="40" cy="10" r="3" fill="#38bdf8"/>
+                <path d="M180 95 H240 L260 115 H290" opacity="0.6"/>
+                <circle cx="290" cy="115" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: TUABIN GIÓ & MÀNG LỌC KHÍ THẢI NET ZERO -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Wind Turbine Tower -->
+                <g transform="translate(1080, 110)">
+                  <!-- Tower Pole -->
+                  <line x1="0" y1="0" x2="-8" y2="90" stroke-width="2.5" opacity="0.8"/>
+                  <line x1="0" y1="0" x2="8" y2="90" stroke-width="2.5" opacity="0.8"/>
+                  <line x1="-15" y1="90" x2="15" y2="90" stroke-width="3" opacity="0.9"/>
+                  <!-- Nacelle Center -->
+                  <circle cx="0" cy="0" r="6" fill="#38bdf8" opacity="0.9"/>
+
+                  <!-- 3 Blades -->
+                  <!-- Blade 1 (Top) -->
+                  <path d="M0 -6 C-3 -30 -1 -55 0 -65 C1 -55 3 -30 0 -6 Z" fill="rgba(56, 189, 248, 0.2)" stroke-width="1.8"/>
+                  <!-- Blade 2 (Bottom Right) -->
+                  <path d="M5 3 C25 18 45 35 55 42 C45 42 25 30 5 3 Z" fill="rgba(56, 189, 248, 0.2)" stroke-width="1.8"/>
+                  <!-- Blade 3 (Bottom Left) -->
+                  <path d="M-5 3 C-25 18 -45 35 -55 42 C-45 42 -25 30 -5 3 Z" fill="rgba(56, 189, 248, 0.2)" stroke-width="1.8"/>
+                </g>
+
+                <!-- Air Purity Waves / CO2 Reduction Curve -->
+                <path d="M920 80 Q960 60 1000 80 T1080 80" opacity="0.5"/>
+                <path d="M900 110 Q940 90 980 110 T1060 110" opacity="0.5"/>
+                <path d="M880 140 Q920 120 960 140 T1040 140" opacity="0.5"/>
+
+                <circle cx="880" cy="140" r="3" fill="#38bdf8"/>
+                <circle cx="900" cy="110" r="3" fill="#38bdf8"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Đà Nẵng</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #0d9488, #059669);">
+                EN
+                <span>ECO-TECH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Vòng tuần hoàn giọt nước tái sinh, Tuabin gió năng lượng sạch, Luồng khí đối lưu</strong> — Khẳng định cam kết bảo vệ môi trường và ESG.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">Circular Economy</span>
+            <span class="tag-item">Net Zero CO2</span>
+            <span class="tag-item">Clean Water</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 7. LV12: XÂY DỰNG - HẠ TẦNG - ĐÔ THỊ THÔNG MINH (SMART INFRASTRUCTURE) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV12">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV12</span>
+            <div>
+              <div class="sector-title">Xây Dựng – Vật Liệu Mới – Hạ Tầng & Đô Thị Thông Minh</div>
+              <div class="sector-desc">Biểu tượng: Cần trục tháp xây dựng, Giàn thép chịu lực không gian, Skyline cao ốc</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">🏗️ Smart City & Civil Engineering</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: CẦN TRỤC THÁP & GIÀN DẦM KHÔNG GIAN -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Construction Tower Crane -->
+                <g transform="translate(110, 40)">
+                  <!-- Vertical Mast -->
+                  <line x1="-8" y1="20" x2="-8" y2="160" stroke-width="2" opacity="0.8"/>
+                  <line x1="8" y1="20" x2="8" y2="160" stroke-width="2" opacity="0.8"/>
+                  <!-- Mast Truss Bracing -->
+                  <path d="M-8 40 L8 60 M-8 60 L8 80 M-8 80 L8 100 M-8 100 L8 120 M-8 120 L8 140 M-8 140 L8 160" opacity="0.5"/>
+
+                  <!-- Horizontal Jib Boom -->
+                  <line x1="-60" y1="20" x2="110" y2="20" stroke-width="2.5" opacity="0.9"/>
+                  <!-- Top Peak Apex -->
+                  <line x1="0" y1="-15" x2="-60" y2="20" opacity="0.7"/>
+                  <line x1="0" y1="-15" x2="35" y2="20" opacity="0.7"/>
+                  <line x1="0" y1="-15" x2="85" y2="20" opacity="0.7"/>
+
+                  <!-- Trolley & Hoist Cable -->
+                  <rect x="55" y="22" width="10" height="6" fill="#38bdf8"/>
+                  <line x1="60" y1="28" x2="60" y2="75" stroke-dasharray="2 2" opacity="0.8"/>
+                  <path d="M55 75 L60 82 L65 75 Z" fill="#38bdf8"/>
+                </g>
+
+                <!-- Space Truss Girder Geometry (Khung giàn chịu lực) -->
+                <path d="M220 120 L250 80 L280 120 L310 80 L340 120" stroke-width="1.8" opacity="0.6"/>
+                <line x1="220" y1="120" x2="340" y2="120" stroke-width="2" opacity="0.7"/>
+                <line x1="250" y1="80" x2="310" y2="80" stroke-width="2" opacity="0.7"/>
+              </g>
+
+              <!-- CÁNH PHẢI: SKYLINE ĐÔ THỊ THÔNG MINH & CẦU DÂY VĂNG -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Smart City Skyline Silhouettes -->
+                <!-- Tower 1 -->
+                <rect x="940" y="90" width="35" height="110" opacity="0.7" fill="rgba(56, 189, 248, 0.08)"/>
+                <line x1="957" y1="90" x2="957" y2="65" stroke-width="2" opacity="0.8"/>
+                <line x1="945" y1="110" x2="970" y2="110" opacity="0.5"/>
+                <line x1="945" y1="130" x2="970" y2="130" opacity="0.5"/>
+                <line x1="945" y1="150" x2="970" y2="150" opacity="0.5"/>
+
+                <!-- Tower 2 (Diagonal futuristic apex) -->
+                <path d="M985 200 V70 L1015 50 V200 Z" opacity="0.8" fill="rgba(56, 189, 248, 0.12)"/>
+                <line x1="995" y1="85" x2="1005" y2="85" opacity="0.5"/>
+                <line x1="995" y1="105" x2="1005" y2="105" opacity="0.5"/>
+                <line x1="995" y1="125" x2="1005" y2="125" opacity="0.5"/>
+
+                <!-- Tower 3 -->
+                <rect x="1030" y="110" width="40" height="90" opacity="0.6" fill="rgba(56, 189, 248, 0.06)"/>
+
+                <!-- Cable-Stayed Bridge Cables (Cầu dây văng) -->
+                <line x1="1110" y1="70" x2="1110" y2="200" stroke-width="3" opacity="0.9"/>
+                <line x1="1110" y1="90" x2="1070" y2="190" opacity="0.7"/>
+                <line x1="1110" y1="115" x2="1080" y2="190" opacity="0.6"/>
+                <line x1="1110" y1="140" x2="1092" y2="190" opacity="0.5"/>
+                <line x1="1110" y1="90" x2="1150" y2="190" opacity="0.7"/>
+                <line x1="1110" y1="115" x2="1140" y2="190" opacity="0.6"/>
+                <line x1="1110" y1="140" x2="1128" y2="190" opacity="0.5"/>
+                <!-- Bridge Deck -->
+                <line x1="1060" y1="190" x2="1170" y2="190" stroke-width="3" opacity="0.9"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Bình Dương</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #475569, #1e293b);">
+                CI
+                <span>CIVIL-INFRA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Cần trục tháp vươn cao, Giàn dầm thép không gian, Skyline cao ốc & Cầu dây văng</strong> — Thể hiện năng lực thi công hạ tầng tầm vóc.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">Smart City</span>
+            <span class="tag-item">Steel Truss</span>
+            <span class="tag-item">Tower Crane</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 8. LV14: LOGISTICS - VẬN TẢI - KHO BÃI (SUPPLY CHAIN & LOGISTICS) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV14">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV14</span>
+            <div>
+              <div class="sector-title">Logistics – Chuỗi Cung Ứng Toàn Cầu & Kho Vận Thông Minh</div>
+              <div class="sector-desc">Biểu tượng: Quả địa cầu tuyến vận tải quốc tế, Tàu container hàng hải, Kho tự động AGV</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">🚢 Global Logistics & Smart Warehousing</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: QUẢ ĐỊA CẦU TUYẾN VẬN TẢI TOÀN CẦU -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Global Coordinates Globe -->
+                <g transform="translate(110, 95)">
+                  <circle cx="0" cy="0" r="48" stroke-width="2" opacity="0.7"/>
+                  <!-- Parallels & Meridians -->
+                  <ellipse cx="0" cy="0" rx="48" ry="18" opacity="0.4"/>
+                  <ellipse cx="0" cy="0" rx="22" ry="48" opacity="0.4"/>
+                  <line x1="-48" y1="0" x2="48" y2="0" opacity="0.5"/>
+
+                  <!-- Flight / Shipping Arc Routes -->
+                  <path d="M-30 15 Q0 -45 35 -10" stroke-width="2" stroke-dasharray="3 3" opacity="0.9"/>
+                  <!-- Plane icon at end of arc -->
+                  <polygon points="35,-10 32,-18 42,-12 37,-7" fill="#38bdf8"/>
+                </g>
+
+                <!-- Navigation Waypoints & Container Lines -->
+                <path d="M110 35 L160 15 H210" opacity="0.6"/>
+                <circle cx="210" cy="15" r="3" fill="#38bdf8"/>
+                <path d="M160 95 H230 L250 120 H280" opacity="0.6"/>
+                <circle cx="280" cy="120" r="3" fill="#38bdf8"/>
+                <path d="M110 150 V175 H50" opacity="0.5"/>
+                <circle cx="50" cy="175" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: TÀU CONTAINER & KHO BÃI THÔNG MINH -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Cargo Container Vessel Silhouette -->
+                <g transform="translate(1000, 110)">
+                  <!-- Ship Hull -->
+                  <path d="M-80 35 L-70 55 H80 L110 35 Z" stroke-width="2" opacity="0.9" fill="rgba(56, 189, 248, 0.15)"/>
+                  <!-- Water Waves -->
+                  <path d="M-100 62 Q-70 56 -40 62 T20 62 T80 62 T140 62" opacity="0.6"/>
+
+                  <!-- Stacked Containers -->
+                  <!-- Row 1 -->
+                  <rect x="-55" y="15" width="22" height="16" opacity="0.7" fill="rgba(56, 189, 248, 0.1)"/>
+                  <rect x="-30" y="15" width="22" height="16" opacity="0.7" fill="rgba(56, 189, 248, 0.1)"/>
+                  <rect x="-5" y="15" width="22" height="16" opacity="0.7" fill="rgba(56, 189, 248, 0.1)"/>
+                  <rect x="20" y="15" width="22" height="16" opacity="0.7" fill="rgba(56, 189, 248, 0.1)"/>
+                  <!-- Row 2 -->
+                  <rect x="-30" y="-3" width="22" height="16" opacity="0.8" fill="rgba(56, 189, 248, 0.15)"/>
+                  <rect x="-5" y="-3" width="22" height="16" opacity="0.8" fill="rgba(56, 189, 248, 0.15)"/>
+                  <!-- Wheelhouse / Bridge Tower -->
+                  <rect x="55" y="-8" width="22" height="40" opacity="0.9" fill="rgba(56, 189, 248, 0.2)"/>
+                  <line x1="65" y1="-8" x2="65" y2="-20" stroke-width="2" opacity="0.8"/>
+                  <!-- Radar spinning beam -->
+                  <circle cx="65" cy="-20" r="3" fill="#38bdf8"/>
+                </g>
+
+                <!-- Barcode / QR Scan Lines -->
+                <path d="M1120 40 V90 M1126 40 V90 M1134 40 V90 M1138 40 V90 M1146 40 V90 M1152 40 V90" stroke-width="1.8" opacity="0.6"/>
+                <line x1="1115" y1="65" x2="1160" y2="65" stroke="#38bdf8" stroke-width="2" opacity="0.9"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Hải Phòng</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #0369a1, #0284c7);">
+                LG
+                <span>LOGISTICS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Quả địa cầu kinh tuyến hải trình, Tàu container biển khơi, Tia quét mã vận đơn RFID</strong> — Khẳng định chuỗi cung ứng liên vận quốc tế.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">Global Freight</span>
+            <span class="tag-item">Supply Chain</span>
+            <span class="tag-item">Container Ship</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 9. LV15: DU LỊCH - THƯƠNG MẠI - DỊCH VỤ (TOURISM & HOSPITALITY) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV15">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV15</span>
+            <div>
+              <div class="sector-title">Du Lịch – Khách Sạn – Dịch Vụ Thương Mại Cao Cấp</div>
+              <div class="sector-desc">Biểu tượng: Hoa la bàn hàng hải 8 hướng, Cánh buồm vươn khơi, Khách sạn 5 sao sang trọng</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">🧭 Tourism, Hospitality & Trade</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: HOA LA BÀN ĐỊNH HƯỚNG 8 HƯỚNG (COMPASS ROSE) -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <g transform="translate(100, 95)">
+                  <!-- Rings -->
+                  <circle cx="0" cy="0" r="48" opacity="0.4" stroke-dasharray="3 3"/>
+                  <circle cx="0" cy="0" r="38" opacity="0.7" stroke-width="1.8"/>
+                  <circle cx="0" cy="0" r="8" fill="#38bdf8" opacity="0.6"/>
+
+                  <!-- 4 Major Compass Points -->
+                  <polygon points="0,-48 6,-12 0,0 -6,-12" fill="rgba(56, 189, 248, 0.4)" stroke-width="1.5"/>
+                  <polygon points="0,48 6,12 0,0 -6,12" fill="rgba(56, 189, 248, 0.4)" stroke-width="1.5"/>
+                  <polygon points="-48,0 -12,-6 0,0 -12,6" fill="rgba(56, 189, 248, 0.4)" stroke-width="1.5"/>
+                  <polygon points="48,0 12,-6 0,0 12,6" fill="rgba(56, 189, 248, 0.4)" stroke-width="1.5"/>
+
+                  <!-- 4 Minor Compass Points -->
+                  <polygon points="-28,-28 -8,-2 0,0 -2,-8" fill="rgba(56, 189, 248, 0.2)"/>
+                  <polygon points="28,28 8,2 0,0 2,8" fill="rgba(56, 189, 248, 0.2)"/>
+                  <polygon points="-28,28 -8,2 0,0 -2,8" fill="rgba(56, 189, 248, 0.2)"/>
+                  <polygon points="28,-28 8,-2 0,0 2,-8" fill="rgba(56, 189, 248, 0.2)"/>
+                </g>
+
+                <path d="M150 95 H210 L230 75 H270" opacity="0.6"/>
+                <circle cx="270" cy="75" r="3" fill="#38bdf8"/>
+                <path d="M100 40 V15 H40" opacity="0.6"/>
+                <circle cx="40" cy="15" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: CÁNH BUỒM VƯƠN KHƠI & KHÁCH SẠN NGHỈ DƯỠNG -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Sailboat / Sail Architecture Structure (Biểu tượng Khát vọng & Du lịch biển) -->
+                <g transform="translate(1040, 110)">
+                  <!-- Main Sail -->
+                  <path d="M-15 40 C-10 -10 15 -45 35 -55 C25 -10 20 20 -15 40 Z" opacity="0.85" fill="rgba(56, 189, 248, 0.15)" stroke-width="2"/>
+                  <!-- Secondary Jib Sail -->
+                  <path d="M-22 40 C-20 10 -5 -15 15 -35 C5 -5 -10 15 -22 40 Z" opacity="0.7" fill="rgba(56, 189, 248, 0.1)"/>
+                  <!-- Boat Hull -->
+                  <path d="M-45 42 L-35 55 H45 L58 42 Z" opacity="0.9" fill="rgba(56, 189, 248, 0.2)" stroke-width="2"/>
+                  <!-- Water ripples -->
+                  <path d="M-70 60 Q-40 54 -10 60 T50 60 T100 60" opacity="0.6"/>
+                </g>
+
+                <!-- Luxury Star Rating Sparkles -->
+                <g transform="translate(920, 60)">
+                  <path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z" fill="#38bdf8" opacity="0.9"/>
+                </g>
+                <g transform="translate(950, 45)">
+                  <path d="M0 -6 L1.5 -1.5 L6 0 L1.5 1.5 L0 6 L-1.5 1.5 L-6 0 L-1.5 -1.5 Z" fill="#38bdf8" opacity="0.8"/>
+                </g>
+                <g transform="translate(980, 60)">
+                  <path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z" fill="#38bdf8" opacity="0.9"/>
+                </g>
+
+                <path d="M920 100 H870 L850 120 H800" opacity="0.5"/>
+                <circle cx="800" cy="120" r="3" fill="#38bdf8"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Quảng Ninh</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #0284c7, #0d9488);">
+                TH
+                <span>HOSPITALITY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Hoa la bàn hàng hải, Cánh buồm vươn khơi đại dương, Ngôi sao dịch vụ đẳng cấp</strong> — Tượng trưng cho du lịch nghỉ dưỡng và dịch vụ khách hàng 5 sao.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">Hospitality</span>
+            <span class="tag-item">Compass Rose</span>
+            <span class="tag-item">Luxury Cruise</span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================================= -->
+      <!-- 10. LV16: CNTT - VIỄN THÔNG - CHUYỂN ĐỔI SỐ (ICT & AI) -->
+      <!-- ========================================================================= -->
+      <div class="banner-card" data-sector="LV16">
+        <div class="card-meta">
+          <div class="card-sector-info">
+            <span class="sector-code">LV16</span>
+            <div>
+              <div class="sector-title">CNTT – Viễn Thông – Trí Tuệ Nhân Tạo & An Ninh Mạng</div>
+              <div class="sector-desc">Biểu tượng: Đám mây dữ liệu Cloud, Khiên bảo mật Cyber Shield, Mạng nơ-ron học sâu AI</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <span class="icon-pill">💻 Cloud, AI & Cyber Security</span>
+          </div>
+        </div>
+
+        <div class="nacen-banner">
+          <div class="watermark-layer" style="opacity: 0.25;">
+            <svg class="watermark-svg" viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- CÁNH TRÁI: CLOUD COMPUTING & KHIÊN BẢO MẬT CYBER -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Cloud Geometry Shape -->
+                <g transform="translate(110, 80)">
+                  <path d="M-35 15 C-42 15 -48 9 -48 2 C-48 -5 -43 -11 -37 -12 C-38 -15 -38 -18 -38 -20 C-38 -32 -28 -42 -15 -42 C-7 -42 0 -38 4 -32 C8 -38 15 -42 24 -42 C36 -42 46 -32 46 -20 C46 -18 45 -16 45 -14 C50 -12 55 -6 55 1 C55 9 48 15 40 15 Z" opacity="0.8" fill="rgba(56, 189, 248, 0.12)" stroke-width="2"/>
+                  <!-- Binary code strings -->
+                  <text x="-30" y="-8" fill="#38bdf8" font-size="9" font-family="monospace" opacity="0.8">01101</text>
+                  <text x="-15" y="6" fill="#38bdf8" font-size="9" font-family="monospace" opacity="0.8">10100</text>
+                </g>
+
+                <!-- Cyber Security Shield -->
+                <g transform="translate(185, 120)">
+                  <path d="M0 -25 L22 -16 V3 C22 17 0 28 0 28 C0 28 -22 17 -22 3 V-16 Z" opacity="0.9" fill="rgba(56, 189, 248, 0.2)" stroke-width="2"/>
+                  <!-- Keyhole inside shield -->
+                  <circle cx="0" cy="-2" r="4" fill="#38bdf8"/>
+                  <polygon points="-2,-2 2,-2 3,9 -3,9" fill="#38bdf8"/>
+                </g>
+
+                <!-- Data Stream Traces -->
+                <path d="M110 38 V15 H50" opacity="0.6"/>
+                <circle cx="50" cy="15" r="3" fill="#38bdf8"/>
+                <path d="M75 95 H20 M20 95 V140 H5" opacity="0.6"/>
+                <circle cx="5" cy="140" r="3" fill="#38bdf8"/>
+                <path d="M165 95 H230 L250 75 H290" opacity="0.6"/>
+                <circle cx="290" cy="75" r="3" fill="#38bdf8"/>
+              </g>
+
+              <!-- CÁNH PHẢI: MẠNG NƠ-RON AI & VỆ TINH PHÁT SÓNG 5G -->
+              <g stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Deep Neural Network Graph -->
+                <g transform="translate(1040, 100)">
+                  <!-- Layer 1 (Input) -->
+                  <circle cx="-60" cy="-40" r="5" fill="#38bdf8" opacity="0.8"/>
+                  <circle cx="-60" cy="0" r="5" fill="#38bdf8" opacity="0.8"/>
+                  <circle cx="-60" cy="40" r="5" fill="#38bdf8" opacity="0.8"/>
+
+                  <!-- Layer 2 (Hidden) -->
+                  <circle cx="0" cy="-55" r="6" fill="rgba(56, 189, 248, 0.3)" stroke-width="2"/>
+                  <circle cx="0" cy="-20" r="6" fill="rgba(56, 189, 248, 0.3)" stroke-width="2"/>
+                  <circle cx="0" cy="20" r="6" fill="rgba(56, 189, 248, 0.3)" stroke-width="2"/>
+                  <circle cx="0" cy="55" r="6" fill="rgba(56, 189, 248, 0.3)" stroke-width="2"/>
+
+                  <!-- Layer 3 (Output) -->
+                  <circle cx="60" cy="-25" r="7" fill="#38bdf8" opacity="0.9"/>
+                  <circle cx="60" cy="25" r="7" fill="#38bdf8" opacity="0.9"/>
+
+                  <!-- Synaptic Interconnections -->
+                  <line x1="-60" y1="-40" x2="0" y2="-55" opacity="0.4"/>
+                  <line x1="-60" y1="-40" x2="0" y2="-20" opacity="0.4"/>
+                  <line x1="-60" y1="-40" x2="0" y2="20" opacity="0.2"/>
+                  <line x1="-60" y1="0" x2="0" y2="-55" opacity="0.2"/>
+                  <line x1="-60" y1="0" x2="0" y2="-20" opacity="0.5"/>
+                  <line x1="-60" y1="0" x2="0" y2="20" opacity="0.5"/>
+                  <line x1="-60" y1="0" x2="0" y2="55" opacity="0.2"/>
+                  <line x1="-60" y1="40" x2="0" y2="-20" opacity="0.2"/>
+                  <line x1="-60" y1="40" x2="0" y2="20" opacity="0.4"/>
+                  <line x1="-60" y1="40" x2="0" y2="55" opacity="0.4"/>
+
+                  <line x1="0" y1="-55" x2="60" y2="-25" opacity="0.6"/>
+                  <line x1="0" y1="-20" x2="60" y2="-25" opacity="0.6"/>
+                  <line x1="0" y1="20" x2="60" y2="-25" opacity="0.3"/>
+                  <line x1="0" y1="-20" x2="60" y2="25" opacity="0.3"/>
+                  <line x1="0" y1="20" x2="60" y2="25" opacity="0.6"/>
+                  <line x1="0" y1="55" x2="60" y2="25" opacity="0.6"/>
+                </g>
+
+                <!-- 5G Telecommunications Satellite Waves -->
+                <path d="M1120 40 A30 30 0 0 1 1150 70" stroke-width="2" opacity="0.8"/>
+                <path d="M1120 25 A45 45 0 0 1 1165 70" stroke-width="1.8" opacity="0.6"/>
+                <path d="M1120 10 A60 60 0 0 1 1180 70" stroke-width="1.5" opacity="0.4"/>
+                <circle cx="1120" cy="70" r="4" fill="#38bdf8"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Real Header Overlays -->
+          <div class="banner-top-right">
+            <span class="pill-location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>Hà Nội</span>
+            </span>
+            <span class="pill-trade">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Sẵn Sàng Giao Thương</span>
+            </span>
+          </div>
+
+          <div class="banner-bottom-left">
+            <div class="avatar-box">
+              <div class="avatar-inner" style="background: linear-gradient(135deg, #4f46e5, #0284c7);">
+                IT
+                <span>AI & CLOUD</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="banner-caption">
+          <div class="caption-left">
+            Đặc trưng: <strong>Điện toán đám mây Cloud, Khiên bảo mật Cyber Shield, Mạng nơ-ron học sâu AI</strong> — Thể hiện năng lực chuyển đổi số và trí tuệ nhân tạo.
+          </div>
+          <div class="caption-tags">
+            <span class="tag-item">Deep Learning</span>
+            <span class="tag-item">Cyber Shield</span>
+            <span class="tag-item">Cloud Data</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function updateOpacity(val) {
+      document.getElementById('opacityVal').textContent = val + '%';
+      const dec = val / 100;
+      document.querySelectorAll('.watermark-layer').forEach(el => {
+        el.style.opacity = dec;
+      });
+    }
+
+    function filterSector(sectorCode) {
+      // Update active button
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick').includes(sectorCode)) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Filter cards
+      document.querySelectorAll('.banner-card').forEach(card => {
+        if (sectorCode === 'ALL' || card.getAttribute('data-sector') === sectorCode) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

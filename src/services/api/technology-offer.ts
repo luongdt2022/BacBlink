@@ -32,6 +32,7 @@ export async function fetchPublicOffers(params?: {
   minTrl?: number;
   ipStatus?: string;
   enterpriseTaxCode?: string;
+  rotate?: boolean;
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -50,6 +51,8 @@ export async function fetchPublicOffers(params?: {
       query.set("ipStatus", params.ipStatus);
     if (params?.enterpriseTaxCode)
       query.set("enterpriseTaxCode", params.enterpriseTaxCode);
+    if (params?.rotate !== undefined)
+      query.set("rotate", String(params.rotate));
     if (params?.page) query.set("page", String(params.page));
     if (params?.limit) query.set("limit", String(params.limit));
 

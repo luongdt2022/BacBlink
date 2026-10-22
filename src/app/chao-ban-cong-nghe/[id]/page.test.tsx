@@ -21,6 +21,7 @@ const mockOffer: TechnologyOffer = {
   currency: "VND",
   unit: "bản quyền phần mềm + tích hợp nhà máy",
   developerOrigin: "Viện Năng Lượng - Bộ Công Thương",
+  enterpriseTaxCode: "0109887766",
   trlLevel: 8,
   ipStatus: "COPYRIGHT_REGISTERED",
   ipRegistrationNumber: "VN-CP-2025-0089",
@@ -347,12 +348,37 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
     // 1. Kiểm tra link ở thông tin đơn vị chào bán
     const originLinks = screen.getAllByRole("link", { name: /Viện Năng Lượng - Bộ Công Thương/i });
     expect(originLinks.length).toBeGreaterThanOrEqual(1);
-    expect(originLinks[0]).toHaveAttribute("href", expect.stringMatching(/^\/enterprises\//));
+    expect(originLinks[0]).toHaveAttribute("href", "/enterprises/0109887766");
 
     // 2. Kiểm tra nút xem hồ sơ doanh nghiệp ở sidebar
     const profileBtn = screen.getByRole("link", { name: /Xem Hồ Sơ Doanh Nghiệp/i });
     expect(profileBtn).toBeInTheDocument();
-    expect(profileBtn).toHaveAttribute("href", expect.stringMatching(/^\/enterprises\//));
+    expect(profileBtn).toHaveAttribute("href", "/enterprises/0109887766");
+  });
+
+  it("T-04-CR96-fallback: Khi không có enterpriseTaxCode hiển thị 'Đang cập nhật MST' và không render Link tới 0108992134", async () => {
+    const offerWithoutTaxCode: TechnologyOffer = {
+      ...mockOffer,
+      enterpriseTaxCode: undefined,
+    };
+    (fetchOfferById as any).mockResolvedValueOnce(offerWithoutTaxCode);
+
+    render(<ChiTietChaoBanPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/Nền tảng Digital Twin mô phỏng/i)).toBeInTheDocument();
+    });
+
+    // 1. Hiển thị 'Đang cập nhật MST'
+    expect(screen.getByText("Đang cập nhật MST")).toBeInTheDocument();
+
+    // 2. Không có bất kỳ link nào trỏ tới 0108992134
+    expect(screen.queryByRole("link", { name: /Xem Hồ Sơ Doanh Nghiệp/i })).toBeNull();
+    const links = screen.queryAllByRole("link");
+    const brokenFallbackLinks = links.filter((l) => l.getAttribute("href")?.includes("0108992134"));
+    expect(brokenFallbackLinks).toHaveLength(0);
+
+    // 3. Nút xem hồ sơ ở sidebar là button disabled 'Chưa liên kết hồ sơ DN'
+    expect(screen.getByRole("button", { name: /Chưa liên kết hồ sơ DN/i })).toBeDisabled();
   });
 
   it("T-04.101 [AC-04-038]: Empty State DataRoom khi hồ sơ không đính kèm tài liệu", async () => {

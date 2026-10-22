@@ -28,6 +28,7 @@ import {
 } from "@/services/api/technology-offer";
 import { TechnologyOffer, SectorItem } from "@/types/technology-offer";
 import { getTechnologyImage } from "@/lib/technology-media";
+import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 
 function ChaoBanCongNgheContent() {
   const router = useRouter();
@@ -768,7 +769,7 @@ function ChaoBanCongNgheContent() {
                   >
                     <div>
                       {/* Media Thumbnail Container (Responsive Aspect Ratio) */}
-                      <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                      <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-brand-700">
                         <Image
                           src={coverImage}
                           alt={offer.title}
@@ -777,7 +778,13 @@ function ChaoBanCongNgheContent() {
                           sizes="(max-width: 768px) 100vw, 50vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                        {/* Sector Watermark Overlay */}
+                        <SectorBannerBackground
+                          sectorCode={offer.sectorCode}
+                          sectorName={offer.sectorName}
+                          opacity={0.45}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
                         {/* Top Overlay Badges */}
                         <div className="absolute top-2.5 right-2.5">
@@ -840,17 +847,29 @@ function ChaoBanCongNgheContent() {
 
                           {/* Đơn vị chào bán / Doanh nghiệp sở hữu */}
                           {(offer.enterpriseName || offer.developerOrigin || offer.enterpriseTaxCode) ? (
-                            <Link
-                              href={offer.enterpriseTaxCode ? `/enterprises/${offer.enterpriseTaxCode}` : `/enterprises/0108992134`}
-                              className="flex items-center gap-1.5 text-caption text-brand-700 dark:text-brand-400 hover:text-brand-900 font-medium group/seller truncate"
-                              title={`Xem hồ sơ doanh nghiệp: ${offer.enterpriseName || offer.developerOrigin || "Xem chi tiết"}`}
-                            >
-                              <Building2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
-                              <span className="truncate group-hover/seller:underline">
-                                {offer.enterpriseName || offer.developerOrigin || `MST: ${offer.enterpriseTaxCode || "0108992134"}`}
-                              </span>
-                              <span className="text-[10px] font-mono text-brand-500 opacity-0 group-hover/seller:opacity-100 transition">↗</span>
-                            </Link>
+                            offer.enterpriseTaxCode ? (
+                              <Link
+                                href={`/enterprises/${offer.enterpriseTaxCode}`}
+                                className="flex items-center gap-1.5 text-caption text-brand-700 dark:text-brand-400 hover:text-brand-900 font-medium group/seller truncate"
+                                title={`Xem hồ sơ doanh nghiệp: ${offer.enterpriseName || offer.developerOrigin || "Xem chi tiết"}`}
+                              >
+                                <Building2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+                                <span className="truncate group-hover/seller:underline">
+                                  {offer.enterpriseName || offer.developerOrigin || `MST: ${offer.enterpriseTaxCode}`}
+                                </span>
+                                <span className="text-xs font-mono text-brand-500 opacity-0 group-hover/seller:opacity-100 transition">↗</span>
+                              </Link>
+                            ) : (
+                              <div
+                                className="flex items-center gap-1.5 text-caption text-slate-600 dark:text-slate-400 font-medium truncate"
+                                title={offer.enterpriseName || offer.developerOrigin || "Đang cập nhật đơn vị"}
+                              >
+                                <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <span className="truncate">
+                                  {offer.enterpriseName || offer.developerOrigin || "Đang cập nhật đơn vị"}
+                                </span>
+                              </div>
+                            )
                           ) : null}
                         </div>
                       </div>

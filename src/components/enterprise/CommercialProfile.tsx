@@ -32,6 +32,7 @@ import {
 import { type EnterprisePublicDetail } from "@/lib/enterprise-client";
 import { type TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyImage } from "@/lib/technology-media";
+import { SectorBannerBackground } from "./SectorBannerBackground";
 
 interface CommercialProfileProps {
   data: EnterprisePublicDetail;
@@ -137,9 +138,13 @@ export function CommercialProfile({
       {/* HERO CARD: NHẬN DIỆN THƯƠNG MẠI & BẢO CHỨNG PHÁP LÝ */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
-        {/* Cover Banner (Đồng bộ chuẩn Brand-700 & Innovation Art của dự án NacenTech) */}
+        {/* Cover Banner (Đồng bộ chuẩn Brand-700 & Sector Watermark theo Nhóm Ngành) */}
         <div className="h-44 sm:h-52 bg-brand-700 relative overflow-hidden border-b border-brand-800">
-          <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
+          <SectorBannerBackground
+            sectorCode={data.sectorCode}
+            sectorName={data.mainSectorName}
+            opacity={0.45}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-brand-900/40 via-transparent to-transparent"></div>
 
           <div className="absolute right-4 sm:right-6 top-4 flex items-center gap-2 z-10">

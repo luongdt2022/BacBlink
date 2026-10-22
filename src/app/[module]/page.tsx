@@ -4,21 +4,12 @@ import { notFound, redirect } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
-  BookOpen,
   Building2,
   GraduationCap,
   Handshake,
-  Layers,
-  Scale,
-  ShoppingCart,
 } from "lucide-react";
 
 const modules = {
-  "gioi-thieu": {
-    title: "Giới thiệu NacenTwin",
-    description: "Nền tảng đổi mới sáng tạo và kết nối cung cầu công nghệ của Viện Đổi Mới Sáng Tạo Quốc Gia.",
-    icon: BookOpen,
-  },
   "doanh-nghiep-dmst": {
     title: "Doanh nghiệp đổi mới sáng tạo",
     description: "Không gian hồ sơ doanh nghiệp ĐMST, phân tích theo vùng/ngành và kết nối hệ sinh thái.",
@@ -33,11 +24,6 @@ const modules = {
     title: "Chuyên gia KH&CN",
     description: "Tìm kiếm hồ sơ chuyên gia và kết nối tư vấn công nghệ.",
     icon: Handshake,
-  },
-  "dich-vu-khac": {
-    title: "Dịch vụ khác",
-    description: "Đánh giá, định giá công nghệ và tư vấn về sở hữu trí tuệ, sáng chế, doanh nghiệp KH&CN.",
-    icon: Scale,
   },
 } as const;
 
@@ -54,12 +40,6 @@ export default async function PublicModulePage({ params }: { params: Promise<{ m
   }
   if (module === "doanh-nghiep-dmst") {
     redirect("/enterprises");
-  }
-  if (module === "gioi-thieu") {
-    redirect("/gioi-thieu");
-  }
-  if (module === "dich-vu-khac") {
-    redirect("/dich-vu-khac");
   }
 
   const item = modules[module as ModuleSlug];

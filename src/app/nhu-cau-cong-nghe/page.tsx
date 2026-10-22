@@ -30,6 +30,7 @@ import { useToast } from "@/components/common/toast";
 import { authClient, ROLES } from "@/lib/auth-client";
 import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
 import { SECTORS_18_CATALOG } from "@/services/api/technology-offer";
+import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 
 interface PublicDemandItem {
   id: string;
@@ -362,7 +363,7 @@ export default function PublicDemandsPage() {
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Tìm tên bài toán, công đoạn, giải pháp mong muốn..."
+                placeholder="Tìm kiếm tên bài toán, công đoạn, giải pháp mong muốn..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-11 pl-10 pr-4 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-control focus:ring-2 focus:ring-brand-500 outline-none transition font-medium text-slate-900 dark:text-white"
@@ -466,7 +467,7 @@ export default function PublicDemandsPage() {
       </div>
 
       {/* MAIN CONTAINER WITH 5 UX STATES */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
         <Async
           state={asyncState}
           onRetry={loadDemands}
@@ -557,8 +558,14 @@ export default function PublicDemandsPage() {
                     key={item.id}
                     className="group surface-card overflow-hidden flex flex-col hover:border-brand-500 hover:shadow-lg transition-all duration-200"
                   >
-                    {/* Media Banner: Khung thu hẹp gọn gàng, khoảng cách giữa badge và tiêu đề vừa vặn */}
-                    <div className="relative h-24 sm:h-28 w-full overflow-hidden bg-gradient-to-br from-brand-600 via-[#4d6aa4] to-brand-500 text-white border-b border-brand-500/40 p-3 sm:p-3.5 flex flex-col justify-between">
+                    {/* Media Banner: Khung thu hẹp gọn gàng, có logo chìm theo ngành phù hợp */}
+                    <div className="relative h-24 sm:h-28 w-full overflow-hidden bg-brand-700 text-white border-b border-brand-500/40 p-3 sm:p-3.5 flex flex-col justify-between">
+                      <SectorBannerBackground
+                        sectorCode={item.sectorCode}
+                        sectorName={sectorName}
+                        opacity={0.5}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-transparent pointer-events-none" />
                       {/* Floating Badges Header: Tên Lĩnh Vực & TNI Score */}
                       <div className="relative z-10 flex items-center justify-between gap-2">
                         <span className="inline-flex items-center text-xs font-bold text-brand-900 bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full shadow-sm">
@@ -703,7 +710,7 @@ export default function PublicDemandsPage() {
             )}
           </div>
         </Async>
-      </main>
+      </div>
 
       {/* QUICK DEMAND MODAL */}
       <QuickDemandModal

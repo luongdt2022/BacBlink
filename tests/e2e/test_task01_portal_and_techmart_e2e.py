@@ -150,6 +150,80 @@ def run_task01_e2e():
             })
             print("  ❌ PHÁT HIỆN DEFECT-07 [MAJOR]: Form đăng ký vé không hiển thị!")
 
+        # ------------------------------------------------------------------
+        # CA 5: Kiểm tra Delta v2: Trang chủ Cung - Cầu không duplicate key & đa dạng ngành
+        # ------------------------------------------------------------------
+        tests_run += 1
+        print("\n▶ [BB-05] Kiểm tra Delta v2: Cung - Cầu Trang chủ (Zero duplicate key & max 6 items)...")
+        console_warnings = []
+        page.on("console", lambda msg: console_warnings.append(msg.text) if msg.type in ["warning", "error"] else None)
+
+        page.goto(f"{BASE_URL}/", wait_until="networkidle")
+        time.sleep(1.5)
+
+        # Tab Chào bán
+        section = page.locator("section:has-text('Công nghệ & nhu cầu nổi bật')")
+        offer_cards = section.locator("article h3").all_inner_texts()
+        offer_titles_normalized = [t.strip().lower() for t in offer_cards if t.strip()]
+        if len(offer_titles_normalized) > 6:
+            defects.append({
+                "id": "DEFECT-08",
+                "severity": "CRITICAL",
+                "summary": f"Tab Chào bán hiển thị {len(offer_titles_normalized)} thẻ (vượt quá giới hạn 6 items).",
+                "url": f"{BASE_URL}/"
+            })
+            print(f"  ❌ PHÁT HIỆN DEFECT-08: Số lượng thẻ chào bán ({len(offer_titles_normalized)}) > 6!")
+        elif len(offer_titles_normalized) != len(set(offer_titles_normalized)):
+            defects.append({
+                "id": "DEFECT-09",
+                "severity": "CRITICAL",
+                "summary": "Tab Chào bán có tiêu đề bị trùng lặp trên giao diện.",
+                "url": f"{BASE_URL}/"
+            })
+            print("  ❌ PHÁT HIỆN DEFECT-09: Thẻ chào bán có tiêu đề trùng lặp!")
+        else:
+            print(f"  ✅ PASS: Tab Chào bán có {len(offer_titles_normalized)} thẻ duy nhất, không trùng lặp.")
+
+        # Chuyển sang Tab Nhu cầu đặt hàng
+        demands_tab = page.locator("button:has-text('Nhu cầu đặt hàng')").first
+        if demands_tab.is_visible():
+            demands_tab.click()
+            time.sleep(1)
+
+            demand_cards = section.locator("article h3").all_inner_texts()
+            demand_titles_normalized = [t.strip().lower() for t in demand_cards if t.strip()]
+            if len(demand_titles_normalized) > 6:
+                defects.append({
+                    "id": "DEFECT-10",
+                    "severity": "CRITICAL",
+                    "summary": f"Tab Nhu cầu hiển thị {len(demand_titles_normalized)} thẻ (vượt quá giới hạn 6 items).",
+                    "url": f"{BASE_URL}/"
+                })
+                print(f"  ❌ PHÁT HIỆN DEFECT-10: Số lượng thẻ nhu cầu ({len(demand_titles_normalized)}) > 6!")
+            elif len(demand_titles_normalized) != len(set(demand_titles_normalized)):
+                defects.append({
+                    "id": "DEFECT-11",
+                    "severity": "CRITICAL",
+                    "summary": "Tab Nhu cầu có bài toán bị trùng lặp tiêu đề trên giao diện.",
+                    "url": f"{BASE_URL}/"
+                })
+                print("  ❌ PHÁT HIỆN DEFECT-11: Thẻ nhu cầu có tiêu đề trùng lặp!")
+            else:
+                print(f"  ✅ PASS: Tab Nhu cầu có {len(demand_titles_normalized)} bài toán duy nhất, không trùng lặp.")
+
+        # Kiểm tra console key collision warnings
+        key_warnings = [w for w in console_warnings if "two children with the same key" in w or "unique \"key\" prop" in w]
+        if key_warnings:
+            defects.append({
+                "id": "DEFECT-12",
+                "severity": "MAJOR",
+                "summary": f"Phát hiện cảnh báo trùng lặp React key trên console: {key_warnings[0]}",
+                "url": f"{BASE_URL}/"
+            })
+            print(f"  ❌ PHÁT HIỆN DEFECT-12: Có React duplicate key warning!")
+        else:
+            print("  ✅ PASS: Console sạch 100%, 0 duplicate key warnings.")
+
         browser.close()
 
     print("\n======================================================================")

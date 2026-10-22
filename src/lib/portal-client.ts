@@ -64,9 +64,25 @@ export const portalClient = {
     return json.data;
   },
 
-  async getPublicDemands(): Promise<any[]> {
+  async getPublicDemands(params?: {
+    q?: string;
+    sectorCode?: string;
+    tniClassification?: string;
+    rotate?: boolean;
+    limit?: number;
+  }): Promise<any[]> {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/public/demands`, {
+      const searchParams = new URLSearchParams();
+      if (params?.q) searchParams.set("q", params.q);
+      if (params?.sectorCode) searchParams.set("sectorCode", params.sectorCode);
+      if (params?.tniClassification) searchParams.set("tniClassification", params.tniClassification);
+      if (params?.rotate !== undefined) searchParams.set("rotate", String(params.rotate));
+      if (params?.limit !== undefined) searchParams.set("limit", String(params.limit));
+
+      const queryStr = searchParams.toString();
+      const url = queryStr ? `${API_BASE}/api/v1/public/demands?${queryStr}` : `${API_BASE}/api/v1/public/demands`;
+
+      const res = await fetch(url, {
         headers: { Accept: "application/json" },
       });
       if (!res.ok) return [];

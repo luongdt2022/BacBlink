@@ -123,7 +123,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
+            <form className="space-y-5" method="POST" action="#" onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }}>
               <div>
                 <label className="block text-label font-bold text-slate-700 dark:text-slate-300">
                   Email đăng ký
