@@ -260,6 +260,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
   it("loads bookmarked IDs from server and allows authenticated user to toggle bookmark (CR-DEMAND-BOOKMARK)", async () => {
     authClient.setSession("test-token-jwt", {
       id: "buyer-user-01",
+      fullName: "Đại diện Doanh Nghiệp Buyer",
       email: "buyer@nacentech.vn",
       role: ROLES.BUYER,
     });
@@ -320,6 +321,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
   it("filters demands by bookmarked status when 'Đã lưu' pill is clicked (CR-DEMAND-BOOKMARK)", async () => {
     authClient.setSession("test-token-jwt", {
       id: "buyer-user-01",
+      fullName: "Đại diện Doanh Nghiệp Buyer",
       email: "buyer@nacentech.vn",
       role: ROLES.BUYER,
     });

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Smartphone,
@@ -15,13 +15,44 @@ import {
   Send,
   Building,
   Phone,
-  Mail
+  Mail,
+  Copy,
+  Check,
+  AlertCircle,
+  HelpCircle
 } from "lucide-react";
 import { useToast } from "@/components/common/toast";
 
 export default function ZaloPreviewPage() {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<"simulator" | "qr">("simulator");
+  const [qrTarget, setQrTarget] = useState<"zalo" | "web">("zalo");
+  const [copied, setCopied] = useState(false);
+  const [customHost, setCustomHost] = useState("");
+
+  const zaloAppId = "3656836549317117720";
+  const zaloDeepLink = `https://zalo.me/s/${zaloAppId}/`;
+
+  // Detect current origin or host for local mobile testing
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCustomHost(window.location.origin);
+    }
+  }, []);
+
+  const webMobileLink = `${customHost || "http://localhost:3000"}/experts/zalo-preview`;
+  const activeQrUrl = qrTarget === "zalo" ? zaloDeepLink : webMobileLink;
+  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=10&data=${encodeURIComponent(activeQrUrl)}`;
+
+  const handleCopyLink = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(activeQrUrl);
+      setCopied(true);
+      toast.success("Đã sao chép liên kết vào bộ nhớ tạm!", "Sao chép thành công");
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
   const [formData, setFormData] = useState({
     fullName: "TS. Nguyễn Văn Hùng",
     email: "hung.nv@hust.edu.vn",
@@ -138,10 +169,11 @@ export default function ZaloPreviewPage() {
               ) : (
                 <form onSubmit={handleSubmit} className="p-4 space-y-3 text-xs flex-1">
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
+                    <label htmlFor="fullName" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
                       Họ và tên chuyên gia <span className="text-rose-500">*</span>
                     </label>
                     <input
+                      id="fullName"
                       type="text"
                       required
                       value={formData.fullName}
@@ -152,10 +184,11 @@ export default function ZaloPreviewPage() {
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
+                      <label htmlFor="phone" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
                         Số điện thoại <span className="text-rose-500">*</span>
                       </label>
                       <input
+                        id="phone"
                         type="tel"
                         required
                         value={formData.phone}
@@ -164,10 +197,11 @@ export default function ZaloPreviewPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
+                      <label htmlFor="degree" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
                         Học vị cao nhất
                       </label>
                       <select
+                        id="degree"
                         value={formData.degree}
                         onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
                         className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-slate-50 dark:bg-slate-800 dark:border-slate-700"
@@ -181,10 +215,11 @@ export default function ZaloPreviewPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
+                    <label htmlFor="email" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
                       Email làm việc <span className="text-rose-500">*</span>
                     </label>
                     <input
+                      id="email"
                       type="email"
                       required
                       value={formData.email}
@@ -194,10 +229,11 @@ export default function ZaloPreviewPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
+                    <label htmlFor="organization" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-0.5">
                       Cơ quan / Viện / Trường công tác
                     </label>
                     <input
+                      id="organization"
                       type="text"
                       value={formData.organization}
                       onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
@@ -219,21 +255,95 @@ export default function ZaloPreviewPage() {
             </div>
           </div>
         ) : (
-          /* TAB QR CODE */
-          <div className="bg-white p-8 rounded-3xl border border-slate-200 text-center space-y-4 max-w-md mx-auto shadow-sm dark:bg-slate-900 dark:border-slate-800">
-            <div className="w-48 h-48 bg-slate-100 rounded-2xl mx-auto flex items-center justify-center border-2 border-dashed border-slate-300 dark:bg-slate-800 dark:border-slate-700">
-              <QrCode className="w-32 h-32 text-brand-600" />
+          /* TAB QR CODE THẬT */
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 text-center space-y-6 max-w-lg mx-auto shadow-sm dark:bg-slate-900 dark:border-slate-800">
+            {/* LỰA CHỌN MỤC TIÊU QUÉT */}
+            <div className="flex p-1 bg-slate-100 rounded-2xl dark:bg-slate-800">
+              <button
+                type="button"
+                onClick={() => setQrTarget("zalo")}
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition ${
+                  qrTarget === "zalo"
+                    ? "bg-white text-[#0068ff] shadow-xs dark:bg-slate-700 dark:text-white"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                }`}
+              >
+                Kênh Zalo Mini App Thật
+              </button>
+              <button
+                type="button"
+                onClick={() => setQrTarget("web")}
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition ${
+                  qrTarget === "web"
+                    ? "bg-white text-brand-700 shadow-xs dark:bg-slate-700 dark:text-white"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                }`}
+              >
+                Kênh Web Mobile Form
+              </button>
             </div>
-            <div className="space-y-1">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                Quét Mã QR Zalo Mini App
-              </h3>
-              <p className="text-xs text-slate-500">
-                Sử dụng camera hoặc ứng dụng Zalo trên điện thoại di động để mở trực tiếp biểu mẫu thu thập hồ sơ chuyên gia.
-              </p>
+
+            {/* HÌNH ẢNH MÃ QR THẬT (SCANNABLE 2D MATRIX) */}
+            <div className="relative inline-block p-4 bg-white rounded-2xl border-2 border-slate-200 shadow-sm mx-auto">
+              <img
+                src={qrCodeImageUrl}
+                alt="Mã QR Quét Thật Zalo Mini App"
+                width={240}
+                height={240}
+                className="w-56 h-56 mx-auto object-contain rounded-lg"
+              />
+              <div className="mt-2 text-xs font-medium text-slate-500 flex items-center justify-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Mã QR 2D Matrix chuẩn ISO</span>
+              </div>
             </div>
-            <div className="inline-block p-2 rounded-xl bg-brand-50 text-brand-800 text-xs font-semibold border border-brand-200">
-              Tích hợp Zalo SDK: Tự động điền Tên & SĐT đã đăng ký
+
+            {/* THÔNG TIN VÀ LIÊN KẾT ĐƯỢC MÃ HÓA */}
+            <div className="space-y-2 text-left bg-slate-50 p-4 rounded-2xl border border-slate-200 dark:bg-slate-800/60 dark:border-slate-700">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                <span>Dữ liệu liên kết đích (Target URL):</span>
+                <span className="text-xs px-2 py-0.5 rounded-md bg-brand-100 text-brand-800 dark:bg-brand-900/60 dark:text-brand-300">
+                  {qrTarget === "zalo" ? "Zalo Mini App Deep Link" : "Web Responsive Route"}
+                </span>
+              </div>
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 font-mono text-xs text-slate-600 break-all dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
+                {activeQrUrl}
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? "Đã chép link" : "Sao chép link"}</span>
+                </button>
+                <a
+                  href={activeQrUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Mở trực tiếp trên tab mới</span>
+                </a>
+              </div>
+            </div>
+
+            {/* HƯỚNG DẪN CHI TIẾT & ĐIỀU KIỆN KIỂM THỬ */}
+            <div className="text-left space-y-2 text-xs text-slate-600 dark:text-slate-300 border-t border-slate-200 pt-4 dark:border-slate-800">
+              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <HelpCircle className="w-4 h-4 text-brand-600" />
+                <span>Chỉ dẫn kiểm thử thực tế cho Tester & Chuyên gia:</span>
+              </div>
+              <ul className="list-disc list-inside space-y-1 text-slate-500 dark:text-slate-400">
+                <li>
+                  <strong>Quét Zalo Mini App thật (`zalo.me/s/{zaloAppId}/`):</strong> Dùng camera Zalo hoặc camera điện thoại. Yêu cầu Mini App đã được phát hành hoặc tài khoản Zalo của bạn nằm trong danh sách Tester trên Zalo for Developers.
+                </li>
+                <li>
+                  <strong>Quét Web Mobile Form:</strong> Dùng camera điện thoại mở trực tiếp biểu mẫu phản hồi nhanh trên trình duyệt mobile để kiểm thử luồng nhập liệu.
+                </li>
+              </ul>
             </div>
           </div>
         )}

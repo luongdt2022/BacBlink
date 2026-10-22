@@ -17,7 +17,7 @@ export function Tier3SectorDynamicForm({
 }: Tier3SectorDynamicFormProps) {
   const currentSector = TT17_SECTORS.find((s) => s.code === sectorCode) || TT17_SECTORS[0];
 
-  // Khởi tạo hoặc cập nhật thông số ngành khi sectorCode thay đổi
+  // Khởi tạo hoặc cập nhật thông số ngành khi sectorCode thay đổi hoặc khi bấm nút
   const handleLoadSectorDefaults = () => {
     if (!currentSector?.defaultSpecs) return;
 
@@ -35,13 +35,46 @@ export function Tier3SectorDynamicForm({
     setSpecValues([...newSectorSpecs, ...nonSectorSpecs]);
   };
 
-  // Tự động nạp lần đầu nếu chưa có trường TIER_3_SECTOR nào
+  // Tự động nạp mẫu ngành vào Lớp 3 khi chọn hoặc thay đổi ngành nghề ở tab trước
   useEffect(() => {
-    const hasSectorSpecs = specValues.some((s) => s.specCategory === "TIER_3_SECTOR");
-    if (!hasSectorSpecs && currentSector?.defaultSpecs) {
-      handleLoadSectorDefaults();
-    }
-  }, [sectorCode]);
+    if (!currentSector?.defaultSpecs || currentSector.defaultSpecs.length === 0) return;
+
+    setSpecValues((prev) => {
+      const sectorSpecs = prev.filter((s) => s.specCategory === "TIER_3_SECTOR");
+
+      // Kiểm tra xem bộ thông số hiện tại có khớp đúng với sectorCode đang chọn hay không
+      const isMatchingSector =
+        sectorSpecs.length > 0 &&
+        (sectorSpecs.some((s) => s.specCode?.startsWith(`SEC_${sectorCode}_`)) ||
+          (sectorSpecs.length === currentSector.defaultSpecs!.length &&
+            sectorSpecs.every((s, idx) => s.specName === currentSector.defaultSpecs![idx].specName)));
+
+      // Nếu đã đúng mẫu ngành hiện tại thì không ghi đè để bảo lưu dữ liệu người dùng đang nhập
+      if (isMatchingSector) {
+        return prev;
+      }
+
+      // Giữ lại các thông số tự do (TIER_3_CUSTOM) và thông số chung
+      const nonSectorSpecs = prev.filter((s) => s.specCategory !== "TIER_3_SECTOR");
+
+      // Tự động nạp bộ trường chuẩn theo ngành mới
+      const newSectorSpecs: OfferSpecValue[] = currentSector.defaultSpecs!.map((ds, idx) => {
+        // Bảo lưu giá trị nếu người dùng đã từng nhập trường có cùng tên thông số
+        const existing = sectorSpecs.find(
+          (s) => s.specName.trim().toLowerCase() === ds.specName.trim().toLowerCase()
+        );
+        return {
+          specCode: `SEC_${sectorCode}_${idx + 1}`,
+          specName: ds.specName,
+          specValue: existing?.specValue || "",
+          unit: ds.unit || "",
+          specCategory: "TIER_3_SECTOR",
+        };
+      });
+
+      return [...newSectorSpecs, ...nonSectorSpecs];
+    });
+  }, [sectorCode, currentSector]);
 
   const updateSectorSpecValue = (index: number, val: string) => {
     setSpecValues((prev) => {
@@ -115,7 +148,7 @@ export function Tier3SectorDynamicForm({
                 value={item.specValue}
                 onChange={(e) => updateSectorSpecValue(originalIndex, e.target.value)}
                 placeholder={`Nhập giá trị${item.unit ? ` (${item.unit})` : ""}`}
-                className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs outline-none focus:border-brand-500"
+                className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
               />
             </div>
           ))}

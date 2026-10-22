@@ -109,7 +109,7 @@ export function InlinePricingCard({
                 setPriceAmount(e.target.value ? Number(e.target.value) : undefined)
               }
               placeholder="Giá chào bán cụ thể (VD: 150000000)"
-              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-500 transition"
             />
             {errors.priceAmount && (
               <p className="mt-1 text-xs text-rose-600">{errors.priceAmount}</p>
@@ -120,7 +120,7 @@ export function InlinePricingCard({
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-sm font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
             >
               <option value="VND">VND (Việt Nam Đồng)</option>
               <option value="USD">USD (Đô la Mỹ)</option>
@@ -133,7 +133,7 @@ export function InlinePricingCard({
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="Đơn vị tính: bộ, chiếc, hệ thống, gói..."
-              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-500 transition"
             />
           </div>
         </div>
@@ -149,7 +149,7 @@ export function InlinePricingCard({
                 setPriceMin(e.target.value ? Number(e.target.value) : undefined)
               }
               placeholder="Giá từ (VD: 50000000)"
-              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-500 transition"
             />
             {errors.priceMin && (
               <p className="mt-1 text-xs text-rose-600">{errors.priceMin}</p>
@@ -164,7 +164,7 @@ export function InlinePricingCard({
                 setPriceMax(e.target.value ? Number(e.target.value) : undefined)
               }
               placeholder="Giá đến (VD: 200000000)"
-              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-500 transition"
             />
             {errors.priceMax && (
               <p className="mt-1 text-xs text-rose-600">{errors.priceMax}</p>
@@ -175,7 +175,7 @@ export function InlinePricingCard({
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-sm font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
             >
               <option value="VND">VND</option>
               <option value="USD">USD</option>
@@ -188,7 +188,7 @@ export function InlinePricingCard({
               value={unit}
               onChange={(e) => setUnit(e.target.value)}
               placeholder="Đơn vị tính: bộ, chiếc..."
-              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-500 transition"
             />
           </div>
         </div>

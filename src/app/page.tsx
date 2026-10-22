@@ -154,7 +154,7 @@ export default function HomePage() {
               owner: o.developerOrigin || "Chủ sở hữu công nghệ",
               location: o.managingAuthorityName || "Toàn quốc",
               trl: o.trlLevel ? `TRL ${o.trlLevel}` : "Đang hoàn thiện",
-              image: getTechnologyImage(o.sectorCode, o.title),
+              image: getTechnologyImage(o.sectorCode, o.title, o.mainImageUrl),
               type: "offers",
             }));
             setOffers(mapped);

@@ -109,7 +109,7 @@ export function DataRoomFileManager({
             <select
               value={docType}
               onChange={(e) => setDocType(e.target.value as OfferDocumentType)}
-              className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
             >
               <option value="CATALOGUE">Catalogue / Brochure</option>
               <option value="PATENT_CERT">Bằng sáng chế / Văn bằng SHTT</option>
@@ -126,7 +126,7 @@ export function DataRoomFileManager({
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
               placeholder="VD: Bao_cao_thu_nghiem_tai_hien_truong.pdf"
-              className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -135,7 +135,7 @@ export function DataRoomFileManager({
             <select
               value={accessScope}
               onChange={(e) => setAccessScope(e.target.value as AccessScope)}
-              className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
             >
               <option value="PUBLIC">PUBLIC — Ai cũng xem được</option>
               <option value="AFTER_CONNECTION">AFTER_CONNECTION — Chỉ sau kết nối</option>

@@ -188,7 +188,7 @@ export const EvidenceDocumentSection: React.FC<EvidenceDocumentSectionProps> = (
                   disabled={disabled}
                   value={doc.documentType}
                   onChange={(e) => handleUpdate(idx, "documentType", e.target.value)}
-                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-caption font-semibold text-slate-700 outline-none focus:border-brand-500"
+                  className="h-8 rounded-lg border border-slate-300 bg-white px-2.5 text-caption font-semibold text-slate-700 outline-none focus:border-brand-500 transition"
                 >
                   <option value="CATALOGUE">Catalogue / Brochure</option>
                   <option value="PATENT_CERT">Bằng SHTT</option>
@@ -201,7 +201,7 @@ export const EvidenceDocumentSection: React.FC<EvidenceDocumentSectionProps> = (
                   disabled={disabled}
                   value={doc.accessScope}
                   onChange={(e) => handleUpdate(idx, "accessScope", e.target.value)}
-                  className={`rounded-lg border px-2 py-1 text-caption font-bold outline-none ${
+                  className={`h-8 rounded-lg border px-2.5 text-caption font-bold outline-none transition ${
                     doc.accessScope === "PUBLIC"
                       ? "border-emerald-300 bg-emerald-50 text-emerald-800"
                       : doc.accessScope === "AFTER_CONNECTION"

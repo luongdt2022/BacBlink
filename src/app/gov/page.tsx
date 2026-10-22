@@ -25,9 +25,131 @@ import {
   RotateCcw,
   FileText,
   Building,
+  Image as ImageIcon,
+  Video,
+  ExternalLink,
+  Tag,
 } from "lucide-react";
 
 import { reviewOffer } from "@/services/api/technology-offer";
+import { TechnologyOffer } from "@/types/technology-offer";
+
+function formatOfferType(type?: string | null): string {
+  switch (type) {
+    case "DEVICE":
+      return "Thiết bị / Máy móc";
+    case "EQUIPMENT":
+      return "Dây chuyền / Thiết bị";
+    case "SOLUTION":
+      return "Giải pháp kỹ thuật";
+    case "SOFTWARE":
+      return "Phần mềm / Nền tảng số";
+    case "PROCESS":
+      return "Quy trình công nghệ";
+    case "PRODUCT":
+    default:
+      return "Sản phẩm thương mại";
+  }
+}
+
+function formatIpStatus(status?: string | null): { label: string; color: string } {
+  switch (status) {
+    case "PATENT_GRANTED":
+      return {
+        label: "Đã cấp Bằng sáng chế",
+        color: "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300",
+      };
+    case "UTILITY_MODEL":
+      return {
+        label: "Giải pháp hữu ích",
+        color: "bg-teal-50 text-teal-800 border-teal-300 dark:bg-teal-950/60 dark:text-teal-300",
+      };
+    case "TRADE_SECRET":
+      return {
+        label: "Bí mật kinh doanh",
+        color: "bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300",
+      };
+    case "PATENT_PENDING":
+    case "PATENT_APPLICATION":
+      return {
+        label: "Đang thẩm định đơn SHTT",
+        color: "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300",
+      };
+    case "SOFTWARE_COPYRIGHT":
+    case "COPYRIGHT_REGISTERED":
+      return {
+        label: "Bản quyền / Quyền tác giả",
+        color: "bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300",
+      };
+    case "NONE":
+    default:
+      return {
+        label: "Chưa bảo hộ SHTT",
+        color: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400",
+      };
+  }
+}
+
+function formatTrl(level?: number | null): { label: string; desc: string; color: string } {
+  const l = Number(level) || 0;
+  if (l >= 9) {
+    return {
+      label: `TRL ${l}/9`,
+      desc: "Thương mại hóa hoàn toàn",
+      color: "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300",
+    };
+  }
+  if (l >= 7) {
+    return {
+      label: `TRL ${l}/9`,
+      desc: "Thử nghiệm thực địa / Tiền thương mại",
+      color: "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300",
+    };
+  }
+  if (l >= 4) {
+    return {
+      label: `TRL ${l}/9`,
+      desc: "Mẫu thử nghiệm (Pilot)",
+      color: "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300",
+    };
+  }
+  return {
+    label: `TRL ${l || 1}/9`,
+    desc: "Ý tưởng & Nghiên cứu lab",
+    color: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400",
+  };
+}
+
+function formatTransferMethod(method?: string | null): string {
+  switch (method) {
+    case "EXCLUSIVE_LICENSE":
+      return "Li-xăng độc quyền";
+    case "NON_EXCLUSIVE_LICENSE":
+      return "Li-xăng không độc quyền";
+    case "ASSIGNMENT_SALE":
+      return "Chuyển giao quyền sở hữu (Bán đứt)";
+    case "JOINT_RD":
+      return "Hợp tác R&D / Hoàn thiện công nghệ";
+    case "CAPITAL_CONTRIBUTION":
+      return "Góp vốn bằng tài sản trí tuệ";
+    default:
+      return method || "Thỏa thuận chuyển giao";
+  }
+}
+
+function formatPrice(offer?: TechnologyOffer | null): string {
+  if (!offer) return "Liên hệ thỏa thuận";
+  if (offer.pricingType === "CONTACT") return "Liên hệ thỏa thuận";
+  if (offer.pricingType === "FIXED" && offer.priceAmount) {
+    return `${Number(offer.priceAmount).toLocaleString("vi-VN")} ${offer.currency || "VNĐ"}${offer.unit ? ` / ${offer.unit}` : ""}`;
+  }
+  if (offer.pricingType === "RANGE" && (offer.priceMin || offer.priceMax)) {
+    const min = offer.priceMin ? Number(offer.priceMin).toLocaleString("vi-VN") : "0";
+    const max = offer.priceMax ? Number(offer.priceMax).toLocaleString("vi-VN") : "...";
+    return `${min} - ${max} ${offer.currency || "VNĐ"}`;
+  }
+  return "Liên hệ thỏa thuận";
+}
 
 export interface GovApprovalItem {
   id: string;
@@ -45,6 +167,7 @@ export interface GovApprovalItem {
   degree?: string;
   summary?: string;
   version: number;
+  rawOffer?: TechnologyOffer;
 }
 
 const PROVINCE_MAP: Record<string, string> = {
@@ -125,8 +248,8 @@ export default function GovDashboard() {
             .filter((t: any) => t.status === "PENDING")
             .map((t: any) => ({
               id: t.id,
-              submitterName: t.developerOrigin || "Doanh nghiệp KH&CN",
-              submitterEmail: "seller@nacentwin.gov.vn",
+              submitterName: t.developerOrigin || t.enterpriseName || "Doanh nghiệp KH&CN",
+              submitterEmail: t.contactEmail || "seller@nacentwin.gov.vn",
               type: "TECHNOLOGY_OFFER" as const,
               titleOrOrg: t.title,
               scopeType: t.scopeType || "PROVINCE",
@@ -135,9 +258,12 @@ export default function GovDashboard() {
               sector: t.sectorCode || "",
               submittedAt: new Date(t.createdAt).toLocaleDateString("vi-VN"),
               status: "PENDING_APPROVAL",
-              summary: `${t.summary}\n\n[Bài toán]: ${t.problemSolved}\n[TRL]: ${t.trlLevel || "Chưa rõ"}/9 | [SHTT]: ${t.ipStatus || "Chưa bảo hộ"} | [Số văn bằng]: ${t.ipRegistrationNumber || "N/A"}`,
-              cvOrDocName: t.ipRegistrationNumber ? `Văn bằng SHTT: ${t.ipRegistrationNumber}` : undefined,
+              summary: t.summary || "",
+              cvOrDocName: t.ipRegistrationNumber
+                ? `Văn bằng SHTT: ${t.ipRegistrationNumber}`
+                : t.documents?.[0]?.fileName || undefined,
               version: 1,
+              rawOffer: t,
             }));
           mapped = [...mapped, ...techMapped];
         }
@@ -250,12 +376,23 @@ export default function GovDashboard() {
         )
       );
 
-      showToast(
-        reviewAction === "APPROVE"
-          ? `Đã phê duyệt hồ sơ ${selectedItem.submitterName}! Cấp role VERIFIED_EXPERT thành công.`
-          : `Đã chuyển trạng thái hồ sơ sang ${nextStatus}.`,
-        reviewAction === "APPROVE" ? "success" : "info"
-      );
+      const isOffer = selectedItem.type === "TECHNOLOGY_OFFER" || selectedItem.type === "SHOP";
+      let successMessage = `Đã chuyển trạng thái hồ sơ sang ${nextStatus}.`;
+      if (reviewAction === "APPROVE") {
+        successMessage = isOffer
+          ? `Đã phê duyệt sản phẩm "${selectedItem.titleOrOrg}"! Công nghệ đã sẵn sàng niêm yết trên Sàn.`
+          : `Đã phê duyệt hồ sơ chuyên gia ${selectedItem.submitterName}! Cấp role VERIFIED_EXPERT thành công.`;
+      } else if (reviewAction === "REQUEST_CHANGES") {
+        successMessage = isOffer
+          ? `Đã gửi yêu cầu hoàn thiện hồ sơ cho sản phẩm "${selectedItem.titleOrOrg}".`
+          : `Đã gửi yêu cầu bổ sung hồ sơ cho chuyên gia ${selectedItem.submitterName}.`;
+      } else if (reviewAction === "REJECT") {
+        successMessage = isOffer
+          ? `Đã từ chối niêm yết sản phẩm "${selectedItem.titleOrOrg}".`
+          : `Đã từ chối phê duyệt hồ sơ của ${selectedItem.submitterName}.`;
+      }
+
+      showToast(successMessage, reviewAction === "APPROVE" ? "success" : "info");
     } catch (e: any) {
       showToast(e.message || "Không thể xử lý yêu cầu thẩm định. Vui lòng thử lại.", "error");
     } finally {
@@ -419,9 +556,21 @@ export default function GovDashboard() {
                 <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold dark:text-slate-300">
                   <tr>
                     <th className="py-3 px-4">Mã Hồ Sơ</th>
-                    <th className="py-3 px-4">Chuyên Gia / Chủ Thể</th>
-                    <th className="py-3 px-4">Đơn Vị Công Tác / Trụ Sở</th>
-                    <th className="py-3 px-4">Lĩnh Vực Chuyên Môn</th>
+                    <th className="py-3 px-4">
+                      {activeTab === "SHOP"
+                        ? "Đơn Vị Chào Bán / Sở Hữu"
+                        : activeTab === "EXPERT"
+                        ? "Chuyên Gia Đăng Ký"
+                        : "Chủ Thể / Người Nộp"}
+                    </th>
+                    <th className="py-3 px-4">
+                      {activeTab === "SHOP"
+                        ? "Tên Sản Phẩm / Công Nghệ"
+                        : activeTab === "EXPERT"
+                        ? "Đơn Vị Công Tác"
+                        : "Tên Hồ Sơ / Cơ Quan"}
+                    </th>
+                    <th className="py-3 px-4">Lĩnh Vực Công Nghệ</th>
                     <th className="py-3 px-4">Ngày Nộp</th>
                     <th className="py-3 px-4">Trạng Thái</th>
                     <th className="py-3 px-4 text-right">Thao Tác</th>
@@ -434,7 +583,20 @@ export default function GovDashboard() {
                       className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition"
                     >
                       <td className="py-3.5 px-4 font-mono font-bold text-brand-700 dark:text-brand-300">
-                        {item.id}
+                        <div>{item.id.slice(0, 8)}...</div>
+                        {activeTab === "ALL" && (
+                          <span
+                            className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${
+                              item.type === "TECHNOLOGY_OFFER" || item.type === "SHOP"
+                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                                : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                            }`}
+                          >
+                            {item.type === "TECHNOLOGY_OFFER" || item.type === "SHOP"
+                              ? "Sản phẩm"
+                              : "Chuyên gia"}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-900 dark:text-white">
@@ -498,223 +660,423 @@ export default function GovDashboard() {
         </Async>
 
       {/* Review Modal / Pane Chi Tiết Hồ Sơ */}
-      {selectedItem && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-surface border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
-              <div className="flex items-center gap-2.5">
-                <ShieldCheck className="w-5 h-5 text-brand-700 dark:text-brand-300" />
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-card-title">
-                    Thẩm Định Hồ Sơ: {selectedItem.id}
-                  </h3>
-                  <p className="text-caption text-slate-500 dark:text-slate-400">
-                    Địa bàn tiếp nhận: <strong>Sở KH&CN {selectedItem.provinceName}</strong> (Cấp 2) &bull; Phiên bản: v{selectedItem.version}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedItem(null);
-                  setReviewAction(null);
-                  setReviewNote("");
-                  setReviewError("");
-                }}
-                className="p-1.5 rounded-control text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-5 flex-1 text-label">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
-                <div>
-                  <span className="text-caption text-slate-400 block">Họ và tên chuyên gia:</span>
-                  <span className="font-bold text-slate-900 dark:text-white text-body">
-                    {selectedItem.submitterName}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-caption text-slate-400 block">Học hàm / Học vị:</span>
-                  <span className="font-bold text-brand-700 dark:text-brand-300 text-body">
-                    {selectedItem.degree || "Tiến sĩ (TS)"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-caption text-slate-400 block">Cơ quan công tác:</span>
-                  <span className="font-medium text-slate-800 dark:text-slate-200">
-                    {selectedItem.titleOrOrg}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-caption text-slate-400 block">Lĩnh vực chuyên môn:</span>
-                  <span className="font-medium text-slate-800 dark:text-slate-200">
-                    {sectorNames[selectedItem.sector] ?? (selectedItem.sector || "Chưa khai báo")}
-                  </span>
-                </div>
-              </div>
-
-              {selectedItem.summary && (
-                <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white mb-1.5">
-                    Tóm Tắt Năng Lực & Hoạt Động Nghiên Cứu
-                  </h4>
-                  <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body">
-                    {selectedItem.summary}
+      {selectedItem && (() => {
+        const isOffer = selectedItem.type === "TECHNOLOGY_OFFER" || selectedItem.type === "SHOP";
+        return (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-surface border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
+                <div className="flex items-center gap-2.5">
+                  {isOffer ? (
+                    <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                      <ShoppingBag className="w-5 h-5" />
+                    </div>
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-card-title flex items-center gap-2">
+                      <span>
+                        {isOffer
+                          ? `Thẩm Định Sản Phẩm Chào Bán: ${selectedItem.titleOrOrg}`
+                          : `Thẩm Định Hồ Sơ Chuyên Gia: ${selectedItem.submitterName}`}
+                      </span>
+                    </h3>
+                    <p className="text-caption text-slate-500 dark:text-slate-400">
+                      Mã hồ sơ: <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{selectedItem.id}</span> &bull;{" "}
+                      Địa bàn tiếp nhận: <strong>Sở KH&CN {selectedItem.provinceName}</strong> (Cấp 2) &bull;{" "}
+                      Loại hình: <strong>{isOffer ? "Sản phẩm / Chào bán công nghệ" : "Hồ sơ Chuyên gia KH&CN"}</strong> &bull;{" "}
+                      Phiên bản: v{selectedItem.version}
+                    </p>
                   </div>
                 </div>
-              )}
-
-              {selectedItem.cvOrDocName && (
-                <div className="p-3.5 rounded-control bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-brand-700 dark:text-brand-300 font-medium">
-                    <FileText className="w-4 h-4" />
-                    <span>Tài liệu đính kèm: {selectedItem.cvOrDocName}</span>
-                  </div>
-                  <span className="text-caption text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    Đã kiểm tra chữ ký số
-                  </span>
-                </div>
-              )}
-
-              {/* Review Actions Form */}
-              <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
-                <h4 className="font-bold text-slate-900 dark:text-white">
-                  Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setReviewAction("APPROVE");
-                      setReviewError("");
-                    }}
-                    className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                      reviewAction === "APPROVE"
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 ring-2 ring-emerald-500"
-                        : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Phê Duyệt Cấp Tỉnh</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setReviewAction("REQUEST_CHANGES");
-                      setReviewError("");
-                    }}
-                    className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                      reviewAction === "REQUEST_CHANGES"
-                        ? "border-cyan-500 bg-cyan-50 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 ring-2 ring-cyan-500"
-                        : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <AlertCircle className="w-4 h-4 text-cyan-600 shrink-0" />
-                    <span>Yêu Cầu Bổ Sung</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setReviewAction("REJECT");
-                      setReviewError("");
-                    }}
-                    className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                      reviewAction === "REJECT"
-                        ? "border-rose-500 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 ring-2 ring-rose-500"
-                        : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                    }`}
-                  >
-                    <X className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>Từ Chối Hồ Sơ</span>
-                  </button>
-                </div>
-
-                {reviewAction && (
-                  <div className="space-y-2 pt-2">
-                    <label className="block text-caption font-bold text-slate-700 dark:text-slate-300">
-                      Ghi chú thẩm định / Lý do quyết định{" "}
-                      {reviewAction !== "APPROVE" && (
-                        <span className="text-rose-500">* (Bắt buộc &ge; 10 ký tự theo BR-ADM-004)</span>
-                      )}
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={reviewNote}
-                      onChange={(e) => {
-                        setReviewNote(e.target.value);
-                        if (reviewError) setReviewError("");
-                      }}
-                      placeholder={
-                        reviewAction === "APPROVE"
-                          ? "Ghi chú phê duyệt: Hồ sơ đáp ứng đầy đủ tiêu chí theo Thông tư 17..."
-                          : "Nhập lý do cụ thể để chuyên gia nắm rõ và bổ sung (tối thiểu 10 ký tự)..."
-                      }
-                      className="w-full p-3 rounded-control border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-body focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                    />
-                    {reviewError && (
-                      <p className="text-caption text-rose-600 font-semibold flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        <span>{reviewError}</span>
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
-              <span className="text-caption text-slate-400">
-                Quyết định này sẽ được gửi thông báo đến Chuyên gia và Trung Ương hậu kiểm.
-              </span>
-
-              <div className="flex items-center gap-3">
-                <AppButton
-                  variant="outline"
+                <button
+                  type="button"
                   onClick={() => {
                     setSelectedItem(null);
                     setReviewAction(null);
                     setReviewNote("");
                     setReviewError("");
                   }}
-                  className="px-4 py-2 rounded-control font-semibold text-slate-700 dark:text-slate-300"
+                  className="p-1.5 rounded-control text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
-                  Hủy bỏ
-                </AppButton>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-                <AppButton
-                  variant="primary"
-                  disabled={!reviewAction || processing}
-                  onClick={handleReviewSubmit}
-                  className={`px-6 py-2 rounded-control font-bold shadow-md transition ${
-                    reviewAction === "APPROVE"
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                      : reviewAction === "REJECT"
-                      ? "bg-rose-600 hover:bg-rose-700 text-white"
-                      : "bg-brand-700 hover:bg-brand-800 text-white"
-                  } disabled:opacity-50`}
-                >
-                  {processing ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Đang lưu quyết định...</span>
+              {/* Modal Body */}
+              <div className="p-6 overflow-y-auto space-y-5 flex-1 text-label">
+                {isOffer ? (
+                  /* Layout Thẩm Định Sản Phẩm Chào Bán Công Nghệ */
+                  <div className="space-y-5">
+                    {/* Grid thông tin chung */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
+                      <div>
+                        <span className="text-caption text-slate-400 block">Tên sản phẩm / công nghệ:</span>
+                        <span className="font-bold text-slate-900 dark:text-white text-body">
+                          {selectedItem.titleOrOrg}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Đơn vị chào bán / Sở hữu:</span>
+                        <span className="font-bold text-brand-700 dark:text-brand-300 text-body">
+                          {selectedItem.rawOffer?.developerOrigin ||
+                            selectedItem.rawOffer?.enterpriseName ||
+                            selectedItem.submitterName}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Lĩnh vực công nghệ (TT17):</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {sectorNames[selectedItem.sector] ?? (selectedItem.sector || "Chưa khai báo")}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Phân loại hình thức:</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {formatOfferType(selectedItem.rawOffer?.offerType)}
+                        </span>
+                      </div>
                     </div>
-                  ) : (
-                    <span>Xác Nhận Quyết Định</span>
+
+                    {/* 4 Thẻ chỉ số thẩm định nhanh: TRL, SHTT, Giá, Chuyển giao */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Mức sẵn sàng TRL</span>
+                        <span
+                          className={`inline-block mt-1 px-2 py-0.5 rounded text-caption font-bold border ${
+                            formatTrl(selectedItem.rawOffer?.trlLevel).color
+                          }`}
+                        >
+                          {formatTrl(selectedItem.rawOffer?.trlLevel).label}
+                        </span>
+                        <span className="block text-[11px] text-slate-500 mt-1 line-clamp-1">
+                          {formatTrl(selectedItem.rawOffer?.trlLevel).desc}
+                        </span>
+                      </div>
+
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Tình trạng SHTT</span>
+                        <span
+                          className={`inline-block mt-1 px-2 py-0.5 rounded text-caption font-bold border ${
+                            formatIpStatus(selectedItem.rawOffer?.ipStatus).color
+                          }`}
+                        >
+                          {formatIpStatus(selectedItem.rawOffer?.ipStatus).label}
+                        </span>
+                        {selectedItem.rawOffer?.ipRegistrationNumber && (
+                          <span className="block text-[11px] text-slate-500 mt-1 font-mono">
+                            Số: {selectedItem.rawOffer.ipRegistrationNumber}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Mức giá chào bán</span>
+                        <span className="block mt-1 font-bold text-emerald-700 dark:text-emerald-400 text-body">
+                          {formatPrice(selectedItem.rawOffer)}
+                        </span>
+                      </div>
+
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Phương thức chuyển giao</span>
+                        <span className="block mt-1 font-medium text-slate-800 dark:text-slate-200 text-caption line-clamp-2">
+                          {formatTransferMethod(
+                            selectedItem.rawOffer?.transferPriorityMethod || selectedItem.rawOffer?.transferMethod
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Ảnh minh họa & Video Demo (nếu có) */}
+                    {(selectedItem.rawOffer?.mainImageUrl ||
+                      (selectedItem.rawOffer?.galleryImageUrls &&
+                        selectedItem.rawOffer.galleryImageUrls.length > 0) ||
+                      selectedItem.rawOffer?.videoDemoUrl) && (
+                      <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-2">
+                        <h4 className="font-bold text-slate-900 dark:text-white text-caption uppercase tracking-wider flex items-center gap-1.5">
+                          <ImageIcon className="w-4 h-4 text-brand-600" />
+                          <span>Hình ảnh & Video giới thiệu sản phẩm</span>
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {selectedItem.rawOffer?.mainImageUrl && (
+                            <div className="w-24 h-20 rounded-control overflow-hidden border border-slate-200 dark:border-slate-700 relative bg-white shrink-0">
+                              <img
+                                src={selectedItem.rawOffer.mainImageUrl}
+                                alt="Ảnh đại diện"
+                                className="w-full h-full object-cover"
+                              />
+                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center font-bold py-0.5">
+                                Ảnh chính
+                              </span>
+                            </div>
+                          )}
+                          {selectedItem.rawOffer?.galleryImageUrls?.map((url, idx) => (
+                            <div
+                              key={idx}
+                              className="w-20 h-20 rounded-control overflow-hidden border border-slate-200 dark:border-slate-700 bg-white shrink-0"
+                            >
+                              <img
+                                src={url}
+                                alt={`Gallery ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                          {selectedItem.rawOffer?.videoDemoUrl && (
+                            <a
+                              href={selectedItem.rawOffer.videoDemoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-control bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900 text-caption font-bold hover:underline"
+                            >
+                              <Video className="w-4 h-4" />
+                              <span>Xem Video Demo</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Mô tả chi tiết & Bài toán giải quyết */}
+                    <div className="space-y-3">
+                      {(selectedItem.rawOffer?.summary || selectedItem.summary) && (
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider">
+                            Mô Tả &amp; Tính Năng Nổi Bật Của Sản Phẩm
+                          </h4>
+                          <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line">
+                            {selectedItem.rawOffer?.summary || selectedItem.summary}
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedItem.rawOffer?.problemSolved && (
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider">
+                            Vấn Đề / Bài Toán Thực Tiễn Giải Quyết
+                          </h4>
+                          <div className="p-3.5 rounded-control bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200/60 dark:border-brand-900/40 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line">
+                            {selectedItem.rawOffer.problemSolved}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* DataRoom & Tài Liệu Pháp Lý SHTT */}
+                    {selectedItem.cvOrDocName && (
+                      <div className="p-3.5 rounded-control bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-brand-700 dark:text-brand-300 font-medium">
+                          <FileText className="w-4 h-4" />
+                          <span>Hồ sơ minh chứng / DataRoom: {selectedItem.cvOrDocName}</span>
+                        </div>
+                        <span className="text-caption text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Đã xác thực chữ ký số
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Layout Thẩm Định Hồ Sơ Chuyên Gia KH&CN */
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
+                      <div>
+                        <span className="text-caption text-slate-400 block">Họ và tên chuyên gia:</span>
+                        <span className="font-bold text-slate-900 dark:text-white text-body">
+                          {selectedItem.submitterName}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Học hàm / Học vị:</span>
+                        <span className="font-bold text-brand-700 dark:text-brand-300 text-body">
+                          {selectedItem.degree || "Tiến sĩ (TS)"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Cơ quan công tác:</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {selectedItem.titleOrOrg}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Lĩnh vực chuyên môn:</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {sectorNames[selectedItem.sector] ?? (selectedItem.sector || "Chưa khai báo")}
+                        </span>
+                      </div>
+                    </div>
+
+                    {selectedItem.summary && (
+                      <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-1.5">
+                          Tóm Tắt Năng Lực &amp; Hoạt Động Nghiên Cứu
+                        </h4>
+                        <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body">
+                          {selectedItem.summary}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedItem.cvOrDocName && (
+                      <div className="p-3.5 rounded-control bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-brand-700 dark:text-brand-300 font-medium">
+                          <FileText className="w-4 h-4" />
+                          <span>Tài liệu đính kèm: {selectedItem.cvOrDocName}</span>
+                        </div>
+                        <span className="text-caption text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          Đã kiểm tra chữ ký số
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Review Actions Form */}
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
+                  <h4 className="font-bold text-slate-900 dark:text-white">
+                    Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReviewAction("APPROVE");
+                        setReviewError("");
+                      }}
+                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
+                        reviewAction === "APPROVE"
+                          ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 ring-2 ring-emerald-500"
+                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{isOffer ? "Phê Duyệt Niêm Yết Sàn" : "Phê Duyệt Cấp Tỉnh"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReviewAction("REQUEST_CHANGES");
+                        setReviewError("");
+                      }}
+                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
+                        reviewAction === "REQUEST_CHANGES"
+                          ? "border-cyan-500 bg-cyan-50 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 ring-2 ring-cyan-500"
+                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <AlertCircle className="w-4 h-4 text-cyan-600 shrink-0" />
+                      <span>Yêu Cầu Bổ Sung</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReviewAction("REJECT");
+                        setReviewError("");
+                      }}
+                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
+                        reviewAction === "REJECT"
+                          ? "border-rose-500 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 ring-2 ring-rose-500"
+                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <X className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{isOffer ? "Từ Chối Niêm Yết" : "Từ Chối Hồ Sơ"}</span>
+                    </button>
+                  </div>
+
+                  {reviewAction && (
+                    <div className="space-y-2 pt-2">
+                      <label className="block text-caption font-bold text-slate-700 dark:text-slate-300">
+                        Ghi chú thẩm định / Lý do quyết định{" "}
+                        {reviewAction !== "APPROVE" && (
+                          <span className="text-rose-500">* (Bắt buộc &ge; 10 ký tự theo BR-ADM-004)</span>
+                        )}
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={reviewNote}
+                        onChange={(e) => {
+                          setReviewNote(e.target.value);
+                          if (reviewError) setReviewError("");
+                        }}
+                        placeholder={
+                          reviewAction === "APPROVE"
+                            ? isOffer
+                              ? "Ghi chú phê duyệt: Sản phẩm đáp ứng tiêu chuẩn TRL và chứng minh tính pháp lý SHTT, đồng ý niêm yết lên Sàn Quốc gia..."
+                              : "Ghi chú phê duyệt: Hồ sơ đáp ứng đầy đủ tiêu chí theo Thông tư 17..."
+                            : isOffer
+                            ? "Nhập lý do cụ thể để doanh nghiệp bổ sung hoặc hoàn thiện hồ sơ chào bán..."
+                            : "Nhập lý do cụ thể để chuyên gia nắm rõ và bổ sung (tối thiểu 10 ký tự)..."
+                        }
+                        className="w-full p-3 rounded-control border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-body focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                      />
+                      {reviewError && (
+                        <p className="text-caption text-rose-600 font-semibold flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          <span>{reviewError}</span>
+                        </p>
+                      )}
+                    </div>
                   )}
-                </AppButton>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
+                <span className="text-caption text-slate-400">
+                  {isOffer
+                    ? "Quyết định phê duyệt sẽ được gửi thông báo đến Doanh nghiệp sở hữu và sản phẩm sẽ được niêm yết công khai trên Sàn."
+                    : "Quyết định này sẽ được gửi thông báo đến Chuyên gia và Trung Ương hậu kiểm."}
+                </span>
+
+                <div className="flex items-center gap-3">
+                  <AppButton
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedItem(null);
+                      setReviewAction(null);
+                      setReviewNote("");
+                      setReviewError("");
+                    }}
+                    className="px-4 py-2 rounded-control font-semibold text-slate-700 dark:text-slate-300"
+                  >
+                    Hủy bỏ
+                  </AppButton>
+
+                  <AppButton
+                    variant="primary"
+                    disabled={!reviewAction || processing}
+                    onClick={handleReviewSubmit}
+                    className={`px-6 py-2 rounded-control font-bold shadow-md transition ${
+                      reviewAction === "APPROVE"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : reviewAction === "REJECT"
+                        ? "bg-rose-600 hover:bg-rose-700 text-white"
+                        : "bg-brand-700 hover:bg-brand-800 text-white"
+                    } disabled:opacity-50`}
+                  >
+                    {processing ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Đang lưu quyết định...</span>
+                      </div>
+                    ) : (
+                      <span>Xác Nhận Quyết Định</span>
+                    )}
+                  </AppButton>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

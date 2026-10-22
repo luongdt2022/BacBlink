@@ -451,7 +451,7 @@ export function CommercialProfile({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredOffers.map((item) => {
-                    const coverImg = getTechnologyImage(item.sectorCode, item.title);
+                    const coverImg = getTechnologyImage(item.sectorCode, item.title, (item as any).mainImageUrl);
                     return (
                       <div
                         key={item.id}

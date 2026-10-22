@@ -75,7 +75,7 @@ export function Tier4CommercialForm({
             <select
               value={transferPriorityMethod}
               onChange={(e) => setTransferPriorityMethod(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
             >
               <option value="PURCHASE_ORDER">Mua bán thương mại thông thường (Hợp đồng cung cấp thiết bị)</option>
               <option value="EXCLUSIVE_LICENSE">Chuyển giao quyền sử dụng độc quyền (Exclusive License)</option>
@@ -121,7 +121,7 @@ export function Tier4CommercialForm({
               value={supplyScope}
               onChange={(e) => setSupplyScope(e.target.value)}
               placeholder="VD: Toàn quốc / Miền Bắc / Quốc tế"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
         </div>
@@ -137,7 +137,7 @@ export function Tier4CommercialForm({
               value={deliveryTimeline}
               onChange={(e) => setDeliveryTimeline(e.target.value)}
               placeholder="VD: 30-45 ngày kể từ ngày tạm ứng hợp đồng"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -150,7 +150,7 @@ export function Tier4CommercialForm({
               value={paymentTerms}
               onChange={(e) => setPaymentTerms(e.target.value)}
               placeholder="VD: Đợt 1 tạm ứng 30%, Đợt 2 thanh toán 50% khi giao hàng, Đợt 3 thanh toán 20% sau nghiệm thu."
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -163,7 +163,7 @@ export function Tier4CommercialForm({
               value={warrantyTerms}
               onChange={(e) => setWarrantyTerms(e.target.value)}
               placeholder="VD: 24 tháng bảo hành chính hãng, 1 đổi 1 trong 30 ngày"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -176,7 +176,7 @@ export function Tier4CommercialForm({
               value={technicalSupportMethod}
               onChange={(e) => setTechnicalSupportMethod(e.target.value)}
               placeholder="VD: Cán bộ kỹ thuật trực tiếp tại hiện trường 24/7 & Hỗ trợ online"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 

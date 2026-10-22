@@ -53,9 +53,18 @@ const SECTOR_IMAGE_MAP: Record<string, { main: string; gallery: string[] }> = {
 };
 
 /**
- * Tra ve duong dan anh dai dien dua tren ma linh vuc (sectorCode) hoac tieu de
+ * Tra ve duong dan anh dai dien dua tren anh thuc te, ma linh vuc (sectorCode) hoac tieu de
  */
-export function getTechnologyImage(sectorCode?: string | null, title?: string | null): string {
+export function getTechnologyImage(
+  sectorCode?: string | null,
+  title?: string | null,
+  customImageUrl?: string | null
+): string {
+  // Uu tien hang dau: Anh thuc te do nguoi ban tai len (URL hoac Base64 Data URI)
+  if (customImageUrl && customImageUrl.trim()) {
+    return customImageUrl.trim();
+  }
+
   if (sectorCode && SECTOR_IMAGE_MAP[sectorCode.toUpperCase()]) {
     return SECTOR_IMAGE_MAP[sectorCode.toUpperCase()].main;
   }

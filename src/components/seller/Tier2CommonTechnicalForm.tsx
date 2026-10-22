@@ -83,7 +83,7 @@ export function Tier2CommonTechnicalForm({
               value={modelCode}
               onChange={(e) => setModelCode(e.target.value)}
               placeholder="VD: NCT-CNC-5X-PRO"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -94,7 +94,7 @@ export function Tier2CommonTechnicalForm({
               value={manufacturer}
               onChange={(e) => setManufacturer(e.target.value)}
               placeholder="VD: NacenTech Robotics"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -105,7 +105,7 @@ export function Tier2CommonTechnicalForm({
               value={originCountry}
               onChange={(e) => setOriginCountry(e.target.value)}
               placeholder="VD: Việt Nam, Đức, Nhật Bản"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -114,7 +114,7 @@ export function Tier2CommonTechnicalForm({
             <select
               value={equipmentStatus}
               onChange={(e) => setEquipmentStatus(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500 bg-white"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
             >
               <option value="NEW">Mới 100% xuất xưởng</option>
               <option value="USED">Đã qua sử dụng (Chất lượng &gt; 85%)</option>
@@ -129,7 +129,7 @@ export function Tier2CommonTechnicalForm({
               value={manufacturingYear ?? ""}
               onChange={(e) => setManufacturingYear(e.target.value ? Number(e.target.value) : undefined)}
               placeholder="VD: 2026"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -140,7 +140,7 @@ export function Tier2CommonTechnicalForm({
               value={capacityScale}
               onChange={(e) => setCapacityScale(e.target.value)}
               placeholder="VD: 50 sản phẩm/giờ"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -151,7 +151,7 @@ export function Tier2CommonTechnicalForm({
               value={energyConsumption}
               onChange={(e) => setEnergyConsumption(e.target.value)}
               placeholder="VD: 15 kW/h"
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
 
@@ -160,7 +160,7 @@ export function Tier2CommonTechnicalForm({
             <select
               value={automationLevel}
               onChange={(e) => setAutomationLevel(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500 bg-white"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
             >
               <option value="FULLY_AUTOMATIC">Tự động hóa hoàn toàn (Full-Auto)</option>
               <option value="SEMI_AUTOMATIC">Bán tự động (Semi-Auto)</option>

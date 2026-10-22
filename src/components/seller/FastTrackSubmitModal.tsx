@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Send, ShieldAlert, CheckCircle2, X } from "lucide-react";
+import { PROVINCIAL_AUTHORITIES_CATALOG } from "@/services/api/technology-offer";
 
 interface FastTrackSubmitModalProps {
   isOpen: boolean;
@@ -12,6 +13,9 @@ interface FastTrackSubmitModalProps {
   sectorName: string;
   pricingDisplay: string;
   isSubmitting: boolean;
+  managingAuthorityId?: string;
+  managingAuthorityName?: string;
+  onAuthorityChange?: (id: string, name: string) => void;
 }
 
 export function FastTrackSubmitModal({
@@ -23,6 +27,9 @@ export function FastTrackSubmitModal({
   sectorName,
   pricingDisplay,
   isSubmitting,
+  managingAuthorityId,
+  managingAuthorityName,
+  onAuthorityChange,
 }: FastTrackSubmitModalProps) {
   const [agreed, setAgreed] = useState(true);
 
@@ -67,6 +74,33 @@ export function FastTrackSubmitModal({
             <div className="flex justify-between">
               <span className="text-slate-500">Hình thức giá:</span>
               <span className="font-bold text-slate-900">{pricingDisplay}</span>
+            </div>
+
+            {/* Khối chọn / thay đổi Sở KH&CN tiếp nhận thẩm định */}
+            <div className="flex items-center justify-between pt-2 border-t border-brand-200/50 gap-2">
+              <span className="text-slate-500 font-medium shrink-0">Sở KH&CN tiếp nhận:</span>
+              {onAuthorityChange ? (
+                <div className="flex items-center gap-2">
+                  <select
+                    value={managingAuthorityId || "VN-HN"}
+                    onChange={(e) => {
+                      const selected = PROVINCIAL_AUTHORITIES_CATALOG.find((a) => a.id === e.target.value);
+                      if (selected) onAuthorityChange(selected.id, selected.name);
+                    }}
+                    className="text-xs font-bold text-slate-900 bg-white border border-brand-200 rounded px-2 py-1 max-w-[260px] truncate outline-none focus:border-brand-500 transition cursor-pointer"
+                  >
+                    {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
+                      <option key={auth.id} value={auth.id}>
+                        {auth.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <span className="font-bold text-slate-900 text-right max-w-[260px] line-clamp-1">
+                  {managingAuthorityName || "Sở Khoa học và Công nghệ TP. Hà Nội"}
+                </span>
+              )}
             </div>
           </div>
 

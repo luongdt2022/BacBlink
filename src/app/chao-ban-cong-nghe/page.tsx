@@ -759,7 +759,8 @@ function ChaoBanCongNgheContent() {
           {!isLoading && !hasError && offers.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
               {offers.map((offer) => {
-                const coverImage = getTechnologyImage(offer.sectorCode, offer.title);
+                const coverImage = getTechnologyImage(offer.sectorCode, offer.title, offer.mainImageUrl);
+                const isCustomImage = coverImage.startsWith("data:") || coverImage.startsWith("http");
                 return (
                   <div
                     key={offer.id}
@@ -772,6 +773,7 @@ function ChaoBanCongNgheContent() {
                           src={coverImage}
                           alt={offer.title}
                           fill
+                          unoptimized={isCustomImage}
                           sizes="(max-width: 768px) 100vw, 50vw"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />

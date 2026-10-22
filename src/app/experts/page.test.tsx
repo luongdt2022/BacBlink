@@ -336,6 +336,45 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     );
   });
 
+  it("automatically imports and suggests logged in user info in connection modal", async () => {
+    localStorage.setItem(
+      "nacentwin_user_context",
+      JSON.stringify({
+        id: "usr-123",
+        fullName: "Trần Doanh Nghiệp",
+        organizationName: "Công ty Cổ phần Cơ Điện Tân Tiến",
+        email: "contact@tantien.vn",
+        phone: "0912345678",
+        role: "BUYER",
+      })
+    );
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+    });
+
+    const connectBtns = screen.getAllByTitle("Gửi yêu cầu kết nối");
+    fireEvent.click(connectBtns[0]);
+
+    expect(screen.getByText("Gửi Yêu Cầu Kết Nối & Tư Vấn")).toBeDefined();
+    expect(screen.getByText(/Đang đăng nhập:/i)).toBeDefined();
+    expect(screen.getByText("Trần Doanh Nghiệp")).toBeDefined();
+    expect(screen.getByText(/Đã tự động điền thông tin/i)).toBeDefined();
+
+    const companyInput = screen.getByPlaceholderText(/VD: Công ty Cổ phần Công nghệ ABC/i) as HTMLInputElement;
+    const nameInput = screen.getByPlaceholderText(/Nguyễn Văn A/i) as HTMLInputElement;
+    const emailInput = screen.getByPlaceholderText(/contact@doanhnghiep.vn/i) as HTMLInputElement;
+
+    expect(companyInput.value).toBe("Công ty Cổ phần Cơ Điện Tân Tiến");
+    expect(nameInput.value).toBe("Trần Doanh Nghiệp");
+    expect(emailInput.value).toBe("contact@tantien.vn");
+
+    localStorage.removeItem("nacentwin_user_context");
+  });
+
   it("renders the featured experts spotlight rail and uniform grid", async () => {
     setupFetch();
 

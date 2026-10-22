@@ -108,6 +108,65 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     // Verify modal action button is enabled (since agreed is true by default)
     const submitConfirmBtn = screen.getByRole("button", { name: /Xác nhận & Nộp hồ sơ chờ duyệt/i });
     expect(submitConfirmBtn).not.toBeDisabled();
+
+    // Verify modal contains managing authority selection dropdown
+    expect(screen.getByText(/Sở KH&CN tiếp nhận:/i)).toBeInTheDocument();
+  });
+
+  it("displays Sở KH&CN tiếp nhận thẩm định combobox in Step 1 and synchronizes with Step 4", () => {
+    render(<TaoHoSoChaoBanPage />);
+
+    // Step 1: Check that authority dropdown is present in SellerIdentityCard
+    const authorityLabels = screen.getAllByText(/Sở KH&CN tiếp nhận thẩm định/i);
+    expect(authorityLabels.length).toBeGreaterThanOrEqual(1);
+
+    // Verify option Thái Nguyên is available in select
+    const selectElements = screen.getAllByRole("combobox");
+    const authoritySelect = selectElements.find((el) => {
+      return Array.from((el as HTMLSelectElement).options).some((opt) => opt.value === "VN-TN");
+    });
+    expect(authoritySelect).toBeDefined();
+
+    // Change authority to VN-TN (Thái Nguyên)
+    fireEvent.change(authoritySelect!, { target: { value: "VN-TN" } });
+
+    // Open Fast Track modal and verify VN-TN is selected
+    const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });
+    fireEvent.click(fastTrackBtn);
+    expect(screen.getByText(/Xác Nhận Nộp Hồ Sơ Nhanh \(Fast-Track\)/i)).toBeInTheDocument();
+
+    const modalSelects = screen.getAllByRole("combobox");
+    const modalAuthSelect = modalSelects.find((el) => {
+      return (el as HTMLSelectElement).value === "VN-TN";
+    });
+    expect(modalAuthSelect).toBeDefined();
+  });
+
+  it("allows selecting Sở KH&CN Thái Nguyên (VN-TN) directly inside FastTrackSubmitModal and updates authority state", () => {
+    render(<TaoHoSoChaoBanPage />);
+
+    // Open Fast Track modal directly
+    const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });
+    fireEvent.click(fastTrackBtn);
+    expect(screen.getByText(/Xác Nhận Nộp Hồ Sơ Nhanh \(Fast-Track\)/i)).toBeInTheDocument();
+
+    // Find the select inside modal
+    const modalSelects = screen.getAllByRole("combobox");
+    const modalAuthSelect = modalSelects[modalSelects.length - 1];
+    expect(modalAuthSelect).toBeInTheDocument();
+
+    // Select VN-TN (Sở Khoa học và Công nghệ tỉnh Thái Nguyên)
+    fireEvent.change(modalAuthSelect, { target: { value: "VN-TN" } });
+    expect((modalAuthSelect as HTMLSelectElement).value).toBe("VN-TN");
+
+    // Close modal
+    const closeBtn = screen.getByRole("button", { name: /Xem lại thông tin/i });
+    fireEvent.click(closeBtn);
+
+    // Verify authority on main page is updated to VN-TN
+    const pageSelects = screen.getAllByRole("combobox");
+    const pageAuthSelect = pageSelects.find((el) => (el as HTMLSelectElement).value === "VN-TN");
+    expect(pageAuthSelect).toBeDefined();
   });
 
   it("allows clicking freely on any step in FormStepper without being locked, and confirms 5 UX states panel is removed", () => {

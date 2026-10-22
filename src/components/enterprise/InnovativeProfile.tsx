@@ -474,7 +474,7 @@ export function InnovativeProfile({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {enterpriseOffers.map((item) => {
-                    const coverImg = getTechnologyImage(item.sectorCode, item.title);
+                    const coverImg = getTechnologyImage(item.sectorCode, item.title, (item as any).mainImageUrl);
                     return (
                       <div
                         key={item.id}

@@ -83,7 +83,7 @@ export function IpQuadDigitizationCard({
           <select
             value={ipStatus}
             onChange={(e) => setIpStatus(e.target.value as IntellectualPropertyStatus)}
-            className="w-full rounded-lg border border-slate-300 bg-white p-2 text-xs outline-none focus:border-brand-500"
+            className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
           >
             <option value="PATENT_GRANTED">Bằng độc quyền sáng chế (Patent Granted)</option>
             <option value="UTILITY_MODEL">Bằng độc quyền giải pháp hữu ích (Utility Model)</option>
@@ -101,7 +101,7 @@ export function IpQuadDigitizationCard({
             value={ipRegistrationNumber}
             onChange={(e) => setIpRegistrationNumber(e.target.value)}
             placeholder="VD: VN 1-0028491 / Cục SHTT"
-            className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+            className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
           />
         </div>
 
@@ -112,7 +112,7 @@ export function IpQuadDigitizationCard({
               type="date"
               value={ipIssueDate}
               onChange={(e) => setIpIssueDate(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 p-2 text-xs outline-none focus:border-brand-500"
+              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
         </div>
@@ -150,7 +150,7 @@ export function IpQuadDigitizationCard({
           <select
             value={managingAuthorityId}
             onChange={handleAuthorityChange}
-            className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs font-medium outline-none focus:border-brand-500"
+            className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
           >
             {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
               <option key={auth.id} value={auth.id}>

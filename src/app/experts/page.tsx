@@ -7,6 +7,7 @@ import {
   SlidersHorizontal,
   ShieldCheck,
   Check,
+  CheckCircle2,
   Sparkles,
   ChevronRight,
   Send,
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 import { AppLink, AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
+import { authClient, type UserContext } from "@/lib/auth-client";
 import { getPublicExpertFilterOptions, type MasterDataOption } from "@/lib/master-data-client";
 import { resolveTechLabel } from "@/lib/tech-label-resolver";
 import { ExpertAvatar } from "@/components/expert-detail/expert-avatar";
@@ -104,6 +106,12 @@ export default function ExpertsDirectoryPage() {
   const [modalSubmitted, setModalSubmitted] = useState(false);
   const [modalSending, setModalSending] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
+  const [autoFilled, setAutoFilled] = useState(false);
+
+  useEffect(() => {
+    setCurrentUser(authClient.getUser());
+  }, []);
 
   const directoryRequest = useRef<AbortController | null>(null);
   const isInitialMount = useRef(true);
@@ -323,16 +331,42 @@ export default function ExpertsDirectoryPage() {
   };
 
   const openConnectModal = (expert: ExpertCardItem) => {
+    const user = authClient.getUser();
     setModalTargetExpert(expert);
-    setModalCompanyName("");
-    setModalContactName("");
-    setModalContactPhone("");
-    setModalContactEmail("");
     setModalProblemSummary("");
     setModalMode("ONLINE");
     setModalSubmitted(false);
     setModalError(null);
+
+    if (user) {
+      setCurrentUser(user);
+      setModalCompanyName(user.organizationName || "");
+      setModalContactName(user.fullName || "");
+      setModalContactPhone(user.phone || user.phoneNumber || "");
+      setModalContactEmail(user.email || "");
+      setAutoFilled(true);
+    } else {
+      setModalCompanyName("");
+      setModalContactName("");
+      setModalContactPhone("");
+      setModalContactEmail("");
+      setAutoFilled(false);
+    }
     setModalOpen(true);
+  };
+
+  const handleAutoFillUser = () => {
+    const user = currentUser || authClient.getUser();
+    if (!user) return;
+    if (user.organizationName) {
+      setModalCompanyName(user.organizationName);
+    } else if (!modalCompanyName) {
+      setModalCompanyName("Doanh nghiệp Đổi mới sáng tạo");
+    }
+    if (user.fullName) setModalContactName(user.fullName);
+    if (user.phone || user.phoneNumber) setModalContactPhone(user.phone || user.phoneNumber || "");
+    if (user.email) setModalContactEmail(user.email);
+    setAutoFilled(true);
   };
 
   const handleSendConnectRequest = async (e: React.FormEvent) => {
@@ -1328,6 +1362,46 @@ export default function ExpertsDirectoryPage() {
             ) : (
               <form onSubmit={handleSendConnectRequest} className="space-y-4 text-caption">
                 {modalError && <div role="alert" className="p-3 rounded-lg bg-red-50 text-red-700 border border-red-200">{modalError}</div>}
+
+                {/* Khối gợi ý và tự động điền thông tin tài khoản */}
+                {currentUser ? (
+                  <div className="flex items-center justify-between bg-brand-50/80 dark:bg-brand-950/40 p-2.5 rounded-xl border border-brand-200/80 dark:border-brand-800 text-xs text-brand-900 dark:text-cyan-300">
+                    <div className="flex items-center gap-1.5 font-medium truncate mr-2">
+                      <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-cyan-400 shrink-0" />
+                      <span className="truncate">
+                        Đang đăng nhập: <strong>{currentUser.fullName}</strong>
+                        {currentUser.organizationName ? ` (${currentUser.organizationName})` : ""}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAutoFillUser}
+                      className="text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline shrink-0"
+                    >
+                      Điền lại từ tài khoản
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+                    <span className="truncate">
+                      Đã có tài khoản Doanh nghiệp / Thành viên?
+                    </span>
+                    <Link
+                      href="/login?redirect=/experts"
+                      className="text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline shrink-0"
+                    >
+                      Đăng nhập để điền nhanh →
+                    </Link>
+                  </div>
+                )}
+
+                {autoFilled && currentUser && (
+                  <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Đã tự động điền thông tin từ hồ sơ tài khoản của bạn</span>
+                  </div>
+                )}
+
                 <div>
                   <label className="block font-bold text-slate-700 mb-1 dark:text-slate-300">Tên Doanh nghiệp / Tổ chức của bạn (*)</label>
                   <input

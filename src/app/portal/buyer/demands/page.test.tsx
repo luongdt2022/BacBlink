@@ -38,6 +38,7 @@ describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
     vi.restoreAllMocks();
     authClient.setSession('test-token-jwt', {
       id: 'buyer-01',
+      fullName: 'Doanh Nghiệp Buyer Demo',
       email: 'buyer@test.com',
       role: ROLES.BUYER,
     });

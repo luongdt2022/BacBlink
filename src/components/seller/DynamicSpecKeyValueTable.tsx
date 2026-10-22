@@ -125,7 +125,7 @@ export function DynamicSpecKeyValueTable({
                       value={spec.specName}
                       onChange={(e) => handleUpdate(index, "specName", e.target.value)}
                       placeholder="VD: Sai số cho phép"
-                      className="w-full rounded-md border border-slate-300 p-1.5 text-xs outline-none focus:border-brand-500"
+                      className="h-8 w-full rounded-md border border-slate-300 bg-white px-2.5 text-xs outline-none focus:border-brand-500 transition"
                     />
                   </td>
                   <td className="py-2 px-3">
@@ -134,7 +134,7 @@ export function DynamicSpecKeyValueTable({
                       value={spec.specValue}
                       onChange={(e) => handleUpdate(index, "specValue", e.target.value)}
                       placeholder="VD: &plusmn; 0.05"
-                      className="w-full rounded-md border border-slate-300 p-1.5 text-xs outline-none focus:border-brand-500"
+                      className="h-8 w-full rounded-md border border-slate-300 bg-white px-2.5 text-xs outline-none focus:border-brand-500 transition"
                     />
                   </td>
                   <td className="py-2 px-3">
@@ -143,14 +143,14 @@ export function DynamicSpecKeyValueTable({
                       value={spec.unit || ""}
                       onChange={(e) => handleUpdate(index, "unit", e.target.value)}
                       placeholder="VD: mm, %, kW"
-                      className="w-full rounded-md border border-slate-300 p-1.5 text-xs outline-none focus:border-brand-500"
+                      className="h-8 w-full rounded-md border border-slate-300 bg-white px-2.5 text-xs outline-none focus:border-brand-500 transition"
                     />
                   </td>
                   <td className="py-2 px-3 text-right">
                     <button
                       type="button"
                       onClick={() => handleDelete(index)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 transition rounded hover:bg-rose-50"
+                      className="inline-flex h-8 w-8 items-center justify-center text-slate-400 hover:text-rose-600 transition rounded hover:bg-rose-50"
                       title="Xóa dòng này"
                     >
                       <Trash2 className="h-4 w-4" />

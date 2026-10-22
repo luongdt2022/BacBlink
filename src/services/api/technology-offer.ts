@@ -162,21 +162,194 @@ export async function createSellerOffer(
   }
 }
 
-export const PROVINCIAL_AUTHORITIES_CATALOG = [
+export interface ProvincialAuthority {
+  id: string;
+  name: string;
+  scopeType: "Sở Tỉnh";
+}
+
+export const PROVINCIAL_AUTHORITIES_CATALOG: ProvincialAuthority[] = [
+  // Tỉnh trọng điểm ĐMST & Vùng Đông Bắc (Ưu tiên Case Thái Nguyên - Chè Thịnh An)
+  { id: "VN-TN", name: "Sở Khoa học và Công nghệ tỉnh Thái Nguyên", scopeType: "Sở Tỉnh" },
   { id: "VN-HN", name: "Sở Khoa học và Công nghệ TP. Hà Nội", scopeType: "Sở Tỉnh" },
   { id: "VN-SG", name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh", scopeType: "Sở Tỉnh" },
   { id: "VN-DN", name: "Sở Khoa học và Công nghệ TP. Đà Nẵng", scopeType: "Sở Tỉnh" },
   { id: "VN-HP", name: "Sở Khoa học và Công nghệ TP. Hải Phòng", scopeType: "Sở Tỉnh" },
   { id: "VN-CT", name: "Sở Khoa học và Công nghệ TP. Cần Thơ", scopeType: "Sở Tỉnh" },
+
+  // Vùng Đồng bằng sông Hồng & Lân cận Hà Nội
+  { id: "VN-BN", name: "Sở Khoa học và Công nghệ tỉnh Bắc Ninh", scopeType: "Sở Tỉnh" },
+  { id: "VN-BG", name: "Sở Khoa học và Công nghệ tỉnh Bắc Giang", scopeType: "Sở Tỉnh" },
+  { id: "VN-VP", name: "Sở Khoa học và Công nghệ tỉnh Vĩnh Phúc", scopeType: "Sở Tỉnh" },
+  { id: "VN-QN", name: "Sở Khoa học và Công nghệ tỉnh Quảng Ninh", scopeType: "Sở Tỉnh" },
+  { id: "VN-HD", name: "Sở Khoa học và Công nghệ tỉnh Hải Dương", scopeType: "Sở Tỉnh" },
+  { id: "VN-HY", name: "Sở Khoa học và Công nghệ tỉnh Hưng Yên", scopeType: "Sở Tỉnh" },
+  { id: "VN-ND", name: "Sở Khoa học và Công nghệ tỉnh Nam Định", scopeType: "Sở Tỉnh" },
+  { id: "VN-TB", name: "Sở Khoa học và Công nghệ tỉnh Thái Bình", scopeType: "Sở Tỉnh" },
+  { id: "VN-NB", name: "Sở Khoa học và Công nghệ tỉnh Ninh Bình", scopeType: "Sở Tỉnh" },
+  { id: "VN-PT", name: "Sở Khoa học và Công nghệ tỉnh Phú Thọ", scopeType: "Sở Tỉnh" },
+
+  // Vùng Đông Nam Bộ & Nam Bộ
   { id: "VN-BD", name: "Sở Khoa học và Công nghệ tỉnh Bình Dương", scopeType: "Sở Tỉnh" },
   { id: "VN-DNA", name: "Sở Khoa học và Công nghệ tỉnh Đồng Nai", scopeType: "Sở Tỉnh" },
-  { id: "VN-BN", name: "Sở Khoa học và Công nghệ tỉnh Bắc Ninh", scopeType: "Sở Tỉnh" },
-  { id: "VN-QN", name: "Sở Khoa học và Công nghệ tỉnh Quảng Ninh", scopeType: "Sở Tỉnh" },
+  { id: "VN-BRVT", name: "Sở Khoa học và Công nghệ tỉnh Bà Rịa - Vũng Tàu", scopeType: "Sở Tỉnh" },
+  { id: "VN-LA", name: "Sở Khoa học và Công nghệ tỉnh Long An", scopeType: "Sở Tỉnh" },
+  { id: "VN-TG", name: "Sở Khoa học và Công nghệ tỉnh Tiền Giang", scopeType: "Sở Tỉnh" },
+
+  // Vùng Miền Trung & Tây Nguyên
+  { id: "VN-TTH", name: "Sở Khoa học và Công nghệ tỉnh Thừa Thiên Huế", scopeType: "Sở Tỉnh" },
+  { id: "VN-QNA", name: "Sở Khoa học và Công nghệ tỉnh Quảng Nam", scopeType: "Sở Tỉnh" },
   { id: "VN-KH", name: "Sở Khoa học và Công nghệ tỉnh Khánh Hòa", scopeType: "Sở Tỉnh" },
   { id: "VN-LD", name: "Sở Khoa học và Công nghệ tỉnh Lâm Đồng", scopeType: "Sở Tỉnh" },
-  { id: "VN-TG", name: "Sở Khoa học và Công nghệ tỉnh Tiền Giang", scopeType: "Sở Tỉnh" },
+  { id: "VN-NA", name: "Sở Khoa học và Công nghệ tỉnh Nghệ An", scopeType: "Sở Tỉnh" },
+  { id: "VN-TH", name: "Sở Khoa học và Công nghệ tỉnh Thanh Hóa", scopeType: "Sở Tỉnh" },
+
+  // Danh mục đại diện các tỉnh thành khác
   { id: "VN-34", name: "Các Sở KH&CN khác thuộc 34 tỉnh thành trọng điểm...", scopeType: "Sở Tỉnh" },
 ];
+
+export interface AuthorityResolutionContext {
+  userScopeId?: string | null;
+  profileProvince?: string | null;
+  profileAddress?: string | null;
+}
+
+export interface ResolvedAuthority {
+  id: string;
+  name: string;
+  isAutoDetected: boolean;
+  detectedFrom?: "user_scope" | "profile_province" | "profile_address" | "fallback";
+}
+
+/**
+ * Chuẩn hóa chuỗi tiếng Việt (loại bỏ dấu và chuyển chữ thường)
+ */
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d")
+    .trim();
+}
+
+/**
+ * Trích xuất từ khóa tên tỉnh/thành từ tên cơ quan Sở KH&CN
+ * VD: "Sở Khoa học và Công nghệ tỉnh Thái Nguyên" -> "Thái Nguyên"
+ */
+function extractProvinceName(authorityName: string): string {
+  return authorityName
+    .replace(/^Sở Khoa học và Công nghệ\s+(tỉnh|TP\.|thành phố)\s+/i, "")
+    .trim();
+}
+
+/**
+ * Phân giải Cơ quan Quản lý Sở KH&CN tiếp nhận theo thứ tự 3 cấp ưu tiên (BR-DELTA-04-01)
+ * Hỗ trợ nhận context dạng AuthorityResolutionContext object hoặc (userContext, profileContext)
+ */
+export function resolveDefaultAuthority(
+  userOrContext?: any,
+  profile?: any
+): ResolvedAuthority {
+  const fallbackResult: ResolvedAuthority = {
+    id: "VN-HN",
+    name: "Sở Khoa học và Công nghệ TP. Hà Nội",
+    isAutoDetected: false,
+    detectedFrom: "fallback",
+  };
+
+  if (!userOrContext && !profile) {
+    return fallbackResult;
+  }
+
+  // Chuẩn hóa input parameters
+  let userScopeId: string | null | undefined = undefined;
+  let profileProvince: string | null | undefined = undefined;
+  let profileAddress: string | null | undefined = undefined;
+
+  if (userOrContext && ("userScopeId" in userOrContext || "profileProvince" in userOrContext || "profileAddress" in userOrContext)) {
+    // Gọi dạng object: resolveDefaultAuthority({ userScopeId, profileProvince, profileAddress })
+    userScopeId = userOrContext.userScopeId;
+    profileProvince = userOrContext.profileProvince;
+    profileAddress = userOrContext.profileAddress;
+  } else {
+    // Gọi dạng 2 tham số: resolveDefaultAuthority(user, profile)
+    userScopeId = userOrContext?.scopeId || profile?.scopeId;
+    profileProvince = profile?.province || profile?.provinceCity;
+    profileAddress = profile?.address || profile?.addressDetail;
+  }
+
+  // Cấp 1: Kiểm tra scopeId (khớp mã Sở, ví dụ: "VN-TN", "TN", "Thái Nguyên", "VN-HN", "HN", "Hà Nội", "SG", "HCM"...)
+  if (userScopeId && userScopeId !== "ALL" && userScopeId !== "GLOBAL") {
+    const rawScope = userScopeId.trim();
+    const normScope = normalizeText(rawScope);
+
+    // So khớp trực tiếp id (VD: VN-TN)
+    const directMatch = PROVINCIAL_AUTHORITIES_CATALOG.find(
+      (a) => a.id.toLowerCase() === rawScope.toLowerCase()
+    );
+    if (directMatch) {
+      return { id: directMatch.id, name: directMatch.name, isAutoDetected: true, detectedFrom: "user_scope" };
+    }
+
+    // So khớp mã rút gọn không có "VN-" (VD: TN -> VN-TN)
+    const shortCodeMatch = PROVINCIAL_AUTHORITIES_CATALOG.find(
+      (a) => a.id.replace(/^VN-/, "").toLowerCase() === rawScope.toLowerCase()
+    );
+    if (shortCodeMatch) {
+      return { id: shortCodeMatch.id, name: shortCodeMatch.name, isAutoDetected: true, detectedFrom: "user_scope" };
+    }
+
+    // So khớp alias phổ biến (VD: HCM, SG -> VN-SG; DN -> VN-DN)
+    if (normScope === "hcm" || normScope === "tp hcm" || normScope === "sai gon") {
+      const sg = PROVINCIAL_AUTHORITIES_CATALOG.find((a) => a.id === "VN-SG");
+      if (sg) return { id: sg.id, name: sg.name, isAutoDetected: true, detectedFrom: "user_scope" };
+    }
+
+    // So khớp tên tỉnh trong tên Sở
+    const nameMatch = PROVINCIAL_AUTHORITIES_CATALOG.find((a) => {
+      const pName = extractProvinceName(a.name);
+      return normalizeText(pName) === normScope || normalizeText(a.name).includes(normScope);
+    });
+    if (nameMatch) {
+      return { id: nameMatch.id, name: nameMatch.name, isAutoDetected: true, detectedFrom: "user_scope" };
+    }
+  }
+
+  // Cấp 2: Kiểm tra profileProvince từ hồ sơ doanh nghiệp
+  if (profileProvince) {
+    const normProvince = normalizeText(profileProvince);
+    const match = PROVINCIAL_AUTHORITIES_CATALOG.find((a) => {
+      const pName = extractProvinceName(a.name);
+      const normPName = normalizeText(pName);
+      return (
+        normProvince.includes(normPName) ||
+        normPName.includes(normProvince) ||
+        normalizeText(a.name).includes(normProvince)
+      );
+    });
+    if (match) {
+      return { id: match.id, name: match.name, isAutoDetected: true, detectedFrom: "profile_province" };
+    }
+  }
+
+  // Cấp 3: Trích xuất từ profileAddress (tìm kiếm tên tỉnh/thành phố trong chuỗi địa chỉ)
+  if (profileAddress) {
+    const normAddress = normalizeText(profileAddress);
+    for (const auth of PROVINCIAL_AUTHORITIES_CATALOG) {
+      if (auth.id === "VN-34") continue;
+      const provinceKeyword = extractProvinceName(auth.name);
+      const normKeyword = normalizeText(provinceKeyword);
+      if (normKeyword && normAddress.includes(normKeyword)) {
+        return { id: auth.id, name: auth.name, isAutoDetected: true, detectedFrom: "profile_address" };
+      }
+    }
+  }
+
+  // Fallback mặc định Hà Nội
+  return fallbackResult;
+}
 
 export async function reviewOffer(
   id: string,

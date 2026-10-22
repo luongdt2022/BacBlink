@@ -25,6 +25,7 @@ import {
   Sparkles,
   X,
   Wand2,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   fetchOfferById,
@@ -32,7 +33,9 @@ import {
   deleteSellerOffer,
   togglePublishOffer,
   PROVINCIAL_AUTHORITIES_CATALOG,
+  resolveDefaultAuthority,
 } from "@/services/api/technology-offer";
+import { getStoredSession } from "@/lib/auth-client";
 import {
   TechnologyOffer,
   OfferType,
@@ -58,6 +61,7 @@ import { DynamicSpecKeyValueTable } from "@/components/seller/DynamicSpecKeyValu
 import { Tier4CommercialForm } from "@/components/seller/Tier4CommercialForm";
 import { IpQuadDigitizationCard } from "@/components/seller/IpQuadDigitizationCard";
 import { DataRoomFileManager } from "@/components/seller/DataRoomFileManager";
+import { MediaUploadSection } from "@/components/seller/MediaUploadSection";
 
 export default function ChinhSuaHoSoChaoBanPage() {
   const router = useRouter();
@@ -92,23 +96,28 @@ export default function ChinhSuaHoSoChaoBanPage() {
   const [priceMin, setPriceMin] = useState<number | undefined>(undefined);
   const [priceMax, setPriceMax] = useState<number | undefined>(undefined);
   const [currency, setCurrency] = useState("VND");
-  const [unit, setUnit] = useState("hệ thống");
+  const [unit, setUnit] = useState("");
+
+  // Media Showcase (Ảnh đại diện, Thư viện ảnh & Video Demo)
+  const [mainImageUrl, setMainImageUrl] = useState<string | null>(null);
+  const [galleryImageUrls, setGalleryImageUrls] = useState<string[]>([]);
+  const [videoDemoUrl, setVideoDemoUrl] = useState<string>("");
 
   // TRL & IP Quad (Step 1 & Step 4)
   const [trlLevel, setTrlLevel] = useState<number>(7);
   const [developerOrigin, setDeveloperOrigin] = useState("");
   const [ipStatus, setIpStatus] = useState<IntellectualPropertyStatus>("PATENT_GRANTED");
   const [ipRegistrationNumber, setIpRegistrationNumber] = useState("");
-  const [ipIssueDate, setIpIssueDate] = useState("2025-06-15");
+  const [ipIssueDate, setIpIssueDate] = useState("");
   const [transferMethod, setTransferMethod] = useState<TransferMethod>("NON_EXCLUSIVE_LICENSE");
   const [commercialStatus, setCommercialStatus] = useState<CommercializationStatus>("PILOT_TESTING");
 
   // Step 2: Lớp 2 (Kỹ thuật chung)
   const [modelCode, setModelCode] = useState("");
   const [manufacturer, setManufacturer] = useState("");
-  const [originCountry, setOriginCountry] = useState("Việt Nam");
+  const [originCountry, setOriginCountry] = useState("");
   const [equipmentStatus, setEquipmentStatus] = useState("NEW");
-  const [manufacturingYear, setManufacturingYear] = useState<number | undefined>(2026);
+  const [manufacturingYear, setManufacturingYear] = useState<number | undefined>(undefined);
   const [capacityScale, setCapacityScale] = useState("");
   const [energyConsumption, setEnergyConsumption] = useState("");
   const [automationLevel, setAutomationLevel] = useState("FULLY_AUTOMATIC");
@@ -120,27 +129,28 @@ export default function ChinhSuaHoSoChaoBanPage() {
 
   // Step 3: Lớp 4 (Thương mại chi tiết)
   const [transferPriorityMethod, setTransferPriorityMethod] = useState("PURCHASE_ORDER");
-  const [priceIncludes, setPriceIncludes] = useState("Đã bao gồm thiết bị chính, vận chuyển nội địa và đào tạo vận hành.");
-  const [taxAndExtraCosts, setTaxAndExtraCosts] = useState("Đã bao gồm VAT 8%; chưa bao gồm chi phí kiểm định chuyên ngành.");
-  const [supplyScope, setSupplyScope] = useState("Toàn quốc");
-  const [deliveryTimeline, setDeliveryTimeline] = useState("30 ngày kể từ ngày ký hợp đồng");
-  const [paymentTerms, setPaymentTerms] = useState("Tạm ứng 30%, 50% khi giao hàng, 20% sau nghiệm thu");
-  const [warrantyTerms, setWarrantyTerms] = useState("24 tháng bảo hành chính hãng");
-  const [technicalSupportMethod, setTechnicalSupportMethod] = useState("Cán bộ kỹ thuật trực tiếp tại hiện trường 24/7 & Hỗ trợ online");
-  const [installationSupport, setInstallationSupport] = useState(true);
+  const [priceIncludes, setPriceIncludes] = useState("");
+  const [taxAndExtraCosts, setTaxAndExtraCosts] = useState("");
+  const [supplyScope, setSupplyScope] = useState("");
+  const [deliveryTimeline, setDeliveryTimeline] = useState("");
+  const [paymentTerms, setPaymentTerms] = useState("");
+  const [warrantyTerms, setWarrantyTerms] = useState("");
+  const [technicalSupportMethod, setTechnicalSupportMethod] = useState("");
+  const [installationSupport, setInstallationSupport] = useState(false);
 
   // Step 4: SHTT, DataRoom & Pháp lý
   const [documents, setDocuments] = useState<OfferDocument[]>([]);
   const [managingAuthorityId, setManagingAuthorityId] = useState("VN-HN");
   const [managingAuthorityName, setManagingAuthorityName] = useState("Sở Khoa học và Công nghệ TP. Hà Nội");
-  const [legalCommitmentConfirmed, setLegalCommitmentConfirmed] = useState(true);
+  const [isAutoDetectedAuthority, setIsAutoDetectedAuthority] = useState(false);
+  const [legalCommitmentConfirmed, setLegalCommitmentConfirmed] = useState(false);
 
   // Doanh nghiệp liên kết (TASK-02)
-  const [enterpriseName, setEnterpriseName] = useState("Công ty TNHH Giải Pháp Công Nghệ NacenTwin");
-  const [enterpriseTaxCode, setEnterpriseTaxCode] = useState("0109887766");
-  const [contactName, setContactName] = useState("Nguyễn Văn Hùng");
-  const [contactPhone, setContactPhone] = useState("0987 654 321");
-  const [contactEmail, setContactEmail] = useState("seller.contact@nacentech.vn");
+  const [enterpriseName, setEnterpriseName] = useState("");
+  const [enterpriseTaxCode, setEnterpriseTaxCode] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
 
   // UI state
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -178,7 +188,12 @@ export default function ChinhSuaHoSoChaoBanPage() {
         setPriceMin(data.priceMin ?? undefined);
         setPriceMax(data.priceMax ?? undefined);
         setCurrency(data.currency || "VND");
-        setUnit(data.unit || "hệ thống");
+        setUnit(data.unit || "");
+
+        // Media Showcase
+        if (data.mainImageUrl) setMainImageUrl(data.mainImageUrl);
+        if (data.galleryImageUrls) setGalleryImageUrls(data.galleryImageUrls);
+        if (data.videoDemoUrl) setVideoDemoUrl(data.videoDemoUrl);
 
         // TRL & IP
         setTrlLevel(data.trlLevel || 7);
@@ -219,8 +234,20 @@ export default function ChinhSuaHoSoChaoBanPage() {
 
         // Lớp 4 DataRoom & Governance
         if (data.documents) setDocuments(data.documents);
-        if (data.managingAuthorityId) setManagingAuthorityId(data.managingAuthorityId);
-        if (data.managingAuthorityName) setManagingAuthorityName(data.managingAuthorityName);
+        if (data.managingAuthorityId) {
+          setManagingAuthorityId(data.managingAuthorityId);
+          setManagingAuthorityName(data.managingAuthorityName || "Sở Khoa học và Công nghệ TP. Hà Nội");
+          setIsAutoDetectedAuthority(false);
+        } else {
+          // Nếu hồ sơ cũ chưa có managingAuthorityId, tự động nhận diện theo địa bàn doanh nghiệp / user
+          const session = getStoredSession();
+          const resolved = resolveDefaultAuthority(session?.user, data);
+          if (resolved) {
+            setManagingAuthorityId(resolved.id);
+            setManagingAuthorityName(resolved.name);
+            setIsAutoDetectedAuthority(resolved.isAutoDetected);
+          }
+        }
         if (typeof data.legalCommitmentConfirmed === "boolean") setLegalCommitmentConfirmed(data.legalCommitmentConfirmed);
 
         // Doanh nghiệp
@@ -307,6 +334,9 @@ export default function ChinhSuaHoSoChaoBanPage() {
         priceMax,
         currency,
         unit,
+        mainImageUrl,
+        galleryImageUrls,
+        videoDemoUrl,
         developerOrigin,
         trlLevel: hasTechTransfer ? trlLevel : undefined,
         ipStatus,
@@ -552,12 +582,21 @@ export default function ChinhSuaHoSoChaoBanPage() {
           <section className="min-w-0 space-y-6">
             {currentStep === 1 && (
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-5 sm:p-7 space-y-7">
+                {/* Doanh nghiệp liên kết (TASK-02) & Chọn Sở KH&CN tiếp nhận (Delta v9) */}
                 <SellerIdentityCard
                   enterpriseName={enterpriseName}
                   enterpriseTaxCode={enterpriseTaxCode}
                   contactName={contactName}
                   contactPhone={contactPhone}
                   contactEmail={contactEmail}
+                  managingAuthorityId={managingAuthorityId}
+                  managingAuthorityName={managingAuthorityName}
+                  onAuthorityChange={(id, name) => {
+                    setManagingAuthorityId(id);
+                    setManagingAuthorityName(name);
+                    setIsAutoDetectedAuthority(false);
+                  }}
+                  isAutoDetected={isAutoDetectedAuthority}
                 />
 
                 <Step1CoreFields
@@ -592,6 +631,37 @@ export default function ChinhSuaHoSoChaoBanPage() {
                   setUnit={setUnit}
                   errors={errors}
                 />
+
+                {/* Khối Hình ảnh & Video trình diễn (Media Showcase) */}
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-teal-700">
+                        <ImageIcon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-extrabold text-slate-900">
+                          Hình Ảnh & Video Trình Diễn (Media Showcase)
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          Tải ảnh đại diện, thư viện ảnh chi tiết (tối đa 6 ảnh) và liên kết video demo vận hành thực tế
+                        </p>
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-teal-50 border border-teal-200 px-2.5 py-0.5 text-xs font-bold text-teal-800">
+                      Media Showcase
+                    </span>
+                  </div>
+
+                  <MediaUploadSection
+                    mainImageUrl={mainImageUrl}
+                    galleryImageUrls={galleryImageUrls}
+                    videoDemoUrl={videoDemoUrl}
+                    onMainImageChange={setMainImageUrl}
+                    onGalleryImagesChange={setGalleryImageUrls}
+                    onVideoDemoChange={(url) => setVideoDemoUrl(url || "")}
+                  />
+                </div>
 
                 <ReactiveYellowTrlPanel
                   hasTechTransfer={hasTechTransfer}
