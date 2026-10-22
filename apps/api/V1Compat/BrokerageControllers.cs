@@ -38,17 +38,18 @@ public record UpdateOpportunityStageRequest(
 );
 
 public record SendDealDiscussionRequest(
-    string SenderName,
-    string SenderRole, // BUYER | SELLER | EXPERT
+    string? SenderName,
+    string? SenderRole, // BUYER | SELLER | EXPERT
     string Message,
     string? AttachmentUrl
 );
 
 public record SaveMouRequest(
     string ScopeOfWork,
-    int PilotDurationMonths,
-    string CommercialTerms,
-    string IntellectualPropertyTerms,
+    int? PilotDurationMonths,
+    int? DurationMonths,
+    string? CommercialTerms,
+    string? IntellectualPropertyTerms,
     string? Status // DRAFT | SIGNED
 );
 
@@ -467,7 +468,6 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
     }
 
     [HttpPut("brokerage/opportunities/{id:guid}/stage")]
-    [AllowAnonymous]
     public async Task<IActionResult> UpdateOpportunityStage(
         Guid id,
         [FromBody] UpdateOpportunityStageRequest req,
@@ -480,6 +480,40 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
 
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        // Tuân thủ BR-BRK-06: Máy trạng thái hữu hạn (FSM) - Kiểm tra trạng thái hiện tại chống nhảy cóc
+        using (var cmdCheck = conn.CreateCommand())
+        {
+            cmdCheck.CommandText = "SELECT stage FROM brokerage.opportunities WHERE id = @checkId;";
+            var pCheckId = cmdCheck.CreateParameter();
+            pCheckId.ParameterName = "@checkId";
+            pCheckId.Value = id;
+            cmdCheck.Parameters.Add(pCheckId);
+
+            var currentStageObj = await cmdCheck.ExecuteScalarAsync(ct);
+            if (currentStageObj == null)
+                return NotFound(new { message = "Không tìm thấy cơ hội hợp tác" });
+
+            var currentStage = currentStageObj.ToString()?.ToUpperInvariant() ?? "INITIATED";
+
+            var allowedNextStages = currentStage switch
+            {
+                "SUGGESTED" => new[] { "INITIATED", "CLOSED_LOST" },
+                "INITIATED" => new[] { "NEGOTIATING", "CLOSED_LOST" },
+                "NEGOTIATING" => new[] { "MOU_SIGNED", "CLOSED_LOST" },
+                "MOU_SIGNED" => new[] { "COMPLETED", "CLOSED_LOST" },
+                _ => Array.Empty<string>()
+            };
+
+            if (!allowedNextStages.Contains(stage))
+            {
+                return BadRequest(new
+                {
+                    error = "ERR_INVALID_STATE_TRANSITION",
+                    message = $"Không thể nhảy cóc từ giai đoạn {currentStage} sang {stage} theo quy tắc BR-BRK-06."
+                });
+            }
+        }
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
@@ -517,9 +551,13 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
     // 4. DEAL ROOM 1-1 & THẢO LUẬN & BIÊN BẢN MOU
     // -------------------------------------------------------------------------
     [HttpGet("brokerage/opportunities/{id:guid}/deal-room")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetDealRoomDetails(Guid id, CancellationToken ct)
     {
+        if (!Actor.IsAuthenticated || Actor.PersonId == null)
+        {
+            return Unauthorized(new { message = "Yêu cầu đăng nhập để truy cập Deal Room mật." });
+        }
+
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
 
@@ -649,6 +687,14 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         if (string.IsNullOrWhiteSpace(req.Message))
             return BadRequest(new { message = "Nội dung thảo luận không được để trống" });
 
+        // Tuân thủ BR-BRK-07: Tự động trích xuất hoặc gán mặc định nếu thiếu senderName / senderRole
+        var senderName = !string.IsNullOrWhiteSpace(req.SenderName)
+            ? req.SenderName
+            : (Actor.Email ?? "Đại diện Doanh nghiệp");
+        var senderRole = !string.IsNullOrWhiteSpace(req.SenderRole)
+            ? req.SenderRole
+            : (Actor.PlatformRole != PlatformRoles.Anonymous ? Actor.PlatformRole : "BUYER");
+
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
 
@@ -669,20 +715,20 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         }
 
         AddParam("@oppId", id);
-        AddParam("@senderName", req.SenderName);
-        AddParam("@senderRole", req.SenderRole);
+        AddParam("@senderName", senderName);
+        AddParam("@senderRole", senderRole);
         AddParam("@message", req.Message);
         AddParam("@attachmentUrl", req.AttachmentUrl);
 
         using var reader = await cmd.ExecuteReaderAsync(ct);
         if (await reader.ReadAsync(ct))
         {
-            return StatusCode(201, Ok200(new
+            return Ok(Ok200(new
             {
                 id = reader.GetGuid(0),
                 opportunityId = id,
-                senderName = req.SenderName,
-                senderRole = req.SenderRole,
+                senderName = senderName,
+                senderRole = senderRole,
                 message = req.Message,
                 attachmentUrl = req.AttachmentUrl,
                 createdAt = reader.GetDateTime(1)
@@ -701,6 +747,15 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
     {
         if (string.IsNullOrWhiteSpace(req.ScopeOfWork))
             return BadRequest(new { message = "Phạm vi hợp tác không được để trống" });
+
+        // Tuân thủ BR-BRK-08: Dung sai DTO và gán mẫu điều khoản mặc định (Boilerplate Clauses)
+        var duration = req.PilotDurationMonths ?? req.DurationMonths ?? 6;
+        var commercial = !string.IsNullOrWhiteSpace(req.CommercialTerms)
+            ? req.CommercialTerms
+            : "Chi phí thử nghiệm thực địa do hai bên đồng tài trợ theo tiến độ thống nhất.";
+        var ip = !string.IsNullOrWhiteSpace(req.IntellectualPropertyTerms)
+            ? req.IntellectualPropertyTerms
+            : "Quyền sở hữu trí tuệ gốc thuộc về bên tạo lập; dữ liệu phát sinh trong thử nghiệm thuộc quyền khai thác chung.";
 
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
@@ -730,9 +785,9 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         AddParam("@code", mouCode);
         AddParam("@oppId", id);
         AddParam("@scope", req.ScopeOfWork);
-        AddParam("@duration", req.PilotDurationMonths > 0 ? req.PilotDurationMonths : 6);
-        AddParam("@commercial", req.CommercialTerms ?? "");
-        AddParam("@ip", req.IntellectualPropertyTerms ?? "");
+        AddParam("@duration", duration);
+        AddParam("@commercial", commercial);
+        AddParam("@ip", ip);
         AddParam("@status", mouStatus);
         AddParam("@signedDate", signedDate);
 
@@ -765,7 +820,7 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
             await cmdUpdateOpp.ExecuteNonQueryAsync(ct);
         }
 
-        return StatusCode(201, Ok200(new
+        return Ok(Ok200(new
         {
             id = createdMouId,
             mouCode = code,

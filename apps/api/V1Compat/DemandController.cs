@@ -258,11 +258,25 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
     }
 
     [HttpGet("buyer/demands")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetBuyerDemands(CancellationToken ct)
     {
-        var items = await db.Set<DemandItem>()
-            .AsNoTracking()
+        if (!Actor.IsAuthenticated || Actor.PersonId == null)
+        {
+            return Unauthorized(new { message = "Yêu cầu đăng nhập để truy cập danh sách bài toán." });
+        }
+
+        var query = db.Set<DemandItem>().AsNoTracking();
+
+        // Chống lỗ hổng IDOR: Nếu là tài khoản BUYER hoặc thành viên thông thường, chỉ lấy bài của chính mình
+        if (Actor.PlatformRole != PlatformRoles.Admin &&
+            Actor.PlatformRole != PlatformRoles.SuperAdmin &&
+            Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
+            Actor.PlatformRole != PlatformRoles.ProvincialAdmin)
+        {
+            query = query.Where(i => i.CreatedBy == Actor.PersonId);
+        }
+
+        var items = await query
             .OrderByDescending(i => i.CreatedAt)
             .Take(50)
             .ToListAsync(ct);
@@ -365,9 +379,13 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         [FromQuery] string? q,
         [FromQuery] string? sectorCode,
         [FromQuery] string? tniClassification,
-        CancellationToken ct)
+        [FromQuery] bool? rotate = null,
+        [FromQuery] int? limit = null,
+        CancellationToken ct = default)
     {
-        var query = db.Set<DemandItem>().AsNoTracking();
+        // Tuân thủ BR-03-002: Chỉ bài toán đã được Cán bộ Sở VERIFIED và cho phép niêm yết mới hiển thị ra Sàn
+        var query = db.Set<DemandItem>().AsNoTracking()
+            .Where(i => i.Status == DemandItemStatuses.Verified && i.IsPublicListed);
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -382,7 +400,31 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             query = query.Where(i => i.TniClassification == tniClassification);
         }
 
-        var items = await query.OrderByDescending(i => i.CreatedAt).Take(50).ToListAsync(ct);
+        var isRotate = rotate.GetValueOrDefault(false);
+        var effectiveLimit = limit ?? (isRotate ? 6 : 50);
+
+        List<DemandItem> items;
+        if (isRotate)
+        {
+            // Lấy tập ứng viên đã sắp xếp để áp dụng thuật toán xoay tua xác định & đan xen ngành
+            var rawCandidates = await query.OrderByDescending(i => i.CreatedAt).Take(200).ToListAsync(ct);
+            items = InterleavedRotation.RotateAndInterleave(
+                rawCandidates,
+                keySelector: i => i.TechnicalProblem,
+                sectorSelector: i => i.SectorCode,
+                limit: effectiveLimit,
+                maxPerSector: 2
+            );
+        }
+        else
+        {
+            // Tương thích ngược: Lọc DistinctBy TechnicalProblem và lấy theo thứ tự mới nhất
+            var rawCandidates = await query.OrderByDescending(i => i.CreatedAt).Take(Math.Max(effectiveLimit * 3, 50)).ToListAsync(ct);
+            items = rawCandidates
+                .DistinctBy(i => i.TechnicalProblem.Trim().ToLowerInvariant())
+                .Take(effectiveLimit)
+                .ToList();
+        }
 
         // Map sang DTO công khai (Ẩn PII, ẩn ngân sách chi tiết nếu cần)
         var result = items.Select(i => new
@@ -614,9 +656,23 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
     }
 
     [HttpPost("gov/demands/{id}/verify")]
-    [AllowAnonymous]
     public async Task<IActionResult> VerifyDemand(Guid id, CancellationToken ct)
     {
+        if (!Actor.IsAuthenticated || Actor.PersonId == null)
+        {
+            return Unauthorized(new { message = "Yêu cầu đăng nhập tài khoản Cán bộ Sở để phê duyệt bài toán." });
+        }
+
+        // Chặn quyền BUYER hoặc các vai trò không thuộc khối Quản trị Nhà nước
+        if (Actor.PlatformRole == PlatformRoles.Buyer ||
+            (Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
+             Actor.PlatformRole != PlatformRoles.SuperAdmin &&
+             Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
+             Actor.PlatformRole != PlatformRoles.Admin))
+        {
+            return StatusCode(403, new { message = "Chỉ Cán bộ Sở KH&CN hoặc Quản trị viên mới có quyền phê duyệt bài toán." });
+        }
+
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán." });
 
@@ -627,9 +683,22 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
     }
 
     [HttpPost("gov/demands/{id}/assign-expert")]
-    [AllowAnonymous]
     public async Task<IActionResult> AssignExpert(Guid id, [FromBody] AssignExpertRequest req, CancellationToken ct)
     {
+        if (!Actor.IsAuthenticated || Actor.PersonId == null)
+        {
+            return Unauthorized(new { message = "Yêu cầu đăng nhập tài khoản Cán bộ Sở để gán chuyên gia." });
+        }
+
+        if (Actor.PlatformRole == PlatformRoles.Buyer ||
+            (Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
+             Actor.PlatformRole != PlatformRoles.SuperAdmin &&
+             Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
+             Actor.PlatformRole != PlatformRoles.Admin))
+        {
+            return StatusCode(403, new { message = "Chỉ Cán bộ Sở KH&CN hoặc Quản trị viên mới có quyền gán chuyên gia." });
+        }
+
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán." });
 

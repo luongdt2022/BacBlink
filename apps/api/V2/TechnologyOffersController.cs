@@ -318,10 +318,14 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         [FromQuery] int? minTrl,
         [FromQuery] string? ipStatus,
         [FromQuery] string? enterpriseTaxCode,
+        [FromQuery] bool? rotate = null,
         [FromQuery] int page = 1,
         [FromQuery] int limit = 12,
         CancellationToken ct = default)
     {
+        var isRotate = rotate.GetValueOrDefault(false);
+        var effectiveLimit = isRotate && limit == 12 ? 6 : limit;
+
         var dbQuery = db.Set<SellerTechnologyOffer>()
             .Include(x => x.SpecValues)
             .Include(x => x.Documents)
@@ -373,11 +377,46 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 dbQuery = dbQuery.Where(x => x.EnterpriseTaxCode != null && x.EnterpriseTaxCode.ToLower() == cleanTax);
             }
 
-            var total = await dbQuery.CountAsync(ct);
-            var entities = await dbQuery.OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
-                                        .Skip((page - 1) * limit)
-                                        .Take(limit)
-                                        .ToListAsync(ct);
+            if (isRotate)
+            {
+                var rawCandidates = await dbQuery
+                    .OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
+                    .Take(200)
+                    .ToListAsync(ct);
+
+                var rotatedEntities = InterleavedRotation.RotateAndInterleave(
+                    rawCandidates,
+                    keySelector: x => x.Title,
+                    sectorSelector: x => x.SectorCode,
+                    limit: effectiveLimit,
+                    maxPerSector: 2
+                );
+
+                return Ok(new
+                {
+                    success = true,
+                    total = rotatedEntities.Count,
+                    page = 1,
+                    limit = effectiveLimit,
+                    totalPages = 1,
+                    data = rotatedEntities.Select(ToDto).ToList()
+                });
+            }
+
+            var allEntities = await dbQuery
+                .OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
+                .Take(Math.Max(page * limit * 3, 100))
+                .ToListAsync(ct);
+
+            var deduplicated = allEntities
+                .DistinctBy(x => x.Title.Trim().ToLowerInvariant())
+                .ToList();
+
+            var total = deduplicated.Count;
+            var entities = deduplicated
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToList();
 
             return Ok(new
             {
@@ -431,11 +470,37 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             query = query.Where(x => x.EnterpriseTaxCode != null && x.EnterpriseTaxCode.Equals(enterpriseTaxCode.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
-        var totalFallback = query.Count();
-        var dataFallback = query.OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
-                                .Skip((page - 1) * limit)
-                                .Take(limit)
-                                .ToList();
+        if (isRotate)
+        {
+            var rotatedFallback = InterleavedRotation.RotateAndInterleave(
+                query.OrderByDescending(x => x.PublishedAt ?? x.CreatedAt).ToList(),
+                keySelector: x => x.Title,
+                sectorSelector: x => x.SectorCode,
+                limit: effectiveLimit,
+                maxPerSector: 2
+            );
+
+            return Ok(new
+            {
+                success = true,
+                total = rotatedFallback.Count,
+                page = 1,
+                limit = effectiveLimit,
+                totalPages = 1,
+                data = rotatedFallback
+            });
+        }
+
+        var deduplicatedFallback = query
+            .DistinctBy(x => x.Title.Trim().ToLowerInvariant())
+            .OrderByDescending(x => x.PublishedAt ?? x.CreatedAt)
+            .ToList();
+
+        var totalFallback = deduplicatedFallback.Count;
+        var dataFallback = deduplicatedFallback
+            .Skip((page - 1) * limit)
+            .Take(limit)
+            .ToList();
 
         return Ok(new
         {
