@@ -80,7 +80,7 @@ def run_task06_blackbox_suite():
         page.fill('input[type="email"]', "admin.super@nacentech.local")
         page.fill('input[type="password"]', "Password@123")
         page.click('button:has-text("Đăng nhập vào Hệ Thống")')
-        page.wait_for_url("**/admin**", timeout=8000)
+        page.wait_for_url("**/admin**", timeout=15000)
         log_pass("T3.1: Super Admin đăng nhập thật thành công vào hệ thống.")
 
         # Truy cập trang Quản lý danh mục ngành

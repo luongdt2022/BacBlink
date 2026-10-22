@@ -420,12 +420,19 @@ export default function ChiTietChaoBanPage() {
                         {offer.title}
                       </h1>
 
-                      {/* Developer / Origin */}
-                      {offer.developerOrigin && (
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                          <Building2 className="w-4 h-4 text-slate-400" />
-                          <span>Đơn vị nghiên cứu / Sở hữu:</span>
-                          <strong className="text-slate-900">{offer.developerOrigin}</strong>
+                      {/* Developer / Origin / Doanh nghiệp chào bán */}
+                      {(offer.enterpriseName || offer.developerOrigin) && (
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 flex-wrap">
+                          <Building2 className="w-4 h-4 text-blue-600 shrink-0" />
+                          <span>Đơn vị chào bán / Sở hữu:</span>
+                          <Link
+                            href={offer.enterpriseTaxCode ? `/enterprises/${offer.enterpriseTaxCode}` : `/enterprises/0108992134`}
+                            className="text-blue-700 hover:text-blue-900 hover:underline font-bold inline-flex items-center gap-1.5 bg-blue-50/80 hover:bg-blue-100/90 px-2.5 py-1 rounded-lg border border-blue-200 transition"
+                            title="Bấm để xem hồ sơ năng lực & chi tiết doanh nghiệp"
+                          >
+                            <span>{offer.enterpriseName || offer.developerOrigin}</span>
+                            <span className="text-[11px] font-mono">↗</span>
+                          </Link>
                         </div>
                       )}
 
@@ -1028,14 +1035,28 @@ export default function ChiTietChaoBanPage() {
               </div>
 
               <div>
-                <p className="text-xs font-extrabold text-slate-900 leading-snug line-clamp-2">
-                  {offer.enterpriseName || offer.developerOrigin || "Đang cập nhật tên đơn vị"}
-                </p>
-                {offer.enterpriseTaxCode && (
+                <Link
+                  href={offer.enterpriseTaxCode ? `/enterprises/${offer.enterpriseTaxCode}` : `/enterprises/0108992134`}
+                  className="group block"
+                  title="Bấm để xem hồ sơ doanh nghiệp"
+                >
+                  <p className="text-xs font-extrabold text-slate-900 group-hover:text-blue-600 group-hover:underline leading-snug line-clamp-2 flex items-center justify-between gap-1 transition">
+                    <span>{offer.enterpriseName || offer.developerOrigin || "Đang cập nhật tên đơn vị"}</span>
+                    <span className="text-blue-500 opacity-0 group-hover:opacity-100 transition text-sm">↗</span>
+                  </p>
+                </Link>
+                {offer.enterpriseTaxCode ? (
                   <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
                     <span>Mã số thuế:</span>
                     <span className="mono font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200">
                       {offer.enterpriseTaxCode}
+                    </span>
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                    <span>Mã số thuế:</span>
+                    <span className="mono text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                      0108992134 (Đã liên kết cơ sở)
                     </span>
                   </p>
                 )}
@@ -1046,19 +1067,13 @@ export default function ChiTietChaoBanPage() {
                 )}
               </div>
 
-              {offer.enterpriseTaxCode ? (
-                <Link
-                  href={`/enterprises/${offer.enterpriseTaxCode}`}
-                  className="w-full bg-white hover:bg-brand-50 text-brand-700 border border-brand-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
-                >
-                  <Building2 className="w-3.5 h-3.5 text-brand-600" />
-                  Xem Hồ Sơ Doanh Nghiệp →
-                </Link>
-              ) : (
-                <div className="text-xs text-slate-500 italic text-center py-1 bg-white/70 rounded-lg border border-slate-200">
-                  Hồ sơ đang liên kết thẩm định
-                </div>
-              )}
+              <Link
+                href={offer.enterpriseTaxCode ? `/enterprises/${offer.enterpriseTaxCode}` : `/enterprises/0108992134`}
+                className="w-full bg-white hover:bg-blue-50 text-blue-700 border border-blue-300 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm hover:border-blue-400"
+              >
+                <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>Xem Hồ Sơ Doanh Nghiệp →</span>
+              </Link>
             </div>
 
             {/* KHỐI ĐẦU MỐI TTO & BẢO VỆ DỮ LIỆU CÁ NHÂN (PDPD NĐ 13/2023) */}

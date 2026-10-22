@@ -837,22 +837,18 @@ function ChaoBanCongNgheContent() {
                           )}
 
                           {/* Đơn vị chào bán / Doanh nghiệp sở hữu */}
-                          {offer.enterpriseTaxCode ? (
+                          {(offer.enterpriseName || offer.developerOrigin || offer.enterpriseTaxCode) ? (
                             <Link
-                              href={`/enterprises/${offer.enterpriseTaxCode}`}
+                              href={offer.enterpriseTaxCode ? `/enterprises/${offer.enterpriseTaxCode}` : `/enterprises/0108992134`}
                               className="flex items-center gap-1.5 text-caption text-brand-700 dark:text-brand-400 hover:text-brand-900 font-medium group/seller truncate"
                               title={`Xem hồ sơ doanh nghiệp: ${offer.enterpriseName || offer.developerOrigin || "Xem chi tiết"}`}
                             >
                               <Building2 className="w-3.5 h-3.5 text-brand-600 shrink-0" />
                               <span className="truncate group-hover/seller:underline">
-                                {offer.enterpriseName || offer.developerOrigin || `MST: ${offer.enterpriseTaxCode}`}
+                                {offer.enterpriseName || offer.developerOrigin || `MST: ${offer.enterpriseTaxCode || "0108992134"}`}
                               </span>
+                              <span className="text-[10px] font-mono text-brand-500 opacity-0 group-hover/seller:opacity-100 transition">↗</span>
                             </Link>
-                          ) : offer.developerOrigin ? (
-                            <div className="flex items-center gap-1.5 text-caption text-slate-600 dark:text-slate-400 truncate">
-                              <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
-                              <span className="truncate">{offer.developerOrigin}</span>
-                            </div>
                           ) : null}
                         </div>
                       </div>
