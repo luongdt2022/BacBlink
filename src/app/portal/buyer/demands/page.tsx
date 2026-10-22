@@ -17,7 +17,8 @@ import {
   ExternalLink,
   Edit,
   Archive,
-  XCircle
+  XCircle,
+  Bookmark
 } from 'lucide-react';
 import { Async, AsyncState } from '@/components/ui/async';
 import QuickDemandModal from '@/components/demand/QuickDemandModal';
@@ -53,6 +54,8 @@ interface DemandItem {
 export default function BuyerDemandsPage() {
   const toast = useToast();
   const [demands, setDemands] = useState<DemandItem[]>([]);
+  const [bookmarkedDemands, setBookmarkedDemands] = useState<DemandItem[]>([]);
+  const [isBookmarkedLoading, setIsBookmarkedLoading] = useState(false);
   const [asyncState, setAsyncState] = useState<AsyncState>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,9 +88,56 @@ export default function BuyerDemandsPage() {
     }
   };
 
+  const fetchBookmarkedDemands = async () => {
+    const token = authClient.getToken();
+    if (!token) return;
+    setIsBookmarkedLoading(true);
+    try {
+      const res = await fetch('/api/v1/demands/bookmarked?limit=50', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const list = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+        setBookmarkedDemands(list);
+      }
+    } catch {
+      // Bỏ qua lỗi ngầm
+    } finally {
+      setIsBookmarkedLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDemands();
+    fetchBookmarkedDemands();
   }, []);
+
+  const handleRemoveBookmark = async (id?: string) => {
+    if (!id) return;
+    const token = authClient.getToken();
+    if (!token) return;
+
+    try {
+      const res = await fetch(`/api/v1/demands/${id}/bookmark`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        setBookmarkedDemands((prev) => prev.filter((d) => d.id !== id));
+        toast.info('Đã hủy theo dõi bài toán khỏi danh sách.', 'Thông báo');
+      } else {
+        toast.error('Không thể hủy theo dõi bài toán.', 'Lỗi');
+      }
+    } catch {
+      toast.error('Lỗi kết nối khi hủy theo dõi bài toán.', 'Lỗi');
+    }
+  };
 
   const handleCreateSuccess = (newItem: any) => {
     setDemands((prev) => [newItem, ...prev]);
@@ -135,6 +185,9 @@ export default function BuyerDemandsPage() {
     if (filterStatus === 'ALL') return true;
     return item.status === filterStatus;
   });
+
+  const isBookmarkedTab = filterStatus === 'BOOKMARKED';
+  const displayList = isBookmarkedTab ? bookmarkedDemands : filteredList;
 
   const verifiedCount = demands.filter(d => d.status === 'VERIFIED').length;
   const pendingCount = demands.filter(d => d.status === 'PENDING').length;
@@ -284,17 +337,31 @@ export default function BuyerDemandsPage() {
             >
               Đã đóng ({closedCount})
             </button>
+            <button
+              onClick={() => {
+                setFilterStatus('BOOKMARKED');
+                fetchBookmarkedDemands();
+              }}
+              className={`px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 ${
+                filterStatus === 'BOOKMARKED'
+                  ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-sm'
+                  : 'text-text-secondary dark:text-slate-400 hover:text-text-primary'
+              }`}
+            >
+              <Bookmark className="w-3.5 h-3.5" />
+              Đang theo dõi ({bookmarkedDemands.length})
+            </button>
           </div>
 
           <div className="text-xs text-text-secondary dark:text-slate-400">
-            Hiển thị <strong>{filteredList.length}</strong> bài toán kỹ thuật
+            Hiển thị <strong>{isBookmarkedTab ? bookmarkedDemands.length : filteredList.length}</strong> bài toán {isBookmarkedTab ? 'đang theo dõi' : 'kỹ thuật'}
           </div>
         </div>
 
         {/* TABLE LIST WITH ASYNC 5 UX STATES */}
         <Async
-          state={asyncState}
-          onRetry={fetchDemands}
+          state={isBookmarkedTab ? (isBookmarkedLoading ? 'loading' : (bookmarkedDemands.length === 0 ? 'empty' : 'success')) : asyncState}
+          onRetry={isBookmarkedTab ? fetchBookmarkedDemands : fetchDemands}
           errorMessage={errorMessage}
           loadingSkeleton={
             <div className="surface-card p-6 space-y-4 animate-pulse">
@@ -304,25 +371,47 @@ export default function BuyerDemandsPage() {
             </div>
           }
           emptyContent={
-            <div className="surface-card p-12 text-center max-w-md mx-auto space-y-4 my-6">
-              <div className="w-14 h-14 bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 rounded-2xl flex items-center justify-center mx-auto">
-                <FileQuestion className="w-7 h-7" />
+            isBookmarkedTab ? (
+              <div className="surface-card p-12 text-center max-w-md mx-auto space-y-4 my-6">
+                <div className="w-14 h-14 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 rounded-2xl flex items-center justify-center mx-auto">
+                  <Bookmark className="w-7 h-7" />
+                </div>
+                <h3 className="text-base font-extrabold text-text-primary dark:text-white">
+                  Chưa có bài toán nào đang theo dõi
+                </h3>
+                <p className="text-xs text-text-secondary dark:text-slate-400">
+                  Quý đơn vị có thể ghé thăm Sàn Giao Dịch Nhu Cầu để lưu các bài toán kỹ thuật quan tâm vào danh sách theo dõi.
+                </p>
+                <div className="pt-2">
+                  <Link
+                    href="/nhu-cau-cong-nghe"
+                    className="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-2"
+                  >
+                    <Search className="w-4 h-4" /> Khám Phá Nhu Cầu Công Nghệ
+                  </Link>
+                </div>
               </div>
-              <h3 className="text-base font-extrabold text-text-primary dark:text-white">
-                Chưa có bài toán kỹ thuật nào
-              </h3>
-              <p className="text-xs text-text-secondary dark:text-slate-400">
-                Doanh nghiệp có thể bắt đầu bằng việc kê khai phiếu khảo sát hoặc đăng nhanh bài toán mới.
-              </p>
-              <div className="pt-2">
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-2"
-                >
-                  <PlusCircle className="w-4 h-4" /> Đăng Bài Toán Ngay
-                </button>
+            ) : (
+              <div className="surface-card p-12 text-center max-w-md mx-auto space-y-4 my-6">
+                <div className="w-14 h-14 bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 rounded-2xl flex items-center justify-center mx-auto">
+                  <FileQuestion className="w-7 h-7" />
+                </div>
+                <h3 className="text-base font-extrabold text-text-primary dark:text-white">
+                  Chưa có bài toán kỹ thuật nào
+                </h3>
+                <p className="text-xs text-text-secondary dark:text-slate-400">
+                  Doanh nghiệp có thể bắt đầu bằng việc kê khai phiếu khảo sát hoặc đăng nhanh bài toán mới.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-2"
+                  >
+                    <PlusCircle className="w-4 h-4" /> Đăng Bài Toán Ngay
+                  </button>
+                </div>
               </div>
-            </div>
+            )
           }
         >
           <div className="surface-card overflow-hidden">
@@ -339,11 +428,11 @@ export default function BuyerDemandsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredList.map((item) => {
+                  {displayList.map((item) => {
                     const tniMeta = getTniClassification(item.tniScore || 70);
                     return (
                       <tr
-                        key={item.itemCode}
+                        key={item.id || item.itemCode}
                         className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition"
                       >
                         <td className="px-6 py-4 font-mono font-bold text-slate-700 dark:text-slate-300">
@@ -391,24 +480,36 @@ export default function BuyerDemandsPage() {
                               Chi tiết <ExternalLink className="w-3.5 h-3.5" />
                             </Link>
 
-                            {item.status === 'PENDING' && (
+                            {isBookmarkedTab ? (
                               <button
-                                onClick={() => setEditingDemand(item)}
-                                className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:underline font-bold text-xs"
-                                title="Chỉnh sửa bài toán"
+                                onClick={() => handleRemoveBookmark(item.id)}
+                                className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:underline font-bold text-xs"
+                                title="Hủy theo dõi bài toán này"
                               >
-                                <Edit className="w-3.5 h-3.5" /> Sửa
+                                <Bookmark className="w-3.5 h-3.5" /> Bỏ theo dõi
                               </button>
-                            )}
+                            ) : (
+                              <>
+                                {item.status === 'PENDING' && (
+                                  <button
+                                    onClick={() => setEditingDemand(item)}
+                                    className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:underline font-bold text-xs"
+                                    title="Chỉnh sửa bài toán"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" /> Sửa
+                                  </button>
+                                )}
 
-                            {item.status !== 'CLOSED' && (
-                              <button
-                                onClick={() => setClosingDemandId(item.id || null)}
-                                className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 hover:underline font-bold text-xs"
-                                title="Đóng bài toán"
-                              >
-                                <XCircle className="w-3.5 h-3.5" /> Đóng
-                              </button>
+                                {item.status !== 'CLOSED' && (
+                                  <button
+                                    onClick={() => setClosingDemandId(item.id || null)}
+                                    className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400 hover:underline font-bold text-xs"
+                                    title="Đóng bài toán"
+                                  >
+                                    <XCircle className="w-3.5 h-3.5" /> Đóng
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         </td>

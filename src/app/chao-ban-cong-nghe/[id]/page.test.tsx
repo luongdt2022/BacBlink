@@ -327,4 +327,21 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
     expect(screen.getByText(/Đặng Thị Thảo/i)).toBeInTheDocument();
     expect(screen.getByText(/Đã tự động điền đơn vị, người liên hệ, email và SĐT từ tài khoản đăng nhập/i)).toBeInTheDocument();
   });
+
+  it("T-04-CR96: Hiển thị liên kết mở hồ sơ doanh nghiệp từ sản phẩm chào bán", async () => {
+    render(<ChiTietChaoBanPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/Nền tảng Digital Twin mô phỏng/i)).toBeInTheDocument();
+    });
+
+    // 1. Kiểm tra link ở thông tin đơn vị chào bán
+    const originLinks = screen.getAllByRole("link", { name: /Viện Năng Lượng - Bộ Công Thương/i });
+    expect(originLinks.length).toBeGreaterThanOrEqual(1);
+    expect(originLinks[0]).toHaveAttribute("href", expect.stringMatching(/^\/enterprises\//));
+
+    // 2. Kiểm tra nút xem hồ sơ doanh nghiệp ở sidebar
+    const profileBtn = screen.getByRole("link", { name: /Xem Hồ Sơ Doanh Nghiệp/i });
+    expect(profileBtn).toBeInTheDocument();
+    expect(profileBtn).toHaveAttribute("href", expect.stringMatching(/^\/enterprises\//));
+  });
 });

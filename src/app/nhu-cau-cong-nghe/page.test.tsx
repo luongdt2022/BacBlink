@@ -42,13 +42,19 @@ const mockSectors = [
   { code: "LV11", name: "Nước – môi trường – chất thải" },
 ];
 
-const setupFetch = () => {
+const setupFetch = (bookmarkedIds: string[] = []) => {
   return vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
     const url = String(input);
     if (url.includes("/api/v1/sectors")) {
       return {
         ok: true,
         json: async () => ({ success: true, data: mockSectors }),
+      } as Response;
+    }
+    if (url.includes("/api/v1/demands/bookmarks/ids")) {
+      return {
+        ok: true,
+        json: async () => bookmarkedIds,
       } as Response;
     }
     if (url.includes("/api/v1/public/demands")) {
@@ -226,6 +232,133 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     expect(screen.getByText("Bài toán kỹ thuật kiểm thử phân trang số 10")).toBeInTheDocument();
     expect(screen.getByText("Bài toán kỹ thuật kiểm thử phân trang số 12")).toBeInTheDocument();
     expect(screen.queryByText("Bài toán kỹ thuật kiểm thử phân trang số 1")).not.toBeInTheDocument();
+  });
+
+  it("prompts login modal and warning when unauthenticated user clicks bookmark button (CR-DEMAND-BOOKMARK)", async () => {
+    setupFetch();
+    render(<PublicDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Tự động hóa phát hiện khuyết tật mối hàn vi mạch SMT bằng AI")).toBeInTheDocument();
+    });
+
+    const bookmarkButtons = screen.getAllByTitle("Lưu theo dõi bài toán");
+    expect(bookmarkButtons.length).toBeGreaterThan(0);
+
+    // Bấm nút bookmark khi chưa đăng nhập
+    fireEvent.click(bookmarkButtons[0]);
+
+    // Modal xác thực đăng nhập phải xuất hiện với đúng thông điệp
+    await waitFor(() => {
+      expect(
+        screen.getByText("Quý đơn vị vui lòng đăng nhập tài khoản Doanh nghiệp hoặc Chuyên gia để lưu bài toán vào danh sách theo dõi.")
+      ).toBeInTheDocument();
+      expect(screen.getByText("Đăng Nhập Ngay")).toBeInTheDocument();
+    });
+  });
+
+  it("loads bookmarked IDs from server and allows authenticated user to toggle bookmark (CR-DEMAND-BOOKMARK)", async () => {
+    authClient.setSession("test-token-jwt", {
+      id: "buyer-user-01",
+      email: "buyer@nacentech.vn",
+      role: ROLES.BUYER,
+    });
+
+    let toggled = false;
+    vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("/api/v1/sectors")) {
+        return { ok: true, json: async () => ({ success: true, data: mockSectors }) } as Response;
+      }
+      if (url.includes("/api/v1/demands/bookmarks/ids")) {
+        return { ok: true, json: async () => ["dem-001"] } as Response;
+      }
+      if (url.includes("/api/v1/public/demands")) {
+        return { ok: true, json: async () => mockDemands } as Response;
+      }
+      if (url.includes("/api/v1/demands/dem-002/bookmark") && init?.method === "POST") {
+        toggled = true;
+        expect(init.headers).toEqual(
+          expect.objectContaining({
+            Authorization: "Bearer test-token-jwt",
+          })
+        );
+        return {
+          ok: true,
+          json: async () => ({ isBookmarked: true, message: "Đã lưu bài toán thành công." }),
+        } as Response;
+      }
+      return { ok: true, json: async () => ({}) } as Response;
+    });
+
+    render(<PublicDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Tự động hóa phát hiện khuyết tật mối hàn vi mạch SMT bằng AI")).toBeInTheDocument();
+    });
+
+    // dem-001 đã bookmark từ server -> hiển thị title "Bỏ lưu theo dõi"
+    await waitFor(() => {
+      expect(screen.getByTitle("Bỏ lưu theo dõi")).toBeInTheDocument();
+    });
+
+    // dem-002 chưa bookmark -> có title "Lưu theo dõi bài toán"
+    const saveButton = screen.getByTitle("Lưu theo dõi bài toán");
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(toggled).toBe(true);
+    });
+
+    // Sau khi toggle thành công, cả 2 bài toán đều ở trạng thái "Bỏ lưu theo dõi"
+    await waitFor(() => {
+      const bookmarkedButtons = screen.getAllByTitle("Bỏ lưu theo dõi");
+      expect(bookmarkedButtons.length).toBe(2);
+    });
+  });
+
+  it("filters demands by bookmarked status when 'Đã lưu' pill is clicked (CR-DEMAND-BOOKMARK)", async () => {
+    authClient.setSession("test-token-jwt", {
+      id: "buyer-user-01",
+      email: "buyer@nacentech.vn",
+      role: ROLES.BUYER,
+    });
+
+    setupFetch(["dem-001"]);
+    render(<PublicDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Tự động hóa phát hiện khuyết tật mối hàn vi mạch SMT bằng AI")).toBeInTheDocument();
+    });
+
+    // Nút lọc "Đã lưu" hiển thị số lượng 1
+    const bookmarkFilterButton = screen.getByTitle("Lọc các bài toán đã lưu theo dõi");
+    expect(bookmarkFilterButton).toBeInTheDocument();
+    expect(bookmarkFilterButton).toHaveTextContent("Đã lưu");
+    expect(bookmarkFilterButton).toHaveTextContent("1");
+
+    // Click vào bộ lọc "Đã lưu"
+    fireEvent.click(bookmarkFilterButton);
+
+    // Chỉ còn dem-001 hiển thị, dem-002 bị ẩn
+    expect(
+      screen.getByText("Tự động hóa phát hiện khuyết tật mối hàn vi mạch SMT bằng AI")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Khắc phục hiện tượng nứt chân chim và co ngót khí khi đúc áp lực")
+    ).not.toBeInTheDocument();
+
+    // Click "Xóa lọc" để trở lại bình thường
+    const clearFilterButton = screen.getByTitle("Xóa bộ lọc");
+    fireEvent.click(clearFilterButton);
+
+    // Cả 2 bài toán đều hiển thị trở lại
+    expect(
+      screen.getByText("Tự động hóa phát hiện khuyết tật mối hàn vi mạch SMT bằng AI")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Khắc phục hiện tượng nứt chân chim và co ngót khí khi đúc áp lực")
+    ).toBeInTheDocument();
   });
 });
 

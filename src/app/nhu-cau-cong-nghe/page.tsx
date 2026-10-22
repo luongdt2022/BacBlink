@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Async, AsyncState } from "@/components/ui/async";
 import QuickDemandModal from "@/components/demand/QuickDemandModal";
+import { ConfirmModal } from "@/components/common/confirm-modal";
 import { getTniClassification } from "@/components/demand/TniRealtimeCalculator";
 import { useToast } from "@/components/common/toast";
 import { authClient, ROLES } from "@/lib/auth-client";
@@ -51,6 +52,7 @@ export default function PublicDemandsPage() {
   const [filterTni, setFilterTni] = useState("");
   const [filterBudget, setFilterBudget] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterBookmarkedOnly, setFilterBookmarkedOnly] = useState(false);
   const [publicDemands, setPublicDemands] = useState<PublicDemandItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 9; // Lưới 3 cột x 3 hàng
@@ -61,6 +63,39 @@ export default function PublicDemandsPage() {
   const [asyncState, setAsyncState] = useState<AsyncState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Load danh sách ID bài toán đã bookmark từ server nếu đã đăng nhập
+  const fetchBookmarkedIds = async () => {
+    const token = authClient.getToken();
+    if (!token) {
+      setBookmarkedIds({});
+      return;
+    }
+    try {
+      const res = await fetch("/api/v1/demands/bookmarks/ids", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const ids: string[] = await res.json();
+        const map: Record<string, boolean> = {};
+        if (Array.isArray(ids)) {
+          ids.forEach((id) => {
+            map[id] = true;
+          });
+        }
+        setBookmarkedIds(map);
+      }
+    } catch {
+      // Bỏ qua lỗi ngầm, không ảnh hưởng danh sách chính
+    }
+  };
+
+  useEffect(() => {
+    fetchBookmarkedIds();
+  }, []);
 
   // Load 10 Lĩnh vực TT17 từ API Master Data
   useEffect(() => {
@@ -119,8 +154,15 @@ export default function PublicDemandsPage() {
     return getSectorName(code);
   };
 
+  const bookmarkedCount = Object.values(bookmarkedIds).filter(Boolean).length;
+
   // Lọc tìm kiếm và ngân sách phía Client
   const filteredDemands = publicDemands.filter((item) => {
+    // 0. Bộ lọc Chỉ hiển thị bài toán đã lưu theo dõi
+    if (filterBookmarkedOnly && !bookmarkedIds[item.id]) {
+      return false;
+    }
+
     // 1. Text Search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -147,7 +189,7 @@ export default function PublicDemandsPage() {
   // Tự động reset trang về 1 khi người dùng thay đổi bộ lọc tìm kiếm
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterSector, filterTni, filterBudget, searchQuery]);
+  }, [filterSector, filterTni, filterBudget, searchQuery, filterBookmarkedOnly]);
 
   const totalPages = Math.ceil(filteredDemands.length / pageSize) || 1;
   const paginatedDemands = filteredDemands.slice(
@@ -191,16 +233,57 @@ export default function PublicDemandsPage() {
     }
   };
 
-  const toggleBookmark = (id: string, title: string) => {
-    setBookmarkedIds((prev) => {
-      const next = { ...prev, [id]: !prev[id] };
-      if (next[id]) {
-        toast.success(`Đã lưu bài toán "${title.slice(0, 40)}..." vào danh sách theo dõi.`, "Đã Lưu Bài Toán");
+  const toggleBookmark = async (id: string, title: string) => {
+    const user = authClient.getUser();
+    const token = authClient.getToken();
+    if (!user || !token) {
+      setShowAuthModal(true);
+      toast.warning(
+        "Quý đơn vị vui lòng đăng nhập tài khoản Doanh nghiệp hoặc Chuyên gia để lưu bài toán vào danh sách theo dõi.",
+        "Yêu Cầu Xác Thực"
+      );
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/v1/demands/${id}/bookmark`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        const isNowBookmarked = Boolean(result.isBookmarked);
+        setBookmarkedIds((prev) => ({
+          ...prev,
+          [id]: isNowBookmarked,
+        }));
+        if (isNowBookmarked) {
+          toast.success(
+            result.message || `Đã lưu bài toán "${title.slice(0, 40)}..." vào danh sách theo dõi.`,
+            "Đã Lưu Bài Toán"
+          );
+        } else {
+          toast.info(
+            result.message || "Đã bỏ lưu bài toán khỏi danh sách theo dõi.",
+            "Bỏ Theo Dõi"
+          );
+        }
+      } else if (res.status === 401) {
+        setShowAuthModal(true);
+        toast.warning(
+          "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục lưu bài toán.",
+          "Yêu Cầu Xác Thực"
+        );
       } else {
-        toast.info("Đã bỏ lưu bài toán khỏi danh sách theo dõi.", "Bỏ Theo Dõi");
+        toast.error("Không thể cập nhật trạng thái lưu bài toán.", "Lỗi");
       }
-      return next;
-    });
+    } catch {
+      toast.error("Lỗi kết nối khi cập nhật lưu bài toán.", "Lỗi");
+    }
   };
 
   return (
@@ -325,13 +408,48 @@ export default function PublicDemandsPage() {
               <option value="MEDIUM">TNI Trung Bình (50 - 64)</option>
             </select>
 
-            {(searchQuery || filterSector || filterBudget || filterTni) && (
+            {/* Bộ lọc Bài toán Đã lưu */}
+            <button
+              type="button"
+              onClick={() => {
+                if (!authClient.getUser()) {
+                  setShowAuthModal(true);
+                  toast.info(
+                    "Quý đơn vị vui lòng đăng nhập để lọc danh sách bài toán đã lưu theo dõi.",
+                    "Yêu Cầu Xác Thực"
+                  );
+                  return;
+                }
+                setFilterBookmarkedOnly((prev) => !prev);
+              }}
+              className={`h-11 px-3.5 text-xs font-bold rounded-control flex items-center gap-1.5 transition border shrink-0 ${
+                filterBookmarkedOnly
+                  ? "bg-amber-500 border-amber-600 text-white shadow-sm"
+                  : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-400"
+              }`}
+              title="Lọc các bài toán đã lưu theo dõi"
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${filterBookmarkedOnly ? "fill-white" : "text-amber-500"}`} />
+              <span>Đã lưu</span>
+              <span
+                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                  filterBookmarkedOnly
+                    ? "bg-white/20 text-white"
+                    : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
+                }`}
+              >
+                {bookmarkedCount}
+              </span>
+            </button>
+
+            {(searchQuery || filterSector || filterBudget || filterTni || filterBookmarkedOnly) && (
               <button
                 onClick={() => {
                   setSearchQuery("");
                   setFilterSector("");
                   setFilterBudget("");
                   setFilterTni("");
+                  setFilterBookmarkedOnly(false);
                 }}
                 className="h-11 px-3 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 border border-slate-200 dark:border-slate-700 rounded-control transition"
                 title="Xóa bộ lọc"
@@ -595,6 +713,21 @@ export default function PublicDemandsPage() {
           setPublicDemands((prev) => [newItem, ...prev]);
           setAsyncState("success");
         }}
+      />
+
+      {/* AUTH REQUIRED MODAL CHO BOOKMARK */}
+      <ConfirmModal
+        isOpen={showAuthModal}
+        title="Yêu Cầu Xác Thực Tài Khoản"
+        message="Quý đơn vị vui lòng đăng nhập tài khoản Doanh nghiệp hoặc Chuyên gia để lưu bài toán vào danh sách theo dõi."
+        confirmText="Đăng Nhập Ngay"
+        cancelText="Để Sau"
+        variant="info"
+        onConfirm={() => {
+          setShowAuthModal(false);
+          window.location.href = "/login";
+        }}
+        onClose={() => setShowAuthModal(false)}
       />
     </div>
   );

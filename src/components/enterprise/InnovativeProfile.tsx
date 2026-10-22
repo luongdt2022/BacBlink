@@ -2,6 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import {
+  BadgeCheck,
+  Handshake,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { type EnterprisePublicDetail, type InnovationEvaluation } from "@/lib/enterprise-client";
 import { type TechnologyOffer } from "@/types/technology-offer";
 import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
@@ -31,87 +38,134 @@ export function InnovativeProfile({
 
   return (
     <div className="space-y-6">
-      {/* Hero Card */}
-      <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-start justify-between gap-6">
-        <div className="flex items-start gap-5 flex-1 min-w-0">
-          <EnterpriseAvatar
-            name={data.name}
-            sectorName={data.mainSectorName}
-            sectorCode={data.sectorCode}
-            website={data.website}
-            size="lg"
-          />
-          <div className="space-y-3 flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
-                {data.subjectType || "DN ĐMST"}
-              </span>
-              {data.isVerified ? (
-                <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                  ✓ Đã kiểm chứng (Sở KH&CN)
-                </span>
-              ) : (
-                <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
-                  Chờ thẩm định
-                </span>
-              )}
-              {data.tniClassification && (
-                <span className="px-2.5 py-1 text-xs font-semibold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
-                  TNI: {data.tniClassification} ({data.tniScore?.toFixed(1) || "N/A"})
-                </span>
-              )}
-            </div>
+      {/* ========================================================================= */}
+      {/* HERO CARD: HỒ SƠ DOANH NGHIỆP ĐỔI MỚI SÁNG TẠO (ĐỒNG BỘ BRAND-700) */}
+      {/* ========================================================================= */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
+        {/* Cover Banner (Đồng bộ chuẩn Brand-700 & Innovation Art của dự án NacenTech) */}
+        <div className="h-44 sm:h-52 bg-brand-700 relative overflow-hidden border-b border-brand-800">
+          <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-900/40 via-transparent to-transparent"></div>
 
-            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-snug">
-              {data.name}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-sm text-slate-600">
-              <div>
-                <span className="text-slate-400">MST:</span>{" "}
-                <strong className="text-slate-800 font-mono">{data.taxCode}</strong>
-              </div>
-              <div>
-                <span className="text-slate-400">Tỉnh/Thành:</span>{" "}
-                <strong className="text-slate-800">{data.provinceCity}</strong>
-              </div>
-              {data.addressDetail && (
-                <div>
-                  <span className="text-slate-400">Địa chỉ:</span>{" "}
-                  <span className="text-slate-800">{data.addressDetail}</span>
-                </div>
-              )}
-              {data.website && (
-                <div>
-                  <span className="text-slate-400">Website:</span>{" "}
-                  <a
-                    href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-brand-600 hover:underline"
-                  >
-                    {data.website}
-                  </a>
-                </div>
-              )}
-            </div>
+          <div className="absolute right-4 sm:right-6 top-4 flex items-center gap-2 z-10">
+            <span className="bg-white/15 backdrop-blur-md border border-white/25 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+              <MapPin className="w-3.5 h-3.5 text-teal-300" />
+              <span>{data.provinceCity || "Toàn quốc"}</span>
+            </span>
+            <span className="bg-teal-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>DN Đổi Mới Sáng Tạo</span>
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-row md:flex-col gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={onOpenConnectModal}
-            className="w-full px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 shadow-sm transition"
-          >
-            🤝 Đề xuất kết nối
-          </button>
-          <Link
-            href="/enterprises"
-            className="w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition"
-          >
-            ← Trở về
-          </Link>
+        {/* Profile Body */}
+        <div className="px-6 sm:px-8 pb-7 relative pt-0">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-5">
+              {/* Brand Logo Avatar (float qua đường biên banner) */}
+              <div className="-mt-14 sm:-mt-16 shrink-0 z-10">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white p-1.5 shadow-lg border-2 border-white relative group">
+                  <EnterpriseAvatar
+                    name={data.name}
+                    sectorName={data.mainSectorName}
+                    sectorCode={data.sectorCode}
+                    website={data.website}
+                    size="lg"
+                  />
+                  {data.isVerified && (
+                    <div
+                      className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-xs"
+                      title="Đã kiểm chứng (Sở KH&CN)"
+                    >
+                      <BadgeCheck className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Titles & Badges */}
+              <div className="space-y-1.5 pt-2 sm:pt-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
+                    {data.subjectType || "DN ĐMST"}
+                  </span>
+                  {data.isVerified ? (
+                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Đã kiểm chứng (Sở KH&CN)</span>
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+                      Chờ thẩm định
+                    </span>
+                  )}
+                  {data.tniClassification && (
+                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
+                      TNI: {data.tniClassification} ({data.tniScore?.toFixed(1) || "N/A"})
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  {data.name}
+                </h1>
+
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 pt-1">
+                  <span>
+                    Mã Số Thuế: <strong className="text-slate-900 font-mono font-bold">{data.taxCode}</strong>
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Tỉnh/Thành: <strong className="text-slate-900">{data.provinceCity}</strong>
+                  </span>
+                  {data.addressDetail && (
+                    <>
+                      <span>•</span>
+                      <span>
+                        Địa chỉ: <span className="text-slate-800">{data.addressDetail}</span>
+                      </span>
+                    </>
+                  )}
+                  {data.website && (
+                    <>
+                      <span>•</span>
+                      <span>
+                        Website:{" "}
+                        <a
+                          href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-brand-600 hover:underline font-medium"
+                        >
+                          {data.website}
+                        </a>
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions CTA Button Group */}
+            <div className="flex items-center gap-2.5 shrink-0 pt-2 lg:pt-0">
+              <button
+                type="button"
+                onClick={onOpenConnectModal}
+                className="bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-sm"
+              >
+                <Handshake className="w-4 h-4 text-teal-400" />
+                <span>Đề xuất kết nối</span>
+              </button>
+
+              <Link
+                href="/enterprises"
+                className="text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-xl transition shadow-xs"
+              >
+                ← Trở về
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 

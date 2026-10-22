@@ -137,17 +137,17 @@ export function CommercialProfile({
       {/* HERO CARD: NHẬN DIỆN THƯƠNG MẠI & BẢO CHỨNG PHÁP LÝ */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
-        {/* Cover Banner */}
-        <div className="h-44 sm:h-52 bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 relative overflow-hidden">
-          <div className="absolute inset-0 bg-radial from-emerald-900/30 to-slate-950/80 mix-blend-overlay"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        {/* Cover Banner (Đồng bộ chuẩn Brand-700 & Innovation Art của dự án NacenTech) */}
+        <div className="h-44 sm:h-52 bg-brand-700 relative overflow-hidden border-b border-brand-800">
+          <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-900/40 via-transparent to-transparent"></div>
 
-          <div className="absolute right-4 sm:right-6 top-4 flex items-center gap-2">
+          <div className="absolute right-4 sm:right-6 top-4 flex items-center gap-2 z-10">
             <span className="bg-white/15 backdrop-blur-md border border-white/25 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-xs">
-              <MapPin className="w-3.5 h-3.5 text-emerald-300" />
+              <MapPin className="w-3.5 h-3.5 text-teal-300" />
               <span>{data.provinceCity || "Toàn quốc"}</span>
             </span>
-            <span className="bg-emerald-600/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs">
+            <span className="bg-emerald-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs">
               <CheckCircle className="w-3.5 h-3.5" />
               <span>Sẵn Sàng Giao Thương</span>
             </span>
@@ -156,28 +156,30 @@ export function CommercialProfile({
 
         {/* Profile Body */}
         <div className="px-6 sm:px-8 pb-7 relative pt-0">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 -mt-16 sm:-mt-20 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-6">
             <div className="flex flex-col sm:flex-row sm:items-end gap-5">
-              {/* Brand Logo Avatar */}
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white p-1.5 shadow-lg border-2 border-white shrink-0 relative group">
-                <div className="w-full h-full rounded-xl bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 text-white flex flex-col items-center justify-center font-extrabold shadow-inner">
-                  <span className="text-3xl font-black">{initials}</span>
-                  <span className="text-xs tracking-widest text-emerald-200 uppercase font-semibold mt-0.5">
-                    COMMERCIAL
-                  </span>
-                </div>
-                {data.isVerified && (
-                  <div
-                    className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-xs"
-                    title="Doanh Nghiệp Đã Xác Thực MST"
-                  >
-                    <BadgeCheck className="w-4 h-4" />
+              {/* Brand Logo Avatar (float qua đường biên banner) */}
+              <div className="-mt-14 sm:-mt-16 shrink-0 z-10">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white p-1.5 shadow-lg border-2 border-white relative group">
+                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-brand-600 via-teal-700 to-brand-800 text-white flex flex-col items-center justify-center font-extrabold shadow-inner">
+                    <span className="text-3xl font-black">{initials}</span>
+                    <span className="text-xs tracking-widest text-teal-200 uppercase font-semibold mt-0.5">
+                      COMMERCIAL
+                    </span>
                   </div>
-                )}
+                  {data.isVerified && (
+                    <div
+                      className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-xs"
+                      title="Doanh Nghiệp Đã Xác Thực MST"
+                    >
+                      <BadgeCheck className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Titles & Badges */}
-              <div className="space-y-1.5 pt-2">
+              {/* Titles & Badges (nằm trọn trong nền trắng, chữ đen sắc nét) */}
+              <div className="space-y-1.5 pt-2 sm:pt-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                     {data.name}
@@ -231,7 +233,7 @@ export function CommercialProfile({
               <button
                 type="button"
                 onClick={() => onOpenRfqModal("Yêu cầu báo giá chung")}
-                className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-sm"
+                className="bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-sm"
               >
                 <FileText className="w-4 h-4" />
                 <span>Gửi Yêu Cầu Báo Giá (RFQ)</span>
@@ -242,7 +244,7 @@ export function CommercialProfile({
                 onClick={onOpenChatModal}
                 className="bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-sm"
               >
-                <Handshake className="w-4 h-4 text-emerald-400" />
+                <Handshake className="w-4 h-4 text-teal-400" />
                 <span>Đề xuất kết nối</span>
               </button>
 
