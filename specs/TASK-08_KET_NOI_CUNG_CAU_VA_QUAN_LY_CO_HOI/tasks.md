@@ -62,3 +62,12 @@
 - [x] T013 [TEST] Viết Invariant Unit Tests kiểm chứng thuật toán Matching Score và quy tắc BR-BRK-01..06.
 - [x] T014 [TEST] Viết Contract & Integration Tests cho các endpoints Brokerage và CSDL PostgreSQL.
 - [x] T015 [TEST] Viết và chạy kịch bản Playwright E2E Black-box kiểm định toàn trình (Buyer tạo yêu cầu -> Seller chấp nhận -> Deal Room đàm phán -> Xuất MOU -> Sở duyệt).
+
+---
+
+## Phase 6: Delta v2 (CR-2026-018) — Làm Mịn Trải Nghiệm Radar Ghép Nối AI (Bên Mua)
+
+- [x] T016 [FE] Bổ sung dropdown `selectedDemandCode` (Bài toán nguồn) cho phép Buyer lọc trực tiếp ứng viên theo bài toán cụ thể đang mở.
+- [x] T017 [FE] Thêm thẻ hiển thị `Giải trình độ tương thích AI (XAI)` bóc tách 4 trục: Lĩnh vực 100% khớp, Mức TRL, Cấp thiết TNI, Bảo hộ SHTT.
+- [x] T018 [FE] Chuẩn hóa định dạng toán học trực quan (`TNI ≥ 80` thay cho chuỗi LaTeX thô).
+- [x] T019 [TEST] Mở rộng `src/app/portal/matching/radar/page.test.tsx` kiểm thử Explainable AI breakdown và selector bài toán, đạt 100% Green.

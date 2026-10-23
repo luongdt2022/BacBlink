@@ -270,6 +270,33 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Refactor UI Trang Chủ, triệt tiêu React Key Collision** | `REQ-01-DELTA-04`, `UI-01-DELTA-01..02` | T-01.24 | `src/app/page.tsx` | Khóa render độc nhất `key={`${item.type}-${item.id || item.itemCode || idx}-${idx}`}`, lọc Client-side Set deduplication, gọi API `rotate=true&limit=6` |
 | **Bộ kiểm thử toàn diện 4 tầng Gate 4** | `SC-DELTA-01..04`, `QC-4-TIERS` | T-01.25 | Invariants, Vitest, E2E | Invariants 5/5 pass, Vitest 6/6 pass, Playwright E2E 5/5 ca pass 100%, 0 duplicate titles, 0 console key warnings |
 
+---
+
+## 21. TASK-00 Delta v11 (CR-2026-014): Chuẩn Hóa Dynamic Navigation, Dual Mode Switcher & Seller TT17 Integration
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Phân giải nhãn hồ sơ động theo chủ thể (Không Hardcode)** | `REQ-NAV-004`, `AC-DELTA-17` | `T-00.64` | `src/app/portal/layout.tsx` (`resolveProfileLabel`) | Nhận diện động: Viện/Trường $\rightarrow$ `Hồ sơ Viện / Trường`, HTX $\rightarrow$ `Hồ sơ Hợp tác xã`, ĐMST $\rightarrow$ `Hồ sơ Doanh nghiệp ĐMST`, Doanh nghiệp $\rightarrow$ `Hồ sơ Doanh nghiệp`; Vitest `QC-TEST-01..04` PASS |
+| **Tích hợp module Đánh giá TT17 cho Seller Workspace** | `REQ-NAV-005`, `AC-DELTA-18` | `T-00.63` | `src/app/portal/layout.tsx` (`sellerNavItems`) | Bổ sung `{ href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck }`; Vitest `QC-TEST-01` PASS |
+| **Rút gọn nhãn Chế độ kép (Dual Mode Switcher), triệt tiêu lỗi truncate** | `REQ-NAV-006`, `AC-DELTA-19` | `T-00.62` | `src/components/common/role-switcher.tsx` | Nhãn `Bên Mua` và `Bên Bán` hiển thị sắc nét không bị dấu ba chấm `(...)`; Vitest `QC-TEST-05..06` PASS |
+| **Bản vẽ Wireframe Basic Design HTML tương tác** | `PO-DEC-20261023-01` | - | `Specification/02_BASIC_DESIGN/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/wireframe_workspace_seller_dual_mode.html` | Bản vẽ HTML trực quan mô phỏng chuyển đổi Dual Mode và dropdown giả lập loại hình chủ thể |
+| **Bộ kiểm thử tự động chuyên biệt & hồi quy Gate 4** | `AC-DELTA-17..20`, `QC-4-TIERS` | `T-00.65` | `src/app/portal/portal-navigation-delta.test.tsx`, `src/app/portal/layout.test.tsx` | 16/16 Vitest tests PASS 100% (10 tests layout + 6 tests delta chuyên biệt) |
+
+---
+
+## 22. TASK-00 Delta v12 (CR-2026-015): Tối Ưu Hóa & Đồng Bộ Toàn Diện 7 Mục Chức Năng Workspace Seller
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Xây dựng Seller Dashboard chuyên biệt cho SELLER role** | `REQ-SELLER-001`, `AC-DELTA-21` | `T-00.66` | `src/components/portal/seller-dashboard.tsx`, `src/app/portal/page.tsx` | Hiển thị 4 KPI doanh nghiệp, Quick Actions, bảng Inbound Leads mới nhất; xóa bỏ vòng lặp 4-card điều hướng của Buyer; Vitest `WAVE1-TEST-01..03` PASS |
+| **Triệt tiêu rò rỉ phân quyền liên kết `/gov/*` khỏi B2B Workspace** | `REQ-SELLER-003..004`, `AC-DELTA-24` | `T-00.66` | `src/app/portal/opportunities/pipeline/page.tsx`, `src/app/portal/matching/radar/page.tsx` | Xóa bỏ liên kết `/gov/opportunities` ("Giám Sát Sở KH&CN"); Vitest `WAVE1-TEST-02..03` PASS |
+| **Dọn dẹp dev badges và bổ sung bộ lọc dải TRL tại Kho Công nghệ** | `REQ-SELLER-002`, `AC-DELTA-22..23` | `T-00.67` | `src/app/portal/seller/technologies/page.tsx` | Xóa bỏ `<header>` trùng lặp và badge `TASK-04`, `SELLER WORKSPACE`; tích hợp bộ lọc dropdown `trlFilter` (TRL 1-3, 4-6, 7-9); Vitest `QC-TEST-02A..02B` PASS |
+| **Làm sạch cú pháp TeX tại trang Đánh giá Năng lực TT17** | `REQ-SELLER-006`, `AC-DELTA-25` | `T-00.67` | `src/app/(portal)/assessments/tt17/page.tsx` | Thay thế chuỗi thô `$T_{"ĐB"}$` thành `T_ĐB`; giao diện hiển thị chuyên nghiệp không bị dính ký tự toán học chưa render |
+| **Nâng cấp Hồ sơ Doanh nghiệp sang ConfirmModal & Clean State** | `REQ-SELLER-007`, `AC-DELTA-26` | `T-00.68` | `src/app/portal/enterprise/profile/page.tsx` | Khởi tạo `highQualificationRatio: ""`; thay thế `window.confirm()` bằng `<ConfirmModal />` chuẩn Design System NacenTech; Vitest `QC-TEST-07A..07B` PASS |
+| **Bộ kiểm thử toàn diện 4 test suites Gate 4/5 Pass** | `AC-DELTA-21..27`, `QC-4-TIERS` | `T-00.69` | `seller-workspace-delta-qc.test.tsx`, `seller-dashboard.test.tsx`, `portal-navigation-delta.test.tsx`, `layout.test.tsx` | 23/23 Vitest tests PASS 100% (100% Green, 0 errors) |
+
+
+
 
 
 

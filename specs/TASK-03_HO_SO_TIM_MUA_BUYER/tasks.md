@@ -143,3 +143,14 @@
 - [x] **T-03.60** `[FE]` `[LOGIC]` Chuẩn hóa logic Navigation & Validation cho 4 bước: Validation bắt buộc tại Tab 1 (ít nhất 1 bài toán), Tab 2 (pháp nhân hợp lệ) và Tab 4 (ký tên & PDPD); Tab 3 hoàn toàn tùy chọn; bổ sung nút fast-track tại Tab 2 chuyển thẳng sang Tab 4; khi submit thất bại tự động focus/cuộn về đúng tab bị thiếu.
 - [x] **T-03.61** `[TEST]` Cập nhật bộ kiểm thử Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` sang mô hình 4 tabs: kiểm tra tiêu đề và stepper 4 bước, kiểm thử validation Tab 1 & Tab 2, kiểm thử Tab 3 tùy chọn không chặn submit, kiểm thử fast-track từ Tab 2 sang Tab 4, kiểm thử free-click stepper, kiểm thử luồng submit toàn trình.
 - [x] **T-03.62** `[TEST]` `[E2E]` Cập nhật kịch bản kiểm thử E2E Playwright `test_task03_buyer_deep_survey_blackbox.py` tương thích hoàn toàn với luồng 4 tabs.
+
+---
+
+## Phase 15: Delta v9 (CR-2026-018) — Làm Mịn Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ & Nâng Cấp Modal
+
+- [x] **T-03.63** `[FE]` `[HEADER]` Chuẩn hóa tiêu đề `/portal/buyer/demands` sang `Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ`, thay badge `TASK-03` bằng `BÊN MUA CÔNG NGHỆ`.
+- [x] **T-03.64** `[FE]` `[PAGINATION]` Tích hợp phân trang `pageSize = 5` cho bảng danh sách bài toán, hỗ trợ chuyển trang, hiển thị tổng số và reset trang khi đổi tab lọc.
+- [x] **T-03.65** `[FE]` `[MODAL]` Nâng cấp `QuickDemandModal.tsx`: Thêm bộ chọn Target TRL (TRL 1-3, 4-6, 7-9), Checkbox Bảo mật ẩn danh (Confidential Mode), Hạn chót nhận đề xuất (Deadline) và file đính kèm RFP.
+- [x] **T-03.66** `[DOC]` `[WIREFRAME]` Đồng bộ Wireframe Basic Design `wireframe_quan_ly_nhu_cau_buyer.html` loại bỏ badge `TASK-03`, thêm phân trang và các trường TRL/Ẩn danh.
+- [x] **T-03.67** `[TEST]` `[QC]` Bổ sung Unit Tests kiểm chứng Header sạch dev badge, phân trang hoạt động và Modal có đầy đủ các trường mới; chạy Vitest 100% PASS (5/5 tests green).
+

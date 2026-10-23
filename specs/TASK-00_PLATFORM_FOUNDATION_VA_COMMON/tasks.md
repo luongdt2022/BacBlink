@@ -170,3 +170,72 @@
   - [x] Chạy `pnpm vitest run src/test/design-rules.test.ts` kiểm tra và khắc phục triệt để các vi phạm bảng màu retired (blue/indigo/purple) hoặc font cỡ nhỏ < 12px.
   - [x] Kiểm tra tính toàn vẹn của logic điều khiển cỡ chữ tại `src/components/common/fontsize-control.tsx`.
   - [x] Chạy `pnpm build` tại `SourceCode/frontend` xác nhận biên dịch Next.js 15 đạt 100% thành công (Exit code 0, 0 linter/type errors).
+
+---
+
+## Giai đoạn 15: Delta v11 (CR-2026-014) — Chuẩn Hóa Dynamic Navigation, Dual Mode & Seller TT17 [`[FE-NAV]`]
+
+- [x] `T-00.62` **[FE][NAV]** Tối ưu hóa component `RoleSwitcher` (`src/components/common/role-switcher.tsx`):
+  - [x] Rút gọn nhãn nút `Bên Mua (Buyer)` $\rightarrow$ `Bên Mua` và `Bên Bán (Seller)` $\rightarrow$ `Bên Bán`.
+  - [x] Triệt tiêu hoàn toàn lỗi CSS truncate gây cắt cụt text thành `(...)`.
+  - [x] Bảo toàn logic chuyển đổi vai trò nhanh <300ms, đồng bộ `localStorage` và `switchEnterpriseActiveRole`.
+
+- [x] `T-00.63` **[FE][NAV]** Bổ sung mục Đánh giá Năng lực TT17 vào Seller Workspace (`src/app/portal/layout.tsx`):
+  - [x] Thêm `{ href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck }` vào `sellerNavItems`.
+  - [x] Xác thực liên kết điều hướng chính xác về module đánh giá TT17.
+
+- [x] `T-00.64` **[FE][NAV]** Triển khai cơ chế phân giải nhãn động `resolveProfileLabel` (`src/app/portal/layout.tsx`):
+  - [x] Nạp `fetchMyEnterpriseProfile()` trong `useEffect` để trích xuất `subjectType`.
+  - [x] Tự động hiển thị `Hồ sơ Viện / Trường` cho Viện/Trường/Học viện hoặc `CLUSTER_ADMIN`.
+  - [x] Tự động hiển thị `Hồ sơ Hợp tác xã` cho HTX.
+  - [x] Tự động hiển thị `Hồ sơ Doanh nghiệp ĐMST` cho `INNOVATION_ENTITY`.
+  - [x] Tự động hiển thị `Hồ sơ Doanh nghiệp` cho Doanh nghiệp `BUYER` và `SELLER`.
+
+- [x] `T-00.65` **[TEST][QC]** Xây dựng test suite chuyên biệt và hồi quy:
+  - [x] Cập nhật test cases hiện có trong `src/app/portal/layout.test.tsx` kiểm chứng sự hiện diện của `Đánh giá Năng lực TT17` và `Hồ sơ Doanh nghiệp`.
+  - [x] Xây dựng test suite riêng `src/app/portal/portal-navigation-delta.test.tsx` bao phủ toàn bộ nhánh phân giải nhãn động và trạng thái nút RoleSwitcher.
+  - [x] Chạy Vitest đạt 100% PASS (100% Green).
+
+---
+
+## Giai đoạn 16: Delta v12 (CR-2026-015) — Tối Ưu Hóa 7 Mục Chức Năng Seller Workspace [`[FE-SELLER]`]
+
+- [x] `T-00.66` **[FE][WAVE-1]** Chuyên biệt hóa Dashboard Seller và triệt tiêu rò rỉ phân quyền (`src/app/portal/page.tsx`, `seller-dashboard.tsx`):
+  - [x] Xây dựng `<SellerDashboard />` tại `src/components/portal/seller-dashboard.tsx` với 4 KPI, Quick Actions và Inbound Leads.
+  - [x] Tích hợp rẽ nhánh tại `src/app/portal/page.tsx` khi `currentRole === "SELLER"`.
+  - [x] Loại bỏ nút `/gov/opportunities` tại `src/app/portal/opportunities/pipeline/page.tsx`.
+  - [x] Loại bỏ nút `/gov/opportunities` tại `src/app/portal/matching/radar/page.tsx`.
+  - [x] Viết unit test `src/app/portal/seller-dashboard.test.tsx` đạt 100% PASS.
+
+- [x] `T-00.67` **[FE][WAVE-2]** Chuẩn hóa Kho Công Nghệ (TRL) và làm sạch text Đánh giá TT17:
+  - [x] Xóa bỏ `<header>` trùng lặp và badge dev `TASK-04`, `SELLER WORKSPACE` trong `src/app/portal/seller/technologies/page.tsx`.
+  - [x] Tích hợp bộ lọc dropdown dải TRL (`TRL_1_3`, `TRL_4_6`, `TRL_7_9`).
+  - [x] Chuẩn hóa ký tự `$T_{"ĐB"}$` thành `T_ĐB` trong `src/app/(portal)/assessments/tt17/page.tsx`.
+
+- [x] `T-00.68` **[FE][WAVE-3]** Nâng cấp Hồ Sơ Doanh Nghiệp sang ConfirmModal và làm sạch State:
+  - [x] Xóa bỏ giá trị gán cứng 40% trong `formData.highQualificationRatio` tại `src/app/portal/enterprise/profile/page.tsx`.
+  - [x] Thay thế lệnh `window.confirm()` bằng `<ConfirmModal />` chuẩn Design System NacenTech.
+
+- [x] `T-00.69` **[TEST][QC]** Xây dựng test suite toàn diện và nghiệm thu Wave 1-3:
+  - [x] Tạo `src/app/portal/seller-workspace-delta-qc.test.tsx` kiểm thử Item 2 (TRL filter & zero dev badges) và Item 7 (ConfirmModal & clean state).
+  - [x] Chạy toàn bộ 4 test suites (`seller-workspace-delta-qc.test.tsx`, `seller-dashboard.test.tsx`, `portal-navigation-delta.test.tsx`, `layout.test.tsx`): 23/23 tests PASS (100% Green).
+
+---
+
+## Giai đoạn 17: Delta v13 (CR-2026-016) — Chuẩn Hóa Cấu Trúc Thông Tin & Navigation Workspace Bên Mua [`[FE-BUYER]`]
+
+- [x] `T-00.70` **[FE][NAV]** Tái cấu trúc mảng `buyerNavItems` trong `src/app/portal/layout.tsx`:
+  - [x] Phân định 3 Section: `Tác nghiệp Mua sắm`, `Khám phá & Ghép nối`, `Chẩn đoán & Hồ sơ`.
+  - [x] Đổi nhãn `Bài toán Tìm mua` $\rightarrow$ `Bài toán Đổi mới Công nghệ`.
+  - [x] Gắn count badge cho Bài toán (`3`), Tiến trình MOU (`1`), và badge `"Mới"` cho Radar Ghép Nối AI.
+  - [x] Đồng bộ nhãn module trong `src/app/portal/page.tsx` sang `Bài toán Đổi mới Công nghệ`.
+
+- [x] `T-00.71` **[DOC][WIREFRAME]** Đồng bộ Wireframe Basic Design HTML:
+  - [x] Cập nhật `Specification/02_BASIC_DESIGN/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/wireframe_workspace_seller_dual_mode.html` phản ánh đúng 3 Section, badges và nhãn chuẩn hóa.
+
+- [x] `T-00.72` **[TEST][QC]** Cập nhật test suite và kiểm thử hồi quy:
+  - [x] Cập nhật `src/app/portal/layout.test.tsx` với các assertions mới về Section headers và nhãn chuẩn hóa.
+  - [x] Bổ sung test cases chuyên biệt trong `src/app/portal/portal-navigation-delta.test.tsx` kiểm chứng 3 Section và badges của Bên Mua.
+  - [x] Chạy Vitest xác nhận 100% PASS (100% Green, 74/74 portal tests pass).
+
+

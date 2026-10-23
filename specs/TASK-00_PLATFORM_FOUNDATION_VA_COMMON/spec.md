@@ -503,3 +503,122 @@ Hệ thống Frontend MUST tích hợp và quản lý 2 bộ font chuẩn thông
 - **AC-DELTA-TYPO-05 (Touch Target $\ge 44\text{px}$)**: 100% nút bấm, controls, input fields và icon action đáp ứng diện tích tương tác tối thiểu $44 \times 44\text{px}$.
 - **AC-DELTA-TYPO-06 (Vietnamese Integrity)**: Toàn bộ các chuỗi văn bản Tiếng Việt chứa ký tự đặc biệt có dấu kép (`ẩ`, `ẫ`, `ệ`, `ỗ`, `ợ`, `Đ`, `Ư`) hiển thị chính xác, sắc nét, không bị lỗi font fallback chân dấu.
 - **AC-DELTA-TYPO-07 (Zero Build Regression)**: Lệnh `pnpm build` và kiểm thử tự động tại `SourceCode/frontend` đạt 0 lỗi biên dịch (Exit code 0).
+
+---
+
+## Spec Delta v11 (CR-2026-014): Chuẩn Hóa Dynamic Profile Labeling, Dual Mode Switcher & Bổ Sung Đánh Giá TT17 Cho Seller Workspace
+
+**Căn cứ thay đổi:** Quyết định PO trực tiếp tại phiên làm việc ngày 23/10/2026; Khắc phục lỗi hiển thị nhãn menu cứng "Hồ sơ Đơn vị / Viện Trường" cho tài khoản Doanh nghiệp Seller và hiện tượng tràn text cắt cụt dấu ba chấm `(...)` tại cụm Chuyển Đổi Chế Độ Kép (Dual Mode).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+1. **Lệch danh xưng pháp nhân (Label Mismatch)**: Trong `PortalLayout` (`src/app/portal/layout.tsx`), mục menu quản trị hồ sơ của nhóm vai trò `SELLER` bị hardcode là `"Hồ sơ Đơn vị / Viện Trường"`. Khi một Doanh nghiệp (Enterprise Seller) đăng nhập vào gian hàng, họ nhìn thấy danh xưng này gây tâm lý hoang mang và hiểu lầm hệ thống nhận diện sai loại hình pháp nhân của doanh nghiệp.
+2. **Tràn chữ tại Chế độ kép (Dual Mode Truncation)**: Tại component `RoleSwitcher` (`src/components/common/role-switcher.tsx`), nhãn nút đang dùng chuỗi dài `Bên Mua (Buyer)` và `Bên Bán (Seller)`. Khi đặt trong lưới `grid-cols-2` của thanh Sidebar có độ rộng giới hạn (w-72), nhãn bị bộ lọc CSS `truncate` cắt cụt thành `Bên Mua (...` và `Bên Bá... ✓`, gây mất mỹ quan và suy giảm trải nghiệm người dùng.
+3. **Thiếu liên kết Đánh giá Năng lực TT17**: Doanh nghiệp cung ứng công nghệ (Seller) cần có lối tắt truy cập vào tính năng Tự Đánh giá Trình độ & Năng lực Công nghệ theo Thông tư 17/2019/TT-BKHCN (`/assessments/tt17`) để định vị mức độ sẵn sàng công nghệ (TRL) và gia tăng điểm uy tín trên sàn giao dịch.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Requirements Delta)
+
+- **REQ-NAV-004 (Dynamic Adaptive Profile Labeling - Không Hardcode)**:
+  - Hệ thống MUST tự động phân giải nhãn hiển thị cho tuyến đường `/portal/enterprise/profile` tương thích động theo loại hình chủ thể thực tế thông qua hàm `resolveProfileLabel`:
+    1. Nếu chủ thể có `subjectType` chứa *"viện"*, *"trường"*, *"đại học"*, *"học viện"* hoặc tên đơn vị `orgName` thuộc khối viện trường $\rightarrow$ hiển thị **`Hồ sơ Viện / Trường`**.
+    2. Nếu chủ thể có `subjectType` chứa *"htx"*, *"hợp tác xã"* $\rightarrow$ hiển thị **`Hồ sơ Hợp tác xã`**.
+    3. Nếu chủ thể có `subjectType` chứa *"đmst"*, *"đổi mới sáng tạo"* hoặc vai trò `INNOVATION_ENTITY` $\rightarrow$ hiển thị **`Hồ sơ Doanh nghiệp ĐMST`**.
+    4. Nếu vai trò là `CLUSTER_ADMIN` $\rightarrow$ hiển thị **`Hồ sơ Viện / Trường`**.
+    5. Mặc định cho Doanh nghiệp thương mại / Doanh nghiệp công nghệ (`BUYER`, `SELLER`) $\rightarrow$ hiển thị **`Hồ sơ Doanh nghiệp`**.
+  - Tuyệt đối cấm gán cứng tĩnh một chuỗi duy nhất trên cấu hình menu.
+
+- **REQ-NAV-005 (Seller Workspace TT17 Integration)**:
+  - Danh mục điều hướng của Nhà Cung Ứng (`SELLER`) trong `sellerNavItems` MUST bổ sung mục **`Đánh giá Năng lực TT17`** dẫn về tuyến `/assessments/tt17` với icon `FileCheck`.
+
+- **REQ-NAV-006 (Crisp & Responsive Dual Mode Switcher)**:
+  - Component `RoleSwitcher` MUST rút gọn nhãn hiển thị thành **`Bên Mua`** và **`Bên Bán`**.
+  - Đảm bảo hiển thị trọn vẹn 100% nội dung chữ kèm icon trên mọi kích thước màn hình Sidebar mà không bị cắt cụt ba chấm.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-DELTA-17 (Dynamic Profile Label)**: Đăng nhập với tài khoản Doanh nghiệp (kể cả khi ở chế độ `SELLER` hay `BUYER`), nhãn menu hiển thị chính xác là `Hồ sơ Doanh nghiệp`. Khi đăng nhập bằng tài khoản Viện/Trường, nhãn tự động đổi thành `Hồ sơ Viện / Trường`.
+- **AC-DELTA-18 (Seller TT17 Presence)**: Trong thanh Sidebar Workspace Nhà Cung Ứng (`SELLER`), mục `Đánh giá Năng lực TT17` xuất hiện rõ ràng và nhấp chọn dẫn đúng về `/assessments/tt17`.
+- **AC-DELTA-19 (Dual Mode Zero-Truncation)**: Cụm chuyển đổi Chế Độ Kép hiển thị sắc nét hai nút `Bên Mua` và `Bên Bán`, không còn xuất hiện dấu ba chấm `(...)` hay tràn giao diện.
+- **AC-DELTA-20 (Zero Regression)**: 100% các bài test điều hướng trong `src/app/portal/layout.test.tsx` và test suite chuyên biệt `src/app/portal/portal-navigation-delta.test.tsx` đạt trạng thái PASS.
+
+---
+
+## Spec Delta v12 (CR-2026-015): Tối Ưu Hóa Toàn Diện 7 Mục Chức Năng Workspace Nhà Cung Ứng (Seller)
+
+**Căn cứ phê duyệt:** Quyết định PO trực tiếp sau phiên kiểm toán đối kháng Party Mode ngày 23/10/2026; Triển khai bằng phương pháp `speckit-delta` theo 3 làn sóng (Wave 1: P0 Lõi trải nghiệm & Bảo mật; Wave 2: P1 Dọn rác kỹ thuật & Bộ lọc TRL; Wave 3: P2 Trải nghiệm tương tác & Modal hóa).
+
+### 1. Bối Cảnh & Vấn Đề (Problem Statement)
+Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`SELLER`), Hội nghị Party Mode đã phát hiện các bất cập cần xử lý:
+1. **Item 1 (`Tổng quan Gian hàng` - `/portal`)**: Đang hiển thị trung tâm điều hướng 4 thẻ của Buyer (Nhu cầu công nghệ, Cung cầu, v.v.) gây vòng lặp điều hướng vô nghĩa thay vì hiển thị Dashboard thực sự của Seller.
+2. **Item 2 (`Kho Công nghệ (TRL)` - `/portal/seller/technologies`)**: Bị lồng 2 thẻ `<header>` dập khuôn, lộ badge rác kỹ thuật (`TASK-04`, `SELLER WORKSPACE`), thiếu bộ lọc nhanh dải TRL (1-3, 4-6, 7-9).
+3. **Item 3 (`Yêu cầu Kết nối Nhận được` - `/portal/opportunities/pipeline?tab=inbound`)**: Rò rỉ nút điều hướng sang `/gov/opportunities` ("Giám Sát Sở KH&CN") trên thanh công cụ của doanh nghiệp B2B.
+4. **Item 4 (`Radar Tìm Kiếm Nhu Cầu (AI)` - `/portal/matching/radar`)**: Rò rỉ nút điều hướng sang `/gov/opportunities`.
+5. **Item 5 (`Tiến trình Chuyển giao & MOU` - `/portal/opportunities/pipeline`)**: Khẳng định quy trình 5 bước Kanban chuyển giao công nghệ minh bạch.
+6. **Item 6 (`Đánh giá Năng lực TT17` - `/assessments/tt17`)**: Lỗi hiển thị thô ký tự TeX `$T_{"ĐB"}$` trong văn bản hướng dẫn thay vì hiển thị chuỗi format chuẩn.
+7. **Item 7 (`Hồ sơ Doanh nghiệp` - `/portal/enterprise/profile`)**: Gán cứng tỷ lệ nhân sự 40% trong state khởi tạo, và sử dụng lệnh trình duyệt thô `window.confirm()` khi nộp hồ sơ thẩm định.
+
+### 2. Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+
+- **REQ-SELLER-001 (Dedicated Seller Dashboard)**:
+  - Khi người dùng ở chế độ `SELLER`, trang `/portal` MUST render component `<SellerDashboard />` chuyên biệt chứa 4 KPI doanh nghiệp (Giải pháp chào bán, Tiếp cận mới, Deal đang đàm phán, Doanh số kỳ vọng), Quick Actions và danh sách Inbound Leads mới nhất.
+- **REQ-SELLER-002 (Clean Tech Warehouse & TRL Filter)**:
+  - Xóa bỏ toàn bộ `<header>` dập khuôn và badge phát triển `TASK-04`, `SELLER WORKSPACE`.
+  - Tích hợp bộ lọc dropdown `trlFilter` phân nhóm 3 dải: TRL 1–3 (Nghiên cứu Lab), TRL 4–6 (Thử nghiệm Pilot), TRL 7–9 (Thương mại hóa).
+- **REQ-SELLER-003 & REQ-SELLER-004 (Zero Gov Route Leakage)**:
+  - Loại bỏ triệt để các liên kết `/gov/*` khỏi header của các trang `/portal/opportunities/pipeline` và `/portal/matching/radar`.
+- **REQ-SELLER-005 (Kanban Stage Integrity)**:
+  - Duy trì 5 giai đoạn Kanban chuyển giao công nghệ: Gợi Ý AI $\rightarrow$ Đã Tiếp Cận $\rightarrow$ Đang Đàm Phán $\rightarrow$ Đã Ký MOU $\rightarrow$ Hoàn Thành.
+- **REQ-SELLER-006 (TT17 Math String Polish)**:
+  - Chuẩn hóa chuỗi hiển thị hệ số đồng bộ thành `T_ĐB` không chứa ký tự escape `$`.
+- **REQ-SELLER-007 (Enterprise Profile Clean State & ConfirmModal)**:
+  - Khởi tạo `highQualificationRatio` là chuỗi rỗng `""`.
+  - Thay thế `window.confirm()` bằng `<ConfirmModal />` tuân thủ Design System chuẩn NacenTech.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-DELTA-21 (Seller Dashboard)**: Đăng nhập vai trò SELLER vào `/portal`, hệ thống hiển thị chuyên biệt `<SellerDashboard />` với 4 KPI và danh sách Inbound Leads thực tế.
+- **AC-DELTA-22 (TRL Filter Dropdown)**: Tại `/portal/seller/technologies`, bộ lọc dải TRL hoạt động chính xác khi chọn từng phân khúc (1-3, 4-6, 7-9).
+- **AC-DELTA-23 (Zero Dev Badges)**: Tuyệt đối không còn xuất hiện các chuỗi `TASK-04` hay `SELLER WORKSPACE` trên giao diện người dùng.
+
+---
+
+## Spec Delta v13 (CR-2026-016): Chuẩn Hóa Cấu Trúc Thông Tin & Navigation Workspace Bên Mua (Buyer Journey Alignment)
+
+**Căn cứ phê duyệt:** Quyết định phê duyệt của PO sau phiên họp Bàn Tròn Đa Tác Tử (Party Mode) ngày 23/10/2026; Khắc phục tính phẳng lì của menu Bên Mua, chuẩn hóa thuật ngữ BKHCN/ĐMST và thiết lập luồng trải nghiệm người mua (Buyer Value Stream).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+1. **Menu phẳng lì thiếu phân nhóm logic**: Trong `PortalLayout` (`src/app/portal/layout.tsx`), mảng `buyerNavItems` hiển thị một danh sách 7 mục phẳng lì, không có phân định section như luồng Chuyên gia (`expertNavItems`), gây khó khăn cho Doanh nghiệp Bên Mua trong việc định vị chức năng.
+2. **Lệch chuẩn thuật ngữ BKHCN**: Nhãn `Bài toán Tìm mua` mang âm hưởng thương mại bán lẻ tiêu dùng, không phản ánh đúng bản chất ĐMST và đặt hàng R&D theo chuẩn Bộ KH&CN. Cần chuẩn hóa thành **`Bài toán Đổi mới Công nghệ`**.
+3. **Thiếu tín hiệu động (Count Badges)**: Các mục quan trọng như `Bài toán Đổi mới Công nghệ`, `Tiến trình Hợp tác & MOU`, `Radar Ghép Nối AI` không có badge số lượng hoặc huy hiệu `"Mới"`, khiến Bên Mua thiếu động lực tương tác và bỏ lỡ các cơ hội ghép nối.
+
+### 2. Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+
+- **REQ-BUYER-NAV-001 (3-Tier Buyer Navigation Grouping)**:
+  - Cấu trúc `buyerNavItems` trong `src/app/portal/layout.tsx` MUST được phân thành 3 khối Section rõ rệt:
+    1. **Khối 1: `Tác nghiệp Mua sắm`**:
+       - `Tổng quan Mua sắm` (`/portal`, icon `LayoutDashboard`).
+       - `Bài toán Đổi mới Công nghệ` (`/portal/buyer/demands`, icon `ShoppingBag`, badge số lượng đếm `3`, badgeType `count`).
+       - `Tiến trình Hợp tác & MOU` (`/portal/opportunities/pipeline`, icon `Kanban`, badge số lượng đếm `1`, badgeType `count`).
+    2. **Khối 2: `Khám phá & Ghép nối`**:
+       - `Radar Ghép Nối AI` (`/portal/matching/radar`, icon `Sparkles`, badge `"Mới"`, badgeType `new`).
+    3. **Khối 3: `Chẩn đoán & Hồ sơ`**:
+       - `Khảo sát Nhu cầu (TNI)` (`/khao-sat-nhu-cau`, icon `ClipboardList`).
+       - `Đánh giá Năng lực TT17` (`/assessments/tt17`, icon `FileCheck`).
+       - `Hồ sơ Doanh nghiệp` (`/portal/enterprise/profile`, icon `Building2`, nhãn thích ứng động theo `dynamicProfileLabel`).
+
+- **REQ-BUYER-NAV-002 (Portal Home Consistency)**:
+  - Đồng bộ tiêu đề thẻ module tại `src/app/portal/page.tsx` từ `Bài toán Tìm mua` thành `Bài toán Đổi mới Công nghệ`.
+
+- **REQ-BUYER-NAV-003 (Basic Design Wireframe Alignment)**:
+  - Cập nhật Wireframe HTML `Specification/02_BASIC_DESIGN/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/wireframe_workspace_seller_dual_mode.html` phản ánh 1:1 cấu trúc 3 Section, badges và nhãn chuẩn hóa.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-DELTA-24 (Buyer 3-Section Navigation)**: Đăng nhập vai trò `BUYER` vào `/portal`, thanh Sidebar hiển thị đủ 3 tiêu đề Section: `Tác nghiệp Mua sắm`, `Khám phá & Ghép nối`, `Chẩn đoán & Hồ sơ`.
+- **AC-DELTA-25 (Buyer Label & Badges)**: Mục `Bài toán Đổi mới Công nghệ` xuất hiện thay thế cho `Bài toán Tìm mua`; xuất hiện badge đếm tại mục Bài toán và Tiến trình MOU; xuất hiện badge `"Mới"` tại Radar Ghép Nối AI.
+- **AC-DELTA-26 (Zero Navigation Regression)**: Toàn bộ test suite trong `layout.test.tsx` và `portal-navigation-delta.test.tsx` đạt 100% PASS mà không có bất kỳ xung đột nào.
+
+- **AC-DELTA-24 (Zero Gov Leakage)**: Không tồn tại liên kết `/gov/opportunities` trong Workspace Doanh nghiệp tại Pipeline và Radar.
+- **AC-DELTA-25 (TT17 Clean Text)**: Toàn bộ text trên trang `/assessments/tt17` hiển thị `T_ĐB` sắc nét, không có lỗi TeX syntax.
+- **AC-DELTA-26 (Profile ConfirmModal)**: Khi nhấp "Nộp hồ sơ thẩm định", hệ thống mở Modal hiện đại `ConfirmModal` với đầy đủ nút xác nhận/hủy bỏ.
+- **AC-DELTA-27 (100% Test Green)**: 100% các bài test trong `seller-workspace-delta-qc.test.tsx`, `seller-dashboard.test.tsx`, `portal-navigation-delta.test.tsx`, và `layout.test.tsx` đạt trạng thái PASS.
+

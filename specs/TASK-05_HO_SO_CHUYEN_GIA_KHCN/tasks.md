@@ -482,3 +482,117 @@
     + Chạy `npm test` trong Frontend: 100% tests pass (0 fail).
     + Chạy `pnpm build` hoặc `npm run build`: biên dịch sạch 0 lỗi TypeScript.
 
+---
+
+## Giai đoạn 10: Delta v1.3 — Chuẩn hóa Menu Workspace Chuyên gia 7 mục & Hợp đồng Thù lao Disabled [CR-2026-006]
+
+- [x] `T150` **[BA-TASK-05-DELTA-v1.3-01][BA][SPEC] Đặc tả Basic Design Delta & Living Spec Kit 7 mục Menu Workspace Chuyên gia**
+  - **Mục tiêu**: Cập nhật SSOT Basic Design Delta và Spec Kit phản ánh quyết định PO-DEC-20261023-01 về menu 7 mục, mục Hợp đồng & Thù lao disabled kèm notification toast, và Phương án A cho quản trị thù lao tư vấn.
+  - **Hành động kỹ thuật**:
+    + Cập nhật `Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md` bổ sung Mục 8 và tái cấu trúc Mục 2.
+    + Cập nhật `SourceCode/specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN/spec.md` bổ sung Mục 19 với REQ-EXP-NAV-001, REQ-EXP-NAV-002, REQ-EXP-NAV-003, BR-EXP-NAV-001 đến BR-EXP-NAV-003, Gherkin ACs và Traceability.
+  - **Tiêu chí kiểm chứng**: Tài liệu được phê duyệt bởi PO.
+
+- [x] `T151` **[FE-TASK-05-DELTA-v1.3-01][FE][NAV] Mở rộng type ExpertMenuKey và resolver resolveExpertActiveMenu**
+  - **Mục tiêu**: Bổ sung key `contracts` và cơ chế phân giải route độc lập, triệt tiêu xung đột với các route khác.
+  - **Hành động kỹ thuật**:
+    + Cập nhật `SourceCode/frontend/src/lib/expert-nav.ts`: thêm `"contracts"` vào `ExpertMenuKey`.
+    + Bổ sung logic phân giải `cleanPath === "/portal/expert/contracts"` và `cleanPath.startsWith("/portal/expert/contracts/")`.
+  - **Tiêu chí kiểm chứng**: Chạy Vitest `src/lib/expert-nav.test.ts` pass 7/7 test cases.
+
+- [x] `T152` **[FE-TASK-05-DELTA-v1.3-02][FE][UI] Tái cấu trúc expertNavItems 7 mục 3 khối và xử lý Disabled Item Toast**
+  - **Mục tiêu**: Hiển thị menu chuyên gia theo đúng 3 khối logic, hỗ trợ badge số lượng, badge mới và badge "Sắp ra mắt" kèm toast notification khi click.
+  - **Hành động kỹ thuật**:
+    + Mở rộng interface `NavItem` trong `SourceCode/frontend/src/app/portal/layout.tsx` với `disabled`, `disabledMessage`, `badge`, `badgeType`.
+    + Cập nhật mảng `expertNavItems` đủ 7 mục theo đúng thứ tự PO phê duyệt.
+    + Xử lý render mục disabled dưới dạng `<button type="button">` có `aria-disabled="true"`, `onClick` gọi `toast.info` thông báo "Tính năng Hợp đồng & Thù lao đang được phát triển theo lộ trình".
+  - **Tiêu chí kiểm chứng**: Thao tác click không navigate, hiển thị toast chính xác, bàn phím điều hướng a11y đầy đủ.
+
+- [x] `T153` **[TEST-TASK-05-DELTA-v1.3-01][TEST][FE] Bộ kiểm thử Unit & Component Tests cho Layout và Resolver Menu 7 mục**
+  - **Mục tiêu**: Bảo đảm tính đúng đắn của logic điều hướng, triệt tiêu hồi quy và xác thực hành vi click disabled.
+  - **Hành động kỹ thuật**:
+    + Mở rộng `SourceCode/frontend/src/lib/expert-nav.test.ts` kiểm thử route `/portal/expert/contracts`.
+    + Mở rộng `SourceCode/frontend/src/app/portal/layout.test.tsx` kiểm thử render đủ 7 mục, aria-disabled, badge "Sắp ra mắt" và spy `mockToastInfo` khi click.
+  - **Tiêu chí kiểm chứng**: 100% tests pass (17/17 tests), 0 regressions.
+
+---
+
+## Giai đoạn 11: Delta v1.4 — Chuẩn hóa Trải nghiệm Dashboard, Triệt tiêu Hardcode Account & Chuẩn hóa Toast [CR-2026-007]
+
+- [x] `T154` **[BA-TASK-05-DELTA-v1.4-01][BA][SPEC] Đặc tả Basic Design Delta & Spec Kit CR-2026-007**
+  - **Mục tiêu**: Cập nhật SSOT Basic Design Delta Mục 9 và Spec Kit Mục 20 phản ánh quyết định PO-DEC-20261023-02 (Dashboard landing, Zero-hardcode phone, Toast standard).
+  - **Hành động kỹ thuật**: Cập nhật `BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md` và `spec.md`.
+  - **Tiêu chí kiểm chứng**: Tài liệu được phê duyệt bởi PO.
+
+- [x] `T155` **[FE-TASK-05-DELTA-v1.4-01][FE][DASH] Chuyển đổi Landing Component profile/page.tsx sang ExpertDashboard & sửa link To-Do**
+  - **Mục tiêu**: Render đúng component `ExpertDashboard` tại `/portal/expert/profile` và sửa toàn bộ link To-Do trỏ về `/portal/expert/profile/edit`.
+  - **Hành động kỹ thuật**:
+    + Cập nhật `SourceCode/frontend/src/app/portal/expert/profile/page.tsx`: import và render `ExpertDashboard`.
+    + Cập nhật `SourceCode/frontend/src/components/expert-detail/expert-dashboard.tsx`:
+      * Sửa `expertDashboardTodos`: đổi `href: "/profile/upgrade/expert"` thành `href: "/portal/expert/profile/edit"`.
+      * Sửa khối thao tác nhanh: nút "Xem hồ sơ của tôi" mở trang public `/experts/${detail.publicProfile.expertCode}` (nếu có) hoặc xem chi tiết `/portal/expert/profile/edit`.
+  - **Tiêu chí kiểm chứng**: Truy cập `/portal/expert/profile` hiển thị Dashboard chào mừng và việc cần làm; click nút "Bổ sung" điều hướng tới `/portal/expert/profile/edit`.
+
+- [x] `T156` **[FE-TASK-05-DELTA-v1.4-02][FE][ACC] Triệt tiêu fake phone 0912****89, gán nhãn minh họa session và lưu preference vào localStorage trong account/page.tsx**
+  - **Mục tiêu**: Loại bỏ dữ liệu giả lập, minh bạch thông tin PDPD và lưu trữ bền vững cài đặt cá nhân.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/app/portal/expert/account/page.tsx`:
+      * Sửa hàm `maskPhone`: nếu không có số điện thoại, trả về `"Chưa cập nhật"` (hoặc `"Chưa đăng ký số điện thoại"`), tuyệt đối không bịa số `0912****89`.
+      * Khối Active Sessions: thêm nhãn phụ `(Mô phỏng phiên thiết bị)`.
+      * Khối Preferences: khi người dùng chọn theme hoặc cỡ chữ, lưu vào `localStorage.setItem("expert_theme_pref", ...)` và `localStorage.setItem("expert_fontsize_pref", ...)`, đọc lại khi mount.
+  - **Tiêu chí kiểm chứng**: Chuyên gia chưa có SĐT không thấy số giả; F5 trình duyệt giữ nguyên theme và cỡ chữ đã chọn.
+
+- [x] `T157` **[FE-TASK-05-DELTA-v1.4-03][FE][TOAST] Thay thế 100% lệnh alert() bằng useToast() trong consultations/page.tsx và matching/radar/page.tsx**
+  - **Mục tiêu**: Nâng cao trải nghiệm người dùng, tuân thủ Design System và không gây chặn trình duyệt.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/app/portal/expert/consultations/page.tsx`: import `useToast`, thay `alert(...)` tại dòng 96 bằng `toast.warning(...)`.
+    + Trong `SourceCode/frontend/src/app/portal/matching/radar/page.tsx`: import `useToast`, thay `alert(...)` tại dòng 89 bằng `toast.error(...)`.
+  - **Tiêu chí kiểm chứng**: Thao tác không bật popup native alert, hiển thị toast toast-notification của hệ thống.
+
+- [x] `T158` **[TEST-TASK-05-DELTA-v1.4-01][TEST][FE] Cập nhật và bổ sung Vitest unit & component tests cho Dashboard, Account, Consultations và Radar**
+  - **Mục tiêu**: Đảm bảo 100% test pass, kiểm chứng không còn alert, không còn fake phone.
+  - **Hành động kỹ thuật**: Chạy toàn bộ test suites frontend, cập nhật test snapshots và assertions.
+  - **Tiêu chí kiểm chứng**: Vitest chạy 100% Green, 0 Errors.
+
+---
+
+## Giai đoạn 12: Delta v1.5 — Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành [CR-2026-008]
+
+- [x] `T159` **[BA-TASK-05-DELTA-v1.5-01][BA][SPEC] Đặc tả Basic Design Delta & Spec Kit CR-2026-008**
+  - **Mục tiêu**: Cập nhật SSOT Basic Design Delta Mục 10 và Spec Kit Mục 21 ghi nhận PO-DEC-20261023-03 (Zero-Mock Endpoints cho Consultations và Projects).
+  - **Hành động kỹ thuật**: Cập nhật `BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md` và `spec.md`.
+  - **Tiêu chí kiểm chứng**: Tài liệu được phê duyệt bởi PO.
+
+- [x] `T160` **[BE-TASK-05-DELTA-v1.5-01][BE][API] Xây dựng Backend Endpoints cho Hộp thư Tư vấn và Dự án Đồng hành trong ExpertController.cs**
+  - **Mục tiêu**: Cung cấp các API thực tế có kiểm soát Scoped RBAC, kết nối CSDL và xử lý giao dịch.
+  - **Hành động kỹ thuật**:
+    + Thêm `GET /api/v1/experts/me/consultations`: truy vấn danh sách ticket tư vấn theo person ID của chuyên gia, bao gồm 3 tab và thông tin thù lao tư vấn.
+    + Thêm `POST /api/v1/experts/me/consultations/{id:guid}/respond`: tiếp nhận hoặc từ chối lịch hẹn.
+    + Thêm `GET /api/v1/experts/me/projects`: truy vấn các cơ hội Kanban TRL 1-9 liên kết chuyên gia.
+  - **Tiêu chí kiểm chứng**: `dotnet build` và `dotnet test` vượt qua 100% test suites.
+
+- [x] `T161` **[FE-TASK-05-DELTA-v1.5-01][FE][API] Tạo API Client Services trong frontend/src/services/api/**
+  - **Mục tiêu**: Tạo các module client gọi API backend chuẩn xác, có xử lý lỗi và kiểu dữ liệu TypeScript.
+  - **Hành động kỹ thuật**:
+    + Tạo `src/services/api/expert-consultations.ts`.
+    + Tạo `src/services/api/expert-projects.ts`.
+  - **Tiêu chí kiểm chứng**: Typescript biên dịch sạch, không lỗi import.
+
+- [x] `T162` **[FE-TASK-05-DELTA-v1.5-02][FE][UI] Triệt tiêu Mock Data trong Hộp thư Tư vấn consultations/page.tsx**
+  - **Mục tiêu**: Xóa bỏ hoàn toàn hằng số mock tĩnh, chuyển sang fetch dữ liệu thật từ API và hỗ trợ 5 UX States.
+  - **Hành động kỹ thuật**: Thay `INITIAL_PENDING_CONSULTATIONS`, `INITIAL_SCHEDULED_CONSULTATIONS`, `INITIAL_COMPLETED_CONSULTATIONS` bằng API call.
+  - **Tiêu chí kiểm chứng**: Giao diện load dữ liệu động qua `<Async>`, tương tác accept/reject gửi request backend thật.
+
+- [x] `T163` **[FE-TASK-05-DELTA-v1.5-03][FE][UI] Triệt tiêu Mock Data trong Dự án Đồng hành projects/page.tsx**
+  - **Mục tiêu**: Xóa bỏ `INITIAL_EXPERT_PROJECTS`, kết nối trực tiếp với endpoint dự án TRL thật từ Backend.
+  - **Hành động kỹ thuật**: Thay `INITIAL_EXPERT_PROJECTS` bằng `expertProjectsApi.getMyProjects()`.
+  - **Tiêu chí kiểm chứng**: Không còn mảng tĩnh trong component, hiển thị empty state chuẩn khi chưa có dự án.
+
+- [x] `T164` **[TEST-TASK-05-DELTA-v1.5-01][TEST][FULL] Bộ kiểm thử hồi quy Backend & Frontend xác nhận Zero-Mock 100%**
+  - **Mục tiêu**: Đảm bảo 100% test pass ở cả Backend .NET và Frontend Next.js.
+  - **Hành động kỹ thuật**: Chạy `dotnet test` và `pnpm test`.
+  - **Tiêu chí kiểm chứng**: 100% tests pass, không mock ngầm.
+
+
+
+

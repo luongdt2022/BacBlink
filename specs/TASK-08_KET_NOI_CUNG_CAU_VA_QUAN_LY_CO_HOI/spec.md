@@ -102,3 +102,18 @@ Mục tiêu chính:
 8. `POST /api/v1/brokerage/opportunities/{id}/discussions`: Gửi tin nhắn / tài liệu trao đổi trong Deal Room.
 9. `POST /api/v1/brokerage/opportunities/{id}/mou`: Soạn thảo và cập nhật Biên bản Ghi nhớ (MOU).
 10. `GET /api/v1/gov/opportunities`: Dành cho Sở KH&CN giám sát cơ hội và SLA kết nối theo địa bàn.
+
+---
+
+## 6. Spec Delta v2 (CR-2026-018) — Làm Mịn Radar Ghép Nối AI & Giải Trình XAI (Bên Mua)
+
+### 6.1. Bối cảnh & Yêu cầu mới
+Theo kết luận Party Mode và chỉ đạo PO ngày 23/10/2026 về việc làm mịn trải nghiệm Doanh nghiệp Mua:
+1. **Lọc theo Bài toán nguồn (`REQ-RADAR-FILTER-001`)**: Bên Mua có thể có nhiều bài toán đang mở; Radar cần cung cấp bộ chọn nhanh bài toán cụ thể (`selectedDemandCode`) để lọc danh sách ứng viên chuyển giao đích danh cho bài toán đó.
+2. **Khối Giải trình Độ tương thích AI XAI (`REQ-RADAR-XAI-001`)**: Minh bạch hóa lý do AI đưa ra điểm khớp nối qua 4 trục trực quan (Lĩnh vực 100% khớp, Mức TRL, Cấp thiết TNI, Bằng sáng chế SHTT) giúp Bên Mua ra quyết định kết nối nhanh chóng.
+3. **Chuẩn hóa hiển thị toán học (`REQ-RADAR-MATH-001`)**: Làm sạch text định dạng toán học, triệt tiêu chuỗi LaTeX thô (`$TNI \ge 80$` $\rightarrow$ `TNI ≥ 80`).
+
+### 6.2. Tiêu chí Nghiệm thu Delta
+- **AC-DELTA-RADAR-01**: Selector `selectedDemandCode` hiển thị mã bài toán và tiêu đề, mặc định chọn `ALL`, khi đổi giá trị thì grid chỉ render các ứng viên của bài toán đó.
+- **AC-DELTA-RADAR-02**: Thẻ mỗi ứng viên có khối `Giải trình độ tương thích AI (XAI)` với 4 ô chỉ số chi tiết.
+- **AC-DELTA-RADAR-03**: 100% test suite `src/app/portal/matching/radar/page.test.tsx` PASS.

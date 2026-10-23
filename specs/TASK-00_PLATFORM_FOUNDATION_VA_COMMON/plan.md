@@ -426,3 +426,89 @@ export const lora = Lora({
 | **Ký tự Tiếng Việt đặc biệt** | Thiếu glyphs tiếng Việt có dấu kép (`ẩ`, `ễ`, `ợ`, `Đ`) dẫn đến lỗi chân dấu | Chỉ định rõ `subsets: ['vietnamese', 'latin']` trên cả 2 cấu hình `Nunito_Sans` và `Lora`. |
 | **Tràn viền màn hình khi scale A+** | Header menu hoặc Data Grid bị vỡ nát khi phóng to 110% | Quy chuẩn `overflow-x: clip` trên `html`, `body`; bảng dữ liệu bọc trong wrapper `overflow-x: auto`. |
 | **Vi phạm Design Rules** | Vô tình sử dụng lại utility classes blue/indigo/purple hoặc font nhỏ < 12px | Giữ vững hàng rào bảo vệ tự động bằng `src/test/design-rules.test.ts`. |
+
+---
+
+## Plan Delta v11 (CR-2026-014): Kiến Trúc Điều Hướng Động & Tối Ưu Bố Cục Sidebar Workspace
+
+### 1. Phân Tầng Kiến Trúc & Luồng Dữ Liệu Điều Hướng (Navigation Architecture)
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       PORTAL NAVIGATION RESOLVER PIPELINE                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                  authClient.getUser()
+                                           │ (role, scopeType, orgName)
+                                           ▼
+                           fetchMyEnterpriseProfile()
+                                           │ (subjectType, capabilityTier)
+                                           ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              resolveProfileLabel(role, subjectType, orgName)                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 1. match subjectType: viện/trường/đại học ──> "Hồ sơ Viện / Trường"         │
+│ 2. match subjectType: htx/hợp tác xã       ──> "Hồ sơ Hợp tác xã"           │
+│ 3. match subjectType: đmst/đổi mới sáng tạo ─> "Hồ sơ Doanh nghiệp ĐMST"    │
+│ 4. match orgName: viện/trường/học viện     ──> "Hồ sơ Viện / Trường"         │
+│ 5. match role: CLUSTER_ADMIN               ──> "Hồ sơ Viện / Trường"         │
+│ 6. match role: INNOVATION_ENTITY           ──> "Hồ sơ Doanh nghiệp ĐMST"    │
+│ 7. Default (BUYER / SELLER / Doanh nghiệp) ──> "Hồ sơ Doanh nghiệp"         │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                           │
+                                           ▼
+                           displayedNavItems = navItems.map(...)
+                 (Gán nhãn động tương thích 100% cho /portal/enterprise/profile)
+```
+
+### 2. Tinh Chỉnh Bố Cục Component RoleSwitcher (Grid CSS Optimization)
+- **Vấn đề đã xử lý**: Nhãn `Bên Mua (Buyer)` và `Bên Bán (Seller)` kết hợp icon `ShoppingBag`/`Store` và icon `Check` gây vượt quá chiều rộng cột `grid-cols-2` trong Sidebar `w-72` (288px), kích hoạt CSS `truncate` cắt cụt chuỗi.
+- **Giải pháp**: Rút gọn text thành `Bên Mua` và `Bên Bán`. Giữ nguyên các thuộc tính tương tác: Optimistic UI cập nhật `<300ms`, đồng bộ `localStorage('nacentwin_active_role')`, gọi API `switchEnterpriseActiveRole()`.
+
+### 3. Tích Hợp Module Đánh Giá TT17 Vào Seller Workspace
+- Tuyến đường: `/assessments/tt17`
+- Vị trí: Chèn vào giữa `Tiến trình Chuyển giao & MOU` và `Hồ sơ Doanh nghiệp` trong `sellerNavItems`.
+- Icon: `FileCheck` từ thư viện `lucide-react`.
+
+### 4. Thẩm Định Kiến Trúc Gate 2 (Gate 2 Architectural Review)
+- **Zero Schema Change**: Delta thuần Frontend & Navigation Mapping, không phát sinh EF Core migration hay thay đổi CSDL PostgreSQL.
+- **Tương thích ngược 100%**: Các vai trò khác (`EXPERT`, `PUBLIC_USER`, `ADMIN`, `GOV`) không bị ảnh hưởng, giữ nguyên các route chuyên trách.
+
+---
+
+## Plan Delta v13 (CR-2026-016): Kiến Trúc Phân Nhóm 3 Section & Trải Nghiệm Navigation Bên Mua
+
+### 1. Phân Tầng Kiến Trúc Navigation Bên Mua (Buyer Navigation Tree)
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       BUYER WORKSPACE NAVIGATION TREE                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                  role === "BUYER"
+                                         │
+                                         ▼
+                 ┌──────────────────────────────────────────────┐
+                 │ Section 1: "Tác nghiệp Mua sắm"              │
+                 │ ├─ /portal (Tổng quan Mua sắm)              │
+                 │ ├─ /portal/buyer/demands (Bài toán ĐMST [3]) │
+                 │ └─ /portal/opportunities/pipeline (MOU [1])  │
+                 ├──────────────────────────────────────────────┤
+                 │ Section 2: "Khám phá & Ghép nối"             │
+                 │ └─ /portal/matching/radar (Radar AI [Mới])   │
+                 ├──────────────────────────────────────────────┤
+                 │ Section 3: "Chẩn đoán & Hồ sơ"               │
+                 │ ├─ /khao-sat-nhu-cau (Khảo sát TNI)          │
+                 │ ├─ /assessments/tt17 (Đánh giá TT17)         │
+                 │ └─ /portal/enterprise/profile (Hồ sơ DN)     │
+                 └──────────────────────────────────────────────┘
+```
+
+### 2. Các Tệp Mã Nguồn Tác Động (Affected Files)
+1. `src/app/portal/layout.tsx`: Cập nhật cấu hình `buyerNavItems` với `section`, `badge`, `badgeType`, `label`.
+2. `src/app/portal/page.tsx`: Cập nhật `generalModules` đổi `title` sang `Bài toán Đổi mới Công nghệ`.
+3. `Specification/02_BASIC_DESIGN/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/wireframe_workspace_seller_dual_mode.html`: Đồng bộ cấu trúc 3 section và badges.
+4. `src/app/portal/layout.test.tsx` & `src/app/portal/portal-navigation-delta.test.tsx`: Bổ sung kiểm thử tự động.
+
+### 3. Thẩm Định Gate 2 (Architectural Guard)
+- **Zero Regression**: Không thay đổi route URL hay logic xác thực vai trò (`RoleGuard`).
+- **Clean Architecture**: Toàn bộ nhãn và section tuân thủ cấu trúc hiển thị của `NavItem`, không làm rò rỉ state ngoài component.
+

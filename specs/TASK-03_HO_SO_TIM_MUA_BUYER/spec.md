@@ -465,3 +465,38 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
   - **Given** người dùng ở bất kỳ bước nào trong 4 tab,
   - **When** người dùng click chuột trực tiếp vào nút Tab 3 trên thanh Stepper Navigation,
   - **Then** giao diện chuyển ngay sang hiển thị nội dung Tab 3 mà không đòi hỏi dữ liệu của các tab trước đó phải được submit.
+
+---
+
+## 11. Spec Delta v2 (CR-2026-017): Làm Mịn Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ & Nâng Cấp Modal Tạo Bài Toán
+
+**Căn cứ phê duyệt:** Chỉ đạo của PO tại phiên làm việc ngày 23/10/2026; Triệt tiêu dev badge rác kỹ thuật, bổ sung phân trang bàn làm việc và các trường nghiệp vụ quan trọng cho bài toán công nghệ (Target TRL, Ẩn danh bảo mật, Thời hạn, File RFP).
+
+### 11.1 Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+
+- **REQ-BUYER-DMD-001 (Zero Dev Badges & Standardized Title)**:
+  - Loại bỏ hoàn toàn badge `TASK-03` trên sub-header của `/portal/buyer/demands`.
+  - Chuẩn hóa tiêu đề chính thành **`Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ`** với badge nghiệp vụ **`BÊN MUA CÔNG NGHỆ`**.
+
+- **REQ-BUYER-DMD-002 (Data Grid Pagination)**:
+  - Bàn làm việc MUST hỗ trợ phân trang cho danh sách bài toán với kích thước trang chuẩn (`pageSize = 5` hoặc `10`).
+  - Cung cấp thanh điều khiển phân trang: nút `Trang trước`, danh sách nút số trang `[1] [2]...`, nút `Trang sau`, và nhãn thông tin `Hiển thị X - Y trong tổng số Z bài toán`.
+  - Đảm bảo khi chuyển tab lọc trạng thái (Tất cả, Đang mở, Chờ duyệt, Đã đóng, Đang theo dõi), trang hiện tại được tự động reset về trang 1.
+
+- **REQ-BUYER-DMD-003 (QuickDemandModal Advanced Fields - Target TRL & Confidentiality)**:
+  - Modal tạo bài toán nhanh `QuickDemandModal` MUST bổ sung 4 trường nghiệp vụ thiết yếu:
+    1. **Target TRL Range (Dải TRL mong muốn tiếp nhận)**: Lựa chọn 3 phân khúc:
+       - `TRL 1–3`: Nghiên cứu cơ bản / Proof of Concept (Lab)
+       - `TRL 4–6`: Thử nghiệm Pilot / Mô hình thực nghiệm (Default)
+       - `TRL 7–9`: Công nghệ hoàn thiện / Sẵn sàng thương mại hóa
+    2. **Chế độ bảo mật danh tính (Confidential Mode)**: Checkbox `isConfidential` cho phép doanh nghiệp đăng bài toán ẩn danh, chỉ công khai điểm nghẽn kỹ thuật nhằm bảo vệ bí mật kinh doanh.
+    3. **Thời hạn nhận đề xuất giải pháp (Deadline)**: Trường chọn ngày `deadlineDate`.
+    4. **Đính kèm hồ sơ kỹ thuật (RFP / Technical Specs)**: Hỗ trợ đính kèm tệp tài liệu `rfpFileName`.
+
+### 11.2 Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-DELTA-DMD-01 (Zero Dev Badge)**: Không còn xuất hiện badge `TASK-03` trên giao diện người dùng `/portal/buyer/demands`. Tiêu đề hiển thị chuẩn hóa `Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ`.
+- **AC-DELTA-DMD-02 (Pagination Control)**: Khi danh sách bài toán vượt quá `pageSize`, hệ thống chia trang chính xác và cho phép bấm chuyển giữa các trang mượt mà.
+- **AC-DELTA-DMD-03 (Quick Demand Modal Advanced Fields)**: Mở modal đăng bài toán, người dùng có thể chọn dải TRL mong muốn, tick chọn chế độ bảo mật ẩn danh và nhập thời hạn đề xuất.
+- **AC-DELTA-DMD-04 (Zero Regression)**: Toàn bộ các test suite hiện có của module Buyer Demands chạy pass 100%.
+

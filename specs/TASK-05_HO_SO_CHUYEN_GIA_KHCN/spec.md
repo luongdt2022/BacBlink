@@ -3,7 +3,7 @@
 **Feature Branch**: `expert-profile-llkh-upgrade`  
 **Feature Directory**: `specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
 **Created**: 25/09/2026  
-**Status**: Delta v6 planned — xác thực thật & liên kết tài khoản–hồ sơ chuyên gia  
+**Status**: Delta v1.5 (CR-2026-008) — Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành  
 **Ánh Xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md)  
 **Bản Dựng Wireframe Tương Tác**: [`wireframe_expert_upgrade.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_upgrade.html)  
 **Nguồn Dữ Liệu Gốc**: Sheet `C.gia` (94 dòng dữ liệu, 6 cột) trong Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`  
@@ -926,3 +926,443 @@ Từ kết quả rà soát thực tế và phản hồi của người dùng (Do
 | **Mobile / Zalo Mini App** | `SourceCode/frontend/src/app/experts/zalo-preview/page.tsx`<br>`SourceCode/ZaloMiniApp/` | Mobile UX Preview & Channel Sync | - Cập nhật giả lập giao diện mobile đồng bộ huy hiệu Social Proof và hiển thị nhãn công nghệ thân thiện.<br>- Đảm bảo form thu thập sơ bộ Zalo không bị ảnh hưởng và tuân thủ PDPD (không thu thập PII trái phép). |
 | **API DTO & Application Service** | `backend/modules/brokerage/Application/Contracts.cs`<br>`backend/modules/brokerage/Application/ExpertService.cs` | Backend API Contract & DTO Projection | - Bổ sung trường `int ConnectionCount = 0` vào `ExpertPublicCardDto` (tương thích ngược với default value).<br>- `ExpertService.GetPublicDirectoryAsync` gán giá trị `ConnectionCount` từ thực thể hồ sơ hoặc tổng hợp liên kết.<br>- Cập nhật các mock/test fixture liên quan trong backend. |
 | **Database & Persistence** | `backend/modules/brokerage/Domain/ExpertProfile.cs`<br>`packages/persistence/Configurations.cs`<br>`packages/persistence/Migrations/` | Domain Entity & Relational Schema | - Domain: Thêm property `ConnectionCount` trong `ExpertProfile.cs` (default 0).<br>- EF Core: Cấu hình ánh xạ cột `connection_count` trong bảng `brokerage.expert_profiles`.<br>- Migration: Tạo migration thêm cột `connection_count` kiểu `integer NOT NULL DEFAULT 0`.<br>- Seed data: Cập nhật seed data thực nghiệm để một số chuyên gia có lượt kết nối $> 0$ và số khác $= 0$. |
+
+---
+
+## 19. Spec Delta v1.3: Chuẩn Hóa Menu Workspace Chuyên Gia 7 Mục & Hợp Đồng Thù Lao Disabled [CR-2026-006]
+
+### 19.1. Bối Cảnh & Căn Cứ Quyết Định PO (Context & PO Rationale)
+
+- **Căn cứ chỉ đạo**: Quyết định PO Orchestrator `PO-DEC-20261023-01` (CR-2026-006) ban hành ngày 23/10/2026 về việc chuẩn hóa thanh điều hướng Workspace Chuyên gia KH&CN (`TASK-05`).
+- **Phản hồi từ User Testing & Khảo sát Chuyên gia**:
+  1. **Tái cấu trúc 3 khối chức năng**: Bàn làm việc Chuyên gia cần phản ánh đúng chu trình tác nghiệp khoa học, tách bạch giữa tác nghiệp hàng ngày (Dashboard, Hộp thư tư vấn, Radar AI, Dự án TRL), khía cạnh kinh tế hợp đồng, và khối quản trị hồ sơ cá nhân.
+  2. **Vấn đề phân hệ Hợp đồng & Thù lao**: Hệ sinh thái hợp đồng điện tử ký số toàn diện (`/contracts`) là bài toán lớn đang được phát triển theo lộ trình. Việc vội vã đưa ra một màn hình mock sẽ vi phạm nguyên tắc Zero-Mock của NacenTech. PO quyết định:
+     - Đặt menu *“Hợp đồng & Thù lao”* ở trạng thái **Disabled (Xám)**, hiển thị nhãn **"Sắp ra mắt"**. Khi bấm vào, chặn điều hướng và hiển thị Toast thông báo lộ trình.
+     - **Phương án A (Thù lao tư vấn)**: Tích hợp trường theo dõi giá trị thù lao & trạng thái thanh lý giải ngân vào **Tab 3 "Lịch sử & Nghiệm thu biên bản"** của Hộp thư Tư vấn (`/portal/expert/consultations?tab=completed`).
+  3. **Đổi tên & Sắp xếp lại "Cài đặt & Tài khoản"**: Đổi tên từ *"Tài khoản Chuyên gia"* thành *"Cài đặt & Tài khoản"*, chuyển xuống vị trí cuối cùng (Mục số 7) trong Sidebar để đúng với thông lệ thiết kế Enterprise UI/UX.
+
+---
+
+### 19.2. Yêu Cầu Chức Năng Mới (Functional Requirements)
+
+#### `REQ-EXP-NAV-001` — Cấu Trúc Menu Workspace Chuyên Gia 7 Mục Theo 3 Khối Logic
+Thanh Sidebar điều hướng cho vai trò `VERIFIED_EXPERT` (và `EXPERT`) được cấu hình gồm **7 mục** phân bổ theo **3 khối**:
+
+1. **Khối 1: Tác nghiệp hàng ngày (Daily Operations)**:
+   - **Mục 1**: `Tổng quan Chuyên gia`
+     * URL: `/portal/expert/profile` (key: `profile`)
+     * Icon: `LayoutDashboard`
+     * Mục tiêu: Dashboard điều hành cá nhân, danh sách việc cần làm, thông báo Sở.
+   - **Mục 2**: `Hộp Thư Tư Vấn & Kết Nối`
+     * URL: `/portal/expert/consultations` (key: `consultations`)
+     * Icon: `Inbox`
+     * Huy hiệu (Badge): **Số đếm ngược SLA 48h** (ví dụ: Badge đỏ/cam hiển thị số lượng yêu cầu đang chờ phản hồi trong vòng 48 giờ).
+     * Mục tiêu: Tiếp nhận đơn tư vấn 1-1 từ DNNVV hoặc chỉ định Sở KH&CN.
+   - **Mục 3**: `Radar Cơ hội Phù hợp (AI)`
+     * URL: `/portal/matching/radar` (hoặc `/portal/expert/radar`, key: `radar`)
+     * Icon: `Sparkles`
+     * Huy hiệu (Badge): **"Mới"** (Pill Badge xanh lá/emerald làm nổi bật cơ hội ghép nối mới).
+     * Mục tiêu: Khám phá nhu cầu công nghệ DNNVV và hội đồng đánh giá TT17.
+   - **Mục 4**: `Dự án Đồng hành & Hợp tác`
+     * URL: `/portal/expert/projects` (key: `projects`)
+     * Icon: `Kanban`
+     * Mục tiêu: Quản lý Kanban 5 giai đoạn R&D, chuyển giao công nghệ TRL 1-9 và Deal Room 1-1.
+
+2. **Khối 2: Kinh tế & Hợp đồng (Economics & Contracts - Sắp ra mắt)**:
+   - **Mục 5**: `Hợp đồng & Thù lao`
+     * URL: `/portal/expert/contracts` (key: `contracts`)
+     * Icon: `FileText` (hoặc `Coins` / `ScrollText`)
+     * Trạng thái: **Disabled (Xám)**
+     * Huy hiệu (Badge): **"Sắp ra mắt"** (Pill badge nhỏ màu hổ phách/xám `bg-amber-100 text-amber-800 text-[10px]`).
+
+3. **Khối 3: Hồ sơ & Quản trị (Profile & Settings)**:
+   - **Mục 6**: `Hồ sơ LLKH của tôi`
+     * URL: `/portal/expert/profile/edit` (key: `profile-edit`)
+     * Icon: `GraduationCap`
+     * Mục tiêu: Quản trị Lý lịch khoa học chuẩn Bộ KH&CN, văn bằng, công trình.
+   - **Mục 7**: `Cài đặt & Tài khoản`
+     * URL: `/portal/expert/account` (key: `account`)
+     * Icon: `ShieldCheck` (hoặc `Settings`)
+     * Nhãn hiển thị: Đổi tên thành **"Cài đặt & Tài khoản"** (trước đây là "Tài khoản Chuyên gia").
+     * Vị trí: Chuyển xuống **vị trí cuối cùng** trong Sidebar.
+     * Mục tiêu: Quản lý định danh khoa học (Mã EXP, QĐ Sở), bật/tắt tiếp nhận tư vấn (Readiness Toggle), đo điểm Completeness 5 trụ cột, an toàn đăng nhập & Zalo Mini App.
+
+#### `REQ-EXP-NAV-002` — Xử Lý Tương Tác Mục Hợp Đồng & Thù Lao Disabled (Toast Notification)
+1. **Khóa chuyển hướng (Route Guard)**:
+   - Phần tử Sidebar mục `contracts` phải áp dụng thuộc tính `disabled: true`, render dạng thẻ `<button>` hoặc `<div>` có `aria-disabled="true"`.
+   - Khi người dùng click chuột hoặc nhấn Enter/Space: Chặn hoàn toàn sự kiện chuyển trang mặc định (`e.preventDefault()`, không gọi `router.push`).
+2. **Thông báo Toast (Notification Toast)**:
+   - Kích hoạt thông báo Toast dạng `info`:
+     * Tiêu đề/Nội dung: *"Tính năng Hợp đồng & Thù lao đang được phát triển theo lộ trình"*.
+     * Thời gian hiển thị: 3000ms.
+3. **Phong cách thị giác (Visual Style)**:
+   - Style xám mờ (`opacity-60 text-slate-400 dark:text-slate-500 cursor-not-allowed hover:bg-transparent`).
+   - Huy hiệu "Sắp ra mắt" hiển thị trực quan ở mép phải của menu item.
+
+#### `REQ-EXP-NAV-003` — Quản Trị Thù Lao Tư Vấn Tại Tab 3 Hộp Thư Tư Vấn (Phương Án A)
+1. **Tích hợp Thù lao vào Tab 3 Lịch sử & Nghiệm thu**:
+   - Mỗi phiên tư vấn hoàn thành trong Tab 3 (`/portal/expert/consultations?tab=completed`) hiển thị đầy đủ:
+     * Giá trị thù lao: `advisoryFeeVnd` (ví dụ: `15.000.000 VNĐ`).
+     * Đơn vị chi trả: `feePayer` (ví dụ: `Quỹ ĐMST Hà Nội` hoặc `Doanh nghiệp chi trả trực tiếp`).
+     * Trạng thái giải ngân: `disbursementStatus` (`CHO_NGHIEM_THU`, `DANG_DOI_SOAT_SO`, `DA_QUYET_TOAN`, `DN_DA_THANH_TOAN`).
+     * Huy hiệu thanh lý: Hiển thị badge màu tương ứng (Xanh lá khi đã quyết toán, Hổ phách khi đang đối soát).
+2. **Khối tổng kết thu nhập ở đầu trang**:
+   - Hiển thị tóm tắt: Tổng thù lao đã quyết toán, Thù lao đang chờ giải ngân từ Quỹ ĐMST.
+
+---
+
+### 19.3. Quy Tắc Nghiệp Vụ (Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Logic Nghiệp Vụ & Ràng Buộc Kỹ Thuật |
+| :--- | :--- | :--- |
+| **`BR-EXP-NAV-001`** | **Quy Tắc Active Route & Khóa Điều Hướng Disabled** | - **Triệt tiêu active cho Disabled**: Mục `contracts` không bao giờ được nhận class active khi người dùng đang ở các màn hình khác.<br>- **Không chuyển route**: Khi click vào mục `disabled`, sự kiện `onClick` gọi `e.preventDefault()`, hiển thị Toast thông báo lộ trình. Tuyệt đối không chuyển hướng URL.<br>- **Phân giải chính xác 7 Key**: Hàm `resolveExpertActiveMenu` phân giải chuẩn xác 7 key (`profile`, `consultations`, `radar`, `projects`, `contracts`, `profile-edit`, `account`), tuyệt đối không có xung đột giữa `consultations` và `projects`. |
+| **`BR-EXP-NAV-002`** | **Phương Án A: Phân Định Phạm Vi Thù Lao** | - Toàn bộ thù lao phiên tư vấn ngắn hạn được đối soát và hiển thị tại Tab 3 của Hộp thư Tư vấn (`consultations?tab=completed`).<br>- Hợp đồng kinh tế lớn và chuyển giao công nghệ dài hạn thuộc phạm vi phân hệ `contracts` tương lai. |
+| **`BR-EXP-NAV-003`** | **Tiêu Chuẩn Tiếp Cận A11y Cho Mục Disabled** | - Phần tử `contracts` trên Sidebar bắt buộc có `aria-disabled="true"` và nhãn `aria-label="Hợp đồng & Thù lao (Tính năng đang được phát triển theo lộ trình, hiện chưa khả dụng)"`.<br>- Vẫn cho phép nhận focus bàn phím (`tabIndex={0}`) để người dùng khiếm thị biết sự hiện diện của tính năng trên lộ trình, phím Enter kích hoạt Toast tương tự click chuột. |
+
+---
+
+### 19.4. Tiêu Chí Chấp Thuận (Acceptance Criteria - Gherkin Format)
+
+#### `AC-NAV-01`: Cấu Trúc Menu 7 Mục Đúng 3 Khối Trên Sidebar
+- **Given** người dùng đăng nhập với vai trò Chuyên gia (`VERIFIED_EXPERT` hoặc `EXPERT`),
+- **When** quan sát thanh Sidebar điều hướng Bàn làm việc Chuyên gia,
+- **Then** hệ thống hiển thị đúng thứ tự 7 mục:
+  1. `Tổng quan Chuyên gia` (`/portal/expert/profile`)
+  2. `Hộp Thư Tư Vấn & Kết Nối` (`/portal/expert/consultations`)
+  3. `Radar Cơ hội Phù hợp (AI)` (`/portal/matching/radar` hoặc `/portal/expert/radar`)
+  4. `Dự án Đồng hành & Hợp tác` (`/portal/expert/projects`)
+  5. `Hợp đồng & Thù lao` (`/portal/expert/contracts` - Disabled)
+  6. `Hồ sơ LLKH của tôi` (`/portal/expert/profile/edit`)
+  7. `Cài đặt & Tài khoản` (`/portal/expert/account`)
+
+#### `AC-NAV-02`: Click Mục "Hợp Đồng & Thù Lao" Hiển Thị Toast & Chặn Chuyển Route
+- **Given** người dùng đang ở bất kỳ trang nào trong Workspace Chuyên gia,
+- **When** người dùng click vào mục *“Hợp đồng & Thù lao”* trên Sidebar,
+- **Then**:
+  - Hệ thống chặn điều hướng trang, URL trình duyệt giữ nguyên không đổi sang `/portal/expert/contracts`.
+  - Một thông báo Toast xuất hiện trên màn hình với nội dung: *"Tính năng Hợp đồng & Thù lao đang được phát triển theo lộ trình"*.
+  - Mục này không bị highlight dạng active.
+
+#### `AC-NAV-03`: Hiển Thị Badge SLA 48h Và Badge "Mới"
+- **Given** chuyên gia có yêu cầu tư vấn đang chờ xử lý trong 48 giờ,
+- **When** quan sát Sidebar,
+- **Then**:
+  - Mục *“Hộp Thư Tư Vấn & Kết Nối”* hiển thị Badge số đếm yêu cầu cần phản hồi trong 48h.
+  - Mục *“Radar Cơ hội Phù hợp (AI)”* hiển thị Badge "Mới" (hoặc icon Sparkles nổi bật).
+  - Mục *“Hợp đồng & Thù lao”* hiển thị Badge "Sắp ra mắt".
+
+#### `AC-NAV-04`: Đổi Tên "Cài Đặt & Tài Khoản" Và Định Vị Ở Cuối Cùng
+- **Given** thanh điều hướng Sidebar của Chuyên gia,
+- **When** quan sát mục số 7,
+- **Then**:
+  - Tên hiển thị là **"Cài đặt & Tài khoản"** (thay vì "Tài khoản Chuyên gia").
+  - Mục này nằm ở vị trí cuối cùng trong danh sách menu chuyên gia.
+  - Khi click, chuyển hướng chính xác đến `/portal/expert/account` và nhận active key `account`.
+
+#### `AC-NAV-05`: Quản Trị Thù Lao Tại Tab 3 Hộp Thư Tư Vấn (Phương Án A)
+- **Given** chuyên gia truy cập `/portal/expert/consultations?tab=completed`,
+- **When** nạp danh sách các phiên tư vấn đã nghiệm thu,
+- **Then**:
+  - Mỗi bản ghi hiển thị rõ ràng giá trị thù lao (ví dụ: `15.000.000 VNĐ`), nguồn chi trả (Quỹ ĐMST / DN), và trạng thái giải ngân (`ĐÃ QUYẾT TOÁN` hoặc `ĐANG ĐỐI SOÁT HỒ SƠ QUỸ ĐMST`).
+
+---
+
+### 19.5. Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt Kỹ Thuật (Surface) | Vị Trí Tệp Mã Nguồn / Spec | Bản Chất Tác Động | Chi Tiết Thay Đổi Cần Thực Hiện |
+| :--- | :--- | :--- | :--- |
+| **Portal Sidebar Navigation** | `SourceCode/frontend/src/app/portal/layout.tsx`<br>`layout.test.tsx` | UI Layout & Navigation Config | - Tái cấu trúc `expertNavItems` thành 7 mục theo đúng thứ tự 3 khối.<br>- Bổ sung item `contracts` với thuộc tính `disabled: true`, badge "Sắp ra mắt".<br>- Bổ sung Toast handler khi click item disabled.<br>- Đổi tên item `account` thành "Cài đặt & Tài khoản", chuyển xuống cuối.<br>- Cập nhật Vitest tests kiểm tra 7 mục và click toast. |
+| **Active Menu Resolver** | `SourceCode/frontend/src/lib/expert-nav.ts`<br>`expert-nav.test.ts` | Routing Helper & Active Key Logic | - Cập nhật type `ExpertMenuKey` bổ sung `"contracts"`.<br>- Cập nhật hàm `resolveExpertActiveMenu` xử lý đúng thứ tự ưu tiên.<br>- Bổ sung unit tests cho tất cả 7 route. |
+| **Consultation Inbox Tab 3** | `SourceCode/frontend/src/app/portal/expert/consultations/page.tsx` | View Logic & UX Display (PA-A) | - Hiển thị trường theo dõi thù lao `advisoryFeeVnd`, nguồn chi trả `feePayer`, trạng thái `disbursementStatus` trong Tab 3.<br>- Bổ sung khối tổng kết thù lao đã quyết toán ở đầu Tab 3. |
+| **Basic Design Delta** | `Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md` | SSOT Kiến trúc & Thiết kế Cơ sở | - Đồng bộ 7 mục 3 khối, quyết định Phương án A và quy chuẩn disabled toast. |
+
+---
+
+### 19.6. Ma Trận Truy Vết Nghiệp Vụ (Traceability Matrix)
+
+| Mã Định Danh | Loại Yêu Cầu | Tên Quy Chuẩn | Mô Tả & Căn Cứ Kiểm Thử | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-EXP-NAV-001`** | Functional Req | Cấu Trúc Menu Workspace 7 Mục 3 Khối | Chuẩn hóa Sidebar thành 7 mục theo 3 khối logic tác nghiệp | `[CONFIRMED]` |
+| **`REQ-EXP-NAV-002`** | Functional Req | Menu Hợp Đồng Disabled & Toast Notification | Khóa click, hiển thị nhãn "Sắp ra mắt" và toast thông báo lộ trình | `[CONFIRMED]` |
+| **`REQ-EXP-NAV-003`** | Functional Req | Quản Trị Thù Lao Tại Tab 3 (Phương Án A) | Tích hợp theo dõi giá trị thù lao & trạng thái thanh lý vào Tab 3 Hộp thư Tư vấn | `[CONFIRMED]` |
+| **`BR-EXP-NAV-001`** | Business Rule | Quy Tắc Active Route & Khóa Điều Hướng | Không active mục disabled, phân giải độc lập 7 keys, không va chạm route | `[CONFIRMED]` |
+| **`BR-EXP-NAV-002`** | Business Rule | Phân Định Thù Lao Tư Vấn & Hợp Đồng Dự Án | Thù lao tư vấn quản lý tại Tab 3; Hợp đồng dự án dành cho giai đoạn sau | `[CONFIRMED]` |
+| **`BR-EXP-NAV-003`** | Business Rule | Tiêu Chuẩn Tiếp Cận A11y Cho Mục Disabled | Thuộc tính `aria-disabled="true"`, `aria-label`, hỗ trợ phím bấm | `[CONFIRMED]` |
+| **`UI-EXP-NAV-7ITEMS`** | UI/UX Spec | Giao Diện Sidebar 7 Mục & Disabled Badge | Style trực quan 7 mục, badge SLA 48h, badge "Mới", badge "Sắp ra mắt" | `[CONFIRMED]` |
+| **`UI-EXP-FEE-TAB3`** | UI/UX Spec | Giao Diện Thẻ Thù Lao & Trạng Thái Thanh Lý | Thẻ tư vấn hoàn thành hiển thị giá trị thù lao, huy hiệu thanh lý | `[CONFIRMED]` |
+
+---
+
+## 20. Spec Delta v1.4: Chuẩn Hóa Trải Nghiệm Dashboard, Triệt Tiêu Hardcode Account & Toast Standard [CR-2026-007]
+
+> **Căn cứ pháp lý & chỉ đạo**: Quyết định PO Orchestrator `PO-DEC-20261023-02` (CR-2026-007: Cải tiến Giai đoạn 1 - Sửa lỗi điều hướng Dashboard, chuẩn hóa Toast và triệt tiêu hardcode) ban hành ngày 23/10/2026.  
+> **Tài liệu tham chiếu Basic Design**: [`BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md) (Mục 9).  
+> **Phạm vi tác động**: Bàn làm việc Chuyên gia KH&CN (`TASK-05`), Tuyến hạ cánh `/portal/expert/profile`, Màn hình Cài đặt & Tài khoản (`/portal/expert/account`), Hộp thư Tư vấn (`/portal/expert/consultations`), Radar cơ hội (`/portal/matching/radar`).
+
+### 20.1. Bối Cảnh & Mục Tiêu Thay Đổi (Context & Objectives)
+
+Sau đợt rà soát nghiệm thu vận hành phiên bản Workspace Chuyên gia 7 mục, PO Orchestrator và QA Shadow đã ghi nhận 3 vấn đề gây suy giảm trải nghiệm người dùng và vi phạm nguyên tắc cốt lõi:
+1. **Lệch Ngữ Cảnh Trang Hạ Cánh Item 1 (`/portal/expert/profile`)**:
+   - Khi chuyên gia nhấp vào mục "Tổng quan Chuyên gia" (`/portal/expert/profile`), hệ thống trước đây hiển thị chi tiết hồ sơ `ExpertOwnerDetailPage` thay vì một trang Dashboard tổng quan đúng nghĩa.
+   - Component `ExpertDashboard` đã được xây dựng sẵn nhưng chưa được gắn làm view chính của route `/portal/expert/profile`, đồng thời các nút hành động trong To-Do list cũ trỏ nhầm sang `/profile/upgrade/expert` thay vì `/portal/expert/profile/edit`.
+2. **Vi Phạm Zero-Mock & Mất Dữ Liệu Tùy Chọn Tại Item 7 (`/portal/expert/account`)**:
+   - Trường số điện thoại khi trống dữ liệu tự ý fallback về số giả `0912****89 (Đã bảo vệ PDPD)`. Điều này vi phạm kỷ luật Zero-Mock và Zero Hallucination của dự án NacenTech.
+   - Các cài đặt giao diện (Theme sáng/tối/hệ thống, Cỡ chữ nhỏ/vừa/lớn) chỉ tồn tại trong bộ nhớ tạm React State, bị reset hoàn toàn khi tải lại trang.
+   - Danh sách phiên đăng nhập (Active Sessions) thiếu nhãn minh họa thiết bị trực quan.
+3. **Sử Dụng Native `alert()` Gây Gián Đoạn Trải Nghiệm**:
+   - Vẫn còn sự xuất hiện của các hàm `alert()` của trình duyệt khi chặn quyền hoặc thông báo lỗi (ví dụ tại `consultations` và `radar`), không đúng chuẩn mực Enterprise Design System của NacenTech.
+
+---
+
+### 20.2. Yêu Cầu Chức Năng Mới (Functional Requirements)
+
+#### `REQ-EXP-DASH-001` — Trang Hạ Cánh Tổng Quan Chuyên Gia (Dashboard Landing Component)
+1. **Gán Component Dashboard làm Landing View**:
+   - Tuyến `/portal/expert/profile` (Item 1 trên Sidebar, key: `profile`) hiển thị trực tiếp component `ExpertDashboard` làm trang hạ cánh trung tâm của Bàn làm việc Chuyên gia.
+   - Được bảo vệ bởi `RoleGuard` cho phép các quyền `VERIFIED_EXPERT` và `EXPERT`.
+2. **Nội Dung & Cấu Trúc Hiển Thị**:
+   - **Banner chào mừng**: Cá nhân hóa theo tên chuyên gia và học hàm/học vị, badge "Dashboard chuyên gia", nền gradient nhận diện thương hiệu.
+   - **Thanh tiến độ % hoàn thiện hồ sơ**: Tính toán động dựa trên 3 tiêu chí cốt lõi (Thông tin liên hệ, Chứng từ xác minh đang hiệu lực, Công trình khoa học/Sáng chế). Màu xanh lá khi đạt $\ge 80\%$, màu hổ phách khi dưới $80\%$.
+   - **Danh sách việc cần làm (To-Do List)**: Hiển thị các hành động cần thực hiện nếu hồ sơ còn thiếu thông tin. Nút bấm tương tác ("Bổ sung" / "Chỉnh sửa") điều hướng trực tiếp đến trang quản trị LLKH chính thức `/portal/expert/profile/edit` (loại bỏ tuyệt đối link cũ `/profile/upgrade/expert`).
+   - **Thao tác nhanh**: Các thẻ shortcut dẫn đến xem chi tiết hồ sơ hoặc sang trang chỉnh sửa `/portal/expert/profile/edit`.
+   - **Thông báo Sở KH&CN**: Cảnh báo nổi bật khi hồ sơ có yêu cầu bổ sung (`CHANGES_REQUESTED`) hoặc thông báo trạng thái thẩm định.
+
+#### `REQ-EXP-ACC-001` — Triệt Tiêu Hardcode PDPD & Lưu Trữ Bền Vững Tùy Chọn Cài Đặt (Zero-Hardcode & Preference Persistence)
+1. **Triệt tiêu số điện thoại giả lập (Zero-Mock PDPD)**:
+   - Khi chuyên gia chưa khai báo số điện thoại (`phone` null, undefined, hoặc rỗng), hệ thống bắt buộc hiển thị nhãn trung thực **"Chưa cập nhật"**. Tuyệt đối cấm hiển thị chuỗi giả mạo `0912****89`.
+   - Khi có số điện thoại thật, thực hiện masking tuân thủ Nghị định 13/2023/NĐ-CP (ví dụ: `0987****34 (Đã bảo vệ PDPD)`).
+2. **Lưu trữ tùy chọn giao diện bền vững (Client Persistence)**:
+   - Tùy chọn Theme (Sáng / Tối / Tự động): Lưu vào `localStorage` với key `expert_theme_pref`. Khôi phục trạng thái khi tải lại trang và áp dụng class tương ứng.
+   - Tùy chọn Cỡ chữ (Nhỏ / Vừa / Lớn): Lưu vào `localStorage` với key `expert_fontsize_pref`. Khôi phục trạng thái khi tải lại trang.
+3. **Minh họa Thiết bị Phiên Đăng Nhập (Active Sessions)**:
+   - Hiển thị danh sách thiết bị có phân loại rõ ràng qua icon và nhãn chi tiết (`Laptop` cho máy tính để bàn/xách tay, `Smartphone` cho điện thoại di động).
+   - Phân định rõ "Phiên hiện tại" và các phiên đăng nhập khác, nút thao tác "Đăng xuất thiết bị này" kích hoạt Toast xác nhận thay vì reload toàn trang.
+
+#### `REQ-EXP-TOAST-001` — Chuẩn Hóa Thông Báo Toast Notification Thay Thế Hoàn Toàn `alert()`
+1. **Loại bỏ 100% `alert()` của trình duyệt**:
+   - Nghiêm cấm hoàn toàn lệnh `window.alert()` trên tất cả các màn hình của Workspace Chuyên gia.
+2. **Chuẩn hóa thông báo bằng `useToast()`**:
+   - Tại Hộp thư Tư vấn (`/portal/expert/consultations`): Khi chuyên gia chưa được Sở KH&CN phê duyệt (`status !== 'APPROVED'`) bấm tiếp nhận yêu cầu có thù lao Quỹ ĐMST $\rightarrow$ Hiển thị Toast Warning với tiêu đề và nội dung giải thích rõ ràng.
+   - Tại Radar Cơ hội Phù hợp (`/portal/matching/radar`): Khi gặp lỗi kết nối hoặc phản hồi thất bại $\rightarrow$ Hiển thị Toast Error với thông điệp thân thiện.
+   - Tại các màn hình liên quan (`projects`, `profile/edit`): Chuyển đổi toàn bộ thông báo xuất báo cáo hoặc khóa hồ sơ sang Toast Info/Warning tương ứng.
+
+---
+
+### 20.3. Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Logic Nghiệp Vụ & Ràng Buộc Kỹ Thuật |
+| :--- | :--- | :--- |
+| **`BR-EXP-DASH-001`** | **Quy Tắc Điều Hướng Landing View & Action Links của Dashboard** | - Route `/portal/expert/profile` luôn phục vụ `ExpertDashboard` làm trang chủ của Bàn làm việc Chuyên gia.<br>- Toàn bộ liên kết cập nhật/bổ sung hồ sơ từ Dashboard bắt buộc dẫn về route quản trị LLKH chính thức `/portal/expert/profile/edit` (loại bỏ triệt để liên kết cũ `/profile/upgrade/expert`).<br>- Trạng thái % hoàn thiện phản ánh thực tế dữ liệu hồ sơ chuyên gia đã lưu. |
+| **`BR-EXP-ACC-001`** | **Quy Tắc Bảo Vệ Dữ Liệu PDPD Thật & Lưu Trữ Tùy Chọn Cục Bộ** | - Tuyệt đối cấm tạo số điện thoại ảo giả lập che giấu thiếu dữ liệu. Thiếu thì hiển thị "Chưa cập nhật".<br>- Tuân thủ Nghị định 13/2023/NĐ-CP: chỉ mask số điện thoại thật do người dùng đã đăng ký.<br>- Cài đặt tùy biến cá nhân (Theme, Font size) lưu bền vững vào `localStorage` (`expert_theme_pref`, `expert_fontsize_pref`), tự động hydrate khi mount component. |
+
+---
+
+### 20.4. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria - Gherkin Format)
+
+#### `AC-DASH-01`: Trang Hạ Cánh `/portal/expert/profile` Hiển Thị Đúng Component `ExpertDashboard` & Link To-Do Chuẩn Xác
+- **Given** người dùng đăng nhập với vai trò Chuyên gia (`VERIFIED_EXPERT` hoặc `EXPERT`),
+- **When** người dùng truy cập route `/portal/expert/profile` (hoặc click mục "Tổng quan Chuyên gia" trên thanh Sidebar),
+- **Then**:
+  - Hệ thống hiển thị giao diện `ExpertDashboard` với banner chào mừng cá nhân hóa, huy hiệu "Dashboard chuyên gia", thanh tiến độ % hoàn thiện và danh sách To-Do list.
+  - Mỗi mục trong To-Do list hiển thị nút "Bổ sung" / "Chỉnh sửa" với thuộc tính `href` trỏ chính xác về `/portal/expert/profile/edit`.
+  - Khối thao tác nhanh cũng cung cấp liên kết dẫn về `/portal/expert/profile/edit`.
+
+#### `AC-DASH-02`: Triệt Tiêu Số Điện Thoại Bịa Đặt & Lưu Bền Vững Tùy Chọn Cài Đặt
+- **Given** chuyên gia chưa cập nhật số điện thoại trong hồ sơ cá nhân,
+- **When** truy cập vào màn hình Cài đặt & Tài khoản (`/portal/expert/account`),
+- **Then**:
+  - Tại ô hiển thị số điện thoại, hệ thống hiển thị văn bản **"Chưa cập nhật"**, tuyệt đối không hiển thị chuỗi giả mạo `0912****89`.
+- **Given** người dùng đang ở trang `/portal/expert/account`,
+- **When** người dùng chọn chế độ giao diện "Tối" (hoặc thay đổi cỡ chữ "Lớn") rồi làm mới trình duyệt (F5/Reload),
+- **Then**:
+  - Hệ thống tự động nạp lại đúng tùy chọn đã lưu từ `localStorage`, giao diện duy trì trạng thái đã chọn.
+- **Given** danh sách phiên đăng nhập (Active sessions),
+- **When** quan sát khối quản trị phiên,
+- **Then**:
+  - Hệ thống hiển thị rõ ràng nhãn thiết bị (`MacBook Pro`, `iPhone...`) kèm icon tương ứng (`Laptop`, `Smartphone`).
+
+#### `AC-DASH-03`: Loại Bỏ Toàn Bộ `alert()` Trình Duyệt & Chuẩn Hóa Bằng `useToast()`
+- **Given** chuyên gia có hồ sơ đang ở trạng thái chờ duyệt hoặc cần chỉnh sửa (`status !== 'APPROVED'`),
+- **When** chuyên gia thao tác tiếp nhận yêu cầu có thù lao Quỹ ĐMST tại Hộp thư Tư vấn (`/portal/expert/consultations`),
+- **Then**:
+  - Không có bất kỳ hộp thoại pop-up `window.alert()` nào của trình duyệt bật lên.
+  - Hệ thống kích hoạt Toast Notification (variant `warning`) hiển thị cảnh báo: *"Hồ sơ Chuyên gia đang chờ Sở KH&CN phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác có thù lao Quỹ ĐMST."*
+- **Given** chuyên gia thao tác phản hồi yêu cầu tại Radar Cơ hội Phù hợp (`/portal/matching/radar`) và gặp lỗi,
+- **When** lỗi xảy ra,
+- **Then**:
+  - Hệ thống hiển thị Toast Notification (variant `error`) thông báo lỗi rõ ràng thay cho `alert()`.
+
+---
+
+### 20.5. Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt Kỹ Thuật (Surface) | Vị Trí Tệp Mã Nguồn / Spec | Bản Chất Tác Động | Chi Tiết Thay Đổi Cần Thực Hiện |
+| :--- | :--- | :--- | :--- |
+| **Expert Profile Landing Route** | `SourceCode/frontend/src/app/portal/expert/profile/page.tsx` | View Component Route | - Chuyển sang render component `ExpertDashboard` (thay vì `ExpertOwnerDetailPage`).<br>- Giữ nguyên `RoleGuard` cho `VERIFIED_EXPERT` và `EXPERT`. |
+| **Expert Dashboard Component** | `SourceCode/frontend/src/components/expert-detail/expert-dashboard.tsx`<br>`expert-dashboard.test.tsx` | UI Component & Action Links | - Cập nhật các liên kết trong To-Do list và Thao tác hồ sơ từ `/profile/upgrade/expert` sang `/portal/expert/profile/edit`.<br>- Bổ sung/cập nhật unit tests tương ứng. |
+| **Expert Account Page** | `SourceCode/frontend/src/app/portal/expert/account/page.tsx`<br>`account.test.tsx` | UI View & Logic Persistence | - Sửa hàm `maskPhone`: khi không có `phone`, trả về `"Chưa cập nhật"`.<br>- Bổ sung lưu/khôi phục `localStorage` cho Theme (`expert_theme_pref`) và Cỡ chữ (`expert_fontsize_pref`).<br>- Gắn nhãn minh họa thiết bị cho active sessions. |
+| **Consultation Inbox** | `SourceCode/frontend/src/app/portal/expert/consultations/page.tsx`<br>`consultations.test.tsx` | UI View & Toast Replacement | - Loại bỏ `alert()`, tích hợp hook `useToast()` để hiển thị thông báo warning/error chuẩn Design System. |
+| **Matching Radar** | `SourceCode/frontend/src/app/portal/matching/radar/page.tsx` | UI View & Toast Replacement | - Loại bỏ `alert(err.message)`, tích hợp `useToast()` để thông báo lỗi thân thiện. |
+| **Basic Design Delta** | `Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md` | SSOT Kiến trúc Cơ sở | - Đồng bộ Quyết định `PO-DEC-20261023-02`, đặc tả chi tiết 3 hạng mục cải tiến trong Mục 9. |
+
+---
+
+### 20.6. Ma Trận Truy Vết Nghiệp Vụ (Traceability Matrix)
+
+| Mã Định Danh | Loại Yêu Cầu | Tên Quy Chuẩn | Mô Tả & Căn Cứ Kiểm Thử | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-EXP-DASH-001`** | Functional Req | Dashboard Landing Component | Tuyến `/portal/expert/profile` hiển thị `ExpertDashboard`, To-Do list trỏ về `/portal/expert/profile/edit` | `[CONFIRMED]` |
+| **`REQ-EXP-ACC-001`** | Functional Req | Zero-Hardcode Phone & Preference Persistence | Triệt tiêu số điện thoại giả, hiển thị "Chưa cập nhật"; lưu theme/cỡ chữ vào `localStorage`; gắn nhãn thiết bị | `[CONFIRMED]` |
+| **`REQ-EXP-TOAST-001`** | Functional Req | Chuẩn Hóa Toast Notification Thay Alert | Loại bỏ 100% `alert()`, chuẩn hóa thông báo qua `useToast()` chuẩn Design System | `[CONFIRMED]` |
+| **`BR-EXP-DASH-001`** | Business Rule | Quy Tắc Điều Hướng Landing View & Action Links | Phân định trang hạ cánh và trang biên tập LLKH, liên kết To-Do đồng bộ | `[CONFIRMED]` |
+| **`BR-EXP-ACC-001`** | Business Rule | Quy Tắc PDPD Thật & Lưu Trữ Cục Bộ | Tuyệt đối không bịa số điện thoại, tuân thủ Nghị định 13/2023/NĐ-CP, lưu client preference | `[CONFIRMED]` |
+| **`UI-EXP-DASH-VIEW`** | UI/UX Spec | Giao Diện Trang Hạ Cánh ExpertDashboard | Banner chào mừng, tiến độ %, To-Do list, thông báo Sở | `[CONFIRMED]` |
+| **`UI-EXP-ACC-ZERO-MOCK`** | UI/UX Spec | Giao Diện Tài Khoản Zero-Mock & Session Icons | Nhãn "Chưa cập nhật", Icon Laptop/Smartphone, lưu trạng thái theme | `[CONFIRMED]` |
+| **`UI-EXP-TOAST-ENTERPRISE`** | UI/UX Spec | Chuẩn Hóa Toast Notification Hệ Thống | Thông báo dạng Toast ToastProvider/useToast thay thế pop-up alert gián đoạn | `[CONFIRMED]` |
+
+---
+
+## 21. Spec Delta v1.5: Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành [CR-2026-008]
+
+### 21.1. Bối Cảnh & Mục Tiêu Kỹ Thuật (Context & Technical Objectives)
+- **Căn cứ pháp lý**: Quyết định của PO Orchestrator `PO-DEC-20261023-03` ban hành ngày 23/10/2026 (CR-2026-008: Zero-Mock Sprint).
+- **Mục tiêu cốt lõi**:
+  1. Triệt tiêu hoàn toàn mảng tĩnh giả lập (`INITIAL_CONSULTATIONS`, `INITIAL_PROJECTS`) trong Frontend tại 2 màn hình: Hộp thư Tư vấn (`/portal/expert/consultations`) và Dự án Đồng hành (`/portal/expert/projects`).
+  2. Xây dựng và tích hợp các API Backend .NET Core API kết nối trực tiếp với CSDL PostgreSQL thật.
+  3. Cưỡng chế phân quyền đa tầng Scoped RBAC `VERIFIED_EXPERT`, tuân thủ mẫu thiết kế bảo mật `/api/v1/experts/me/*`.
+  4. Đảm bảo toàn bộ tương tác tiếp nhận/từ chối phiếu tư vấn đạt tính nguyên tử (Atomic transaction), kiểm tra SLA 48h chặt chẽ.
+
+---
+
+### 21.2. Yêu Cầu Chức Năng Chi Tiết (Functional Requirements)
+
+#### `REQ-EXP-API-001`: Backend API Danh Sách Phiếu Tư Vấn Chuyên Gia (My Consultations API)
+- **Tuyến API**: `GET /api/v1/experts/me/consultations`
+- **Mục đích**: Cung cấp danh sách các phiếu tư vấn được gán cho chính chuyên gia đang đăng nhập, phục vụ 3 Tab nghiệp vụ: Chờ duyệt, Lịch hẹn sắp tới, Lịch sử nghiệm thu.
+- **Xác thực & Ủy quyền**: `Bearer Token` - Vai trò `VERIFIED_EXPERT` (hoặc `EXPERT` có hồ sơ đã được duyệt).
+- **Tham số truy vấn (Query Params)**:
+  * `tab` (tùy chọn): `pending` | `scheduled` | `completed`.
+  * `pageIndex` (mặc định: 1), `pageSize` (mặc định: 20).
+- **Hợp đồng DTO (`ConsultationTicketDto`)**:
+  * `ticketCode` (string): Mã phiếu tư vấn (ví dụ: `CS-2026-0012`).
+  * `enterpriseName` (string): Tên doanh nghiệp đặt yêu cầu tư vấn.
+  * `demandTitle` (string): Tiêu đề nhu cầu / bài toán công nghệ.
+  * `meetingDate` (string): Ngày hẹn chuẩn `YYYY-MM-DD`.
+  * `meetingTime` (string): Khung giờ hẹn (ví dụ: `09:00 - 11:30`).
+  * `meetingType` (string): Hình thức (`ONLINE_ZOOM` | `ONLINE_MEET` | `ON_SITE`).
+  * `meetingUrl` (string, nullable): URL phòng họp trực tuyến (nếu là Online).
+  * `advisoryFeeVnd` (number): Mức thù lao tư vấn kỹ thuật (VNĐ).
+  * `feePayer` (string): Đơn vị chi trả (`SO_KHCN_QUY_DMST` | `DOANH_NGHIEP_TU_CHI_TRA`).
+  * `disbursementStatus` (string): Trạng thái giải ngân (`CHUA_GIAI_NGAN` | `DANG_XU_LY` | `DA_QUYET_TOAN`).
+  * `slaDeadlineHours` (number): Số giờ còn lại trước khi hết hạn SLA 48h.
+  * `status` (string): Trạng thái phiếu (`PENDING_ACCEPTANCE` | `SCHEDULED` | `COMPLETED` | `REJECTED` | `SLA_EXPIRED`).
+
+#### `REQ-EXP-API-002`: Backend API Phản Hồi Tiếp Nhận / Từ Chối Phiếu Tư Vấn (Consultation Response API)
+- **Tuyến API**: `POST /api/v1/experts/me/consultations/{id}/respond`
+- **Mục đích**: Cho phép chuyên gia chấp thuận (`ACCEPT`) hoặc từ chối (`REJECT`) phiếu tư vấn.
+- **Tham số đường dẫn**: `id` - Khóa chính định danh UUID của phiếu tư vấn.
+- **Cấu trúc Body**:
+  ```json
+  {
+    "action": "ACCEPT", // "ACCEPT" | "REJECT"
+    "reason": "Chuyên gia đồng ý lịch làm việc trực tuyến."
+  }
+  ```
+- **Xử lý nghiệp vụ Backend**:
+  * Kiểm tra quyền sở hữu phiếu tư vấn (`ExpertId == CurrentUser.ExpertId`).
+  * Kiểm tra hạn SLA 48h: Nếu `slaDeadlineHours <= 0`, từ chối thao tác và trả về mã lỗi `ERR_SLA_EXPIRED`.
+  * Ghi nhận cập nhật trạng thái phiếu và lịch sử xử lý trong giao dịch CSDL nguyên tử.
+  * Trả về kết quả cập nhật mới nhất cho Client.
+
+#### `REQ-EXP-API-003`: Backend API Danh Sách Dự Án Đồng Hành Kanban (My Projects Kanban API)
+- **Tuyến API**: `GET /api/v1/experts/me/projects`
+- **Mục đích**: Cung cấp danh sách dự án R&D / Tech Transfer cho bảng Kanban 5 cột theo thang TRL 1-9.
+- **Xác thực & Ủy quyền**: `Bearer Token` - Vai trò `VERIFIED_EXPERT`.
+- **Tham số truy vấn**: `stage` (tùy chọn: `NDA_RECEIVE` | `DEAL_ROOM_1_1` | `TRL_ASSESSMENT` | `MOU_SIGNING` | `TRANSFER_COMPLETION`), `keyword` (tùy chọn).
+- **Hợp đồng DTO (`ExpertProjectDto`)**:
+  * `projectCode` (string): Mã định danh dự án KH&CN (ví dụ: `PRJ-RD-2026-004`).
+  * `title` (string): Tên nhiệm vụ / dự án đồng hành R&D.
+  * `stage` (string): Giai đoạn tương ứng trên 5 cột Kanban.
+  * `securityStatus` (string): Mức độ bảo mật (`STRICT_CONFIDENTIAL` | `INTERNAL` | `PUBLIC_DOMAIN`).
+  * `partnerOrgName` (string): Doanh nghiệp / Tổ chức đối tác.
+  * `sectorCode` (string): Mã ngành KH&CN theo QĐ 12/2008/QĐ-BKHCN.
+  * `sectorName` (string): Tên lĩnh vực KH&CN.
+  * `currentTrl` (number): Mức TRL hiện tại (1 - 9).
+  * `currentTrlLabel` (string): Nhãn mô tả TRL hiện tại.
+  * `targetTrl` (number): Mức TRL mục tiêu (1 - 9).
+  * `targetTrlLabel` (string): Nhãn mô tả TRL mục tiêu.
+  * `estimatedValueVnd` (number): Giá trị dự kiến chuyển giao (VNĐ).
+  * `deadlineSlaText` (string): Thời hạn hoàn thành chặng hiện tại.
+  * `dealRoomUrl` (string): Đường dẫn phòng đàm phán bảo mật Deal Room 1-1.
+
+---
+
+### 21.3. Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Logic Nghiệp Vụ & Ràng Buộc Kỹ Thuật |
+| :--- | :--- | :--- |
+| **`BR-EXP-API-001`** | **Phân Quyền Truy Cập Tài Nguyên Chuyên Gia (me/* Pattern)** | - Toàn bộ API lấy dữ liệu cá nhân chuyên gia (`me/*`) phải trích xuất `ExpertId`/`UserId` từ JWT Claims đã xác thực.<br>- Nghiêm cấm nhận `expertId` từ Query/Body để query dữ liệu.<br>- Chuyên gia chỉ được truy xuất và thao tác trên đúng phiếu tư vấn và dự án do mình làm chủ nhiệm/tham gia; vi phạm trả về `403 Forbidden` ngay tại tầng API Gateway/Controller.<br>- Ngăn chặn 100% nguy cơ IDOR và rò rỉ dữ liệu chéo người dùng. |
+| **`BR-EXP-API-002`** | **SLA Phản Hồi 48h & Giao Dịch Phản Hồi Nguyên Tử (Atomic Response)** | - Phiếu tư vấn gửi tới chuyên gia có thời hạn phản hồi nghiêm ngặt 48 giờ tính từ thời điểm tạo.<br>- Khi `slaDeadlineHours <= 0`, phiếu tự động chuyển trạng thái `SLA_EXPIRED`, hệ thống khóa chức năng Chấp thuận.<br>- Hành động phản hồi (`ACCEPT` / `REJECT`) được thực thi trong Transaction CSDL nguyên tử: cập nhật trạng thái phiếu tư vấn, lưu log vết kiểm toán và thông báo sang phía Doanh nghiệp/Sở KH&CN.<br>- Nếu bất kỳ bước nào thất bại, toàn bộ giao dịch rollback, đảm bảo tính toàn vẹn CSDL. |
+
+---
+
+### 21.4. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria - Gherkin Format)
+
+#### `AC-API-01`: Tích Hợp Zero-Mock Endpoint Hộp Thư Tư Vấn & Phản Hồi Nguyên Tử (Atomic Response)
+- **Given** người dùng đăng nhập với vai trò Chuyên gia (`VERIFIED_EXPERT`),
+- **When** người dùng mở trang Hộp thư Tư vấn (`/portal/expert/consultations`),
+- **Then**:
+  - Frontend gọi API `GET /api/v1/experts/me/consultations` kèm Bearer Token xác thực.
+  - Tuyệt đối không nạp mảng `INITIAL_CONSULTATIONS` tĩnh vào component.
+  - Component `<Async>` hiển thị Skeleton loading trong lúc gọi API, hiển thị Empty state nếu không có phiếu, và hiển thị danh sách thẻ phiếu tư vấn thật từ CSDL PostgreSQL khi thành công.
+  - Trên mỗi thẻ phiếu tư vấn hiển thị đầy đủ: `ticketCode`, `enterpriseName`, `demandTitle`, `meetingDate`, `meetingTime`, hình thức họp kèm badge SLA 48h.
+- **Given** một phiếu tư vấn ở trạng thái `PENDING_ACCEPTANCE` có `slaDeadlineHours > 0`,
+- **When** chuyên gia bấm nút "Tiếp nhận" (hoặc "Từ chối" kèm lý do),
+- **Then**:
+  - Frontend gửi request `POST /api/v1/experts/me/consultations/{id}/respond` với action tương ứng.
+  - Backend cập nhật trạng thái trong Transaction CSDL PostgreSQL và trả về `200 OK`.
+  - Frontend cập nhật tức thì trạng thái của thẻ phiếu tư vấn sang `SCHEDULED` (hoặc `REJECTED`) và hiển thị Toast Notification thông báo thành công mà không làm vỡ giao diện.
+
+#### `AC-API-02`: Tích Hợp Zero-Mock Endpoint Dự Án Đồng Hành Kanban Phản Ánh Trạng Thái TRL Thực Tế Từ CSDL
+- **Given** người dùng đăng nhập với vai trò Chuyên gia (`VERIFIED_EXPERT`),
+- **When** người dùng truy cập trang Dự án Đồng hành (`/portal/expert/projects`),
+- **Then**:
+  - Frontend gọi API `GET /api/v1/experts/me/projects` lấy danh sách dự án KH&CN của chuyên gia.
+  - Tuyệt đối không sử dụng mảng dữ liệu tĩnh `INITIAL_PROJECTS` trong frontend code.
+  - Dữ liệu trả về được phân bổ tự động vào 5 cột Kanban theo trường `stage`:
+    * Cột 1: Tiếp nhận & Ký NDA (`NDA_RECEIVE`)
+    * Cột 2: Đàm phán Deal Room 1-1 (`DEAL_ROOM_1_1`)
+    * Cột 3: Thẩm định TRL & Lộ trình Tech (`TRL_ASSESSMENT`)
+    * Cột 4: Ký kết Thỏa thuận MOU (`MOU_SIGNING`)
+    * Cột 5: Đồng hành Chuyển giao & Nghiệm thu (`TRANSFER_COMPLETION`)
+  - Mỗi thẻ dự án hiển thị chính xác: `projectCode`, `title`, đối tác, lĩnh vực KH&CN, nhãn TRL hiện tại $\rightarrow$ TRL mục tiêu, giá trị dự kiến và liên kết phòng Deal Room.
+  - Khi cột không có dự án, hiển thị Empty State theo đúng chuẩn thiết kế kèm nút hành động định hướng (ví dụ: "Tìm kiếm dự án tại Radar").
+
+---
+
+### 21.5. Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt Kỹ Thuật (Surface) | Vị Trí Tệp Mã Nguồn / Spec | Bản Chất Tác Động | Chi Tiết Thay Đổi Cần Thực Hiện |
+| :--- | :--- | :--- | :--- |
+| **Backend API Controller** | `SourceCode/backend/src/NacenTwin.Api/Controllers/ExpertConsultationsController.cs`<br>`ExpertProjectsController.cs` | REST API Endpoints | - Hiện thực `GET /api/v1/experts/me/consultations`, `POST /api/v1/experts/me/consultations/{id}/respond`.<br>- Hiện thực `GET /api/v1/experts/me/projects`.<br>- Phân quyền Scoped RBAC `VERIFIED_EXPERT`. |
+| **Backend Domain & Application** | `SourceCode/backend/src/NacenTwin.Application/Features/Experts/Queries/`<br>`Commands/` | CQRS Handlers & DTOs | - Tạo `GetMyConsultationsQuery`, `RespondConsultationCommand`.<br>- Tạo `GetMyProjectsQuery`.<br>- Triển khai các DTO: `ConsultationTicketDto`, `ExpertProjectDto`.<br>- Xử lý ràng buộc SLA 48h (`BR-EXP-API-002`). |
+| **PostgreSQL Database** | `SourceCode/backend/src/NacenTwin.Infrastructure/Persistence/` | EF Core Entities & Migrations | - Bổ sung/đồng bộ entities `ConsultationTicket`, `ExpertProject` vào DbContext.<br>- Đảm bảo migration non-destructive. |
+| **Frontend Consultation Inbox** | `SourceCode/frontend/src/app/portal/expert/consultations/page.tsx`<br>`SourceCode/frontend/src/services/expert-consultation.service.ts` | UI View & API Client | - Xóa sạch mảng tĩnh `INITIAL_CONSULTATIONS`.<br>- Tích hợp gọi API qua service client.<br>- Bọc dữ liệu bằng component `<Async>`, xử lý Loading/Error/Empty/Success states. |
+| **Frontend Expert Projects Kanban** | `SourceCode/frontend/src/app/portal/expert/projects/page.tsx`<br>`SourceCode/frontend/src/services/expert-project.service.ts` | UI View & API Client | - Xóa sạch mảng tĩnh `INITIAL_PROJECTS`.<br>- Tích hợp gọi API qua service client.<br>- Hiển thị thẻ Kanban từ dữ liệu backend thực tế. |
+| **Basic Design Delta** | `Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md` | SSOT Kiến trúc Cơ sở | - Đồng bộ Quyết định `PO-DEC-20261023-03` tại Mục 10. |
+
+---
+
+### 21.6. Ma Trận Truy Vết Nghiệp Vụ (Traceability Matrix)
+
+| Mã Định Danh | Loại Yêu Cầu | Tên Quy Chuẩn | Mô Tả & Căn Cứ Kiểm Thử | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-EXP-API-001`** | Functional Req | My Consultations API | `GET /api/v1/experts/me/consultations`, phân quyền `VERIFIED_EXPERT`, lấy danh sách phiếu tư vấn | `[CONFIRMED]` |
+| **`REQ-EXP-API-002`** | Functional Req | Consultation Response API | `POST /api/v1/experts/me/consultations/{id}/respond`, tiếp nhận/từ chối nguyên tử (Atomic), kiểm tra SLA 48h | `[CONFIRMED]` |
+| **`REQ-EXP-API-003`** | Functional Req | My Projects Kanban API | `GET /api/v1/experts/me/projects`, danh sách dự án R&D theo 5 cột Kanban TRL 1-9 | `[CONFIRMED]` |
+| **`BR-EXP-API-001`** | Business Rule | Phân Quyền me/* Pattern | Trích xuất danh tính từ JWT Claims, chống IDOR và rò rỉ dữ liệu chéo | `[CONFIRMED]` |
+| **`BR-EXP-API-002`** | Business Rule | SLA Phản Hồi 48h & Atomic Response | Khóa phiếu khi quá hạn 48h (`SLA_EXPIRED`), cập nhật nguyên tử trong DB transaction | `[CONFIRMED]` |
+| **`AC-API-01`** | Acceptance Criteria | Kiểm Thử Zero-Mock Hộp Thư Tư Vấn | Xóa bỏ mock tĩnh, kết nối backend CSDL PostgreSQL, phản hồi nguyên tử | `[CONFIRMED]` |
+| **`AC-API-02`** | Acceptance Criteria | Kiểm Thử Zero-Mock Dự Án Đồng Hành | Xóa bỏ mock tĩnh, nạp dự án thực tế vào 5 cột Kanban theo thang TRL 1-9 | `[CONFIRMED]` |
+| **`UI-EXP-CONSULT-ZERO-MOCK`** | UI/UX Spec | Giao Diện Hộp Thư Tư Vấn Zero-Mock | 3 Tab nghiệp vụ, hiển thị 5 UX States qua `<Async>`, badge SLA 48h | `[CONFIRMED]` |
+| **`UI-EXP-PROJ-ZERO-MOCK`** | UI/UX Spec | Giao Diện Kanban Dự Án Zero-Mock | 5 Cột Kanban TRL 1-9, thẻ dự án chuẩn KH&CN, không nút giám sát Sở | `[CONFIRMED]` |
