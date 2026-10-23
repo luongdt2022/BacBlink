@@ -32,6 +32,7 @@ export default function SellerTechnologiesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [trlFilter, setTrlFilter] = useState("ALL");
 
   const loadData = async () => {
     setIsLoading(true);
@@ -60,53 +61,49 @@ export default function SellerTechnologiesPage() {
       (statusFilter === "PENDING" && item.status === "PENDING") ||
       (statusFilter === "DRAFT" && item.status === "DRAFT");
 
-    return matchSearch && matchStatus;
+    const trl = item.trlLevel || 0;
+    const matchTrl =
+      trlFilter === "ALL" ||
+      (trlFilter === "TRL_1_3" && trl >= 1 && trl <= 3) ||
+      (trlFilter === "TRL_4_6" && trl >= 4 && trl <= 6) ||
+      (trlFilter === "TRL_7_9" && trl >= 7 && trl <= 9);
+
+    return matchSearch && matchStatus && matchTrl;
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">
-      {/* HEADER */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-extrabold text-xl shadow">
-              S
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 border border-emerald-200">
-                  SELLER WORKSPACE
-                </span>
-                <span className="rounded-full bg-brand-100 text-brand-800 text-xs font-bold px-2 py-0.5 border border-brand-200">
-                  TASK-04
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
-                Quản Lý Danh Mục Giải Pháp & Công Nghệ Chào Bán Của Doanh Nghiệp
-              </p>
-            </div>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* PAGE HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+            <Link href="/portal" className="hover:text-brand-700">Workspace</Link>
+            <span>/</span>
+            <span className="text-slate-800 dark:text-slate-200 font-bold">Kho Công nghệ (TRL)</span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/chao-ban-cong-nghe"
-              className="text-xs font-bold text-slate-600 hover:text-emerald-600 transition hidden sm:inline-block"
-            >
-              Xem sàn công khai →
-            </Link>
-            <Link
-              href="/portal/seller/technologies/create"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
-            >
-              <PlusCircle className="w-4 h-4" /> Đăng Chào Bán Mới
-            </Link>
-          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Quản Lý Kho Giải Pháp & Công Nghệ Chào Bán
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Danh mục công nghệ, cấp độ sẵn sàng TRL 1–9 và tình trạng thẩm định của Sở KH&CN.
+          </p>
         </div>
-      </header>
 
-      {/* MAIN BODY */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/chao-ban-cong-nghe"
+            className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-brand-700 transition hidden sm:inline-block"
+          >
+            Xem sàn công khai →
+          </Link>
+          <Link
+            href="/portal/seller/technologies/create"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <PlusCircle className="w-4 h-4" /> Đăng Chào Bán Mới
+          </Link>
+        </div>
+      </div>
         {/* KPI CARDS */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
@@ -179,6 +176,18 @@ export default function SellerTechnologiesPage() {
                 <option value="APPROVED">Đang hiển thị</option>
                 <option value="PENDING">Chờ Sở duyệt</option>
                 <option value="DRAFT">Bản nháp</option>
+              </select>
+
+              <select
+                value={trlFilter}
+                onChange={(e) => setTrlFilter(e.target.value)}
+                className="form-control text-sm font-medium"
+                data-testid="trl-filter-select"
+              >
+                <option value="ALL">Tất cả dải TRL</option>
+                <option value="TRL_1_3">TRL 1–3 (Nghiên cứu Lab)</option>
+                <option value="TRL_4_6">TRL 4–6 (Thử nghiệm Pilot)</option>
+                <option value="TRL_7_9">TRL 7–9 (Thương mại hóa)</option>
               </select>
 
               <button
@@ -322,7 +331,6 @@ export default function SellerTechnologiesPage() {
             </table>
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
+      </div>
+    );
+  }

@@ -3,6 +3,11 @@ import { vi, describe, expect, it, beforeEach, afterEach } from "vitest";
 import type { ReactNode } from "react";
 import ExpertConsultationsPage from "./page";
 import { authClient } from "@/lib/auth-client";
+import {
+  INITIAL_PENDING_CONSULTATIONS,
+  INITIAL_SCHEDULED_CONSULTATIONS,
+  INITIAL_COMPLETED_CONSULTATIONS,
+} from "@/lib/consultations";
 
 vi.mock("next/link", () => ({
   default: ({ children, href }: { children: ReactNode; href: string }) => <a href={href}>{children}</a>,
@@ -12,11 +17,57 @@ vi.mock("@/components/auth/role-guard", () => ({
   RoleGuard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-describe("ExpertConsultationsPage (T132 & T135)", () => {
+const mockToastWarning = vi.fn();
+vi.mock("@/components/common/toast", () => ({
+  useToast: () => ({
+    warning: mockToastWarning,
+    error: vi.fn(),
+    success: vi.fn(),
+    info: vi.fn(),
+  }),
+}));
+
+const mockConsultationTickets = [
+  ...INITIAL_PENDING_CONSULTATIONS,
+  ...INITIAL_SCHEDULED_CONSULTATIONS,
+  ...INITIAL_COMPLETED_CONSULTATIONS,
+];
+
+describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   beforeEach(() => {
     cleanup();
     vi.clearAllMocks();
     localStorage.clear();
+
+    vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method?.toUpperCase() || "GET";
+
+      if (url.includes("/api/v1/experts/me/consultations") && method === "POST") {
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: { id: "REQ-CON-2026-081", status: "SCHEDULED", message: "OK" },
+          }),
+        } as Response;
+      }
+
+      if (url.includes("/api/v1/experts/me/consultations")) {
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: mockConsultationTickets,
+          }),
+        } as Response;
+      }
+
+      return {
+        ok: true,
+        json: async () => ({ success: true, data: [] }),
+      } as Response;
+    });
   });
 
   afterEach(() => {
@@ -41,9 +92,9 @@ describe("ExpertConsultationsPage (T132 & T135)", () => {
     expect(screen.getByTestId("tab-btn-scheduled")).toBeInTheDocument();
     expect(screen.getByTestId("tab-btn-completed")).toBeInTheDocument();
 
-    // Tab 1 contains invitations
+    // Tab 1 contains invitations loaded from API
     expect(
-      screen.getByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP")
+      await screen.findByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP")
     ).toBeInTheDocument();
     expect(screen.getByText("Mã Đơn: REQ-CON-2026-081")).toBeInTheDocument();
 
@@ -67,6 +118,8 @@ describe("ExpertConsultationsPage (T132 & T135)", () => {
     });
 
     render(<ExpertConsultationsPage />);
+
+    await screen.findByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP");
 
     fireEvent.click(screen.getByTestId("tab-btn-scheduled"));
 
@@ -92,6 +145,8 @@ describe("ExpertConsultationsPage (T132 & T135)", () => {
 
     render(<ExpertConsultationsPage />);
 
+    await screen.findByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP");
+
     fireEvent.click(screen.getByTestId("tab-btn-completed"));
 
     expect(screen.getByText(/Lịch Sử Tư Vấn Đã Nghiệm Thu Biên Bản/i)).toBeInTheDocument();
@@ -108,6 +163,8 @@ describe("ExpertConsultationsPage (T132 & T135)", () => {
     });
 
     render(<ExpertConsultationsPage />);
+
+    await screen.findByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP");
 
     const acceptButtons = screen.getAllByRole("button", { name: /Đồng Ý Tư Vấn & Chọn Lịch Hẹn/i });
     fireEvent.click(acceptButtons[0]);
@@ -141,6 +198,8 @@ describe("ExpertConsultationsPage (T132 & T135)", () => {
     });
 
     render(<ExpertConsultationsPage />);
+
+    await screen.findByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP");
 
     const rejectButtons = screen.getAllByRole("button", { name: /Từ Chối & Nêu Lý Do/i });
     fireEvent.click(rejectButtons[0]);
@@ -186,5 +245,33 @@ describe("ExpertConsultationsPage (T132 & T135)", () => {
     expect(
       screen.getByText(/Hồ sơ Chuyên gia KH&CN của bạn đang trong tiến trình thẩm định tại Sở KH&CN/i)
     ).toBeInTheDocument();
+  });
+
+  it("blocks accepting DEPT_ASSIGNED consultation when role is EXPERT using toast warning without alert()", async () => {
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    authClient.setSession("token-expert", {
+      id: "u-exp-pending",
+      email: "candidate@nacentech.vn",
+      fullName: "TS. Ứng Viên Chuyên Gia",
+      role: "EXPERT",
+    });
+
+    render(<ExpertConsultationsPage />);
+
+    await screen.findByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP");
+
+    // Click Đồng ý tư vấn on DEPT_ASSIGNED ticket
+    const acceptButtons = screen.getAllByRole("button", { name: /Đồng Ý Tư Vấn & Chọn Lịch Hẹn/i });
+    fireEvent.click(acceptButtons[0]);
+
+    // Verify toast warning called instead of alert()
+    expect(mockToastWarning).toHaveBeenCalledWith(
+      "Hồ sơ Chuyên gia đang chờ Sở KH&CN phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác có thù lao Quỹ ĐMST.",
+      "Chờ Duyệt Hồ Sơ"
+    );
+    expect(alertSpy).not.toHaveBeenCalled();
+
+    // Verify modal was NOT opened
+    expect(screen.queryByRole("heading", { name: "Đồng Ý Tư Vấn & Chọn Lịch Hẹn" })).not.toBeInTheDocument();
   });
 });

@@ -975,12 +975,20 @@ export default function DeepSurveyPage() {
                 <LogIn className="w-4 h-4" /> Đăng Nhập Ngay Vào Hệ Thống
               </Link>
             ) : (
-              <Link
-                href="/portal/buyer/demands"
-                className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
-              >
-                Đến Bàn Làm Việc Buyer Workspace <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/portal/buyer/demands"
+                  className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
+                >
+                  <Cpu className="w-4 h-4 text-brand-200" /> Đến Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/portal/matching/radar"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4 text-emerald-200" /> Khám Phá Radar Ghép Nối AI
+                </Link>
+              </div>
             )}
             <button
               onClick={() => {

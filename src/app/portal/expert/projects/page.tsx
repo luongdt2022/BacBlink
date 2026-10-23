@@ -30,8 +30,8 @@ import {
   ExpertProject,
   KanbanStageKey,
   KANBAN_TRL_STAGES,
-  INITIAL_EXPERT_PROJECTS,
 } from "@/lib/expert-projects";
+import { expertProjectsApi } from "@/services/api/expert-projects";
 
 export default function ExpertProjectsPage() {
   return (
@@ -56,12 +56,13 @@ function ExpertProjectsContent() {
 
   const [notification, setNotification] = useState<string | null>(null);
 
-  const loadProjects = () => {
+  const loadProjects = async () => {
     setUxState("loading");
     try {
       const user = authClient.getUser();
       setCurrentUser(user);
-      setProjects(INITIAL_EXPERT_PROJECTS);
+      const data = await expertProjectsApi.getMyProjects();
+      setProjects(data);
       setUxState("idle");
     } catch {
       setUxState("error");

@@ -114,4 +114,68 @@ describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
       expect(unbookmarkCalled).toBe(true);
     });
   });
+
+  it('renders clean subheader with zero dev badge TASK-03 and standardized title', async () => {
+    vi.spyOn(global, 'fetch').mockImplementation(async () => {
+      return {
+        ok: true,
+        json: async () => mockDemands,
+      } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ')).toBeInTheDocument();
+      expect(screen.getByText('BÊN MUA CÔNG NGHỆ')).toBeInTheDocument();
+    });
+
+    // Zero Dev Badge
+    expect(screen.queryByText('TASK-03')).not.toBeInTheDocument();
+  });
+
+  it('supports pagination controls when demands exceed pageSize of 5', async () => {
+    const manyDemands = Array.from({ length: 8 }, (_, i) => ({
+      id: `dmd-page-${i + 1}`,
+      itemCode: `DMD-PAGE-${i + 1}`,
+      stageName: `Công đoạn ${i + 1}`,
+      technicalProblem: `Vấn đề bài toán số ${i + 1}`,
+      sectorCode: 'LV01',
+      budgetRange: '500 triệu – 1 tỷ VNĐ',
+      tniScore: 80,
+      tniClassification: 'HIGH',
+      status: 'VERIFIED',
+    }));
+
+    vi.spyOn(global, 'fetch').mockImplementation(async () => {
+      return {
+        ok: true,
+        json: async () => manyDemands,
+      } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Vấn đề bài toán số 1')).toBeInTheDocument();
+      expect(screen.getByText('Vấn đề bài toán số 5')).toBeInTheDocument();
+    });
+
+    // Item 6 should NOT be on Page 1
+    expect(screen.queryByText('Vấn đề bài toán số 6')).not.toBeInTheDocument();
+
+    // Check pagination controls
+    const nextPageBtn = screen.getByRole('button', { name: /Trang sau/i });
+    expect(nextPageBtn).toBeInTheDocument();
+    expect(nextPageBtn).not.toBeDisabled();
+
+    // Click next page
+    fireEvent.click(nextPageBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Vấn đề bài toán số 6')).toBeInTheDocument();
+      expect(screen.getByText('Vấn đề bài toán số 8')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Vấn đề bài toán số 1')).not.toBeInTheDocument();
+  });
 });

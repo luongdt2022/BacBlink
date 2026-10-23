@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { authClient, UserContext } from "@/lib/auth-client";
 import { ExpertDashboard } from "@/components/expert-detail/expert-dashboard";
+import { SellerDashboard } from "@/components/portal/seller-dashboard";
 
 interface PortalModule {
   Icon: LucideIcon;
@@ -31,8 +32,8 @@ const generalModules: PortalModule[] = [
   },
   {
     Icon: ShoppingBag,
-    title: "Bài toán Tìm mua",
-    copy: "Đăng nhu cầu đổi mới công nghệ.",
+    title: "Bài toán Đổi mới Công nghệ",
+    copy: "Đăng nhu cầu đổi mới công nghệ và tìm kiếm nguồn cung.",
     href: "/portal/buyer/demands",
   },
   {
@@ -95,11 +96,32 @@ function GeneralPortalDashboard({ user }: { user: UserContext | null }) {
 
 export default function PortalDashboard() {
   const [user, setUser] = useState<UserContext | null>(null);
+  const [activeRole, setActiveRole] = useState<string | null>(null);
 
   useEffect(() => {
-    setUser(authClient.getUser());
+    const u = authClient.getUser();
+    setUser(u);
+    const cached = localStorage.getItem("nacentwin_active_role");
+    if (cached) {
+      setActiveRole(cached);
+    } else if (u?.role?.toUpperCase() === "SELLER") {
+      setActiveRole("SELLER");
+    } else if (u?.role?.toUpperCase() === "BUYER") {
+      setActiveRole("BUYER");
+    } else {
+      setActiveRole(u?.role ?? null);
+    }
   }, []);
 
-  if (user?.role === "VERIFIED_EXPERT") return <ExpertDashboard />;
+  const currentRole = (activeRole || user?.role || "").toUpperCase();
+
+  if (currentRole === "VERIFIED_EXPERT" || currentRole === "EXPERT") {
+    return <ExpertDashboard />;
+  }
+
+  if (currentRole === "SELLER") {
+    return <SellerDashboard user={user} />;
+  }
+
   return <GeneralPortalDashboard user={user} />;
 }

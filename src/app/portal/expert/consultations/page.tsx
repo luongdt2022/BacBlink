@@ -27,12 +27,9 @@ import { RoleGuard } from "@/components/auth/role-guard";
 import { AppButton } from "@/components/ui/design-system";
 import { Async, UXState } from "@/components/ui/async";
 import { authClient, UserContext } from "@/lib/auth-client";
-import {
-  ConsultationTicket,
-  INITIAL_PENDING_CONSULTATIONS,
-  INITIAL_SCHEDULED_CONSULTATIONS,
-  INITIAL_COMPLETED_CONSULTATIONS,
-} from "@/lib/consultations";
+import { useToast } from "@/components/common/toast";
+import { ConsultationTicket } from "@/lib/consultations";
+import { expertConsultationsApi } from "@/services/api/expert-consultations";
 
 export default function ExpertConsultationsPage() {
   return (
@@ -46,6 +43,7 @@ export default function ExpertConsultationsPage() {
 }
 
 function ExpertConsultationsContent() {
+  const toast = useToast();
   const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
   const [uxState, setUxState] = useState<UXState>("loading");
   const [activeTab, setActiveTab] = useState<"pending" | "scheduled" | "completed">("pending");
@@ -70,14 +68,15 @@ function ExpertConsultationsContent() {
 
   const [notification, setNotification] = useState<string | null>(null);
 
-  const loadData = () => {
+  const loadData = async () => {
     setUxState("loading");
     try {
       const user = authClient.getUser();
       setCurrentUser(user);
-      setPendingList(INITIAL_PENDING_CONSULTATIONS);
-      setScheduledList(INITIAL_SCHEDULED_CONSULTATIONS);
-      setCompletedList(INITIAL_COMPLETED_CONSULTATIONS);
+      const tickets = await expertConsultationsApi.getMyConsultations();
+      setPendingList(tickets.filter((t) => t.status === "PENDING"));
+      setScheduledList(tickets.filter((t) => t.status === "SCHEDULED"));
+      setCompletedList(tickets.filter((t) => t.status === "COMPLETED"));
       setUxState("idle");
     } catch {
       setUxState("error");
@@ -93,36 +92,56 @@ function ExpertConsultationsContent() {
   // Handlers
   const handleOpenAcceptModal = (ticket: ConsultationTicket) => {
     if (isPendingApprovalRole && ticket.source === "DEPT_ASSIGNED") {
-      alert("Hồ sơ Chuyên gia đang chờ Sở KH&CN phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác có thù lao Quỹ ĐMST.");
+      toast.warning(
+        "Hồ sơ Chuyên gia đang chờ Sở KH&CN phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác có thù lao Quỹ ĐMST.",
+        "Chờ Duyệt Hồ Sơ"
+      );
       return;
     }
     setAcceptingTicket(ticket);
     setExpertNote("");
   };
 
-  const handleConfirmAccept = (e: React.FormEvent) => {
+  const handleConfirmAccept = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!acceptingTicket) return;
 
-    const newScheduledTicket: ConsultationTicket = {
-      ...acceptingTicket,
-      status: "SCHEDULED",
-      meetingDate: scheduledDate,
-      meetingTime: scheduledTime,
-      meetingType,
-      meetingUrl,
-      canJoinMeeting: false,
-      meetingCountdownText: "Sẽ mở trước giờ họp 15 phút",
-      preReadMaterials: [
-        { name: "Phieu_khao_sat_nhu_cau_TNI.pdf", size: "1.2 MB", url: "#" },
-      ],
-    };
+    try {
+      await expertConsultationsApi.respondConsultation(acceptingTicket.id, {
+        action: "ACCEPT",
+        meetingDate: scheduledDate,
+        meetingTime: scheduledTime,
+        meetingType,
+        meetingUrl,
+        expertNote,
+      });
 
-    setScheduledList((prev) => [newScheduledTicket, ...prev]);
-    setPendingList((prev) => prev.filter((item) => item.id !== acceptingTicket.id));
-    setAcceptingTicket(null);
-    setNotification(`Đã chấp thuận lời mời từ ${newScheduledTicket.enterpriseName} và chuyển vào lịch hẹn!`);
-    setTimeout(() => setNotification(null), 5000);
+      const newScheduledTicket: ConsultationTicket = {
+        ...acceptingTicket,
+        status: "SCHEDULED",
+        meetingDate: scheduledDate,
+        meetingTime: scheduledTime,
+        meetingType,
+        meetingUrl,
+        canJoinMeeting: false,
+        meetingCountdownText: "Sẽ mở trước giờ họp 15 phút",
+        preReadMaterials: acceptingTicket.preReadMaterials || [
+          { name: "Phieu_khao_sat_nhu_cau_TNI.pdf", size: "1.2 MB", url: "#" },
+        ],
+      };
+
+      setScheduledList((prev) => [newScheduledTicket, ...prev]);
+      setPendingList((prev) => prev.filter((item) => item.id !== acceptingTicket.id));
+      setAcceptingTicket(null);
+      toast.success(
+        `Đã chấp thuận lời mời từ ${newScheduledTicket.enterpriseName} và chuyển vào lịch hẹn!`,
+        "Tiếp Nhận Thành Công"
+      );
+      setNotification(`Đã chấp thuận lời mời từ ${newScheduledTicket.enterpriseName} và chuyển vào lịch hẹn!`);
+      setTimeout(() => setNotification(null), 5000);
+    } catch (err: any) {
+      toast.error(err.message || "Lỗi khi chấp thuận lời mời tư vấn.");
+    }
   };
 
   const handleOpenRejectModal = (ticket: ConsultationTicket) => {
@@ -131,7 +150,7 @@ function ExpertConsultationsContent() {
     setRejectionError("");
   };
 
-  const handleConfirmReject = (e: React.FormEvent) => {
+  const handleConfirmReject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rejectingTicket) return;
 
@@ -140,10 +159,26 @@ function ExpertConsultationsContent() {
       return;
     }
 
-    setPendingList((prev) => prev.filter((item) => item.id !== rejectingTicket.id));
-    setRejectingTicket(null);
-    setNotification(`Đã từ chối lời mời tư vấn mã ${rejectingTicket.id}. Thông báo đã được gửi tới đối tác.`);
-    setTimeout(() => setNotification(null), 5000);
+    try {
+      await expertConsultationsApi.respondConsultation(rejectingTicket.id, {
+        action: "REJECT",
+        rejectionReasonCategory,
+        rejectionNote,
+      });
+
+      setPendingList((prev) => prev.filter((item) => item.id !== rejectingTicket.id));
+      setRejectingTicket(null);
+      setRejectionNote("");
+      setRejectionError("");
+      toast.info(
+        `Đã từ chối lời mời tư vấn mã ${rejectingTicket.id}. Thông báo đã được gửi tới đối tác.`,
+        "Đã Từ Chối"
+      );
+      setNotification(`Đã từ chối lời mời tư vấn mã ${rejectingTicket.id}. Thông báo đã được gửi tới đối tác.`);
+      setTimeout(() => setNotification(null), 5000);
+    } catch (err: any) {
+      toast.error(err.message || "Lỗi khi từ chối lời mời tư vấn.");
+    }
   };
 
   return (
@@ -577,16 +612,26 @@ function ExpertConsultationsContent() {
                       </div>
 
                       {/* Quyết toán thù lao Badge */}
-                      <div className="text-right shrink-0">
+                      <div className="text-right shrink-0 space-y-1">
                         {ticket.disbursementStatus === "DISBURSED" ? (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-caption font-bold border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>ĐÃ QUYẾT TOÁN THÙ LAO ({ticket.disbursementAmountVnd?.toLocaleString("vi-VN")} VNĐ)</span>
+                            <span>ĐÃ QUYẾT TOÁN THÙ LAO ({(ticket.disbursementAmountVnd || ticket.advisoryFeeVnd || 0).toLocaleString("vi-VN")} VNĐ)</span>
                           </span>
-                        ) : (
+                        ) : ticket.disbursementStatus === "AUDITING" ? (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-caption font-bold border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300">
                             <Clock className="w-3.5 h-3.5" />
                             <span>ĐANG ĐỐI SOÁT HỒ SƠ QUỸ ĐMST</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-caption font-bold border border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>CHƯA CÓ YÊU CẦU GIẢI NGÂN</span>
+                          </span>
+                        )}
+                        {ticket.feePayer && (
+                          <span className="block text-caption text-slate-500 font-medium">
+                            Nguồn chi trả: {ticket.feePayer}
                           </span>
                         )}
                       </div>

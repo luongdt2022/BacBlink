@@ -1,11 +1,21 @@
 import React from "react";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import PortalLayout from "./layout";
 import { authClient } from "@/lib/auth-client";
 
 let mockPathname = "/portal";
 let mockSearchParams = new URLSearchParams();
+const mockToastInfo = vi.fn();
+
+vi.mock("@/components/common/toast", () => ({
+  useToast: () => ({
+    info: mockToastInfo,
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+  }),
+}));
 
 vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname,
@@ -33,7 +43,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     cleanup();
   });
 
-  it("renders Buyer tailored workspace menu for BUYER role", () => {
+  it("renders Buyer tailored workspace menu for BUYER role (Delta v13: 3 Sections)", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u1",
       email: "buyer@example.com",
@@ -47,14 +57,39 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
       </PortalLayout>
     );
 
+    // 1. Header & Badge
     expect(screen.getByText("Bên Mua Công Nghệ")).toBeInTheDocument();
     expect(screen.getByText("Workspace Bên Mua")).toBeInTheDocument();
-    expect(screen.getByText("Bài toán Tìm mua")).toBeInTheDocument();
+
+    // 2. 3 Section Headers
+    expect(screen.getByText("Tác nghiệp Mua sắm")).toBeInTheDocument();
+    expect(screen.getByText("Khám phá & Ghép nối")).toBeInTheDocument();
+    expect(screen.getByText("Chẩn đoán & Hồ sơ")).toBeInTheDocument();
+
+    // 3. Section 1 Items
+    expect(screen.getByText("Tổng quan Mua sắm")).toBeInTheDocument();
+    expect(screen.getByText("Bài toán Đổi mới Công nghệ")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Bài toán Đổi mới Công nghệ/i })).toHaveAttribute("href", "/portal/buyer/demands");
+    expect(screen.getByText("3")).toBeInTheDocument(); // Badge count
+
     expect(screen.getByText("Tiến trình Hợp tác & MOU")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Tiến trình Hợp tác & MOU/i })).toHaveAttribute("href", "/portal/opportunities/pipeline");
+    expect(screen.getByText("1")).toBeInTheDocument(); // Badge count
+
+    // 4. Section 2 Item
+    expect(screen.getByText("Radar Ghép Nối AI")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Radar Ghép Nối AI/i })).toHaveAttribute("href", "/portal/matching/radar");
+    expect(screen.getByText("Mới")).toBeInTheDocument(); // Badge new
+
+    // 5. Section 3 Items
     expect(screen.getByText("Khảo sát Nhu cầu (TNI)")).toBeInTheDocument();
     expect(screen.getByText("Đánh giá Năng lực TT17")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
+
+    // Negative assertions
     expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
   });
 
   it("renders Seller tailored workspace menu for SELLER role", () => {
@@ -76,12 +111,16 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByText("Kho Công nghệ (TRL)")).toBeInTheDocument();
     expect(screen.getByText("Yêu cầu Kết nối Nhận được")).toBeInTheDocument();
     expect(screen.getByText("Tiến trình Chuyển giao & MOU")).toBeInTheDocument();
+    expect(screen.getByText("Đánh giá Năng lực TT17")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
+    expect(screen.queryByText("Hồ sơ Đơn vị / Viện Trường")).not.toBeInTheDocument();
     expect(screen.queryByText("Niêm yết Công nghệ mới")).not.toBeInTheDocument();
     expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bài toán Đổi mới Công nghệ")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
   });
 
-  it("renders Expert tailored workspace menu for VERIFIED_EXPERT role", () => {
+  it("renders Expert tailored workspace menu for VERIFIED_EXPERT role (CR-2026-006 Delta v1.3: 7 items in 3 sections)", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u3",
       email: "expert@example.com",
@@ -95,25 +134,56 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
       </PortalLayout>
     );
 
+    // 1. Header & Badge
     expect(screen.getByText("Chuyên Gia KH&CN")).toBeInTheDocument();
     expect(screen.getByText("Workspace Chuyên Gia")).toBeInTheDocument();
-    expect(screen.getByText("Tài khoản Chuyên gia")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Tài khoản Chuyên gia/i })).toHaveAttribute("href", "/portal/expert/account");
+
+    // 2. 3 Section Headers
+    expect(screen.getByText("Tác nghiệp hàng ngày")).toBeInTheDocument();
+    expect(screen.getByText("Kinh tế & Hợp đồng")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ & Quản trị")).toBeInTheDocument();
+
+    // 3. Khối 1: Tác nghiệp hàng ngày (4 items)
     expect(screen.getByText("Tổng quan Chuyên gia")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Tổng quan Chuyên gia/i })).toHaveAttribute("href", "/portal/expert/profile");
-    expect(screen.getByText("Hồ sơ LLKH của tôi")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Hồ sơ LLKH của tôi/i })).toHaveAttribute("href", "/portal/expert/profile/edit");
+
     expect(screen.getByText("Hộp Thư Tư Vấn & Kết Nối")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Hộp Thư Tư Vấn & Kết Nối/i })).toHaveAttribute("href", "/portal/expert/consultations");
+    expect(screen.getByText("2")).toBeInTheDocument(); // Badge count
+
     expect(screen.getByText("Radar Cơ hội Phù hợp (AI)")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Radar Cơ hội Phù hợp \(AI\)/i })).toHaveAttribute("href", "/portal/matching/radar");
+    expect(screen.getByText("Mới")).toBeInTheDocument(); // Badge new
+
     expect(screen.getByText("Dự án Đồng hành & Hợp tác")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Dự án Đồng hành & Hợp tác/i })).toHaveAttribute("href", "/portal/expert/projects");
+
+    // 4. Khối 2: Kinh tế & Hợp đồng (1 item disabled)
+    expect(screen.getByText("Hợp đồng & Thù lao")).toBeInTheDocument();
+    const contractsBtn = screen.getByRole("button", { name: /Hợp đồng & Thù lao/i });
+    expect(contractsBtn).toBeInTheDocument();
+    expect(contractsBtn).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByText("Sắp ra mắt")).toBeInTheDocument(); // Badge coming-soon
+
+    // Click disabled contracts button triggers toast without navigation
+    fireEvent.click(contractsBtn);
+    expect(mockToastInfo).toHaveBeenCalledWith(
+      "Tính năng Hợp đồng & Thù lao đang được phát triển theo lộ trình.",
+      "Sắp Ra Mắt"
+    );
+
+    // 5. Khối 3: Hồ sơ & Quản trị (2 items)
+    expect(screen.getByText("Hồ sơ LLKH của tôi")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Hồ sơ LLKH của tôi/i })).toHaveAttribute("href", "/portal/expert/profile/edit");
+
+    expect(screen.getByText("Cài đặt & Tài khoản")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Cài đặt & Tài khoản/i })).toHaveAttribute("href", "/portal/expert/account");
 
     // Negative assertions: Expert workspace must not link to legacy pipeline
     expect(document.querySelector('a[href*="/portal/opportunities/pipeline"]')).toBeNull();
     expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
     expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bài toán Đổi mới Công nghệ")).not.toBeInTheDocument();
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
   });
 

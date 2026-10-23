@@ -62,7 +62,7 @@ export default function AssessmentDashboardPage() {
             Đánh Giá Trình Độ & Năng Lực Công Nghệ
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-3xl">
-            Tự chẩn đoán 26 tiêu chí (5 nhóm T-E-O-R-I), đo lường hệ số đồng bộ $T_{"ĐB"}$ và nhận diện điểm nghẽn công nghệ cho doanh nghiệp sản xuất chế biến, chế tạo.
+            Tự chẩn đoán 26 tiêu chí (5 nhóm T-E-O-R-I), đo lường hệ số đồng bộ T_ĐB và nhận diện điểm nghẽn công nghệ cho doanh nghiệp sản xuất chế biến, chế tạo.
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function AssessmentDashboardPage() {
                   Phiếu Khảo Sát & Tự Chẩn Đoán Trình Độ Công Nghệ Sản Xuất
                 </h2>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Hệ thống hỗ trợ các doanh nghiệp ngành chế biến, chế tạo (VSIC C.10 – C.32) tự đánh giá toàn diện qua 26 tiêu chí, tính toán tức thời hệ số đồng bộ $T_ĐB$ và bóc tách các khâu điểm nghẽn dây chuyền.
+                  Hệ thống hỗ trợ các doanh nghiệp ngành chế biến, chế tạo (VSIC C.10 – C.32) tự đánh giá toàn diện qua 26 tiêu chí, tính toán tức thời hệ số đồng bộ T_ĐB và bóc tách các khâu điểm nghẽn dây chuyền.
                 </p>
                 <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60">
                   <p className="text-xs sm:text-sm text-emerald-900 dark:text-emerald-200 font-medium flex items-start gap-2">

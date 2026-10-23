@@ -39,4 +39,13 @@ describe("resolveExpertActiveMenu (T131 & T135)", () => {
     expect(resolveExpertActiveMenu("/portal/expert/projects/PRJ-EXP-2026-001")).toBe("projects");
     expect(resolveExpertActiveMenu("/portal/expert/projects")).not.toBe("consultations");
   });
+
+  it("resolves contracts route properly without colliding with other routes (CR-2026-006)", () => {
+    expect(resolveExpertActiveMenu("/portal/expert/contracts")).toBe("contracts");
+    expect(resolveExpertActiveMenu("/portal/expert/contracts/HD-2026-001")).toBe("contracts");
+    expect(resolveExpertActiveMenu("/portal/expert/contracts?tab=active")).toBe("contracts");
+    expect(resolveExpertActiveMenu("/portal/expert/contracts")).not.toBe("projects");
+    expect(resolveExpertActiveMenu("/portal/expert/contracts")).not.toBe("consultations");
+    expect(resolveExpertActiveMenu("/portal/expert/contracts")).not.toBe("profile");
+  });
 });

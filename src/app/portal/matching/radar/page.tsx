@@ -26,8 +26,10 @@ import { MatchCandidate, ConnectionRequest } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
 import ConnectionRequestModal from './ConnectionRequestModal';
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
+import { useToast } from "@/components/common/toast";
 
 export default function MatchingRadarPage() {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'RADAR' | 'REQUESTS'>('RADAR');
   const [candidates, setCandidates] = useState<MatchCandidate[]>([]);
   const [requests, setRequests] = useState<ConnectionRequest[]>([]);
@@ -38,6 +40,7 @@ export default function MatchingRadarPage() {
   const [sector, setSector] = useState('ALL');
   const [minScore, setMinScore] = useState<number>(0);
   const [search, setSearch] = useState('');
+  const [selectedDemandCode, setSelectedDemandCode] = useState<string>('ALL');
 
   // Modal State
   const [selectedCandidate, setSelectedCandidate] = useState<MatchCandidate | null>(null);
@@ -86,7 +89,7 @@ export default function MatchingRadarPage() {
       fetchRadarData();
       setTimeout(() => setActionSuccessMsg(null), 4000);
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi phản hồi yêu cầu.');
+      toast.error(err.message || "Lỗi khi phản hồi yêu cầu kết nối.", "Thao Tác Thất Bại");
     }
   };
 
@@ -116,12 +119,6 @@ export default function MatchingRadarPage() {
               className="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm backdrop-blur-sm hover:scale-[1.02]"
             >
               <Kanban className="w-4 h-4 text-brand-200" /> Pipeline Cơ Hội (Kanban)
-            </Link>
-            <Link
-              href="/gov/opportunities"
-              className="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-300/40 text-emerald-200 text-xs font-bold flex items-center gap-2 transition-all backdrop-blur-sm"
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-300" /> Cổng Giám Sát Sở KH&CN
             </Link>
           </div>
         </div>
@@ -175,7 +172,7 @@ export default function MatchingRadarPage() {
 
         <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Thuật toán tích hợp TNI $\ge$ 80 + SHTT TRL 7–9</span>
+          <span>Thuật toán tích hợp TNI ≥ 80 + SHTT TRL 7–9</span>
         </div>
       </div>
 
@@ -211,6 +208,30 @@ export default function MatchingRadarPage() {
             </form>
 
             <div className="flex flex-wrap items-center gap-3">
+              {/* My Demand Context Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Bài toán nguồn:</span>
+                <select
+                  value={selectedDemandCode}
+                  onChange={(e) => setSelectedDemandCode(e.target.value)}
+                  className="h-11 px-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer max-w-[200px] truncate"
+                  title="Chọn bài toán nguồn để lọc kết quả Radar"
+                >
+                  <option value="ALL">Tất cả bài toán ({candidates.length})</option>
+                  {Array.from(
+                    new Map(
+                      candidates
+                        .filter((c) => c.demandCode)
+                        .map((c) => [c.demandCode, c.demandTitle || c.demandCode])
+                    ).entries()
+                  ).map(([code, title]) => (
+                    <option key={code} value={code}>
+                      {code}: {title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Ngành TT17:</span>
                 <select
@@ -287,7 +308,9 @@ export default function MatchingRadarPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {candidates.map((c) => {
+              {candidates
+                .filter((c) => selectedDemandCode === 'ALL' || c.demandCode === selectedDemandCode)
+                .map((c) => {
                 const isHighMatch = c.matchScore >= 90;
                 const isMediumMatch = c.matchScore >= 80;
 
@@ -381,6 +404,34 @@ export default function MatchingRadarPage() {
                           <p className="text-xs font-extrabold text-slate-900 dark:text-white line-clamp-2 leading-relaxed">
                             {c.offerTitle}
                           </p>
+                        </div>
+                      </div>
+
+                      {/* Explainable AI Breakdown (XAI) */}
+                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 font-bold">
+                          <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300">
+                            <Sparkles className="w-3.5 h-3.5 text-brand-600" /> Giải trình độ tương thích AI:
+                          </span>
+                          <span className="text-brand-700 dark:text-cyan-400 font-extrabold">{c.matchScore}% Tổng Hợp</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-semibold text-slate-600 dark:text-slate-300">
+                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                            <span className="block text-[10px] text-slate-400">Lĩnh vực:</span>
+                            <span className="text-emerald-700 dark:text-emerald-400 font-bold">100% Khớp</span>
+                          </div>
+                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                            <span className="block text-[10px] text-slate-400">Mức TRL:</span>
+                            <span className="text-brand-700 dark:text-cyan-400 font-bold">TRL {c.trlLevel}</span>
+                          </div>
+                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                            <span className="block text-[10px] text-slate-400">Cấp thiết TNI:</span>
+                            <span className="text-rose-600 dark:text-rose-400 font-bold">{c.tniScore}/100</span>
+                          </div>
+                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                            <span className="block text-[10px] text-slate-400">Bảo hộ SHTT:</span>
+                            <span className="text-amber-700 dark:text-amber-400 font-bold">{c.ipStatus === 'PATENT_GRANTED' ? 'Đã cấp bằng' : 'Đang xét'}</span>
+                          </div>
                         </div>
                       </div>
                     </div>

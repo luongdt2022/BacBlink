@@ -1,6 +1,6 @@
 /**
  * Expert Workspace Active Menu Resolver
- * Triệt tiêu xung đột active menu giữa 6 route chuyên biệt theo PO-DEC-20261014-02
+ * Triệt tiêu xung đột active menu giữa 7 route chuyên biệt theo CR-2026-006 (Delta v1.3)
  */
 
 export type ExpertMenuKey =
@@ -9,7 +9,8 @@ export type ExpertMenuKey =
   | "profile-edit"
   | "consultations"
   | "radar"
-  | "projects";
+  | "projects"
+  | "contracts";
 
 export function resolveExpertActiveMenu(pathname: string): ExpertMenuKey {
   if (!pathname) return "profile";
@@ -48,6 +49,10 @@ export function resolveExpertActiveMenu(pathname: string): ExpertMenuKey {
 
   if (cleanPath === "/portal/expert/projects" || cleanPath.startsWith("/portal/expert/projects/")) {
     return "projects";
+  }
+
+  if (cleanPath === "/portal/expert/contracts" || cleanPath.startsWith("/portal/expert/contracts/")) {
+    return "contracts";
   }
 
   // Fallback if inside expert namespace

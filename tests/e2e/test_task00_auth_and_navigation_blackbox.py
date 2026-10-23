@@ -139,7 +139,7 @@ def run_task00_blackbox_suite():
                 "email": "buyer.user@demo.nacentech.vn",
                 "password": "Password@123",
                 "target_url": f"{BASE_WEB_URL}/portal",
-                "expected_menu": "Bài toán Tìm mua",
+                "expected_menu": "Bài toán Đổi mới Công nghệ",
                 "secondary_menu": "Khảo sát Nhu cầu (TNI)"
             },
             {

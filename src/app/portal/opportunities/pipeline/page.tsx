@@ -227,13 +227,6 @@ export default function OpportunitiesPipelinePage() {
               <Sparkles className="w-4 h-4 text-teal-300" />
               Radar Ghép Nối AI
             </Link>
-            <Link
-              href="/gov/opportunities"
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-extrabold flex items-center gap-2 transition shadow-lg shadow-emerald-950/20"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              Giám Sát Sở KH&CN
-            </Link>
           </div>
         </div>
       </section>

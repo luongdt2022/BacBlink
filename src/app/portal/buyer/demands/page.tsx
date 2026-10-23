@@ -63,6 +63,8 @@ export default function BuyerDemandsPage() {
   const [closingDemandId, setClosingDemandId] = useState<string | null>(null);
   const [isClosingSubmitting, setIsClosingSubmitting] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const pageSize = 5;
 
   const fetchDemands = async () => {
     setAsyncState('loading');
@@ -188,6 +190,10 @@ export default function BuyerDemandsPage() {
 
   const isBookmarkedTab = filterStatus === 'BOOKMARKED';
   const displayList = isBookmarkedTab ? bookmarkedDemands : filteredList;
+  const totalItems = displayList.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const validCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedList = displayList.slice((validCurrentPage - 1) * pageSize, validCurrentPage * pageSize);
 
   const verifiedCount = demands.filter(d => d.status === 'VERIFIED').length;
   const pendingCount = demands.filter(d => d.status === 'PENDING').length;
@@ -198,7 +204,7 @@ export default function BuyerDemandsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
-      {/* WORKSPACE SUB-HEADER (Chuẩn theo Wireframe Basic Design) */}
+      {/* WORKSPACE SUB-HEADER (Chuẩn theo Wireframe Basic Design Delta v13) */}
       <section className="bg-white dark:bg-slate-900 border-b border-border-default dark:border-slate-800 py-6 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -208,10 +214,10 @@ export default function BuyerDemandsPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-extrabold tracking-tight text-text-primary dark:text-white text-xl">
-                  Bàn Làm Việc Doanh Nghiệp (Buyer Workspace)
+                  Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ
                 </h1>
                 <span className="rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 text-xs font-bold px-2.5 py-0.5 border border-brand-200 dark:border-brand-800">
-                  TASK-03
+                  BÊN MUA CÔNG NGHỆ
                 </span>
               </div>
               <p className="text-xs text-text-secondary dark:text-slate-400 mt-0.5">
@@ -298,7 +304,10 @@ export default function BuyerDemandsPage() {
         <div className="surface-card p-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
             <button
-              onClick={() => setFilterStatus('ALL')}
+              onClick={() => {
+                setFilterStatus('ALL');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1.5 rounded-lg transition ${
                 filterStatus === 'ALL'
                   ? 'bg-white dark:bg-slate-700 text-brand-700 dark:text-white shadow-sm'
@@ -308,7 +317,10 @@ export default function BuyerDemandsPage() {
               Tất cả ({demands.length})
             </button>
             <button
-              onClick={() => setFilterStatus('VERIFIED')}
+              onClick={() => {
+                setFilterStatus('VERIFIED');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1.5 rounded-lg transition ${
                 filterStatus === 'VERIFIED'
                   ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm'
@@ -318,7 +330,10 @@ export default function BuyerDemandsPage() {
               Đang mở tìm cung ({verifiedCount})
             </button>
             <button
-              onClick={() => setFilterStatus('PENDING')}
+              onClick={() => {
+                setFilterStatus('PENDING');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1.5 rounded-lg transition ${
                 filterStatus === 'PENDING'
                   ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-sm'
@@ -328,7 +343,10 @@ export default function BuyerDemandsPage() {
               Chờ thẩm định ({pendingCount})
             </button>
             <button
-              onClick={() => setFilterStatus('CLOSED')}
+              onClick={() => {
+                setFilterStatus('CLOSED');
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1.5 rounded-lg transition ${
                 filterStatus === 'CLOSED'
                   ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 shadow-sm'
@@ -340,6 +358,7 @@ export default function BuyerDemandsPage() {
             <button
               onClick={() => {
                 setFilterStatus('BOOKMARKED');
+                setCurrentPage(1);
                 fetchBookmarkedDemands();
               }}
               className={`px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 ${
@@ -428,7 +447,7 @@ export default function BuyerDemandsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {displayList.map((item) => {
+                  {paginatedList.map((item) => {
                     const tniMeta = getTniClassification(item.tniScore || 70);
                     return (
                       <tr
@@ -491,7 +510,7 @@ export default function BuyerDemandsPage() {
                             ) : (
                               <>
                                 {item.status === 'PENDING' && (
-                                  <button
+                                   <button
                                     onClick={() => setEditingDemand(item)}
                                     className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 hover:underline font-bold text-xs"
                                     title="Chỉnh sửa bài toán"
@@ -519,6 +538,44 @@ export default function BuyerDemandsPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* PAGINATION CONTROLS */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                <p className="text-xs text-text-secondary dark:text-slate-400">
+                  Hiển thị <strong>{(validCurrentPage - 1) * pageSize + 1}</strong> – <strong>{Math.min(validCurrentPage * pageSize, totalItems)}</strong> trong tổng số <strong>{totalItems}</strong> bài toán
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={validCurrentPage === 1}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-800 transition text-text-primary dark:text-white"
+                  >
+                    Trang trước
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
+                        validCurrentPage === page
+                          ? 'bg-brand-700 text-white shadow-sm'
+                          : 'border border-slate-200 dark:border-slate-700 text-text-secondary dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={validCurrentPage === totalPages}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 dark:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-800 transition text-text-primary dark:text-white"
+                  >
+                    Trang sau
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </Async>
       </main>

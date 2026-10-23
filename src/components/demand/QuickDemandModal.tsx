@@ -74,6 +74,14 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
     needConsulting: false,
     // 10. Loại hình tiếp nhận
     demandTypeCode: 'NC01',
+    // 11. Dải TRL mong muốn tiếp nhận
+    targetTrlRange: 'TRL_4_6',
+    // 12. Chế độ bảo mật danh tính
+    isConfidential: false,
+    // 13. Thời hạn nhận đề xuất
+    deadlineDate: '',
+    // 14. File đính kèm RFP
+    rfpFileName: '',
   };
 
   const initialTniValues: TniValues = {
@@ -127,6 +135,10 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
         techGroupCode: formData.techGroupCode,
         demandTypeCode: formData.demandTypeCode,
         budgetRange: formData.budgetRange,
+        targetTrlRange: formData.targetTrlRange,
+        isConfidential: formData.isConfidential,
+        deadlineDate: formData.deadlineDate || null,
+        rfpFileName: formData.rfpFileName || null,
         urgencyScore: tniValues.urgency,
         impactScore: tniValues.impact,
         investmentCapacity: tniValues.investment,
@@ -416,6 +428,70 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                         code: dt.code,
                         label: dt.name
                       }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Hàng: 11. Target TRL & 12. Thời hạn (Deadline) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end pt-1">
+                  {/* 11. Target TRL */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      11. Mức TRL mong muốn tiếp nhận
+                    </label>
+                    <select
+                      value={formData.targetTrlRange}
+                      onChange={(e) => setFormData({ ...formData, targetTrlRange: e.target.value })}
+                      className="form-control w-full text-xs font-medium"
+                    >
+                      <option value="TRL_1_3">TRL 1–3: Nghiên cứu Lab / Thử nghiệm</option>
+                      <option value="TRL_4_6">TRL 4–6: Thử nghiệm Pilot / Mô hình thực tế</option>
+                      <option value="TRL_7_9">TRL 7–9: Công nghệ hoàn thiện / Thương mại hóa</option>
+                    </select>
+                  </div>
+
+                  {/* 12. Thời hạn (Deadline) */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      12. Hạn chót nhận chào giải pháp
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.deadlineDate}
+                      onChange={(e) => setFormData({ ...formData, deadlineDate: e.target.value })}
+                      className="form-control w-full text-xs font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* Hàng: 13. Bảo mật ẩn danh & 14. File RFP đính kèm */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end pt-1">
+                  {/* 13. Chế độ bảo mật ẩn danh */}
+                  <div>
+                    <label className="flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800/70 transition h-11">
+                      <input
+                        type="checkbox"
+                        checked={formData.isConfidential}
+                        onChange={(e) => setFormData({ ...formData, isConfidential: e.target.checked })}
+                        className="w-4 h-4 rounded accent-brand-700 cursor-pointer"
+                      />
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        Đăng ẩn danh tên công ty
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* 14. Đính kèm RFP */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      13. Tài liệu yêu cầu kỹ thuật (RFP)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.rfpFileName}
+                      onChange={(e) => setFormData({ ...formData, rfpFileName: e.target.value })}
+                      placeholder="Tên tệp đính kèm (VD: RFP_HeThongHan.pdf)"
+                      className="form-control w-full text-xs font-medium"
                     />
                   </div>
                 </div>

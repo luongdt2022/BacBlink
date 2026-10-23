@@ -241,6 +241,66 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
     expect(await screen.findByText(/Đã lưu cài đặt trải nghiệm và cấu hình thông báo thành công/i)).toBeInTheDocument();
   });
 
+  it("hiển thị 'Chưa cập nhật' khi số điện thoại rỗng (PDPD không bịa số 0912****89)", async () => {
+    vi.spyOn(authClient, "getUser").mockReturnValue({
+      id: "u-expert",
+      email: "nguyenvanan@nacentech.gov.vn",
+      fullName: "GS. TSKH. Nguyễn Văn An",
+      role: "VERIFIED_EXPERT",
+    });
+    vi.spyOn(expertApi, "getMyExpertDetail").mockResolvedValue({
+      ...mockPrivateDetail,
+      phone: null,
+    });
+    vi.spyOn(expertApi, "getMyExpertCompleteness").mockResolvedValue(mockCompleteness);
+
+    render(<ExpertAccountPage />);
+
+    expect(await screen.findByDisplayValue("Chưa cập nhật")).toBeInTheDocument();
+    expect(screen.queryByDisplayValue(/0912\*\*\*\*89/)).not.toBeInTheDocument();
+  });
+
+  it("hiển thị nhãn phụ (Mô phỏng phiên thiết bị) tại khối Active Sessions", async () => {
+    vi.spyOn(authClient, "getUser").mockReturnValue({
+      id: "u-expert",
+      email: "nguyenvanan@nacentech.gov.vn",
+      fullName: "GS. TSKH. Nguyễn Văn An",
+      role: "VERIFIED_EXPERT",
+    });
+    vi.spyOn(expertApi, "getMyExpertDetail").mockResolvedValue(mockPrivateDetail);
+    vi.spyOn(expertApi, "getMyExpertCompleteness").mockResolvedValue(mockCompleteness);
+
+    render(<ExpertAccountPage />);
+
+    expect(await screen.findByText(/Mô phỏng phiên thiết bị/i)).toBeInTheDocument();
+  });
+
+  it("khôi phục theme và cỡ chữ từ localStorage khi mount và lưu vào localStorage khi chọn", async () => {
+    localStorage.setItem("expert_theme_pref", "dark");
+    localStorage.setItem("expert_fontsize_pref", "125%");
+
+    vi.spyOn(authClient, "getUser").mockReturnValue({
+      id: "u-expert",
+      email: "nguyenvanan@nacentech.gov.vn",
+      fullName: "GS. TSKH. Nguyễn Văn An",
+      role: "VERIFIED_EXPERT",
+    });
+    vi.spyOn(expertApi, "getMyExpertDetail").mockResolvedValue(mockPrivateDetail);
+    vi.spyOn(expertApi, "getMyExpertCompleteness").mockResolvedValue(mockCompleteness);
+
+    render(<ExpertAccountPage />);
+
+    expect(await screen.findByText("Tài Khoản Chuyên Gia KH&CN")).toBeInTheDocument();
+
+    // Chọn theme Sáng -> lưu ngay vào localStorage
+    fireEvent.click(screen.getByText("Sáng"));
+    expect(localStorage.getItem("expert_theme_pref")).toBe("light");
+
+    // Chọn cỡ chữ 110% -> lưu ngay vào localStorage
+    fireEvent.click(screen.getByText("110%"));
+    expect(localStorage.getItem("expert_fontsize_pref")).toBe("110%");
+  });
+
   it("hiển thị UX State Error khi API thất bại và hỗ trợ nút Thử lại (Retry)", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",

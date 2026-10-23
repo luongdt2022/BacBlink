@@ -44,7 +44,7 @@ export default function ExpertAccountPage() {
 }
 
 function maskPhone(phone?: string | null): string {
-  if (!phone) return "0912****89 (Đã bảo vệ PDPD)";
+  if (!phone) return "Chưa cập nhật";
   const cleaned = phone.replace(/\s+/g, "");
   if (cleaned.length >= 10) {
     return `${cleaned.slice(0, 4)}****${cleaned.slice(-2)} (Đã bảo vệ PDPD)`;
@@ -159,6 +159,16 @@ function ExpertAccountContent() {
 
   useEffect(() => {
     fetchData();
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("expert_theme_pref");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        setThemePreference(savedTheme);
+      }
+      const savedFontSize = localStorage.getItem("expert_fontsize_pref");
+      if (savedFontSize === "100%" || savedFontSize === "110%" || savedFontSize === "125%") {
+        setFontSizePreference(savedFontSize);
+      }
+    }
   }, []);
 
   // Handle toggle accepting consultation
@@ -221,6 +231,10 @@ function ExpertAccountContent() {
   // Save general preferences
   const handleSavePreferences = () => {
     setIsUpdating(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("expert_theme_pref", themePreference);
+      localStorage.setItem("expert_fontsize_pref", fontSizePreference);
+    }
     setTimeout(() => {
       setIsUpdating(false);
       setActionNotice({
@@ -644,7 +658,7 @@ function ExpertAccountContent() {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <div>
                 <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  Phiên Đăng Nhập Hiện Hoạt (Active Sessions)
+                  Phiên Đăng Nhập Hiện Hoạt (Active Sessions) <span className="normal-case font-medium text-slate-500 dark:text-slate-400">(Mô phỏng phiên thiết bị)</span>
                 </h3>
                 <p className="text-caption text-slate-500 dark:text-slate-400">
                   Giám sát các thiết bị đang truy cập tài khoản chuyên gia để bảo vệ dữ liệu PDPD.
@@ -717,7 +731,10 @@ function ExpertAccountContent() {
               <div className="flex gap-2 text-xs">
                 <button
                   type="button"
-                  onClick={() => setThemePreference("light")}
+                  onClick={() => {
+                    setThemePreference("light");
+                    if (typeof window !== "undefined") localStorage.setItem("expert_theme_pref", "light");
+                  }}
                   className={`flex-1 py-1.5 rounded-lg font-bold transition shadow-sm ${
                     themePreference === "light"
                       ? "bg-white dark:bg-slate-700 border border-brand-500 text-brand-700 dark:text-brand-300"
@@ -728,7 +745,10 @@ function ExpertAccountContent() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setThemePreference("dark")}
+                  onClick={() => {
+                    setThemePreference("dark");
+                    if (typeof window !== "undefined") localStorage.setItem("expert_theme_pref", "dark");
+                  }}
                   className={`flex-1 py-1.5 rounded-lg font-bold transition shadow-sm ${
                     themePreference === "dark"
                       ? "bg-white dark:bg-slate-700 border border-brand-500 text-brand-700 dark:text-brand-300"
@@ -747,7 +767,10 @@ function ExpertAccountContent() {
                   <button
                     key={size}
                     type="button"
-                    onClick={() => setFontSizePreference(size)}
+                    onClick={() => {
+                      setFontSizePreference(size);
+                      if (typeof window !== "undefined") localStorage.setItem("expert_fontsize_pref", size);
+                    }}
                     className={`flex-1 py-1.5 rounded-lg font-bold transition shadow-sm ${
                       fontSizePreference === size
                         ? "bg-white dark:bg-slate-700 border border-brand-500 text-brand-700 dark:text-brand-300"

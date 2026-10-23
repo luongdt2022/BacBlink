@@ -9,6 +9,7 @@ import {
   UpsertEnterpriseRequest,
 } from "../../../../lib/enterprise-client";
 import { SearchableProvinceCombobox } from "@/components/common/searchable-province-combobox";
+import { ConfirmModal } from "@/components/common/confirm-modal";
 
 const TABS = [
   { id: "legal", label: "1. Pháp lý & Định danh" },
@@ -27,6 +28,7 @@ export default function EnterpriseOwnerProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -52,7 +54,7 @@ export default function EnterpriseOwnerProfilePage() {
     workforceScale: "10-50 người",
     revenueRange: "10 - 50 tỷ VNĐ",
     operatingZone: "",
-    highQualificationRatio: "40%",
+    highQualificationRatio: "",
     hasRdUnit: false,
     hasRdBudget: false,
     rdBudgetAmount: 0,
@@ -87,7 +89,7 @@ export default function EnterpriseOwnerProfilePage() {
         workforceScale: res.workforceScale || "10-50 người",
         revenueRange: res.revenueRange || "10 - 50 tỷ VNĐ",
         operatingZone: res.operatingZone || "",
-        highQualificationRatio: res.highQualificationRatio || "40%",
+        highQualificationRatio: res.highQualificationRatio || "",
         hasRdUnit: !!res.hasRdUnit,
         hasRdBudget: !!res.hasRdBudget,
         rdBudgetAmount: res.rdBudgetAmount || 0,
@@ -123,10 +125,8 @@ export default function EnterpriseOwnerProfilePage() {
     }
   };
 
-  const handleSubmitVerification = async () => {
-    if (!confirm("Bạn có chắc chắn muốn nộp hồ sơ này đến Sở KH&CN để thẩm định không?")) {
-      return;
-    }
+  const handleConfirmSubmitVerification = async () => {
+    setShowSubmitModal(false);
     try {
       setSubmitting(true);
       setError(null);
@@ -199,7 +199,7 @@ export default function EnterpriseOwnerProfilePage() {
               {saving ? "Đang lưu..." : "💾 Lưu nháp"}
             </button>
             <button
-              onClick={handleSubmitVerification}
+              onClick={() => setShowSubmitModal(true)}
               disabled={saving || submitting || profile?.status === "Verified"}
               className="px-4 py-2 text-xs font-semibold rounded-xl bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition disabled:opacity-50"
             >
@@ -650,7 +650,24 @@ export default function EnterpriseOwnerProfilePage() {
             {/* TAB 9: Điểm nghẽn */}
             {activeTab === "bottlenecks" && (
               <div className="space-y-4">
-                <h3 className="font-bold text-slate-800 text-sm">Nhóm 9: Điểm nghẽn lớn nhất trong hoạt động đổi mới sáng tạo</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-slate-800 text-sm">Nhóm 9: Điểm nghẽn lớn nhất trong hoạt động đổi mới sáng tạo</h3>
+                  <Link
+                    href="/portal/buyer/demands"
+                    className="text-xs font-bold text-brand-600 hover:text-brand-700 underline flex items-center gap-1"
+                  >
+                    Tạo Bài Toán Đổi Mới Công Nghệ &rarr;
+                  </Link>
+                </div>
+                <div className="p-3 bg-brand-50/60 border border-brand-200/80 rounded-xl text-xs text-brand-900 flex items-center justify-between">
+                  <span>Bạn có sự cố máy móc hoặc điểm nghẽn sản xuất cụ thể cần Viện - Trường giải quyết?</span>
+                  <Link
+                    href="/khao-sat-nhu-cau"
+                    className="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-bold shrink-0 shadow-sm"
+                  >
+                    Kê khai phiếu TNI 4 Bước
+                  </Link>
+                </div>
                 <div className="space-y-2 text-xs">
                   {[
                     "Thiếu vốn và khó tiếp cận nguồn vốn ưu đãi ĐMST",
@@ -721,6 +738,18 @@ export default function EnterpriseOwnerProfilePage() {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showSubmitModal}
+        onClose={() => setShowSubmitModal(false)}
+        onConfirm={handleConfirmSubmitVerification}
+        title="Xác nhận nộp hồ sơ thẩm định"
+        message="Hồ sơ sau khi nộp sẽ được chuyển trực tiếp đến Sở KH&CN để cán bộ thụ lý đối soát. Trong thời gian thẩm định, quý đơn vị vẫn có thể cập nhật thông tin bổ sung khi được yêu cầu."
+        confirmText="Xác nhận nộp hồ sơ"
+        cancelText="Để tôi kiểm tra lại"
+        variant="info"
+        loading={submitting}
+      />
     </main>
   );
 }

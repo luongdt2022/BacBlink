@@ -3,6 +3,7 @@ import { vi, describe, expect, it, beforeEach, afterEach } from "vitest";
 import type { ReactNode } from "react";
 import ExpertProjectsPage from "./page";
 import { authClient } from "@/lib/auth-client";
+import { INITIAL_EXPERT_PROJECTS } from "@/lib/expert-projects";
 
 vi.mock("next/link", () => ({
   default: ({ children, href }: { children: ReactNode; href: string }) => <a href={href}>{children}</a>,
@@ -12,18 +13,35 @@ vi.mock("@/components/auth/role-guard", () => ({
   RoleGuard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-describe("ExpertProjectsPage (T133 & T135)", () => {
+describe("ExpertProjectsPage (T133 & T135 & T164)", () => {
   beforeEach(() => {
     cleanup();
     vi.clearAllMocks();
     localStorage.clear();
+
+    vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/v1/experts/me/projects")) {
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: INITIAL_EXPERT_PROJECTS,
+          }),
+        } as Response;
+      }
+      return {
+        ok: true,
+        json: async () => ({ success: true, data: [] }),
+      } as Response;
+    });
   });
 
   afterEach(() => {
     cleanup();
   });
 
-  it("renders 5 TRL Kanban columns and project cards correctly", () => {
+  it("renders 5 TRL Kanban columns and project cards correctly", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
       email: "tuan.nv@nacentech.vn",
@@ -35,8 +53,8 @@ describe("ExpertProjectsPage (T133 & T135)", () => {
 
     expect(screen.getByText(/Dự Án Đồng Hành & Hợp Tác \(Thang Đo TRL 1-9\)/i)).toBeInTheDocument();
 
-    // 5 TRL Columns
-    expect(screen.getByText("Tiếp Nhận & Ký NDA")).toBeInTheDocument();
+    // 5 TRL Columns loaded from API
+    expect(await screen.findByText("Tiếp Nhận & Ký NDA")).toBeInTheDocument();
     expect(screen.getByText("Đàm Phán Deal Room 1-1")).toBeInTheDocument();
     expect(screen.getByText("Thẩm Định & Thử Nghiệm TRL")).toBeInTheDocument();
     expect(screen.getByText("Dự Thảo & Ký Kết MOU")).toBeInTheDocument();
@@ -60,7 +78,7 @@ describe("ExpertProjectsPage (T133 & T135)", () => {
     expect(screen.getByText("Khám Phá Radar AI")).toBeInTheDocument();
   });
 
-  it("strictly DOES NOT contain 'Giám sát Sở KH&CN' button on expert workspace", () => {
+  it("strictly DOES NOT contain 'Giám sát Sở KH&CN' button on expert workspace", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
       email: "tuan.nv@nacentech.vn",
@@ -69,13 +87,15 @@ describe("ExpertProjectsPage (T133 & T135)", () => {
     });
 
     render(<ExpertProjectsPage />);
+
+    expect(screen.getByText(/Dự Án Đồng Hành & Hợp Tác/i)).toBeInTheDocument();
 
     // Strict Negative Assertion: Giám sát Sở KH&CN is forbidden on expert workspace
     expect(screen.queryByText(/Giám Sát Sở KH&CN/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Giám Sát Sở KH&CN/i })).not.toBeInTheDocument();
   });
 
-  it("strictly DOES NOT contain rudimentary text 'Trống' on empty columns and renders graphical empty state with Radar CTA", () => {
+  it("strictly DOES NOT contain rudimentary text 'Trống' on empty columns and renders graphical empty state with Radar CTA", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
       email: "tuan.nv@nacentech.vn",
@@ -84,6 +104,8 @@ describe("ExpertProjectsPage (T133 & T135)", () => {
     });
 
     render(<ExpertProjectsPage />);
+
+    await screen.findByText("PRJ-EXP-2026-042");
 
     // Strict Negative Assertion: No crude 'Trống' text anywhere
     expect(screen.queryByText(/^Trống$/i)).not.toBeInTheDocument();
@@ -97,7 +119,7 @@ describe("ExpertProjectsPage (T133 & T135)", () => {
     expect(screen.getAllByRole("button", { name: /Đặt Lại Bộ Lọc/i }).length).toBeGreaterThan(0);
   });
 
-  it("filters projects by search query and TRL range", () => {
+  it("filters projects by search query and TRL range", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
       email: "tuan.nv@nacentech.vn",
@@ -106,6 +128,8 @@ describe("ExpertProjectsPage (T133 & T135)", () => {
     });
 
     render(<ExpertProjectsPage />);
+
+    await screen.findByText("PRJ-EXP-2026-042");
 
     const searchInput = screen.getByPlaceholderText(/Tìm theo mã dự án PRJ-EXP-/i);
     fireEvent.change(searchInput, { target: { value: "PRJ-EXP-2026-042" } });

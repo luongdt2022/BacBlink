@@ -30,7 +30,7 @@ describe("QuickDemandModal — 10 Fields Section B & TNI", () => {
     expect(screen.getByText("Đăng Bài Toán Kỹ Thuật Cần Tìm Cung")).toBeInTheDocument();
     expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
 
-    // 10 Fields in exact sequence
+    // 10 Fields in exact sequence + 4 Advanced Fields (Delta v13)
     expect(screen.getByText(/1\. Tên công nghệ \/ thiết bị/i)).toBeInTheDocument();
     expect(screen.getByText(/2\. Mô tả chi tiết thêm về nhu cầu/i)).toBeInTheDocument();
     expect(screen.getByText(/3\. Ngân sách/i)).toBeInTheDocument();
@@ -41,6 +41,10 @@ describe("QuickDemandModal — 10 Fields Section B & TNI", () => {
     expect(screen.getByText(/8\. Mục tiêu kỹ thuật và kinh tế kỳ vọng sau khi có công nghệ\/ thiết bị/i)).toBeInTheDocument();
     expect(screen.getByText(/9\. Cần chuyên gia tư vấn/i)).toBeInTheDocument();
     expect(screen.getByText(/10\. Loại hình tiếp nhận/i)).toBeInTheDocument();
+    expect(screen.getByText(/11\. Mức TRL mong muốn tiếp nhận/i)).toBeInTheDocument();
+    expect(screen.getByText(/12\. Hạn chót nhận chào giải pháp/i)).toBeInTheDocument();
+    expect(screen.getByText(/Đăng ẩn danh tên công ty/i)).toBeInTheDocument();
+    expect(screen.getByText(/13\. Tài liệu yêu cầu kỹ thuật \(RFP\)/i)).toBeInTheDocument();
 
     // Right Column: TNI section preserved
     expect(screen.getByText("2. Chỉ Số Nhu Cầu Đổi Mới (TNI)")).toBeInTheDocument();

@@ -182,7 +182,7 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
           }`}
         >
           <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">Bên Mua (Buyer)</span>
+          <span className="truncate">Bên Mua</span>
           {activeRole === 'BUYER' && <Check className="w-3 h-3 shrink-0 ml-auto" />}
         </button>
 
@@ -197,7 +197,7 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
           }`}
         >
           <Store className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">Bên Bán (Seller)</span>
+          <span className="truncate">Bên Bán</span>
           {activeRole === 'SELLER' && <Check className="w-3 h-3 shrink-0 ml-auto" />}
         </button>
       </div>

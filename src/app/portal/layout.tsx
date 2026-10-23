@@ -19,10 +19,13 @@ import {
   Inbox,
   Rocket,
   ShieldCheck,
+  FileText,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { fetchMyEnterpriseProfile } from "@/lib/enterprise-client";
 import { resolveExpertActiveMenu } from "@/lib/expert-nav";
 import { RoleSwitcher } from "@/components/common/role-switcher";
+import { useToast } from "@/components/common/toast";
 
 interface NavItem {
   href: string;
@@ -30,17 +33,97 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   section?: string;
   key?: string;
+  badge?: string | number;
+  badgeType?: "count" | "new" | "coming-soon";
+  disabled?: boolean;
+  disabledMessage?: string;
 }
 
-// 1. Bên Mua Công Nghệ (BUYER) - Tập trung giải bài toán, tìm cung & tiến trình hợp tác
+/** Tự động nhận diện nhãn hồ sơ tương thích động theo loại hình chủ thể & role */
+function resolveProfileLabel(role?: string | null, subjectType?: string | null, orgName?: string | null): string {
+  const upperRole = (role ?? "").toUpperCase();
+  const st = (subjectType ?? "").toLowerCase();
+  const on = (orgName ?? "").toLowerCase();
+
+  // 1. Nhận diện theo loại hình chủ thể từ profile
+  if (st.includes("viện") || st.includes("trường") || st.includes("học viện") || st.includes("đại học")) {
+    return "Hồ sơ Viện / Trường";
+  }
+  if (st.includes("htx") || st.includes("hợp tác xã")) {
+    return "Hồ sơ Hợp tác xã";
+  }
+  if (st.includes("đmst") || st.includes("đổi mới sáng tạo")) {
+    return "Hồ sơ Doanh nghiệp ĐMST";
+  }
+
+  // 2. Nhận diện theo tên đơn vị
+  if (on.includes("viện") || on.includes("trường") || on.includes("học viện") || on.includes("đại học")) {
+    return "Hồ sơ Viện / Trường";
+  }
+
+  // 3. Nhận diện theo vai trò (Role)
+  if (upperRole === "CLUSTER_ADMIN") {
+    return "Hồ sơ Viện / Trường";
+  }
+  if (upperRole === "INNOVATION_ENTITY") {
+    return "Hồ sơ Doanh nghiệp ĐMST";
+  }
+
+  // Mặc định cho Doanh nghiệp (BUYER / SELLER)
+  return "Hồ sơ Doanh nghiệp";
+}
+
+// 1. Bên Mua Công Nghệ (BUYER) - Tập trung giải bài toán, tìm cung & tiến trình hợp tác (Delta v13: 3 Sections)
 const buyerNavItems: NavItem[] = [
-  { href: "/portal", label: "Tổng quan Mua sắm", icon: LayoutDashboard },
-  { href: "/portal/buyer/demands", label: "Bài toán Tìm mua", icon: ShoppingBag },
-  { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
-  { href: "/portal/opportunities/pipeline", label: "Tiến trình Hợp tác & MOU", icon: Kanban },
-  { href: "/khao-sat-nhu-cau", label: "Khảo sát Nhu cầu (TNI)", icon: ClipboardList },
-  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck },
-  { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2 },
+  // Khối 1: Tác nghiệp Đặt hàng & Hợp tác
+  {
+    href: "/portal",
+    label: "Tổng quan Mua sắm",
+    icon: LayoutDashboard,
+    section: "Tác nghiệp Mua sắm",
+  },
+  {
+    href: "/portal/buyer/demands",
+    label: "Bài toán Đổi mới Công nghệ",
+    icon: ShoppingBag,
+    badge: 3,
+    badgeType: "count",
+  },
+  {
+    href: "/portal/opportunities/pipeline",
+    label: "Tiến trình Hợp tác & MOU",
+    icon: Kanban,
+    badge: 1,
+    badgeType: "count",
+  },
+
+  // Khối 2: Khám phá & Ghép nối AI
+  {
+    href: "/portal/matching/radar",
+    label: "Radar Ghép Nối AI",
+    icon: Sparkles,
+    section: "Khám phá & Ghép nối",
+    badge: "Mới",
+    badgeType: "new",
+  },
+
+  // Khối 3: Chẩn đoán & Năng lực
+  {
+    href: "/khao-sat-nhu-cau",
+    label: "Khảo sát Nhu cầu (TNI)",
+    icon: ClipboardList,
+    section: "Chẩn đoán & Hồ sơ",
+  },
+  {
+    href: "/assessments/tt17",
+    label: "Đánh giá Năng lực TT17",
+    icon: FileCheck,
+  },
+  {
+    href: "/portal/enterprise/profile",
+    label: "Hồ sơ Doanh nghiệp",
+    icon: Building2,
+  },
 ];
 
 // 2. Nhà Cung Ứng Công Nghệ (SELLER) - Quản lý tài sản TRL, đón nhận leads & chuyển giao
@@ -50,17 +133,34 @@ const sellerNavItems: NavItem[] = [
   { href: "/portal/opportunities/pipeline?tab=inbound", label: "Yêu cầu Kết nối Nhận được", icon: Inbox },
   { href: "/portal/matching/radar", label: "Radar Tìm Kiếm Nhu Cầu (AI)", icon: Sparkles },
   { href: "/portal/opportunities/pipeline", label: "Tiến trình Chuyển giao & MOU", icon: Kanban },
-  { href: "/portal/enterprise/profile", label: "Hồ sơ Đơn vị / Viện Trường", icon: Building2 },
+  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck },
+  { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2 },
 ];
 
 // 3. Chuyên Gia KH&CN (EXPERT / VERIFIED_EXPERT) - Thuần chất LLKH, tư vấn & đồng hành
 const expertNavItems: NavItem[] = [
-  { href: "/portal/expert/account", label: "Tài khoản Chuyên gia", icon: ShieldCheck, key: "account" },
-  { href: "/portal/expert/profile", label: "Tổng quan Chuyên gia", icon: LayoutDashboard, key: "profile" },
-  { href: "/portal/expert/profile/edit", label: "Hồ sơ LLKH của tôi", icon: GraduationCap, key: "profile-edit" },
-  { href: "/portal/expert/consultations", label: "Hộp Thư Tư Vấn & Kết Nối", icon: Inbox, key: "consultations" },
-  { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles, key: "radar" },
+  // Khối 1: Tác nghiệp hàng ngày
+  { href: "/portal/expert/profile", label: "Tổng quan Chuyên gia", icon: LayoutDashboard, key: "profile", section: "Tác nghiệp hàng ngày" },
+  { href: "/portal/expert/consultations", label: "Hộp Thư Tư Vấn & Kết Nối", icon: Inbox, key: "consultations", badge: 2, badgeType: "count" },
+  { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles, key: "radar", badge: "Mới", badgeType: "new" },
   { href: "/portal/expert/projects", label: "Dự án Đồng hành & Hợp tác", icon: Kanban, key: "projects" },
+
+  // Khối 2: Kinh tế & Hợp đồng (Sắp ra mắt)
+  {
+    href: "/portal/expert/contracts",
+    label: "Hợp đồng & Thù lao",
+    icon: FileText,
+    key: "contracts",
+    section: "Kinh tế & Hợp đồng",
+    disabled: true,
+    badge: "Sắp ra mắt",
+    badgeType: "coming-soon",
+    disabledMessage: "Tính năng Hợp đồng & Thù lao đang được phát triển theo lộ trình.",
+  },
+
+  // Khối 3: Hồ sơ & Quản trị
+  { href: "/portal/expert/profile/edit", label: "Hồ sơ LLKH của tôi", icon: GraduationCap, key: "profile-edit", section: "Hồ sơ & Quản trị" },
+  { href: "/portal/expert/account", label: "Cài đặt & Tài khoản", icon: ShieldCheck, key: "account" },
 ];
 
 // 4. Doanh Nghiệp ĐMST (INNOVATION_ENTITY) - Phân tách 2 khối Cung-Cầu & Năng lực
@@ -113,10 +213,17 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams?.get("tab") || "";
+  const toast = useToast();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     setUserRole(authClient.getUser()?.role ?? null);
+    fetchMyEnterpriseProfile()
+      .then((p) => {
+        if (p) setUserProfile(p);
+      })
+      .catch(() => {});
   }, [pathname]);
 
   const upperRole = (userRole ?? "").toUpperCase();
@@ -161,6 +268,19 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     workspaceTitle = "Giám Sát Thị Trường Địa Bàn";
     workspaceBadge = "Cán Bộ Quản Trị Nhà Nước";
   }
+
+  const dynamicProfileLabel = resolveProfileLabel(
+    userRole,
+    userProfile?.subjectType,
+    authClient.getUser()?.organizationName
+  );
+
+  const displayedNavItems = navItems.map((item) => {
+    if (item.href === "/portal/enterprise/profile") {
+      return { ...item, label: dynamicProfileLabel };
+    }
+    return item;
+  });
 
   return (
     <RoleGuard
@@ -214,14 +334,16 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           )}
 
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {displayedNavItems.map((item) => {
               const Icon = item.icon;
               const basePath = item.href.split("?")[0];
               const itemQuery = item.href.includes("?") ? new URLSearchParams(item.href.split("?")[1]) : null;
               const activeExpertKey = isExpert ? resolveExpertActiveMenu(pathname) : null;
 
               let isActive = false;
-              if (isExpert && item.key) {
+              if (item.disabled) {
+                isActive = false;
+              } else if (isExpert && item.key) {
                 isActive = item.key === activeExpertKey;
               } else if (basePath === "/portal") {
                 isActive = pathname === "/portal";
@@ -234,6 +356,37 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                   isActive = true;
                 }
               }
+
+              const renderBadge = () => {
+                if (!item.badge) return null;
+                if (item.badgeType === "coming-soon") {
+                  return (
+                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                      {item.badge}
+                    </span>
+                  );
+                }
+                if (item.badgeType === "count") {
+                  return (
+                    <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white">
+                      {item.badge}
+                    </span>
+                  );
+                }
+                if (item.badgeType === "new") {
+                  return (
+                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
+                      {item.badge}
+                    </span>
+                  );
+                }
+                return (
+                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                    {item.badge}
+                  </span>
+                );
+              };
+
               return (
                 <React.Fragment key={item.href + item.label}>
                   {item.section && (
@@ -241,18 +394,38 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                       {item.section}
                     </div>
                   )}
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`focus-ring flex min-h-11 items-center gap-2.5 px-3 py-2 rounded-control text-label font-semibold transition ${
-                      isActive
-                        ? "bg-brand-700 text-white shadow-sm shadow-brand-700/20"
-                        : "text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 hover:text-brand-700 dark:hover:text-white"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
-                  </Link>
+                  {item.disabled ? (
+                    <button
+                      type="button"
+                      aria-disabled="true"
+                      aria-label={`${item.label} (${item.disabledMessage || "Tính năng đang được phát triển theo lộ trình, hiện chưa khả dụng"})`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toast.info(
+                          item.disabledMessage || "Tính năng Hợp đồng & Thù lao đang được phát triển theo lộ trình.",
+                          "Sắp Ra Mắt"
+                        );
+                      }}
+                      className="focus-ring flex min-h-11 w-full items-center gap-2.5 px-3 py-2 rounded-control text-label font-semibold transition cursor-not-allowed opacity-60 text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{item.label}</span>
+                      {renderBadge()}
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`focus-ring flex min-h-11 items-center gap-2.5 px-3 py-2 rounded-control text-label font-semibold transition ${
+                        isActive
+                          ? "bg-brand-700 text-white shadow-sm shadow-brand-700/20"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 hover:text-brand-700 dark:hover:text-white"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{item.label}</span>
+                      {renderBadge()}
+                    </Link>
+                  )}
                 </React.Fragment>
               );
             })}

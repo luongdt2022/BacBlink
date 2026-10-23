@@ -26,10 +26,12 @@ import { DealRoomData, DealDiscussion, MouAgreement } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
 import MouModal from './MouModal';
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
+import { useToast } from '@/components/common/toast';
 
 export default function DealRoomPage() {
   const params = useParams();
   const id = params?.id as string;
+  const toast = useToast();
 
   const [data, setData] = useState<DealRoomData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,9 +76,10 @@ export default function DealRoomPage() {
         message: message.trim(),
       });
       setMessage('');
+      toast.success('Đã gửi thông điệp đàm phán thành công.', 'Gửi Tin Nhắn');
       await fetchDealRoom();
     } catch (err: any) {
-      alert(err.message || 'Lỗi khi gửi tin nhắn.');
+      toast.error(err.message || 'Lỗi khi gửi tin nhắn.', 'Gửi Tin Nhắn Thất Bại');
     } finally {
       setIsSending(false);
     }
