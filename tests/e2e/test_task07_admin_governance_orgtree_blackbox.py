@@ -82,7 +82,7 @@ def run_task07_blackbox_suite():
         # Đăng nhập thật bằng tài khoản Super Admin
         page.goto(f"{BASE_WEB_URL}/login")
         page.wait_for_selector('input[type="email"]', timeout=8000)
-        page.fill('input[type="email"]', "admin.super@nacentech.local")
+        page.fill('input[type="email"]', "super.admin@demo.nacentech.vn")
         page.fill('input[type="password"]', "Password@123")
         page.click('button:has-text("Đăng nhập vào Hệ Thống")')
         page.wait_for_url("**/admin**", wait_until="domcontentloaded", timeout=12000)
