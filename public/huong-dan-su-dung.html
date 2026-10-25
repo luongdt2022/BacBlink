@@ -7,8 +7,10 @@
 <style>
 /* Modern Base Styling */
 :root {
-  --primary: #0284c7;
-  --primary-hover: #0369a1;
+  --primary: #3C5999;
+  --primary-hover: #30477A;
+  --emerald: #2D9A85;
+  --emerald-hover: #258B78;
   --slate-900: #0f172a;
   --slate-800: #1e293b;
   --slate-700: #334155;
@@ -20,10 +22,10 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; max-width: 1060px; margin: 30px auto; padding: 0 24px; color: var(--slate-800); background: #f8fafc; }
-h1, h2, h3, h4 { color: var(--slate-900); }
+body { font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; max-width: 1080px; margin: 30px auto; padding: 0 24px; color: var(--slate-800); background: #F8FAFC; }
+h1, h2, h3, h4 { font-family: 'Lora', Georgia, serif; color: var(--slate-900); }
 h1 { border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-top: 20px; }
-h2 { border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-top: 36px; }
+h2 { border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-top: 36px; }
 img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); margin: 16px 0; }
 pre, code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; font-family: monospace; font-size: 13px; }
 table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -1362,7 +1364,7 @@ th { background: #e0f2fe; color: #0369a1; font-weight: 700; }
     <section class="module-section" id="module-6" data-module="6">
       <div class="module-header-row">
         <h2 id="phan-he-6-mang-luoi-chuyen-gia-khcn-ai-scan-llkh">PHÂN HỆ 6: MẠNG LƯỚI CHUYÊN GIA KH&amp;CN &amp; AI SCAN LLKH</h2>
-        <span class="module-screen-counter" id="mod-counter-6">6 / 6 màn hình</span>
+        <span class="module-screen-counter" id="mod-counter-6">9 / 9 màn hình</span>
       </div>
       <div class="module-screens-container">
         
@@ -1531,6 +1533,84 @@ th { background: #e0f2fe; color: #0369a1; font-weight: 700; }
 
           <div class="screen-card-footer">
             <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.6: Màn Hình Tài Khoản Chuyên Gia KH&CN (/portal/expert/account)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-7" data-screen-num="6.7" data-roles="VERIFIED_EXPERT" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.7 [MỚI]</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="67-so-tay-tu-van-1-1-lich-hen-dmst">6.7. Sổ Tay Tư Vấn 1-1 &amp; Lịch Hẹn Đổi Mới Sáng Tạo (/portal/expert/consultations)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/expert/consultations</code></li>
+<li><strong>Mục đích</strong>: Không gian quản trị toàn trình các buổi tư vấn công nghệ 1-1 giữa Chuyên gia và Doanh nghiệp. Hỗ trợ xem danh sách yêu cầu mới, chấp nhận/từ chối lịch hẹn trực tuyến, ghi nhận biên bản tư vấn và lưu trữ lịch sử tư vấn có chữ ký số.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>VERIFIED_EXPERT</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Workspace Chuyên gia tác nghiệp</li>
+<li>🔑 <strong>Quyền hạn</strong>: Tiếp nhận yêu cầu tư vấn, Điều phối lịch hẹn, Ký số biên bản tư vấn</li>
+</ul>
+<h4 id="cac-buoc-thao-tac_67">Quy trình thao tác:</h4>
+<ol>
+<li><strong>Tiếp nhận yêu cầu tư vấn</strong>: Duyệt danh sách các phiếu đề nghị tư vấn gửi từ Doanh nghiệp/DNNVV; xem trước bài toán kỹ thuật cần tháo gỡ.</li>
+<li><strong>Xác nhận lịch hẹn</strong>: Lựa chọn khung giờ tư vấn trực tuyến (Google Meet/MS Teams) hoặc trực tiếp tại văn phòng Viện/Trường; gửi phản hồi tới doanh nghiệp.</li>
+<li><strong>Ghi nhận biên bản chuyên môn</strong>: Sau buổi tư vấn, nhập khuyến nghị giải pháp, tài liệu viện dẫn và xác nhận hoàn thành buổi tư vấn.</li>
+</ol>
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.7: Sổ Tay Tư Vấn 1-1 & Lịch Hẹn ĐMST (/portal/expert/consultations)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-8" data-screen-num="6.8" data-roles="VERIFIED_EXPERT" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.8 [MỚI]</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="68-quan-ly-de-tai-khcn-du-an-tu-van">6.8. Quản Lý Đề Tài KH&amp;CN &amp; Dự Án Tư Vấn Chuyển Giao (/portal/expert/projects)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/portal/expert/projects</code></li>
+<li><strong>Mục đích</strong>: Quản lý các đề tài nghiên cứu KH&amp;CN cấp Nhà nước, cấp Bộ, cấp Tỉnh và các dự án chuyển giao công nghệ cho doanh nghiệp mà chuyên gia đang chủ trì hoặc tham gia ban cố vấn.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>VERIFIED_EXPERT</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Workspace Chuyên gia</li>
+<li>🔑 <strong>Quyền hạn</strong>: Quản lý mốc đề tài, Đính kèm báo cáo kỹ thuật, Cập nhật tiến độ giải ngân KH&amp;CN</li>
+</ul>
+<h4 id="cac-buoc-thao-tac_68">Quy trình thao tác:</h4>
+<ol>
+<li><strong>Theo dõi tiến độ đề tài</strong>: Xem danh sách các đề tài nghiên cứu đang thực hiện kèm trạng thái từng mốc giai đoạn (Milestones).</li>
+<li><strong>Cập nhật sản phẩm trung gian</strong>: Tải lên báo cáo tiến độ kỹ thuật, biên bản đo kiểm và sản phẩm mẫu thử nghiệm.</li>
+<li><strong>Lưu trữ hồ sơ nghiệm thu</strong>: Hoàn tất đề tài và lưu trữ hồ sơ phục vụ đánh giá năng lực khoa học trong hệ thống CSDL quốc gia.</li>
+</ol>
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.8: Quản Lý Đề Tài KH&CN & Dự Án Chuyển Giao (/portal/expert/projects)</span>
+            <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
+          </div>
+        </article>
+        
+
+        <article class="screen-card" id="screen-6-9" data-screen-num="6.9" data-roles="PUBLIC_USER VERIFIED_EXPERT" data-module="6">
+          <div class="screen-card-header">
+            <div class="screen-id-badge">Màn hình 6.9 [MỚI]</div>
+            <div class="screen-roles-badge-list"><span class="screen-role-tag" style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe">🌐 Người Dùng Đại Chúng</span> <span class="screen-role-tag" style="background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe">🎓 Chuyên Gia KH&CN</span></div>
+          </div>
+          <h3 id="69-xem-truoc-the-chuyen-gia-zalo-mini-app">6.9. Xem Trước Thẻ Chuyên Gia Zalo Mini App (/experts/zalo-preview)</h3>
+          <ul>
+<li><strong>Địa chỉ truy cập</strong>: <code>http://localhost:3000/experts/zalo-preview</code></li>
+<li><strong>Mục đích</strong>: Giao diện mô phỏng danh thiếp số điện tử của chuyên gia tối ưu cho thiết bị di động và môi trường Zalo Mini App. Hỗ trợ quét mã QR một chạm để kết nối nhanh chóng mà không cần cài thêm ứng dụng.</li>
+<li>👤 <strong>Vai trò thực hiện</strong>: <code>PUBLIC_USER</code>, <code>VERIFIED_EXPERT</code></li>
+<li>🏷️ <strong>Phạm vi áp dụng</strong>: Ứng dụng di động &amp; Zalo</li>
+<li>🔑 <strong>Quyền hạn</strong>: Xem danh thiếp số, Quét QR, Kết nối tư vấn một chạm</li>
+</ul>
+<h4 id="cac-buoc-thao-tac_69">Quy trình thao tác:</h4>
+<ol>
+<li><strong>Mở danh thiếp số</strong>: Người dùng mở thẻ chuyên gia trên điện thoại hoặc qua Zalo Mini App.</li>
+<li><strong>Quét mã QR chia sẻ</strong>: Quét mã QR cá nhân hóa để lưu danh bạ hoặc chia sẻ hồ sơ khoa học tới mạng lưới đối tác.</li>
+<li><strong>Kích hoạt tương tác</strong>: Nhấn nút gọi hoặc nhắn tin Zalo OA chính thức để gửi lời mời tư vấn nhanh.</li>
+</ol>
+          <div class="screen-card-footer">
+            <span class="screen-footer-meta">Phân hệ 6 &bull; Màn hình 6.9: Xem Trước Thẻ Chuyên Gia Zalo Mini App (/experts/zalo-preview)</span>
             <a href="#role-filter-toolbar" class="back-to-filter-link" onclick="scrollToFilter(event)">⬆️ Về bộ lọc vai trò</a>
           </div>
         </article>
@@ -2211,18 +2291,29 @@ th { background: #e0f2fe; color: #0369a1; font-weight: 700; }
 <script>
 // Data Registry of Roles and Screens
 const ROLE_CONFIGS = {"PUBLIC_USER": {"code": "PUBLIC_USER", "title": "Người Dùng Đại Chúng", "icon": "🌐", "color": "#2563eb", "bg": "#eff6ff", "border": "#bfdbfe", "desc": "Khách vãng lai và thành viên mới. Xem sàn chào bán/nhu cầu, tra cứu danh bạ DN & Chuyên gia, đăng ký tài khoản, đăng ký vé Techmart."}, "BUYER": {"code": "BUYER", "title": "Bên Mua (Doanh Nghiệp / DNNVV)", "icon": "🛒", "color": "#059669", "bg": "#ecfdf5", "border": "#a7f3d0", "desc": "DNNVV có nhu cầu công nghệ. Khảo sát sâu 7 phần A-G, đăng bài toán nhu cầu, chấm điểm TNI, quản lý vé nhu cầu và đàm phán trong Deal Room."}, "SELLER": {"code": "SELLER", "title": "Bên Bán (Nguồn Cung Công Nghệ)", "icon": "🏭", "color": "#d97706", "bg": "#fffbeb", "border": "#fde68a", "desc": "Viện, trường, doanh nghiệp cung ứng công nghệ. Đăng hồ sơ chào bán, bộ tứ SHTT/TRL, chọn Sở tiếp nhận thẩm định, quản lý kho công nghệ, đàm phán MOU."}, "VERIFIED_EXPERT": {"code": "VERIFIED_EXPERT", "title": "Chuyên Gia KH&CN", "icon": "🎓", "color": "#7c3aed", "bg": "#f5f3ff", "border": "#ddd6fe", "desc": "Nhà khoa học, chuyên gia đã xác thực. Quản lý Sổ tay LLKH, scan CV bằng AI, tư vấn kỹ thuật, tham gia Deal Room và hỗ trợ định giá chuyển giao."}, "INNOVATION_ENTITY": {"code": "INNOVATION_ENTITY", "title": "Doanh Nghiệp ĐMST", "icon": "💡", "color": "#0284c7", "bg": "#f0f9ff", "border": "#bae6fd", "desc": "Chủ thể ĐMST được định danh. Quản lý hồ sơ 10 nhóm trường, bổ sung bằng sáng chế SHTT, tự đánh giá 26 tiêu chí TT17."}, "PROVINCIAL_ADMIN": {"code": "PROVINCIAL_ADMIN", "title": "Cán Bộ Sở KH&CN Tỉnh", "icon": "🏛️", "color": "#e11d48", "bg": "#fff1f2", "border": "#fecdd3", "desc": "Cơ quan quản lý địa phương (Scope Tỉnh/Thành). Thẩm định hồ sơ công nghệ, duyệt chuyên gia địa bàn, giám sát kết nối cung cầu (SLA 48h), chấm TT17."}, "SUPER_ADMIN": {"code": "SUPER_ADMIN", "title": "Quản Trị Tối Cao", "icon": "👑", "color": "#4338ca", "bg": "#eef2ff", "border": "#c7d2fe", "desc": "Quản trị viên hệ thống quốc gia. Vận hành phân quyền 10 Roles 3D Scoped RBAC, quản lý người dùng, cây hành chính 3 cấp, hậu kiểm & thu hồi."}, "AUDITOR": {"code": "AUDITOR", "title": "Kiểm Toán Viên Độc Lập", "icon": "📋", "color": "#475569", "bg": "#f8fafc", "border": "#e2e8f0", "desc": "Cán bộ giám sát độc lập. Tra cứu nhật ký tác nghiệp bất biến (Audit Trail), kiểm tra tuân thủ an toàn dữ liệu PDPD."}};
-const ALL_SCREENS = [{"num":"1.1","id":"11-ang-nhap-he-thong","title":"Đăng Nhập Hệ Thống","module":1,"roles":["PUBLIC_USER","BUYER","SELLER","VERIFIED_EXPERT","INNOVATION_ENTITY","PROVINCIAL_ADMIN","SUPER_ADMIN","AUDITOR"]},{"num":"1.2","id":"12-ang-ky-tai-khoan-moi","title":"Đăng Ký Tài Khoản Mới","module":1,"roles":["PUBLIC_USER"]},{"num":"1.3","id":"13-cai-at-tai-khoan-he-thong-giao-dien","title":"Cài Đặt Tài Khoản Thành Viên Đại Chúng (PUBLIC_USER)","module":1,"roles":["PUBLIC_USER"]},{"num":"2.1","id":"21-trang-chu-portal-nacentwin","title":"Trang Chủ Portal Nacentwin","module":2,"roles":["PUBLIC_USER"]},{"num":"2.2","id":"22-san-su-kien-techmart-phien-chao-gia","title":"Sàn Sự Kiện Techmart &amp; Phiên Chào Giá","module":2,"roles":["PUBLIC_USER","BUYER","SELLER"]},{"num":"2.3","id":"23-ang-ky-ve-tham-quan-techmart","title":"Đăng Ký Vé Tham Quan Techmart","module":2,"roles":["PUBLIC_USER"]},{"num":"2.4","id":"24-trung-tam-tra-cuu-wireframes-noi-bo","title":"Trung Tâm Tra Cứu Wireframes Nội Bộ","module":2,"roles":["SUPER_ADMIN","AUDITOR"]},{"num":"3.1","id":"31-danh-ba-304-doanh-nghiep-mst-toan-quoc","title":"Danh Bạ 304 Doanh Nghiệp ĐMST Toàn Quốc","module":3,"roles":["PUBLIC_USER","BUYER","SELLER","PROVINCIAL_ADMIN"]},{"num":"3.2","id":"32-ho-so-doanh-nghiep-mst-cong-khai","title":"Hồ Sơ Doanh Nghiệp ĐMST Công Khai","module":3,"roles":["PUBLIC_USER","BUYER","SELLER"]},{"num":"3.3","id":"33-ban-lam-viec-doanh-nghiep-trong-portal","title":"Bàn Làm Việc Doanh Nghiệp Trong Portal","module":3,"roles":["INNOVATION_ENTITY"]},{"num":"3.4","id":"34-tu-quan-tri-chinh-sua-ho-so-dn","title":"Tự Quản Trị &amp; Chỉnh Sửa Hồ Sơ DN","module":3,"roles":["INNOVATION_ENTITY"]},{"num":"4.1","id":"41-phieu-khao-sat-sau-nhu-cau-dnnvv-7-phan-a-rightarrow-g","title":"Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần (A $\\rightarrow$ G)","module":4,"roles":["BUYER"]},{"num":"4.2","id":"42-san-niem-yet-nhu-cau-mua-cong-nghe","title":"Sàn Niêm Yết Nhu Cầu Mua Công Nghệ","module":4,"roles":["PUBLIC_USER","SELLER","VERIFIED_EXPERT"]},{"num":"4.3","id":"43-chi-tiet-bai-toan-nhu-cau-ky-thuat-pdpd-masked","title":"Chi Tiết Bài Toán Nhu Cầu Kỹ Thuật (PDPD Masked)","module":4,"roles":["SELLER","VERIFIED_EXPERT"]},{"num":"4.4","id":"44-ban-lam-viec-quan-ly-ve-nhu-cau-cua-buyer","title":"Bàn Làm Việc Quản Lý Vé Nhu Cầu Của Buyer","module":4,"roles":["BUYER"]},{"num":"5.1","id":"51-san-chao-ban-cong-nghe-18-nganh","title":"Sàn Chào Bán Công Nghệ 18 Ngành","module":5,"roles":["PUBLIC_USER","BUYER"]},{"num":"5.2","id":"52-chi-tiet-ho-so-chao-ban-bo-tu-shtttrl","title":"Chi Tiết Hồ Sơ Chào Bán &amp; Bộ Tứ SHTT/TRL","module":5,"roles":["PUBLIC_USER","BUYER"]},{"num":"5.3","id":"53-ban-lam-viec-quan-ly-kho-cong-nghe-seller","title":"Bàn Làm Việc Quản Lý Kho Công Nghệ Seller","module":5,"roles":["SELLER"]},{"num":"5.4","id":"54-tao-ho-so-chao-ban-moi-chon-so-tiep-nhan","title":"Tạo Hồ Sơ Chào Bán Mới &amp; Chọn Sở Tiếp Nhận","module":5,"roles":["SELLER"]},{"num":"5.5","id":"55-chinh-sua-ho-so-chao-ban-a-niem-yet","title":"Chỉnh Sửa Hồ Sơ Chào Bán Đã Niêm Yết","module":5,"roles":["SELLER"]},{"num":"6.1","id":"61-danh-ba-chuyen-gia-khcn-cong-khai","title":"Danh Bạ Chuyên Gia KH&amp;CN Công Khai","module":6,"roles":["PUBLIC_USER","BUYER","INNOVATION_ENTITY"]},{"num":"6.2","id":"62-so-tay-chuyen-gia-profile-chi-tiet","title":"Sổ Tay Chuyên Gia Profile Chi Tiết","module":6,"roles":["PUBLIC_USER","BUYER"]},{"num":"6.3","id":"63-form-nang-hang-chuyen-gia-3-buoc","title":"Form Nâng Hạng Chuyên Gia 3 Bước","module":6,"roles":["PUBLIC_USER"]},{"num":"6.4","id":"64-ban-lam-viec-dashboard-chuyen-gia","title":"Bàn Làm Việc Dashboard Chuyên Gia","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.5","id":"65-chinh-sua-ho-so-chuyen-gia-completeness-engine","title":"Chỉnh Sửa Hồ Sơ Chuyên Gia &amp; Completeness Engine","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.6","id":"screen-6-6","title":"Tài Khoản Chuyên Gia KH&CN (/portal/expert/account)","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"7.1","id":"71-ban-o-kham-pha-ma-tran-linh-vuc-cong-nghe","title":"Bản Đồ Khám Phá Ma Trận Lĩnh Vực - Công Nghệ","module":7,"roles":["PUBLIC_USER","BUYER","SELLER","VERIFIED_EXPERT"]},{"num":"7.2","id":"72-quan-tri-danh-muc-nganh-trong-so-matching","title":"Quản Trị Danh Mục Ngành &amp; Trọng Số Matching","module":7,"roles":["SUPER_ADMIN"]},{"num":"8.1","id":"81-khong-gian-portal-hub-ieu-huong-vai-tro","title":"Không Gian Portal Hub Điều Hướng Vai Trò","module":8,"roles":["BUYER","SELLER","VERIFIED_EXPERT","INNOVATION_ENTITY"]},{"num":"8.2","id":"82-radar-ghep-noi-cung-cau-ai-2-chieu","title":"Radar Ghép Nối Cung Cầu AI 2 Chiều","module":8,"roles":["BUYER","SELLER"]},{"num":"8.3","id":"83-bang-kanban-5-buoc-quan-ly-pipeline-co-hoi","title":"Bảng Kanban 5 Bước Quản Lý Pipeline Cơ Hội","module":8,"roles":["BUYER","SELLER","PROVINCIAL_ADMIN"]},{"num":"8.4","id":"84-phong-hop-tac-deal-room-1-1-soan-thao-mou","title":"Phòng Hợp Tác Deal Room 1-1 &amp; Soạn Thảo MOU","module":8,"roles":["BUYER","SELLER","VERIFIED_EXPERT"]},{"num":"9.1","id":"91-wizard-ke-khai-26-tieu-chi-5-nhom-t-e-o-r-i-tt17","title":"Wizard Kê Khai 26 Tiêu Chí 5 Nhóm T-E-O-R-I (TT17)","module":9,"roles":["BUYER","INNOVATION_ENTITY"]},{"num":"9.2","id":"92-bao-cao-anh-gia-trinh-o-cong-nghe-tt17-radar-chart","title":"Báo Cáo Đánh Giá Trình Độ Công Nghệ TT17 &amp; Radar Chart","module":9,"roles":["BUYER","INNOVATION_ENTITY","PROVINCIAL_ADMIN"]},{"num":"9.3","id":"93-bao-cao-xuat-ban-chi-tiet-phu-luc-ii-iv","title":"Báo Cáo Xuất Bản Chi Tiết Phụ Lục II &amp; IV","module":9,"roles":["INNOVATION_ENTITY","PROVINCIAL_ADMIN"]},{"num":"9.4","id":"94-khao-sat-anh-gia-nang-luc-tiep-nhan-buyer","title":"Khảo Sát Đánh Giá Năng Lực Tiếp Nhận Buyer","module":9,"roles":["BUYER"]},{"num":"10.1","id":"101-tong-quan-trung-tam-ieu-hanh-quan-tri","title":"Tổng Quan Trung Tâm Điều Hành Quản Trị","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.2","id":"102-trung-tam-kiem-duyet-5-luong-admin-toan-quoc","title":"Trung Tâm Kiểm Duyệt 5 Luồng Admin Toàn Quốc","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.3","id":"103-quan-ly-ma-tran-vai-tro-nguoi-dung-quyen-nang","title":"Quản Lý Ma Trận Vai Trò, Người Dùng &amp; Quyền Năng","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.4","id":"104-quan-ly-cay-hanh-chinh-3-cap-to-chuc","title":"Quản Lý Cây Hành Chính 3 Cấp Tổ Chức","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.5","id":"105-dashboard-thong-ke-csdl-304-doanh-nghiep","title":"Dashboard Thống Kê CSDL 304 Doanh Nghiệp","module":10,"roles":["SUPER_ADMIN","AUDITOR"]},{"num":"11.1","id":"111-cong-tac-nghiep-cap-so-khcn-ia-ban","title":"Cổng Tác Nghiệp Cấp Sở KH&amp;CN Địa Bàn","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.2","id":"112-trung-tam-kiem-duyet-ho-so-cap-so","title":"Trung Tâm Kiểm Duyệt Hồ Sơ Cấp Sở","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.3","id":"113-tham-inh-ho-so-doanh-nghiep-thuoc-tinh","title":"Thẩm Định Hồ Sơ Doanh Nghiệp Thuộc Tỉnh","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.4","id":"114-giam-sat-bai-toan-nhu-cau-tren-ia-ban-tinh","title":"Giám Sát Bài Toán Nhu Cầu Trên Địa Bàn Tỉnh","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.5","id":"115-giam-sat-co-hoi-hop-tac-ia-ban-sla-48h","title":"Giám Sát Cơ Hội Hợp Tác Địa Bàn (SLA 48h)","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.6","id":"116-tham-inh-anh-gia-cong-nghe-tt17-cap-so","title":"Thẩm Định Đánh Giá Công Nghệ TT17 Cấp Sở","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.7","id":"117-phan-cong-can-bo-so-tac-nghiep","title":"Phân Công Cán Bộ Sở Tác Nghiệp","module":11,"roles":["PROVINCIAL_ADMIN"]}];
+const ALL_SCREENS = [{"num":"1.1","id":"11-ang-nhap-he-thong","title":"Đăng Nhập Hệ Thống","module":1,"roles":["PUBLIC_USER","BUYER","SELLER","VERIFIED_EXPERT","INNOVATION_ENTITY","PROVINCIAL_ADMIN","SUPER_ADMIN","AUDITOR"]},{"num":"1.2","id":"12-ang-ky-tai-khoan-moi","title":"Đăng Ký Tài Khoản Mới","module":1,"roles":["PUBLIC_USER"]},{"num":"1.3","id":"13-cai-at-tai-khoan-he-thong-giao-dien","title":"Cài Đặt Tài Khoản Thành Viên Đại Chúng (PUBLIC_USER)","module":1,"roles":["PUBLIC_USER"]},{"num":"2.1","id":"21-trang-chu-portal-nacentwin","title":"Trang Chủ Portal Nacentwin","module":2,"roles":["PUBLIC_USER"]},{"num":"2.2","id":"22-san-su-kien-techmart-phien-chao-gia","title":"Sàn Sự Kiện Techmart &amp; Phiên Chào Giá","module":2,"roles":["PUBLIC_USER","BUYER","SELLER"]},{"num":"2.3","id":"23-ang-ky-ve-tham-quan-techmart","title":"Đăng Ký Vé Tham Quan Techmart","module":2,"roles":["PUBLIC_USER"]},{"num":"2.4","id":"24-trung-tam-tra-cuu-wireframes-noi-bo","title":"Trung Tâm Tra Cứu Wireframes Nội Bộ","module":2,"roles":["SUPER_ADMIN","AUDITOR"]},{"num":"3.1","id":"31-danh-ba-304-doanh-nghiep-mst-toan-quoc","title":"Danh Bạ 304 Doanh Nghiệp ĐMST Toàn Quốc","module":3,"roles":["PUBLIC_USER","BUYER","SELLER","PROVINCIAL_ADMIN"]},{"num":"3.2","id":"32-ho-so-doanh-nghiep-mst-cong-khai","title":"Hồ Sơ Doanh Nghiệp ĐMST Công Khai","module":3,"roles":["PUBLIC_USER","BUYER","SELLER"]},{"num":"3.3","id":"33-ban-lam-viec-doanh-nghiep-trong-portal","title":"Bàn Làm Việc Doanh Nghiệp Trong Portal","module":3,"roles":["INNOVATION_ENTITY"]},{"num":"3.4","id":"34-tu-quan-tri-chinh-sua-ho-so-dn","title":"Tự Quản Trị &amp; Chỉnh Sửa Hồ Sơ DN","module":3,"roles":["INNOVATION_ENTITY"]},{"num":"4.1","id":"41-phieu-khao-sat-sau-nhu-cau-dnnvv-7-phan-a-rightarrow-g","title":"Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần (A $\\rightarrow$ G)","module":4,"roles":["BUYER"]},{"num":"4.2","id":"42-san-niem-yet-nhu-cau-mua-cong-nghe","title":"Sàn Niêm Yết Nhu Cầu Mua Công Nghệ","module":4,"roles":["PUBLIC_USER","SELLER","VERIFIED_EXPERT"]},{"num":"4.3","id":"43-chi-tiet-bai-toan-nhu-cau-ky-thuat-pdpd-masked","title":"Chi Tiết Bài Toán Nhu Cầu Kỹ Thuật (PDPD Masked)","module":4,"roles":["SELLER","VERIFIED_EXPERT"]},{"num":"4.4","id":"44-ban-lam-viec-quan-ly-ve-nhu-cau-cua-buyer","title":"Bàn Làm Việc Quản Lý Vé Nhu Cầu Của Buyer","module":4,"roles":["BUYER"]},{"num":"5.1","id":"51-san-chao-ban-cong-nghe-18-nganh","title":"Sàn Chào Bán Công Nghệ 18 Ngành","module":5,"roles":["PUBLIC_USER","BUYER"]},{"num":"5.2","id":"52-chi-tiet-ho-so-chao-ban-bo-tu-shtttrl","title":"Chi Tiết Hồ Sơ Chào Bán &amp; Bộ Tứ SHTT/TRL","module":5,"roles":["PUBLIC_USER","BUYER"]},{"num":"5.3","id":"53-ban-lam-viec-quan-ly-kho-cong-nghe-seller","title":"Bàn Làm Việc Quản Lý Kho Công Nghệ Seller","module":5,"roles":["SELLER"]},{"num":"5.4","id":"54-tao-ho-so-chao-ban-moi-chon-so-tiep-nhan","title":"Tạo Hồ Sơ Chào Bán Mới &amp; Chọn Sở Tiếp Nhận","module":5,"roles":["SELLER"]},{"num":"5.5","id":"55-chinh-sua-ho-so-chao-ban-a-niem-yet","title":"Chỉnh Sửa Hồ Sơ Chào Bán Đã Niêm Yết","module":5,"roles":["SELLER"]},{"num":"6.1","id":"61-danh-ba-chuyen-gia-khcn-cong-khai","title":"Danh Bạ Chuyên Gia KH&amp;CN Công Khai","module":6,"roles":["PUBLIC_USER","BUYER","INNOVATION_ENTITY"]},{"num":"6.2","id":"62-so-tay-chuyen-gia-profile-chi-tiet","title":"Sổ Tay Chuyên Gia Profile Chi Tiết","module":6,"roles":["PUBLIC_USER","BUYER"]},{"num":"6.3","id":"63-form-nang-hang-chuyen-gia-3-buoc","title":"Form Nâng Hạng Chuyên Gia 3 Bước","module":6,"roles":["PUBLIC_USER"]},{"num":"6.4","id":"64-ban-lam-viec-dashboard-chuyen-gia","title":"Bàn Làm Việc Dashboard Chuyên Gia","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.5","id":"65-chinh-sua-ho-so-chuyen-gia-completeness-engine","title":"Chỉnh Sửa Hồ Sơ Chuyên Gia &amp; Completeness Engine","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.6","id":"screen-6-6","title":"Tài Khoản Chuyên Gia KH&CN (/portal/expert/account)","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.7","id":"screen-6-7","title":"Sổ Tay Tư Vấn 1-1 & Lịch Hẹn ĐMST (/portal/expert/consultations)","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.8","id":"screen-6-8","title":"Quản Lý Đề Tài KH&CN & Dự Án Chuyển Giao (/portal/expert/projects)","module":6,"roles":["VERIFIED_EXPERT"]},{"num":"6.9","id":"screen-6-9","title":"Xem Trước Thẻ Chuyên Gia Zalo Mini App (/experts/zalo-preview)","module":6,"roles":["PUBLIC_USER","VERIFIED_EXPERT"]},{"num":"7.1","id":"71-ban-o-kham-pha-ma-tran-linh-vuc-cong-nghe","title":"Bản Đồ Khám Phá Ma Trận Lĩnh Vực - Công Nghệ","module":7,"roles":["PUBLIC_USER","BUYER","SELLER","VERIFIED_EXPERT"]},{"num":"7.2","id":"72-quan-tri-danh-muc-nganh-trong-so-matching","title":"Quản Trị Danh Mục Ngành &amp; Trọng Số Matching","module":7,"roles":["SUPER_ADMIN"]},{"num":"8.1","id":"81-khong-gian-portal-hub-ieu-huong-vai-tro","title":"Không Gian Portal Hub Điều Hướng Vai Trò","module":8,"roles":["BUYER","SELLER","VERIFIED_EXPERT","INNOVATION_ENTITY"]},{"num":"8.2","id":"82-radar-ghep-noi-cung-cau-ai-2-chieu","title":"Radar Ghép Nối Cung Cầu AI 2 Chiều","module":8,"roles":["BUYER","SELLER"]},{"num":"8.3","id":"83-bang-kanban-5-buoc-quan-ly-pipeline-co-hoi","title":"Bảng Kanban 5 Bước Quản Lý Pipeline Cơ Hội","module":8,"roles":["BUYER","SELLER","PROVINCIAL_ADMIN"]},{"num":"8.4","id":"84-phong-hop-tac-deal-room-1-1-soan-thao-mou","title":"Phòng Hợp Tác Deal Room 1-1 &amp; Soạn Thảo MOU","module":8,"roles":["BUYER","SELLER","VERIFIED_EXPERT"]},{"num":"9.1","id":"91-wizard-ke-khai-26-tieu-chi-5-nhom-t-e-o-r-i-tt17","title":"Wizard Kê Khai 26 Tiêu Chí 5 Nhóm T-E-O-R-I (TT17)","module":9,"roles":["BUYER","INNOVATION_ENTITY"]},{"num":"9.2","id":"92-bao-cao-anh-gia-trinh-o-cong-nghe-tt17-radar-chart","title":"Báo Cáo Đánh Giá Trình Độ Công Nghệ TT17 &amp; Radar Chart","module":9,"roles":["BUYER","INNOVATION_ENTITY","PROVINCIAL_ADMIN"]},{"num":"9.3","id":"93-bao-cao-xuat-ban-chi-tiet-phu-luc-ii-iv","title":"Báo Cáo Xuất Bản Chi Tiết Phụ Lục II &amp; IV","module":9,"roles":["INNOVATION_ENTITY","PROVINCIAL_ADMIN"]},{"num":"9.4","id":"94-khao-sat-anh-gia-nang-luc-tiep-nhan-buyer","title":"Khảo Sát Đánh Giá Năng Lực Tiếp Nhận Buyer","module":9,"roles":["BUYER"]},{"num":"10.1","id":"101-tong-quan-trung-tam-ieu-hanh-quan-tri","title":"Tổng Quan Trung Tâm Điều Hành Quản Trị","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.2","id":"102-trung-tam-kiem-duyet-5-luong-admin-toan-quoc","title":"Trung Tâm Kiểm Duyệt 5 Luồng Admin Toàn Quốc","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.3","id":"103-quan-ly-ma-tran-vai-tro-nguoi-dung-quyen-nang","title":"Quản Lý Ma Trận Vai Trò, Người Dùng &amp; Quyền Năng","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.4","id":"104-quan-ly-cay-hanh-chinh-3-cap-to-chuc","title":"Quản Lý Cây Hành Chính 3 Cấp Tổ Chức","module":10,"roles":["SUPER_ADMIN"]},{"num":"10.5","id":"105-dashboard-thong-ke-csdl-304-doanh-nghiep","title":"Dashboard Thống Kê CSDL 304 Doanh Nghiệp","module":10,"roles":["SUPER_ADMIN","AUDITOR"]},{"num":"11.1","id":"111-cong-tac-nghiep-cap-so-khcn-ia-ban","title":"Cổng Tác Nghiệp Cấp Sở KH&amp;CN Địa Bàn","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.2","id":"112-trung-tam-kiem-duyet-ho-so-cap-so","title":"Trung Tâm Kiểm Duyệt Hồ Sơ Cấp Sở","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.3","id":"113-tham-inh-ho-so-doanh-nghiep-thuoc-tinh","title":"Thẩm Định Hồ Sơ Doanh Nghiệp Thuộc Tỉnh","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.4","id":"114-giam-sat-bai-toan-nhu-cau-tren-ia-ban-tinh","title":"Giám Sát Bài Toán Nhu Cầu Trên Địa Bàn Tỉnh","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.5","id":"115-giam-sat-co-hoi-hop-tac-ia-ban-sla-48h","title":"Giám Sát Cơ Hội Hợp Tác Địa Bàn (SLA 48h)","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.6","id":"116-tham-inh-anh-gia-cong-nghe-tt17-cap-so","title":"Thẩm Định Đánh Giá Công Nghệ TT17 Cấp Sở","module":11,"roles":["PROVINCIAL_ADMIN"]},{"num":"11.7","id":"117-phan-cong-can-bo-so-tac-nghiep","title":"Phân Công Cán Bộ Sở Tác Nghiệp","module":11,"roles":["PROVINCIAL_ADMIN"]}];
 
 let currentRole = 'ALL';
 let currentSearch = '';
 
+// Aliases for 100% interoperability with Next.js router
+ROLE_CONFIGS["EXPERT"] = ROLE_CONFIGS["VERIFIED_EXPERT"];
+ROLE_CONFIGS["ENTERPRISE"] = ROLE_CONFIGS["INNOVATION_ENTITY"];
+ROLE_CONFIGS["GOV"] = ROLE_CONFIGS["PROVINCIAL_ADMIN"];
+ROLE_CONFIGS["ADMIN"] = ROLE_CONFIGS["SUPER_ADMIN"];
+
 function initFilter() {
-  // Check URL hash, e.g. #role=BUYER or #search=xyz
+  // Check URL hash, e.g. #role=BUYER or #role=EXPERT or #search=xyz
   const hash = window.location.hash.replace('#', '');
   const params = new URLSearchParams(hash);
-  const hashRole = params.get('role');
+  let hashRole = params.get('role');
   const hashSearch = params.get('q');
   
+  if (hashRole === 'EXPERT') hashRole = 'VERIFIED_EXPERT';
+  if (hashRole === 'ENTERPRISE') hashRole = 'INNOVATION_ENTITY';
+  if (hashRole === 'GOV') hashRole = 'PROVINCIAL_ADMIN';
+  if (hashRole === 'ADMIN') hashRole = 'SUPER_ADMIN';
+
   if (hashRole && (hashRole === 'ALL' || ROLE_CONFIGS[hashRole])) {
     currentRole = hashRole;
   }

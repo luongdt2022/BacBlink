@@ -119,14 +119,14 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 hover:border-brand-300 transition">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-xs font-bold uppercase tracking-wider">Giải pháp Chào bán</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-brand-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-teal-50 text-brand-700 flex items-center justify-center">
               <Cpu className="w-4 h-4" />
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
             {isLoading ? "..." : kpi.totalOffers}
           </p>
-          <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
             <span className="text-emerald-600 font-bold flex items-center gap-0.5">
               <CheckCircle2 className="w-3 h-3" /> {kpi.publishedOffers} niêm yết
             </span>
@@ -146,7 +146,7 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
           <p className="text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-400">
             {isLoading ? "..." : (kpi.totalOffers * 14 + 128)}
           </p>
-          <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+          <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
             <TrendingUp className="w-3 h-3 text-emerald-500" />
             <span className="text-emerald-600 font-bold">+18.5%</span> so với tháng trước
           </p>
@@ -163,7 +163,7 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
           <p className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">
             {isLoading ? "..." : (inboundRequests.length || 0)}
           </p>
-          <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+          <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
             <Clock className="w-3 h-3 text-amber-500" />
             <span className="text-amber-700 font-bold">{pendingRequestsCount} yêu cầu chờ phản hồi</span>
           </p>
@@ -173,15 +173,15 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 hover:border-brand-300 transition">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
             <span className="text-xs font-bold uppercase tracking-wider">Thương Vụ Đang Đàm Phán</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 flex items-center justify-center">
               <Kanban className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-purple-700 dark:text-purple-400">
+          <p className="text-2xl sm:text-3xl font-black text-brand-700 dark:text-brand-300">
             {isLoading ? "..." : (activeNegotiationsCount || opportunities.length || 0)}
           </p>
-          <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3 text-purple-600" />
+          <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-brand-700" />
             <span>Tiến trình MOU / Chuyển giao</span>
           </p>
         </div>
@@ -217,7 +217,7 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
               <div className="py-10 text-center rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-200 dark:border-slate-700 space-y-2">
                 <Inbox className="w-8 h-8 text-slate-400 mx-auto" />
                 <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Chưa có yêu cầu hỏi mua mới nào</p>
-                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
                   Chủ động sử dụng Radar Ghép Nối AI để quét các bài toán tìm mua công nghệ trên sàn.
                 </p>
                 <Link
@@ -236,14 +236,14 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
                         <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
                           {req.senderOrgName || "Doanh nghiệp Mua"}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold shrink-0">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold shrink-0">
                           {req.requestCode}
                         </span>
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1">
                         {req.message || "Bày tỏ quan tâm đến giải pháp và mong muốn kết nối Deal Room."}
                       </p>
-                      <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                      <div className="flex items-center gap-3 text-xs text-slate-400">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3 text-amber-500" /> SLA &le; 48h
                         </span>
@@ -306,19 +306,19 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
                   >
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 shrink-0">
+                        <span className="text-xs font-extrabold px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 shrink-0">
                           TRL {item.trlLevel || "Chưa gắn"}
                         </span>
                         <h3 className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {item.title}
                         </h3>
                       </div>
-                      <p className="text-[11px] text-slate-500 truncate">
+                      <p className="text-xs text-slate-500 truncate">
                         {item.sectorName || "Lĩnh vực công nghệ"} • Mã: {item.offerCode}
                       </p>
                     </div>
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
                         item.status === "APPROVED"
                           ? "bg-emerald-100 text-emerald-800"
                           : item.status === "PENDING"

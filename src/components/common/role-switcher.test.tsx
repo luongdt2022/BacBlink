@@ -53,8 +53,8 @@ describe('RoleSwitcher Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Chế Độ Kép (Dual Mode)')).toBeInTheDocument();
-      expect(screen.getByText('Bên Mua (Buyer)')).toBeInTheDocument();
-      expect(screen.getByText('Bên Bán (Seller)')).toBeInTheDocument();
+      expect(screen.getByText('Bên Mua')).toBeInTheDocument();
+      expect(screen.getByText('Bên Bán')).toBeInTheDocument();
     });
   });
 
@@ -75,10 +75,10 @@ describe('RoleSwitcher Component', () => {
     render(<RoleSwitcher />);
 
     await waitFor(() => {
-      expect(screen.getByText('Bên Bán (Seller)')).toBeInTheDocument();
+      expect(screen.getByText('Bên Bán')).toBeInTheDocument();
     });
 
-    const sellerBtn = screen.getByRole('button', { name: /Bên Bán \(Seller\)/i });
+    const sellerBtn = screen.getByRole('button', { name: /Bên Bán/i });
     fireEvent.click(sellerBtn);
 
     await waitFor(() => {

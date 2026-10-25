@@ -293,7 +293,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
 
     expect(screen.getByText("Quản Trị Viên Hệ Thống")).toBeInTheDocument();
     expect(screen.getByText("Góc Nhìn Giám Sát Thực Địa")).toBeInTheDocument();
-    expect(screen.getByText("Về Tổng Hành Dinh Quản Trị")).toBeInTheDocument();
+    expect(screen.getByText("Về Trung Tâm Quản Trị Hệ Thống")).toBeInTheDocument();
     expect(screen.getByText("Kho Chào bán Toàn sàn")).toBeInTheDocument();
     expect(screen.getByText("Bài toán Nhu cầu Toàn sàn")).toBeInTheDocument();
   });

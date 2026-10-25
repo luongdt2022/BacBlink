@@ -417,19 +417,19 @@ export default function MatchingRadarPage() {
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-semibold text-slate-600 dark:text-slate-300">
                           <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-[10px] text-slate-400">Lĩnh vực:</span>
+                            <span className="block text-xs text-slate-400">Lĩnh vực:</span>
                             <span className="text-emerald-700 dark:text-emerald-400 font-bold">100% Khớp</span>
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-[10px] text-slate-400">Mức TRL:</span>
+                            <span className="block text-xs text-slate-400">Mức TRL:</span>
                             <span className="text-brand-700 dark:text-cyan-400 font-bold">TRL {c.trlLevel}</span>
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-[10px] text-slate-400">Cấp thiết TNI:</span>
+                            <span className="block text-xs text-slate-400">Cấp thiết TNI:</span>
                             <span className="text-rose-600 dark:text-rose-400 font-bold">{c.tniScore}/100</span>
                           </div>
                           <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-[10px] text-slate-400">Bảo hộ SHTT:</span>
+                            <span className="block text-xs text-slate-400">Bảo hộ SHTT:</span>
                             <span className="text-amber-700 dark:text-amber-400 font-bold">{c.ipStatus === 'PATENT_GRANTED' ? 'Đã cấp bằng' : 'Đang xét'}</span>
                           </div>
                         </div>

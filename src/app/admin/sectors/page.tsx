@@ -14,7 +14,7 @@ import {
   ExternalLink,
   Edit2
 } from "lucide-react";
-import { AdminNav } from "@/components/admin/admin-nav";
+import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
@@ -260,8 +260,14 @@ export default function AdminSectorsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Navigation Bar */}
-        <AdminNav />
+        {/* Breadcrumbs */}
+        <AdminBreadcrumbs
+          items={[
+            { label: "Trang chủ", href: "/" },
+            { label: "Quản Trị Hệ Thống", href: "/admin" },
+            { label: "Danh Mục Lĩnh Vực & TT17" },
+          ]}
+        />
 
         {/* Header */}
         <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">

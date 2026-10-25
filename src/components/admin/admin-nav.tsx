@@ -30,9 +30,9 @@ export function AdminNav() {
     },
     {
       href: "/admin/org-tree",
-      label: "Cây 34 Tỉnh Thành",
+      label: "Cây Thư Mục 34 Tỉnh/Thành",
       icon: Network,
-      badge: "3 Miền",
+      badge: "34 Tỉnh/Thành",
     },
     {
       href: "/admin/sectors",

@@ -59,7 +59,7 @@ describe("OrgTreePage (TASK-07 Administrative Org Tree & Scoped RBAC)", () => {
   it("renders 3-tier organizational hierarchy with root central node and provincial units", async () => {
     render(<OrgTreePage />);
 
-    expect(await screen.findByText(/Cơ Cấu Cây Hành Chính 3 Cấp & Cơ Sở Liên Kết/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Cây Tổ Chức Mạng Lưới Đổi Mới Sáng Tạo/i)).toBeInTheDocument();
     expect(await screen.findByText(/Cơ quan Đầu mối Trung ương NacenTech/i)).toBeInTheDocument();
     expect(await screen.findByText(/Sở Khoa học và Công nghệ TP. Hà Nội/i)).toBeInTheDocument();
   });

@@ -312,7 +312,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 href="/admin"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 hover:text-brand-900 dark:text-brand-200 hover:underline"
               >
-                <span>Về Tổng Hành Dinh Quản Trị</span>
+                <span>Về Trung Tâm Quản Trị Hệ Thống</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -361,27 +361,27 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 if (!item.badge) return null;
                 if (item.badgeType === "coming-soon") {
                   return (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    <span className="ml-auto text-xs font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                       {item.badge}
                     </span>
                   );
                 }
                 if (item.badgeType === "count") {
                   return (
-                    <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white">
+                    <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500 text-white">
                       {item.badge}
                     </span>
                   );
                 }
                 if (item.badgeType === "new") {
                   return (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
+                    <span className="ml-auto text-xs font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
                       {item.badge}
                     </span>
                   );
                 }
                 return (
-                  <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                  <span className="ml-auto text-xs font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                     {item.badge}
                   </span>
                 );

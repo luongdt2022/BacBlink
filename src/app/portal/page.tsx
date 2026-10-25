@@ -15,6 +15,7 @@ import {
 import { authClient, UserContext } from "@/lib/auth-client";
 import { ExpertDashboard } from "@/components/expert-detail/expert-dashboard";
 import { SellerDashboard } from "@/components/portal/seller-dashboard";
+import { BuyerDashboard } from "@/components/portal/buyer-dashboard";
 
 interface PortalModule {
   Icon: LucideIcon;
@@ -95,22 +96,46 @@ function GeneralPortalDashboard({ user }: { user: UserContext | null }) {
 }
 
 export default function PortalDashboard() {
-  const [user, setUser] = useState<UserContext | null>(null);
-  const [activeRole, setActiveRole] = useState<string | null>(null);
+  const [user, setUser] = useState<UserContext | null>(() => authClient.getUser());
+  const [activeRole, setActiveRole] = useState<string | null>(() => {
+    const u = authClient.getUser();
+    if (typeof window === "undefined") return null;
+    const isEnterprise =
+      u?.role?.toUpperCase() === "BUYER" ||
+      u?.role?.toUpperCase() === "SELLER" ||
+      u?.role?.toUpperCase() === "INNOVATION_ENTITY";
+    const cached = isEnterprise ? localStorage.getItem("nacentwin_active_role") : null;
+    if (cached) return cached;
+    if (u?.role?.toUpperCase() === "SELLER") return "SELLER";
+    if (u?.role?.toUpperCase() === "BUYER" || u?.role?.toUpperCase() === "INNOVATION_ENTITY") return "BUYER";
+    return u?.role ?? null;
+  });
 
   useEffect(() => {
     const u = authClient.getUser();
     setUser(u);
-    const cached = localStorage.getItem("nacentwin_active_role");
+    const isEnterprise =
+      u?.role?.toUpperCase() === "BUYER" ||
+      u?.role?.toUpperCase() === "SELLER" ||
+      u?.role?.toUpperCase() === "INNOVATION_ENTITY";
+    const cached = isEnterprise ? localStorage.getItem("nacentwin_active_role") : null;
     if (cached) {
       setActiveRole(cached);
     } else if (u?.role?.toUpperCase() === "SELLER") {
       setActiveRole("SELLER");
-    } else if (u?.role?.toUpperCase() === "BUYER") {
+    } else if (u?.role?.toUpperCase() === "BUYER" || u?.role?.toUpperCase() === "INNOVATION_ENTITY") {
       setActiveRole("BUYER");
     } else {
       setActiveRole(u?.role ?? null);
     }
+
+    const handleStorageChange = () => {
+      const updated = localStorage.getItem("nacentwin_active_role");
+      if (updated) setActiveRole(updated);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const currentRole = (activeRole || user?.role || "").toUpperCase();
@@ -121,6 +146,10 @@ export default function PortalDashboard() {
 
   if (currentRole === "SELLER") {
     return <SellerDashboard user={user} />;
+  }
+
+  if (currentRole === "BUYER" || currentRole === "INNOVATION_ENTITY") {
+    return <BuyerDashboard user={user} />;
   }
 
   return <GeneralPortalDashboard user={user} />;

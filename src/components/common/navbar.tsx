@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { authClient, getRoleDisplayName, UserContext } from "@/lib/auth-client";
+import { authClient, getRoleDisplayName, getWorkspacePath, UserContext } from "@/lib/auth-client";
 import { useI18n, I18nToggle } from "./i18n-provider";
 import { ThemeToggle } from "./theme-toggle";
 import { ConfirmModal } from "./confirm-modal";
@@ -16,6 +16,9 @@ import {
   X,
   ChevronDown,
   UserRound,
+  LayoutDashboard,
+  Settings,
+  Briefcase,
 } from "lucide-react";
 
 export function Navbar() {
@@ -75,7 +78,6 @@ export function Navbar() {
     { href: "/huong-dan", label: t("user_guide") || "Hướng dẫn" },
     { href: "/dich-vu-khac", label: t("services") },
     { href: "/wireframes", label: t("wireframes") || "Wireframes" },
-    { href: "/dashboard", label: "Dashboard & CR" },
   ];
 
   const isActiveLink = (href: string) => href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -195,17 +197,18 @@ export function Navbar() {
                           <p className="truncate text-label font-bold text-text-primary dark:text-white">{user.fullName || user.email}</p>
                           <p className="truncate text-caption text-text-secondary dark:text-slate-400">{getRoleDisplayName(user.role)}</p>
                         </div>
-                        <Link href="/settings" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
+                        <Link href="/dashboard" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center gap-2 px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
+                          <LayoutDashboard className="size-4" aria-hidden="true" />
+                          Dashboard & CR
+                        </Link>
+                        <Link href={getWorkspacePath(user.role)} role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center gap-2 px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
+                          <Briefcase className="size-4" aria-hidden="true" />
+                          Không gian làm việc
+                        </Link>
+                        <Link href="/settings" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center gap-2 px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
+                          <Settings className="size-4" aria-hidden="true" />
                           Cài đặt tài khoản
                         </Link>
-                        <Link href="/assessments/tt17" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
-                          Đánh giá công nghệ (TT17)
-                        </Link>
-                        {authClient.hasRole(["PROVINCIAL_ADMIN", "PROVINCE_OFFICER", "PROVINCE_LEADER", "ADMIN", "SUPER_ADMIN"]) && (
-                          <Link href="/gov/assessments/tt17" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center px-3 text-label font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-slate-800">
-                            Thẩm định TT17 (Sở KH&CN)
-                          </Link>
-                        )}
                         <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setLogoutModalOpen(true); }} className="focus-ring flex min-h-11 w-full items-center gap-2 px-3 text-left text-label font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300">
                           <LogOut className="size-4" aria-hidden="true" />
                           {t("logout")}
@@ -280,6 +283,8 @@ export function Navbar() {
               </div>
             ) : (
               <div className="flex flex-wrap gap-3 border-t border-border-default py-3 sm:hidden">
+                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="focus-ring rounded-control px-4 py-3 text-label font-semibold text-brand-700 dark:text-brand-200">Dashboard & CR</Link>
+                <Link href={getWorkspacePath(user.role)} onClick={() => setMobileMenuOpen(false)} className="focus-ring rounded-control px-4 py-3 text-label font-semibold text-brand-700 dark:text-brand-200">Không gian làm việc</Link>
                 <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="focus-ring rounded-control px-4 py-3 text-label font-semibold text-brand-700 dark:text-brand-200">Cài đặt tài khoản</Link>
                 <button type="button" onClick={() => { setMobileMenuOpen(false); setLogoutModalOpen(true); }} className="focus-ring rounded-control px-4 py-3 text-label font-semibold text-brand-700 dark:text-brand-200">{t("logout")}</button>
               </div>

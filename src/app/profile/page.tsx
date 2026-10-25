@@ -323,7 +323,7 @@ export default function ProfilePage() {
                     <div className="font-bold text-xs text-teal-900 dark:text-teal-300 flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-teal-700" /> Console Quản Trị
                     </div>
-                    <p className="text-xs text-slate-500">Tổng hành dinh giám sát và kiểm duyệt toàn quốc.</p>
+                    <p className="text-xs text-slate-500">Trung tâm quản trị giám sát và kiểm duyệt toàn quốc.</p>
                   </Link>
                 )}
 

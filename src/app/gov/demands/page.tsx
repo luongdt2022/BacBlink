@@ -263,7 +263,7 @@ export default function GovDemandsPage() {
 
             {/* Sort Switcher */}
             <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary dark:text-slate-400 shrink-0">
-              <span className="text-[11px] shrink-0">Sắp xếp:</span>
+              <span className="text-caption shrink-0">Sắp xếp:</span>
               <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 border border-slate-200 dark:border-slate-700">
                 <button
                   type="button"
@@ -299,7 +299,7 @@ export default function GovDemandsPage() {
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="text-brand-600 dark:text-brand-400 hover:underline font-medium text-[11px]"
+                className="text-brand-600 dark:text-brand-400 hover:underline font-medium text-caption"
               >
                 Xóa bộ lọc tìm kiếm
               </button>

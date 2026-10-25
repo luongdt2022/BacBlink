@@ -28,14 +28,22 @@ describe("Navbar account menu", () => {
 
   afterEach(cleanup);
 
-  it("opens the authenticated account menu with settings and logout", async () => {
+  it("opens the authenticated account menu with dashboard, workspace, settings and logout, and hides dashboard from main nav", async () => {
     render(<Navbar />);
+
+    // Verify Dashboard & CR is not in the main navigation bar
+    const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
+    expect(within(mainNav).queryByText("Dashboard & CR")).not.toBeInTheDocument();
+
     const trigger = await screen.findByRole("button", { name: "Mở menu tài khoản" });
     fireEvent.click(trigger);
 
     const menu = screen.getByRole("menu", { name: "Menu tài khoản" });
+    expect(within(menu).getByRole("menuitem", { name: /Dashboard & CR/i })).toHaveAttribute("href", "/dashboard");
+    expect(within(menu).getByRole("menuitem", { name: /Không gian làm việc/i })).toHaveAttribute("href", "/portal");
     expect(within(menu).getByRole("menuitem", { name: "Cài đặt tài khoản" })).toHaveAttribute("href", "/settings");
     expect(within(menu).getByRole("menuitem", { name: "Đăng xuất" })).toBeVisible();
+    expect(within(menu).queryByText(/Đánh giá công nghệ \(TT17\)/i)).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-expanded", "true");
 
     fireEvent.mouseDown(document.body);

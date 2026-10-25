@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { AppButton } from "@/components/ui/design-system";
 import { authClient, UserContext } from "@/lib/auth-client";
 import { Async, UXState } from "@/components/ui/async";
@@ -67,19 +68,19 @@ function formatIpStatus(status?: string | null): { label: string; color: string 
     case "TRADE_SECRET":
       return {
         label: "Bí mật kinh doanh",
-        color: "bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300",
+        color: "bg-brand-50 text-brand-800 border-brand-300 dark:bg-brand-950/60 dark:text-brand-300",
       };
     case "PATENT_PENDING":
     case "PATENT_APPLICATION":
       return {
         label: "Đang thẩm định đơn SHTT",
-        color: "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300",
+        color: "bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300",
       };
     case "SOFTWARE_COPYRIGHT":
     case "COPYRIGHT_REGISTERED":
       return {
         label: "Bản quyền / Quyền tác giả",
-        color: "bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300",
+        color: "bg-brand-100 text-brand-800 border-brand-300 dark:bg-brand-950/60 dark:text-brand-300",
       };
     case "NONE":
     default:
@@ -103,7 +104,7 @@ function formatTrl(level?: number | null): { label: string; desc: string; color:
     return {
       label: `TRL ${l}/9`,
       desc: "Thử nghiệm thực địa / Tiền thương mại",
-      color: "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300",
+      color: "bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300",
     };
   }
   if (l >= 4) {
@@ -183,12 +184,35 @@ const PROVINCE_MAP: Record<string, string> = {
 };
 
 
-export default function GovDashboard() {
+function GovDashboardContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const tabParam = searchParams.get("tab")?.toUpperCase();
+  const activeTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" = useMemo(() => {
+    if (
+      tabParam === "EXPERT" ||
+      tabParam === "SHOP" ||
+      tabParam === "DEMAND" ||
+      tabParam === "ACCOUNT" ||
+      tabParam === "ALL"
+    ) {
+      return tabParam;
+    }
+    return "ALL";
+  }, [tabParam]);
+
+  const handleTabChange = (newTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT") => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", newTab);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   const [user, setUser] = useState<UserContext | null>(null);
   const [items, setItems] = useState<GovApprovalItem[]>([]);
   const [sectorNames, setSectorNames] = useState<Record<string, string>>({});
   const [uxState, setUxState] = useState<UXState>("loading");
-  const [activeTab, setActiveTab] = useState<"ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT">("EXPERT");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState<GovApprovalItem | null>(null);
   const [reviewAction, setReviewAction] = useState<"APPROVE" | "REJECT" | "REQUEST_CHANGES" | null>(null);
@@ -426,7 +450,7 @@ export default function GovDashboard() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 font-semibold text-caption mb-2 border border-brand-200 dark:border-brand-900">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Phân Hệ Thẩm Định Cấp 2: Lãnh Đạo Sở KH&CN</span>
+            <span>Quy Trình Kiểm Duyệt 2 Cấp (Maker-Checker) • Phê Duyệt Cấp 2: Lãnh Đạo Sở KH&CN</span>
           </div>
           <h1 className="font-bold text-slate-900 dark:text-white tracking-tight type-page-title flex items-center gap-3">
             <span>Hàng Đợi Kiểm Duyệt Địa Bàn</span>
@@ -496,7 +520,7 @@ export default function GovDashboard() {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => handleTabChange(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-label transition cursor-pointer ${
                   isActive
                     ? "border-brand-700 text-brand-700 dark:border-brand-400 dark:text-brand-400"
@@ -586,10 +610,10 @@ export default function GovDashboard() {
                         <div>{item.id.slice(0, 8)}...</div>
                         {activeTab === "ALL" && (
                           <span
-                            className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${
+                            className={`inline-block text-caption font-bold px-1.5 py-0.5 rounded mt-0.5 ${
                               item.type === "TECHNOLOGY_OFFER" || item.type === "SHOP"
                                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                                : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                                : "bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300"
                             }`}
                           >
                             {item.type === "TECHNOLOGY_OFFER" || item.type === "SHOP"
@@ -753,7 +777,7 @@ export default function GovDashboard() {
                         >
                           {formatTrl(selectedItem.rawOffer?.trlLevel).label}
                         </span>
-                        <span className="block text-[11px] text-slate-500 mt-1 line-clamp-1">
+                        <span className="block text-caption text-slate-500 mt-1 line-clamp-1">
                           {formatTrl(selectedItem.rawOffer?.trlLevel).desc}
                         </span>
                       </div>
@@ -768,7 +792,7 @@ export default function GovDashboard() {
                           {formatIpStatus(selectedItem.rawOffer?.ipStatus).label}
                         </span>
                         {selectedItem.rawOffer?.ipRegistrationNumber && (
-                          <span className="block text-[11px] text-slate-500 mt-1 font-mono">
+                          <span className="block text-caption text-slate-500 mt-1 font-mono">
                             Số: {selectedItem.rawOffer.ipRegistrationNumber}
                           </span>
                         )}
@@ -809,7 +833,7 @@ export default function GovDashboard() {
                                 alt="Ảnh đại diện"
                                 className="w-full h-full object-cover"
                               />
-                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center font-bold py-0.5">
+                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-caption text-center font-bold py-0.5">
                                 Ảnh chính
                               </span>
                             </div>
@@ -1078,5 +1102,13 @@ export default function GovDashboard() {
         );
       })()}
     </div>
+  );
+}
+
+export default function GovDashboard() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Đang tải Cổng công vụ...</div>}>
+      <GovDashboardContent />
+    </Suspense>
   );
 }

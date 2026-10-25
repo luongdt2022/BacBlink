@@ -20,7 +20,7 @@ import {
   Building,
 } from "lucide-react";
 import { AppButton } from "@/components/ui/design-system";
-import { AdminNav } from "@/components/admin/admin-nav";
+import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { Async } from "@/components/ui/async";
 import {
   orgTreeApi,
@@ -297,8 +297,14 @@ export default function OrgTreePage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Navigation Hub */}
-      <AdminNav />
+      {/* Breadcrumbs */}
+      <AdminBreadcrumbs
+        items={[
+          { label: "Trang chủ", href: "/" },
+          { label: "Quản Trị Hệ Thống", href: "/admin" },
+          { label: "Cây Thư Mục 34 Tỉnh/Thành" },
+        ]}
+      />
 
       {/* Toast Thông Báo */}
       {toastMessage && (
@@ -312,10 +318,10 @@ export default function OrgTreePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-hero font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Cơ Cấu Cây Hành Chính 3 Cấp & Cơ Sở Liên Kết (Online CRUD)
+            Cây Tổ Chức Mạng Lưới Đổi Mới Sáng Tạo (34 Tỉnh/Thành Trọng Điểm)
           </h1>
           <p className="text-body text-slate-600 dark:text-slate-300 mt-1">
-            Mạng lưới hành chính phân cấp 3 tầng kết nối trực tiếp PostgreSQL: Trung ương → Sở KH&CN Tỉnh → Viện/Trường Cơ sở.
+            Quản Trị Cây Thư Mục & Phân Cấp Hành Chính 34 Tỉnh/Thành kết nối trực tiếp PostgreSQL: Trung ương → Sở KH&CN Tỉnh → Viện/Trường Cơ sở.
           </p>
         </div>
 

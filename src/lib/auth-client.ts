@@ -98,6 +98,32 @@ export function getRedirectPathByRole(role?: string | null): string {
   return "/";
 }
 
+/** Trả về đường dẫn Không gian làm việc (Workspace) chính xác theo Role */
+export function getWorkspacePath(role?: string | null): string {
+  if (!role) return "/portal";
+
+  const upper = role.toUpperCase();
+
+  // Tầng 0: Cổng Quản trị Tối cao
+  if (upper === "SUPER_ADMIN" || upper === "OPERATOR_ADMIN" || upper === "ADMIN") {
+    return "/admin";
+  }
+
+  // Tầng 1: Cổng Thẩm định Nhà nước & 34 Sở Tỉnh trọng điểm
+  if (
+    upper === "PROVINCIAL_ADMIN" ||
+    upper === "SECTOR_ADMIN" ||
+    upper === "CLUSTER_ADMIN" ||
+    upper === "PROVINCE_OFFICER" ||
+    upper === "PROVINCE_LEADER"
+  ) {
+    return "/gov";
+  }
+
+  // Tầng 2 & 3: Không gian Thị trường, Chuyên gia và Đại chúng
+  return "/portal";
+}
+
 const TOKEN_KEY = "nacentwin_access_token";
 const USER_KEY = "nacentwin_user_context";
 

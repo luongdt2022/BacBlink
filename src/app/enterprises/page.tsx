@@ -242,7 +242,7 @@ export default function EnterprisesDirectoryPage() {
             Danh Bạ Doanh Nghiệp & Chủ Thể Đổi Mới Sáng Tạo
           </h1>
           <p className="mt-3 text-base sm:text-lg text-slate-300 max-w-3xl leading-relaxed">
-            Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của các doanh nghiệp trên 63 tỉnh/thành toàn quốc.
+            Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của các doanh nghiệp trên 34 tỉnh/thành trọng điểm ĐMST toàn quốc.
           </p>
 
           {/* Search Box */}

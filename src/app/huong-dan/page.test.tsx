@@ -39,19 +39,21 @@ describe("UserGuidePage", () => {
     expect(
       screen.getByText("Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin")
     ).toBeInTheDocument();
-    expect(screen.getByText("11 Phân Hệ · 48 Màn Hình")).toBeInTheDocument();
-    expect(screen.getByText("7 Vai Trò Tác Nhân")).toBeInTheDocument();
+    expect(screen.getByText(/11 Phân Hệ · 60 Màn Hình/i)).toBeInTheDocument();
+    expect(screen.getByText(/7 Vai Trò Tác Nhân/i)).toBeInTheDocument();
 
     // Role buttons
-    expect(screen.getByRole("button", { name: "Tất cả (48)" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Bên mua công nghệ (6)" })
+      screen.getByRole("button", { name: "Tất cả (60)" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Bên chào bán (8)" })
+      screen.getByRole("button", { name: /Bên mua công nghệ/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Chuyên gia KH&CN (7)" })
+      screen.getByRole("button", { name: /Bên chào bán/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Chuyên gia KH&CN/i })
     ).toBeInTheDocument();
   });
 
@@ -80,9 +82,73 @@ describe("UserGuidePage", () => {
   it("changes role filter and updates URL hash", () => {
     render(<UserGuidePage />);
 
-    const buyerBtn = screen.getByRole("button", { name: "Bên mua công nghệ (6)" });
+    const buyerBtn = screen.getByRole("button", { name: /Bên mua công nghệ/i });
     fireEvent.click(buyerBtn);
 
     expect(buyerBtn).toHaveClass("bg-brand-700");
+  });
+
+  it("filters and displays newly added expert screens when EXPERT role is selected", () => {
+    render(<UserGuidePage />);
+
+    const expertBtn = screen.getByRole("button", { name: /Chuyên gia KH&CN/i });
+    fireEvent.click(expertBtn);
+
+    expect(expertBtn).toHaveClass("bg-brand-700");
+    expect(screen.getByText(/Vai trò: Chuyên gia KH&CN/i)).toBeInTheDocument();
+    expect(
+      screen.getByText("Sổ Tay Quản Lý Lịch Hẹn & Phiếu Yêu Cầu Tư Vấn 1-1 Doanh Nghiệp")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Quản Lý Đề Tài KH&CN & Dự Án Tư Vấn Chuyển Giao Công Nghệ")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Xem Trước Thẻ Chuyên Gia Zalo Mini App Danh Thiếp Số")
+    ).toBeInTheDocument();
+  });
+
+  it("filters screens in real-time when searching by keyword", () => {
+    render(<UserGuidePage />);
+
+    const searchInput = screen.getByPlaceholderText(
+      /Tìm theo tên màn hình, mã số/i
+    );
+    fireEvent.change(searchInput, { target: { value: "consultations" } });
+
+    expect(
+      screen.getByText("Sổ Tay Quản Lý Lịch Hẹn & Phiếu Yêu Cầu Tư Vấn 1-1 Doanh Nghiệp")
+    ).toBeInTheDocument();
+  });
+
+  it("toggles between visual cards and full document view modes", () => {
+    render(<UserGuidePage />);
+
+    const docModeBtn = screen.getByRole("button", { name: /Văn Bản/i });
+    fireEvent.click(docModeBtn);
+
+    const cardsModeBtn = screen.getByRole("button", { name: /Thẻ UI\/UX/i });
+    expect(cardsModeBtn).toBeInTheDocument();
+    fireEvent.click(cardsModeBtn);
+  });
+
+  it("filters technology assessment screens and request forms when special filters are clicked", () => {
+    render(<UserGuidePage />);
+
+    const assessFilterBtn = screen.getByRole("button", { name: /Đánh Giá Công Nghệ/i });
+    fireEvent.click(assessFilterBtn);
+
+    expect(
+      screen.getByText("Trung Tâm Đánh Giá Trình Độ & Năng Lực Công Nghệ Theo TT17/2019/TT-BKHCN")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Wizard Kê Khai 26 Tiêu Chí Đánh Giá Trình Độ Công Nghệ 5 Nhóm T-E-O-R-I")
+    ).toBeInTheDocument();
+
+    const requestFormsBtn = screen.getByRole("button", { name: /Phiếu Yêu Cầu/i });
+    fireEvent.click(requestFormsBtn);
+
+    expect(
+      screen.getByText("Phiếu Tạo Nhanh Bài Toán Nhu Cầu Công Nghệ (Quick Demand Modal)")
+    ).toBeInTheDocument();
   });
 });

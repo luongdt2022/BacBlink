@@ -356,17 +356,17 @@ export default function PublicDemandsPage() {
 
       {/* SEARCH & FILTERS BAR (ĐẦY ĐỦ 10 LĨNH VỰC TT17 & KHOẢNG NGÂN SÁCH) */}
       <div className="bg-white dark:bg-slate-900 border-b border-border-default dark:border-slate-800 sticky top-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex-1 w-full flex flex-wrap items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
+          <div className="flex-1 flex flex-wrap items-center gap-2.5">
             {/* Search Input */}
-            <div className="relative flex-1 min-w-[240px]">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Tìm kiếm tên bài toán, công đoạn, giải pháp mong muốn..."
+                placeholder="Tìm kiếm tên bài toán, công đoạn, giải pháp..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 pl-10 pr-4 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-control focus:ring-2 focus:ring-brand-500 outline-none transition font-medium text-slate-900 dark:text-white"
+                className="w-full h-10 pl-10 pr-4 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-control focus:ring-2 focus:ring-brand-500 outline-none transition font-medium text-slate-900 dark:text-white"
               />
             </div>
 
@@ -374,7 +374,7 @@ export default function PublicDemandsPage() {
             <select
               value={filterSector}
               onChange={(e) => setFilterSector(e.target.value)}
-              className="form-control text-sm font-semibold max-w-[260px]"
+              className="form-control text-xs sm:text-sm font-semibold h-10 w-auto max-w-[170px] xl:max-w-[190px] shrink-0"
             >
               <option value="">Tất cả Lĩnh vực</option>
               {sectors.map((sec) => (
@@ -388,24 +388,24 @@ export default function PublicDemandsPage() {
             <select
               value={filterBudget}
               onChange={(e) => setFilterBudget(e.target.value)}
-              className="form-control text-sm font-semibold max-w-[200px]"
+              className="form-control text-xs sm:text-sm font-semibold h-10 w-auto max-w-[140px] xl:max-w-[160px] shrink-0"
             >
               <option value="">Tất cả Ngân Sách</option>
-              <option value="LT_500M">Dưới 500 triệu VNĐ</option>
-              <option value="500M_1B">500 triệu – 1 tỷ VNĐ</option>
-              <option value="1B_3B">1 – 3 tỷ VNĐ</option>
-              <option value="GT_3B">Trên 3 tỷ VNĐ</option>
+              <option value="LT_500M">Dưới 500 triệu</option>
+              <option value="500M_1B">500 triệu – 1 tỷ</option>
+              <option value="1B_3B">1 – 3 tỷ</option>
+              <option value="GT_3B">Trên 3 tỷ</option>
             </select>
 
             {/* TNI Level Filter */}
             <select
               value={filterTni}
               onChange={(e) => setFilterTni(e.target.value)}
-              className="form-control text-sm font-semibold max-w-[220px]"
+              className="form-control text-xs sm:text-sm font-semibold h-10 w-auto max-w-[150px] xl:max-w-[175px] shrink-0"
             >
-              <option value="">Tất cả Mức Ưu Tiên TNI</option>
-              <option value="VERY_HIGH">TNI Rất Cao (≥ 80) — Ưu tiên P0</option>
-              <option value="HIGH">TNI Cao (65 - 79) — Ưu tiên P1</option>
+              <option value="">Tất cả Mức TNI</option>
+              <option value="VERY_HIGH">TNI Rất Cao (≥ 80)</option>
+              <option value="HIGH">TNI Cao (65 - 79)</option>
               <option value="MEDIUM">TNI Trung Bình (50 - 64)</option>
             </select>
 
@@ -423,7 +423,7 @@ export default function PublicDemandsPage() {
                 }
                 setFilterBookmarkedOnly((prev) => !prev);
               }}
-              className={`h-11 px-3.5 text-xs font-bold rounded-control flex items-center gap-1.5 transition border shrink-0 ${
+              className={`h-10 px-3 text-xs font-bold rounded-control flex items-center gap-1.5 transition border shrink-0 whitespace-nowrap ${
                 filterBookmarkedOnly
                   ? "bg-amber-500 border-amber-600 text-white shadow-sm"
                   : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-amber-400"
@@ -452,7 +452,7 @@ export default function PublicDemandsPage() {
                   setFilterTni("");
                   setFilterBookmarkedOnly(false);
                 }}
-                className="h-11 px-3 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 border border-slate-200 dark:border-slate-700 rounded-control transition"
+                className="h-10 px-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 border border-slate-200 dark:border-slate-700 rounded-control transition shrink-0 whitespace-nowrap"
                 title="Xóa bộ lọc"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Xóa lọc
@@ -460,7 +460,7 @@ export default function PublicDemandsPage() {
             )}
           </div>
 
-          <div className="text-xs text-text-secondary dark:text-slate-400 shrink-0">
+          <div className="text-xs text-text-secondary dark:text-slate-400 shrink-0 whitespace-nowrap self-center">
             Hiển thị <strong className="text-text-primary dark:text-white font-bold">{filteredDemands.length}</strong> bài toán đang tìm cung
           </div>
         </div>

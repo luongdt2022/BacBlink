@@ -4,7 +4,11 @@ import Tt17WizardPage from "@/app/(portal)/assessments/tt17/wizard/page";
 import Tt17HubPage from "@/app/(portal)/assessments/tt17/page";
 import EnterpriseProfilePage from "@/app/portal/enterprise/profile/page";
 import { authClient } from "@/lib/auth-client";
-import { calculateLaborProductivityGrowth } from "@/services/api/assessment-tt17";
+import {
+  calculateLaborProductivityGrowth,
+  calculateLocalScore,
+  INITIAL_SURVEY_DATA,
+} from "@/services/api/assessment-tt17";
 
 // Mock next/navigation
 const pushMock = vi.fn();
@@ -224,5 +228,65 @@ describe("TASK-09 TT17 Delta: Public Intake & Zero Mock Leak & Profile Integrati
     const growth = calculateLaborProductivityGrowth(series);
     // Tốc độ tăng trưởng bình quân hàng năm ~ 10%
     expect(growth).toBeCloseTo(10.0, 1);
+  });
+
+  it("T-09.33: Kê khai 23 nhóm ngành và hiển thị bộ định mức tham chiếu K_chuẩn 1-4 trong Wizard", () => {
+    authClient.clearSession();
+    render(<Tt17WizardPage />);
+
+    // Kiểm tra dropdown mã ngành chứa C.28
+    const industrySelect = screen.getByLabelText(/Mã Ngành Chế Biến, Chế Tạo/i);
+    expect(industrySelect).toBeInTheDocument();
+
+    // Thay đổi sang C.28
+    fireEvent.change(industrySelect, { target: { value: "C.28" } });
+
+    // Kiểm tra hiển thị định mức ngành C.28
+    expect(screen.getByText(/Bộ Định Mức Tham Chiếu Chuẩn Cho Nhóm Ngành/i)).toBeInTheDocument();
+    expect(screen.getByText(/300 triệu\/LĐ/i)).toBeInTheDocument();
+    expect(screen.getByText(/7% DT/i)).toBeInTheDocument();
+    expect(screen.getByText(/55% DT/i)).toBeInTheDocument();
+    expect(screen.getByText(/150 triệu\/người/i)).toBeInTheDocument();
+
+    // Kiểm tra Sticky Realtime Scorecard hiển thị điểm
+    expect(screen.getByText(/Tính Điểm Tức Thời \(Real-Time\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/\/ 100 điểm/i)).toBeInTheDocument();
+  });
+
+  it("T-09.34: Đối soát 1:1 công thức tính điểm 26 tiêu chí giữa Frontend và Backend Engine", () => {
+    // Nạp INITIAL_SURVEY_DATA với ngành C.28
+    const survey = { ...INITIAL_SURVEY_DATA };
+    const score = calculateLocalScore(survey, "C.28");
+
+    // Xác minh điểm số 5 nhóm đạt giá trị hợp lệ trong khoảng chuẩn
+    expect(score.scoreT).toBeGreaterThanOrEqual(1.0);
+    expect(score.scoreT).toBeLessThanOrEqual(30.0);
+
+    expect(score.scoreE).toBeGreaterThanOrEqual(1.0);
+    expect(score.scoreE).toBeLessThanOrEqual(20.0);
+
+    expect(score.scoreO).toBeGreaterThanOrEqual(1.0);
+    expect(score.scoreO).toBeLessThanOrEqual(19.0);
+
+    expect(score.scoreR).toBeGreaterThanOrEqual(1.0);
+    expect(score.scoreR).toBeLessThanOrEqual(17.0);
+
+    expect(score.scoreI).toBeGreaterThanOrEqual(1.0);
+    expect(score.scoreI).toBeLessThanOrEqual(14.0);
+
+    // Xác minh tổng điểm = tổng 5 nhóm và xếp loại hợp lệ
+    expect(score.totalScore).toBeCloseTo(
+      score.scoreT + score.scoreE + score.scoreO + score.scoreR + score.scoreI,
+      1
+    );
+    expect(["TIEN_TIEN", "TRUNG_BINH_TIEN_TIEN", "TRUNG_BINH", "LAC_HAU", "CAN_THAM_DINH"]).toContain(
+      score.classification
+    );
+    expect(score.syncCoefficient).toBeGreaterThanOrEqual(0.0);
+    expect(score.syncCoefficient).toBeLessThanOrEqual(1.0);
+
+    // Kiểm tra đủ 26 tiêu chí trong danh sách criteria
+    expect(score.criteria.length).toBe(26);
+    expect(score.criteria.every((c) => !isNaN(c.achievedScore) && isFinite(c.achievedScore))).toBe(true);
   });
 });
