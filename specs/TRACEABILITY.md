@@ -129,6 +129,10 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | Ma trận 10 Roles & Quyền hạn | `REQ-ADM-ROLE-001`, `FR-ADM-004` | T021, T024 | `GovernanceControllers.cs`, `src/app/admin/roles/page.tsx` | Vitest & API Contract test |
 | Gán vai trò & Scope cho tài khoản cán bộ | `REQ-ADM-ROLE-002`, `BR-ADM-008` | T022, T024 | `GovernanceControllers.cs`, `ApprovalService.cs` | Invariant escalation check & Audit test |
 | Cây thư mục 34 tỉnh thành trọng điểm & 3 Miền | `REQ-ADM-TREE-001`, `FR-ADM-006` | T023, T025 | `OrganizationTreeService.cs`, `src/app/admin/org-tree/page.tsx` | Tree explorer & province stats verified |
+| Trung Tâm Phê Duyệt Toàn Quốc & Bộ lọc 63 Tỉnh | `REQ-ADMIN-08`, `UI-ADMIN-08` | T048, T049, T050 | `apps/api/V1Compat/GovernanceControllers.cs`, `src/app/admin/approvals/page.tsx`, `layout.tsx` | Vitest 29/29 pass, API `GET /api/v1/admin/approvals/central-queue` verified |
+| Cảnh báo vi phạm SLA Cấp Sở 72h làm việc | `BR-ADMIN-SLA` | T044, T046, T047 | `ApprovalSlaMonitorWorker.cs`, `ApprovalService.cs`, `Configurations.cs` | Worker background job verified, badge đỏ `SLA_BREACHED` trên UI |
+| Phê Duyệt Can Thiệp / Vượt Cấp Tầng 0 (Admin Override) | `BR-ADMIN-OVERRIDE` | T045, T046, T048, T051 | `ApprovalRequest.cs`, `ApprovalService.cs`, `GovernanceControllers.cs` | Invariant tests 134/134 pass, Modal override validate $\ge 20$ chars, Optimistic lock 409 Conflict |
+| Kiểm thử 4 tầng Blackbox & Chaos Concurrency | `AC-DELTA-V4-01..05` | T053, T054, T055 | `tests/integration/Task07DeltaV4ApprovalQcTests.cs`, `tests/e2e/test_task07_delta_v4_admin_override_visualqa.py` | QC Blackbox 7/7 pass trên Postgres thật, Chaos anti-double spending pass, Visual QA 8.88/10 |
 
 ---
 

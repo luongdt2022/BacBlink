@@ -51,4 +51,17 @@
 - [x] T-09.26 [FE] Cập nhật `src/app/(portal)/assessments/tt17/wizard/page.tsx`: Bổ sung Modal chúc mừng và hiển thị tài khoản doanh nghiệp được cấp tự động (Email, Mật khẩu tạm thời, Nút Đăng nhập ngay, Nút Xem Báo cáo Phụ lục IV).
 - [x] T-09.27 [QC] Bổ sung Unit & Integration test cases trong `src/test/assessment-tt17.test.tsx` kiểm thử 4 cơ chế mới, chạy đạt 100% PASS.
 
+---
+
+### Phase 6: Delta v3 — Tái Cấu Trúc Form Kê Khai Phụ Lục I Theo "Phiếu Thu Thập Thực Tế" & Tích Hợp Định Mức 23 Nhóm Ngành [DELTA-TT17-V3]
+- [x] T-09.28 [SPEC] Hoàn thiện tài liệu `spec.md` & `BASIC_DESIGN_NACENTECH.md` bổ sung `REQ-09-010`, `REQ-09-011`, `BR-09-009` và Cross-Surface Impact Matrix.
+- [x] T-09.29 [DB] Tạo script migration CSDL `master_industry_benchmarks.sql` chứa đầy đủ bảng `assessment.industry_benchmarks` và 23 bản ghi seed data C.10 $\rightarrow$ C.32 từ sheet `Nhóm ngành`.
+- [x] T-09.30 [BE] Nâng cấp `Tt17ScoringEngine` trên Backend (.NET) ánh xạ toàn bộ công thức `Bảng khảo sát` và hệ số $K_{chuẩn 1 \rightarrow 4}$, xử lý an toàn mẫu số bằng 0 theo `BR-09-009`.
+- [x] T-09.31 [BE] Viết bộ Unit Tests xUnit cho `Tt17ScoringEngine` bao phủ các ca biên (Gbd=0, Mtt=0, Gdt=0) và kiểm chứng tính toán đúng 26 tiêu chí.
+- [x] T-09.32 [FE] Cập nhật TypeScript types & `calculateLocalScore()` trong `assessment-tt17.ts` tích hợp bộ hằng số 23 ngành, đồng bộ 100% với Backend.
+- [x] T-09.33 [FE] Tái cấu trúc `AssessmentWizardPage` (`/assessments/tt17/wizard/page.tsx`): 6 bước thân thiện theo `Phiếu thu thập`, Financial Grid 3 năm, Tooltips kế toán dẫn chiếu BCTC, 5 UX states.
+- [x] T-09.34 [QC] Viết và thực thi test suite kiểm thử toàn diện (Vitest Unit, DB Integration, Playwright E2E) đối soát điểm số 1:1 với Excel `Bảng khảo sát`.
+- [x] T-09.35 [INT] Trình nghiệm thu Gate 5 (`po-gate`), cập nhật `ROADMAP.md` và `TRACEABILITY.md`.
+
+
 

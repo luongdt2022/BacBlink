@@ -70,6 +70,21 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
   - Tích hợp nút *"Tra cứu MST"* cạnh ô nhập Mã số thuế và sự kiện phím tắt `Enter`: Gọi API `lookupTaxCode(taxCode)` tra cứu dữ liệu Cổng VietQR / CSDL Quốc gia, tự động điền Tên DN, Tỉnh thành, Địa chỉ nhà máy và thông báo kết quả qua Toast.
 - **`REQ-09-009` (Modal Chúc Mừng & Xác Nhận Cấp Tài Khoản Tự Động)**:
   - Khi khách vãng lai nộp bài đánh giá thành công (`autoProvisioned = true`), Wizard hiển thị Modal chúc mừng trang trọng chứa Mã hồ sơ khảo sát, Hộp thông báo màu hổ phách ghi rõ Tên đăng nhập (Email), Mật khẩu tạm thời, Nút *"Đăng Nhập Ngay Vào Hệ Thống"* và Nút *"Xem Báo Cáo Đánh Giá Phụ Lục IV"*.
+- **`REQ-09-010` (Tái Cấu Trúc Giao Diện Wizard 6 Bước Theo "Phiếu Thu Thập Thực Tế")**:
+  - Tái cấu trúc 6 bước kê khai bám sát 1:1 `Phiếu thu thập` trong file Excel SSOT 19.10:
+    - *Bước 1 (Mục A - Định danh & Phân ngành)*: Tự động tra cứu MST, chọn 1 trong 23 mã ngành C.10 $\rightarrow$ C.32 (tự động nạp bộ hệ số $K_{chuẩn 1 \rightarrow 4}$), quy mô vốn và lao động.
+    - *Bước 2 (Mục B - Máy móc, Thiết bị & Chuyển giao)*: Danh mục 03 dây chuyền chính, Nguyên giá $G_{bđ}$, Giá trị còn lại $G_{sx}$, Đầu tư mở rộng $G_{tbm1}$, Thay thế bảo dưỡng $G_{tbm2}$, Thiết bị số hóa $G_{sh}$, Checkbox loại chuyển giao công nghệ. Có Tooltip hướng dẫn lấy số liệu từ Mã 211 Bảng cân đối kế toán & Danh mục TSCĐ.
+    - *Bước 3 (Mục C - Hoạt động SXKD 3 Năm)*: Component bảng lưới Financial Matrix Grid nhập chuỗi số liệu 3 năm ($G_{sp}, G_{dt}, G_{cp}, P_{tt}, P$), Chi phí điện/than/xăng dầu $G_{nl}$, Chi phí nguyên vật liệu $G_{nvl}$, Checkbox chuẩn chất lượng SP (ISO/TCVN) và sáng kiến cải tiến Kaizen.
+    - *Bước 4 (Mục D - Nhân lực & Quản trị Môi trường)*: Cơ cấu lao động ($M, M_{tt}, M_{bc}, M_{ql}$), Chi phí đào tạo $G_{đthl}$, Checkbox 6 hệ thống quản lý (MES, ERP, PLM, PDM, PPS, SCM), SCADA/MDC, Chứng chỉ ISO 9001/14001, xử lý chất thải.
+    - *Bước 5 (Mục Đ - CNTT & Năng lực R&D)*: Hạ tầng CNTT, Chi phí phần mềm/CNTT $G_{tt}$, Cơ sở R&D, Nhân lực R&D $M_{r\&d}$, Chi phí R&D $G_{R\&D}$, Quỹ phát triển KH&CN.
+    - *Bước 6 (Mục E - Đổi mới Sáng tạo & Chuyển đổi số 4.0)*: Doanh thu SP mới, Văn bằng SHTT sáng chế/GPHI, Hợp tác Viện/Trường, Chiến lược 4.0, Checkbox 11 công nghệ 4.0 (Cloud, Robot, AR/VR, IoT, Big Data, Blockchain, In 3D...) và mức độ triển khai.
+- **`REQ-09-011` (Bảng Master Data Định Mức 23 Ngành Chế Biến Chế Tạo - `assessment.industry_benchmarks`)**:
+  - Lưu trữ 23 mã ngành VSIC (C.10 $\rightarrow$ C.32) cùng 4 hệ số định mức trung bình:
+    * $K_{chuẩn 1}$: Hệ số tự động hóa trung bình (triệu đồng/lao động).
+    * $K_{chuẩn 2}$: Hệ số chi phí năng lượng trung bình ($G_{nl} / G_{dt}$).
+    * $K_{chuẩn 3}$: Hệ số chi phí nguyên vật liệu trung bình ($G_{nvl} / G_{dt}$).
+    * $K_{chuẩn 4}$: Năng suất lao động trung bình (triệu đồng/người/năm).
+  - Cung cấp API `GET /api/v1/assessments/tt17/benchmarks` trả về danh mục 23 ngành và hệ số benchmark để Frontend tính live score đồng bộ 100% với Backend.
 
 ---
 
@@ -88,23 +103,37 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
   2. Tạo mới tài khoản người dùng với role `ENTERPRISE` liên kết với Email và Enterprise này.
   3. Gắn `enterprise_id` vào bản đánh giá `tt17_evaluations`, đóng băng trạng thái `SUBMITTED` và cấp quyền truy cập.
 - **`BR-09-008 (Tính toán Tự động Năng suất Lao động TC08 & Zero-Mock Engine)`**: Tuyệt đối không gán cứng giá trị cho TC08 (`s08 = 4.0`); hệ thống bắt buộc tính toán tự động tốc độ tăng năng suất lao động bình quân từ chuỗi tài chính 3 năm, đồng bộ 100% giữa Frontend và Backend Engine.
+- **`BR-09-009 (Bộ Quy Tắc Phòng Vệ Mẫu Số Bằng 0 & Phân Nhánh An Toàn - Defensive Division Rules)`**:
+  1. Nếu $G_{bđ} = 0 \rightarrow K_{kh} = 0\%$ (chấm 1 điểm).
+  2. Nếu $M_{tt} = 0 \rightarrow K_{tđh} = 0$ (chấm 1 điểm), $K_{ns} = 0$ (chấm 1 điểm).
+  3. Nếu $G_{dt} = 0 \rightarrow K_{cđ} = 0, K_{nl} = 0, K_{nvl} = 0, K_{tt} = 0, K_{R\&D} = 0$.
+  4. Tuyệt đối không sinh lỗi `NaN` hoặc `Infinity` trên giao diện người dùng; hiển thị cảnh báo hướng dẫn người dùng nhập doanh thu để hệ thống tính toán các chỉ số kinh tế.
 
 ---
 
 ## 5. YÊU CẦU DỮ LIỆU & SCHEMA CSDL (HYBRID JSONB ADR-0013)
 
-Bảng dữ liệu: `assessment.tt17_evaluations`
+### Bảng 1: `assessment.tt17_evaluations`
 - `id`: UUID (Primary Key)
 - `enterprise_id`: UUID (Khóa ngoại tham chiếu `enterprise.profiles`)
 - `assessment_year`: INT (Năm đánh giá, ví dụ: 2026)
 - `status`: VARCHAR(30) (`DRAFT`, `SUBMITTED`, `IN_REVIEW`, `CHANGES_REQUESTED`, `APPROVED`)
 - `scope_type`: VARCHAR(20) (`PROVINCE`)
 - `scope_id`: VARCHAR(10) (Mã tỉnh/thành: `HN`, `HP`, `HCM`...)
-- `survey_data_json`: JSONB (Lưu trữ toàn bộ thông tin kê khai Phụ lục I: danh mục máy móc thiết bị, chuỗi tài chính 3 năm, chứng chỉ ISO, dữ liệu R&D, thông tin liên hệ email/phone)
+- `survey_data_json`: JSONB (Lưu trữ toàn bộ thông tin kê khai Phiếu thu thập: máy móc, chuỗi tài chính 3 năm, điện/năng lượng, nguyên vật liệu, cơ cấu lao động, chứng chỉ, CNTT, R&D, CĐS)
 - `scores_json`: JSONB (Chi tiết điểm 26 tiêu chí, điểm 5 nhóm T-E-O-R-I, tổng điểm $\tau$, hệ số $T_{ĐB}$, xếp loại)
 - `reviewer_id`: UUID (Nullable - Cán bộ thẩm định)
 - `review_notes`: TEXT (Nhận xét của Hội đồng thẩm định)
 - `audit_trail_json`: JSONB (Lịch sử điều chỉnh điểm)
 - `created_at`, `updated_at`, `submitted_at`, `approved_at`: TIMESTAMPTZ
 - **Unique Constraint**: `(enterprise_id, assessment_year)` — Mỗi doanh nghiệp chỉ có 1 bản đánh giá chính thức cho mỗi năm.
+
+### Bảng 2: `assessment.industry_benchmarks` (Master Data Định Mức 23 Ngành)
+- `industry_code`: VARCHAR(10) (Primary Key, ví dụ: `C.10`, `C.11` ... `C.32`)
+- `industry_name`: VARCHAR(255) (Tên ngành công nghiệp chế biến chế tạo)
+- `k_chuan_1`: NUMERIC(10,2) (Hệ số tự động hóa trung bình - triệu đồng/lao động)
+- `k_chuan_2`: NUMERIC(6,4) (Hệ số chi phí năng lượng trung bình)
+- `k_chuan_3`: NUMERIC(6,4) (Hệ số chi phí nguyên vật liệu trung bình)
+- `k_chuan_4`: NUMERIC(10,2) (Năng suất lao động trung bình - triệu đồng/người/năm)
+- `created_at`, `updated_at`: TIMESTAMPTZ
 

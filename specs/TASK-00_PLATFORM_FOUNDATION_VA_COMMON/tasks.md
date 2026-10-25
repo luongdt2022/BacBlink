@@ -238,4 +238,21 @@
   - [x] Bổ sung test cases chuyên biệt trong `src/app/portal/portal-navigation-delta.test.tsx` kiểm chứng 3 Section và badges của Bên Mua.
   - [x] Chạy Vitest xác nhận 100% PASS (100% Green, 74/74 portal tests pass).
 
+---
+
+## Giai đoạn 18: Delta v14 (CR-2026-019) — Xây Dựng Bàn Làm Việc Tổng Quan Mua Sắm (Executive Buyer Dashboard) [`[FE-BUYER-DASHBOARD]`]
+
+- [x] `T-00.73` **[FE][DASHBOARD]** Xây dựng component `<BuyerDashboard />` tại `src/components/portal/buyer-dashboard.tsx`:
+  - [x] Executive Banner chào mừng Bên Mua kèm 3 nút Quick Actions: `+ Khai Báo Bài Toán Nhanh` (mở QuickDemandModal), `Khảo Sát Nhu Cầu (TNI 4 Bước)`, `Radar Ghép Nối AI`.
+  - [x] 4 KPI Cards hoạt động như đường link điều hướng sống (Bài toán đang mở $\rightarrow$ `/portal/buyer/demands`, Ứng viên AI $\rightarrow$ `/portal/matching/radar`, Deals đang trao đổi $\rightarrow$ `/portal/opportunities/pipeline`, Thỏa thuận đã ký MOU $\rightarrow$ `/portal/opportunities/pipeline`).
+  - [x] Widget 1: Tiến Trình Hợp Tác & Deal Room (liệt kê các thương vụ đang đàm phán kèm nút Vào Deal Room).
+  - [x] Widget 2: Danh sách Bài toán Đổi mới Công nghệ mới nhất kèm điểm cấp thiết TNI và nút mở Radar.
+- [x] `T-00.74` **[FE][ROUTING]** Tích hợp rẽ nhánh tại `src/app/portal/page.tsx`:
+  - [x] Render `<BuyerDashboard />` khi `currentRole === "BUYER" || currentRole === "INNOVATION_ENTITY"`.
+  - [x] Lắng nghe sự kiện `storage` cập nhật `activeRole` khi người dùng chuyển đổi chế độ kép trên Sidebar.
+- [x] `T-00.75` **[TEST][QC]** Viết test suite chuyên biệt và kiểm thử hồi quy:
+  - [x] Xây dựng `src/app/portal/buyer-dashboard.test.tsx` kiểm thử 4 trục chức năng đạt 4/4 PASS.
+  - [x] Xây dựng `src/app/portal/page.test.tsx` kiểm thử role-based routing đạt 2/2 PASS.
+  - [x] Toàn bộ portal test suites đạt 100% Green (85/85 tests).
+
 

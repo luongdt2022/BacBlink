@@ -413,7 +413,7 @@
       "name": "Lọc danh mục bài toán theo Lĩnh vực LV08",
       "status": "PASS",
       "expected": "Lọc chính xác",
-      "actual": "HTTP 200, 5 items"
+      "actual": "HTTP 200, 3 items"
     },
     {
       "id": "TC-PUB-05",
@@ -665,5 +665,5 @@
     }
   ],
   "defects": [],
-  "timestamp": "2026-10-22 19:21:14"
+  "timestamp": "2026-10-23 18:17:17"
 }

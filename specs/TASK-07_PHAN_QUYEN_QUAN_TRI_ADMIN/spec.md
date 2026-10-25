@@ -197,3 +197,195 @@ Trước Delta v6, tuyến `/admin/users` trên Web Portal bị `redirect("/admi
 
 
 
+
+
+---
+
+## 9. Spec Delta v4 (CR-2026-020): Trung Tâm Phê Duyệt Toàn Quốc & Năng Lực Vượt Cấp (Admin Override) [Delta v4]
+
+**Căn cứ thay đổi**: Quyết định PO `CR-2026-020` & HTML Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_admin_tong_hanh_dinh.html`).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+Trong mô hình phân cấp quản trị đa tầng, 63 Sở KH&CN Tỉnh/Thành được trao quyền tiếp nhận và sơ kiểm/thẩm định các loại hồ sơ (Chào bán công nghệ, Nhu cầu công nghệ, Nâng hạng Chuyên gia KH&CN, Hồ sơ Doanh nghiệp ĐMST). Tuy nhiên, trên thực tế xuất hiện các điểm nghẽn nghiêm trọng:
+1. **Nghẽn tắc SLA cấp Sở**: Một số Sở địa phương quá tải hoặc thiếu cán bộ chuyên trách dẫn đến hồ sơ bị tồn đọng quá thời hạn cam kết công vụ (SLA > 72h làm việc), ảnh hưởng trực tiếp đến quyền lợi của nhà khoa học và doanh nghiệp.
+2. **Thiếu cơ chế can thiệp tối cao**: Trước Delta v4, Quản trị viên Trung ương (`SUPER_ADMIN`, `OPERATOR_ADMIN`) chỉ có quyền xem hoặc hậu kiểm thu hồi sau khi Sở đã duyệt, nhưng **không có cơ chế can thiệp duyệt thay (Override)** đối với các hồ sơ đang bị Sở ngâm trễ hạn hoặc các đề tài trọng điểm cấp Quốc gia cần xử lý khẩn cấp.
+3. **Cơ cấu Menu phân mảnh**: Thanh Sidebar chưa được nhóm theo các khối chức năng điều hành, thiếu phân khu rõ ràng cho Trung tâm phê duyệt và giám sát SLA toàn quốc.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Requirements Delta)
+
+#### REQ-ADMIN-08: Trung Tâm Phê Duyệt Toàn Quốc & Quản Lý Hàng Đợi 63 Tỉnh/Thành
+- **Phạm vi hiển thị & Truy vấn**:
+  - Xây dựng Trung tâm Phê duyệt Toàn quốc tại `/admin/approvals` tập hợp toàn bộ hồ sơ đang chờ xử lý từ tất cả 63 Sở KH&CN trên toàn quốc (`Scope = GLOBAL`).
+  - Hỗ trợ bộ lọc đa chiều:
+    - Theo Địa phương: Dropdown 63 Sở KH&CN Tỉnh/Thành (Hà Nội, TP.HCM, Hải Phòng, Đà Nẵng, Cần Thơ...).
+    - Theo Loại hồ sơ: `TECH_SUPPLY` (Chào bán CN), `TECH_DEMAND` (Nhu cầu CN), `EXPERT` (Chuyên gia KH&CN), `INNOVATION_ENTITY` (Doanh nghiệp ĐMST).
+    - Theo Tình trạng SLA: Tất cả, Còn hạn (`SLA_NORMAL`), Sắp quá hạn (`SLA_WARNING`), Quá hạn (`SLA_BREACHED`).
+    - Ô tìm kiếm toàn văn theo Mã hồ sơ, Tên chủ thể, MST, Lĩnh vực.
+  - Hỗ trợ 3 Tabs điều hướng:
+    - Tab 1 (`/admin/approvals`): Tất cả hàng đợi phê duyệt toàn quốc.
+    - Tab 2 (`/admin/approvals?tab=sla`): Cảnh báo quá hạn SLA Sở tỉnh (chỉ hiển thị hồ sơ có `is_sla_breached = true`).
+    - Tab 3 (`/admin/approvals?tab=override`): Danh sách hồ sơ đã hoặc cần thực thi Phê duyệt Vượt cấp / Can thiệp.
+- **Năng lực Can thiệp Phê duyệt Vượt cấp (Admin Override)**:
+  - Cung cấp nút thao tác **[Duyệt Thay / Can Thiệp]** nổi bật bên cạnh nút **[Xem Chi Tiết]** trên từng dòng hồ sơ.
+  - Khi kích hoạt, hiển thị Modal can thiệp vượt cấp bắt buộc nhập lý do giải trình và cam kết trách nhiệm.
+  - Sau khi xác nhận thành công, hệ thống trực tiếp cấp quyền/chuyển trạng thái `APPROVED` cho hồ sơ, không cần chờ Sở địa phương duyệt nữa.
+
+### 3. Quy Tắc Nghiệp Vụ (Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Logic Nghiệp Vụ & Ràng Buộc Kỹ Thuật | Phản Ứng Khi Vi Phạm |
+| :--- | :--- | :--- | :--- |
+| **BR-ADMIN-SLA** | **Quy Tắc Tính Hạn SLA Thẩm Định Cấp Sở** | - Thời hạn SLA thẩm định hồ sơ tại Sở KH&CN địa phương mặc định là **72 giờ làm việc** (Working Hours: 08:00 - 17:00 từ Thứ 2 đến Thứ 6, trừ ngày nghỉ lễ theo Luật Lao động).<br>- Hệ thống chạy background job định kỳ mỗi 15 phút quét toàn bộ bảng `approval_requests` có `status IN ('PENDING_REVIEW', 'PENDING_APPROVAL')`.<br>- Nếu `current_time > submitted_at + 72 working hours` $\rightarrow$ Tự động chuyển cờ `is_sla_breached = true`, tính `sla_overdue_hours` và đánh dấu tag đỏ cảnh báo `SLA_BREACHED`. | Tự động kích hoạt cảnh báo đỏ trên UI và bắn notification nhắc nhở cán bộ Sở. |
+| **BR-ADMIN-OVERRIDE** | **Quy Tắc Phê Duyệt Vượt Cấp (Admin Override)** | - **Thẩm quyền thực thi**: CHỈ người dùng mang vai trò `SUPER_ADMIN` hoặc `OPERATOR_ADMIN` (Tầng 0) mới có quyền gọi API can thiệp duyệt thay (`POST /api/v1/admin/approvals/{id}/override`). Cán bộ cấp Sở (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) bị cấm tuyệt đối.<br>- **Điều kiện kích hoạt**: Hồ sơ phải thuộc một trong hai trường hợp: (1) Đã bị quá hạn SLA cấp Sở (`is_sla_breached == true`); hoặc (2) Có cờ khẩn cấp cấp Quốc gia (`is_national_priority == true`).<br>- **Bắt buộc nhập lý do giải trình**: Trường `override_reason` là bắt buộc, độ dài **tối thiểu 20 ký tự**, tối đa 1000 ký tự. Cấm khoảng trắng rỗng.<br>- **Cam kết trách nhiệm**: Bắt buộc trường `confirm_commitment: true` xác nhận chịu trách nhiệm trước Bộ KH&CN.<br>- **Khóa lạc quan (Optimistic Locking)**: Request bắt buộc gửi kèm `expected_version`. Nếu bản ghi đã bị Cán bộ Sở hoặc Admin khác cập nhật trước đó $\rightarrow$ Chặn với lỗi `409 Conflict`.<br>- **Thông báo & Lưu vết**: Tự động ghi bản ghi bất biến vào `approval_audit_logs` với action `ADMIN_OVERRIDE_APPROVE` và phát tán Domain Event `ApprovalOverriddenDomainEvent` gửi email + thông báo đến Sở địa phương sở tại. | - Thiếu lý do $\ge 20$ ký tự $\rightarrow$ `422 UnprocessableEntity` (`ERR_OVERRIDE_REASON_MIN_LENGTH`).<br>- Không đúng Role $\rightarrow$ `403 Forbidden`.<br>- Xung đột phiên bản $\rightarrow$ `409 Conflict` (`ERR_RECORD_ALREADY_MODIFIED`). |
+
+### 4. Giao Diện & Bố Cục UX (UI Specification)
+
+#### UI-ADMIN-08: Ma Trận 5 UX States & Bố Cục Accordion 4 Nhóm 8 Menu Items
+- **Cơ cấu Sidebar Accordion 4 Nhóm & 8 Menu Items**:
+  - **Nhóm 1: TRUNG TÂM ĐIỀU HÀNH**:
+    1. Tổng quan Dashboard 360° & BI Toàn quốc (`/admin`)
+  - **Nhóm 2: TRUNG TÂM PHÊ DUYỆT TOÀN QUỐC**:
+    2. Tất cả Hàng đợi Phê duyệt (`/admin/approvals`)
+    3. Cảnh báo Quá hạn SLA Sở Tỉnh (`/admin/approvals?tab=sla`)
+    4. Phê duyệt Vượt cấp / Can thiệp (`/admin/approvals?tab=override`)
+  - **Nhóm 3: QUẢN TRỊ DANH MỤC & CƠ CẤU**:
+    5. Quản lý 10 Vai trò (RBAC) (`/admin/users`)
+    6. Cây Tổ chức 63 Sở KH&CN Tỉnh/Thành (`/admin/org-tree`)
+    7. Danh mục 18 Ngành TT17 & TRL (`/admin/master-data`)
+  - **Nhóm 4: GIÁM SÁT & VẬN HÀNH**:
+    8. Nhật ký Kiểm toán Toàn quốc (Audit Logs) (`/admin/audit-logs`)
+    9. Cấu hình Tham số & SLA Hệ thống (`/admin/system-config`)
+- **Ma trận 5 Trạng Thái UX Chuẩn Hóa qua Component `<Async>`**:
+
+| Trạng Thái UX | Biểu Hiện Trên Giao Diện Trung Tâm Phê Duyệt (`/admin/approvals`) | Trải Nghiệm & Hành Động Người Dùng |
+| :--- | :--- | :--- |
+| **1. Loading** | Hiển thị 5 dòng Skeleton Table với hiệu ứng shimmer màu xám nhạt tại vùng bảng dữ liệu; các nút filter và tab ở trạng thái disabled. | Người dùng nhận biết hệ thống đang tải dữ liệu từ CSDL, không gây giật lag giao diện. |
+| **2. Empty** | Khi bộ lọc không tìm thấy hồ sơ nào (hoặc không có hồ sơ quá hạn SLA), hiển thị minh họa SVG chiếc hộp rỗng kèm thông báo: *"Không có hồ sơ nào cần xử lý trong phạm vi đã chọn."* | Nút bấm *"Đặt lại bộ lọc"* để đưa bảng về trạng thái mặc định. |
+| **3. Error** | Khi API ngắt kết nối mạng hoặc server trả về lỗi `500 InternalServerError`, hiển thị khối Alert màu đỏ kèm mã lỗi và nút *"Thử lại ngay"* (`retry()`). | Không làm sập toàn bộ trang dashboard admin, cô lập lỗi trong khung dữ liệu bảng. |
+| **4. Success** | Hiển thị bảng hàng đợi đầy đủ các cột thông tin, phân trang 10/25/50 bản ghi, highlight tag đỏ nhấp nháy cho hồ sơ quá hạn SLA, nút *"Duyệt Thay / Can Thiệp"* sẵn sàng thao tác. | Cho phép mở Modal can thiệp, lọc và tìm kiếm tức thì. |
+| **5. Partial / Updating** | Khi Admin vừa submit modal Duyệt can thiệp hoặc chuyển trang phân trang, dòng hồ sơ liên quan hiển thị spinner xoay nhẹ và lớp phủ mờ 50% trong thời gian gọi API. | Ngăn chặn double click (spam submit) và phản hồi trạng thái cập nhật mượt mà. |
+
+### 5. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **AC-DELTA-V4-01**: Truy cập `/admin` hiển thị Sidebar gồm đủ 4 nhóm Accordion và 8 menu items đúng đường dẫn và cấu trúc thẩm quyền.
+- **AC-DELTA-V4-02**: Truy cập `/admin/approvals` hiển thị bảng hàng đợi với dữ liệu từ 63 Sở KH&CN toàn quốc, hỗ trợ lọc theo từng Tỉnh/Thành và Loại hồ sơ.
+- **AC-DELTA-V4-03**: Các hồ sơ quá hạn SLA (> 72h làm việc) tự động hiển thị badge đỏ nhấp nháy `SLA_BREACHED` kèm số giờ quá hạn cụ thể theo `BR-ADMIN-SLA`.
+- **AC-DELTA-V4-04**: Bấm nút [Duyệt Thay / Can Thiệp] mở Modal "Admin Override". Nếu nhập lý do dưới 20 ký tự hoặc chưa tích cam kết, nút [Xác Nhận Duyệt Can Thiệp] bị disabled và hiển thị thông báo lỗi.
+- **AC-DELTA-V4-05**: Khi submit duyệt can thiệp hợp lệ, hệ thống gọi API `POST /api/v1/admin/approvals/{id}/override`, cập nhật trạng thái `APPROVED`, ghi Audit Log bất biến và gửi thông báo về Sở KH&CN liên quan. Nếu phiên bản bị xung đột, trả về mã `409 Conflict` theo `BR-ADMIN-OVERRIDE`.
+
+---
+
+## PHẦN 8: DELTA V5 — CHUẨN HÓA CỔNG CÔNG VỤ CẤP SỞ KH&CN (`/gov`) VỚI SIDEBAR ACCORDION 4 NHÓM & 3D SCOPED RBAC
+
+### 1. Bối Cảnh Nghiệp Vụ & Mục Tiêu (PO-DEC-20261023-02)
+- Cổng Công Vụ Cấp Sở KH&CN (`/gov/*`) phục vụ các Cán bộ và Lãnh đạo của 63 Sở KH&CN tỉnh thành (vai trò `PROVINCIAL_ADMIN`, `PROVINCE_OFFICER`, `PROVINCE_LEADER`).
+- Khắc phục tình trạng layout cũ chỉ có thanh tab ngang mỏng trên đỉnh, làm mất định hướng không gian làm việc và che giấu các tính năng quan trọng (`/gov/demands`, `/gov/approvals/enterprises`).
+- Nâng cấp đồng bộ layout của `/gov` sang cấu trúc **Sidebar Menu bên trái dạng Accordion 4 nhóm** tương tự `/admin`.
+
+### 2. Ma Trận Quy Tắc Nghiệp Vụ (Business Rules - Delta v5)
+- **`BR-GOV-SIDEBAR-01`**: Mọi cán bộ Sở KH&CN khi đăng nhập vào `/gov/*` bắt buộc phải nhìn thấy Sidebar Menu bên trái với chiều rộng cố định `w-72` trên Desktop (có thể thu gọn/mở dạng Drawer trên màn hình nhỏ).
+- **`BR-GOV-SIDEBAR-02`**: Cây điều hướng bao gồm 4 nhóm Accordion mở mặc định:
+  - **Nhóm 1: Kiểm Duyệt Hồ Sơ Địa Bàn**:
+    1. *Tất cả hàng đợi* (`/gov?tab=ALL`)
+    2. *Chuyên gia KH&CN* (`/gov?tab=EXPERT`)
+    3. *Shop Chào Bán / Sáng chế TRL* (`/gov?tab=SHOP`)
+    4. *Nhu cầu Công nghệ* (`/gov?tab=DEMAND`)
+    5. *Tài khoản Pháp nhân / DN ĐMST* (`/gov?tab=ACCOUNT` & `/gov/approvals/enterprises`)
+  - **Nhóm 2: Thẩm Định Công Nghệ TT17**:
+    6. *Hội đồng Chấm điểm TT17* (`/gov/assessments/tt17`)
+  - **Nhóm 3: Giám Sát Cung - Cầu & Địa Bàn**:
+    7. *Tiến trình Đàm phán & SLA 48h* (`/gov/opportunities`)
+    8. *Bài toán Nhu cầu DNNVV Địa bàn* (`/gov/demands`)
+  - **Nhóm 4: Quản Trị Công Vụ & Nhân Sự Sở**:
+    9. *Phân công Cán bộ & Chuyên viên* (`/gov/settings/staff`)
+- **`BR-GOV-SCOPE-03`**: Sidebar Header hiển thị huy hiệu `TẦNG 1: QUẢN TRỊ NHÀ NƯỚC`, tên cơ quan `Sở KH&CN [Tỉnh/Thành]`, mã Scope (`HN`, `SG`, `HP`...) và cam kết `SLA <= 48h`.
+- **`BR-GOV-LABEL-04`**: Khắc phục nhầm lẫn thuật ngữ Maker-Checker. Sửa badge tiêu đề trên Header `/gov` thành: `Quy Trình Kiểm Duyệt 2 Cấp (Maker-Checker) • Phê Duyệt Cấp 2: Lãnh Đạo Sở KH&CN`.
+- **`BR-GOV-ISOLATION-05`**: Dữ liệu danh sách trong toàn bộ các trang `/gov/*` tuyệt đối bị cô lập theo địa bàn được phân quyền (`scope_type = 'PROVINCE'` & `scope_id = @User.ScopeId`), không thể truy xuất hồ sơ của địa phương khác.
+
+### 3. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria - Delta v5)
+- **AC-DELTA-V5-01**: Truy cập `/gov` hiển thị Sidebar Menu bên trái gồm đủ 4 nhóm Accordion và 9 menu items với đầy đủ icon và trạng thái active tương ứng với URL/Tab hiện tại.
+- **AC-DELTA-V5-02**: Bấm vào các mục trong Nhóm 1 chuyển đúng tab lọc dữ liệu trên `/gov` (`EXPERT`, `SHOP`, `DEMAND`, `ACCOUNT`, `ALL`) và cập nhật URL query param không tải lại trang.
+- **AC-DELTA-V5-03**: Nối thông suốt liên kết đến `/gov/demands` và `/gov/approvals/enterprises` trên Sidebar, không còn route bị sót.
+- **AC-DELTA-V5-04**: Header hiển thị rõ ràng địa bàn thẩm quyền (ví dụ: `Hà Nội (HN)`) và SLA $\le 48\text{h}$.
+- **AC-DELTA-V5-05**: Không làm gãy chức năng duyệt hồ sơ của Cán bộ Sở, 100% test case hồi quy của phân hệ `/gov` tiếp tục pass.
+
+
+
+---
+
+## 10. Đặc Tả Delta v5 (CR-2026-021) — Tinh Gọn Điều Hướng & Trải Nghiệm Người Dùng Tầng 0 [Delta v5]
+
+**Căn cứ thay đổi**: Quyết định PO `CR-2026-021` (Kế hoạch nâng cấp Delta v5 Phase 1) & Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_admin_tong_hanh_dinh.html`).
+
+### 1. Bối Cảnh & Mục Tiêu (Context & Objectives)
+Trong phiên bản Delta v4, hệ thống đã thiết lập Trung tâm Phê duyệt Toàn quốc và Sidebar Accordion 4 nhóm 8 menu items trên Cổng Quản Trị Hệ Thống Tối Cao (Tầng 0). Tuy nhiên, qua quá trình kiểm thử thực địa và phản hồi từ Lãnh đạo/Chuyên viên vận hành:
+1. **Nghịch lý điều hướng kép (Navigation Redundancy)**: Tồn tại song song thanh điều hướng ngang (`<AdminNav />`) bên cạnh Sidebar, làm chật chội không gian hiển thị của các bảng dữ liệu lớn (bảng hàng đợi, cây tổ chức, bảng phân quyền).
+2. **Lỗi trễ URL State**: Việc nhấp chọn các menu con từ Sidebar (`/admin/approvals?tab=sla`, `/admin/approvals?tab=override`) chưa phản ứng tức thì (reactive) nếu component không lắng nghe `useSearchParams()` đúng chuẩn Next.js App Router.
+3. **Phân tán danh mục địa phương**: Cần chuẩn hóa dứt khoát 100% dữ liệu địa bàn về **34 Tỉnh/Thành phố trọng điểm ĐMST** theo Master Excel (thay cho 63 tỉnh), đảm bảo tính tập trung của CSDL Đổi mới sáng tạo Quốc gia.
+
+---
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Functional Requirements Delta)
+
+#### REQ-ADMIN-09: Breadcrumbs Navigation Thay Thế Top Nav Trùng Lặp
+- **Loại bỏ Top Nav trùng lặp**:
+  - Gỡ bỏ hoàn toàn component điều hướng ngang `<AdminNav />` tại tất cả các trang quản trị (`/admin/approvals`, `/admin/roles`, `/admin/org-tree`, `/admin/sectors`, `/admin/audit-logs`, `/admin/system-config`).
+  - Toàn bộ điều hướng chính phân hệ được quy hoạch tập trung 100% vào Sidebar Accordion 4 nhóm.
+- **Tích hợp Breadcrumbs tinh gọn**:
+  - Bố trí thanh đường dẫn Breadcrumbs tại đầu vùng nội dung chính (`main content`), ngay trên khối tiêu đề trang.
+  - Cấu trúc đường dẫn ngữ cảnh:
+    $$\text{Trang chủ} \rightarrow \text{Quản Trị Hệ Thống} \rightarrow \text{[Tên phân hệ con]}$$
+  - Mỗi node đường dẫn là một liên kết tương tác (`<Link>`):
+    + `Trang chủ`: chuyển hướng về `/`.
+    + `Quản Trị Hệ Thống`: chuyển hướng về Tổng quan Admin `/admin`.
+    + `[Tên phân hệ con]`: hiển thị tên phân hệ hiện tại với `aria-current="page"` (ví dụ: *"Hàng Đợi Phê Duyệt Toàn Quốc"*, *"Quản Lý 10 Vai Trò"*, *"Cây Thư Mục 34 Tỉnh/Thành"*).
+  - Khả năng tiếp cận: Chuẩn WAI-ARIA breadcrumbs pattern (`<nav aria-label="Breadcrumb">`, `<ol>`, `<li>`).
+
+#### REQ-ADMIN-10: Bộ Lọc Hàng Đợi 34 Tỉnh/Thành Chuẩn Hóa & Reactive URL State
+- **Phản ứng nhanh với URL State (Reactive Tab Switching)**:
+  - Trang `/admin/approvals` lắng nghe tham số truy vấn `tab` thông qua `useSearchParams()`.
+  - Khi người dùng nhấp chọn link từ Sidebar hoặc Breadcrumbs hoặc gõ trực tiếp URL:
+    + `?tab=sla`: Kích hoạt ngay tab *"Cảnh báo Quá hạn SLA Sở Tỉnh"*, bảng tự động lọc các hồ sơ `is_sla_breached = true`.
+    + `?tab=override`: Kích hoạt ngay tab *"Phê duyệt Vượt cấp / Can thiệp"*, hiển thị các hồ sơ đủ điều kiện Admin Override.
+    + Không có tham số hoặc `tab=all`: Kích hoạt tab *"Tất cả Hàng đợi Phê duyệt"*.
+  - Khi người dùng chuyển tab trên giao diện qua các nút bấm Tab, URL tự động cập nhật qua `router.push('/admin/approvals?tab=...', { scroll: false })` không gây giật lag trang.
+- **Bộ lọc Địa phương chuẩn hóa 34 Tỉnh/Thành**:
+  - Dropdown Địa phương hiển thị đầy đủ và chuẩn xác 34 Tỉnh/Thành phố trọng điểm ĐMST theo `BR-ADMIN-34PROV`.
+  - Lựa chọn địa phương được gắn kết vào state gọi API `GET /api/v1/admin/approvals?provinceCode={code}&page=1`, tự động reset trang về 1 khi đổi địa phương.
+
+---
+
+### 3. Quy Tắc Nghiệp Vụ (Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Logic Nghiệp Vụ & Ràng Buộc Kỹ Thuật | Phản Ứng Khi Vi Phạm |
+| :--- | :--- | :--- | :--- |
+| **BR-ADMIN-34PROV** | **Danh Mục Chuẩn 34 Tỉnh/Thành Phố Trọng Điểm ĐMST** | - Nền tảng NacenTwin vận hành CSDL và phân cấp quản trị tập trung trên đúng **34 Tỉnh/Thành phố trọng điểm Đổi mới Sáng tạo (ĐMST)** theo Master Excel SSOT.<br>- Danh mục 34 tỉnh/thành được phân bổ theo 3 miền:<br>  1. **Miền Bắc (12)**: Hà Nội, Hải Phòng, Bắc Ninh, Quảng Ninh, Hưng Yên, Thái Nguyên, Phú Thọ, Ninh Bình, Cao Bằng, Tuyên Quang, Lào Cai, Lạng Sơn.<br>  2. **Miền Trung & Tây Nguyên (10)**: Thanh Hóa, Nghệ An, Hà Tĩnh, Quảng Trị, Thừa Thiên Huế, Quảng Ngãi, Khánh Hòa, Đắk Lắk, Gia Lai, Lâm Đồng.<br>  3. **Miền Nam (12)**: TP. Hồ Chí Minh, Cần Thơ, Đồng Nai, Tây Ninh, Vĩnh Long, Đồng Tháp, An Giang, Cà Mau, Điện Biên, Lai Châu, Sơn La (khu vực kết nối Tây Bắc & liên kết ĐMST Tây Nam Bộ theo Đề tài).<br>- Toàn bộ tiêu đề UI, nhãn bộ lọc, dữ liệu thống kê KPI và cây thư mục tổ chức phải sử dụng đúng danh mục 34 tỉnh/thành, nghiêm cấm hiển thị danh sách 63 tỉnh hành chính chung chung. | Lọc ngoài danh mục 34 tỉnh $\rightarrow$ `400 BadRequest` (`ERR_INVALID_INNOVATION_PROVINCE_CODE`). |
+| **BR-ADMIN-URL-STATE** | **Đồng Bộ Hai Chiều Trạng Thái URL & Bộ Lọc** | - Mọi thay đổi về Tab (`tab`), Mã Tỉnh (`provinceCode`), và Từ khóa tìm kiếm (`searchQuery`) tại Bảng hàng đợi đều phải đồng bộ vào URL Query Parameters.<br>- Khi tải trang lần đầu, hệ thống ưu tiên đọc state từ URL Query Params để dựng trạng thái ban đầu của bảng (Initial State Hydration).<br>- Đảm bảo khi Admin gửi link ca trực (ví dụ: `/admin/approvals?tab=sla&provinceCode=HN`) cho đồng nghiệp, người nhận truy cập sẽ nhìn thấy chính xác giao diện và dữ liệu đã được lọc. | Tham số URL không hợp lệ $\rightarrow$ Tự động fallback về tab mặc định `all` mà không gây vỡ giao diện. |
+
+---
+
+### 4. Giao Diện & Bố Cục UX (UI Specification)
+
+#### UI-ADMIN-09: Ma Trận 5 UX States & Bố Cục Loại Bỏ `<AdminNav />` Thay Bằng Breadcrumbs
+- **Bố cục giao diện Tinh gọn**:
+  - Vùng nội dung chính (`main`) được giải phóng hoàn toàn khỏi thanh ngang `<AdminNav />`, tăng 15% diện tích theo chiều dọc cho bảng hàng đợi và bảng dữ liệu.
+  - Vị trí trên cùng: Component `<Breadcrumbs />` hiển thị phân cấp:
+    `Trang chủ / Quản Trị Hệ Thống / [Tên phân hệ]`
+  - Vị trí kế tiếp: Header Banner trang với badge `CR-2026-021 DELTA V5: TRUNG TÂM PHÊ DUYỆT TOÀN QUỐC & GIÁM SÁT 34 TỈNH/THÀNH PHỐ TRỌNG ĐIỂM ĐMST`.
+  - Bộ lọc Dropdown Địa phương chuẩn hóa nhãn: `"Địa phương (34 Tỉnh/Thành phố trọng điểm ĐMST)"` với tùy chọn mặc định `"Toàn quốc (34 Tỉnh/Thành phố trọng điểm ĐMST)"`.
+- **Ma trận 5 Trạng Thái UX Chuẩn Hóa qua Component `<Async>`**:
+
+| Trạng Thái UX | Biểu Hiện Trên Giao Diện Bảng Hàng Đợi (`/admin/approvals`) | Trải Nghiệm & Hành Động Người Dùng |
+| :--- | :--- | :--- |
+| **1. Loading** | Hiển thị 5 dòng Skeleton Table mượt mà (shimmer) tại khu vực bảng dữ liệu; các nút chuyển tab và dropdown bộ lọc ở trạng thái giữ nguyên vị trí, không gây lay-out shift (CLS = 0). | Người dùng nhận biết hệ thống đang truy vấn dữ liệu từ PostgreSQL qua reactive URL, giao diện ổn định. |
+| **2. Empty** | Khi bộ lọc không có hồ sơ (ví dụ: chọn tỉnh không có hồ sơ trễ hạn SLA), hiển thị icon SVG thư mục rỗng kèm thông điệp: *"Không có hồ sơ nào trong hàng đợi của 34 Tỉnh/Thành phố trọng điểm ĐMST theo tiêu chí đã chọn."* | Cung cấp nút *"Đặt lại bộ lọc"* để đưa về toàn bộ 34 tỉnh và tab mặc định. |
+| **3. Error** | Khi API ngắt kết nối hoặc trả về lỗi, khối Alert cảnh báo hiển thị kèm mã lỗi rõ ràng và nút *"Tải lại dữ liệu"* (`refetch()`). Breadcrumbs vẫn giữ nguyên để người dùng điều hướng an toàn. | Người dùng không bị kẹt, có thể quay lui về `/admin` qua Breadcrumbs. |
+| **4. Success** | Bảng hàng đợi hiển thị đầy đủ các cột dữ liệu theo chuẩn 34 tỉnh; tag đỏ `SLA_BREACHED` cho hồ sơ quá hạn; nút [Duyệt Can Thiệp] mở modal xác thực; URL cập nhật đúng `?tab=...`. | Thao tác mượt mà, phân trang chính xác, phản hồi tức thì. |
+| **5. Partial / Updating** | Khi Admin chuyển đổi tab giữa `Tất cả` $\leftrightarrow$ `Cảnh báo SLA` $\leftrightarrow$ `Duyệt can thiệp`, bảng áp dụng lớp phủ mờ nhẹ (opacity-60) kèm thanh tiến trình mỏng phía trên bảng dữ liệu. | Tránh hiện tượng nhấp nháy toàn bộ trang, duy trì tính liên tục của trải nghiệm điều hành. |
+
+---
+
+### 5. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **AC-DELTA-V5-01**: Truy cập bất kỳ trang con nào của Cổng Admin (`/admin/approvals`, `/admin/roles`, `/admin/org-tree`, `/admin/sectors`, `/admin/audit-logs`, `/admin/system-config`), tuyệt đối không còn xuất hiện thanh điều hướng ngang `<AdminNav />`.
+- **AC-DELTA-V5-02**: Tại đầu mỗi trang quản trị, hiển thị Breadcrumbs chuẩn: `Trang chủ / Quản Trị Hệ Thống / [Tên phân hệ]`. Bấm `Trang chủ` về `/`, bấm `Quản Trị Hệ Thống` về `/admin`.
+- **AC-DELTA-V5-03**: Nhấp vào menu Sidebar *"Cảnh báo Quá hạn SLA Sở Tỉnh"* (`/admin/approvals?tab=sla`) hoặc *"Phê duyệt Vượt cấp / Can thiệp"* (`/admin/approvals?tab=override`), trang lập tức chuyển sang đúng Tab tương ứng và hiển thị danh sách hồ sơ tương thích mà không cần tải lại trang.
+- **AC-DELTA-V5-04**: Dropdown Địa phương tại `/admin/approvals` và `/admin/org-tree` hiển thị chuẩn danh mục 34 Tỉnh/Thành phố trọng điểm ĐMST theo `BR-ADMIN-34PROV`.
+- **AC-DELTA-V5-05**: Toàn bộ tiêu đề, nhãn phụ, thống kê KPI trên giao diện hiển thị chuẩn xác cụm từ *"34 Tỉnh/Thành phố trọng điểm ĐMST"*, không còn tàn dư của cụm từ "63 tỉnh" hoặc "Tổng hành dinh".

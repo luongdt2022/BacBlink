@@ -119,6 +119,20 @@ def http_put(path, data, token=None):
         return 0, {"error": str(e)}
 
 # =============================================================================
+# BROWSER AUTH HELPER
+# =============================================================================
+def set_browser_auth(page, user_creds):
+    status, res = http_post("/api/v1/auth/login", user_creds)
+    if status == 200:
+        token = res.get("accessToken")
+        user = res.get("user")
+        page.goto(f"{FRONTEND_URL}/login", wait_until="networkidle")
+        page.evaluate("""({ token, user }) => {
+            localStorage.setItem('nacentwin_access_token', token);
+            localStorage.setItem('nacentwin_user_context', JSON.stringify(user));
+        }""", {"token": token, "user": user})
+
+# =============================================================================
 # GIAI ĐOẠN 1: ĐĂNG NHẬP & PHÂN QUYỀN VAI TRÒ (TC-AUTH-01 .. TC-AUTH-12)
 # =============================================================================
 def test_phase1_auth(page):
@@ -338,6 +352,7 @@ def test_phase2_demands(page):
                     {"title": "Sai công thức tính TNI mức Thấp", "severity": "CRITICAL"})
 
     # TC-DMD-13: Đóng QuickDemandModal bằng ESC hoặc nút Hủy
+    set_browser_auth(page, BUYER_USER)
     page.goto(f"{FRONTEND_URL}/portal/buyer/demands", wait_until="networkidle")
     open_btn = page.locator('button:has-text("Đăng Bài Toán Mới")').first
     try:
@@ -434,6 +449,7 @@ def test_phase3_gov(page):
     target_id = sample.get("itemId")
 
     # TC-GOV-01: Cổng thẩm định /gov/demands render bảng dữ liệu
+    set_browser_auth(page, ADMIN_USER)
     page.goto(f"{FRONTEND_URL}/gov/demands", wait_until="networkidle")
     table = page.locator("table")
     try:
@@ -667,6 +683,7 @@ def test_phase5_brokerage(page):
     record_test("TC-BRK-04", "G5-DEAL", "Tự động điền (Auto-fill) thông tin Seller vào form chào bán", "PASS", "Auto-fill thành công", "Auto-fill supported")
 
     # TC-BRK-05: Giao diện Pipeline Kanban 5 cột
+    set_browser_auth(page, BUYER_USER)
     page.goto(f"{FRONTEND_URL}/portal/opportunities/pipeline", wait_until="networkidle")
     kanban_cols = page.locator("h3, div.font-bold").filter(has_text="Gợi Ý AI")
     try:

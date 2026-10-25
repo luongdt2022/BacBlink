@@ -101,3 +101,88 @@
 - [x] `T042` **[FE]** Thay thế redirect trong `src/app/admin/users/page.tsx` bằng Data Table quản lý người dùng kết nối trực tiếp `GET /api/v1/admin/users`, thanh tìm kiếm, bộ lọc 10 Roles & trạng thái ACTIVE/LOCKED, phân trang, các nút thao tác Khóa/Mở tài khoản (`PATCH /api/v1/admin/users/{id}`) và Reset mật khẩu (`POST /api/v1/admin/users/{id}/reset-password`).
 - [x] `T043` **[TEST]** Kiểm thử biên dịch Frontend và Backend, kiểm chứng trang `/admin/users` tải dữ liệu và hoạt động không lỗi.
 
+---
+
+## Phase 11: Delta v7 (CR-2026-020) — Trung Tâm Phê Duyệt Toàn Quốc & Phê Duyệt Vượt Cấp (Admin Override)
+
+- [x] `T044` **[BE-DB]** Tạo EF Core Migration phi phá hủy `Add_Approval_Override_And_Sla_Fields` bổ sung các cột `is_override`, `override_reason`, `overridden_by_user_id`, `overridden_at_utc`, `is_sla_breached`, `sla_overdue_hours`, `is_national_priority` (toàn bộ nullable hoặc default an toàn); cấu hình Concurrency Token qua `xmin` / `RowVersion` và tạo chỉ mục `idx_approval_sla_breach` và `idx_approval_central_queue`.
+- [x] `T045` **[BE-Domain]** Mở rộng Entity `ApprovalRequest` bảo vệ tính bất biến: phương thức `ExecuteAdminOverride(...)`, `MarkSlaBreached(...)`, phát sinh Domain Event `ApprovalOverriddenDomainEvent`, tuân thủ state machine chuyển trạng thái sang `APPROVED`.
+- [x] `T046` **[BE-Logic]** Cập nhật `ApprovalService`: triển khai các phương thức `GetCentralApprovalQueueAsync` (truy vấn toàn quốc theo 63 tỉnh & SLA) và `OverrideApproveAsync` (kiểm tra quyền Tầng 0 `SUPER_ADMIN`/`OPERATOR_ADMIN`, validate giải trình $\ge 20$ ký tự, cam kết trách nhiệm, kiểm soát Optimistic Lock ném 409 Conflict và ghi Audit Log Cấp độ 3).
+- [x] `T047` **[BE-Worker]** Phát triển Background Worker `ApprovalSlaMonitorWorker` chạy định kỳ mỗi 15 phút: tính toán 72 giờ làm việc (Working Hours: loại trừ T7/CN/ngày lễ theo quy định Bộ LĐTBXH), tự động đánh dấu cờ `is_sla_breached = true`, tính `sla_overdue_hours` và gửi notification cảnh báo.
+- [x] `T048` **[BE-API]** Cung cấp 2 Endpoints API mới tại `ApprovalController`: `GET /api/v1/admin/approvals/central-queue` và `POST /api/v1/admin/approvals/{id}/override`, áp dụng chính sách phân quyền RBAC `RequireGlobalAdmin`, rate limiting và audit trail.
+- [x] `T049` **[FE-Nav]** Nâng cấp Sidebar Layout Admin theo cấu trúc Accordion 4 nhóm 8 mục menu chuẩn wireframe SSOT (`wireframe_admin_tong_hanh_dinh.html`), đồng bộ định tuyến liên kết các phân hệ quản trị.
+- [x] `T050` **[FE-Hub]** Xây dựng giao diện Trung tâm Phê duyệt Toàn quốc tại `/admin/approvals` với bộ lọc 63 Tỉnh/Thành, loại hồ sơ, tìm kiếm toàn văn và 3 tabs điều hướng (Hàng đợi toàn quốc, Cảnh báo SLA, Phê duyệt Vượt cấp).
+- [x] `T051` **[FE-Modal]** Xây dựng Modal "Duyệt Thay / Can Thiệp Tối Cao" (Admin Override Modal) với trường giải trình bắt buộc validate realtime $\ge 20$ ký tự, checkbox cam kết trách nhiệm pháp lý và xử lý vô hiệu hóa nút submit an toàn.
+- [x] `T052` **[FE-UX]** Chuẩn hóa trọn vẹn 5 trạng thái UX (Loading Skeleton, Empty State hình chiếc hộp rỗng có nút reset filter, Error Alert có nút retry, Success Table với badge nhấp nháy SLA_BREACHED, Partial Updating làm mờ 50% dòng đang thao tác) qua component chuẩn `<Async>`.
+- [x] `T053` **[QC-Blackbox]** **[THIẾT QUÂN LUẬT QC]** Kiểm thử Blackbox 4 tầng (Unit, Contract, DB Postgres thật, Playwright) chạy trên PostgreSQL thật 100% Zero-Mock; kiểm chứng toàn trình luồng duyệt thay từ Sở đến Admin, cập nhật trạng thái `APPROVED` và đối soát dòng dữ liệu CSDL cùng Audit Log bất biến.
+- [x] `T054` **[QC-Chaos]** **[THIẾT QUÂN LUẬT QC]** Kiểm thử phá hoại Stress & Chaos Concurrency (giả lập Cán bộ Sở và Super Admin cùng bấm duyệt 1 hồ sơ tại cùng 1 mili-giây $\rightarrow$ xác nhận chính xác 1 transaction thành công và transaction thứ 2 nhận `409 Conflict`), Boundary test giải trình 19 ký tự (FAIL 422) vs 20 ký tự (PASS), và giả lập tài khoản Sở gọi API Override (FAIL 403 `ERR_PRIVILEGE_ESCALATION`). Bắt buộc tìm và ghi nhận lỗi/ngoại lệ biên; báo cáo 0 bug mà không có chứng cứ phá hoại sẽ bị bác bỏ.
+- [x] `T055` **[QC-VisualQA]** **[THIẾT QUÂN LUẬT QC]** Chạy Playwright E2E Visual QA chấm điểm giao diện Trung tâm phê duyệt trên 3 viewports (Desktop 1920x1080, Laptop 1366x768, Tablet 1024x768) đạt điểm thẩm mỹ $\ge 8.5/10$, đối soát 1:1 với HTML Wireframe Basic Design gốc, triệt tiêu hoàn toàn nút chết và AI-slop.
+
+---
+
+## Phase 12: Delta v8 (CR-2026-021) — Tinh Gọn Điều Hướng Breadcrumbs & Sửa Lỗi Routing Sidebar
+
+- [x] `T056` **[FE-Breadcrumbs]** Tạo component `AdminBreadcrumbs` tái sử dụng tại `SourceCode/frontend/src/components/admin/admin-breadcrumbs.tsx`:
+  - Khai báo interface `BreadcrumbItem { label: string; href?: string }` và `AdminBreadcrumbsProps { items: BreadcrumbItem[]; className?: string }`.
+  - Hiển thị theo chuẩn tiếp cận WAI-ARIA breadcrumb (`<nav aria-label="Breadcrumb">`, `<ol>`, `<li>`).
+  - Node gốc hiển thị icon `Home` liên kết về `/`, phân cách giữa các cấp bằng icon `ChevronRight`.
+  - Node cuối cùng hiển thị `aria-current="page"`, chữ in đậm không có link click.
+  - Tiêu chí kiểm chứng: Component render đúng cấu trúc DOM, TypeScript compile 0 warning, styling tương thích Tailwind.
+
+- [x] `T057` **[FE-CleanNav]** Gỡ bỏ `<AdminNav />` và tích hợp `AdminBreadcrumbs` trên 6 trang con Cổng Quản Trị:
+  - Thay thế `<AdminNav />` tại `src/app/admin/approvals/page.tsx` bằng `AdminBreadcrumbs` (`Trang chủ` $\rightarrow$ `Quản Trị Hệ Thống` $\rightarrow$ `Hàng Đợi Phê Duyệt Toàn Quốc`).
+  - Thay thế `<AdminNav />` tại `src/app/admin/roles/page.tsx` bằng `AdminBreadcrumbs` (`Trang chủ` $\rightarrow$ `Quản Trị Hệ Thống` $\rightarrow$ `Quản Lý 10 Vai Trò`).
+  - Thay thế `<AdminNav />` tại `src/app/admin/org-tree/page.tsx` bằng `AdminBreadcrumbs` (`Trang chủ` $\rightarrow$ `Quản Trị Hệ Thống` $\rightarrow$ `Cây Thư Mục 34 Tỉnh/Thành`).
+  - Thay thế `<AdminNav />` tại `src/app/admin/sectors/page.tsx` bằng `AdminBreadcrumbs` (`Trang chủ` $\rightarrow$ `Quản Trị Hệ Thống` $\rightarrow$ `Danh Mục Lĩnh Vực & TT17`).
+  - Thay thế `<AdminNav />` tại `src/app/admin/audit-logs/page.tsx` bằng `AdminBreadcrumbs` (`Trang chủ` $\rightarrow$ `Quản Trị Hệ Thống` $\rightarrow$ `Nhật Ký Kiểm Toán Cấp Độ 3`).
+  - Thay thế `<AdminNav />` tại `src/app/admin/system-config/page.tsx` bằng `AdminBreadcrumbs` (`Trang chủ` $\rightarrow$ `Quản Trị Hệ Thống` $\rightarrow$ `Cấu Hình Hệ Thống & Tham Số SLA`).
+  - Xóa bỏ hoàn toàn liên kết dev `/dashboard` ("Agent Orchestrator & CR") khỏi giao diện người dùng.
+  - Tiêu chí kiểm chứng: Truy cập 6 trang không còn thanh ngang `<AdminNav />`, diện tích hiển thị tăng 15%, breadcrumbs hiển thị chính xác.
+
+- [x] `T058` **[FE-Provinces]** Chuẩn hóa danh mục 34 Tỉnh/Thành phố trọng điểm ĐMST `PROVINCES_34` dùng chung:
+  - Tạo tệp `SourceCode/frontend/src/lib/constants/provinces.ts` khai báo interface `ProvinceItem` và mảng `PROVINCES_34`.
+  - Chứa chuẩn xác 34 tỉnh/thành theo `BR-ADMIN-34PROV` (Bắc 12, Trung & Tây Nguyên 10, Nam 12) + tùy chọn `ALL`.
+  - Import và thay thế toàn bộ hardcode `PROVINCES_63` trong `src/app/admin/approvals/page.tsx` và `src/app/admin/org-tree/page.tsx`.
+  - Dropdown Địa phương chuẩn hóa nhãn: `"Địa phương (34 Tỉnh/Thành phố trọng điểm ĐMST)"` với tùy chọn mặc định `"Toàn quốc (34 Tỉnh/Thành phố trọng điểm ĐMST)"`.
+  - Tiêu chí kiểm chứng: Dropdown hiển thị đúng 34 tỉnh, chọn tỉnh lọc dữ liệu API chính xác, không còn tàn dư danh sách 63 tỉnh chung chung.
+
+- [x] `T059` **[FE-ReactiveURL]** Tích hợp `useSearchParams()` và `<Suspense>` cho `approvals/page.tsx` đồng bộ click 2 chiều:
+  - Loại bỏ `getInitialNavTab()`, `window.history.pushState` và event listener `popstate` thủ công.
+  - Sử dụng `useSearchParams()` và `useRouter()` từ `next/navigation`: `tabParam = searchParams.get("tab")`, suy diễn state `navTab`.
+  - Hàm `handleSwitchNavTab` cập nhật URL qua `router.push('/admin/approvals?...', { scroll: false })` giữ nguyên các params khác và reset `page=1`.
+  - Tách `AdminApprovalsContent` và bọc trong `<Suspense fallback={<AdminApprovalsSkeleton />}>` tại root export để bảo vệ SSR / tránh deopt client.
+  - Tiêu chí kiểm chứng: Nhấp vào menu Sidebar (`?tab=sla`, `?tab=override`), state tab chuyển đổi tức thời 0ms mà không reload trang. Nhấp tab trên UI cập nhật URL ngay lập tức.
+
+- [x] `T060` **[FE-TextSync]** Đính chính tiêu đề, nhãn mác, triệt tiêu thuật ngữ lệch chuẩn:
+  - Đổi tiêu đề Banner `approvals/page.tsx` thành badge: `CR-2026-021 DELTA V5: TRUNG TÂM PHÊ DUYỆT TOÀN QUỐC & GIÁM SÁT 34 TỈNH/THÀNH PHỐ TRỌNG ĐIỂM ĐMST`.
+  - Xóa bỏ chữ "Online CRUD" tại `org-tree/page.tsx`, thay bằng "Quản Trị Cây Thư Mục & Phân Cấp Hành Chính 34 Tỉnh/Thành".
+  - Xóa bỏ triệt để từ khóa "Tổng hành dinh" trên giao diện Admin $\rightarrow$ thống nhất gọi là "Trung Tâm Quản Trị Hệ Thống".
+  - Đổi placeholder/empty text: *"Không có hồ sơ nào trong hàng đợi của 34 Tỉnh/Thành phố trọng điểm ĐMST theo tiêu chí đã chọn."*
+  - Tiêu chí kiểm chứng: Rà soát toàn bộ UI không còn từ ngữ cũ, text chuẩn hóa 100% theo SSOT.
+
+- [x] `T061` **[QC-Routing]** **[THIẾT QUÂN LUẬT QC]** Viết test / kiểm thử chuyển tab và reactive search params:
+  - Viết kịch bản kiểm thử điều hướng (Navigation & URL State Test): giả lập click từ Sidebar vào `/admin/approvals?tab=sla`, xác minh tab SLA kích hoạt ngay và danh sách hồ sơ lọc đúng `isSlaBreached = true`.
+  - Kiểm chứng click `/admin/approvals?tab=override`: tab Phê duyệt vượt cấp kích hoạt ngay, nút [Duyệt Can Thiệp] sẵn sàng.
+  - Kiểm chứng chuyển tab trên UI: URL query params thay đổi đúng `?tab=...` và không reload trang (Zero Page Reload).
+  - Kiểm thử tải trang trực tiếp bằng URL copy (Deep Linking Hydration): truy cập `/admin/approvals?tab=sla&provinceCode=HN` hiển thị chính xác tab SLA và tỉnh Hà Nội.
+  - Tiêu chí kiểm chứng: 100% test routing & URL state pass.
+
+- [x] `T062` **[QC-VisualQA]** **[THIẾT QUÂN LUẬT QC]** Kiểm định Visual QA 1:1 theo Wireframe mới, thang điểm $\ge 8.5/10$:
+  - Chạy Playwright E2E Visual QA chụp ảnh màn hình trên 3 viewports: Desktop 1920x1080, Laptop 1366x768, Tablet 1024x768.
+  - Đối soát 1:1 với wireframe: Breadcrumbs hiển thị đúng phân cấp, không còn thanh ngang `<AdminNav />`, không còn nút chết/liên kết gãy (`/dashboard`).
+  - Chấm điểm theo 4 trục (Design Consistency 0.3, 5 UX States 0.3, Responsive 0.2, Interactive Polish 0.2) đạt $\ge 8.5/10$.
+  - Tiêu chí kiểm chứng: Không phát hiện lỗi layout shift (CLS = 0) và xác nhận 100% controls phản hồi mượt mà.
+
+---
+
+## Phase 13: Delta v9 (CR-2026-022) — Chuẩn Hóa Cổng Công Vụ Cấp Sở KH&CN (`/gov`) Với Sidebar Accordion 4 Nhóm & 3D Scoped RBAC
+
+- [x] `T063` **[SPEC]** Ghi nhận Spec Delta v9 bổ sung `BR-GOV-SIDEBAR-01..05` và `AC-DELTA-V5-01..05` vào `specs/TASK-07_.../spec.md` và Mục 12 trong `Specification/BASIC_DESIGN_NACENTECH.md`.
+- [x] `T064` **[FE-Nav]** Xây dựng component `GovSidebarNav` tại `SourceCode/frontend/src/app/gov/layout.tsx` với cấu trúc Accordion 4 nhóm (Kiểm duyệt hồ sơ địa bàn, Thẩm định công nghệ TT17, Giám sát cung-cầu & SLA, Quản trị công vụ & nhân sự Sở) tích hợp thông tin Scoped Token địa phương (`user.scopeId` $\rightarrow$ Tên Sở KH&CN, SLA $\le 48\text{h}$, Maker-Checker 2 cấp).
+- [x] `T065` **[FE-Routes]** Nối thông suốt toàn bộ 9 tuyến URL trên Sidebar: tab filter `/gov?tab=...`, `/gov/assessments/tt17`, `/gov/opportunities`, `/gov/demands` (nối tính năng giám sát nhu cầu địa bàn bị sót trước đây), `/gov/approvals/enterprises` và `/gov/settings/staff`.
+- [x] `T066` **[FE-UX]** Cập nhật Header & Breadcrumb trên `src/app/gov/page.tsx`: sửa badge Maker-Checker chuẩn hóa ("Quy trình Kiểm duyệt 2 cấp • Phê duyệt Cấp 2: Lãnh đạo Sở KH&CN"), hiển thị đúng địa bàn thẩm quyền và bảo đảm responsive mobile/tablet drawer.
+- [x] `T067` **[QC-E2E]** **[THIẾT QUÂN LUẬT QC]** Kiểm thử Playwright E2E chạy trên PostgreSQL thật Zero-Mock (`test_task07_delta_v8_gov_sidebar_e2e.py`): đăng nhập tài khoản Cán bộ Sở Hà Nội (`hanoi.admin@demo.nacentech.vn`), kiểm chứng Sidebar Menu hiển thị đầy đủ 4 nhóm 9 items, click chuyển các tab và trang `/gov/*` thông suốt, đối soát dữ liệu hiển thị đúng phạm vi Hà Nội và bị cô lập hoàn toàn với Hải Phòng.
+
+
+
+
