@@ -4,6 +4,7 @@ using NacenTech.Modules.Policy.Application;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NacenTech.Kernel.Application;
+using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Identity.Application;
 using NacenTech.Modules.Identity.Domain;
 
@@ -23,6 +24,17 @@ public sealed class ReviewApprovalDto
     [Required] public string Action { get; set; } = string.Empty;
     public int ExpectedVersion { get; set; }
     public string? ReviewNote { get; set; }
+}
+
+public sealed class OverrideApprovalDto
+{
+    [Required, MinLength(20, ErrorMessage = "Lý do can thiệp giải trình phải từ 20 ký tự trở lên")]
+    public string OverrideReason { get; set; } = string.Empty;
+
+    [Required]
+    public bool ConfirmCommitment { get; set; }
+
+    public int ExpectedVersion { get; set; }
 }
 
 [Route("api/v1/governance/approvals")]
@@ -98,6 +110,60 @@ public sealed class ApprovalController(IApprovalService approvals) : V1Controlle
         await approvals.GetByIdAsync(id, Actor, ct);
         var logs = await approvals.GetAuditLogsAsync("approval_requests", id.ToString(), ct);
         return Ok(Ok200(logs));
+    }
+
+    [HttpGet("/api/v1/admin/approvals/central-queue")]
+    [HttpGet("central-queue")]
+    public async Task<IActionResult> CentralQueue(
+        [FromQuery] string? provinceId,
+        [FromQuery] string? requestType,
+        [FromQuery] string? slaStatus,
+        [FromQuery] string? searchTerm,
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 20,
+        CancellationToken ct = default)
+    {
+        RequireGlobalAdmin();
+
+        var result = await approvals.GetCentralApprovalQueueAsync(
+            new ApprovalQueueQueryFilter(provinceId, requestType, slaStatus, searchTerm, page, limit),
+            Actor,
+            ct);
+
+        return Ok(new
+        {
+            success = true,
+            data = result.Data,
+            total = result.Total,
+            page = result.Page,
+            limit = result.Limit,
+            totalPages = result.TotalPages
+        });
+    }
+
+    [HttpPost("/api/v1/admin/approvals/{id:guid}/override")]
+    [HttpPost("{id:guid}/override")]
+    public async Task<IActionResult> OverrideApprove(Guid id, [FromBody] OverrideApprovalDto dto, CancellationToken ct)
+    {
+        RequireGlobalAdmin();
+
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+        var result = await approvals.OverrideApproveAsync(
+            id,
+            new OverrideApprovalCommand(dto.OverrideReason, dto.ConfirmCommitment, dto.ExpectedVersion),
+            Actor,
+            ip,
+            ct);
+
+        return Ok(Ok200(result));
+    }
+
+    private void RequireGlobalAdmin()
+    {
+        if (Actor.PersonId is null || Actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin))
+        {
+            throw new ForbiddenException("Chỉ Quản trị viên Tối cao (SuperAdmin hoặc OperatorAdmin) mới có thẩm quyền thực hiện thao tác này.", "ERR_FORBIDDEN_GLOBAL_ADMIN");
+        }
     }
 }
 

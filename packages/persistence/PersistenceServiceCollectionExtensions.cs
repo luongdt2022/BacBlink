@@ -78,6 +78,8 @@ public static class PersistenceServiceCollectionExtensions
         services.AddHostedService<RecurringObligationSeeder>();
         services.AddSingleton<ExpertCompletenessReminderWorker>();
         services.AddHostedService(sp => sp.GetRequiredService<ExpertCompletenessReminderWorker>());
+        services.AddSingleton<ApprovalSlaMonitorWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<ApprovalSlaMonitorWorker>());
         return services;
     }
 

@@ -201,5 +201,161 @@ public sealed class GovernanceApprovalInvariantsTests
         req.ReviewedById.ShouldBe(superAdminId);
         req.ReviewNote!.ShouldContain("[THU HỒI TRUNG ƯƠNG]");
     }
+
+    [Fact]
+    public void Admin_override_succeeds_when_sla_breached_and_role_is_super_admin()
+    {
+        var req = new ApprovalRequest(
+            Guid.NewGuid(),
+            ApprovalRequestTypes.TechSupply,
+            ScopeTypes.Province,
+            "HN",
+            "{\"techName\":\"AI Camera Solution\"}",
+            DateTimeOffset.UtcNow.AddHours(-10));
+
+        var adminId = Guid.NewGuid();
+        req.MarkSlaBreached(24.5);
+        req.IsSlaBreached.ShouldBeTrue();
+        req.SlaOverdueHours.ShouldBe(24.5);
+
+        const string reason = "Hồ sơ quá hạn SLA Sở Hà Nội quá 24h làm việc. Trung ương can thiệp duyệt thay.";
+        req.ExecuteAdminOverride(adminId, PlatformRoles.SuperAdmin, reason, confirmCommitment: true);
+
+        req.Status.ShouldBe(ApprovalStatuses.Approved);
+        req.IsOverride.ShouldBeTrue();
+        req.OverrideReason.ShouldBe(reason);
+        req.OverriddenByUserId.ShouldBe(adminId);
+        req.OverriddenAtUtc.ShouldNotBeNull();
+        req.ReviewedById.ShouldBe(adminId);
+        req.DomainEvents.ShouldContain(e => e is ApprovalOverriddenDomainEvent);
+    }
+
+    [Fact]
+    public void Admin_override_succeeds_when_national_priority_flag_is_set()
+    {
+        var req = new ApprovalRequest(
+            Guid.NewGuid(),
+            ApprovalRequestTypes.Demand,
+            ScopeTypes.Province,
+            "HCM",
+            "{\"demandName\":\"Semiconductor Clean Room\"}",
+            DateTimeOffset.UtcNow.AddHours(48));
+
+        req.SetNationalPriority(true);
+        req.IsNationalPriority.ShouldBeTrue();
+
+        var operatorAdminId = Guid.NewGuid();
+        const string reason = "Đề tài trọng điểm Quốc gia lĩnh vực bán dẫn cần phê duyệt khẩn cấp theo Quyết định của Bộ.";
+        req.ExecuteAdminOverride(operatorAdminId, PlatformRoles.OperatorAdmin, reason, confirmCommitment: true);
+
+        req.Status.ShouldBe(ApprovalStatuses.Approved);
+        req.IsOverride.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Admin_override_throws_when_reason_is_less_than_20_characters()
+    {
+        var req = new ApprovalRequest(
+            Guid.NewGuid(),
+            ApprovalRequestTypes.Expert,
+            ScopeTypes.Province,
+            "HP",
+            "{\"name\":\"TS B\"}",
+            DateTimeOffset.UtcNow);
+
+        req.MarkSlaBreached(10);
+        var adminId = Guid.NewGuid();
+
+        var ex = Should.Throw<ValidationException>(() =>
+        {
+            req.ExecuteAdminOverride(adminId, PlatformRoles.SuperAdmin, "Lý do quá ngắn", confirmCommitment: true);
+        });
+        ex.Message.ShouldContain("20 ký tự");
+    }
+
+    [Fact]
+    public void Admin_override_throws_when_commitment_not_confirmed()
+    {
+        var req = new ApprovalRequest(
+            Guid.NewGuid(),
+            ApprovalRequestTypes.Expert,
+            ScopeTypes.Province,
+            "HP",
+            "{\"name\":\"TS B\"}",
+            DateTimeOffset.UtcNow);
+
+        req.MarkSlaBreached(10);
+        var adminId = Guid.NewGuid();
+
+        var ex = Should.Throw<ValidationException>(() =>
+        {
+            req.ExecuteAdminOverride(adminId, PlatformRoles.SuperAdmin, "Lý do can thiệp giải trình hợp lệ dài hơn 20 ký tự.", confirmCommitment: false);
+        });
+        ex.Message.ShouldContain("cam kết trách nhiệm");
+    }
+
+    [Fact]
+    public void Admin_override_throws_when_role_is_not_tier_0()
+    {
+        var req = new ApprovalRequest(
+            Guid.NewGuid(),
+            ApprovalRequestTypes.Expert,
+            ScopeTypes.Province,
+            "HP",
+            "{\"name\":\"TS B\"}",
+            DateTimeOffset.UtcNow);
+
+        req.MarkSlaBreached(10);
+        var officerId = Guid.NewGuid();
+
+        Should.Throw<UnauthorizedAccessException>(() =>
+        {
+            req.ExecuteAdminOverride(officerId, PlatformRoles.ProvincialAdmin, "Lý do can thiệp giải trình hợp lệ dài hơn 20 ký tự.", confirmCommitment: true);
+        });
+    }
+
+    [Fact]
+    public void Admin_override_throws_when_neither_sla_breached_nor_national_priority()
+    {
+        var req = new ApprovalRequest(
+            Guid.NewGuid(),
+            ApprovalRequestTypes.Expert,
+            ScopeTypes.Province,
+            "HP",
+            "{\"name\":\"TS B\"}",
+            DateTimeOffset.UtcNow.AddHours(48));
+
+        var adminId = Guid.NewGuid();
+
+        var ex = Should.Throw<InvalidOperationException>(() =>
+        {
+            req.ExecuteAdminOverride(adminId, PlatformRoles.SuperAdmin, "Lý do can thiệp giải trình hợp lệ dài hơn 20 ký tự.", confirmCommitment: true);
+        });
+        ex.Message.ShouldContain("SLA");
+    }
+
+    [Fact]
+    public void Working_hours_calculation_excludes_weekends_and_lunch_break()
+    {
+        var vnOffset = TimeSpan.FromHours(7);
+        // Thứ Sáu: 2026-10-23 15:00:00 (GMT+7)
+        var friday3Pm = new DateTimeOffset(2026, 10, 23, 15, 0, 0, vnOffset);
+        // Thứ Hai tuần sau: 2026-10-26 10:00:00 (GMT+7)
+        var monday10Am = new DateTimeOffset(2026, 10, 26, 10, 0, 0, vnOffset);
+
+        // Thứ 6 từ 15h đến 17h = 2h.
+        // T7 và CN = 0h.
+        // Thứ 2 từ 8h đến 10h = 2h.
+        // Tổng cộng: 4.0h
+        var hours = NacenTech.Persistence.Workers.ApprovalSlaMonitorWorker.CalculateWorkingHours(friday3Pm, monday10Am);
+        hours.ShouldBe(4.0);
+
+        // Cùng ngày bao gồm giờ ăn trưa: Thứ Hai 10h đến 14h (10h-12h: 2h; 12h-13h: 0h; 13h-14h: 1h -> Tổng 3h)
+        var monday10AmSameDay = new DateTimeOffset(2026, 10, 26, 10, 0, 0, vnOffset);
+        var monday2PmSameDay = new DateTimeOffset(2026, 10, 26, 14, 0, 0, vnOffset);
+
+        var sameDayHours = NacenTech.Persistence.Workers.ApprovalSlaMonitorWorker.CalculateWorkingHours(monday10AmSameDay, monday2PmSameDay);
+        sameDayHours.ShouldBe(3.0);
+    }
 }
 

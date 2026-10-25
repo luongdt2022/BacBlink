@@ -70,9 +70,21 @@ public sealed class ApprovalRequestConfiguration : IEntityTypeConfiguration<Appr
         b.Property(x => x.ReviewNote).HasColumnType("text");
         b.Property(x => x.SlaDeadlineUtc).IsRequired();
 
+        // TASK-07 DELTA V4 (CR-2026-020): Override & SLA monitoring fields
+        b.Property(x => x.IsOverride).IsRequired().HasDefaultValue(false);
+        b.Property(x => x.OverrideReason).HasColumnType("text");
+        b.Property(x => x.OverriddenByUserId);
+        b.Property(x => x.OverriddenAtUtc);
+        b.Property(x => x.IsSlaBreached).IsRequired().HasDefaultValue(false);
+        b.Property(x => x.SlaOverdueHours).IsRequired().HasDefaultValue(0.0);
+        b.Property(x => x.IsNationalPriority).IsRequired().HasDefaultValue(false);
+        b.Ignore(x => x.RowVersion);
+
         b.HasIndex(x => new { x.ScopeType, x.ScopeId, x.Status }).HasDatabaseName("idx_approval_scope");
         b.HasIndex(x => new { x.Status, x.SlaDeadlineUtc }).HasDatabaseName("idx_approval_sla");
         b.HasIndex(x => x.UserId);
+        b.HasIndex(x => new { x.IsSlaBreached, x.Status }).HasDatabaseName("idx_approval_sla_breach");
+        b.HasIndex(x => new { x.ScopeType, x.ScopeId, x.RequestType, x.Status, x.CreatedAt }).HasDatabaseName("idx_approval_central_queue");
     }
 }
 

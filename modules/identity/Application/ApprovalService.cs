@@ -205,6 +205,170 @@ public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock,
             x.CreatedAtUtc)).ToList();
     }
 
+    public async Task<PagedResult<CentralApprovalItemDto>> GetCentralApprovalQueueAsync(ApprovalQueueQueryFilter filter, ICurrentActor actor, CancellationToken ct)
+    {
+        if (actor.PersonId is null || actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin))
+        {
+            throw new ForbiddenException("Chỉ Quản trị viên Tối cao (SuperAdmin hoặc OperatorAdmin) mới có quyền truy cập Hàng đợi Toàn quốc.", "ERR_FORBIDDEN_GLOBAL_ACCESS");
+        }
+
+        var query = db.Set<ApprovalRequest>().AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(filter.ProvinceId) && filter.ProvinceId != "ALL")
+        {
+            var prov = filter.ProvinceId.Trim().ToUpperInvariant();
+            query = query.Where(x => x.ScopeId == prov);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.RequestType) && filter.RequestType != "ALL")
+        {
+            var reqType = filter.RequestType.Trim().ToUpperInvariant();
+            query = query.Where(x => x.RequestType == reqType);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SlaStatus) && filter.SlaStatus != "ALL")
+        {
+            var sla = filter.SlaStatus.Trim().ToUpperInvariant();
+            var now = clock.UtcNow;
+            query = sla switch
+            {
+                "BREACHED" => query.Where(x => x.IsSlaBreached),
+                "WARNING" => query.Where(x => !x.IsSlaBreached && x.SlaDeadlineUtc <= now.AddHours(12)),
+                "NORMAL" => query.Where(x => !x.IsSlaBreached && x.SlaDeadlineUtc > now.AddHours(12)),
+                _ => query
+            };
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.Trim();
+            query = query.Where(x => x.PayloadJson.Contains(term) || (x.ScopeId != null && x.ScopeId.Contains(term)));
+        }
+
+        var total = await query.CountAsync(ct);
+        var page = filter.Page > 0 ? filter.Page : 1;
+        var limit = filter.PageSize > 0 ? Math.Min(filter.PageSize, 100) : 20;
+
+        var items = await query
+            .OrderByDescending(x => x.IsSlaBreached)
+            .ThenByDescending(x => x.CreatedAt)
+            .Skip((page - 1) * limit)
+            .Take(limit)
+            .ToListAsync(ct);
+
+        var userIds = items.Select(x => x.UserId).Distinct().ToList();
+        var users = await db.Set<Person>().AsNoTracking()
+            .Where(p => userIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, p => $"{p.FirstName} {p.LastName}".Trim(), ct);
+
+        var dtos = items.Select(x => new CentralApprovalItemDto(
+            x.Id,
+            x.UserId,
+            users.TryGetValue(x.UserId, out var name) && !string.IsNullOrWhiteSpace(name) ? name : "N/A",
+            x.RequestType,
+            x.ScopeType,
+            x.ScopeId,
+            ResolveProvinceName(x.ScopeId),
+            x.Status,
+            x.Version,
+            x.IsSlaBreached,
+            x.SlaOverdueHours,
+            x.IsOverride,
+            x.OverrideReason,
+            x.SlaDeadlineUtc,
+            x.CreatedAt)).ToList();
+
+        return new PagedResult<CentralApprovalItemDto>(dtos, total, page, limit);
+    }
+
+    public async Task<ApprovalRequestDto> OverrideApproveAsync(
+        Guid id,
+        OverrideApprovalCommand cmd,
+        ICurrentActor actor,
+        string ipAddress,
+        CancellationToken ct)
+    {
+        if (actor.PersonId is null || actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin))
+        {
+            throw new ForbiddenException("Chỉ Quản trị viên Tối cao (SuperAdmin hoặc OperatorAdmin) mới có thẩm quyền can thiệp phê duyệt vượt cấp.", "ERR_FORBIDDEN_OVERRIDE");
+        }
+
+        if (string.IsNullOrWhiteSpace(cmd.OverrideReason) || cmd.OverrideReason.Trim().Length < 20)
+        {
+            throw new ValidationException("Lý do can thiệp giải trình bắt buộc phải có độ dài tối thiểu 20 ký tự theo BR-ADMIN-OVERRIDE.");
+        }
+
+        if (!cmd.ConfirmCommitment)
+        {
+            throw new ValidationException("Bắt buộc phải tích chọn cam kết trách nhiệm giải trình trước Bộ KH&CN.");
+        }
+
+        var request = await db.Set<ApprovalRequest>().FirstOrDefaultAsync(x => x.Id == id, ct)
+            ?? throw new NotFoundException($"Không tìm thấy hồ sơ thẩm định ID '{id}'.");
+
+        if (request.Version != cmd.ExpectedVersion)
+        {
+            throw new ConflictException("Hồ sơ này vừa được Cán bộ Sở/Admin khác xử lý. Vui lòng tải lại dữ liệu mới nhất.", "ERR_RECORD_ALREADY_MODIFIED");
+        }
+
+        var actorId = actor.PersonId.Value;
+        request.ExecuteAdminOverride(actorId, actor.PlatformRole, cmd.OverrideReason, cmd.ConfirmCommitment);
+
+        await ApplyApprovalSideEffectsAsync(request, ct);
+
+        if (request.RequestType == ApprovalRequestTypes.Expert)
+        {
+            await expertApproval.ApplyAsync(request.UserId, request.PayloadJson, "APPROVE", $"[ADMIN_OVERRIDE]: {cmd.OverrideReason.Trim()}", ct);
+        }
+
+        var audit = new ApprovalAuditLog(
+            actorId,
+            actor.PlatformRole,
+            "ADMIN_OVERRIDE_APPROVE",
+            "approval_requests",
+            request.Id.ToString(),
+            ipAddress,
+            System.Text.Json.JsonSerializer.Serialize(new
+            {
+                action = "ADMIN_OVERRIDE_APPROVE",
+                reason = cmd.OverrideReason.Trim(),
+                version = request.Version,
+                scopeId = request.ScopeId,
+                isSlaBreached = request.IsSlaBreached,
+                isNationalPriority = request.IsNationalPriority
+            }));
+
+        db.Set<ApprovalAuditLog>().Add(audit);
+
+        try
+        {
+            await uow.CommitAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("Hồ sơ này vừa được Cán bộ Sở/Admin khác xử lý. Vui lòng tải lại dữ liệu mới nhất.", "ERR_RECORD_ALREADY_MODIFIED");
+        }
+
+        var user = await db.Set<Person>().AsNoTracking().FirstOrDefaultAsync(p => p.Id == request.UserId, ct);
+        return ToDto(request, user is null ? null : PersonMapper.ToDto(user));
+    }
+
+    private static string? ResolveProvinceName(string? provinceId)
+    {
+        if (string.IsNullOrWhiteSpace(provinceId)) return null;
+        return provinceId.ToUpperInvariant() switch
+        {
+            "HN" => "Sở KH&CN Hà Nội",
+            "HCM" => "Sở KH&CN TP. Hồ Chí Minh",
+            "HP" => "Sở KH&CN Hải Phòng",
+            "DN" => "Sở KH&CN Đà Nẵng",
+            "CT" => "Sở KH&CN Cần Thơ",
+            "BD" => "Sở KH&CN Bình Dương",
+            "DNA" => "Sở KH&CN Đồng Nai",
+            _ => $"Sở KH&CN {provinceId}"
+        };
+    }
+
     private static void RequireReviewer(ICurrentActor actor)
     {
         if (actor.PersonId is null || actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin or PlatformRoles.ProvincialAdmin or PlatformRoles.ClusterAdmin or PlatformRoles.SectorAdmin))

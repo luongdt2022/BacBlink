@@ -233,7 +233,41 @@ public interface IApprovalService
     Task<ApprovalRequestDto> SubmitRequestAsync(SubmitApprovalRequestCommand cmd, CancellationToken ct);
     Task<ApprovalRequestDto> ReviewRequestAsync(Guid id, ReviewApprovalRequestCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
     Task<IReadOnlyList<ApprovalAuditLogDto>> GetAuditLogsAsync(string targetEntity, string targetId, CancellationToken ct);
+
+    // TASK-07 DELTA V4 (CR-2026-020): Central Queue & Admin Override
+    Task<PagedResult<CentralApprovalItemDto>> GetCentralApprovalQueueAsync(ApprovalQueueQueryFilter filter, ICurrentActor actor, CancellationToken ct);
+    Task<ApprovalRequestDto> OverrideApproveAsync(Guid id, OverrideApprovalCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
 }
+
+public sealed record OverrideApprovalCommand(
+    string OverrideReason,
+    bool ConfirmCommitment,
+    int ExpectedVersion);
+
+public sealed record ApprovalQueueQueryFilter(
+    string? ProvinceId = null,
+    string? RequestType = null,
+    string? SlaStatus = null, // 'ALL', 'NORMAL', 'WARNING', 'BREACHED'
+    string? SearchTerm = null,
+    int Page = 1,
+    int PageSize = 20);
+
+public sealed record CentralApprovalItemDto(
+    Guid Id,
+    Guid UserId,
+    string UserName,
+    string RequestType,
+    string ScopeType,
+    string? ScopeId,
+    string? ProvinceName,
+    string Status,
+    int Version,
+    bool IsSlaBreached,
+    double SlaOverdueHours,
+    bool IsOverride,
+    string? OverrideReason,
+    DateTimeOffset SlaDeadlineUtc,
+    DateTimeOffset CreatedAtUtc);
 
 public interface IOrganizationTreeService
 {

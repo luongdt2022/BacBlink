@@ -173,24 +173,36 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [AllowAnonymous]
     [HttpPut("api/v1/assessments/tt17/draft")]
     [HttpPut("api/v2/assessments/tt17/draft")]
+    [HttpPost("api/v1/assessments/tt17/draft")]
+    [HttpPost("api/v2/assessments/tt17/draft")]
     public async Task<IActionResult> SaveAssessmentDraft([FromBody] SaveAssessmentDraftDto payload, CancellationToken ct = default)
     {
+        var taxCode = !string.IsNullOrWhiteSpace(payload.TaxCode)
+            ? payload.TaxCode.Trim()
+            : (!string.IsNullOrWhiteSpace(payload.SurveyData?.TaxCode) ? payload.SurveyData.TaxCode.Trim() : "0100000000");
+
+        var entName = !string.IsNullOrWhiteSpace(payload.EnterpriseName)
+            ? payload.EnterpriseName.Trim()
+            : (!string.IsNullOrWhiteSpace(payload.SurveyData?.CompanyName) ? payload.SurveyData.CompanyName.Trim() : "Doanh nghiệp Sản xuất");
+
         var existing = AssessmentsStore.Values
-            .FirstOrDefault(x => x.AssessmentYear == payload.AssessmentYear)
+            .FirstOrDefault(x => x.AssessmentYear == payload.AssessmentYear && (x.TaxCode == taxCode || x.EnterpriseName == entName))
             ?? new Tt17AssessmentDto
             {
                 Id = Guid.NewGuid(),
-                EnterpriseId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                EnterpriseName = "Doanh nghiệp Sản xuất",
-                TaxCode = "0100000000",
+                EnterpriseId = Guid.NewGuid(),
+                EnterpriseName = entName,
+                TaxCode = taxCode,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
+        existing.EnterpriseName = entName;
+        existing.TaxCode = taxCode;
         existing.AssessmentYear = payload.AssessmentYear;
         existing.IndustryCode = string.IsNullOrWhiteSpace(payload.IndustryCode) ? "C.10" : payload.IndustryCode;
         existing.ScopeId = string.IsNullOrWhiteSpace(payload.ScopeId) ? "HN" : payload.ScopeId;
         existing.SurveyData = payload.SurveyData ?? new();
-        existing.ScoreResult = ScoringEngine.Calculate(existing.SurveyData);
+        existing.ScoreResult = ScoringEngine.Calculate(existing.SurveyData, existing.IndustryCode);
         existing.Status = "DRAFT";
         existing.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -198,7 +210,7 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         var scoresJson = JsonSerializer.Serialize(existing.ScoreResult);
 
         var entity = await db.Set<Tt17Assessment>()
-            .FirstOrDefaultAsync(x => x.EnterpriseId == existing.EnterpriseId && x.AssessmentYear == existing.AssessmentYear, ct);
+            .FirstOrDefaultAsync(x => (x.TaxCode == taxCode || x.EnterpriseId == existing.EnterpriseId) && x.AssessmentYear == existing.AssessmentYear, ct);
 
         if (entity == null)
         {
@@ -208,6 +220,10 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         }
         else
         {
+            if (entity.Status != "DRAFT" && entity.Status != "CHANGES_REQUESTED")
+            {
+                return BadRequest(new { success = false, message = $"Hồ sơ năm {payload.AssessmentYear} đã được nộp hoặc phê duyệt, không thể lưu nháp đè lên." });
+            }
             entity.UpdateDraft(surveyJson, scoresJson);
         }
         await uow.CommitAsync(ct);
@@ -260,7 +276,7 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         existing.IndustryCode = string.IsNullOrWhiteSpace(payload.IndustryCode) ? "C.10" : payload.IndustryCode;
         existing.ScopeId = string.IsNullOrWhiteSpace(payload.ScopeId) ? "HN" : payload.ScopeId;
         existing.SurveyData = payload.SurveyData ?? new();
-        existing.ScoreResult = ScoringEngine.Calculate(existing.SurveyData);
+        existing.ScoreResult = ScoringEngine.Calculate(existing.SurveyData, existing.IndustryCode);
         existing.Status = "SUBMITTED";
         existing.SubmittedAt = DateTimeOffset.UtcNow;
         existing.UpdatedAt = DateTimeOffset.UtcNow;
@@ -269,7 +285,7 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         var scoresJson = JsonSerializer.Serialize(existing.ScoreResult);
 
         var entity = await db.Set<Tt17Assessment>()
-            .FirstOrDefaultAsync(x => x.EnterpriseId == existing.EnterpriseId && x.AssessmentYear == existing.AssessmentYear, ct);
+            .FirstOrDefaultAsync(x => (x.TaxCode == taxCode || x.EnterpriseId == existing.EnterpriseId) && x.AssessmentYear == existing.AssessmentYear, ct);
 
         if (entity == null)
         {

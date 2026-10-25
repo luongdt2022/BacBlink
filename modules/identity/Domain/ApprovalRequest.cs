@@ -11,8 +11,9 @@ public static class ApprovalRequestTypes
     public const string Demand = "DEMAND";
     public const string Institution = "INSTITUTION";
     public const string TechnologyOffer = "TECHNOLOGY_OFFER";
+    public const string TechSupply = "TECH_SUPPLY";
 
-    public static readonly HashSet<string> All = [Account, Shop, Expert, Demand, Institution, TechnologyOffer];
+    public static readonly HashSet<string> All = [Account, Shop, Expert, Demand, Institution, TechnologyOffer, TechSupply];
 }
 
 public static class ApprovalStatuses
@@ -65,6 +66,14 @@ public sealed class ApprovalRequest : AggregateRoot
     public Guid? ReviewedById { get; private set; }
     public string? ReviewNote { get; private set; }
     public DateTimeOffset SlaDeadlineUtc { get; private set; }
+    public bool IsOverride { get; private set; } = false;
+    public string? OverrideReason { get; private set; }
+    public Guid? OverriddenByUserId { get; private set; }
+    public DateTimeOffset? OverriddenAtUtc { get; private set; }
+    public bool IsSlaBreached { get; private set; } = false;
+    public double SlaOverdueHours { get; private set; } = 0;
+    public bool IsNationalPriority { get; private set; } = false;
+    public uint RowVersion { get; private set; }
 
     public void AssignOfficer(Guid officerId)
     {
@@ -123,6 +132,96 @@ public sealed class ApprovalRequest : AggregateRoot
         ReviewNote = note.Trim();
         Status = ApprovalStatuses.ChangesRequested;
         Version++;
+        Touch();
+    }
+
+    public void ExecuteAdminOverride(Guid adminId, string reason, bool confirmCommitment, IReadOnlyCollection<string> adminRoles)
+    {
+        var hasValidRole = adminRoles != null && adminRoles.Any(r =>
+            string.Equals(r, PlatformRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(r, PlatformRoles.OperatorAdmin, StringComparison.OrdinalIgnoreCase));
+
+        if (!hasValidRole)
+        {
+            throw new UnauthorizedAccessException("Chỉ SuperAdmin hoặc OperatorAdmin mới có quyền phê duyệt vượt cấp.");
+        }
+
+        var primaryRole = adminRoles!.First(r =>
+            string.Equals(r, PlatformRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(r, PlatformRoles.OperatorAdmin, StringComparison.OrdinalIgnoreCase));
+
+        ExecuteAdminOverrideInternal(adminId, primaryRole, reason, confirmCommitment);
+    }
+
+    public void ExecuteAdminOverride(Guid adminId, string adminRole, string reason, bool confirmCommitment)
+    {
+        if (!string.Equals(adminRole, PlatformRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(adminRole, PlatformRoles.OperatorAdmin, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("Chỉ SuperAdmin hoặc OperatorAdmin mới có quyền phê duyệt vượt cấp.");
+        }
+
+        ExecuteAdminOverrideInternal(adminId, adminRole, reason, confirmCommitment);
+    }
+
+    private void ExecuteAdminOverrideInternal(Guid adminId, string adminRole, string reason, bool confirmCommitment)
+    {
+        if (adminId == Guid.Empty) throw new ValidationException("AdminId không được rỗng.");
+
+        if (Status != ApprovalStatuses.PendingReview && Status != ApprovalStatuses.PendingApproval)
+        {
+            throw new InvalidOperationException($"Không thể can thiệp hồ sơ ở trạng thái {Status}.");
+        }
+
+        if (!IsSlaBreached && !IsNationalPriority)
+        {
+            throw new InvalidOperationException("Chỉ được duyệt vượt cấp khi hồ sơ đã quá hạn SLA cấp Sở (>72h làm việc) hoặc có cờ trọng điểm Quốc gia.");
+        }
+
+        if (string.IsNullOrWhiteSpace(reason) || reason.Trim().Length < 20)
+        {
+            throw new ValidationException("Lý do can thiệp giải trình bắt buộc phải có độ dài tối thiểu 20 ký tự.");
+        }
+
+        if (!confirmCommitment)
+        {
+            throw new ValidationException("Bắt buộc phải tích chọn cam kết trách nhiệm giải trình trước Bộ KH&CN.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        IsOverride = true;
+        OverrideReason = reason.Trim();
+        OverriddenByUserId = adminId;
+        OverriddenAtUtc = now;
+        ReviewedById = adminId;
+        ReviewNote = $"[ADMIN_OVERRIDE]: {reason.Trim()}";
+        Status = ApprovalStatuses.Approved;
+        Version++;
+        Touch();
+
+        Raise(new ApprovalOverriddenDomainEvent(
+            Id,
+            adminId,
+            adminRole,
+            ScopeType,
+            ScopeId,
+            OverrideReason,
+            now));
+    }
+
+    public void MarkSlaBreached(double overdueHours)
+    {
+        if (!IsSlaBreached)
+        {
+            IsSlaBreached = true;
+            SlaOverdueHours = Math.Max(0, overdueHours);
+            Touch();
+        }
+    }
+
+    public void SetNationalPriority(bool isPriority)
+    {
+        IsNationalPriority = isPriority;
         Touch();
     }
 
