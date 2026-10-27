@@ -184,8 +184,9 @@ def run_task00_blackbox_suite():
             expect(page.locator(f"aside >> text={item['secondary_menu']}").first).to_be_visible(timeout=5000)
             log_pass(f"T4.Menu: Sidebar hiển thị đúng các menu đặc thù: [{item['expected_menu']}], [{item['secondary_menu']}]")
 
-            # Đăng xuất an toàn qua Settings hoặc Header
+            # Đăng xuất an toàn qua Settings hoặc Header: xóa sạch cả localStorage và Cookies phiên
             page.evaluate("localStorage.clear()")
+            page.context.clear_cookies()
 
         # 4.2 Kiểm thử quy trình Đăng xuất an toàn & Chống phím Back rò rỉ phiên
         log_header("Tầng 4.2: Đăng xuất An toàn & Thẩm định Phím Back Trình Duyệt")
