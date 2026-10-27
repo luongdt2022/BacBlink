@@ -163,8 +163,8 @@ def run_task00_blackbox_suite():
                 "email": "admin.super@nacentech.local",
                 "password": "Password@123",
                 "target_url": f"{BASE_WEB_URL}/admin",
-                "expected_menu": "Tổng quan Quản trị",
-                "secondary_menu": "Cây Thư mục 34 Tỉnh"
+                "expected_menu": "Tổng quan Dashboard 360°",
+                "secondary_menu": "Cây Thư mục 34 Tỉnh/Thành"
             }
         ]
 
