@@ -14,7 +14,10 @@ import {
   AlertCircle,
   Building,
   MapPin,
-  Tag
+  Tag,
+  Info,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { API_BASE } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
@@ -22,12 +25,15 @@ import { Async } from "@/components/ui/async";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AppButton } from "@/components/ui/design-system";
 import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
+import { resolveProvinceName, resolveRoleName, resolveSectorName } from "@/lib/label-resolver";
 
 interface RoleMatrixItem {
   code: string;
   name: string;
   tier: string;
   scope: string;
+  scopeDescription: string;
+  description: string;
   canReview: boolean;
   canApproveFinal: boolean;
   canManageOrg: boolean;
@@ -36,16 +42,136 @@ interface RoleMatrixItem {
 }
 
 const ROLES_MATRIX: RoleMatrixItem[] = [
-  { code: "SUPER_ADMIN", name: "Quản trị Tối cao (NacenTech)", tier: "Tầng 1 (Trung Ương)", scope: "GLOBAL", canReview: true, canApproveFinal: true, canManageOrg: true, canManageSectors: true, canConfigureSystem: true },
-  { code: "OPERATOR_ADMIN", name: "Quản trị Vận hành Sàn Giao dịch", tier: "Tầng 1 (Trung Ương)", scope: "GLOBAL", canReview: true, canApproveFinal: true, canManageOrg: false, canManageSectors: true, canConfigureSystem: false },
-  { code: "PROVINCIAL_ADMIN", name: "Lãnh đạo Sở KH&CN Tỉnh/Thành", tier: "Tầng 2 (Sở Tỉnh)", scope: "PROVINCE", canReview: true, canApproveFinal: true, canManageOrg: true, canManageSectors: false, canConfigureSystem: false },
-  { code: "CLUSTER_ADMIN", name: "Chuyên viên Thẩm định Sở Tỉnh", tier: "Tầng 2 (Sở Tỉnh)", scope: "ORG_UNIT", canReview: true, canApproveFinal: false, canManageOrg: false, canManageSectors: false, canConfigureSystem: false },
-  { code: "SECTOR_ADMIN", name: "Trưởng Ban Quản lý Ngành TT17", tier: "Tầng 3 (Chuyên Ngành)", scope: "SECTOR", canReview: true, canApproveFinal: true, canManageOrg: false, canManageSectors: true, canConfigureSystem: false },
-  { code: "INNOVATION_ENTITY", name: "Đại diện Viện, Trường, Hiệp hội", tier: "Tầng 4 (Cơ Sở)", scope: "ORG_UNIT", canReview: false, canApproveFinal: false, canManageOrg: false, canManageSectors: false, canConfigureSystem: false },
-  { code: "VERIFIED_EXPERT", name: "Chuyên gia Khoa học & Công nghệ", tier: "Tầng 4 (Cá Nhân)", scope: "PERSONAL", canReview: false, canApproveFinal: false, canManageOrg: false, canManageSectors: false, canConfigureSystem: false },
-  { code: "SELLER", name: "Nhà Cung Ứng Công Nghệ (Shop)", tier: "Tầng 4 (Cá Nhân)", scope: "PERSONAL", canReview: false, canApproveFinal: false, canManageOrg: false, canManageSectors: false, canConfigureSystem: false },
-  { code: "BUYER", name: "Bên Mua Công Nghệ / Doanh Nghiệp", tier: "Tầng 4 (Cá Nhân)", scope: "PERSONAL", canReview: false, canApproveFinal: false, canManageOrg: false, canManageSectors: false, canConfigureSystem: false },
-  { code: "PUBLIC_USER", name: "Người Dùng Thành Viên Tự Do", tier: "Tầng 4 (Cá Nhân)", scope: "PERSONAL", canReview: false, canApproveFinal: false, canManageOrg: false, canManageSectors: false, canConfigureSystem: false }
+  {
+    code: "SUPER_ADMIN",
+    name: "Quản trị Tối cao (NacenTech)",
+    tier: "Tầng 1 (Trung Ương)",
+    scope: "GLOBAL",
+    scopeDescription: "Phạm vi toàn quốc (GLOBAL): Toàn quyền quản trị tham số, chính sách và override tầng 0",
+    description: "Quản trị tối cao hệ sinh thái NacenTech, thiết lập quy tắc vận hành và bảo vệ toàn vẹn dữ liệu.",
+    canReview: true,
+    canApproveFinal: true,
+    canManageOrg: true,
+    canManageSectors: true,
+    canConfigureSystem: true
+  },
+  {
+    code: "OPERATOR_ADMIN",
+    name: "Quản trị Vận hành Sàn Giao dịch",
+    tier: "Tầng 1 (Trung Ương)",
+    scope: "GLOBAL",
+    scopeDescription: "Phạm vi toàn quốc (GLOBAL): Điều hành hoạt động sàn giao dịch công nghệ",
+    description: "Kiểm soát dòng giao dịch, duyệt gian hàng và điều phối hoạt động chuyển giao công nghệ.",
+    canReview: true,
+    canApproveFinal: true,
+    canManageOrg: false,
+    canManageSectors: true,
+    canConfigureSystem: false
+  },
+  {
+    code: "PROVINCIAL_ADMIN",
+    name: "Lãnh đạo Sở KH&CN Tỉnh/Thành",
+    tier: "Tầng 2 (Sở Tỉnh)",
+    scope: "PROVINCE",
+    scopeDescription: "Phạm vi tỉnh/thành (PROVINCE): Đại diện Sở KH&CN địa phương quản lý địa bàn",
+    description: "Lãnh đạo Sở KH&CN phê duyệt hồ sơ cấp tỉnh, phân công cán bộ và giám sát mạng lưới ĐMST địa bàn.",
+    canReview: true,
+    canApproveFinal: true,
+    canManageOrg: true,
+    canManageSectors: false,
+    canConfigureSystem: false
+  },
+  {
+    code: "CLUSTER_ADMIN",
+    name: "Chuyên viên Thẩm định Sở Tỉnh",
+    tier: "Tầng 2 (Sở Tỉnh)",
+    scope: "ORG_UNIT",
+    scopeDescription: "Phạm vi đơn vị hành chính/tổ chức (ORG_UNIT): Chuyên viên tác nghiệp Sở Tỉnh",
+    description: "Chuyên viên thẩm tra hồ sơ, rà soát tính hợp lệ và trình lãnh đạo Sở phê duyệt.",
+    canReview: true,
+    canApproveFinal: false,
+    canManageOrg: false,
+    canManageSectors: false,
+    canConfigureSystem: false
+  },
+  {
+    code: "SECTOR_ADMIN",
+    name: "Trưởng Ban Quản lý Ngành TT17",
+    tier: "Tầng 3 (Chuyên Ngành)",
+    scope: "SECTOR",
+    scopeDescription: "Phạm vi chuyên ngành Thông tư 17 (SECTOR): Trưởng ban quản lý lĩnh vực",
+    description: "Thẩm định tính phù hợp công nghệ theo 18 lĩnh vực TT17 và chấm điểm tiêu chuẩn kỹ thuật.",
+    canReview: true,
+    canApproveFinal: true,
+    canManageOrg: false,
+    canManageSectors: true,
+    canConfigureSystem: false
+  },
+  {
+    code: "INNOVATION_ENTITY",
+    name: "Đại diện Viện, Trường, Hiệp hội",
+    tier: "Tầng 4 (Cơ Sở)",
+    scope: "ORG_UNIT",
+    scopeDescription: "Phạm vi cơ sở/viện trường (ORG_UNIT): Đơn vị ĐMST cơ sở",
+    description: "Đại diện Viện nghiên cứu, Trường đại học quản lý tài sản trí tuệ và đề xuất giải pháp.",
+    canReview: false,
+    canApproveFinal: false,
+    canManageOrg: false,
+    canManageSectors: false,
+    canConfigureSystem: false
+  },
+  {
+    code: "VERIFIED_EXPERT",
+    name: "Chuyên gia Khoa học & Công nghệ",
+    tier: "Tầng 4 (Cá Nhân)",
+    scope: "PERSONAL",
+    scopeDescription: "Phạm vi cá nhân chuyên gia (PERSONAL): Hội đồng đánh giá chuyên môn",
+    description: "Nhà khoa học tham gia phản biện độc lập, đánh giá TRL và tư vấn thương mại hóa công nghệ.",
+    canReview: false,
+    canApproveFinal: false,
+    canManageOrg: false,
+    canManageSectors: false,
+    canConfigureSystem: false
+  },
+  {
+    code: "SELLER",
+    name: "Nhà Cung Ứng Công Nghệ (Shop)",
+    tier: "Tầng 4 (Cá Nhân)",
+    scope: "PERSONAL",
+    scopeDescription: "Phạm vi cá nhân/gian hàng (PERSONAL): Nhà cung ứng công nghệ",
+    description: "Doanh nghiệp cung ứng giải pháp kỹ thuật, mở gian hàng và chào bán công nghệ trên sàn.",
+    canReview: false,
+    canApproveFinal: false,
+    canManageOrg: false,
+    canManageSectors: false,
+    canConfigureSystem: false
+  },
+  {
+    code: "BUYER",
+    name: "Bên Mua Công Nghệ / Doanh Nghiệp",
+    tier: "Tầng 4 (Cá Nhân)",
+    scope: "PERSONAL",
+    scopeDescription: "Phạm vi doanh nghiệp đặt hàng (PERSONAL): Bên có nhu cầu công nghệ",
+    description: "Doanh nghiệp sản xuất đăng ký bài toán công nghệ cần tìm kiếm lời giải hoặc chuyển giao.",
+    canReview: false,
+    canApproveFinal: false,
+    canManageOrg: false,
+    canManageSectors: false,
+    canConfigureSystem: false
+  },
+  {
+    code: "PUBLIC_USER",
+    name: "Người Dùng Thành Viên Tự Do",
+    tier: "Tầng 4 (Cá Nhân)",
+    scope: "PERSONAL",
+    scopeDescription: "Phạm vi tài khoản cá nhân (PERSONAL): Thành viên tự do",
+    description: "Người dùng đại chúng tiếp cận thông tin công nghệ công khai và tài liệu khoa học.",
+    canReview: false,
+    canApproveFinal: false,
+    canManageOrg: false,
+    canManageSectors: false,
+    canConfigureSystem: false
+  }
 ];
 
 interface OfficerUser {
@@ -64,6 +190,12 @@ export default function AdminRolesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Pagination states
+  const [matrixPage, setMatrixPage] = useState(1);
+  const [matrixPageSize, setMatrixPageSize] = useState(10);
+  const [officersPage, setOfficersPage] = useState(1);
+  const [officersPageSize, setOfficersPageSize] = useState(10);
 
   // Form state
   const [formEmail, setFormEmail] = useState("");
@@ -104,6 +236,12 @@ export default function AdminRolesPage() {
     const matchesRole = !filterRole || u.role === filterRole;
     return matchesSearch && matchesRole;
   });
+
+  const matrixTotalPages = Math.ceil(ROLES_MATRIX.length / matrixPageSize) || 1;
+  const paginatedMatrix = ROLES_MATRIX.slice((matrixPage - 1) * matrixPageSize, matrixPage * matrixPageSize);
+
+  const officersTotalPages = Math.ceil(filteredOfficers.length / officersPageSize) || 1;
+  const paginatedOfficers = filteredOfficers.slice((officersPage - 1) * officersPageSize, officersPage * officersPageSize);
 
   const handleAssignSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaveError("");
@@ -253,6 +391,7 @@ export default function AdminRolesPage() {
                     <th className="py-3 px-4">Tên Nghiệp Vụ</th>
                     <th className="py-3 px-4">Tầng Quản Trị</th>
                     <th className="py-3 px-4">Phạm Vi (Scope)</th>
+                    <th className="py-3 px-4 text-center">Cán Bộ Đã Gán</th>
                     <th className="py-3 px-4 text-center">Thẩm Định HS</th>
                     <th className="py-3 px-4 text-center">Ký Duyệt Cuối</th>
                     <th className="py-3 px-4 text-center">Quản Trị Sở Tỉnh</th>
@@ -261,33 +400,135 @@ export default function AdminRolesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {ROLES_MATRIX.map((r) => (
-                    <tr key={r.code} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-4">{getRoleBadge(r.code)}</td>
-                      <td className="py-3 px-4 font-medium text-gray-900">{r.name}</td>
-                      <td className="py-3 px-4 text-gray-600 text-xs">{r.tier}</td>
-                      <td className="py-3 px-4">
-                        <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 font-mono">{r.scope}</code>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {r.canReview ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {r.canApproveFinal ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {r.canManageOrg ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {r.canManageSectors ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {r.canConfigureSystem ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
-                      </td>
-                    </tr>
-                  ))}
+                  {paginatedMatrix.map((r) => {
+                    const assignedCount = officers.filter((o) => o.role === r.code).length;
+                    return (
+                      <tr key={r.code} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-4">{getRoleBadge(r.code)}</td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-gray-900">{r.name}</span>
+                            <div className="relative group inline-block">
+                              <button
+                                type="button"
+                                className="text-gray-400 hover:text-brand-600 focus:outline-none p-0.5 rounded"
+                                title={`${r.scopeDescription} — ${r.description}`}
+                                aria-label={`Chi tiết quyền hạn ${r.name}`}
+                              >
+                                <Info className="w-3.5 h-3.5" />
+                              </button>
+                              <div className="pointer-events-none absolute left-0 bottom-full mb-2 hidden group-hover:block group-focus-within:block w-72 p-2.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-30">
+                                <p className="font-semibold text-brand-300 mb-1">{r.name} ({r.code})</p>
+                                <p className="text-gray-200 mb-1.5">{r.description}</p>
+                                <div className="border-t border-gray-700 pt-1 text-xs text-amber-300">
+                                  <span className="font-medium">Phạm vi:</span> {r.scopeDescription}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-gray-600 text-xs">{r.tier}</td>
+                        <td className="py-3 px-4">
+                          <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 font-mono">{r.scope}</code>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFilterRole(r.code);
+                              setActiveTab("officers");
+                              setOfficersPage(1);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 transition"
+                            title={`Xem danh sách ${assignedCount} cán bộ giữ vai trò ${r.code}`}
+                          >
+                            <Users className="w-3 h-3" />
+                            <span>{assignedCount} cán bộ</span>
+                          </button>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {r.canReview ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {r.canApproveFinal ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {r.canManageOrg ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {r.canManageSectors ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {r.canConfigureSystem ? <CheckCircle2 className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Matrix Pagination Controls */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
+              <div className="flex items-center gap-2">
+                <span>Hiển thị:</span>
+                <div className="inline-flex rounded-md shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMatrixPageSize(5);
+                      setMatrixPage(1);
+                    }}
+                    className={`px-2.5 py-1 text-xs font-medium border rounded-l-md transition ${
+                      matrixPageSize === 5
+                        ? "bg-brand-700 text-white border-brand-700"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    5
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMatrixPageSize(10);
+                      setMatrixPage(1);
+                    }}
+                    className={`px-2.5 py-1 text-xs font-medium border-t border-b border-r rounded-r-md transition ${
+                      matrixPageSize === 10
+                        ? "bg-brand-700 text-white border-brand-700"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    10
+                  </button>
+                </div>
+                <span>vai trò / trang</span>
+                <span className="text-gray-400">|</span>
+                <span>
+                  Hiển thị {Math.min((matrixPage - 1) * matrixPageSize + 1, ROLES_MATRIX.length)} - {Math.min(matrixPage * matrixPageSize, ROLES_MATRIX.length)} trong tổng số {ROLES_MATRIX.length} vai trò
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={matrixPage <= 1}
+                  onClick={() => setMatrixPage((p) => Math.max(1, p - 1))}
+                  className="px-2.5 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Trang trước</span>
+                </button>
+                <span className="px-2 font-medium">Trang {matrixPage} / {matrixTotalPages}</span>
+                <button
+                  type="button"
+                  disabled={matrixPage >= matrixTotalPages}
+                  onClick={() => setMatrixPage((p) => Math.min(matrixTotalPages, p + 1))}
+                  className="px-2.5 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  <span>Trang sau</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -302,7 +543,10 @@ export default function AdminRolesPage() {
                   type="text"
                   placeholder="Tìm theo email, tên cán bộ, mã tỉnh..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setOfficersPage(1);
+                  }}
                   className="form-control w-full pl-9 pr-3 text-sm"
                 />
               </div>
@@ -310,7 +554,10 @@ export default function AdminRolesPage() {
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <select
                   value={filterRole}
-                  onChange={(e) => setFilterRole(e.target.value)}
+                  onChange={(e) => {
+                    setFilterRole(e.target.value);
+                    setOfficersPage(1);
+                  }}
                   className="form-control text-sm font-medium"
                 >
                   <option value="">Tất cả Vai Trò</option>
@@ -338,11 +585,16 @@ export default function AdminRolesPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {(officersLoading || officersError) && <tr><td colSpan={7}><Async state={officersLoading ? "loading" : "error"} errorMessage={officersError} onRetry={() => void loadOfficers()}><span /></Async></td></tr>}
-                  {!officersLoading && !officersError && filteredOfficers.map((o) => (
+                  {!officersLoading && !officersError && paginatedOfficers.map((o) => (
                     <tr key={o.id} className="hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4 font-semibold text-gray-900">{o.name || o.email}</td>
                       <td className="py-3 px-4 text-gray-600 font-mono text-xs">{o.email}</td>
-                      <td className="py-3 px-4">{getRoleBadge(o.role)}</td>
+                      <td className="py-3 px-4">
+                        <div className="space-y-0.5">
+                          {getRoleBadge(o.role)}
+                          <div className="text-xs text-gray-500">{resolveRoleName(o.role)}</div>
+                        </div>
+                      </td>
                       <td className="py-3 px-4">
                         <span className="inline-flex items-center gap-1 text-xs text-gray-600">
                           {o.scopeType === "GLOBAL" && <Building className="w-3.5 h-3.5 text-red-500" />}
@@ -353,7 +605,11 @@ export default function AdminRolesPage() {
                       </td>
                       <td className="py-3 px-4">
                         <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono font-bold text-gray-800">
-                          {o.scopeType === "SECTOR" ? sectors.find((sector) => sector.code === o.scopeId)?.name || o.scopeId : o.scopeId || "Toàn quốc"}
+                          {o.scopeType === "SECTOR"
+                            ? sectors.find((sector) => sector.code === o.scopeId)?.name || resolveSectorName(o.scopeId)
+                            : o.scopeType === "PROVINCE"
+                            ? `${resolveProvinceName(o.scopeId)} (${o.scopeId})`
+                            : o.scopeId || "Toàn quốc"}
                         </code>
                       </td>
                       <td className="py-3 px-4 text-xs text-gray-500">{o.assignedAt ? new Date(o.assignedAt).toLocaleDateString("vi-VN") : "Chưa ghi nhận"}</td>
@@ -384,6 +640,52 @@ export default function AdminRolesPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Officers Pagination Controls */}
+            {!officersLoading && !officersError && filteredOfficers.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
+                <div className="flex items-center gap-2">
+                  <span>Hiển thị</span>
+                  <select
+                    value={officersPageSize}
+                    onChange={(e) => {
+                      setOfficersPageSize(Number(e.target.value));
+                      setOfficersPage(1);
+                    }}
+                    className="border border-gray-300 rounded px-2 py-1 text-xs bg-white"
+                    aria-label="Số cán bộ trên trang"
+                  >
+                    <option value={5}>5 cán bộ / trang</option>
+                    <option value={10}>10 cán bộ / trang</option>
+                    <option value={20}>20 cán bộ / trang</option>
+                  </select>
+                  <span>
+                    (Hiển thị {Math.min((officersPage - 1) * officersPageSize + 1, filteredOfficers.length)} - {Math.min(officersPage * officersPageSize, filteredOfficers.length)} / {filteredOfficers.length} cán bộ)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={officersPage <= 1}
+                    onClick={() => setOfficersPage((p) => Math.max(1, p - 1))}
+                    className="px-2.5 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Trang trước</span>
+                  </button>
+                  <span className="px-2 font-medium">Trang {officersPage} / {officersTotalPages}</span>
+                  <button
+                    type="button"
+                    disabled={officersPage >= officersTotalPages}
+                    onClick={() => setOfficersPage((p) => Math.min(officersTotalPages, p + 1))}
+                    className="px-2.5 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                  >
+                    <span>Trang sau</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

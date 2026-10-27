@@ -1,1114 +1,623 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, Suspense } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { AppButton } from "@/components/ui/design-system";
-import { authClient, UserContext } from "@/lib/auth-client";
-import { Async, UXState } from "@/components/ui/async";
-import { getActiveSectors } from "@/lib/master-data-client";
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
+  LayoutDashboard,
   FileCheck2,
-  Users,
+  Clock,
   Building2,
+  Users,
   GraduationCap,
   ShoppingBag,
-  Clock,
+  Award,
+  BarChart3,
+  TrendingUp,
+  AlertTriangle,
   CheckCircle2,
-  XCircle,
-  Eye,
-  Filter,
-  Search,
-  ShieldCheck,
-  AlertCircle,
-  MapPin,
-  Check,
-  X,
-  RotateCcw,
-  FileText,
-  Building,
-  Image as ImageIcon,
-  Video,
+  ArrowRight,
   ExternalLink,
-  Tag,
+  RefreshCw,
+  Eye,
+  Sparkles,
+  ShieldCheck,
+  ChevronRight,
+  Filter,
+  Layers,
+  Copy,
+  Check,
+  Search,
+  BadgeCheck,
 } from "lucide-react";
+import { GovPageHeader } from "@/components/gov/gov-page-header";
+import { authClient, UserContext } from "@/lib/auth-client";
+import { AppButton } from "@/components/ui/design-system";
+import { resolveProvinceName, formatGovRecordCode } from "@/lib/gov-label-resolver";
 
-import { reviewOffer } from "@/services/api/technology-offer";
-import { TechnologyOffer } from "@/types/technology-offer";
-
-function formatOfferType(type?: string | null): string {
-  switch (type) {
-    case "DEVICE":
-      return "Thiết bị / Máy móc";
-    case "EQUIPMENT":
-      return "Dây chuyền / Thiết bị";
-    case "SOLUTION":
-      return "Giải pháp kỹ thuật";
-    case "SOFTWARE":
-      return "Phần mềm / Nền tảng số";
-    case "PROCESS":
-      return "Quy trình công nghệ";
-    case "PRODUCT":
-    default:
-      return "Sản phẩm thương mại";
-  }
-}
-
-function formatIpStatus(status?: string | null): { label: string; color: string } {
-  switch (status) {
-    case "PATENT_GRANTED":
-      return {
-        label: "Đã cấp Bằng sáng chế",
-        color: "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300",
-      };
-    case "UTILITY_MODEL":
-      return {
-        label: "Giải pháp hữu ích",
-        color: "bg-teal-50 text-teal-800 border-teal-300 dark:bg-teal-950/60 dark:text-teal-300",
-      };
-    case "TRADE_SECRET":
-      return {
-        label: "Bí mật kinh doanh",
-        color: "bg-brand-50 text-brand-800 border-brand-300 dark:bg-brand-950/60 dark:text-brand-300",
-      };
-    case "PATENT_PENDING":
-    case "PATENT_APPLICATION":
-      return {
-        label: "Đang thẩm định đơn SHTT",
-        color: "bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300",
-      };
-    case "SOFTWARE_COPYRIGHT":
-    case "COPYRIGHT_REGISTERED":
-      return {
-        label: "Bản quyền / Quyền tác giả",
-        color: "bg-brand-100 text-brand-800 border-brand-300 dark:bg-brand-950/60 dark:text-brand-300",
-      };
-    case "NONE":
-    default:
-      return {
-        label: "Chưa bảo hộ SHTT",
-        color: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400",
-      };
-  }
-}
-
-function formatTrl(level?: number | null): { label: string; desc: string; color: string } {
-  const l = Number(level) || 0;
-  if (l >= 9) {
-    return {
-      label: `TRL ${l}/9`,
-      desc: "Thương mại hóa hoàn toàn",
-      color: "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300",
-    };
-  }
-  if (l >= 7) {
-    return {
-      label: `TRL ${l}/9`,
-      desc: "Thử nghiệm thực địa / Tiền thương mại",
-      color: "bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300",
-    };
-  }
-  if (l >= 4) {
-    return {
-      label: `TRL ${l}/9`,
-      desc: "Mẫu thử nghiệm (Pilot)",
-      color: "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300",
-    };
-  }
-  return {
-    label: `TRL ${l || 1}/9`,
-    desc: "Ý tưởng & Nghiên cứu lab",
-    color: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400",
-  };
-}
-
-function formatTransferMethod(method?: string | null): string {
-  switch (method) {
-    case "EXCLUSIVE_LICENSE":
-      return "Li-xăng độc quyền";
-    case "NON_EXCLUSIVE_LICENSE":
-      return "Li-xăng không độc quyền";
-    case "ASSIGNMENT_SALE":
-      return "Chuyển giao quyền sở hữu (Bán đứt)";
-    case "JOINT_RD":
-      return "Hợp tác R&D / Hoàn thiện công nghệ";
-    case "CAPITAL_CONTRIBUTION":
-      return "Góp vốn bằng tài sản trí tuệ";
-    default:
-      return method || "Thỏa thuận chuyển giao";
-  }
-}
-
-function formatPrice(offer?: TechnologyOffer | null): string {
-  if (!offer) return "Liên hệ thỏa thuận";
-  if (offer.pricingType === "CONTACT") return "Liên hệ thỏa thuận";
-  if (offer.pricingType === "FIXED" && offer.priceAmount) {
-    return `${Number(offer.priceAmount).toLocaleString("vi-VN")} ${offer.currency || "VNĐ"}${offer.unit ? ` / ${offer.unit}` : ""}`;
-  }
-  if (offer.pricingType === "RANGE" && (offer.priceMin || offer.priceMax)) {
-    const min = offer.priceMin ? Number(offer.priceMin).toLocaleString("vi-VN") : "0";
-    const max = offer.priceMax ? Number(offer.priceMax).toLocaleString("vi-VN") : "...";
-    return `${min} - ${max} ${offer.currency || "VNĐ"}`;
-  }
-  return "Liên hệ thỏa thuận";
-}
-
-export interface GovApprovalItem {
+interface PriorityActionItem {
   id: string;
-  submitterName: string;
-  submitterEmail: string;
-  type: "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "FACILITY" | "TECHNOLOGY_OFFER";
-  titleOrOrg: string;
-  scopeType: string;
-  scopeId: string;
-  provinceName: string;
-  sector: string;
+  code: string;
+  type: "SHOP" | "EXPERT" | "DEMAND" | "ENTERPRISE";
+  typeLabel: string;
+  typeColor: string;
+  title: string;
+  applicant: string;
   submittedAt: string;
-  status: "PENDING_APPROVAL" | "APPROVED" | "CHANGES_REQUESTED" | "REJECTED";
-  cvOrDocName?: string;
-  degree?: string;
-  summary?: string;
-  version: number;
-  rawOffer?: TechnologyOffer;
+  slaRemaining: string;
+  slaUrgency: "NORMAL" | "WARNING" | "NEW";
+  actionHref: string;
 }
 
-const PROVINCE_MAP: Record<string, string> = {
-  HP: "Hải Phòng",
-  HN: "Hà Nội",
-  HCM: "TP. Hồ Chí Minh",
-  DN: "Đà Nẵng",
-  QN: "Quảng Ninh",
-  BN: "Bắc Ninh",
-  BDG: "Bình Dương",
-  DNA: "Đồng Nai",
-  CT: "Cần Thơ",
-};
+const SAMPLE_PRIORITY_ITEMS: PriorityActionItem[] = [
+  {
+    id: "appr-shop-001",
+    code: "CB-HN-C25347",
+    type: "SHOP",
+    typeLabel: "Chào Bán Công Nghệ (TRL)",
+    typeColor: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300",
+    title: "Hệ thống AI IoT Giám sát Chất lượng Nước Nuôi Tôm Công Nghệ Cao",
+    applicant: "Viện Công Nghệ Sinh Học & Môi Trường Hà Nội",
+    submittedAt: "24/10/2026 09:30",
+    slaRemaining: "Còn 14h (Cận hạn)",
+    slaUrgency: "WARNING",
+    actionHref: "/gov/approvals?tab=SHOP",
+  },
+  {
+    id: "appr-exp-001",
+    code: "CG-HN-A109F2",
+    type: "EXPERT",
+    typeLabel: "Chuyên Gia KH&CN",
+    typeColor: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950 dark:text-violet-300",
+    title: "TS. Nguyễn Minh Triết - Chuyên gia AI & Xử lý Ngôn ngữ Tự nhiên",
+    applicant: "Đại học Quốc gia Hà Nội",
+    submittedAt: "25/10/2026 14:15",
+    slaRemaining: "Còn 36h",
+    slaUrgency: "NORMAL",
+    actionHref: "/gov/approvals?tab=EXPERT",
+  },
+  {
+    id: "appr-dem-001",
+    code: "NC-HN-88E29E",
+    type: "DEMAND",
+    typeLabel: "Bài Toán Nhu Cầu DNNVV",
+    typeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300",
+    title: "Cần tìm giải pháp robot hàn tự động 6 trục cho xưởng gia công cơ khí",
+    applicant: "Công ty TNHH Cơ Khí Chính Xác Thăng Long",
+    submittedAt: "25/10/2026 16:40",
+    slaRemaining: "Còn 38h",
+    slaUrgency: "NORMAL",
+    actionHref: "/gov/approvals?tab=DEMAND",
+  },
+  {
+    id: "appr-ent-001",
+    code: "DN-HN-825CDC",
+    type: "ENTERPRISE",
+    typeLabel: "Thẩm Định DN ĐMST",
+    typeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300",
+    title: "Hồ sơ đăng ký cấp huy hiệu Doanh nghiệp Đổi mới Sáng tạo",
+    applicant: "Công ty Cổ phần Giải pháp Nông nghiệp Xanh Hà Nội",
+    submittedAt: "26/10/2026 08:20",
+    slaRemaining: "Mới tiếp nhận (48h)",
+    slaUrgency: "NEW",
+    actionHref: "/gov/approvals/enterprises",
+  },
+  {
+    id: "appr-shop-002",
+    code: "CB-HN-7F3A19",
+    type: "SHOP",
+    typeLabel: "Chào Bán Công Nghệ (TRL)",
+    typeColor: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950 dark:text-sky-300",
+    title: "Module quang điện mặt trời hiệu suất cao Perovskite - Silicon Tandem",
+    applicant: "Viện Vật Lý - Viện Hàn Lâm KH&CN",
+    submittedAt: "26/10/2026 09:10",
+    slaRemaining: "Còn 45h",
+    slaUrgency: "NORMAL",
+    actionHref: "/gov/approvals?tab=SHOP",
+  },
+  {
+    id: "appr-exp-002",
+    code: "CG-HN-E320B4",
+    type: "EXPERT",
+    typeLabel: "Chuyên Gia KH&CN",
+    typeColor: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950 dark:text-violet-300",
+    title: "PGS.TS. Trần Thị Mai Lan - Chuyên gia Công nghệ Sinh học Vi sinh",
+    applicant: "Học viện Nông nghiệp Việt Nam",
+    submittedAt: "26/10/2026 10:05",
+    slaRemaining: "Mới tiếp nhận (48h)",
+    slaUrgency: "NEW",
+    actionHref: "/gov/approvals?tab=EXPERT",
+  },
+];
 
-
-function GovDashboardContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  const tabParam = searchParams.get("tab")?.toUpperCase();
-  const activeTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" = useMemo(() => {
-    if (
-      tabParam === "EXPERT" ||
-      tabParam === "SHOP" ||
-      tabParam === "DEMAND" ||
-      tabParam === "ACCOUNT" ||
-      tabParam === "ALL"
-    ) {
-      return tabParam;
-    }
-    return "ALL";
-  }, [tabParam]);
-
-  const handleTabChange = (newTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT") => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", newTab);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
+export default function GovExecutiveDashboard() {
   const [user, setUser] = useState<UserContext | null>(null);
-  const [items, setItems] = useState<GovApprovalItem[]>([]);
-  const [sectorNames, setSectorNames] = useState<Record<string, string>>({});
-  const [uxState, setUxState] = useState<UXState>("loading");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState<GovApprovalItem | null>(null);
-  const [reviewAction, setReviewAction] = useState<"APPROVE" | "REJECT" | "REQUEST_CHANGES" | null>(null);
-  const [reviewNote, setReviewNote] = useState("");
-  const [reviewError, setReviewError] = useState("");
-  const [processing, setProcessing] = useState(false);
-  const [toastMsg, setToastMsg] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
-
-  const showToast = (text: string, type: "success" | "error" | "info" = "success") => {
-    setToastMsg({ text, type });
-    setTimeout(() => setToastMsg(null), 4000);
-  };
-
-  const currentScopeId = user?.scopeId || "HP";
-  const currentProvinceName = PROVINCE_MAP[currentScopeId] || currentScopeId;
-
-  const loadApprovals = async (targetUser?: UserContext | null) => {
-    setUxState("loading");
-    const u = targetUser || user || authClient.getUser();
-    const scopeId = u?.scopeId || "HP";
-
-    try {
-      let mapped: GovApprovalItem[] = [];
-      const res = await fetch(`/api/v1/approvals?scopeType=PROVINCE&scopeId=${scopeId}`, {
-        headers: authClient.getAuthHeaders(),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const dataList = json.data?.items || json.data || json;
-        if (Array.isArray(dataList)) {
-          mapped = dataList.map((x: any) => ({
-            id: x.id,
-            submitterName: x.user?.fullName || "Chuyên gia địa phương",
-            submitterEmail: x.user?.email || "chuyengia@haiphong.gov.vn",
-            type: x.requestType || "EXPERT",
-            titleOrOrg: x.payloadJson ? JSON.parse(x.payloadJson).organizationName || "Sở KH&CN" : "Sở KH&CN",
-            scopeType: x.scopeType || "PROVINCE",
-            scopeId: x.scopeId || scopeId,
-            provinceName: PROVINCE_MAP[x.scopeId] || x.scopeId || "Địa phương",
-            sector: x.payloadJson ? JSON.parse(x.payloadJson).expertiseSectors?.[0] || "" : "",
-            submittedAt: new Date(x.createdAt).toLocaleDateString("vi-VN"),
-            status: x.status || "PENDING_APPROVAL",
-            degree: x.payloadJson ? JSON.parse(x.payloadJson).degree : "Tiến sĩ (TS)",
-            summary: x.payloadJson ? JSON.parse(x.payloadJson).consultingSummary : "",
-            version: x.version || 1,
-          }));
-        }
-      }
-
-      // Nạp hồ sơ công nghệ chào bán cần thẩm định Cấp 2 của Sở KH&CN
-      try {
-        const techRes = await fetch(`/api/v1/portal/seller/technologies?status=PENDING`);
-        if (techRes.ok) {
-          const techJson = await techRes.json();
-          const techList = techJson.data || [];
-          const techMapped: GovApprovalItem[] = techList
-            .filter((t: any) => t.status === "PENDING")
-            .map((t: any) => ({
-              id: t.id,
-              submitterName: t.developerOrigin || t.enterpriseName || "Doanh nghiệp KH&CN",
-              submitterEmail: t.contactEmail || "seller@nacentwin.gov.vn",
-              type: "TECHNOLOGY_OFFER" as const,
-              titleOrOrg: t.title,
-              scopeType: t.scopeType || "PROVINCE",
-              scopeId: t.scopeId || scopeId,
-              provinceName: t.managingAuthorityName || PROVINCE_MAP[t.scopeId] || "Hà Nội",
-              sector: t.sectorCode || "",
-              submittedAt: new Date(t.createdAt).toLocaleDateString("vi-VN"),
-              status: "PENDING_APPROVAL",
-              summary: t.summary || "",
-              cvOrDocName: t.ipRegistrationNumber
-                ? `Văn bằng SHTT: ${t.ipRegistrationNumber}`
-                : t.documents?.[0]?.fileName || undefined,
-              version: 1,
-              rawOffer: t,
-            }));
-          mapped = [...mapped, ...techMapped];
-        }
-      } catch {
-        // Silent fallback
-      }
-
-      setItems(mapped);
-      setUxState(mapped.length === 0 ? "empty" : "success");
-    } catch {
-      setItems([]);
-      setUxState("error");
-    }
-  };
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("ALL");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    getActiveSectors().then((rows) => setSectorNames(Object.fromEntries(rows.map((row) => [row.code, row.name])))).catch(() => setSectorNames({}));
-    const u = authClient.getUser();
-    setUser(u);
-    loadApprovals(u);
+    setUser(authClient.getUser());
   }, []);
 
+  const scopeCode = (user?.scopeId || "HN").toUpperCase();
+  const provinceLabel = resolveProvinceName(scopeCode);
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 600);
+  };
+
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      const matchTab =
-        activeTab === "ALL"
-          ? true
-          : activeTab === "SHOP"
-          ? item.type === "SHOP" || (item.type as string) === "TECHNOLOGY_OFFER"
-          : item.type === activeTab;
-      const matchSearch =
-        item.submitterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.titleOrOrg.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchTab && matchSearch;
-    });
-  }, [items, activeTab, searchQuery]);
+    if (selectedTypeFilter === "ALL") return SAMPLE_PRIORITY_ITEMS;
+    return SAMPLE_PRIORITY_ITEMS.filter((item) => item.type === selectedTypeFilter);
+  }, [selectedTypeFilter]);
 
-  const stats = useMemo(() => {
-    return {
-      all: items.length,
-      expert: items.filter((x) => x.type === "EXPERT").length,
-      shop: items.filter((x) => x.type === "SHOP" || (x.type as string) === "TECHNOLOGY_OFFER").length,
-      demand: items.filter((x) => x.type === "DEMAND").length,
-      account: items.filter((x) => x.type === "ACCOUNT").length,
-    };
-  }, [items]);
-
-  const handleReviewSubmit = async () => {
-    if (!selectedItem || !reviewAction) return;
-
-    if (reviewAction === "REJECT" || reviewAction === "REQUEST_CHANGES") {
-      if (!reviewNote.trim() || reviewNote.trim().length < 10) {
-        setReviewError("Lý do xử lý bắt buộc phải có ít nhất 10 ký tự theo Quy tắc BR-ADM-004.");
-        return;
-      }
-    }
-
-    setProcessing(true);
-    setReviewError("");
-
-    try {
-      if (selectedItem.type === "TECHNOLOGY_OFFER") {
-        await reviewOffer(
-          selectedItem.id,
-          reviewAction,
-          reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ công nghệ hợp lệ, Sở KH&CN phê duyệt cấp cơ sở." : "Cần bổ sung hồ sơ.")
-        );
-      } else {
-        const res = await fetch(`/api/v1/approvals/${selectedItem.id}/review`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            ...authClient.getAuthHeaders(),
-          },
-          body: JSON.stringify({
-            action: reviewAction,
-            expectedVersion: selectedItem.version,
-            reviewNote: reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ hợp lệ, Lãnh đạo Sở KH&CN phê duyệt cấp cơ sở." : ""),
-          }),
-        });
-
-        if (res.status === 409) {
-          showToast("Xung đột (409 Conflict): Hồ sơ đã được cán bộ khác xử lý trước đó. Đang tải lại...", "error");
-          await loadApprovals();
-          setSelectedItem(null);
-          setReviewAction(null);
-          return;
-        }
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || "Không thể xử lý yêu cầu thẩm định.");
-        }
-      }
-
-      // Cập nhật trạng thái thành công trong UI
-      const nextStatus =
-        reviewAction === "APPROVE"
-          ? "APPROVED"
-          : reviewAction === "REJECT"
-          ? "REJECTED"
-          : "CHANGES_REQUESTED";
-
-      setItems((prev) =>
-        prev.map((it) =>
-          it.id === selectedItem.id
-            ? { ...it, status: nextStatus, version: it.version + 1 }
-            : it
-        )
-      );
-
-      const isOffer = selectedItem.type === "TECHNOLOGY_OFFER" || selectedItem.type === "SHOP";
-      let successMessage = `Đã chuyển trạng thái hồ sơ sang ${nextStatus}.`;
-      if (reviewAction === "APPROVE") {
-        successMessage = isOffer
-          ? `Đã phê duyệt sản phẩm "${selectedItem.titleOrOrg}"! Công nghệ đã sẵn sàng niêm yết trên Sàn.`
-          : `Đã phê duyệt hồ sơ chuyên gia ${selectedItem.submitterName}! Cấp role VERIFIED_EXPERT thành công.`;
-      } else if (reviewAction === "REQUEST_CHANGES") {
-        successMessage = isOffer
-          ? `Đã gửi yêu cầu hoàn thiện hồ sơ cho sản phẩm "${selectedItem.titleOrOrg}".`
-          : `Đã gửi yêu cầu bổ sung hồ sơ cho chuyên gia ${selectedItem.submitterName}.`;
-      } else if (reviewAction === "REJECT") {
-        successMessage = isOffer
-          ? `Đã từ chối niêm yết sản phẩm "${selectedItem.titleOrOrg}".`
-          : `Đã từ chối phê duyệt hồ sơ của ${selectedItem.submitterName}.`;
-      }
-
-      showToast(successMessage, reviewAction === "APPROVE" ? "success" : "info");
-    } catch (e: any) {
-      showToast(e.message || "Không thể xử lý yêu cầu thẩm định. Vui lòng thử lại.", "error");
-    } finally {
-      setProcessing(false);
-      setSelectedItem(null);
-      setReviewAction(null);
-      setReviewNote("");
-    }
+  // Thống kê nhanh
+  const stats = {
+    pendingTotal: SAMPLE_PRIORITY_ITEMS.length,
+    pendingShop: SAMPLE_PRIORITY_ITEMS.filter((i) => i.type === "SHOP").length,
+    pendingExp: SAMPLE_PRIORITY_ITEMS.filter((i) => i.type === "EXPERT").length,
+    pendingDem: SAMPLE_PRIORITY_ITEMS.filter((i) => i.type === "DEMAND").length,
+    pendingEnt: SAMPLE_PRIORITY_ITEMS.filter((i) => i.type === "ENTERPRISE").length,
   };
 
   return (
     <div className="space-y-6">
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-control shadow-xl text-label font-semibold flex items-center gap-2 animate-bounce transition ${
-            toastMsg.type === "success"
-              ? "bg-emerald-600 text-white"
-              : toastMsg.type === "error"
-              ? "bg-rose-600 text-white"
-              : "bg-brand-700 text-white"
-          }`}
-        >
-          {toastMsg.type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-          <span>{toastMsg.text}</span>
-        </div>
-      )}
-
-      {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 font-semibold text-caption mb-2 border border-brand-200 dark:border-brand-900">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Quy Trình Kiểm Duyệt 2 Cấp (Maker-Checker) • Phê Duyệt Cấp 2: Lãnh Đạo Sở KH&CN</span>
-          </div>
-          <h1 className="font-bold text-slate-900 dark:text-white tracking-tight type-page-title flex items-center gap-3">
-            <span>Hàng Đợi Kiểm Duyệt Địa Bàn</span>
-            <span className="px-3 py-1 rounded-control bg-brand-700 text-white text-caption font-bold">
-              {currentProvinceName} ({currentScopeId})
-            </span>
-          </h1>
-          <p className="text-body text-slate-500 dark:text-slate-400 mt-1">
-            Thẩm định hồ sơ theo cơ chế 3D Scoped RBAC dành cho 34 Sở KH&CN tỉnh thành trọng điểm và Ban Điều Phối Lĩnh Vực TT17.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <AppButton
-            variant="outline"
-            onClick={() => loadApprovals()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-control text-label font-semibold text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Làm mới danh sách</span>
-          </AppButton>
-        </div>
-      </div>
-
-      {/* Scope Info Card Banner */}
-      <div className="bg-gradient-to-r from-brand-500/10 via-brand-50 to-white dark:from-brand-950/40 dark:via-slate-900 dark:to-slate-900 border border-brand-200 dark:border-brand-900/60 rounded-surface p-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-brand-700 text-white flex items-center justify-center font-bold">
-            <MapPin className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-card-title">
-              Cán bộ phụ trách: {user?.fullName || "Lãnh đạo Sở KH&CN"}
-            </h4>
-            <p className="text-caption text-slate-600 dark:text-slate-400">
-              Quyền hạn: <strong>{user?.role || "PROVINCIAL_ADMIN"}</strong> &bull; Phạm vi kiểm duyệt:{" "}
-              <strong>Sở KH&CN {currentProvinceName}</strong> &bull; Hậu kiểm: NacenTech Trung Ương.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 text-label font-semibold">
-          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
-            <Clock className="w-4 h-4" />
-            <span>SLA Cam Kết: &le; 48 Giờ</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-brand-700 dark:text-brand-300">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Maker-Checker 2 Cấp</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 5 Tabs Navigation with Badges */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: "EXPERT", label: "Chuyên Gia KH&CN", count: stats.expert, icon: GraduationCap },
-            { id: "SHOP", label: "Shop Chào Bán", count: stats.shop, icon: Building2 },
-            { id: "DEMAND", label: "Nhu Cầu Công Nghệ", count: stats.demand, icon: ShoppingBag },
-            { id: "ACCOUNT", label: "Tài Khoản Pháp Nhân", count: stats.account, icon: Users },
-            { id: "ALL", label: "Tất Cả", count: stats.all, icon: FileCheck2 },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => handleTabChange(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-label transition cursor-pointer ${
-                  isActive
-                    ? "border-brand-700 text-brand-700 dark:border-brand-400 dark:text-brand-400"
-                    : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 hover:border-slate-300"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-caption font-bold ${
-                    isActive
-                      ? "bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300"
-                      : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                  }`}
-                >
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search Input */}
-        <div className="relative min-w-[18rem] pb-2 sm:pb-0">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm theo tên chuyên gia, đơn vị, mã..."
-            className="form-control w-full pl-9 pr-3 text-sm"
-          />
-        </div>
-      </div>
-
-      {/* Main Content Area via 5 UX States Container */}
-      <Async
-        state={uxState}
-        loadingText="Đang tải danh sách hồ sơ kiểm duyệt địa bàn..."
-        emptyContent={
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-12 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-            </div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-card-title">
-              Hàng đợi kiểm duyệt hiện đang trống!
-            </h3>
-            <p className="text-body text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-              Không có hồ sơ nào đang chờ thẩm định tại địa bàn {currentProvinceName}. Toàn bộ hồ sơ đã được xử lý đúng cam kết SLA.
-            </p>
+      {/* Gov Standard Header */}
+      <GovPageHeader
+        breadcrumbs={[
+          { label: "Trang chủ", href: "/" },
+          { label: "Cổng Công Vụ Sở KH&CN", href: "/gov" },
+          { label: "Trung Tâm Điều Hành & Giám Sát" },
+        ]}
+        title={`Trung Tâm Điều Hành & Giám Sát KH&CN ${provinceLabel}`}
+        subtitle="Hệ thống Dashboard 360° tổng hợp chỉ số phát triển thị trường công nghệ và hàng đợi công việc ưu tiên cần xử lý của địa bàn"
+        icon={LayoutDashboard}
+        scopeCode={scopeCode}
+        slaText=""
+        makerCheckerText=""
+        actions={
+          <div className="flex items-center gap-2">
+            <AppButton
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+              <span>{refreshing ? "Đang cập nhật..." : "Làm Mới"}</span>
+            </AppButton>
+            <Link href="/gov/approvals">
+              <AppButton variant="primary" className="flex items-center gap-1.5 px-3 py-1.5 text-xs">
+                <FileCheck2 className="w-4 h-4" />
+                <span>Vào Hàng Đợi Kiểm Duyệt</span>
+              </AppButton>
+            </Link>
           </div>
         }
-      >
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[54rem] text-left text-label">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase tracking-wider font-semibold dark:text-slate-300">
-                  <tr>
-                    <th className="py-3 px-4">Mã Hồ Sơ</th>
-                    <th className="py-3 px-4">
-                      {activeTab === "SHOP"
-                        ? "Đơn Vị Chào Bán / Sở Hữu"
-                        : activeTab === "EXPERT"
-                        ? "Chuyên Gia Đăng Ký"
-                        : "Chủ Thể / Người Nộp"}
-                    </th>
-                    <th className="py-3 px-4">
-                      {activeTab === "SHOP"
-                        ? "Tên Sản Phẩm / Công Nghệ"
-                        : activeTab === "EXPERT"
-                        ? "Đơn Vị Công Tác"
-                        : "Tên Hồ Sơ / Cơ Quan"}
-                    </th>
-                    <th className="py-3 px-4">Lĩnh Vực Công Nghệ</th>
-                    <th className="py-3 px-4">Ngày Nộp</th>
-                    <th className="py-3 px-4">Trạng Thái</th>
-                    <th className="py-3 px-4 text-right">Thao Tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredItems.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition"
-                    >
-                      <td className="py-3.5 px-4 font-mono font-bold text-brand-700 dark:text-brand-300">
-                        <div>{item.id.slice(0, 8)}...</div>
-                        {activeTab === "ALL" && (
-                          <span
-                            className={`inline-block text-caption font-bold px-1.5 py-0.5 rounded mt-0.5 ${
-                              item.type === "TECHNOLOGY_OFFER" || item.type === "SHOP"
-                                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-                                : "bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300"
-                            }`}
-                          >
-                            {item.type === "TECHNOLOGY_OFFER" || item.type === "SHOP"
-                              ? "Sản phẩm"
-                              : "Chuyên gia"}
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900 dark:text-white">
-                          {item.submitterName}
-                        </div>
-                        <div className="text-xs text-slate-400">{item.submitterEmail}</div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-medium">
-                        {item.titleOrOrg}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-caption font-semibold">
-                          {sectorNames[item.sector] ?? (item.sector || "Chưa khai báo")}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
-                        {item.submittedAt}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {item.status === "PENDING_APPROVAL" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-caption font-bold dark:bg-amber-950/60 dark:text-amber-300">
-                            <Clock className="w-3 h-3" />
-                            <span>Chờ Lãnh Đạo Duyệt</span>
-                          </span>
-                        )}
-                        {item.status === "APPROVED" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-caption font-bold dark:bg-emerald-950/60 dark:text-emerald-300">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Đã Duyệt (Cấp Tỉnh)</span>
-                          </span>
-                        )}
-                        {item.status === "REJECTED" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-caption font-bold dark:bg-rose-950/60 dark:text-rose-300">
-                            <XCircle className="w-3 h-3" />
-                            <span>Đã Từ Chối</span>
-                          </span>
-                        )}
-                        {item.status === "CHANGES_REQUESTED" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-caption font-bold dark:bg-cyan-950/60 dark:text-cyan-300">
-                            <AlertCircle className="w-3 h-3" />
-                            <span>Yêu Cầu Bổ Sung</span>
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <AppButton
-                          variant="primary"
-                          onClick={() => setSelectedItem(item)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control font-semibold text-caption"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Thẩm Định</span>
-                        </AppButton>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      />
+
+      {/* KHỐI 1: 4 THẺ KPI TỔNG HỢP 360° ĐỊA BÀN */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI 1: Hồ sơ chờ phê duyệt */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Hồ Sơ Chờ Phê Duyệt
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400 flex items-center justify-center">
+              <Clock className="w-5 h-5" />
             </div>
           </div>
-        </Async>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                {stats.pendingTotal}
+              </span>
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                việc cần xử lý
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              {stats.pendingShop} chào bán · {stats.pendingExp} chuyên gia · {stats.pendingDem} nhu cầu · {stats.pendingEnt} DN
+            </p>
+          </div>
+          <Link
+            href="/gov/approvals"
+            className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brand-primary hover:underline"
+          >
+            <span>Vào hàng đợi kiểm duyệt</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
 
-      {/* Review Modal / Pane Chi Tiết Hồ Sơ */}
-      {selectedItem && (() => {
-        const isOffer = selectedItem.type === "TECHNOLOGY_OFFER" || selectedItem.type === "SHOP";
-        return (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-surface border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              {/* Modal Header */}
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
-                <div className="flex items-center gap-2.5">
-                  {isOffer ? (
-                    <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                      <ShoppingBag className="w-5 h-5" />
-                    </div>
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center shrink-0">
-                      <ShieldCheck className="w-5 h-5" />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-card-title flex items-center gap-2">
-                      <span>
-                        {isOffer
-                          ? `Thẩm Định Sản Phẩm Chào Bán: ${selectedItem.titleOrOrg}`
-                          : `Thẩm Định Hồ Sơ Chuyên Gia: ${selectedItem.submitterName}`}
-                      </span>
-                    </h3>
-                    <p className="text-caption text-slate-500 dark:text-slate-400">
-                      Mã hồ sơ: <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{selectedItem.id}</span> &bull;{" "}
-                      Địa bàn tiếp nhận: <strong>Sở KH&CN {selectedItem.provinceName}</strong> (Cấp 2) &bull;{" "}
-                      Loại hình: <strong>{isOffer ? "Sản phẩm / Chào bán công nghệ" : "Hồ sơ Chuyên gia KH&CN"}</strong> &bull;{" "}
-                      Phiên bản: v{selectedItem.version}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedItem(null);
-                    setReviewAction(null);
-                    setReviewNote("");
-                    setReviewError("");
-                  }}
-                  className="p-1.5 rounded-control text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+        {/* KPI 2: Năng lực công nghệ địa bàn */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Công Nghệ & Sáng Chế
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950 dark:text-sky-400 flex items-center justify-center">
+              <Building2 className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                142
+              </span>
+              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                TRL 6.8 / 9
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              48 Viện/Trường · 94 Doanh nghiệp ĐMST niêm yết
+            </p>
+          </div>
+          <Link
+            href="/gov/approvals?tab=SHOP"
+            className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brand-primary hover:underline"
+          >
+            <span>Xem danh mục công nghệ</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
 
-              {/* Modal Body */}
-              <div className="p-6 overflow-y-auto space-y-5 flex-1 text-label">
-                {isOffer ? (
-                  /* Layout Thẩm Định Sản Phẩm Chào Bán Công Nghệ */
-                  <div className="space-y-5">
-                    {/* Grid thông tin chung */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
-                      <div>
-                        <span className="text-caption text-slate-400 block">Tên sản phẩm / công nghệ:</span>
-                        <span className="font-bold text-slate-900 dark:text-white text-body">
-                          {selectedItem.titleOrOrg}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-caption text-slate-400 block">Đơn vị chào bán / Sở hữu:</span>
-                        <span className="font-bold text-brand-700 dark:text-brand-300 text-body">
-                          {selectedItem.rawOffer?.developerOrigin ||
-                            selectedItem.rawOffer?.enterpriseName ||
-                            selectedItem.submitterName}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-caption text-slate-400 block">Lĩnh vực công nghệ (TT17):</span>
-                        <span className="font-medium text-slate-800 dark:text-slate-200">
-                          {sectorNames[selectedItem.sector] ?? (selectedItem.sector || "Chưa khai báo")}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-caption text-slate-400 block">Phân loại hình thức:</span>
-                        <span className="font-medium text-slate-800 dark:text-slate-200">
-                          {formatOfferType(selectedItem.rawOffer?.offerType)}
-                        </span>
-                      </div>
-                    </div>
+        {/* KPI 3: Bài toán Cung - Cầu */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Nhu Cầu Đặt Hàng & Deal
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-600 dark:bg-cyan-950 dark:text-cyan-400 flex items-center justify-center">
+              <Layers className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                28
+              </span>
+              <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
+                14 đang kết nối
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              SLA phản hồi trung bình: 18.5h / 48h
+            </p>
+          </div>
+          <Link
+            href="/gov/opportunities"
+            className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brand-primary hover:underline"
+          >
+            <span>Giám sát tiến trình đàm phán</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
 
-                    {/* 4 Thẻ chỉ số thẩm định nhanh: TRL, SHTT, Giá, Chuyển giao */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                        <span className="text-caption text-slate-400 block">Mức sẵn sàng TRL</span>
-                        <span
-                          className={`inline-block mt-1 px-2 py-0.5 rounded text-caption font-bold border ${
-                            formatTrl(selectedItem.rawOffer?.trlLevel).color
-                          }`}
-                        >
-                          {formatTrl(selectedItem.rawOffer?.trlLevel).label}
-                        </span>
-                        <span className="block text-caption text-slate-500 mt-1 line-clamp-1">
-                          {formatTrl(selectedItem.rawOffer?.trlLevel).desc}
-                        </span>
-                      </div>
+        {/* KPI 4: Thẩm định DN ĐMST & TT17 */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              DN ĐMST & TT17
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950 dark:text-violet-400 flex items-center justify-center">
+              <Award className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                64
+              </span>
+              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">
+                19 Hội đồng TT17
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Đánh giá 26 tiêu chí năng lực công nghệ
+            </p>
+          </div>
+          <Link
+            href="/gov/assessments/tt17"
+            className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-brand-primary hover:underline"
+          >
+            <span>Hội đồng chấm điểm TT17</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
 
-                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                        <span className="text-caption text-slate-400 block">Tình trạng SHTT</span>
-                        <span
-                          className={`inline-block mt-1 px-2 py-0.5 rounded text-caption font-bold border ${
-                            formatIpStatus(selectedItem.rawOffer?.ipStatus).color
-                          }`}
-                        >
-                          {formatIpStatus(selectedItem.rawOffer?.ipStatus).label}
-                        </span>
-                        {selectedItem.rawOffer?.ipRegistrationNumber && (
-                          <span className="block text-caption text-slate-500 mt-1 font-mono">
-                            Số: {selectedItem.rawOffer.ipRegistrationNumber}
-                          </span>
-                        )}
-                      </div>
+      {/* KHỐI 2: CÔNG VIỆC CẦN XỬ LÝ NGAY (PRIORITY WORK QUEUE) */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
+        {/* Header Khối */}
+        <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                Công Việc Cần Xử Lý Ngay (Hàng Đợi Ưu Tiên)
+              </h2>
+              <span className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-300 dark:border-amber-800">
+                {filteredItems.length} hồ sơ
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Danh sách các hồ sơ công nghệ, chuyên gia, nhu cầu và doanh nghiệp đang chờ Sở phê duyệt
+            </p>
+          </div>
 
-                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                        <span className="text-caption text-slate-400 block">Mức giá chào bán</span>
-                        <span className="block mt-1 font-bold text-emerald-700 dark:text-emerald-400 text-body">
-                          {formatPrice(selectedItem.rawOffer)}
-                        </span>
-                      </div>
+          {/* Filter Chips */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { key: "ALL", label: `Tất cả (${stats.pendingTotal})` },
+              { key: "SHOP", label: `Chào bán (${stats.pendingShop})` },
+              { key: "EXPERT", label: `Chuyên gia (${stats.pendingExp})` },
+              { key: "DEMAND", label: `Nhu cầu (${stats.pendingDem})` },
+              { key: "ENTERPRISE", label: `DN ĐMST (${stats.pendingEnt})` },
+            ].map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setSelectedTypeFilter(f.key)}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                  selectedTypeFilter === f.key
+                    ? "bg-brand-primary text-white shadow-xs"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                        <span className="text-caption text-slate-400 block">Phương thức chuyển giao</span>
-                        <span className="block mt-1 font-medium text-slate-800 dark:text-slate-200 text-caption line-clamp-2">
-                          {formatTransferMethod(
-                            selectedItem.rawOffer?.transferPriorityMethod || selectedItem.rawOffer?.transferMethod
-                          )}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Ảnh minh họa & Video Demo (nếu có) */}
-                    {(selectedItem.rawOffer?.mainImageUrl ||
-                      (selectedItem.rawOffer?.galleryImageUrls &&
-                        selectedItem.rawOffer.galleryImageUrls.length > 0) ||
-                      selectedItem.rawOffer?.videoDemoUrl) && (
-                      <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-2">
-                        <h4 className="font-bold text-slate-900 dark:text-white text-caption uppercase tracking-wider flex items-center gap-1.5">
-                          <ImageIcon className="w-4 h-4 text-brand-600" />
-                          <span>Hình ảnh & Video giới thiệu sản phẩm</span>
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-3">
-                          {selectedItem.rawOffer?.mainImageUrl && (
-                            <div className="w-24 h-20 rounded-control overflow-hidden border border-slate-200 dark:border-slate-700 relative bg-white shrink-0">
-                              <img
-                                src={selectedItem.rawOffer.mainImageUrl}
-                                alt="Ảnh đại diện"
-                                className="w-full h-full object-cover"
-                              />
-                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-caption text-center font-bold py-0.5">
-                                Ảnh chính
-                              </span>
-                            </div>
-                          )}
-                          {selectedItem.rawOffer?.galleryImageUrls?.map((url, idx) => (
-                            <div
-                              key={idx}
-                              className="w-20 h-20 rounded-control overflow-hidden border border-slate-200 dark:border-slate-700 bg-white shrink-0"
-                            >
-                              <img
-                                src={url}
-                                alt={`Gallery ${idx + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
-                          {selectedItem.rawOffer?.videoDemoUrl && (
-                            <a
-                              href={selectedItem.rawOffer.videoDemoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-control bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900 text-caption font-bold hover:underline"
-                            >
-                              <Video className="w-4 h-4" />
-                              <span>Xem Video Demo</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Mô tả chi tiết & Bài toán giải quyết */}
-                    <div className="space-y-3">
-                      {(selectedItem.rawOffer?.summary || selectedItem.summary) && (
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider">
-                            Mô Tả &amp; Tính Năng Nổi Bật Của Sản Phẩm
-                          </h4>
-                          <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line">
-                            {selectedItem.rawOffer?.summary || selectedItem.summary}
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedItem.rawOffer?.problemSolved && (
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider">
-                            Vấn Đề / Bài Toán Thực Tiễn Giải Quyết
-                          </h4>
-                          <div className="p-3.5 rounded-control bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200/60 dark:border-brand-900/40 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line">
-                            {selectedItem.rawOffer.problemSolved}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* DataRoom & Tài Liệu Pháp Lý SHTT */}
-                    {selectedItem.cvOrDocName && (
-                      <div className="p-3.5 rounded-control bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-brand-700 dark:text-brand-300 font-medium">
-                          <FileText className="w-4 h-4" />
-                          <span>Hồ sơ minh chứng / DataRoom: {selectedItem.cvOrDocName}</span>
-                        </div>
-                        <span className="text-caption text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          Đã xác thực chữ ký số
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Layout Thẩm Định Hồ Sơ Chuyên Gia KH&CN */
-                  <div className="space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
-                      <div>
-                        <span className="text-caption text-slate-400 block">Họ và tên chuyên gia:</span>
-                        <span className="font-bold text-slate-900 dark:text-white text-body">
-                          {selectedItem.submitterName}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-caption text-slate-400 block">Học hàm / Học vị:</span>
-                        <span className="font-bold text-brand-700 dark:text-brand-300 text-body">
-                          {selectedItem.degree || "Tiến sĩ (TS)"}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-caption text-slate-400 block">Cơ quan công tác:</span>
-                        <span className="font-medium text-slate-800 dark:text-slate-200">
-                          {selectedItem.titleOrOrg}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-caption text-slate-400 block">Lĩnh vực chuyên môn:</span>
-                        <span className="font-medium text-slate-800 dark:text-slate-200">
-                          {sectorNames[selectedItem.sector] ?? (selectedItem.sector || "Chưa khai báo")}
-                        </span>
-                      </div>
-                    </div>
-
-                    {selectedItem.summary && (
-                      <div>
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-1.5">
-                          Tóm Tắt Năng Lực &amp; Hoạt Động Nghiên Cứu
-                        </h4>
-                        <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body">
-                          {selectedItem.summary}
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedItem.cvOrDocName && (
-                      <div className="p-3.5 rounded-control bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-brand-700 dark:text-brand-300 font-medium">
-                          <FileText className="w-4 h-4" />
-                          <span>Tài liệu đính kèm: {selectedItem.cvOrDocName}</span>
-                        </div>
-                        <span className="text-caption text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          Đã kiểm tra chữ ký số
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Review Actions Form */}
-                <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
-                  <h4 className="font-bold text-slate-900 dark:text-white">
-                    Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN
-                  </h4>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Danh Sách Priority Queue */}
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {filteredItems.map((item) => (
+            <div
+              key={item.id}
+              className="p-4 sm:p-5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="space-y-2 min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Mã hồ sơ */}
+                  <span className="inline-flex items-center gap-1 text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+                    <span>{item.code}</span>
                     <button
                       type="button"
-                      onClick={() => {
-                        setReviewAction("APPROVE");
-                        setReviewError("");
-                      }}
-                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                        reviewAction === "APPROVE"
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 ring-2 ring-emerald-500"
-                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                      }`}
+                      onClick={() => handleCopyCode(item.code)}
+                      title="Sao chép mã hồ sơ"
+                      className="hover:text-brand-primary transition p-0.5"
                     >
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{isOffer ? "Phê Duyệt Niêm Yết Sàn" : "Phê Duyệt Cấp Tỉnh"}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReviewAction("REQUEST_CHANGES");
-                        setReviewError("");
-                      }}
-                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                        reviewAction === "REQUEST_CHANGES"
-                          ? "border-cyan-500 bg-cyan-50 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 ring-2 ring-cyan-500"
-                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <AlertCircle className="w-4 h-4 text-cyan-600 shrink-0" />
-                      <span>Yêu Cầu Bổ Sung</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReviewAction("REJECT");
-                        setReviewError("");
-                      }}
-                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                        reviewAction === "REJECT"
-                          ? "border-rose-500 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 ring-2 ring-rose-500"
-                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <X className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span>{isOffer ? "Từ Chối Niêm Yết" : "Từ Chối Hồ Sơ"}</span>
-                    </button>
-                  </div>
-
-                  {reviewAction && (
-                    <div className="space-y-2 pt-2">
-                      <label className="block text-caption font-bold text-slate-700 dark:text-slate-300">
-                        Ghi chú thẩm định / Lý do quyết định{" "}
-                        {reviewAction !== "APPROVE" && (
-                          <span className="text-rose-500">* (Bắt buộc &ge; 10 ký tự theo BR-ADM-004)</span>
-                        )}
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={reviewNote}
-                        onChange={(e) => {
-                          setReviewNote(e.target.value);
-                          if (reviewError) setReviewError("");
-                        }}
-                        placeholder={
-                          reviewAction === "APPROVE"
-                            ? isOffer
-                              ? "Ghi chú phê duyệt: Sản phẩm đáp ứng tiêu chuẩn TRL và chứng minh tính pháp lý SHTT, đồng ý niêm yết lên Sàn Quốc gia..."
-                              : "Ghi chú phê duyệt: Hồ sơ đáp ứng đầy đủ tiêu chí theo Thông tư 17..."
-                            : isOffer
-                            ? "Nhập lý do cụ thể để doanh nghiệp bổ sung hoặc hoàn thiện hồ sơ chào bán..."
-                            : "Nhập lý do cụ thể để chuyên gia nắm rõ và bổ sung (tối thiểu 10 ký tự)..."
-                        }
-                        className="w-full p-3 rounded-control border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-body focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                      />
-                      {reviewError && (
-                        <p className="text-caption text-rose-600 font-semibold flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          <span>{reviewError}</span>
-                        </p>
+                      {copiedCode === item.code ? (
+                        <Check className="w-3 h-3 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-slate-400 hover:text-slate-700" />
                       )}
-                    </div>
-                  )}
-                </div>
-              </div>
+                    </button>
+                  </span>
 
-              {/* Modal Footer */}
-              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
-                <span className="text-caption text-slate-400">
-                  {isOffer
-                    ? "Quyết định phê duyệt sẽ được gửi thông báo đến Doanh nghiệp sở hữu và sản phẩm sẽ được niêm yết công khai trên Sàn."
-                    : "Quyết định này sẽ được gửi thông báo đến Chuyên gia và Trung Ương hậu kiểm."}
-                </span>
+                  {/* Loại hồ sơ */}
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${item.typeColor}`}>
+                    {item.typeLabel}
+                  </span>
 
-                <div className="flex items-center gap-3">
-                  <AppButton
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedItem(null);
-                      setReviewAction(null);
-                      setReviewNote("");
-                      setReviewError("");
-                    }}
-                    className="px-4 py-2 rounded-control font-semibold text-slate-700 dark:text-slate-300"
+                  {/* Thời hạn SLA */}
+                  <span
+                    className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      item.slaUrgency === "WARNING"
+                        ? "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950 dark:text-rose-300"
+                        : item.slaUrgency === "NEW"
+                        ? "bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-950 dark:text-sky-300"
+                        : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950 dark:text-amber-300"
+                    }`}
                   >
-                    Hủy bỏ
-                  </AppButton>
+                    <Clock className="w-3 h-3 shrink-0" />
+                    <span>{item.slaRemaining}</span>
+                  </span>
+                </div>
 
+                {/* Tiêu đề & Đơn vị */}
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 hover:text-brand-primary transition">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                      {item.applicant}
+                    </span>
+                    <span>·</span>
+                    <span>Nộp lúc {item.submittedAt}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Thao tác Xử lý */}
+              <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                <Link href={item.actionHref}>
                   <AppButton
                     variant="primary"
-                    disabled={!reviewAction || processing}
-                    onClick={handleReviewSubmit}
-                    className={`px-6 py-2 rounded-control font-bold shadow-md transition ${
-                      reviewAction === "APPROVE"
-                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                        : reviewAction === "REJECT"
-                        ? "bg-rose-600 hover:bg-rose-700 text-white"
-                        : "bg-brand-700 hover:bg-brand-800 text-white"
-                    } disabled:opacity-50`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs shadow-xs"
                   >
-                    {processing ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>Đang lưu quyết định...</span>
-                      </div>
-                    ) : (
-                      <span>Xác Nhận Quyết Định</span>
-                    )}
+                    <span>Xử lý ngay</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </AppButton>
-                </div>
+                </Link>
               </div>
             </div>
-          </div>
-        );
-      })()}
-    </div>
-  );
-}
+          ))}
+        </div>
 
-export default function GovDashboard() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-slate-500">Đang tải Cổng công vụ...</div>}>
-      <GovDashboardContent />
-    </Suspense>
+        {/* Footer chuyển sang Hàng Đợi Toàn Màn Hình */}
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+          <span className="text-slate-500 dark:text-slate-400">
+            Hiển thị {filteredItems.length} công việc ưu tiên cần xử lý trong ngày
+          </span>
+          <Link
+            href="/gov/approvals"
+            className="font-bold text-brand-primary hover:underline flex items-center gap-1"
+          >
+            <span>Mở toàn bộ hàng đợi kiểm duyệt (5 phân hệ)</span>
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+
+      {/* KHỐI 3: PHÂN BỔ THEO 18 NGÀNH CÔNG NGHỆ TT17 & LỐI TẮT ĐIỀU HÀNH */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Phân bổ ngành TT17 địa phương */}
+        <div className="lg:col-span-2 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-brand-primary" />
+                <span>Cơ Cấu Lĩnh Vực Công Nghệ Trọng Điểm Địa Bàn</span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Theo danh mục Thông tư 17/2019/TT-BKHCN
+              </p>
+            </div>
+            <Link
+              href="/gov/assessments/tt17"
+              className="text-xs font-bold text-brand-primary hover:underline"
+            >
+              Chi tiết TT17 &rarr;
+            </Link>
+          </div>
+
+          {/* Progress Bars */}
+          <div className="space-y-3.5">
+            {[
+              { name: "Công nghệ thông tin & Viễn thông", count: 42, pct: 30, color: "bg-sky-600" },
+              { name: "Cơ khí chế tạo & Tự động hóa", count: 34, pct: 24, color: "bg-emerald-600" },
+              { name: "Công nghệ sinh học & Y tế - Dược phẩm", count: 26, pct: 18, color: "bg-violet-600" },
+              { name: "Nông nghiệp công nghệ cao & Chế biến thực phẩm", count: 22, pct: 15, color: "bg-amber-600" },
+              { name: "Năng lượng tái tạo & Vật liệu mới", count: 18, pct: 13, color: "bg-cyan-600" },
+            ].map((sector) => (
+              <div key={sector.name} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {sector.name}
+                  </span>
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {sector.count} hồ sơ ({sector.pct}%)
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${sector.color} rounded-full transition-all duration-500`}
+                    style={{ width: `${sector.pct}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 4 Lối Tắt Điều Hành Trực Tiếp */}
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-brand-primary" />
+              <span>Lối Tắt Nghiệp Vụ Điều Hành</span>
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Truy cập nhanh các phân hệ chuyên trách
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            <Link
+              href="/gov/approvals"
+              className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-brand-primary bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between group transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 dark:bg-sky-950 dark:text-sky-300 flex items-center justify-center font-bold">
+                  <FileCheck2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-brand-primary transition">
+                    Hàng Đợi Kiểm Duyệt
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    5 phân hệ duyệt toàn màn hình
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            <Link
+              href="/gov/approvals/enterprises"
+              className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-brand-primary bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between group transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center font-bold">
+                  <BadgeCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-brand-primary transition">
+                    Thẩm Định Doanh Nghiệp ĐMST
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Xác thực 4 tiêu chí pháp lý & MST
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            <Link
+              href="/gov/assessments/tt17"
+              className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-brand-primary bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between group transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950 dark:text-violet-300 flex items-center justify-center font-bold">
+                  <Award className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-brand-primary transition">
+                    Hội Đồng Đánh Giá TT17
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Chấm điểm 26 tiêu chí công nghệ
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            <Link
+              href="/gov/settings/staff"
+              className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-brand-primary bg-slate-50/50 dark:bg-slate-800/30 flex items-center justify-between group transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-300 flex items-center justify-center font-bold">
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-brand-primary transition">
+                    Phân Công Cán Bộ Thẩm Tra
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Maker - Checker và phân quyền Sở
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -18,10 +18,13 @@ import {
   RefreshCw,
   AlertCircle,
   Building,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { AppButton } from "@/components/ui/design-system";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { Async } from "@/components/ui/async";
+import { resolveProvinceName } from "@/lib/label-resolver";
 import {
   orgTreeApi,
   OrganizationUnitItem,
@@ -69,6 +72,30 @@ export default function OrgTreePage() {
 
   const [search, setSearch] = useState("");
   const [selectedNode, setSelectedNode] = useState<NestedOrgNode | null>(null);
+  const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(new Set());
+
+  const toggleCollapse = (id: string) => {
+    setCollapsedNodeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const expandAll = () => {
+    setCollapsedNodeIds(new Set());
+  };
+
+  const collapseAll = () => {
+    const allParentIds = new Set<string>();
+    flatUnits.forEach((u) => {
+      if (flatUnits.some((child) => child.parentId === u.id)) {
+        allParentIds.add(u.id);
+      }
+    });
+    setCollapsedNodeIds(allParentIds);
+  };
 
   // Modals state
   const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
@@ -379,7 +406,7 @@ export default function OrgTreePage() {
 
       {/* Main Tree Card */}
       <div className="rounded-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Network className="w-5 h-5 text-brand-600" />
             <h2 className="text-card-title font-bold text-slate-900 dark:text-white">
@@ -387,15 +414,49 @@ export default function OrgTreePage() {
             </h2>
           </div>
 
-          <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm Sở Tỉnh hoặc Viện/Trường..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-control text-label border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1.5">
+              <AppButton
+                variant="outline"
+                onClick={expandAll}
+                className="flex items-center gap-1 min-h-8 px-2.5 py-1 text-xs"
+                title="Mở rộng tất cả các nhánh đơn vị"
+              >
+                <ChevronDown className="w-3.5 h-3.5" />
+                <span>Mở Rộng Tất Cả</span>
+              </AppButton>
+              <AppButton
+                variant="outline"
+                onClick={collapseAll}
+                className="flex items-center gap-1 min-h-8 px-2.5 py-1 text-xs"
+                title="Thu gọn tất cả các nhánh đơn vị"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+                <span>Thu Gọn Tất Cả</span>
+              </AppButton>
+            </div>
+
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm Sở Tỉnh hoặc Viện/Trường..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-8 py-1.5 rounded-control text-label border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  title="Xóa tìm kiếm"
+                  aria-label="Xóa tìm kiếm"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -427,12 +488,14 @@ export default function OrgTreePage() {
           >
             <div className="space-y-4">
               {treeNodes.map((root) => {
+                const isRootCollapsed = collapsedNodeIds.has(root.id);
                 const filteredChildren = root.children?.filter(
                   (c) =>
                     !search ||
                     c.name.toLowerCase().includes(search.toLowerCase()) ||
                     c.code.toLowerCase().includes(search.toLowerCase()) ||
                     (c.provinceId && c.provinceId.toLowerCase().includes(search.toLowerCase())) ||
+                    resolveProvinceName(c.provinceId).toLowerCase().includes(search.toLowerCase()) ||
                     c.children?.some(
                       (sub) =>
                         sub.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -445,16 +508,31 @@ export default function OrgTreePage() {
                     {/* Level 1: Root Central */}
                     <div className="p-4 rounded-control border-2 border-brand-500 bg-brand-50 dark:bg-brand-950/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold">
+                        {root.children && root.children.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => toggleCollapse(root.id)}
+                            className="p-1 rounded hover:bg-brand-200 text-brand-800 dark:text-brand-200 focus:outline-none shrink-0"
+                            title={isRootCollapsed ? "Mở rộng danh sách Sở Tỉnh" : "Thu gọn danh sách Sở Tỉnh"}
+                            aria-label={isRootCollapsed ? "Mở rộng danh sách Sở Tỉnh" : "Thu gọn danh sách Sở Tỉnh"}
+                          >
+                            {isRootCollapsed ? (
+                              <ChevronRight className="w-5 h-5" />
+                            ) : (
+                              <ChevronDown className="w-5 h-5" />
+                            )}
+                          </button>
+                        )}
+                        <div className="w-10 h-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold shrink-0">
                           TW
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-label font-bold text-slate-900 dark:text-white">
                               {root.name}
                             </span>
                             <span className="px-2 py-0.5 rounded-full text-caption font-semibold bg-brand-200 text-brand-800 dark:bg-brand-900 dark:text-brand-200">
-                              Cấp 1: Toàn quốc
+                              Cấp 1: Toàn quốc ({root.children?.length ?? 0} Sở Tỉnh trực thuộc)
                             </span>
                             <span
                               className={`px-2 py-0.5 rounded-full text-caption font-semibold ${
@@ -493,58 +571,79 @@ export default function OrgTreePage() {
                     </div>
 
                     {/* Level 2 & 3: Provincial & Institutions */}
-                    <div className="pl-4 sm:pl-8 border-l-2 border-slate-200 dark:border-slate-800 space-y-4 mt-3">
-                      {filteredChildren && filteredChildren.length === 0 ? (
-                        <p className="text-caption text-slate-500 italic py-2">
-                          Không tìm thấy đơn vị nào khớp với từ khóa tìm kiếm &quot;{search}&quot;.
-                        </p>
-                      ) : (
-                        filteredChildren?.map((prov) => {
-                          const hasLeader = Boolean(prov.leaderEmail);
-                          const isProvActive = prov.status === "ACTIVE";
+                    {!isRootCollapsed && (
+                      <div className="pl-4 sm:pl-8 border-l-2 border-slate-200 dark:border-slate-800 space-y-4 mt-3">
+                        {filteredChildren && filteredChildren.length === 0 ? (
+                          <p className="text-caption text-slate-500 italic py-2">
+                            Không tìm thấy đơn vị nào khớp với từ khóa tìm kiếm &quot;{search}&quot;.
+                          </p>
+                        ) : (
+                          filteredChildren?.map((prov) => {
+                            const hasLeader = Boolean(prov.leaderEmail);
+                            const isProvActive = prov.status === "ACTIVE";
+                            const isProvCollapsed = collapsedNodeIds.has(prov.id);
 
-                          return (
-                            <div
-                              key={prov.id}
-                              className={`p-3.5 rounded-control border transition ${
-                                isProvActive
-                                  ? "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-brand-300"
-                                  : "border-rose-200 dark:border-rose-900 bg-rose-50/30 dark:bg-rose-950/20 opacity-75"
-                              }`}
-                            >
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div className="flex items-start gap-3">
-                                  <Building2 className="w-5 h-5 text-slate-500 mt-0.5" />
-                                  <div>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <span className="text-label font-bold text-slate-900 dark:text-white">
-                                        {prov.name}
-                                      </span>
-                                      {prov.provinceId && (
-                                        <span className="px-2 py-0.5 rounded-full text-caption font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                          Scope: {prov.provinceId}
-                                        </span>
-                                      )}
-                                      <span
-                                        className={`px-2 py-0.5 rounded-full text-caption font-semibold ${
-                                          isProvActive
-                                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                                            : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200"
-                                        }`}
+                            return (
+                              <div
+                                key={prov.id}
+                                className={`p-3.5 rounded-control border transition ${
+                                  isProvActive
+                                    ? "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-brand-300"
+                                    : "border-rose-200 dark:border-rose-900 bg-rose-50/30 dark:bg-rose-950/20 opacity-75"
+                                }`}
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  <div className="flex items-start gap-3">
+                                    {prov.children && prov.children.length > 0 ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => toggleCollapse(prov.id)}
+                                        className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 focus:outline-none shrink-0 mt-0.5"
+                                        title={isProvCollapsed ? "Mở rộng danh sách cơ sở" : "Thu gọn danh sách cơ sở"}
+                                        aria-label={isProvCollapsed ? "Mở rộng danh sách cơ sở" : "Thu gọn danh sách cơ sở"}
                                       >
-                                        {isProvActive ? "Hoạt động" : "Vô hiệu hóa"}
-                                      </span>
+                                        {isProvCollapsed ? (
+                                          <ChevronRight className="w-4 h-4" />
+                                        ) : (
+                                          <ChevronDown className="w-4 h-4" />
+                                        )}
+                                      </button>
+                                    ) : (
+                                      <Building2 className="w-5 h-5 text-slate-500 mt-0.5 shrink-0" />
+                                    )}
+                                    <div>
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span className="text-label font-bold text-slate-900 dark:text-white">
+                                          {prov.name}
+                                        </span>
+                                        {prov.provinceId && (
+                                          <span className="px-2 py-0.5 rounded-full text-caption font-semibold bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+                                            Địa bàn: {resolveProvinceName(prov.provinceId)} ({prov.provinceId})
+                                          </span>
+                                        )}
+                                        <span className="px-2 py-0.5 rounded-full text-caption font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                          {prov.children?.length ?? 0} cơ sở trực thuộc
+                                        </span>
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-caption font-semibold ${
+                                            isProvActive
+                                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+                                              : "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200"
+                                          }`}
+                                        >
+                                          {isProvActive ? "Hoạt động" : "Vô hiệu hóa"}
+                                        </span>
+                                      </div>
+                                      <p className="text-caption text-slate-500 mt-0.5">
+                                        Mã: <code className="font-mono">{prov.code}</code>
+                                        {hasLeader ? (
+                                          <span> • Cán bộ phụ trách: <strong className="text-slate-700 dark:text-slate-200">{prov.leaderName}</strong> ({prov.leaderEmail})</span>
+                                        ) : (
+                                          <span className="text-amber-600 font-semibold"> • Chưa bàn giao tài khoản quản trị Sở</span>
+                                        )}
+                                      </p>
                                     </div>
-                                    <p className="text-caption text-slate-500 mt-0.5">
-                                      Mã: <code className="font-mono">{prov.code}</code>
-                                      {hasLeader ? (
-                                        <span> • Cán bộ phụ trách: <strong className="text-slate-700 dark:text-slate-200">{prov.leaderName}</strong> ({prov.leaderEmail})</span>
-                                      ) : (
-                                        <span className="text-amber-600 font-semibold"> • Chưa bàn giao tài khoản quản trị Sở</span>
-                                      )}
-                                    </p>
                                   </div>
-                                </div>
 
                                 <div className="flex items-center gap-2 shrink-0">
                                   {/* Cấp tài khoản quản trị Sở */}
@@ -597,7 +696,7 @@ export default function OrgTreePage() {
                               </div>
 
                               {/* Level 3: Institutions */}
-                              {prov.children && prov.children.length > 0 && (
+                              {!isProvCollapsed && prov.children && prov.children.length > 0 && (
                                 <div className="mt-3 pl-4 sm:pl-6 border-l-2 border-slate-100 dark:border-slate-800 space-y-2">
                                   <p className="text-caption font-semibold text-slate-400 uppercase tracking-wider">
                                     Cơ sở trực thuộc / Viện / Trường liên kết ({prov.children.length})
@@ -663,6 +762,7 @@ export default function OrgTreePage() {
                         })
                       )}
                     </div>
+                  )}
                   </div>
                 );
               })}

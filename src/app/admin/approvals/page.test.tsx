@@ -468,4 +468,75 @@ describe("AdminApprovalsPage (TASK-07)", () => {
       expect(screen.queryByTestId("admin-nav")).not.toBeInTheDocument();
     });
   });
+
+  describe("T076 [Wave 2 Delta v6] Human-readable labels, independent scrolling, and whitespace validation", () => {
+    it("renders human-readable labels for request types and provinces in table and detail drawer (T073)", async () => {
+      render(<AdminApprovalsPage />);
+      await screen.findByText("Đặng Tiến Lượng");
+
+      // Verify human-readable request type labels in table badges (also present in dropdown option)
+      expect(screen.getAllByText("Hồ sơ Chuyên gia KH&CN").length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText("Gian hàng Công nghệ (Shop)")).toBeInTheDocument();
+      expect(screen.getByText("Bài toán Nhu cầu Công nghệ")).toBeInTheDocument();
+
+      // Verify human-readable province names
+      expect(screen.getAllByText("Sở KH&CN TP. Hà Nội").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Sở KH&CN TP. Hải Phòng").length).toBeGreaterThanOrEqual(1);
+
+      // Select row to inspect detail drawer
+      fireEvent.click(screen.getByText("Đặng Tiến Lượng"));
+
+      // Verify detail drawer header uses resolved type name
+      expect(screen.getByText(/Thẩm định Hồ sơ Chuyên gia KH&CN/i)).toBeInTheDocument();
+      // Verify detail drawer displays human-readable province
+      expect(screen.getAllByText("Sở KH&CN TP. Hà Nội").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("blocks whitespace-only rejection reason and displays valid trimmed counter (T075 & BR-ADM-VAL-WHITESPACE)", async () => {
+      render(<AdminApprovalsPage />);
+      await screen.findByText("Đặng Tiến Lượng");
+
+      // Select first row
+      fireEvent.click(screen.getByText("Đặng Tiến Lượng"));
+
+      // Open reject modal
+      const rejectBtn = screen.getByRole("button", { name: /Từ chối Hồ sơ/i });
+      fireEvent.click(rejectBtn);
+
+      const textarea = screen.getByPlaceholderText(/Nhập lý do không đạt tiêu chí/i);
+      const confirmBtn = screen.getByRole("button", { name: /Xác nhận Từ chối/i });
+
+      // Initially disabled
+      expect(confirmBtn).toBeDisabled();
+      expect(screen.getByText("0/500 ký tự hợp lệ")).toBeInTheDocument();
+
+      // Input 15 spaces (whitespace only)
+      fireEvent.change(textarea, { target: { value: "               " } });
+
+      // Must remain disabled and counter shows 0 valid chars
+      expect(confirmBtn).toBeDisabled();
+      expect(screen.getByText("0/500 ký tự hợp lệ")).toBeInTheDocument();
+
+      // Input valid characters >= 10 chars
+      const validReason = "Hồ sơ không hợp lệ do thiếu quyết định bổ nhiệm";
+      fireEvent.change(textarea, { target: { value: validReason } });
+
+      // Now enabled and counter matches valid trimmed length
+      expect(confirmBtn).not.toBeDisabled();
+      expect(screen.getByText(`${validReason.trim().length}/500 ký tự hợp lệ`)).toBeInTheDocument();
+    });
+
+    it("applies independent scroll classes to 2-column layout (T074)", async () => {
+      const { container } = render(<AdminApprovalsPage />);
+      await screen.findByText("Đặng Tiến Lượng");
+
+      // Check for split grid container with height constraints
+      const grid = container.querySelector(".lg\\:h-\\[calc\\(100vh-14rem\\)\\]");
+      expect(grid).toBeInTheDocument();
+
+      // Check for scrollbar-thin on table wrapper and drawer
+      const scrollables = container.querySelectorAll(".scrollbar-thin");
+      expect(scrollables.length).toBeGreaterThanOrEqual(2);
+    });
+  });
 });

@@ -168,16 +168,19 @@ export default function AdminDashboard() {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-6 shadow-xs space-y-4">
         <h3 className="font-bold text-slate-900 dark:text-white flex items-center justify-between text-card-title">
           <span>Cấu Trúc Phân Tầng 10 Vai Trò & 3D Scoped RBAC</span>
-          <span className="text-label text-brand-700 font-semibold cursor-pointer flex items-center gap-1 dark:text-brand-200">
+          <Link
+            href="/admin/roles"
+            className="text-label text-brand-700 hover:text-brand-900 font-semibold flex items-center gap-1 dark:text-brand-200 hover:underline transition"
+          >
             <span>Chi tiết chính sách</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
-          </span>
+          </Link>
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-label">
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1.5">
             <span className="px-2 py-0.5 rounded bg-brand-100 text-brand-700 text-caption font-semibold dark:bg-brand-950 dark:text-brand-200">TẦNG 0</span>
-            <p className="font-bold text-slate-900 dark:text-white">Quản Trị Trung Ương</p>
+            <p className="font-bold text-slate-900 dark:text-white">Quản Trị Tối Cao</p>
             <p className="break-words text-slate-500 text-caption dark:text-slate-300">SUPER_ADMIN, OPERATOR_ADMIN</p>
           </div>
 

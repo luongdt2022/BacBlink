@@ -84,4 +84,31 @@ describe("OrgTreePage (TASK-07 Administrative Org Tree & Scoped RBAC)", () => {
 
     expect(await screen.findByText(/Đã thêm thành công đơn vị/i)).toBeInTheDocument();
   });
+
+  it("resolves province labels, filters via search input and toggles collapse (T078)", async () => {
+    render(<OrgTreePage />);
+
+    // Province label resolved via @/lib/label-resolver
+    expect(await screen.findByText(/Địa bàn:.*Hà Nội \(HN\)/i)).toBeInTheDocument();
+
+    // Search filter
+    const searchInput = screen.getByPlaceholderText(/Tìm kiếm Sở Tỉnh hoặc Viện\/Trường/i);
+    fireEvent.change(searchInput, { target: { value: "Hà Nội" } });
+    expect(screen.getByText(/Sở Khoa học và Công nghệ TP. Hà Nội/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Sở Khoa học và Công nghệ TP. Hồ Chí Minh/i)).not.toBeInTheDocument();
+
+    // Clear search button
+    const clearBtn = screen.getByRole("button", { name: /Xóa tìm kiếm/i });
+    fireEvent.click(clearBtn);
+    expect(screen.getByText(/Sở Khoa học và Công nghệ TP. Hồ Chí Minh/i)).toBeInTheDocument();
+
+    // Collapse All & Expand All
+    const collapseAllBtn = screen.getByRole("button", { name: /Thu Gọn Tất Cả/i });
+    fireEvent.click(collapseAllBtn);
+    expect(screen.queryByText(/Sở Khoa học và Công nghệ TP. Hà Nội/i)).not.toBeInTheDocument();
+
+    const expandAllBtn = screen.getByRole("button", { name: /Mở Rộng Tất Cả/i });
+    fireEvent.click(expandAllBtn);
+    expect(screen.getByText(/Sở Khoa học và Công nghệ TP. Hà Nội/i)).toBeInTheDocument();
+  });
 });

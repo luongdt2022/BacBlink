@@ -33,6 +33,12 @@ import { authClient } from "@/lib/auth-client";
 import { getActiveSectors } from "@/lib/master-data-client";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { PROVINCES_34 } from "@/lib/constants/provinces";
+import {
+  resolveProvinceName,
+  resolveRoleName,
+  resolveRequestTypeLabel,
+  resolveSectorName,
+} from "@/lib/label-resolver";
 
 interface ApprovalItem {
   id: string;
@@ -145,8 +151,7 @@ function parseItem(raw: unknown): ApprovalItem {
   const province = scopeType === "PROVINCE" ? scopeId : scopeId || "";
   const provinceName =
     (item.provinceName as string) ||
-    PROVINCES_34.find((p) => p.code === province)?.name ||
-    (province ? `Sở KH&CN ${province}` : "Sở KH&CN TP. Hà Nội");
+    resolveProvinceName(province);
 
   const submittedAt = item.createdAt
     ? new Date(String(item.createdAt)).toLocaleString("vi-VN")
@@ -325,7 +330,7 @@ function AdminApprovalsContent() {
     codes
       .split(", ")
       .filter(Boolean)
-      .map((code) => sectorNames[code] || code)
+      .map((code) => resolveSectorName(code, sectorNames))
       .join(", ") || "Chưa khai báo lĩnh vực";
 
   // Modal: Admin Override
@@ -810,14 +815,14 @@ function AdminApprovalsContent() {
         onRetry={() => void loadApprovals()}
         partialWarning={taxonomyError}
       >
-        {/* Main Table & Details Split Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Table & Details Split Layout with Independent Viewport Scrolling */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-14rem)] lg:min-h-[640px] items-start">
           {/* Table List (2 cols) */}
-          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col h-full overflow-hidden">
+            <div className="overflow-x-auto overflow-y-auto flex-1 scrollbar-thin">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800">
+                  <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
                     <th className="p-3 whitespace-nowrap">Mã HS</th>
                     <th className="p-3 whitespace-nowrap">Loại Hồ Sơ</th>
                     <th className="p-3">Chủ Thể Nộp / Đơn Vị</th>
@@ -846,7 +851,7 @@ function AdminApprovalsContent() {
 
                         <td className="p-3">
                           <span
-                            className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-bold ${
+                            className={`inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold ${
                               item.type === "EXPERT"
                                 ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
                                 : item.type === "SHOP"
@@ -863,29 +868,21 @@ function AdminApprovalsContent() {
                             {item.type === "DEMAND" && <Building2 className="w-3 h-3" />}
                             {item.type === "ACCOUNT" && <UserCheck className="w-3 h-3" />}
                             {item.type === "FACILITY" && <Building2 className="w-3 h-3" />}
-                            <span>
-                              {item.type === "SHOP"
-                                ? "Chào bán CN"
-                                : item.type === "DEMAND"
-                                ? "Nhu cầu CN"
-                                : item.type === "EXPERT"
-                                ? "Chuyên gia"
-                                : item.type === "FACILITY"
-                                ? "DN ĐMST"
-                                : "Tài khoản"}
-                            </span>
+                            <span>{resolveRequestTypeLabel(item.type)}</span>
                           </span>
                         </td>
 
                         <td className="p-3 font-medium text-slate-900 dark:text-white">
-                          <div className="font-bold">{item.submitterName}</div>
-                          <div className="text-xs text-slate-400 truncate max-w-[200px]" title={item.titleOrOrg}>
+                          <div className="font-bold truncate max-w-[220px]" title={item.submitterName}>
+                            {item.submitterName}
+                          </div>
+                          <div className="text-xs text-slate-400 truncate max-w-[220px]" title={item.titleOrOrg}>
                             {item.titleOrOrg}
                           </div>
                         </td>
 
                         <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                          {item.provinceName || (item.province ? `Sở KH&CN ${item.province}` : "Sở KH&CN TP. Hà Nội")}
+                          {item.provinceName || (item.province ? resolveProvinceName(item.province) : "Sở KH&CN TP. Hà Nội")}
                         </td>
 
                         <td className="p-3 text-slate-500 whitespace-nowrap">
@@ -990,14 +987,14 @@ function AdminApprovalsContent() {
             </div>
           </div>
 
-          {/* Drawer / Card Chi Tiết Hồ Sơ */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between">
+          {/* Drawer / Card Chi Tiết Hồ Sơ with Independent Scrolling */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between h-full overflow-y-auto scrollbar-thin">
             {selectedItem ? (
               <div className="space-y-5">
                 <div className="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
                   <div>
                     <span className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
-                      Thẩm định Hồ sơ {selectedItem.type}
+                      Thẩm định {resolveRequestTypeLabel(selectedItem.type)}
                     </span>
                     <h3 className="font-bold text-slate-900 dark:text-white text-base mt-0.5">
                       {selectedItem.submitterName}
@@ -1030,7 +1027,7 @@ function AdminApprovalsContent() {
                   <div>
                     <span className="text-slate-500 block">Địa phương phụ trách</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedItem.provinceName || selectedItem.province || "Chưa phân công"}
+                      {selectedItem.provinceName || (selectedItem.province ? resolveProvinceName(selectedItem.province) : "Chưa phân công")}
                     </span>
                   </div>
 
@@ -1340,8 +1337,8 @@ function AdminApprovalsContent() {
               />
               <div className="flex justify-between text-xs text-slate-400 mt-1">
                 <span>Tối thiểu 10 ký tự</span>
-                <span className={actionModal.reason.length < 10 ? "text-rose-500 font-semibold" : "text-emerald-600 font-semibold"}>
-                  {actionModal.reason.length}/500
+                <span className={actionModal.reason.trim().length < 10 ? "text-rose-500 font-semibold" : "text-emerald-600 font-semibold"}>
+                  {actionModal.reason.trim().length}/500 ký tự hợp lệ
                 </span>
               </div>
             </div>

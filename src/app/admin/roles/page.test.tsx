@@ -15,4 +15,16 @@ describe("AdminRoles real-provider contracts",()=>{
  it("assigns via POST and reloads only after provider confirms",async()=>{render(<AdminRolesPage/>);fireEvent.click(screen.getByRole("button",{name:/Gán Vai Trò Cán Bộ/}));fireEvent.change(screen.getByPlaceholderText("VD: so.danang@nacentech.local"),{target:{value:"officer@example.test"}});fireEvent.change(screen.getByPlaceholderText("Nhập mã scope"),{target:{value:"P91"}});fireEvent.click(screen.getByRole("button",{name:/Xác Nhận Bổ Nhiệm/}));expect(await screen.findByText("Đã lưu phân quyền.")).toBeInTheDocument();const call=fetchMock.mock.calls.find(([,opts])=>(opts as RequestInit)?.method==="POST");expect(call).toBeDefined();expect(JSON.parse((call![1] as RequestInit).body as string)).toMatchObject({email:"officer@example.test",role:"PROVINCIAL_ADMIN",scopeType:"PROVINCE",scopeId:"P91"});});
  it("empty email is required by HTML form rather than a fake local alert",()=>{render(<AdminRolesPage/>);fireEvent.click(screen.getByRole("button",{name:/Gán Vai Trò Cán Bộ/}));const input=screen.getByPlaceholderText("VD: so.danang@nacentech.local") as HTMLInputElement;expect(input).toBeRequired();expect(input.checkValidity()).toBe(false);});
  it("provider failure keeps assignment modal open and reports error",async()=>{render(<AdminRolesPage/>);fireEvent.click(screen.getByRole("button",{name:/Gán Vai Trò Cán Bộ/}));fireEvent.change(screen.getByPlaceholderText("VD: so.danang@nacentech.local"),{target:{value:"officer@example.test"}});fireEvent.change(screen.getByPlaceholderText("Nhập mã scope"),{target:{value:"P91"}});fetchMock.mockRejectedValueOnce(new Error("provider unavailable"));fireEvent.click(screen.getByRole("button",{name:/Xác Nhận Bổ Nhiệm/}));await waitFor(()=>expect(screen.getByRole("alert")).toHaveTextContent("provider unavailable"));expect(screen.getByText("Bổ Nhiệm & Gán Vai Trò Cán Bộ")).toBeInTheDocument();});
+ it("renders assigned officer count and allows pagination toggle for roles matrix (T077)",async()=>{
+  render(<AdminRolesPage/>);
+  expect(screen.getByText("Ma Trận 10 Vai Trò & Thẩm Quyền Cốt Lõi")).toBeInTheDocument();
+  expect(await screen.findByText(/1 cán bộ/i)).toBeInTheDocument();
+  const btn5 = screen.getByRole("button", { name: /^5$/ });
+  expect(btn5).toBeInTheDocument();
+  fireEvent.click(btn5);
+  expect(screen.getByText(/Trang 1 \/ 2/i)).toBeInTheDocument();
+  const nextBtn = screen.getByRole("button", { name: /Trang sau/i });
+  fireEvent.click(nextBtn);
+  expect(screen.getByText(/Trang 2 \/ 2/i)).toBeInTheDocument();
+ });
 });

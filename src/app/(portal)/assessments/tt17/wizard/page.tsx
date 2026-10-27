@@ -7,6 +7,7 @@ import { AppButton } from "@/components/ui/design-system";
 import {
   Tt17SurveyData,
   INITIAL_SURVEY_DATA,
+  SAMPLE_BENCHMARK_DAIHUNG,
   calculateLocalScore,
   saveAssessmentDraft,
   submitAssessment,
@@ -44,6 +45,8 @@ import {
   SlidersHorizontal,
   Coins,
   TrendingUp,
+  RotateCcw,
+  Sparkles,
 } from "lucide-react";
 
 const STEPS = [
@@ -465,6 +468,35 @@ export default function AssessmentWizardPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSurvey(INITIAL_SURVEY_DATA);
+                    setIndustryCode("C.10");
+                    showToast("Đã xóa trắng form về trạng thái ban đầu.", "success");
+                  }}
+                  className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition"
+                  title="Xóa trắng mọi trường nhập liệu"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Xóa Trắng
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSurvey(SAMPLE_BENCHMARK_DAIHUNG);
+                    setIndustryCode("C.10");
+                    setMoneyUnit("TY");
+                    showToast("Đã nạp bộ dữ liệu mẫu chuẩn TT17: CÔNG TY TNHH ĐẠI HƯNG (43 điểm, Kđb=0.42, Trung bình)!", "success");
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
+                  title="Nạp dữ liệu mẫu benchmark kiểm chuẩn TT17"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  Mẫu DN Đại Hưng (43đ)
+                </button>
+
                 <button
                   onClick={handleSaveDraft}
                   disabled={saving}

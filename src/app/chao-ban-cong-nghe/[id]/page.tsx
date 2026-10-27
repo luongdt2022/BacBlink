@@ -284,6 +284,27 @@ export default function ChiTietChaoBanPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col">
+      {/* BANNER CẢNH BÁO TRẠNG THÁI KIỂM DUYỆT (CHẾ ĐỘ PREVIEW NỘI BỘ) */}
+      {offer.status !== "APPROVED" && (
+        <aside aria-label="Cảnh báo kiểm duyệt" className="bg-amber-500 text-slate-950 px-4 py-3 border-b border-amber-600 shadow-sm sticky top-0 z-30">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-950 animate-ping shrink-0" />
+              <span>
+                <strong>CHẾ ĐỘ XEM TRƯỚC NỘI BỘ (PREVIEW):</strong> Hồ sơ công nghệ này đang ở trạng thái{" "}
+                <span className="font-mono uppercase font-bold bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded">
+                  {offer.status || "PENDING"}
+                </span>
+                . Sản phẩm <strong>CHƯA ĐƯỢC NIÊM YẾT CÔNG KHAI</strong> trên Sàn Quốc Gia. Khách hàng bên ngoài không thể tìm kiếm hay giao dịch cho đến khi được Lãnh đạo Sở phê duyệt.
+              </span>
+            </div>
+            <span className="text-xs font-extrabold uppercase bg-slate-950 text-amber-300 px-2.5 py-1 rounded-md tracking-wider shrink-0">
+              Chưa Công Khai
+            </span>
+          </div>
+        </aside>
+      )}
+
       {/* BREADCRUMB HEADER */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">

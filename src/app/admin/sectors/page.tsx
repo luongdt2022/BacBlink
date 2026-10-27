@@ -12,7 +12,8 @@ import {
   Building2,
   Calendar,
   ExternalLink,
-  Edit2
+  Edit2,
+  AlertTriangle
 } from "lucide-react";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AppButton } from "@/components/ui/design-system";
@@ -79,6 +80,8 @@ export default function AdminSectorsPage() {
   const [saveError, setSaveError] = useState("");
   const [editingSector, setEditingSector] = useState<SectorItem | null>(null);
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null);
+  const [confirmSector, setConfirmSector] = useState<SectorItem | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -251,6 +254,8 @@ export default function AdminSectorsPage() {
       const response = await fetch(`${API_BASE}/api/v1/admin/sectors/${sector.id}`, { method: "DELETE", headers: authClient.getAuthHeaders() });
       const payload = await response.json();
       if (!response.ok || payload.success !== true) throw new Error("Không ngừng hoạt động được lĩnh vực.");
+      setToastMessage(`Đã ngừng hoạt động lĩnh vực [${sector.code}] ${sector.name}`);
+      setTimeout(() => setToastMessage(null), 4000);
       setLoadVersion((value) => value + 1);
     } catch {
       setSectorsError("Không ngừng hoạt động được lĩnh vực. Vui lòng thử lại.");
@@ -442,7 +447,19 @@ export default function AdminSectorsPage() {
                         >
                           Sửa tên
                         </button>
-                        {s.isActive && <button disabled={!s.id || !!deactivatingId} onClick={() => deactivateSector(s)} className="focus-ring ml-3 min-h-11 text-label text-status-danger disabled:opacity-50">{deactivatingId === s.id ? "Đang lưu..." : "Ngừng hoạt động"}</button>}
+                        {s.isActive && (
+                          <button
+                            type="button"
+                            disabled={!s.id || !!deactivatingId}
+                            onClick={() => {
+                              setConfirmSector(s);
+                              setIsConfirmModalOpen(true);
+                            }}
+                            className="focus-ring ml-3 min-h-11 text-label text-status-danger hover:underline disabled:opacity-50"
+                          >
+                            {deactivatingId === s.id ? "Đang lưu..." : "Ngừng hoạt động"}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -972,6 +989,91 @@ export default function AdminSectorsPage() {
                   </AppButton>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+        {/* Modal Xác Nhận Ngừng Hoạt Động Lĩnh Vực (T079 Safe Confirmation) */}
+        {isConfirmModalOpen && confirmSector && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-150">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-100 dark:border-slate-800">
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-100 dark:border-slate-800 mb-4">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                    Xác Nhận Ngừng Hoạt Động Lĩnh Vực
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    Thao tác này sẽ chuyển trạng thái lĩnh vực sang vô hiệu hóa an toàn.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-sm">
+                <div className="p-3 rounded-lg bg-gray-50 dark:bg-slate-800 space-y-1.5 border border-gray-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 dark:text-slate-400 text-xs">Mã lĩnh vực:</span>
+                    <code className="font-mono font-bold text-gray-900 dark:text-white bg-gray-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-xs">
+                      {confirmSector.code}
+                    </code>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 dark:text-slate-400 text-xs">Tên lĩnh vực:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-right">
+                      {confirmSector.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 dark:text-slate-400 text-xs">Phân nhóm TT17:</span>
+                    <span className="font-mono text-brand-700 dark:text-brand-400 text-xs">
+                      {confirmSector.tt17Code || "Chưa phân nhóm"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 dark:text-slate-400 text-xs">Quy tắc lọc / Hồ sơ liên kết:</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 text-xs">
+                      {confirmSector.filterRuleCount} quy tắc lọc
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 text-xs">
+                  <p className="font-semibold">⚠️ Cảnh báo tác động hệ thống:</p>
+                  <p className="mt-1">
+                    Lĩnh vực này đang có <strong>{confirmSector.filterRuleCount} quy tắc lọc</strong>. Khi ngừng hoạt động, lĩnh vực sẽ không còn khả dụng để gán hồ sơ mới hoặc hiển thị trên cổng công khai.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800 mt-5">
+                <AppButton
+                  variant="outline"
+                  type="button"
+                  onClick={() => {
+                    setIsConfirmModalOpen(false);
+                    setConfirmSector(null);
+                  }}
+                  disabled={Boolean(deactivatingId)}
+                >
+                  Hủy Bỏ
+                </AppButton>
+                <AppButton
+                  variant="primary"
+                  type="button"
+                  onClick={async () => {
+                    if (confirmSector) {
+                      await deactivateSector(confirmSector);
+                      setIsConfirmModalOpen(false);
+                      setConfirmSector(null);
+                    }
+                  }}
+                  disabled={Boolean(deactivatingId)}
+                  className="bg-rose-600 hover:bg-rose-700 text-white border-rose-600"
+                >
+                  {deactivatingId ? "Đang xử lý..." : "Xác Nhận Ngừng Hoạt Động"}
+                </AppButton>
+              </div>
             </div>
           </div>
         )}

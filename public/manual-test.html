@@ -1,0 +1,2969 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Kiểm Thử Thủ Công NacenTech - Sổ Tay Kịch Bản & Thẩm Định 10 Roles</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --brand-navy: #0f172a;
+      --brand-teal: #0d9488;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --border: #e2e8f0;
+      --border-subtle: #cbd5e1;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      
+      --pass: #16a34a;
+      --pass-bg: #dcfce7;
+      --fail: #dc2626;
+      --fail-bg: #fee2e2;
+      --pending: #ea580c;
+      --pending-bg: #ffedd5;
+      --blocked: #6b7280;
+      --blocked-bg: #f3f4f6;
+
+      --p0: #b91c1c;
+      --p0-bg: #fef2f2;
+      --p1: #d97706;
+      --p1-bg: #fffbeb;
+      --p2: #2563eb;
+      --p2-bg: #eff6ff;
+
+      --tag-t0: #b91c1c;
+      --tag-t0-bg: #fef2f2;
+      --tag-t1: #c2410c;
+      --tag-t1-bg: #fff7ed;
+      --tag-t2: #047857;
+      --tag-t2-bg: #ecfdf5;
+      --tag-t3: #475569;
+      --tag-t3-bg: #f1f5f9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    /* Top Banner */
+    .top-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0369a1 100%);
+      color: #ffffff;
+      padding: 26px 24px 20px;
+      border-bottom: 4px solid var(--brand-teal);
+    }
+    .header-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-radius: 9999px;
+      background: rgba(13, 148, 136, 0.25);
+      color: #5eead4;
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      margin-bottom: 10px;
+    }
+    .header-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .header-subtitle {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      max-width: 980px;
+      line-height: 1.5;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Session Profile Bar (Khai Báo Phiên Kiểm Thử & Người Thực Hiện) */
+    .session-profile-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--primary);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .session-fields {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+    .session-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .session-item label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    .session-input {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background: #f8fafc;
+      outline: none;
+      min-width: 200px;
+      transition: all 0.2s;
+    }
+    .session-input:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .session-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Tab Navigation (Việt Hóa 100%) */
+    .tab-navigation {
+      display: flex;
+      flex-wrap: wrap;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      padding: 8px;
+      gap: 8px;
+      margin-bottom: 24px;
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+    }
+    .sheet-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sheet-tab-btn:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+    .sheet-tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary-dark);
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+    .sheet-tab-btn .tab-badge {
+      background: rgba(0,0,0,0.12);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+    }
+    .sheet-tab-btn.active .tab-badge {
+      background: rgba(255,255,255,0.25);
+      color: #ffffff;
+    }
+
+    /* Tab Panels */
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Callout Box Hướng Dẫn Nghiệp Vụ Cho QC */
+    .qc-guide-card {
+      background: linear-gradient(to right, #f0fdf4, #f8fafc);
+      border: 1px solid #bbf7d0;
+      border-left: 6px solid var(--pass);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .guide-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #166534;
+      margin-bottom: 10px;
+    }
+    .guide-body {
+      font-size: 0.9rem;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .guide-col {
+      background: #ffffff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #dcfce7;
+    }
+    .guide-col-title {
+      font-weight: 700;
+      color: #15803d;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* Dashboard Metrics Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .kpi-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .kpi-val {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: var(--text-light);
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      background: #e2e8f0;
+      height: 14px;
+      border-radius: 9999px;
+      overflow: hidden;
+      display: flex;
+      margin-top: 10px;
+    }
+    .progress-pass { background: var(--pass); height: 100%; transition: width 0.3s; }
+    .progress-fail { background: var(--fail); height: 100%; transition: width 0.3s; }
+    .progress-blocked { background: var(--blocked); height: 100%; transition: width 0.3s; }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+    thead th {
+      background: #f1f5f9;
+      color: var(--text-main);
+      font-weight: 700;
+      padding: 10px 12px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+    tbody td {
+      padding: 10px 12px;
+      vertical-align: top;
+      line-height: 1.45;
+    }
+
+    /* Badges */
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .p-high { background: var(--p0-bg); color: var(--p0); border: 1px solid #fecaca; }
+    .p-med { background: var(--p1-bg); color: var(--p1); border: 1px solid #fed7aa; }
+    .p-low { background: var(--p2-bg); color: var(--p2); border: 1px solid #bfdbfe; }
+
+    .tag-pass { background: var(--pass-bg); color: var(--pass); font-weight: 700; }
+    .tag-fail { background: var(--fail-bg); color: var(--fail); font-weight: 700; }
+    .tag-pending { background: var(--pending-bg); color: var(--pending); font-weight: 700; }
+    .tag-blocked { background: var(--blocked-bg); color: var(--blocked); font-weight: 700; }
+
+    .badge-t0 { background: var(--tag-t0-bg); color: var(--tag-t0); border: 1px solid #fecaca; }
+    .badge-t1 { background: var(--tag-t1-bg); color: var(--tag-t1); border: 1px solid #fed7aa; }
+    .badge-t2 { background: var(--tag-t2-bg); color: var(--tag-t2); border: 1px solid #a7f3d0; }
+    .badge-t3 { background: var(--tag-t3-bg); color: var(--tag-t3); border: 1px solid #cbd5e1; }
+
+    .code-chip {
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.8rem;
+      border: 1px solid #e2e8f0;
+      word-break: break-all;
+    }
+
+    /* Filter & Search Bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .filter-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .filter-btn {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .filter-btn:hover { background: #f1f5f9; color: var(--text-main); }
+    .filter-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary-dark);
+    }
+    .search-input {
+      border: 1px solid var(--border);
+      background: #ffffff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      width: 250px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--primary); }
+
+    /* Interactive Inputs */
+    .status-select {
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      outline: none;
+      cursor: pointer;
+      width: 115px;
+    }
+    .status-select[data-val="UNTESTED"] { background: var(--pending-bg); color: var(--pending); border-color: #fdba74; }
+    .status-select[data-val="PASSED"] { background: var(--pass-bg); color: var(--pass); border-color: #86efac; }
+    .status-select[data-val="FAILED"] { background: var(--fail-bg); color: var(--fail); border-color: #fca5a5; }
+    .status-select[data-val="BLOCKED"] { background: var(--blocked-bg); color: var(--blocked); border-color: #cbd5e1; }
+
+    .tbl-input {
+      width: 100%;
+      min-width: 130px;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .tbl-input:focus { border-color: var(--primary); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--pass); color: #fff; }
+    .btn-success:hover { background: #15803d; }
+    .btn-outline { background: #fff; border-color: var(--border); color: var(--text-main); }
+    .btn-outline:hover { background: #f8fafc; }
+    .btn-danger { background: var(--fail); color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+
+    /* Interactive Image Paste & Evidence Upload Box */
+    .evidence-cell {
+      min-width: 150px;
+      position: relative;
+    }
+    .evidence-dropzone {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 6px;
+      padding: 6px;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .evidence-dropzone:focus, .evidence-dropzone.dragover {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+    .evidence-thumb-wrap {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      max-height: 80px;
+      overflow: hidden;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+    .evidence-thumb {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+      display: block;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .evidence-thumb:hover {
+      opacity: 0.85;
+    }
+    .btn-del-img {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(220, 38, 38, 0.85);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-del-img:hover {
+      background: #b91c1c;
+    }
+    .btn-paste-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background: #ffffff;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    .btn-paste-action:hover {
+      background: #f1f5f9;
+      border-color: var(--primary);
+    }
+    .paste-hint {
+      font-size: 0.68rem;
+      color: var(--text-light);
+      text-align: center;
+    }
+
+    .step-list {
+      padding-left: 16px;
+      margin: 3px 0;
+    }
+    .step-list li {
+      margin-bottom: 3px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #ffffff;
+      border-radius: 14px;
+      max-width: 860px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25);
+    }
+
+    /* Fullscreen Image Lightbox */
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .lightbox-img {
+      max-width: 95vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .btn-close-lightbox {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-close-lightbox:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Print View */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .top-header { padding: 15px; }
+      .session-profile-card, .tab-navigation, .filter-bar, .no-print { display: none !important; }
+      .tab-panel { display: block !important; margin-bottom: 30px; page-break-after: always; }
+      .card { box-shadow: none; border: 1px solid #ccc; }
+      .status-select, .tbl-input { border: none; background: transparent !important; }
+      .btn-paste-action, .btn-del-img, .paste-hint { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Hero Header -->
+  <header class="top-header">
+    <div class="header-inner">
+      <span class="badge-pill">🛡️ NacenTech Quality Assurance & Verification • Hồ Sơ Kiểm Thử Chuẩn Hóa</span>
+      <h1 class="header-title">Hồ Sơ Kiểm Thử Manual: Đăng Ký, Đăng Nhập & Phân Quyền 10 Roles</h1>
+      <p class="header-subtitle">
+        Phân hệ: <strong>TASK-00 (IAM Foundation & Common) &amp; TASK-07 (Phân Quyền &amp; Quản Trị Admin 3D Scoped RBAC)</strong> • Tích hợp chức năng khai báo phiên kiểm thử, dán ảnh chụp màn hình trực tiếp từ Clipboard (Ctrl+V) và lưu trữ kết quả để phục vụ phê duyệt Quality Gate 4.
+      </p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ============================================================== -->
+    <!-- MỤC KHAI BÁO PHIÊN KIỂM THỬ (TEST SESSION PROFILE & SUBMIT)     -->
+    <!-- ============================================================== -->
+    <section class="session-profile-card no-print">
+      <div class="session-fields">
+        <div class="session-item">
+          <label>👤 HỌ VÀ TÊN CHUYÊN VIÊN QC:</label>
+          <input type="text" id="globalTesterName" class="session-input" placeholder="Ví dụ: Nguyễn Văn A..." onchange="onGlobalProfileChange()">
+        </div>
+        <div class="session-item">
+          <label>📅 NGÀY KIỂM THỬ:</label>
+          <input type="date" id="globalTestDate" class="session-input" onchange="onGlobalProfileChange()">
+        </div>
+        <div class="session-item">
+          <label>🌐 MÔI TRƯỜNG THỰC NGHIỆM:</label>
+          <select id="globalTestEnv" class="session-input" onchange="onGlobalProfileChange()">
+            <option value="Localhost (http://localhost:3000)">Localhost (http://localhost:3000)</option>
+            <option value="Staging Server">Staging Server (NacenTech)</option>
+            <option value="UAT / Pre-Release">UAT / Pre-Release</option>
+          </select>
+        </div>
+        <div class="session-item">
+          <label>🏷️ PHIÊN KIỂM THỬ (RUN ID):</label>
+          <span class="code-chip" id="sessionRunId" style="font-size:0.88rem; font-weight:700;">TR-20261027-01</span>
+        </div>
+      </div>
+
+      <div class="session-actions">
+        <button class="btn btn-success" onclick="submitTestSession()">💾 Lưu Kết Quả</button>
+        <button class="btn btn-primary" onclick="openReviewModal()">📂 Đối Soát Kết Quả Đã Lưu</button>
+        <button class="btn btn-outline" onclick="exportSelfContainedReport()">📄 Xuất File Báo Cáo JSON</button>
+      </div>
+    </section>
+
+    <!-- Tab Navigation (Việt Hóa 100%) -->
+    <nav class="tab-navigation no-print">
+      <button class="sheet-tab-btn active" onclick="switchTab('summary')">
+        <span>📊</span> 1. Tổng Quan &amp; Ma Trận Phủ <span class="tab-badge" id="tab-badge-summary">KPI</span>
+      </button>
+      <button class="sheet-tab-btn" onclick="switchTab('testcases')">
+        <span>📋</span> 2. Kịch Bản Kiểm Thử Chi Tiết <span class="tab-badge" id="tab-badge-tc">38 Cases</span>
+      </button>
+      <button class="sheet-tab-btn" onclick="switchTab('field-val')">
+        <span>🔍</span> 3. Kiểm Soát Trường &amp; Form <span class="tab-badge">16 Trường</span>
+      </button>
+      <button class="sheet-tab-btn" onclick="switchTab('messages')">
+        <span>💬</span> 4. Từ Điển Thông Báo Hệ Thống <span class="tab-badge">15 Câu</span>
+      </button>
+      <button class="sheet-tab-btn" onclick="switchTab('credentials')">
+        <span>🔑</span> 5. Tài Khoản Mẫu &amp; Sơ Đồ Luồng <span class="tab-badge">10 Roles</span>
+      </button>
+      <div style="margin-left: auto; display: flex; gap: 8px;">
+        <button class="btn btn-outline" onclick="openDefectModal()">🐞 Báo Cáo Lỗi (Defect)</button>
+        <button class="btn btn-outline" onclick="window.print()">🖨️ In / PDF</button>
+      </div>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: TỔNG QUAN & MA TRẬN PHỦ             -->
+    <!-- ========================================== -->
+    <div id="tab-summary" class="tab-panel active">
+      
+      <!-- Khối Hướng Dẫn Nghiệp Vụ Cho QC -->
+      <div class="qc-guide-card">
+        <div class="guide-header">
+          <span>📖</span> HƯỚNG DẪN TÁC NGHIỆP TAB 1: TỔNG QUAN &amp; MA TRẬN PHỦ (SUMMARY &amp; COVERAGE)
+        </div>
+        <div class="guide-body">
+          <p><strong>🎯 Ý nghĩa của Tab này:</strong> Đây là "Bảng điều khiển trung tâm" (Executive Dashboard) giúp Chuyên viên QC và Người thẩm định (PO/PM) theo dõi toàn cảnh sức khỏe chất lượng của phân hệ. Tab này cung cấp bức tranh định lượng về tiến độ kiểm thử (%), số kịch bản Đạt, số Lỗi phát hiện và ma trận đối soát độ phủ các kỹ thuật kiểm thử.</p>
+          <div class="guide-grid">
+            <div class="guide-col">
+              <div class="guide-col-title"><span>📌</span> Công việc của Chuyên viên QC:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main);">
+                <li>Xem mục tiêu tổng thể: Toàn bộ phân hệ gồm <strong>38 kịch bản</strong>, trong đó có <strong>21 kịch bản mức High (P0)</strong> bắt buộc phải Pass 100% trước khi ký duyệt Gate 4.</li>
+                <li>Theo dõi tiến độ kiểm thử: Khi cập nhật trạng thái tại Tab 2 và Tab 3, số liệu thống kê tại Tab 1 sẽ tự động nhảy số theo thời gian thực.</li>
+              </ul>
+            </div>
+            <div class="guide-col">
+              <div class="guide-col-title"><span>📐</span> Ý nghĩa của Ma Trận Độ Phủ (Coverage Matrix):</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main);">
+                <li><strong>Positive (Luồng đúng):</strong> Kiểm chứng hành trình người dùng khi nhập dữ liệu hợp lệ.</li>
+                <li><strong>Negative (Luồng sai):</strong> Kiểm chứng khả năng chặn lọc và xử lý ngoại lệ khi nhập sai hoặc thiếu thông tin.</li>
+                <li><strong>Boundary (Kiểm thử biên):</strong> Kiểm chứng các ngưỡng cận dưới, cận trên (độ dài mật khẩu, ký tự).</li>
+                <li><strong>Security &amp; RBAC (Bảo mật):</strong> Kiểm chứng cô lập quyền hạn, chống vượt cấp truy cập Cổng Admin.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meta Information Card -->
+      <div class="card">
+        <div class="card-title">📌 Hồ Sơ Dự Án &amp; Thông Tin Đợt Kiểm Thử</div>
+        <div class="card-desc">Cấu trúc đối soát chuẩn hóa theo Sheet <code>Summary</code> của bộ tài liệu kiểm thử mẫu.</div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">TÊN DỰ ÁN</div>
+            <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">Sàn Nacentwin / NacenTech (Platform &amp; Gov)</div>
+          </div>
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">PHÂN HỆ NGHIỆM THU</div>
+            <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">TASK-00 (Auth/IAM) &amp; TASK-07 (3D Scoped RBAC)</div>
+          </div>
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">TÀI LIỆU NGUỒN (SSOT)</div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: var(--primary);">TASK-00/spec.md &amp; TASK-07/spec.md (Delta v9)</div>
+          </div>
+          <div style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">CHUYÊN VIÊN QC ĐẢM NHẬN</div>
+            <div style="font-weight: 800; font-size: 1.05rem; color: var(--brand-teal);" id="metaTesterName">Chưa khai báo</div>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-box">
+            <span class="kpi-label">Tổng Kịch Bản (Cases)</span>
+            <span class="kpi-val" id="summary-total">38</span>
+            <span class="kpi-sub">Bao phủ 5 phân hệ</span>
+          </div>
+          <div class="kpi-box" style="border-left: 4px solid var(--p0);">
+            <span class="kpi-label" style="color: var(--p0);">Mức Ưu Tiên High (P0)</span>
+            <span class="kpi-val" style="color: var(--p0);" id="summary-p0">21</span>
+            <span class="kpi-sub">Trọng yếu hệ thống</span>
+          </div>
+          <div class="kpi-box" style="border-left: 4px solid var(--p1);">
+            <span class="kpi-label" style="color: var(--p1);">Mức Ưu Tiên Medium (P1)</span>
+            <span class="kpi-val" style="color: var(--p1);" id="summary-p1">13</span>
+            <span class="kpi-sub">Ngoại lệ &amp; Form input</span>
+          </div>
+          <div class="kpi-box" style="border-left: 4px solid var(--p2);">
+            <span class="kpi-label" style="color: var(--p2);">Mức Ưu Tiên Low (P2)</span>
+            <span class="kpi-val" style="color: var(--p2);" id="summary-p2">4</span>
+            <span class="kpi-sub">UX, Loading, Boundary</span>
+          </div>
+          <div class="kpi-box" style="border-left: 4px solid var(--pass);">
+            <span class="kpi-label" style="color: var(--pass);">Đạt (Passed)</span>
+            <span class="kpi-val" style="color: var(--pass);" id="summary-pass">0</span>
+            <span class="kpi-sub" id="summary-pass-pct">0% hoàn thành</span>
+          </div>
+          <div class="kpi-box" style="border-left: 4px solid var(--fail);">
+            <span class="kpi-label" style="color: var(--fail);">Lỗi (Failed)</span>
+            <span class="kpi-val" style="color: var(--fail);" id="summary-fail">0</span>
+            <span class="kpi-sub">Cần báo cáo Dev</span>
+          </div>
+          <div class="kpi-box" style="border-left: 4px solid var(--pending);">
+            <span class="kpi-label" style="color: var(--pending);">Chưa Chạy (Untested)</span>
+            <span class="kpi-val" style="color: var(--pending);" id="summary-untested">38</span>
+            <span class="kpi-sub">Chờ thực hiện</span>
+          </div>
+        </div>
+
+        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; display: flex; justify-content: space-between;">
+          <span>Tiến độ kiểm thử toàn trình (Execution Progress)</span>
+          <span id="progress-text-pct">0%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-pass" id="kpi-bar-pass" style="width: 0%;"></div>
+          <div class="progress-fail" id="kpi-bar-fail" style="width: 0%;"></div>
+          <div class="progress-blocked" id="kpi-bar-blocked" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Coverage Matrix Card -->
+      <div class="card">
+        <div class="card-title">📐 Ma Trận Độ Phủ Kiểm Thử (Coverage Matrix)</div>
+        <div class="card-desc">Bóc tách theo từng Module x Kỹ thuật kiểm thử chứng minh độ bao phủ 100% bề mặt chức năng.</div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Phân Hệ (Module)</th>
+                <th>Cụm Chức Năng (Function)</th>
+                <th style="text-align: center;">Positive (Luồng đúng)</th>
+                <th style="text-align: center;">Negative (Luồng sai)</th>
+                <th style="text-align: center;">Boundary (Kiểm thử biên)</th>
+                <th style="text-align: center;">Security &amp; RBAC (Bảo mật)</th>
+                <th style="text-align: center;">Tổng Số TC</th>
+                <th style="text-align: center;">Tỷ Lệ Mức P0 (High)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Màn Đăng Ký (UI-AUTH-01)</strong></td>
+                <td>Xác thực thông tin &amp; Điều khoản PDPD</td>
+                <td style="text-align: center;"><span class="tag" style="background:#e0f2fe; color:#0369a1;">1 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f1f5f9; color:#475569;">6 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#ffedd5; color:#c2410c;">1 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f3e8ff; color:#7e22ce;">2 bài</span></td>
+                <td style="text-align: center;"><strong>10</strong></td>
+                <td style="text-align: center;"><span class="tag p-high">60%</span></td>
+              </tr>
+              <tr>
+                <td><strong>Màn Đăng Nhập (UI-AUTH-02)</strong></td>
+                <td>Xác thực JWT &amp; Quản lý phiên Session</td>
+                <td style="text-align: center;"><span class="tag" style="background:#e0f2fe; color:#0369a1;">2 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f1f5f9; color:#475569;">2 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#ffedd5; color:#c2410c;">0 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f3e8ff; color:#7e22ce;">3 bài</span></td>
+                <td style="text-align: center;"><strong>7</strong></td>
+                <td style="text-align: center;"><span class="tag p-high">71%</span></td>
+              </tr>
+              <tr>
+                <td><strong>Điều Hướng Động 10 Roles</strong></td>
+                <td>Role Gateway Routing (/admin, /gov, /portal, /)</td>
+                <td style="text-align: center;"><span class="tag" style="background:#e0f2fe; color:#0369a1;">10 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f1f5f9; color:#475569;">0 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#ffedd5; color:#c2410c;">0 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f3e8ff; color:#7e22ce;">0 bài</span></td>
+                <td style="text-align: center;"><strong>10</strong></td>
+                <td style="text-align: center;"><span class="tag p-high">80%</span></td>
+              </tr>
+              <tr>
+                <td><strong>Nâng Cấp Quyền &amp; Duyệt (UI-ADM-01)</strong></td>
+                <td>Hàng đợi thẩm định phân cấp &amp; Vòng đời tài khoản</td>
+                <td style="text-align: center;"><span class="tag" style="background:#e0f2fe; color:#0369a1;">2 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f1f5f9; color:#475569;">2 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#ffedd5; color:#c2410c;">0 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f3e8ff; color:#7e22ce;">2 bài</span></td>
+                <td style="text-align: center;"><strong>6</strong></td>
+                <td style="text-align: center;"><span class="tag p-high">67%</span></td>
+              </tr>
+              <tr>
+                <td><strong>Bảo Mật Scoped RBAC</strong></td>
+                <td>RoleGuard, Row-Level Security &amp; Chống IDOR</td>
+                <td style="text-align: center;"><span class="tag" style="background:#e0f2fe; color:#0369a1;">0 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f1f5f9; color:#475569;">0 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#ffedd5; color:#c2410c;">0 bài</span></td>
+                <td style="text-align: center;"><span class="tag" style="background:#f3e8ff; color:#7e22ce;">5 bài</span></td>
+                <td style="text-align: center;"><strong>5</strong></td>
+                <td style="text-align: center;"><span class="tag p-high">100%</span></td>
+              </tr>
+              <tr style="background: #f1f5f9; font-weight: 800;">
+                <td colspan="2">TỔNG CỘNG TOÀN DIỆN (100% PHỦ KÍN)</td>
+                <td style="text-align: center;">15 bài</td>
+                <td style="text-align: center;">10 bài</td>
+                <td style="text-align: center;">1 bài</td>
+                <td style="text-align: center;">12 bài</td>
+                <td style="text-align: center; color: var(--primary); font-size: 1.05rem;">38 Cases</td>
+                <td style="text-align: center;"><span class="tag p-high">21/38 (55%)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: KỊCH BẢN KIỂM THỬ CHI TIẾT (18 CỘT) -->
+    <!-- ========================================== -->
+    <div id="tab-testcases" class="tab-panel">
+      
+      <!-- Khối Hướng Dẫn Nghiệp Vụ Cho QC -->
+      <div class="qc-guide-card">
+        <div class="guide-header">
+          <span>📖</span> HƯỚNG DẪN TÁC NGHIỆP TAB 2: KỊCH BẢN KIỂM THỬ CHI TIẾT (TEST CASES MASTER)
+        </div>
+        <div class="guide-body">
+          <p><strong>🎯 Ý nghĩa của Tab này:</strong> Đây là "Bảng tác nghiệp thực chiến chính". Từng kịch bản kiểm thử được chuẩn hóa 18 cột, cung cấp chi tiết điều kiện tiên quyết, dữ liệu thử và kết quả kỳ vọng. Đặc biệt, bảng hỗ trợ <strong>Dán trực tiếp ảnh chụp màn hình từ Clipboard (Ctrl + V / Cmd + V)</strong> để lưu vết bằng chứng lỗi phục vụ người phê duyệt đối soát.</p>
+          <div class="guide-grid">
+            <div class="guide-col">
+              <div class="guide-col-title"><span>📝</span> 4 Bước thực thi kiểm thử:</div>
+              <ol style="padding-left: 18px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li><strong>Pre-condition:</strong> Đảm bảo đang đứng đúng màn hình hoặc đăng nhập đúng tài khoản yêu cầu.</li>
+                <li><strong>Test Steps:</strong> Thực hiện tuần tự các bước 1, 2, 3 trên giao diện phần mềm.</li>
+                <li><strong>Test Data:</strong> Sử dụng chính xác chuỗi dữ liệu trong cột dữ liệu thử.</li>
+                <li><strong>Expected Result:</strong> So sánh kết quả thực tế trên màn hình với kết quả kỳ vọng mô tả trong bảng.</li>
+              </ol>
+            </div>
+            <div class="guide-col">
+              <div class="guide-col-title"><span>📷</span> Hướng dẫn đính kèm ảnh bằng chứng lỗi:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li>Khi phát hiện lỗi: Chụp ảnh màn hình (PrintScreen / phím tắt chụp ảnh của hệ điều hành).</li>
+                <li>Click chuột vào ô <strong>"Ảnh Bằng Chứng"</strong> tại dòng kiểm thử đó và nhấn <strong>Ctrl + V</strong> (hoặc Cmd + V trên Mac) hoặc bấm <strong>"Chọn ảnh"</strong>.</li>
+                <li>Ảnh thu nhỏ sẽ xuất hiện ngay tại dòng kiểm thử. Click vào ảnh để phóng to toàn màn hình.</li>
+                <li>Sau khi hoàn thành, bấm nút <strong>"💾 Lưu Kết Quả"</strong> ở trên cùng để lưu dữ liệu vào hệ thống.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Danh Sách Kịch Bản Kiểm Thử Chi Tiết (Consolidated Test Execution Sheet)</div>
+        <div class="card-desc">Bảng kiểm thử thủ công chuẩn 18 cột. Hỗ trợ dán ảnh bằng chứng trực tiếp từ bộ nhớ tạm (Ctrl+V), tự động đồng bộ kết quả và lưu vết kiểm toán.</div>
+
+        <!-- Filter Controls -->
+        <div class="filter-bar no-print">
+          <div class="filter-group">
+            <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">LỌC PHÂN HỆ:</span>
+            <button class="filter-btn active" onclick="filterModule('ALL', this)">Tất cả</button>
+            <button class="filter-btn" onclick="filterModule('REGISTER', this)">Đăng Ký</button>
+            <button class="filter-btn" onclick="filterModule('LOGIN', this)">Đăng Nhập</button>
+            <button class="filter-btn" onclick="filterModule('10ROLES', this)">10 Roles Gateway</button>
+            <button class="filter-btn" onclick="filterModule('UPGRADE', this)">Nâng Cấp Quyền</button>
+            <button class="filter-btn" onclick="filterModule('SECURITY', this)">Bảo Mật RBAC</button>
+          </div>
+
+          <div class="filter-group">
+            <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">MỨC ƯU TIÊN:</span>
+            <button class="filter-btn" onclick="filterPriority('ALL', this)">Tất cả</button>
+            <button class="filter-btn" onclick="filterPriority('High', this)">High (P0)</button>
+            <button class="filter-btn" onclick="filterPriority('Medium', this)">Medium (P1)</button>
+            <button class="filter-btn" onclick="filterPriority('Low', this)">Low (P2)</button>
+          </div>
+
+          <div class="filter-group">
+            <input type="text" class="search-input" id="tcSearchInput" placeholder="Tìm theo mã TC, tiêu đề..." oninput="filterSearch()">
+            <button class="btn btn-outline" style="padding: 5px 10px;" onclick="resetAllTCState()">↺ Reset Dữ Liệu</button>
+          </div>
+        </div>
+
+        <!-- Test Cases Master Table -->
+        <div class="table-container">
+          <table id="tcMasterTable">
+            <thead>
+              <tr>
+                <th style="width: 45px;">#</th>
+                <th style="width: 130px;">Phân Hệ</th>
+                <th style="width: 130px;">Cụm Chức Năng</th>
+                <th style="width: 110px;">Mã Test Case</th>
+                <th style="min-width: 190px;">Tiêu Đề Kịch Bản</th>
+                <th style="min-width: 150px;">Điều Kiện Tiên Quyết</th>
+                <th style="min-width: 230px;">Các Bước Thao Tác</th>
+                <th style="min-width: 170px;">Dữ Liệu Thử Nghiệm</th>
+                <th style="min-width: 230px;">Kết Quả Kỳ Vọng</th>
+                <th style="width: 75px;">Ưu Tiên</th>
+                <th style="width: 120px;">Kết Quả</th>
+                <th style="min-width: 170px;">Ghi Chú Defect / Bug</th>
+                <th style="width: 160px;">Ảnh Bằng Chứng (Ctrl+V)</th>
+                <th style="width: 110px;">Người Thực Hiện</th>
+              </tr>
+            </thead>
+            <tbody id="tcTableBody">
+              <!-- Render tự động từ JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: KIỂM SOÁT TRƯỜNG & FORM NHẬP LIỆU   -->
+    <!-- ========================================== -->
+    <div id="tab-field-val" class="tab-panel">
+      
+      <!-- Khối Hướng Dẫn Nghiệp Vụ Cho QC -->
+      <div class="qc-guide-card">
+        <div class="guide-header">
+          <span>📖</span> HƯỚNG DẪN TÁC NGHIỆP TAB 3: KIỂM SOÁT TRƯỜNG &amp; FORM (FIELD VALIDATION MATRIX)
+        </div>
+        <div class="guide-body">
+          <p><strong>🎯 Ý nghĩa của Tab này:</strong> Bảng đối soát vi mô từng control giao diện (textbox, password, dropdown, checkbox). Chuyên viên QC rà soát trực tiếp tính hợp lệ dữ liệu đầu vào, ràng buộc bắt buộc, min/max length, regex định dạng và câu báo lỗi inline chuẩn mực.</p>
+          <div class="guide-grid">
+            <div class="guide-col">
+              <div class="guide-col-title"><span>🔍</span> Phương pháp kiểm tra từng ô nhập liệu:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li><strong>Trường Bắt buộc (Required = Yes):</strong> Để trống và bấm gửi/lưu để kiểm tra xem hệ thống có chặn và báo lỗi inline đúng câu chữ không.</li>
+                <li><strong>Độ dài tối đa (Max Length):</strong> Nhập chuỗi ký tự vượt quá giới hạn quy định xem ô nhập liệu có tự động chặn cắt hoặc hiển thị cảnh báo không.</li>
+                <li><strong>Định dạng (Regex):</strong> Nhập sai quy cách (Email thiếu @, Số điện thoại sai đầu số) để kiểm tra bộ lọc client-side.</li>
+              </ul>
+            </div>
+            <div class="guide-col">
+              <div class="guide-col-title"><span>💡</span> Tiêu chí thẩm định chất lượng:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li>Câu thông báo lỗi thực tế phải trùng khớp 100% với cột <em>"Thông Báo Lỗi Chuẩn"</em>.</li>
+                <li>Mọi trường mật khẩu bắt buộc phải được che ký tự dưới dạng ký hiệu bảo mật (<code>••••••••</code>).</li>
+                <li>Tích chọn trạng thái thực tế: 🟢 ĐẠT (PASS) hoặc 🔴 LỖI (FAIL) kèm ghi chú cụ thể.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔍 Bảng Kiểm Soát Trường &amp; Form Nhập Liệu (Field Validation Matrix)</div>
+        <div class="card-desc">Bảng kê khai chi tiết 16 trường nhập liệu thuộc Form Đăng ký, Đăng nhập và Wizard nâng cấp. Đảm bảo trạng thái kiểm thử tương tác và lưu vết tự động.</div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 140px;">Màn Hình (Screen)</th>
+                <th style="width: 130px;">Tên Trường (Field Name)</th>
+                <th style="width: 100px;">Loại Control</th>
+                <th style="width: 80px; text-align:center;">Bắt Buộc</th>
+                <th style="width: 100px;">Độ Dài Min/Max</th>
+                <th style="width: 130px;">Định Dạng (Regex)</th>
+                <th>Quy Tắc Kiểm Tra (Validation Rule)</th>
+                <th>Thông Báo Lỗi Chuẩn (Error Message)</th>
+                <th style="width: 125px;">Trạng Thái</th>
+                <th style="width: 160px;">Ghi Chú Khi Test</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Họ và Tên đệm</td>
+                <td>Textbox</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Max: 100</td>
+                <td>Text tiếng Việt / Anh</td>
+                <td>Không được để trống hoặc chỉ chứa khoảng trắng</td>
+                <td><code>Vui lòng nhập Họ và Tên đệm.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-01', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-01" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-01', this)"></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Tên</td>
+                <td>Textbox</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Max: 50</td>
+                <td>Text tiếng Việt / Anh</td>
+                <td>Không được để trống</td>
+                <td><code>Vui lòng nhập Tên.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-02', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-02" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-02', this)"></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Địa chỉ Email</td>
+                <td>Textbox (Email)</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Max: 255</td>
+                <td><code>^\S+@\S+\.\S+$</code></td>
+                <td>Email hợp lệ, duy nhất trên toàn hệ thống (Unique)</td>
+                <td><code>Địa chỉ email chưa đúng định dạng.</code> / <code>Email đã được sử dụng.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-03', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-03" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-03', this)"></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Mật khẩu</td>
+                <td>Password</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Min: 8, Max: 128</td>
+                <td>Alphanumeric / Special</td>
+                <td>Tối thiểu 8 ký tự</td>
+                <td><code>Mật khẩu phải có ít nhất 8 ký tự.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-04', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-04" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-04', this)"></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Xác nhận mật khẩu</td>
+                <td>Password</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Min: 8, Max: 128</td>
+                <td>Khớp ô Mật khẩu</td>
+                <td>Phải trùng khớp 1:1 với mật khẩu đã nhập</td>
+                <td><code>Mật khẩu xác nhận không khớp.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-05', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-05" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-05', this)"></td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Số điện thoại</td>
+                <td>Textbox (Tel)</td>
+                <td style="text-align:center;"><span class="tag tag-pending">No</span></td>
+                <td>10 số</td>
+                <td><code>^(03|05|07|08|09)\d{8}$</code></td>
+                <td>Định dạng số di động Việt Nam</td>
+                <td><code>Số điện thoại chưa đúng định dạng.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-06', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-06" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-06', this)"></td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Cơ quan / Tổ chức</td>
+                <td>Textbox</td>
+                <td style="text-align:center;"><span class="tag tag-pending">No</span></td>
+                <td>Max: 255</td>
+                <td>Text</td>
+                <td>Tùy chọn</td>
+                <td>-</td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-07', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-07" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-07', this)"></td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td><strong>UI-AUTH-01 Đăng ký</strong></td>
+                <td>Cam kết PDPD Nghị định 13</td>
+                <td>Checkbox</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Boolean</td>
+                <td>Checked = true</td>
+                <td>Bắt buộc tích đồng ý Điều khoản bảo vệ dữ liệu cá nhân</td>
+                <td><code>Bạn cần đồng ý với Điều khoản Bảo vệ Dữ liệu Cá nhân...</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-08', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-08" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-08', this)"></td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td><strong>UI-AUTH-02 Đăng nhập</strong></td>
+                <td>Email đăng nhập</td>
+                <td>Textbox (Email)</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Max: 255</td>
+                <td>Email</td>
+                <td>Không để trống</td>
+                <td>HTML5 Tooltip / <code>Vui lòng nhập email</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-09', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-09" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-09', this)"></td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td><strong>UI-AUTH-02 Đăng nhập</strong></td>
+                <td>Mật khẩu</td>
+                <td>Password</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>-</td>
+                <td>Password</td>
+                <td>Không để trống</td>
+                <td>HTML5 Tooltip / <code>Vui lòng nhập mật khẩu</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-10', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-10" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-10', this)"></td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td><strong>UI-EXP-01 Nâng cấp Chuyên gia</strong></td>
+                <td>Họ và tên đầy đủ</td>
+                <td>Textbox</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Max: 100</td>
+                <td>Text</td>
+                <td>Không để trống</td>
+                <td><code>Vui lòng nhập họ và tên đầy đủ.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-11', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-11" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-11', this)"></td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td><strong>UI-EXP-01 Nâng cấp Chuyên gia</strong></td>
+                <td>Năm sinh</td>
+                <td>Number</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>4 chữ số</td>
+                <td>1940 &le; Năm &le; 2005</td>
+                <td>Nằm trong độ tuổi lao động nghiên cứu</td>
+                <td><code>Năm sinh không hợp lệ (1940 - 2005).</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-12', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-12" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-12', this)"></td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td><strong>UI-EXP-01 Nâng cấp Chuyên gia</strong></td>
+                <td>Cơ quan công tác</td>
+                <td>Textbox</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Max: 255</td>
+                <td>Text</td>
+                <td>Viện nghiên cứu, Trường đại học hoặc Doanh nghiệp</td>
+                <td><code>Vui lòng nhập cơ quan công tác.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-13', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-13" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-13', this)"></td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td><strong>UI-EXP-01 Nâng cấp Chuyên gia</strong></td>
+                <td>Số năm kinh nghiệm</td>
+                <td>Number</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>Min: 1</td>
+                <td>Integer &ge; 1</td>
+                <td>Tối thiểu 1 năm nghiên cứu thực tiễn</td>
+                <td><code>Số năm kinh nghiệm phải lớn hơn 0.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-14', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-14" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-14', this)"></td>
+              </tr>
+              <tr>
+                <td>15</td>
+                <td><strong>UI-EXP-01 Nâng cấp Chuyên gia</strong></td>
+                <td>Lĩnh vực chuyên môn</td>
+                <td>Dropdown</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>18 Ngành TT17</td>
+                <td>Mã ngành hợp lệ</td>
+                <td>Chọn ít nhất 1 ngành thuộc danh mục Thông tư 17</td>
+                <td><code>Vui lòng chọn lĩnh vực chuyên môn.</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-15', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-15" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-15', this)"></td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td><strong>UI-ADM-01 Hàng đợi duyệt</strong></td>
+                <td>Lý do từ chối hồ sơ</td>
+                <td>Textarea</td>
+                <td style="text-align:center;"><span class="tag tag-fail">Yes</span></td>
+                <td>10 &le; Len &le; 500</td>
+                <td>Text</td>
+                <td>Bắt buộc nhập lý do chi tiết tối thiểu 10 ký tự (BR-ADM-004)</td>
+                <td><code>Vui lòng nhập lý do từ chối (tối thiểu 10 ký tự).</code></td>
+                <td>
+                  <select class="status-select" data-val="UNTESTED" onchange="onFvStatusChange('FV-16', this)">
+                    <option value="UNTESTED" selected>CHƯA CHẠY</option>
+                    <option value="PASSED">ĐẠT (PASS)</option>
+                    <option value="FAILED">LỖI (FAIL)</option>
+                    <option value="BLOCKED">BỊ CHẶN</option>
+                  </select>
+                </td>
+                <td><input type="text" class="tbl-input" id="fv-note-FV-16" placeholder="Ghi chú..." onchange="onFvNoteChange('FV-16', this)"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: TỪ ĐIỂN THÔNG BÁO HỆ THỐNG          -->
+    <!-- ========================================== -->
+    <div id="tab-messages" class="tab-panel">
+      
+      <!-- Khối Hướng Dẫn Nghiệp Vụ Cho QC -->
+      <div class="qc-guide-card">
+        <div class="guide-header">
+          <span>📖</span> HƯỚNG DẪN TÁC NGHIỆP TAB 4: TỪ ĐIỂN THÔNG BÁO HỆ THỐNG (SYSTEM MESSAGES DICTIONARY)
+        </div>
+        <div class="guide-body">
+          <p><strong>🎯 Ý nghĩa của Tab này:</strong> Quy định nguyên văn từng câu chữ thông báo của hệ thống. Kiểm soát tính chuẩn xác, nhất quán trong văn phong giao tiếp với người dùng và tuân thủ các quy tắc an toàn bảo mật thông tin.</p>
+          <div class="guide-grid">
+            <div class="guide-col">
+              <div class="guide-col-title"><span>💬</span> Nhóm thông báo hệ thống:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li><strong style="color: var(--pass);">Success (Xanh lá):</strong> Xác nhận thao tác thành công (Đăng ký, Đăng xuất, Phê duyệt).</li>
+                <li><strong style="color: var(--fail);">Error (Đỏ):</strong> Báo lỗi vi phạm quy tắc nghiệp vụ hoặc dữ liệu không hợp lệ.</li>
+                <li><strong style="color: #0369a1;">Info / Warning:</strong> Thông báo trạng thái vận hành (Khóa hồ sơ thẩm định SLA 48h).</li>
+              </ul>
+            </div>
+            <div class="guide-col">
+              <div class="guide-col-title"><span>🛡️</span> Rào chắn bảo mật nghiêm ngặt:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li><strong>Thông báo an toàn trung tính (<code>MSG-AUTH-006</code>):</strong> Khi đăng nhập sai mật khẩu hoặc tài khoản chưa đăng ký, hệ thống <em>bắt buộc chỉ được phản hồi: "Tài khoản hoặc mật khẩu không chính xác."</em></li>
+                <li>Nếu hệ thống thông báo phân biệt "Email này không tồn tại" hoặc "Mật khẩu của email này bị sai" $\rightarrow$ <strong>LẬP TỨC ĐÁNH LỖI BẢO MẬT (SECURITY DEFECT)</strong> vì làm rò rỉ dữ liệu tài khoản cho kẻ tấn công dò quét!</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💬 Từ Điển Thông Báo Hệ Thống (System Messages Master Sheet)</div>
+        <div class="card-desc">Bảng quy chuẩn nguyên văn từng câu chữ thông báo của hệ thống. Kiểm tra chống việc lập trình viên tự chế thông báo hoặc lỗi chính tả.</div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã Code</th>
+                <th>Phân Loại</th>
+                <th>Màn Hình / Phân Hệ</th>
+                <th>Kiểu Giao Diện (Component)</th>
+                <th>Nội Dung Nguyên Văn (Exact Content)</th>
+                <th>Điều Kiện Kích Hoạt (Trigger Condition)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>MSG-AUTH-001</code></td>
+                <td><span class="tag tag-pass">Success</span></td>
+                <td>/register</td>
+                <td>Alert Banner Xanh</td>
+                <td><strong>Đăng ký thành công! Tài khoản công chúng của bạn đã sẵn sàng để đăng nhập.</strong></td>
+                <td>Đăng ký thành công với role PUBLIC_USER; form được tự động reset sạch sẽ.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-002</code></td>
+                <td><span class="tag tag-fail">Error</span></td>
+                <td>/register</td>
+                <td>Inline Alert Đỏ</td>
+                <td><strong>Email đã được sử dụng trên hệ thống.</strong></td>
+                <td>API trả về mã lỗi HTTP 409 Conflict khi email đã tồn tại trong CSDL.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-003</code></td>
+                <td><span class="tag tag-fail">Error</span></td>
+                <td>/register</td>
+                <td>Inline Alert Đỏ</td>
+                <td><strong>Bạn cần đồng ý với Điều khoản Bảo vệ Dữ liệu Cá nhân (Nghị định 13/2023/NĐ-CP) để tiếp tục.</strong></td>
+                <td>Người dùng bỏ trống checkbox PDPD khi bấm Submit.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-004</code></td>
+                <td><span class="tag tag-fail">Error</span></td>
+                <td>/register</td>
+                <td>Inline Alert Đỏ</td>
+                <td><strong>Mật khẩu xác nhận không khớp.</strong></td>
+                <td>Giá trị ô Mật khẩu khác với ô Xác nhận mật khẩu.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-005</code></td>
+                <td><span class="tag tag-fail">Error</span></td>
+                <td>/register</td>
+                <td>Inline Alert Đỏ</td>
+                <td><strong>Mật khẩu phải có ít nhất 8 ký tự.</strong></td>
+                <td>Nhập mật khẩu có độ dài dưới 8 ký tự.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-006</code></td>
+                <td><span class="tag tag-fail">Security Error</span></td>
+                <td>/login</td>
+                <td>Toast / Alert Đỏ</td>
+                <td><strong>Tài khoản hoặc mật khẩu không chính xác.</strong></td>
+                <td>Nhập sai mật khẩu hoặc tài khoản chưa đăng ký (Báo lỗi trung tính bảo mật).</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-007</code></td>
+                <td><span class="tag tag-pending">UX Loading</span></td>
+                <td>/login</td>
+                <td>Button Spinner</td>
+                <td><strong>Đang đăng nhập...</strong> (hoặc biểu tượng xoay)</td>
+                <td>Trong lúc chờ backend phản hồi, vô hiệu hóa nút chống click đúp.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-008</code></td>
+                <td><span class="tag tag-fail">Security Error</span></td>
+                <td>/admin, /gov</td>
+                <td>Modal / Toast</td>
+                <td><strong>Bạn không có quyền truy cập khu vực này (403 Forbidden).</strong></td>
+                <td>Người dùng cố tình truy cập URL vượt quyền phân cấp.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-009</code></td>
+                <td><span class="tag" style="background:#e0f2fe; color:#0369a1;">Info Notice</span></td>
+                <td>/profile/detail</td>
+                <td>Alert Banner Cam</td>
+                <td><strong>Hồ sơ đang trong quá trình thẩm định (SLA 48h). Quý chuyên gia tạm thời không thể chỉnh sửa.</strong></td>
+                <td>Hồ sơ ở trạng thái PENDING_REVIEW; nút chỉnh sửa bị khóa theo BR-EXP-006.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-010</code></td>
+                <td><span class="tag tag-pass">Success</span></td>
+                <td>/admin/approvals</td>
+                <td>Toast Xanh</td>
+                <td><strong>Phê duyệt hồ sơ thành công!</strong></td>
+                <td>Admin phê duyệt chính thức hồ sơ, cấp vai trò VERIFIED_EXPERT.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-011</code></td>
+                <td><span class="tag tag-fail">Error</span></td>
+                <td>/admin/approvals</td>
+                <td>Modal Error Text</td>
+                <td><strong>Vui lòng nhập lý do từ chối (tối thiểu 10 ký tự).</strong></td>
+                <td>Admin từ chối hồ sơ nhưng để trống hoặc nhập dưới 10 ký tự (BR-ADM-004).</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-012</code></td>
+                <td><span class="tag tag-fail">Concurrency Error</span></td>
+                <td>/admin/approvals</td>
+                <td>Toast Đỏ</td>
+                <td><strong>Hồ sơ đã được xử lý bởi cán bộ khác. Vui lòng tải lại trang.</strong></td>
+                <td>Phát hiện xung đột phiên bản (Optimistic Lock 409 Conflict).</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-013</code></td>
+                <td><span class="tag tag-fail">Security Error</span></td>
+                <td>/gov/approvals</td>
+                <td>API Error JSON</td>
+                <td><strong>ERR_DATA_SCOPE_VIOLATION: Bạn không có quyền truy cập dữ liệu ngoài địa bàn phân công.</strong></td>
+                <td>Cán bộ Sở Tỉnh A cố tình truy vấn hồ sơ của Sở Tỉnh B.</td>
+              </tr>
+              <tr>
+                <td><code>MSG-AUTH-014</code></td>
+                <td><span class="tag tag-pass">Success</span></td>
+                <td>/settings, Header</td>
+                <td>Toast Xanh</td>
+                <td><strong>Đăng xuất thành công. Hẹn gặp lại Quý khách!</strong></td>
+                <td>Người dùng bấm Đăng xuất; phiên làm việc bị xóa sạch.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: TÀI KHOẢN MẪU & SƠ ĐỒ LUỒNG         -->
+    <!-- ========================================== -->
+    <div id="tab-credentials" class="tab-panel">
+      
+      <!-- Khối Hướng Dẫn Nghiệp Vụ Cho QC -->
+      <div class="qc-guide-card">
+        <div class="guide-header">
+          <span>📖</span> HƯỚNG DẪN TÁC NGHIỆP TAB 5: TÀI KHOẢN MẪU &amp; SƠ ĐỒ LUỒNG (TEST CREDENTIALS &amp; FLOW)
+        </div>
+        <div class="guide-body">
+          <p><strong>🎯 Ý nghĩa của Tab này:</strong> Cung cấp danh mục tài khoản mẫu chuẩn hóa thuộc 4 tầng kiến trúc (10 Roles) cùng sơ đồ luồng luân chuyển tài khoản trong hệ sinh thái NacenTech.</p>
+          <div class="guide-grid">
+            <div class="guide-col">
+              <div class="guide-col-title"><span>🔑</span> Cách thức sử dụng danh mục tài khoản mẫu:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li>Sử dụng đúng <strong>Tài khoản Test (Email)</strong> và <strong>Mật khẩu mẫu</strong> để đăng nhập tại <code>/login</code>.</li>
+                <li>Xác thực cổng điều hướng: Ngay sau khi đăng nhập, quan sát thanh URL trình duyệt xem có chuyển về đúng Cổng quy định không (<code>/admin</code>, <code>/gov</code>, <code>/portal</code>, <code>/</code>). Nếu sai cổng $\rightarrow$ Lập tức ghi nhận lỗi Routing Bug!</li>
+              </ul>
+            </div>
+            <div class="guide-col">
+              <div class="guide-col-title"><span>🗺️</span> Chu trình 4 bước nâng cấp tài khoản:</div>
+              <ul style="padding-left: 16px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6;">
+                <li>Tài khoản đăng ký mới là <strong>PUBLIC_USER</strong> (ở trang chủ).</li>
+                <li>Nộp hồ sơ nâng hạng tại mục Cài đặt (Settings) $\rightarrow$ Trạng thái chuyển thành <strong>PENDING_REVIEW</strong>.</li>
+                <li>Admin đăng nhập vào hàng đợi thẩm định để kiểm duyệt.</li>
+                <li>Chỉ khi Admin ký duyệt thì CSDL mới cấp Role mới (<code>VERIFIED_EXPERT</code> hoặc <code>SELLER</code>) và mở khóa Cổng tác nghiệp <code>/portal</code>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sơ đồ luồng -->
+      <div class="card">
+        <div class="card-title">🗺️ Sơ Đồ Luồng Nghiệp Vụ Toàn Trình (Architecture &amp; Flow Overview)</div>
+        <div class="card-desc">Bản đồ luân chuyển tài khoản từ công dân vãng lai đến tài khoản chuyên gia/doanh nghiệp có thẩm quyền.</div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 16px; border-top: 4px solid var(--primary);">
+            <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 6px;">1️⃣ Đăng Ký Công Khai (/register)</div>
+            <div style="font-size: 0.84rem; color: var(--text-muted);">
+              Khách vãng lai đăng ký tại <code>/register</code>. Điền Họ tên, Email, Mật khẩu &ge; 8 ký tự và cam kết PDPD. Hệ thống tự động kích hoạt cấp tài khoản <code>PUBLIC_USER</code> (Tầng 3).
+            </div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 16px; border-top: 4px solid var(--brand-teal);">
+            <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 6px;">2️⃣ Đăng Nhập &amp; Gateway (/login)</div>
+            <div style="font-size: 0.84rem; color: var(--text-muted);">
+              Xác thực tại <code>/login</code>, cấp JWT Token chứa 4 Claims: <code>sub</code>, <code>role</code>, <code>scope_type</code>, <code>scope_id</code>. Tự động điều hướng về 1 trong 4 Cổng (/admin, /gov, /portal, /).
+            </div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 16px; border-top: 4px solid var(--p1);">
+            <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 6px;">3️⃣ Nộp Hồ Sơ Nâng Cấp Quyền</div>
+            <div style="font-size: 0.84rem; color: var(--text-muted);">
+              Thành viên vào <code>/settings</code> bấm [Nâng hạng tài khoản] &gt; Chọn Chuyên gia hoặc Doanh nghiệp &gt; Nộp Wizard 3 bước. Trạng thái chuyển thành <code>PENDING_REVIEW</code> (Khóa sửa theo SLA 48h).
+            </div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 16px; border-top: 4px solid var(--pass);">
+            <div style="font-weight: 800; font-size: 0.95rem; margin-bottom: 6px;">4️⃣ Admin Thẩm Định &amp; Đổi Role</div>
+            <div style="font-size: 0.84rem; color: var(--text-muted);">
+              Admin mở <code>/admin/approvals</code> hoặc <code>/gov/approvals</code> kiểm tra. Bấm [Phê duyệt] &gt; CSDL cập nhật vai trò mới <code>VERIFIED_EXPERT</code>. Đăng nhập lại sẽ mở Cổng <code>/portal</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh mục 10 tài khoản mẫu -->
+      <div class="card">
+        <div class="card-title">🔑 Danh Mục 10 Tài Khoản Mẫu (Test Credentials Matrix)</div>
+        <div class="card-desc">Tài khoản chuẩn hóa 4 tầng kiến trúc để đăng nhập kiểm chứng phân quyền và điều hướng cổng.</div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Tầng Phân Cấp</th>
+                <th>Mã Role Kỹ Thuật</th>
+                <th>Tên Hiển Thị Tiếng Việt</th>
+                <th>Tài Khoản Test (Email)</th>
+                <th>Mật Khẩu Mẫu</th>
+                <th>Phạm Vi Thẩm Quyền (Scope)</th>
+                <th>Cổng Điều Hướng Kỳ Vọng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag badge-t0">Tầng 0 (Trung ương)</span></td>
+                <td><code>SUPER_ADMIN</code></td>
+                <td><strong>Quản trị viên cấp cao</strong></td>
+                <td><span class="code-chip">superadmin@nacentech.gov.vn</span></td>
+                <td><code>Admin@123456</code></td>
+                <td><code>GLOBAL</code> (Toàn quốc)</td>
+                <td><span class="code-chip">/admin</span> (Tổng Hành Dinh)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t0">Tầng 0 (Trung ương)</span></td>
+                <td><code>OPERATOR_ADMIN</code></td>
+                <td><strong>Quản trị viên vận hành</strong></td>
+                <td><span class="code-chip">operator@nacentech.gov.vn</span></td>
+                <td><code>Admin@123456</code></td>
+                <td><code>GLOBAL</code> (Vận hành sàn)</td>
+                <td><span class="code-chip">/admin</span> (Cổng Vận Hành)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t1">Tầng 1 (Cơ quan)</span></td>
+                <td><code>PROVINCIAL_ADMIN</code></td>
+                <td><strong>Quản trị viên cấp tỉnh</strong></td>
+                <td><span class="code-chip">lanhdaoso.hp@haiphong.gov.vn</span></td>
+                <td><code>Admin@123456</code></td>
+                <td><code>PROVINCE</code> (Hải Phòng - <code>HP</code>)</td>
+                <td><span class="code-chip">/gov</span> (Cổng Công Vụ Tỉnh)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t1">Tầng 1 (Cơ quan)</span></td>
+                <td><code>SECTOR_ADMIN</code></td>
+                <td><strong>Quản trị viên ngành TT17</strong></td>
+                <td><span class="code-chip">truongnganh.it@nacentech.gov.vn</span></td>
+                <td><code>Admin@123456</code></td>
+                <td><code>SECTOR</code> (Mã: <code>IT_TELECOM</code>)</td>
+                <td><span class="code-chip">/gov</span> (Cổng Chuyên Ngành)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t1">Tầng 1 (Cơ quan)</span></td>
+                <td><code>CLUSTER_ADMIN</code></td>
+                <td><strong>Quản trị Viện / Trường</strong></td>
+                <td><span class="code-chip">vienkhcn.admin@vienkhcn.gov.vn</span></td>
+                <td><code>Admin@123456</code></td>
+                <td><code>ORG_UNIT</code> (Mã Viện/Trường)</td>
+                <td><span class="code-chip">/gov</span> (Cổng Cơ Sở Liên Kết)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t2">Tầng 2 (Thị trường)</span></td>
+                <td><code>VERIFIED_EXPERT</code></td>
+                <td><strong>Chuyên gia KH&amp;CN đã xác thực</strong></td>
+                <td><span class="code-chip">chuyengia.it@bachkhoa.edu.vn</span></td>
+                <td><code>Expert@123456</code></td>
+                <td><code>GLOBAL</code> / <code>SECTOR</code></td>
+                <td><span class="code-chip">/portal</span> (Dashboard Chuyên Gia)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t2">Tầng 2 (Thị trường)</span></td>
+                <td><code>SELLER</code></td>
+                <td><strong>Nhà cung ứng công nghệ</strong></td>
+                <td><span class="code-chip">seller.congnghe@viettel.com.vn</span></td>
+                <td><code>Seller@123456</code></td>
+                <td><code>GLOBAL</code> / <code>SECTOR</code></td>
+                <td><span class="code-chip">/portal</span> (Gian Hàng Chào Bán)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t2">Tầng 2 (Thị trường)</span></td>
+                <td><code>BUYER</code></td>
+                <td><strong>Bên có nhu cầu công nghệ</strong></td>
+                <td><span class="code-chip">buyer.nhucau@vinamilk.com.vn</span></td>
+                <td><code>Buyer@123456</code></td>
+                <td><code>GLOBAL</code> / <code>SECTOR</code></td>
+                <td><span class="code-chip">/portal</span> (Không Gian Tìm Mua)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t2">Tầng 2 (Thị trường)</span></td>
+                <td><code>INNOVATION_ENTITY</code></td>
+                <td><strong>Chủ thể đổi mới sáng tạo</strong></td>
+                <td><span class="code-chip">doanhnghiep.dmst@fpt.com.vn</span></td>
+                <td><code>Entity@123456</code></td>
+                <td><code>ORG_UNIT</code></td>
+                <td><span class="code-chip">/portal</span> (Hồ Sơ Năng Lực ĐMST)</td>
+              </tr>
+              <tr>
+                <td><span class="tag badge-t3">Tầng 3 (Công chúng)</span></td>
+                <td><code>PUBLIC_USER</code></td>
+                <td><strong>Thành viên công chúng</strong></td>
+                <td><span class="code-chip">congdan.test@gmail.com</span></td>
+                <td><code>User@123456</code></td>
+                <td><code>GLOBAL</code> (Mặc định)</td>
+                <td><span class="code-chip">/</span> (Trang Chủ Cổng Thông Tin)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Defect Export Modal -->
+  <div class="modal-backdrop" id="defectModal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:1.2rem; font-weight:800; color:var(--fail);">🐞 Danh Sách Lỗi Phát Hiện (Báo Cáo Defect)</h3>
+        <button class="btn btn-outline" onclick="closeDefectModal()">✕ Đóng</button>
+      </div>
+      <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:14px;">
+        Dưới đây là danh sách toàn bộ các ca kiểm thử bị đánh giá <strong>FAILED</strong> kèm ảnh chụp bằng chứng. Bạn có thể sao chép nhanh khối văn bản này gửi cho đội phát triển (Dev) để sửa lỗi ngay:
+      </p>
+      <div style="background:#1e293b; color:#f8fafc; padding:16px; border-radius:8px; font-family:monospace; font-size:0.84rem; max-height:400px; overflow-y:auto; white-space:pre-wrap;" id="defectSummaryContent">
+        (Chưa có bài test nào bị FAILED)
+      </div>
+      <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-primary" onclick="copyDefectText()">📋 Sao Chép Nội Dung Gửi Dev</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Submissions Modal (Dành Cho Người Thẩm Định / Lead Review) -->
+  <div class="modal-backdrop" id="reviewModal">
+    <div class="modal-box" style="max-width:920px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:1.25rem; font-weight:800; color:var(--primary);">📂 Thẩm Định &amp; Đối Soát Kết Quả Kiểm Thử Đã Lưu</h3>
+        <button class="btn btn-outline" onclick="closeReviewModal()">✕ Đóng</button>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:700; font-size:0.92rem;">📥 Nạp Phiếu Kiểm Thử Từ File JSON Ngoại Vi</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Nếu chuyên viên QC gửi file kết quả kiểm thử (.json), bạn có thể tải lên đây để review toàn bộ hình ảnh và kết quả:</div>
+        </div>
+        <label class="btn btn-primary" style="cursor:pointer;">
+          📁 Chọn File JSON Để Mở
+          <input type="file" accept=".json" style="display:none;" onchange="importTestSessionFile(event)">
+        </label>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:8px;">Lịch Sử Các Đợt Kiểm Thử Đã Nộp Trên Hệ Thống:</h4>
+        <div class="table-container" style="max-height:220px; overflow-y:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã Đợt (Run ID)</th>
+                <th>Người Kiểm Thử</th>
+                <th>Ngày Test</th>
+                <th>Môi Trường</th>
+                <th>Kết Quả (Pass/Fail)</th>
+                <th>Thời Điểm Nộp</th>
+                <th style="width:100px;">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="submittedSessionsTable">
+              <!-- Render tự động -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Khu vực Ký duyệt Gate 4 của Reviewer -->
+      <div style="border-top:2px solid var(--border); padding-top:16px; margin-top:16px;">
+        <h4 style="font-size:0.95rem; font-weight:800; color:var(--brand-navy); margin-bottom:10px;">✍️ Ý Kiến Phê Duyệt Của Reviewer (Quality Gate 4 Sign-Off):</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">HỌ VÀ TÊN NGƯỜI DUYỆT (PO / LEAD QC):</label>
+            <input type="text" id="reviewerName" class="session-input" style="width:100%;" placeholder="Nhập tên người duyệt...">
+          </div>
+          <div>
+            <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">KẾT LUẬN THẨM ĐỊNH:</label>
+            <select id="reviewDecision" class="session-input" style="width:100%;">
+              <option value="APPROVED">🟢 CHẤP THUẬN XUẤT XƯỞNG (PASS GATE 4)</option>
+              <option value="REWORK">🟡 YÊU CẦU SỬA DEFECT &amp; KIỂM THỬ LẠI</option>
+              <option value="REJECTED">🔴 TỪ CHỐI BÀN GIAO (REJECT)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted);">GHI CHÚ / Ý KIẾN CHỈ ĐẠO:</label>
+          <textarea id="reviewComments" class="tbl-input" style="width:100%; height:60px;" placeholder="Ghi nhận xét đánh giá đợt kiểm thử..."></textarea>
+        </div>
+        <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
+          <button class="btn btn-success" onclick="saveReviewAudit()">✅ Ký Phê Duyệt &amp; Lưu Biên Bản</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Image Lightbox Modal -->
+  <div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
+    <button class="btn-close-lightbox" onclick="closeLightbox()">✕</button>
+    <img src="" id="lightboxImg" class="lightbox-img" onclick="event.stopPropagation()">
+  </div>
+
+  <!-- SCRIPT QUẢN LÝ DỮ LIỆU & TƯƠNG TÁC -->
+  <script>
+    // Dữ liệu 38 Test Cases chuẩn hóa 18 cột theo form ECareHome
+    const testCasesData = [
+      // Phân hệ 1: ĐĂNG KÝ (10 Cases)
+      {
+        id: "TC-REG-001",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Họ và Tên đệm",
+        title: "Bỏ trống Họ và Tên đệm (bắt buộc)",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Để trống ô 'Họ và Tên đệm'\n2. Điền đủ các trường khác hợp lệ\n3. Tích PDPD\n4. Bấm 'Đăng ký thành viên'",
+        data: "Họ đệm: (để trống); Tên: 'Văn A'; Email: 'test1@gmail.com'; Pass: 'Pass@1234'",
+        expected: "Hệ thống chặn submit, hiển thị thông báo lỗi inline: 'Vui lòng nhập Họ và Tên đệm.'",
+        priority: "High",
+        type: "Negative"
+      },
+      {
+        id: "TC-REG-002",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Tên",
+        title: "Bỏ trống Tên (bắt buộc)",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Nhập Họ đệm: 'Nguyễn'\n2. Để trống ô 'Tên'\n3. Điền các trường khác hợp lệ & tích PDPD\n4. Bấm 'Đăng ký'",
+        data: "Họ đệm: 'Nguyễn'; Tên: (để trống); Pass: 'Pass@1234'",
+        expected: "Chặn submit form, báo lỗi trường bắt buộc: 'Vui lòng nhập Tên.'",
+        priority: "High",
+        type: "Negative"
+      },
+      {
+        id: "TC-REG-003",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Địa chỉ Email",
+        title: "Bỏ trống Địa chỉ Email",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Để trống trường Email\n2. Nhập các trường khác hợp lệ\n3. Bấm 'Đăng ký thành viên'",
+        data: "Email: (để trống)",
+        expected: "Hệ thống chặn submit, báo lỗi vi mô: 'Vui lòng nhập địa chỉ email.'",
+        priority: "High",
+        type: "Negative"
+      },
+      {
+        id: "TC-REG-004",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Địa chỉ Email",
+        title: "Nhập Email sai định dạng Regex",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Nhập email sai format\n2. Bấm 'Đăng ký thành viên'",
+        data: "Lần lượt: 'user.gmail.com' (thiếu @); 'user@' (thiếu domain); '@domain.vn'",
+        expected: "Báo lỗi inline chuẩn hóa: 'Địa chỉ email chưa đúng định dạng.'; không gửi request đến server.",
+        priority: "High",
+        type: "Negative"
+      },
+      {
+        id: "TC-REG-005",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Mật khẩu",
+        title: "Mật khẩu biên cận dưới (< 8 ký tự)",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Nhập mật khẩu 7 ký tự\n2. Nhập xác nhận mật khẩu đúng 7 ký tự đó\n3. Bấm 'Đăng ký'",
+        data: "Mật khẩu: 'Pass123' (7 ký tự); Xác nhận: 'Pass123'",
+        expected: "Báo lỗi độ dài: 'Mật khẩu phải có ít nhất 8 ký tự.'; chặn chuyển bước.",
+        priority: "High",
+        type: "Boundary"
+      },
+      {
+        id: "TC-REG-006",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Xác nhận mật khẩu",
+        title: "Bỏ trống ô Xác nhận mật khẩu",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Nhập mật khẩu hợp lệ\n2. Để trống ô Xác nhận mật khẩu\n3. Bấm 'Đăng ký'",
+        data: "Pass: 'Pass@1234'; Confirm: (để trống)",
+        expected: "Báo lỗi yêu cầu xác nhận: 'Vui lòng xác nhận mật khẩu.'",
+        priority: "Medium",
+        type: "Negative"
+      },
+      {
+        id: "TC-REG-007",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Xác nhận mật khẩu",
+        title: "Mật khẩu xác nhận không khớp (Cross-field)",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Nhập mật khẩu A\n2. Nhập xác nhận mật khẩu B khác A\n3. Bấm 'Đăng ký'",
+        data: "Mật khẩu: 'PassA@1234'; Xác nhận: 'PassB@5678'",
+        expected: "Báo lỗi logic chéo: 'Mật khẩu xác nhận không khớp.'",
+        priority: "High",
+        type: "Negative"
+      },
+      {
+        id: "TC-REG-008",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Cam kết PDPD",
+        title: "Không tích chọn cam kết PDPD Nghị định 13",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Điền mọi trường hợp lệ 100%\n2. BỎ TRỐNG checkbox cam kết dữ liệu cá nhân\n3. Bấm 'Đăng ký'",
+        data: "Checkbox PDPD: false (chưa tích)",
+        expected: "Báo lỗi pháp lý: 'Bạn cần đồng ý với Điều khoản Bảo vệ Dữ liệu Cá nhân (Nghị định 13/2023/NĐ-CP) để tiếp tục.'; không gửi request.",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-REG-009",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Tính duy nhất Email",
+        title: "Đăng ký với Email đã tồn tại trong CSDL",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Nhập email đã tồn tại sẵn trong DB\n2. Điền đủ các trường khác hợp lệ & tích PDPD\n3. Bấm 'Đăng ký'",
+        data: "Email: 'superadmin@nacentech.gov.vn' (đã có trong DB)",
+        expected: "Backend phản hồi HTTP 409 Conflict. Giao diện hiển thị Alert đỏ: 'Email đã được sử dụng trên hệ thống.'",
+        priority: "High",
+        type: "Negative"
+      },
+      {
+        id: "TC-REG-010",
+        module: "UI-AUTH-01 Đăng ký",
+        function: "Tạo tài khoản mới",
+        title: "Đăng ký thành công tài khoản công chúng (Happy Path)",
+        pre: "Đang mở màn hình /register",
+        steps: "1. Nhập thông tin đầy đủ, email mới toanh\n2. Tích chọn cam kết PDPD\n3. Bấm 'Đăng ký thành viên'\n4. Quan sát giao diện",
+        data: "Họ: 'Trần'; Tên: 'Văn Test'; Email: 'tester.nacen@gmail.com'; Pass: 'Pass@123456'",
+        expected: "Hiển thị Banner xanh lá: 'Đăng ký thành công! Tài khoản công chúng của bạn đã sẵn sàng để đăng nhập.'; Toàn bộ form được reset sạch.",
+        priority: "High",
+        type: "Positive"
+      },
+
+      // Phân hệ 2: ĐĂNG NHẬP (7 Cases)
+      {
+        id: "TC-LOG-001",
+        module: "UI-AUTH-02 Đăng nhập",
+        function: "Email đăng nhập",
+        title: "Bỏ trống Email đăng nhập",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Để trống ô Email\n2. Nhập mật khẩu bất kỳ\n3. Bấm 'Đăng nhập vào Hệ Thống'",
+        data: "Email: (để trống); Pass: 'Pass@123456'",
+        expected: "Trình duyệt chặn gửi request bằng HTML5 required tooltip; focus con trỏ vào ô Email.",
+        priority: "Medium",
+        type: "Negative"
+      },
+      {
+        id: "TC-LOG-002",
+        module: "UI-AUTH-02 Đăng nhập",
+        function: "Mật khẩu đăng nhập",
+        title: "Bỏ trống Mật khẩu đăng nhập",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Nhập email hợp lệ\n2. Để trống ô Mật khẩu\n3. Bấm 'Đăng nhập'",
+        data: "Email: 'test@gmail.com'; Pass: (để trống)",
+        expected: "Chặn submit request, yêu cầu nhập mật khẩu.",
+        priority: "Medium",
+        type: "Negative"
+      },
+      {
+        id: "TC-LOG-003",
+        module: "UI-AUTH-02 Đăng nhập",
+        function: "Bảo mật tài khoản",
+        title: "Đăng nhập tài khoản không tồn tại trên hệ thống",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Nhập email chưa từng đăng ký\n2. Nhập mật khẩu\n3. Bấm 'Đăng nhập'",
+        data: "Email: 'khongtontai.999@test.vn'; Pass: 'Pass@123456'",
+        expected: "API trả về HTTP 401. Giao diện báo lỗi trung tính bảo mật: 'Tài khoản hoặc mật khẩu không chính xác.' (Tuyệt đối không lộ email tồn tại).",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-LOG-004",
+        module: "UI-AUTH-02 Đăng nhập",
+        function: "Xác thực mật khẩu",
+        title: "Đăng nhập đúng Email nhưng sai Mật khẩu",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Nhập email đúng của tài khoản\n2. Nhập sai mật khẩu\n3. Bấm 'Đăng nhập'",
+        data: "Email: 'superadmin@nacentech.gov.vn'; Pass: 'MatKhauSai@123'",
+        expected: "Báo lỗi: 'Tài khoản hoặc mật khẩu không chính xác.'; nút bấm trở về trạng thái sẵn sàng để nhập lại.",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-LOG-005",
+        module: "UI-AUTH-02 Đăng nhập",
+        function: "Trạng thái Loading & Chống Spam",
+        title: "Kiểm tra Spinner Loading & Vô hiệu hóa Double-click",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Bật Network Throttling (Fast 3G)\n2. Bấm nút 'Đăng nhập'\n3. Thử click liên tiếp 2-3 lần vào nút",
+        data: "Email & Pass hợp lệ",
+        expected: "Nút chuyển sang trạng thái Loading (Spinner), disabled click đúp; chỉ gửi duy nhất 1 request xác thực.",
+        priority: "Low",
+        type: "UX"
+      },
+      {
+        id: "TC-LOG-006",
+        module: "UI-AUTH-02 Đăng nhập",
+        function: "Lưu phiên Session JWT",
+        title: "Đăng nhập thành công & Kiểm tra lưu trữ JWT an toàn",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Nhập đúng tài khoản & pass\n2. Bấm 'Đăng nhập'\n3. Sau khi chuyển trang, mở F12 > Application > Local Storage",
+        data: "superadmin@nacentech.gov.vn / Admin@123456",
+        expected: "Đăng nhập thành công. LocalStorage lưu đủ: 'nacentwin_access_token' (JWT chứa role, scope) và 'nacentwin_user' (object).",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-LOG-007",
+        module: "UI-AUTH-02 Đăng nhập",
+        function: "Đăng xuất tài khoản",
+        title: "Đăng xuất làm sạch phiên (Logout Flow)",
+        pre: "Đang ở trạng thái đã đăng nhập",
+        steps: "1. Bấm Avatar góc phải trên cùng\n2. Chọn 'Đăng xuất'\n3. F12 kiểm tra LocalStorage\n4. Bấm Back trình duyệt",
+        data: "N/A",
+        expected: "Hệ thống chuyển về /login hoặc trang chủ. LocalStorage bị xóa sạch token. Bấm Back không được quay lại trang quản trị.",
+        priority: "High",
+        type: "Positive"
+      },
+
+      // Phân hệ 3: ĐIỀU HƯỚNG ĐỘNG 10 ROLES (10 Cases)
+      {
+        id: "TC-GW-001",
+        module: "Role Gateway Routing",
+        function: "Tầng 0: SUPER_ADMIN",
+        title: "Điều hướng Quản trị viên cấp cao về Tổng Hành Dinh",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản superadmin\n2. Bấm 'Đăng nhập'\n3. Quan sát URL chuyển hướng",
+        data: "superadmin@nacentech.gov.vn / Admin@123456",
+        expected: "Hệ thống tự động đưa về Cổng /admin; hiển thị đủ 4 menu tác nghiệp: approvals, roles, org-tree, sectors.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-002",
+        module: "Role Gateway Routing",
+        function: "Tầng 0: OPERATOR_ADMIN",
+        title: "Điều hướng Quản trị viên vận hành về Cổng Vận Hành",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản operator\n2. Bấm 'Đăng nhập'",
+        data: "operator@nacentech.gov.vn / Admin@123456",
+        expected: "Điều hướng về Cổng /admin; truy cập được hàng đợi duyệt hồ sơ và vận hành sàn giao dịch.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-003",
+        module: "Role Gateway Routing",
+        function: "Tầng 1: PROVINCIAL_ADMIN",
+        title: "Điều hướng Lãnh đạo Sở KH&CN Tỉnh về Cổng Công Vụ",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản Sở Hải Phòng\n2. Bấm 'Đăng nhập'",
+        data: "lanhdaoso.hp@haiphong.gov.vn / Admin@123456",
+        expected: "Điều hướng về Cổng /gov; thanh tiêu đề hiển thị địa bàn 'Sở KH&CN Hải Phòng'; dữ liệu chỉ thuộc Hải Phòng.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-004",
+        module: "Role Gateway Routing",
+        function: "Tầng 1: SECTOR_ADMIN",
+        title: "Điều hướng Quản trị viên ngành TT17 về Cổng Chuyên Ngành",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản Trưởng ngành IT\n2. Bấm 'Đăng nhập'",
+        data: "truongnganh.it@nacentech.gov.vn / Admin@123456",
+        expected: "Điều hướng về Cổng /gov; bộ lọc dữ liệu mặc định neo theo ngành 'Công nghệ thông tin & Viễn thông'.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-005",
+        module: "Role Gateway Routing",
+        function: "Tầng 1: CLUSTER_ADMIN",
+        title: "Điều hướng Quản trị Viện/Trường về Cổng Đơn Vị Liên Kết",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản Viện KHCN\n2. Bấm 'Đăng nhập'",
+        data: "vienkhcn.admin@vienkhcn.gov.vn / Admin@123456",
+        expected: "Điều hướng về Cổng /gov; quản trị danh mục nhà khoa học và đề tài sáng chế nội bộ Viện.",
+        priority: "Medium",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-006",
+        module: "Role Gateway Routing",
+        function: "Tầng 2: VERIFIED_EXPERT",
+        title: "Điều hướng Chuyên gia KH&CN về Dashboard Chuyên Gia",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản Chuyên gia\n2. Bấm 'Đăng nhập'",
+        data: "chuyengia.it@bachkhoa.edu.vn / Expert@123456",
+        expected: "Điều hướng về Cổng /portal; mở Dashboard Chuyên gia có thanh tiến độ LLKH và danh sách yêu cầu tư vấn.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-007",
+        module: "Role Gateway Routing",
+        function: "Tầng 2: SELLER",
+        title: "Điều hướng Bên Bán về Không Gian Thị Trường (Shop)",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản Nhà cung ứng\n2. Bấm 'Đăng nhập'",
+        data: "seller.congnghe@viettel.com.vn / Seller@123456",
+        expected: "Điều hướng về Cổng /portal; mở menu Quản lý chào bán công nghệ, đăng giải pháp R&D.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-008",
+        module: "Role Gateway Routing",
+        function: "Tầng 2: BUYER",
+        title: "Điều hướng Bên Mua về Không Gian Nhu Cầu Công Nghệ",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản Bên Mua\n2. Bấm 'Đăng nhập'",
+        data: "buyer.nhucau@vinamilk.com.vn / Buyer@123456",
+        expected: "Điều hướng về Cổng /portal; mở Quản lý bài toán tìm mua và phiếu khảo sát công nghệ TT17.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-009",
+        module: "Role Gateway Routing",
+        function: "Tầng 2: INNOVATION_ENTITY",
+        title: "Điều hướng Chủ thể ĐMST về Không Gian Năng Lực ĐMST",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản Doanh nghiệp ĐMST\n2. Bấm 'Đăng nhập'",
+        data: "doanhnghiep.dmst@fpt.com.vn / Entity@123456",
+        expected: "Điều hướng về Cổng /portal; quản lý hồ sơ năng lực ĐMST, danh mục bằng sáng chế SHTT.",
+        priority: "Medium",
+        type: "Positive"
+      },
+      {
+        id: "TC-GW-010",
+        module: "Role Gateway Routing",
+        function: "Tầng 3: PUBLIC_USER",
+        title: "Điều hướng Thành viên công chúng về Trang Chủ",
+        pre: "Đang mở màn hình /login",
+        steps: "1. Đăng nhập tài khoản người dùng thường\n2. Bấm 'Đăng nhập'",
+        data: "congdan.test@gmail.com / User@123456",
+        expected: "Điều hướng về Trang chủ /; vào /settings thấy các tùy chọn Nâng cấp tài khoản lên Chuyên gia/Doanh nghiệp.",
+        priority: "High",
+        type: "Positive"
+      },
+
+      // Phân hệ 4: NÂNG CẤP VÀ PHÊ DUYỆT (6 Cases)
+      {
+        id: "TC-UPG-001",
+        module: "UI-ADM-01 Hàng đợi duyệt",
+        function: "Nộp hồ sơ Chuyên gia",
+        title: "PUBLIC_USER nộp hồ sơ nâng hạng Chuyên gia KH&CN",
+        pre: "Đã đăng nhập tài khoản PUBLIC_USER",
+        steps: "1. Vào /settings > chọn thẻ [Chuyên gia KH&CN]\n2. Điền Bước 1 (Học hàm/học vị/Cơ quan)\n3. Bước 2 (Chuyên môn, kinh nghiệm)\n4. Bước 3 (Tích 2 cam kết PDPD) > Bấm Nộp",
+        data: "Lý lịch khoa học đầy đủ",
+        expected: "Màn hình báo gửi thành công. Trạng thái hồ sơ là PENDING_REVIEW; CSDL tạo bản ghi ApprovalRequest loại EXPERT.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-UPG-002",
+        module: "UI-ADM-01 Hàng đợi duyệt",
+        function: "Khóa sửa hồ sơ (BR-EXP-006)",
+        title: "Khóa nút chỉnh sửa và cảnh báo SLA 48h khi hồ sơ Chờ Duyệt",
+        pre: "Hồ sơ đang ở trạng thái PENDING_REVIEW",
+        steps: "1. Vào trang xem chi tiết hồ sơ cá nhân\n2. Quan sát nút [Chỉnh sửa hồ sơ]\n3. Quan sát banner cảnh báo",
+        data: "N/A",
+        expected: "Nút [Chỉnh sửa hồ sơ] bị disabled/làm mờ. Hiển thị Banner: 'Hồ sơ đang trong quá trình thẩm định (SLA 48h)...'",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-UPG-003",
+        module: "UI-ADM-01 Hàng đợi duyệt",
+        function: "Phê duyệt thẩm định",
+        title: "Admin Phê Duyệt Hồ Sơ Chuyên Gia Thành Công",
+        pre: "Đăng nhập SUPER_ADMIN vào /admin/approvals",
+        steps: "1. Mở Tab [Chuyên gia KH&CN]\n2. Tìm hồ sơ đang chờ duyệt > Xem chi tiết\n3. Bấm nút màu xanh [Phê duyệt Chính thức]",
+        data: "Hồ sơ hợp lệ",
+        expected: "Bật Toast: 'Phê duyệt hồ sơ thành công!'. Badge trạng thái chuyển sang màu xanh APPROVED; CSDL gán role VERIFIED_EXPERT.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-UPG-004",
+        module: "UI-ADM-01 Hàng đợi duyệt",
+        function: "Tái đăng nhập sau duyệt",
+        title: "Tái đăng nhập sau khi được cấp role mới VERIFIED_EXPERT",
+        pre: "Tài khoản vừa được Admin phê duyệt ở TC-UPG-003",
+        steps: "1. Đăng xuất tài khoản Admin\n2. Đăng nhập lại bằng tài khoản vừa được duyệt\n3. Quan sát cổng chuyển hướng",
+        data: "Tài khoản người dùng đã duyệt",
+        expected: "Hệ thống không về trang chủ /, tự động chuyển hướng sang /portal mở Dashboard Chuyên Gia. Token chứa role VERIFIED_EXPERT.",
+        priority: "High",
+        type: "Positive"
+      },
+      {
+        id: "TC-UPG-005",
+        module: "UI-ADM-01 Hàng đợi duyệt",
+        function: "Từ chối hồ sơ (BR-ADM-004)",
+        title: "Từ chối hồ sơ bắt buộc nhập lý do >= 10 ký tự",
+        pre: "Đang mở chi tiết hồ sơ chờ duyệt tại /admin/approvals",
+        steps: "1. Bấm nút [Từ chối hồ sơ]\n2. Để trống ô lý do từ chối > Bấm Xác nhận\n3. Thử gõ lý do ngắn < 10 ký tự (ví dụ: 'Sai ảnh') > Bấm Xác nhận",
+        data: "Lý do: (để trống) và 'Sai ảnh' (8 ký tự)",
+        expected: "Báo lỗi: 'Vui lòng nhập lý do từ chối (tối thiểu 10 ký tự).'; Modal không đóng, không gửi request từ chối.",
+        priority: "High",
+        type: "Negative"
+      },
+      {
+        id: "TC-UPG-006",
+        module: "UI-ADM-01 Hàng đợi duyệt",
+        function: "Xung đột đồng thời (Optimistic Lock)",
+        title: "Chống duyệt đè khi 2 Admin cùng mở một hồ sơ (HTTP 409)",
+        pre: "2 Cán bộ A và B cùng mở chi tiết 1 hồ sơ (Version = 1)",
+        steps: "1. Cán bộ A bấm [Phê duyệt] trước > Thành công (Version -> 2)\n2. Cán bộ B bấm [Từ chối] trên màn hình cũ (vẫn giữ Version = 1)",
+        data: "Hai phiên làm việc song song",
+        expected: "Cán bộ B nhận lỗi: 'Hồ sơ đã được xử lý bởi cán bộ khác. Vui lòng tải lại trang.' (HTTP 409 Conflict); dữ liệu Cán bộ A được bảo toàn.",
+        priority: "Medium",
+        type: "Negative"
+      },
+
+      // Phân hệ 5: BẢO MẬT & SCOPED RBAC (5 Cases)
+      {
+        id: "TC-SEC-001",
+        module: "Bảo Mật Scoped RBAC",
+        function: "RoleGuard Chặn URL /admin",
+        title: "PUBLIC_USER cố tình gõ trực tiếp URL Cổng Admin",
+        pre: "Đã đăng nhập bằng tài khoản người dùng thường",
+        steps: "1. Trên thanh địa chỉ trình duyệt, gõ trực tiếp: http://localhost:3000/admin\n2. Bấm Enter",
+        data: "URL: /admin",
+        expected: "RoleGuard kích hoạt ngay lập tức. Tuyệt đối KHÔNG hiển thị giao diện Admin; tự động redirect về trang chủ / hoặc báo 403 Forbidden.",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-SEC-002",
+        module: "Bảo Mật Scoped RBAC",
+        function: "Ranh giới Tầng 1 và Tầng 0",
+        title: "Cán bộ Sở Tỉnh cố tình truy cập Cổng Quản Trị Trung Ương",
+        pre: "Đã đăng nhập bằng tài khoản Sở Hải Phòng",
+        steps: "1. Gõ trực tiếp URL /admin/roles hoặc /admin/system-config\n2. Bấm Enter",
+        data: "URL: /admin/roles",
+        expected: "Bị chặn truy cập. Cán bộ chỉ có quyền tác nghiệp trong phạm vi Cổng công vụ /gov/*, không thể vào /admin.",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-SEC-003",
+        module: "Bảo Mật Scoped RBAC",
+        function: "Cô lập dữ liệu Row-Level Security",
+        title: "Cô lập dữ liệu địa bàn Sở: Chống nhìn trộm hồ sơ tỉnh khác",
+        pre: "Đã đăng nhập tài khoản Sở Hải Phòng (Scope HP)",
+        steps: "1. Vào /gov/approvals kiểm tra danh sách hồ sơ\n2. F12 gọi thử API lấy hồ sơ tỉnh khác: /api/v1/gov/enterprises?scopeId=HN",
+        data: "Scope: HP vs HN",
+        expected: "Giao diện chỉ hiển thị hồ sơ thuộc Hải Phòng. API gọi sang địa bàn Hà Nội bị chặn với mã 403 (ERR_DATA_SCOPE_VIOLATION).",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-SEC-004",
+        module: "Bảo Mật Scoped RBAC",
+        function: "Chống tiêm nhiễm Role (Tampering)",
+        title: "Tiêm nhiễm Role đặc quyền vào Payload Form Đăng Ký",
+        pre: "Đang mở form /register",
+        steps: "1. F12 Network chặn request POST /api/v1/auth/register\n2. Sửa payload chèn thêm: role='SUPER_ADMIN', scopeType='GLOBAL'\n3. Gửi đi",
+        data: "role tiêm nhiễm: SUPER_ADMIN",
+        expected: "Backend loại bỏ hoàn toàn các trường tiêm nhiễm; CSDL chỉ lưu tài khoản với vai trò PUBLIC_USER duy nhất.",
+        priority: "High",
+        type: "Security"
+      },
+      {
+        id: "TC-SEC-005",
+        module: "Bảo Mật Scoped RBAC",
+        function: "Chống sửa chéo hồ sơ (IDOR)",
+        title: "Chuyên gia A cố tình sửa hồ sơ của Chuyên gia B qua API",
+        pre: "Đã đăng nhập bằng tài khoản Chuyên gia A",
+        steps: "1. Vào màn hình sửa hồ sơ cá nhân của mình\n2. F12 đổi ID trong đường link API PUT từ id_chuyengia_A thành id_chuyengia_B\n3. Gửi request",
+        data: "ID hồ sơ của người khác",
+        expected: "Backend so khớp token với ID hồ sơ, chặn đứng với HTTP 403 Forbidden hoặc 404; dữ liệu Chuyên gia B nguyên vẹn.",
+        priority: "High",
+        type: "Security"
+      }
+    ];
+
+    // Chuyển Tab
+    function switchTab(tabId) {
+      document.querySelectorAll('.sheet-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      const targetBtn = Array.from(document.querySelectorAll('.sheet-tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (targetBtn) targetBtn.classList.add('active');
+
+      const targetPanel = document.getElementById('tab-' + tabId);
+      if (targetPanel) targetPanel.classList.add('active');
+    }
+
+    // Render bảng Test Cases
+    function renderTestCases(list) {
+      const tbody = document.getElementById('tcTableBody');
+      tbody.innerHTML = '';
+      const globalTester = document.getElementById('globalTesterName').value || 'Chưa gán';
+
+      list.forEach((tc, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'tc-data-row';
+        tr.setAttribute('data-id', tc.id);
+        tr.setAttribute('data-module', tc.module);
+        tr.setAttribute('data-priority', tc.priority);
+
+        // Đọc trạng thái từ localStorage
+        const savedStatus = localStorage.getItem('nacen_res_' + tc.id) || 'UNTESTED';
+        const savedRemark = localStorage.getItem('nacen_rem_' + tc.id) || '';
+        const savedImg = localStorage.getItem('nacen_img_' + tc.id) || '';
+        const savedTester = localStorage.getItem('nacen_tst_' + tc.id) || globalTester;
+
+        let pClass = 'p-med';
+        if (tc.priority === 'High') pClass = 'p-high';
+        else if (tc.priority === 'Low') pClass = 'p-low';
+
+        // Khối hiển thị ảnh bằng chứng (Thumbnail + Dán ảnh + Xóa ảnh)
+        let imgHtml = '';
+        if (savedImg) {
+          imgHtml = `
+            <div class="evidence-thumb-wrap">
+              <img src="${savedImg}" class="evidence-thumb" onclick="openLightbox('${tc.id}')" title="Click để xem ảnh lớn">
+              <button class="btn-del-img" onclick="removeEvidenceImage('${tc.id}', event)" title="Xóa ảnh này">✕</button>
+            </div>
+          `;
+        }
+
+        tr.innerHTML = `
+          <td><strong>${idx + 1}</strong></td>
+          <td><span style="font-weight:700; color:var(--text-main);">${tc.module}</span></td>
+          <td><span style="font-size:0.83rem; color:var(--text-muted);">${tc.function}</span></td>
+          <td><span class="code-chip" style="font-weight:700;">${tc.id}</span></td>
+          <td>
+            <strong>${tc.title}</strong>
+            <div style="font-size:0.75rem; margin-top:2px;">
+              <span class="tag" style="background:#f1f5f9; color:#475569;">${tc.type}</span>
+            </div>
+          </td>
+          <td><div style="font-size:0.83rem; color:#475569; background:#f8fafc; padding:4px 6px; border-radius:4px; border:1px solid #e2e8f0;">${tc.pre}</div></td>
+          <td><div style="white-space:pre-line; font-size:0.83rem;">${tc.steps}</div></td>
+          <td><div style="font-size:0.82rem; font-family:monospace; color:#0f172a; background:#f1f5f9; padding:4px 6px; border-radius:4px;">${tc.data}</div></td>
+          <td><div style="font-size:0.83rem; color:#065f46;">${tc.expected}</div></td>
+          <td><span class="tag ${pClass}">${tc.priority}</span></td>
+          <td>
+            <select class="status-select" data-val="${savedStatus}" onchange="onStatusChange('${tc.id}', this)">
+              <option value="UNTESTED" ${savedStatus==='UNTESTED'?'selected':''}>CHƯA CHẠY</option>
+              <option value="PASSED" ${savedStatus==='PASSED'?'selected':''}>ĐẠT (PASS)</option>
+              <option value="FAILED" ${savedStatus==='FAILED'?'selected':''}>LỖI (FAIL)</option>
+              <option value="BLOCKED" ${savedStatus==='BLOCKED'?'selected':''}>BỊ CHẶN</option>
+            </select>
+          </td>
+          <td><input type="text" class="tbl-input" placeholder="Ghi chú defect..." value="${savedRemark}" onchange="onRemarkChange('${tc.id}', this)"></td>
+          <td class="evidence-cell">
+            <div class="evidence-dropzone" id="dropzone-${tc.id}" tabindex="0" onpaste="handleEvidencePaste(event, '${tc.id}')" title="Click vào đây và nhấn Ctrl+V để dán ảnh chụp màn hình">
+              <div id="img-container-${tc.id}">${imgHtml}</div>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:4px;">
+                <label class="btn-paste-action" title="Tải ảnh từ máy tính">
+                  📁 Chọn ảnh
+                  <input type="file" accept="image/*" style="display:none;" onchange="handleEvidenceUpload(event, '${tc.id}')">
+                </label>
+                <span class="paste-hint">Ctrl+V để dán</span>
+              </div>
+            </div>
+          </td>
+          <td><input type="text" class="tbl-input" placeholder="Người Test" value="${savedTester}" onchange="onTesterChange('${tc.id}', this)"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      updateKPIs();
+    }
+
+    // Xử lý Dán ảnh trực tiếp từ Clipboard (Ctrl + V / Cmd + V)
+    function handleEvidencePaste(e, tcId) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            saveEvidenceImage(tcId, event.target.result);
+          };
+          reader.readAsDataURL(blob);
+          e.preventDefault();
+          break;
+        }
+      }
+    }
+
+    // Xử lý Chọn file ảnh từ máy
+    function handleEvidenceUpload(e, tcId) {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          saveEvidenceImage(tcId, event.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Lưu Base64 ảnh vào LocalStorage & cập nhật giao diện
+    function saveEvidenceImage(tcId, base64Data) {
+      try {
+        localStorage.setItem('nacen_img_' + tcId, base64Data);
+        const container = document.getElementById('img-container-' + tcId);
+        if (container) {
+          container.innerHTML = `
+            <div class="evidence-thumb-wrap">
+              <img src="${base64Data}" class="evidence-thumb" onclick="openLightbox('${tcId}')" title="Click để phóng to ảnh">
+              <button class="btn-del-img" onclick="removeEvidenceImage('${tcId}', event)" title="Xóa ảnh">✕</button>
+            </div>
+          `;
+        }
+      } catch (err) {
+        alert('Dung lượng ảnh quá lớn so với bộ nhớ trình duyệt. Vui lòng nén ảnh hoặc chụp vùng lỗi nhỏ hơn!');
+      }
+    }
+
+    // Xóa ảnh bằng chứng
+    function removeEvidenceImage(tcId, event) {
+      if (event) event.stopPropagation();
+      localStorage.removeItem('nacen_img_' + tcId);
+      const container = document.getElementById('img-container-' + tcId);
+      if (container) container.innerHTML = '';
+    }
+
+    // Mở Lightbox xem ảnh lớn
+    function openLightbox(tcId) {
+      const imgData = localStorage.getItem('nacen_img_' + tcId);
+      if (imgData) {
+        document.getElementById('lightboxImg').src = imgData;
+        document.getElementById('lightboxModal').style.display = 'flex';
+      }
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightboxModal').style.display = 'none';
+    }
+
+    // Lưu trạng thái vào LocalStorage
+    function onStatusChange(id, selectEl) {
+      const val = selectEl.value;
+      selectEl.setAttribute('data-val', val);
+      localStorage.setItem('nacen_res_' + id, val);
+      updateKPIs();
+    }
+    function onRemarkChange(id, inputEl) {
+      localStorage.setItem('nacen_rem_' + id, inputEl.value);
+    }
+    function onTesterChange(id, inputEl) {
+      localStorage.setItem('nacen_tst_' + id, inputEl.value);
+    }
+
+    // Cập nhật Profile phiên làm việc
+    function onGlobalProfileChange() {
+      const name = document.getElementById('globalTesterName').value;
+      const date = document.getElementById('globalTestDate').value;
+      const env = document.getElementById('globalTestEnv').value;
+
+      localStorage.setItem('nacen_session_tester', name);
+      localStorage.setItem('nacen_session_date', date);
+      localStorage.setItem('nacen_session_env', env);
+
+      const metaEl = document.getElementById('metaTesterName');
+      if (metaEl) metaEl.textContent = name || 'Chưa khai báo';
+
+      // Cập nhật người test cho các test cases nếu người dùng muốn
+      document.querySelectorAll('.tc-data-row').forEach(tr => {
+        const tcId = tr.getAttribute('data-id');
+        const testerInput = tr.querySelector('input[placeholder="Người Test"]');
+        if (testerInput && !localStorage.getItem('nacen_tst_' + tcId)) {
+          testerInput.value = name;
+        }
+      });
+    }
+
+    // Cập nhật số liệu KPI toàn trình
+    function updateKPIs() {
+      let total = testCasesData.length;
+      let p0 = 0, p1 = 0, p2 = 0;
+      let pass = 0, fail = 0, blocked = 0, untested = 0;
+
+      testCasesData.forEach(tc => {
+        if (tc.priority === 'High') p0++;
+        else if (tc.priority === 'Medium') p1++;
+        else if (tc.priority === 'Low') p2++;
+
+        const res = localStorage.getItem('nacen_res_' + tc.id) || 'UNTESTED';
+        if (res === 'PASSED') pass++;
+        else if (res === 'FAILED') fail++;
+        else if (res === 'BLOCKED') blocked++;
+        else untested++;
+      });
+
+      document.getElementById('summary-total').textContent = total;
+      document.getElementById('summary-p0').textContent = p0;
+      document.getElementById('summary-p1').textContent = p1;
+      document.getElementById('summary-p2').textContent = p2;
+
+      document.getElementById('summary-pass').textContent = pass;
+      document.getElementById('summary-fail').textContent = fail;
+      document.getElementById('summary-untested').textContent = untested;
+
+      const pct = total > 0 ? Math.round((pass / total) * 100) : 0;
+      document.getElementById('summary-pass-pct').textContent = pct + '% hoàn thành';
+      document.getElementById('progress-text-pct').textContent = pct + '%';
+
+      document.getElementById('kpi-bar-pass').style.width = pct + '%';
+      document.getElementById('kpi-bar-fail').style.width = (total > 0 ? (fail / total) * 100 : 0) + '%';
+      document.getElementById('kpi-bar-blocked').style.width = (total > 0 ? (blocked / total) * 100 : 0) + '%';
+    }
+
+    // Lưu trạng thái Field Validation (Tab 3) vào LocalStorage
+    function onFvStatusChange(id, selectEl) {
+      const val = selectEl.value;
+      selectEl.setAttribute('data-val', val);
+      localStorage.setItem('nacen_fv_' + id, val);
+    }
+    function onFvNoteChange(id, inputEl) {
+      localStorage.setItem('nacen_fvn_' + id, inputEl.value);
+    }
+    function restoreFvState() {
+      for (let i = 1; i <= 16; i++) {
+        const id = 'FV-' + (i < 10 ? '0' + i : i);
+        const savedVal = localStorage.getItem('nacen_fv_' + id);
+        const select = document.querySelector(`select[onchange*="${id}"]`);
+        if (select && savedVal) {
+          select.value = savedVal;
+          select.setAttribute('data-val', savedVal);
+        }
+        const savedNote = localStorage.getItem('nacen_fvn_' + id);
+        const noteInput = document.getElementById('fv-note-' + id);
+        if (noteInput && savedNote) {
+          noteInput.value = savedNote;
+        }
+      }
+    }
+
+    // Bộ lọc theo Module
+    let currentModule = 'ALL';
+    let currentPriority = 'ALL';
+
+    function filterModule(mod, btn) {
+      currentModule = mod;
+      btn.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function filterPriority(pri, btn) {
+      currentPriority = pri;
+      btn.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function filterSearch() {
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('tcSearchInput').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.tc-data-row');
+
+      rows.forEach(r => {
+        const mod = r.getAttribute('data-module');
+        const pri = r.getAttribute('data-priority');
+        const text = r.innerText.toLowerCase();
+
+        let matchMod = (currentModule === 'ALL');
+        if (currentModule === 'REGISTER' && mod.includes('Đăng ký')) matchMod = true;
+        if (currentModule === 'LOGIN' && mod.includes('Đăng nhập')) matchMod = true;
+        if (currentModule === '10ROLES' && mod.includes('Role Gateway')) matchMod = true;
+        if (currentModule === 'UPGRADE' && mod.includes('Hàng đợi duyệt')) matchMod = true;
+        if (currentModule === 'SECURITY' && mod.includes('Bảo Mật')) matchMod = true;
+
+        let matchPri = (currentPriority === 'ALL' || pri === currentPriority);
+        let matchText = (!q || text.includes(q));
+
+        if (matchMod && matchPri && matchText) {
+          r.style.display = '';
+        } else {
+          r.style.display = 'none';
+        }
+      });
+    }
+
+    // Reset toàn bộ
+    function resetAllTCState() {
+      if (confirm('Bạn có chắc chắn muốn reset toàn bộ trạng thái test về CHƯA CHẠY?')) {
+        testCasesData.forEach(tc => {
+          localStorage.removeItem('nacen_res_' + tc.id);
+          localStorage.removeItem('nacen_rem_' + tc.id);
+          localStorage.removeItem('nacen_img_' + tc.id);
+        });
+        for (let i = 1; i <= 16; i++) {
+          const id = 'FV-' + (i < 10 ? '0' + i : i);
+          localStorage.removeItem('nacen_fv_' + id);
+          localStorage.removeItem('nacen_fvn_' + id);
+          const select = document.querySelector(`select[onchange*="${id}"]`);
+          if (select) {
+            select.value = 'UNTESTED';
+            select.setAttribute('data-val', 'UNTESTED');
+          }
+          const noteInput = document.getElementById('fv-note-' + id);
+          if (noteInput) noteInput.value = '';
+        }
+        renderTestCases(testCasesData);
+      }
+    }
+
+    // ĐÓNG GÓI & LƯU KẾT QUẢ KIỂM THỬ (SAVE TEST RESULTS)
+    function submitTestSession() {
+      const testerName = document.getElementById('globalTesterName').value.trim();
+      if (!testerName) {
+        alert('⚠️ Vui lòng nhập Họ và Tên Chuyên viên QC trước khi lưu kết quả!');
+        document.getElementById('globalTesterName').focus();
+        return;
+      }
+
+      const runId = document.getElementById('sessionRunId').textContent;
+      const testDate = document.getElementById('globalTestDate').value || new Date().toISOString().slice(0, 10);
+      const testEnv = document.getElementById('globalTestEnv').value;
+
+      // Gom toàn bộ kết quả 38 test cases
+      const testResults = testCasesData.map(tc => {
+        return {
+          id: tc.id,
+          module: tc.module,
+          function: tc.function,
+          title: tc.title,
+          priority: tc.priority,
+          status: localStorage.getItem('nacen_res_' + tc.id) || 'UNTESTED',
+          remark: localStorage.getItem('nacen_rem_' + tc.id) || '',
+          evidenceImage: localStorage.getItem('nacen_img_' + tc.id) || null,
+          tester: localStorage.getItem('nacen_tst_' + tc.id) || testerName
+        };
+      });
+
+      // Gom kết quả Field Validation
+      const fieldValResults = [];
+      for (let i = 1; i <= 16; i++) {
+        const id = 'FV-' + (i < 10 ? '0' + i : i);
+        fieldValResults.push({
+          id: id,
+          status: localStorage.getItem('nacen_fv_' + id) || 'UNTESTED',
+          note: localStorage.getItem('nacen_fvn_' + id) || ''
+        });
+      }
+
+      // Đếm kết quả
+      let passCount = testResults.filter(r => r.status === 'PASSED').length;
+      let failCount = testResults.filter(r => r.status === 'FAILED').length;
+      let untestedCount = testResults.filter(r => r.status === 'UNTESTED').length;
+
+      const sessionPayload = {
+        runId: runId,
+        testerName: testerName,
+        testDate: testDate,
+        environment: testEnv,
+        submittedAt: new Date().toISOString(),
+        summary: {
+          total: testCasesData.length,
+          passed: passCount,
+          failed: failCount,
+          untested: untestedCount,
+          passPercentage: Math.round((passCount / testCasesData.length) * 100) + '%'
+        },
+        testCases: testResults,
+        fieldValidation: fieldValResults
+      };
+
+      // Lưu vào danh sách các đợt đã nộp trong LocalStorage
+      let submittedList = [];
+      try {
+        submittedList = JSON.parse(localStorage.getItem('nacen_submitted_sessions') || '[]');
+      } catch (e) { submittedList = []; }
+
+      // Thêm phiên mới vào đầu danh sách
+      submittedList.unshift(sessionPayload);
+      localStorage.setItem('nacen_submitted_sessions', JSON.stringify(submittedList));
+
+      // Tự động tải file JSON về máy để QC gửi cho Quản trị dự án
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sessionPayload, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `PHIEU_KIEM_THU_${testerName.replace(/\s+/g, '_')}_${runId}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      alert(`✅ ĐÃ LƯU KẾT QUẢ & XUẤT FILE BÁO CÁO THÀNH CÔNG!\n\n` +
+            `• Mã đợt kiểm thử: ${runId}\n` +
+            `• Chuyên viên QC: ${testerName}\n` +
+            `• Kết quả: ${passCount} Đạt / ${failCount} Lỗi / ${untestedCount} Chưa chạy\n\n` +
+            `📁 File báo cáo "PHIEU_KIEM_THU_${testerName.replace(/\s+/g, '_')}_${runId}.json" đã được tải về máy của bạn.\n` +
+            `👉 BÀN GIAO: Chuyên viên QC gửi file JSON này cho Quản trị dự án (PM/Lead).\n` +
+            `👉 QUẢN TRỊ DỰ ÁN: Mở portal này, bấm nút "📂 Đối Soát Kết Quả Đã Lưu" rồi nạp file JSON là xem được 100% kết quả, ghi chú và ảnh chụp lỗi!`);
+    }
+
+    // Xuất file JSON tự chứa để gửi cho Lead
+    function exportSelfContainedReport() {
+      const testerName = document.getElementById('globalTesterName').value.trim() || 'QC_Specialist';
+      const runId = document.getElementById('sessionRunId').textContent;
+      
+      const sessionPayload = {
+        runId: runId,
+        testerName: testerName,
+        testDate: document.getElementById('globalTestDate').value || new Date().toISOString().slice(0, 10),
+        environment: document.getElementById('globalTestEnv').value,
+        exportedAt: new Date().toISOString(),
+        testCases: testCasesData.map(tc => ({
+          id: tc.id,
+          module: tc.module,
+          title: tc.title,
+          priority: tc.priority,
+          status: localStorage.getItem('nacen_res_' + tc.id) || 'UNTESTED',
+          remark: localStorage.getItem('nacen_rem_' + tc.id) || '',
+          evidenceImage: localStorage.getItem('nacen_img_' + tc.id) || null
+        }))
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sessionPayload, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `PHIEU_KIEM_THU_${testerName}_${runId}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // Modal Review Đối Soát
+    function openReviewModal() {
+      renderSubmittedSessionsList();
+      document.getElementById('reviewModal').style.display = 'flex';
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').style.display = 'none';
+    }
+
+    // Hiển thị danh sách các đợt đã nộp
+    function renderSubmittedSessionsList() {
+      const tbody = document.getElementById('submittedSessionsTable');
+      tbody.innerHTML = '';
+
+      let list = [];
+      try {
+        list = JSON.parse(localStorage.getItem('nacen_submitted_sessions') || '[]');
+      } catch (e) { list = []; }
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:16px;">Chưa có phiếu kiểm thử nào được nộp trên máy này.</td></tr>';
+        return;
+      }
+
+      list.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${s.runId}</strong></td>
+          <td><span style="font-weight:700; color:var(--brand-teal);">${s.testerName}</span></td>
+          <td>${s.testDate}</td>
+          <td><span style="font-size:0.8rem;">${s.environment}</span></td>
+          <td>
+            <span class="tag tag-pass">${s.summary.passed} Đạt</span>
+            ${s.summary.failed > 0 ? `<span class="tag tag-fail">${s.summary.failed} Lỗi</span>` : ''}
+          </td>
+          <td style="font-size:0.75rem; color:var(--text-muted);">${new Date(s.submittedAt).toLocaleString('vi-VN')}</td>
+          <td>
+            <button class="btn btn-outline" style="padding:4px 8px; font-size:0.75rem;" onclick="loadSessionIntoPortal(${idx})">Mở Xem</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Nạp một đợt kiểm thử vào màn hình để review
+    function loadSessionIntoPortal(idx) {
+      let list = JSON.parse(localStorage.getItem('nacen_submitted_sessions') || '[]');
+      const session = list[idx];
+      if (!session) return;
+
+      if (confirm(`Bạn có muốn nạp toàn bộ kết quả của Chuyên viên QC "${session.testerName}" (Đợt ${session.runId}) vào màn hình để thẩm định không?`)) {
+        // Nạp thông tin
+        document.getElementById('globalTesterName').value = session.testerName;
+        document.getElementById('globalTestDate').value = session.testDate;
+        document.getElementById('globalTestEnv').value = session.environment;
+        document.getElementById('sessionRunId').textContent = session.runId;
+
+        // Nạp kết quả test cases & ảnh
+        session.testCases.forEach(tc => {
+          localStorage.setItem('nacen_res_' + tc.id, tc.status);
+          localStorage.setItem('nacen_rem_' + tc.id, tc.remark || '');
+          if (tc.evidenceImage) {
+            localStorage.setItem('nacen_img_' + tc.id, tc.evidenceImage);
+          } else {
+            localStorage.removeItem('nacen_img_' + tc.id);
+          }
+        });
+
+        // Nạp Field validation
+        if (session.fieldValidation) {
+          session.fieldValidation.forEach(fv => {
+            localStorage.setItem('nacen_fv_' + fv.id, fv.status);
+            localStorage.setItem('nacen_fvn_' + fv.id, fv.note || '');
+          });
+        }
+
+        renderTestCases(testCasesData);
+        restoreFvState();
+        closeReviewModal();
+        alert(`Đã nạp xong đợt kiểm thử của "${session.testerName}". Bạn có thể xem ngay các kết quả và hình ảnh đính kèm trên bảng.`);
+      }
+    }
+
+    // Nhập file JSON do QC gửi
+    function importTestSessionFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const session = JSON.parse(e.target.result);
+          if (!session.testCases) throw new Error('File không đúng cấu trúc phiếu kiểm thử.');
+
+          let list = JSON.parse(localStorage.getItem('nacen_submitted_sessions') || '[]');
+          list.unshift(session);
+          localStorage.setItem('nacen_submitted_sessions', JSON.stringify(list));
+
+          renderSubmittedSessionsList();
+          alert(`Đã nhập thành công phiếu kiểm thử của "${session.testerName}". Bấm nút "Mở Xem" để review chi tiết.`);
+        } catch (err) {
+          alert('Lỗi khi đọc file JSON: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Lưu biên bản thẩm định của Reviewer
+    function saveReviewAudit() {
+      const reviewer = document.getElementById('reviewerName').value.trim();
+      if (!reviewer) {
+        alert('Vui lòng nhập họ tên Người duyệt (PO / Lead QC)!');
+        return;
+      }
+      const decision = document.getElementById('reviewDecision').value;
+      const comments = document.getElementById('reviewComments').value.trim();
+      const runId = document.getElementById('sessionRunId').textContent;
+
+      const auditRecord = {
+        runId: runId,
+        reviewer: reviewer,
+        decision: decision,
+        comments: comments,
+        signedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('nacen_gate4_audit_' + runId, JSON.stringify(auditRecord));
+      alert(`✅ ĐÃ LƯU BIÊN BẢN PHÊ DUYỆT QUALITY GATE 4!\n\n- Người duyệt: ${reviewer}\n- Quyết định: ${decision}\n- Ghi chú: ${comments || '(Không)'}\n\nBiên bản đã được lưu vết an toàn vào hệ thống kiểm toán.`);
+      closeReviewModal();
+    }
+
+    // Modal Xuất Defect Report
+    function openDefectModal() {
+      const failed = [];
+      testCasesData.forEach(tc => {
+        const res = localStorage.getItem('nacen_res_' + tc.id);
+        if (res === 'FAILED') {
+          const rem = localStorage.getItem('nacen_rem_' + tc.id) || 'Chưa có mô tả chi tiết';
+          const hasImg = localStorage.getItem('nacen_img_' + tc.id) ? 'Có đính kèm ảnh bằng chứng' : 'Chưa đính kèm ảnh';
+          failed.push({ ...tc, remark: rem, imgStatus: hasImg });
+        }
+      });
+
+      let text = '';
+      if (failed.length === 0) {
+        text = '🎉 TUYỆT VỜI: Hiện tại chưa có ca kiểm thử nào bị FAILED!';
+      } else {
+        const tester = document.getElementById('globalTesterName').value || 'QC';
+        text = `BÁO CÁO DEFECT PHÁT HIỆN (${failed.length} LỖI CẦN KHẮC PHỤC)\nDự án: NacenTech • Phân hệ IAM & RBAC 10 Roles\nNgười thực hiện: ${tester} • Ngày: ${new Date().toLocaleDateString('vi-VN')}\n--------------------------------------------------\n\n`;
+        failed.forEach((f, i) => {
+          text += `[LỖI #${i+1}] ${f.id} - ${f.title}\n`;
+          text += `- Phân hệ: ${f.module} / ${f.function}\n`;
+          text += `- Mức độ ưu tiên: ${f.priority}\n`;
+          text += `- Các bước tái hiện:\n${f.steps}\n`;
+          text += `- Dữ liệu kiểm thử: ${f.data}\n`;
+          text += `- Kết quả kỳ vọng: ${f.expected}\n`;
+          text += `- Thực tế bị lỗi (Remark): ${f.remark}\n`;
+          text += `- Bằng chứng màn hình: ${f.imgStatus}\n`;
+          text += `--------------------------------------------------\n`;
+        });
+      }
+
+      document.getElementById('defectSummaryContent').textContent = text;
+      document.getElementById('defectModal').style.display = 'flex';
+    }
+
+    function closeDefectModal() {
+      document.getElementById('defectModal').style.display = 'none';
+    }
+
+    function copyDefectText() {
+      const text = document.getElementById('defectSummaryContent').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Đã sao chép nội dung báo cáo Defect vào bộ nhớ tạm!');
+      });
+    }
+
+    // Khởi động
+    window.addEventListener('DOMContentLoaded', () => {
+      // Khôi phục thông tin phiên
+      const savedTester = localStorage.getItem('nacen_session_tester') || '';
+      const savedDate = localStorage.getItem('nacen_session_date') || new Date().toISOString().slice(0, 10);
+      const savedEnv = localStorage.getItem('nacen_session_env') || 'Localhost (http://localhost:3000)';
+
+      document.getElementById('globalTesterName').value = savedTester;
+      document.getElementById('globalTestDate').value = savedDate;
+      document.getElementById('globalTestEnv').value = savedEnv;
+      if (savedTester) document.getElementById('metaTesterName').textContent = savedTester;
+
+      renderTestCases(testCasesData);
+      restoreFvState();
+    });
+  </script>
+</body>
+</html>
