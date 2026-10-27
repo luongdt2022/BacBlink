@@ -72,7 +72,13 @@ def main():
         page.fill("#tt17-contact-person", "Nguyễn Văn Tuấn (Giám đốc Kỹ thuật)")
         page.fill("#tt17-contact-email", "tuan.nv@nacentech.test")
         page.fill("#tt17-contact-phone", "0988776655")
-        page.select_option("#tt17-scope-id", "Hà Nội")
+        scope_el = page.locator("#tt17-scope-id")
+        tag_name = scope_el.evaluate("el => el.tagName.toLowerCase()")
+        if tag_name == "select":
+            scope_el.select_option("Hà Nội")
+        else:
+            scope_el.fill("Hà Nội")
+            page.locator("li:has-text('Hà Nội')").first.click()
         page.fill("#tt17-company-address", "Khu Công nghệ cao Hòa Lạc, Thạch Thất, Hà Nội")
         print("  ✅ Đã điền đầy đủ thông tin pháp nhân và người đại diện.")
 
