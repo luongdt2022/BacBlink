@@ -401,41 +401,39 @@ export default function AssessmentWizardPage() {
         )}
 
         {/* Top Header Card */}
-        <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm mb-6">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 shadow-sm mb-6">
+          {/* Top Utility Bar: Navigation & Action Buttons */}
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+            {/* Left: Breadcrumb & Standard Pill */}
+            <div className="flex flex-wrap items-center gap-2.5">
               <Link
                 href="/assessments/tt17"
-                className="text-xs font-semibold text-brand-700 hover:underline flex items-center gap-1 mb-2"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-brand-700 dark:text-slate-400 dark:hover:text-cyan-400 transition"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                Quay lại Dashboard Lịch Sử
+                <ChevronLeft className="w-4 h-4" />
+                <span>Quay lại Dashboard Lịch Sử</span>
               </Link>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold text-xs border border-emerald-200/90 dark:border-emerald-800 mb-2">
-                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Phiếu Thu Thập Số Liệu & Tự Đánh Giá Doanh Nghiệp (Thông tư 17/2019/TT-BKHCN)</span>
+              <span className="text-slate-300 dark:text-slate-700">·</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-semibold text-xs border border-emerald-200/80 dark:border-emerald-800">
+                <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>Thông tư 17/2019/TT-BKHCN · 26 Tiêu Chí Đánh Giá</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                Kê Khai Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-3xl leading-relaxed">
-                Biểu mẫu thu thập số liệu thực tế từ Báo cáo tài chính & hiện trạng nhà máy. Hệ thống tự động đối soát với định mức ngành (C.10 - C.32), tự động tính toán 26 tiêu chí và cấp tài khoản Doanh nghiệp sau khi hoàn tất.
-              </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 shrink-0">
+            {/* Right: Currency Unit Selector & Action Tools */}
+            <div className="flex flex-wrap items-center gap-2">
               {/* Unit Selector Toggle */}
-              <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center gap-1 border border-slate-200 dark:border-slate-700 shadow-inner">
-                <span className="text-xs font-bold text-slate-500 px-2 flex items-center gap-1">
+              <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-lg flex items-center gap-0.5 border border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-bold text-slate-500 px-1.5 flex items-center gap-1">
                   <Coins className="w-3 h-3 text-amber-500" /> Đơn vị:
                 </span>
                 <button
                   type="button"
                   onClick={() => setMoneyUnit("TY")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
+                  className={`px-2 py-0.5 text-xs font-bold rounded-md transition ${
                     moneyUnit === "TY"
-                      ? "bg-brand-700 text-white shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                      ? "bg-brand-700 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                   title="Nhập số tiền theo Tỷ VNĐ (khuyên dùng, ví dụ: 60)"
                 >
@@ -444,10 +442,10 @@ export default function AssessmentWizardPage() {
                 <button
                   type="button"
                   onClick={() => setMoneyUnit("TRIEU")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
+                  className={`px-2 py-0.5 text-xs font-bold rounded-md transition ${
                     moneyUnit === "TRIEU"
-                      ? "bg-brand-700 text-white shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                      ? "bg-brand-700 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                   title="Nhập số tiền theo Triệu VNĐ"
                 >
@@ -456,10 +454,10 @@ export default function AssessmentWizardPage() {
                 <button
                   type="button"
                   onClick={() => setMoneyUnit("VND")}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
+                  className={`px-2 py-0.5 text-xs font-bold rounded-md transition ${
                     moneyUnit === "VND"
-                      ? "bg-brand-700 text-white shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                      ? "bg-brand-700 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                   }`}
                   title="Nhập số tiền VNĐ đầy đủ"
                 >
@@ -467,49 +465,72 @@ export default function AssessmentWizardPage() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSurvey(INITIAL_SURVEY_DATA);
-                    setIndustryCode("C.10");
-                    showToast("Đã xóa trắng form về trạng thái ban đầu.", "success");
-                  }}
-                  className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition"
-                  title="Xóa trắng mọi trường nhập liệu"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Xóa Trắng
-                </button>
+              {/* Reset Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSurvey(INITIAL_SURVEY_DATA);
+                  setIndustryCode("C.10");
+                  showToast("Đã xóa trắng form về trạng thái ban đầu.", "success");
+                }}
+                className="h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1 transition"
+                title="Xóa trắng mọi trường nhập liệu"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                <span>Xóa Trắng</span>
+              </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSurvey(SAMPLE_BENCHMARK_DAIHUNG);
-                    setIndustryCode("C.10");
-                    setMoneyUnit("TY");
-                    showToast("Đã nạp bộ dữ liệu mẫu chuẩn TT17: CÔNG TY TNHH ĐẠI HƯNG (43 điểm, Kđb=0.42, Trung bình)!", "success");
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
-                  title="Nạp dữ liệu mẫu benchmark kiểm chuẩn TT17"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  Mẫu DN Đại Hưng (43đ)
-                </button>
+              {/* Benchmark Sample Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSurvey(SAMPLE_BENCHMARK_DAIHUNG);
+                  setIndustryCode("C.10");
+                  setMoneyUnit("TY");
+                  showToast("Đã nạp bộ dữ liệu mẫu chuẩn TT17: CÔNG TY TNHH ĐẠI HƯNG (43 điểm, Kđb=0.42, Trung bình)!", "success");
+                }}
+                className="h-8 px-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-xs font-bold flex items-center gap-1 transition shadow-xs"
+                title="Nạp dữ liệu mẫu benchmark kiểm chuẩn TT17"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>Mẫu Đại Hưng (43đ)</span>
+              </button>
 
-                <button
-                  onClick={handleSaveDraft}
-                  disabled={saving}
-                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-2 shadow-sm transition"
-                >
-                  <Save className="w-4 h-4" />
-                  Lưu Nháp
-                </button>
-                <AppButton variant="primary" onClick={handleSubmit} disabled={saving} className="px-5 py-2.5 text-xs font-bold shadow-md">
-                  <Send className="w-4 h-4 mr-2" />
-                  Hoàn Tất & Nộp Hồ Sơ
-                </AppButton>
-              </div>
+              {/* Save Draft Button */}
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={saving}
+                className="h-8 px-3 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold flex items-center gap-1.5 transition disabled:opacity-50"
+              >
+                <Save className="w-3.5 h-3.5 text-slate-500" />
+                <span>Lưu Nháp</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom Title & Action Section: Button cùng hàng dịch sang bên phải ngoài cùng */}
+          <div className="pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="max-w-3xl">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Kê Khai Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
+                Biểu mẫu thu thập số liệu thực tế từ Báo cáo tài chính & hiện trạng nhà máy. Hệ thống tự động đối soát với định mức ngành (C.10 - C.32), tự động tính toán 26 tiêu chí và cấp tài khoản Doanh nghiệp sau khi hoàn tất.
+              </p>
+            </div>
+
+            {/* Final Submit Button - dịch bên phải ngoài cùng */}
+            <div className="shrink-0 self-start md:self-center">
+              <AppButton
+                variant="primary"
+                onClick={handleSubmit}
+                disabled={saving}
+                className="h-10 px-5 text-xs sm:text-sm font-bold shadow-sm hover:shadow transition flex items-center"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                <span>Hoàn Tất & Nộp Hồ Sơ</span>
+              </AppButton>
             </div>
           </div>
         </div>
