@@ -593,4 +593,216 @@ Gỡ bỏ hoàn toàn việc import và render component `<AdminNav />` trên 6 
 - Xóa bỏ từ khóa "Online CRUD" tại cây tổ chức `/admin/org-tree` $\rightarrow$ Đổi thành *"Quản Trị Cây Thư Mục & Phân Cấp Hành Chính 34 Tỉnh/Thành"*.
 - Xóa bỏ triệt để các cụm từ "Tổng hành dinh" $\rightarrow$ Thống nhất danh xưng nghiệp vụ là *"Trung Tâm Quản Trị Hệ Thống"*.
 
+---
+
+## 6. Kế Hoạch Kỹ Thuật Delta v6 (CR-2026-022) — Tinh Chỉnh UI/UX 7 Màn Hình & Hồi Sinh Audit Logs / System Config
+
+### 6.1. Thiết Kế Tầng Dữ Liệu & Hợp Đồng API Đợt 1 (Data & API Contracts)
+
+#### A. DTOs & API Contract Tra Cứu Nhật Ký Kiểm Toán (`/admin/audit-logs`)
+```typescript
+export interface AuditLogItem {
+  id: string;
+  approvalId?: string;
+  actorId: string;
+  actorName: string;
+  actorRole: string;
+  action: "SUBMITTED" | "APPROVED" | "REJECTED" | "CHANGES_REQUESTED" | "OVERRIDE_APPROVE" | "REVOKE";
+  provinceCode?: string;
+  provinceName?: string;
+  requestType: "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "FACILITY";
+  targetTitle: string;
+  reason?: string;
+  ipAddress?: string;
+  createdAt: string;
+}
+
+export interface AuditLogQueryParams {
+  page?: number;
+  limit?: number;
+  action?: string;
+  searchTerm?: string;
+  dateRange?: "all" | "today" | "7days" | "30days";
+}
+```
+- **Backend Endpoint**: `GET /api/v1/governance/audit-logs` hoặc fallback đọc từ `approval_audit_logs`.
+- **Client Cache**: Hỗ trợ xuất dữ liệu ra định dạng CSV chuẩn UTF-8 có BOM (hỗ trợ Excel tiếng Việt không lỗi font).
+
+#### B. DTOs & Lưu Trữ Cấu Hình Hệ Thống (`/admin/system-config`)
+```typescript
+export interface SystemConfigData {
+  slaBaseHours: number; // 48, 72, 96
+  officeHoursStart: string; // "08:00"
+  officeHoursEnd: string; // "17:00"
+  workingDays: string[]; // ["MON", "TUE", "WED", "THU", "FRI"]
+  slaMonitorScanMinutes: number; // 15, 30, 60
+  emailAlertEnabled: boolean;
+  smsAlertEnabled: boolean;
+  overrideMinReasonChars: number; // 20
+  optimisticLockingEnabled: boolean;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+```
+- **Local Persistence & Sync**: Lưu vào `localStorage` key `nacentwin_system_config` và đồng bộ qua API khi có backend endpoint.
+
+#### C. Universal Label Resolver Engine (`src/lib/label-resolver.ts`)
+```typescript
+export function resolveProvinceName(code?: string | null): string;
+export function resolveSectorName(code?: string | null, sectorDict?: Record<string, string>): string;
+export function resolveRequestTypeLabel(type?: string | null): string;
+export function resolveRoleName(role?: string | null): string;
+export function resolveActionBadge(action?: string | null): { label: string; colorClass: string };
+```
+
+### 6.2. Kế Hoạch Triển Khai Mã Nguồn Đợt 1
+1. **`src/lib/label-resolver.ts`**: Tạo module dùng chung để phân giải 100% mã sang tên tiếng Việt tường minh.
+2. **`src/app/admin/audit-logs/page.tsx`**: Viết lại toàn bộ component, thay thế khối placeholder tĩnh bằng Data Table chuẩn 5 UX states, filter, pagination và export CSV.
+3. **`src/app/admin/system-config/page.tsx`**: Viết lại component, thay card tĩnh bằng Form cấu hình tương tác đầy đủ input, dropdown, toggle và nút Lưu với validation.
+4. **`src/app/admin/page.tsx`**: Sửa nút chết `Chi tiết chính sách` trỏ về `/admin/roles`, chuẩn hóa nhãn Tầng 0.
+5. **Kiểm thử**: Viết test unit `audit-logs/page.test.tsx` và `system-config/page.test.tsx`, đảm bảo 100% Green.
+
+---
+
+## 9. Kế Hoạch Kỹ Thuật Delta V6: Chuẩn Hóa Toàn Diện 7 Màn Hình Cổng Công Vụ Cấp Sở (`/gov/*`)
+
+### 9.1. Kiến Trúc Thành Phần Tái Sử Dụng (Shared Gov Components)
+
+#### 1. Module Giải Nghĩa Nhãn `GovLabelResolver` (`src/lib/gov-label-resolver.ts`)
+Mở rộng từ `label-resolver.ts` để bao phủ toàn bộ các mã kỹ thuật xuất hiện trong phân hệ công vụ:
+- `resolveSectorName(code: string, customDict?: Record<string, string>): string`
+- `resolveProvinceName(code: string): string` (Tra cứu từ `PROVINCES_34`)
+- `resolveTrlInfo(level: number | null | undefined): { label: string; desc: string; color: string }`
+- `resolveIpStatusInfo(status: string | null | undefined): { label: string; desc: string; color: string }`
+- `resolveTt17Classification(classification: string | null | undefined): { label: string; badgeClass: string }`
+- `resolveTniUrgency(urgency: string | null | undefined): { label: string; badgeClass: string }`
+- `resolveRoleDisplayName(role: string | null | undefined): string`
+
+#### 2. Component `GovPageHeader` (`src/components/gov/gov-page-header.tsx`)
+```typescript
+export interface GovBreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+export interface GovPageHeaderProps {
+  breadcrumbs: GovBreadcrumbItem[];
+  title: string;
+  subtitle?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  scopeCode?: string;
+  slaText?: string; // Mặc định: "SLA ≤ 48h"
+  makerCheckerText?: string; // Mặc định: "Maker-Checker 2 Cấp"
+  actions?: React.ReactNode;
+  className?: string;
+}
+```
+
+### 9.2. Kế Hoạch Triển Khai 3 Đợt Không Tràn Context
+
+#### Đợt 1: Xây Dựng Hạ Tầng Shared & Khóa Cứng Ranh Giới
+1. Tạo `src/lib/gov-label-resolver.ts` với đầy đủ test unit `src/lib/gov-label-resolver.test.ts`.
+2. Tạo `src/components/gov/gov-page-header.tsx` với test unit `src/components/gov/gov-page-header.test.tsx`.
+3. Kiểm tra bảo đảm tính tương thích, 100% test pass.
+
+#### Đợt 2: Nâng Cấp Nhóm Thẩm Định & Cấp Phép (Màn hình 1, 2, 3)
+1. **Màn hình 1 (`src/app/gov/page.tsx`)**:
+   - Tích hợp `GovPageHeader` và `GovLabelResolver`.
+   - Giải nghĩa toàn bộ mã ngành, mã TRL, mã SHTT trên cả 5 tabs.
+   - Kiểm tra ràng buộc lý do Từ chối/Yêu cầu bổ sung $\ge 10$ ký tự sau khi `.trim()`.
+2. **Màn hình 2 (`src/app/gov/approvals/enterprises/page.tsx`)**:
+   - Gỡ bỏ thẻ `<main>` lồng nhau gây padding kép; tích hợp `GovPageHeader`.
+   - Hiển thị tiêu chí xác thực ĐMST (Mã số thuế, vốn, bằng độc quyền sáng chế).
+   - Ràng buộc lý do từ chối $\ge 10$ ký tự.
+3. **Màn hình 3 (`src/app/gov/assessments/tt17/page.tsx`)**:
+   - Xóa bỏ triệt để hardcode `scopeId = "HP"`, lấy `user.scopeId`.
+   - Nạp tên 23 ngành chế biến chế tạo C.10 $\rightarrow$ C.32.
+   - Thêm bộ lọc phân loại công nghệ (Tiên tiến, Trung bình...) và tối ưu Drawer 26 tiêu chí.
+
+#### Đợt 3: Nâng Cấp Nhóm Giám Sát, Nhân Sự & Kiểm Thử Toàn Trình (Màn hình 4, 5, 6, 7)
+1. **Màn hình 4 (`src/app/gov/opportunities/page.tsx`)**:
+   - Tích hợp `GovPageHeader`, giữ cán bộ trong không gian công vụ.
+   - Bổ sung bộ lọc cơ hội ách tắc quá hạn SLA 48h.
+2. **Màn hình 5 (`src/app/gov/demands/page.tsx`)**:
+   - **Xóa bỏ triệt để mock**: Xóa UUID chuyên gia tĩnh `01a125a3-...`.
+   - Tạo Modal chọn chuyên gia từ danh bạ chuyên gia thật của CSDL địa bàn.
+   - Bổ sung bộ lọc theo chỉ số TNI (Cấp bách / Chiến lược) và debounce nút bấm.
+3. **Màn hình 6 (`src/app/gov/settings/staff/page.tsx`)**:
+   - Bổ sung vai trò `PROVINCE_OFFICER` (Maker) vào dropdown bổ nhiệm cán bộ bên cạnh `PROVINCIAL_ADMIN` (Checker).
+   - Validate định dạng email và liên kết CSDL thật.
+4. **Màn hình 7 (`src/app/gov/approvals/page.tsx`)**:
+   - Chuẩn hóa Hub chuyển hướng đồng bộ với `/gov`.
+5. **Kiểm thử toàn diện**: Viết unit tests cho cả 7 màn hình, kiểm thử 5 UX states, chạy build Next.js 66 routes.
+
+---
+
+## 10. Plan Delta v10 (PO-DEC-20261026-GOV-TABLE-UX): Tối Ưu Bảng Thẩm Định Địa Bàn
+
+### 10.1. Mục Tiêu Kỹ Thuật
+1. **Chuẩn Hóa Mã Hồ Sơ Công Vụ**:
+   - Bổ sung hàm `formatGovRecordCode(id, type, scopeCode)` tại `src/lib/gov-label-resolver.ts`.
+   - Sinh mã định danh công vụ chuẩn mực: `CB-HN-C25347` (Chào bán), `CG-HN-A109F2` (Chuyên gia), `NC-HN-88E29E` (Nhu cầu), `DN-HN-825CDC` (Doanh nghiệp).
+   - Tích hợp nút Copy mã với phản hồi trực quan (tooltip/icon check) và hiển thị UUID gốc khi hover.
+2. **Xem Chi Tiết Đầy Đủ Trước Khi Phê Duyệt**:
+   - Biến cột "Tên Sản Phẩm / Công Nghệ" thành liên kết/nút bấm mở modal thẩm định với đầy đủ thông số.
+   - Bổ sung nút liên kết trực tiếp mở trang chi tiết sản phẩm trên sàn quốc gia (`/chao-ban-cong-nghe/[id]`) trong tab mới.
+   - Đổi nút thao tác tại bảng thành "Xem Chi Tiết & Duyệt" để cán bộ nắm bắt toàn diện dữ liệu trước khi ký duyệt.
+3. **Sắp Xếp & Lọc Tương Tác Trực Tiếp Trên Header Bảng (Interactive Column Headers)**:
+   - Thêm trạng thái `sortConfig` (`key`, `direction`: `asc` | `desc` | `null`) cho các cột: Mã hồ sơ, Đơn vị nộp, Tên sản phẩm, Ngày nộp.
+   - Thêm trạng thái `filterConfig` (`sector`, `status`) với dropdown popover chọn nhanh danh mục lĩnh vực và trạng thái xử lý.
+   - Hiển thị thanh thông báo trạng thái lọc (Active Filter Bar) và nút "Xóa bộ lọc (Reset)".
+
+---
+
+## 11. Plan Delta v7 (CR-2026-023): Tái Thiết Kế Toàn Diện Màn Hình Phê Duyệt Tập Trung & Giám Sát SLA (`/admin/approvals`)
+
+### 11.1. Kiến Trúc Bố Cục Full-Width Master Grid & Slide-over Drawer
+- **Vấn đề cũ**: Màn hình bị chia cứng `lg:col-span-2` và `lg:col-span-1` khiến bảng danh sách bị dồn cục, các cột bị cắt xén, thiếu không gian cho cột Thời gian và Thao tác.
+- **Thiết kế mới**:
+  - Bảng danh sách chiếm **100% chiều rộng** (`w-full`), hiển thị rộng rãi, thoáng đãng.
+  - Cột 1: Mã HS `#058915` (click copy full UUID) + Capsule Badge loại hồ sơ ngang 1 dòng (`whitespace-nowrap inline-flex items-center gap-1.5 h-6 px-2.5 py-0.5 rounded-full font-bold text-xs`).
+  - Cột 2: Chủ thể & Đơn vị (tên đậm + đơn vị mờ, `truncate max-w-[240px]`).
+  - Cột 3: Địa phương Sở KH&CN (hiển thị rõ tên tỉnh, ví dụ: `Sở KH&CN TP. Hà Nội`).
+  - Cột 4: Ngày gửi & Trạng thái SLA (hiển thị đầy đủ ngày giờ và badge quá hạn đỏ/vàng).
+  - Cột 5: Nút "Thẩm định" mở Slide-over Drawer.
+  - **Slide-over Drawer**: Khi click chọn 1 hồ sơ, Drawer trượt từ mép phải ra màn hình (`fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl`), có nút đóng `X` và nền mờ `backdrop-blur-xs`. Người dùng có thể đối soát hồ sơ và duyệt/từ chối ngay trên Drawer mà không làm mất dấu bảng danh sách.
+
+### 11.2. Unified Filter Toolbar (Gộp Nhất Thể & Xóa Combobox Trùng Lặp)
+- Gộp 2 dải tab thành **1 thanh Segmented Toolbar duy nhất**:
+  - Nhóm tính chất: `Tất cả hàng đợi (count)` | `Cảnh báo SLA (count)` | `Can thiệp Tầng 0 (count)`.
+  - Vạch ngăn cách dọc (`h-6 w-px bg-slate-300 dark:bg-slate-700 mx-2`).
+  - Nhóm danh mục: `Tất cả` | `Chào bán CN` | `Nhu cầu CN` | `Chuyên gia KH&CN` | `Doanh nghiệp ĐMST` | `Tài khoản`.
+- Hàng điều khiển phụ: Ô tìm kiếm đa năng tích hợp icon Search + Dropdown chọn 34 Tỉnh/Thành phố. Xóa bỏ hoàn toàn combobox "Loại hồ sơ" và "Trạng thái SLA" trùng lặp.
+
+### 11.3. Cấu Trúc Dữ Liệu & Payload Thẩm Định Doanh Nghiệp ĐMST (`FACILITY` / `ENTERPRISE`)
+- **Bóc tách từ `payloadJson`**:
+  ```typescript
+  interface EnterpriseApprovalPayload {
+    organizationName: string;      // Tên doanh nghiệp
+    taxCode: string;               // Mã số thuế
+    representativeName: string;    // Người đại diện pháp luật
+    charterCapital: string;        // Vốn điều lệ
+    innovationSector: string;      // Lĩnh vực ĐMST
+    enterpriseCertNo?: string;     // Số giấy chứng nhận DN KH&CN / ĐMST
+    licenseDocUrl?: string;        // Link file PDF Giấy phép ĐKKD
+  }
+  ```
+- Trên Drawer thẩm định: Hiển thị mục kiểm tra tính pháp lý của Mã số thuế và liên kết tải/mở Giấy chứng nhận ĐMST.
+
+### 11.4. Universal Label Resolver & Thuật Ngữ Chuẩn Hóa
+- Cập nhật `src/lib/label-resolver.ts`:
+  - `SHOP`: `"Chào Bán Công Nghệ"`
+  - `DEMAND`: `"Nhu Cầu Công Nghệ"`
+  - `EXPERT`: `"Chuyên Gia KH&CN"`
+  - `FACILITY` / `ENTERPRISE`: `"Doanh Nghiệp ĐMST"`
+  - `ACCOUNT`: `"Tài Khoản Tổ Chức"`
+- Format mã hồ sơ rút gọn `#HS-xxxxxx` (lấy 6 ký tự hex cuối hoặc mã số định danh).
+
+### 11.5. Phân Kỳ Thi Công 3 Waves Nguyên Tử Không Tràn Context
+- **Wave 1**: Cập nhật từ điển `label-resolver.ts` & format mã hồ sơ rút gọn.
+- **Wave 2**: Tái cấu trúc component `approvals/page.tsx` (Unified Toolbar, Full-width Grid, Capsule Badge, Enterprise Slide-over Drawer).
+- **Wave 3**: Cập nhật bộ unit test `approvals/page.test.tsx` và `qc-edge-cases.test.tsx`, chạy toàn bộ test suite đạt 100% Green.
+
+
+
 

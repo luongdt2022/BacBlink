@@ -3,7 +3,7 @@
 **Feature Branch**: `admin-governance-rbac`  
 **Feature Directory**: `specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`  
 **Created**: 25/09/2026  
-**Status**: Ready for Implementation  
+**Status**: Shipped (2026-10-26 — Delta v9: Chuẩn Hóa Toàn Diện 7 Màn Hình Cổng Công Vụ Cấp Sở /gov/*)  
 **Ánh Xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/README.md)  
 **Tài Liệu Kế Thừa & Nâng Cấp**: Nâng cấp toàn diện từ `SRS-001-CORE-IAM` lên chuẩn 10 Roles & 3D Scoped RBAC  
 **Nguồn Dữ Liệu Gốc**: Sheet `Admin` (6 dòng, 2 cột) trong Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`  
@@ -389,3 +389,278 @@ Trong phiên bản Delta v4, hệ thống đã thiết lập Trung tâm Phê duy
 - **AC-DELTA-V5-03**: Nhấp vào menu Sidebar *"Cảnh báo Quá hạn SLA Sở Tỉnh"* (`/admin/approvals?tab=sla`) hoặc *"Phê duyệt Vượt cấp / Can thiệp"* (`/admin/approvals?tab=override`), trang lập tức chuyển sang đúng Tab tương ứng và hiển thị danh sách hồ sơ tương thích mà không cần tải lại trang.
 - **AC-DELTA-V5-04**: Dropdown Địa phương tại `/admin/approvals` và `/admin/org-tree` hiển thị chuẩn danh mục 34 Tỉnh/Thành phố trọng điểm ĐMST theo `BR-ADMIN-34PROV`.
 - **AC-DELTA-V5-05**: Toàn bộ tiêu đề, nhãn phụ, thống kê KPI trên giao diện hiển thị chuẩn xác cụm từ *"34 Tỉnh/Thành phố trọng điểm ĐMST"*, không còn tàn dư của cụm từ "63 tỉnh" hoặc "Tổng hành dinh".
+
+---
+
+## 11. Đặc Tả Delta v6 (CR-2026-022) — Tinh Chỉnh UI/UX Toàn Diện 7 Màn Hình Admin & Hồi Sinh Audit Logs / System Config [Delta v6]
+
+**Căn cứ thay đổi**: Quyết định PO `CR-2026-022` (Kế hoạch nâng cấp Delta v6 theo Party Mode) & Basic Design (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/KE_HOACH_NANG_CAP_DELTA_V6_ADMIN_FULL.md`).
+
+### 1. Bối Cảnh & Mục Tiêu
+Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản Trị Hệ Thống Tối Cao (Admin Tầng 0), phát hiện 2 màn hình tĩnh placeholder (Audit Logs, System Config) và tình trạng dữ liệu hiển thị mã thô (Code/ID) thay vì tên tiếng Việt tường minh. Delta v6 quy chuẩn hóa và giải quyết dứt điểm các vấn đề trên theo 3 đợt.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung Đợt 1 (Functional Requirements Wave 1)
+
+#### REQ-ADM-06: Bảng Nhật Ký Kiểm Toán Tương Tác Sống (Interactive Audit Logs Data Table)
+- **Vị trí**: `/admin/audit-logs`.
+- **Chức năng**:
+  - Xóa bỏ hoàn toàn khối tĩnh chỉ có icon và thông báo.
+  - Thay thế bằng Bảng dữ liệu kiểm toán Cấp 3 (`approval_audit_logs`) hiển thị các trường:
+    1. `Thời gian` (Định dạng ngày giờ Việt Nam: `DD/MM/YYYY HH:mm:ss`).
+    2. `Tác nhân` (Tên cán bộ/admin + vai trò).
+    3. `Địa bàn / Phạm vi` (Tên tỉnh thành phân giải từ mã tỉnh).
+    4. `Hành vi thao tác` (Badge màu phân loại: `Phê duyệt`, `Yêu cầu bổ sung`, `Từ chối`, `Can thiệp Vượt cấp Tầng 0`).
+    5. `Hồ sơ liên quan` (Tên hồ sơ / tên chủ thể).
+    6. `Lý do / Giải trình` (Hiển thị văn bản giải trình kiểm toán).
+    7. `Địa chỉ IP / Thiết bị` (Ghi nhận vết truy cập mạng an toàn).
+  - **Bộ lọc & Tìm kiếm**:
+    - Tìm kiếm theo từ khóa (tên cán bộ, tên hồ sơ, lý do).
+    - Lọc theo Hành vi (`Tất cả`, `Phê duyệt`, `Từ chối`, `Vượt cấp`).
+    - Lọc theo Khoảng thời gian (`Tất cả`, `Hôm nay`, `7 ngày qua`, `30 ngày qua`).
+  - **Phân trang & Xuất dữ liệu**:
+    - Phân trang 10 dòng/trang.
+    - Nút `[Xuất file CSV / Excel]` phục vụ thanh tra an toàn thông tin Cấp 3.
+  - **5 UX States**: Áp dụng qua component `<Async>` (Loading Skeleton, Empty State, Error Alert với Refetch, Success Table, Updating Dimmer).
+
+#### REQ-ADM-07: Form Cấu Hình Tham Số & SLA Hệ Thống (Interactive System Config Form)
+- **Vị trí**: `/admin/system-config`.
+- **Chức năng**:
+  - Xóa bỏ card text hardcode tĩnh.
+  - Xây dựng Form cấu hình tham số tương tác thực tế:
+    1. `Ngưỡng SLA Thẩm Định Cấp Sở`: Cho phép chọn các mức chuẩn `48 giờ`, `72 giờ (Mặc định)`, `96 giờ`.
+    2. `Khung Giờ Hành Chính`: Cấu hình giờ bắt đầu (`08:00`), giờ kết thúc (`17:00`), áp dụng Thứ 2 - Thứ 6.
+    3. `Chu Kỳ Quét SLA Monitor`: Lựa chọn tần suất quét cảnh báo (`15 phút / lần`, `30 phút / lần`, `60 phút / lần`).
+    4. `Kênh Cảnh Báo Khẩn`: Switch toggle Bật/Tắt gửi thông báo Email tự động cho Lãnh đạo Sở khi hồ sơ chạm mốc 80% SLA.
+    5. `Chính Sách Admin Override`: Hiển thị quy định độ dài tối thiểu lý do can thiệp ($\ge 20$ ký tự) và cơ chế Optimistic Locking.
+  - **Nút Thao Tác & Feedback**:
+    - Nút `[Lưu Cấu Hình Tham Số]`.
+    - Kiểm tra thẩm quyền: Chỉ tài khoản `SUPER_ADMIN` mới có quyền lưu thay đổi.
+    - Toast feedback thành công và cơ chế lưu trữ bền vững (Local Persistence & Sync).
+
+#### REQ-ADM-08: Sửa Nút Chết & Đồng Bộ Thuật Ngữ Dashboard 360°
+- **Vị trí**: `/admin`.
+- **Chức năng**:
+  - Gắn liên kết `<Link href="/admin/roles">` cho nút *"Chi tiết chính sách"* tại khối 10 Roles, chấm dứt tình trạng dead-click.
+  - Đồng bộ thuật ngữ: Sửa nhãn khối 10 Roles thành `TẦNG 0: Quản Trị Tối Cao (SUPER_ADMIN, OPERATOR_ADMIN)` đồng nhất với Sidebar và ma trận phân quyền.
+
+### 3. Tiêu Chuẩn Chấp Thuận Đợt 1 (Acceptance Criteria Wave 1)
+- **AC-DELTA-V6-01**: Truy cập `/admin/audit-logs` hiển thị Bảng dữ liệu kiểm toán tương tác sống với đầy đủ 5 trạng thái UX (Loading, Empty, Error, Success), có tìm kiếm, lọc hành vi và nút xuất CSV hoạt động.
+- **AC-DELTA-V6-02**: Truy cập `/admin/system-config` hiển thị Form cấu hình cho phép thay đổi tham số SLA, giờ hành chính và bật tắt cảnh báo; nút [Lưu Cấu Hình] cập nhật thành công và hiển thị Toast thông báo.
+- **AC-DELTA-V6-03**: Tại `/admin`, nút *"Chi tiết chính sách"* điều hướng chính xác về `/admin/roles`; thuật ngữ Tầng 0 được đồng bộ 100%.
+- **AC-DELTA-V6-04**: 100% test case trong `src/app/admin/audit-logs/page.test.tsx` và `src/app/admin/system-config/page.test.tsx` pass.
+
+---
+
+### 4. Yêu Cầu Chức Năng Bổ Sung Đợt 2 (Functional Requirements Wave 2)
+
+#### REQ-ADM-11: Chuẩn Hóa Hiển Thị Tên Tường Minh (Code-to-Name Label Resolution)
+- **Vị trí**: `/admin/approvals` (Hàng Đợi Phê Duyệt Toàn Quốc).
+- **Chức năng**:
+  - Triệt tiêu 100% hiện tượng hiển thị mã định danh kỹ thuật thô (`HN`, `SG`, `01`, `02`, `EXPERT`, `SHOP`, `DEMAND`).
+  - Toàn bộ danh sách hồ sơ bên trái và panel chi tiết bên phải phải gọi `Universal Label Resolver Engine`:
+    1. Cột/Tag Địa phương: Hiển thị `TP. Hà Nội`, `TP. Hồ Chí Minh`, `Tỉnh Bắc Ninh`... thay vì mã `HN`, `SG`, `BN`.
+    2. Cột/Tag Loại hồ sơ: Hiển thị `Hồ sơ Chuyên gia KH&CN`, `Gian hàng Công nghệ (Shop)`, `Bài toán Nhu cầu Công nghệ`... thay vì mã `EXPERT`, `SHOP`, `DEMAND`.
+    3. Cột/Tag Lĩnh vực: Hiển thị tên ngành đầy đủ theo TT17/2019/TT-BKHCN (`Công nghệ thông tin & Truyền thông`, `Năng lượng & Tự động hóa`...) thay vì mã `01`, `02` hay `SECTOR_01`.
+    4. Thẩm quyền can thiệp Tầng 0: Hiển thị rõ `Quản trị Tối cao (NacenTech)` hoặc `Lãnh đạo Sở KH&CN Tỉnh`.
+
+#### REQ-ADM-12: Tối Ưu Bố Cục Master-Detail Viewport Cuộn Độc Lập
+- **Vị trí**: `/admin/approvals`.
+- **Chức năng**:
+  - Khắc phục hiện tượng tràn chiều cao gây cuộn cả trang trình duyệt.
+  - Thiết lập chiều cao cố định cho khung làm việc: `lg:h-[calc(100vh-12rem)] lg:min-h-[620px]`.
+  - Cột trái (Danh sách hồ sơ hàng đợi) và Cột phải (Chi tiết hồ sơ đang chọn) có thanh cuộn nội bộ độc lập (`overflow-y-auto scrollbar-thin`).
+  - Khi duyệt hoặc từ chối hồ sơ, danh sách bên trái giữ nguyên vị trí cuộn, không bị nhảy giật lên đầu trang.
+
+#### BR-ADM-VAL-WHITESPACE: Ràng Buộc Kiểm Tra Ký Tự Thực (Anti-Whitespace Validation)
+- Khi cán bộ/admin nhập lý do Từ chối hoặc Yêu cầu bổ sung: Chuỗi lý do sau khi loại bỏ khoảng trắng thừa `.trim()` phải đạt độ dài tối thiểu $\ge 10$ ký tự. Nghiêm cấm submit chuỗi chỉ toàn dấu cách.
+- Khi Super Admin nhập lý do Can thiệp vượt cấp Tầng 0: Chuỗi lý do sau khi `.trim()` phải đạt độ dài tối thiểu $\ge 20$ ký tự theo quy định kiểm toán Nghị định 85/2016.
+
+### 5. Tiêu Chuẩn Chấp Thuận Đợt 2 (Acceptance Criteria Wave 2)
+- **AC-DELTA-V6-05**: Tại `/admin/approvals`, 100% các mục trong danh sách và panel chi tiết hiển thị Tên Tỉnh tiếng Việt, Tên Ngành tiếng Việt và Tên Loại Hồ Sơ tường minh, không còn bất kỳ mã thô nào.
+- **AC-DELTA-V6-06**: Bố cục Master-Detail hoạt động với 2 cột cuộn độc lập trên màn hình desktop/laptop, không làm cuộn trang chính.
+- **AC-DELTA-V6-07**: Modal Từ chối và Modal Yêu cầu bổ sung chặn thành công chuỗi toàn khoảng trắng hoặc chuỗi `.trim().length < 10`.
+- **AC-DELTA-V6-08**: 100% test case trong `src/app/admin/approvals/page.test.tsx` pass.
+
+---
+
+## PHẦN 12: DELTA V6 — CHUẨN HÓA TOÀN DIỆN 7 MÀN HÌNH CỔNG CÔNG VỤ CẤP SỞ KH&CN (`/gov/*`)
+
+**Căn cứ phê duyệt**: Quyết định PO `PO-DEC-20261026-GOV` & Kết luận Hội nghị Bàn tròn Đa Tác tử (BMad Party Mode).
+
+### 1. Bối Cảnh & Mục Tiêu (Context & Objectives)
+1. **Triệt Tiêu 100% Mã Kỹ Thuật Thô**: Người dùng là Lãnh đạo và Chuyên viên Sở KH&CN, khi thẩm định hồ sơ không được hiển thị các mã thô (`CN01`, `TRL7`, `HP`, `PATENT_GRANTED`, `TIEN_TIEN`, `URGENT`) mà bắt buộc phải giải nghĩa sang tên tiếng Việt chuẩn hóa.
+2. **Khung Tiêu Đề Dùng Chung `GovPageHeader`**: Chuẩn hóa Breadcrumbs 3 cấp, huy hiệu địa bàn, cam kết SLA $\le 48\text{h}$, và cơ chế Maker-Checker 2 cấp cho cả 7 màn hình.
+3. **Phân Quyền Maker-Checker 2 Cấp Hoàn Chỉnh**: Bổ sung vai trò `PROVINCE_OFFICER` (Chuyên viên thẩm tra - Maker) bên cạnh `PROVINCE_LEADER` / `PROVINCIAL_ADMIN` (Lãnh đạo phê duyệt - Checker).
+4. **Xóa Bỏ Triệt Để Hardcode & Mock**: Loại bỏ `scopeId = "HP"` mặc định và xóa UUID chuyên gia giả định tại `/gov/demands`.
+
+---
+
+### 2. Yêu Cầu Chức Năng Bổ Sung Theo 7 Màn Hình (Functional Requirements)
+
+#### REQ-GOV-01: Bộ Giải Nghĩa Dữ Liệu Công Vụ (`GovLabelResolver`) & `GovPageHeader`
+- **Vị trí**: `SourceCode/frontend/src/components/gov/`.
+- **Chức năng**:
+  - `GovLabelResolver`: Cung cấp hàm chuyển đổi:
+    * `resolveSectorName(code)`: `CN01` $\rightarrow$ "Công nghệ thông tin và truyền thông", `CN06` $\rightarrow$ "Công nghệ sinh học trong nông nghiệp"...
+    * `resolveProvinceName(code)`: `HN` $\rightarrow$ "TP. Hà Nội", `HP` $\rightarrow$ "TP. Hải Phòng", `SG` $\rightarrow$ "TP. Hồ Chí Minh"...
+    * `resolveTrlInfo(level)`: Trả về label "TRL 7/9" và mô tả "Thử nghiệm trong môi trường thực tế".
+    * `resolveIpStatusInfo(status)`: `PATENT_GRANTED` $\rightarrow$ "Đã cấp Bằng sáng chế", `UTILITY_MODEL` $\rightarrow$ "Giải pháp hữu ích"...
+    * `resolveTt17Classification(code)`: `TIEN_TIEN` $\rightarrow$ "Trình độ Tiên tiến", `TRUNG_BINH` $\rightarrow$ "Trình độ Trung bình"...
+    * `resolveTniUrgency(code)`: `URGENT` $\rightarrow$ "Cấp bách (Giải quyết trong quý)", `STRATEGIC` $\rightarrow$ "Chiến lược dài hạn"...
+  - `GovPageHeader`: Component tiêu chuẩn hiển thị Breadcrumbs 3 cấp, Tên chức năng, Icon, Badge địa bàn (`scopeCode`), SLA $\le 48\text{h}$ và Maker-Checker 2 Cấp.
+
+#### REQ-GOV-02: Chuẩn Hóa Màn Hình Hàng Đợi Phê Duyệt Địa Bàn (`/gov`)
+- **Vị trí**: `/gov`.
+- **Chức năng**:
+  - Bọc trang bằng `GovPageHeader`.
+  - Toàn bộ danh sách hồ sơ (Chuyên gia, Shop, Nhu cầu, Doanh nghiệp) hiển thị tên ngành, tên tỉnh, mức độ TRL và tình trạng SHTT bằng tiếng Việt rõ ràng.
+  - Đồng bộ URL param `?tab=` giữa Sidebar Menu và bộ lọc trong trang.
+  - Bắt buộc kiểm tra độ dài lý do Từ chối hoặc Yêu cầu bổ sung $\ge 10$ ký tự thực sau khi `.trim()`.
+
+#### REQ-GOV-03: Thẩm Định Doanh Nghiệp ĐMST (`/gov/approvals/enterprises`)
+- **Vị trí**: `/gov/approvals/enterprises`.
+- **Chức năng**:
+  - Gỡ bỏ bọc thẻ `<main min-h-screen py-10 px-4 md:px-8>` làm padding kép; sử dụng `GovPageHeader`.
+  - Hiển thị đầy đủ tiêu chí xác thực ĐMST: Mã số thuế, Vốn điều lệ, Tình trạng chứng nhận DN KH&CN, Số lượng bằng độc quyền sáng chế.
+  - Ràng buộc lý do yêu cầu bổ sung $\ge 10$ ký tự thực (`BR-ADM-VAL-WHITESPACE`).
+
+#### REQ-GOV-04: Hội Đồng Chấm Điểm TT17 (`/gov/assessments/tt17`)
+- **Vị trí**: `/gov/assessments/tt17`.
+- **Chức năng**:
+  - Xóa bỏ triệt để hardcode `scopeId = "HP"`. Đọc `user.scopeId` từ token xác thực.
+  - Giải nghĩa 23 mã ngành VSIC chế biến chế tạo (C.10 $\rightarrow$ C.32) sang tên ngành tiếng Việt đầy đủ.
+  - Hiển thị danh hiệu phân loại công nghệ bằng tiếng Việt: Tiên tiến, Trung bình tiên tiến, Trung bình, Lạc hậu.
+  - Drawer chấm điểm 26 tiêu chí có scrollbar nội bộ, không tràn viền màn hình.
+
+#### REQ-GOV-05: Giám Sát Tiến Trình Cung–Cầu & Cảnh Báo SLA (`/gov/opportunities`)
+- **Vị trí**: `/gov/opportunities`.
+- **Chức năng**:
+  - Sử dụng `GovPageHeader`, giữ người dùng trong phân hệ công vụ quản lý nhà nước.
+  - Bảng danh sách cơ hội có bộ lọc nhanh: "Tất cả cơ hội" và "Cảnh báo quá hạn SLA 48h".
+  - Hiển thị đầy đủ tên công nghệ, tên bên cung, tên bên cầu, không viết tắt.
+
+#### REQ-GOV-06: Giám Sát Bài Toán Nhu Cầu DNNVV Địa Bàn (`/gov/demands`)
+- **Vị trí**: `/gov/demands`.
+- **Chức năng**:
+  - **Triệt tiêu mock ngầm**: Xóa bỏ `expertId: '01a125a3-...'`. Mở Modal chọn chuyên gia từ CSDL danh bạ chuyên gia thật của địa bàn.
+  - Bổ sung bộ lọc theo chỉ số TNI (Technology Need Index): Tất cả, Cấp bách (TNI $\ge 8.0$), Chiến lược ($6.0 \le$ TNI $< 8.0$), Tiềm năng (TNI $< 6.0$).
+  - Nút phê duyệt có debounce chống click đúp.
+
+#### REQ-GOV-07: Quản Trị & Phân Công Cán Bộ Sở (`/gov/settings/staff`)
+- **Vị trí**: `/gov/settings/staff`.
+- **Chức năng**:
+  - Bổ sung vai trò `PROVINCE_OFFICER` (Chuyên viên Thẩm tra - Cấp 1 Maker) vào dropdown chọn vai trò bổ nhiệm.
+  - Vai trò `PROVINCE_LEADER` / `PROVINCIAL_ADMIN` (Lãnh đạo Sở - Cấp 2 Checker).
+  - Validate định dạng email hợp lệ trước khi gửi lên API.
+  - Hiển thị đúng số lượng hồ sơ đã xử lý từ API thay vì gán tĩnh số 0.
+
+#### REQ-GOV-08: Hub Phê Duyệt Đồng Bộ (`/gov/approvals`)
+- **Vị trí**: `/gov/approvals`.
+- **Chức năng**:
+  - Tích hợp điều hướng thông suốt với `/gov`, đảm bảo các liên kết cũ trỏ tới `/gov/approvals` tự động nhận diện và đồng bộ trạng thái tab.
+
+#### REQ-GOV-09: Chuẩn Hóa Mã Hồ Sơ Công Vụ Định Danh Nghiệp Vụ
+- **Vị trí**: `/gov` (và các bảng kiểm duyệt cấp sở).
+- **Chức năng**:
+  - Loại bỏ hiển thị chuỗi UUID thô cắt ngắn không có ý nghĩa (`c25347fc...`).
+  - Chuẩn hóa mã hồ sơ hiển thị theo định dạng nghiệp vụ: `[Tiền Tố]-[Mã Tỉnh]-[6 Ký Tự Hash]` (VD: `CB-HN-C25347` cho chào bán công nghệ, `CG-HN-A109F2` cho chuyên gia, `NC-HN-88E29E` cho nhu cầu, `DN-HN-825CDC` cho doanh nghiệp).
+  - Tích hợp nút Copy nhanh mã hồ sơ vào clipboard, kèm tooltip xem UUID gốc phục vụ đối soát kỹ thuật.
+
+#### REQ-GOV-10: Cơ Chế Xem Chi Tiết Đầy Đủ Trước Khi Phê Duyệt
+- **Vị trí**: `/gov`.
+- **Chức năng**:
+  - Tên sản phẩm / công nghệ trở thành liên kết tương tác (`Link`/`Button`), khi click sẽ mở ngay Modal/Drawer xem chi tiết toàn diện.
+  - Cung cấp nút liên kết mở trang chi tiết sản phẩm trên sàn giao dịch quốc gia (`/chao-ban-cong-nghe/[id]`) trong tab mới để cán bộ đối chiếu trực quan.
+  - Nút thao tác tại bảng đổi thành "Xem Chi Tiết & Duyệt" để đảm bảo nguyên tắc thẩm định thực chất trước khi ký duyệt.
+
+#### REQ-GOV-11: Sắp Xếp & Lọc Tương Tác Trực Tiếp Trên Tiêu Đề Bảng (Table Header Filter & Sort)
+- **Vị trí**: `/gov`.
+- **Chức năng**:
+  - Click vào tiêu đề các cột: Mã hồ sơ, Đơn vị nộp, Tên sản phẩm, Ngày nộp để chuyển đổi sắp xếp Tăng dần / Giảm dần (`ArrowUpDown`, `ArrowUp`, `ArrowDown`).
+  - Dropdown Filter popover trực tiếp trên Header cột "Lĩnh Vực Công Nghệ" (lọc theo từng ngành hoặc tất cả) và cột "Trạng Thái" (lọc theo Chờ duyệt, Đã duyệt, Yêu cầu bổ sung, Từ chối).
+  - Hiển thị thanh thông báo trạng thái lọc và nút "Xóa bộ lọc (Reset)" để trở về trạng thái mặc định.
+
+---
+
+### 3. Tiêu Chuẩn Chấp Thuận Delta V6 & V10 Cho Cổng Công Vụ (Acceptance Criteria)
+- **AC-GOV-01**: Cả 7 màn hình hiển thị đồng nhất `GovPageHeader` với Breadcrumbs 3 cấp, huy hiệu địa bàn và SLA $\le 48\text{h}$.
+- **AC-GOV-02**: 100% mã ngành, mã địa bàn, mã TRL, mã SHTT, mã TT17 hiển thị bằng tiếng Việt tự nhiên, không còn mã kỹ thuật thô.
+- **AC-GOV-03**: Xóa bỏ 100% hardcode `scopeId = "HP"` và mock UUID chuyên gia. Dữ liệu được cô lập chuẩn xác theo `user.scopeId`.
+- **AC-GOV-04**: Form phân công cán bộ Sở hỗ trợ đầy đủ vai trò `PROVINCE_OFFICER` và `PROVINCIAL_ADMIN`.
+- **AC-GOV-05**: Ràng buộc lý do từ chối/yêu cầu bổ sung $\ge 10$ ký tự thực sau `.trim()` trên 100% modal phê duyệt.
+- **AC-GOV-06**: Toàn bộ unit tests và E2E tests của phân hệ `/gov` đạt 100% Green, không phá vỡ bất kỳ route nào trong 66 routes của hệ thống.
+- **AC-GOV-07**: Mã hồ sơ hiển thị theo định dạng `[Prefix]-[Scope]-[Hash]` có nút copy; click tên sản phẩm mở modal chi tiết sản phẩm và có link xem trên sàn; tiêu đề bảng hỗ trợ sort và filter dropdown.
+
+---
+
+## PHẦN 13: DELTA V7 (CR-2026-023) — TÁI THIẾT KẾ TOÀN DIỆN MÀN HÌNH PHÊ DUYỆT TẬP TRUNG & GIÁM SÁT SLA (`/admin/approvals`)
+
+**Căn cứ phê duyệt**: Quyết định PO `PO-DEC-20261026-APPROVALS-V7` & Kết luận Hội nghị Bàn tròn Đa Tác tử (BMad Party Mode).  
+**Kỹ năng áp dụng**: `speckit-delta` kết hợp `nacen-basic-design`.
+
+### 1. Bối Cảnh & Mục Tiêu Cải Tiến
+1. **Triệt tiêu hoàn toàn sự chồng chéo của bộ lọc**: Xóa bỏ hiện tượng 2 tầng tabs + 4 combobox trùng lặp. Thay bằng 1 thanh Segmented Filter tích hợp số đếm trực quan.
+2. **Chuẩn hóa thuật ngữ hành chính công**: Loại bỏ từ ngữ tùy tiện ("Shop", "Nguồn cung", "Nhu cầu", "Cơ sở"). Chuẩn hóa thành 5 nhóm: `Chào Bán Công Nghệ`, `Nhu Cầu Công Nghệ`, `Chuyên Gia KH&CN`, `Doanh Nghiệp ĐMST`, `Tài Khoản Tổ Chức`.
+3. **Bổ sung luồng thẩm định Doanh Nghiệp ĐMST (`FACILITY` / `ENTERPRISE`)**: Thẩm định chuyên sâu Mã số thuế (MST), Người đại diện pháp luật, Vốn điều lệ, Giấy chứng nhận ĐMST / Doanh nghiệp KH&CN.
+4. **Sửa dứt điểm lỗi CSS vỡ giao diện & co ép bảng**:
+   - Thay mã UUID 36 ký tự đỏ chót bằng Mã hồ sơ rút gọn `#058915` (kèm tooltip copy full UUID).
+   - Đổi Badge loại hồ sơ từ hình tròn bẻ 5 dòng chữ thành **Capsule Badge ngang 1 dòng** (`whitespace-nowrap`).
+   - Bảng danh sách hiển thị **toàn chiều rộng (Full-width)**, không bị co ép bởi card chi tiết tĩnh.
+   - Chi tiết hồ sơ hiển thị dạng **Slide-over Drawer** trượt từ mép phải khi chọn dòng.
+5. **Đảm bảo 100% giải nghĩa Mã sang Tên tiếng Việt**: 100% Tỉnh/thành, Ngành TT17, Vai trò, Loại hồ sơ hiển thị tên tường minh.
+
+### 2. Yêu Cầu Chức Năng Chi Tiết (Functional Requirements)
+
+#### REQ-ADM-13: Gộp Nhất Thể Bộ Điều Khiển & Bộ Lọc Thông Minh (Unified Filter Toolbar)
+- **Vị trí**: `/admin/approvals`.
+- **Chức năng**:
+  - Tích hợp 2 dải tab thành **1 thanh Segmented Filter Toolbar duy nhất**:
+    * Nhóm lọc tính chất: `Tất cả hàng đợi`, `Cảnh báo SLA (Quá hạn > 72h)`, `Can thiệp Tầng 0 (Super Admin)`.
+    * Phân cách tinh gọn.
+    * Nhóm lọc phân loại: `Tất cả`, `Chào bán CN`, `Nhu cầu CN`, `Chuyên gia KH&CN`, `Doanh nghiệp ĐMST`, `Tài khoản`.
+  - Bên dưới: Thanh tìm kiếm nhanh đa năng (họ tên, email, MST, tên công nghệ, mã hồ sơ) kết hợp Dropdown chọn 34 Tỉnh/Thành phố.
+  - Loại bỏ các combobox trùng lặp (Loại hồ sơ, Trạng thái SLA).
+
+#### REQ-ADM-14: Chuẩn Hóa Danh Mục & Nhãn 5 Loại Hồ Sơ
+- **Vị trí**: `/admin/approvals` và `src/lib/label-resolver.ts`.
+- **Chức năng**:
+  - `SHOP` / `TECH_SUPPLY`: Hiển thị nhãn `"Chào Bán Công Nghệ"` (Icon ShoppingBag, màu Teal).
+  - `DEMAND` / `TECH_DEMAND`: Hiển thị nhãn `"Nhu Cầu Công Nghệ"` (Icon HelpCircle, màu Amber).
+  - `EXPERT`: Hiển thị nhãn `"Chuyên Gia KH&CN"` (Icon GraduationCap, màu Blue).
+  - `FACILITY` / `ENTERPRISE`: Hiển thị nhãn `"Doanh Nghiệp ĐMST"` (Icon Building2, màu Indigo).
+  - `ACCOUNT`: Hiển thị nhãn `"Tài Khoản Tổ Chức"` (Icon UserCheck, màu Slate).
+
+#### REQ-ADM-15: Tối Ưu Bảng Master Grid Full-Width & Khắc Phục Lỗi CSS
+- **Vị trí**: `/admin/approvals`.
+- **Chức năng**:
+  - Bảng danh sách chiếm 100% chiều rộng màn hình, không bị co ép.
+  - Cột 1 (Mã HS & Loại HS): Gộp mã rút gọn `#058915` (hover hiện tooltip full UUID + click copy) và Badge Capsule loại hồ sơ 1 dòng (`whitespace-nowrap inline-flex items-center gap-1.5 h-6 px-2.5 py-0.5 rounded-full font-bold text-xs`).
+  - Cột 2 (Chủ Thể & Đơn Vị): Hiển thị tên chủ thể in đậm, tên đơn vị trực thuộc in mờ, có fallback đọc từ tiêu đề công nghệ / bài toán nếu chưa có họ tên cá nhân. Có `truncate max-w-[240px]` kèm tooltip `title`.
+  - Cột 3 (Địa Bàn): Hiển thị Tên Sở KH&CN địa phương rõ ràng (`Sở KH&CN TP. Hà Nội`, `Sở KH&CN TP. Hải Phòng`...).
+  - Cột 4 (Thời Gian & Trạng Thái SLA): Hiển thị đầy đủ ngày giờ nộp và badge số giờ quá hạn SLA (không bị cắt cụt chữ).
+  - Cột 5 (Thao Tác): Hiển thị nút `"Thẩm định"` hoặc icon click mở nhanh Drawer chi tiết.
+
+#### REQ-ADM-16: Luồng Thẩm Định Chuyên Biệt Cho Doanh Nghiệp ĐMST
+- **Vị trí**: `/admin/approvals` (Detail Drawer).
+- **Chức năng**:
+  - Khi xem hồ sơ loại `FACILITY` / `ENTERPRISE`:
+    * Hiển thị: Tên Doanh nghiệp, Mã số thuế (MST), Người đại diện pháp luật, Vốn điều lệ, Lĩnh vực công nghệ ĐMST chính.
+    * Hiển thị tình trạng đính kèm: Giấy phép ĐKKD, Giấy chứng nhận Doanh nghiệp KH&CN / ĐMST.
+    * Nút mở xem văn bằng, tài liệu đính kèm.
+
+#### REQ-ADM-17: Slide-over Drawer Thẩm Định Tối Ưu UX
+- **Vị trí**: `/admin/approvals`.
+- **Chức năng**:
+  - Khi click vào 1 dòng trong bảng: Drawer chi tiết trượt ra mượt mà từ mép phải màn hình (hoặc chia 60/40), có nút đóng `X` và backdrop làm mờ.
+  - Giữ nguyên vị trí cuộn của bảng danh sách.
+  - Bộ nút hành động: `[Phê duyệt hồ sơ]`, `[Duyệt thay / Can thiệp Tầng 0]`, `[Yêu cầu bổ sung]`, `[Từ chối hồ sơ]`.
+  - Toàn bộ modal lý do áp dụng quy tắc `BR-ADM-VAL-WHITESPACE` (tối thiểu 10 ký tự hợp lệ sau khi `.trim()`).
+
+### 3. Tiêu Chuẩn Chấp Thuận Delta v7 (Acceptance Criteria)
+- **AC-DELTA-V7-01**: Bỏ hoàn toàn các combobox trùng lặp; thanh lọc Segmented Filter gộp 1 hàng duy nhất phản ứng mượt mà.
+- **AC-DELTA-V7-02**: 100% thuật ngữ đổi sang `"Chào Bán Công Nghệ"`, `"Nhu Cầu Công Nghệ"`, `"Chuyên Gia KH&CN"`, `"Doanh Nghiệp ĐMST"`, `"Tài Khoản Tổ Chức"`.
+- **AC-DELTA-V7-03**: Badge loại hồ sơ hiển thị Capsule 1 dòng nằm ngang, không bị bẻ dòng thành hình tròn; Mã HS rút gọn kèm nút copy, không hiển thị UUID thô 36 ký tự.
+- **AC-DELTA-V7-04**: Thẩm định Doanh nghiệp ĐMST hiển thị đầy đủ MST, Người đại diện và hồ sơ pháp lý.
+- **AC-DELTA-V7-05**: Toàn bộ unit tests tại `approvals/page.test.tsx` và admin suite đạt 100% Green.
+
+
