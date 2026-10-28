@@ -36,16 +36,17 @@ export const INDUSTRY_BENCHMARKS: Record<string, IndustryBenchmark> = {
 };
 
 export interface MachineryItem {
-  name: string;
+  name: string; // Cột 1: Tên thiết bị, máy móc, công nghệ
+  quantity?: number; // Cột 2: Số lượng
+  manufactureYear: number; // Cột 3: Năm sản xuất
+  startUsageYear: number; // Cột 4: Năm đưa vào sử dụng
+  productName?: string; // Cột 5: Tên sản phẩm / bán sản phẩm
+  designedCapacityYear?: number | string; // Cột 6: Sản lượng theo thiết kế tối đa/năm
   originCountry?: string;
-  manufactureYear: number;
-  startUsageYear: number;
   originalCost?: number;
   currentBookValue?: number;
   isAutomated?: boolean;
   isAdvancedCountry?: boolean;
-  productName?: string;
-  designedCapacityYear?: number;
 }
 
 export interface FinancialSeriesItem {
@@ -101,6 +102,13 @@ export interface Tt17SurveyData {
 
   // Mục C: Hoạt động SXKD 3 năm
   financialSeries: FinancialSeriesItem[];
+  // Mục C.2: Tên tối đa 03 sản phẩm có doanh thu cao nhất (Trang 24–25 Phụ lục I TT17)
+  mainProduct1Name?: string;
+  mainProduct1Share?: number;
+  mainProduct2Name?: string;
+  mainProduct2Share?: number;
+  mainProduct3Name?: string;
+  mainProduct3Share?: number;
   mainProductStandard: "co_so" | "quoc_gia" | "quoc_te" | "co_so_vuot_quoc_te"; // TC07
   energyCostYear: number; // G_nl: Chi phí điện & nhiên liệu năm gần nhất (VNĐ)
   materialCostYear: number; // G_nvl: Chi phí nguyên vật liệu năm gần nhất (VNĐ)
@@ -150,6 +158,8 @@ export interface Tt17SurveyData {
   technologyMasteryLevel?: number;
 
   // Mục E: Đổi mới sáng tạo & Chuyển đổi số 4.0
+  // Mục E.1: Tên 1–3 sản phẩm mới tiêu biểu tạo ra trong 3 năm qua (Trang 29–30 Phụ lục I TT17)
+  newProductNames?: string;
   newProductType: "none" | "kieu_dang" | "tinh_nang" | "hoan_toan_moi"; // TC23
   newProductRevenueRatio: number; // % doanh thu từ sản phẩm mới (TC23)
   rdTechnologyResult: "none" | "dang_nghien_cuu" | "thu_nghiem_lab" | "giai_phap_huu_ich" | "bang_sang_che"; // TC24
@@ -225,7 +235,16 @@ export const INITIAL_SURVEY_DATA: Tt17SurveyData = {
   productionFacilityAddress2: "",
   productionFacilityAddress3: "",
 
-  machineries: [],
+  machineries: [
+    {
+      name: "",
+      quantity: 1,
+      manufactureYear: 2021,
+      startUsageYear: 2022,
+      productName: "",
+      designedCapacityYear: "",
+    },
+  ],
   originalCostEquipment: 0,
   currentBookValueEquipment: 0,
   newInvestEquipment3Years: 0,
@@ -239,6 +258,12 @@ export const INITIAL_SURVEY_DATA: Tt17SurveyData = {
     { year: 2024, industrialOutputValue: 0, netRevenue: 0, directWorkersCount: 0, actualOutput: 0, designedCapacity: 0 },
     { year: 2025, industrialOutputValue: 0, netRevenue: 0, directWorkersCount: 0, actualOutput: 0, designedCapacity: 0 },
   ],
+  mainProduct1Name: "",
+  mainProduct1Share: 0,
+  mainProduct2Name: "",
+  mainProduct2Share: 0,
+  mainProduct3Name: "",
+  mainProduct3Share: 0,
   mainProductStandard: "co_so",
   energyCostYear: 0,
   materialCostYear: 0,
@@ -269,6 +294,7 @@ export const INITIAL_SURVEY_DATA: Tt17SurveyData = {
   rdExpenses3Years: 0,
   hasSciTechFund: false,
 
+  newProductNames: "",
   newProductType: "none",
   newProductRevenueRatio: 0,
   rdTechnologyResult: "none",
@@ -293,7 +319,16 @@ export const SAMPLE_BENCHMARK_DAIHUNG: Tt17SurveyData = {
   directWorkers: 50,
   indirectStaff: 0,
 
-  machineries: [],
+  machineries: [
+    {
+      name: "",
+      quantity: 1,
+      manufactureYear: 2021,
+      startUsageYear: 2022,
+      productName: "",
+      designedCapacityYear: "",
+    },
+  ],
   originalCostEquipment: 10000000000,
   currentBookValueEquipment: 3000000000,
   newInvestEquipment3Years: 3000000000,
@@ -307,6 +342,12 @@ export const SAMPLE_BENCHMARK_DAIHUNG: Tt17SurveyData = {
     { year: 2024, industrialOutputValue: 28000000000, netRevenue: 28000000000, directWorkersCount: 48, actualOutput: 40, designedCapacity: 100 },
     { year: 2025, industrialOutputValue: 31726700000, netRevenue: 31726700000, directWorkersCount: 50, actualOutput: 40, designedCapacity: 100 },
   ],
+  mainProduct1Name: "Gạo thơm xuất khẩu ST25",
+  mainProduct1Share: 60,
+  mainProduct2Name: "Gạo tấm xuất khẩu",
+  mainProduct2Share: 25,
+  mainProduct3Name: "Cám gạo trích ly",
+  mainProduct3Share: 15,
   mainProductStandard: "co_so",
   energyCostYear: 300000000,
   materialCostYear: 4000000000,
@@ -335,6 +376,7 @@ export const SAMPLE_BENCHMARK_DAIHUNG: Tt17SurveyData = {
   rdExpenses3Years: 0,
   hasSciTechFund: false,
 
+  newProductNames: "Gạo hữu cơ hút chân không đóng gói túi zip 1kg",
   newProductType: "kieu_dang",
   newProductRevenueRatio: 0,
   rdTechnologyResult: "dang_nghien_cuu",

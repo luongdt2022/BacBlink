@@ -15,9 +15,11 @@ import {
   ClipboardCheck,
   Clock,
   Cpu,
+  FileCheck2,
   FileDown,
   FileSearch,
   FileSignature,
+  Flame,
   GraduationCap,
   Handshake,
   HeartHandshake,
@@ -27,6 +29,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Target,
 } from "lucide-react";
 import { useToast } from "@/components/common/toast";
 import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
@@ -335,17 +338,24 @@ export default function HomePage() {
               ))}
               <span className="hidden sm:inline text-white/30">|</span>
               <Link
-                href="/trien-lam"
+                href="/khao-sat-nhu-cau"
                 className="inline-flex items-center gap-1 font-semibold text-amber-300 hover:text-amber-200 transition ml-1"
               >
-                <Sparkles className="size-3.5" /> Sàn Sự Kiện Techmart &rarr;
+                <Target className="size-3.5" /> Khảo sát TNI &rarr;
               </Link>
               <span className="hidden sm:inline text-white/30">|</span>
               <Link
-                href="/huong-dan"
-                className="inline-flex items-center gap-1 font-semibold text-emerald-300 hover:text-emerald-200 transition ml-1"
+                href="/assessments/tt17/wizard"
+                className="inline-flex items-center gap-1 font-semibold text-cyan-300 hover:text-cyan-200 transition ml-1"
               >
-                <BookOpen className="size-3.5" /> Hướng dẫn cho người mới &rarr;
+                <Award className="size-3.5" /> Đánh giá TT17 &rarr;
+              </Link>
+              <span className="hidden sm:inline text-white/30">|</span>
+              <Link
+                href="/trien-lam"
+                className="inline-flex items-center gap-1 font-semibold text-amber-200 hover:text-white transition ml-1"
+              >
+                <Sparkles className="size-3.5" /> Sàn Techmart &rarr;
               </Link>
             </div>
           </div>
@@ -544,6 +554,214 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* HỆ THỐNG ĐÁNH GIÁ NĂNG LỰC & KHẢO SÁT CÔNG NGHỆ QUỐC GIA (TT17, TNI, DN ĐMST, TRL) */}
+        <section className="bg-gradient-to-b from-slate-50 via-white to-slate-50 py-16 dark:from-slate-900/60 dark:via-slate-950 dark:to-slate-900/60 sm:py-20 border-y border-slate-200/80 dark:border-slate-800">
+          <div className="page-container">
+            <div className="mx-auto max-w-3xl text-center">
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1.5 text-xs font-bold text-brand-700 dark:bg-brand-950/80 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800">
+                <Sparkles className="size-3.5 text-amber-500" />
+                <span>CÔNG CỤ ĐO LƯỜNG &amp; THẨM ĐỊNH QUỐC GIA</span>
+              </div>
+              <h2 className="mt-4 type-section-title text-text-primary dark:text-white">
+                Khảo Sát Nhu Cầu &amp; Đánh Giá Năng Lực Công Nghệ
+              </h2>
+              <p className="mt-3 text-base leading-7 text-text-secondary dark:text-slate-300">
+                Hệ thống công cụ đo lường và định vị chuẩn hóa theo quy chuẩn Bộ Khoa học &amp; Công nghệ, giúp doanh nghiệp, viện nghiên cứu và nhà khoa học đánh giá trình độ công nghệ, bắt mạch nhu cầu và kết nối chuyển giao trực tiếp.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Card 1: Khảo sát Nhu cầu Công nghệ & Chỉ số TNI */}
+              <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-amber-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-amber-400 hover:shadow-xl dark:border-amber-900/40 dark:bg-slate-900">
+                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-amber-500/10 blur-xl transition group-hover:bg-amber-500/20" />
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                      <Flame className="size-3 text-amber-600" />
+                      Chỉ số TNI
+                    </span>
+                    <span className="text-xs font-bold text-amber-600/70 dark:text-amber-400/60">01</span>
+                  </div>
+                  <div className="mt-5 flex items-center gap-3">
+                    <div className="grid size-12 place-items-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300">
+                      <Target className="size-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-amber-600 transition">
+                        Khảo Sát Nhu Cầu (TNI)
+                      </h3>
+                      <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Technology Needs Index</p>
+                    </div>
+                  </div>
+                  <p className="mt-3.5 text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+                    Bắt mạch nhu cầu doanh nghiệp, tự động tính toán chỉ số nhu cầu công nghệ (TNI) và kết nối nguồn cung chuyển giao phù hợp.
+                  </p>
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-600 dark:text-slate-400">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-amber-600 shrink-0" />
+                      <span>Form 4 bước tinh gọn &amp; Auto-lookup MST</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-amber-600 shrink-0" />
+                      <span>Đo lường mức độ cấp thiết đổi mới</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Link
+                    href="/khao-sat-nhu-cau"
+                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-sm font-bold text-white transition hover:bg-amber-600 shadow-sm"
+                  >
+                    <span>Làm Khảo Sát TNI Ngay</span>
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </article>
+
+              {/* Card 2: Đánh giá Năng lực Doanh nghiệp theo TT17 */}
+              <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-brand-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-brand-400 hover:shadow-xl dark:border-brand-900/40 dark:bg-slate-900">
+                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-brand-500/10 blur-xl transition group-hover:bg-brand-500/20" />
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+                      <FileCheck2 className="size-3 text-brand-700" />
+                      Thông tư 17/2019
+                    </span>
+                    <span className="text-xs font-bold text-brand-600/70 dark:text-brand-400/60">02</span>
+                  </div>
+                  <div className="mt-5 flex items-center gap-3">
+                    <div className="grid size-12 place-items-center rounded-xl bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:text-brand-300">
+                      <Award className="size-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-brand-700 transition">
+                        Đánh Giá Năng Lực TT17
+                      </h3>
+                      <p className="text-xs text-brand-700 dark:text-brand-300 font-medium">26 Tiêu Chí • 5 Nhóm THIOC</p>
+                    </div>
+                  </div>
+                  <p className="mt-3.5 text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+                    Đánh giá trình độ và năng lực công nghệ doanh nghiệp theo Thông tư 17/2019/TT-BKHCN, xếp hạng Tiên tiến, Trung bình hoặc Lạc hậu.
+                  </p>
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-600 dark:text-slate-400">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-brand-600 shrink-0" />
+                      <span>Tính điểm tự động 26 chỉ tiêu định lượng</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-brand-600 shrink-0" />
+                      <span>Cấp báo cáo thẩm định hồ sơ chính thức</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Link
+                    href="/assessments/tt17/wizard"
+                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 py-2.5 text-sm font-bold text-white transition hover:bg-brand-800 shadow-sm"
+                  >
+                    <span>Tự Đánh Giá TT17 Ngay</span>
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </article>
+
+              {/* Card 3: Đánh giá Doanh nghiệp ĐMST */}
+              <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-purple-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-purple-400 hover:shadow-xl dark:border-purple-900/40 dark:bg-slate-900">
+                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-purple-500/10 blur-xl transition group-hover:bg-purple-500/20" />
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                      <Sparkles className="size-3 text-purple-600" />
+                      DN Đổi Mới Sáng Tạo
+                    </span>
+                    <span className="text-xs font-bold text-purple-600/70 dark:text-purple-400/60">03</span>
+                  </div>
+                  <div className="mt-5 flex items-center gap-3">
+                    <div className="grid size-12 place-items-center rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300">
+                      <LineChart className="size-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-purple-600 transition">
+                        Đánh Giá DN ĐMST
+                      </h3>
+                      <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">8 Nhóm Tiêu Chí • 100 Điểm</p>
+                    </div>
+                  </div>
+                  <p className="mt-3.5 text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+                    Bộ 37 tiêu chí ĐMST trực quan qua biểu đồ Radar Chart 8 trục, chứng nhận xếp hạng Dẫn đầu, Đang phát triển hoặc Tiềm năng.
+                  </p>
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-600 dark:text-slate-400">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-purple-600 shrink-0" />
+                      <span>Biểu đồ Radar Chart 8 trục thời gian thực</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-purple-600 shrink-0" />
+                      <span>Tra cứu danh bạ 300+ doanh nghiệp ĐMST</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Link
+                    href="/doanh-nghiep-dmst"
+                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2.5 text-sm font-bold text-white transition hover:bg-purple-700 shadow-sm"
+                  >
+                    <span>Tra Cứu &amp; Đánh Giá ĐMST</span>
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </article>
+
+              {/* Card 4: Thang đo Mức độ Sẵn sàng Công nghệ TRL 1-9 */}
+              <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-emerald-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-emerald-400 hover:shadow-xl dark:border-emerald-900/40 dark:bg-slate-900">
+                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-emerald-500/10 blur-xl transition group-hover:bg-emerald-500/20" />
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      <Rocket className="size-3 text-emerald-600" />
+                      Thang Đo TRL 1–9
+                    </span>
+                    <span className="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/60">04</span>
+                  </div>
+                  <div className="mt-5 flex items-center gap-3">
+                    <div className="grid size-12 place-items-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
+                      <Cpu className="size-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-emerald-600 transition">
+                        Thẩm Định Thang Đo TRL
+                      </h3>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">Technology Readiness Level</p>
+                    </div>
+                  </div>
+                  <p className="mt-3.5 text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+                    Chuẩn hóa 9 cấp độ hoàn thiện công nghệ từ phòng lab (TRL 1-3), thử nghiệm (TRL 4-6) đến sẵn sàng thương mại hóa (TRL 7-9).
+                  </p>
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-600 dark:text-slate-400">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
+                      <span>Thẩm định độc lập bởi Hội đồng Viện</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
+                      <span>Gắn nhãn TRL và bảo hộ sở hữu trí tuệ</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Link
+                    href="/chao-ban-cong-nghe"
+                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 shadow-sm"
+                  >
+                    <span>Khám Phá Công Nghệ TRL</span>
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
         {/* VÌ SAO CHỌN NACENTWIN */}
         <section className="page-container py-16 sm:py-20">
           <div className="mx-auto max-w-2xl text-center">
@@ -727,24 +945,38 @@ export default function HomePage() {
                     Dịch Vụ Viện NacenTech
                   </h2>
                 </div>
-                <ul className="mt-6 space-y-4 text-body text-slate-600 dark:text-slate-300">
-                  {[
-                    "Cấp chứng nhận thang đo TRL 1-9 chính thức",
-                    "Thẩm định giá trị tài sản trí tuệ & sáng chế",
-                    "Tư vấn đăng ký Doanh nghiệp KH&CN",
-                  ].map((item) => (
-                    <li key={item} className="flex gap-2">
-                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
-                      {item}
-                    </li>
-                  ))}
+                <ul className="mt-6 space-y-3.5 text-sm text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
+                    <Link href="/assessments/tt17/wizard" className="hover:text-brand-700 hover:underline">
+                      Đánh giá năng lực công nghệ theo TT17
+                    </Link>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
+                    <Link href="/chao-ban-cong-nghe" className="hover:text-brand-700 hover:underline">
+                      Chứng nhận mức độ sẵn sàng TRL 1-9
+                    </Link>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
+                    <Link href="/doanh-nghiep-dmst" className="hover:text-brand-700 hover:underline">
+                      Đánh giá &amp; xếp hạng Doanh nghiệp ĐMST
+                    </Link>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
+                    <Link href="/khao-sat-nhu-cau" className="hover:text-brand-700 hover:underline">
+                      Khảo sát &amp; tính toán chỉ số TNI nhu cầu
+                    </Link>
+                  </li>
                 </ul>
               </div>
               <Link
                 href="/khao-sat-nhu-cau"
                 className="focus-ring mt-7 block w-full rounded-xl bg-nacen-green-500 py-3 text-center text-sm font-bold text-white transition hover:bg-nacen-green-600"
               >
-                Đăng Ký Tư Vấn Thẩm Định
+                Đăng Ký Khảo Sát &amp; Thẩm Định
               </Link>
             </section>
           </div>

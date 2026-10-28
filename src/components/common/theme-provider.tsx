@@ -21,14 +21,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
     const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-    if (storedTheme === "dark" || storedTheme === "light") {
-      setThemeState(storedTheme);
-      applyTheme(storedTheme);
+    // Mặc định luôn là chế độ sáng (light mode) theo yêu cầu, không tự động theo OS dark mode
+    if (storedTheme === "dark") {
+      setThemeState("dark");
+      applyTheme("dark");
     } else {
-      const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
-      const initialTheme = prefersDark ? "dark" : "light";
-      setThemeState(initialTheme);
-      applyTheme(initialTheme);
+      setThemeState("light");
+      applyTheme("light");
     }
   }, []);
 
@@ -61,7 +60,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    return {
+      theme: "light" as Theme,
+      setTheme: () => {},
+      toggleTheme: () => {},
+    };
   }
   return context;
 }

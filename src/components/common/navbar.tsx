@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient, getRoleDisplayName, getWorkspacePath, UserContext } from "@/lib/auth-client";
 import { useI18n, I18nToggle } from "./i18n-provider";
-import { ThemeToggle } from "./theme-toggle";
+import { useTheme } from "./theme-provider";
 import { ConfirmModal } from "./confirm-modal";
 import { useToast } from "./toast";
 import { FontsizeControl } from "./fontsize-control";
@@ -19,12 +19,15 @@ import {
   LayoutDashboard,
   Settings,
   Briefcase,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useI18n();
+  const { theme, toggleTheme } = useTheme();
   const toast = useToast();
 
   const [user, setUser] = useState<UserContext | null>(null);
@@ -107,9 +110,7 @@ export function Navbar() {
               </div>
             </Link>
 
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-            </div>
+            {/* Survey Header Tools */}
           </div>
         </div>
       </header>
@@ -163,9 +164,6 @@ export function Navbar() {
               {/* Language Switcher */}
               <I18nToggle />
 
-              {/* Dark/Light Theme Toggle */}
-              <ThemeToggle />
-
               <div className="mx-1 hidden h-6 w-px bg-slate-200 dark:bg-slate-800 sm:block" />
 
               {/* User Session */}
@@ -208,6 +206,21 @@ export function Navbar() {
                           <Settings className="size-4" aria-hidden="true" />
                           Cài đặt tài khoản
                         </Link>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => toggleTheme()}
+                          className="focus-ring flex min-h-11 w-full items-center justify-between px-3 text-left text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200"
+                        >
+                          <span className="flex items-center gap-2">
+                            {theme === "light" ? <Moon className="size-4 text-slate-600 dark:text-slate-300" aria-hidden="true" /> : <Sun className="size-4 text-amber-400" aria-hidden="true" />}
+                            <span>Giao diện: {theme === "light" ? "Sáng" : "Tối"}</span>
+                          </span>
+                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                            {theme === "light" ? "Bật tối" : "Bật sáng"}
+                          </span>
+                        </button>
+                        <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
                         <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setLogoutModalOpen(true); }} className="focus-ring flex min-h-11 w-full items-center gap-2 px-3 text-left text-label font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300">
                           <LogOut className="size-4" aria-hidden="true" />
                           {t("logout")}

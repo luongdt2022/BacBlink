@@ -49,6 +49,7 @@ import {
   Sparkles,
   MapPin,
   Factory,
+  Package,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -183,17 +184,19 @@ export default function AssessmentWizardPage() {
   };
 
   const handleAddMachinery = () => {
+    if ((survey.machineries || []).length >= 3) {
+      showToast("Theo Thông tư 17, doanh nghiệp chỉ cần kê khai tối đa 03 dây chuyền/thiết bị chính.", "error");
+      return;
+    }
     const newItem: MachineryItem = {
-      name: "Máy móc thiết bị mới",
-      originCountry: "Việt Nam",
-      manufactureYear: 2023,
-      startUsageYear: 2024,
-      originalCost: 500000000,
-      currentBookValue: 450000000,
-      isAutomated: false,
-      isAdvancedCountry: false,
+      name: "",
+      quantity: 1,
+      manufactureYear: 2021,
+      startUsageYear: 2022,
+      productName: "",
+      designedCapacityYear: "",
     };
-    updateSurvey({ machineries: [...survey.machineries, newItem] });
+    updateSurvey({ machineries: [...(survey.machineries || []), newItem] });
   };
 
   const handleRemoveMachinery = (index: number) => {
@@ -1224,112 +1227,142 @@ export default function AssessmentWizardPage() {
                   </div>
                 </div>
 
-                {/* Danh sách máy móc động */}
+                {/* Mục B.I: Bảng Dây chuyền thiết bị, máy móc sản xuất chính chuẩn Phụ lục I TT17 */}
                 <div className="border-t border-slate-200 dark:border-slate-800 pt-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 className="text-xs font-bold uppercase text-slate-700 dark:text-slate-300">
-                        Mục B.1 · Danh Sách Dây Chuyền / Máy Móc Sản Xuất Chính (Tối Đa 03 Dây Chuyền Chính)
+                      <h3 className="text-xs font-bold uppercase text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <span>Mục B.I · Dây Chuyền Thiết Bị, Máy Móc, Công Nghệ Sản Xuất Chính Của Doanh Nghiệp</span>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                          Mục B.I Phụ lục I TT17
+                        </span>
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        💡 <strong>Hướng dẫn Thông tư 17:</strong> Quý Doanh nghiệp chỉ cần liệt kê <strong>tối đa 03 dây chuyền hoặc thiết bị sản xuất chính</strong> có sản lượng cao nhất (không cần nhập toàn bộ máy lẻ).
+                        💡 <strong>Quy định Thông tư 17:</strong> Kê khai <strong>tối đa 03 dây chuyền hoặc máy móc sản xuất chính</strong> tạo ra sản lượng lớn nhất. Cung cấp căn cứ đối soát thực địa và xác định công suất thiết kế P (phục vụ tính chỉ số OEE tại TC15).
                       </p>
                     </div>
                     <button
                       type="button"
+                      id="tt17-btn-add-machinery"
                       onClick={handleAddMachinery}
-                      className="px-3 py-1.5 rounded-lg bg-brand-700 text-white text-xs font-semibold hover:bg-brand-800 flex items-center gap-1 shadow-sm transition shrink-0 self-start sm:self-auto"
+                      disabled={(survey.machineries || []).length >= 3}
+                      className="px-3 py-1.5 rounded-lg bg-brand-700 text-white text-xs font-semibold hover:bg-brand-800 disabled:opacity-50 flex items-center gap-1 shadow-xs transition shrink-0 self-start sm:self-auto"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      Thêm Thiết Bị Chính
+                      Thêm Thiết Bị Chính ({(survey.machineries || []).length}/3)
                     </button>
                   </div>
 
-                  <div className="space-y-3">
-                    {survey.machineries.map((m, idx) => (
-                      <div
-                        key={idx}
-                        className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 space-y-3 shadow-sm"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex-1">
-                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                              Thiết Bị #{idx + 1}: Tên Máy Móc / Dây Chuyền Sản Xuất
-                            </span>
-                            <input
-                              type="text"
-                              value={m.name}
-                              onChange={(e) => handleUpdateMachinery(idx, { name: e.target.value })}
-                              className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-2 focus:ring-brand-500"
-                              placeholder="Ví dụ: Máy tiện CNC 5 trục Doosan Puma"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMachinery(idx)}
-                            className="text-rose-600 hover:text-rose-800 p-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition mt-4"
-                            title="Xóa thiết bị này"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                          <div>
-                            <span className="text-slate-500 font-medium block mb-1">Xuất Xứ:</span>
-                            <input
-                              type="text"
-                              value={m.originCountry || "Việt Nam"}
-                              onChange={(e) => handleUpdateMachinery(idx, { originCountry: e.target.value })}
-                              className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-brand-500"
-                              placeholder="Nhập hoặc bấm chọn..."
-                            />
-                            <div className="flex flex-wrap gap-1 mt-1.5">
-                              {["Việt Nam", "Nhật Bản", "Đức", "Hàn Quốc", "Trung Quốc"].map((c) => (
-                                <button
-                                  key={c}
-                                  type="button"
-                                  onClick={() => handleUpdateMachinery(idx, { originCountry: c })}
-                                  className="text-xs px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 hover:bg-brand-100 dark:hover:bg-brand-900 text-slate-700 dark:text-slate-200"
-                                >
-                                  {c}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 font-medium block mb-1">Năm Chế Tạo:</span>
-                            <input
-                              type="number"
-                              value={m.manufactureYear}
-                              onChange={(e) => handleUpdateMachinery(idx, { manufactureYear: parseInt(e.target.value) || 2020 })}
-                              className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-brand-500"
-                            />
-                          </div>
-                          <div>
-                            <span className="text-slate-500 font-medium block mb-1">Nguyên Giá:</span>
-                            <FormattedMoneyInput
-                              value={m.originalCost || 0}
-                              onChange={(val) => handleUpdateMachinery(idx, { originalCost: val })}
-                              unit={moneyUnit}
-                              className="h-[40px] py-1.5 text-xs"
-                            />
-                          </div>
-                          <div className="flex items-center gap-3 pt-5 sm:pt-6">
-                            <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-700 dark:text-slate-300">
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                          <th className="p-2.5 w-10 text-center">STT</th>
+                          <th className="p-2.5 min-w-[220px]">
+                            <div>Tên Thiết Bị, Máy Móc, Công Nghệ <span className="text-rose-500">*</span></div>
+                            <span className="text-[11px] font-normal text-slate-500 block">Ví dụ: Dây chuyền dập liên hoàn, Máy tiện CNC...</span>
+                          </th>
+                          <th className="p-2.5 w-20 text-center">
+                            <div>Số Lượng</div>
+                            <span className="text-[11px] font-normal text-slate-500 block">Bộ / Cái</span>
+                          </th>
+                          <th className="p-2.5 w-24 text-center">
+                            <div>Năm SX</div>
+                            <span className="text-[11px] font-normal text-slate-500 block">Chế tạo</span>
+                          </th>
+                          <th className="p-2.5 w-24 text-center">
+                            <div>Năm Sử Dụng</div>
+                            <span className="text-[11px] font-normal text-slate-500 block">Đưa vào xưởng</span>
+                          </th>
+                          <th className="p-2.5 min-w-[180px]">
+                            <div>Tên Sản Phẩm / Bán SP</div>
+                            <span className="text-[11px] font-normal text-slate-500 block">Sản phẩm do máy tạo ra</span>
+                          </th>
+                          <th className="p-2.5 min-w-[160px]">
+                            <div>Sản Lượng Thiết Kế (P)</div>
+                            <span className="text-[11px] font-normal text-slate-500 block">Tối đa/năm (sp, tấn...)</span>
+                          </th>
+                          <th className="p-2.5 w-12 text-center">Xóa</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                        {(survey.machineries || []).map((m, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                            <td className="p-2.5 text-center font-bold text-slate-500 bg-slate-50/60 dark:bg-slate-800/40">
+                              {idx + 1}
+                            </td>
+                            <td className="p-2">
                               <input
-                                type="checkbox"
-                                checked={m.isAutomated || false}
-                                onChange={(e) => handleUpdateMachinery(idx, { isAutomated: e.target.checked })}
-                                className="rounded border-slate-300"
+                                type="text"
+                                value={m.name}
+                                onChange={(e) => handleUpdateMachinery(idx, { name: e.target.value })}
+                                placeholder="Nhập tên dây chuyền / máy móc chính..."
+                                className="w-full h-[38px] px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold focus:ring-2 focus:ring-brand-500"
                               />
-                              <span>Tự động hóa / CNC</span>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                min="1"
+                                value={m.quantity || 1}
+                                onChange={(e) => handleUpdateMachinery(idx, { quantity: parseInt(e.target.value) || 1 })}
+                                className="w-full h-[38px] px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center font-semibold focus:ring-2 focus:ring-brand-500"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                value={m.manufactureYear || 2020}
+                                onChange={(e) => handleUpdateMachinery(idx, { manufactureYear: parseInt(e.target.value) || 2020 })}
+                                className="w-full h-[38px] px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center focus:ring-2 focus:ring-brand-500"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="number"
+                                value={m.startUsageYear || 2021}
+                                onChange={(e) => handleUpdateMachinery(idx, { startUsageYear: parseInt(e.target.value) || 2021 })}
+                                className="w-full h-[38px] px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center focus:ring-2 focus:ring-brand-500"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                value={m.productName || ""}
+                                onChange={(e) => handleUpdateMachinery(idx, { productName: e.target.value })}
+                                placeholder="Ví dụ: Linh kiện dập, Chi tiết đúc..."
+                                className="w-full h-[38px] px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-brand-500"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                value={m.designedCapacityYear || ""}
+                                onChange={(e) => handleUpdateMachinery(idx, { designedCapacityYear: e.target.value })}
+                                placeholder="Ví dụ: 100.000 sp/năm"
+                                className="w-full h-[38px] px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono font-semibold text-emerald-700 dark:text-emerald-400 focus:ring-2 focus:ring-brand-500"
+                              />
+                            </td>
+                            <td className="p-2 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveMachinery(idx)}
+                                className="text-slate-400 hover:text-rose-600 p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                                title="Xóa dòng thiết bị này"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
+                  {(survey.machineries || []).length === 0 && (
+                    <div className="p-4 text-center text-xs text-slate-500 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 mt-2">
+                      Chưa có thiết bị nào trong danh sách. Bấm <strong>"Thêm Thiết Bị"</strong> ở trên để thêm dây chuyền chính.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1464,6 +1497,124 @@ export default function AssessmentWizardPage() {
                   <span className="text-xs text-slate-500 mt-1 block">
                     * <strong>Hướng dẫn BCTC:</strong> Doanh thu thuần lấy tại <strong>Mã số 10</strong> (Báo cáo KQKD). Tổng chi phí SXKD lấy tổng Giá vốn hàng bán (Mã 11) + Chi phí tài chính (Mã 22) + Chi phí bán hàng (Mã 25) + Chi phí QLDN (Mã 26). Hệ thống tự động tính hệ số hiệu quả sản xuất kinh doanh (TC07) và tỷ lệ tăng năng suất lao động <strong>K_ns</strong> (TC08).
                   </span>
+                </div>
+
+                {/* Mục C.2: Tên tối đa 03 sản phẩm có doanh thu cao nhất (Trang 24–25 Phụ lục I TT17) */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <div>
+                      <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Package className="w-4 h-4 text-emerald-600" />
+                        Mục C.2 · Danh Mục Sản Phẩm Chủ Lực (Tối Đa 03 Sản Phẩm Tạo Doanh Thu Cao Nhất)
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Theo quy định Mục C.2 Phụ lục I TT 17/2019/TT-BKHCN: Doanh nghiệp kê khai tối đa 03 sản phẩm chủ lực tạo doanh thu cao nhất.
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-200 self-start sm:self-auto">
+                      Phụ Lục I TT17 (Trang 24–25)
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Sản phẩm 1 */}
+                    <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          1. Sản phẩm chủ lực 1 (Cao nhất)
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                          Bắt buộc
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={survey.mainProduct1Name || ""}
+                        onChange={(e) => updateSurvey({ mainProduct1Name: e.target.value })}
+                        placeholder="Ví dụ: Gạo thơm xuất khẩu ST25..."
+                        className="w-full h-[38px] px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
+                        <div className="relative flex-1">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={survey.mainProduct1Share ?? ""}
+                            onChange={(e) => updateSurvey({ mainProduct1Share: parseFloat(e.target.value) || 0 })}
+                            placeholder="60"
+                            className="w-full h-[32px] px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-right pr-6"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 pointer-events-none">%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sản phẩm 2 */}
+                    <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          2. Sản phẩm chủ lực 2
+                        </span>
+                        <span className="text-[10px] text-slate-400">Tùy chọn</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={survey.mainProduct2Name || ""}
+                        onChange={(e) => updateSurvey({ mainProduct2Name: e.target.value })}
+                        placeholder="Ví dụ: Gạo tấm chất lượng cao..."
+                        className="w-full h-[38px] px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
+                        <div className="relative flex-1">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={survey.mainProduct2Share ?? ""}
+                            onChange={(e) => updateSurvey({ mainProduct2Share: parseFloat(e.target.value) || 0 })}
+                            placeholder="25"
+                            className="w-full h-[32px] px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-right pr-6"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 pointer-events-none">%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sản phẩm 3 */}
+                    <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          3. Sản phẩm chủ lực 3
+                        </span>
+                        <span className="text-[10px] text-slate-400">Tùy chọn</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={survey.mainProduct3Name || ""}
+                        onChange={(e) => updateSurvey({ mainProduct3Name: e.target.value })}
+                        placeholder="Ví dụ: Cám gạo trích ly..."
+                        className="w-full h-[38px] px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
+                        <div className="relative flex-1">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={survey.mainProduct3Share ?? ""}
+                            onChange={(e) => updateSurvey({ mainProduct3Share: parseFloat(e.target.value) || 0 })}
+                            placeholder="15"
+                            className="w-full h-[32px] px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-right pr-6"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 pointer-events-none">%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-800 pt-4">
@@ -2134,6 +2285,28 @@ export default function AssessmentWizardPage() {
                       />
                       <span className="text-xs text-slate-500 mt-1 block">
                         Theo Điều 8 Khoản 1 TT17: Nếu tỷ lệ doanh thu sản phẩm mới (G_spm / G_dt) đạt <strong>&ge; 5%</strong> tổng doanh thu thì được cộng thêm <strong>+1.0 điểm</strong>.
+                      </span>
+                    </div>
+
+                    {/* Mục E.1: Kê khai tên sản phẩm mới tiêu biểu (Phụ lục I TT17 Trang 29–30) */}
+                    <div className="md:col-span-2 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <label className="block text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
+                          Mục E.1 · Tên 1–3 Sản Phẩm Mới Tiêu Biểu Tạo Ra Trong 03 Năm Qua (Phụ Lục I TT17)
+                        </label>
+                        <span className="text-[11px] font-semibold text-teal-700 dark:text-teal-400 bg-teal-100 dark:bg-teal-950/80 px-2 py-0.5 rounded border border-teal-200 self-start sm:self-auto">
+                          Trang 29–30 Phụ Lục I TT17
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={survey.newProductNames || ""}
+                        onChange={(e) => updateSurvey({ newProductNames: e.target.value })}
+                        placeholder="Ví dụ: Gạo hữu cơ hút chân không đóng túi zip 1kg, Nước tăng lực thảo mộc..."
+                        className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500"
+                      />
+                      <span className="text-xs text-slate-500 block">
+                        * Kê khai tên thương mại hoặc tên kỹ thuật của sản phẩm mới tiêu biểu tạo ra trong 3 năm qua tương ứng với phân loại đã chọn tại TC23.
                       </span>
                     </div>
 
