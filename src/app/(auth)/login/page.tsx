@@ -211,14 +211,14 @@ export default function LoginPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
                   {[
-                    { label: "Super Admin", email: "super.admin@demo.nacentech.vn", color: "hover:bg-brand-50 text-brand-700 border-brand-200" },
+                    { label: "Super Admin (Toàn quốc)", email: "super.admin@demo.nacentech.vn", color: "hover:bg-brand-50 text-brand-700 border-brand-200" },
+                    { label: "Sở KH&CN Tiền Giang (166 DN)", email: "tiengiang.admin@demo.nacentech.vn", color: "hover:bg-indigo-50 text-indigo-700 border-indigo-200" },
+                    { label: "Sở KH&CN Ninh Thuận (8 DN)", email: "ninhthuan.admin@demo.nacentech.vn", color: "hover:bg-emerald-50 text-emerald-700 border-emerald-200" },
                     { label: "Sở KH&CN Hà Nội", email: "hanoi.admin@demo.nacentech.vn", color: "hover:bg-cyan-50 text-cyan-700 border-cyan-200" },
                     { label: "Doanh Nghiệp Buyer", email: "buyer.user@demo.nacentech.vn", color: "hover:bg-amber-50 text-amber-700 border-amber-200" },
                     { label: "Doanh Nghiệp Seller", email: "seller.user@demo.nacentech.vn", color: "hover:bg-emerald-50 text-emerald-700 border-emerald-200" },
                     { label: "Doanh Nghiệp ĐMST", email: "innovation.entity@demo.nacentech.vn", color: "hover:bg-brand-50 text-brand-700 border-brand-200" },
-                    { label: "Cụm ĐMST HN", email: "cluster.admin@demo.nacentech.vn", color: "hover:bg-innovation-50 text-innovation-600 border-innovation-200" },
                     { label: "Chuyên Gia KH&CN", email: "expert.user@demo.nacentech.vn", color: "hover:bg-teal-50 text-teal-700 border-teal-200" },
-                    { label: "Người Dùng Thường", email: "public.user@demo.nacentech.vn", color: "hover:bg-slate-100 text-slate-700 border-slate-200" },
                   ].map((acc) => (
                     <button
                       key={acc.email}

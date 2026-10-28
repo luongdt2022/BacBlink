@@ -7,6 +7,7 @@ import { RoleGuard } from "@/components/auth/role-guard";
 import {
   Lock,
   LayoutDashboard,
+  Award,
   Inbox,
   AlarmClock,
   Zap,
@@ -58,6 +59,24 @@ const MENU_GROUPS: MenuGroup[] = [
           </span>
         ),
         keywords: "dashboard bi 360 tong quan dieu hanh toan quoc live",
+      },
+      {
+        href: "/admin/assessments/tt17",
+        label: "Dashboard Đánh giá Công nghệ TT17",
+        icon: Award,
+        iconColor: "text-amber-300",
+        badge: (isActive: boolean) => (
+          <span
+            className={`shrink-0 whitespace-nowrap text-xs font-bold px-2 py-0.5 rounded-full leading-none ml-auto transition-colors ${
+              isActive
+                ? "bg-brand-100 text-brand-800"
+                : "bg-emerald-400/20 text-emerald-200 border border-emerald-400/30"
+            }`}
+          >
+            TT17
+          </span>
+        ),
+        keywords: "dashboard danh gia cong nghe tt17 tien giang ninh thuan 26 tieu chi doanh nghiep",
       },
     ],
   },

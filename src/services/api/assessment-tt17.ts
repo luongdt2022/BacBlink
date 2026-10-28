@@ -69,7 +69,16 @@ export interface Tt17SurveyData {
   companyPhone: string;
   companyEmail: string;
   companyType: string;
-  industryCode?: string; // C.10 - C.32
+  industryCode?: string; // C.10 - C.32 (Ngành 1 chính)
+
+  // Mục A.9: Ngành sản xuất kinh doanh phụ (Theo thứ tự doanh thu/LĐ giảm dần - Phụ lục I TT17)
+  secondaryIndustry2?: string;
+  secondaryIndustry3?: string;
+
+  // Mục A.10: Địa chỉ cơ sở sản xuất 1, 2, 3 (Phục vụ thẩm định thực địa)
+  productionFacilityAddress1?: string;
+  productionFacilityAddress2?: string;
+  productionFacilityAddress3?: string;
 
   // Mục B: Máy móc & Thiết bị sản xuất
   machineries: MachineryItem[];
@@ -98,6 +107,7 @@ export interface Tt17SurveyData {
   hasKaizenPolicy: boolean; // Chương trình thúc đẩy sáng kiến
   kaizenCount3Years: number; // Số lượng sáng kiến
   hasHighImpactKaizen: boolean; // Sáng kiến hiệu quả kinh tế cao
+  kaizenHighlights?: string; // Tên 1-3 sáng kiến cải tiến tiêu biểu (tùy chọn)
   maintenanceLevel: 1 | 2 | 3 | 4; // TC10: 1-sự cố, 2-định kỳ, 3-chuyên sâu, 4-chẩn đoán
 
   // Legacy/Fallback Mục C
@@ -209,6 +219,11 @@ export const INITIAL_SURVEY_DATA: Tt17SurveyData = {
   companyEmail: "",
   companyType: "Công ty TNHH",
   industryCode: "C.10",
+  secondaryIndustry2: "",
+  secondaryIndustry3: "",
+  productionFacilityAddress1: "",
+  productionFacilityAddress2: "",
+  productionFacilityAddress3: "",
 
   machineries: [],
   originalCostEquipment: 0,
@@ -321,7 +336,7 @@ export const SAMPLE_BENCHMARK_DAIHUNG: Tt17SurveyData = {
   hasSciTechFund: false,
 
   newProductType: "kieu_dang",
-  newProductRevenueRatio: 5,
+  newProductRevenueRatio: 0,
   rdTechnologyResult: "dang_nghien_cuu",
   academyPartnershipType: "chuyen_gia_dao_tao",
   digitalStrategyLevel: "chua_biet",
@@ -489,6 +504,128 @@ export async function reviewAssessment(id: string, action: "APPROVE" | "REJECT" 
   }
   const json = await res.json();
   return json.data;
+}
+
+export interface Tt17DashboardProvinceStat {
+  scopeId: string;
+  provinceName: string;
+  count: number;
+  approvedCount: number;
+  submittedCount: number;
+  avgTotalScore: number;
+  maxTotalScore: number;
+  minTotalScore: number;
+  avgScoreT: number;
+  avgScoreE: number;
+  avgScoreO: number;
+  avgScoreR: number;
+  avgScoreI: number;
+  avgSyncCoefficient: number;
+  tienTienCount: number;
+  trungBinhTienTienCount: number;
+  trungBinhCount: number;
+  lacHauCount: number;
+}
+
+export interface Tt17DashboardClassificationStat {
+  classification: string;
+  label: string;
+  count: number;
+  percentage: number;
+  avgScore: number;
+}
+
+export interface Tt17DashboardIndustryStat {
+  industryCode: string;
+  count: number;
+  percentage: number;
+  avgTotalScore: number;
+  avgScoreT: number;
+  avgScoreE: number;
+  avgScoreO: number;
+  avgScoreR: number;
+  avgScoreI: number;
+}
+
+export interface Tt17DashboardCriterionStat {
+  code: string;
+  group: string;
+  name: string;
+  maxScore: number;
+  avgScore: number;
+  achievementRate: number;
+  bottleneckCount: number;
+  bottleneckRate: number;
+}
+
+export interface Tt17DashboardEnterpriseItem {
+  id: string;
+  enterpriseName: string;
+  taxCode: string;
+  scopeId: string;
+  industryCode: string;
+  status: string;
+  totalScore: number;
+  scoreT: number;
+  scoreE: number;
+  scoreO: number;
+  scoreR: number;
+  scoreI: number;
+  syncCoefficient: number;
+  classification: string;
+}
+
+export interface Tt17DashboardData {
+  totalAssessments: number;
+  approvedCount: number;
+  submittedCount: number;
+  draftCount: number;
+  changesRequestedCount: number;
+  avgTotalScore: number;
+  maxTotalScore: number;
+  minTotalScore: number;
+  avgSyncCoefficient: number;
+  avgGroupScores: {
+    scoreT: number;
+    maxT: number;
+    scoreE: number;
+    maxE: number;
+    scoreO: number;
+    maxO: number;
+    scoreR: number;
+    maxR: number;
+    scoreI: number;
+    maxI: number;
+  };
+  byProvince: Tt17DashboardProvinceStat[];
+  byClassification: Tt17DashboardClassificationStat[];
+  byIndustry: Tt17DashboardIndustryStat[];
+  criteriaStats: Tt17DashboardCriterionStat[];
+  topEnterprises: Tt17DashboardEnterpriseItem[];
+  bottomEnterprises: Tt17DashboardEnterpriseItem[];
+}
+
+export async function getTt17Dashboard(params?: {
+  scopeId?: string;
+  industryCode?: string;
+  classification?: string;
+}): Promise<Tt17DashboardData | null> {
+  try {
+    const p = new URLSearchParams();
+    if (params?.scopeId) p.set("scopeId", params.scopeId);
+    if (params?.industryCode) p.set("industryCode", params.industryCode);
+    if (params?.classification) p.set("classification", params.classification);
+    const res = await fetch(`/api/v1/admin/assessments/tt17/dashboard?${p.toString()}`, {
+      headers: authClient.getAuthHeaders(),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json.data || null;
+    }
+  } catch (err) {
+    console.error("Lỗi khi tải dữ liệu Dashboard TT17:", err);
+  }
+  return null;
 }
 
 export function calculateLaborProductivityGrowth(series?: FinancialSeriesItem[]): number {
@@ -975,15 +1112,25 @@ export function calculateLocalScore(survey: Tt17SurveyData, industryCodeInput?: 
     recommendation: "Thành lập phòng thí nghiệm, phòng thiết kế CAD/CAM riêng biệt phục vụ R&D.",
   });
 
-  // TC22: Quỹ KHCN & Chi phí R&D - Max 4đ
+  // TC22: Quỹ KHCN & Chi phí R&D - Max 4đ (Phân nhánh theo 3 cấp quy mô DN - Điều 7 Khoản 5 TT17)
   const gRd = survey.rdExpenses3Years || 0;
   let kRd = 0;
   if (gDt > 0) kRd = (gRd / gDt) * 100;
   let s22 = 0;
   if (survey.hasSciTechFund) s22 += 1;
-  if (kRd >= 1.5) s22 += 3;
-  else if (kRd >= 0.8) s22 += 2;
-  else if (kRd >= 0.4) s22 += 1;
+  if (totalCap >= 1000000000000 && m >= 3000) {
+    if (kRd >= 0.1) s22 += 3;
+    else if (kRd >= 0.06) s22 += 2;
+    else if (kRd >= 0.02) s22 += 1;
+  } else if (totalCap >= 100000000000 && m >= 200) {
+    if (kRd >= 0.5) s22 += 3;
+    else if (kRd >= 0.3) s22 += 2;
+    else if (kRd >= 0.1) s22 += 1;
+  } else {
+    if (kRd >= 1.0) s22 += 3;
+    else if (kRd >= 0.6) s22 += 2;
+    else if (kRd >= 0.2) s22 += 1;
+  }
   s22 = Math.min(4, Math.max(1, s22));
   criteria.push({
     code: "TC22",
@@ -992,7 +1139,7 @@ export function calculateLocalScore(survey: Tt17SurveyData, industryCodeInput?: 
     maxScore: 4,
     achievedScore: s22,
     isBottleneck: s22 < 1.6,
-    recommendation: "Trích lập Quỹ phát triển KH&CN của DN và nâng tỷ lệ chi R&D lên trên 1% doanh thu.",
+    recommendation: "Trích lập Quỹ phát triển KH&CN của DN và nâng tỷ lệ chi R&D theo định mức quy mô.",
   });
 
   const scoreR = Math.min(17, s18 + s19 + s20 + s21 + s22);
@@ -1000,13 +1147,13 @@ export function calculateLocalScore(survey: Tt17SurveyData, industryCodeInput?: 
   // --------------------------------------------------------------------------
   // NHÓM I: NĂNG LỰC ĐỔI MỚI SÁNG TẠO (TỐI ĐA 14 ĐIỂM)
   // --------------------------------------------------------------------------
-  // TC23: Kết quả nghiên cứu, phát triển sản phẩm - Max 4đ
+  // TC23: Kết quả nghiên cứu, phát triển sản phẩm - Max 4đ (Điều 8 Khoản 1 TT17: Doanh thu SP mới >= 5% cộng +1đ)
   let s23 = 1;
   const prodType = survey.newProductType || "tinh_nang";
   if (prodType === "hoan_toan_moi") s23 = 3;
   else if (prodType === "tinh_nang") s23 = 2;
   else if (prodType === "kieu_dang") s23 = 1;
-  if (survey.newProductRevenueRatio >= 20) s23 = Math.min(4, s23 + 1);
+  if (prodType !== "none" && survey.newProductRevenueRatio >= 5) s23 = Math.min(4, s23 + 1);
   criteria.push({
     code: "TC23",
     group: "I",

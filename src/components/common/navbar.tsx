@@ -70,14 +70,13 @@ export function Navbar() {
   const navLinks = [
     { href: "/", label: t("home") },
     { href: "/gioi-thieu", label: t("about") },
+    { href: "/trien-lam", label: "Sự kiện Techmart" },
     { href: "/chao-ban-cong-nghe", label: t("technology_offers") },
     { href: "/nhu-cau-cong-nghe", label: t("technology_demands") },
     { href: "/doanh-nghiep-dmst", label: t("innovative_enterprises") },
-    { href: "/trien-lam", label: "Sự kiện Techmart" },
     { href: "/chuyen-gia", label: t("experts") },
-    { href: "/huong-dan", label: t("user_guide") || "Hướng dẫn" },
     { href: "/dich-vu-khac", label: t("services") },
-    { href: "/wireframes", label: t("wireframes") || "Wireframes" },
+    { href: "/huong-dan", label: t("user_guide") || "Hướng dẫn" },
   ];
 
   const isActiveLink = (href: string) => href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);

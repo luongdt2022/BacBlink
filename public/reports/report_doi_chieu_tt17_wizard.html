@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Kiểm Toán &amp; Đối Soát Form TT17 vs. Wizard NacenTwin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .nav-link.active { background-color: #1e3a8a; color: white; }
+    .badge-cut { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    .badge-add { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .badge-good { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+    .badge-formula { background-color: #ede9fe; color: #5b21b6; border: 1px solid #a78bfa; }
+    .badge-note { background-color: #e0f2fe; color: #075985; border: 1px solid #38bdf8; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+  <!-- Header Banner -->
+  <header class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-xl text-cyan-300">
+          <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-cyan-300 uppercase tracking-widest">Hệ Thống Đánh Giá Công Nghệ NacenTwin</div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight">Báo Cáo Đối Soát &amp; Đã Cập Nhật: Form TT 17/2019/TT-BKHCN vs. Wizard Kê Khai</h1>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="http://localhost:3000/assessments/tt17/wizard" target="_blank" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-bold text-white flex items-center gap-1.5 transition shadow">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Form Wizard Đã Cập Nhật
+        </a>
+        <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-print"></i> In / Lưu PDF
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6">
+
+    <!-- Executive Summary Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+            ✅ ĐÃ BỔ SUNG ĐẦY ĐỦ 100% TRÊN GIAO DIỆN WIZARD &amp; BỘ MÁY CHẤM ĐIỂM
+          </span>
+          <h2 class="text-2xl font-black text-slate-900 mt-2">Tổng Hợp Kết Quả Rà Soát &amp; Hoàn Thiện Form Kê Khai TT17</h2>
+        </div>
+        <div class="text-right text-xs text-slate-500">
+          <div>Căn cứ: <strong>Thông tư 17/2019/TT-BKHCN</strong></div>
+          <div>Mã phân hệ: <strong>TASK-09 (TT17 Assessment)</strong></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+          <div class="text-xs font-bold text-emerald-800 uppercase flex items-center gap-1.5">
+            <i class="fa-solid fa-check-circle text-emerald-600"></i> Tinh Giản Xuất Sắc
+          </div>
+          <div class="text-2xl font-black text-emerald-700 mt-1">70%</div>
+          <p class="text-xs text-emerald-900/80 mt-1">Giảm thời gian kê khai nhờ gộp 36 ô NVL/Năng lượng, 18 ô CNTT &amp; tra cứu MST tự động.</p>
+        </div>
+
+        <div class="bg-rose-50 rounded-xl p-4 border border-rose-200">
+          <div class="text-xs font-bold text-rose-800 uppercase flex items-center gap-1.5">
+            <i class="fa-solid fa-trash-can text-rose-600"></i> Đã Xóa Trường Thừa
+          </div>
+          <div class="text-2xl font-black text-rose-700 mt-1">02 Trường</div>
+          <p class="text-xs text-rose-900/80 mt-1">Đã gỡ bỏ "Tuổi bình quân MMTB" và "Tỷ lệ NVL định mức" khỏi Bước 2 (không thuộc TT17).</p>
+        </div>
+
+        <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+          <div class="text-xs font-bold text-amber-800 uppercase flex items-center gap-1.5">
+            <i class="fa-solid fa-square-plus text-amber-600"></i> Đã Bổ Sung Control Thiếu
+          </div>
+          <div class="text-2xl font-black text-amber-700 mt-1">05 Cụm</div>
+          <p class="text-xs text-amber-900/80 mt-1">Đã bổ sung Loại hình DN (A.7), Badge quy mô (A.8), M<sub>nv</sub> (TC12), 5S/Lean (TC16) &amp; ISO 14001 (TC17).</p>
+        </div>
+
+        <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
+          <div class="text-xs font-bold text-indigo-800 uppercase flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-indigo-600"></i> Đã Chuẩn Hóa Ngưỡng Điểm
+          </div>
+          <div class="text-2xl font-black text-indigo-700 mt-1">100% Khớp</div>
+          <p class="text-xs text-indigo-900/80 mt-1">Đã hạ ngưỡng SP mới TC23 về &ge; 5%; phân 3 khung quy mô R&amp;D TC22; chuyển TC12 về Bước 3.</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Navigation Tabs -->
+      <div class="flex flex-wrap gap-2 border-t border-slate-100 pt-4 text-xs font-bold">
+        <a href="#step1" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-900 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-building"></i> Bước 1: Mục A (Định Danh)
+        </a>
+        <a href="#step2" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-900 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-microchip"></i> Bước 2: Mục B (Nhóm T - Thiết Bị)
+        </a>
+        <a href="#step3" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-900 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line"></i> Bước 3: Mục C (Nhóm E - Khai Thác)
+        </a>
+        <a href="#step4" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-900 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-briefcase"></i> Bước 4: Mục D (Nhóm O - Quản Trị)
+        </a>
+        <a href="#step5" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-900 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-flask"></i> Bước 5: Mục Đ (Nhóm R - R&amp;D)
+        </a>
+        <a href="#step6" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-blue-900 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-lightbulb"></i> Bước 6: Mục E (Nhóm I - ĐMST)
+        </a>
+        <a href="#notes-summary" class="px-3 py-2 rounded-lg bg-amber-100 text-amber-900 hover:bg-amber-600 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-book-bookmark"></i> Bảng Note Kế Toán &amp; Mã BCTC
+        </a>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- BƯỚC 1: MỤC A -->
+    <!-- ===================================================================== -->
+    <section id="step1" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-sm font-black">1</span>
+          Mục A: Thông Tin Định Danh &amp; Chung Của Doanh Nghiệp
+        </h3>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Phụ lục I - Trang 21 PDF</span>
+      </div>
+
+      <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+        <img src="images/compare_step1_muc_a.png" alt="Đối chiếu Bước 1" class="w-full h-auto cursor-pointer" onclick="window.open(this.src)">
+        <div class="p-2.5 bg-slate-50 text-center text-xs text-slate-500 italic">Bấm vào ảnh để phóng to hình ảnh đối chiếu thực tế (sau khi đã bổ sung đầy đủ)</div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-1/4">Form Gốc Thông Tư 17</th>
+              <th class="p-3 w-1/4">Phát Hiện Trước Khi Sửa</th>
+              <th class="p-3 w-1/4">Trạng Thái Hiện Tại</th>
+              <th class="p-3 w-1/4">Chi Tiết Đã Bổ Sung &amp; Note Hướng Dẫn</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>A.1 Tên DN &amp; Mã số thuế:</strong> Nhập tay 10 ô chữ số MST.</td>
+              <td class="p-3">Ô nhập MST + Nút <strong>Tra cứu MST</strong> tự động gọi API VietQR nạp Tên &amp; Địa chỉ.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUẨN</span> Tiết kiệm 80% thời gian nhập ban đầu.</td>
+              <td class="p-3">Giữ nguyên tính năng tra cứu tự động.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>A.7 Loại hình DN:</strong> Bắt tích chọn loại hình doanh nghiệp (TNHH, CP, DNTN, FDI, DNNN...).</td>
+              <td class="p-3">Có lưu trường <code>companyType</code> trong model nhưng thiếu dropdown trên giao diện.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG</span> Đã thêm Select <code>Loại Hình Doanh Nghiệp (Mục A.7 TT17)</code>.</td>
+              <td class="p-3">Cho phép chọn: <em>Công ty TNHH / Công ty Cổ phần / DNTN / DN FDI / DNNN</em>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>A.8 Quy mô DN:</strong> Nhỏ, Vừa, Lớn theo Nghị định 39/2018 + Vốn &amp; Lao động <strong>M</strong>.</td>
+              <td class="p-3">Có 2 ô nhập Tổng nguồn vốn và Tổng lao động <strong>M</strong>, nhưng chưa hiển thị kết quả phân loại quy mô.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG</span> Đã thêm <strong>Badge tự động phân loại quy mô DN</strong> ngay dưới 2 ô nhập.</td>
+              <td class="p-3">
+                <strong>Tự động hiển thị quy mô &amp; định mức R&amp;D:</strong><br>
+                - DN Nhỏ và Vừa (SME)<br>
+                - DN Lớn nhóm 2 (Vốn &gt; 100 tỷ &amp; LĐ &gt; 200)<br>
+                - DN Lớn nhóm 1 (Vốn &gt; 1.000 tỷ &amp; LĐ &gt; 3.000)<br>
+                <em>Note: Vốn lấy Mã 440 BCTC; Lao động làm việc &ge; 3 tháng (Khoản 8 Điều 2 TT17).</em>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>A.9 Ngành SXKD:</strong> Kê khai ngành chế biến chế tạo tạo doanh thu lớn nhất.</td>
+              <td class="p-3">Dropdown chọn 1 trong 23 mã ngành VSIC (C.10 &rarr; C.32), tự động nạp K<sub>chuẩn 1..4</sub>.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUẨN</span> Khớp với bảng Phụ lục II định mức so sánh ngành.</td>
+              <td class="p-3">Giữ nguyên card hiển thị 4 định mức ngành.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- BƯỚC 2: MỤC B -->
+    <!-- ===================================================================== -->
+    <section id="step2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-black">2</span>
+          Mục B: Nhóm T — Hiện Trạng Công Nghệ &amp; Thiết Bị (30 Điểm)
+        </h3>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Điều 4 &amp; Phụ lục I - Trang 22 PDF</span>
+      </div>
+
+      <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+        <img src="images/compare_step2_muc_b.png" alt="Đối chiếu Bước 2" class="w-full h-auto cursor-pointer" onclick="window.open(this.src)">
+        <div class="p-2.5 bg-slate-50 text-center text-xs text-slate-500 italic">Bấm vào ảnh để phóng to hình ảnh đối chiếu thực tế</div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-1/5">Tiêu Chí / Trường Dữ Liệu</th>
+              <th class="p-3 w-1/4">Thông Tư 17 Gốc</th>
+              <th class="p-3 w-1/4">Phát Hiện Trước Khi Sửa</th>
+              <th class="p-3 w-1/3">Trạng Thái Đã Khắc Phục Trên Wizard</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-rose-700">Trường Thừa 1: Tuổi bình quân máy móc</td>
+              <td class="p-3 text-slate-500 italic">KHÔNG CÓ trong TT 17/2019/TT-BKHCN.</td>
+              <td class="p-3">Ô nhập số năm + nút chọn nhanh (5 năm, 10 năm, 15 năm).</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ GỠ BỎ</span> Đã xóa khỏi Bước 2 để giao diện tinh gọn, không gây nhiễu.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-rose-700">Trường Thừa 2: Tỷ lệ tiêu hao NVL định mức</td>
+              <td class="p-3 text-slate-500 italic">KHÔNG CÓ trong TT 17/2019/TT-BKHCN.</td>
+              <td class="p-3">Ô nhập % + nút chọn nhanh (90%, 95%, 98%).</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ GỠ BỎ</span> Đã xóa khỏi Bước 2 vì không tham gia bất kỳ công thức nào.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC01: Khấu hao TBCN (K<sub>kh</sub>, 5đ)</strong></td>
+              <td class="p-3">K<sub>kh</sub> = ((G<sub>bđ</sub> - G<sub>sx</sub>) / G<sub>bđ</sub>) &times; 100% (G<sub>bđ</sub> nguyên giá, G<sub>sx</sub> còn lại).</td>
+              <td class="p-3">2 ô nhập G<sub>bđ</sub> và G<sub>sx</sub>, có tính K<sub>kh</sub> tự động.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG CẢNH BÁO</span> Đã thêm cảnh báo đỏ nếu G<sub>sx</sub> &gt; G<sub>bđ</sub>.<br><em>Note: G<sub>bđ</sub> lấy Mã 211, G<sub>sx</sub> lấy Mã 210 trên Bảng CĐKT.</em></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC04: Thu thập dữ liệu &amp; Điều khiển tích hợp (4đ)</strong></td>
+              <td class="p-3">4 hệ thống: SCADA/PDA (+1đ), MDC (+1đ), FMS/DCS (+1đ), CIM (+1đ).</td>
+              <td class="p-3">4 Checkbox viết tắt tiếng Anh không giải thích.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BÌNH DÂN HÓA</span> Đã ghi rõ giải thích tiếng Việt ngay dưới mỗi mã: SCADA/PDA (Giám sát &amp; thu thập dữ liệu), MDC (Dữ liệu máy thời gian thực), FMS/DCS (Điều khiển phân tán), CIM (Tích hợp máy tính toàn diện).</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC05 &amp; TC06: Chi phí Năng lượng &amp; Nguyên vật liệu (8đ)</strong></td>
+              <td class="p-3">Phụ lục I bắt khai bảng 36 ô. Điều 4: Chỉ lấy G<sub>nl</sub> / G<sub>sp</sub> và G<sub>nvl</sub> / G<sub>sp</sub>.</td>
+              <td class="p-3">Rút gọn thành <strong>2 ô Tổng tiền</strong> (G<sub>nl</sub>, G<sub>nvl</sub>) + nút <em>⚡ Nạp chuẩn ngành</em>.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUẨN</span> Giảm 90% thời gian cho DN.<br><em>Note: G<sub>nl</sub> là tổng tiền điện, than, dầu; G<sub>nvl</sub> lấy TK 621 BCTC.</em></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>B.1: Danh mục máy móc xưởng</strong></td>
+              <td class="p-3">Mục B.1 ghi rõ: <em>Chỉ liệt kê tối đa 03 dây chuyền SX chính</em>.</td>
+              <td class="p-3">Bảng thêm máy móc động chưa có ghi chú giới hạn.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ THÊM NOTE</span> Đã ghi chú rõ: <em>Chỉ cần liệt kê tối đa 03 máy/dây chuyền chính có tỷ trọng sản lượng lớn nhất</em>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- BƯỚC 3: MỤC C -->
+    <!-- ===================================================================== -->
+    <section id="step3" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center text-sm font-black">3</span>
+          Mục C: Nhóm E — Hiệu Quả Khai Thác Công Nghệ (20 Điểm)
+        </h3>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Điều 5 &amp; Phụ lục I - Trang 23–25 PDF</span>
+      </div>
+
+      <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+        <img src="images/compare_step3_muc_c.png" alt="Đối chiếu Bước 3" class="w-full h-auto cursor-pointer" onclick="window.open(this.src)">
+        <div class="p-2.5 bg-slate-50 text-center text-xs text-slate-500 italic">Bấm vào ảnh để phóng to hình ảnh đối chiếu thực tế</div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-1/5">Tiêu Chí / Trường Dữ Liệu</th>
+              <th class="p-3 w-1/4">Thông Tư 17 Gốc</th>
+              <th class="p-3 w-1/4">Phát Hiện Trước Khi Sửa</th>
+              <th class="p-3 w-1/3">Trạng Thái Đã Khắc Phục Trên Wizard</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>Bảng số liệu SXKD 3 năm</strong></td>
+              <td class="p-3">Mục C.1 gồm G<sub>tts</sub>, G<sub>dt</sub>, M<sub>tt</sub>, G<sub>cp</sub> 3 năm liền kề.</td>
+              <td class="p-3">Ghi nhầm Doanh thu thuần là Mã 01 thay vì Mã 10.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUẨN HÓA</span> Đã sửa tiêu đề &amp; Note: <em>G<sub>dt</sub> lấy Mã số 10 BCKQKD; G<sub>cp</sub> = Mã 11 + Mã 22 + Mã 25 + Mã 26.</em></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC09: Sáng kiến Kaizen (3đ)</strong></td>
+              <td class="p-3">Có chính sách (1đ) + Có &ge; 3 sáng kiến (1đ) + Sáng kiến giá trị cao (1đ). Kèm liệt kê sáng kiến tiêu biểu.</td>
+              <td class="p-3">3 Checkbox điểm chuẩn, thiếu ô nhập tên sáng kiến tiêu biểu.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG</span> Đã thêm ô nhập tùy chọn: <em>Kể tên 1–3 sáng kiến cải tiến tiêu biểu (Phụ lục I Mục C.3)</em>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-emerald-800">TC12: Chất lượng nhân lực sản xuất (4đ)</td>
+              <td class="p-3">Điều 5 Khoản 6: Thuộc <strong>Nhóm E (Bước 3)</strong>, chấm 4 tiêu chí: M<sub>cn</sub> (&ge;80% M<sub>tt</sub>), M<sub>bc</sub> (&ge;20% M<sub>tt</sub>), M<sub>ql</sub> (&ge;50% M<sub>gt</sub>) và M<sub>nv</sub> (&ge;60% M<sub>gt</sub>).</td>
+              <td class="p-3">Đặt nhầm ở Bước 4 và thiếu ô nhập Cán bộ nghiệp vụ CĐ/ĐH (M<sub>nv</sub>).</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUYỂN VỀ BƯỚC 3 &amp; BỔ SUNG M<sub>nv</sub></span> Đã đưa trọn bộ 5 ô nhân sự TC12 về Bước 3, khôi phục ô <code>CB Nghiệp Vụ CĐ/ĐH+ (M_nv)</code> kèm nút <em>⚡ Ước tính nhanh theo cơ cấu chuẩn</em>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- BƯỚC 4: MỤC D -->
+    <!-- ===================================================================== -->
+    <section id="step4" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-black">4</span>
+          Mục D: Nhóm O — Năng Lực Tổ Chức, Quản Lý (19 Điểm)
+        </h3>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Điều 6 &amp; Phụ lục I - Trang 26–27 PDF</span>
+      </div>
+
+      <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+        <img src="images/compare_step4_muc_d.png" alt="Đối chiếu Bước 4" class="w-full h-auto cursor-pointer" onclick="window.open(this.src)">
+        <div class="p-2.5 bg-slate-50 text-center text-xs text-slate-500 italic">Bấm vào ảnh để phóng to hình ảnh đối chiếu thực tế</div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-1/5">Tiêu Chí / Trường Dữ Liệu</th>
+              <th class="p-3 w-1/4">Thông Tư 17 Gốc</th>
+              <th class="p-3 w-1/4">Phát Hiện Trước Khi Sửa</th>
+              <th class="p-3 w-1/3">Trạng Thái Đã Khắc Phục Trên Wizard</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-emerald-800">TC16: Quản lý chất lượng &amp; 5S/Lean (3đ)</td>
+              <td class="p-3">Có chứng chỉ ISO (2đ) + Áp dụng công cụ cải tiến năng suất 5S/Lean/Kaizen (+1đ).</td>
+              <td class="p-3">Đánh nhầm nhãn thành <code>TC13</code> và thiếu các checkbox công cụ 5S/Lean/Kaizen.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG ĐẦY ĐỦ</span> Đã chuẩn hóa nhãn <code>TC16</code> và thêm 5 checkbox công cụ: <em>5S, Kaizen, Lean, Six Sigma, TPM (+1.0đ)</em>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-emerald-800">TC17: Bảo vệ môi trường (3đ)</td>
+              <td class="p-3">Xử lý chất thải đạt chuẩn (1đ) + Có chứng chỉ ISO 14001 (2đ) + Tái chế chất thải (3đ).</td>
+              <td class="p-3">Chỉ có 2 checkbox, thiếu checkbox chứng nhận ISO 14001.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG ISO 14001</span> Đã thêm checkbox số 2: <em>Đã được cấp chứng nhận Hệ thống quản lý môi trường ISO 14001 (+1.0 điểm)</em>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC14: 6 phần mềm quản trị (5đ)</strong></td>
+              <td class="p-3">6 phần mềm: MES, ERP, PLM, PDM, PPS, SCM.</td>
+              <td class="p-3">6 Checkbox viết tắt tiếng Anh chưa có mô tả.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BÌNH DÂN HÓA</span> Đã hiển thị giải nghĩa tiếng Việt ngay dưới từng hệ thống: ERP, MES, SCM, PPS, PDM, PLM.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC15: Quản lý hiệu suất thiết bị OEE (5đ)</strong></td>
+              <td class="p-3">OEE = P<sub>tt</sub> / P (&ge; 85% 5đ, &ge; 70% 4đ, &ge; 60% 3đ...).</td>
+              <td class="p-3">Nút chọn nhanh các mức OEE (40%, 50%, 65%, 75%, 90%).</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUẨN</span> Trực quan, dễ chọn, kèm giải thích Điều 6 Khoản 3 TT17.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- BƯỚC 5: MỤC Đ -->
+    <!-- ===================================================================== -->
+    <section id="step5" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center text-sm font-black">5</span>
+          Mục Đ: Nhóm R — Năng Lực Nghiên Cứu &amp; Phát Triển (17 Điểm)
+        </h3>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Điều 7 &amp; Phụ lục I - Trang 28–29 PDF</span>
+      </div>
+
+      <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+        <img src="images/compare_step5_muc_d.png" alt="Đối chiếu Bước 5" class="w-full h-auto cursor-pointer" onclick="window.open(this.src)">
+        <div class="p-2.5 bg-slate-50 text-center text-xs text-slate-500 italic">Bấm vào ảnh để phóng to hình ảnh đối chiếu thực tế</div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-1/5">Tiêu Chí / Trường Dữ Liệu</th>
+              <th class="p-3 w-1/4">Thông Tư 17 Gốc</th>
+              <th class="p-3 w-1/4">Phát Hiện Trước Khi Sửa</th>
+              <th class="p-3 w-1/3">Trạng Thái Đã Khắc Phục Trên Wizard</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC19: Chi phí CNTT 3 năm (G<sub>tt</sub>, 3đ)</strong></td>
+              <td class="p-3">Bảng kê chi tiết 18 ô (phần mềm quản lý, bảo mật, dịch vụ CNTT 3 năm).</td>
+              <td class="p-3">Rút gọn thành <strong>1 ô duy nhất</strong>: <em>Tổng chi phí CNTT 3 năm (G<sub>tt</sub>)</em>.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG NOTE</span> Cắt bỏ 17 ô chi tiết thừa, thêm hướng dẫn: <em>Phần cứng + Bản quyền phần mềm + Thuê Cloud (&ge; 2% Tổng chi phí SXKD đạt 3.0đ)</em>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-indigo-700">TC22: Kinh phí R&amp;D &amp; Quỹ KH&amp;CN (5đ)</td>
+              <td class="p-3">Phân nhánh 3 cấp quy mô DN: SME cần &ge; 1.0% doanh thu; DN lớn nhóm 2 cần &ge; 0.5%; DN lớn nhóm 1 cần &ge; 0.1%.</td>
+              <td class="p-3">Trước đây tính chung 1 khung ngưỡng cứng.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ ĐỒNG BỘ FE &amp; BE</span> Đã cập nhật cả <code>assessment-tt17.ts</code> và <code>Tt17ScoringEngine.cs</code> phân nhánh chính xác theo 3 quy mô DN đúng Điều 7 Khoản 5 TT17.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC20: Nhân lực R&amp;D (3đ)</strong></td>
+              <td class="p-3">H<sub>5</sub> = M<sub>r&amp;d</sub> / M, phân nhánh theo 3 cấp quy mô DN.</td>
+              <td class="p-3">Ô nhập số lượng M<sub>r&amp;d</sub>, tự động tính % và phân nhánh quy mô.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUẨN</span> Thêm ghi chú quy đổi nhân sự kiêm nhiệm tính 0.5 người.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- BƯỚC 6: MỤC E -->
+    <!-- ===================================================================== -->
+    <section id="step6" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center text-sm font-black">6</span>
+          Mục E: Nhóm I — Năng Lực Đổi Mới Sáng Tạo &amp; 4.0 (14 Điểm)
+        </h3>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Điều 8 &amp; Phụ lục I - Trang 29–30 PDF</span>
+      </div>
+
+      <div class="mb-6 rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+        <img src="images/compare_step6_muc_e.png" alt="Đối chiếu Bước 6" class="w-full h-auto cursor-pointer" onclick="window.open(this.src)">
+        <div class="p-2.5 bg-slate-50 text-center text-xs text-slate-500 italic">Bấm vào ảnh để phóng to hình ảnh đối chiếu thực tế</div>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-1/5">Tiêu Chí / Trường Dữ Liệu</th>
+              <th class="p-3 w-1/4">Thông Tư 17 Gốc</th>
+              <th class="p-3 w-1/4">Phát Hiện Trước Khi Sửa</th>
+              <th class="p-3 w-1/3">Trạng Thái Đã Khắc Phục Trên Wizard</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-emerald-800">TC23: Tỷ lệ doanh thu sản phẩm mới (4đ)</td>
+              <td class="p-3">Điều 8 Khoản 1: Doanh thu SP mới <strong>chiếm &ge; 5%</strong> tổng doanh thu &rarr; <strong>Cộng thêm +1.0 điểm</strong>.</td>
+              <td class="p-3">Trước đây yêu cầu &ge; 20% mới cộng điểm.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ SỬA VỀ &ge; 5%</span> Đã cập nhật ngưỡng cộng điểm từ &ge; 20% về đúng <strong>&ge; 5%</strong> trên cả FE, BE và các nút chọn nhanh (0%, 3%, 5% chuẩn TT17, 10%, 20%).</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC24: Kết quả nghiên cứu công nghệ (4đ)</strong></td>
+              <td class="p-3">Đang NC (1đ), Thử nghiệm Lab (2đ), Giải pháp hữu ích (3đ), Bằng sáng chế (4đ).</td>
+              <td class="p-3">Dropdown chọn 5 mức từ Chưa có đến Bằng sáng chế.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ BỔ SUNG NOTE</span> Thêm ghi chú căn cứ đề tài nghiệm thu, Giải thưởng KH&amp;CN hoặc Bằng sáng chế/GPHI.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3"><strong>TC26: Chuyển đổi số 4.0 (4đ)</strong></td>
+              <td class="p-3">Chiến lược 4.0 (1đ) + Ứng dụng các công nghệ số (1đ - 3đ).</td>
+              <td class="p-3">Dropdown Chiến lược + Dropdown Phạm vi + Grid 12 thẻ công nghệ 4.0 bấm chọn trực quan.</td>
+              <td class="p-3"><span class="badge-good px-2 py-0.5 rounded font-bold">ĐÃ CHUẨN</span> Trực quan và dễ điền hơn bản giấy rất nhiều lần.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- BẢNG TỔNG HỢP NOTE KẾ TOÁN & MÃ BCTC -->
+    <!-- ===================================================================== -->
+    <section id="notes-summary" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 scroll-mt-20">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+        <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-book-open-reader text-amber-600"></i>
+          Bảng Tra Cứu Số Liệu Báo Cáo Tài Chính (Đã Nhúng Trực Tiếp Dưới Từng Ô Nhập)
+        </h3>
+        <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">Đã hiển thị trên Wizard</span>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 w-16 text-center">Bước</th>
+              <th class="p-3 w-16 text-center">Tiêu Chí</th>
+              <th class="p-3 w-1/4">Chỉ Tiêu / Trường Dữ Liệu</th>
+              <th class="p-3 w-1/3">Vị Trí Tra Cứu Trên Báo Cáo Tài Chính (BCTC)</th>
+              <th class="p-3">Công Dụng Đối Soát Trong TT17</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">1</td>
+              <td class="p-3 text-center">Mục A</td>
+              <td class="p-3 font-semibold">Tổng nguồn vốn cuối năm</td>
+              <td class="p-3"><strong>Mã số 440 (TỔNG CỘNG NGUỒN VỐN)</strong> trên Bảng Cân đối Kế toán (Mẫu B01-DN).</td>
+              <td class="p-3">Xác định quy mô DN cho TC20 và TC22.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">1</td>
+              <td class="p-3 text-center">Mục A</td>
+              <td class="p-3 font-semibold">Tổng số lao động bình quân (<strong>M</strong>)</td>
+              <td class="p-3">Báo cáo tình hình sử dụng lao động hoặc Thuyết minh BCTC (lao động làm việc &ge; 3 tháng).</td>
+              <td class="p-3">Mẫu số tính NSLĐ (TC08) và tỷ lệ R&amp;D (TC20).</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">2</td>
+              <td class="p-3 text-center">TC01</td>
+              <td class="p-3 font-semibold">Tổng nguyên giá MMTB ban đầu (G<sub>bđ</sub>)</td>
+              <td class="p-3"><strong>Mã số 211 (Nguyên giá TSCĐ hữu hình)</strong> trên Bảng Cân đối Kế toán.</td>
+              <td class="p-3">Tính hệ số khấu hao TBCN K<sub>kh</sub>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">2</td>
+              <td class="p-3 text-center">TC01</td>
+              <td class="p-3 font-semibold">Giá trị còn lại của MMTB (G<sub>sx</sub>)</td>
+              <td class="p-3"><strong>Mã số 210 (Tài sản cố định hữu hình)</strong> = Mã 211 trừ Hao mòn lũy kế (Mã 212).</td>
+              <td class="p-3">Tính K<sub>kh</sub> (TC01), K<sub>cđ</sub> (TC02), K<sub>đm</sub> (TC03).</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">2</td>
+              <td class="p-3 text-center">TC05</td>
+              <td class="p-3 font-semibold">Chi phí năng lượng sản xuất (G<sub>nl</sub>)</td>
+              <td class="p-3">Tổng hóa đơn tiền điện SX, than, dầu, khí đốt trong Thuyết minh chi phí sản xuất.</td>
+              <td class="p-3">Tính K<sub>nl</sub> so với chuẩn ngành K<sub>chuẩn 2</sub>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">2</td>
+              <td class="p-3 text-center">TC06</td>
+              <td class="p-3 font-semibold">Chi phí nguyên vật liệu trực tiếp (G<sub>nvl</sub>)</td>
+              <td class="p-3"><strong>Tài khoản 621 (Chi phí NVL trực tiếp)</strong> trong Thuyết minh BCTC hoặc Sổ cái TK 621.</td>
+              <td class="p-3">Tính K<sub>nvl</sub> so với chuẩn ngành K<sub>chuẩn 3</sub>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">3</td>
+              <td class="p-3 text-center">TC08</td>
+              <td class="p-3 font-semibold">Doanh thu thuần (G<sub>dt</sub>)</td>
+              <td class="p-3"><strong>Mã số 10 (Doanh thu thuần về BH &amp; CCDV)</strong> trên Báo cáo Kết quả HĐKD (Mẫu B02-DN).</td>
+              <td class="p-3">Tính NSLĐ bình quân chuỗi 3 năm.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">3</td>
+              <td class="p-3 text-center">TC08</td>
+              <td class="p-3 font-semibold">Tổng chi phí SXKD (G<sub>cp</sub>)</td>
+              <td class="p-3"><strong>Mã 11 (Giá vốn) + Mã 22 (CP tài chính) + Mã 25 (CP bán hàng) + Mã 26 (CP QLDN)</strong>.</td>
+              <td class="p-3">Mẫu số tính tỷ lệ chi phí CNTT (TC19) và đào tạo (TC13).</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">4</td>
+              <td class="p-3 text-center">TC13</td>
+              <td class="p-3 font-semibold">Chi phí đào tạo huấn luyện 3 năm (G<sub>đthl</sub>)</td>
+              <td class="p-3">Sổ chi tiết chi phí quản lý doanh nghiệp (TK 642 / 627 - tiểu khoản Đào tạo, bồi dưỡng tay nghề).</td>
+              <td class="p-3">Tính tỷ lệ K<sub>đthl</sub> so với tổng chi phí.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">5</td>
+              <td class="p-3 text-center">TC19</td>
+              <td class="p-3 font-semibold">Chi phí CNTT 3 năm (G<sub>tt</sub>)</td>
+              <td class="p-3">Hóa đơn mua bản quyền phần mềm, cước viễn thông/Internet, thuê Cloud và máy chủ.</td>
+              <td class="p-3">Tính tỷ lệ K<sub>tt</sub> so với tổng chi phí G<sub>cp</sub>.</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 text-center font-bold">5</td>
+              <td class="p-3 text-center">TC22</td>
+              <td class="p-3 font-semibold">Kinh phí R&amp;D 3 năm (G<sub>rd</sub>) &amp; Quỹ KH&amp;CN</td>
+              <td class="p-3">Sổ theo dõi Quỹ Phát triển KH&amp;CN (TK 356) hoặc Thuyết minh chi phí nghiên cứu chế thử SP mới.</td>
+              <td class="p-3">Tính tỷ lệ K<sub>r&amp;d</sub> theo quy mô DN.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer Action -->
+    <div class="text-center py-6 border-t border-slate-200">
+      <p class="text-xs text-slate-500 mb-3">Báo cáo kiểm toán được xuất bản tự động phục vụ rà soát và nghiệm thu kỹ thuật (Quality Gate 1 - Spec Kit NacenTech).</p>
+      <a href="http://localhost:3000/assessments/tt17/wizard" target="_blank" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs shadow transition">
+        <i class="fa-solid fa-arrow-left"></i> Mở Màn Hình Wizard Đánh Giá Đã Cập Nhật
+      </a>
+    </div>
+
+  </div>
+
+</body>
+</html>

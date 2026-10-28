@@ -11,7 +11,7 @@ const dictionary: Record<Language, Record<string, string>> = {
     brand_sub: "Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)",
     home: "Trang chủ",
     about: "Giới thiệu",
-    technology_offers: "Chào bán",
+    technology_offers: "Công nghệ",
     technology_demands: "Nhu cầu",
     innovative_enterprises: "DN ĐMST",
     experts: "Chuyên gia",

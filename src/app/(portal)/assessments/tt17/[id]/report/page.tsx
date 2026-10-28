@@ -8,6 +8,7 @@ import {
   getAssessmentById,
   CriterionScore,
 } from "@/services/api/assessment-tt17";
+import { Tt17SurveyDetailView } from "@/components/assessments/tt17-survey-detail-view";
 
 export default function AssessmentReportPage() {
   const params = useParams();
@@ -410,6 +411,19 @@ export default function AssessmentReportPage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Appendix I: Submitted Survey Form Details */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+              <div className="border-b border-slate-200 pb-3">
+                <h2 className="text-sm font-bold text-slate-800">
+                  Hồ Sơ Dữ Liệu Khảo Sát Doanh Nghiệp Đã Submit (Phụ Lục I - TT17)
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Chi tiết từng chỉ số đầu vào theo 6 mục của Phiếu thu thập thông tin trình độ công nghệ
+                </p>
+              </div>
+              <Tt17SurveyDetailView assessment={assessment} />
             </div>
 
             {/* Appendix II: Detail 26 Criteria Table */}

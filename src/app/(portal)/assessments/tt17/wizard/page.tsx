@@ -47,6 +47,10 @@ import {
   TrendingUp,
   RotateCcw,
   Sparkles,
+  MapPin,
+  Factory,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const STEPS = [
@@ -81,6 +85,8 @@ export default function AssessmentWizardPage() {
     } | null;
   } | null>(null);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [showExtraFacilities, setShowExtraFacilities] = useState(false);
+  const [showExtraIndustries, setShowExtraIndustries] = useState(false);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setToastMsg({ text, type });
@@ -703,7 +709,27 @@ export default function AssessmentWizardPage() {
                       />
                     </div>
 
-                    <div className="md:col-span-2">
+                    <div>
+                      <label htmlFor="tt17-company-type" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Loại Hình Doanh Nghiệp (Mục A.7 TT17)
+                      </label>
+                      <select
+                        id="tt17-company-type"
+                        value={survey.companyType || "Công ty TNHH"}
+                        onChange={(e) => updateSurvey({ companyType: e.target.value })}
+                        className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 leading-normal"
+                      >
+                        <option value="Công ty TNHH">Công ty TNHH</option>
+                        <option value="Công ty Cổ phần">Công ty Cổ phần</option>
+                        <option value="Doanh nghiệp tư nhân">Doanh nghiệp tư nhân (DNTN)</option>
+                        <option value="Doanh nghiệp nước ngoài (FDI)">Doanh nghiệp có vốn đầu tư nước ngoài (FDI)</option>
+                        <option value="Doanh nghiệp nhà nước">Doanh nghiệp Nhà nước</option>
+                        <option value="Công ty Liên doanh / Hợp danh">Công ty Liên doanh / Hợp danh</option>
+                        <option value="Hợp tác xã">Hợp tác xã / Liên hiệp HTX</option>
+                      </select>
+                    </div>
+
+                    <div>
                       <label htmlFor="tt17-company-address" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                         Địa Chỉ Trụ Sở Chính Chi Tiết
                       </label>
@@ -716,12 +742,74 @@ export default function AssessmentWizardPage() {
                         className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
+
+                    <div className="md:col-span-2">
+                      <label htmlFor="tt17-facility-address-1" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Địa Chỉ Cơ Sở Sản Xuất 1 (Nhà Xưởng Chính - Mục A.10 TT17)
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="tt17-facility-address-1"
+                          type="text"
+                          placeholder="Địa chỉ nhà xưởng/nhà máy chính sản xuất..."
+                          value={survey.productionFacilityAddress1 ?? (survey.companyAddress || "")}
+                          onChange={(e) => updateSurvey({ productionFacilityAddress1: e.target.value })}
+                          className="w-full h-[42px] pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500"
+                        />
+                        <Factory className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mục A.10: Accordion mở rộng thêm Cơ sở 2 & Cơ sở 3 */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      id="tt17-btn-toggle-facilities"
+                      onClick={() => setShowExtraFacilities(!showExtraFacilities)}
+                      className="text-xs font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 flex items-center gap-1.5 transition py-1"
+                    >
+                      <Factory className="w-3.5 h-3.5" />
+                      <span>{showExtraFacilities ? "Thu gọn danh sách cơ sở sản xuất phụ" : "+ Thêm Địa Chỉ Cơ Sở Sản Xuất 2 & 3 (Theo Mục A.10 Phụ Lục I TT17)"}</span>
+                      {showExtraFacilities ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+                    {showExtraFacilities && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Địa Chỉ Cơ Sở Sản Xuất 2 (Nhà xưởng / Chi nhánh phụ)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Địa chỉ nhà xưởng 2..."
+                            value={survey.productionFacilityAddress2 || ""}
+                            onChange={(e) => updateSurvey({ productionFacilityAddress2: e.target.value })}
+                            className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                            Địa Chỉ Cơ Sở Sản Xuất 3 (Nhà xưởng / Chi nhánh phụ)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Địa chỉ nhà xưởng 3..."
+                            value={survey.productionFacilityAddress3 || ""}
+                            onChange={(e) => updateSurvey({ productionFacilityAddress3: e.target.value })}
+                            className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-500 md:col-span-2">
+                          * Kê khai các nhà xưởng, cơ sở sản xuất trực tiếp phục vụ công tác thẩm định thực địa của Hội đồng chuyên gia theo Mục A.10 Phụ lục I TT17.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="pt-2">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-3">
-                    2. Lựa Chọn Nhóm Ngành & Định Mức Kỹ Thuật (23 Ngành Theo TT17)
+                    2. Lựa Chọn Nhóm Ngành & Định Mức Kỹ Thuật (Mục A.9 TT17)
                   </span>
                 </div>
 
@@ -740,7 +828,7 @@ export default function AssessmentWizardPage() {
 
                   <div>
                     <label htmlFor="tt17-industry-code" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Mã Ngành Chế Biến, Chế Tạo (VSIC C.10 - C.32) <span className="text-rose-500">*</span>
+                      Mã Ngành Chế Biến, Chế Tạo (Ngành 1 Chính - Quyết Định K_chuẩn) <span className="text-rose-500">*</span>
                     </label>
                     <select
                       id="tt17-industry-code"
@@ -755,6 +843,61 @@ export default function AssessmentWizardPage() {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                {/* Mục A.9: Accordion mở rộng thêm Ngành phụ 2 & Ngành phụ 3 */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    id="tt17-btn-toggle-industries"
+                    onClick={() => setShowExtraIndustries(!showExtraIndustries)}
+                    className="text-xs font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 flex items-center gap-1.5 transition py-1"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    <span>{showExtraIndustries ? "Thu gọn danh sách ngành phụ" : "+ Thêm Ngành Hoạt Động SXKD 2 & 3 (Theo Mục A.9 Phụ Lục I TT17)"}</span>
+                    {showExtraIndustries ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
+                  {showExtraIndustries && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Ngành 2 (Tạo doanh thu / Lao động lớn thứ 2)
+                        </label>
+                        <select
+                          value={survey.secondaryIndustry2 || ""}
+                          onChange={(e) => updateSurvey({ secondaryIndustry2: e.target.value })}
+                          className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"
+                        >
+                          <option value="">-- Chưa chọn / Không có ngành 2 --</option>
+                          {Object.values(INDUSTRY_BENCHMARKS).map((bench) => (
+                            <option key={bench.industryCode} value={bench.industryCode}>
+                              {bench.industryCode} - {bench.industryName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          Ngành 3 (Tạo doanh thu / Lao động lớn thứ 3)
+                        </label>
+                        <select
+                          value={survey.secondaryIndustry3 || ""}
+                          onChange={(e) => updateSurvey({ secondaryIndustry3: e.target.value })}
+                          className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"
+                        >
+                          <option value="">-- Chưa chọn / Không có ngành 3 --</option>
+                          {Object.values(INDUSTRY_BENCHMARKS).map((bench) => (
+                            <option key={bench.industryCode} value={bench.industryCode}>
+                              {bench.industryCode} - {bench.industryName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <p className="text-[11px] text-slate-500 md:col-span-2">
+                        * Theo Mục A.9 Phụ lục I TT17: Liệt kê tối đa 03 ngành chế biến chế tạo theo thứ tự giảm dần. Hệ thống chỉ sử dụng <strong>Ngành 1</strong> để đối soát 4 hệ số chuẩn ngành (K_chuẩn 1..4); Ngành 2 &amp; 3 phục vụ thống kê và xuất hồ sơ in nộp Sở KH&CN.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Card hiển thị hệ số chuẩn của ngành đang chọn */}
@@ -802,7 +945,7 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <span className="text-xs text-slate-500 mt-1 block">
-                      Tương đương: <strong>{formatVietnameseCurrencyText(survey.totalCapital)}</strong> (dùng phân loại quy mô DN cho TC20).
+                      Lấy tại <strong>Mã số 440 (Tổng cộng nguồn vốn)</strong> trên Bảng CĐKT: <strong>{formatVietnameseCurrencyText(survey.totalCapital)}</strong>.
                     </span>
                   </div>
 
@@ -816,8 +959,32 @@ export default function AssessmentWizardPage() {
                       onChange={(e) => updateSurvey({ totalWorkforce: parseInt(e.target.value) || 0 })}
                       className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500"
                     />
-                    <span className="text-xs text-slate-500 mt-1 block">Tổng số người lao động ký hợp đồng từ 1 năm trở lên.</span>
+                    <span className="text-xs text-slate-500 mt-1 block">
+                      Tổng số người làm việc trong năm liền kề (<strong>không tính lao động thời vụ dưới 03 tháng</strong> theo Khoản 8 Điều 2 TT17).
+                    </span>
                   </div>
+                </div>
+
+                {/* Badge tự động phân loại Quy mô Doanh nghiệp theo Nghị định 39/2018 & Điều 7 TT17 */}
+                <div className="p-3.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
+                    <Info className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>
+                      <strong>Phân loại Quy mô DN (Mục A.8 & Điều 7 TT17):</strong>{" "}
+                      {survey.totalCapital >= 1_000_000_000_000 && survey.totalWorkforce >= 3000
+                        ? "Doanh nghiệp Lớn Nhóm 1 (Vốn ≥ 1.000 tỷ & LĐ ≥ 3.000 người)"
+                        : survey.totalCapital >= 100_000_000_000 && survey.totalWorkforce >= 200
+                        ? "Doanh nghiệp Lớn Nhóm 2 (Vốn ≥ 100 tỷ & LĐ ≥ 200 người)"
+                        : "Doanh nghiệp Nhỏ và Vừa (SME)"}
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full font-bold bg-white dark:bg-slate-900 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 shrink-0">
+                    {survey.totalCapital >= 1_000_000_000_000 && survey.totalWorkforce >= 3000
+                      ? "Định mức R&D: H5 ≥ 1.0%, K_r&d ≥ 0.1%"
+                      : survey.totalCapital >= 100_000_000_000 && survey.totalWorkforce >= 200
+                      ? "Định mức R&D: H5 ≥ 2.5%, K_r&d ≥ 0.5%"
+                      : "Định mức R&D SME: H5 ≥ 5.0%, K_r&d ≥ 1.0%"}
+                  </span>
                 </div>
               </div>
             )}
@@ -839,9 +1006,16 @@ export default function AssessmentWizardPage() {
                 <div className="p-3.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 flex items-start gap-2.5 text-xs text-teal-900 dark:text-teal-300">
                   <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold">Hướng dẫn lấy số liệu từ Báo cáo Tài chính:</span> Quý Doanh nghiệp tra cứu trực tiếp trên <strong>Bảng Cân đối Kế toán</strong> (Chỉ tiêu 211: Nguyên giá TSCĐ hữu hình, Chỉ tiêu 212: Giá trị hao mòn lũy kế).
+                    <span className="font-bold">Hướng dẫn lấy số liệu từ Báo cáo Tài chính:</span> Quý Doanh nghiệp tra cứu trực tiếp trên <strong>Bảng Cân đối Kế toán (Mẫu B01-DN)</strong> tại <strong>Mã số 211</strong> (Nguyên giá TSCĐ hữu hình), <strong>Mã số 212</strong> (Giá trị hao mòn lũy kế) và <strong>Mã số 210</strong> (Giá trị còn lại = Mã 211 trừ Mã 212).
                   </div>
                 </div>
+
+                {survey.originalCostEquipment > 0 && survey.currentBookValueEquipment > survey.originalCostEquipment && (
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-200 flex items-center gap-2 font-semibold">
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Cảnh báo: Giá trị còn lại (G_sx) đang lớn hơn Tổng nguyên giá ban đầu (G_bđ). Vui lòng kiểm tra lại chỉ tiêu Mã 210 và Mã 211 trên BCTC.</span>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -854,7 +1028,7 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <div className="flex items-center justify-between text-xs text-slate-500 mt-1">
-                      <span>Mã số 211 trên BCTC: <strong>{formatVietnameseCurrencyText(survey.originalCostEquipment)}</strong></span>
+                      <span>Mã số 211 trên Bảng CĐKT: <strong>{formatVietnameseCurrencyText(survey.originalCostEquipment)}</strong></span>
                       {totalMachineryCost > 0 && (
                         <button
                           type="button"
@@ -870,7 +1044,7 @@ export default function AssessmentWizardPage() {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      TC01 · Giá Trị Còn Lại Của Máy Móc Thiết Bị (G_sx)
+                      TC01 & TC02 · Giá Trị Còn Lại Của Máy Móc Thiết Bị (G_sx)
                     </label>
                     <FormattedMoneyInput
                       value={survey.currentBookValueEquipment}
@@ -878,7 +1052,7 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <span className="text-xs text-slate-500 mt-1 block">
-                      Mã 210 = Nguyên giá trừ Hao mòn: <strong>{formatVietnameseCurrencyText(survey.currentBookValueEquipment)}</strong> (Khấu hao: {survey.originalCostEquipment > 0 ? (((survey.originalCostEquipment - survey.currentBookValueEquipment) / survey.originalCostEquipment) * 100).toFixed(1) : 0}%).
+                      Mã 210 = Nguyên giá trừ Hao mòn: <strong>{formatVietnameseCurrencyText(survey.currentBookValueEquipment)}</strong> (Khấu hao K_kh: {survey.originalCostEquipment > 0 ? (((survey.originalCostEquipment - survey.currentBookValueEquipment) / survey.originalCostEquipment) * 100).toFixed(1) : 0}%).
                     </span>
                   </div>
 
@@ -892,7 +1066,7 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <span className="text-xs text-slate-500 mt-1 block">
-                      Mua sắm mở rộng: <strong>{formatVietnameseCurrencyText(survey.newInvestEquipment3Years)}</strong>
+                      Thiết bị <strong>mới 100%</strong> lắp đặt mở rộng SX: <strong>{formatVietnameseCurrencyText(survey.newInvestEquipment3Years)}</strong> (không tính máy cũ).
                     </span>
                   </div>
 
@@ -906,7 +1080,7 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <span className="text-xs text-slate-500 mt-1 block">
-                      Thay thế/bảo dưỡng: <strong>{formatVietnameseCurrencyText(survey.replacementEquipment3Years)}</strong> (Đổi mới: {survey.originalCostEquipment > 0 ? (((survey.newInvestEquipment3Years + survey.replacementEquipment3Years) / survey.originalCostEquipment) * 100).toFixed(1) : 0}%).
+                      Thiết bị <strong>mới 100%</strong> thay thế/bảo dưỡng: <strong>{formatVietnameseCurrencyText(survey.replacementEquipment3Years)}</strong> (Đổi mới K_đm: {survey.originalCostEquipment > 0 ? (((survey.newInvestEquipment3Years + survey.replacementEquipment3Years) / survey.originalCostEquipment) * 100).toFixed(1) : 0}%).
                     </span>
                   </div>
 
@@ -920,7 +1094,7 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <span className="text-xs text-slate-500 mt-1 block">
-                      Thiết bị CNC, PLC, IoT, robot: <strong>{formatVietnameseCurrencyText(survey.digitalEquipmentValue)}</strong> (Định mức ngành: {currentBenchmark.kChuan1} triệu/LĐ).
+                      Tổng giá trị máy CNC, PLC, IoT, robot công nghiệp: <strong>{formatVietnameseCurrencyText(survey.digitalEquipmentValue)}</strong> (Chuẩn ngành: {currentBenchmark.kChuan1} triệu/LĐ).
                     </span>
                   </div>
 
@@ -933,37 +1107,70 @@ export default function AssessmentWizardPage() {
                       onChange={(e) => updateSurvey({ mainProductStandard: e.target.value as any })}
                       className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 leading-normal"
                     >
-                      <option value="co_so_vuot_quoc_te">Tiêu chuẩn quốc tế cao cấp / CE / FDA / JIS (4.0đ)</option>
-                      <option value="quoc_te">Đạt tiêu chuẩn Quốc tế ISO / Quy chuẩn khu vực (3.0đ)</option>
+                      <option value="co_so_vuot_quoc_te">Tiêu chuẩn cơ sở có chỉ tiêu cao hơn Tiêu chuẩn Quốc tế / CE / FDA / JIS (4.0đ)</option>
+                      <option value="quoc_te">Đạt tiêu chuẩn Quốc tế ISO / IEC / Quy chuẩn khu vực (3.0đ)</option>
                       <option value="quoc_gia">Đạt Tiêu chuẩn Quốc gia TCVN / QCVN (2.0đ)</option>
-                      <option value="co_so">Tiêu chuẩn cơ sở TCCS tự công bố (1.0đ)</option>
+                      <option value="co_so">Tiêu chuẩn cơ sở (TCCS) tự công bố (1.0đ)</option>
                     </select>
                     <span className="text-xs text-slate-500 mt-1 block">
-                      Tiêu chuẩn xuất xưởng của sản phẩm dây chuyền chính.
+                      Mức tiêu chuẩn chất lượng cao nhất mà sản phẩm dây chuyền chính đáp ứng.
                     </span>
                   </div>
 
                   <div className="md:col-span-2">
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      TC04 · Hệ Thống Thu Thập Dữ Liệu & Điều Khiển Tích Hợp Đang Sử Dụng
+                      TC04 · Giải Pháp Quản Lý & Thu Thập Dữ Liệu Sản Xuất Tự Động Đang Áp Dụng (Tối đa 4.0 điểm)
                     </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                      {["SCADA", "MDC", "FMS", "CIM"].map((sys) => {
-                        const checked = survey.dataCollectionSystems.includes(sys);
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                      {[
+                        {
+                          code: "SCADA",
+                          title: "Hệ thống SCADA hoặc PDA (+1.0đ)",
+                          desc: "Giám sát, điều khiển và thu thập dữ liệu sản xuất tự động tại xưởng",
+                        },
+                        {
+                          code: "MDC",
+                          title: "Hệ thống MDC (+1.0đ)",
+                          desc: "Kết nối và thu thập dữ liệu trạng thái hoạt động trực tiếp từ máy móc (Machine Data Collection)",
+                        },
+                        {
+                          code: "FMS",
+                          title: "Hệ thống FMS hoặc DCS (+1.0đ)",
+                          desc: "Hệ thống sản xuất linh hoạt (FMS) hoặc hệ thống điều khiển phân tán tự động (DCS)",
+                        },
+                        {
+                          code: "CIM",
+                          title: "Hệ thống CIM (+1.0đ)",
+                          desc: "Sản xuất tích hợp toàn diện bằng máy tính (kết nối từ thiết kế CAD/CAM xuống máy CNC và quản trị)",
+                        },
+                      ].map((sys) => {
+                        const checked = survey.dataCollectionSystems.includes(sys.code);
                         return (
-                          <label key={sys} className="flex items-center gap-1.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                          <label
+                            key={sys.code}
+                            className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition ${
+                              checked
+                                ? "bg-brand-50/80 dark:bg-brand-950/50 border-brand-500 text-brand-900 dark:text-cyan-200 shadow-xs"
+                                : "border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            }`}
+                          >
                             <input
                               type="checkbox"
                               checked={checked}
                               onChange={(e) => {
                                 const list = e.target.checked
-                                  ? [...survey.dataCollectionSystems, sys]
-                                  : survey.dataCollectionSystems.filter((x) => x !== sys);
+                                  ? [...survey.dataCollectionSystems, sys.code]
+                                  : survey.dataCollectionSystems.filter((x) => x !== sys.code);
                                 updateSurvey({ dataCollectionSystems: list });
                               }}
-                              className="rounded border-slate-300"
+                              className="rounded border-slate-300 mt-0.5 text-brand-700"
                             />
-                            <span>Hệ thống {sys}</span>
+                            <div>
+                              <span className="font-bold block">{sys.title}</span>
+                              <span className="text-slate-500 dark:text-slate-400 text-[11px] leading-snug block mt-0.5">
+                                {sys.desc}
+                              </span>
+                            </div>
                           </label>
                         );
                       })}
@@ -973,7 +1180,7 @@ export default function AssessmentWizardPage() {
                   {/* TC05: Năng Lượng */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      TC05 · Chi Phí Tiêu Hao Năng Lượng Năm Gần Nhất (G_nl)
+                      TC05 · Tổng Chi Phí Năng Lượng Sản Xuất Năm Gần Nhất (G_nl)
                     </label>
                     <FormattedMoneyInput
                       value={survey.energyCostYear}
@@ -981,14 +1188,14 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <div className="flex items-center justify-between text-xs text-slate-500 mt-1">
-                      <span>Điện, than, dầu: <strong>{formatVietnameseCurrencyText(survey.energyCostYear)}</strong></span>
+                      <span>Tổng tiền điện SX, than, củi, xăng dầu, khí đốt: <strong>{formatVietnameseCurrencyText(survey.energyCostYear)}</strong></span>
                       <button
                         type="button"
                         onClick={() => updateSurvey({ energyCostYear: Math.round(latestGdt * currentBenchmark.kChuan2) })}
-                        className="font-bold text-brand-700 hover:underline dark:text-cyan-400"
+                        className="font-bold text-brand-700 hover:underline dark:text-cyan-400 shrink-0 ml-1"
                         title="Tự động tính theo định mức % doanh thu của nhóm ngành"
                       >
-                        ⚡ Nạp chuẩn ({(currentBenchmark.kChuan2 * 100).toFixed(0)}% DT = {formatVietnameseCurrencyText(Math.round(latestGdt * currentBenchmark.kChuan2))})
+                        ⚡ Nạp chuẩn ({(currentBenchmark.kChuan2 * 100).toFixed(0)}% DT)
                       </button>
                     </div>
                   </div>
@@ -996,7 +1203,7 @@ export default function AssessmentWizardPage() {
                   {/* TC06: Nguyên Vật Liệu */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      TC06 · Chi Phí Nguyên Vật Liệu Trực Tiếp Năm Gần Nhất (G_nvl)
+                      TC06 · Tổng Chi Phí Nguyên Vật Liệu Trực Tiếp Năm Gần Nhất (G_nvl)
                     </label>
                     <FormattedMoneyInput
                       value={survey.materialCostYear}
@@ -1004,111 +1211,37 @@ export default function AssessmentWizardPage() {
                       unit={moneyUnit}
                     />
                     <div className="flex items-center justify-between text-xs text-slate-500 mt-1">
-                      <span>Mã 621 BCTC: <strong>{formatVietnameseCurrencyText(survey.materialCostYear)}</strong></span>
+                      <span>Tài khoản 621 trên Thuyết minh BCTC: <strong>{formatVietnameseCurrencyText(survey.materialCostYear)}</strong></span>
                       <button
                         type="button"
                         onClick={() => updateSurvey({ materialCostYear: Math.round(latestGdt * currentBenchmark.kChuan3) })}
-                        className="font-bold text-brand-700 hover:underline dark:text-cyan-400"
+                        className="font-bold text-brand-700 hover:underline dark:text-cyan-400 shrink-0 ml-1"
                         title="Tự động tính theo định mức % doanh thu của nhóm ngành"
                       >
-                        ⚡ Nạp chuẩn ({(currentBenchmark.kChuan3 * 100).toFixed(0)}% DT = {formatVietnameseCurrencyText(Math.round(latestGdt * currentBenchmark.kChuan3))})
+                        ⚡ Nạp chuẩn ({(currentBenchmark.kChuan3 * 100).toFixed(0)}% DT)
                       </button>
                     </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Tuổi Bình Quân Của Máy Móc, Thiết Bị Chính (Năm)
-                      </label>
-                      <span className="text-xs text-brand-700 dark:text-cyan-400 font-semibold">Chọn nhanh theo khung:</span>
-                    </div>
-                    {/* Nút chọn nhanh khung tuổi theo quy chuẩn TT17 */}
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {[
-                        { label: "≤ 5 năm (Mới)", val: 4 },
-                        { label: "6 - 10 năm", val: 7.5 },
-                        { label: "11 - 15 năm", val: 12 },
-                        { label: "> 15 năm", val: 16 },
-                      ].map((preset) => (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          onClick={() => updateSurvey({ averageEquipmentAge: preset.val })}
-                          className={`px-2 py-1 text-xs rounded-md font-medium border transition ${
-                            survey.averageEquipmentAge === preset.val
-                              ? "bg-brand-700 text-white border-brand-700 shadow-sm"
-                              : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-brand-400"
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={survey.averageEquipmentAge || 7.5}
-                      onChange={(e) => updateSurvey({ averageEquipmentAge: parseFloat(e.target.value) || 0 })}
-                      className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
-                    />
-                    <span className="text-xs text-slate-500 mt-1 block">Tuổi trung bình của dây chuyền máy móc phục vụ sản xuất.</span>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        Tỷ Lệ Tiêu Hao Nguyên Vật Liệu Trong Định Mức (%)
-                      </label>
-                      <span className="text-xs text-brand-700 dark:text-cyan-400 font-semibold">Chọn nhanh:</span>
-                    </div>
-                    {/* Nút chọn nhanh tỷ lệ */}
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {[
-                        { label: "90%", val: 90 },
-                        { label: "95% (Chuẩn)", val: 95 },
-                        { label: "98%", val: 98 },
-                        { label: "100% (Tối ưu)", val: 100 },
-                      ].map((preset) => (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          onClick={() => updateSurvey({ materialConsumptionRatio: preset.val })}
-                          className={`px-2 py-1 text-xs rounded-md font-medium border transition ${
-                            survey.materialConsumptionRatio === preset.val
-                              ? "bg-brand-700 text-white border-brand-700 shadow-sm"
-                              : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-brand-400"
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={survey.materialConsumptionRatio || 95}
-                      onChange={(e) => updateSurvey({ materialConsumptionRatio: parseFloat(e.target.value) || 0 })}
-                      className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
-                    />
-                    <span className="text-xs text-slate-500 mt-1 block">Hiệu suất sử dụng nguyên vật liệu so với định mức kỹ thuật.</span>
                   </div>
                 </div>
 
                 {/* Danh sách máy móc động */}
                 <div className="border-t border-slate-200 dark:border-slate-800 pt-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-bold uppercase text-slate-700 dark:text-slate-300">
-                      Danh Sách Máy Móc, Thiết Bị Sản Xuất Chính Trong Xưởng
-                    </h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div>
+                      <h3 className="text-xs font-bold uppercase text-slate-700 dark:text-slate-300">
+                        Mục B.1 · Danh Sách Dây Chuyền / Máy Móc Sản Xuất Chính (Tối Đa 03 Dây Chuyền Chính)
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        💡 <strong>Hướng dẫn Thông tư 17:</strong> Quý Doanh nghiệp chỉ cần liệt kê <strong>tối đa 03 dây chuyền hoặc thiết bị sản xuất chính</strong> có sản lượng cao nhất (không cần nhập toàn bộ máy lẻ).
+                      </p>
+                    </div>
                     <button
                       type="button"
                       onClick={handleAddMachinery}
-                      className="px-3 py-1.5 rounded-lg bg-brand-700 text-white text-xs font-semibold hover:bg-brand-800 flex items-center gap-1 shadow-sm transition"
+                      className="px-3 py-1.5 rounded-lg bg-brand-700 text-white text-xs font-semibold hover:bg-brand-800 flex items-center gap-1 shadow-sm transition shrink-0 self-start sm:self-auto"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      Thêm Thiết Bị
+                      Thêm Thiết Bị Chính
                     </button>
                   </div>
 
@@ -1221,10 +1354,10 @@ export default function AssessmentWizardPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h3 className="text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
-                        Bảng Số Liệu Sản Xuất & Kinh Doanh 3 Năm Liền Kề
+                        Bảng Số Liệu Sản Xuất & Kinh Doanh 3 Năm Liền Kề (TC07 & TC08)
                       </h3>
                       <p className="text-xs text-slate-500">
-                        Trích xuất từ Báo cáo kết quả hoạt động kinh doanh (KQKD) & Báo cáo thống kê sản xuất.
+                        Trích xuất từ Báo cáo kết quả hoạt động kinh doanh (Mẫu B02-DN) & Báo cáo thống kê sản xuất.
                       </p>
                     </div>
                   </div>
@@ -1235,30 +1368,31 @@ export default function AssessmentWizardPage() {
                         <tr>
                           <th className="p-3 w-16 text-center">Năm</th>
                           <th className="p-3 min-w-[170px]">
-                            <div>Giá Trị Sản Xuất</div>
-                            <span className="text-xs font-normal text-slate-500 block">Báo cáo thống kê</span>
+                            <div>Giá Trị Sản Xuất (G_tts)</div>
+                            <span className="text-xs font-normal text-slate-500 block">Báo cáo thống kê SX</span>
                           </th>
                           <th className="p-3 min-w-[170px]">
-                            <div>Doanh Thu Thuần</div>
-                            <span className="text-xs font-normal text-slate-500 block">Mã số 01 - KQKD</span>
+                            <div>Doanh Thu Thuần (G_dt)</div>
+                            <span className="text-xs font-normal text-slate-500 block">Mã số 10 - KQKD</span>
                           </th>
                           <th className="p-3 min-w-[120px]">
-                            <div>Lao Động Sản Xuất</div>
+                            <div>LĐ Sản Xuất (M_tt)</div>
                             <span className="text-xs font-normal text-slate-500 block">Công nhân trực tiếp</span>
                           </th>
                           <th className="p-3 min-w-[170px]">
-                            <div>Tổng Chi Phí SXKD</div>
-                            <span className="text-xs font-normal text-slate-500 block">Mã 11 + 22 + 25</span>
+                            <div>Tổng Chi Phí SXKD (G_cp)</div>
+                            <span className="text-xs font-normal text-slate-500 block">Mã 11 + 22 + 25 + 26</span>
                           </th>
                           <th className="p-3 min-w-[130px] text-right">
-                            <div>Năng Suất LĐ</div>
-                            <span className="text-xs font-normal text-slate-500 block">Doanh thu / Người</span>
+                            <div>NSLĐ Bình Quân</div>
+                            <span className="text-xs font-normal text-slate-500 block">G_tts / M_tt</span>
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
                         {survey.financialSeries.map((item, idx) => {
-                          const nslđ = item.directWorkersCount > 0 ? item.netRevenue / item.directWorkersCount : 0;
+                          const outputVal = item.industrialOutputValue > 0 ? item.industrialOutputValue : item.netRevenue;
+                          const nslđ = item.directWorkersCount > 0 ? outputVal / item.directWorkersCount : 0;
                           return (
                             <tr key={item.year} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
                               <td className="p-3 font-bold text-center text-slate-900 dark:text-white bg-slate-50/80 dark:bg-slate-800/40">
@@ -1328,7 +1462,7 @@ export default function AssessmentWizardPage() {
                     </table>
                   </div>
                   <span className="text-xs text-slate-500 mt-1 block">
-                    * Hệ thống tự động tính toán tốc độ tăng trưởng năng suất lao động bình quân (TC08) từ chuỗi số liệu trên.
+                    * <strong>Hướng dẫn BCTC:</strong> Doanh thu thuần lấy tại <strong>Mã số 10</strong> (Báo cáo KQKD). Tổng chi phí SXKD lấy tổng Giá vốn hàng bán (Mã 11) + Chi phí tài chính (Mã 22) + Chi phí bán hàng (Mã 25) + Chi phí QLDN (Mã 26). Hệ thống tự động tính hệ số hiệu quả sản xuất kinh doanh (TC07) và tỷ lệ tăng năng suất lao động <strong>K_ns</strong> (TC08).
                   </span>
                 </div>
 
@@ -1336,7 +1470,7 @@ export default function AssessmentWizardPage() {
                   {/* TC09: Sáng kiến Kaizen */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      TC09 · Áp Dụng Sáng Kiến Cải Tiến Kỹ Thuật (Kaizen / 5S / Lean)
+                      TC09 · Sáng Kiến Cải Tiến Kỹ Thuật, Hợp Lý Hóa Sản Xuất (3.0 điểm)
                     </label>
                     <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
                       <label className="flex items-center gap-2 cursor-pointer font-semibold text-slate-700 dark:text-slate-300">
@@ -1366,40 +1500,52 @@ export default function AssessmentWizardPage() {
                         />
                         <span>Có sáng kiến đem lại giá trị làm lợi kinh tế lớn (+1.0đ)</span>
                       </label>
+                      <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                          Kể tên 1–3 sáng kiến cải tiến tiêu biểu (tùy chọn - Phụ lục I Mục C.3):
+                        </label>
+                        <input
+                          type="text"
+                          value={survey.kaizenHighlights || ""}
+                          onChange={(e) => updateSurvey({ kaizenHighlights: e.target.value })}
+                          placeholder="VD: Cải tiến đồ gá gá lắp tự động giảm 20% thời gian gia công..."
+                          className="w-full h-9 px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {/* TC10: Năng Lực Bảo Dưỡng */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      TC10 · Cấp Độ Bảo Dưỡng, Sửa Chữa Máy Móc Thiết Bị
+                      TC10 · Cấp Độ Bảo Dưỡng, Sửa Chữa Máy Móc Thiết Bị (3.0 điểm)
                     </label>
                     <select
                       value={survey.maintenanceLevel}
                       onChange={(e) => updateSurvey({ maintenanceLevel: (parseInt(e.target.value) || 2) as any })}
                       className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 leading-normal"
                     >
-                      <option value={1}>Cấp 1: Chỉ sửa chữa khi phát sinh sự cố hư hỏng (1.0đ)</option>
-                      <option value={2}>Cấp 2: Bảo dưỡng định kỳ theo lịch khuyến cáo của nhà sản xuất (2.0đ)</option>
-                      <option value={3}>Cấp 3: Bảo dưỡng chuyên sâu, có sẵn danh mục linh kiện dự phòng (3.0đ)</option>
-                      <option value={4}>Cấp 4: Bảo dưỡng dự đoán (Predictive Maintenance / Chẩn đoán cảm biến rung động) (4.0đ)</option>
+                      <option value={1}>Cấp 1: Chỉ sửa chữa khi phát sinh sự cố hư hỏng (0.0đ)</option>
+                      <option value={2}>Cấp 2: Bảo dưỡng định kỳ theo lịch khuyến cáo của nhà sản xuất (1.0đ)</option>
+                      <option value={3}>Cấp 3: Bảo dưỡng chủ động (Preventive), có sẵn kho linh kiện dự phòng (2.0đ)</option>
+                      <option value={4}>Cấp 4: Bảo dưỡng dự đoán (Predictive Maintenance / Cảm biến chẩn đoán) (3.0đ)</option>
                     </select>
                     <span className="text-xs text-slate-500 mt-1 block">
-                      Đánh giá khả năng chủ động phòng ngừa sự cố máy móc tại xưởng.
+                      Đánh giá khả năng chủ động phòng ngừa sự cố máy móc tại xưởng theo Điều 5 Khoản 4 TT17.
                     </span>
                   </div>
 
                   {/* TC11: Chuyển Giao Công Nghệ */}
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-2 border-t border-slate-200 dark:border-slate-800 pt-4">
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      TC11 · Hình Thức Tiếp Nhận Chuyển Giao Công Nghệ Trong 3 Năm
+                      TC11 · Tiếp Nhận Chuyển Giao & Sở Hữu Công Nghệ Trong 3 Năm (4.0 điểm)
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs mb-3">
                       {[
                         { key: "dong_bo", label: "Chuyển giao đồng bộ dây chuyền (1.0đ)" },
                         { key: "ban_quyen", label: "Mua bản quyền, li-xăng công nghệ (2.0đ)" },
                         { key: "cai_tien", label: "Cải tiến, giải mã công nghệ (3.0đ)" },
-                        { key: "sang_che", label: "Bằng độc quyền sáng chế (4.0đ)" },
+                        { key: "sang_che", label: "Bằng độc quyền sáng chế / GPHI (4.0đ)" },
                       ].map((item) => {
                         const checked = survey.transferredTechTypes.includes(item.key);
                         return (
@@ -1422,7 +1568,7 @@ export default function AssessmentWizardPage() {
                     </div>
                     <div>
                       <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Tổng Giá Trị Hợp Đồng Chuyển Giao Công Nghệ
+                        Tổng Giá Trị Hợp Đồng Chuyển Giao Công Nghệ (G_cg)
                       </span>
                       <FormattedMoneyInput
                         value={survey.transferredTechValue}
@@ -1432,6 +1578,131 @@ export default function AssessmentWizardPage() {
                       <span className="text-xs text-slate-500 mt-1 block">
                         Tổng giá trị hợp đồng: <strong>{formatVietnameseCurrencyText(survey.transferredTechValue)}</strong>
                       </span>
+                    </div>
+                  </div>
+
+                  {/* TC12: Chất Lượng Nguồn Nhân Lực Sản Xuất (4.0 điểm) - Đúng Điều 5 Khoản 6 Nhóm E */}
+                  <div className="md:col-span-2 border-t border-slate-200 dark:border-slate-800 pt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
+                          TC12 · Chất Lượng Nguồn Nhân Lực Sản Xuất (4.0 điểm - Điều 5 Khoản 6 TT17)
+                        </span>
+                        <span className="text-xs text-slate-500 block">
+                          Chấm điểm 4 tiêu chí thành phần (mỗi tiêu chí đạt ngưỡng được +1.0 điểm): M_cn (&ge;80% M_tt), M_bc (&ge;20% M_tt), M_ql (&ge;50% M_gt), M_nv (&ge;60% M_gt).
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const total = Math.max(survey.totalWorkforce || 100, 10);
+                          const mTt = latestDirectWorkers > 0 ? latestDirectWorkers : Math.round(total * 0.75);
+                          const mGt = Math.max(total - mTt, 5);
+                          updateSurvey({
+                            directWorkers: mTt,
+                            trainedWorkers: Math.round(mTt * 0.85),
+                            highSkilledWorkers: Math.round(mTt * 0.22),
+                            qualifiedManagers: Math.round(mGt * 0.55),
+                            qualifiedProfessionals: Math.round(mGt * 0.65),
+                          });
+                        }}
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition self-start sm:self-auto"
+                      >
+                        ⚡ Ước tính nhanh theo cơ cấu chuẩn
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            1. LĐ Trực Tiếp (M_tt)
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => updateSurvey({ directWorkers: latestDirectWorkers })}
+                            className="text-[11px] font-bold text-brand-700 hover:underline dark:text-cyan-400"
+                            title="Đồng bộ số lượng công nhân từ Bảng 3 năm"
+                          >
+                            Đồng bộ ({latestDirectWorkers})
+                          </button>
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          value={survey.directWorkers}
+                          onChange={(e) => updateSurvey({ directWorkers: parseInt(e.target.value) || 0 })}
+                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
+                        />
+                        <span className="text-[11px] text-slate-500 mt-1 block">
+                          LĐ gián tiếp (M_gt = M - M_tt): <strong>{Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 0)}</strong> người.
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          2. CN Qua Đào Tạo Nghề (M_cn)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={survey.trainedWorkers}
+                          onChange={(e) => updateSurvey({ trainedWorkers: parseInt(e.target.value) || 0 })}
+                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
+                        />
+                        <span className="text-[11px] text-slate-500 mt-1 block">
+                          Tỷ lệ M_cn/M_tt: <strong>{survey.directWorkers > 0 ? ((survey.trainedWorkers / survey.directWorkers) * 100).toFixed(1) : "0.0"}%</strong> (&ge; 80% đạt +1.0đ).
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          3. CN Bậc Cao / Nghệ Nhân (M_bc)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={survey.highSkilledWorkers}
+                          onChange={(e) => updateSurvey({ highSkilledWorkers: parseInt(e.target.value) || 0 })}
+                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
+                        />
+                        <span className="text-[11px] text-slate-500 mt-1 block">
+                          Tỷ lệ M_bc/M_tt: <strong>{survey.directWorkers > 0 ? ((survey.highSkilledWorkers / survey.directWorkers) * 100).toFixed(1) : "0.0"}%</strong> (&ge; 20% đạt +1.0đ).
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          4. CB Quản Lý Đạt Chuẩn (M_ql)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={survey.qualifiedManagers}
+                          onChange={(e) => updateSurvey({ qualifiedManagers: parseInt(e.target.value) || 0 })}
+                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
+                        />
+                        <span className="text-[11px] text-slate-500 mt-1 block">
+                          Trình độ ĐH & &ge;3 năm KN: <strong>{Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1) > 0 ? (((survey.qualifiedManagers || 0) / Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1)) * 100).toFixed(1) : "0.0"}%</strong> M_gt (&ge; 50% đạt +1.0đ).
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                          5. CB Nghiệp Vụ CĐ/ĐH+ (M_nv)
+                        </label>
+                        <input
+                          id="tt17-qualified-professionals"
+                          type="number"
+                          min="0"
+                          value={survey.qualifiedProfessionals ?? 0}
+                          onChange={(e) => updateSurvey({ qualifiedProfessionals: parseInt(e.target.value) || 0 })}
+                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
+                        />
+                        <span className="text-[11px] text-slate-500 mt-1 block">
+                          Kỹ sư / Chuyên viên CĐ-ĐH+: <strong>{Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1) > 0 ? (((survey.qualifiedProfessionals || 0) / Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1)) * 100).toFixed(1) : "0.0"}%</strong> M_gt (&ge; 60% đạt +1.0đ).
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1451,68 +1722,16 @@ export default function AssessmentWizardPage() {
                   </span>
                 </h2>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
+                  {/* TC13: Chi phí đào tạo & huấn luyện */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      TC13 · Hệ Thống Quản Lý Chất Lượng Đã Được Chứng Nhận
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                      {["ISO 9001", "ISO 22000", "HACCP", "GMP", "IATF 16949", "ISO 45001"].map((iso) => {
-                        const checked = survey.isoCertifications.includes(iso);
-                        return (
-                          <label key={iso} className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(e) => {
-                                const list = e.target.checked
-                                  ? [...survey.isoCertifications, iso]
-                                  : survey.isoCertifications.filter((x) => x !== iso);
-                                updateSurvey({ isoCertifications: list });
-                              }}
-                            />
-                            <span>Chứng nhận {iso}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                      TC14 · Phần Mềm Ứng Dụng Trong Quản Trị & Sản Xuất
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                      {["ERP", "MES", "PLM", "PDM", "PPS", "SCM"].map((sw) => {
-                        const checked = survey.softwareApplications.includes(sw);
-                        return (
-                          <label key={sw} className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(e) => {
-                                const list = e.target.checked
-                                  ? [...survey.softwareApplications, sw]
-                                  : survey.softwareApplications.filter((x) => x !== sw);
-                                updateSurvey({ softwareApplications: list });
-                              }}
-                            />
-                            <span>Hệ thống {sw}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* TC13: Chi phí đào tạo */}
-                  <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-3">
-                      TC13 · Chi Phí Đào Tạo & Bồi Dưỡng Nhân Lực
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block mb-2">
+                      TC13 · Chi Phí Đào Tạo, Huấn Luyện Nhân Lực (3.0 điểm - Điều 6 Khoản 1 TT17)
                     </span>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Tổng Chi Phí Đào Tạo Huấn Luyện 3 Năm (G_dthl)
+                          Tổng Chi Phí Đào Tạo & Huấn Luyện 3 Năm (G_dthl)
                         </label>
                         <FormattedMoneyInput
                           value={survey.trainingCost3Years}
@@ -1520,31 +1739,62 @@ export default function AssessmentWizardPage() {
                           unit={moneyUnit}
                         />
                         <span className="text-xs text-slate-500 mt-1 block">
-                          Mã BCTC: <strong>{formatVietnameseCurrencyText(survey.trainingCost3Years)}</strong> (Tỷ lệ: {latestGdt > 0 ? ((survey.trainingCost3Years / latestGdt) * 100).toFixed(2) : 0}% DT, ≥ 1% đạt 2.0đ, ≥ 2% đạt 3.0đ).
+                          Tổng chi đào tạo: <strong>{formatVietnameseCurrencyText(survey.trainingCost3Years)}</strong> (Tỷ lệ K_dthl = G_dthl / Tổng G_cp = <strong>{(survey.financialSeries.reduce((s, r) => s + (r.totalCosts || r.netRevenue * 0.85), 0) > 0 ? (survey.trainingCost3Years / survey.financialSeries.reduce((s, r) => s + (r.totalCosts || r.netRevenue * 0.85), 0)) * 100 : 0).toFixed(2)}%</strong>; &ge; 5% đạt 3.0đ, 2%&ndash;&lt;5% đạt 2.0đ, &lt;2% đạt 1.0đ).
                         </span>
                       </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Số Lao Động Qua Đào Tạo Nghề (Người)
-                        </label>
-                        <input
-                          type="number"
-                          value={survey.trainedWorkers}
-                          onChange={(e) => updateSurvey({ trainedWorkers: parseInt(e.target.value) || 0 })}
-                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
-                        />
-                        <span className="text-xs text-slate-500 mt-1 block">
-                          Tỷ lệ qua đào tạo: <strong>{survey.totalWorkforce > 0 ? ((survey.trainedWorkers / survey.totalWorkforce) * 100).toFixed(1) : "0.0"}%</strong> (≥ 50% đạt tối đa cho TC12).
-                        </span>
+                      <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs text-slate-600 dark:text-slate-300">
+                        <strong className="text-amber-900 dark:text-amber-300 block mb-1">💡 Hướng dẫn lấy số liệu kế toán:</strong>
+                        Cộng tổng chi phí đào tạo nghề, huấn luyện an toàn lao động, bồi dưỡng nâng bậc thợ và đào tạo quản trị trong 3 năm (trích từ <strong>Tài khoản 642 / 627</strong> hoặc Báo cáo quyết toán kinh phí đào tạo nội bộ).
                       </div>
+                    </div>
+                  </div>
+
+                  {/* TC14: Phần mềm quản trị & sản xuất */}
+                  <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
+                      TC14 · Ứng Dụng Công Nghệ Thông Tin Phục Vụ Sản Xuất, Quản Lý (5.0 điểm - Điều 6 Khoản 2 TT17)
+                    </label>
+                    <span className="text-xs text-slate-500 block mb-2.5">
+                      Chọn các hệ thống phần mềm chuyên dụng doanh nghiệp đang vận hành thực tế (có từ 1 hệ thống đạt 4.0đ, tích hợp đồng bộ từ 3 hệ thống trở lên đạt 5.0đ):
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                      {[
+                        { code: "ERP", desc: "Hoạch định nguồn lực doanh nghiệp tổng thể (Kế toán, Mua hàng, Kho, Nhân sự)" },
+                        { code: "MES", desc: "Hệ thống điều hành và giám sát thực thi sản xuất trực tiếp tại nhà xưởng" },
+                        { code: "SCM", desc: "Quản trị chuỗi cung ứng, nhà cung cấp, kho vận và hậu cần" },
+                        { code: "PPS", desc: "Lập kế hoạch và điều độ tiến độ sản xuất tự động" },
+                        { code: "PDM", desc: "Quản lý dữ liệu kỹ thuật sản phẩm, định mức BOM và bản vẽ thiết kế" },
+                        { code: "PLM", desc: "Quản lý toàn bộ vòng đời sản phẩm từ ý tưởng R&D đến sản xuất" },
+                      ].map((sw) => {
+                        const checked = survey.softwareApplications.includes(sw.code);
+                        return (
+                          <label key={sw.code} className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                const list = e.target.checked
+                                  ? [...survey.softwareApplications, sw.code]
+                                  : survey.softwareApplications.filter((x) => x !== sw.code);
+                                updateSurvey({ softwareApplications: list });
+                              }}
+                              className="mt-0.5 rounded border-slate-300 text-brand-700"
+                            />
+                            <div>
+                              <span className="font-bold text-slate-800 dark:text-slate-200">Hệ thống {sw.code}</span>
+                              <span className="block text-[11px] text-slate-500">{sw.desc}</span>
+                            </div>
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* TC15: Hiệu suất thiết bị tổng thể OEE */}
                   <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        TC15 · Hiệu Suất Thiết Bị Tổng Thể OEE / Tỷ Lệ Khai Thác Công Suất (P_tt / P)
+                      <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                        TC15 · Hiệu Suất Thiết Bị Tổng Thể OEE / Tỷ Lệ Khai Thác Công Suất (P_tt / P - 5.0 điểm)
                       </label>
                       <span className="text-xs text-brand-700 dark:text-cyan-400 font-semibold">Chọn nhanh theo mức OEE:</span>
                     </div>
@@ -1585,90 +1835,112 @@ export default function AssessmentWizardPage() {
                       })}
                     </div>
                     <span className="text-xs text-slate-500 block">
-                      Tỷ lệ sản lượng thực tế so với công suất thiết kế: <strong>{(((survey.financialSeries?.[survey.financialSeries.length - 1]?.actualOutput || 85) / (survey.financialSeries?.[survey.financialSeries.length - 1]?.designedCapacity || 100)) * 100).toFixed(0)}%</strong> (≥ 85% đạt 5.0đ tối đa).
+                      Tỷ lệ sản lượng thực tế bình quân 3 năm so với công suất thiết kế của dây chuyền chính: <strong>{(((survey.financialSeries?.[survey.financialSeries.length - 1]?.actualOutput || 85) / (survey.financialSeries?.[survey.financialSeries.length - 1]?.designedCapacity || 100)) * 100).toFixed(0)}%</strong> (&ge; 85% đạt 5.0đ tối đa theo Điều 6 Khoản 3 TT17).
                     </span>
                   </div>
 
-                  {/* TC12: Cơ cấu nhân lực sản xuất */}
-                  <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-3">
-                      TC12 · Trình Độ Chuyên Môn & Cơ Cấu Lao Động
-                    </span>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            Lao Động Trực Tiếp (M_tt)
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => updateSurvey({ directWorkers: latestDirectWorkers })}
-                            className="text-xs font-bold text-brand-700 hover:underline dark:text-cyan-400"
-                            title="Đồng bộ số lượng công nhân từ Báo cáo tài chính 3 năm"
-                          >
-                            ⚡ Đồng bộ ({latestDirectWorkers})
-                          </button>
-                        </div>
-                        <input
-                          type="number"
-                          value={survey.directWorkers}
-                          onChange={(e) => updateSurvey({ directWorkers: parseInt(e.target.value) || 0 })}
-                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
-                        />
-                        <span className="text-xs text-slate-500 mt-1 block">Công nhân trực tiếp đứng máy/dây chuyền.</span>
+                  {/* TC16: Hệ thống quản lý chất lượng & Công cụ cải tiến năng suất */}
+                  <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
+                        TC16 · Hệ Thống Quản Lý Chất Lượng & Công Cụ Cải Tiến Năng Suất (3.0 điểm - Điều 6 Khoản 4 TT17)
+                      </label>
+                      <span className="text-xs text-slate-500 block mb-2">
+                        1. Chứng nhận Hệ thống quản lý chất lượng đang còn hiệu lực (ISO 9001 được 1.0đ; có thêm chứng nhận chuyên ngành HACCP/GMP/IATF 16949/ISO 22000... được 2.0đ):
+                      </span>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
+                        {["ISO 9001", "ISO 22000", "HACCP", "GMP", "IATF 16949", "ISO 45001"].map((iso) => {
+                          const checked = survey.isoCertifications.includes(iso);
+                          return (
+                            <label key={iso} className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) => {
+                                  const list = e.target.checked
+                                    ? [...survey.isoCertifications, iso]
+                                    : survey.isoCertifications.filter((x) => x !== iso);
+                                  updateSurvey({ isoCertifications: list });
+                                }}
+                                className="rounded border-slate-300 text-brand-700"
+                              />
+                              <span>Chứng nhận {iso}</span>
+                            </label>
+                          );
+                        })}
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Công Nhân Bậc Cao / Nghệ Nhân (M_bc)
-                        </label>
-                        <input
-                          type="number"
-                          value={survey.highSkilledWorkers}
-                          onChange={(e) => updateSurvey({ highSkilledWorkers: parseInt(e.target.value) || 0 })}
-                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
-                        />
-                        <span className="text-xs text-slate-500 mt-1 block">
-                          Tỷ lệ: <strong>{survey.directWorkers > 0 ? ((survey.highSkilledWorkers / survey.directWorkers) * 100).toFixed(1) : "0.0"}%</strong> (≥ 15% đạt 3.0đ tối đa).
-                        </span>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                          Cán Bộ Quản Lý Đạt Chuẩn (M_ql)
-                        </label>
-                        <input
-                          type="number"
-                          value={survey.qualifiedManagers}
-                          onChange={(e) => updateSurvey({ qualifiedManagers: parseInt(e.target.value) || 0 })}
-                          className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
-                        />
-                        <span className="text-xs text-slate-500 mt-1 block">
-                          Tỷ lệ: <strong>{survey.totalWorkforce > 0 ? ((survey.qualifiedManagers / survey.totalWorkforce) * 100).toFixed(1) : "0.0"}%</strong> (≥ 80% đạt 2.0đ tối đa).
-                        </span>
+                    <div>
+                      <span className="text-xs text-slate-500 block mb-2">
+                        2. Các công cụ cải tiến năng suất chất lượng đang áp dụng tại xưởng (Áp dụng ít nhất 1 công cụ được cộng thêm +1.0 điểm):
+                      </span>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                        {[
+                          { key: "5S", label: "5S (Sàng lọc - Sắp xếp...)" },
+                          { key: "Kaizen", label: "Kaizen (Cải tiến liên tục)" },
+                          { key: "Lean", label: "Lean (Sản xuất tinh gọn)" },
+                          { key: "Six Sigma", label: "Six Sigma (Kiểm soát sai lỗi)" },
+                          { key: "TPM", label: "TPM (Bảo trì năng suất toàn diện)" },
+                        ].map((tool) => {
+                          const tools = survey.productivityTools || [];
+                          const checked = tools.includes(tool.key);
+                          return (
+                            <label key={tool.key} className="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) => {
+                                  const current = survey.productivityTools || [];
+                                  const list = e.target.checked
+                                    ? [...current, tool.key]
+                                    : current.filter((x) => x !== tool.key);
+                                  updateSurvey({ productivityTools: list });
+                                }}
+                                className="rounded border-slate-300 text-brand-700"
+                              />
+                              <span>{tool.label}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+                  {/* TC17: Quản lý môi trường */}
+                  <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2">
+                    <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1">
+                      TC17 · Năng Lực Quản Lý Môi Trường & Tuần Hoàn Chất Thải (3.0 điểm - Điều 6 Khoản 5 TT17)
+                    </span>
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
                       <input
                         type="checkbox"
                         checked={survey.environmentalCompliant}
                         onChange={(e) => updateSurvey({ environmentalCompliant: e.target.checked })}
-                        className="rounded border-slate-300"
+                        className="rounded border-slate-300 text-brand-700"
                       />
-                      <span>TC17 · Doanh nghiệp tuân thủ 100% quy định pháp luật về bảo vệ môi trường, có hệ thống xử lý chất thải đạt chuẩn</span>
+                      <span>1. Có báo cáo ĐTM / Kế hoạch bảo vệ môi trường và hệ thống xử lý chất thải đạt quy chuẩn (+1.0 điểm)</span>
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      <input
+                        id="tt17-has-iso14001"
+                        type="checkbox"
+                        checked={Boolean(survey.hasIso14001)}
+                        onChange={(e) => updateSurvey({ hasIso14001: e.target.checked })}
+                        className="rounded border-slate-300 text-brand-700"
+                      />
+                      <span>2. Đã được cấp chứng nhận Hệ thống quản lý môi trường ISO 14001 (hoặc tương đương) (+1.0 điểm)</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
                       <input
                         type="checkbox"
                         checked={survey.hasWasteRecycling}
                         onChange={(e) => updateSurvey({ hasWasteRecycling: e.target.checked })}
-                        className="rounded border-slate-300"
+                        className="rounded border-slate-300 text-brand-700"
                       />
-                      <span>TC17 · Có giải pháp thu gom, tái chế và tái sử dụng chất thải trong tuần hoàn sản xuất (+1.0 điểm)</span>
+                      <span>3. Có giải pháp thu gom, tái chế, tái sử dụng chất thải hoặc sản xuất sạch hơn (+1.0 điểm)</span>
                     </label>
                   </div>
                 </div>
@@ -1693,22 +1965,25 @@ export default function AssessmentWizardPage() {
                     {/* TC18: Đã điều chỉnh chiều cao chuẩn h-[42px] px-3.5 py-2.5 */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC18 · Mức Độ Đầu Tư Hạ Tầng Công Nghệ Thông Tin
+                        TC18 · Mức Độ Đầu Tư Hạ Tầng Công Nghệ Thông Tin (3.0 điểm)
                       </label>
                       <select
                         value={survey.itInfrastructureLevel}
                         onChange={(e) => updateSurvey({ itInfrastructureLevel: (parseInt(e.target.value) || 1) as any })}
                         className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 leading-normal"
                       >
-                        <option value={1}>Mức 1: Mạng LAN, Internet cơ bản (1.0đ)</option>
-                        <option value={2}>Mức 2: Tự động hóa quy trình nghiệp vụ, máy chủ nội bộ (2.0đ)</option>
-                        <option value={3}>Mức 3: Tích hợp toàn diện Cloud/Trung tâm dữ liệu đạt chuẩn ISO 27001 (3.0đ)</option>
+                        <option value={1}>Mức 1: Máy tính văn phòng, mạng LAN, Internet cơ bản (1.0đ)</option>
+                        <option value={2}>Mức 2: Có Website thương mại, máy chủ nội bộ, phần mềm nghiệp vụ (2.0đ)</option>
+                        <option value={3}>Mức 3: Hệ thống Cloud/Data Center đồng bộ, bảo mật an toàn thông tin (3.0đ)</option>
                       </select>
+                      <span className="text-xs text-slate-500 mt-1 block">
+                        Đánh giá mức độ trang bị phần cứng, mạng và hạ tầng số theo Điều 7 Khoản 1 TT17.
+                      </span>
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC19 · Tổng Chi Phí Đầu Tư CNTT 3 Năm (G_tt)
+                        TC19 · Tổng Chi Phí Đầu Tư Cho CNTT Trong 3 Năm (G_tt - 3.0 điểm)
                       </label>
                       <FormattedMoneyInput
                         value={survey.itExpenses3Years}
@@ -1716,44 +1991,48 @@ export default function AssessmentWizardPage() {
                         unit={moneyUnit}
                       />
                       <span className="text-xs text-slate-500 mt-1 block">
-                        Đầu tư CNTT: <strong>{formatVietnameseCurrencyText(survey.itExpenses3Years)}</strong>
+                        Đầu tư CNTT (Phần cứng + Bản quyền phần mềm + Thuê Cloud): <strong>{formatVietnameseCurrencyText(survey.itExpenses3Years)}</strong> (&ge; 2% Tổng chi phí SXKD đạt 3.0đ tối đa).
                       </span>
                     </div>
 
                     {/* TC21: Đã điều chỉnh chiều cao chuẩn h-[42px] px-3.5 py-2.5 */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC21 · Cơ Sở Vật Chất Phục Vụ Nghiên Cứu & Thiết Kế
+                        TC21 · Cơ Sở Vật Chất Phục Vụ Nghiên Cứu & Thiết Kế (3.0 điểm)
                       </label>
                       <select
                         value={survey.rdFacilityLevel}
                         onChange={(e) => updateSurvey({ rdFacilityLevel: (parseInt(e.target.value) || 1) as any })}
                         className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 leading-normal"
                       >
-                        <option value={1}>Mức 1: Bộ phận kiêm nhiệm (1.0đ)</option>
-                        <option value={2}>Mức 2: Có phòng thí nghiệm / phòng thiết kế CAD/CAM chuyên trách (2.0đ)</option>
-                        <option value={3}>Mức 3: Viện hoặc Trung tâm R&D chuyên biệt hiện đại (3.0đ)</option>
+                        <option value={1}>Mức 1: Bộ phận kỹ thuật kiêm nhiệm nghiên cứu (1.0đ)</option>
+                        <option value={2}>Mức 2: Có phòng thí nghiệm / phòng thiết kế CAD/CAM/CAE chuyên trách (2.0đ)</option>
+                        <option value={3}>Mức 3: Có Viện hoặc Trung tâm R&D độc lập đủ trang thiết bị thử nghiệm (3.0đ)</option>
                       </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC20 · Số Lượng Nhân Lực R&D Chuyên Trách (M_r&d)
-                      </label>
-                      <input
-                        type="number"
-                        value={survey.rdWorkforceCount}
-                        onChange={(e) => updateSurvey({ rdWorkforceCount: parseInt(e.target.value) || 0 })}
-                        className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
-                      />
                       <span className="text-xs text-slate-500 mt-1 block">
-                        Tỷ lệ nhân lực R&D: {((survey.rdWorkforceCount / (survey.totalWorkforce || 1)) * 100).toFixed(1)}%
+                        Đánh giá tổ chức bộ phận R&D và trang thiết bị đo lường, mô phỏng theo Điều 7 Khoản 4 TT17.
                       </span>
                     </div>
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC22 · Tổng Kinh Phí Chi Cho R&D Trong 3 Năm (G_rd)
+                        TC20 · Số Lượng Nhân Lực R&D Trình Độ Đại Học Trở Lên (M_r&d - 3.0 điểm)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={survey.rdWorkforceCount}
+                        onChange={(e) => updateSurvey({ rdWorkforceCount: parseInt(e.target.value) || 0 })}
+                        className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
+                      />
+                      <span className="text-xs text-slate-500 mt-1 block">
+                        Quy đổi nhân lực R&D (nhân sự kiêm nhiệm tính 0.5 người): <strong>{((survey.rdWorkforceCount / (survey.totalWorkforce || 1)) * 100).toFixed(1)}%</strong> tổng lao động.
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        TC22 · Tổng Kinh Phí Chi Cho Nghiên Cứu & Phát Triển 3 Năm (G_rd - 5.0 điểm)
                       </label>
                       <FormattedMoneyInput
                         value={survey.rdExpenses3Years}
@@ -1761,7 +2040,7 @@ export default function AssessmentWizardPage() {
                         unit={moneyUnit}
                       />
                       <span className="text-xs text-slate-500 mt-1 block">
-                        Chi R&D: <strong>{formatVietnameseCurrencyText(survey.rdExpenses3Years)}</strong>
+                        Chi R&D 3 năm: <strong>{formatVietnameseCurrencyText(survey.rdExpenses3Years)}</strong> (Tỷ lệ K_rd = <strong>{(survey.financialSeries.reduce((s, r) => s + r.netRevenue, 0) > 0 ? (survey.rdExpenses3Years / survey.financialSeries.reduce((s, r) => s + r.netRevenue, 0)) * 100 : 0).toFixed(2)}%</strong> tổng doanh thu 3 năm; chấm theo quy mô DN tại Bước 1).
                       </span>
                     </div>
 
@@ -1773,7 +2052,7 @@ export default function AssessmentWizardPage() {
                           onChange={(e) => updateSurvey({ hasSciTechFund: e.target.checked })}
                           className="rounded border-slate-300"
                         />
-                        <span>TC22 · Doanh nghiệp có trích lập và sử dụng Quỹ Phát triển KH&CN theo quy định (Nghị định 95/2014) (+1.0 điểm)</span>
+                        <span>TC22 · Doanh nghiệp có trích lập và sử dụng Quỹ Phát triển KH&CN từ lợi nhuận trước thuế (+1.0 điểm)</span>
                       </label>
                     </div>
                   </div>
@@ -1799,7 +2078,7 @@ export default function AssessmentWizardPage() {
                     {/* TC23: Đã điều chỉnh chiều cao chuẩn h-[42px] px-3.5 py-2.5 */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC23 · Loại Sản Phẩm Mới Tạo Ra Trong 3 Năm Qua
+                        TC23 · Loại Sản Phẩm Mới Tạo Ra Trong 3 Năm Qua (4.0 điểm)
                       </label>
                       <select
                         value={survey.newProductType}
@@ -1811,6 +2090,9 @@ export default function AssessmentWizardPage() {
                         <option value="tinh_nang">Sản phẩm cải tiến tính năng kỹ thuật vượt trội (2.0đ)</option>
                         <option value="hoan_toan_moi">Sản phẩm hoàn toàn mới trên thị trường (3.0đ)</option>
                       </select>
+                      <span className="text-xs text-slate-500 mt-1 block">
+                        Đánh giá mức độ đổi mới sản phẩm thương mại hóa theo Điều 8 Khoản 1 TT17.
+                      </span>
                     </div>
 
                     <div>
@@ -1823,10 +2105,10 @@ export default function AssessmentWizardPage() {
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         {[
                           { label: "0%", val: 0 },
+                          { label: "3%", val: 3 },
+                          { label: "5% (+1.0đ chuẩn TT17)", val: 5 },
                           { label: "10%", val: 10 },
-                          { label: "20% (+1.0đ)", val: 20 },
-                          { label: "30%", val: 30 },
-                          { label: "50%", val: 50 },
+                          { label: "20%", val: 20 },
                         ].map((preset) => (
                           <button
                             key={preset.label}
@@ -1850,13 +2132,15 @@ export default function AssessmentWizardPage() {
                         onChange={(e) => updateSurvey({ newProductRevenueRatio: parseFloat(e.target.value) || 0 })}
                         className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
                       />
-                      <span className="text-xs text-slate-500 mt-1 block">Nếu &ge; 20% doanh thu thuần được cộng thêm +1.0 điểm.</span>
+                      <span className="text-xs text-slate-500 mt-1 block">
+                        Theo Điều 8 Khoản 1 TT17: Nếu tỷ lệ doanh thu sản phẩm mới (G_spm / G_dt) đạt <strong>&ge; 5%</strong> tổng doanh thu thì được cộng thêm <strong>+1.0 điểm</strong>.
+                      </span>
                     </div>
 
                     {/* TC24: Đã điều chỉnh chiều cao chuẩn h-[42px] px-3.5 py-2.5 */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC24 · Kết Quả Nghiên Cứu KH&CN Áp Dụng
+                        TC24 · Kết Quả Nghiên Cứu KH&CN Áp Dụng Vào Sản Xuất (4.0 điểm)
                       </label>
                       <select
                         value={survey.rdTechnologyResult}
@@ -1865,16 +2149,19 @@ export default function AssessmentWizardPage() {
                       >
                         <option value="none">Chưa ứng dụng kết quả nghiên cứu (0.0đ)</option>
                         <option value="dang_nghien_cuu">Đang trong giai đoạn nghiên cứu thử nghiệm (1.0đ)</option>
-                        <option value="thu_nghiem_lab">Đã thử nghiệm thành công quy mô phòng lab (2.0đ)</option>
-                        <option value="giai_phap_huu_ich">Đã được cấp văn bằng Giải pháp hữu ích (3.0đ)</option>
+                        <option value="thu_nghiem_lab">Đã thử nghiệm thành công quy mô phòng lab / xưởng pilot (2.0đ)</option>
+                        <option value="giai_phap_huu_ich">Đã được cấp văn bằng Giải pháp hữu ích hoặc giải thưởng KH&CN (3.0đ)</option>
                         <option value="bang_sang_che">Đã được cấp Bằng độc quyền Sáng chế bảo hộ (4.0đ)</option>
                       </select>
+                      <span className="text-xs text-slate-500 mt-1 block">
+                        Căn cứ các đề tài R&D nghiệm thu, Giải thưởng KH&CN hoặc Bằng độc quyền sáng chế/GPHI theo Điều 8 Khoản 2 TT17.
+                      </span>
                     </div>
 
                     {/* TC25: Đã điều chỉnh chiều cao chuẩn h-[42px] px-3.5 py-2.5 */}
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        TC25 · Hợp Tác Với Viện Nghiên Cứu, Trường Đại Học
+                        TC25 · Hợp Tác Với Viện Nghiên Cứu, Trường Đại Học (2.0 điểm)
                       </label>
                       <select
                         value={survey.academyPartnershipType}
@@ -1882,9 +2169,12 @@ export default function AssessmentWizardPage() {
                         className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 leading-normal"
                       >
                         <option value="none">Không có hoạt động hợp tác (0.0đ)</option>
-                        <option value="chuyen_gia_dao_tao">Mời chuyên gia tư vấn, đào tạo kỹ thuật (1.0đ)</option>
-                        <option value="du_an_rd">Cùng thực hiện đề tài / dự án R&D chuyển giao công nghệ (2.0đ)</option>
+                        <option value="chuyen_gia_dao_tao">Mời chuyên gia tư vấn kỹ thuật, đào tạo nhân lực (1.0đ)</option>
+                        <option value="du_an_rd">Cùng ký hợp đồng thực hiện đề tài / dự án R&D chuyển giao công nghệ (2.0đ)</option>
                       </select>
+                      <span className="text-xs text-slate-500 mt-1 block">
+                        Đánh giá mức độ gắn kết Viện - Trường - Doanh nghiệp theo Điều 8 Khoản 3 TT17.
+                      </span>
                     </div>
 
                     {/* TC26 Chiến lược: Đã điều chỉnh chiều cao chuẩn h-[42px] px-3.5 py-2.5 */}

@@ -14,7 +14,7 @@ vi.mock("next/link", () => ({
 }));
 vi.mock("./i18n-provider", () => ({
   I18nToggle: () => <span>Ngôn ngữ</span>,
-  useI18n: () => ({ t: (key: string) => ({ home: "Trang chủ", about: "Giới thiệu", technology_offers: "Chào bán", technology_demands: "Nhu cầu", innovative_enterprises: "DN ĐMST", experts: "Chuyên gia", user_guide: "Hướng dẫn", services: "Dịch vụ", logout: "Đăng xuất", login: "Đăng nhập", register: "Đăng ký", expert_upgrade: "Nâng hạng" })[key] ?? key }),
+  useI18n: () => ({ t: (key: string) => ({ home: "Trang chủ", about: "Giới thiệu", technology_offers: "Công nghệ", technology_demands: "Nhu cầu", innovative_enterprises: "DN ĐMST", experts: "Chuyên gia", user_guide: "Hướng dẫn", services: "Dịch vụ", logout: "Đăng xuất", login: "Đăng nhập", register: "Đăng ký", expert_upgrade: "Nâng hạng" })[key] ?? key }),
 }));
 vi.mock("./theme-toggle", () => ({ ThemeToggle: () => <span>Giao diện</span> }));
 vi.mock("./toast", () => ({ useToast: () => ({ info: vi.fn() }) }));

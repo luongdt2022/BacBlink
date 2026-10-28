@@ -226,6 +226,11 @@ export function resolveTt17Classification(classification?: string | null): {
         label: "Trình độ Lạc hậu (< 50đ)",
         badgeClass: "bg-rose-100 text-rose-800 border-rose-300",
       };
+    case "CAN_THAM_DINH":
+      return {
+        label: "Cần thẩm định (Lệch đồng bộ)",
+        badgeClass: "bg-amber-100 text-amber-800 border-amber-300",
+      };
     default:
       return {
         label: classification || "Chưa xếp loại",
