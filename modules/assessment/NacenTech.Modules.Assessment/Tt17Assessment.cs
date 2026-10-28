@@ -82,9 +82,6 @@ public class Tt17Assessment : AggregateRoot
 
     public void Review(string action, Guid reviewerId, string? notes, string? adjustedScoresJson)
     {
-        if (Status is not "SUBMITTED" and not "IN_REVIEW")
-            throw new InvalidOperationException("Hồ sơ chưa được nộp hoặc không ở trạng thái thẩm định.");
-
         ReviewerId = reviewerId;
         ReviewNotes = notes;
 

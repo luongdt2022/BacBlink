@@ -21,102 +21,131 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
 {
     private static readonly Tt17ScoringEngine ScoringEngine = new();
     private static readonly ConcurrentDictionary<Guid, Tt17AssessmentDto> AssessmentsStore = new(SeedInitialAssessments());
+    private static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    private static string NormalizeScopeId(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return "HN";
+        var s = raw.Trim();
+        if (s.Equals("Hà Nội", StringComparison.OrdinalIgnoreCase)) return "HN";
+        if (s.Equals("Tiền Giang", StringComparison.OrdinalIgnoreCase)) return "TG";
+        if (s.Equals("Ninh Thuận", StringComparison.OrdinalIgnoreCase)) return "NT";
+        if (s.Equals("Hải Phòng", StringComparison.OrdinalIgnoreCase)) return "HP";
+        if (s.Equals("Đà Nẵng", StringComparison.OrdinalIgnoreCase)) return "DN";
+        return s.ToUpperInvariant();
+    }
+
+    private static Tt17AssessmentDto MapEntityToDto(Tt17Assessment entity)
+    {
+        Tt17SurveyDataDto? survey = null;
+        Tt17ScoreResultDto? scores = null;
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(entity.SurveyDataJson))
+            {
+                survey = JsonSerializer.Deserialize<Tt17SurveyDataDto>(entity.SurveyDataJson, JsonOpts);
+            }
+        }
+        catch
+        {
+            survey = new Tt17SurveyDataDto();
+        }
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(entity.ScoresJson))
+            {
+                scores = JsonSerializer.Deserialize<Tt17ScoreResultDto>(entity.ScoresJson, JsonOpts);
+            }
+        }
+        catch
+        {
+            scores = null;
+        }
+
+        survey ??= new Tt17SurveyDataDto();
+        if (
+            scores == null ||
+            scores.Criteria == null ||
+            scores.Criteria.Count == 0 ||
+            (scores.ScoreT == 0 && scores.ScoreE == 0 && scores.ScoreO == 0 && scores.ScoreR == 0 && scores.ScoreI == 0)
+        )
+        {
+            scores = ScoringEngine.Calculate(survey, entity.IndustryCode);
+        }
+
+        return new Tt17AssessmentDto
+        {
+            Id = entity.Id,
+            EnterpriseId = entity.EnterpriseId,
+            EnterpriseName = entity.EnterpriseName,
+            TaxCode = entity.TaxCode,
+            AssessmentYear = entity.AssessmentYear,
+            Status = entity.Status,
+            ScopeType = entity.ScopeType,
+            ScopeId = NormalizeScopeId(entity.ScopeId),
+            IndustryCode = string.IsNullOrWhiteSpace(entity.IndustryCode) ? "C.10" : entity.IndustryCode,
+            SurveyData = survey,
+            ScoreResult = scores,
+            ReviewNotes = entity.ReviewNotes,
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt,
+            SubmittedAt = entity.SubmittedAtUtc ?? entity.CreatedAt,
+            ApprovedAt = entity.ApprovedAtUtc
+        };
+    }
 
     private static IEnumerable<KeyValuePair<Guid, Tt17AssessmentDto>> SeedInitialAssessments()
     {
-        var id1 = Guid.Parse("99999999-9999-9999-9999-999999999991");
-        var entId1 = Guid.Parse("00000000-0000-0000-0000-000000000001");
+        return Enumerable.Empty<KeyValuePair<Guid, Tt17AssessmentDto>>();
+    }
 
-        var survey1 = new Tt17SurveyDataDto
+    private async Task<List<Tt17AssessmentDto>> LoadAllAssessmentsAsync(CancellationToken ct = default)
+    {
+        var dbEntities = await db.Set<Tt17Assessment>()
+            .AsNoTracking()
+            .OrderByDescending(x => x.UpdatedAt)
+            .ToListAsync(ct);
+
+        var result = new List<Tt17AssessmentDto>(dbEntities.Count + AssessmentsStore.Count);
+        var seenIds = new HashSet<Guid>();
+
+        foreach (var entity in dbEntities)
         {
-            TotalCapital = 120_000_000_000,
-            TotalWorkforce = 250,
-            CompanyAddress = "Khu Công Nghiệp Nomura, Huyện An Dương, Hải Phòng",
-            CompanyPhone = "0225 3743 888",
-            CompanyEmail = "contact@haiphong-precision.vn",
-            CompanyType = "Công ty Cổ phần",
+            var dto = MapEntityToDto(entity);
+            result.Add(dto);
+            seenIds.Add(dto.Id);
+        }
 
-            // Nhóm T
-            DepreciationCoefficient = 0.35,
-            ModernEquipmentRatio = 65.0,
-            AdvancedCountryEquipmentRatio = 55.0,
-            AutomationRatio = 60.0,
-            AverageEquipmentAge = 5.5,
-            LineSynchronizationLevel = 4,
-            MaterialConsumptionRatio = 98.0,
-
-            // Nhóm E
-            DefectProductRatio = 1.8,
-            CapacityUtilizationRatio = 82.0,
-            ExportRevenueRatio = 45.0,
-            EnergySavingRatio = 8.5,
-            FinancialSeries = new List<FinancialSeriesDto>
+        foreach (var kv in AssessmentsStore)
+        {
+            if (!seenIds.Contains(kv.Key))
             {
-                new() { Year = 2023, IndustrialOutputValue = 90_000_000_000, NetRevenue = 85_000_000_000, DirectWorkersCount = 180 },
-                new() { Year = 2024, IndustrialOutputValue = 105_000_000_000, NetRevenue = 100_000_000_000, DirectWorkersCount = 190 },
-                new() { Year = 2025, IndustrialOutputValue = 125_000_000_000, NetRevenue = 120_000_000_000, DirectWorkersCount = 200 }
-            },
+                result.Add(kv.Value);
+            }
+        }
 
-            // Nhóm O
-            IsoCertifications = new List<string> { "ISO 9001:2015", "ISO 14001:2015" },
-            SoftwareApplications = new List<string> { "ERP SAP Business One", "MES Production" },
-            ProductivityTools = new List<string> { "5S", "Kaizen" },
-            DigitalMaturityLevel = 4,
-            EnvironmentalCompliant = true,
-
-            // Nhóm R
-            RdWorkforceCount = 12,
-            HasLabOrTestingFacility = true,
-            RdExpenseRatio = 1.8,
-            RdProjectsCount = 2,
-            TechnologyMasteryLevel = 4,
-
-            // Nhóm I
-            GrantedPatentsCount = 1,
-            RegisteredIpCount = 2,
-            NewProductRevenueRatio = 22.0,
-            AcademyPartnershipCount = 2,
-            HasInternalInnovationPolicy = true
-        };
-
-        var scoreResult1 = ScoringEngine.Calculate(survey1);
-
-        var dto1 = new Tt17AssessmentDto
-        {
-            Id = id1,
-            EnterpriseId = entId1,
-            EnterpriseName = "Công ty CP Chế tạo Cơ khí Chính xác Hải Phòng",
-            TaxCode = "0200188999",
-            AssessmentYear = 2025,
-            Status = "APPROVED",
-            ScopeType = "PROVINCE",
-            ScopeId = "HP",
-            IndustryCode = "C.28",
-            SurveyData = survey1,
-            ScoreResult = scoreResult1,
-            ReviewNotes = "Hồ sơ BCTC 3 năm và chứng chỉ ISO hợp lệ. Hội đồng Sở KH&CN Hải Phòng phê duyệt cấp chứng nhận Phụ lục IV.",
-            CreatedAt = DateTimeOffset.UtcNow.AddMonths(-3),
-            UpdatedAt = DateTimeOffset.UtcNow.AddMonths(-2),
-            SubmittedAt = DateTimeOffset.UtcNow.AddMonths(-2),
-            ApprovedAt = DateTimeOffset.UtcNow.AddMonths(-2)
-        };
-
-        yield return new KeyValuePair<Guid, Tt17AssessmentDto>(id1, dto1);
+        return result;
     }
 
     [AllowAnonymous]
     [HttpGet("api/v1/assessments/tt17/current")]
     [HttpGet("api/v2/assessments/tt17/current")]
-    public IActionResult GetCurrentAssessment([FromQuery] int? year)
+    public async Task<IActionResult> GetCurrentAssessment([FromQuery] int? year, CancellationToken ct = default)
     {
         var targetYear = year ?? DateTime.UtcNow.Year;
-        var existing = AssessmentsStore.Values
+        var all = await LoadAllAssessmentsAsync(ct);
+        var existing = all
             .OrderByDescending(x => x.AssessmentYear)
+            .ThenByDescending(x => x.UpdatedAt)
             .FirstOrDefault();
 
         if (existing is null)
         {
-            // Trả về bản nháp trống khởi tạo
             var newDto = new Tt17AssessmentDto
             {
                 Id = Guid.NewGuid(),
@@ -140,10 +169,12 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [AllowAnonymous]
     [HttpGet("api/v1/assessments/tt17/history")]
     [HttpGet("api/v2/assessments/tt17/history")]
-    public IActionResult GetAssessmentHistory()
+    public async Task<IActionResult> GetAssessmentHistory(CancellationToken ct = default)
     {
-        var list = AssessmentsStore.Values
+        var all = await LoadAllAssessmentsAsync(ct);
+        var list = all
             .OrderByDescending(x => x.AssessmentYear)
+            .ThenByDescending(x => x.UpdatedAt)
             .ToList();
 
         return Ok(new { success = true, data = list });
@@ -152,8 +183,14 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [AllowAnonymous]
     [HttpGet("api/v1/assessments/tt17/{id}")]
     [HttpGet("api/v2/assessments/tt17/{id}")]
-    public IActionResult GetAssessmentById(Guid id)
+    public async Task<IActionResult> GetAssessmentById(Guid id, CancellationToken ct = default)
     {
+        var entity = await db.Set<Tt17Assessment>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (entity != null)
+        {
+            return Ok(new { success = true, data = MapEntityToDto(entity) });
+        }
+
         if (AssessmentsStore.TryGetValue(id, out var dto))
         {
             return Ok(new { success = true, data = dto });
@@ -324,22 +361,256 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [AllowAnonymous]
     [HttpGet("api/v1/gov/assessments/tt17")]
     [HttpGet("api/v2/gov/assessments/tt17")]
-    public IActionResult GetGovAssessmentQueue([FromQuery] string? scopeId, [FromQuery] string? status)
+    public async Task<IActionResult> GetGovAssessmentQueue([FromQuery] string? scopeId, [FromQuery] string? status, CancellationToken ct = default)
     {
-        var query = AssessmentsStore.Values.AsEnumerable();
+        var all = await LoadAllAssessmentsAsync(ct);
+        var query = all.AsEnumerable();
 
-        if (!string.IsNullOrWhiteSpace(scopeId))
+        if (!string.IsNullOrWhiteSpace(scopeId) && !scopeId.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
         {
-            query = query.Where(x => x.ScopeId.Equals(scopeId, StringComparison.OrdinalIgnoreCase));
+            var normalizedScope = NormalizeScopeId(scopeId);
+            query = query.Where(x => NormalizeScopeId(x.ScopeId).Equals(normalizedScope, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (!string.IsNullOrWhiteSpace(status))
+        if (!string.IsNullOrWhiteSpace(status) && !status.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
         {
-            query = query.Where(x => x.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(x => x.Status.Equals(status.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 
-        var list = query.OrderByDescending(x => x.SubmittedAt ?? x.CreatedAt).ToList();
-        return Ok(new { success = true, data = list });
+        var list = query
+            .OrderByDescending(x => x.ScoreResult?.TotalScore ?? 0)
+            .ThenBy(x => x.TaxCode)
+            .ToList();
+
+        return Ok(new { success = true, data = list, totalCount = list.Count });
+    }
+
+    [AllowAnonymous]
+    [HttpGet("api/v1/gov/assessments/tt17/dashboard")]
+    [HttpGet("api/v2/gov/assessments/tt17/dashboard")]
+    [HttpGet("api/v1/admin/assessments/tt17/dashboard")]
+    [HttpGet("api/v2/admin/assessments/tt17/dashboard")]
+    public async Task<IActionResult> GetTt17Dashboard(
+        [FromQuery] string? scopeId,
+        [FromQuery] string? industryCode,
+        [FromQuery] string? classification,
+        CancellationToken ct = default)
+    {
+        var all = await LoadAllAssessmentsAsync(ct);
+
+        var filtered = all.AsEnumerable();
+        if (!string.IsNullOrWhiteSpace(scopeId) && !scopeId.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            var normalizedScope = NormalizeScopeId(scopeId);
+            filtered = filtered.Where(x => NormalizeScopeId(x.ScopeId).Equals(normalizedScope, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(industryCode) && !industryCode.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            filtered = filtered.Where(x => x.IndustryCode.Equals(industryCode.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(classification) && !classification.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            filtered = filtered.Where(x => (x.ScoreResult?.Classification ?? "").Equals(classification.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        var items = filtered.ToList();
+        var total = items.Count;
+
+        var provinceNameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["TG"] = "Tỉnh Tiền Giang",
+            ["NT"] = "Tỉnh Ninh Thuận",
+            ["HN"] = "TP. Hà Nội",
+            ["HP"] = "TP. Hải Phòng",
+            ["DN"] = "TP. Đà Nẵng",
+            ["SG"] = "TP. Hồ Chí Minh"
+        };
+
+        var byProvince = all
+            .GroupBy(x => NormalizeScopeId(x.ScopeId))
+            .Select(g =>
+            {
+                var pItems = g.ToList();
+                var pCount = pItems.Count;
+                return new
+                {
+                    scopeId = g.Key,
+                    provinceName = provinceNameMap.TryGetValue(g.Key, out var pName) ? pName : $"Tỉnh/TP ({g.Key})",
+                    count = pCount,
+                    approvedCount = pItems.Count(x => x.Status == "APPROVED"),
+                    submittedCount = pItems.Count(x => x.Status == "SUBMITTED"),
+                    avgTotalScore = pCount > 0 ? Math.Round(pItems.Average(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
+                    maxTotalScore = pCount > 0 ? Math.Round(pItems.Max(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
+                    minTotalScore = pCount > 0 ? Math.Round(pItems.Min(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
+                    avgScoreT = pCount > 0 ? Math.Round(pItems.Average(x => x.ScoreResult?.ScoreT ?? 0), 2) : 0,
+                    avgScoreE = pCount > 0 ? Math.Round(pItems.Average(x => x.ScoreResult?.ScoreE ?? 0), 2) : 0,
+                    avgScoreO = pCount > 0 ? Math.Round(pItems.Average(x => x.ScoreResult?.ScoreO ?? 0), 2) : 0,
+                    avgScoreR = pCount > 0 ? Math.Round(pItems.Average(x => x.ScoreResult?.ScoreR ?? 0), 2) : 0,
+                    avgScoreI = pCount > 0 ? Math.Round(pItems.Average(x => x.ScoreResult?.ScoreI ?? 0), 2) : 0,
+                    avgSyncCoefficient = pCount > 0 ? Math.Round(pItems.Average(x => x.ScoreResult?.SyncCoefficient ?? 0), 3) : 0,
+                    tienTienCount = pItems.Count(x => x.ScoreResult?.Classification == "TIEN_TIEN"),
+                    trungBinhTienTienCount = pItems.Count(x => x.ScoreResult?.Classification == "TRUNG_BINH_TIEN_TIEN"),
+                    trungBinhCount = pItems.Count(x => x.ScoreResult?.Classification == "TRUNG_BINH"),
+                    lacHauCount = pItems.Count(x => x.ScoreResult?.Classification == "LAC_HAU" || x.ScoreResult?.Classification == "CAN_THAM_DINH")
+                };
+            })
+            .OrderByDescending(x => x.count)
+            .ToList();
+
+        var classificationOrder = new[]
+        {
+            ("TIEN_TIEN", "Trình độ Tiên tiến (≥ 75đ)"),
+            ("TRUNG_BINH_TIEN_TIEN", "Trung bình Tiên tiến (60–74đ)"),
+            ("TRUNG_BINH", "Trình độ Trung bình (35–59đ)"),
+            ("LAC_HAU", "Trình độ Lạc hậu (< 35đ)")
+        };
+
+        var byClassification = classificationOrder.Select(c =>
+        {
+            var matched = items.Where(x =>
+                c.Item1 == "LAC_HAU"
+                    ? (x.ScoreResult?.Classification == "LAC_HAU" || x.ScoreResult?.Classification == "CAN_THAM_DINH")
+                    : x.ScoreResult?.Classification == c.Item1
+            ).ToList();
+            return new
+            {
+                classification = c.Item1,
+                label = c.Item2,
+                count = matched.Count,
+                percentage = total > 0 ? Math.Round(matched.Count * 100.0 / total, 1) : 0,
+                avgScore = matched.Count > 0 ? Math.Round(matched.Average(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0
+            };
+        }).ToList();
+
+        var byIndustry = items
+            .GroupBy(x => string.IsNullOrWhiteSpace(x.IndustryCode) ? "C.10" : x.IndustryCode.ToUpperInvariant())
+            .Select(g =>
+            {
+                var iItems = g.ToList();
+                var iCount = iItems.Count;
+                return new
+                {
+                    industryCode = g.Key,
+                    count = iCount,
+                    percentage = total > 0 ? Math.Round(iCount * 100.0 / total, 1) : 0,
+                    avgTotalScore = iCount > 0 ? Math.Round(iItems.Average(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
+                    avgScoreT = iCount > 0 ? Math.Round(iItems.Average(x => x.ScoreResult?.ScoreT ?? 0), 2) : 0,
+                    avgScoreE = iCount > 0 ? Math.Round(iItems.Average(x => x.ScoreResult?.ScoreE ?? 0), 2) : 0,
+                    avgScoreO = iCount > 0 ? Math.Round(iItems.Average(x => x.ScoreResult?.ScoreO ?? 0), 2) : 0,
+                    avgScoreR = iCount > 0 ? Math.Round(iItems.Average(x => x.ScoreResult?.ScoreR ?? 0), 2) : 0,
+                    avgScoreI = iCount > 0 ? Math.Round(iItems.Average(x => x.ScoreResult?.ScoreI ?? 0), 2) : 0
+                };
+            })
+            .OrderByDescending(x => x.count)
+            .ToList();
+
+        var allCriteria = items
+            .Where(x => x.ScoreResult?.Criteria != null)
+            .SelectMany(x => x.ScoreResult.Criteria)
+            .GroupBy(c => c.Code)
+            .Select(g =>
+            {
+                var cList = g.ToList();
+                var first = cList.First();
+                var avgAchieved = cList.Count > 0 ? Math.Round(cList.Average(c => c.AchievedScore), 2) : 0;
+                var maxScore = first.MaxScore > 0 ? first.MaxScore : 1;
+                var bottleneckCnt = cList.Count(c => c.IsBottleneck || c.AchievedScore < c.MaxScore * 0.5);
+                return new
+                {
+                    code = g.Key,
+                    group = first.Group,
+                    name = first.Name,
+                    maxScore = first.MaxScore,
+                    avgScore = avgAchieved,
+                    achievementRate = Math.Round(avgAchieved * 100.0 / maxScore, 1),
+                    bottleneckCount = bottleneckCnt,
+                    bottleneckRate = cList.Count > 0 ? Math.Round(bottleneckCnt * 100.0 / cList.Count, 1) : 0
+                };
+            })
+            .OrderBy(c => c.code)
+            .ToList();
+
+        var topEnterprises = items
+            .OrderByDescending(x => x.ScoreResult?.TotalScore ?? 0)
+            .Take(15)
+            .Select(x => new
+            {
+                id = x.Id,
+                enterpriseName = x.EnterpriseName,
+                taxCode = x.TaxCode,
+                scopeId = x.ScopeId,
+                industryCode = x.IndustryCode,
+                status = x.Status,
+                totalScore = x.ScoreResult?.TotalScore ?? 0,
+                scoreT = x.ScoreResult?.ScoreT ?? 0,
+                scoreE = x.ScoreResult?.ScoreE ?? 0,
+                scoreO = x.ScoreResult?.ScoreO ?? 0,
+                scoreR = x.ScoreResult?.ScoreR ?? 0,
+                scoreI = x.ScoreResult?.ScoreI ?? 0,
+                syncCoefficient = x.ScoreResult?.SyncCoefficient ?? 0,
+                classification = x.ScoreResult?.Classification ?? "CAN_THAM_DINH"
+            })
+            .ToList();
+
+        var bottomEnterprises = items
+            .OrderBy(x => x.ScoreResult?.TotalScore ?? 0)
+            .Take(15)
+            .Select(x => new
+            {
+                id = x.Id,
+                enterpriseName = x.EnterpriseName,
+                taxCode = x.TaxCode,
+                scopeId = x.ScopeId,
+                industryCode = x.IndustryCode,
+                status = x.Status,
+                totalScore = x.ScoreResult?.TotalScore ?? 0,
+                scoreT = x.ScoreResult?.ScoreT ?? 0,
+                scoreE = x.ScoreResult?.ScoreE ?? 0,
+                scoreO = x.ScoreResult?.ScoreO ?? 0,
+                scoreR = x.ScoreResult?.ScoreR ?? 0,
+                scoreI = x.ScoreResult?.ScoreI ?? 0,
+                syncCoefficient = x.ScoreResult?.SyncCoefficient ?? 0,
+                classification = x.ScoreResult?.Classification ?? "CAN_THAM_DINH"
+            })
+            .ToList();
+
+        return Ok(new
+        {
+            success = true,
+            data = new
+            {
+                totalAssessments = total,
+                approvedCount = items.Count(x => x.Status == "APPROVED"),
+                submittedCount = items.Count(x => x.Status == "SUBMITTED"),
+                draftCount = items.Count(x => x.Status == "DRAFT"),
+                changesRequestedCount = items.Count(x => x.Status == "CHANGES_REQUESTED"),
+                avgTotalScore = total > 0 ? Math.Round(items.Average(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
+                maxTotalScore = total > 0 ? Math.Round(items.Max(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
+                minTotalScore = total > 0 ? Math.Round(items.Min(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
+                avgSyncCoefficient = total > 0 ? Math.Round(items.Average(x => x.ScoreResult?.SyncCoefficient ?? 0), 3) : 0,
+                avgGroupScores = new
+                {
+                    scoreT = total > 0 ? Math.Round(items.Average(x => x.ScoreResult?.ScoreT ?? 0), 2) : 0,
+                    maxT = 30,
+                    scoreE = total > 0 ? Math.Round(items.Average(x => x.ScoreResult?.ScoreE ?? 0), 2) : 0,
+                    maxE = 20,
+                    scoreO = total > 0 ? Math.Round(items.Average(x => x.ScoreResult?.ScoreO ?? 0), 2) : 0,
+                    maxO = 19,
+                    scoreR = total > 0 ? Math.Round(items.Average(x => x.ScoreResult?.ScoreR ?? 0), 2) : 0,
+                    maxR = 17,
+                    scoreI = total > 0 ? Math.Round(items.Average(x => x.ScoreResult?.ScoreI ?? 0), 2) : 0,
+                    maxI = 14
+                },
+                byProvince,
+                byClassification,
+                byIndustry,
+                criteriaStats = allCriteria,
+                topEnterprises,
+                bottomEnterprises
+            }
+        });
     }
 
     [AllowAnonymous]
@@ -354,7 +625,14 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         }
 
         var action = payload.Action.Trim().ToUpperInvariant();
-        if (existing != null)
+        if (entity != null)
+        {
+            entity.Review(action, Guid.Parse("00000000-0000-0000-0000-000000000002"), payload.ReviewNotes, null);
+            await uow.CommitAsync(ct);
+            existing = MapEntityToDto(entity);
+            AssessmentsStore[id] = existing;
+        }
+        else if (existing != null)
         {
             existing.ReviewNotes = payload.ReviewNotes;
             existing.UpdatedAt = DateTimeOffset.UtcNow;
@@ -375,12 +653,6 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
                     return BadRequest(new { success = false, message = "Hành động thẩm định không hợp lệ." });
             }
             AssessmentsStore[id] = existing;
-        }
-
-        if (entity != null)
-        {
-            entity.Review(action, Guid.Parse("00000000-0000-0000-0000-000000000002"), payload.ReviewNotes, null);
-            await uow.CommitAsync(ct);
         }
 
         return Ok(new { success = true, data = existing, message = $"Thẩm định hồ sơ thành công: {action}" });

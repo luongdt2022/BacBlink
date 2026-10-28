@@ -371,23 +371,38 @@ public sealed class Tt17ScoringEngine
             : 0.0;
         criteria.Add(CreateCriterion("TC21", "R", "Hạ tầng dành cho nghiên cứu và phát triển (Phòng Lab/CAD/Testing)", 3.0, s21, "Thành lập phòng thí nghiệm, phòng thiết kế CAD/CAM riêng biệt."));
 
-        // TC22: Quỹ KHCN & Chi phí R&D - Max 4đ
+        // TC22: Quỹ KHCN & Chi phí R&D - Max 4đ (Phân nhánh theo 3 cấp quy mô DN - Điều 7 Khoản 5 TT17)
         double gRd = survey.RdExpenses3Years;
         double kRd = gDt > 0 ? (gRd / gDt) * 100.0 : 0;
         double s22 = 0;
         if (survey.HasSciTechFund) s22 += 1.0;
-        if (kRd >= 1.5) s22 += 3.0;
-        else if (kRd >= 0.8) s22 += 2.0;
-        else if (kRd >= 0.4) s22 += 1.0;
+        if (totalCap >= 1_000_000_000_000 && m >= 3000)
+        {
+            if (kRd >= 0.1) s22 += 3.0;
+            else if (kRd >= 0.06) s22 += 2.0;
+            else if (kRd >= 0.02) s22 += 1.0;
+        }
+        else if (totalCap >= 100_000_000_000 && m >= 200)
+        {
+            if (kRd >= 0.5) s22 += 3.0;
+            else if (kRd >= 0.3) s22 += 2.0;
+            else if (kRd >= 0.1) s22 += 1.0;
+        }
+        else
+        {
+            if (kRd >= 1.0) s22 += 3.0;
+            else if (kRd >= 0.6) s22 += 2.0;
+            else if (kRd >= 0.2) s22 += 1.0;
+        }
         s22 = Math.Clamp(s22, 0.0, 4.0);
-        criteria.Add(CreateCriterion("TC22", "R", "Quỹ phát triển KH&CN và đầu tư cho hoạt động R&D", 4.0, s22, "Trích lập Quỹ KH&CN và nâng tỷ lệ chi R&D lên trên 1% doanh thu."));
+        criteria.Add(CreateCriterion("TC22", "R", "Quỹ phát triển KH&CN và đầu tư cho hoạt động R&D", 4.0, s22, "Trích lập Quỹ KH&CN và nâng tỷ lệ chi R&D theo định mức quy mô DN."));
 
         double scoreR = Math.Min(17.0, s18 + s19 + s20 + s21 + s22);
 
         // -------------------------------------------------------------
         // NHÓM I: NĂNG LỰC ĐỔI MỚI SÁNG TẠO (MAX 14 ĐIỂM)
         // -------------------------------------------------------------
-        // TC23: Kết quả nghiên cứu sản phẩm mới - Max 4đ
+        // TC23: Kết quả nghiên cứu sản phẩm mới - Max 4đ (Điều 8 Khoản 1 TT17: Doanh thu SP mới >= 5% cộng +1đ)
         double s23 = survey.NewProductType switch
         {
             "hoan_toan_moi" => 3.0,
@@ -395,7 +410,7 @@ public sealed class Tt17ScoringEngine
             "kieu_dang" => 1.0,
             _ => 0.0
         };
-        if (s23 > 0 && survey.NewProductRevenueRatio >= 20.0) s23 = Math.Min(4.0, s23 + 1.0);
+        if (s23 > 0 && survey.NewProductRevenueRatio >= 5.0) s23 = Math.Min(4.0, s23 + 1.0);
         criteria.Add(CreateCriterion("TC23", "I", "Kết quả nghiên cứu, phát triển sản phẩm mới", 4.0, s23, "Đẩy mạnh thương mại hóa các sản phẩm mới có tính năng đột phá."));
 
         // TC24: Kết quả nghiên cứu công nghệ mới - Max 4đ
