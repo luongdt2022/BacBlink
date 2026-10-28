@@ -270,3 +270,227 @@
   3. `src/app/portal/enterprise/profile/page.tsx`: Biểu mẫu cập nhật hồ sơ doanh nghiệp.
 - **Acceptance Criteria**:
   - `AC-02-016`: Gõ ký tự không dấu (ví dụ: "ha noi", "da nang") tự động lọc và gợi ý chính xác "Hà Nội", "Đà Nẵng". Chọn mục cập nhật state và kích hoạt tìm kiếm danh bạ tức thì.
+
+---
+
+## 10. SPEC DELTA V5 (CR-2026-020): PHIẾU KHẢO SÁT 43 CÂU HỎI ĐÁNH GIÁ NĂNG LỰC ĐMST & TÍNH TOÁN TNI TOÀN DIỆN
+
+> **Mã CR**: `CR-2026-020`  
+> **Căn cứ**: Kế hoạch tổng thể `MASTER-PLAN-CR-2026-020-SURVEY43Q`, Tài liệu Thiết kế cơ sở [`BD_DELTA_CR_020_PHIEU_KHAO_SAT_43_CAU.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/BD_DELTA_CR_020_PHIEU_KHAO_SAT_43_CAU.md) và Wireframe [`wireframe_khao_sat_dmst_43_cau.html`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_khao_sat_dmst_43_cau.html).  
+> **Dữ liệu SSOT**: `Specification/01_DATA_RAW/Khảo sát 304 DN-final-2408.xlsx` (43 câu hỏi) & `SourceCode/backend/modules/enterprise/NacenTech.Modules.Enterprise/Application/InnovationRatingEngine.cs`.
+
+### 10.1 Yêu Cầu Chức Năng Mới (Functional Requirements)
+
+- **`REQ-02-025` [Giao Diện Khảo Sát Wizard 5 Bước Chuẩn Hóa 43 Câu Hỏi]**:
+  - Hệ thống cung cấp route chuyên biệt `/khao-sat-dmst` (và đồng bộ tương thích `/khao-sat-nhu-cau`) tổ chức theo mô hình Wizard 5 bước tuần tự:
+    - **Bước 1 (Câu 1 – 11)**: Định danh pháp nhân & Quy mô nền tảng (Tên DN, MST, Địa chỉ, Email, SĐT, Tỉnh thành, Ngành chính, Sở hữu, Lao động, Doanh thu, Tỷ lệ ĐH).
+    - **Bước 2 (Câu 12 – 16)**: Quản trị & Nguồn lực ĐMST (Bộ phận R&D, Đào tạo 12 tháng, Đầu tư máy móc 3 năm, Ngân sách R&D, Nền tảng quản trị số ERP/CRM/HRM).
+    - **Bước 3 (Câu 17 – 27)**: Đổi mới Sản phẩm, Quy trình & Chuyển đổi số (SP mới, Cải tiến SP, Quy trình mới, Đổi mới tổ chức, Đổi mới marketing, Mua công nghệ, Hiệu quả ĐMST, Chiến lược CĐS, Khâu số hóa, Công nghệ số tiên tiến).
+    - **Bước 4 (Câu 28 – 36)**: Hợp tác Hệ sinh thái, Sở hữu trí tuệ & Thị trường (Hợp tác 7 đối tượng Viện/Trường/Quỹ/Nhà nước/Quốc tế, Hỗ trợ nhà nước, Tiếp cận vốn, Bằng Sáng chế/GPHI, Doanh thu SP mới, Xuất khẩu, Chuỗi giá trị).
+    - **Bước 5 (Câu 37 – 43)**: Nhu cầu Công nghệ, Chỉ số TNI & Kiến nghị (Top rào cản, Nhu cầu hỗ trợ, Thang điểm 1-5 sao cho 8 loại thông tin công nghệ, Sẵn sàng phỏng vấn sâu, Sẵn sàng cập nhật CSDL, Tính năng sàn mong muốn, Textarea kiến nghị tự do).
+  - Có thanh tiến trình (Progress Bar), chỉ báo phần trăm hoàn thành (20%, 40%, 60%, 80%, 100%), hỗ trợ điều hướng [Quay lại] và [Tiếp tục].
+
+- **`REQ-02-026` [Cơ Chế Tự Động Điền Autofill Từ Hồ Sơ Đã Đăng Nhập & Khóa MST]**:
+  - Khi người dùng đăng nhập tài khoản sở hữu hồ sơ doanh nghiệp (ví dụ tài khoản Demo Bên Mua `buyer.user@demo.nacentech.vn` với Công ty TNHH Trường Hoan, MST `0100255428`):
+    - Hook `useEnterpriseAutofill` tự động kích hoạt gọi `GET /api/v1/surveys/innovation-demand/prefill` để lấy thông tin pháp nhân.
+    - Điền sẵn toàn bộ Bước 1 (C01 - C11), các cờ R&D (C12, C15), thông tin xuất khẩu (C35), chuỗi giá trị (C36).
+    - Bắt buộc khóa trường Mã số thuế (`tax_code` / `C02`) ở trạng thái `read-only`/`disabled` kèm huy hiệu xác thực: `[✓ Đã xác thực từ Hồ sơ Pháp nhân SSOT]`.
+  - Đối với Khách vãng lai: Cho phép nhập MST; hỗ trợ tự động tra cứu hồ sơ công khai theo MST (Debounce 500ms) để gợi ý điền nhanh hoặc đăng nhập.
+
+- **`REQ-02-027` [Entry Points Liên Thông Từ Trang Chủ Và Danh Bạ Doanh Nghiệp]**:
+  - **Trên Trang Chủ (`src/app/page.tsx` & Header)**:
+    - Bổ sung liên kết trên Header Navigation: *"Khảo sát ĐMST"* kèm badge `"43 câu"` dẫn sang `/khao-sat-dmst`.
+    - Bổ sung 1 Thẻ hành động nhanh (Quick Action Card) tại khu vực giải pháp nổi bật trên Home: *"Đánh giá Năng lực Đổi mới sáng tạo (43 tiêu chuẩn)"* kèm nút CTA `[Bắt đầu khảo sát →]`.
+  - **Trên Danh Bạ Doanh Nghiệp (`src/app/enterprises/page.tsx` & `/doanh-nghiep-dmst`)**:
+    - Bổ sung Banner kêu gọi hành động (CTA Banner) ở đầu trang: *"Doanh nghiệp của bạn chưa có Điểm ĐMST & Huy hiệu Xác thực trên Nacentwin? Làm bài khảo sát 43 câu ngay để hiển thị trên CSDL Quốc gia và kết nối công nghệ"* kèm nút `[Làm khảo sát ngay (15 phút) ⚡]`.
+
+- **`REQ-02-028` [Lưu Nháp Tức Thời LocalStorage & Khôi Phục Phiên Làm Việc]**:
+  - Tự động serialize toàn bộ giá trị 43 câu hỏi vào `localStorage` của trình duyệt theo key: `nacentwin_survey_43q_draft_{userId || 'guest'}` với cơ chế Debounce 600ms sau mỗi thao tác nhập liệu.
+  - Hiển thị nhãn trạng thái thời gian thực: `[✓ Đã lưu nháp tự động lúc HH:mm:ss]`.
+  - Khi tải lại trang (F5) hoặc mở lại trình duyệt trong vòng 7 ngày, hệ thống hiển thị thông báo khôi phục phiên làm dở để người dùng tiếp tục không bị mất dữ liệu.
+
+---
+
+### 10.2 Quy Tắc Nghiệp Vụ Mới (Business Rules)
+
+- **`BR-02-015` [Quy Tắc Autofill & Khóa Trường Định Danh Mã Số Thuế]**:
+  - Khi phiên làm việc là người dùng đã đăng nhập (`isAuthenticated == true`), trường `tax_code` là bất biến (Immutable), cấm người dùng sửa đổi trên UI.
+  - Backend API (`POST /api/v1/surveys/innovation-demand/submit`) bắt buộc kiểm tra đối chiếu: `tax_code` gửi lên phải trùng khớp với mã số thuế của Doanh nghiệp liên kết trong Identity Token. Mọi hành vi cố tình giả mạo hoặc gửi sai lệch MST đều bị chặn với mã lỗi `403 Forbidden` (`ERR_TAX_CODE_MISMATCH`).
+- **`BR-02-016` [Data Binding Tức Thời Sang Engine ĐMST & Thuật Toán TNI Trong 1 Transaction]**:
+  - Thao tác nộp phiếu khảo sát thành công kích hoạt đồng thời 3 hành động trong một Database Transaction:
+    1. Ghi nhận dữ liệu 43 câu hỏi dạng JSONB vào `demand.demand_surveys`.
+    2. Kích hoạt `InnovationRatingEngine.Calculate()` tính toán điểm 8 nhóm năng lực (Quản trị 12đ, R&D & CN 18đ, SP/Quy trình 20đ, SHTT 10đ, CĐS 10đ, Thị trường 15đ, Nhân lực 7đ, Liên kết 8đ), xếp hạng Huy hiệu (`LEADING`, `DEVELOPING`, `POTENTIAL`, `UNRATED`), lưu bản ghi vào `enterprise.innovation_evaluations` và cập nhật `enterprises.latest_innovation_score`.
+    3. Kích hoạt `TniCalculationEngine.Calculate()` trích xuất 4 tham số $K, L, N, O$ (thang 1 - 5) theo công thức $TNI = \text{ROUND}((K \times 35 + L \times 30 + N \times 20 + O \times 15) / 5)$, phân loại 4 cấp độ và cập nhật vào `enterprises.tni_score` và `enterprises.tni_classification`.
+- **`BR-02-017` [Toàn Vẹn Dữ Liệu JSONB & Bảo Mật PII Theo Nghị Định 13/2023]**:
+  - Toàn bộ 43 trường câu hỏi khảo sát được lưu trữ bảo toàn (Zero Data Loss) trong cột `survey_answers` kiểu JSONB của bảng `demand_surveys`.
+  - Doanh thu năm (C09), ngân sách R&D (C15) và số điện thoại người liên hệ (C04) trong phiếu khảo sát được bảo vệ theo `BR-02-002`, không hiển thị công khai ra bên ngoài khi chưa được Chủ sở hữu cấp phép.
+
+---
+
+### 10.3 Tiêu Chuẩn Chấp Thuận Định Lượng (Acceptance Criteria)
+
+- **`AC-02-016` (AC-TIER-01 — Autofill Happy Path Với Tài Khoản Đã Đăng Nhập)**:
+  - Given người dùng đăng nhập tài khoản `buyer.user@demo.nacentech.vn`,
+  - When truy cập trang `/khao-sat-dmst`,
+  - Then Bước 1 tự động hiển thị:
+    - Tên DN: `CÔNG TY TNHH TRƯỜNG HOAN`
+    - Mã số thuế: `0100255428` ở trạng thái `read-only`/`disabled` kèm huy hiệu `[✓ Đã xác thực từ Hồ sơ Pháp nhân SSOT]`
+    - Tỉnh thành: `Hà Nội`, Ngành: `Nông nghiệp công nghệ cao, nông nghiệp số (LV01)`
+    - Cờ R&D và ngân sách tại Bước 2 hiển thị đúng trạng thái hiện tại của hồ sơ.
+- **`AC-02-017` (AC-TIER-02 — Chấm Điểm Tức Thời Sau Khi Nộp Khảo Sát)**:
+  - Given người dùng điền đầy đủ các câu hỏi bắt buộc từ Bước 1 đến Bước 5,
+  - When bấm nút *"Nộp Phiếu Khảo Sát"*,
+  - Then hệ thống xử lý hoàn tất trong thời gian $< 500\text{ms}$,
+  - And trả về kết quả gồm:
+    - Điểm ĐMST tổng hợp (thang 100), xếp hạng phân tầng và biểu đồ Radar Chart 8 trục.
+    - Điểm TNI (thang 100) và phân loại nhu cầu (Rất cao, Cao, Trung bình, Thấp).
+  - And truy vấn trực tiếp CSDL PostgreSQL xác nhận bản ghi `enterprise.innovation_evaluations` và `demand.demand_surveys` đã được tạo mới thành công, trường `enterprises.latest_innovation_score` và `enterprises.tni_score` được cập nhật chính xác.
+- **`AC-02-018` (AC-TIER-03 — Điều Hướng Mượt Mà Từ Home & Danh Bạ)**:
+  - Given người dùng đang ở Trang chủ (`/`) hoặc Danh bạ Doanh nghiệp (`/enterprises` hoặc `/doanh-nghiep-dmst`),
+  - When bấm vào Quick Action Card trên Home hoặc Banner CTA trên Danh bạ,
+  - Then hệ thống điều hướng đến trang `/khao-sat-dmst` trong thời gian $< 200\text{ms}$ mà không phát sinh lỗi trang trắng, không reload toàn bộ trang (Client-side routing).
+
+---
+
+## 11. DELTA CR-021: BỘ LỌC TRÌNH ĐỘ TT17 & ĐIỂM ĐÁNH GIÁ NĂNG LỰC TRÊN CARD DN
+
+> **Mã CR**: `CR-2026-021-TT17-FILTER-CARD`  
+> **Căn cứ pháp lý & Thiết kế cơ sở**:
+> 1. Thông tư số 17/2019/TT-BKHCN ngày 10/12/2019 của Bộ KH&CN (Điều 9, Điều 10 về phân loại trình độ & năng lực công nghệ).
+> 2. Tài liệu Thiết kế cơ sở Delta: [`Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/BD_DELTA_CR_021_BO_LOC_VA_DIEM_TT17.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/BD_DELTA_CR_021_BO_LOC_VA_DIEM_TT17.md).
+> 3. Quyết định PO: Giai đoạn Gate 1 (DoR Approved) ngày 28/10/2026.
+> 4. Phạm vi màn hình: Danh bạ Doanh nghiệp ĐMST (`/enterprises` và alias `/doanh-nghiep-dmst`).
+
+### 11.1 Yêu Cầu Chức Năng (Functional Requirements)
+
+- **`REQ-02-DELTA-01` [Bộ Lọc Trình Độ Công Nghệ TT17 Đa Phân Hạng]**:
+  - Hệ thống bổ sung Bộ lọc Trình độ công nghệ TT17 trên Sidebar Danh bạ Doanh nghiệp (`EnterprisesDirectoryView.tsx`), hỗ trợ lọc tức thời theo 5 phân hạng chuẩn hóa:
+    1. **`TIEN_TIEN`**: Tiên tiến (Tổng điểm $\tau \ge 75$ và Hệ số đồng bộ $T_{ĐB} \ge 0.65$).
+    2. **`TRUNG_BINH_TIEN_TIEN`**: Trung bình tiên tiến ($60 \le \tau < 75$ và $T_{ĐB} \ge 0.50$, hoặc $\tau \ge 75$ nhưng $T_{ĐB} < 0.65$).
+    3. **`TRUNG_BINH`**: Trung bình ($35 \le \tau < 60$ và $T_{ĐB} \ge 0.30$, hoặc $60 \le \tau < 75$ nhưng $T_{ĐB} < 0.50$).
+    4. **`LAC_HAU`**: Lạc hậu ($\tau < 35$ hoặc vi phạm hệ số đồng bộ $T_{ĐB} < 0.30$).
+    5. **`UNRATED`**: Chưa đánh giá (Doanh nghiệp chưa hoàn thành khảo sát 26 tiêu chí TT17).
+  - Tích hợp liên hoàn với các bộ lọc hiện hữu (Địa bàn 34 tỉnh, 11 lĩnh vực công nghệ, Loại hình chủ thể, Phân tầng TNI, Mức độ ĐMST); cập nhật query param `tt17Classification` trên URL và nút "Xóa tất cả".
+
+- **`REQ-02-DELTA-02` [Tiêu Chí Sắp Xếp `tt17_desc` — Điểm Trình Độ TT17 Cao Nhất]**:
+  - Dropdown Sắp xếp tại thanh công cụ phía trên Grid bổ sung tùy chọn:
+    - Nhãn hiển thị: `"Điểm trình độ TT17 cao nhất"` (Value: `tt17_desc`).
+    - Vị trí: Đặt ở vị trí ưu tiên thứ 2 (ngay sau `"Chỉ số TNI cao nhất"`).
+  - Khi kích hoạt `sortBy=tt17_desc`, hệ thống sắp xếp danh sách doanh nghiệp giảm dần theo Điểm đánh giá TT17 (`LatestTt17Score DESC NULLS LAST`), sau đó sắp xếp phụ theo Hệ số đồng bộ (`LatestTt17SyncCoeff DESC NULLS LAST`).
+
+- **`REQ-02-DELTA-03` [Hiển Thị Trình Độ & Điểm Số TT17 Trên Thẻ Doanh Nghiệp (Enterprise Card)]**:
+  - Nâng cấp layout thẻ doanh nghiệp tại Grid kết quả tra cứu:
+    - **Tại Tầng 1 (Header Card)**: Hiển thị Huy hiệu phân hạng TT17 bên cạnh MST và Huy hiệu Đã xác thực:
+      - `TIEN_TIEN`: Badge màu xanh dương (`bg-sky-50 text-sky-700 border-sky-300`) với nhãn `🚀 Tiên tiến (TT17)`.
+      - `TRUNG_BINH_TIEN_TIEN`: Badge màu ngọc bích (`bg-emerald-50 text-emerald-700 border-emerald-300`) với nhãn `⚡ TB Tiên tiến (TT17)`.
+      - `TRUNG_BINH`: Badge màu xám slate (`bg-slate-100 text-slate-700 border-slate-300`) với nhãn `⚙️ Trung bình (TT17)`.
+      - `LAC_HAU`: Badge màu hồng đậm (`bg-rose-50 text-rose-700 border-rose-300`) với nhãn `⚠️ Lạc hậu (TT17)`.
+    - **Tại Tầng 4 (Metric Dashboard Card)**: Tái cấu trúc thành Hộp chỉ số 2 cột song hành đối quát 2 trục:
+      - *Cột 1*: **Chỉ số Nhu cầu TNI** (Trục Cầu — Thang 100đ, mức độ cấp thiết và phân tầng nhu cầu).
+      - *Cột 2*: **Trình độ Công nghệ TT17** (Trục Cung/Năng lực — Điểm $\tau/100$, phân hạng chính thức và Hệ số đồng bộ $T_{ĐB}$). Đối với doanh nghiệp chưa đánh giá, hiển thị `--/100` kèm chú thích mờ `"Chưa đánh giá TT17"`.
+
+---
+
+### 11.2 Quy Tắc Nghiệp Vụ (Business Rules)
+
+- **`BR-02-DELTA-01` [Quy Tắc Phân Hạng TT17 Chuẩn Điều 10 TT 17/2019/TT-BKHCN & Hệ Số Đồng Bộ $T_{ĐB}$]**:
+  - Tổng điểm đánh giá $\tau$ là tổng đại số của 5 nhóm tiêu chí (thang điểm 100):
+    $$\tau = T + E + O + R + I \quad (0 \le \tau \le 100)$$
+    Trong đó: $T \le 30$ (Hiện trạng thiết bị), $E \le 20$ (Khai thác CN), $O \le 19$ (Tổ chức/quản lý), $R \le 17$ (Nghiên cứu/phát triển), $I \le 14$ (Đổi mới sáng tạo).
+  - Hệ số đồng bộ công nghệ $T_{ĐB}$ được tính theo trung bình nhân có trọng số của 5 nhóm:
+    $$T_{ĐB} = \left(\frac{T}{30}\right)^{0,30} \times \left(\frac{E}{20}\right)^{0,20} \times \left(\frac{O}{19}\right)^{0,19} \times \left(\frac{R}{17}\right)^{0,17} \times \left(\frac{I}{14}\right)^{0,14}$$
+  - **Quy tắc hạ bậc phân loại bắt buộc**:
+    1. Nếu $\tau \ge 75$: Đạt hạng **Tiên tiến** NẾU $T_{ĐB} \ge 0.65$. Nếu $T_{ĐB} < 0.65$, tự động hạ xuống hạng **Trung bình tiên tiến**.
+    2. Nếu $60 \le \tau < 75$: Đạt hạng **Trung bình tiên tiến** NẾU $T_{ĐB} \ge 0.50$. Nếu $T_{ĐB} < 0.50$, tự động hạ xuống hạng **Trung bình**.
+    3. Nếu $35 \le \tau < 60$: Đạt hạng **Trung bình** NẾU $T_{ĐB} \ge 0.30$. Nếu $T_{ĐB} < 0.30$, tự động hạ xuống hạng **Lạc hậu**.
+    4. Nếu $\tau < 35$: Luôn xếp hạng **Lạc hậu**.
+
+---
+
+### 11.3 Thiết Kế Dữ Liệu & Hợp Đồng DTO (Database & DTO Contracts)
+
+- **`DB-02-DELTA-01` [Ánh Xạ Dữ Liệu Đánh Giá TT17 Sang `EnterprisePublicDirectoryItemDto`]**:
+  - Hợp đồng DTO `EnterprisePublicDirectoryItemDto` trong `NacenTech.Modules.Enterprise.Application` được mở rộng với 3 trường dữ liệu:
+    ```csharp
+    public sealed record EnterprisePublicDirectoryItemDto(
+        Guid Id,
+        string Name,
+        string? TaxCode,
+        string SubjectType,
+        string ProvinceCity,
+        string MainSectorName,
+        string? SectorCode,
+        string? WorkforceScale,
+        bool IsVerified,
+        decimal? TniScore,
+        string? TniClassification,
+        int IpCount,
+        string Status,
+        string? OwnershipType = null,
+        string? OperatingZone = null,
+        bool HasRdUnit = false,
+        bool IsExporting = false,
+        bool InValueChain = false,
+        IReadOnlyList<string>? TopBottlenecks = null,
+        IReadOnlyList<string>? SupportNeeds = null,
+        decimal? InnovationScore = null,
+        string? InnovationTier = null,
+        string? InnovationBadge = null,
+        string? Website = null,
+        // Bổ sung các trường TT17 theo DB-02-DELTA-01:
+        decimal? Tt17Score = null,
+        string? Tt17Classification = null,
+        decimal? Tt17SyncCoefficient = null
+    );
+    ```
+  - Tại tầng Persistence (`EfEnterpriseRepository.cs`), truy vấn `SearchAsync` nạp trực tiếp giá trị `LatestTt17Score`, `LatestTt17Tier`, `LatestTt17SyncCoeff` từ bảng `enterprise.enterprises` (được đồng bộ tự động từ phân hệ `assessment.tt17_assessments`), đảm bảo thời gian truy vấn $< 200\text{ms}$ cho 304 DN.
+
+---
+
+### 11.4 Quy Chuẩn Giao Diện & 5 Trạng Thái UX (UI/UX Specification)
+
+- **`UI-02-DELTA-01` [Chuẩn Hóa 5 UX States Cho Bộ Lọc & Danh Bạ TT17]**:
+  - Giao diện component `EnterprisesDirectoryView.tsx` xử lý triệt để 5 trạng thái UX qua bộ wrapper thống nhất:
+    1. **Loading State**: Hiển thị lưới 6 Skeleton Card nhấp nháy (Shimmer/Pulse) giữ nguyên tỷ lệ chiều cao, bố cục Badge Tầng 1 và Box Tầng 4 dạng placeholder màu xám mờ.
+    2. **Empty State**: Khi người dùng áp bộ lọc phân hạng TT17 mà không có doanh nghiệp nào phù hợp, hiển thị minh họa Empty State với thông điệp: *"Không tìm thấy doanh nghiệp nào thuộc phân hạng TT17 đã chọn trên địa bàn này"* kèm nút bấm `[Xóa bộ lọc TT17]` và `[Khám phá tất cả DN]`.
+    3. **Error State**: Khi kết nối API gặp sự cố hoặc timeout, hiển thị Card lỗi màu hổ phách/đỏ nhạt kèm thông báo tiếng Việt rõ nghĩa và nút `[Thử tải lại]`.
+    4. **Success State**: Hiển thị danh sách doanh nghiệp phân trang (9 DN/trang), gắn Badge TT17 Tầng 1 và Box điểm 2 cột Tầng 4 sắc nét, phản hồi chuyển trang $< 300\text{ms}$.
+    5. **Partial State**: Đối với doanh nghiệp đã có hồ sơ và điểm TNI nhưng chưa đánh giá TT17, Card không hiển thị lỗi mà hiển thị box Trình độ TT17 ở trạng thái nhạt `--/100` kèm dòng chữ `Chưa đánh giá TT17` và gợi ý liên kết đến trang khảo sát.
+
+---
+
+### 11.5 Tiêu Chuẩn Chấp Thuận Định Lượng (Acceptance Criteria)
+
+- **`AC-02-DELTA-01` (AC-TIER-01 — Lọc Phân Hạng TT17 Chính Xác)**:
+  - Given người dùng đang ở trang `/enterprises` hoặc `/doanh-nghiep-dmst`,
+  - When chọn phân hạng `"Tiên tiến (≥ 75đ & T_ĐB ≥ 0.65)"` trên bộ lọc TT17,
+  - Then danh sách trả về 100% doanh nghiệp có `Tt17Classification == 'TIEN_TIEN'`,
+  - And URL cập nhật tham số `?tt17Classification=TIEN_TIEN` mà không tải lại toàn trang.
+
+- **`AC-02-DELTA-02` (AC-TIER-02 — Sắp Xếp Giảm Dần Theo Điểm TT17)**:
+  - Given người dùng chọn tùy chọn `"Điểm trình độ TT17 cao nhất"` trên Menu Sắp xếp,
+  - When danh sách hiển thị kết quả,
+  - Then thứ tự doanh nghiệp tuân thủ nghiêm ngặt: Doanh nghiệp có `Tt17Score` cao hơn đứng trước; trường hợp cùng điểm số thì doanh nghiệp có `Tt17SyncCoefficient` cao hơn đứng trước; các doanh nghiệp chưa đánh giá (`Tt17Score == null`) xếp cuối cùng.
+
+- **`AC-02-DELTA-03` (AC-TIER-03 — Hiển Thị Song Hành 2 Trục TT17 & TNI Trên Card)**:
+  - Given một doanh nghiệp đã có kết quả đánh giá TT17 và khảo sát TNI,
+  - When Card doanh nghiệp render trên màn hình,
+  - Then Tầng 1 hiển thị Badge phân hạng TT17 với màu sắc và nhãn tương ứng,
+  - And Tầng 4 chia 2 cột rõ rệt: Cột trái hiển thị Chỉ số TNI và phân loại nhu cầu; Cột phải hiển thị Điểm TT17 ($\tau$) và Hệ số đồng bộ ($T_{ĐB}$).
+
+- **`AC-02-DELTA-04` (AC-TIER-04 — Tuân Thủ Luật Hạ Bậc Đồng Bộ BR-02-DELTA-01)**:
+  - Given doanh nghiệp có tổng điểm $\tau = 80$ nhưng hệ số đồng bộ $T_{ĐB} = 0.58$ ($< 0.65$),
+  - When hệ thống tính toán và hiển thị phân hạng,
+  - Then phân hạng bị hạ xuống `TRUNG_BINH_TIEN_TIEN`, Badge hiển thị `⚡ TB Tiên tiến (TT17)`, tuyệt đối không được gán nhãn `TIEN_TIEN`.
+
+---
+
+### 11.6 Ma Trận Truy Vết Toàn Trình (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Dữ Liệu & Hợp Đồng (DB) | Giao Diện Người Dùng (UI) | Tiêu Chuẩn Chấp Thuận (AC) |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-02-DELTA-01`** | `BR-02-DELTA-01` | `DB-02-DELTA-01` | `UI-02-DELTA-01` | `AC-02-DELTA-01` |
+| **`REQ-02-DELTA-02`** | `BR-02-DELTA-01` | `DB-02-DELTA-01` | `UI-02-DELTA-01` | `AC-02-DELTA-02` |
+| **`REQ-02-DELTA-03`** | `BR-02-DELTA-01` | `DB-02-DELTA-01` | `UI-02-DELTA-01` | `AC-02-DELTA-03`, `AC-02-DELTA-04` |
+
+

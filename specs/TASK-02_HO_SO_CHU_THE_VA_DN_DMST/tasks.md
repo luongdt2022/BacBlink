@@ -110,3 +110,15 @@
 - [x] **T-02.68** `[FE]` **[BƯỚC 2 - SAU BƯỚC 1] Gắn ô tìm kiếm tỉnh vào Bộ lọc trang Danh bạ Doanh nghiệp ngoài sàn**: Thay ô chọn cũ ở trang Danh bạ Doanh nghiệp (`/enterprises`) bằng ô tìm kiếm thông minh; khi người dùng chọn tỉnh nào thì hệ thống tự lọc danh sách công ty ở tỉnh đó.
 - [x] **T-02.69** `[FE]` **[BƯỚC 3 - SAU BƯỚC 1] Gắn ô tìm kiếm tỉnh vào Form Khai báo & Sửa hồ sơ Doanh nghiệp**: Thay ô nhập tỉnh ở trang quản lý hồ sơ (`/portal/enterprise/profile`) bằng ô thông minh, giúp doanh nghiệp chọn chuẩn tên tỉnh/thành phố trụ sở, tránh gõ sai chính tả.
 - [x] **T-02.70** `[TEST]` **[BƯỚC 4 - LÀM CUỐI CÙNG] Kiểm tra tự động toàn diện tìm kiếm tỉnh và lọc dữ liệu**: Kiểm tra tự động toàn trình: gõ tiếng Việt không dấu, bấm chọn tỉnh, xác nhận danh sách doanh nghiệp lọc ra chính xác 100% trước khi xuất xưởng.
+
+---
+
+## Giai đoạn 9: Delta CR-2026-020 — Biểu Mẫu Khảo Sát Đánh Giá DN ĐMST 43 Câu, Autofill & Điều Hướng Entry Points [BE][FE][DB][TEST]
+
+- [x] **T-02.71** `[SPEC]` **Basic Design & Đặc tả Delta V5**: Hoàn thiện Basic Design `BD_DELTA_CR_020_PHIEU_KHAO_SAT_43_CAU.md`, wireframe HTML tương tác `wireframe_khao_sat_dmst_43_cau.html`, cập nhật spec.md Mục 10 (`REQ-02-025..028`, `BR-02-015..017`, `AC-02-016..018`).
+- [x] **T-02.72** `[BE]` **Backend API Prefill, Submit & Chấm điểm tức thời**: Xây dựng controller `InnovationDemandSurveyController.cs` (`GET /prefill`, `POST /submit`), invariant `InnovationSurveyInvariants.cs` (khóa MST khi đăng nhập `BR-02-015`, chống IDOR), liên kết `InnovationRatingEngine.cs` (C01..C43) và `TniCalculationEngine.cs`, 149/149 tests green.
+- [x] **T-02.73** `[FE]` **Frontend Wizard 5 Bước 43 Câu Hỏi & Radar Chart**: Xây dựng trang `/khao-sat-dmst` (123 KB, 5 UX states, tự động điền hồ sơ SSOT, khóa MST, tự lưu nháp localStorage Debounce 600ms, hiển thị Màn hình Kết quả Radar Chart 8 trục SVG + Chỉ số TNI), Vitest 3/3 passed.
+- [x] **T-02.74** `[FE]` **Entry Points Điều Hướng**: Tích hợp liên kết khảo sát trên Header Navbar (`navbar.tsx`), Quick Action Card trang chủ (`page.tsx`), và CTA Banner danh bạ doanh nghiệp ĐMST (`EnterprisesDirectoryView.tsx`).
+- [x] **T-02.75** `[TEST]` **QC Kiểm thử 4 tầng Zero-Mock & Playwright E2E**: Xây dựng `test_innovation_survey_43q.py` kiểm thử 4 tầng (Invariants, API Contracts & IDOR, PostgreSQL DB thật, Playwright E2E 4 kịch bản), 4/4 suites passed (100% Green).
+- [x] **T-02.76** `[PO]` **QA Shadow Audit & Nghiệm thu Gate 5 DoD**: Đối soát CSDL PostgreSQL thật, kiểm tra static guard-rails, cập nhật Roadmap, ban hành Biên bản Nghiệm thu Xuất xưởng Gate 5 Shipped.
+
