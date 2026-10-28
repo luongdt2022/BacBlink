@@ -216,7 +216,7 @@ export function Navbar() {
                             {theme === "light" ? <Moon className="size-4 text-slate-600 dark:text-slate-300" aria-hidden="true" /> : <Sun className="size-4 text-amber-400" aria-hidden="true" />}
                             <span>Giao diện: {theme === "light" ? "Sáng" : "Tối"}</span>
                           </span>
-                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                             {theme === "light" ? "Bật tối" : "Bật sáng"}
                           </span>
                         </button>

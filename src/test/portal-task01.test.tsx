@@ -168,6 +168,24 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       "/khao-sat-nhu-cau"
     );
 
+    // 3b. Kiểm tra 4 Card Khảo Sát & Đánh Giá Năng Lực Quốc Gia (TNI, TT17, DN ĐMST, TRL 1-9)
+    expect(screen.getByRole("link", { name: /Làm Khảo Sát TNI Ngay/i })).toHaveAttribute(
+      "href",
+      "/khao-sat-nhu-cau"
+    );
+    expect(screen.getByRole("link", { name: /Tự Đánh Giá TT17 Ngay/i })).toHaveAttribute(
+      "href",
+      "/assessments/tt17/wizard"
+    );
+    expect(screen.getByRole("link", { name: /Tra Cứu & Đánh Giá ĐMST/i })).toHaveAttribute(
+      "href",
+      "/doanh-nghiep-dmst"
+    );
+    expect(screen.getByRole("link", { name: /Khám Phá Công Nghệ TRL/i })).toHaveAttribute(
+      "href",
+      "/chao-ban-cong-nghe"
+    );
+
     // 4. KIỂM THỬ TƯƠNG TÁC THỰC: Submit form tìm kiếm phải gọi router.push
     const searchInput = screen.getByPlaceholderText(/Tìm công nghệ/i);
     fireEvent.change(searchInput, { target: { value: "Robot Laser" } });

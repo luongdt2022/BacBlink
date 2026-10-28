@@ -355,7 +355,7 @@ export default function HomePage() {
                 href="/trien-lam"
                 className="inline-flex items-center gap-1 font-semibold text-amber-200 hover:text-white transition ml-1"
               >
-                <Sparkles className="size-3.5" /> Sàn Techmart &rarr;
+                <Sparkles className="size-3.5" /> Sàn Sự Kiện Techmart &rarr;
               </Link>
             </div>
           </div>
@@ -666,25 +666,25 @@ export default function HomePage() {
               </article>
 
               {/* Card 3: Đánh giá Doanh nghiệp ĐMST */}
-              <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-purple-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-purple-400 hover:shadow-xl dark:border-purple-900/40 dark:bg-slate-900">
-                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-purple-500/10 blur-xl transition group-hover:bg-purple-500/20" />
+              <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-teal-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-teal-400 hover:shadow-xl dark:border-teal-900/40 dark:bg-slate-900">
+                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-teal-500/10 blur-xl transition group-hover:bg-teal-500/20" />
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                      <Sparkles className="size-3 text-purple-600" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                      <Sparkles className="size-3 text-teal-600" />
                       DN Đổi Mới Sáng Tạo
                     </span>
-                    <span className="text-xs font-bold text-purple-600/70 dark:text-purple-400/60">03</span>
+                    <span className="text-xs font-bold text-teal-600/70 dark:text-teal-400/60">03</span>
                   </div>
                   <div className="mt-5 flex items-center gap-3">
-                    <div className="grid size-12 place-items-center rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300">
+                    <div className="grid size-12 place-items-center rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-950/80 dark:text-teal-300">
                       <LineChart className="size-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-purple-600 transition">
+                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-teal-600 transition">
                         Đánh Giá DN ĐMST
                       </h3>
-                      <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">8 Nhóm Tiêu Chí • 100 Điểm</p>
+                      <p className="text-xs text-teal-700 dark:text-teal-300 font-medium">8 Nhóm Tiêu Chí • 100 Điểm</p>
                     </div>
                   </div>
                   <p className="mt-3.5 text-sm leading-relaxed text-text-secondary dark:text-slate-300">
@@ -692,11 +692,11 @@ export default function HomePage() {
                   </p>
                   <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-purple-600 shrink-0" />
+                      <CheckCircle2 className="size-3.5 text-teal-600 shrink-0" />
                       <span>Biểu đồ Radar Chart 8 trục thời gian thực</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-purple-600 shrink-0" />
+                      <CheckCircle2 className="size-3.5 text-teal-600 shrink-0" />
                       <span>Tra cứu danh bạ 300+ doanh nghiệp ĐMST</span>
                     </li>
                   </ul>
@@ -704,7 +704,7 @@ export default function HomePage() {
                 <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <Link
                     href="/doanh-nghiep-dmst"
-                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-2.5 text-sm font-bold text-white transition hover:bg-purple-700 shadow-sm"
+                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 py-2.5 text-sm font-bold text-white transition hover:bg-teal-700 shadow-sm"
                   >
                     <span>Tra Cứu &amp; Đánh Giá ĐMST</span>
                     <ArrowRight className="size-4" />
@@ -976,7 +976,7 @@ export default function HomePage() {
                 href="/khao-sat-nhu-cau"
                 className="focus-ring mt-7 block w-full rounded-xl bg-nacen-green-500 py-3 text-center text-sm font-bold text-white transition hover:bg-nacen-green-600"
               >
-                Đăng Ký Khảo Sát &amp; Thẩm Định
+                Đăng Ký Tư Vấn Thẩm Định
               </Link>
             </section>
           </div>

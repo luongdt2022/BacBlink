@@ -134,7 +134,7 @@ export default function SettingsPage() {
               >
                 <Moon className={`h-4 w-4 ${theme === "dark" ? "text-cyan-400" : "text-slate-400"}`} />
                 <span>Chế độ Tối</span>
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Đang hoàn thiện</span>
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">Đang hoàn thiện</span>
               </button>
             </div>
           </div>
