@@ -1,0 +1,12 @@
+{
+  "total_tests": 16,
+  "passed_tests": 16,
+  "failed_tests": 0,
+  "bugs_detected": [],
+  "evidence_files": [
+    "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_01_enterprises_initial_grid.png",
+    "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_02_sorted_tt17_desc.png",
+    "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_03_empty_state_multi_filter.png",
+    "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_04_url_sync_check.png"
+  ]
+}

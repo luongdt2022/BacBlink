@@ -26,6 +26,9 @@ export interface EnterpriseDirectoryItem {
   innovationTier?: string;
   innovationBadge?: string;
   website?: string;
+  tt17Score?: number;
+  tt17Classification?: string;
+  tt17SyncCoefficient?: number;
 }
 
 export interface InnovationCriteriaDetail {
@@ -169,6 +172,7 @@ export async function fetchEnterprises(params: {
   subjectType?: string;
   tniClassification?: string;
   innovationTier?: string;
+  tt17Classification?: string;
   sortBy?: string;
   sort?: string;
   page?: number;
@@ -181,6 +185,7 @@ export async function fetchEnterprises(params: {
   if (params.subjectType) query.set("subjectType", params.subjectType);
   if (params.tniClassification) query.set("tniClassification", params.tniClassification);
   if (params.innovationTier) query.set("innovationTier", params.innovationTier);
+  if (params.tt17Classification) query.set("tt17Classification", params.tt17Classification);
   const sortVal = params.sortBy || params.sort;
   if (sortVal) query.set("sortBy", sortVal);
   query.set("page", String(params.page || 1));

@@ -338,6 +338,13 @@ export default function HomePage() {
               ))}
               <span className="hidden sm:inline text-white/30">|</span>
               <Link
+                href="/khao-sat-dmst"
+                className="inline-flex items-center gap-1 font-semibold text-emerald-300 hover:text-emerald-200 transition ml-1"
+              >
+                <ClipboardCheck className="size-3.5" /> Khảo sát ĐMST (43 câu) &rarr;
+              </Link>
+              <span className="hidden sm:inline text-white/30">|</span>
+              <Link
                 href="/khao-sat-nhu-cau"
                 className="inline-flex items-center gap-1 font-semibold text-amber-300 hover:text-amber-200 transition ml-1"
               >
@@ -665,49 +672,55 @@ export default function HomePage() {
                 </div>
               </article>
 
-              {/* Card 3: Đánh giá Doanh nghiệp ĐMST */}
+              {/* Card 3: Khảo sát Đổi mới sáng tạo 43 câu (CR-020) */}
               <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-teal-200/80 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-teal-400 hover:shadow-xl dark:border-teal-900/40 dark:bg-slate-900">
                 <div className="absolute -right-6 -top-6 size-28 rounded-full bg-teal-500/10 blur-xl transition group-hover:bg-teal-500/20" />
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
                       <Sparkles className="size-3 text-teal-600" />
-                      DN Đổi Mới Sáng Tạo
+                      43 Tiêu Chuẩn ĐMST
                     </span>
                     <span className="text-xs font-bold text-teal-600/70 dark:text-teal-400/60">03</span>
                   </div>
                   <div className="mt-5 flex items-center gap-3">
                     <div className="grid size-12 place-items-center rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-950/80 dark:text-teal-300">
-                      <LineChart className="size-6" />
+                      <ClipboardCheck className="size-6" />
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-teal-600 transition">
-                        Đánh Giá DN ĐMST
+                        Khảo Sát ĐMST (43 Câu)
                       </h3>
-                      <p className="text-xs text-teal-700 dark:text-teal-300 font-medium">8 Nhóm Tiêu Chí • 100 Điểm</p>
+                      <p className="text-xs text-teal-700 dark:text-teal-300 font-medium">8 Nhóm Năng Lực • Chỉ Số TNI</p>
                     </div>
                   </div>
                   <p className="mt-3.5 text-sm leading-relaxed text-text-secondary dark:text-slate-300">
-                    Bộ 37 tiêu chí ĐMST trực quan qua biểu đồ Radar Chart 8 trục, chứng nhận xếp hạng Dẫn đầu, Đang phát triển hoặc Tiềm năng.
+                    Tự động chấm điểm 8 nhóm năng lực, tính toán chỉ số TNI tức thời và xuất hồ sơ Radar Chart trong 1-click.
                   </p>
                   <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-4 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-teal-600 shrink-0" />
-                      <span>Biểu đồ Radar Chart 8 trục thời gian thực</span>
+                      <span>Autofill hồ sơ pháp nhân SSOT &amp; Khóa MST an toàn</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-teal-600 shrink-0" />
-                      <span>Tra cứu danh bạ 300+ doanh nghiệp ĐMST</span>
+                      <span>Biểu đồ Radar Chart 8 trục &amp; Huy hiệu ĐMST</span>
                     </li>
                   </ul>
                 </div>
-                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
                   <Link
-                    href="/doanh-nghiep-dmst"
+                    href="/khao-sat-dmst"
                     className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 py-2.5 text-sm font-bold text-white transition hover:bg-teal-700 shadow-sm"
                   >
-                    <span>Tra Cứu &amp; Đánh Giá ĐMST</span>
+                    <span>Làm Khảo Sát ĐMST Ngay</span>
                     <ArrowRight className="size-4" />
+                  </Link>
+                  <Link
+                    href="/doanh-nghiep-dmst"
+                    className="flex w-full items-center justify-center gap-1 text-xs font-semibold text-slate-500 hover:text-teal-600 py-1"
+                  >
+                    <span>Xem bảng xếp hạng &amp; danh bạ DN &rarr;</span>
                   </Link>
                 </div>
               </article>

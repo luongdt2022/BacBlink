@@ -1060,6 +1060,23 @@ export default function DeepSurveyPage() {
         </div>
       </section>
 
+      {/* CR-020 ALIAS / CROSS-NAVIGATION BANNER */}
+      <div className="bg-blue-50 dark:bg-blue-950/60 border-b border-blue-200 dark:border-blue-800 px-4 py-2.5">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-blue-900 dark:text-blue-200">
+          <div className="flex items-center gap-2">
+            <span className="bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full text-[10px]">Chuẩn mới 2026</span>
+            <span>Bạn muốn làm <strong>Phiếu khảo sát năng lực ĐMST 43 câu</strong> có tính điểm 8 nhóm và xuất biểu đồ Radar Chart tức thời?</span>
+          </div>
+          <Link
+            href="/khao-sat-dmst"
+            className="font-bold text-blue-700 dark:text-blue-300 hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>Chuyển sang Khảo sát ĐMST 43 câu</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
       {/* STEPPER NAVIGATION BAR (4 TABS TINH GỌN: NHU CẦU -> DOANH NGHIỆP -> THÔNG TIN BỔ SUNG -> XÁC NHẬN) */}
       <div className="sticky top-[68px] z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">

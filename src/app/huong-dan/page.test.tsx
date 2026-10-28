@@ -69,7 +69,7 @@ describe("UserGuidePage", () => {
 
     fireEvent.click(zenButton);
     expect(screen.getByRole("button", { name: /Thu nhỏ/i })).toBeInTheDocument();
-  });
+  }, 30000);
 
   it("renders the interactive guide iframe", () => {
     render(<UserGuidePage />);

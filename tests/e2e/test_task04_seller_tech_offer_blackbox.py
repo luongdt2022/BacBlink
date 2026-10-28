@@ -132,7 +132,8 @@ def main():
         sql_check = f"""
             SELECT id, offer_code, title, sector_code, trl_level, ip_status, ip_registration_number, status, managing_authority_id, legal_consent
             FROM technology.seller_technology_offers
-            WHERE title = '{UNIQUE_TITLE}';
+            WHERE title = '{UNIQUE_TITLE}'
+            ORDER BY created_at DESC LIMIT 1;
         """
         db_record = ""
         for _ in range(10):
@@ -143,8 +144,8 @@ def main():
 
         assert db_record, f"❌ KHÔNG TÌM THẤY HỒ SƠ '{UNIQUE_TITLE}' TRONG CSDL!"
 
-        fields = db_record.split("|")
-        offer_id, offer_code, title, sector, trl, ip_st, ip_num, status, auth_id, legal = fields
+        fields = db_record.splitlines()[0].split("|")
+        offer_id, offer_code, title, sector, trl, ip_st, ip_num, status, auth_id, legal = fields[:10]
 
         print(f"  ✅ [CSDL ĐÃ LƯU]: Id={offer_id} | Code={offer_code}")
         print(f"  ✅ [THUỘC TÍNH SHTT]: Lĩnh vực={sector} | TRL={trl} | IP={ip_st} ({ip_num})")

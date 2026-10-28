@@ -21,6 +21,7 @@ import {
   Briefcase,
   Moon,
   Sun,
+  ClipboardCheck,
 } from "lucide-react";
 
 export function Navbar() {
@@ -268,6 +269,17 @@ export function Navbar() {
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div id="mobile-navigation" className="max-h-[75dvh] overflow-y-auto space-y-2 border-t border-border-default bg-white px-4 pt-3 pb-4 dark:border-slate-800 dark:bg-slate-950 xl:hidden">
+            <Link
+              href="/khao-sat-dmst"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between rounded-control px-3 py-2.5 text-label font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-200 border border-blue-200 dark:border-blue-800"
+            >
+              <span className="flex items-center gap-2">
+                <ClipboardCheck className="size-4 text-blue-600 dark:text-blue-400" />
+                <span>Khảo sát năng lực ĐMST</span>
+              </span>
+              <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">43 câu</span>
+            </Link>
             {navLinks.map((link) => (
               <Link
                 key={link.href}

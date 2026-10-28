@@ -449,6 +449,18 @@ export async function saveAssessmentDraft(
       surveyData: surveyData,
     };
   }
+
+  if (bodyPayload.surveyData?.machineries) {
+    bodyPayload.surveyData.machineries = bodyPayload.surveyData.machineries.map((m: any) => ({
+      ...m,
+      designedCapacityYear: Number(m.designedCapacityYear) || 0,
+      originalCost: Number(m.originalCost) || 0,
+      currentBookValue: Number(m.currentBookValue) || 0,
+      manufactureYear: Number(m.manufactureYear) || 0,
+      startUsageYear: Number(m.startUsageYear) || 0,
+    }));
+  }
+
   const res = await fetch("/api/v1/assessments/tt17/draft", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
@@ -493,10 +505,29 @@ export interface SubmitAssessmentResponse extends Tt17Assessment {
 }
 
 export async function submitAssessment(payload: SubmitAssessmentPayload): Promise<SubmitAssessmentResponse> {
+  const sanitizedSurveyData = payload.surveyData
+    ? {
+        ...payload.surveyData,
+        machineries: payload.surveyData.machineries?.map((m: any) => ({
+          ...m,
+          designedCapacityYear: Number(m.designedCapacityYear) || 0,
+          originalCost: Number(m.originalCost) || 0,
+          currentBookValue: Number(m.currentBookValue) || 0,
+          manufactureYear: Number(m.manufactureYear) || 0,
+          startUsageYear: Number(m.startUsageYear) || 0,
+        })),
+      }
+    : payload.surveyData;
+
+  const sanitizedPayload = {
+    ...payload,
+    surveyData: sanitizedSurveyData,
+  };
+
   const res = await fetch("/api/v1/assessments/tt17/submit", {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authClient.getAuthHeaders() },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(sanitizedPayload),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
