@@ -90,8 +90,52 @@ public sealed class DemandSurvey : AggregateRoot
     public DateTimeOffset? SubmittedAt { get; private set; }
     public Guid? OrganizationId { get; private set; }
     public Guid? CreatedBy { get; private set; }
+    public Guid? EnterpriseId { get; set; }
+    public string? SurveyAnswers { get; set; }
+    public bool? HasRdUnit { get; set; }
+    public bool? HasTechTraining { get; set; }
+    public bool? HasMachineryUpgrade { get; set; }
+    public bool? HasRdBudget { get; set; }
+    public bool? IsExporting { get; set; }
+    public bool? InValueChain { get; set; }
+    public List<string> SupportNeeds { get; set; } = [];
+    public string? Recommendations { get; set; }
+    public decimal? TniScore { get; set; }
+    public string? TniClassification { get; set; }
+    public int? SurveyYear { get; set; }
 
     public IReadOnlyList<DemandItem> Items => _items.AsReadOnly();
+
+    public void SetInnovationDemandDetails(
+        Guid? enterpriseId,
+        string? surveyAnswers,
+        bool? hasRdUnit,
+        bool? hasTechTraining,
+        bool? hasMachineryUpgrade,
+        bool? hasRdBudget,
+        bool? isExporting,
+        bool? inValueChain,
+        List<string>? supportNeeds,
+        string? recommendations,
+        decimal? tniScore,
+        string? tniClassification,
+        int? surveyYear = null)
+    {
+        EnterpriseId = enterpriseId;
+        SurveyAnswers = surveyAnswers;
+        HasRdUnit = hasRdUnit;
+        HasTechTraining = hasTechTraining;
+        HasMachineryUpgrade = hasMachineryUpgrade;
+        HasRdBudget = hasRdBudget;
+        IsExporting = isExporting;
+        InValueChain = inValueChain;
+        SupportNeeds = supportNeeds ?? [];
+        Recommendations = recommendations;
+        TniScore = tniScore;
+        TniClassification = tniClassification;
+        SurveyYear = surveyYear ?? DateTime.UtcNow.Year;
+        Touch();
+    }
 
     public void AddItem(DemandItem item)
     {

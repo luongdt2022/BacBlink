@@ -58,6 +58,9 @@ public class Enterprise : AggregateRoot
     public string? TniClassification { get; set; }
     public decimal? LatestInnovationScore { get; set; }
     public string? LatestInnovationTier { get; set; }
+    public decimal? LatestTt17Score { get; set; }
+    public string? LatestTt17Classification { get; set; }
+    public decimal? LatestTt17SyncCoeff { get; set; }
     
     public string AddressInfoJson { get; set; } = "{}";
     public string ProfileDetailsJson { get; set; } = "{}";

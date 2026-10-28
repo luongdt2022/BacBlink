@@ -19,6 +19,10 @@ internal sealed class EnterpriseConfiguration : IEntityTypeConfiguration<Domain.
         b.Property(x => x.CapabilityTier).HasMaxLength(30).HasDefaultValue("BASIC");
         b.Property(x => x.ActiveRole).HasMaxLength(30).HasDefaultValue("BUYER");
         
+        b.Property(x => x.LatestTt17Score).HasPrecision(5, 2);
+        b.Property(x => x.LatestTt17Classification).HasMaxLength(30);
+        b.Property(x => x.LatestTt17SyncCoeff).HasPrecision(4, 2);
+        
         b.Property(x => x.AddressInfoJson).HasColumnType("jsonb");
         b.Property(x => x.ProfileDetailsJson).HasColumnType("jsonb");
         b.Property(x => x.TopBottlenecksJson).HasColumnType("jsonb");
@@ -31,6 +35,7 @@ internal sealed class EnterpriseConfiguration : IEntityTypeConfiguration<Domain.
         b.HasIndex(x => x.SectorCode);
         b.HasIndex(x => x.Status);
         b.HasIndex(x => x.IsVerified);
+        b.HasIndex(x => x.LatestTt17Classification);
 
         b.HasMany(x => x.Identifiers).WithOne().HasForeignKey(x => x.EnterpriseId);
         b.HasMany(x => x.InnovationProjects).WithOne().HasForeignKey(x => x.EnterpriseId);

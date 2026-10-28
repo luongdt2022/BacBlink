@@ -87,6 +87,9 @@ public class EfEnterpriseRepository : IEnterpriseRepository
     {
         var qry = _db.Set<Domain.Enterprise>().AsNoTracking().AsQueryable();
 
+        // Chỉ hiển thị các thực thể doanh nghiệp hợp lệ có mã số thuế trong danh bạ công khai
+        qry = qry.Where(x => x.TaxCode != null && x.TaxCode != "");
+
         if (!string.IsNullOrWhiteSpace(query.Q))
         {
             var q = query.Q.Trim().ToLower();
@@ -208,6 +211,35 @@ public class EfEnterpriseRepository : IEnterpriseRepository
             }
         }
 
+        if (!string.IsNullOrWhiteSpace(query.Tt17Classification))
+        {
+            var tt17 = query.Tt17Classification.Trim().ToUpper();
+            if (tt17 == "TIEN_TIEN")
+            {
+                qry = qry.Where(x => x.LatestTt17Classification == "TIEN_TIEN");
+            }
+            else if (tt17 == "TRUNG_BINH_TIEN_TIEN")
+            {
+                qry = qry.Where(x => x.LatestTt17Classification == "TRUNG_BINH_TIEN_TIEN");
+            }
+            else if (tt17 == "TRUNG_BINH")
+            {
+                qry = qry.Where(x => x.LatestTt17Classification == "TRUNG_BINH");
+            }
+            else if (tt17 == "LAC_HAU")
+            {
+                qry = qry.Where(x => x.LatestTt17Classification == "LAC_HAU");
+            }
+            else if (tt17 == "UNRATED")
+            {
+                qry = qry.Where(x => x.LatestTt17Classification == "UNRATED" || x.LatestTt17Classification == null || !x.LatestTt17Score.HasValue);
+            }
+            else
+            {
+                qry = qry.Where(x => x.LatestTt17Classification == tt17);
+            }
+        }
+
         var totalCount = await qry.CountAsync(ct);
         var page = query.Page <= 0 ? 1 : query.Page;
         var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
@@ -215,12 +247,13 @@ public class EfEnterpriseRepository : IEnterpriseRepository
         var sortBy = query.SortBy?.Trim().ToLower();
         IQueryable<Domain.Enterprise> sortedQry = sortBy switch
         {
-            "innovation_desc" => qry.OrderByDescending(x => x.LatestInnovationScore).ThenBy(x => x.Name),
-            "ip_desc" => qry.OrderByDescending(x => x.IntellectualProperties.Count).ThenByDescending(x => x.TniScore),
+            "tt17_desc" => qry.OrderByDescending(x => x.LatestTt17Score ?? -1).ThenByDescending(x => x.LatestTt17SyncCoeff ?? -1).ThenBy(x => x.Name),
+            "innovation_desc" => qry.OrderByDescending(x => x.LatestInnovationScore ?? -1).ThenBy(x => x.Name),
+            "ip_desc" => qry.OrderByDescending(x => x.IntellectualProperties.Count).ThenByDescending(x => x.TniScore ?? -1),
             "name_asc" => qry.OrderBy(x => x.Name),
             "name_desc" => qry.OrderByDescending(x => x.Name),
             "recent" => qry.OrderByDescending(x => x.UpdatedAt).ThenByDescending(x => x.CreatedAt),
-            _ => qry.OrderByDescending(x => x.TniScore).ThenBy(x => x.Name)
+            _ => qry.OrderByDescending(x => x.TniScore ?? -1).ThenByDescending(x => x.LatestInnovationScore ?? -1).ThenBy(x => x.Name)
         };
 
         var items = await sortedQry

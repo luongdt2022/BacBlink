@@ -17,5 +17,6 @@
     <ProjectReference Include="..\..\modules\policy\NacenTech.Modules.Policy.csproj" />
     <ProjectReference Include="..\..\modules\assessment\NacenTech.Modules.Assessment\NacenTech.Modules.Assessment.csproj" />
     <ProjectReference Include="..\..\modules\content\NacenTech.Modules.Content.csproj" />
+    <ProjectReference Include="..\..\modules\demand\NacenTech.Modules.Demand.csproj" />
   </ItemGroup>
 </Project>

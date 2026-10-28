@@ -240,7 +240,8 @@ public sealed class Tt17ScoringEngineTests
         var result = _engine.Calculate(survey);
         Assert.True(result.TotalScore >= 60.0 && result.TotalScore < 75.0, $"Actual TotalScore: {result.TotalScore}");
         Assert.Equal(0.0, result.SyncCoefficient);
-        Assert.Equal("CAN_THAM_DINH", result.Classification);
+        // BR-02-DELTA-01: Điểm 60-74 nhưng hệ số đồng bộ < 0.50 bị giáng cấp xuống TRUNG_BINH
+        Assert.Equal("TRUNG_BINH", result.Classification);
     }
 
     [Fact]

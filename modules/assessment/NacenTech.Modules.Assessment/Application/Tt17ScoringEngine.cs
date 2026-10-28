@@ -468,25 +468,25 @@ public sealed class Tt17ScoringEngine
             ) / 100.0;
         }
 
-        string classification = "CAN_THAM_DINH";
-        string classificationLabel = "Cần thẩm định chuyên gia";
+        string classification = "LAC_HAU";
+        string classificationLabel = "Lạc hậu";
 
-        if (total >= 75.0 && sync >= 0.65)
+        if (total >= 75.0)
         {
-            classification = "TIEN_TIEN";
-            classificationLabel = "Tiên tiến";
+            if (sync >= 0.65) { classification = "TIEN_TIEN"; classificationLabel = "Tiên tiến"; }
+            else { classification = "TRUNG_BINH_TIEN_TIEN"; classificationLabel = "Trung bình tiên tiến"; }
         }
-        else if (total >= 60.0 && total < 75.0 && sync >= 0.50)
+        else if (total >= 60.0 && total < 75.0)
         {
-            classification = "TRUNG_BINH_TIEN_TIEN";
-            classificationLabel = "Trung bình tiên tiến";
+            if (sync >= 0.50) { classification = "TRUNG_BINH_TIEN_TIEN"; classificationLabel = "Trung bình tiên tiến"; }
+            else { classification = "TRUNG_BINH"; classificationLabel = "Trung bình"; }
         }
-        else if (total >= 35.0 && total < 60.0 && sync >= 0.30)
+        else if (total >= 35.0 && total < 60.0)
         {
-            classification = "TRUNG_BINH";
-            classificationLabel = "Trung bình";
+            if (sync >= 0.30) { classification = "TRUNG_BINH"; classificationLabel = "Trung bình"; }
+            else { classification = "LAC_HAU"; classificationLabel = "Lạc hậu"; }
         }
-        else if (total < 35.0 && sync < 0.30)
+        else
         {
             classification = "LAC_HAU";
             classificationLabel = "Lạc hậu";

@@ -9,6 +9,14 @@ namespace NacenTech.Modules.Enterprise.Tests;
 
 public class FakeRepository : IEnterpriseRepository
 {
+    public System.Collections.Generic.List<EnterpriseEntity> Enterprises { get; set; } = new();
+
+    public FakeRepository() { }
+    public FakeRepository(System.Collections.Generic.IEnumerable<EnterpriseEntity> initial)
+    {
+        Enterprises.AddRange(initial);
+    }
+
     public Task<bool> ExistsByTaxCodeAsync(string taxCode, Guid? excludeId = null, System.Threading.CancellationToken ct = default)
     {
         return Task.FromResult(taxCode == "DUPLICATE");
@@ -16,31 +24,32 @@ public class FakeRepository : IEnterpriseRepository
 
     public Task<EnterpriseEntity?> GetByIdAsync(Guid id, System.Threading.CancellationToken ct = default)
     {
-        return Task.FromResult<EnterpriseEntity?>(null);
+        return Task.FromResult(Enterprises.Find(x => x.Id == id));
     }
 
     public Task<EnterpriseEntity?> GetByTaxCodeAsync(string taxCode, System.Threading.CancellationToken ct = default)
     {
-        return Task.FromResult<EnterpriseEntity?>(null);
+        return Task.FromResult(Enterprises.Find(x => x.TaxCode == taxCode));
     }
 
     public Task<EnterpriseEntity?> GetByOwnerPersonIdAsync(Guid personId, System.Threading.CancellationToken ct = default)
     {
-        return Task.FromResult<EnterpriseEntity?>(null);
+        return Task.FromResult(Enterprises.Find(x => x.OwnerPersonId == personId));
     }
 
     public Task<EnterpriseEntity?> GetByIdentifierAsync(string type, string value, System.Threading.CancellationToken ct = default)
     {
-        return Task.FromResult<EnterpriseEntity?>(null);
+        return Task.FromResult(Enterprises.Find(x => x.Identifiers.Any(i => i.Type == type && i.Value == value)));
     }
 
     public Task<EnterpriseEntity?> GetByContactEmailAsync(string email, System.Threading.CancellationToken ct = default)
     {
-        return Task.FromResult<EnterpriseEntity?>(null);
+        return Task.FromResult(Enterprises.Find(x => x.ContactEmail == email));
     }
 
     public Task AddAsync(EnterpriseEntity enterprise, System.Threading.CancellationToken ct = default)
     {
+        Enterprises.Add(enterprise);
         return Task.CompletedTask;
     }
 
@@ -51,7 +60,38 @@ public class FakeRepository : IEnterpriseRepository
 
     public Task<(System.Collections.Generic.IReadOnlyList<EnterpriseEntity> Items, int TotalCount)> SearchAsync(EnterpriseSearchQuery query, System.Threading.CancellationToken ct = default)
     {
-        return Task.FromResult<(System.Collections.Generic.IReadOnlyList<EnterpriseEntity>, int)>((new System.Collections.Generic.List<EnterpriseEntity>(), 0));
+        var qry = Enterprises.AsQueryable();
+        qry = qry.Where(x => x.TaxCode != null && x.TaxCode != "");
+
+        if (!string.IsNullOrWhiteSpace(query.Tt17Classification))
+        {
+            var tt17 = query.Tt17Classification.Trim().ToUpper();
+            if (tt17 == "TIEN_TIEN")
+                qry = qry.Where(x => x.LatestTt17Classification == "TIEN_TIEN");
+            else if (tt17 == "TRUNG_BINH_TIEN_TIEN")
+                qry = qry.Where(x => x.LatestTt17Classification == "TRUNG_BINH_TIEN_TIEN");
+            else if (tt17 == "TRUNG_BINH")
+                qry = qry.Where(x => x.LatestTt17Classification == "TRUNG_BINH");
+            else if (tt17 == "LAC_HAU")
+                qry = qry.Where(x => x.LatestTt17Classification == "LAC_HAU");
+            else if (tt17 == "UNRATED")
+                qry = qry.Where(x => x.LatestTt17Classification == "UNRATED" || x.LatestTt17Classification == null || !x.LatestTt17Score.HasValue);
+            else
+                qry = qry.Where(x => x.LatestTt17Classification == tt17);
+        }
+
+        var sortBy = query.SortBy?.Trim().ToLower();
+        IQueryable<EnterpriseEntity> sortedQry = sortBy switch
+        {
+            "tt17_desc" => qry.OrderByDescending(x => x.LatestTt17Score ?? -1).ThenByDescending(x => x.LatestTt17SyncCoeff ?? -1).ThenBy(x => x.Name),
+            _ => qry.OrderBy(x => x.Name)
+        };
+
+        var total = sortedQry.Count();
+        var page = query.Page <= 0 ? 1 : query.Page;
+        var pageSize = query.PageSize <= 0 ? 9 : query.PageSize;
+        var items = sortedQry.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        return Task.FromResult<(System.Collections.Generic.IReadOnlyList<EnterpriseEntity>, int)>((items, total));
     }
 
     public Task<EnterpriseDashboardStatsDto> GetDashboardStatsAsync(System.Threading.CancellationToken ct = default)
@@ -234,5 +274,73 @@ public class EnterpriseTests
         result.TotalScore.ShouldBeGreaterThan(0);
         result.Classification.ShouldBeOneOf("DEVELOPING", "POTENTIAL");
         result.RadarChartData.Count.ShouldBe(8);
+    }
+
+    [Fact]
+    public async Task Test_SearchAsync_FilterByTt17Classification()
+    {
+        var ent1 = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN A", TaxCode = "0101", LatestTt17Classification = "TIEN_TIEN", LatestTt17Score = 80.5m, LatestTt17SyncCoeff = 0.75m };
+        var ent2 = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN B", TaxCode = "0102", LatestTt17Classification = "TRUNG_BINH_TIEN_TIEN", LatestTt17Score = 68.0m, LatestTt17SyncCoeff = 0.65m };
+        var ent3 = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN C", TaxCode = "0103", LatestTt17Classification = "TRUNG_BINH", LatestTt17Score = 45.0m, LatestTt17SyncCoeff = 0.50m };
+        var ent4 = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN D", TaxCode = "0104", LatestTt17Classification = "LAC_HAU", LatestTt17Score = 28.0m, LatestTt17SyncCoeff = 0.35m };
+        var ent5 = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN E", TaxCode = "0105", LatestTt17Classification = null, LatestTt17Score = null };
+
+        var repo = new FakeRepository([ent1, ent2, ent3, ent4, ent5]);
+
+        var resultTienTien = await repo.SearchAsync(new EnterpriseSearchQuery { Tt17Classification = "TIEN_TIEN" });
+        resultTienTien.TotalCount.ShouldBe(1);
+        resultTienTien.Items[0].TaxCode.ShouldBe("0101");
+
+        var resultUnrated = await repo.SearchAsync(new EnterpriseSearchQuery { Tt17Classification = "UNRATED" });
+        resultUnrated.TotalCount.ShouldBe(1);
+        resultUnrated.Items[0].TaxCode.ShouldBe("0105");
+
+        var resultTrungBinh = await repo.SearchAsync(new EnterpriseSearchQuery { Tt17Classification = "TRUNG_BINH" });
+        resultTrungBinh.TotalCount.ShouldBe(1);
+        resultTrungBinh.Items[0].TaxCode.ShouldBe("0103");
+    }
+
+    [Fact]
+    public async Task Test_SearchAsync_SortByTt17Desc()
+    {
+        var entLow = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN Thap", TaxCode = "0101", LatestTt17Score = 55.0m, LatestTt17SyncCoeff = 0.5m };
+        var entHigh = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN Cao", TaxCode = "0102", LatestTt17Score = 85.0m, LatestTt17SyncCoeff = 0.8m };
+        var entMid = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN Giua", TaxCode = "0103", LatestTt17Score = 70.0m, LatestTt17SyncCoeff = 0.7m };
+        var entEqualScoreHighSync = new EnterpriseEntity(Guid.NewGuid()) { Name = "DN Bang Diem Sync Cao", TaxCode = "0104", LatestTt17Score = 85.0m, LatestTt17SyncCoeff = 0.9m };
+
+        var repo = new FakeRepository([entLow, entHigh, entMid, entEqualScoreHighSync]);
+
+        var result = await repo.SearchAsync(new EnterpriseSearchQuery { SortBy = "tt17_desc" });
+        result.TotalCount.ShouldBe(4);
+        result.Items[0].TaxCode.ShouldBe("0104"); // 85.0 & sync 0.9
+        result.Items[1].TaxCode.ShouldBe("0102"); // 85.0 & sync 0.8
+        result.Items[2].TaxCode.ShouldBe("0103"); // 70.0
+        result.Items[3].TaxCode.ShouldBe("0101"); // 55.0
+    }
+
+    [Fact]
+    public async Task Test_EnterpriseService_GetPublicDirectory_MapsTt17FieldsCorrectly()
+    {
+        var ent = new EnterpriseEntity(Guid.NewGuid())
+        {
+            Name = "DN Cong Nghe Moi",
+            TaxCode = "0109999999",
+            ProvinceCity = "Hà Nội",
+            MainSectorName = "Công nghệ thông tin",
+            LatestTt17Score = 88.5m,
+            LatestTt17Classification = "TIEN_TIEN",
+            LatestTt17SyncCoeff = 0.82m
+        };
+
+        var repo = new FakeRepository([ent]);
+        var svc = new EnterpriseService(repo);
+
+        var result = await svc.GetPublicDirectoryAsync(new EnterpriseSearchQuery { SortBy = "tt17_desc" });
+        result.TotalCount.ShouldBe(1);
+        var item = result.Items[0];
+        item.TaxCode.ShouldBe("0109999999");
+        item.Tt17Score.ShouldBe(88.5m);
+        item.Tt17Classification.ShouldBe("TIEN_TIEN");
+        item.Tt17SyncCoefficient.ShouldBe(0.82m);
     }
 }

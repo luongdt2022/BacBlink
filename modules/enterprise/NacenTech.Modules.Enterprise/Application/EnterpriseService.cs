@@ -85,7 +85,10 @@ public class EnterpriseService : IEnterpriseService
                 InnovationScore: x.LatestInnovationScore,
                 InnovationTier: x.LatestInnovationTier,
                 InnovationBadge: GetInnovationBadgeName(x.LatestInnovationTier),
-                Website: x.Website
+                Website: x.Website,
+                Tt17Score: x.LatestTt17Score,
+                Tt17Classification: x.LatestTt17Classification,
+                Tt17SyncCoefficient: x.LatestTt17SyncCoeff
             )).ToList();
 
             return new EnterprisePublicDirectoryDto(dtoItems, totalCount, query.Page, pageSize, totalPages);

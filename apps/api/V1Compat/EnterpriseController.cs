@@ -122,6 +122,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
         [FromQuery] string? subjectType,
         [FromQuery] string? tniClassification,
         [FromQuery] string? innovationTier,
+        [FromQuery] string? tt17Classification,
         [FromQuery] string? sortBy,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 9,
@@ -135,6 +136,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
             SubjectType = subjectType,
             TniClassification = tniClassification,
             InnovationTier = innovationTier,
+            Tt17Classification = tt17Classification,
             SortBy = sortBy,
             Page = page <= 0 ? 1 : page,
             PageSize = pageSize <= 0 ? 9 : pageSize

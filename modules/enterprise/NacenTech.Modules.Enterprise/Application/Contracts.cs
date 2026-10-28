@@ -27,7 +27,10 @@ public sealed record EnterprisePublicDirectoryItemDto(
     decimal? InnovationScore = null,
     string? InnovationTier = null,
     string? InnovationBadge = null,
-    string? Website = null
+    string? Website = null,
+    decimal? Tt17Score = null,
+    string? Tt17Classification = null,
+    decimal? Tt17SyncCoefficient = null
 );
 
 public sealed record InnovationCriteriaDetailDto(
@@ -190,6 +193,7 @@ public sealed class EnterpriseSearchQuery
     public string? SubjectType { get; set; }
     public string? TniClassification { get; set; }
     public string? InnovationTier { get; set; }
+    public string? Tt17Classification { get; set; }
     public string? SortBy { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 9;
