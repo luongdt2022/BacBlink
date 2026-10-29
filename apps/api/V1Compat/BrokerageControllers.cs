@@ -19,8 +19,8 @@ namespace NacenTech.Api.V1Compat;
 // =========================================================================
 
 public record CreateConnectionRequest(
-    Guid DemandId,
-    Guid OfferId,
+    Guid? DemandId,
+    Guid? OfferId,
     string SenderOrgName,
     string SenderRole, // BUYER | SELLER | BROKER
     string ReceiverOrgName,
@@ -203,8 +203,8 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
                 senderRole = reader.GetString(4),
                 receiverUserId = reader.IsDBNull(5) ? (Guid?)null : reader.GetGuid(5),
                 receiverOrgName = reader.GetString(6),
-                demandId = reader.GetGuid(7),
-                offerId = reader.GetGuid(8),
+                demandId = reader.IsDBNull(7) ? (Guid?)null : reader.GetGuid(7),
+                offerId = reader.IsDBNull(8) ? (Guid?)null : reader.GetGuid(8),
                 message = reader.GetString(9),
                 proposedBudgetRange = reader.IsDBNull(10) ? null : reader.GetString(10),
                 status = reader.GetString(11),
@@ -223,8 +223,10 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         [FromBody] CreateConnectionRequest req,
         CancellationToken ct)
     {
-        if (req.DemandId == Guid.Empty || req.OfferId == Guid.Empty)
-            return BadRequest(new { message = "DemandId và OfferId không được để trống" });
+        if (string.IsNullOrWhiteSpace(req.SenderOrgName))
+            return BadRequest(new { message = "Đơn vị gửi kết nối không được để trống" });
+        if (string.IsNullOrWhiteSpace(req.ReceiverOrgName))
+            return BadRequest(new { message = "Đơn vị tiếp nhận không được để trống" });
         if (string.IsNullOrWhiteSpace(req.Message))
             return BadRequest(new { message = "Nội dung đề xuất kết nối không được để trống" });
 
@@ -255,10 +257,10 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         AddParam("@code", requestCode);
         AddParam("@senderUserId", senderUserId);
         AddParam("@senderOrg", req.SenderOrgName);
-        AddParam("@senderRole", req.SenderRole);
+        AddParam("@senderRole", string.IsNullOrWhiteSpace(req.SenderRole) ? "BUYER" : req.SenderRole);
         AddParam("@receiverOrg", req.ReceiverOrgName);
-        AddParam("@demandId", req.DemandId);
-        AddParam("@offerId", req.OfferId);
+        AddParam("@demandId", req.DemandId.HasValue && req.DemandId.Value != Guid.Empty ? req.DemandId.Value : DBNull.Value);
+        AddParam("@offerId", req.OfferId.HasValue && req.OfferId.Value != Guid.Empty ? req.OfferId.Value : DBNull.Value);
         AddParam("@message", req.Message);
         AddParam("@budget", req.ProposedBudgetRange);
 

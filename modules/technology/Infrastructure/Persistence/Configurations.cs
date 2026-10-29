@@ -85,6 +85,11 @@ public sealed class SellerTechnologyOfferConfiguration : IEntityTypeConfiguratio
         b.Property(x => x.IpIssueDate);
         b.Property(x => x.LegalCommitmentConfirmed).HasDefaultValue(false);
 
+        // DEFECT-09: Soft Delete mapping and global query filter
+        b.Property(x => x.IsDeleted).HasDefaultValue(false);
+        b.Property(x => x.DeletedAt);
+        b.HasQueryFilter(x => !x.IsDeleted);
+
         b.HasMany(x => x.SpecValues).WithOne().HasForeignKey(x => x.OfferId).OnDelete(DeleteBehavior.Cascade);
         b.Navigation(x => x.SpecValues).UsePropertyAccessMode(PropertyAccessMode.Field);
 
@@ -96,6 +101,7 @@ public sealed class SellerTechnologyOfferConfiguration : IEntityTypeConfiguratio
         b.HasIndex(x => x.Status);
         b.HasIndex(x => x.ManagingAuthorityId);
         b.HasIndex(x => x.EnterpriseTaxCode);
+        b.HasIndex(x => x.IsDeleted);
     }
 }
 

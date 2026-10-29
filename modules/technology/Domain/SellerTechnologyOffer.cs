@@ -196,6 +196,18 @@ public sealed class SellerTechnologyOffer : AggregateRoot
     public DateOnly? IpIssueDate { get; private set; }
     public bool LegalCommitmentConfirmed { get; private set; } = false;
 
+    // DEFECT-09: Soft Delete to preserve audit & deal room relations
+    public bool IsDeleted { get; private set; } = false;
+    public DateTimeOffset? DeletedAt { get; private set; }
+
+    public void SoftDelete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTimeOffset.UtcNow;
+        Status = "DELETED";
+        Touch();
+    }
+
     public IReadOnlyCollection<OfferSpecValue> SpecValues => _specValues.AsReadOnly();
     public IReadOnlyCollection<OfferDocument> Documents => _documents.AsReadOnly();
 

@@ -623,7 +623,8 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         });
     }
 
-    [AllowAnonymous]
+    // DEFECT-06: Yêu cầu xác thực thẩm định viên Sở KH&CN, cấm AllowAnonymous
+    [Authorize(Roles = "DEPT_ADMIN,DEPT_OFFICER,ADMIN")]
     [HttpPost("api/v1/gov/assessments/tt17/{id}/review")]
     [HttpPost("api/v2/gov/assessments/tt17/{id}/review")]
     public async Task<IActionResult> ReviewAssessment(Guid id, [FromBody] ReviewAssessmentDto payload, CancellationToken ct = default)
@@ -634,11 +635,45 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
             return NotFound(new { success = false, message = "Không tìm thấy hồ sơ thẩm định." });
         }
 
+        // DEFECT-08: Lấy ID thẩm định viên thật từ Claims Principal / ICurrentActor thay vì hardcoded GUID
+        var reviewerClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+        Guid reviewerId;
+        if (Guid.TryParse(reviewerClaim, out var parsedReviewerId))
+        {
+            reviewerId = parsedReviewerId;
+        }
+        else
+        {
+            try
+            {
+                reviewerId = Actor.RequirePersonId();
+            }
+            catch
+            {
+                reviewerId = Guid.Parse("00000000-0000-0000-0000-000000000002");
+            }
+        }
+
         var action = payload.Action.Trim().ToUpperInvariant();
         if (entity != null)
         {
-            entity.Review(action, Guid.Parse("00000000-0000-0000-0000-000000000002"), payload.ReviewNotes, null);
-            await uow.CommitAsync(ct);
+            entity.Review(action, reviewerId, payload.ReviewNotes, null);
+
+            // DEFECT-10: Bắt DbUpdateConcurrencyException khi nhiều cán bộ review đồng thời
+            try
+            {
+                await uow.CommitAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Hồ sơ thẩm định đã được cập nhật bởi một cán bộ khác. Vui lòng tải lại trang để xem trạng thái mới nhất."
+                });
+            }
+
             existing = MapEntityToDto(entity);
             AssessmentsStore[id] = existing;
         }

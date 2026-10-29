@@ -109,6 +109,8 @@ builder.Services.AddControllers(o =>
       o.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never;
       o.JsonSerializerOptions.Converters.Add(new JsDateTimeOffsetConverter());
       o.JsonSerializerOptions.Converters.Add(new NullableJsDateTimeOffsetConverter());
+      o.JsonSerializerOptions.Converters.Add(new VietnameseDecimalJsonConverter());
+      o.JsonSerializerOptions.Converters.Add(new NullableVietnameseDecimalJsonConverter());
   });
 // Hai tài liệu riêng. Trước đây có đúng một document tên "v2" chứa toàn đường /api/v1, nên "0 endpoint v2"
 // đọc thành "76 endpoint v2" với bất kỳ ai mở tài liệu ra xem — đó là nửa sau của B-01, và nó đã làm cả một

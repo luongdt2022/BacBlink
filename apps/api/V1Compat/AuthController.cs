@@ -8,16 +8,26 @@ namespace NacenTech.Api.V1Compat;
 
 public sealed class LoginDto
 {
+    private string _email = string.Empty;
     [Required, RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "email must be a valid email")]
-    public string Email { get; set; } = string.Empty;
+    public string Email
+    {
+        get => _email;
+        set => _email = value?.Trim().ToLowerInvariant() ?? string.Empty;
+    }
     [Required(ErrorMessage = "password must be a string")]
     public string Password { get; set; } = string.Empty;
 }
 
 public sealed class RegisterDto
 {
+    private string _email = string.Empty;
     [Required, RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "email must be a valid email")]
-    public string Email { get; set; } = string.Empty;
+    public string Email
+    {
+        get => _email;
+        set => _email = value?.Trim().ToLowerInvariant() ?? string.Empty;
+    }
     [Required, MinLength(8, ErrorMessage = "password must be longer than or equal to 8 characters")]
     public string Password { get; set; } = string.Empty;
     [Required, MinLength(8, ErrorMessage = "confirmPassword must be longer than or equal to 8 characters")]
@@ -37,8 +47,13 @@ public sealed class ActivateAccountDto
 
 public sealed class EmailDto
 {
+    private string _email = string.Empty;
     [Required, RegularExpression(@"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", ErrorMessage = "email must be a valid email")]
-    public string Email { get; set; } = string.Empty;
+    public string Email
+    {
+        get => _email;
+        set => _email = value?.Trim().ToLowerInvariant() ?? string.Empty;
+    }
 }
 
 public sealed class ChangePasswordDto

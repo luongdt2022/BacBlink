@@ -823,19 +823,27 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         return CreatedAtAction(nameof(GetOfferById), new { id }, new { success = true, message, data = newOffer });
     }
 
+    // DEFECT-06: Phê duyệt công nghệ chỉ dành cho Cán bộ Sở KH&CN, cấm AllowAnonymous
     [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/review")]
     [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/review")]
-    [AllowAnonymous]
+    [Authorize(Roles = "DEPT_ADMIN,DEPT_OFFICER,ADMIN")]
     public async Task<IActionResult> ReviewOffer(Guid id, [FromBody] ReviewOfferDto dto, CancellationToken ct = default)
     {
-        if (!OffersStore.TryGetValue(id, out var existing))
+        // DEFECT-07: Đọc trực tiếp từ CSDL PostgreSQL để đảm bảo kiến trúc Stateless
+        var entity = await db.Set<SellerTechnologyOffer>()
+            .Include(x => x.SpecValues)
+            .Include(x => x.Documents)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+
+        var hasInStore = OffersStore.TryGetValue(id, out var existing);
+        if (entity == null && !hasInStore)
         {
             return NotFound(new { success = false, message = "Không tìm thấy hồ sơ công nghệ." });
         }
 
         var action = dto.Action.ToUpperInvariant();
         string newStatus;
-        DateTimeOffset? publishedAt = existing.PublishedAt;
+        DateTimeOffset? publishedAt = entity?.PublishedAt ?? existing?.PublishedAt;
 
         switch (action)
         {
@@ -859,13 +867,6 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 return BadRequest(new { success = false, message = $"Hành động thẩm định không hợp lệ: {action}. Hỗ trợ: APPROVE, REJECT, REQUEST_CHANGES, REVOKE." });
         }
 
-        var updated = existing with
-        {
-            Status = newStatus,
-            PublishedAt = publishedAt
-        };
-
-        var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
         if (entity != null)
         {
             if (action == "REVOKE")
@@ -876,16 +877,52 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             {
                 entity.Review(action, dto.ReviewNote);
             }
-            await uow.CommitAsync(ct);
+
+            // DEFECT-10: Bắt DbUpdateConcurrencyException khi nhiều cán bộ review đồng thời
+            try
+            {
+                // DEFECT-10: Bắt DbUpdateConcurrencyException khi cập nhật đồng thời
+            try
+            {
+                await uow.CommitAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Hồ sơ công nghệ đã được thay đổi bởi một phiên làm việc khác. Vui lòng tải lại và thử lại."
+                });
+            }
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Hồ sơ công nghệ đã được thẩm định hoặc thay đổi bởi một phiên làm việc khác. Vui lòng tải lại danh sách."
+                });
+            }
+
+            var updatedFromDb = ToDto(entity);
+            OffersStore[id] = updatedFromDb;
+            return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updatedFromDb });
         }
+
+        var updated = existing! with
+        {
+            Status = newStatus,
+            PublishedAt = publishedAt
+        };
 
         OffersStore[id] = updated;
         return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updated });
     }
 
+    // DEFECT-06: Endpoint cập nhật hồ sơ yêu cầu xác thực JWT của doanh nghiệp
     [HttpPut("/api/v1/portal/seller/technologies/{id:guid}")]
     [HttpPut("/api/v2/portal/seller/technologies/{id:guid}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> UpdateSellerOffer(Guid id, [FromBody] UpdateSellerOfferDto dto, CancellationToken ct = default)
     {
         var existingInStore = OffersStore.TryGetValue(id, out var existing);
@@ -1095,7 +1132,19 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 }
             }
 
-            await uow.CommitAsync(ct);
+            // DEFECT-10: Bắt DbUpdateConcurrencyException khi cập nhật đồng thời
+            try
+            {
+                await uow.CommitAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Hồ sơ công nghệ đã được thay đổi bởi một phiên làm việc khác. Vui lòng tải lại và thử lại."
+                });
+            }
         }
 
         OffersStore[id] = updated;
@@ -1115,26 +1164,41 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         });
     }
 
+    // DEFECT-06: Endpoint xóa công nghệ yêu cầu xác thực JWT
     [HttpDelete("/api/v1/portal/seller/technologies/{id:guid}")]
     [HttpDelete("/api/v2/portal/seller/technologies/{id:guid}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> DeleteSellerOffer(Guid id, CancellationToken ct = default)
     {
         OffersStore.TryRemove(id, out var _);
 
+        // DEFECT-09: Soft Delete để bảo toàn quan hệ ngoại khóa với Deal Room và Audit Trail
         var entity = await db.Set<SellerTechnologyOffer>().FirstOrDefaultAsync(x => x.Id == id, ct);
         if (entity != null)
         {
-            db.Set<SellerTechnologyOffer>().Remove(entity);
-            await uow.CommitAsync(ct);
+            entity.SoftDelete();
+            // DEFECT-10: Bắt DbUpdateConcurrencyException khi cập nhật đồng thời
+            try
+            {
+                await uow.CommitAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Hồ sơ công nghệ đã được thay đổi bởi một phiên làm việc khác. Vui lòng tải lại và thử lại."
+                });
+            }
         }
 
-        return Ok(new { success = true, message = "Đã xóa hồ sơ công nghệ thành công khỏi kho lưu trữ." });
+        return Ok(new { success = true, message = "Đã xóa hồ sơ công nghệ thành công khỏi kho lưu trữ (Soft Delete)." });
     }
 
+    // DEFECT-06: Endpoint bật/tắt xuất bản yêu cầu xác thực JWT
     [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/toggle-publish")]
     [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/toggle-publish")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> TogglePublish(Guid id, [FromQuery] bool? publish, CancellationToken ct = default)
     {
         var existingInStore = OffersStore.TryGetValue(id, out var offer);
@@ -1155,7 +1219,19 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         if (entity != null)
         {
             entity.SetStatus(nextStatus);
-            await uow.CommitAsync(ct);
+            // DEFECT-10: Bắt DbUpdateConcurrencyException khi cập nhật đồng thời
+            try
+            {
+                await uow.CommitAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    message = "Hồ sơ công nghệ đã được thay đổi bởi một phiên làm việc khác. Vui lòng tải lại và thử lại."
+                });
+            }
         }
 
         if (offer != null)

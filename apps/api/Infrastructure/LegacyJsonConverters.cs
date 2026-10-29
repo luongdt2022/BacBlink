@@ -26,6 +26,105 @@ public sealed class NullableJsDateTimeOffsetConverter : JsonConverter<DateTimeOf
     }
 }
 
+/// <summary>
+/// DEFECT-13: Chuẩn hóa parse tiền tệ Việt Nam.
+/// Hỗ trợ cả số nguyên, số thực, chuỗi có dấu chấm phân cách hàng nghìn (1.500.000.000),
+/// dấu phẩy phân cách hàng nghìn (1,500,000,000) hoặc dấu phẩy thập phân (1.500.000,50).
+/// </summary>
+public sealed class VietnameseDecimalJsonConverter : JsonConverter<decimal>
+{
+    public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Number)
+        {
+            return reader.GetDecimal();
+        }
+
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            var raw = reader.GetString();
+            if (string.IsNullOrWhiteSpace(raw)) return 0m;
+            return ParseVietnameseDecimal(raw);
+        }
+
+        throw new JsonException($"Không thể chuyển đổi token {reader.TokenType} sang decimal.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, decimal value, JsonSerializerOptions options)
+        => writer.WriteNumberValue(value);
+
+    public static decimal ParseVietnameseDecimal(string raw)
+    {
+        var clean = raw.Trim().Replace(" ", "").Replace("\u00A0", "");
+
+        int lastDot = clean.LastIndexOf('.');
+        int lastComma = clean.LastIndexOf(',');
+
+        if (lastDot > -1 && lastComma > -1)
+        {
+            if (lastDot > lastComma)
+            {
+                clean = clean.Replace(",", "");
+            }
+            else
+            {
+                clean = clean.Replace(".", "").Replace(',', '.');
+            }
+        }
+        else if (lastDot > -1)
+        {
+            int dotCount = clean.Count(c => c == '.');
+            int charsAfterDot = clean.Length - 1 - lastDot;
+            if (dotCount > 1 || charsAfterDot == 3)
+            {
+                clean = clean.Replace(".", "");
+            }
+        }
+        else if (lastComma > -1)
+        {
+            int commaCount = clean.Count(c => c == ',');
+            int charsAfterComma = clean.Length - 1 - lastComma;
+            if (commaCount > 1 || charsAfterComma == 3)
+            {
+                clean = clean.Replace(",", "");
+            }
+            else
+            {
+                clean = clean.Replace(',', '.');
+            }
+        }
+
+        if (decimal.TryParse(clean, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+        {
+            return result;
+        }
+
+        throw new JsonException($"Chuỗi giá trị '{raw}' không thể phân tích cú pháp thành số thập phân hợp lệ.");
+    }
+}
+
+public sealed class NullableVietnameseDecimalJsonConverter : JsonConverter<decimal?>
+{
+    public override decimal? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null) return null;
+        if (reader.TokenType == JsonTokenType.Number) return reader.GetDecimal();
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            var raw = reader.GetString();
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            return VietnameseDecimalJsonConverter.ParseVietnameseDecimal(raw);
+        }
+        return null;
+    }
+
+    public override void Write(Utf8JsonWriter writer, decimal? value, JsonSerializerOptions options)
+    {
+        if (value.HasValue) writer.WriteNumberValue(value.Value);
+        else writer.WriteNullValue();
+    }
+}
+
 public static class LegacyJson
 {
     public static readonly JsonSerializerOptions Options = Create();
@@ -40,6 +139,8 @@ public static class LegacyJson
         };
         o.Converters.Add(new JsDateTimeOffsetConverter());
         o.Converters.Add(new NullableJsDateTimeOffsetConverter());
+        o.Converters.Add(new VietnameseDecimalJsonConverter());
+        o.Converters.Add(new NullableVietnameseDecimalJsonConverter());
         return o;
     }
 }
