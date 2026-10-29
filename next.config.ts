@@ -9,6 +9,14 @@ const config: NextConfig = {
         source: "/api/v1/:path*",
         destination: "http://localhost:5080/api/v1/:path*",
       },
+      {
+        source: "/api/v2/:path*",
+        destination: "http://localhost:5080/api/v2/:path*",
+      },
+      {
+        source: "/health",
+        destination: "http://localhost:5080/health",
+      },
       // NacenTech Agent Orchestrator & CR Dashboard (Port 8420)
       {
         source: "/orchestrator-app",
@@ -51,4 +59,3 @@ const config: NextConfig = {
 };
 
 export default config;
-
