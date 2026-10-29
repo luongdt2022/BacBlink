@@ -11,6 +11,7 @@ import {
 } from "../../../lib/enterprise-client";
 import { fetchPublicOffers } from "@/services/api/technology-offer";
 import { type TechnologyOffer } from "@/types/technology-offer";
+import { brokerageApi } from "@/services/api/brokerage";
 import { CommercialProfile } from "@/components/enterprise/CommercialProfile";
 import { InnovativeProfile } from "@/components/enterprise/InnovativeProfile";
 import {
@@ -146,11 +147,28 @@ export default function EnterpriseDetailPage() {
     setRfqModalOpen(false);
   };
 
-  const handleSubmitRfq = (e: React.FormEvent) => {
+  const [isSubmittingRfq, setIsSubmittingRfq] = useState(false);
+  const [isSubmittingChat, setIsSubmittingChat] = useState(false);
+
+  const handleSubmitRfq = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRfqModalOpen(false);
-    const rfqCode = `RFQ-${Math.floor(100000 + Math.random() * 900000)}`;
-    showToast(`Đã gửi yêu cầu báo giá thành công! Mã yêu cầu: ${rfqCode}`);
+    setIsSubmittingRfq(true);
+    try {
+      const fullMessage = `[Yêu cầu báo giá RFQ - ${rfqTargetProduct}] Số lượng: ${rfqQuantity}. Ngày cần giao: ${rfqDeliveryDate || "Thỏa thuận"}. Ghi chú: ${rfqNotes || "Không có"}. Người liên hệ: ${rfqContactName} (${rfqContactPhone})`;
+      const res = await brokerageApi.createConnectionRequest({
+        senderOrgName: rfqCompanyName.trim(),
+        senderRole: "BUYER",
+        receiverOrgName: data?.name || "Doanh nghiệp",
+        message: fullMessage,
+        proposedBudgetRange: "Thỏa thuận",
+      });
+      setRfqModalOpen(false);
+      showToast(`Đã gửi yêu cầu báo giá thành công! Mã yêu cầu: ${res.requestCode}`);
+    } catch (err: any) {
+      showToast(err.message || "Không thể gửi yêu cầu báo giá. Vui lòng thử lại.");
+    } finally {
+      setIsSubmittingRfq(false);
+    }
   };
 
   // Chat Modal open helper
@@ -164,10 +182,25 @@ export default function EnterpriseDetailPage() {
     setChatModalOpen(false);
   };
 
-  const handleSubmitChat = (e: React.FormEvent) => {
+  const handleSubmitChat = async (e: React.FormEvent) => {
     e.preventDefault();
-    setChatSuccess(true);
-    showToast("Đã gửi thông điệp giao thương tới doanh nghiệp qua kênh trung gian sàn!");
+    setIsSubmittingChat(true);
+    try {
+      const fullMessage = `[Giao thương - Mục đích: ${chatPurpose}] ${chatMessage}`;
+      const res = await brokerageApi.createConnectionRequest({
+        senderOrgName: "Đối tác giao thương",
+        senderRole: "BUYER",
+        receiverOrgName: data?.name || "Doanh nghiệp",
+        message: fullMessage,
+        proposedBudgetRange: "Thỏa thuận",
+      });
+      setChatSuccess(true);
+      showToast(`Đã gửi thông điệp giao thương thành công! Mã yêu cầu: ${res.requestCode}`);
+    } catch (err: any) {
+      showToast(err.message || "Không thể gửi thông điệp. Vui lòng thử lại.");
+    } finally {
+      setIsSubmittingChat(false);
+    }
   };
 
   // Toggle Bookmark
@@ -484,10 +517,11 @@ export default function EnterpriseDetailPage() {
                 </button>
                 <button
                   type="submit"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm"
+                  disabled={isSubmittingRfq}
+                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Gửi Yêu Cầu Báo Giá</span>
+                  <span>{isSubmittingRfq ? "Đang gửi..." : "Gửi Yêu Cầu Báo Giá"}</span>
                 </button>
               </div>
             </form>
@@ -582,9 +616,10 @@ export default function EnterpriseDetailPage() {
                   </button>
                   <button
                     type="submit"
-                    className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-2 rounded-xl transition shadow-sm"
+                    disabled={isSubmittingChat}
+                    className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-bold px-5 py-2 rounded-xl transition shadow-sm"
                   >
-                    Gửi đề xuất
+                    {isSubmittingChat ? "Đang gửi..." : "Gửi đề xuất"}
                   </button>
                 </div>
               </form>

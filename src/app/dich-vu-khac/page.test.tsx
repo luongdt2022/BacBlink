@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import DichVuKhacPage from "./page";
+import { brokerageApi } from "@/services/api/brokerage";
 
 const mockToast = {
   success: vi.fn(),
@@ -16,6 +17,11 @@ vi.mock("@/components/common/toast", () => ({
 describe("DichVuKhacPage (Dịch Vụ Khác)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(brokerageApi, "createConnectionRequest").mockResolvedValue({
+      id: "req-srv-01",
+      requestCode: "REQ-202610-1234",
+      status: "PENDING",
+    });
   });
 
   afterEach(() => {

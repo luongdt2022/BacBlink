@@ -600,12 +600,14 @@ def run_suite():
     }
 
     # Xuất ra thư mục Specification
-    spec_json_path = f"Specification/PHIEU_KIEM_THU_QC_MODULE_02_{report_data['runId']}.json"
+    spec_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../Specification"))
+    os.makedirs(spec_dir, exist_ok=True)
+    spec_json_path = os.path.join(spec_dir, f"PHIEU_KIEM_THU_QC_MODULE_02_{report_data['runId']}.json")
     with open(spec_json_path, "w", encoding="utf-8") as f:
         json.dump(report_data, f, ensure_ascii=False, indent=2)
 
     # Xuất ra file test-results-module02.json trong public để web xem trực tiếp
-    public_json_path = "SourceCode/frontend/public/test-results-module02.json"
+    public_json_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../public/test-results-module02.json"))
     os.makedirs(os.path.dirname(public_json_path), exist_ok=True)
     with open(public_json_path, "w", encoding="utf-8") as f:
         json.dump(report_data, f, ensure_ascii=False, indent=2)

@@ -1,3 +1,5 @@
-import EnterpriseSurveyPage from '../khao-sat-doanh-nghiep/page';
+import { redirect } from "next/navigation";
 
-export default EnterpriseSurveyPage;
+export default function KhaoSatCongNghePage() {
+  redirect("/khao-sat-nhu-cau");
+}

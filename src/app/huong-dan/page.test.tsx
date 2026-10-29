@@ -39,12 +39,12 @@ describe("UserGuidePage", () => {
     expect(
       screen.getByText("Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin")
     ).toBeInTheDocument();
-    expect(screen.getByText(/11 Phân Hệ · 60 Màn Hình/i)).toBeInTheDocument();
+    expect(screen.getByText(/11 Phân Hệ · 69 Màn Hình/i)).toBeInTheDocument();
     expect(screen.getByText(/7 Vai Trò Tác Nhân/i)).toBeInTheDocument();
 
     // Role buttons
     expect(
-      screen.getByRole("button", { name: "Tất cả (60)" })
+      screen.getByRole("button", { name: "Tất cả (69)" })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Bên mua công nghệ/i })
@@ -148,7 +148,7 @@ describe("UserGuidePage", () => {
     fireEvent.click(requestFormsBtn);
 
     expect(
-      screen.getByText("Phiếu Tạo Nhanh Bài Toán Nhu Cầu Công Nghệ (Quick Demand Modal)")
+      screen.getByText(/Phiếu Khảo Sát Sâu Nhu Cầu Đổi Mới Công Nghệ DNNVV/i)
     ).toBeInTheDocument();
   });
 });

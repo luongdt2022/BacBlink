@@ -65,6 +65,19 @@ export default function UserGuidePage() {
     return "ALL";
   };
 
+  // Safe href sanitizer to avoid App Router bracket errors
+  const getSafeHref = (route: string) => {
+    if (!route) return "/";
+    if (route.includes("[")) {
+      return route
+        .replace(/\[module\]/g, "elearning")
+        .replace(/\[taxCode\]/g, "0101234567")
+        .replace(/\[expertCode\]/g, "EXP-2026-0889")
+        .replace(/\[id\]/g, "DEMAND-001");
+    }
+    return route;
+  };
+
   // Đồng bộ hash từ URL cha
   useEffect(() => {
     const handleHashChange = () => {
@@ -738,7 +751,7 @@ export default function UserGuidePage() {
                           </div>
 
                           <Link
-                            href={screen.route}
+                            href={getSafeHref(screen.route)}
                             className="inline-flex items-center gap-1 rounded-md bg-surface-subtle hover:bg-brand-50 px-2 py-1 text-xs font-bold text-brand-700 hover:text-brand-800 dark:bg-slate-800 dark:text-brand-300 dark:hover:bg-slate-700 transition"
                             title={`Truy cập trực tiếp màn hình ${screen.route}`}
                           >
@@ -833,7 +846,7 @@ export default function UserGuidePage() {
                               <span>Giao diện trực tiếp tại đường dẫn {screen.route}</span>
                             </div>
                             <Link
-                              href={screen.route}
+                              href={getSafeHref(screen.route)}
                               className="font-bold text-brand-700 hover:underline dark:text-brand-400"
                             >
                               Mở màn hình →
@@ -848,7 +861,7 @@ export default function UserGuidePage() {
                           {screen.moduleName}
                         </span>
                         <Link
-                          href={screen.route}
+                          href={getSafeHref(screen.route)}
                           className="font-bold text-brand-700 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 inline-flex items-center gap-1"
                         >
                           Truy cập màn hình <ArrowRight className="size-3" />

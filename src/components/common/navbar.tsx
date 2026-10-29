@@ -229,6 +229,18 @@ export function Navbar() {
                       </div>
                     )}
                   </div>
+
+                  {/* DEFECT-04: Nút Đăng xuất nhanh trực tiếp trên Header */}
+                  <button
+                    type="button"
+                    onClick={() => setLogoutModalOpen(true)}
+                    className="focus-ring inline-flex size-9 items-center justify-center rounded-control text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                    title="Đăng xuất nhanh"
+                    aria-label="Đăng xuất nhanh"
+                  >
+                    <LogOut className="size-4" aria-hidden="true" />
+                  </button>
+
                   {user.role?.toUpperCase() === "PUBLIC_USER" && (
                     <Link
                       href="/settings"

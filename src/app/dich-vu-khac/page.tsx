@@ -17,6 +17,7 @@ import {
   HelpCircle
 } from "lucide-react";
 import { useToast } from "@/components/common/toast";
+import { brokerageApi } from "@/services/api/brokerage";
 
 export default function DichVuKhacPage() {
   const toast = useToast();
@@ -31,7 +32,7 @@ export default function DichVuKhacPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim()) {
       toast.error("Vui lòng điền đầy đủ họ tên, email và số điện thoại liên hệ.", "Thiếu thông tin");
@@ -39,12 +40,22 @@ export default function DichVuKhacPage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const code = `SRV-202610-${Math.floor(1000 + Math.random() * 9000)}`;
-      setSubmittedCode(code);
+    try {
+      const fullMessage = `[Dịch vụ tư vấn - Loại: ${formData.serviceType}] Người liên hệ: ${formData.fullName.trim()} (${formData.phone.trim()}, ${formData.email.trim()}). Nội dung: ${formData.description.trim() || "Không có"}`;
+      const res = await brokerageApi.createConnectionRequest({
+        senderOrgName: formData.organization.trim() || formData.fullName.trim(),
+        senderRole: "BUYER",
+        receiverOrgName: "Viện Đổi Mới Công Nghệ NacenTech - Trung Tâm Tư Vấn SHTT",
+        message: fullMessage,
+        proposedBudgetRange: "Thỏa thuận",
+      });
+      setSubmittedCode(res.requestCode);
+      toast.success(`Yêu cầu tư vấn đã được tiếp nhận với mã phiếu ${res.requestCode}!`, "Đăng ký thành công");
+    } catch (err: any) {
+      toast.error(err.message || "Không thể gửi yêu cầu tư vấn. Vui lòng thử lại.", "Lỗi gửi yêu cầu");
+    } finally {
       setIsSubmitting(false);
-      toast.success(`Yêu cầu tư vấn đã được tiếp nhận với mã phiếu ${code}!`, "Đăng ký thành công");
-    }, 600);
+    }
   };
 
   return (

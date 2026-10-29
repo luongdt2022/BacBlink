@@ -62,7 +62,7 @@ import {
 
 const STORAGE_KEY = 'nacentwin_deep_survey_draft_v2';
 
-export default function DeepSurveyPage() {
+export default function DeepSurveyPage({ showDemoButton = true }: any) {
   const toast = useToast();
 
   // Wizard state: 1 -> 4
@@ -1029,14 +1029,16 @@ export default function DeepSurveyPage() {
 
           <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end gap-2.5 shrink-0">
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={handleFillSampleData}
-                className="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-300/30 text-amber-200 text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-sm"
-                title="Điền dữ liệu mẫu demo để thử nghiệm nhanh quy trình"
-              >
-                <Sparkles className="w-3.5 h-3.5" /> Điền dữ liệu mẫu (Demo)
-              </button>
+              {showDemoButton && (
+                <button
+                  type="button"
+                  onClick={handleFillSampleData}
+                  className="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-300/30 text-amber-200 text-xs font-bold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-sm"
+                  title="Điền dữ liệu mẫu demo để thử nghiệm nhanh quy trình"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Điền dữ liệu mẫu (Demo)
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleSaveDraft}

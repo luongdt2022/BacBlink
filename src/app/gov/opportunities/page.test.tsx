@@ -8,6 +8,7 @@ import { authClient } from '@/lib/auth-client';
 vi.mock('@/services/api/brokerage', () => ({
   brokerageApi: {
     getGovOpportunities: vi.fn(),
+    updateOpportunityStage: vi.fn(),
   },
 }));
 
@@ -146,6 +147,34 @@ describe('T085 [FE-Gov-Screen4] GovOpportunitiesPage Screen 4 Verification', () 
       expect(screen.getByText(/Giám Sát Tiến Trình Deal/i)).toBeInTheDocument();
       expect(screen.getByText(/Nguyễn Văn An/i)).toBeInTheDocument();
       expect(screen.getByText(/Trần Thị Bình/i)).toBeInTheDocument();
+    });
+  });
+
+  it('allows gov officer to activate negotiation and open deal room (ADR-BROKERAGE-01)', async () => {
+    (brokerageApi.updateOpportunityStage as any) = vi.fn().mockResolvedValue({
+      id: 'deal-2',
+      stage: 'NEGOTIATING',
+    });
+
+    render(<GovOpportunitiesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('OPP-2026-002')).toBeInTheDocument();
+    });
+
+    const monitorButtons = screen.getAllByText('Giám sát Deal');
+    // Click deal-2 (which has stage === 'INITIATED')
+    fireEvent.click(monitorButtons[1]);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Kích Hoạt Đàm Phán \(Mở Deal Room\)/i)).toBeInTheDocument();
+    });
+
+    const activateBtn = screen.getByText(/Kích Hoạt Đàm Phán \(Mở Deal Room\)/i);
+    fireEvent.click(activateBtn);
+
+    await waitFor(() => {
+      expect(brokerageApi.updateOpportunityStage).toHaveBeenCalledWith('deal-2', 'NEGOTIATING');
     });
   });
 });

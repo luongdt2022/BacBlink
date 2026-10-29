@@ -43,8 +43,8 @@ export const brokerageApi = {
   },
 
   async createConnectionRequest(payload: {
-    demandId: string;
-    offerId: string;
+    demandId?: string;
+    offerId?: string;
     senderOrgName: string;
     senderRole: string;
     receiverOrgName: string;

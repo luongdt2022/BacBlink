@@ -24,14 +24,35 @@ import { brokerageApi } from '@/services/api/brokerage';
 import { GovPageHeader } from '@/components/gov/gov-page-header';
 import { resolveProvinceName } from '@/lib/gov-label-resolver';
 import { authClient } from '@/lib/auth-client';
+import { useToast } from '@/components/common/toast';
 
 export default function GovOpportunitiesPage() {
+  const toast = useToast();
   const [data, setData] = useState<GovOpportunitiesOverview | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterSlaOnly, setFilterSlaOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<(Opportunity & { isSlaWarning: boolean }) | null>(null);
+  const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+
+  const handleUpdateStage = async (newStage: string) => {
+    if (!selectedDeal) return;
+    setIsUpdatingStage(true);
+    try {
+      await brokerageApi.updateOpportunityStage(selectedDeal.id, newStage);
+      toast.success(
+        `Đã chuyển trạng thái cơ hội sang ${newStage} thành công!`,
+        'Cập Nhật Tiến Trình'
+      );
+      setSelectedDeal((prev) => (prev ? { ...prev, stage: newStage } : null));
+      await fetchGovData();
+    } catch (err: any) {
+      toast.error(err.message || 'Không thể cập nhật tiến trình cơ hội.', 'Thất Bại');
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
 
   const user = authClient.getUser();
   const userScopeId = user?.scopeId || '';
@@ -367,6 +388,52 @@ export default function GovOpportunitiesPage() {
                 </div>
               </div>
             </div>
+
+              {/* Tác Vụ Cán Bộ Quản Trị Sở KH&CN (ADR-BROKERAGE-01) */}
+              <div className="p-3.5 bg-brand-50/80 dark:bg-brand-950/40 rounded-xl border border-brand-200 dark:border-brand-800 space-y-2">
+                <span className="text-caption font-bold text-brand-900 dark:text-cyan-300 block">
+                  Tác Vụ Quản Trị Sở KH&CN (Cơ Chế Bảo Trợ Nhà Nước):
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedDeal.stage === 'INITIATED' && (
+                    <button
+                      type="button"
+                      disabled={isUpdatingStage}
+                      onClick={() => handleUpdateStage('NEGOTIATING')}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-700 hover:bg-brand-800 text-white shadow-xs flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {isUpdatingStage ? 'Đang xử lý...' : 'Kích Hoạt Đàm Phán (Mở Deal Room)'}
+                    </button>
+                  )}
+
+                  {(selectedDeal.stage === 'NEGOTIATING' || selectedDeal.stage === 'MOU_SIGNED') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          window.location.href = `/portal/opportunities/${selectedDeal.id}/deal-room`;
+                        }
+                      }}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <FileSignature className="w-3.5 h-3.5" />
+                      <span>Vào Phòng Đàm Phán & Xem Thảo Luận (Deal Room)</span>
+                    </button>
+                  )}
+
+                  {selectedDeal.stage !== 'CLOSED_LOST' && selectedDeal.stage !== 'COMPLETED' && (
+                    <button
+                      type="button"
+                      disabled={isUpdatingStage}
+                      onClick={() => handleUpdateStage('CLOSED_LOST')}
+                      className="px-3 py-2 rounded-xl text-xs font-bold text-rose-700 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-900 transition disabled:opacity-50 cursor-pointer"
+                    >
+                      Bác Bỏ / Đóng Ca
+                    </button>
+                  )}
+                </div>
+              </div>
 
             <div className="flex justify-end pt-3 border-t border-border">
               <button

@@ -27,10 +27,13 @@ import {
   Briefcase,
   Users,
   Compass,
-  FileText
+  FileText,
+  Search,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/components/common/toast";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getStoredSession } from "@/lib/auth-client";
+import { lookupTaxCode, fetchMyEnterpriseProfile } from "@/lib/enterprise-client";
 import { PROVINCES_34 } from "@/app/khao-sat-nhu-cau/types";
 
 // =========================================================================
@@ -418,6 +421,9 @@ export default function KhaoSatDmstPage() {
   // Authentication & Prefill state
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isTaxCodeLocked, setIsTaxCodeLocked] = useState<boolean>(false);
+  const [isLookingUpTax, setIsLookingUpTax] = useState<boolean>(false);
+  const [isPrefilledFromSession, setIsPrefilledFromSession] = useState<boolean>(false);
+  const [detectedProfile, setDetectedProfile] = useState<any | null>(null);
   const [enterpriseId, setEnterpriseId] = useState<string | null>(null);
   const [isVerifiedProfile, setIsVerifiedProfile] = useState<boolean>(false);
   const [prefillLoading, setPrefillLoading] = useState<boolean>(true);
@@ -440,112 +446,147 @@ export default function KhaoSatDmstPage() {
   const [c04Email, setC04Email] = useState("");
   const [c04Phone, setC04Phone] = useState("");
   const [c04Website, setC04Website] = useState("");
-  const [c05Province, setC05Province] = useState(PROVINCES_34[0]);
-  const [c06MainSector, setC06MainSector] = useState(SECTOR_OPTIONS[0]);
-  const [c07Ownership, setC07Ownership] = useState(OWNERSHIP_OPTIONS[0]);
-  const [c08Workforce, setC08Workforce] = useState(WORKFORCE_OPTIONS[1]);
-  const [c09Revenue, setC09Revenue] = useState(REVENUE_OPTIONS[1]);
-  const [c10OperatingZone, setC10OperatingZone] = useState(OPERATING_ZONES[2]);
-  const [c11HighQualRatio, setC11HighQualRatio] = useState(HIGH_QUAL_OPTIONS[1]);
+  const [c05Province, setC05Province] = useState("");
+  const [c06MainSector, setC06MainSector] = useState("");
+  const [c07Ownership, setC07Ownership] = useState("");
+  const [c08Workforce, setC08Workforce] = useState("");
+  const [c09Revenue, setC09Revenue] = useState("");
+  const [c10OperatingZone, setC10OperatingZone] = useState("");
+  const [c11HighQualRatio, setC11HighQualRatio] = useState("");
 
   // Bước 2: C12 - C16
-  const [c12HasRdUnit, setC12HasRdUnit] = useState<boolean>(false);
-  const [c13HasTraining, setC13HasTraining] = useState<boolean>(true);
-  const [c14HasMachinery, setC14HasMachinery] = useState<boolean>(true);
-  const [c15HasRdBudget, setC15HasRdBudget] = useState<boolean>(false);
-  const [c16Platforms, setC16Platforms] = useState<string[]>([
-    "Phần mềm Kế toán số",
-    "CRM (Quản lý khách hàng)",
-  ]);
+  const [c12HasRdUnit, setC12HasRdUnit] = useState<boolean | null>(null);
+  const [c13HasTraining, setC13HasTraining] = useState<boolean | null>(null);
+  const [c14HasMachinery, setC14HasMachinery] = useState<boolean | null>(null);
+  const [c15HasRdBudget, setC15HasRdBudget] = useState<boolean | null>(null);
+  const [c16Platforms, setC16Platforms] = useState<string[]>([]);
 
   // Bước 3: C17 - C27
-  const [c17NewProducts, setC17NewProducts] = useState<boolean>(true);
-  const [c18ImprovedProducts, setC18ImprovedProducts] = useState<boolean>(true);
-  const [c19ProcessInnovation, setC19ProcessInnovation] = useState<boolean>(true);
-  const [c20OrgInnovation, setC20OrgInnovation] = useState<boolean>(false);
-  const [c21MarketingInnovation, setC21MarketingInnovation] = useState<boolean>(true);
-  const [c22TechAcquisition, setC22TechAcquisition] = useState<string[]>([
-    "Tự nghiên cứu R&D nội bộ",
-    "Mua thiết bị, dây chuyền kèm công nghệ",
-  ]);
-  const [c23ImpactOutcomes, setC23ImpactOutcomes] = useState<string[]>([
-    "Tăng doanh thu / lợi nhuận",
-    "Nâng cao năng suất lao động",
-    "Nâng cao chất lượng sản phẩm, dịch vụ",
-  ]);
-  const [c24DigitalStrategy, setC24DigitalStrategy] = useState(DIGITAL_STRATEGY_OPTIONS[0]);
-  const [c25DigitalMaturity, setC25DigitalMaturity] = useState(DIGITAL_MATURITY_OPTIONS[1]);
-  const [c26DigitizedActivities, setC26DigitizedActivities] = useState<string[]>([
-    "Kế toán, tài chính",
-    "Bán hàng, tiếp thị & chăm sóc khách hàng",
-    "Quản lý sản xuất, vận hành, kho bãi",
-  ]);
-  const [c27AdvancedTech, setC27AdvancedTech] = useState<string[]>([
-    "Điện toán đám mây (Cloud Computing)",
-    "Dữ liệu lớn (Big Data & Data Analytics)",
-  ]);
+  const [c17NewProducts, setC17NewProducts] = useState<boolean | null>(null);
+  const [c18ImprovedProducts, setC18ImprovedProducts] = useState<boolean | null>(null);
+  const [c19ProcessInnovation, setC19ProcessInnovation] = useState<boolean | null>(null);
+  const [c20OrgInnovation, setC20OrgInnovation] = useState<boolean | null>(null);
+  const [c21MarketingInnovation, setC21MarketingInnovation] = useState<boolean | null>(null);
+  const [c22TechAcquisition, setC22TechAcquisition] = useState<string[]>([]);
+  const [c23ImpactOutcomes, setC23ImpactOutcomes] = useState<string[]>([]);
+  const [c24DigitalStrategy, setC24DigitalStrategy] = useState("");
+  const [c25DigitalMaturity, setC25DigitalMaturity] = useState("");
+  const [c26DigitizedActivities, setC26DigitizedActivities] = useState<string[]>([]);
+  const [c27AdvancedTech, setC27AdvancedTech] = useState<string[]>([]);
 
   // Bước 4: C28 - C36
-  const [c28Collaborations, setC28Collaborations] = useState<Record<string, string>>({
-    universities: "Thường xuyên",
-    same_industry: "Thỉnh thoảng",
-    supply_chain: "Thường xuyên",
-    incubators: "Thỉnh thoảng",
-    funds: "Không có",
-    gov_agencies: "Thỉnh thoảng",
-    international: "Không có",
-  });
-  const [c29PublicSupport, setC29PublicSupport] = useState<string[]>([
-    "Hỗ trợ tài chính, vốn mồi, quỹ phát triển KH&CN",
-  ]);
-  const [c30FundingAccess, setC30FundingAccess] = useState(FUNDING_ACCESS_OPTIONS[1]);
-  const [c31IpAssets, setC31IpAssets] = useState<string[]>([
-    "Bằng độc quyền Sáng chế",
-    "Nhãn hiệu / Thương hiệu đã được cấp văn bằng bảo hộ",
-  ]);
-  const [c32InnovationResults, setC32InnovationResults] = useState<string[]>([
-    "Được cấp văn bằng bảo hộ SHTT mới",
-    "Thương mại hóa thành công sản phẩm mới ra thị trường",
-  ]);
-  const [c33NewProductRevenue, setC33NewProductRevenue] = useState(NEW_PRODUCT_REVENUE_OPTIONS[1]);
-  const [c34RecordedImpacts, setC34RecordedImpacts] = useState<string[]>([
-    "Tạo thêm việc làm mới cho địa phương",
-    "Gia tăng uy tín thương hiệu và vị thế cạnh tranh quốc tế",
-  ]);
-  const [c35IsExporting, setC35IsExporting] = useState<boolean>(false);
-  const [c36InValueChain, setC36InValueChain] = useState<boolean>(true);
+  const [c28Collaborations, setC28Collaborations] = useState<Record<string, string>>({});
+  const [c29PublicSupport, setC29PublicSupport] = useState<string[]>([]);
+  const [c30FundingAccess, setC30FundingAccess] = useState("");
+  const [c31IpAssets, setC31IpAssets] = useState<string[]>([]);
+  const [c32InnovationResults, setC32InnovationResults] = useState<string[]>([]);
+  const [c33NewProductRevenue, setC33NewProductRevenue] = useState("");
+  const [c34RecordedImpacts, setC34RecordedImpacts] = useState<string[]>([]);
+  const [c35IsExporting, setC35IsExporting] = useState<boolean | null>(null);
+  const [c36InValueChain, setC36InValueChain] = useState<boolean | null>(null);
 
   // Bước 5: C37 - C43
-  const [c37Bottlenecks, setC37Bottlenecks] = useState<string[]>([
-    "1. Thiếu nguồn vốn và rủi ro tài chính cao",
-    "2. Thiếu nhân lực kỹ thuật & quản trị ĐMST trình độ cao",
-    "3. Khó khăn trong việc tìm kiếm công nghệ, thiết bị phù hợp",
-  ]);
-  const [c38SupportNeeds, setC38SupportNeeds] = useState<string[]>([
-    "1. Hỗ trợ tài chính, vốn vay ưu đãi, kết nối quỹ đầu tư",
-    "3. Tư vấn tìm kiếm giải pháp công nghệ, chuyên gia kỹ thuật",
-    "4. Kết nối cung - cầu công nghệ và chuyển giao bản quyền",
-  ]);
-  const [c39InfoNeeds, setC39InfoNeeds] = useState<Record<string, number>>({
-    expert_db: 5,
-    transferable_tech: 5,
-    state_policies: 4,
-    industry_demand: 4,
-    emerging_trends: 4,
-    tech_assessment_reports: 3,
-    patents_ip: 5,
-    techmart_events: 4,
-  });
-  const [c40WillingInterview, setC40WillingInterview] = useState(WILLING_INTERVIEW_OPTIONS[0]);
-  const [c41WillingUpdate, setC41WillingUpdate] = useState(WILLING_UPDATE_OPTIONS[0]);
-  const [c42RequestedFeatures, setC42RequestedFeatures] = useState<string[]>([
-    "2. Chấm điểm & Xem biểu đồ Radar Chart năng lực ĐMST tự động",
-    "3. Đăng ký kết nối 1-1 bảo mật với nhà cung cấp công nghệ",
-    "4. Cảnh báo tự động cơ hội tài trợ, dự án KH&CN mới",
-  ]);
-  const [c43Recommendations, setC43Recommendations] = useState(
-    "Kiến nghị Bộ KH&CN đơn giản hóa thủ tục thẩm định hồ sơ hỗ trợ tài chính cho doanh nghiệp SME nông nghiệp số và tăng cường các phiên kết nối chuyển giao công nghệ trực tiếp tại địa phương."
-  );
+  const [c37Bottlenecks, setC37Bottlenecks] = useState<string[]>([]);
+  const [c38SupportNeeds, setC38SupportNeeds] = useState<string[]>([]);
+  const [c39InfoNeeds, setC39InfoNeeds] = useState<Record<string, number>>({});
+  const [c40WillingInterview, setC40WillingInterview] = useState("");
+  const [c41WillingUpdate, setC41WillingUpdate] = useState("");
+  const [c42RequestedFeatures, setC42RequestedFeatures] = useState<string[]>([]);
+  const [c43Recommendations, setC43Recommendations] = useState("");
+
+  // -------------------------------------------------------------------------
+  // SMART PROFILE PREFILL & TAX LOOKUP
+  // -------------------------------------------------------------------------
+
+  const applyEnterpriseProfile = (af: any, notify: boolean = false) => {
+    if (!af) return;
+    setIsTaxCodeLocked(Boolean(af.isTaxCodeLocked ?? true));
+    setIsPrefilledFromSession(true);
+    if (af.legalName || af.name) setC01LegalName(af.legalName || af.name);
+    if (af.taxCode) setC02TaxCode(af.taxCode);
+    if (af.addressDetail || af.address) setC03Address(af.addressDetail || af.address);
+    if (af.contactEmail) setC04Email(af.contactEmail);
+    if (af.contactPhone) setC04Phone(af.contactPhone);
+    if (af.website) setC04Website(af.website);
+    const prov = af.provinceCity || af.province;
+    if (prov) {
+      const matched = PROVINCES_34.find(
+        (p) => p.toLowerCase().includes(prov.toLowerCase()) || prov.toLowerCase().includes(p.toLowerCase())
+      );
+      if (matched) setC05Province(matched);
+      else if (PROVINCES_34.includes(prov)) setC05Province(prov);
+    }
+    if (af.mainSectorName || af.sectorName) {
+      const sector = af.mainSectorName || af.sectorName;
+      const matchedSector = SECTOR_OPTIONS.find(
+        (s) => s.toLowerCase().includes(sector.toLowerCase()) || sector.toLowerCase().includes(s.toLowerCase())
+      );
+      if (matchedSector) setC06MainSector(matchedSector);
+    }
+    if (af.ownershipType) setC07Ownership(af.ownershipType);
+    if (af.workforceScale) setC08Workforce(af.workforceScale);
+    if (af.revenueRange && af.revenueRange !== "[BẢO MẬT]") setC09Revenue(af.revenueRange);
+    if (af.operatingZone) setC10OperatingZone(af.operatingZone);
+    if (af.highQualificationRatio) setC11HighQualRatio(af.highQualificationRatio);
+    if (af.hasRdUnit !== undefined) setC12HasRdUnit(Boolean(af.hasRdUnit));
+    if (af.hasTechTraining !== undefined) setC13HasTraining(Boolean(af.hasTechTraining));
+    if (af.hasMachineryUpgrade !== undefined) setC14HasMachinery(Boolean(af.hasMachineryUpgrade));
+    if (af.hasRdBudget !== undefined) setC15HasRdBudget(Boolean(af.hasRdBudget));
+    if (af.isExporting !== undefined) setC35IsExporting(Boolean(af.isExporting));
+    if (af.inValueChain !== undefined) setC36InValueChain(Boolean(af.inValueChain));
+    if (notify) {
+      toast.success(
+        `Đã tự động điền thông tin Doanh nghiệp "${af.legalName || af.name || af.taxCode}" vào phiếu khảo sát.`
+      );
+    }
+  };
+
+  // Tra cứu mã số thuế tự động (Hybrid Lookup: CSDL Quốc Gia / VietQR / NacenTwin)
+  const handleLookupTaxCode = async () => {
+    const rawTax = c02TaxCode.trim();
+    if (!rawTax) {
+      toast.warning("Vui lòng nhập Mã số thuế trước khi tra cứu.");
+      return;
+    }
+
+    setIsLookingUpTax(true);
+    try {
+      const res = await lookupTaxCode(rawTax);
+      if (res && res.found && res.name) {
+        setC01LegalName(res.name);
+        if (res.address) setC03Address(res.address);
+        if (res.province) {
+          const matchedProv = PROVINCES_34.find(
+            (p) =>
+              res.province?.toLowerCase().includes(p.toLowerCase()) ||
+              p.toLowerCase().includes(res.province?.toLowerCase() || "")
+          );
+          if (matchedProv) setC05Province(matchedProv);
+          else if (PROVINCES_34.includes(res.province)) setC05Province(res.province);
+        }
+        if (res.sectorName) {
+          const matchedSector = SECTOR_OPTIONS.find(
+            (s) =>
+              res.sectorName?.toLowerCase().includes(s.toLowerCase()) ||
+              s.toLowerCase().includes(res.sectorName?.toLowerCase() || "")
+          );
+          if (matchedSector) setC06MainSector(matchedSector);
+        }
+        const sourceName = res.source === "INTERNAL" ? "CSDL Doanh nghiệp NacenTwin" : "Cổng Thông tin VietQR";
+        toast.success(
+          `Đã tìm thấy thông tin: ${res.name} (Nguồn: ${sourceName}). Đã tự động điền vào phiếu.`
+        );
+      } else {
+        toast.warning(
+          res?.message || `Không tìm thấy thông tin cho MST ${rawTax}. Quý Doanh nghiệp vui lòng điền thủ công.`
+        );
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Lỗi khi tra cứu mã số thuế từ máy chủ.");
+    } finally {
+      setIsLookingUpTax(false);
+    }
+  };
 
   // -------------------------------------------------------------------------
   // INITIAL DATA FETCH & PREFILL
@@ -562,45 +603,57 @@ export default function KhaoSatDmstPage() {
           headers,
         });
 
-        if (!res.ok) {
-          throw new Error("Không thể nạp dữ liệu định danh.");
+        if (res.ok) {
+          const data = await res.json();
+          if (cancelled) return;
+
+          setIsAuthenticated(Boolean(data.isAuthenticated));
+          setEnterpriseId(data.enterpriseId || null);
+          setIsVerifiedProfile(Boolean(data.isVerifiedProfile));
+
+          if (data.autofill) {
+            const af = data.autofill;
+            setDetectedProfile(af);
+            // Form mở ra để trắng sạch, giữ gợi ý với nút bấm để người dùng chủ động điền
+            return;
+          }
         }
 
-        const data = await res.json();
-        if (cancelled) return;
-
-        setIsAuthenticated(Boolean(data.isAuthenticated));
-        setEnterpriseId(data.enterpriseId || null);
-        setIsVerifiedProfile(Boolean(data.isVerifiedProfile));
-
-        if (data.autofill) {
-          const af = data.autofill;
-          setIsTaxCodeLocked(Boolean(af.isTaxCodeLocked));
-          if (af.legalName || af.name) setC01LegalName(af.legalName || af.name);
-          if (af.taxCode) setC02TaxCode(af.taxCode);
-          if (af.addressDetail) setC03Address(af.addressDetail);
-          if (af.contactEmail) setC04Email(af.contactEmail);
-          if (af.contactPhone) setC04Phone(af.contactPhone);
-          if (af.website) setC04Website(af.website);
-          if (af.provinceCity && PROVINCES_34.includes(af.provinceCity)) setC05Province(af.provinceCity);
-          if (af.mainSectorName) setC06MainSector(af.mainSectorName);
-          if (af.ownershipType) setC07Ownership(af.ownershipType);
-          if (af.workforceScale) setC08Workforce(af.workforceScale);
-          if (af.revenueRange) setC09Revenue(af.revenueRange);
-          if (af.operatingZone) setC10OperatingZone(af.operatingZone);
-          if (af.highQualificationRatio) setC11HighQualRatio(af.highQualificationRatio);
-          if (af.hasRdUnit !== undefined) setC12HasRdUnit(Boolean(af.hasRdUnit));
-          if (af.hasTechTraining !== undefined) setC13HasTraining(Boolean(af.hasTechTraining));
-          if (af.hasMachineryUpgrade !== undefined) setC14HasMachinery(Boolean(af.hasMachineryUpgrade));
-          if (af.hasRdBudget !== undefined) setC15HasRdBudget(Boolean(af.hasRdBudget));
-          if (af.isExporting !== undefined) setC35IsExporting(Boolean(af.isExporting));
-          if (af.inValueChain !== undefined) setC36InValueChain(Boolean(af.inValueChain));
-        } else {
-          // Khách vãng lai: Kiểm tra xem có bản nháp LocalStorage không
-          checkDraftInStorage();
+        // Kiểm tra xem session có hồ sơ Doanh nghiệp không (fallback sang portal enterprise profile)
+        const session = getStoredSession();
+        const isDemoAccount = session?.user?.email?.includes("demo.nacentech.vn");
+        if (session?.accessToken && !isDemoAccount) {
+          try {
+            const profile = await fetchMyEnterpriseProfile();
+            if (!cancelled && profile && (profile.name || profile.taxCode || profile.legalName)) {
+              setIsAuthenticated(true);
+              setDetectedProfile(profile);
+              // Form mở ra để trắng sạch, giữ gợi ý với nút bấm để người dùng chủ động điền
+              return;
+            }
+          } catch {
+            // Bỏ qua nếu chưa tạo hồ sơ
+          }
         }
+
+        // Khách vãng lai: Kiểm tra xem có bản nháp LocalStorage không
+        checkDraftInStorage();
       } catch (err) {
         console.warn("Prefill fallback:", err);
+        const session = getStoredSession();
+        const isDemoAccount = session?.user?.email?.includes("demo.nacentech.vn");
+        if (session?.accessToken && !isDemoAccount) {
+          try {
+            const profile = await fetchMyEnterpriseProfile();
+            if (!cancelled && profile && (profile.name || profile.taxCode || profile.legalName)) {
+              setIsAuthenticated(true);
+              setDetectedProfile(profile);
+              return;
+            }
+          } catch {
+            // Bỏ qua
+          }
+        }
         checkDraftInStorage();
       } finally {
         if (!cancelled) setPrefillLoading(false);
@@ -698,6 +751,12 @@ export default function KhaoSatDmstPage() {
   // Debounced auto-save effect
   useEffect(() => {
     if (prefillLoading || evalResult) return;
+
+    // Không tự động lưu nháp nếu toàn bộ form đang trống
+    const hasAnyInput = Boolean(
+      c01LegalName.trim() || c02TaxCode.trim() || c03Address.trim() || c04Email.trim() || c04Phone.trim()
+    );
+    if (!hasAnyInput) return;
 
     const timer = setTimeout(() => {
       const draftData = {
@@ -888,16 +947,16 @@ export default function KhaoSatDmstPage() {
         c09_revenue: c09Revenue,
         c10_operating_zone: c10OperatingZone,
         c11_high_qual_ratio: c11HighQualRatio,
-        c12_has_rd_unit: c12HasRdUnit,
-        c13_has_training: c13HasTraining,
-        c14_has_machinery_upgrade: c14HasMachinery,
-        c15_has_rd_budget: c15HasRdBudget,
+        c12_has_rd_unit: c12HasRdUnit ?? false,
+        c13_has_training: c13HasTraining ?? false,
+        c14_has_machinery_upgrade: c14HasMachinery ?? false,
+        c15_has_rd_budget: c15HasRdBudget ?? false,
         c16_governance_platforms: c16Platforms,
-        c17_new_products: c17NewProducts,
-        c18_improved_products: c18ImprovedProducts,
-        c19_process_innovation: c19ProcessInnovation,
-        c20_org_innovation: c20OrgInnovation,
-        c21_marketing_innovation: c21MarketingInnovation,
+        c17_new_products: c17NewProducts ?? false,
+        c18_improved_products: c18ImprovedProducts ?? false,
+        c19_process_innovation: c19ProcessInnovation ?? false,
+        c20_org_innovation: c20OrgInnovation ?? false,
+        c21_marketing_innovation: c21MarketingInnovation ?? false,
         c22_tech_acquisition: c22TechAcquisition,
         c23_impact_outcomes: c23ImpactOutcomes,
         c24_digital_strategy: c24DigitalStrategy,
@@ -911,8 +970,8 @@ export default function KhaoSatDmstPage() {
         c32_innovation_results: c32InnovationResults,
         c33_new_product_revenue_ratio: c33NewProductRevenue,
         c34_recorded_impacts: c34RecordedImpacts,
-        c35_is_exporting: c35IsExporting,
-        c36_in_value_chain: c36InValueChain,
+        c35_is_exporting: c35IsExporting ?? false,
+        c36_in_value_chain: c36InValueChain ?? false,
         c37_top_bottlenecks: c37Bottlenecks,
         c38_support_needs: c38SupportNeeds,
         c39_info_needs: c39InfoNeeds,
@@ -1343,6 +1402,79 @@ export default function KhaoSatDmstPage() {
               </p>
             </div>
 
+            {/* Banner gợi ý hoặc đã đồng bộ hồ sơ Doanh nghiệp đã đăng nhập */}
+            {detectedProfile && (
+              <div
+                className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm ${
+                  isPrefilledFromSession
+                    ? "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800 text-teal-900 dark:text-teal-200"
+                    : "bg-brand-50 dark:bg-brand-950/40 border-brand-200 dark:border-brand-800 text-brand-900 dark:text-cyan-200"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <Building2
+                    className={`w-5 h-5 shrink-0 mt-0.5 ${
+                      isPrefilledFromSession
+                        ? "text-teal-600 dark:text-teal-400"
+                        : "text-brand-600 dark:text-cyan-400"
+                    }`}
+                  />
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                      {isPrefilledFromSession
+                        ? "Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký"
+                        : "Gợi ý: Phát hiện tài khoản Doanh nghiệp đã đăng nhập"}
+                      <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                        {isPrefilledFromSession ? "✓ Đã đồng bộ" : "Đã đăng nhập"}
+                      </span>
+                    </h4>
+                    <p
+                      className={`text-xs mt-0.5 ${
+                        isPrefilledFromSession
+                          ? "text-teal-700 dark:text-teal-300"
+                          : "text-brand-700 dark:text-slate-300"
+                      }`}
+                    >
+                      {isPrefilledFromSession ? (
+                        <>
+                          Hệ thống đã nhận diện pháp nhân{" "}
+                          <strong>{detectedProfile.legalName || detectedProfile.name}</strong> (MST:{" "}
+                          <span className="font-mono font-bold">{detectedProfile.taxCode}</span>) và nạp sẵn thông tin vào phiếu khảo sát.
+                        </>
+                      ) : (
+                        <>
+                          Bạn đang đăng nhập với tư cách:{" "}
+                          <strong>{detectedProfile.legalName || detectedProfile.name}</strong> (MST:{" "}
+                          <span className="font-mono font-bold">{detectedProfile.taxCode}</span>). Bạn có muốn tự động điền thông tin doanh nghiệp vào phiếu khảo sát?
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => applyEnterpriseProfile(detectedProfile, true)}
+                  className={`shrink-0 px-3.5 py-2 text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5 ${
+                    isPrefilledFromSession
+                      ? "bg-teal-600 hover:bg-teal-700 text-white"
+                      : "bg-brand-600 hover:bg-brand-700 text-white"
+                  }`}
+                >
+                  {isPrefilledFromSession ? (
+                    <>
+                      <RefreshCw className="size-3.5" />
+                      Điền lại từ hồ sơ DN
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-3.5" />
+                      Điền thông tin DN vào form
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
             {/* C01: Tên doanh nghiệp */}
             <div>
               <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">
@@ -1358,7 +1490,7 @@ export default function KhaoSatDmstPage() {
               />
             </div>
 
-            {/* C02: Mã số thuế với BR-02-015 SSOT Lock */}
+            {/* C02: Mã số thuế với BR-02-015 SSOT Lock & Tra cứu MST */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -1371,23 +1503,47 @@ export default function KhaoSatDmstPage() {
                   </span>
                 )}
               </div>
-              <input
-                type="text"
-                value={c02TaxCode}
-                onChange={(e) => setC02TaxCode(e.target.value)}
-                disabled={isTaxCodeLocked}
-                placeholder="10 hoặc 13 chữ số MST"
-                className={`form-control w-full text-xs font-mono ${
-                  isTaxCodeLocked
-                    ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-bold"
-                    : ""
-                }`}
-                required
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={c02TaxCode}
+                  onChange={(e) => setC02TaxCode(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !isTaxCodeLocked) {
+                      e.preventDefault();
+                      handleLookupTaxCode();
+                    }
+                  }}
+                  disabled={isTaxCodeLocked}
+                  placeholder="10 hoặc 13 chữ số MST (Ví dụ: 0108992134)"
+                  className={`form-control flex-1 text-xs font-mono ${
+                    isTaxCodeLocked
+                      ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed font-bold"
+                      : ""
+                  }`}
+                  required
+                />
+                {!isTaxCodeLocked && (
+                  <button
+                    type="button"
+                    onClick={handleLookupTaxCode}
+                    disabled={isLookingUpTax || !c02TaxCode.trim()}
+                    className="px-3.5 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-cyan-300 dark:hover:bg-brand-900 border border-brand-200 dark:border-brand-800 rounded-xl transition shadow-sm disabled:opacity-50"
+                    title="Tự động tra cứu Tên DN, Tỉnh thành và Địa chỉ theo MST"
+                  >
+                    {isLookingUpTax ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Search className="size-3.5" />
+                    )}
+                    Tra cứu MST
+                  </button>
+                )}
+              </div>
               <p className="text-[11px] text-slate-500 mt-1">
                 {isTaxCodeLocked
                   ? "Trường MST được khóa bảo vệ toàn vẹn dữ liệu do tài khoản đã xác thực quyền sở hữu pháp nhân."
-                  : "Nhập mã số thuế để hệ thống tra cứu và đồng bộ hồ sơ."}
+                  : "Nhập MST và bấm Tra cứu để tự động nạp Tên DN, Tỉnh thành và Địa chỉ."}
               </p>
             </div>
 
@@ -1459,6 +1615,7 @@ export default function KhaoSatDmstPage() {
                   onChange={(e) => setC05Province(e.target.value)}
                   className="form-control w-full text-xs"
                 >
+                  <option value="">-- Chọn Tỉnh / Thành phố --</option>
                   {PROVINCES_34.map((p) => (
                     <option key={p} value={p}>
                       {p}
@@ -1475,6 +1632,7 @@ export default function KhaoSatDmstPage() {
                   onChange={(e) => setC06MainSector(e.target.value)}
                   className="form-control w-full text-xs"
                 >
+                  <option value="">-- Chọn Ngành hoạt động chính --</option>
                   {SECTOR_OPTIONS.map((s) => (
                     <option key={s} value={s}>
                       {s}
@@ -1818,7 +1976,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c17"
-                      checked={c17NewProducts}
+                      checked={c17NewProducts === true}
                       onChange={() => setC17NewProducts(true)}
                     /> Có
                   </label>
@@ -1826,7 +1984,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c17"
-                      checked={!c17NewProducts}
+                      checked={c17NewProducts === false}
                       onChange={() => setC17NewProducts(false)}
                     /> Không
                   </label>
@@ -1842,7 +2000,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c18"
-                      checked={c18ImprovedProducts}
+                      checked={c18ImprovedProducts === true}
                       onChange={() => setC18ImprovedProducts(true)}
                     /> Có
                   </label>
@@ -1850,7 +2008,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c18"
-                      checked={!c18ImprovedProducts}
+                      checked={c18ImprovedProducts === false}
                       onChange={() => setC18ImprovedProducts(false)}
                     /> Không
                   </label>
@@ -1866,7 +2024,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c19"
-                      checked={c19ProcessInnovation}
+                      checked={c19ProcessInnovation === true}
                       onChange={() => setC19ProcessInnovation(true)}
                     /> Có
                   </label>
@@ -1874,7 +2032,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c19"
-                      checked={!c19ProcessInnovation}
+                      checked={c19ProcessInnovation === false}
                       onChange={() => setC19ProcessInnovation(false)}
                     /> Không
                   </label>
@@ -1890,7 +2048,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c20"
-                      checked={c20OrgInnovation}
+                      checked={c20OrgInnovation === true}
                       onChange={() => setC20OrgInnovation(true)}
                     /> Có
                   </label>
@@ -1898,7 +2056,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c20"
-                      checked={!c20OrgInnovation}
+                      checked={c20OrgInnovation === false}
                       onChange={() => setC20OrgInnovation(false)}
                     /> Không
                   </label>
@@ -1914,7 +2072,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c21"
-                      checked={c21MarketingInnovation}
+                      checked={c21MarketingInnovation === true}
                       onChange={() => setC21MarketingInnovation(true)}
                     /> Có
                   </label>
@@ -1922,7 +2080,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c21"
-                      checked={!c21MarketingInnovation}
+                      checked={c21MarketingInnovation === false}
                       onChange={() => setC21MarketingInnovation(false)}
                     /> Không
                   </label>
@@ -1995,6 +2153,7 @@ export default function KhaoSatDmstPage() {
                   onChange={(e) => setC24DigitalStrategy(e.target.value)}
                   className="form-control w-full text-xs"
                 >
+                  <option value="">-- Chọn chiến lược chuyển đổi số --</option>
                   {DIGITAL_STRATEGY_OPTIONS.map((s) => (
                     <option key={s} value={s}>
                       {s}
@@ -2012,6 +2171,7 @@ export default function KhaoSatDmstPage() {
                   onChange={(e) => setC25DigitalMaturity(e.target.value)}
                   className="form-control w-full text-xs"
                 >
+                  <option value="">-- Chọn mức độ chuyển đổi số --</option>
                   {DIGITAL_MATURITY_OPTIONS.map((m) => (
                     <option key={m} value={m}>
                       {m}
@@ -2111,7 +2271,7 @@ export default function KhaoSatDmstPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     {COLLAB_PARTNERS.map((partner) => {
-                      const currentVal = c28Collaborations[partner.key] || "Không có";
+                      const currentVal = c28Collaborations[partner.key];
                       return (
                         <tr key={partner.key} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
                           <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">{partner.label}</td>
@@ -2281,6 +2441,7 @@ export default function KhaoSatDmstPage() {
                   onChange={(e) => setC33NewProductRevenue(e.target.value)}
                   className="form-control w-full text-xs"
                 >
+                  <option value="">-- Chọn tỷ lệ DT --</option>
                   {NEW_PRODUCT_REVENUE_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>
                       {opt}
@@ -2298,7 +2459,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c35"
-                      checked={c35IsExporting}
+                      checked={c35IsExporting === true}
                       onChange={() => setC35IsExporting(true)}
                     /> Có
                   </label>
@@ -2306,7 +2467,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c35"
-                      checked={!c35IsExporting}
+                      checked={c35IsExporting === false}
                       onChange={() => setC35IsExporting(false)}
                     /> Không
                   </label>
@@ -2322,7 +2483,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c36"
-                      checked={c36InValueChain}
+                      checked={c36InValueChain === true}
                       onChange={() => setC36InValueChain(true)}
                     /> Có
                   </label>
@@ -2330,7 +2491,7 @@ export default function KhaoSatDmstPage() {
                     <input
                       type="radio"
                       name="c36"
-                      checked={!c36InValueChain}
+                      checked={c36InValueChain === false}
                       onChange={() => setC36InValueChain(false)}
                     /> Không
                   </label>
@@ -2453,7 +2614,7 @@ export default function KhaoSatDmstPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {INFO_NEEDS_ITEMS.map((item) => {
-                  const rating = c39InfoNeeds[item.key] || 4;
+                  const rating = c39InfoNeeds[item.key] || 0;
                   return (
                     <div
                       key={item.key}

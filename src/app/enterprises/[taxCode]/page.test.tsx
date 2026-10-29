@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import EnterpriseDetailPage from "./page";
 import * as enterpriseClient from "@/lib/enterprise-client";
 import * as techOfferApi from "@/services/api/technology-offer";
+import { brokerageApi } from "@/services/api/brokerage";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -158,6 +159,11 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
   it("TC-COMM-01: Renders Commercial Layout when subjectType !== INNOVATIVE_ENTERPRISE", async () => {
     vi.spyOn(enterpriseClient, "fetchEnterpriseDetail").mockResolvedValue(mockCommercialEnterprise);
     vi.spyOn(enterpriseClient, "getInnovationRating").mockResolvedValue(null as any);
+    vi.spyOn(brokerageApi, "createConnectionRequest").mockResolvedValue({
+      id: "req-rfq-01",
+      requestCode: "REQ-20261029-ABC123",
+      status: "PENDING",
+    });
     vi.spyOn(techOfferApi, "fetchPublicOffers").mockResolvedValue({
       data: mockOffers as any,
       total: 2,
@@ -200,6 +206,11 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
   it("TC-COMM-02: Tab switching works across Offers, Demands, and Overview", async () => {
     vi.spyOn(enterpriseClient, "fetchEnterpriseDetail").mockResolvedValue(mockCommercialEnterprise);
     vi.spyOn(enterpriseClient, "getInnovationRating").mockResolvedValue(null as any);
+    vi.spyOn(brokerageApi, "createConnectionRequest").mockResolvedValue({
+      id: "req-rfq-01",
+      requestCode: "REQ-20261029-ABC123",
+      status: "PENDING",
+    });
     vi.spyOn(techOfferApi, "fetchPublicOffers").mockResolvedValue({
       data: mockOffers as any,
       total: 2,
@@ -240,6 +251,11 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
   it("TC-COMM-03: Interactive RFQ Modal flow opens and submits successfully", async () => {
     vi.spyOn(enterpriseClient, "fetchEnterpriseDetail").mockResolvedValue(mockCommercialEnterprise);
     vi.spyOn(enterpriseClient, "getInnovationRating").mockResolvedValue(null as any);
+    vi.spyOn(brokerageApi, "createConnectionRequest").mockResolvedValue({
+      id: "req-rfq-01",
+      requestCode: "REQ-20261029-ABC123",
+      status: "PENDING",
+    });
     vi.spyOn(techOfferApi, "fetchPublicOffers").mockResolvedValue({
       data: mockOffers as any,
       total: 2,
@@ -316,6 +332,11 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
   it("TC-COMM-05: Supports switching view mode via quick switcher", async () => {
     vi.spyOn(enterpriseClient, "fetchEnterpriseDetail").mockResolvedValue(mockCommercialEnterprise);
     vi.spyOn(enterpriseClient, "getInnovationRating").mockResolvedValue(null as any);
+    vi.spyOn(brokerageApi, "createConnectionRequest").mockResolvedValue({
+      id: "req-rfq-01",
+      requestCode: "REQ-20261029-ABC123",
+      status: "PENDING",
+    });
     vi.spyOn(techOfferApi, "fetchPublicOffers").mockResolvedValue({
       data: mockOffers as any,
       total: 2,

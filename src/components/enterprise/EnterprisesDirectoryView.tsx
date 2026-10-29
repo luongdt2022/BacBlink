@@ -37,6 +37,7 @@ import {
 import { PROVINCES_34 } from "@/app/khao-sat-nhu-cau/types";
 import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
 import { SearchableProvinceCombobox } from "@/components/common/searchable-province-combobox";
+import { brokerageApi } from "@/services/api/brokerage";
 
 // 11 Lĩnh vực công nghệ trọng điểm theo Thông tư 17/2019/TT-BKHCN
 const SECTORS_TT17 = [
@@ -304,20 +305,35 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
     });
   };
 
-  const handleConnectSubmit = (e: React.FormEvent) => {
+  const [isSubmittingConnect, setIsSubmittingConnect] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+
+  const handleConnectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!connectModalEnt) return;
 
-    // Sinh mã phiếu kết nối thực chuẩn nghiệp vụ
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const randomSuffix = Math.random().toString(36).substring(2, 7).toUpperCase();
-    const newCode = `REQ-KN-${todayStr}-${randomSuffix}`;
+    setIsSubmittingConnect(true);
+    setConnectError(null);
+    try {
+      const fullMessage = `[Liên hệ: ${connectContact.trim()}] ${connectNote.trim()}`;
+      const res = await brokerageApi.createConnectionRequest({
+        senderOrgName: connectOrgName.trim(),
+        senderRole: "BUYER",
+        receiverOrgName: connectModalEnt.name,
+        message: fullMessage,
+        proposedBudgetRange: "Thỏa thuận",
+      });
 
-    setConnectResult({
-      requestCode: newCode,
-      submittedAt: new Date().toLocaleString("vi-VN"),
-      entName: connectModalEnt.name
-    });
+      setConnectResult({
+        requestCode: res.requestCode,
+        submittedAt: new Date().toLocaleString("vi-VN"),
+        entName: connectModalEnt.name
+      });
+    } catch (err: any) {
+      setConnectError(err.message || "Không thể gửi yêu cầu kết nối. Vui lòng thử lại.");
+    } finally {
+      setIsSubmittingConnect(false);
+    }
   };
 
   const handleCopyCode = (code: string) => {
@@ -373,37 +389,25 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
               </button>
             )}
           </form>
+          {/* Quick CTA Khảo Sát ĐMST (Tối ưu không gian: 1 câu chú thích ngắn gọn + 1 button) */}
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs">
+            <span className="flex items-center gap-1.5 text-teal-200 font-medium">
+              <Sparkles className="w-4 h-4 text-teal-300 shrink-0" />
+              Doanh nghiệp của bạn chưa có Điểm ĐMST? Làm bài khảo sát 43 câu để hiển thị trên CSDL Quốc gia và kết nối công nghệ.
+            </span>
+            <Link
+              href="/khao-sat-dmst"
+              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold text-xs transition shadow-md shadow-teal-500/20 whitespace-nowrap"
+            >
+              <span>Làm khảo sát ngay (15 phút)</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        {/* Banner CTA Khảo Sát ĐMST 43 Câu (CR-020) */}
-        <div className="bg-gradient-to-r from-blue-900 via-indigo-950 to-teal-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden mb-8 border border-teal-500/30">
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2.5 max-w-2xl text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-bold">
-                <Sparkles className="size-3.5 text-teal-300" /> Dành Cho Doanh Nghiệp Chưa Có Điểm ĐMST
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-snug">
-                Doanh nghiệp của bạn chưa có Điểm ĐMST? Làm bài khảo sát 43 câu ngay để hiển thị trên CSDL Quốc gia và kết nối công nghệ
-              </h2>
-              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                Hoàn thành phiếu khảo sát năng lực 43 tiêu chí (15 phút). Nhận ngay biểu đồ phân tích Radar Chart 8 trục, phân tầng xếp hạng chính thức và ưu tiên kết nối với hơn 500+ nhà cung cấp công nghệ.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-              <Link
-                href="/khao-sat-dmst"
-                className="px-6 py-3.5 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-black text-xs sm:text-sm transition shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 whitespace-nowrap"
-              >
-                <span>Làm khảo sát ngay (15 phút)</span>
-                <ChevronRight className="size-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Bộ Lọc */}
           <aside className="lg:col-span-1 space-y-6">
@@ -1059,19 +1063,31 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                   * Theo quy định bảo vệ dữ liệu cá nhân NĐ 13/2023/NĐ-CP, thông tin liên lạc của đại diện doanh nghiệp sẽ được kết nối chính thức sau khi hồ sơ đáp ứng tiêu chí sơ tuyển.
                 </div>
 
+                {connectError && (
+                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{connectError}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => setConnectModalEnt(null)}
+                    onClick={() => {
+                      setConnectModalEnt(null);
+                      setConnectError(null);
+                    }}
                     className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     Hủy bỏ
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-700 hover:bg-brand-800 text-white shadow-md flex items-center gap-1.5 transition"
+                    disabled={isSubmittingConnect}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-700 hover:bg-brand-800 disabled:opacity-50 text-white shadow-md flex items-center gap-1.5 transition"
                   >
-                    <Send className="w-3.5 h-3.5" /> Gửi Đề Xuất
+                    <Send className="w-3.5 h-3.5" />
+                    {isSubmittingConnect ? "Đang gửi..." : "Gửi Đề Xuất"}
                   </button>
                 </div>
               </form>

@@ -128,7 +128,7 @@ describe("KhaoSatDmstPage (CR-2026-020 43 Questions Wizard)", () => {
     vi.restoreAllMocks();
   });
 
-  it("renders Step 1 with prefilled data and locked tax code badge", async () => {
+  it("renders Step 1 cleanly blank and allows filling from detected profile with locked tax code", async () => {
     render(<KhaoSatDmstPage />);
 
     // Chờ prefill hoàn tất
@@ -136,11 +136,22 @@ describe("KhaoSatDmstPage (CR-2026-020 43 Questions Wizard)", () => {
       expect(screen.getByText(/Khối I: Định Danh Pháp Nhân/i)).toBeInTheDocument();
     });
 
-    // Kiểm tra tên công ty đã được autofill
-    const companyInput = screen.getByDisplayValue("CÔNG TY TNHH TRƯỜNG HOAN");
-    expect(companyInput).toBeInTheDocument();
+    // Form mở ra để trắng sạch
+    const companyInput = screen.getByPlaceholderText(/Ví dụ: CÔNG TY CỔ PHẦN CÔNG NGHỆ NACENTECH/i);
+    expect((companyInput as HTMLInputElement).value).toBe("");
 
-    // Kiểm tra trường MST bị khóa (disabled) và có huy hiệu SSOT
+    // Hiển thị gợi ý tài khoản Doanh nghiệp đã đăng nhập
+    expect(screen.getByText(/Gợi ý: Phát hiện tài khoản Doanh nghiệp đã đăng nhập/i)).toBeInTheDocument();
+    const fillBtn = screen.getByRole("button", { name: /Điền thông tin DN vào form/i });
+    expect(fillBtn).toBeInTheDocument();
+
+    // Bấm nút điền thông tin DN
+    fireEvent.click(fillBtn);
+
+    // Kiểm tra tên công ty đã được điền và trường MST bị khóa có huy hiệu SSOT
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("CÔNG TY TNHH TRƯỜNG HOAN")).toBeInTheDocument();
+    });
     const taxCodeInput = screen.getByDisplayValue("0100255428");
     expect(taxCodeInput).toBeDisabled();
     expect(screen.getByText(/Đã xác thực từ Hồ sơ Pháp nhân SSOT/i)).toBeInTheDocument();
@@ -152,6 +163,10 @@ describe("KhaoSatDmstPage (CR-2026-020 43 Questions Wizard)", () => {
     await waitFor(() => {
       expect(screen.getByText(/Khối I: Định Danh Pháp Nhân/i)).toBeInTheDocument();
     });
+
+    // Điền thông tin DN từ hồ sơ
+    const fillBtn = screen.getByRole("button", { name: /Điền thông tin DN vào form/i });
+    fireEvent.click(fillBtn);
 
     // Bấm Tiếp tục sang Bước 2
     const btnNext1 = screen.getByRole("button", { name: /Tiếp tục Bước 2/i });
@@ -194,6 +209,10 @@ describe("KhaoSatDmstPage (CR-2026-020 43 Questions Wizard)", () => {
       expect(screen.getByText(/Khối I: Định Danh Pháp Nhân/i)).toBeInTheDocument();
     });
 
+    // Điền thông tin DN từ hồ sơ
+    const fillBtn = screen.getByRole("button", { name: /Điền thông tin DN vào form/i });
+    fireEvent.click(fillBtn);
+
     // Nhảy tới bước 5 bằng nút Stepper
     const step5Button = screen.getByText(/C37 - C43/i).closest("button")!;
     fireEvent.click(step5Button);
@@ -201,6 +220,10 @@ describe("KhaoSatDmstPage (CR-2026-020 43 Questions Wizard)", () => {
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /Hoàn Thành & Nộp Phiếu Khảo Sát/i })).toBeInTheDocument();
     });
+
+    // Chọn ít nhất 1 rào cản tại Câu 37
+    const checkbox37 = screen.getByLabelText(/1\. Thiếu nguồn vốn/i);
+    fireEvent.click(checkbox37);
 
     // Bấm nộp phiếu khảo sát
     const submitBtn = screen.getByRole("button", { name: /Hoàn Thành & Nộp Phiếu Khảo Sát/i });
@@ -220,5 +243,65 @@ describe("KhaoSatDmstPage (CR-2026-020 43 Questions Wizard)", () => {
     // Kiểm tra liên kết xem hồ sơ doanh nghiệp
     const viewProfileLinks = screen.getAllByRole("link", { name: /Xem Hồ Sơ/i });
     expect(viewProfileLinks.length).toBeGreaterThan(0);
+  });
+
+  it("allows entering tax code and looking up enterprise info when unauthenticated", async () => {
+    // Giả lập khách chưa đăng nhập (autofill = null)
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/v1/surveys/innovation-demand/prefill")) {
+          return {
+            ok: true,
+            json: async () => ({
+              isAuthenticated: false,
+              enterpriseId: null,
+              isVerifiedProfile: false,
+              autofill: null,
+            }),
+          } as Response;
+        }
+        if (url.includes("/api/v1/enterprises/lookup-tax/")) {
+          return {
+            ok: true,
+            json: async () => ({
+              data: {
+                found: true,
+                source: "VIETQR",
+                taxCode: "0108992134",
+                name: "CÔNG TY CỔ PHẦN CÔNG NGHỆ TÂN TIẾN",
+                address: "Tầng 5, Tòa nhà Innovation, Cầu Giấy, Hà Nội",
+                province: "Hà Nội",
+              },
+            }),
+          } as Response;
+        }
+        return { ok: true, json: async () => ({}) } as Response;
+      })
+    );
+
+    render(<KhaoSatDmstPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Khối I: Định Danh Pháp Nhân/i)).toBeInTheDocument();
+    });
+
+    // Trường MST không bị khóa và nút Tra cứu MST hiển thị
+    const taxInput = screen.getByPlaceholderText(/10 hoặc 13 chữ số MST/i);
+    expect(taxInput).not.toBeDisabled();
+
+    const lookupBtn = screen.getByRole("button", { name: /Tra cứu MST/i });
+    expect(lookupBtn).toBeInTheDocument();
+
+    // Nhập MST và bấm Tra cứu
+    fireEvent.change(taxInput, { target: { value: "0108992134" } });
+    fireEvent.click(lookupBtn);
+
+    // Dữ liệu được tự động điền vào Tên DN và Địa chỉ
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("CÔNG TY CỔ PHẦN CÔNG NGHỆ TÂN TIẾN")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("Tầng 5, Tòa nhà Innovation, Cầu Giấy, Hà Nội")).toBeInTheDocument();
+    });
   });
 });
