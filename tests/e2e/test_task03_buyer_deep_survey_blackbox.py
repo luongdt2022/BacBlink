@@ -98,6 +98,15 @@ def main():
         submit_btn = page.locator("button:has-text('Hoàn Tất & Nộp Khảo Sát')").first
         submit_btn.click()
 
+        # Nếu kích hoạt Modal xác nhận đồng bộ hồ sơ (BR-03-006), bấm xác nhận
+        try:
+            modal_btn = page.locator("button:has-text('Đồng bộ & Hoàn tất'), button:has-text('Chỉ dùng cho khảo sát này')").first
+            modal_btn.wait_for(state="visible", timeout=3000)
+            modal_btn.click()
+            print("  ✅ Đã bấm xác nhận trên Modal Đồng bộ ngược hồ sơ (BR-03-006).")
+        except Exception:
+            pass
+
         # Chờ màn hình thành công
         page.wait_for_selector("text=Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!", timeout=20000)
         print("  🎉 Frontend thông báo: 'Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!'")
