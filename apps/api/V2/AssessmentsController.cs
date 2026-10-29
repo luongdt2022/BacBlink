@@ -212,8 +212,13 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [HttpPut("api/v2/assessments/tt17/draft")]
     [HttpPost("api/v1/assessments/tt17/draft")]
     [HttpPost("api/v2/assessments/tt17/draft")]
-    public async Task<IActionResult> SaveAssessmentDraft([FromBody] SaveAssessmentDraftDto payload, CancellationToken ct = default)
+    public async Task<IActionResult> SaveAssessmentDraft([FromBody] SaveAssessmentDraftDto? payload, CancellationToken ct = default)
     {
+        if (payload == null)
+        {
+            return BadRequest(new { success = false, message = "Dữ liệu lưu nháp không được để trống." });
+        }
+
         var taxCode = !string.IsNullOrWhiteSpace(payload.TaxCode)
             ? payload.TaxCode.Trim()
             : (!string.IsNullOrWhiteSpace(payload.SurveyData?.TaxCode) ? payload.SurveyData.TaxCode.Trim() : "0100000000");
@@ -274,8 +279,13 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [AllowAnonymous]
     [HttpPost("api/v1/assessments/tt17/submit")]
     [HttpPost("api/v2/assessments/tt17/submit")]
-    public async Task<IActionResult> SubmitAssessment([FromBody] SaveAssessmentDraftDto payload, CancellationToken ct = default)
+    public async Task<IActionResult> SubmitAssessment([FromBody] SaveAssessmentDraftDto? payload, CancellationToken ct = default)
     {
+        if (payload == null)
+        {
+            return BadRequest(new { success = false, message = "Dữ liệu khảo sát không được để trống." });
+        }
+
         var taxCode = !string.IsNullOrWhiteSpace(payload.TaxCode)
             ? payload.TaxCode.Trim()
             : (!string.IsNullOrWhiteSpace(payload.SurveyData?.TaxCode) ? payload.SurveyData.TaxCode.Trim() : "0100000000");
