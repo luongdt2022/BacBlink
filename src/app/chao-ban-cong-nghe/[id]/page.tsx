@@ -1372,7 +1372,7 @@ export default function ChiTietChaoBanPage() {
                 )}
 
                 {autoFilled && (
-                  <div className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                  <div className="text-caption text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                     <span>Đã tự động điền đơn vị, người liên hệ, email và SĐT từ tài khoản đăng nhập. Bạn có thể chỉnh sửa nếu cần.</span>
                   </div>

@@ -378,7 +378,7 @@ export default function PublicDemandDetailPage() {
                     <form onSubmit={handleSendOffer} className="space-y-4 text-xs">
                       {/* Trạng thái tài khoản & Hỗ trợ tự động điền */}
                       {currentUser ? (
-                        <div className="flex items-center justify-between bg-brand-50/70 dark:bg-brand-950/40 p-2.5 rounded-xl border border-brand-200/60 dark:border-brand-800 text-xs text-brand-800 dark:text-cyan-300">
+                        <div className="flex items-center justify-between bg-brand-50/70 dark:bg-brand-950/40 p-2.5 rounded-xl border border-brand-200/60 dark:border-brand-800 text-caption text-brand-800 dark:text-cyan-300">
                           <div className="flex items-center gap-1.5 font-medium truncate mr-2">
                             <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-cyan-400 shrink-0" />
                             <span className="truncate">Đang đăng nhập: <strong>{currentUser.fullName}</strong></span>
@@ -408,7 +408,7 @@ export default function PublicDemandDetailPage() {
                       </div>
 
                       {autoFilled && (
-                        <div className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <div className="text-caption text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 font-semibold bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
                           <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                           <span>Đã tự động điền đơn vị, email và SĐT từ tài khoản đăng nhập. Bạn có thể chỉnh sửa nếu cần.</span>
                         </div>

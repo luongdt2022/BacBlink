@@ -285,6 +285,7 @@ export default function GovDemandsPage() {
         </div>
       </div>
 
+
       {/* Filter & Search Bar */}
       <div className="surface-card p-4 space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -463,14 +464,14 @@ export default function GovDemandsPage() {
                       <tr
                         key={item.id}
                         className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition ${
-                          isRecent ? 'bg-brand-50/30 dark:bg-brand-950/20' : ''
+                          isRecent ? 'bg-cyan-50/30 dark:bg-cyan-950/20' : ''
                         }`}
                       >
                         <td className="px-6 py-4 font-mono font-bold text-slate-700 dark:text-slate-300">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span>{item.itemCode}</span>
                             {isRecent && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-extrabold bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-cyan-300 border border-brand-200 dark:border-brand-800">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-caption font-extrabold bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800">
                                 <Sparkles className="w-2.5 h-2.5" /> Mới
                               </span>
                             )}
