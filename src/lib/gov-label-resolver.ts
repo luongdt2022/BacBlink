@@ -379,3 +379,54 @@ export function formatGovRecordCode(
     displayCode: code,
   };
 }
+
+/**
+ * Chuẩn hóa học vị / học hàm chuyên gia KH&CN cho cán bộ công vụ
+ * Hỗ trợ các mã chuẩn hóa: DOCTOR, MASTER, ENGINEER_BACHELOR, ASSOCIATE_PROFESSOR, PROFESSOR...
+ */
+export function formatDegree(degree?: string | null, rank?: string | null): string {
+  let rankLabel = "";
+  if (rank) {
+    const r = rank.trim().toUpperCase();
+    if (r === "GS" || r === "PROFESSOR") rankLabel = "GS.";
+    else if (r === "PGS" || r === "ASSOCIATE_PROFESSOR") rankLabel = "PGS.";
+    else rankLabel = rank;
+  }
+
+  let degLabel = "";
+  if (degree) {
+    const d = degree.trim().toUpperCase();
+    switch (d) {
+      case "ENGINEER_BACHELOR":
+      case "BACHELOR":
+      case "ENGINEER":
+      case "CU_NHAN":
+      case "KY_SU":
+        degLabel = "Kỹ sư / Cử nhân";
+        break;
+      case "MASTER":
+      case "THAC_SI":
+        degLabel = "ThS.";
+        break;
+      case "DOCTOR":
+      case "PHD":
+      case "TIEN_SI":
+        degLabel = "TS.";
+        break;
+      case "POSTDOC":
+        degLabel = "Sau Tiến sĩ (Postdoc)";
+        break;
+      default:
+        degLabel = degree;
+        break;
+    }
+  }
+
+  if (rankLabel && degLabel) {
+    if (degLabel.startsWith("TS") || degLabel.startsWith("ThS")) {
+      return `${rankLabel} ${degLabel}`.trim();
+    }
+    return `${rankLabel} - ${degLabel}`.trim();
+  }
+  return rankLabel || degLabel || "Chuyên gia KH&CN";
+}

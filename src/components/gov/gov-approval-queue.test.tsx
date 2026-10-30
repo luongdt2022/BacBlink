@@ -38,7 +38,7 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     });
 
     global.fetch = vi.fn().mockImplementation((url: string) => {
-      if (url.includes("/api/v1/approvals")) {
+      if (url.includes("/api/v1/approvals") || url.includes("/api/v1/governance/approvals")) {
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -164,6 +164,45 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     // Popover opens
     await waitFor(() => {
       expect(screen.getByText("Lọc theo ngành TT17")).toBeInTheDocument();
+    });
+  });
+
+  it("displays both 'Xem Chi Tiết' and 'Phê Duyệt' action buttons and opens full dossier modal", async () => {
+    render(<GovApprovalQueue />);
+
+    await waitFor(() => {
+      expect(screen.getByText("TS. Nguyễn Minh Triết")).toBeInTheDocument();
+    });
+
+    // Check presence of both buttons
+    const detailBtns = screen.getAllByRole("button", { name: /Xem Chi Tiết/i });
+    expect(detailBtns.length).toBeGreaterThan(0);
+
+    const reviewBtns = screen.getAllByRole("button", { name: /Phê Duyệt/i });
+    expect(reviewBtns.length).toBeGreaterThan(0);
+
+    // Click 'Xem Chi Tiết' for the expert item
+    const expertDetailBtn = screen.getByTestId("btn-detail-appr-exp-001");
+    expect(expertDetailBtn).toBeInTheDocument();
+    fireEvent.click(expertDetailBtn);
+
+    // Verify Dossier Detail Modal opens
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText("Hồ Sơ Chuyên Gia KH&CN: TS. Nguyễn Minh Triết")).toBeInTheDocument();
+      expect(screen.getAllByText("Đại học Quốc gia Hà Nội").length).toBeGreaterThan(0);
+      expect(screen.getByText(/Chuyên gia AI và xử lý ngôn ngữ tự nhiên/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Tiến Hành Phê Duyệt Hồ Sơ/i })).toBeInTheDocument();
+    });
+
+    // Click forward to review
+    const forwardBtn = screen.getByTestId("btn-forward-to-review");
+    fireEvent.click(forwardBtn);
+
+    // Verify Review Modal opens
+    await waitFor(() => {
+      expect(screen.getByText("Thẩm Định Hồ Sơ Chuyên Gia: TS. Nguyễn Minh Triết")).toBeInTheDocument();
+      expect(screen.getByText(/Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN/i)).toBeInTheDocument();
     });
   });
 });

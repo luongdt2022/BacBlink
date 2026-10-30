@@ -35,6 +35,11 @@ import {
   ArrowDown,
   Copy,
   Sparkles,
+  Award,
+  BookOpen,
+  Mail,
+  Phone,
+  Briefcase,
 } from "lucide-react";
 
 import { reviewOffer } from "@/services/api/technology-offer";
@@ -47,6 +52,7 @@ import {
   resolveIpStatusInfo,
   resolveGovRequestType,
   formatGovRecordCode,
+  formatDegree,
 } from "@/lib/gov-label-resolver";
 
 function formatOfferType(type?: string | null): string {
@@ -98,6 +104,160 @@ function formatPrice(offer?: TechnologyOffer | null): string {
   return "Liên hệ thỏa thuận";
 }
 
+export interface GovParsedExpert {
+  fullName: string;
+  birthYear?: number | string;
+  organizationName: string;
+  organizationAddress?: string;
+  degree?: string;
+  degreeYear?: number | string;
+  academicRank?: string;
+  researchTitle?: string;
+  expertiseSectors: string[];
+  specializedKeywords: string[];
+  consultingSummary?: string;
+  publications?: Array<{ title?: string; journal?: string; year?: number | string; doi?: string; authors?: string }>;
+  expertCode?: string;
+  phone?: string;
+  email?: string;
+  documents?: Array<{ fileName?: string; fileUrl?: string; fileType?: string }>;
+  raw: any;
+}
+
+export function parseGovPayload(payload: any, fallbackUser?: any): GovParsedExpert {
+  let p: any = {};
+  if (typeof payload === "string") {
+    try {
+      p = JSON.parse(payload);
+    } catch {
+      p = {};
+    }
+  } else if (payload && typeof payload === "object") {
+    p = payload;
+  }
+
+  // Parse fullName - ưu tiên PascalCase -> camelCase -> user context -> fallback
+  const fullName =
+    p.FullName ||
+    p.fullName ||
+    p.Name ||
+    p.name ||
+    fallbackUser?.fullName ||
+    fallbackUser?.name ||
+    (fallbackUser?.email ? fallbackUser.email.split("@")[0] : "") ||
+    "Chuyên gia địa phương";
+
+  // Parse organizationName
+  const organizationName =
+    p.OrganizationName ||
+    p.organizationName ||
+    p.Organization ||
+    p.organization ||
+    p.CurrentWorkplace ||
+    p.currentWorkplace ||
+    "Sở KH&CN";
+
+  // Parse organizationAddress
+  const organizationAddress =
+    p.OrganizationAddress ||
+    p.organizationAddress ||
+    p.Address ||
+    p.address ||
+    "";
+
+  // Parse degree & academicRank
+  const degree = p.Degree || p.degree || "";
+  const degreeYear = p.DegreeYear || p.degreeYear;
+  const academicRank = p.AcademicRank || p.academicRank || "";
+  const researchTitle =
+    p.ResearchTitle ||
+    p.researchTitle ||
+    p.PositionTitle ||
+    p.positionTitle ||
+    p.Title ||
+    p.title ||
+    "";
+  const birthYear = p.BirthYear || p.birthYear;
+
+  // Parse expertiseSectors
+  let expertiseSectors: string[] = [];
+  const rawSectors = p.ExpertiseSectors || p.expertiseSectors;
+  if (Array.isArray(rawSectors)) {
+    expertiseSectors = rawSectors.filter(Boolean);
+  } else if (typeof rawSectors === "string") {
+    expertiseSectors = [rawSectors];
+  } else if (p.ExpertiseSector || p.expertiseSector) {
+    expertiseSectors = [p.ExpertiseSector || p.expertiseSector];
+  } else if (p.SectorCode || p.sectorCode) {
+    expertiseSectors = [p.SectorCode || p.sectorCode];
+  }
+
+  // Parse specializedKeywords
+  let specializedKeywords: string[] = [];
+  const rawKeywords = p.SpecializedKeywords || p.specializedKeywords || p.Keywords || p.keywords;
+  if (Array.isArray(rawKeywords)) {
+    specializedKeywords = rawKeywords.filter(Boolean);
+  } else if (typeof rawKeywords === "string") {
+    specializedKeywords = rawKeywords.split(",").map((s: string) => s.trim()).filter(Boolean);
+  }
+
+  // Parse consultingSummary
+  const consultingSummary =
+    p.ConsultingSummary ||
+    p.consultingSummary ||
+    p.Summary ||
+    p.summary ||
+    p.PublicBio ||
+    p.publicBio ||
+    p.Bio ||
+    p.bio ||
+    "";
+
+  // Parse publications
+  let publications: any[] = [];
+  const rawPubs = p.PublicationsJson || p.publicationsJson || p.Publications || p.publications;
+  if (typeof rawPubs === "string") {
+    try {
+      publications = JSON.parse(rawPubs);
+    } catch {
+      publications = [];
+    }
+  } else if (Array.isArray(rawPubs)) {
+    publications = rawPubs;
+  }
+
+  // Parse documents
+  let documents: any[] = [];
+  const rawDocs = p.Documents || p.documents;
+  if (Array.isArray(rawDocs)) {
+    documents = rawDocs;
+  }
+
+  const expertCode = p.ExpertCode || p.expertCode || "";
+  const phone = p.Phone || p.phone || fallbackUser?.phoneNumber || fallbackUser?.phone || "";
+  const email = p.Email || p.email || fallbackUser?.email || "";
+
+  return {
+    fullName,
+    birthYear,
+    organizationName,
+    organizationAddress,
+    degree,
+    degreeYear,
+    academicRank,
+    researchTitle,
+    expertiseSectors,
+    specializedKeywords,
+    consultingSummary,
+    publications,
+    expertCode,
+    phone,
+    email,
+    documents,
+    raw: p,
+  };
+}
+
 export interface GovApprovalItem {
   id: string;
   submitterName: string;
@@ -115,6 +275,7 @@ export interface GovApprovalItem {
   summary?: string;
   version: number;
   rawOffer?: TechnologyOffer;
+  expertPayload?: GovParsedExpert;
 }
 
 function GovDashboardContent() {
@@ -148,6 +309,7 @@ function GovDashboardContent() {
   const [uxState, setUxState] = useState<UXState>("loading");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState<GovApprovalItem | null>(null);
+  const [detailItem, setDetailItem] = useState<GovApprovalItem | null>(null);
   const [reviewAction, setReviewAction] = useState<"APPROVE" | "REJECT" | "REQUEST_CHANGES" | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [reviewError, setReviewError] = useState("");
@@ -209,22 +371,38 @@ function GovDashboardContent() {
         const json = await res.json();
         const dataList = json.data?.items || json.data || json;
         if (Array.isArray(dataList)) {
-          mapped = dataList.map((x: any) => ({
-            id: x.id,
-            submitterName: x.user?.fullName || "Chuyên gia địa phương",
-            submitterEmail: x.user?.email || "chuyengia@haiphong.gov.vn",
-            type: x.requestType || "EXPERT",
-            titleOrOrg: x.payloadJson ? JSON.parse(x.payloadJson).organizationName || "Sở KH&CN" : "Sở KH&CN",
-            scopeType: x.scopeType || "PROVINCE",
-            scopeId: x.scopeId || scopeId,
-            provinceName: resolveProvinceName(x.scopeId) || resolveProvinceName(scopeId),
-            sector: x.payloadJson ? JSON.parse(x.payloadJson).expertiseSectors?.[0] || "" : "",
-            submittedAt: new Date(x.createdAt).toLocaleDateString("vi-VN"),
-            status: x.status || "PENDING_APPROVAL",
-            degree: x.payloadJson ? JSON.parse(x.payloadJson).degree : "Tiến sĩ (TS)",
-            summary: x.payloadJson ? JSON.parse(x.payloadJson).consultingSummary : "",
-            version: x.version || 1,
-          }));
+          mapped = dataList.map((x: any) => {
+            const parsed = parseGovPayload(x.payloadJson, x.user);
+
+            // Chuẩn hóa trạng thái: map PENDING, PENDING_REVIEW, PENDING_APPROVAL -> PENDING_APPROVAL
+            let normStatus: "PENDING_APPROVAL" | "APPROVED" | "CHANGES_REQUESTED" | "REJECTED" = "PENDING_APPROVAL";
+            const rawSt = (x.status || "").toUpperCase();
+            if (rawSt === "APPROVED") normStatus = "APPROVED";
+            else if (rawSt === "REJECTED") normStatus = "REJECTED";
+            else if (rawSt === "CHANGES_REQUESTED") normStatus = "CHANGES_REQUESTED";
+            else normStatus = "PENDING_APPROVAL";
+
+            const sector = parsed.expertiseSectors[0] || "";
+
+            return {
+              id: x.id,
+              submitterName: parsed.fullName,
+              submitterEmail: parsed.email || x.user?.email || "chuyengia@haiphong.gov.vn",
+              type: x.requestType || "EXPERT",
+              titleOrOrg: parsed.organizationName,
+              scopeType: x.scopeType || "PROVINCE",
+              scopeId: x.scopeId || scopeId,
+              provinceName: resolveProvinceName(x.scopeId) || resolveProvinceName(scopeId),
+              sector: sector,
+              submittedAt: new Date(x.createdAt).toLocaleDateString("vi-VN"),
+              status: normStatus,
+              degree: parsed.degree || "Tiến sĩ (TS)",
+              summary: parsed.consultingSummary,
+              version: x.version || 1,
+              cvOrDocName: parsed.documents?.[0]?.fileName || undefined,
+              expertPayload: parsed,
+            };
+          });
         }
       }
 
@@ -1130,14 +1308,29 @@ function GovDashboardContent() {
 
                         {/* Cột 7: Thao tác Thẩm Định */}
                         <td className="py-3.5 px-4 text-right">
-                          <AppButton
-                            variant="primary"
-                            onClick={() => setSelectedItem(item)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control font-semibold text-caption whitespace-nowrap"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>Xem Chi Tiết &amp; Duyệt</span>
-                          </AppButton>
+                          <div className="flex items-center justify-end gap-2">
+                            <AppButton
+                              variant="outline"
+                              onClick={() => setDetailItem(item)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-control font-semibold text-caption whitespace-nowrap text-slate-700 hover:text-slate-900 border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                              title="Xem toàn bộ hồ sơ chi tiết"
+                              data-testid={`btn-detail-${item.id}`}
+                            >
+                              <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                              <span>Xem Chi Tiết</span>
+                            </AppButton>
+
+                            <AppButton
+                              variant="primary"
+                              onClick={() => setSelectedItem(item)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control font-semibold text-caption whitespace-nowrap"
+                              title="Thẩm định và ban hành quyết định phê duyệt"
+                              data-testid={`btn-review-${item.id}`}
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              <span>Phê Duyệt</span>
+                            </AppButton>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1195,6 +1388,21 @@ function GovDashboardContent() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                  <AppButton
+                    variant="outline"
+                    onClick={() => {
+                      const itemToView = selectedItem;
+                      setSelectedItem(null);
+                      setDetailItem(itemToView);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control font-semibold text-caption whitespace-nowrap text-slate-700 hover:text-slate-900 border-slate-300 dark:border-slate-700 dark:text-slate-300"
+                    title="Mở toàn bộ hồ sơ chi tiết"
+                    data-testid="btn-view-dossier-from-review"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <span className="hidden sm:inline">Xem Toàn Bộ Hồ Sơ</span>
+                  </AppButton>
+
                   {isOffer && (
                     <a
                       href={`/chao-ban-cong-nghe/${selectedItem.id}`}
@@ -1204,7 +1412,7 @@ function GovDashboardContent() {
                       title="Xem trước giao diện niêm yết của sản phẩm (Chế độ xem trước nội bộ, chưa công khai)"
                     >
                       <Eye className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
-                      <span className="hidden sm:inline">Xem Trước Niêm Yết (Preview)</span>
+                      <span className="hidden sm:inline">Xem Trước Niêm Yết</span>
                     </a>
                   )}
                   <button
@@ -1432,7 +1640,7 @@ function GovDashboardContent() {
                       <div>
                         <span className="text-caption text-slate-400 block">Học hàm / Học vị:</span>
                         <span className="font-bold text-brand-700 dark:text-brand-300 text-body">
-                          {selectedItem.degree || "Tiến sĩ (TS)"}
+                          {formatDegree(selectedItem.expertPayload?.degree || selectedItem.degree, selectedItem.expertPayload?.academicRank)}
                         </span>
                       </div>
                       <div>
@@ -1442,20 +1650,89 @@ function GovDashboardContent() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-caption text-slate-400 block">Lĩnh vực chuyên môn:</span>
+                        <span className="text-caption text-slate-400 block">Lĩnh vực chuyên môn (TT17):</span>
                         <span className="font-medium text-slate-800 dark:text-slate-200">
                           {resolveSectorName(selectedItem.sector, sectorNames)}
                         </span>
                       </div>
+                      {selectedItem.expertPayload?.researchTitle && (
+                        <div>
+                          <span className="text-caption text-slate-400 block">Chức danh nghiên cứu:</span>
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            {selectedItem.expertPayload.researchTitle}
+                          </span>
+                        </div>
+                      )}
+                      {selectedItem.expertPayload?.birthYear && (
+                        <div>
+                          <span className="text-caption text-slate-400 block">Năm sinh:</span>
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            {selectedItem.expertPayload.birthYear}
+                          </span>
+                        </div>
+                      )}
+                      {selectedItem.expertPayload?.organizationAddress && (
+                        <div className="sm:col-span-2">
+                          <span className="text-caption text-slate-400 block">Địa chỉ cơ quan:</span>
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            {selectedItem.expertPayload.organizationAddress}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {selectedItem.summary && (
+                    {selectedItem.expertPayload?.specializedKeywords && selectedItem.expertPayload.specializedKeywords.length > 0 && (
                       <div>
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-1.5">
-                          Tóm Tắt Năng Lực &amp; Hoạt Động Nghiên Cứu
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5 text-brand-600" />
+                          <span>Từ Khóa Chuyên Môn Sâu</span>
                         </h4>
-                        <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body">
-                          {selectedItem.summary}
+                        <div className="flex flex-wrap gap-1.5">
+                          {selectedItem.expertPayload.specializedKeywords.map((kw, i) => (
+                            <span
+                              key={i}
+                              className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-caption font-medium border border-slate-200 dark:border-slate-600"
+                            >
+                              #{kw}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {(selectedItem.expertPayload?.consultingSummary || selectedItem.summary) && (
+                      <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider flex items-center gap-1.5">
+                          <BookOpen className="w-3.5 h-3.5 text-brand-600" />
+                          <span>Tóm Tắt Năng Lực &amp; Hoạt Động Nghiên Cứu</span>
+                        </h4>
+                        <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line">
+                          {selectedItem.expertPayload?.consultingSummary || selectedItem.summary}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedItem.expertPayload?.publications && selectedItem.expertPayload.publications.length > 0 && (
+                      <div>
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider flex items-center gap-1.5">
+                          <Award className="w-3.5 h-3.5 text-brand-600" />
+                          <span>Công Bố Khoa Học ({selectedItem.expertPayload.publications.length})</span>
+                        </h4>
+                        <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                          {selectedItem.expertPayload.publications.map((pub, idx) => (
+                            <div
+                              key={idx}
+                              className="p-2.5 rounded-control bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-caption space-y-0.5"
+                            >
+                              <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                {idx + 1}. {pub.title || "Công trình nghiên cứu"}
+                              </p>
+                              <p className="text-slate-500 dark:text-slate-400">
+                                {pub.journal && `${pub.journal} `}
+                                {pub.year && `(${pub.year})`}
+                              </p>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -1611,6 +1888,481 @@ function GovDashboardContent() {
                     )}
                   </AppButton>
                 </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Dossier Detail Modal / Cửa Sổ Xem Chi Tiết Toàn Bộ Hồ Sơ */}
+      {detailItem && (() => {
+        const isOffer = detailItem.type === "TECHNOLOGY_OFFER" || detailItem.type === "SHOP";
+        const codeInfo = formatGovRecordCode(detailItem.id, detailItem.type, detailItem.scopeId);
+        const authorityDisplay = detailItem.provinceName.startsWith("Sở")
+          ? detailItem.provinceName
+          : `Sở KH&CN ${detailItem.provinceName}`;
+        const expert = detailItem.expertPayload;
+
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="gov-detail-title"
+          >
+            <div className="bg-white dark:bg-slate-900 rounded-surface border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {isOffer ? (
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                      <ShoppingBag className="w-5 h-5" />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-5 h-5" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3
+                        id="gov-detail-title"
+                        className="font-bold text-slate-900 dark:text-white text-card-title truncate"
+                      >
+                        {isOffer
+                          ? `Chi Tiết Sản Phẩm Chào Bán: ${detailItem.titleOrOrg}`
+                          : `Hồ Sơ Chuyên Gia KH&CN: ${detailItem.submitterName}`}
+                      </h3>
+                      <span className="font-mono text-caption text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
+                        {codeInfo.code}
+                      </span>
+                    </div>
+                    <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                      <span>Cơ quan tiếp nhận: <strong>{authorityDisplay}</strong> (Cấp 2)</span>
+                      <span>&bull;</span>
+                      <span>Ngày nộp: <strong>{detailItem.submittedAt}</strong></span>
+                      <span>&bull;</span>
+                      <span>Loại hồ sơ: <strong>{resolveGovRequestType(detailItem.type).label}</strong></span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {isOffer && (
+                    <a
+                      href={`/chao-ban-cong-nghe/${detailItem.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800 text-caption font-bold transition shadow-xs"
+                      title="Xem trước giao diện niêm yết của sản phẩm (Chế độ xem trước nội bộ, chưa công khai)"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+                      <span className="hidden sm:inline">Xem Trước Niêm Yết</span>
+                    </a>
+                  )}
+                  {expert?.expertCode && (
+                    <a
+                      href={`/experts/${expert.expertCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-brand-50 hover:bg-brand-100 text-brand-900 border border-brand-300 dark:bg-brand-950/60 dark:text-brand-200 dark:border-brand-800 text-caption font-bold transition shadow-xs"
+                      title="Xem hồ sơ chuyên gia trên Sàn Công nghệ"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-brand-700 dark:text-brand-400" />
+                      <span className="hidden sm:inline">Xem Trang Công Khai</span>
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setDetailItem(null)}
+                    className="p-1.5 rounded-control text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    title="Đóng cửa sổ"
+                    aria-label="Đóng"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-6 flex-1 text-label">
+                {isOffer ? (
+                  /* Layout Chi Tiết Chào Bán Công Nghệ */
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
+                      <div>
+                        <span className="text-caption text-slate-400 block">Tên sản phẩm / công nghệ:</span>
+                        <span className="font-bold text-slate-900 dark:text-white text-body">
+                          {detailItem.titleOrOrg}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Đơn vị chào bán / Sở hữu:</span>
+                        <span className="font-bold text-brand-700 dark:text-brand-300 text-body">
+                          {detailItem.rawOffer?.developerOrigin ||
+                            detailItem.rawOffer?.enterpriseName ||
+                            detailItem.submitterName}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Lĩnh vực công nghệ (TT17):</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {resolveSectorName(detailItem.sector, sectorNames)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Phân loại hình thức:</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {formatOfferType(detailItem.rawOffer?.offerType)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 4 Thẻ chỉ số: TRL, SHTT, Giá, Chuyển giao */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Mức sẵn sàng TRL</span>
+                        {(() => {
+                          const trl = resolveTrlInfo(detailItem.rawOffer?.trlLevel);
+                          return (
+                            <>
+                              <span
+                                className={`inline-block mt-1 px-2 py-0.5 rounded text-caption font-bold border ${trl.colorClass}`}
+                              >
+                                {trl.label}
+                              </span>
+                              <span className="block text-caption text-slate-500 mt-1 line-clamp-1">
+                                {trl.desc}
+                              </span>
+                            </>
+                          );
+                        })()}
+                      </div>
+
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Tình trạng SHTT</span>
+                        {(() => {
+                          const ip = resolveIpStatusInfo(detailItem.rawOffer?.ipStatus);
+                          return (
+                            <>
+                              <span
+                                className={`inline-block mt-1 px-2 py-0.5 rounded text-caption font-bold border ${ip.colorClass}`}
+                              >
+                                {ip.label}
+                              </span>
+                              {detailItem.rawOffer?.ipRegistrationNumber && (
+                                <span className="block text-caption text-slate-500 mt-1 font-mono">
+                                  Số: {detailItem.rawOffer.ipRegistrationNumber}
+                                </span>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Giá dự kiến</span>
+                        <span className="font-bold text-brand-700 dark:text-brand-300 block mt-1 text-body">
+                          {formatPrice(detailItem.rawOffer)}
+                        </span>
+                      </div>
+
+                      <div className="p-3 rounded-control border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                        <span className="text-caption text-slate-400 block">Phương thức chuyển giao</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200 block mt-1 text-caption">
+                          {formatTransferMethod(
+                            detailItem.rawOffer?.transferPriorityMethod || detailItem.rawOffer?.transferMethod
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Media */}
+                    {(detailItem.rawOffer?.mainImageUrl ||
+                      (detailItem.rawOffer?.galleryImageUrls &&
+                        detailItem.rawOffer.galleryImageUrls.length > 0) ||
+                      detailItem.rawOffer?.videoDemoUrl) && (
+                      <div className="p-4 rounded-surface bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-2">
+                        <h4 className="font-bold text-slate-900 dark:text-white text-caption uppercase tracking-wider flex items-center gap-1.5">
+                          <ImageIcon className="w-4 h-4 text-brand-600" />
+                          <span>Hình ảnh &amp; Video giới thiệu sản phẩm</span>
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {detailItem.rawOffer?.mainImageUrl && (
+                            <div className="w-24 h-20 rounded-control overflow-hidden border border-slate-200 dark:border-slate-700 relative bg-white shrink-0">
+                              <img
+                                src={detailItem.rawOffer.mainImageUrl}
+                                alt="Ảnh đại diện"
+                                className="w-full h-full object-cover"
+                              />
+                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-caption text-center font-bold py-0.5">
+                                Ảnh chính
+                              </span>
+                            </div>
+                          )}
+                          {detailItem.rawOffer?.galleryImageUrls?.map((url, idx) => (
+                            <div
+                              key={idx}
+                              className="w-20 h-20 rounded-control overflow-hidden border border-slate-200 dark:border-slate-700 bg-white shrink-0"
+                            >
+                              <img
+                                src={url}
+                                alt={`Gallery ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                          {detailItem.rawOffer?.videoDemoUrl && (
+                            <a
+                              href={detailItem.rawOffer.videoDemoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-control bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900 text-caption font-bold hover:underline"
+                            >
+                              <Video className="w-4 h-4" />
+                              <span>Xem Video Demo</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Mô tả & Bài toán */}
+                    <div className="space-y-3">
+                      {(detailItem.rawOffer?.summary || detailItem.summary) && (
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider">
+                            Mô Tả &amp; Tính Năng Nổi Bật Của Sản Phẩm
+                          </h4>
+                          <div className="p-3.5 rounded-control bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line">
+                            {detailItem.rawOffer?.summary || detailItem.summary}
+                          </div>
+                        </div>
+                      )}
+
+                      {detailItem.rawOffer?.problemSolved && (
+                        <div>
+                          <h4 className="font-bold text-slate-900 dark:text-white mb-1.5 text-caption uppercase tracking-wider">
+                            Vấn Đề / Bài Toán Thực Tiễn Giải Quyết
+                          </h4>
+                          <div className="p-3.5 rounded-control bg-brand-50/40 dark:bg-brand-950/20 border border-brand-200/60 dark:border-brand-900/40 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line">
+                            {detailItem.rawOffer.problemSolved}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Layout Chi Tiết Hồ Sơ Chuyên Gia KH&CN */
+                  <div className="space-y-6">
+                    {/* Thẻ định danh chuyên gia (Profile Header Card) */}
+                    <div className="p-5 rounded-surface bg-gradient-to-r from-brand-50/70 via-slate-50 to-white dark:from-brand-950/40 dark:via-slate-800/40 dark:to-slate-900 border border-brand-200/80 dark:border-brand-900/60 flex flex-col md:flex-row gap-5 items-start">
+                      <div className="w-20 h-20 rounded-2xl bg-brand-600 text-white flex flex-col items-center justify-center font-bold text-2xl shadow-md shrink-0">
+                        <span className="tracking-wide">
+                          {detailItem.submitterName.slice(0, 2).toUpperCase()}
+                        </span>
+                        <span className="text-[10px] font-normal uppercase tracking-widest text-brand-200 mt-0.5">
+                          EXPERT
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                            {detailItem.submitterName}
+                          </h2>
+                          <span className="px-2.5 py-0.5 rounded-full text-caption font-bold bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300 border border-brand-300 dark:border-brand-800">
+                            {formatDegree(expert?.degree || detailItem.degree, expert?.academicRank)}
+                          </span>
+                          {expert?.birthYear && (
+                            <span className="text-caption text-slate-500 dark:text-slate-400">
+                              (Sinh năm: {expert.birthYear})
+                            </span>
+                          )}
+                        </div>
+
+                        {expert?.researchTitle && (
+                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <Briefcase className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
+                            <span>{expert.researchTitle}</span>
+                          </p>
+                        )}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-caption text-slate-600 dark:text-slate-400">
+                          <div className="flex items-start gap-1.5">
+                            <Building2 className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                            <div>
+                              <span className="text-slate-400">Cơ quan: </span>
+                              <strong className="text-slate-800 dark:text-slate-200">
+                                {expert?.organizationName || detailItem.titleOrOrg}
+                              </strong>
+                            </div>
+                          </div>
+                          {expert?.organizationAddress && (
+                            <div className="flex items-start gap-1.5">
+                              <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                              <div>
+                                <span className="text-slate-400">Địa chỉ: </span>
+                                <span className="text-slate-700 dark:text-slate-300">
+                                  {expert.organizationAddress}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          {(expert?.email || detailItem.submitterEmail) && (
+                            <div className="flex items-center gap-1.5">
+                              <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>{expert?.email || detailItem.submitterEmail}</span>
+                            </div>
+                          )}
+                          {expert?.phone && (
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                              <span>{expert.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Lĩnh vực & Từ khóa chuyên môn */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-brand-600" />
+                        <span>Lĩnh Vực &amp; Chuyên Môn Khoa Học Công Nghệ (TT 17/2019/TT-BKHCN)</span>
+                      </h4>
+                      <div className="p-4 rounded-surface bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div>
+                          <span className="text-caption text-slate-400 block mb-1">
+                            Lĩnh vực công nghệ tiếp nhận thẩm định:
+                          </span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {(expert?.expertiseSectors && expert.expertiseSectors.length > 0
+                              ? expert.expertiseSectors
+                              : [detailItem.sector]
+                            ).map((sec, idx) => (
+                              <span
+                                key={idx}
+                                className="px-3 py-1 rounded-full bg-brand-50 text-brand-800 dark:bg-brand-950 dark:text-brand-300 border border-brand-200 dark:border-brand-800 font-semibold text-caption inline-flex items-center gap-1.5"
+                              >
+                                <span className="font-mono font-bold text-brand-600 dark:text-brand-400">
+                                  {sec || "TT17"}:
+                                </span>
+                                <span>{resolveSectorName(sec, sectorNames)}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {expert?.specializedKeywords && expert.specializedKeywords.length > 0 && (
+                          <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                            <span className="text-caption text-slate-400 block mb-1.5">
+                              Từ khóa chuyên môn sâu &amp; Công nghệ chủ chốt:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {expert.specializedKeywords.map((kw, i) => (
+                                <span
+                                  key={i}
+                                  className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-caption font-medium border border-slate-200 dark:border-slate-600"
+                                >
+                                  #{kw}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tóm tắt năng lực nghiên cứu & tư vấn */}
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-brand-600" />
+                        <span>Tóm Tắt Năng Lực Nghiên Cứu &amp; Hoạt Động Tư Vấn</span>
+                      </h4>
+                      <div className="p-4 rounded-surface bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 leading-relaxed text-body whitespace-pre-line shadow-xs">
+                        {expert?.consultingSummary || detailItem.summary || (
+                          <span className="italic text-slate-400">Chuyên gia chưa cập nhật nội dung tóm tắt chi tiết.</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Công bố khoa học (Publications) */}
+                    {expert?.publications && expert.publications.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                          <Award className="w-4 h-4 text-brand-600" />
+                          <span>Công Bố Khoa Học &amp; Ấn Phẩm Tiêu Biểu ({expert.publications.length})</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {expert.publications.map((pub, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3 rounded-control bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-caption space-y-1"
+                            >
+                              <p className="font-bold text-slate-800 dark:text-slate-200 text-body">
+                                {idx + 1}. {pub.title || "Công trình nghiên cứu"}
+                              </p>
+                              <p className="text-slate-500 dark:text-slate-400 flex items-center gap-2 flex-wrap">
+                                {pub.journal && <span>Tạp chí / Kỷ yếu: <strong>{pub.journal}</strong></span>}
+                                {pub.year && <span>&bull; Năm: <strong>{pub.year}</strong></span>}
+                                {pub.authors && <span>&bull; Tác giả: {pub.authors}</span>}
+                                {pub.doi && <span>&bull; DOI: {pub.doi}</span>}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Hồ sơ minh chứng & Tài liệu đính kèm */}
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-brand-600" />
+                        <span>Hồ Sơ Minh Chứng &amp; Pháp Lý Công Vụ</span>
+                      </h4>
+                      <div className="p-3.5 rounded-control bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-300 font-medium">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>
+                            {detailItem.cvOrDocName || "Hồ sơ đăng ký chuyên gia đã được ký số công vụ qua Cổng Dịch vụ công."}
+                          </span>
+                        </div>
+                        <span className="text-caption text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-100 dark:bg-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+                          Xác thực CCCD &amp; CKS
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between gap-3">
+                <AppButton
+                  variant="outline"
+                  onClick={() => setDetailItem(null)}
+                  className="px-4 py-2"
+                >
+                  <span>Đóng Cửa Sổ</span>
+                </AppButton>
+
+                {detailItem.status === "PENDING_APPROVAL" && (
+                  <AppButton
+                    variant="primary"
+                    onClick={() => {
+                      const target = detailItem;
+                      setDetailItem(null);
+                      setSelectedItem(target);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2"
+                    data-testid="btn-forward-to-review"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Tiến Hành Phê Duyệt Hồ Sơ</span>
+                  </AppButton>
+                )}
               </div>
             </div>
           </div>
