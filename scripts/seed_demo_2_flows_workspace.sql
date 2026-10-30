@@ -21,13 +21,22 @@ DECLARE
     v_mou_demand_id     UUID := 'd2222222-0003-7000-8000-000000000002';
     
     -- Tài khoản Actor cố định
-    v_seller_person_id  UUID := '208039ea-cb0b-4b9b-b115-73a1f629e521'; -- seller.user@demo.nacentech.vn
-    v_buyer_person_id   UUID := 'fbc7b482-4cdd-4f5e-80dc-5fdc5944cc76'; -- buyer.user@demo.nacentech.vn
+    v_seller_person_id  UUID;
+    v_buyer_person_id   UUID;
 
     -- Doanh nghiệp Demo cố định
     v_ent_seller_id     UUID := 'e1111111-0000-7000-8000-000000000001'; -- 0201998877
     v_ent_buyer_id      UUID := 'e2222222-0000-7000-8000-000000000002'; -- 0108996655
 BEGIN
+    SELECT id INTO v_seller_person_id FROM identity.persons WHERE email = 'seller.user@demo.nacentech.vn';
+    IF v_seller_person_id IS NULL THEN
+        v_seller_person_id := '50f4aa5a-e12e-431f-9f0b-240268cc40cd';
+    END IF;
+
+    SELECT id INTO v_buyer_person_id FROM identity.persons WHERE email = 'buyer.user@demo.nacentech.vn';
+    IF v_buyer_person_id IS NULL THEN
+        v_buyer_person_id := 'e3383100-d2f8-4105-a917-13970cf35467';
+    END IF;
     RAISE NOTICE '>>> Bắt đầu nạp dữ liệu Test Demo 2 luồng Workspace...';
 
     -- DỌN DẸP BẢN GHI DEMO CŨ NẾU ĐÃ TỒN TẠI (IDEMPOTENCY)
@@ -89,9 +98,9 @@ BEGIN
         true, false, 'BUYER', v_buyer_person_id, v_now, v_now
     );
 
-    INSERT INTO enterprise.enterprise_intellectual_properties (id, enterprise_id, type, title, registration_number, created_at, updated_at) VALUES
-    (gen_random_uuid(), v_ent_seller_id, 'PATENT', 'Phương pháp và thiết bị kiểm tra quang học tự động mối hàn vi mạch SMT bằng AI Vision', 'VN-1-2026-004812', v_now, v_now),
-    (gen_random_uuid(), v_ent_seller_id, 'UTILITY_SOLUTION', 'Thuật toán lọc nhiễu ảnh và phát hiện khuyết tật hàn vi mô thời gian thực', 'VN-2-2026-001205', v_now, v_now);
+    INSERT INTO enterprise.enterprise_intellectual_properties (id, enterprise_id, type, title, registration_number) VALUES
+    (gen_random_uuid(), v_ent_seller_id, 'PATENT', 'Phương pháp và thiết bị kiểm tra quang học tự động mối hàn vi mạch SMT bằng AI Vision', 'VN-1-2026-004812'),
+    (gen_random_uuid(), v_ent_seller_id, 'UTILITY_SOLUTION', 'Thuật toán lọc nhiễu ảnh và phát hiện khuyết tật hàn vi mô thời gian thực', 'VN-2-2026-001205');
 
     -- =========================================================================
     -- PHẦN 1: LUỒNG 1 - MUA SẢN PHẨM & TRAO ĐỔI WORKSPACE
@@ -105,7 +114,7 @@ BEGIN
         commercial_status, contact_point_role, status, successful_connections, rating_score, review_count,
         managing_authority_id, managing_authority_name, enterprise_tax_code, enterprise_name,
         main_image_url, delivery_timeline, warranty_terms, supply_scope, payment_terms,
-        installation_support, equipment_status, is_deleted, created_by, published_at, created_at, updated_at
+        installation_support, equipment_status, is_deleted, legal_consent, created_by, published_at, created_at, updated_at
     ) VALUES (
         v_offer_buy_id,
         'SP-DEMO-MUA-01',
@@ -143,6 +152,7 @@ BEGIN
         true,
         'NEW',
         false,
+        true,
         v_seller_person_id,
         v_now,
         v_now,
