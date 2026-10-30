@@ -2,7 +2,8 @@
 
 **Feature**: `TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`  
 **Spec Reference**: [`spec.md`](./spec.md)  
-**Status**: Ready for Implementation (Delta v2 Applied)  
+**Version**: 1.12.0  
+**Status**: Completed (Shipped Gate 5)  
 
 ---
 

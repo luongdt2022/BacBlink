@@ -69,26 +69,26 @@
 
 ## Phase 7: Delta v3 — Hoàn chỉnh Data Model, Chứng từ và AI Ingestion
 
-- [ ] T029 [BE][REQ-EXP-DB-001][DB-EXP-001] Tạo aggregate/bảng con cho đào tạo, công tác, publications (tối đa 5), patents, practical projects, research projects và awards; map FK, ordering và validation.
-- [ ] T030 [BE][REQ-EXP-DB-002][DB-EXP-002][SEC-EXP-001] Tạo `expert_identity_private` và `expert_documents`; mã hóa PII, metadata/checksum/malware status và policy truy cập chứng từ.
-- [ ] T031 [BE][REQ-EXP-DB-003][DB-EXP-003][AI-EXP-001] Tạo `expert_ai_ingestions`, unified status lifecycle và magic-link token hash/one-time use; thay việc lưu tên tệp bằng storage reference thực.
-- [ ] T032 [BE][DB-EXP-004] Tạo migration non-destructive `CreateExpertProfileAndEvidenceSchema`, FK/index/partial unique index; cập nhật EF snapshot và kiểm chứng apply trên database sạch.
-- [ ] T033 [BE][REQ-EXP-DB-005][API-EXP-001] Tách DTO public/owner/admin, mở rộng contracts cho hồ sơ/bảng con/chứng từ và danh mục chuẩn; cập nhật endpoint intake, submit và review theo BR-EXP-011 đến BR-EXP-015.
-- [ ] T034 [BE][REQ-EXP-DB-004][API-EXP-002] Liên thông transaction với `approval_requests` TASK-07 và ghi `expert_profile_status_history`; không cấp role EXPERT trước approval thành công.
-- [ ] T035 [FE][REQ-EXP-DB-005][UI-EXP-001] Bổ sung form/review cho chứng từ, các danh mục hồ sơ khoa học, consent versioned, danh mục chuẩn và trạng thái AI; bảo đảm 5 trạng thái UX.
-- [ ] T036 [TEST][INT] Viết unit/DB integration/API contract tests cho FK, partial uniqueness, PII masking, upload validation, token one-time, status transitions và atomic approval; chạy regression backend/frontend.
-- [ ] T037 [INT] Cập nhật TRACEABILITY/ROADMAP sau khi migration và test pass; chỉ khi đó đánh dấu Delta v3 hoàn tất.
+- [x] T029 [BE][REQ-EXP-DB-001][DB-EXP-001] Tạo aggregate/bảng con cho đào tạo, công tác, publications (tối đa 5), patents, practical projects, research projects và awards; map FK, ordering và validation.
+- [x] T030 [BE][REQ-EXP-DB-002][DB-EXP-002][SEC-EXP-001] Tạo `expert_identity_private` và `expert_documents`; mã hóa PII, metadata/checksum/malware status và policy truy cập chứng từ.
+- [x] T031 [BE][REQ-EXP-DB-003][DB-EXP-003][AI-EXP-001] Tạo `expert_ai_ingestions`, unified status lifecycle và magic-link token hash/one-time use; thay việc lưu tên tệp bằng storage reference thực.
+- [x] T032 [BE][DB-EXP-004] Tạo migration non-destructive `CreateExpertProfileAndEvidenceSchema`, FK/index/partial unique index; cập nhật EF snapshot và kiểm chứng apply trên database sạch.
+- [x] T033 [BE][REQ-EXP-DB-005][API-EXP-001] Tách DTO public/owner/admin, mở rộng contracts cho hồ sơ/bảng con/chứng từ và danh mục chuẩn; cập nhật endpoint intake, submit và review theo BR-EXP-011 đến BR-EXP-015.
+- [x] T034 [BE][REQ-EXP-DB-004][API-EXP-002] Liên thông transaction với `approval_requests` TASK-07 và ghi `expert_profile_status_history`; không cấp role EXPERT trước approval thành công.
+- [x] T035 [FE][REQ-EXP-DB-005][UI-EXP-001] Bổ sung form/review cho chứng từ, các danh mục hồ sơ khoa học, consent versioned, danh mục chuẩn và trạng thái AI; bảo đảm 5 trạng thái UX.
+- [x] T036 [TEST][INT] Viết unit/DB integration/API contract tests cho FK, partial uniqueness, PII masking, upload validation, token one-time, status transitions và atomic approval; chạy regression backend/frontend.
+- [x] T037 [INT] Cập nhật TRACEABILITY/ROADMAP sau khi migration và test pass; chỉ khi đó đánh dấu Delta v3 hoàn tất.
 
 ---
 
 ## Phase 8: Delta v4 — Hợp nhất DB, Zalo Mini App và Web Portal
 
-- [ ] T038 [BE][REQ-EXP-INT-001][API-EXP-003] Tạo canonical owner/draft DTO và endpoint đọc/cập nhật/submit profile; loại bỏ mapping Web payload cũ sai tên trường.
-- [ ] T039 [BE][REQ-EXP-INT-002][API-EXP-004] Bổ sung API transaction cho collections/chứng từ/consent và projection public/owner/admin an toàn PII.
-- [ ] T040 [BE][REQ-EXP-INT-003][API-EXP-005] Nối quick-intake với `expert_documents`, `expert_ai_ingestions`, tracking code và Magic Link hash/one-time use.
-- [ ] T041 [ZALO][REQ-EXP-INT-003][UI-EXP-002] Đồng bộ client Zalo theo quick-intake response/status chuẩn, polling ingestion và handoff Magic Link.
-- [ ] T042 [FE][REQ-EXP-INT-001][REQ-EXP-INT-004][UI-EXP-003] Thay Web payload bằng canonical contract; thêm draft review, chứng từ/collections và 5 UX states thật.
-- [ ] T043 [TEST][REQ-EXP-INT-005] Viết API contract, integration và E2E tests cho Zalo → Web → approval; chạy build/regression hai client.
+- [x] T038 [BE][REQ-EXP-INT-001][API-EXP-003] Tạo canonical owner/draft DTO và endpoint đọc/cập nhật/submit profile; loại bỏ mapping Web payload cũ sai tên trường.
+- [x] T039 [BE][REQ-EXP-INT-002][API-EXP-004] Bổ sung API transaction cho collections/chứng từ/consent và projection public/owner/admin an toàn PII.
+- [x] T040 [BE][REQ-EXP-INT-003][API-EXP-005] Nối quick-intake với `expert_documents`, `expert_ai_ingestions`, tracking code và Magic Link hash/one-time use.
+- [x] T041 [ZALO][REQ-EXP-INT-003][UI-EXP-002] Đồng bộ client Zalo theo quick-intake response/status chuẩn, polling ingestion và handoff Magic Link.
+- [x] T042 [FE][REQ-EXP-INT-001][REQ-EXP-INT-004][UI-EXP-003] Thay Web payload bằng canonical contract; thêm draft review, chứng từ/collections và 5 UX states thật.
+- [x] T043 [TEST][REQ-EXP-INT-005] Viết API contract, integration và E2E tests cho Zalo → Web → approval; chạy build/regression hai client.
 
 ---
 
@@ -122,13 +122,13 @@
 ## Phase 11: Delta v7 — Owner Workspace View/Edit/Completeness
 
 - [x] T061 [FE][REQ-EXP-OWNER-001][REQ-EXP-OWNER-003] Bổ sung wireframe owner workspace, cảnh báo completeness trên Owner Detail và loại Quick Portal Switcher QA khỏi Navbar; đổi menu chuyên gia tới owner route thật.
-- [ ] T062 [BE][REQ-EXP-OWNER-002][BR-EXP-030] Chuẩn hóa completeness API do backend tính và trả danh sách thiếu không lộ PII.
-- [ ] T063 [FE][REQ-EXP-OWNER-001][BR-EXP-031] Thay wizard demo bằng edit contract thật, lưu nháp/nộp lại và điều hướng chính xác tới nhóm cần bổ sung.
-- [ ] T064 [TEST][INT] Test completeness, quyền owner/admin, edit/re-submit và regression Web/Zalo.
-- [ ] T065 [BE][REQ-EXP-OWNER-001][BR-EXP-030] Thêm owner completeness contract/API, server-side calculation và test PII/owner isolation.
-- [ ] T066 [BE][REQ-EXP-OWNER-001][BR-EXP-031] Thêm canonical draft update/submit contract, optimistic version, profile-state guard và approval handoff.
-- [ ] T067 [FE][REQ-EXP-OWNER-001] Xây dựng menu workspace: Tổng quan, Hồ sơ của tôi, Năng lực chuyên môn và Thông báo; điều hướng Edit theo `editAnchor`.
-- [ ] T068 [TODO — PENDING PO][INT][REQ-EXP-OWNER-001] Yêu cầu tư vấn & kết nối: giữ menu `Sắp có`, chưa gọi API/không tạo dữ liệu. Chờ PO chốt cách mở rộng `CaseInvitation` cho `EXPERT_PROFILE` hoặc aggregate riêng; không triển khai order/hợp đồng/thanh toán.
+- [x] T062 [BE][REQ-EXP-OWNER-002][BR-EXP-030] Chuẩn hóa completeness API do backend tính và trả danh sách thiếu không lộ PII.
+- [x] T063 [FE][REQ-EXP-OWNER-001][BR-EXP-031] Thay wizard demo bằng edit contract thật, lưu nháp/nộp lại và điều hướng chính xác tới nhóm cần bổ sung.
+- [x] T064 [TEST][INT] Test completeness, quyền owner/admin, edit/re-submit và regression Web/Zalo.
+- [x] T065 [BE][REQ-EXP-OWNER-001][BR-EXP-030] Thêm owner completeness contract/API, server-side calculation và test PII/owner isolation.
+- [x] T066 [BE][REQ-EXP-OWNER-001][BR-EXP-031] Thêm canonical draft update/submit contract, optimistic version, profile-state guard và approval handoff.
+- [x] T067 [FE][REQ-EXP-OWNER-001] Xây dựng menu workspace: Tổng quan, Hồ sơ của tôi, Năng lực chuyên môn và Thông báo; điều hướng Edit theo `editAnchor`.
+- [x] T068 [TODO — PENDING PO][INT][REQ-EXP-OWNER-001] Yêu cầu tư vấn & kết nối: giữ menu `Sắp có`, chưa gọi API/không tạo dữ liệu. Chờ PO chốt cách mở rộng `CaseInvitation` cho `EXPERT_PROFILE` hoặc aggregate riêng; không triển khai order/hợp đồng/thanh toán.
 
 ---
 
@@ -421,7 +421,7 @@
 
 ---
 
-## Giai đoạn 9: Delta v2 — Tinh chỉnh Thẻ Chuyên gia & Social Proof Kết nối
+## Phase 22: Delta v2 — Tinh chỉnh Thẻ Chuyên gia & Social Proof Kết nối
 
 - [x] `T145` **[BE-TASK-05-DELTA-v2-01][BE][DB][DOMAIN] Cập nhật Domain Entity ExpertProfile & Migration EF Core non-destructive cho connection_count**
   - **Mục tiêu**: Bổ sung trường `ConnectionCount` vào thực thể `ExpertProfile` và tạo migration cơ sở dữ liệu phi phá hủy.
@@ -484,7 +484,7 @@
 
 ---
 
-## Giai đoạn 10: Delta v1.3 — Chuẩn hóa Menu Workspace Chuyên gia 7 mục & Hợp đồng Thù lao Disabled [CR-2026-006]
+## Phase 23: Delta v1.3 — Chuẩn hóa Menu Workspace Chuyên gia 7 mục & Hợp đồng Thù lao Disabled [CR-2026-006]
 
 - [x] `T150` **[BA-TASK-05-DELTA-v1.3-01][BA][SPEC] Đặc tả Basic Design Delta & Living Spec Kit 7 mục Menu Workspace Chuyên gia**
   - **Mục tiêu**: Cập nhật SSOT Basic Design Delta và Spec Kit phản ánh quyết định PO-DEC-20261023-01 về menu 7 mục, mục Hợp đồng & Thù lao disabled kèm notification toast, và Phương án A cho quản trị thù lao tư vấn.
@@ -517,7 +517,7 @@
 
 ---
 
-## Giai đoạn 11: Delta v1.4 — Chuẩn hóa Trải nghiệm Dashboard, Triệt tiêu Hardcode Account & Chuẩn hóa Toast [CR-2026-007]
+## Phase 24: Delta v1.4 — Chuẩn hóa Trải nghiệm Dashboard, Triệt tiêu Hardcode Account & Chuẩn hóa Toast [CR-2026-007]
 
 - [x] `T154` **[BA-TASK-05-DELTA-v1.4-01][BA][SPEC] Đặc tả Basic Design Delta & Spec Kit CR-2026-007**
   - **Mục tiêu**: Cập nhật SSOT Basic Design Delta Mục 9 và Spec Kit Mục 20 phản ánh quyết định PO-DEC-20261023-02 (Dashboard landing, Zero-hardcode phone, Toast standard).
@@ -556,7 +556,7 @@
 
 ---
 
-## Giai đoạn 12: Delta v1.5 — Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành [CR-2026-008]
+## Phase 25: Delta v1.5 — Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành [CR-2026-008]
 
 - [x] `T159` **[BA-TASK-05-DELTA-v1.5-01][BA][SPEC] Đặc tả Basic Design Delta & Spec Kit CR-2026-008**
   - **Mục tiêu**: Cập nhật SSOT Basic Design Delta Mục 10 và Spec Kit Mục 21 ghi nhận PO-DEC-20261023-03 (Zero-Mock Endpoints cho Consultations và Projects).
@@ -595,7 +595,7 @@
 
 ---
 
-## Giai đoạn Delta v1.3: Smart AI CV Onboarding
+## Phase 26: Delta v1.3 — Smart AI CV Onboarding
 
 - [x] `T-DELTA-01` **[BE][PROMPT][REQ-EXP-CV-002] Thiết kế & chuẩn hóa Structured Output Prompt cho AI CV Extractor (Google Gemini Multimodal API)**
   - **Mục tiêu**: Xây dựng system prompt và JSON Schema chặt chẽ trích xuất toàn diện 94 trường dữ liệu từ tệp CV/LLKH (PDF, DOCX, Ảnh scan) khớp Sheet `C.gia`.
@@ -648,7 +648,7 @@
 
 ---
 
-## Giai đoạn 20: Delta CR-2026-011 — Chuẩn Hóa Taxonomy 10 Lĩnh Vực TT17 Cho Form Công Nghệ, Hướng Dẫn & Bộ Lọc Chuyên Gia [FE][TEST]
+## Phase 27: Delta CR-2026-011 — Chuẩn Hóa Taxonomy 10 Lĩnh Vực TT17 Cho Form Công Nghệ, Hướng Dẫn & Bộ Lọc Chuyên Gia [FE][TEST]
 
 - [x] `T-DELTA-07` **[FE] Chuẩn hóa nhãn Stepper Bước 2 tại Form Tạo & Sửa Công Nghệ Seller (`create/page.tsx` & `[id]/edit/page.tsx`)**
   - **Mục tiêu**: Đổi nhãn Stepper Bước 2 từ "Bước 2: Thông số kỹ thuật & 18 Ngành TT17" thành "Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17".
@@ -685,7 +685,7 @@
 
 ---
 
-## Giai đoạn 21: Delta CR-2026-012 — Mở Rộng Quyền Mua Hàng & Đăng Nhu Cầu Trong Workspace Chuyên Gia KH&CN [FE][TEST]
+## Phase 28: Delta CR-2026-012 — Mở Rộng Quyền Mua Hàng & Đăng Nhu Cầu Trong Workspace Chuyên Gia KH&CN [FE][TEST]
 
 - [x] `T-DELTA-12` **[FE] Cập nhật thanh Sidebar Workspace Chuyên Gia 8 mục (`src/app/portal/layout.tsx`)**
   - **Mục tiêu**: Thêm mục số 5 "Đơn hàng & Nhu cầu đặt mua" vào Khối Tác nghiệp hàng ngày của Chuyên gia.

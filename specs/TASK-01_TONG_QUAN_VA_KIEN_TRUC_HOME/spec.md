@@ -252,7 +252,7 @@
 
 ---
 
-## Spec Delta v2: Chuẩn Hóa 4 Chỉ Số Marketplace Metrics & Triệt Tiêu 100% Mock Số Tĩnh (CR-2026-010)
+## Spec Delta v3: Chuẩn Hóa 4 Chỉ Số Marketplace Metrics & Triệt Tiêu 100% Mock Số Tĩnh (CR-2026-010)
 
 > **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
 

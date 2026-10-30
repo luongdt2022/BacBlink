@@ -2,8 +2,9 @@
 
 **Feature Branch**: `brokerage-matching-dealroom`  
 **Feature Directory**: `specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI`  
+**Version**: 1.12.0  
 **Created**: 11/10/2026  
-**Status**: `Active` (Delta CR-2026-012 In Progress — Gate 1 DoR Approved by BA)  
+**Status**: Completed (Shipped Gate 5)  
 **Ánh Xạ Basic Design**: 
 - Master Basic Design: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 5.4 Phân hệ 08 & Mục 17 PO-DEC-20261030-05)
 - Phân hệ Basic Design: [`Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md`](../../Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md)  
@@ -107,7 +108,7 @@ Mục tiêu chính:
 
 ---
 
-## 6. Spec Delta v2 (CR-2026-018) — Làm Mịn Radar Ghép Nối AI & Giải Trình XAI (Bên Mua)
+## Spec Delta v2 (CR-2026-018) — Làm Mịn Radar Ghép Nối AI & Giải Trình XAI (Bên Mua)
 
 ### 6.1. Bối cảnh & Yêu cầu mới
 Theo kết luận Party Mode và chỉ đạo PO ngày 23/10/2026 về việc làm mịn trải nghiệm Doanh nghiệp Mua:

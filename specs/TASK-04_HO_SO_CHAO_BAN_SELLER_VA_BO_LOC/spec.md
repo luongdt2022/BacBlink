@@ -3,6 +3,8 @@
 
 > **Mã Epic**: `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`  
 > **Căn cứ**: Quyết định PO `PO-DEC-20261008-01` & `PO-DEC-20261008-04`, Basic Design `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/README.md`  
+> **Version**: 1.10.0  
+> **Status**: Completed (Shipped Gate 5)  
 > **Trạng thái**: ✅ **Shipped (2026-10-10)** — Quality Gate 5 Final Accepted  
 > **Độ ưu tiên**: P1 (Core Business Capability - Trọng tâm Sàn Giao Dịch Công Nghệ)
 

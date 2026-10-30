@@ -1,7 +1,8 @@
 # Implementation Plan: TASK-08 Kết Nối Cung–Cầu & Quản Lý Cơ Hội Hợp Tác
 
 **Feature Directory**: `specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI`  
-**Status**: Ready for Implementation (Delta CR-2026-012 Gate 2 Architecture & Plan Approved)  
+**Version**: 1.12.0  
+**Status**: Completed (Shipped Gate 5)  
 
 ---
 

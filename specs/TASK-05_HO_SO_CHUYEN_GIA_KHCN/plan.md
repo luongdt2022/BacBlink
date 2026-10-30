@@ -2,7 +2,8 @@
 
 **Feature**: `TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
 **Spec Reference**: [`spec.md`](./spec.md)  
-**Status**: Cần hoàn tất DB Closure Plan trước khi triển khai/đánh dấu nghiệm thu  
+**Version**: 1.18.0  
+**Status**: Completed (Shipped Gate 5)  
 **Basic Design Mapping**: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md)  
 **Architecture Report Reference**: [`Reports/Bao_cao_giai_phap_cong_nghe_va_nen_tang_NacenTech.md`](../../Reports/Bao_cao_giai_phap_cong_nghe_va_nen_tang_NacenTech.md) (Mục 2.2 Module Brokerage & Identity)  
 

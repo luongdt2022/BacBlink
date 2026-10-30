@@ -2,7 +2,7 @@
 
 **Feature**: `TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Spec Reference**: [`spec.md`](./spec.md)  
-**Status**: Ready for Implementation  
+**Status**: Completed (Shipped Gate 5)  
 
 ---
 
@@ -514,7 +514,24 @@ export const lora = Lora({
 
 ---
 
-## Kế Hoạch Triển Khai Delta v10 (Architecture & UI Mapping): Tinh Gọn Onboarding & Bàn Làm Việc Thành Viên Đại Chúng (PUBLIC_USER)
+## Plan Delta v14 (CR-2026-019): Bàn Làm Việc Tổng Quan Mua Sắm (Executive Buyer Dashboard)
+
+### 1. Kiến Trúc Phân Tách Component
+- Component: `src/components/portal/buyer-dashboard.tsx`.
+- Tích hợp tại `src/app/portal/page.tsx` khi vai trò đang hoạt động là `BUYER` hoặc `INNOVATION_ENTITY`.
+- 4 KPI cards sống dẫn hướng trực tiếp đến các phân hệ nghiệp vụ:
+  - Bài toán đang mở -> `/portal/buyer/demands`
+  - Ứng viên AI -> `/portal/matching/radar`
+  - Deals đang trao đổi -> `/portal/opportunities/pipeline`
+  - Thỏa thuận đã ký MOU -> `/portal/opportunities/pipeline`
+
+### 2. Tiêu Chí Nghiệm Thu Kiến Trúc
+- Lắng nghe sự kiện `storage` cập nhật `activeRole` khi chuyển đổi Dual Mode trên Sidebar.
+- Không rò rỉ dữ liệu ngoài scope, đạt 100% Green test suites.
+
+---
+
+## Plan Delta v15 (CR-2026-10-30): Kế Hoạch Triển Khai Tinh Gọn Onboarding & Bàn Làm Việc Thành Viên Đại Chúng (PUBLIC_USER)
 
 ### 1. Bối Cảnh & Kiến Trúc Phân Tách Component Frontend
 

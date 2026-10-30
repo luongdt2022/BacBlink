@@ -10,7 +10,7 @@
 
 | Mã Task BD | Tên Phân Hệ | Tài Liệu Nguồn Gốc (Excel / Basic Design) | Thư Mục Detail Design (Spec Kit) | Phạm Vi Mã Định Danh | Trạng Thái Kỹ Thuật |
 | :---: | :--- | :--- | :--- | :--- | :---: |
-| **`TASK-00`** | Platform Foundation & Common | Hiến pháp kỹ thuật, Clean Architecture | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | `ARCH-*`, `DB-INIT-*`, `API-BASE-*`, `FR-COMM-*`, `FR-RBAC-*` | 🟡 Foundation shipped; vòng đời account 10 role mở |
+| **`TASK-00`** | Platform Foundation & Common | Hiến pháp kỹ thuật, Clean Architecture | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | `ARCH-*`, `DB-INIT-*`, `API-BASE-*`, `FR-COMM-*`, `FR-RBAC-*` | ✅ Hoàn thành Delta v15 (Gate 4/5 Pass, 84/84 Tasks) |
 | **`TASK-01`** | Tổng quan & Kiến trúc Home | Sheet `HOME1` + `Giới thiệu` (60 dòng) | [`specs/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/) | `REQ-HOME-*`, `BR-HOME-*`, `API-PORTAL-*`, `UI-LANDING-*`, `UI-TECHMART-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-02`** | Hồ sơ Doanh nghiệp ĐMST & 304 DN Thật | Sheet `DN ĐMST` (225 dòng dữ liệu) + 304 DN thật | [`specs/TASK-02_HO_SO_CHU_THE_VA_DN_DMST`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) | `REQ-02-*`, `BR-02-*`, `DB-ENT-*`, `API-ENT-*`, `UI-ENT-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-03`** | Hồ sơ Tìm Mua (Buyer) | Sheet `T.mua SP` (356 dòng dữ liệu) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | `REQ-BUY-*`, `BR-SURVEY-*`, `DB-DEMAND-*` | ✅ Hoàn thành (Delta v8 Shipped) |
@@ -324,6 +324,38 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Bàn Làm Việc 2 Tabs Cấp Cao (Đơn Mua vs Nhu Cầu R&D)** | `REQ-BUYER-ORD-002`, `AC-ORD-03`, `AC-ORD-05` | `Task 6.3` | `src/app/portal/buyer/demands/page.tsx` | Phân tách 2 Tabs độc lập qua query param `?tab=commercial` / `?tab=demands`, xem chi tiết đơn, nút hủy đơn khi `SUBMITTED`; Vitest `buyer/demands/page.test.tsx` 8/8 PASS |
 | **CTA Dẫn Hướng Liền Mạch Từ Modal Sang Workspace Đơn Hàng** | `REQ-BUYER-ORD-001`, `AC-ORD-01`, `AC-ORD-03` | `Task 6.4` | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Bổ sung nút CTA "Theo dõi đơn hàng trong Workspace →" tại Modal thành công; Vitest `chao-ban-cong-nghe/[id]/page.test.tsx` 18/18 PASS |
 | **Kiểm Định Blackbox 4 Tầng Zero-Mock & Playwright E2E Gate 4/5 Pass** | `AC-ORD-01..05`, `QC-4-TIERS` | `Task 6.5`, `Task 6.6` | `tests/e2e/gate4_qc_execution_report.json`, PostgreSQL Container `nacentech-postgres-1` | 42/42 tests PASS 100% (23 Unit + 19 E2E/DB/UX), đối soát PostgreSQL thật, chặn IDOR Đọc & Ghi 403 Forbidden, 12 ảnh Playwright |
+
+---
+
+## 25. TASK-00 Delta v13 (CR-2026-016): Chuẩn Hóa Cấu Trúc Thông Tin & Navigation Workspace Bên Mua
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Phân nhóm Sidebar Bên Mua thành 3 Section rõ ràng** | `REQ-BUYER-NAV-001`, `AC-DELTA-24` | `T-00.70` | `src/app/portal/layout.tsx` | Phân 3 cụm: Tác nghiệp Mua sắm, Khám phá & Ghép nối, Chẩn đoán & Hồ sơ; Vitest `layout.test.tsx` PASS |
+| **Chuẩn hóa nhãn và Badges đếm sống** | `REQ-BUYER-NAV-002`, `AC-DELTA-25` | `T-00.70` | `src/app/portal/layout.tsx` | Đổi nhãn `Bài toán Đổi mới Công nghệ`, bổ sung badge "Mới" cho Radar; Vitest PASS |
+| **Đồng bộ Wireframe Basic Design HTML** | `REQ-BUYER-NAV-003` | `T-00.71` | `Specification/02_BASIC_DESIGN/TASK-00_.../wireframe_workspace_seller_dual_mode.html` | Cập nhật bản vẽ HTML tương thích 1:1 bố cục |
+| **Kiểm thử hồi quy 74/74 portal navigation tests** | `AC-DELTA-26`, `QC-4-TIERS` | `T-00.72` | `portal-navigation-delta.test.tsx`, `layout.test.tsx` | 74/74 tests PASS 100% |
+
+---
+
+## 26. TASK-00 Delta v14 (CR-2026-019): Bàn Làm Việc Tổng Quan Mua Sắm (Executive Buyer Dashboard)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Xây dựng Component BuyerDashboard cho vai trò BUYER** | `REQ-BUYER-DASH-001`, `AC-DELTA-28` | `T-00.73` | `src/components/portal/buyer-dashboard.tsx` | 4 KPI Cards điều hướng sống, Banner Quick Actions, Widgets Deal Room & Nhu cầu mới nhất |
+| **Tích hợp Dynamic Routing theo Vai Trò** | `REQ-BUYER-DASH-002`, `AC-DELTA-29` | `T-00.74` | `src/app/portal/page.tsx` | Render `<BuyerDashboard />` khi `currentRole === "BUYER"`, cập nhật theo event storage Dual Mode |
+| **Kiểm thử chuyên biệt 85/85 tests Green** | `AC-DELTA-30`, `QC-4-TIERS` | `T-00.75` | `buyer-dashboard.test.tsx`, `page.test.tsx` | 85/85 tests PASS 100% |
+
+---
+
+## 27. TASK-00 Delta v15 (CR-2026-10-30): Tinh Gọn Onboarding & Bàn Làm Việc Thành Viên Đại Chúng (PUBLIC_USER)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Form Đăng Ký Tinh Gọn (Gỡ bỏ trường Organization)** | `REQ-PUB-ONBOARD-001`, `BR-PUB-01`, `AC-PUB-01` | `T-00.76` | `src/app/(auth)/register/page.tsx` | Gỡ bỏ trường `organization`, giữ vững PDPD NĐ 13/2023, kích hoạt tài khoản `PUBLIC_USER` |
+| **Sidebar Navigation Chuẩn 5 Mục Cho Public User** | `REQ-PUB-NAV-001`, `AC-PUB-02` | `T-00.77` | `src/app/portal/layout.tsx` | 5 mục: Bàn làm việc, Nhu cầu quan tâm, Radar Ghép nối, Nâng hạng vai trò, Cài đặt; 0 rò rỉ module DN |
+| **GeneralPortalDashboard 3 Khối Cá Nhân Hóa** | `REQ-PUB-DASH-001`, `AC-PUB-03` | `T-00.78` | `src/app/portal/page.tsx` | Hero Banner chào mừng cá nhân hóa, 3-Card Explorer Grid, Banner CTA Nâng Hạng 4 Lộ Trình |
+| **Kiểm thử hồi quy toàn diện Zero Regression** | `AC-PUB-04..05`, `QC-4-TIERS` | `T-00.79`, `T-00.80` | `layout.test.tsx`, `portal-navigation-delta.test.tsx`, `register/page.test.tsx` | 100% tests PASS, bảo vệ an toàn toàn diện |
 
 
 

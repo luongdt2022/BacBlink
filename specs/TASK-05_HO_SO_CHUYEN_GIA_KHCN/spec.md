@@ -2,8 +2,9 @@
 
 **Feature Branch**: `expert-profile-llkh-upgrade`  
 **Feature Directory**: `specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
+**Version**: 1.18.0  
 **Created**: 25/09/2026  
-**Status**: Delta v1.5 (CR-2026-008) — Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành  
+**Status**: Completed (Shipped Gate 5)  
 **Ánh Xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md)  
 **Bản Dựng Wireframe Tương Tác**: [`wireframe_expert_upgrade.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_upgrade.html)  
 **Nguồn Dữ Liệu Gốc**: Sheet `C.gia` (94 dòng dữ liệu, 6 cột) trong Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`  
@@ -94,7 +95,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 ---
 
-## 5. Spec Delta v2: Kênh Tiếp Nhận Nhanh Qua Zalo Mini App (< 2 Phút) & Chuẩn Hóa PDPD
+## Spec Delta v2: Kênh Tiếp Nhận Nhanh Qua Zalo Mini App (< 2 Phút) & Chuẩn Hóa PDPD
 
 - **Bối cảnh & Căn cứ thay đổi**: Triển khai theo tài liệu Thiết kế Cơ sở `TASK-05` (Mục 4) và Wireframe [`wireframe_zalo_input_form.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_zalo_input_form.html). Ứng dụng mã nguồn sẵn có tại [`SourceCode/ZaloMiniApp/`](../../SourceCode/ZaloMiniApp/) để tiếp cận nhanh đội ngũ nhà khoa học trên điện thoại di động qua Zalo OA/Group.
 - **Quyết định PO quan trọng**:
@@ -134,7 +135,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 ---
 
-## 6. Spec Delta v3: Hoàn chỉnh Data Model Hồ sơ Chuyên gia, Chứng từ và AI Ingestion
+## Spec Delta v3: Hoàn chỉnh Data Model Hồ sơ Chuyên gia, Chứng từ và AI Ingestion
 
 **Bối cảnh & căn cứ thay đổi:** Đối soát 28/09/2026 giữa Basic Design TASK-05, Detail Design, `ExpertProfile`/EF configuration và EF migration snapshot cho thấy model hiện tại thiếu các nhóm trường bắt buộc, chưa có migration `expert_profiles`, và chưa đáp ứng NFR mã hóa PII. Delta này chỉ bổ sung, không xóa hoặc đổi kiểu dữ liệu cũ.
 
@@ -165,7 +166,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 ---
 
-## 7. Spec Delta v4: Hợp nhất Contract DB — Zalo Mini App — Web Portal
+## Spec Delta v4: Hợp nhất Contract DB — Zalo Mini App — Web Portal
 
 **Phát hiện:** Zalo đang gọi đúng route quick-intake nhưng chỉ truyền dữ liệu sơ bộ; Web Portal đang gửi tên trường không khớp `SubmitExpertUpgradeRequest`. Các bảng chi tiết đã có trong database nhưng chưa có API contract hay luồng UI ghi/đọc. Delta này là hợp đồng bắt buộc để ba lớp dùng chung một data model.
 
@@ -195,7 +196,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 ---
 
-## 8. Spec Delta v5: Trang Chi Tiết Chuyên Gia KH&CN
+## Spec Delta v5: Trang Chi Tiết Chuyên Gia KH&CN
 
 **Nguồn đã đối soát:** [`wireframe_so_tay_chuyen_gia_profile.html`](../../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_so_tay_chuyen_gia_profile.html). Đây là màn hình của đúng `TASK-05`, gồm hai projection của cùng một hồ sơ: **Public Web** và **Full/Owner**.
 
@@ -243,7 +244,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 ---
 
-## 9. Spec Delta v6: Đăng nhập thật và xem Hồ sơ Full của Chuyên gia
+## Spec Delta v6: Đăng nhập thật và xem Hồ sơ Full của Chuyên gia
 
 **Bối cảnh & căn cứ thay đổi:** Rà soát luồng chạy local ngày 29/09/2026 cho thấy trang `/login` gọi relative URL không được proxy sang API, sau đó bắt mọi lỗi và tạo `mock-jwt-token`. Token giả bị API từ chối khi owner page gọi `/api/v1/experts/me/detail`. Đồng thời, tài khoản demo trên Web chưa được liên kết bằng `person_id` tới hồ sơ `CG-NACEN-DEMOIT01`. Đây là lỗ hổng của đúng hành trình TASK-05, không mở Epic mới; TASK-00 chỉ là dependency về JWT/RBAC.
 
@@ -281,7 +282,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 4. **Given** chạy fixture local hai lần, **When** kiểm tra database, **Then** chỉ có một account demo active và một liên kết `person_id` tới profile; dữ liệu public hiện hữu không bị tạo trùng hoặc thay đổi ngoài phạm vi fixture.
 5. **Given** regression public profile và Zalo handoff, **When** chạy test/build, **Then** `/experts/CG-NACEN-DEMOIT01` vẫn public-safe, không mang token và các test cũ không hồi quy.
 
-## 10. Spec Delta v7: Owner Workspace — View, Edit và Cảnh báo hoàn thiện
+## Spec Delta v7: Owner Workspace — View, Edit và Cảnh báo hoàn thiện
 
 **Căn cứ:** Basic Design v2.3 và wireframe `wireframe_expert_owner_workspace.html`. Không tạo Epic mới; đây là năng lực owner self-service của TASK-05.
 
@@ -316,7 +317,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 Đơn có báo giá, chấp nhận/hủy, hợp đồng, hóa đơn hoặc thanh toán không thuộc Delta v7. Đây là miền Marketplace & Commerce; không dùng từ `order` hay tạo bảng/API thanh toán trong TASK-05 trước khi PO chốt chính sách thương mại.
 
-## 11. Spec Delta v8: Dashboard tác nghiệp chuyên gia
+## Spec Delta v8: Dashboard tác nghiệp chuyên gia
 
 **Căn cứ:** Basic Design v2.4 và `wireframe_expert_dashboard.html`. Trang `/portal` trước đây tái sử dụng dashboard đa vai trò, làm chuyên gia thấy các thẻ Gian hàng, Buyer và Doanh nghiệp không thuộc quyền/ngữ cảnh của mình.
 
@@ -342,7 +343,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 2. Profile thiếu liên hệ/chứng từ/công trình hiển thị đúng CTA Bổ sung; profile đủ hiển thị Empty/Success trung thực.
 3. Lỗi Owner Detail có Retry; role khác vẫn nhận dashboard chung không hồi quy.
 
-## 12. Spec Delta v9: CCCD là dữ liệu lịch sử, không phải input Portal/Zalo
+## Spec Delta v9: CCCD là dữ liệu lịch sử, không phải input Portal/Zalo
 
 **Căn cứ:** Decision Record Basic Design v2.5. CCCD/ảnh CCCD không được chuyên gia tự nhập hoặc xem trên Web Portal/Zalo trong MVP; dữ liệu cũ được bảo toàn trong DB cho quy trình xác minh được cấp quyền sau này.
 
@@ -365,7 +366,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 ---
 
-## 13. Spec Delta v10: Danh bạ Tìm kiếm & Lọc Chuyên gia Công Khai (`/experts` & `/chuyen-gia`)
+## Spec Delta v10: Danh bạ Tìm kiếm & Lọc Chuyên gia Công Khai (`/experts` & `/chuyen-gia`)
 
 **Căn cứ pháp lý & Thiết kế cơ sở**: Basic Design v2.7 (Mục 2.3) và Wireframe [`wireframe_danh_ba_chuyen_gia.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_danh_ba_chuyen_gia.html).
 
@@ -394,7 +395,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 - **BR-EXP-036 (Bảo vệ PII Tuyệt đối)**: Danh bạ công khai `/experts` chỉ niêm yết các hồ sơ có trạng thái `APPROVED`. Tuyệt đối KHÔNG trả về và KHÔNG render số CCCD, ảnh CCCD, Số điện thoại di động cá nhân hoặc Email riêng tư của chuyên gia.
 - **BR-EXP-037 (Xử lý Bất đồng bộ 5 UX States)**: Giao diện danh bạ phải bao phủ trọn vẹn 5 trạng thái UX: Loading (Skeleton Cards), Empty (Không tìm thấy chuyên gia phù hợp), Error (Lỗi nạp dữ liệu kèm Retry), Success (Grid thẻ chuyên gia), Updating (Lọc dữ liệu mượt mà).
 
-## 14. Spec Delta v11: Hội tụ danh bạ theo Master Data và tinh gọn UX
+## Spec Delta v11: Hội tụ danh bạ theo Master Data và tinh gọn UX
 
 **Quyết định PO**: Bộ lọc lĩnh vực hiển thị đúng các taxonomy `SECTOR` đang active trong DB; không hardcode số lượng hoặc bịa mã TT17. Baseline hiện tại có 10 mã `LV` được migration TASK-06 seed. Danh sách runtime lấy từ `GET /api/v1/sectors`; count trên giao diện là số mục trả về từ nguồn này.
 
@@ -420,7 +421,7 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 **Điều chỉnh theo đối chiếu mã nguồn**: TASK-05 đã có `POST /api/v1/public/experts/{expertCode}/consultation-requests`, gửi notification cho nhóm quản trị. Delta v11 nối modal với endpoint hiện hữu và dùng thông điệp chính xác về người nhận; không tạo lại API. Quy trình xử lý yêu cầu tư vấn/cơ hội cung-cầu tiếp theo vẫn thuộc TASK-08.
 
 
-## Delta v12 - CR-2026-005: Runtime sectors across channels
+## Spec Delta v12 — CR-2026-005: Runtime sectors across channels
 
 - **REQ-MD-SECTOR-001**: Web, admin, profile and Zalo sector selectors, lists, labels and counts read the SECTOR taxonomy API/DB; no fixed 10/18 lists or default sector.
 - **BR-MD-SECTOR-001**: New selections require an active code. Never replace the selected sector silently with the first record; ask the user to select again when an existing code is inactive.
@@ -431,13 +432,13 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 
 This scope supersedes v11 owner/admin/Zalo exclusions for sector data consumption. Specialized keywords remain separate from sectors.
 
-## 13. Delta v13 — close real draft handoff gap
+## Spec Delta v13 — Close real draft handoff gap
 
 Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-signed HMAC token with onlySHA256 hash stored in existing DB column; legacy plaintext tokens are rejected. GET does notconsume; authenticated officialsubmit claims originalprofile and clears hash/expiry in samehosttransaction as approval enqueue. Runtimeindustrycode survives handoff, historical inactivecode requires active user selection before submission. No fabricatedAIprogress/prefill is reported. ConfiguredfrontendURL replaces hardcodedhost. Minimal handoff completion does not imply completion of CV ingestion/ZNS pipeline.
 
 ---
 
-## 14. Spec Delta v14: Form Chỉnh Sửa Hồ Sơ Chuyên Gia & Completeness Engine
+## Spec Delta v14: Form Chỉnh Sửa Hồ Sơ Chuyên Gia & Completeness Engine
 
 **Căn cứ pháp lý & Thiết kế cơ sở**: Basic Design Wireframe [`wireframe_chinh_sua_ho_so_chuyen_gia.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_chinh_sua_ho_so_chuyen_gia.html) và [`wireframe_expert_dashboard.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_dashboard.html).
 
@@ -475,7 +476,7 @@ Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-
 
 ---
 
-## 15. Spec Delta v16: Bàn Làm Việc Quản Trị Tài Khoản Chuyên Gia (Account Workspace) [CR-2026-013]
+## Spec Delta v15: Bàn Làm Việc Quản Trị Tài Khoản Chuyên Gia (Account Workspace) [CR-2026-013]
 
 **Căn cứ pháp lý & Thiết kế cơ sở**: Quyết định phê duyệt PO-DEC-20261014-01, Mục 7 trong Basic Design [`README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md) và Wireframe độc lập [`wireframe_expert_account.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_account.html).
 
@@ -505,7 +506,7 @@ Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-
 
 ---
 
-## 16. Spec Delta v7 (PO-DEC-20261014-02): Chuẩn Hóa 6 Màn Hình Workspace Chuyên Gia, Hộp Thư Tư Vấn 3 Tab, Kanban Dự Án TRL 5 UX States & Scoped RBAC
+## Spec Delta v16 (PO-DEC-20261014-02): Chuẩn Hóa 6 Màn Hình Workspace Chuyên Gia, Hộp Thư Tư Vấn 3 Tab, Kanban Dự Án TRL 5 UX States & Scoped RBAC
 
 **Căn cứ pháp lý & Thiết kế cơ sở**:
 - Quyết định phê duyệt PO: `PO-DEC-20261014-02`.
@@ -605,7 +606,7 @@ Existing US06/BR-EXP-009/015/017 remain mandatory. Draft lookup uses72h purpose-
 
 ---
 
-## 17. Spec Delta v17 (PO-DEC-20261016-03): Tối Ưu Hóa UI/UX Danh Bạ Chuyên Gia & Bộ Lọc Đa Tiêu Chí [CR-2026-016]
+## Spec Delta v17 (PO-DEC-20261016-03): Tối Ưu Hóa UI/UX Danh Bạ Chuyên Gia & Bộ Lọc Đa Tiêu Chí [CR-2026-016]
 
 **Căn cứ pháp lý & Quyết định Sản phẩm**:
 - **Quyết định phê duyệt PO**: `PO-DEC-20261016-03` ngày 16/10/2026 về tinh gọn và tối ưu hóa trải nghiệm người dùng Danh bạ Chuyên gia KH&CN (`/experts` và `/chuyen-gia`).
@@ -846,7 +847,7 @@ Từ kết quả rà soát thực tế và phản hồi của người dùng (Do
 
 ---
 
-## Spec Delta v2: Tinh chỉnh Thẻ Chuyên gia & Bổ sung Social Proof (Lượt kết nối)
+## Spec Delta v18: Tinh chỉnh Thẻ Chuyên gia & Bổ sung Social Proof (Lượt kết nối)
 
 ### 18.1. Bối Cảnh & Căn Cứ Quyết Định PO (Context & PO Rationale)
 
@@ -929,7 +930,7 @@ Từ kết quả rà soát thực tế và phản hồi của người dùng (Do
 
 ---
 
-## 19. Spec Delta v1.3: Chuẩn Hóa Menu Workspace Chuyên Gia 7 Mục & Hợp Đồng Thù Lao Disabled [CR-2026-006]
+## Spec Delta v19: Chuẩn Hóa Menu Workspace Chuyên Gia 7 Mục & Hợp Đồng Thù Lao Disabled [CR-2026-006]
 
 ### 19.1. Bối Cảnh & Căn Cứ Quyết Định PO (Context & PO Rationale)
 
@@ -1093,7 +1094,7 @@ Thanh Sidebar điều hướng cho vai trò `VERIFIED_EXPERT` (và `EXPERT`) đ�
 
 ---
 
-## 20. Spec Delta v1.4: Chuẩn Hóa Trải Nghiệm Dashboard, Triệt Tiêu Hardcode Account & Toast Standard [CR-2026-007]
+## Spec Delta v20: Chuẩn Hóa Trải Nghiệm Dashboard, Triệt Tiêu Hardcode Account & Toast Standard [CR-2026-007]
 
 > **Căn cứ pháp lý & chỉ đạo**: Quyết định PO Orchestrator `PO-DEC-20261023-02` (CR-2026-007: Cải tiến Giai đoạn 1 - Sửa lỗi điều hướng Dashboard, chuẩn hóa Toast và triệt tiêu hardcode) ban hành ngày 23/10/2026.  
 > **Tài liệu tham chiếu Basic Design**: [`BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BASIC_DESIGN_DELTA_EXPERT_WORKSPACE.md) (Mục 9).  
@@ -1222,7 +1223,7 @@ Sau đợt rà soát nghiệm thu vận hành phiên bản Workspace Chuyên gia
 
 ---
 
-## 21. Spec Delta v1.5: Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành [CR-2026-008]
+## Spec Delta v21: Zero-Mock Backend Integration Cho Hộp Thư Tư Vấn & Dự Án Đồng Hành [CR-2026-008]
 
 ### 21.1. Bối Cảnh & Mục Tiêu Kỹ Thuật (Context & Technical Objectives)
 - **Căn cứ pháp lý**: Quyết định của PO Orchestrator `PO-DEC-20261023-03` ban hành ngày 23/10/2026 (CR-2026-008: Zero-Mock Sprint).
@@ -1369,7 +1370,7 @@ Sau đợt rà soát nghiệm thu vận hành phiên bản Workspace Chuyên gia
 
 ---
 
-## 22. Delta v1.3: Smart AI CV Onboarding (Bóc tách & Điền form toàn diện)
+## Spec Delta v22: Smart AI CV Onboarding (Bóc tách & Điền form toàn diện)
 
 ### 22.1. Bối Cảnh & Mục Tiêu Nghiệp Vụ
 

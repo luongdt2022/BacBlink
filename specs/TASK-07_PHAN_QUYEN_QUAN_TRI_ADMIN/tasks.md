@@ -281,7 +281,7 @@
 
 ---
 
-## Phase 10: Delta V6 — Chuẩn Hóa Toàn Diện 7 Màn Hình Cổng Công Vụ Cấp Sở (`/gov/*`) [Delta v6]
+## Phase 17: Delta v11 — Chuẩn Hóa Toàn Diện 7 Màn Hình Cổng Công Vụ Cấp Sở (`/gov/*`) [Delta v11]
 
 ### Đợt 1: Hạ Tầng Shared & Bộ Giải Nghĩa Nhãn (Universal Label Resolvers)
 - [x] `T080` **[FE-LabelResolver]** Xây dựng module `src/lib/gov-label-resolver.ts`:
@@ -342,7 +342,7 @@
 
 ---
 
-## Phase 11: Delta v10 — Tối Ưu Bảng Thẩm Định Địa Bàn (PO-DEC-20261026-GOV-TABLE-UX)
+## Phase 18: Delta v11b — Tối Ưu Bảng Thẩm Định Địa Bàn (PO-DEC-20261026-GOV-TABLE-UX)
 
 - [x] `T090` **[FE-Gov-CodeFormat]** Chuẩn hóa Mã Hồ Sơ Công Vụ:
   - Bổ sung hàm `formatGovRecordCode` trong `src/lib/gov-label-resolver.ts` sinh mã định danh công vụ chuẩn: `CB-HN-C25347`, `CG-HN-A109F2`, `NC-HN-88E29E`, `DN-HN-825CDC`.
@@ -365,37 +365,37 @@
 
 ---
 
-## Phase 17: Delta v7 (CR-2026-023) — Tái Thiết Kế Toàn Diện Màn Hình Phê Duyệt Tập Trung & Giám Sát SLA (`/admin/approvals`)
+## Phase 19: Delta v12 (CR-2026-023) — Tái Thiết Kế Toàn Diện Màn Hình Phê Duyệt Tập Trung & Giám Sát SLA (`/admin/approvals`)
 
 ### Wave 1: Chuẩn Hóa Nhãn & Format Mã Hồ Sơ Rút Gọn
-- [ ] `T094` **[FE-LabelResolver-V7]** Cập nhật `src/lib/label-resolver.ts`:
+- [x] `T094` **[FE-LabelResolver-V7]** Cập nhật `src/lib/label-resolver.ts`:
   - Đổi nhãn sang chuẩn hành chính công: `SHOP` -> "Chào Bán Công Nghệ", `DEMAND` -> "Nhu Cầu Công Nghệ", `EXPERT` -> "Chuyên Gia KH&CN", `FACILITY`/`ENTERPRISE` -> "Doanh Nghiệp ĐMST", `ACCOUNT` -> "Tài Khoản Tổ Chức".
   - Bổ sung hàm `formatApprovalRecordCode(id, type, scope)` trả về mã rút gọn thân thiện `#058915` (hoặc `#HS-058915`).
-  - Viết unit test xác thực tại `src/lib/label-resolver.test.ts`.
+  - Viết unit test xác thực tại `src/lib/label-resolver.test.ts` (6/6 tests pass).
 
 ### Wave 2: Tái Cấu Trúc UI Layout & Enterprise Approval Slide-over Drawer
-- [ ] `T095` **[FE-UnifiedToolbar]** Tái cấu trúc thanh điều khiển tại `src/app/admin/approvals/page.tsx`:
+- [x] `T095` **[FE-UnifiedToolbar]** Tái cấu trúc thanh điều khiển tại `src/app/admin/approvals/page.tsx`:
   - Gộp thành 1 thanh Segmented Filter duy nhất (Nhóm tính chất: Tất cả, SLA, Can thiệp + Nhóm phân loại: Chào bán CN, Nhu cầu CN, Chuyên gia, Doanh nghiệp ĐMST, Tài khoản).
   - Thanh tìm kiếm đa năng kết hợp dropdown 34 Tỉnh/Thành phố. Xóa bỏ hoàn toàn combobox trùng lặp.
-- [ ] `T096` **[FE-FullwidthTable]** Chuyển đổi bảng sang Full-width Master Grid:
+- [x] `T096` **[FE-FullwidthTable]** Chuyển đổi bảng sang Full-width Master Grid:
   - Mã hồ sơ rút gọn kèm nút copy UUID gốc.
   - Capsule Badge ngang 1 dòng (`whitespace-nowrap`).
   - Tên chủ thể và đơn vị rõ ràng có fallback thông minh, không bị méo chữ.
   - Cột thời gian và số giờ trễ SLA hiển thị đầy đủ, không bị cắt xén.
   - Cột thao tác hiển thị nút "Thẩm định" mở Drawer trực tiếp.
-- [ ] `T097` **[FE-EnterpriseDrawer]** Xây dựng Slide-over Drawer chuyên sâu:
+- [x] `T097` **[FE-EnterpriseDrawer]** Xây dựng Slide-over Drawer chuyên sâu:
   - Thiết kế trượt từ phải ra màn hình (`fixed inset-y-0 right-0 max-w-xl shadow-2xl`).
   - Tích hợp luồng thẩm định Doanh nghiệp ĐMST (Mã số thuế, đại diện pháp luật, vốn điều lệ, giấy phép ĐKKD, giấy chứng nhận ĐMST).
   - Giữ nguyên vị trí cuộn của bảng danh sách.
   - Kiểm tra validation lý do `.trim().length >= 10`.
 
 ### Wave 3: Kiểm Thử Độc Lập & Nghiệm Thu Toàn Trình
-- [ ] `T098` **[QC-Verification-V7]** Cập nhật và bổ sung bài test trong `src/app/admin/approvals/page.test.tsx` & `qc-edge-cases.test.tsx`:
+- [x] `T098` **[QC-Verification-V7]** Cập nhật và bổ sung bài test trong `src/app/admin/approvals/page.test.tsx` & `qc-edge-cases.test.tsx`:
   - Test case xác thực thanh lọc Segmented Filter mới.
   - Test case xác thực hiển thị mã rút gọn `#HS-...` và badge Capsule 1 dòng.
   - Test case xác thực luồng thẩm định Doanh nghiệp ĐMST (MST, người đại diện).
   - Test case xác thực Slide-over Drawer mở/đóng và kiểm tra validation khoảng trắng.
-- [ ] `T099` **[QC-FullRegression-V7]** Chạy toàn bộ test suites (`npx vitest run src/app/admin/`) và build Next.js 66 routes đảm bảo 100% Green.
+- [x] `T099` **[QC-FullRegression-V7]** Chạy toàn bộ test suites (`npx vitest run src/app/admin/`) và build Next.js 66 routes đảm bảo 100% Green.
 
 
 

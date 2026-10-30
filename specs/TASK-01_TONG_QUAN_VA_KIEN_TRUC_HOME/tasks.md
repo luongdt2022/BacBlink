@@ -37,8 +37,7 @@
 - [x] **T-01.16** `[TEST]` Viết Vitest cho component Mega-menu, Floating AI Widget và Event Card.
 - [x] **T-01.17** `[QC]` Bàn giao QC thực thi bộ kiểm thử Playwright Visual QA & E2E cho 2 màn hình trên Desktop và Mobile.
 - [x] **T-01.18** `[GATE]` Thẩm định Gate 3 SA (`guard-rails.sh`), đối soát Gate 5 Definition of Done và đóng Epic Shipped trong `ROADMAP.md`.
-
-- [x] `TASK-01-CR19` **[CR]** [P1] (Người gửi: a  Lượng) bỏ cho a phần nội dung ở trang chủ : Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết (11 Phân Hệ · 48 Màn Hình Thực Tế) — không cần hiển thị phần chỉ dẫn này ở trang chủ
+  - [x] `TASK-01-CR19` **[CR]** [P1] (Người gửi: a Lượng) bỏ phần nội dung ở trang chủ: Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết.
 
 ---
 
@@ -106,8 +105,8 @@
     - [x] Thẻ 3 hiển thị Lượt Kết Nối & MOU link tới `/trien-lam`.
     - [x] Thẻ 4 hiển thị Quy Mô Giao Dịch & Ngân Sách formatted (Tỷ / Triệu VNĐ) link tới `/portal/opportunities/pipeline`.
     - [x] 0% số hardcode, đủ 5 trạng thái UX (Loading pulse, Error retry, Empty 0, Success, Updating).
-- [ ] **T-01.30** `[TEST]` Bổ sung Unit Tests & Integration Tests cho Portal Overview Stats mới:
+- [x] **T-01.30** `[TEST]` Bổ sung Unit Tests & Integration Tests cho Portal Overview Stats mới:
   - Tiêu chí kiểm chứng:
-    - [ ] Unit Test backend kiểm tra `PortalOverviewService`: Tính toán đúng các công thức đếm từ CSDL thật.
-    - [ ] Vitest component test cho `page.tsx`: Render đúng 4 thẻ số liệu qua `<Async>`.
-    - [ ] Playwright E2E: Xác nhận số liệu trên Trang chủ khớp 1:1 với kết quả truy vấn SQL PostgreSQL trực tiếp.
+    - [x] Unit Test backend kiểm tra `PortalOverviewService`: Tính toán đúng các công thức đếm từ CSDL thật (`PortalHomeInvariantsTests.cs`).
+    - [x] Vitest component test cho `page.tsx`: Render đúng 4 thẻ số liệu qua `<Async>`.
+    - [x] Playwright E2E: Xác nhận số liệu trên Trang chủ khớp 1:1 với kết quả truy vấn SQL PostgreSQL trực tiếp.

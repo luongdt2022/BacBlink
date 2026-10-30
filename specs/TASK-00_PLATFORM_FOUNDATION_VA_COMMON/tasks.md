@@ -3,7 +3,7 @@
 **Feature**: `TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Spec Reference**: [`spec.md`](./spec.md)  
 **Plan Reference**: [`plan.md`](./plan.md)  
-**Status**: Ready to Implement  
+**Status**: Completed (Shipped Gate 5)  
 
 ---
 
@@ -257,7 +257,7 @@
 
 ---
 
-## Giai đoạn 9: Delta v10 — Tinh Gọn Onboarding & Bàn Làm Việc Public User [`[FE-PUBLIC-USER]`]
+## Giai đoạn 19: Delta v15 (CR-2026-10-30) — Tinh Gọn Onboarding & Bàn Làm Việc Public User [`[FE-PUBLIC-USER]`]
 
 - [x] `T-00.76` **[FE-DELTA-10-01]** Form Đăng ký: Xác nhận gỡ bỏ trường Organization, giữ vững PDPD và validation (`src/app/(auth)/register/page.tsx`):
   - [x] Gỡ bỏ hoàn toàn trường nhập liệu Cơ quan / Đơn vị (`organization`) khỏi `initialFormData`, UI form và validation state.

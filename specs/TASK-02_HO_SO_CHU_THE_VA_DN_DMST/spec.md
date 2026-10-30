@@ -98,7 +98,7 @@
 
 ---
 
-## 6. SPEC DELTA V2 (CR-2026-010): NÂNG CẤP TOÀN DIỆN DANH BẠ 34 TỈNH THÀNH TRỌNG ĐIỂM, ICON THƯƠNG HIỆU & THÔNG TIN CỐT LÕI
+## Spec Delta v2 (CR-2026-010): Nâng Cấp Toàn Diện Danh Bạ 34 Tỉnh Thành Trọng Điểm, Icon Thương Hiệu & Thông Tin Cốt Lõi
 
 > **Căn cứ thay đổi**: Quyết định PO phê duyệt ngày 12/10/2026 rà soát màn hình `http://localhost:3000/doanh-nghiep-dmst` đối chiếu 1:1 với `wireframe_danh_ba_dn_dmst.html`. Đồng bộ phạm vi toàn dự án là **34 tỉnh/thành trọng điểm**.
 
@@ -124,7 +124,7 @@
 
 ---
 
-## 7. SPEC DELTA V3 (CR-2026-012): BỘ TIÊU CHÍ ĐÁNH GIÁ & CHẤM ĐIỂM MỨC ĐỘ ĐỔI MỚI SÁNG TẠO DOANH NGHIỆP (THANG 100 ĐIỂM, 8 NHÓM TIÊU CHÍ)
+## Spec Delta v3 (CR-2026-012): Bộ Tiêu Chí Đánh Giá & Chấm Điểm Mức Độ Đổi Mới Sáng Tạo Doanh Nghiệp (Thang 100 Điểm, 8 Nhóm Tiêu Chí)
 
 > **Căn cứ thay đổi**: 
 > 1. Quyết định PO `PO-DEC-20261014-03` (14/10/2026) phê duyệt chuẩn hóa bộ tiêu chí ĐMST.
@@ -169,7 +169,7 @@
 
 ---
 
-## 8. SPEC DELTA V4 (CR-2026-015): CHỦ THỂ DOANH NGHIỆP THỐNG NHẤT & KÍCH HOẠT NĂNG LỰC ĐA TẦNG (UNIFIED ENTERPRISE & PROGRESSIVE CAPABILITY TIERS: BUYER / SELLER / DUAL MODE)
+## Spec Delta v4 (CR-2026-015): Chủ Thể Doanh Nghiệp Thống Nhất & Kích Hoạt Năng Lực Đa Tầng (Unified Enterprise & Progressive Capability Tiers: Buyer / Seller / Dual Mode)
 
 > **Mã thay đổi**: `CR-2026-015`  
 > **Căn cứ nghiệp vụ**: 
@@ -273,7 +273,7 @@
 
 ---
 
-## 10. SPEC DELTA V5 (CR-2026-020): PHIẾU KHẢO SÁT 43 CÂU HỎI ĐÁNH GIÁ NĂNG LỰC ĐMST & TÍNH TOÁN TNI TOÀN DIỆN
+## Spec Delta v5 (CR-2026-020): Phiếu Khảo Sát 43 Câu Hỏi Đánh Giá Năng Lực ĐMST & Tính Toán TNI Toàn Diện
 
 > **Mã CR**: `CR-2026-020`  
 > **Căn cứ**: Kế hoạch tổng thể `MASTER-PLAN-CR-2026-020-SURVEY43Q`, Tài liệu Thiết kế cơ sở [`BD_DELTA_CR_020_PHIEU_KHAO_SAT_43_CAU.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/BD_DELTA_CR_020_PHIEU_KHAO_SAT_43_CAU.md) và Wireframe [`wireframe_khao_sat_dmst_43_cau.html`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/wireframe_khao_sat_dmst_43_cau.html).  

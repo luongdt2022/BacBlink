@@ -78,31 +78,31 @@
 
 > **Mục tiêu**: Triệt tiêu toàn bộ giá trị khởi tạo cứng (công ty mẫu, ngân sách giả định, nhân sự giả lập, fallback 1000), chuẩn hóa hàm định dạng tiền tệ động Triệu / Tỷ VNĐ toàn sàn, và củng cố validation client/server.
 
-- [ ] T020 [FE] Xây dựng tiện ích định dạng tiền tệ dùng chung `src/lib/currency.ts` (`formatCurrencyMillionVnd`) với đầy đủ logic quy đổi $\ge 1.000$ Tr $\rightarrow$ `"X,X Tỷ VNĐ"`, $< 1.000$ Tr $\rightarrow$ `"XXX Triệu VNĐ"`, hỗ trợ tùy chọn `emptyLabel` và `compact`.
-- [ ] T021 [FE] Triệt tiêu dữ liệu khởi tạo cứng và tăng cường validation trong `ConnectionRequestModal.tsx`:
+- [x] T020 [FE] Xây dựng tiện ích định dạng tiền tệ dùng chung `src/lib/currency.ts` (`formatCurrencyMillionVnd`) với đầy đủ logic quy đổi $\ge 1.000$ Tr $\rightarrow$ `"X,X Tỷ VNĐ"`, $< 1.000$ Tr $\rightarrow$ `"XXX Triệu VNĐ"`, hỗ trợ tùy chọn `emptyLabel` và `compact`.
+- [x] T021 [FE] Triệt tiêu dữ liệu khởi tạo cứng và tăng cường validation trong `ConnectionRequestModal.tsx`:
   - Nạp `senderOrgName` từ `authClient.getUser()?.organizationName || ''`.
   - Khởi tạo `proposedBudget = ''` kèm placeholder định hướng `"VD: 500 triệu - 1 tỷ VNĐ, hoặc Thỏa thuận"`.
   - Khởi tạo `message = ''` kèm placeholder hướng dẫn mục tiêu hợp tác.
   - Kiểm tra validation: `senderOrgName.trim().length >= 3` và `message.trim().length >= 10`.
-- [ ] T022 [FE] Chuẩn hóa định dạng tiền tệ động trên Pipeline (`src/app/portal/opportunities/pipeline/page.tsx`):
+- [x] T022 [FE] Chuẩn hóa định dạng tiền tệ động trên Pipeline (`src/app/portal/opportunities/pipeline/page.tsx`):
   - Card KPI "Tổng giá trị dự kiến": sử dụng `formatCurrencyMillionVnd(totalValue)`.
   - Thẻ cơ hội trên bảng Kanban: sử dụng `formatCurrencyMillionVnd(opp.estimatedValueMillionVnd, { compact: true })`.
-- [ ] T023 [FE] Chuẩn hóa định dạng tiền tệ trên Cổng Giám Sát Sở (`src/app/gov/opportunities/page.tsx`):
+- [x] T023 [FE] Chuẩn hóa định dạng tiền tệ trên Cổng Giám Sát Sở (`src/app/gov/opportunities/page.tsx`):
   - Thẻ KPI "Tổng GT dự kiến": áp dụng `formatCurrencyMillionVnd(stats.totalEstimatedValueMillionVnd)`.
   - Cột bảng dữ liệu và Modal Giám Sát Deal: định dạng đồng nhất qua `formatCurrencyMillionVnd`.
-- [ ] T024 [FE] Triệt tiêu nhân sự giả lập và fallback ảo trong Deal Room:
+- [x] T024 [FE] Triệt tiêu nhân sự giả lập và fallback ảo trong Deal Room:
   - `src/app/portal/opportunities/[id]/deal-room/page.tsx`: Xóa bỏ `'Kỹ sư Vũ Quang Hải'`, nạp `senderName` từ `authClient.getUser()?.fullName || ''`.
   - `src/app/portal/opportunities/[id]/deal-room/MouModal.tsx`: Xóa bỏ fallback ảo `|| 1000`, hiển thị giá trị thật đã format hoặc chuỗi *"thỏa thuận theo phụ lục hợp đồng"*.
-- [ ] T025 [BE] Thẩm định và gia cố API validation trong `BrokerageControllers.cs`:
+- [x] T025 [BE] Thẩm định và gia cố API validation trong `BrokerageControllers.cs`:
   - Trong `CreateConnectionRequest`: Bổ sung kiểm tra độ dài `SenderOrgName.Trim().Length >= 3` và `Message.Trim().Length >= 10` theo quy tắc `BR-DEL-08-02`.
   - Đối soát các truy vấn `SUM(estimated_value_million_vnd)` và đếm requests đảm bảo đọc ghi trực tiếp CSDL PostgreSQL thật `brokerage.opportunities`.
-- [ ] T026 [TEST] Xây dựng Unit Test cho tiện ích tiền tệ `src/lib/currency.test.ts` bao phủ 100% các nhánh: `null`, `0`, $< 1.000$ Tr, $\ge 1.000$ Tr, và `compact`.
-- [ ] T027 [TEST] Xây dựng Unit Test cho `ConnectionRequestModal.test.tsx` kiểm chứng: form mở lên sạch rỗng, lấy tổ chức từ `authClient`, validate tối thiểu 3 ký tự tổ chức và 10 ký tự nội dung.
-- [ ] T028 [TEST] Cập nhật và chạy toàn bộ test suites hiện có:
+- [x] T026 [TEST] Xây dựng Unit Test cho tiện ích tiền tệ `src/lib/currency.test.ts` bao phủ 100% các nhánh: `null`, `0`, $< 1.000$ Tr, $\ge 1.000$ Tr, và `compact`.
+- [x] T027 [TEST] Xây dựng Unit Test cho `ConnectionRequestModal.test.tsx` kiểm chứng: form mở lên sạch rỗng, lấy tổ chức từ `authClient`, validate tối thiểu 3 ký tự tổ chức và 10 ký tự nội dung.
+- [x] T028 [TEST] Cập nhật và chạy toàn bộ test suites hiện có:
   - `pipeline/page.test.tsx`: Cập nhật kỳ vọng `"5,5 Tỷ VNĐ"`.
   - `gov/opportunities/page.test.tsx`: Kiểm tra format KPI và danh sách.
   - `deal-room/page.test.tsx`: Đồng bộ `senderName` từ `authClient`.
-- [ ] T029 [TEST] Quét kiểm toán Zero-Mock toàn diện (Grep Guard) đảm bảo 0 chuỗi mock ngầm trong thư mục `matching/` và `opportunities/`.
+- [x] T029 [TEST] Quét kiểm toán Zero-Mock toàn diện (Grep Guard) đảm bảo 0 chuỗi mock ngầm trong thư mục `matching/` và `opportunities/`.
 
 ---
 

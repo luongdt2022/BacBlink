@@ -1,5 +1,12 @@
 # Kế Hoạch Kỹ Thuật (plan.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
+**Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
+**Version**: 1.13.0  
+**Status**: Completed (Shipped Gate 5)  
+**Last Updated**: 2026-10-30  
+**Baseline Hash**: `a1b2c3d`  
+**Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
+
 > **Mã phân hệ**: `TASK-03_HO_SO_TIM_MUA_BUYER`  
 > **Kiến trúc**: .NET Core 8+ Clean Architecture / Modular Monolith & Next.js 15 App Router  
 > **Cơ sở dữ liệu**: PostgreSQL 16+ / EF Core (Npgsql)  

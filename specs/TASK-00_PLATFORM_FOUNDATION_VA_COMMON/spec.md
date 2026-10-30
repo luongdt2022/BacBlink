@@ -3,7 +3,7 @@
 **Feature Branch**: `foundation-platform-common`  
 **Feature Directory**: `specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Created**: 25/09/2026  
-**Status**: In Planning  
+**Status**: Completed (Shipped Gate 5)  
 **Ánh Xạ Kỹ Thuật**: Nền tảng hạ tầng, Modular Monolith Clean Architecture, Shared Kernel & Docker Compose  
 **Phạm Vi**: Backend .NET Core (`backend/`), Docker Dev Environment, Shared Contracts & Base Entities  
 
@@ -376,7 +376,7 @@ Tuyến `/profile/upgrade` trước đây chỉ chứa lệnh chuyển hướng 
 
 ---
 
-## 10. Spec Delta v2: Chuẩn Hóa Typography Cổng DVCQG (Nunito Sans & Lora) [PO-DEC-20261015-01]
+## Spec Delta v10 (CR-2026-TYPO): Chuẩn Hóa Typography Cổng DVCQG (Nunito Sans & Lora) [PO-DEC-20261015-01]
 
 > **Căn cứ pháp lý & Thiết kế cơ sở:**
 > - Quyết định PO: **`PO-DEC-20261015-01`** (Phê duyệt chuẩn hóa Typography Cổng DVCQG cho Hệ sinh thái Gov-Tech NacenTwin).
@@ -624,7 +624,31 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 
 ---
 
-## DELTA-CR-2026-10-30: Chuẩn Hóa Thuật Ngữ B2B, Onboarding Tinh Gọn & Tái Cấu Trúc Không Gian Cá Nhân Cho Thành Viên Đại Chúng (PUBLIC_USER)
+## Spec Delta v14 (CR-2026-019): Bàn Làm Việc Tổng Quan Mua Sắm (Executive Buyer Dashboard)
+
+### 1. Bối Cảnh & Mục Tiêu (Context & Objectives)
+- Cung cấp giao diện tổng quan chiến lược (Executive Dashboard) cho vai trò Bên Mua (`BUYER` và `INNOVATION_ENTITY`) khi truy cập `/portal`.
+- Tích hợp 4 KPI Cards tương tác sống:
+  1. Bài toán đang mở -> điều hướng `/portal/buyer/demands`
+  2. Ứng viên AI -> điều hướng `/portal/matching/radar`
+  3. Deals đang trao đổi -> điều hướng `/portal/opportunities/pipeline`
+  4. Thỏa thuận đã ký MOU -> điều hướng `/portal/opportunities/pipeline`
+- Banner chào mừng với 3 nút tác vụ nhanh (Quick Actions): `+ Khai Báo Bài Toán Nhanh`, `Khảo Sát Nhu Cầu (TNI 4 Bước)`, `Radar Ghép Nối AI`.
+- 2 Widgets chuyên sâu: Tiến Trình Hợp Tác Deal Room và Danh sách Bài toán mới nhất.
+
+### 2. Yêu Cầu Chức Năng (Functional Requirements)
+- **REQ-BUYER-DASH-001**: Render component `<BuyerDashboard />` tại `/portal` khi `currentRole === "BUYER" || currentRole === "INNOVATION_ENTITY"`.
+- **REQ-BUYER-DASH-002**: Lắng nghe sự kiện `storage` cập nhật `activeRole` khi chuyển đổi Dual Mode.
+- **REQ-BUYER-DASH-003**: 4 KPI cards hiển thị dữ liệu thật và hoạt động như các router links.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **AC-DELTA-28**: Truy cập `/portal` với vai trò `BUYER` hiển thị đầy đủ 4 KPI cards, Quick Action banner và 2 widgets.
+- **AC-DELTA-29**: Nhấp vào từng KPI card chuyển trang chính xác đến route đích tương ứng.
+- **AC-DELTA-30**: Unit & Component tests trong `buyer-dashboard.test.tsx` và `page.test.tsx` đạt 100% PASS.
+
+---
+
+## Spec Delta v15 (CR-2026-10-30): Chuẩn Hóa Thuật Ngữ B2B, Onboarding Tinh Gọn & Tái Cấu Trúc Không Gian Cá Nhân Cho Thành Viên Đại Chúng (PUBLIC_USER)
 
 > **Căn cứ phê duyệt:** Quyết định phê duyệt của Product Owner (`nacen-po-pm`) và Senior BA (`nacen-ba`) theo Quyết định `PO-DEC-20261030-01` (CR-2026-006 / Delta v10); Kế hoạch Đợt 1 chuẩn hóa thuật ngữ B2B toàn hệ thống và định vị Thành viên Đại chúng (`PUBLIC_USER`) là "Bên Mua tiềm năng (Buyer-leaning explorer)".
 

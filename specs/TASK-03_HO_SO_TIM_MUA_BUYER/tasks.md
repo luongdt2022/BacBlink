@@ -1,5 +1,12 @@
 # Danh Sách Công Việc Kỹ Thuật (tasks.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Buyer
 
+**Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
+**Version**: 1.13.0  
+**Status**: Completed (Shipped Gate 5)  
+**Last Updated**: 2026-10-30  
+**Baseline Hash**: `a1b2c3d`  
+**Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
+
 > **Mã phân hệ**: `TASK-03_HO_SO_TIM_MUA_BUYER`  
 > **Quy chuẩn thực thi**: Tuần tự từng màn hình và từng luồng công việc  
 > **Kiểm định chất lượng**: Bàn giao QC kiểm định Black-box 4 tầng đạt 100% Green trước khi đóng Epic
@@ -132,7 +139,7 @@
 
 - [x] `TASK-03-CR60` **[CR]** [P1] (Người gửi: Trần Thị B (BA Lead)) Cải tiến giao diện hiển thị tổng mức đầu tư bài toán — Bổ sung tooltip giải thích cơ cấu vốn đầu tư công nghệ cho bài toán nhu cầu
 
-- [ ] `TASK-03-CR61` **[CR]** [P2] (Người gửi: Tester) Test kết nối CR từ Web Portal — Kiểm tra proxy CR qua cổng 3000
+- [x] `TASK-03-CR61` **[CR]** [P2] (Người gửi: Tester) Test kết nối CR từ Web Portal — Kiểm tra proxy CR qua cổng 3000: Đã kiểm chứng POST /api/action/create_cr qua cổng 3000 -> 8420 thành công, ghi nhận chuẩn xác.
 
 ---
 
@@ -158,7 +165,7 @@
 
 ---
 
-## Giai Đoạn Delta v1.1: Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER (CR-TASK-03-DELTA-01)
+## Phase 16: Delta v10 (CR-TASK-03-DELTA-01) — Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER
 
 - [x] **T-03.DEL-01** `[FE]` Cập nhật `handleOpenQuickDemand` tại `nhu-cau-cong-nghe/page.tsx` cho phép `PUBLIC_USER` & `USER`.
 - [x] **T-03.DEL-02** `[FE]` Cập nhật thông báo thân thiện cho Guest khi bấm đăng bài toán, dẫn hướng đăng ký/đăng nhập công chúng.
@@ -169,7 +176,7 @@
 
 ---
 
-## Phase 16: Delta v10 (CR-2026-010) — Triệt Tiêu 100% Mock Số Tĩnh Tại Sàn Nhu Cầu & Tích Hợp `<Async>`
+## Phase 17: Delta v11 (CR-2026-010) — Triệt Tiêu 100% Mock Số Tĩnh Tại Sàn Nhu Cầu & Tích Hợp `<Async>`
 
 - [x] **T-03.68** `[FE]` Refactor Hero Quick Metrics trong `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.tsx`:
   - Loại bỏ hoàn toàn 3 khối số liệu tĩnh hardcode `"142"`, `"68.5 tỷ"`, `"24 Giờ"`.
@@ -195,7 +202,7 @@
 
 ---
 
-## Giai Đoạn 6: Delta v1.2 — Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User (CR-TASK-03-DELTA-02)
+## Phase 18: Delta v13 (CR-TASK-03-DELTA-02) — Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User (CR-TASK-03-DELTA-02)
 
 > **Mã CR**: `CR-TASK-03-DELTA-02`  
 > **Căn cứ**: Quyết định PO `PO-DEC-20261030-03` & Đặc tả Kỹ thuật `spec.md` Mục 13 (Section Delta v1.2).  

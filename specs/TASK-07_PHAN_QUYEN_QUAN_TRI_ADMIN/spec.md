@@ -1,9 +1,13 @@
 # Feature Specification: TASK-07 Phân Quyền & Năng Lực Quản Trị Admin
 
+**Epic**: TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN  
+**Version**: 1.12.0  
+**Status**: Completed (Shipped Gate 5)  
+**Last Updated**: 2026-10-30  
+**Baseline Hash**: `a1b2c3d`  
+**Ánh Xạ Kỹ Thuật**: 3D Scoped RBAC, 7 Screens Gov Portal, 10 Roles Governance  
 **Feature Branch**: `admin-governance-rbac`  
 **Feature Directory**: `specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`  
-**Created**: 25/09/2026  
-**Status**: Shipped (2026-10-26 — Delta v9: Chuẩn Hóa Toàn Diện 7 Màn Hình Cổng Công Vụ Cấp Sở /gov/*)  
 **Ánh Xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/README.md)  
 **Tài Liệu Kế Thừa & Nâng Cấp**: Nâng cấp toàn diện từ `SRS-001-CORE-IAM` lên chuẩn 10 Roles & 3D Scoped RBAC  
 **Nguồn Dữ Liệu Gốc**: Sheet `Admin` (6 dòng, 2 cột) trong Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`  
@@ -129,7 +133,7 @@ Phân hệ quản trị tập trung và phân cấp (Hierarchical Admin & Govern
 
 ---
 
-## 5. Spec Delta v3: Quản Lý 10 Vai Trò & Cây Thư Mục 34 Tỉnh Thành Trọng Điểm
+## Spec Delta v3: Quản Lý 10 Vai Trò & Cây Thư Mục 34 Tỉnh Thành Trọng Điểm
 
 - **Căn cứ nâng cấp**: Yêu cầu PO hoàn thiện năng lực Quản trị Admin: Quản lý vai trò (Role Management) và hiển thị Cây thư mục 34 tỉnh thành trọng điểm KH&CN toàn quốc.
 - **Phạm vi bổ sung**:
@@ -139,7 +143,7 @@ Phân hệ quản trị tập trung và phân cấp (Hierarchical Admin & Govern
 
 ---
 
-## 6. Spec Delta v4: Phân Cấp Phê Duyệt Chuyên Gia Cho Cấp 2 (Sở Tỉnh) & Trung Ương Hậu Kiểm
+## Spec Delta v4: Phân Cấp Phê Duyệt Chuyên Gia Cho Cấp 2 (Sở Tỉnh) & Trung Ương Hậu Kiểm
 
 - **Bối cảnh & Căn cứ nâng cấp**: Hoàn thiện giải pháp phân cấp quản lý chuyên gia trong mô hình đa cấp (Basic Design v2.6). Chuyển giao thẩm quyền phê duyệt chuyên gia KH&CN cho Cấp 2 (Lãnh đạo Sở KH&CN Tỉnh / Đơn vị liên kết) trực tiếp quản lý địa bàn, Trung ương (Super Admin) tập trung hậu kiểm và can thiệp thu hồi khi phát hiện sai phạm.
 - **Yêu cầu chức năng mới**:
@@ -153,7 +157,7 @@ Phân hệ quản trị tập trung và phân cấp (Hierarchical Admin & Govern
 
 ---
 
-## 7. Spec Delta v5: Vận Hành Cây Hành Chính 3 Cấp Online & Full CRUD (CR-2026-006)
+## Spec Delta v5: Vận Hành Cây Hành Chính 3 Cấp Online & Full CRUD (CR-2026-006)
 
 - **Căn cứ nâng cấp**: Yêu cầu PO đưa Cây thư mục hành chính 3 cấp (Trung ương $\rightarrow$ Sở Tỉnh $\rightarrow$ Cơ sở) vận hành thực tế 100% với CSDL PostgreSQL thật, loại bỏ hoàn toàn mock data tĩnh và hỗ trợ đầy đủ các thao tác Thêm, Sửa, Vô hiệu hóa/Xóa.
 - **Yêu cầu chức năng mới**:
@@ -172,7 +176,7 @@ Phân hệ quản trị tập trung và phân cấp (Hierarchical Admin & Govern
   - *AC-TREE-03*: Cập nhật thông tin đơn vị qua `PUT` thành công, lưu vết `ApprovalAuditLog`.
   ---
 
-## 8. Spec Delta v6 (CR-2026-012): Bàn Quản Trị Người Dùng & Phân Vai Trò 10 Roles (/admin/users) [GAP-02]
+## Spec Delta v6 (CR-2026-012): Bàn Quản Trị Người Dùng & Phân Vai Trò 10 Roles (/admin/users) [GAP-02]
 
 **Căn cứ thay đổi:** Quyết định PO `PO-DEC-20261013-10` & HTML Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_nguoi_dung_admin.html`).
 
@@ -201,7 +205,7 @@ Trước Delta v6, tuyến `/admin/users` trên Web Portal bị `redirect("/admi
 
 ---
 
-## 9. Spec Delta v4 (CR-2026-020): Trung Tâm Phê Duyệt Toàn Quốc & Năng Lực Vượt Cấp (Admin Override) [Delta v4]
+## Spec Delta v7 (CR-2026-020): Trung Tâm Phê Duyệt Toàn Quốc & Năng Lực Vượt Cấp (Admin Override) [Delta v7]
 
 **Căn cứ thay đổi**: Quyết định PO `CR-2026-020` & HTML Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_admin_tong_hanh_dinh.html`).
 
@@ -273,7 +277,7 @@ Trong mô hình phân cấp quản trị đa tầng, 63 Sở KH&CN Tỉnh/Thành
 
 ---
 
-## PHẦN 8: DELTA V5 — CHUẨN HÓA CỔNG CÔNG VỤ CẤP SỞ KH&CN (`/gov`) VỚI SIDEBAR ACCORDION 4 NHÓM & 3D SCOPED RBAC
+## Spec Delta v8 (PO-DEC-20261023-02): Chuẩn Hóa Cổng Công Vụ Cấp Sở KH&CN (/gov) Với Sidebar Accordion 4 Nhóm & 3D Scoped RBAC
 
 ### 1. Bối Cảnh Nghiệp Vụ & Mục Tiêu (PO-DEC-20261023-02)
 - Cổng Công Vụ Cấp Sở KH&CN (`/gov/*`) phục vụ các Cán bộ và Lãnh đạo của 63 Sở KH&CN tỉnh thành (vai trò `PROVINCIAL_ADMIN`, `PROVINCE_OFFICER`, `PROVINCE_LEADER`).
@@ -311,7 +315,7 @@ Trong mô hình phân cấp quản trị đa tầng, 63 Sở KH&CN Tỉnh/Thành
 
 ---
 
-## 10. Đặc Tả Delta v5 (CR-2026-021) — Tinh Gọn Điều Hướng & Trải Nghiệm Người Dùng Tầng 0 [Delta v5]
+## Spec Delta v9 (CR-2026-021) — Tinh Gọn Điều Hướng & Trải Nghiệm Người Dùng Tầng 0 [Delta v9]
 
 **Căn cứ thay đổi**: Quyết định PO `CR-2026-021` (Kế hoạch nâng cấp Delta v5 Phase 1) & Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_admin_tong_hanh_dinh.html`).
 
@@ -392,7 +396,7 @@ Trong phiên bản Delta v4, hệ thống đã thiết lập Trung tâm Phê duy
 
 ---
 
-## 11. Đặc Tả Delta v6 (CR-2026-022) — Tinh Chỉnh UI/UX Toàn Diện 7 Màn Hình Admin & Hồi Sinh Audit Logs / System Config [Delta v6]
+## Spec Delta v10 (CR-2026-022) — Tinh Chỉnh UI/UX Toàn Diện 7 Màn Hình Admin & Hồi Sinh Audit Logs / System Config [Delta v10]
 
 **Căn cứ thay đổi**: Quyết định PO `CR-2026-022` (Kế hoạch nâng cấp Delta v6 theo Party Mode) & Basic Design (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/KE_HOACH_NANG_CAP_DELTA_V6_ADMIN_FULL.md`).
 
@@ -483,7 +487,7 @@ Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản 
 
 ---
 
-## PHẦN 12: DELTA V6 — CHUẨN HÓA TOÀN DIỆN 7 MÀN HÌNH CỔNG CÔNG VỤ CẤP SỞ KH&CN (`/gov/*`)
+## Spec Delta v11 — Chuẩn Hóa Toàn Diện 7 Màn Hình Cổng Công Vụ Cấp Sở KH&CN (/gov/*)
 
 **Căn cứ phê duyệt**: Quyết định PO `PO-DEC-20261026-GOV` & Kết luận Hội nghị Bàn tròn Đa Tác tử (BMad Party Mode).
 
@@ -593,7 +597,7 @@ Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản 
 
 ---
 
-## PHẦN 13: DELTA V7 (CR-2026-023) — TÁI THIẾT KẾ TOÀN DIỆN MÀN HÌNH PHÊ DUYỆT TẬP TRUNG & GIÁM SÁT SLA (`/admin/approvals`)
+## Spec Delta v12 (CR-2026-023) — Tái Thiết Kế Toàn Diện Màn Hình Phê Duyệt Tập Trung & Giám Sát SLA (/admin/approvals)
 
 **Căn cứ phê duyệt**: Quyết định PO `PO-DEC-20261026-APPROVALS-V7` & Kết luận Hội nghị Bàn tròn Đa Tác tử (BMad Party Mode).  
 **Kỹ năng áp dụng**: `speckit-delta` kết hợp `nacen-basic-design`.

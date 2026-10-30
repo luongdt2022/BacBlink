@@ -1,10 +1,17 @@
 # Đặc Tả Kỹ Thuật (Spec Kit): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
+**Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
+**Version**: 1.13.0  
+**Status**: Completed (Shipped Gate 5)  
+**Last Updated**: 2026-10-30  
+**Baseline Hash**: `a1b2c3d`  
+**Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
+
 > **Mã phân hệ**: `TASK-03_HO_SO_TIM_MUA_BUYER`  
 > **Căn cứ nguồn**: Sheet `T.mua SP` (356 dòng), Sheet `tìm mua 7.10` (109 dòng), Quyết định PO `PO-DEC-20261008-01` & `PO-DEC-20261008-03`  
 > **Phê duyệt phạm vi**: 6 Màn hình & 5 Luồng công việc (Chốt bởi PO ngày 10/10/2026)  
 > **Cơ chế liên kết**: Ánh xạ 1:1 với `Specification/02_BASIC_DESIGN/TASK-03_HO_SO_TIM_MUA_BUYER/`  
-> **Hiến pháp áp dụng**: `.specify/memory/constitution.md`
+> **Hiến pháp áp dụng**: `specs/SPEC_MANAGEMENT_CONSTITUTION.md`
 
 ---
 
@@ -247,7 +254,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## 8. DELTA V6 (CR-006) — TÁI CẤU TRÚC THỨ TỰ TAB KHẢO SÁT & CHUẨN HÓA RÀNG BUỘC VALIDATION
+## Spec Delta v6 (CR-006): Tái Cấu Trúc Thứ Tự Tab Khảo Sát & Chuẩn Hóa Ràng Buộc Validation
 
 > **Căn cứ**: Yêu cầu thay đổi `CR-006 [TASK-03]` từ Backlog ngày 17/10/2026.  
 > **Mục tiêu**: Giảm thiểu ma sát (Friction) cho doanh nghiệp khi tham gia khảo sát nhu cầu, ưu tiên thu thập ngay bài toán công nghệ sau thông tin pháp nhân.
@@ -269,7 +276,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## 9. DELTA V7 (CR-2026-016): BẮT BUỘC TỰ ĐỘNG ĐIỀN 100% THÔNG TIN HỒ SƠ DOANH NGHIỆP ĐÃ ĐĂNG NHẬP & LIÊN KẾT TÀI KHOẢN DEMO BUYER
+## Spec Delta v7 (CR-2026-016): Bắt Buộc Tự Động Điền 100% Thông Tin Hồ Sơ Doanh Nghiệp Đã Đăng Nhập & Liên Kết Tài Khoản Demo Buyer
 
 > **Mã thay đổi**: `CR-2026-016`  
 > **Căn cứ thay đổi**: 
@@ -329,7 +336,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## 10. SPEC DELTA V2 (CR-2026-017): TÁI CẤU TRÚC FORM KHẢO SÁT NHU CẦU 4 TAB TINH GỌN (LEAN 4-STEP WIZARD)
+## Spec Delta v8 (CR-2026-017 / TASK-03-CR59): Tái Cấu Trúc Form Khảo Sát Nhu Cầu 4 Tab Tinh Gọn (Lean 4-Step Wizard)
 
 > **Mã thay đổi**: `CR-2026-017` / `SPEC-DELTA-V2-TASK03`  
 > **Căn cứ thay đổi**: 
@@ -468,7 +475,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## 11. Spec Delta v2 (CR-2026-017): Làm Mịn Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ & Nâng Cấp Modal Tạo Bài Toán
+## Spec Delta v9 (CR-2026-018): Làm Mịn Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ & Nâng Cấp Modal Tạo Bài Toán
 
 **Căn cứ phê duyệt:** Chỉ đạo của PO tại phiên làm việc ngày 23/10/2026; Triệt tiêu dev badge rác kỹ thuật, bổ sung phân trang bàn làm việc và các trường nghiệp vụ quan trọng cho bài toán công nghệ (Target TRL, Ẩn danh bảo mật, Thời hạn, File RFP).
 
@@ -504,7 +511,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## Giai đoạn Delta v1.1: Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER (CR-TASK-03-DELTA-01)
+## Spec Delta v10 (CR-TASK-03-DELTA-01): Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER
 
 > **Căn cứ pháp lý & Quyết định PO**: Quyết định PO `PO-DEC-20261030-01` & Yêu cầu thay đổi `CR-TASK-03-DELTA-01` ngày 30/10/2026.  
 > **Mục tiêu**: Phá vỡ rào cản pháp nhân, cho phép cá nhân, kỹ sư, nhà sáng chế độc lập và thành viên đại chúng (`PUBLIC_USER` / `USER`) đóng góp bài toán công nghệ từ thực tiễn sản xuất vào kho dữ liệu nhu cầu Quốc gia.
@@ -577,7 +584,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## Spec Delta v5: Chuẩn Hóa Zero-Mock Số Liệu Sàn Tìm Mua & Taxonomy SSOT (CR-2026-010)
+## Spec Delta v11 (CR-2026-010): Chuẩn Hóa Zero-Mock Số Liệu Sàn Tìm Mua & Taxonomy SSOT
 
 > **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
 
@@ -597,7 +604,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## DELTA-CR-2026-10-30: Chuẩn Hóa Thuật Ngữ TT17 "Nhu Cầu Công Nghệ", Mở Quyền Quick Demand Cho PUBLIC_USER & Kỷ Luật Zero-Mock KPI Summary
+## Spec Delta v12 (CR-2026-10-30): Chuẩn Hóa Thuật Ngữ TT17 "Nhu Cầu Công Nghệ", Mở Quyền Quick Demand Cho PUBLIC_USER & Kỷ Luật Zero-Mock KPI Summary
 
 > **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & `PO-DEC-20261030-02`, Kế hoạch Đợt 1 chuẩn hóa thuật ngữ TT17 và số liệu đo lường toàn sàn.
 
@@ -642,7 +649,7 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 ---
 
-## Delta v1.2 (CR-TASK-03-DELTA-02): Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User
+## Spec Delta v13 (CR-TASK-03-DELTA-02): Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User
 
 > **Căn cứ pháp lý & Quyết định PO**: Quyết định PO `PO-DEC-20261030-03` & Yêu cầu thay đổi `CR-TASK-03-DELTA-02` ngày 30/10/2026.  
 > **Mục tiêu**: Chuẩn hóa quy trình đặt mua sản phẩm thương mại cho Thành viên Đại chúng (`PUBLIC_USER` / `USER`), triệt tiêu hoàn toàn đơn hàng mồ côi (Zero Orphaned Orders) bằng Bearer Token, minh bạch hóa tiến trình xử lý đơn qua Stepper 4 bước và tổ chức giao diện quản trị 2 Tabs tại Public Workspace.
