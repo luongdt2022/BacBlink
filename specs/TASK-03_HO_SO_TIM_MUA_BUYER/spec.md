@@ -149,8 +149,8 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
   - Nút "Chi tiết & Chào giải pháp": Đảm bảo dẫn hướng thông suốt cho `SELLER` và `EXPERT`.
 
 ### 2. Yêu cầu Chức năng Mới (FR-Delta-01 -> FR-Delta-04)
-- **FR-Delta-01**: Hero Banner hiển thị khối Quick Metrics (140+ Bài toán đang tìm, 68.5+ Tỷ ngân sách mua, 24 Giờ hỗ trợ kết nối) với độ tương phản WCAG AA đạt chuẩn.
-- **FR-Delta-02**: Combobox Bộ lọc Lĩnh vực nạp động toàn bộ danh mục 10 Lĩnh vực TT17 kèm fallback an toàn.
+- **FR-Delta-01 [Dynamic Quick Metrics & Zero-Mock]**: Hero Banner hiển thị khối Quick Metrics nạp động thời gian thực từ CSDL PostgreSQL thông qua API (`totalDemands`: Tổng số bài toán nhu cầu `PUBLISHED`; `totalBudget`: Tổng ngân sách dự kiến của các bài toán công khai; `slaSupport`: Cam kết thời gian kết nối của nền tảng). Bắt buộc bọc qua component chuẩn `<Async>` hỗ trợ 5 UX States. Xóa bỏ vĩnh viễn các số tĩnh ảo tưởng (`142 bài toán`, `68.5 tỷ`).
+- **FR-Delta-02 [Taxonomy SSOT Filter]**: Combobox Bộ lọc Lĩnh vực nạp động 100% từ Runtime API duy nhất `GET /api/v1/master-data/sectors?activeOnly=true` (10 Lĩnh vực TT17 chuẩn `LV01..LV17`). Tuyệt đối cấm dùng mảng tự chế 18 ngành hoặc mã khuyết.
 - **FR-Delta-03**: Bổ sung bộ lọc Ngân sách đầu tư (5 mức) và bộ lọc Mức độ cấp thiết TNI.
 - **FR-Delta-04**: Thẻ Card hiển thị đầy đủ thông tin nghiệp vụ: Tên lĩnh vực tiếng Việt, Ngân sách chuẩn hóa, Nhãn doanh nghiệp PDPD masked, nút Bookmark và CTA nộp giải pháp.
 
@@ -499,4 +499,257 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 - **AC-DELTA-DMD-02 (Pagination Control)**: Khi danh sách bài toán vượt quá `pageSize`, hệ thống chia trang chính xác và cho phép bấm chuyển giữa các trang mượt mà.
 - **AC-DELTA-DMD-03 (Quick Demand Modal Advanced Fields)**: Mở modal đăng bài toán, người dùng có thể chọn dải TRL mong muốn, tick chọn chế độ bảo mật ẩn danh và nhập thời hạn đề xuất.
 - **AC-DELTA-DMD-04 (Zero Regression)**: Toàn bộ các test suite hiện có của module Buyer Demands chạy pass 100%.
+
+
+
+---
+
+## Giai đoạn Delta v1.1: Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER (CR-TASK-03-DELTA-01)
+
+> **Căn cứ pháp lý & Quyết định PO**: Quyết định PO `PO-DEC-20261030-01` & Yêu cầu thay đổi `CR-TASK-03-DELTA-01` ngày 30/10/2026.  
+> **Mục tiêu**: Phá vỡ rào cản pháp nhân, cho phép cá nhân, kỹ sư, nhà sáng chế độc lập và thành viên đại chúng (`PUBLIC_USER` / `USER`) đóng góp bài toán công nghệ từ thực tiễn sản xuất vào kho dữ liệu nhu cầu Quốc gia.
+
+### 12.1 Yêu Cầu Kỹ Thuật Nghiệp Vụ (Requirements Specification)
+
+- **`REQ-BUYER-DMD-004` [Mở Quyền Truy Cập & Kích Hoạt QuickDemandModal Cho PUBLIC_USER & USER]**:
+  1. Hệ thống MUST cho phép người dùng mang vai trò `PUBLIC_USER` hoặc `USER` (đã đăng nhập, chưa nâng hạng pháp nhân) được phép mở và thao tác trên component `QuickDemandModal`.
+  2. Điểm kích hoạt (Entry Points) hỗ trợ cho `PUBLIC_USER`:
+     - Nút CTA **"Đăng bài toán nhanh"** trên Banner Hành động nhanh tại Bàn làm việc `/portal`.
+     - Nút **"Đăng bài toán kỹ thuật"** trên thanh công cụ của Sàn Nhu cầu Công nghệ `/nhu-cau-cong-nghe`.
+  3. Form `QuickDemandModal` khi được mở bởi `PUBLIC_USER`:
+     - Tự động ẩn hoặc chuyển trường Mã số thuế (MST) / Tên doanh nghiệp thành trường không bắt buộc (Optional).
+     - Cho phép người dùng nhập trực tiếp thông tin người đề xuất (Họ tên, SĐT, Email - tự động nạp từ phiên đăng nhập).
+     - Thu thập đủ các trường kỹ thuật cốt lõi: Tiêu đề bài toán, Công đoạn sản xuất, Vấn đề kỹ thuật gặp phải, Mục tiêu kỳ vọng, Dải TRL mong muốn (`TRL 1-3`, `TRL 4-6`, `TRL 7-9`), Thời hạn đề xuất, và 4 tham số TNI ($K, L, N, O$).
+
+- **`BR-DMD-PUBLIC-01` [Quy Tắc Tiếp Nhận & Thẩm Định Bài Toán Từ Thành Viên Đại Chúng]**:
+  1. **Trạng Thái Khởi Tạo Mặc Định (Default PENDING Status)**:
+     - Mọi bài toán kỹ thuật được gửi từ vai trò `PUBLIC_USER` hoặc `USER` khi lưu vào CSDL (`demand_items`) MUST có trạng thái khởi tạo `status = 'PENDING'`.
+     - Tuyệt đối KHÔNG niêm yết công khai trực tiếp lên sàn `/nhu-cau-cong-nghe` khi chưa qua quy trình thẩm định.
+  2. **Quy Trình Thẩm Định & Phân Luồng (Triage & Verification Workflow)**:
+     - Hồ sơ bài toán tự động được gắn `approval_type = 'DEMAND'` và đẩy vào Hàng đợi tiếp nhận `/gov/demands` của Sở KH&CN địa phương (dựa trên địa bàn người dùng khai báo hoặc mặc định Sở KH&CN đầu mối).
+     - Cán bộ thẩm tra (`PROVINCE_OFFICER`) và Lãnh đạo Sở (`PROVINCE_LEADER` / `PROVINCIAL_ADMIN`) hoặc Admin Sàn (`OPERATOR_ADMIN`, `SUPER_ADMIN`) có thẩm quyền rà soát nội dung:
+       * Loại bỏ các bài toán spam, nội dung quảng cáo sai quy định hoặc không mang tính kỹ thuật.
+       * Chuẩn hóa từ khóa phân loại ngành (`LV01–LV18`, `CN01–CN48`).
+       * Phê duyệt bài toán chuyển trạng thái `status = 'VERIFIED'` để niêm yết công khai lên sàn và kích hoạt Radar Ghép Nối AI.
+  3. **Tuân Thủ Bảo Vệ Dữ Liệu Cá Nhân (PDPD Compliance - NĐ 13/2023/NĐ-CP)**:
+     - Toàn bộ thông tin cá nhân của người đề xuất (Họ tên, Số điện thoại cá nhân, Địa chỉ Email cá nhân) MUST được mã hóa và ẩn danh (Masking) trên toàn bộ các bề mặt công khai.
+     - Bên Bán hoặc Chuyên gia chỉ có thể xem nội dung bài toán kỹ thuật, mục tiêu và điểm TNI; chỉ được tiếp cận thông tin liên hệ khi người đề xuất bài toán chủ động bấm "Chấp thuận kết nối" (Opt-in Handshake).
+  4. **Miễn Trừ Thủ Tục Pháp Nhân (No Corporate Tax ID Requirement)**:
+     - Tuyệt đối KHÔNG chặn nộp bài toán nếu người dùng để trống Mã số thuế (MST) hoặc Giấy phép ĐKKD.
+     - Bản ghi liên kết trực tiếp với mã định danh cá nhân: `created_by = current_user.id`, `scope_type = 'GLOBAL'`, `institution_id = null`.
+
+### 12.2 Ma Trận Phân Quyền 10 Roles Cho Chức Năng Đăng Bài Toán Nhu Cầu Nhanh
+
+| STT | Mã Vai Trò (Role Code) | Tên Phân Quyền Vai Trò | Quyền Mở `QuickDemandModal` | Quyền Submit Bài Toán | Ràng Buộc MST Doanh Nghiệp | Trạng Thái Bản Ghi Mới | Hàng Đợi Thẩm Định |
+| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| 1 | `SUPER_ADMIN` | Quản trị viên Tối cao Trung ương | Có | Có | Không | `VERIFIED` | Bỏ qua kiểm duyệt (Direct Verified) |
+| 2 | `OPERATOR_ADMIN` | Quản trị viên Vận hành Sàn | Có | Có | Không | `VERIFIED` | Bỏ qua kiểm duyệt (Hỗ trợ nhập liệu) |
+| 3 | `PROVINCIAL_ADMIN` | Lãnh đạo / QTV Sở KH&CN Tỉnh | Có | Có | Không | `VERIFIED` | Bài toán đặt hàng KH&CN cấp Tỉnh |
+| 4 | `PROVINCE_OFFICER` | Chuyên viên Thẩm tra Sở KH&CN | Có | Có | Không | `PENDING` | Chờ Lãnh đạo Sở phê duyệt |
+| 5 | `ENTERPRISE` | Doanh nghiệp ĐMST (Đã xác minh MST) | Có | Có | Bắt buộc | `PENDING` | Ưu tiên đối soát CSDL 304 DN |
+| 6 | `BUYER` | Bên Mua Công nghệ Chính Thức | Có | Có | Bắt buộc | `PENDING` | Kích hoạt Deal Room & Radar AI sau duyệt |
+| 7 | `SELLER` | Bên Bán Công nghệ (Chủ Gian Hàng) | Có | Có | Không | `PENDING` | Tìm kiếm công nghệ bổ trợ R&D |
+| 8 | `VERIFIED_EXPERT` | Chuyên gia KH&CN đã được Sở cấp thẻ | Có | Có | Không | `PENDING` | Bài toán R&D / Đề tài thử nghiệm |
+| 9 | `INNOVATION_ENTITY` | Viện nghiên cứu, Trường Đại học, HTX | Có | Có | Tùy chọn | `PENDING` | Nhu cầu chuyển giao công nghệ liên ngành |
+| 10 | `PUBLIC_USER` / `USER` | **Thành viên đại chúng / Kỹ sư cá nhân** | **CÓ (MỚI)** | **CÓ (MỚI)** | **KHÔNG BẮT BUỘC** | **`PENDING`** | **Bắt buộc qua Thẩm định Sở/Sàn (PDPD Protected)** |
+
+### 12.3 Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-DELTA-DMD-05` [Mở Modal & Đăng Bài Toán Thành Công Bởi PUBLIC_USER]**:
+  - **Given** người dùng đăng nhập tài khoản có vai trò `PUBLIC_USER` (hoặc `USER`),
+  - **When** bấm nút "Đăng bài toán nhanh" tại Bàn làm việc `/portal` hoặc Sàn `/nhu-cau-cong-nghe`,
+  - **Then** modal `QuickDemandModal` mở ra mà không yêu cầu nhập Mã số thuế,
+  - **When** người dùng nhập đầy đủ Tiêu đề, Mô tả vấn đề, Mục tiêu, chọn dải TRL và chấm điểm 4 tham số $K, L, N, O$, sau đó bấm "Gửi bài toán",
+  - **Then** hệ thống gửi yêu cầu `POST /api/v1/demands/items` thành công,
+  - **And** bản ghi được khởi tạo với trạng thái `PENDING`, hiển thị thông báo "Bài toán kỹ thuật của bạn đã được tiếp nhận và đang chờ Sở KH&CN / Ban quản trị thẩm định".
+
+- **`AC-DELTA-DMD-06` [Chặn Hiển Thị Công Khai Cho Đến Khi Thẩm Định]**:
+  - **Given** bài toán được tạo bởi `PUBLIC_USER` đang ở trạng thái `PENDING`,
+  - **When** người dùng vãng lai hoặc Seller truy cập Sàn `/nhu-cau-cong-nghe`,
+  - **Then** bài toán này KHÔNG xuất hiện trên danh sách công khai.
+  - **When** Cán bộ Sở KH&CN (`PROVINCIAL_ADMIN`) đăng nhập vào `/gov/demands` và duyệt bài toán sang `VERIFIED`,
+  - **Then** bài toán xuất hiện công khai trên `/nhu-cau-cong-nghe` với thông tin cá nhân đã được Masking theo chuẩn PDPD.
+
+- **`AC-DELTA-DMD-07` [Zero Regression RBAC & Backward Compatibility]**:
+  - **Given** các tài khoản mang vai trò `BUYER`, `ENTERPRISE`, `SELLER`, `VERIFIED_EXPERT`, `SUPER_ADMIN`,
+  - **When** thực hiện tạo bài toán qua `QuickDemandModal` hoặc Khảo sát chuyên sâu `/khao-sat-nhu-cau`,
+  - **Then** hành vi, luồng dữ liệu và validation của các vai trò này hoạt động đúng theo đặc tả gốc, không phát sinh lỗi hồi quy.
+
+---
+
+## Spec Delta v5: Chuẩn Hóa Zero-Mock Số Liệu Sàn Tìm Mua & Taxonomy SSOT (CR-2026-010)
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
+
+### 1. Bối cảnh & Mục tiêu
+- **Xóa bỏ số liệu tĩnh**: Gỡ bỏ vĩnh viễn 3 khối số liệu tĩnh hardcoded `"142 bài toán"`, `"68.5 tỷ"`, `"24 giờ"` trên Hero Banner Sàn Tìm Mua (`app/nhu-cau-cong-nghe/page.tsx`).
+- **Nạp động thời gian thực từ API thật**:
+  - `totalDemands`: Đếm tổng số bài toán nhu cầu có trạng thái `PUBLISHED` từ schema `demand`.
+  - `totalBudget`: Tính tổng giá trị ngân sách dự kiến của các bài toán công khai.
+  - `slaSupport`: Cam kết thời gian kết nối hỗ trợ của nền tảng.
+- **5 UX States qua `<Async>`**: Bắt buộc mọi khối số liệu thống kê và danh sách bài toán xử lý qua component chuẩn `<Async>`. Không bao giờ fallback số giả khi mất kết nối mạng.
+- **Đồng bộ Taxonomy 10 Lĩnh vực TT17**: Combobox bộ lọc Lĩnh vực nạp động 100% từ `GET /api/v1/master-data/sectors?activeOnly=true`. Nghiêm cấm mảng tự chế 18 ngành hoặc mã khuyết.
+
+### 2. Tiêu chí Đo Lường Hoàn Thành (Success Criteria)
+- **`SC-DELTA-DMD-08`**: 100% số liệu hiển thị trên Hero Banner của Sàn Tìm Mua lấy từ API backend thật, khớp chính xác từng đơn vị với CSDL PostgreSQL.
+- **`SC-DELTA-DMD-09`**: Khi CSDL chưa có bài toán nào, hệ thống hiển thị trung thực con số `0` bài toán kèm lời mời đăng bài, không hiển thị bất kỳ số giả định nào.
+- **`SC-DELTA-DMD-10`**: Bộ lọc Lĩnh vực hiển thị đúng 10 Lĩnh vực chuẩn TT17, lọc chính xác các bài toán thuộc mã `LV` được chọn.
+
+---
+
+## DELTA-CR-2026-10-30: Chuẩn Hóa Thuật Ngữ TT17 "Nhu Cầu Công Nghệ", Mở Quyền Quick Demand Cho PUBLIC_USER & Kỷ Luật Zero-Mock KPI Summary
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & `PO-DEC-20261030-02`, Kế hoạch Đợt 1 chuẩn hóa thuật ngữ TT17 và số liệu đo lường toàn sàn.
+
+### 1. Bối Cảnh & Lý Do Thay Đổi
+- **Chuẩn hóa thuật ngữ TT17**: Thông tư 17/2019/TT-BKHCN quy định chính thức thuật ngữ **"Nhu cầu công nghệ"** (Technology Demand), loại bỏ thuật ngữ tự phát "Bài toán đổi mới / Bài toán công nghệ" gây lệch chuẩn văn bản quy phạm pháp luật.
+- **Mở quyền đăng nhu cầu nhanh cho đại chúng**: Người dùng cá nhân, kỹ sư (`PUBLIC_USER`, `USER`) được nộp nhu cầu kỹ thuật mà không cần MST, chuyển vào hàng đợi duyệt `PENDING` và bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP (PDPD).
+- **Kỷ luật Zero-Mock KPI Summary**: Xóa bỏ 100% số liệu ảo (`142 bài toán`, `68.5 tỷ`, `24 giờ`), nạp động qua API thời gian thực từ schema `demand`, hỗ trợ 5 UX states qua component `<Async>`.
+
+### 2. Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+- **`REQ-DEL-03-01` (Chuẩn Hóa Thuật Ngữ TT17: Nhu Cầu Công Nghệ)**:
+  - Trên toàn bộ giao diện Sàn Tìm Mua (`/nhu-cau-cong-nghe`), Form khảo sát (`/khao-sat-nhu-cau`), Modal đăng nhanh (`QuickDemandModal`), Bảng Kanban điều phối và các nhãn điều hướng: MUST thay thế toàn diện cụm từ `"Bài toán đổi mới"` / `"Bài toán công nghệ"` thành cụm từ chuẩn hóa **`"Nhu cầu công nghệ"`** theo đúng Thông tư 17/2019/TT-BKHCN.
+  - Các nhãn nút bấm, placeholder, thông báo hệ thống được cập nhật đồng bộ (ví dụ: *"Đăng nhu cầu công nghệ"*, *"Tìm kiếm nhu cầu công nghệ"*, *"Tra cứu nhu cầu theo lĩnh vực"*).
+- **`REQ-DEL-03-02` (Mở Quyền Quick Demand Cho PUBLIC_USER & Chế Độ Bảo Vệ PDPD)**:
+  - Cho phép tài khoản `PUBLIC_USER` / `USER` mở và nộp form `QuickDemandModal` từ cả hai bề mặt: Trang tổng quan / Không gian cá nhân (`/portal`) và Sàn Nhu cầu (`/nhu-cau-cong-nghe`).
+  - Không bắt buộc Mã số thuế (MST) và ĐKKD doanh nghiệp đối với người nộp là cá nhân/kỹ sư. Gán `scope_type = 'GLOBAL'`, `institution_id = null`, `created_by = current_user.id`.
+  - Trạng thái bản ghi khởi tạo mặc định là `PENDING` (chờ Cán bộ Sở KH&CN hoặc Quản trị viên Sàn thẩm tra tính hợp lệ và loại trừ spam trước khi niêm yết).
+  - Áp dụng bảo vệ PDPD: Thông tin định danh cá nhân (Họ tên, SĐT, Email) của người nộp bắt buộc phải được che mờ (masking) khi hiển thị công khai trên Sàn.
+
+### 3. Quy Tắc Nghiệp Vụ (Business Rules)
+- **`BR-DEL-03-01` (Kỷ Luật Zero-Mock KPI Summary & Marketplace Metrics)**:
+  - **Triệt tiêu số liệu tĩnh**: Xóa bỏ vĩnh viễn toàn bộ số liệu tĩnh hardcoded (`"142 bài toán"`, `"68.5 tỷ"`, `"24 giờ"`) trên Hero Banner Sàn Tìm Mua (`app/nhu-cau-cong-nghe/page.tsx`).
+  - **Nạp động 100% qua API backend thật**:
+    * `totalDemands`: Đếm thời gian thực tổng số nhu cầu công nghệ có trạng thái `PUBLISHED` từ schema `demand`.
+    * `totalBudget`: Tính tổng giá trị ngân sách dự kiến của các nhu cầu công khai (chuyển đổi đơn vị Triệu VNĐ / Tỷ VNĐ).
+    * `slaSupport`: Cam kết thời gian phản hồi hỗ trợ kết nối từ nền tảng.
+  - **Kỷ luật 5 UX States qua `<Async>`**: Mọi khối số liệu thống kê summary bắt buộc xử lý qua component `<Async>` hỗ trợ đủ 5 trạng thái (Loading, Empty, Error, Success, Updating). Khi CSDL chưa có dữ liệu, hiển thị trung thực con số `0`, cấm tuyệt đối fallback số dummy ảo trong khối `catch`.
+  - **Đồng bộ Taxonomy SSOT 10 Lĩnh vực TT17**: Bộ lọc Lĩnh vực nạp động 100% từ `GET /api/v1/master-data/sectors?activeOnly=true`, khớp chính xác 10 mã `LV` chuẩn, triệt tiêu mảng tự chế 18 ngành.
+
+### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **`AC-DEL-03-01` (TT17 Terminology Standardization)**:
+  - 100% nhãn giao diện, bộ lọc, modal và thông báo tại phân hệ Sàn Tìm Mua hiển thị nhất quán cụm từ `"Nhu cầu công nghệ"`, không còn xuất hiện cụm từ `"Bài toán đổi mới"`.
+- **`AC-DEL-03-02` (PUBLIC_USER Quick Demand Submission)**:
+  - Người dùng đăng nhập vai trò `PUBLIC_USER` có thể bấm mở `QuickDemandModal`, form không yêu cầu MST, nhập nội dung nhu cầu và nộp thành công với status `PENDING`. Bản ghi không hiển thị công khai cho đến khi được duyệt sang `VERIFIED`.
+- **`AC-DEL-03-03` (Zero-Mock Marketplace Metrics Validation)**:
+  - Hero banner Sàn Tìm Mua hiển thị số liệu thực tế từ API `GET /api/v1/portal/stats` hoặc endpoint đếm nhu cầu thật. Không xuất hiện chuỗi hardcoded `"142 bài toán"` hay `"68.5 tỷ"`. Khi CSDL có 0 bản ghi, hiển thị chính xác số `0`.
+
+### 5. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-DEL-03-01** | `BR-DEL-03-01` | `AC-DEL-03-01` | `app/nhu-cau-cong-nghe/page.tsx`, `components/demand/*` | `nhu-cau-cong-nghe.test.tsx` |
+| **REQ-DEL-03-02** | `BR-DEL-03-01` | `AC-DEL-03-02` | `components/modals/QuickDemandModal.tsx`, `app/nhu-cau-cong-nghe/page.tsx` | `quick-demand-modal.test.tsx` |
+
+---
+
+## Delta v1.2 (CR-TASK-03-DELTA-02): Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User
+
+> **Căn cứ pháp lý & Quyết định PO**: Quyết định PO `PO-DEC-20261030-03` & Yêu cầu thay đổi `CR-TASK-03-DELTA-02` ngày 30/10/2026.  
+> **Mục tiêu**: Chuẩn hóa quy trình đặt mua sản phẩm thương mại cho Thành viên Đại chúng (`PUBLIC_USER` / `USER`), triệt tiêu hoàn toàn đơn hàng mồ côi (Zero Orphaned Orders) bằng Bearer Token, minh bạch hóa tiến trình xử lý đơn qua Stepper 4 bước và tổ chức giao diện quản trị 2 Tabs tại Public Workspace.
+
+### 1. Yêu Cầu Kỹ Thuật Nghiệp Vụ (Requirements Specification)
+
+- **`REQ-BUYER-ORD-001` [Đặt Mua Sản Phẩm Thương Mại & Gán Chủ Tài Khoản Xác Thực]**:
+  1. Hệ thống MUST cho phép người dùng (sau khi đăng nhập với vai trò `PUBLIC_USER` hoặc `BUYER`) thực hiện đặt mua hoặc gửi yêu cầu báo giá thương mại từ các trang sản phẩm/thiết bị (`/san-pham`, `/chao-ban-cong-nghe/[id]`) hoặc modal mua nhanh (`QuickBuyModal` / `OrderPlacementModal`).
+  2. Bắt buộc gắn kết chủ tài khoản: Mọi yêu cầu tạo đơn đặt mua MUST gửi kèm JWT Bearer Token trong header `Authorization: Bearer <token>`. Phía Backend trích xuất mã định danh người dùng `PersonId` (`current_user.id`) từ JWT claims và gán trực tiếp vào thuộc tính `created_by` / `buyer_id` của đơn hàng.
+  3. Form đặt mua thu thập tối thiểu:
+     - Thông tin mặt hàng: Mã sản phẩm (`offer_id`), tên sản phẩm, đơn giá niêm yết (nếu có), số lượng mong muốn.
+     - Thông tin liên hệ người mua: Họ và tên, số điện thoại, email (tự động nạp sẵn từ hồ sơ người dùng đã đăng nhập).
+     - Địa chỉ giao nhận / triển khai và ghi chú yêu cầu kỹ thuật/thương mại kèm theo.
+  4. Hệ thống MUST sinh mã đơn hàng chuẩn hóa: `ORD-YYYYMMDD-XXXXX` (trong đó `XXXXX` là số thứ tự tăng dần trong ngày).
+  5. Nghiêm cấm tạo đơn mồ côi: Nếu người dùng chưa đăng nhập bấm nút đặt mua, hệ thống MUST hiển thị Auth Modal yêu cầu đăng nhập/đăng ký, lưu tạm thông tin đặt mua trong bộ nhớ phiên và khôi phục nộp đơn sau khi đăng nhập thành công.
+
+- **`REQ-BUYER-ORD-002` [Giao Diện Quản Trị 2 Tabs: Đơn Hàng Thương Mại vs Nhu Cầu R&D]**:
+  1. Tại Bàn làm việc người mua (`/portal/saved` hoặc `/portal/orders`) thuộc menu **"Đơn hàng & Yêu cầu mua"**, hệ thống MUST cung cấp giao diện quản trị phân tách thành 2 Tabs rõ ràng:
+     - **Tab 1 — "Đơn hàng thương mại" (`Commercial Orders`)**:
+       * Hiển thị danh sách các đơn đặt mua sản phẩm/thiết bị thương mại do người dùng đã tạo.
+       * Mỗi đơn hàng hiển thị: Mã đơn, Tên sản phẩm, Nhà cung cấp (Seller), Ngày đặt, Tổng giá trị ước tính, và Huy hiệu trạng thái (Badge).
+       * Nhấp vào đơn hàng sẽ mở view chi tiết kèm Order Tracking Stepper 4 bước.
+     - **Tab 2 — "Nhu cầu công nghệ / Bài toán R&D" (`R&D Demands`)**:
+       * Hiển thị danh sách các bài toán kỹ thuật đã nộp qua `QuickDemandModal` hoặc Khảo sát sâu `/khao-sat-nhu-cau`.
+       * Hiển thị chỉ số TNI, lĩnh vực, ngân sách dự kiến và trạng thái thẩm định Cấp Sở/Sàn (`PENDING` / `VERIFIED` / `RETURNED`).
+  2. Mỗi Tab duy trì bộ lọc trạng thái, tìm kiếm từ khóa và phân trang độc lập, không làm xáo trộn dữ liệu của Tab còn lại.
+
+- **`REQ-BUYER-ORD-003` [Thanh Tiến Trình Đơn Hàng (Order Tracking Stepper 4 Bước)]**:
+  1. Giao diện chi tiết đơn hàng thương mại MUST tích hợp thành phần hiển thị tiến trình `OrderTrackingStepper` gồm đúng 4 bước tuyến tính:
+     - **Bước 1 — `SUBMITTED` (Đã gửi đơn)**: Thời điểm người mua hoàn tất gửi đơn. Đơn ở trạng thái chờ tiếp nhận.
+     - **Bước 2 — `PROCESSING` (Đang xử lý)**: Bên Bán (Seller) hoặc Quản trị viên đã tiếp nhận thông tin, đang kiểm tra tình trạng hàng/năng lực cung cấp kỹ thuật.
+     - **Bước 3 — `NEGOTIATING` (Đang đàm phán)**: Hai bên đang thương thảo hợp đồng, thống nhất bảng giá, phụ lục kỹ thuật, điều khoản bảo hành và thanh toán.
+     - **Bước 4 — `COMPLETED` (Hoàn tất)**: Hai bên ký kết hợp đồng thương mại hoặc hoàn tất bàn giao, chuyển giao giải pháp.
+  2. Hiển thị trực quan trạng thái từng bước:
+     - Bước đã hoàn thành: Icon check xanh lá cây kèm thời điểm hoàn thành (Timestamp).
+     - Bước hiện tại đang kích hoạt: Icon nổi bật, vòng quay hoặc viền sáng kèm thông tin hướng dẫn hành động tiếp theo.
+     - Bước chưa tới: Màu xám mờ.
+  3. Xử lý trạng thái ngoại lệ:
+     - Nếu đơn bị hủy (`CANCELLED`): Stepper chuyển sang màu xám/đỏ hiển thị nhãn "Đơn hàng đã hủy" kèm lý do hủy và người thực hiện hủy.
+     - Nếu đơn bị từ chối (`REJECTED`): Stepper hiển thị nhãn "Bên bán từ chối tiếp nhận" kèm lý do phản hồi của Seller.
+
+### 2. Quy Tắc Nghiệp Vụ (Business Rules)
+
+- **`BR-ORD-AUTH-01` [Bắt Buộc Xác Thực Bearer Token & Chống Đơn Hàng Mồ Côi]**:
+  1. API endpoint tạo đơn mua `POST /api/v1/demands/orders` bắt buộc phải có Header `Authorization: Bearer <jwt_access_token>`.
+  2. Nếu request thiếu token hoặc token hết hạn/không hợp lệ, Backend MUST trả về HTTP `401 Unauthorized` kèm mã lỗi `AUTH_TOKEN_REQUIRED`.
+  3. Backend giải mã JWT lấy `sub` hoặc claim `person_id` / `user_id` gán vào trường `created_by` và `buyer_id`. Tuyệt đối cấm để giá trị `NULL`.
+  4. Bản ghi đơn hàng mặc định gán: `scope_type = 'GLOBAL'`, `is_commercial = true`.
+  5. Tài khoản `PUBLIC_USER` chỉ được quyền xem và thao tác trên các đơn hàng có `created_by = current_user.id`.
+
+- **`BR-ORD-TRACKING-01` [Quy Tắc Chuyển Đổi Trạng Thái Đơn Hàng (Order State Machine)]**:
+  1. **Ma Trận Chuyển Đổi Hợp Lệ (State Transition Matrix)**:
+     - `SUBMITTED` → `PROCESSING` (Thực hiện bởi: Seller sở hữu sản phẩm hoặc Operator Admin).
+     - `SUBMITTED` → `CANCELLED` (Thực hiện bởi: Buyer chủ sở hữu đơn).
+     - `PROCESSING` → `NEGOTIATING` (Thực hiện bởi: Seller hoặc Buyer khi bắt đầu thương thảo).
+     - `PROCESSING` → `REJECTED` (Thực hiện bởi: Seller khi hết hàng hoặc không khả thi).
+     - `NEGOTIATING` → `COMPLETED` (Thực hiện bởi: Seller hoặc Buyer khi hai bên thống nhất hợp đồng).
+     - `NEGOTIATING` → `CANCELLED` (Thực hiện bởi: Seller hoặc Buyer khi đàm phán bất thành).
+  2. **Quyền Hủy Đơn Của Buyer**:
+     - Người mua (`Buyer`) có toàn quyền chủ động bấm "Hủy đơn" (`CANCELLED`) khi đơn đang ở trạng thái `SUBMITTED` mà không cần sự đồng thuận của Seller.
+     - Khi đơn đã chuyển sang `PROCESSING` hoặc `NEGOTIATING`, hành động hủy yêu cầu nhập lý do và gửi thông báo xác nhận đến bên còn lại.
+  3. **Lưu Vết Kiểm Toán Bắt Buộc (Audit Trail SSOT)**:
+     - Mọi thao tác đổi trạng thái MUST ghi nhận một bản ghi vào bảng `order_status_logs` (hoặc `audit_events`) gồm: `order_id`, `from_status`, `to_status`, `changed_by_user_id`, `changed_at`, `reason_notes`.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-ORD-01` [Đặt Hàng Thương Mại Kèm Bearer Token & Gán Chủ Sở Hữu]**:
+  - **Given** người dùng đã đăng nhập với tài khoản `PUBLIC_USER` (hoặc `BUYER`),
+  - **When** vào trang chi tiết sản phẩm thương mại `/chao-ban-cong-nghe/[id]` và bấm "Đặt mua ngay",
+  - **And** điền số lượng, địa chỉ giao nhận và bấm "Xác nhận đặt hàng",
+  - **Then** Frontend gửi request `POST /api/v1/demands/orders` kèm header `Authorization: Bearer <token>`,
+  - **And** Backend xác thực token thành công, trích xuất `PersonId`, lưu bản ghi với `created_by = PersonId`,
+  - **And** hệ thống trả về mã đơn hàng `ORD-YYYYMMDD-XXXXX` và chuyển hướng người dùng đến trang chi tiết đơn hàng trong Bàn làm việc `/portal/saved?tab=commercial`.
+
+- **`AC-ORD-02` [Chặn Khách Vãng Lai & Điều Hướng Đăng Nhập An Toàn]**:
+  - **Given** người dùng chưa đăng nhập (khách vãng lai / Guest),
+  - **When** bấm nút "Đặt mua ngay" tại trang sản phẩm,
+  - **Then** hệ thống KHÔNG gửi request tạo đơn ẩn danh,
+  - **And** hiển thị Auth Modal yêu cầu đăng nhập/đăng ký,
+  - **When** người dùng hoàn tất đăng nhập thành công,
+  - **Then** hệ thống tự động giữ nguyên mặt hàng đã chọn và mở lại form đặt hàng với thông tin cá nhân đã nạp sẵn.
+
+- **`AC-ORD-03` [Giao Diện Bàn Làm Việc 2 Tabs Hoạt Động Độc Lập]**:
+  - **Given** người dùng truy cập Bàn làm việc qua menu "Đơn hàng & Yêu cầu mua" (`/portal/saved`),
+  - **When** chọn Tab "Đơn hàng thương mại",
+  - **Then** hệ thống hiển thị danh sách các đơn đặt mua sản phẩm của người dùng kèm mã `ORD-*`, tên sản phẩm, trạng thái và nút xem tiến trình,
+  - **When** người dùng chuyển sang Tab "Nhu cầu công nghệ / Bài toán R&D",
+  - **Then** hệ thống nạp danh sách các bài toán kỹ thuật/khảo sát TNI kèm trạng thái thẩm định Cấp Sở (`PENDING` / `VERIFIED`), không hiển thị lẫn lộn đơn thương mại.
+
+- **`AC-ORD-04` [Hiển Thị Trực Quan Order Tracking Stepper 4 Bước]**:
+  - **Given** người mua mở chi tiết một đơn đặt mua hàng thương mại,
+  - **Then** màn hình hiển thị thanh `OrderTrackingStepper` gồm đúng 4 bước: `SUBMITTED` -> `PROCESSING` -> `NEGOTIATING` -> `COMPLETED`,
+  - **When** đơn hàng ở trạng thái `PROCESSING`,
+  - **Then** bước 1 (`SUBMITTED`) có tích xanh hoàn thành kèm giờ gửi, bước 2 (`PROCESSING`) sáng màu active với chú thích "Đang kiểm tra hàng", bước 3 và 4 ở trạng thái chờ (inactive).
+
+- **`AC-ORD-05` [Buyer Hủy Đơn Thành Công Tại Bước SUBMITTED]**:
+  - **Given** một đơn hàng của Buyer đang ở trạng thái `SUBMITTED`,
+  - **When** Buyer bấm nút "Hủy đơn hàng" và xác nhận tại hộp thoại cảnh báo,
+  - **Then** API `PATCH /api/v1/demands/orders/{id}/status` gửi payload `{ status: 'CANCELLED', reason: '...' }`,
+  - **And** Backend cập nhật `status = 'CANCELLED'`, ghi log kiểm toán,
+  - **And** giao diện Stepper chuyển sang trạng thái "Đã hủy", vô hiệu hóa các nút tương tác tiếp theo.
+
+### 4. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Mã Yêu Cầu (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Bảng CSDL Tác Động (DB Schema) | Giao Diện Triển Khai (UI Screens) | API Endpoint Ánh Xạ |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-BUYER-ORD-001** | `BR-ORD-AUTH-01` | `AC-ORD-01`, `AC-ORD-02` | `demand.demand_orders`, `demand.order_items` | `QuickBuyModal.tsx`, `ProductDetailPage.tsx` | `POST /api/v1/demands/orders` |
+| **REQ-BUYER-ORD-002** | `BR-ORD-AUTH-01`, `BR-ORD-TRACKING-01` | `AC-ORD-03` | `demand.demand_orders`, `demand.demand_items` | `OrdersWorkspaceTabs.tsx`, `/portal/saved/page.tsx` | `GET /api/v1/demands/my-orders`, `GET /api/v1/demands/items` |
+| **REQ-BUYER-ORD-003** | `BR-ORD-TRACKING-01` | `AC-ORD-04`, `AC-ORD-05` | `demand.demand_orders`, `demand.order_status_logs` | `OrderTrackingStepper.tsx`, `OrderDetailModal.tsx` | `GET /api/v1/demands/orders/{id}`, `PATCH /api/v1/demands/orders/{id}/status` |
 

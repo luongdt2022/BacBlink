@@ -299,6 +299,33 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Nâng cấp Hồ sơ Doanh nghiệp sang ConfirmModal & Clean State** | `REQ-SELLER-007`, `AC-DELTA-26` | `T-00.68` | `src/app/portal/enterprise/profile/page.tsx` | Khởi tạo `highQualificationRatio: ""`; thay thế `window.confirm()` bằng `<ConfirmModal />` chuẩn Design System NacenTech; Vitest `QC-TEST-07A..07B` PASS |
 | **Bộ kiểm thử toàn diện 4 test suites Gate 4/5 Pass** | `AC-DELTA-21..27`, `QC-4-TIERS` | `T-00.69` | `seller-workspace-delta-qc.test.tsx`, `seller-dashboard.test.tsx`, `portal-navigation-delta.test.tsx`, `layout.test.tsx` | 23/23 Vitest tests PASS 100% (100% Green, 0 errors) |
 
+---
+
+## 23. TASK-03 Delta v1.1 (CR-TASK-03-DELTA-01): Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER & Siết Chặt Zero-IDOR
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Mở quyền Quick Demand cho PUBLIC_USER, USER, EXPERT** | `REQ-BUYER-DMD-004`, `BR-DMD-PUBLIC-01`, `AC-DELTA-DMD-05` | `T-03.DEL-01`, `T-03.DEL-02` | `src/app/nhu-cau-cong-nghe/page.tsx` | Toast Info hướng dẫn Guest; mở `setIsModalOpen(true)` cho `PUBLIC_USER`, `USER`, `EXPERT`; Vitest `nhu-cau-cong-nghe/page.test.tsx` PASS |
+| **Tích hợp Menu "Bài toán Đã Đăng" vào Bàn làm việc cá nhân** | `REQ-BUYER-DMD-004`, `AC-DELTA-DMD-06` | `T-03.DEL-03` | `src/app/portal/layout.tsx` | Bổ sung `{ href: "/portal/buyer/demands", label: "Bài toán Đã Đăng", icon: ShoppingBag }` vào `publicNavItems`; Vitest `layout.test.tsx` PASS |
+| **Triệt tiêu lỗi 401 trên Workspace Bên Mua khi tải danh sách** | `BR-DMD-PUBLIC-01`, `AC-DELTA-DMD-06` | `T-03.DEL-04` | `src/app/portal/buyer/demands/page.tsx` | Gắn Bearer Token vào `GET /api/v1/buyer/demands`, Empty State chuẩn UX; Vitest `buyer/demands/page.test.tsx` PASS |
+| **Siết chặt Zero-IDOR & Zero-Token trên API Update & Close** | `BR-DMD-PUBLIC-01`, `AC-DELTA-DMD-07` | `T-03.DEL-04` | `backend/apps/api/V1Compat/DemandController.cs` | Gỡ `[AllowAnonymous]`, ép xác thực JWT, chặn 403 Forbidden nếu `item.CreatedBy != Actor.PersonId`; .NET unit test 21/21 PASS |
+| **Kiểm định 4 tầng Blackbox Zero-Mock trên PostgreSQL thật** | `QC-4-TIERS`, `BR-DMD-PUBLIC-01` | `T-03.DEL-05` | `run_qc_gate4_cr_task03_delta01.py`, CSDL PostgreSQL | Đối soát bản ghi `demand_items` thật (`DMD-20261030-0EC05C`, `created_by` khớp `PersonId`, `status = 'PENDING'`), 35/35 TCs PASS 100% |
+| **Shadow SQA Lead Audit Gate 5 Sign-Off** | `GATE5-AUDIT` | - | `Specification/BASIC_DESIGN_NACENTECH.md`, `specs/TASK-03/` | 0 mock ngầm, 0 compiler warnings, cấp thẻ GO toàn trình |
+
+---
+
+## 24. TASK-03 Delta v1.2 (CR-TASK-03-DELTA-02): Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Đặt Mua Sản Phẩm Thương Mại & Gán Chủ Tài Khoản Xác Thực** | `REQ-BUYER-ORD-001`, `BR-ORD-AUTH-01`, `AC-ORD-01` | `Task 6.1` | `src/services/api/technology-offer.ts`, `backend/apps/api/V1Compat/DemandController.cs` | Tự động gắn Bearer Token qua `authClient.getToken()`, lưu metadata `offerId`, `offerTitle`, `offerCode`, `isCommercialOrder`; CSDL PostgreSQL thật lưu `created_by = PersonId`; Vitest `technology-offer.test.ts` 8/8 PASS |
+| **Đồng Bộ Menu "Đơn hàng & Yêu cầu mua" trong Sidebar Workspace** | `REQ-BUYER-ORD-002`, `AC-ORD-03` | `Task 6.2` | `src/app/portal/layout.tsx` | Đổi nhãn `publicNavItems` sang "Đơn hàng & Yêu cầu mua" (`ShoppingBag`); Vitest `layout.test.tsx` 10/10 PASS |
+| **Component OrderTrackingStepper 4 Bước Tuyến Tính & Trạng Thái Hủy** | `REQ-BUYER-ORD-003`, `BR-ORD-TRACKING-01`, `AC-ORD-04` | `Task 6.3` | `src/components/demand/OrderTrackingStepper.tsx` | 4 bước `SUBMITTED` -> `PROCESSING` -> `NEGOTIATING` -> `COMPLETED`, hỗ trợ badge `CANCELLED` và `REJECTED`; Vitest `OrderTrackingStepper.test.tsx` 7/7 PASS |
+| **Bàn Làm Việc 2 Tabs Cấp Cao (Đơn Mua vs Nhu Cầu R&D)** | `REQ-BUYER-ORD-002`, `AC-ORD-03`, `AC-ORD-05` | `Task 6.3` | `src/app/portal/buyer/demands/page.tsx` | Phân tách 2 Tabs độc lập qua query param `?tab=commercial` / `?tab=demands`, xem chi tiết đơn, nút hủy đơn khi `SUBMITTED`; Vitest `buyer/demands/page.test.tsx` 8/8 PASS |
+| **CTA Dẫn Hướng Liền Mạch Từ Modal Sang Workspace Đơn Hàng** | `REQ-BUYER-ORD-001`, `AC-ORD-01`, `AC-ORD-03` | `Task 6.4` | `src/app/chao-ban-cong-nghe/[id]/page.tsx` | Bổ sung nút CTA "Theo dõi đơn hàng trong Workspace →" tại Modal thành công; Vitest `chao-ban-cong-nghe/[id]/page.test.tsx` 18/18 PASS |
+| **Kiểm Định Blackbox 4 Tầng Zero-Mock & Playwright E2E Gate 4/5 Pass** | `AC-ORD-01..05`, `QC-4-TIERS` | `Task 6.5`, `Task 6.6` | `tests/e2e/gate4_qc_execution_report.json`, PostgreSQL Container `nacentech-postgres-1` | 42/42 tests PASS 100% (23 Unit + 19 E2E/DB/UX), đối soát PostgreSQL thật, chặn IDOR Đọc & Ghi 403 Forbidden, 12 ảnh Playwright |
+
+
 
 
 

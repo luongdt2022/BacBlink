@@ -154,3 +154,101 @@
 - [x] **T-03.66** `[DOC]` `[WIREFRAME]` Đồng bộ Wireframe Basic Design `wireframe_quan_ly_nhu_cau_buyer.html` loại bỏ badge `TASK-03`, thêm phân trang và các trường TRL/Ẩn danh.
 - [x] **T-03.67** `[TEST]` `[QC]` Bổ sung Unit Tests kiểm chứng Header sạch dev badge, phân trang hoạt động và Modal có đầy đủ các trường mới; chạy Vitest 100% PASS (5/5 tests green).
 
+
+
+---
+
+## Giai Đoạn Delta v1.1: Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER (CR-TASK-03-DELTA-01)
+
+- [x] **T-03.DEL-01** `[FE]` Cập nhật `handleOpenQuickDemand` tại `nhu-cau-cong-nghe/page.tsx` cho phép `PUBLIC_USER` & `USER`.
+- [x] **T-03.DEL-02** `[FE]` Cập nhật thông báo thân thiện cho Guest khi bấm đăng bài toán, dẫn hướng đăng ký/đăng nhập công chúng.
+- [x] **T-03.DEL-03** `[FE]` Cập nhật `portal/layout.tsx` bổ sung menu "Bài toán Đã Đăng" (`/portal/buyer/demands`) vào `publicNavItems`.
+- [x] **T-03.DEL-04** `[FE]` `[TEST]` Cập nhật và chạy Vitest Unit test (`nhu-cau-cong-nghe/page.test.tsx`, `portal/layout.test.tsx`).
+- [x] **T-03.DEL-05** `[QC]` Kịch bản kiểm thử 4 tầng Blackbox Zero-Mock trên CSDL PostgreSQL thật với tài khoản `public.user@demo.nacentech.vn`.
+
+
+---
+
+## Phase 16: Delta v10 (CR-2026-010) — Triệt Tiêu 100% Mock Số Tĩnh Tại Sàn Nhu Cầu & Tích Hợp `<Async>`
+
+- [x] **T-03.68** `[FE]` Refactor Hero Quick Metrics trong `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.tsx`:
+  - Loại bỏ hoàn toàn 3 khối số liệu tĩnh hardcode `"142"`, `"68.5 tỷ"`, `"24 Giờ"`.
+  - Tích hợp hook/fetch `portalClient.getStats()` để nạp động:
+    * Khối 1: `totalDemands` (Bài toán đang tìm).
+    * Khối 2: Tổng ngân sách mua (tính từ `totalEstimatedValueMillionVnd` hoặc tổng các bài toán thật, định dạng Tỷ / Triệu VNĐ).
+    * Khối 3: `totalSuccessfulConnections` (Lượt kết nối thành công & MOU).
+  - Bọc khối qua component `<Async>` chuẩn hóa 5 UX States (Loading skeleton pulse, Error retry, Empty 0, Success, Updating).
+  - Tiêu chí kiểm chứng:
+    - [x] Không còn bất kỳ chuỗi `"142"`, `"68.5"`, `"24 Giờ"` hardcode trong file.
+    - [x] Khi API chưa có dữ liệu, hiển thị trung thực `0` hoặc `"0 VNĐ"`.
+    - [x] Khi API gặp lỗi, hiển thị khối thông báo kèm nút `[Tải lại số liệu]`.
+- [x] **T-03.69** `[FE]` Đồng bộ bộ lọc ngành trên Sàn Tìm Mua sang dùng `getActiveSectors()` từ `master-data-client.ts`, đảm bảo chỉ hiển thị 10 Lĩnh vực chuẩn TT17 (`LV01..LV17`).
+  - Tiêu chí kiểm chứng:
+    - [x] Bộ lọc nạp động từ `/api/v1/master-data/sectors?activeOnly=true`.
+    - [x] Không có mã tiền tố lạ `SEC-*` hay viết tắt tiếng Anh.
+- [x] **T-03.70** `[TEST]` Bổ sung Unit Test Vitest trong `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.test.tsx`:
+  - Tiêu chí kiểm chứng:
+    - [x] Khẳng định số liệu Hero nạp động từ `portalClient.getStats()`.
+    - [x] Khẳng định trạng thái Loading, Empty và Error của Hero Metrics hoạt động chuẩn.
+    - [x] Không có fallback ngầm sang số dummy.
+
+
+---
+
+## Giai Đoạn 6: Delta v1.2 — Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User (CR-TASK-03-DELTA-02)
+
+> **Mã CR**: `CR-TASK-03-DELTA-02`  
+> **Căn cứ**: Quyết định PO `PO-DEC-20261030-03` & Đặc tả Kỹ thuật `spec.md` Mục 13 (Section Delta v1.2).  
+> **Mục tiêu**: Xóa bỏ hoàn toàn đơn hàng mồ côi (Zero Orphaned Orders), quản lý đơn đặt mua sản phẩm thương mại trên Bàn làm việc Bên Mua theo mô hình 2 Tabs độc lập, minh bạch hóa tiến trình qua Stepper 4 bước và dẫn hướng thông suốt từ trang chi tiết sản phẩm.
+
+- [x] **Task 6.1** `[BE/API]` Nâng cấp Client API `services/api/technology-offer.ts` & Xác thực Backend `DemandController.cs`:
+  - Mở rộng giao diện `CreateQuickDemandPayload` bổ sung các trường metadata: `offerId?: string`, `offerTitle?: string`, `offerCode?: string`, `isCommercialOrder?: boolean`.
+  - Cập nhật hàm `submitQuickDemand`: Tự động trích xuất JWT Access Token qua `authClient.getToken()` và đính kèm Header `Authorization: Bearer <token>` vào request gửi tới `/api/v1/demands/items`.
+  - Kiểm tra và đảm bảo endpoint `POST /api/v1/demands/items` tại `DemandController.cs` nhận diện chính xác `Actor.PersonId` để gán vào `demandItem.CreatedBy`, triệt tiêu hoàn toàn đơn hàng không có chủ sở hữu.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-02`.
+
+- [x] **Task 6.2** `[FE/Nav]` Cập nhật Sidebar Navigation `publicNavItems` trong `SourceCode/frontend/src/app/portal/layout.tsx`:
+  - Đổi nhãn menu trỏ tới `/portal/buyer/demands` thành **`"Đơn hàng & Yêu cầu mua"`** trong danh sách `publicNavItems` (dành cho `PUBLIC_USER` / `USER`).
+  - Đảm bảo icon `ShoppingBag` hiển thị chuẩn xác, active state đồng bộ khi truy cập các tab con của Bàn làm việc.
+  - Tiêu chí nghiệm thu: `AC-ORD-03`.
+
+- [x] **Task 6.3** `[FE/UI]` Xây dựng Component `OrderTrackingStepper` và Tái Cấu Trúc Bàn Làm Việc 2 Tabs trong `SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`:
+  - Tạo mới component `OrderTrackingStepper.tsx` (`src/components/demand/OrderTrackingStepper.tsx`) thể hiện quy trình 4 bước:
+    * Bước 1: `SUBMITTED` (Đã gửi đơn / Chờ tiếp nhận)
+    * Bước 2: `PROCESSING` (Đang xử lý / Kiểm tra năng lực cung cấp)
+    * Bước 3: `NEGOTIATING` (Đang đàm phán hợp đồng / báo giá)
+    * Bước 4: `COMPLETED` (Hoàn tất giao dịch / Ký kết)
+    * Xử lý hiển thị trực quan các trạng thái ngoại lệ: `CANCELLED` (Đã hủy) và `REJECTED` (Từ chối tiếp nhận).
+  - Tái cấu trúc giao diện trang `/portal/buyer/demands` thành 2 Tabs cấp cao:
+    * **Tab 1 — "Đơn mua sản phẩm thương mại" (`commercial`)**: Danh sách đơn đặt mua thiết bị/sản phẩm thương phẩm, tích hợp hiển thị trạng thái bằng `OrderTrackingStepper`, hỗ trợ nút Xem chi tiết đơn và Hủy đơn khi đang ở trạng thái `SUBMITTED`.
+    * **Tab 2 — "Nhu cầu R&D / Bài toán công nghệ" (`demands`)**: Quản lý toàn bộ bài toán kỹ thuật chuyên sâu từ Khảo sát và Quick Demand, bảo toàn nguyên vẹn hàng 4 KPI Cards, điểm TNI, bộ lọc đa trạng thái và phân trang 5 bản ghi.
+  - Hỗ trợ chuyển tab thông qua URL query parameter (ví dụ: `/portal/buyer/demands?tab=commercial`).
+  - Tiêu chí nghiệm thu: `AC-ORD-03`, `AC-ORD-04`, `AC-ORD-05`.
+
+- [x] **Task 6.4** `[FE/Modal]` Cập nhật Quick Demand Modal trên `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx`:
+  - Trong sự kiện submit form: Đảm bảo truyền đầy đủ JWT Token từ `authClient` và các thông tin định danh sản phẩm (`offer.id`, `offer.title`, `offer.offerCode`).
+  - Tại màn hình thông báo gửi thành công (`connectSuccess === true`):
+    * Bổ sung nút CTA: **`"Theo dõi đơn hàng trong Workspace →"`** đặt cạnh nút "Hoàn tất & Đóng".
+    * Thiết lập hành vi click CTA: Điều hướng người dùng trực tiếp tới `/portal/buyer/demands?tab=commercial` để xem đơn hàng vừa tạo.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-03`.
+
+- [x] **Task 6.5** `[Test/Unit]` Viết Bộ Kiểm Thử Unit Test Vitest Cho Client API & Stepper Component:
+  - Tạo file kiểm thử `src/services/api/technology-offer.test.ts`:
+    * Kiểm chứng `submitQuickDemand` tự động gắn Bearer Token khi user đã đăng nhập.
+    * Kiểm chứng truyền đúng metadata sản phẩm (`offerId`, `offerTitle`, `offerCode`).
+    * Kiểm chứng xử lý mã lỗi HTTP 401 khi token không hợp lệ hoặc hết hạn.
+  - Tạo file kiểm thử `src/components/demand/OrderTrackingStepper.test.tsx`:
+    * Kiểm chứng hiển thị đúng 4 bước và nhãn tương ứng.
+    * Kiểm chứng bước hiện tại active, các bước trước có tick xanh hoàn thành.
+    * Kiểm chứng hiển thị trạng thái `CANCELLED` khi đơn bị hủy.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-04`.
+
+- [x] **Task 6.6** `[Test/E2E]` Kịch Bản Kiểm Thử E2E Tự Động Toàn Trình (Playwright):
+  - Xây dựng kịch bản kiểm thử luồng end-to-end:
+    1. Đăng nhập với tài khoản `PUBLIC_USER` (`public.user@demo.nacentech.vn`).
+    2. Truy cập trang chi tiết công nghệ `/chao-ban-cong-nghe/[id]` và mở modal đặt mua.
+    3. Điền thông tin và nộp đơn thành công.
+    4. Click nút CTA "Theo dõi đơn hàng trong Workspace", xác nhận chuyển hướng đúng `/portal/buyer/demands?tab=commercial`.
+    5. Kiểm tra đơn hàng mới xuất hiện tại Tab 1 với mã đơn chuẩn hóa, thông tin sản phẩm chính xác và Stepper hiển thị bước 1 `SUBMITTED`.
+    6. Kiểm tra chuyển sang Tab 2 dữ liệu bài toán R&D được cách ly độc lập, không bị ảnh hưởng.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-03`, `AC-ORD-04`, `AC-ORD-05`.

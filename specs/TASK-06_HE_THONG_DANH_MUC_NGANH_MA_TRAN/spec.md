@@ -63,17 +63,31 @@ Phân hệ quản trị Dữ liệu danh mục nền tảng (Master / Reference 
 | **BR-SEC-002** | **Định Dạng Mã Ngành Chuẩn SSOT** | Mã Lĩnh vực phải thuộc tập 10 mã `LV` chuẩn đã xác thực (`LV01, LV05, LV07, LV08, LV11, LV12, LV14, LV15, LV16, LV17`). Triệt tiêu hoàn toàn mã tự chế `SEC-*` và từ chối các mã khuyết chưa có dữ liệu. | `422 Unprocessable` (`ERR_INVALID_SECTOR_CODE`) |
 | **BR-SEC-003** | **Thang Điểm Ma Trận Bất Biến** | Điểm tương thích ma trận Lĩnh vực - Công nghệ nằm trong thang đo số nguyên từ 1 đến 5 sao. | `422 Unprocessable` (`ERR_INVALID_RATING`) |
 | **BR-SEC-004** | **Phân Quyền Master Data** | Chỉ `SUPER_ADMIN`, `OPERATOR_ADMIN` hoặc `SECTOR_ADMIN` mới có quyền thay đổi danh mục ngành. | `403 Forbidden` (`ERR_UNAUTHORIZED_SECTOR_EDIT`) |
+| **BR-SEC-005** | **Zero-Static-Array Taxonomy Enforcement** | Toàn bộ giao diện và dịch vụ bắt buộc chỉ lấy danh mục ngành từ runtime API `GET /api/v1/master-data/sectors?activeOnly=true`. Cấm định nghĩa mảng ngành tĩnh (như 18 ngành tự chế hay mã khuyết) trong mã nguồn Frontend/Backend. | `422 Unprocessable` (`ERR_STATIC_TAXONOMY_PROHIBITED`) |
 
 ---
 
 ## 4. API Endpoints Đặc Tả
 
-1. `GET /api/v1/master-data/sectors`: Lấy danh sách 10 Lĩnh vực chuẩn (hỗ trợ lọc active/inactive).
+1. `GET /api/v1/master-data/sectors?activeOnly=true`: Nguồn chân lý duy nhất (SSOT) lấy danh sách 10 Lĩnh vực chuẩn TT17 (`LV01, LV05, LV07, LV08, LV11, LV12, LV14, LV15, LV16, LV17`).
 2. `POST /api/v1/master-data/sectors`: Thêm mới hoặc cập nhật Lĩnh vực (Admin only).
 3. `GET /api/v1/master-data/tt17`: Lấy danh mục 10 phân ngành chế biến chế tạo TT17.
 4. `GET /api/v1/master-data/matrix`: Lấy ma trận các cặp quan hệ LV-CN (hỗ trợ lọc theo `fieldCode`, `minRating`).
 5. `GET /api/v1/master-data/exhibitions`: Lấy danh mục 15 triển lãm quốc tế chuyên ngành.
 
-## CR-2026-005 Delta: Dynamic taxonomy constraint
+---
 
-`SECTOR` and `CATEGORY` are runtime DB taxonomies. All screens and API projections that display sector counts, names, options, filters, role scopes or expert profile labels MUST source them from active taxonomy. Hardcoded sector lists/counts and fallback lists are prohibited. Empty/error DB/API results are represented honestly. Matrix compatibility relations may remain separately governed configuration data, but the displayed sector label and active eligibility must resolve through taxonomy; unknown or inactive codes cannot be presented as active sectors.
+## Spec Delta CR-2026-010: Khóa Chặt Nguồn Chân Lý Taxonomy SSOT & Triệt Tiêu Mảng Tĩnh Toàn Sàn
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
+
+### 1. Quy định Khóa Chặt Danh Mục Ngành SSOT
+- **Runtime API duy nhất**: `GET /api/v1/master-data/sectors?activeOnly=true` là nguồn dữ liệu ngành duy nhất cho toàn bộ hệ thống (Trang chủ, Sàn Chào Bán, Sàn Tìm Mua, Doanh nghiệp ĐMST, Chuyên gia KH&CN, Cổng Quản Trị Gov/Admin).
+- **10 Nhóm ngành active TT17**: `LV01` (Nông nghiệp), `LV05` (Chế biến thực phẩm – đồ uống), `LV07` (Cơ khí – chế tạo – CN hỗ trợ), `LV08` (Điện – điện tử – tự động hóa), `LV11` (Nước – môi trường – chất thải), `LV12` (Xây dựng – vật liệu – hạ tầng), `LV14` (Logistics – vận tải – kho bãi), `LV15` (Du lịch – khách sạn – nhà hàng), `LV16` (CNTT – viễn thông – chuyển đổi số), `LV17` (Khoa học – công nghệ – ĐMST).
+- **Triệt tiêu mảng tự chế**: Xóa bỏ hoàn toàn mảng `TT17_SECTORS` 18 ngành tự chế và các mảng gán nhãn lệch mã.
+- **Tính trung thực qua `<Async>`**: Khi API chưa phản hồi hoặc lỗi, UI bắt buộc hiển thị trạng thái Loading hoặc Error với nút Thử lại. Tuyệt đối không fallback sang mảng dữ liệu ngầm trong khối `catch`.
+
+### 2. Tiêu chí Chấp Nhận Nghiệm Thu (Acceptance Criteria)
+- **`AC-SEC-010`**: API `GET /api/v1/master-data/sectors?activeOnly=true` trả về đúng 10 bản ghi Lĩnh vực active chuẩn TT17, đầy đủ trường `code`, `name`, `tt17Code`, `filterRuleCount`, `isActive`.
+- **`AC-SEC-011`**: Toàn bộ codebase frontend không còn bất kỳ file nào khai báo mảng ngành hardcoded; 100% sử dụng client service nạp từ API.
+

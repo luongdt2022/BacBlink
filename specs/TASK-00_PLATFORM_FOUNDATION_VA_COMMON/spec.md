@@ -622,3 +622,110 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 - **AC-DELTA-26 (Profile ConfirmModal)**: Khi nhấp "Nộp hồ sơ thẩm định", hệ thống mở Modal hiện đại `ConfirmModal` với đầy đủ nút xác nhận/hủy bỏ.
 - **AC-DELTA-27 (100% Test Green)**: 100% các bài test trong `seller-workspace-delta-qc.test.tsx`, `seller-dashboard.test.tsx`, `portal-navigation-delta.test.tsx`, và `layout.test.tsx` đạt trạng thái PASS.
 
+---
+
+## DELTA-CR-2026-10-30: Chuẩn Hóa Thuật Ngữ B2B, Onboarding Tinh Gọn & Tái Cấu Trúc Không Gian Cá Nhân Cho Thành Viên Đại Chúng (PUBLIC_USER)
+
+> **Căn cứ phê duyệt:** Quyết định phê duyệt của Product Owner (`nacen-po-pm`) và Senior BA (`nacen-ba`) theo Quyết định `PO-DEC-20261030-01` (CR-2026-006 / Delta v10); Kế hoạch Đợt 1 chuẩn hóa thuật ngữ B2B toàn hệ thống và định vị Thành viên Đại chúng (`PUBLIC_USER`) là "Bên Mua tiềm năng (Buyer-leaning explorer)".
+
+### 1. Bối Cảnh & Lý Do Thay Đổi (Background & Problem Statement)
+
+1. **Chuẩn hóa thuật ngữ B2B**: Thuật ngữ "Bàn làm việc" mang tính hành chính/công vụ cũ, chưa phản ánh đúng bản chất sản phẩm sàn thương mại công nghệ B2B hiện đại. Cần chuẩn hóa toàn diện thành **"Trang tổng quan / Không gian cá nhân"** trên thanh điều hướng, tiêu đề trang và breadcrumb.
+2. **Rào cản Onboarding không cần thiết**: Form đăng ký tài khoản công khai (`/register`) thu thập trường Cơ quan / Đơn vị (`organization`). Đối với người dùng cá nhân, kỹ sư, nhà khoa học độc lập hoặc người tìm hiểu thị trường, việc yêu cầu đơn vị tạo rào cản tâm lý e ngại, làm giảm sút tỷ lệ chuyển đổi đăng ký.
+3. **Lệch pha không gian tác nghiệp**: Sau khi đăng ký thành công, tài khoản `PUBLIC_USER` (Tầng 3 Công chúng) truy cập `/portal` thì giao diện cũ lại hiển thị các module của pháp nhân (Gian hàng chào bán công nghệ, Tự đánh giá TT17, Hồ sơ Doanh nghiệp ĐMST). Người dùng cá nhân chưa xác minh MST/ĐKKD không có tư cách pháp lý để thực hiện các chức năng này.
+4. **Định vị nghiệp vụ chuẩn hóa**: Thành viên đại chúng (`PUBLIC_USER` / `USER`) được định vị là **"Bên Mua tiềm năng (Buyer-leaning explorer)"** – nhóm người dùng khám phá thị trường công nghệ, khảo sát nhu cầu công nghệ và nhận diện cơ hội trước khi nâng hạng.
+
+### 2. Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+
+- **REQ-DEL-00-01 (Chuẩn Hóa Thuật Ngữ B2B: Trang Tổng Quan / Không Gian Cá Nhân)**:
+  - Toàn bộ giao diện Portal, Sidebar Navigation, Breadcrumb, Header Title và thông báo hệ thống MUST thay thế dứt điểm cụm từ `"Bàn làm việc"` thành `"Trang tổng quan / Không gian cá nhân"`.
+  - Giữ nguyên cấu trúc định tuyến URL hạt nhân `/portal`, chỉ chuẩn hóa nhãn hiển thị người dùng (UI Labels).
+
+- **REQ-DEL-00-02 (Onboarding Tinh Gọn Cho PUBLIC_USER)**:
+  - Form đăng ký tại `src/app/(auth)/register/page.tsx` MUST loại bỏ hoàn toàn trường Cơ quan / Đơn vị / Viện trường (`organization`).
+  - Giao diện đăng ký chỉ thu thập các trường danh tính cá nhân cốt lõi:
+    1. Họ và tên đệm (`lastName`, bắt buộc)
+    2. Tên (`firstName`, bắt buộc)
+    3. Địa chỉ Email (`email`, bắt buộc, đúng chuẩn RFC)
+    4. Số điện thoại liên hệ (`phoneNumber`, bắt buộc/tuỳ chọn theo chuẩn di động VN)
+    5. Mật khẩu (`password`, tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, số, ký tự đặc biệt) & Xác nhận mật khẩu (`confirmPassword`)
+    6. Checkbox cam kết tuân thủ chính sách bảo vệ dữ liệu cá nhân (`agreePdpd`, bắt buộc, tuân thủ Nghị định số 13/2023/NĐ-CP).
+  - Tự động gán role `PUBLIC_USER`, trạng thái `isActive = true`, phạm vi `scopeType = GLOBAL`, `scopeId = null` ngay khi đăng ký thành công.
+  - Sau khi đăng ký hoàn tất, hiển thị thông báo thành công và chuyển hướng trực tiếp vào Trang tổng quan / Không gian cá nhân `/portal`.
+
+- **REQ-DEL-00-03 (Ranh Giới Vai Trò & Cô Lập Tính Năng Cho PUBLIC_USER/USER)**:
+  - **Không sở hữu gian hàng chào bán (Seller Shop)**: Người dùng thuộc vai trò `PUBLIC_USER` / `USER` tuyệt đối không có quyền tạo hoặc quản trị gian hàng chào bán công nghệ. Khi người dùng muốn bán giải pháp/thiết bị, hệ thống yêu cầu nâng hạng lên Bên Bán (`SELLER`) qua Upgrade Hub (`/profile/upgrade`).
+  - **Chỉ khám phá Sàn công khai & gửi nhu cầu**: Tài khoản đại chúng chỉ được phép duyệt, tìm kiếm sản phẩm trên Sàn Chào bán công khai (`/chao-ban-cong-nghe`), lưu giải pháp vào danh sách quan tâm (`/portal/saved`), và gửi nhu cầu công nghệ cá nhân qua biểu mẫu nhanh (`QuickDemandModal`).
+  - **Ẩn module chuyên sâu**: Ẩn hoàn toàn các module tác nghiệp của pháp nhân: Gian hàng Bên Bán (`/portal/seller/*`), Tự đánh giá năng lực TT17 (`/assessments/tt17`), và Hồ sơ Doanh nghiệp ĐMST (`/portal/enterprise/*`).
+
+- **REQ-DEL-00-04 (Sidebar Navigation 5 Menu Chuẩn Cho PUBLIC_USER)**:
+  - Trong `src/app/portal/layout.tsx`, danh mục `publicNavItems` dành cho người dùng vai trò `PUBLIC_USER` MUST được chuẩn hóa thành đúng 5 mục may đo:
+    1. **Trang tổng quan / Không gian cá nhân** (`/portal`, icon `LayoutDashboard`): Trung tâm tác nghiệp cá nhân và khám phá.
+    2. **Nhu cầu & Sản phẩm quan tâm** (`/portal/saved`, icon `ShoppingBag` hoặc `Bookmark`): Quản lý giải pháp công nghệ, nhu cầu công nghệ đã đánh dấu theo dõi.
+    3. **Radar Ghép Nối AI** (`/portal/matching/radar`, icon `Sparkles`, badge `"Mới"`, badgeType `"new"`): Công cụ gợi ý ghép nối cung–cầu thông minh (yêu cầu điều kiện kích hoạt $\ge 1$ nhu cầu công nghệ).
+    4. **Đăng ký Nâng hạng Vai trò** (`/profile/upgrade`, icon `Rocket`): Cửa ngõ nâng hạng đa tuyến 4 lộ trình (Chuyên gia KH&CN, Doanh nghiệp ĐMST, Bên Mua, Bên Bán).
+    5. **Cài đặt Tài khoản** (`/settings`, icon `Settings` hoặc `FileCheck`): Quản trị thông tin cá nhân, mật khẩu và phiên đăng nhập.
+  - Tuyệt đối KHÔNG hiển thị các mục của Bên Bán, Đánh giá TT17, hoặc Hồ sơ Doanh nghiệp ĐMST trên sidebar của `PUBLIC_USER`.
+
+- **REQ-DEL-00-05 (Trang Tổng Quan /portal 3 Khối Tác Nghiệp Cho PUBLIC_USER)**:
+  - Khi người dùng đăng nhập có vai trò `PUBLIC_USER` (hoặc tài khoản đại chúng chưa nâng hạng), trang `/portal` (`src/app/portal/page.tsx`) MUST hiển thị giao diện chuyên biệt gồm 3 khối chức năng:
+    1. **Khối 1: Banner Hành Động Nhanh (Quick Action Hero Banner)**:
+       - Lời chào cá nhân hóa theo tên người dùng: *"Xin chào, [Họ và Tên]!"*.
+       - Định vị vai trò: *"Thành viên Khám phá / Bên Mua tiềm năng"*.
+       - Lối tắt hành động nhanh dẫn tới Sàn Chào Bán (`/san-pham`) hoặc Hub Nâng Hạng (`/profile/upgrade`).
+    2. **Khối 2: Lưới 3 Thẻ Mua Sắm & Khám Phá AI (3-Card Explorer Grid)**:
+       - *Thẻ 1: Khám phá Sàn Công nghệ* (`/san-pham` hoặc `/chao-ban-cong-nghe`): Tra cứu công nghệ TRL 1–9, thiết bị, giải pháp sáng chế đã được kiểm định.
+       - *Thẻ 2: Nhu cầu công nghệ* (`/nhu-cau-cong-nghe` hoặc `/portal/buyer/demands`): Khảo sát nhu cầu doanh nghiệp, cơ hội R&D mở từ thị trường.
+       - *Thẻ 3: Radar Ghép Nối AI* (`/portal/matching/radar`): Khám phá gợi ý ghép nối tự động cung–cầu công nghệ bằng thuật toán thông minh (kèm điều kiện kích hoạt $\ge 1$ nhu cầu).
+    3. **Khối 3: Banner Kêu Gọi Nâng Hạng Vai Trò (Upgrade CTA Banner)**:
+       - Hộp thông báo nổi bật giới thiệu quyền lợi và động lực nâng cấp tài khoản:
+         * *Bên Mua (Buyer)*: Đăng nhu cầu chính thức, tính điểm TNI, mở Deal Room đàm phán.
+         * *Nhà Cung Ứng (Seller)*: Mở gian hàng công nghệ, chào bán giải pháp trên Sàn Quốc gia.
+         * *Chuyên gia KH&CN*: Tham gia tư vấn, phản biện đề tài, nhận thù lao chuyên gia.
+         * *Doanh nghiệp ĐMST*: Sở hữu Hồ sơ năng lực 10 tab, nhận hỗ trợ từ Sở KH&CN.
+       - Nút hành động CTA nổi bật trỏ trực tiếp đến Cổng Nâng Cấp Vai Trò (`/profile/upgrade`).
+  - Tuyệt đối loại bỏ component 4 thẻ pháp nhân cũ (`generalModules` gồm Gian hàng, TT17, Hồ sơ DN) đối với vai trò `PUBLIC_USER`.
+
+### 3. Quy Tắc Nghiệp Vụ (Business Rules)
+
+- **BR-DEL-00-01 (Bảo Toàn Tuyệt Đối 100% Không Gian Tác Nghiệp Các Role Khác - Zero Cross-Role Impact)**:
+  - Mọi thay đổi trong `DELTA-CR-2026-10-30` chỉ áp dụng riêng cho vai trò `PUBLIC_USER`.
+  - Giữ nguyên vẹn 100% không gian tác nghiệp, cấu trúc thanh điều hướng và giao diện dashboard của:
+    1. `BUYER` (Đã liên kết MST/Pháp nhân): Giữ nguyên 3 Section (`Tác nghiệp Mua sắm`, `Khám phá & Ghép nối`, `Chẩn đoán & Hồ sơ`) theo Spec Delta v13.
+    2. `SELLER`: Giữ nguyên 7 mục chức năng chuyên biệt và `<SellerDashboard />` theo Spec Delta v12.
+    3. `VERIFIED_EXPERT` / `EXPERT`: Giữ nguyên 6 mục chức năng và `<ExpertDashboard />` theo Spec Delta v8 & v10.
+    4. `GOV` (`PROVINCE_OFFICER`, `PROVINCE_LEADER`): Giữ nguyên Cổng Công vụ 7 màn hình theo PO-DEC-20261026-GOV.
+    5. `ADMIN` (`SUPER_ADMIN`, `OPERATOR_ADMIN`, `SECTOR_ADMIN`): Giữ nguyên cổng quản trị hệ thống.
+
+### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-DEL-00-01 (B2B Terminology Standardization)**:
+  - Toàn bộ các vị trí hiển thị text trên Sidebar, Header, Breadcrumbs và trang chủ `/portal` hiển thị nhãn `"Trang tổng quan / Không gian cá nhân"` (hoặc `"Trang tổng quan"` tùy độ rộng màn hình), không còn sót từ `"Bàn làm việc"`.
+- **AC-DEL-00-02 (Lean Registration Form)**:
+  - Khi người dùng truy cập trang `/register`, biểu mẫu chỉ hiển thị các trường: Họ và tên đệm, Tên, Email, Số điện thoại, Mật khẩu, Xác nhận mật khẩu, và Checkbox PDPD.
+  - Tuyệt đối không còn hiển thị trường nhập liệu hoặc nhãn liên quan đến Cơ quan / Đơn vị / Viện trường (`organization`).
+  - Đăng ký thành công tạo tài khoản `PUBLIC_USER`, tự kích hoạt và chuyển hướng về `/portal`.
+- **AC-DEL-00-03 (PUBLIC_USER Scope & Feature Isolation)**:
+  - Tài khoản `PUBLIC_USER` không thấy nút tạo gian hàng và không truy cập được các route quản trị gian hàng Bên Bán (`/portal/seller/*`).
+  - Chuyển hướng hoặc chặn cảnh báo an toàn nếu người dùng đại chúng nhập URL trực tiếp vào các module pháp nhân chưa được cấp quyền.
+- **AC-DEL-00-04 (PUBLIC_USER 5-Item Navigation)**:
+  - Khi đăng nhập với tài khoản vai trò `PUBLIC_USER`, thanh Sidebar của Portal hiển thị chính xác 5 mục: `Trang tổng quan / Không gian cá nhân`, `Nhu cầu & Sản phẩm quan tâm`, `Radar Ghép Nối AI`, `Đăng ký Nâng hạng Vai trò`, `Cài đặt Tài khoản`.
+  - Tuyệt đối không xuất hiện các mục chức năng của vai trò khác như Gian hàng chào bán, Tự đánh giá TT17, hoặc Hồ sơ Doanh nghiệp ĐMST.
+- **AC-DEL-00-05 (PUBLIC_USER Lean Dashboard with 3 Cards & Upgrade Banner)**:
+  - Khi đăng nhập vai trò `PUBLIC_USER` vào `/portal`, màn hình hiển thị:
+    1. Hero Banner chào mừng cá nhân hóa.
+    2. Lưới 3 thẻ mua sắm & khám phá AI: `Khám phá Sàn Công nghệ`, `Nhu cầu công nghệ`, `Radar Ghép Nối AI`.
+    3. Banner Nâng hạng Vai trò với nút chuyển hướng trỏ đến `/profile/upgrade`.
+    4. Tuyệt đối không hiển thị 4 thẻ chức năng pháp nhân cũ (`generalModules`).
+
+### 5. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-DEL-00-01** | `BR-DEL-00-01` | `AC-DEL-00-01` | `src/app/portal/layout.tsx`, `src/components/layout/*` | `portal-navigation-delta.test.tsx` |
+| **REQ-DEL-00-02** | `BR-DEL-00-01` | `AC-DEL-00-02` | `src/app/(auth)/register/page.tsx` | `src/app/(auth)/register/page.test.tsx` |
+| **REQ-DEL-00-03** | `BR-DEL-00-01` | `AC-DEL-00-03` | `src/app/portal/layout.tsx`, `src/app/portal/page.tsx` | `portal-dashboard.test.tsx` |
+| **REQ-DEL-00-04** | `BR-DEL-00-01` | `AC-DEL-00-04` | `src/app/portal/layout.tsx` | `src/app/portal/layout.test.tsx`, `portal-navigation-delta.test.tsx` |
+| **REQ-DEL-00-05** | `BR-DEL-00-01` | `AC-DEL-00-05` | `src/app/portal/page.tsx` | `src/app/portal/page.test.tsx`, `portal-dashboard.test.tsx` |
+
+

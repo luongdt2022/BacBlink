@@ -1366,3 +1366,263 @@ Sau đợt rà soát nghiệm thu vận hành phiên bản Workspace Chuyên gia
 | **`AC-API-02`** | Acceptance Criteria | Kiểm Thử Zero-Mock Dự Án Đồng Hành | Xóa bỏ mock tĩnh, nạp dự án thực tế vào 5 cột Kanban theo thang TRL 1-9 | `[CONFIRMED]` |
 | **`UI-EXP-CONSULT-ZERO-MOCK`** | UI/UX Spec | Giao Diện Hộp Thư Tư Vấn Zero-Mock | 3 Tab nghiệp vụ, hiển thị 5 UX States qua `<Async>`, badge SLA 48h | `[CONFIRMED]` |
 | **`UI-EXP-PROJ-ZERO-MOCK`** | UI/UX Spec | Giao Diện Kanban Dự Án Zero-Mock | 5 Cột Kanban TRL 1-9, thẻ dự án chuẩn KH&CN, không nút giám sát Sở | `[CONFIRMED]` |
+
+---
+
+## 22. Delta v1.3: Smart AI CV Onboarding (Bóc tách & Điền form toàn diện)
+
+### 22.1. Bối Cảnh & Mục Tiêu Nghiệp Vụ
+
+Nhằm triệt tiêu rào cản thời gian và công sức khi nhà khoa học phải tự tay nhập liệu hơn 90 trường thông tin hồ sơ lý lịch khoa học (LLKH), hệ thống nâng cấp trải nghiệm Onboarding lên chuẩn **Smart AI CV Onboarding**:
+1. **Dời Trọng Tâm Lên Bước 1 (Entry-point Elevation)**: Đưa Hero Dropzone *"AI Trích Xuất Dữ Liệu Hồ Sơ Tự Động (AI CV Scan)"* lên ngay đầu **Bước 1 ("Quét CV & Định danh")** của Form Wizard, biến thao tác kéo thả CV thành cửa ngõ tự động hóa toàn diện.
+2. **Bóc Tách Toàn Diện 94 Trường Sheet `C.gia`**: Dùng mô hình đa phương thức (Google Gemini Multimodal API) kết hợp Structured JSON Outputs để đọc hiểu tệp CV/LLKH (PDF, DOCX, Ảnh scan) và tự động điền đồng thời vào cả 3 bước (Định danh, Năng lực chuyên môn, Công bố/Sáng chế/Đề tài).
+3. **Bảo Tồn Dữ Liệu Người Dùng (Non-destructive) & Không Đóng Băng Hệ Thống (Zero-Lock Fallback)**: Đảm bảo người dùng luôn nắm quyền kiểm soát cao nhất (Human-in-the-Loop) và form luôn sẵn sàng cho nhập liệu thủ công trong mọi tình huống.
+
+---
+
+### 22.2. User Story
+
+#### `US-EXP-DELTA-01`: Smart AI CV Onboarding & Tự Động Hóa Biểu Mẫu 3 Bước Chuẩn 94 Trường Sheet `C.gia`
+- **User Persona**: Nhà khoa học, Giảng viên đại học, Chuyên gia R&D có sẵn tệp CV / LLKH cá nhân.
+- **Mục tiêu**: Nâng hạng tài khoản thành công trong thời gian dưới 3 phút nhờ AI tự động điền sẵn 94 trường thông tin vào Form Wizard 3 bước.
+
+**Acceptance Criteria (Gherkin Format)**:
+1. **Scenario 1: Kéo thả tệp CV tại Bước 1 và Kích hoạt Quét In-Memory**
+   - **Given** người dùng ở Bước 1 của trang `/profile/upgrade/expert` ("Quét CV & Định danh"),
+   - **When** người dùng kéo thả hoặc chọn tải lên tệp CV (định dạng PDF, DOCX, PNG, JPG với dung lượng $\le 20$MB),
+   - **Then**:
+     - Hệ thống tiếp nhận tệp, hiển thị tiến trình quét (0% $\rightarrow$ 100%) kèm Shimmer Animation.
+     - Tệp được phân tích in-memory hoặc lưu tạm có mã hóa, tuân thủ Nghị định 13/2023/NĐ-CP (PDPD).
+     - Backend gọi Google Gemini Multimodal trích xuất schema có cấu trúc theo 94 trường chuẩn hóa.
+
+2. **Scenario 2: Tự Động Điền Dữ Liệu Không Ghi Đè (Non-destructive Auto-fill)**
+   - **Given** quá trình bóc tách AI hoàn tất thành công (`success: true`),
+   - **When** dữ liệu DTO được đẩy về client,
+   - **Then**:
+     - Hệ thống tự động điền các trường còn trống trên cả 3 bước:
+       * **Bước 1**: Họ tên, Năm sinh, Giới tính, Học vị cao nhất, Năm đạt, Cơ quan, Chức vụ, Google Scholar, ORCID, Scopus ID...
+       * **Bước 2**: 18 Ngành TT17, Lĩnh vực OECD, Quá trình đào tạo, Quá trình công tác, Tóm tắt năng lực tư vấn, Từ khóa...
+       * **Bước 3**: Danh mục tối đa 5 bài báo Scopus/ISI, Bằng sáng chế/GPHI, Đề tài KH&CN các cấp, Giải thưởng...
+     - Tuyệt đối KHÔNG ghi đè lên các trường người dùng đã nhập trước đó hoặc đã chỉnh sửa bằng tay.
+     - Các trường được AI điền tự động hiển thị visual badge `"✨ AI Gợi Ý"` và viền màu xanh lá nhạt để người dùng dễ dàng nhận biết và kiểm chứng.
+
+3. **Scenario 3: Dự Phòng Hoàn Hảo & Không Đóng Băng Giao Diện (Zero-Lock Fallback)**
+   - **Given** dịch vụ AI gặp sự cố (quá hạn ngạch rate limit `429`, timeout `504`, mất mạng, hoặc tệp tài liệu quá mờ không thể OCR `422`),
+   - **When** request trích xuất thất bại,
+   - **Then**:
+     - Hệ thống hiển thị Toast Notification thông báo lỗi nhẹ nhàng: *"Trợ lý AI tạm thời không phân tích được tệp. Vui lòng tiếp tục nhập liệu thủ công bằng biểu mẫu bên dưới."*
+     - Toàn bộ các trường form trên cả 3 bước vẫn mở 100% cho người dùng nhập liệu bằng tay.
+     - Tuyệt đối không đóng băng (freeze) giao diện, không khóa nút "Tiếp tục", không ngăn cản luồng nộp hồ sơ chuẩn.
+
+4. **Scenario 4: Kiểm Duyệt Con Người (Human-in-the-Loop) & Nộp Hồ Sơ Chính Thức**
+   - **Given** các trường thông tin đã được AI gợi ý trên cả 3 bước,
+   - **When** chuyên gia chuyển tiếp qua Bước 2 và Bước 3,
+   - **Then**:
+     - Chuyên gia có toàn quyền thêm, sửa, xóa bất kỳ dòng thông tin nào (đặc biệt là danh mục đề tài, công bố khoa học).
+     - Hệ thống chỉ tiếp nhận nộp hồ sơ khi chuyên gia tích chọn Cam kết PDPD (NĐ 13/2023) và chủ động nhấn nút **[GỬI HỒ SƠ NÂNG CẤP CHUYÊN GIA]** tại Bước 3.
+
+---
+
+### 22.3. Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules)
+
+| Mã Quy Tắc | Tên Quy Tắc | Logic Nghiệp Vụ & Ràng Buộc Kỹ Thuật |
+| :--- | :--- | :--- |
+| **`BR-EXP-CV-01`** | **Non-destructive Auto-fill (Tự Động Điền Không Hủy Dữ Liệu)** | - Khi AI trả về kết quả trích xuất, hệ thống **CHỈ điền tự động vào các trường form đang mang giá trị rỗng/mặc định**.<br>- Nếu một trường đã có dữ liệu do người dùng tự nhập hoặc sửa đổi trước đó, hệ thống giữ nguyên 100% dữ liệu của người dùng, không được phép tự ý ghi đè.<br>- Cung cấp visual indicator `"✨ AI Gợi Ý"` cho phép người dùng click để đối chiếu giữa giá trị người dùng nhập và giá trị AI phát hiện từ CV nếu có sai lệch. |
+| **`BR-EXP-CV-02`** | **Zero-Lock Fallback (Dự Phòng Hoàn Hảo Không Khóa Giao Diện)** | - Luồng AI CV Scan là tính năng **gia tăng tốc độ (accelerator)**, KHÔNG PHẢI là điều kiện tiên quyết (prerequisite) để nâng cấp tài khoản.<br>- Nếu phân hệ AI gặp lỗi (mất kết nối, file không hỗ trợ, OCR confidence $< 0.3$, JSON parse error, rate limit), toàn bộ form 3 bước vẫn duy trì trạng thái hoạt động bình thường.<br>- Tuyệt đối không chặn tiến trình người dùng, không disable nút bấm điều hướng Stepper, và không làm mất bất kỳ dữ liệu nào đã nhập. |
+| **`BR-EXP-CV-03`** | **PDPD & In-Memory Parsing (Bảo Mật Dữ Liệu Cá Nhân NĐ 13/2023)** | - Tệp CV/LLKH tải lên chỉ phục vụ mục đích trích xuất biểu mẫu, được xử lý in-memory hoặc lưu trữ tạm thời trong bucket ngắn hạn với thời gian tự hủy tối đa 24 giờ.<br>- Dữ liệu định danh cá nhân nhạy cảm (Số CCCD, số điện thoại riêng tư) chỉ được lưu vào CSDL khi người dùng xác nhận nộp hồ sơ ở Bước 3.<br>- Nghiêm cấm sử dụng tệp CV và thông tin khoa học của chuyên gia cho mục đích huấn luyện AI bên thứ ba khi chưa có sự đồng ý bằng văn bản. |
+| **`BR-EXP-CV-04`** | **Human-in-the-Loop (Người Dùng Là Chốt Chặn Kiểm Duyệt Cuối Cùng)** | - Mọi kết quả do AI trích xuất chỉ có giá trị là **BẢN NHÁP GỢI Ý (Draft Suggestions)**.<br>- Chuyên gia bắt buộc phải trực tiếp rà soát, kiểm chứng và xác nhận dữ liệu trên cả 3 bước.<br>- Hệ thống tuyệt đối không tự động nộp hồ sơ (`auto-submit`) và không tự động gán trạng thái `VERIFIED_EXPERT` nếu không có thao tác xác nhận chủ động từ người dùng kèm cam kết pháp lý. |
+
+---
+
+### 22.4. Ma Trận Data Mapping 94 Trường Sheet `C.gia` Sang Form Wizard 3 Bước
+
+Toàn bộ 94 trường trích xuất từ Sheet `C.gia` (Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`) được phân bổ chính xác vào 3 bước của Form Wizard:
+
+#### 1. Bước 1: Quét CV & Định Danh Khoa Học (22 Trường Chuẩn Hóa)
+| STT | Tên Trường DTO / Form Field | Nhãn Giao Diện | Kiểu Dữ Liệu | Ràng Buộc Nghiệp Vụ | Dòng Sheet `C.gia` |
+| :---: | :--- | :--- | :---: | :--- | :---: |
+| 1 | `ai_cv_file` | Tệp CV/LLKH nguồn | File (PDF/DOCX) | Tối đa 20MB, đầu vào kích hoạt trích xuất AI | Dòng 65-66, 79 |
+| 2 | `full_name` | Họ và tên đầy đủ | String | Bắt buộc, 2 - 100 ký tự | Dòng 83 |
+| 3 | `birth_year` | Năm sinh | Integer (YYYY) | Bắt buộc, $1940 \le \text{Năm sinh} \le 2005$ | Dòng 84 |
+| 4 | `gender` | Giới tính | Enum (M/F/O) | `Nam`, `Nữ`, `Khác` | Dòng 85 |
+| 5 | `academic_rank` | Học hàm khoa học | Enum | `Không có`, `Phó Giáo sư (PGS)`, `Giáo sư (GS)` | Dòng 86 |
+| 6 | `academic_rank_year` | Năm được phong học hàm | Integer (YYYY) | Bắt buộc nếu chọn PGS/GS | Dòng 87 |
+| 7 | `highest_degree` | Học vị cao nhất | Enum | Bắt buộc: `TS`, `ThS`, `KS`, `Cử nhân`, `TSKH` | Dòng 88 |
+| 8 | `degree_year` | Năm đạt học vị | Integer (YYYY) | Bắt buộc, năm tốt nghiệp văn bằng cao nhất | Dòng 89 |
+| 9 | `id_card_number` | Số Căn cước công dân | String (12 số) | Chuẩn 12 chữ số Bộ Công an, mã hóa AES-256 | Dòng 90 |
+| 10 | `id_card_issue_date` | Ngày cấp CCCD | Date | $\le$ Ngày hiện tại | Dòng 91 |
+| 11 | `id_card_issue_place` | Nơi cấp CCCD | String | Cục CSQLHC về TTXH hoặc Công an tỉnh/TP | Dòng 91 |
+| 12 | `id_card_front_file` | Ảnh mặt trước CCCD | File Upload | JPG/PNG/PDF $\le 10$MB | Dòng 77 |
+| 13 | `id_card_back_file` | Ảnh mặt sau CCCD | File Upload | JPG/PNG/PDF $\le 10$MB | Dòng 77 |
+| 14 | `portrait_image` | Ảnh chân dung 3x4 | File Upload | Ảnh nền sáng, định dạng JPG/PNG $\le 5$MB | Dòng 67 |
+| 15 | `degree_certificate_file` | Bản scan văn bằng cao nhất | File Upload | PDF/Ảnh scan bằng gốc | Dòng 78 |
+| 16 | `organization_name` | Cơ quan / Đơn vị công tác | String | Tên Viện, Trường, Trung tâm, Doanh nghiệp | Dòng 98 |
+| 17 | `organization_address` | Địa chỉ cơ quan | String | Địa chỉ trụ sở nơi công tác | Dòng 101 |
+| 18 | `research_title` | Chức danh nghiên cứu | String | Nghiên cứu viên, Giảng viên cao cấp, Kỹ sư chính | Dòng 92 |
+| 19 | `management_position` | Chức vụ quản lý | String | Trưởng phòng, Viện trưởng, Trưởng Lab... | Dòng 93 |
+| 20 | `google_scholar_url` | Google Scholar URL | URL Format | Link hồ sơ bài báo khoa học quốc tế | Dòng 94 |
+| 21 | `orcid_id` | ORCID iD | String (16 ký tự) | Định danh nhà khoa học toàn cầu (xxxx-xxxx-xxxx-xxxx) | Dòng 95 |
+| 22 | `scopus_author_id` | Scopus Author ID | String | Mã tác giả Scopus (Elsevier) | Dòng 96 |
+
+#### 2. Bước 2: Năng Lực Chuyên Môn & Tiến Trình Đào Tạo - Công Tác (36 Trường Chuẩn Hóa)
+| STT | Tên Trường DTO / Form Field | Nhãn Giao Diện | Kiểu Dữ Liệu | Ràng Buộc Nghiệp Vụ | Dòng Sheet `C.gia` |
+| :---: | :--- | :--- | :---: | :--- | :---: |
+| 23-28 | `expertise_sectors` | 18 Ngành công nghiệp TT17 | Multi-Select | Bắt buộc chọn ít nhất 1 ngành trọng điểm | Dòng 147 |
+| 29-34 | `oecd_fields` | 6 Lĩnh vực KH&CN (OECD) | Multi-Select | Tự nhiên, Kỹ thuật, Y dược, Nông nghiệp, Xã hội, Nhân văn | Master Data |
+| 35-44 | `training_history` | Quá trình đào tạo (ĐH/ThS/TS) | Dynamic Table | 4 cấp độ: Bậc học, Nơi đào tạo, Chuyên ngành, Năm tốt nghiệp, Luận án | Dòng 102-106 |
+| 45-54 | `employment_history` | Quá trình công tác chuyên môn | Dynamic Table | Giai đoạn (từ năm - đến năm), Cơ quan, Vị trí, Địa điểm | Dòng 107-111 |
+| 55 | `consulting_summary` | Tóm tắt năng lực tư vấn | Textarea | Mô tả sâu công nghệ, giải pháp thế mạnh | Dòng 151 |
+| 56-57 | `mastered_tech_codes` | Nhóm công nghệ làm chủ | Multi-Select | Danh mục 34 công nghệ chuẩn hóa (CN01 -> CN39) | Ma trận LV-CN |
+| 58 | `research_keywords` | Từ khóa chuyên môn (Keywords) | Array of String | Tối đa 10 từ khóa lĩnh vực mũi nhọn | Dòng 148 |
+
+#### 3. Bước 3: Hồ Sơ Khoa Học, Đăng Ký Nhiệm Vụ & Cam Kết Pháp Lý (36 Trường Chuẩn Hóa)
+| STT | Tên Trường DTO / Form Field | Nhãn Giao Diện | Kiểu Dữ Liệu | Ràng Buộc Nghiệp Vụ | Dòng Sheet `C.gia` |
+| :---: | :--- | :--- | :---: | :--- | :---: |
+| 59-68 | `publications` | Công bố khoa học tiêu biểu | Dynamic Table | Tối đa 5 bài báo: Tên bài báo, Tác giả, Tạp chí, Năm, DOI, ISI/Scopus | Dòng 112-117 |
+| 69-74 | `patents` | Bằng độc quyền sáng chế / GPHI | Dynamic Table | Tên sáng chế, Số văn bằng, Năm cấp, Quốc gia/Cục SHTT | Dòng 118-121 |
+| 75-79 | `practical_projects` | Công trình ứng dụng thực tế | Dynamic Table | Tên công nghệ, Đơn vị tiếp nhận, Quy mô, Kết quả áp dụng | Dòng 122-126 |
+| 80-86 | `research_projects` | Đề tài/Dự án KH&CN các cấp | Dynamic Table | Tên đề tài, Cấp (Nhà nước/Bộ/Cơ sở), Vai trò, Năm, Đánh giá nghiệm thu | Dòng 127-131 |
+| 87-90 | `awards` | Giải thưởng KH&CN đã đạt | Dynamic Table | Tên giải thưởng, Cơ quan trao thưởng, Năm trao thưởng | Dòng 132-136 |
+| 91 | `is_project_leader` | Đăng ký Chủ nhiệm nhiệm vụ KH&CN | Boolean (Checkbox) | Yêu cầu học vị $\ge$ Tiến sĩ hoặc xác nhận chủ nhiệm cấp Bộ | Dòng 75 |
+| 92 | `is_main_contributor` | Đăng ký Thành viên nghiên cứu chính | Boolean (Checkbox) | Đăng ký tham gia nhóm nghiên cứu trọng điểm | Dòng 76 |
+| 93 | `pdpd_consent` | Cam kết bảo vệ dữ liệu PDPD | Boolean (Checkbox) | Bắt buộc tích theo Nghị định 13/2023/NĐ-CP | Dòng 155 |
+| 94 | `legal_oath` | Cam kết trung thực & Pháp lý | Boolean (Checkbox) | Bắt buộc tích: Chịu trách nhiệm hoàn toàn về tính chính xác | Dòng 155 |
+
+---
+
+### 22.5. Ma Trận Truy Vết Nghiệp Vụ Delta v1.3 (Traceability Matrix)
+
+| Mã Định Danh | Loại Yêu Cầu | Tên Quy Chuẩn | Mô Tả & Căn Cứ Kiểm Thử | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-EXP-CV-001`** | Functional Req | Hero AI CV Dropzone Bước 1 | Đưa Dropzone bóc tách CV lên đầu Bước 1 Wizard `/profile/upgrade/expert` | `[CONFIRMED]` |
+| **`REQ-EXP-CV-002`** | Functional Req | Bóc Tách 94 Trường Sheet C.gia | Gọi Google Gemini Multimodal trích xuất schema có cấu trúc chuẩn 94 trường | `[CONFIRMED]` |
+| **`REQ-EXP-CV-003`** | Functional Req | Non-destructive Auto-fill | Tự động điền giá trị vào form cả 3 bước mà không ghi đè dữ liệu người dùng | `[CONFIRMED]` |
+| **`REQ-EXP-CV-004`** | Functional Req | Zero-Lock Fallback Form | Khi lỗi AI hoặc ngắt mạng, mở 100% form thủ công, không chặn tiến trình | `[CONFIRMED]` |
+| **`BR-EXP-CV-01`** | Business Rule | Điền Form Không Ghi Đè | Chỉ điền ô trống, hiển thị visual badge `"✨ AI Gợi Ý"` | `[CONFIRMED]` |
+| **`BR-EXP-CV-02`** | Business Rule | Dự Phòng Zero-Lock | Form hoạt động bình thường kể cả khi dịch vụ AI sập hoặc timeout | `[CONFIRMED]` |
+| **`BR-EXP-CV-03`** | Business Rule | Bảo Vệ Dữ Liệu PDPD NĐ 13 | Xử lý CV in-memory, không lưu vĩnh viễn PII khi chưa submit | `[CONFIRMED]` |
+| **`BR-EXP-CV-04`** | Business Rule | Human-in-the-Loop | Bản nháp gợi ý, người dùng rà soát 3 bước và chủ động nộp hồ sơ | `[CONFIRMED]` |
+| **`UI-EXP-CV-01`** | UI/UX Spec | Wireframe Stepper Mới | Bước 1: "Quét CV & Định danh", Bước 2: "Năng lực Chuyên môn", Bước 3: "Công bố & Cam kết" | `[CONFIRMED]` |
+| **`UI-EXP-CV-02`** | UI/UX Spec | 5 UX States Scanner | Idle $\rightarrow$ Scanning Shimmer $\rightarrow$ Success Auto-fill $\rightarrow$ Error Fallback Toast $\rightarrow$ Partial Review | `[CONFIRMED]` |
+
+---
+
+## 23. PHỤ LỤC DELTA V1.6 (CR-2026-011): CHUẨN HÓA ĐỒNG BỘ 10 LĨNH VỰC TT17 CHO BỘ LỌC CHUYÊN GIA KH&CN
+
+### 23.1 Mục Tiêu & Ranh Giới Chuẩn Hóa
+- **Chuẩn hóa danh mục ngành**: Phân hệ Danh bạ Chuyên gia (`/experts`) và Hồ sơ Chuyên gia (`/portal/expert/*`) thống nhất sử dụng duy nhất **10 Lĩnh vực công nghệ trọng điểm TT17** khớp 1:1 với CSDL Master Data `policy.taxonomy_terms`.
+- **Khai tử thuật ngữ 18 ngành**: Thay thế toàn bộ các nhãn và trường mô tả cũ "18 Ngành công nghiệp TT17" thành "10 Lĩnh Vực Công Nghệ Trọng Điểm TT17".
+
+### 23.2 Đặc Tả Yêu Cầu Kỹ Thuật
+- **`REQ-EXP-DELTA-01` (Bộ Lọc Ngành Khớp 10 Lĩnh Vực CSDL)**:
+  - Danh bạ chuyên gia nạp bộ lọc ngành từ `getPublicExpertFilterOptions()` (`GET /api/v1/sectors`).
+  - Dropdown lọc ngành hiển thị đúng 10 mã và tên chuẩn (`LV01`, `LV05`, `LV07`, `LV08`, `LV11`, `LV12`, `LV14`, `LV15`, `LV16`, `LV17`).
+  - Tham số `sectorCodes` gửi xuống API `/api/v1/public/experts` phải đối soát trực tiếp theo `primary_sector_code` và mảng `expertise_sectors` trong CSDL PostgreSQL.
+- **`AC-EXP-DELTA-01` (Kiểm Thử Bộ Lọc Chuyên Gia)**:
+  - Given người dùng tích chọn lĩnh vực `LV07` (Cơ khí – chế tạo – công nghiệp hỗ trợ),
+  - When hệ thống tải danh sách chuyên gia,
+  - Then toàn bộ kết quả trả về là các chuyên gia có lĩnh vực công tác chính hoặc chuyên môn hẹp thuộc ngành cơ khí.
+
+---
+
+## 24. PHỤ LỤC DELTA V1.4 (CR-2026-012): MỞ RỘNG QUYỀN MUA HÀNG & ĐĂNG NHU CẦU TRONG WORKSPACE CHUYÊN GIA KH&CN
+
+### 24.1. Bối Cảnh & Cơ Sở Quyết Định PO
+- **Căn cứ quyết định**: Quyết định PO `PO-DEC-20261030-04` và cập nhật Thiết kế Cơ sở `BASIC_DESIGN_NACENTECH.md` Mục 5.3.3.
+- **Vấn đề thực tế**: Chuyên gia KH&CN (`VERIFIED_EXPERT`, `EXPERT`) trong các viện nghiên cứu, trường đại học thường là Chủ nhiệm đề tài hoặc Trưởng phòng thí nghiệm. Họ có nhu cầu mua sắm thiết bị, mẫu thử nghiệm, sản phẩm thương mại OCOP từ các Nhà cung ứng (Seller), đồng thời có nhu cầu đăng bài toán nhu cầu R&D liên ngành tìm kiếm đối tác liên kết.
+- **Khắc phục lỗi đứt gãy luồng người dùng**: Trước đây Workspace Chuyên gia chỉ có 7 mục menu tập trung vào tư vấn và nghiên cứu, hoàn toàn thiếu menu quản lý đơn hàng và nhu cầu. Khi Chuyên gia đặt mua sản phẩm tại Sàn chào bán và nhấn nút CTA *"Theo dõi đơn hàng trong Workspace →"*, thanh Sidebar Chuyên gia không có menu tương ứng, gây đứt gãy trải nghiệm.
+
+---
+
+### 24.2. Yêu Cầu Chức Năng Mới (Functional Requirements)
+
+#### `REQ-EXP-COMMERCE-001` — Quyền Mua Sắm & Quản Lý Đơn Đặt Mua Thương Mại
+- Tài khoản `VERIFIED_EXPERT` và `EXPERT` được quyền đặt mua sản phẩm thương mại, mẫu thử nghiệm trực tiếp tại Sàn Chào Bán (`/chao-ban-cong-nghe/[id]`).
+- Mọi yêu cầu tạo đơn gửi tới `POST /api/v1/demands/items` tự động đính kèm JWT Bearer Token, gán `CreatedBy = Actor.PersonId`, sinh mã đơn định danh `ORD-YYYYMMDD-XXXXX`.
+- Chuyên gia được quản lý toàn bộ đơn đặt mua của mình tại **Tab 1: Đơn mua sản phẩm thương mại** trên Bàn làm việc `/portal/buyer/demands?tab=commercial`.
+- Giao diện tích hợp thành phần `OrderTrackingStepper` hiển thị 4 bước tuyến tính: `SUBMITTED` $\rightarrow$ `PROCESSING` $\rightarrow$ `NEGOTIATING` $\rightarrow$ `COMPLETED`.
+- Cho phép Chuyên gia chủ động bấm "Hủy đơn hàng" khi đơn hàng đang ở trạng thái `SUBMITTED`.
+
+#### `REQ-EXP-DEMAND-001` — Quyền Đăng Bài Toán Nhu Cầu R&D & Quản Lý Nhu Cầu Cá Nhân
+- Chuyên gia được quyền mở biểu mẫu đăng nhanh nhu cầu công nghệ (`QuickDemandModal`) ngay trong Workspace cá nhân.
+- Hệ thống tự động tính điểm chỉ số nhu cầu công nghệ (TNI Score: K, L, N, O) và xếp loại TNI tương ứng, lưu vào CSDL với trạng thái `PENDING`.
+- Chuyên gia theo dõi danh sách bài toán, tiến độ thẩm định của Sở KH&CN, và số lượng hồ sơ nguồn cung ghép nối tại **Tab 2: Nhu cầu R&D / Bài toán công nghệ** (`/portal/buyer/demands?tab=demands`).
+
+#### `REQ-EXP-NAV-003` — Chuẩn Hóa Cấu Trúc Sidebar Workspace Chuyên Gia 8 Mục
+Thanh điều hướng Sidebar cho vai trò Chuyên gia (`expertNavItems`) được cấu hình gồm **8 mục** phân bổ theo 3 khối logic chặt chẽ:
+
+1. **Khối 1: Tác nghiệp hàng ngày (Daily Operations)**:
+   - **Mục 1**: `Tổng quan Chuyên gia` — URL: `/portal/expert/profile` (Icon: `LayoutDashboard`)
+   - **Mục 2**: `Hộp Thư Tư Vấn & Kết Nối` — URL: `/portal/expert/consultations` (Icon: `Inbox`, Badge: SLA đếm ngược)
+   - **Mục 3**: `Radar Cơ hội Phù hợp (AI)` — URL: `/portal/matching/radar` (Icon: `Sparkles`, Badge: "Mới")
+   - **Mục 4**: `Dự án Đồng hành & Hợp tác` — URL: `/portal/expert/projects` (Icon: `Kanban`)
+   - **Mục 5**: `Đơn hàng & Nhu cầu đặt mua` — URL: `/portal/buyer/demands` (Icon: `ShoppingBag`) *(MỚI)*
+2. **Khối 2: Kinh tế & Hợp đồng (Economics & Contracts)**:
+   - **Mục 6**: `Hợp đồng & Thù lao` — URL: `/portal/expert/contracts` (Icon: `FileText`, Trạng thái: `disabled: true`, Badge: "Sắp ra mắt")
+3. **Khối 3: Hồ sơ & Quản trị (Profile & Settings)**:
+   - **Mục 7**: `Hồ sơ LLKH của tôi` — URL: `/portal/expert/profile/edit` (Icon: `GraduationCap`)
+   - **Mục 8**: `Cài đặt & Tài khoản` — URL: `/portal/expert/account` (Icon: `ShieldCheck`)
+
+---
+
+### 24.3. Quy Tắc Nghiệp Vụ (Business Rules)
+
+- **`BR-EXP-015` (Bảo Vệ Chống IDOR Trên Đơn Hàng & Nhu Cầu Chuyên Gia)**:
+  * Truy vấn danh sách đơn hàng và bài toán tại `/api/v1/buyer/demands` luôn gắn chặt điều kiện `CreatedBy == Actor.PersonId` đối với Chuyên gia.
+  * Chuyên gia tuyệt đối không nhìn thấy đơn mua hoặc bài toán chưa công bố của các Doanh nghiệp hoặc Chuyên gia khác.
+- **`BR-EXP-016` (Đồng Bộ Dẫn Hướng CTA Từ Sàn Chào Bán Sang Workspace Chuyên Gia)**:
+  * Khi Chuyên gia tạo đơn mua thành công tại modal `/chao-ban-cong-nghe/[id]`, nút CTA `"Theo dõi đơn hàng trong Workspace →"` dẫn hướng trực tiếp tới `/portal/buyer/demands?tab=commercial`.
+  * Tại Bàn làm việc, Sidebar Workspace Chuyên gia tự động highlight mục số 5 *"Đơn hàng & Nhu cầu đặt mua"*.
+- **`BR-EXP-017` (Bộ Lọc Danh Sách Đơn Hàng & Bài Toán 5 UX States)**:
+  * Trang `/portal/buyer/demands` phải hiển thị đủ 5 trạng thái UX qua component chuẩn `<Async>`: Loading shimmer $\rightarrow$ Empty state (kèm CTA khám phá Sàn hoặc đăng bài toán) $\rightarrow$ Error alert $\rightarrow$ Success state.
+
+---
+
+### 24.4. Tiêu Chí Chấp Thuận (Acceptance Criteria)
+
+- **`AC-EXP-ORD-01`**:
+  * **Given** tài khoản Chuyên gia (`VERIFIED_EXPERT`) đã đăng nhập,
+  * **When** truy cập sản phẩm thương mại tại `/chao-ban-cong-nghe/[id]` và bấm "Đặt mua sản phẩm",
+  * **Then** hệ thống tạo đơn hàng thành công, hiển thị mã `ORD-YYYYMMDD-XXXXX` và cung cấp nút CTA chuyển về Workspace.
+- **`AC-EXP-ORD-02`**:
+  * **Given** Chuyên gia truy cập `/portal/buyer/demands?tab=commercial`,
+  * **Then** hệ thống hiển thị danh sách đơn đặt mua của chính Chuyên gia, bảng chi tiết đơn và `OrderTrackingStepper` 4 bước chính xác.
+- **`AC-EXP-DMD-01`**:
+  * **Given** Chuyên gia truy cập `/portal/buyer/demands?tab=demands`,
+  * **When** bấm "Đăng bài toán nhu cầu mới" và hoàn tất form `QuickDemandModal`,
+  * **Then** bài toán được lưu vào CSDL với trạng thái `PENDING`, hiển thị ngay lập tức trong bảng nhu cầu của Chuyên gia.
+- **`AC-EXP-NAV-01`**:
+  * **Given** tài khoản Chuyên gia đăng nhập vào `/portal/*`,
+  * **Then** Sidebar Workspace Chuyên gia hiển thị đúng 8 mục menu; khi URL là `/portal/buyer/demands`, mục số 5 *"Đơn hàng & Nhu cầu đặt mua"* được active nổi bật.
+
+---
+
+### 24.5. Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt Kỹ Thuật (Surface) | Vị Trí Tệp Mã Nguồn / Schema | Bản Chất Tác Động | Chi Tiết Thay Đổi Cần Thực Hiện |
+| :--- | :--- | :--- | :--- |
+| **Frontend Portal Layout** | `SourceCode/frontend/src/app/portal/layout.tsx`<br>`layout.test.tsx` | Navigation & Active Route Logic | - Bổ sung item số 5 `{ href: "/portal/buyer/demands", label: "Đơn hàng & Nhu cầu đặt mua", icon: ShoppingBag, key: "orders-demands" }` vào `expertNavItems`.<br>- Cập nhật Vitest tests kiểm chứng 8 mục menu. |
+| **Frontend Demands Page** | `SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`<br>`page.test.tsx` | View Logic & Context Awareness | - Điều chỉnh hiển thị tiêu đề linh hoạt theo vai trò (Chuyên gia / Doanh nghiệp / Thành viên).<br>- Đảm bảo component 2 Tabs vận hành trơn tru khi `isExpert` truy cập. |
+| **Frontend Technology Offer** | `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx` | Order Flow & Modal CTA | - Kiểm tra CTA chuyển hướng `/portal/buyer/demands?tab=commercial` cho Chuyên gia. |
+| **Backend API & RBAC** | `backend/apps/api/V1Compat/DemandController.cs` | Controller & Scoped IDOR | - Xác nhận `POST /api/v1/demands/items` và `GET /api/v1/buyer/demands` đã hỗ trợ `Actor.PersonId` cho vai trò `VERIFIED_EXPERT`/`EXPERT`. |
+| **Database & Persistence** | PostgreSQL `brokerage.demand_items` | Relational Data | - Tái sử dụng bảng `demand_items` hiện tại với `created_by` và `is_commercial_order`. Không yêu cầu migration mới. |
+
+---
+
+### 24.6. Ma Trận Truy Vết Nghiệp Vụ Delta v1.4 (Traceability Matrix)
+
+| Mã Định Danh | Loại Yêu Cầu | Tên Quy Chuẩn | Mô Tả & Căn Cứ Kiểm Thử | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-EXP-COMMERCE-001`** | Functional Req | Đơn Hàng Mua Sắm Chuyên Gia | Đặt mua sản phẩm tại Sàn và theo dõi Stepper 4 bước | `[CONFIRMED]` |
+| **`REQ-EXP-DEMAND-001`** | Functional Req | Đăng Nhu Cầu R&D Chuyên Gia | Tạo bài toán qua QuickDemandModal và quản lý nhu cầu | `[CONFIRMED]` |
+| **`REQ-EXP-NAV-003`** | Functional Req | Sidebar Chuyên Gia 8 Mục | Thêm mục số 5 "Đơn hàng & Nhu cầu đặt mua" | `[CONFIRMED]` |
+| **`BR-EXP-015`** | Business Rule | Chống Rò Rỉ IDOR | Chỉ truy xuất đơn hàng/nhu cầu có CreatedBy == Actor.PersonId | `[CONFIRMED]` |
+| **`BR-EXP-016`** | Business Rule | Dẫn Hướng CTA Từ Sàn | CTA modal mua hàng dẫn mượt mà về Workspace Chuyên gia | `[CONFIRMED]` |
+| **`BR-EXP-017`** | Business Rule | Chuẩn Hóa 5 UX States | Áp dụng <Async> đủ 5 trạng thái tại bàn làm việc đơn hàng | `[CONFIRMED]` |
+| **`AC-EXP-ORD-01`** | Acceptance Criteria | Kiểm Thử Đặt Mua Hàng | Test case đặt mua sản phẩm thương mại cho Chuyên gia | `[CONFIRMED]` |
+| **`AC-EXP-ORD-02`** | Acceptance Criteria | Kiểm Thử Quản Lý Đơn Mua | Test case bảng đơn hàng và stepper 4 bước | `[CONFIRMED]` |
+| **`AC-EXP-DMD-01`** | Acceptance Criteria | Kiểm Thử Đăng Nhu Cầu | Test case tạo nhu cầu và tính điểm TNI cho Chuyên gia | `[CONFIRMED]` |
+| **`AC-EXP-NAV-01`** | Acceptance Criteria | Kiểm Thử Sidebar 8 Mục | Test case hiển thị và active route mục 5 Sidebar | `[CONFIRMED]` |
+
+
+

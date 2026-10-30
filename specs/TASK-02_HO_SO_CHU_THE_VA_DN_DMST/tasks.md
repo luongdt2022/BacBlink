@@ -122,3 +122,33 @@
 - [x] **T-02.75** `[TEST]` **QC Kiểm thử 4 tầng Zero-Mock & Playwright E2E**: Xây dựng `test_innovation_survey_43q.py` kiểm thử 4 tầng (Invariants, API Contracts & IDOR, PostgreSQL DB thật, Playwright E2E 4 kịch bản), 4/4 suites passed (100% Green).
 - [x] **T-02.76** `[PO]` **QA Shadow Audit & Nghiệm thu Gate 5 DoD**: Đối soát CSDL PostgreSQL thật, kiểm tra static guard-rails, cập nhật Roadmap, ban hành Biên bản Nghiệm thu Xuất xưởng Gate 5 Shipped.
 
+---
+
+## Giai đoạn 10: Delta CR-2026-011 — Chuẩn Hóa Taxonomy 10 Lĩnh Vực TT17 & Zero-Mock Dashboard Doanh Nghiệp [FE][BE][TEST]
+
+- [x] **T-02.77** `[FE]` **Khai tử mảng tĩnh `SECTORS_TT17` & tích hợp nạp động `getActiveSectors()` tại `EnterprisesDirectoryView.tsx`**:
+  - **Mục tiêu**: Xóa bỏ hoàn toàn định nghĩa `const SECTORS_TT17 = [...]` bị gán sai lệch mã tại dòng 43 của `EnterprisesDirectoryView.tsx`.
+  - **Hành động kỹ thuật**:
+    + Import `getActiveSectors`, `type SectorOption` từ `@/lib/master-data-client`.
+    + Khai báo state: `sectors: SectorOption[]`, `sectorsLoading: boolean`, `sectorsError: boolean`.
+    + Sử dụng `useEffect` nạp động danh sách 10 Lĩnh vực TT17 từ API `/api/v1/sectors`.
+    + Cập nhật combobox Lĩnh vực công nghệ: render tùy chọn mặc định `{ code: "", name: "Tất cả lĩnh vực công nghệ" }` và danh sách động nạp được.
+    + Đảm bảo 5 UX States (Loading shimmer/disabled, Error fallback text, Empty fallback, Success options).
+  - **Tiêu chí kiểm chứng**: Dropdown hiển thị đầy đủ 10 Lĩnh vực chuẩn SSOT (`LV01` - Nông nghiệp, `LV05` - Chế biến thực phẩm, `LV07` - Cơ khí...).
+
+- [x] **T-02.78** `[BE][AUDIT]` **Đối soát Zero-Mock & xác thực số liệu CSDL thật cho Admin Dashboard Doanh Nghiệp**:
+  - **Mục tiêu**: Chứng minh 100% số liệu thống kê tại `/api/v1/admin/enterprises/dashboard` được truy vấn trực tiếp từ bảng `enterprise.enterprises`.
+  - **Hành động kỹ thuật**:
+    + Rà soát `EfEnterpriseRepository.cs` (`GetDashboardStatsAsync`): kiểm tra truy vấn AsNoTracking cho `totalEnterprises`, `verifiedCount`, `byProvince`, `bySector`, `byTni`.
+    + Rà soát `EnterpriseAdminDashboardPage.tsx`: xác nhận fetch dữ liệu qua `fetchDashboardStats()` và không chứa bất kỳ mảng dữ liệu giả lập (mock array) nào trong component.
+  - **Tiêu chí kiểm chứng**: Endpoint trả về HTTP 200, tổng số DN khớp với số lượng thực trong CSDL PostgreSQL (304 DN).
+
+- [x] **T-02.79** `[TEST]` **Kiểm thử Unit & Playwright E2E cho Bộ Lọc Lĩnh Vực & Dashboard Doanh Nghiệp**:
+  - **Mục tiêu**: Xác thực toàn trình hành vi lọc theo lĩnh vực và tải số liệu dashboard không lỗi.
+  - **Hành động kỹ thuật**:
+    + Viết test kiểm tra nạp danh mục động và chọn lọc `LV01` (Nông nghiệp), `LV07` (Cơ khí) tại `EnterprisesDirectoryView.tsx`.
+    + Viết test Playwright E2E: người dùng chọn ngành `LV01` $\rightarrow$ URL cập nhật `sectorCode=LV01` $\rightarrow$ kết quả hiển thị chỉ chứa doanh nghiệp thuộc ngành nông nghiệp.
+    + Kiểm tra trang `/admin/enterprises/dashboard` hiển thị đầy đủ các thẻ chỉ số và biểu đồ phân bố từ dữ liệu thật.
+  - **Tiêu chí kiểm chứng**: 100% test cases Green, không shallow assertions.
+
+

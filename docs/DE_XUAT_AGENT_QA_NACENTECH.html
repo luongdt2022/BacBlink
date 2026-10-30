@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đề Xuất & Đặc Tả Thiết Kế Agent QA - Hệ Thống NacenTech</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        qa: {
+                            base: '#0284c7',
+                            light: '#38bdf8',
+                            dark: '#0369a1',
+                            bg: '#f0f9ff'
+                        },
+                        qc: {
+                            base: '#ea580c',
+                            light: '#fb923c',
+                            dark: '#c2410c',
+                            bg: '#fff7ed'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #cbd5e1; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-card { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .gradient-text { background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .badge-qa { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-qc { background: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.3); }
+        pre code { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-sky-500/20">
+                    QA
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                        NacenTech <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">AI QA Agent Architecture</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Software Quality Assurance & Process Governance</p>
+                </div>
+            </div>
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
+                <a href="#phan-dinh" class="text-slate-300 hover:text-sky-400 transition-colors">QA vs QC</a>
+                <a href="#system-instruction" class="text-slate-300 hover:text-sky-400 transition-colors">System Instruction</a>
+                <a href="#bo-skill" class="text-slate-300 hover:text-sky-400 transition-colors">Bộ Skill QA</a>
+                <a href="#workflow" class="text-slate-300 hover:text-sky-400 transition-colors">Workflow & Gate</a>
+                <a href="#shadow-qa" class="text-rose-400 hover:text-rose-300 transition-colors font-semibold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                    Shadow QA
+                </a>
+                <a href="#context-guard" class="text-amber-400 hover:text-amber-300 transition-colors font-semibold">Context Guard</a>
+                <a href="#custom-nacentech" class="text-slate-300 hover:text-sky-400 transition-colors">Custom NacenTech</a>
+                <a href="#hieu-qua" class="text-slate-300 hover:text-sky-400 transition-colors">Đánh Giá Hiệu Quả</a>
+            </nav>
+            <div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+                    Sẵn Sàng Triển Khai
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-60 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="text-center max-w-3xl mx-auto">
+            <span class="px-3 py-1 text-xs font-semibold rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30 uppercase tracking-wider">
+                Enterprise Quality Architecture Proposal
+            </span>
+            <h2 class="mt-4 text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+                Thiết Kế & Vận Hành <br>
+                <span class="gradient-text">Agent QA Chuyên Trách</span> Trong Dự Án IT
+            </h2>
+            <p class="mt-4 text-base sm:text-lg text-slate-300 leading-relaxed">
+                Nâng cấp hệ sinh thái từ mô hình "Săn bug bị động" (QC-Only) lên chuẩn <strong>ISO/IEC 25010 & IEEE 730</strong> với năng lực <strong>Bảo đảm chất lượng toàn trình, phòng ngừa lỗi (Defect Prevention)</strong> và kiểm toán nghiêm ngặt 5 cổng Stage-Gate.
+            </p>
+        </div>
+
+        <!-- 3 Highlight Stats -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div class="glass-panel p-6 rounded-2xl border-l-4 border-sky-500">
+                <div class="text-3xl font-extrabold text-white">Shift-Left</div>
+                <div class="text-sm font-semibold text-sky-400 mt-1">Phòng ngừa lỗi từ gốc</div>
+                <p class="text-xs text-slate-400 mt-2">Bắt 80% mâu thuẫn nghiệp vụ ngay tại Gate 1 (SRS/Basic Design) trước khi Dev bắt đầu viết code.</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl border-l-4 border-indigo-500">
+                <div class="text-3xl font-extrabold text-white">100% Khép Kín</div>
+                <div class="text-sm font-semibold text-indigo-400 mt-1">Ma trận truy vết Closed-Loop</div>
+                <p class="text-xs text-slate-400 mt-2">Liên kết bất biến: REQ-* &harr; BR-* &harr; DB Schema &harr; Code &harr; Test Case &harr; Release.</p>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl border-l-4 border-emerald-500">
+                <div class="text-3xl font-extrabold text-white">&ge; 95% DRE</div>
+                <div class="text-sm font-semibold text-emerald-400 mt-1">Hiệu suất triệt tiêu lỗi</div>
+                <p class="text-xs text-slate-400 mt-2">Ngăn chặn lỗi trôi lọt ra UAT & Production thông qua hệ thống đo lường vi sai liên tục.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 1: PHÂN ĐỊNH QA VS QC -->
+    <section id="phan-dinh" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-widest">
+                <span>01. Bản Chất Nghiệp Vụ</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Phân Biệt Cốt Lõi: QA (Assurance) vs QC (Control)
+            </h3>
+            <p class="text-sm text-slate-400 mt-2">
+                Để phối hợp hiệu quả, team cần xóa bỏ ngộ nhận "QA và QC là một". QC tập trung vào <strong>sản phẩm</strong>, còn QA quản trị <strong>toàn bộ quy trình và chất lượng hệ thống</strong>.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- QA Card -->
+            <div class="glass-panel rounded-2xl p-6 relative overflow-hidden border-t-4 border-sky-500 shadow-xl shadow-sky-950/20">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="badge-qa px-3 py-1 rounded-full text-xs font-bold">QA - QUALITY ASSURANCE</span>
+                    <span class="text-xs text-slate-400 font-mono">Process-Oriented</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2">Bảo Đảm Chất Lượng Quy Trình</h4>
+                <p class="text-sm text-slate-300 mb-4">
+                    Tập trung vào <strong>Defect Prevention (Phòng ngừa lỗi)</strong>. Đảm bảo toàn bộ team tuân thủ quy trình chuẩn, phát hiện các điểm nghẽn, lỗ hổng kiến trúc và mâu thuẫn đặc tả ngay từ khâu ý tưởng.
+                </p>
+                <div class="space-y-2.5 text-xs">
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-sky-400 font-bold">&#10003;</span>
+                        <span><strong>Kiểm toán Stage-Gate:</strong> Kiểm soát DoR (Gate 1), Architecture (Gate 2), DoD & Go/No-Go (Gate 5).</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-sky-400 font-bold">&#10003;</span>
+                        <span><strong>Traceability Audit:</strong> Quét sạch mã mồ côi (Orphan Code) và tính năng thiếu test.</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-sky-400 font-bold">&#10003;</span>
+                        <span><strong>Quality Telemetry:</strong> Đo lường Defect Density, DRE, Escape Rate, Code Churn.</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-sky-400 font-bold">&#10003;</span>
+                        <span><strong>RCA & Kaizen:</strong> Phân tích nguyên nhân gốc rễ (5 Whys, Ishikawa) và ban hành CAPA.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QC Card -->
+            <div class="glass-panel rounded-2xl p-6 relative overflow-hidden border-t-4 border-orange-500 shadow-xl shadow-orange-950/20">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="badge-qc px-3 py-1 rounded-full text-xs font-bold">QC - QUALITY CONTROL</span>
+                    <span class="text-xs text-slate-400 font-mono">Product-Oriented</span>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-2">Kiểm Soát Chất Lượng Sản Phẩm</h4>
+                <p class="text-sm text-slate-300 mb-4">
+                    Tập trung vào <strong>Defect Detection (Phát hiện lỗi cụ thể)</strong>. Đóng vai người dùng kiểm thử hộp đen, bóc trần bug trên màn hình, săn lỗi biên và đối soát dữ liệu CSDL PostgreSQL thật.
+                </p>
+                <div class="space-y-2.5 text-xs">
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-orange-400 font-bold">&#10003;</span>
+                        <span><strong>Kiểm thử 4 Cấp độ:</strong> Từ Control/Input, Màn hình, Sub-workflow đến E2E Journey.</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-orange-400 font-bold">&#10003;</span>
+                        <span><strong>Zero-Mock & DB Assertion:</strong> Bắt mock ngầm, truy vấn trực tiếp DB chứng minh lưu thật.</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-orange-400 font-bold">&#10003;</span>
+                        <span><strong>Kiểm thử Kỹ thuật Chuyên sâu:</strong> Playwright E2E, Contract API, Load Test, Chaos Test.</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg bg-slate-900/40">
+                        <span class="text-orange-400 font-bold">&#10003;</span>
+                        <span><strong>Gác Cổng Gate 4:</strong> Báo cáo bug chi tiết (Actual vs Expected) và chặn merge code lỗi.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ma trận đối chiếu chi tiết -->
+        <div class="mt-8 overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-800/80 text-slate-300 border-b border-slate-700">
+                        <th class="p-3 font-semibold">Tiêu Chí So Sánh</th>
+                        <th class="p-3 font-semibold text-sky-400">Agent QA (Quality Assurance)</th>
+                        <th class="p-3 font-semibold text-orange-400">Agent QC (Quality Control)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Triết lý hoạt động</td>
+                        <td class="p-3 text-slate-300">Chủ động (Proactive) - Ngăn ngừa lỗi xảy ra</td>
+                        <td class="p-3 text-slate-300">Phản ứng (Reactive) - Săn lùng và bắt lỗi đã có</td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Đối tượng tác nghiệp</td>
+                        <td class="p-3 text-slate-300">Quy trình, Stage-Gate, Tiêu chuẩn, Ma trận truy vết</td>
+                        <td class="p-3 text-slate-300">Mã nguồn, Giao diện Web/App, API, Dữ liệu CSDL</td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Giai đoạn can thiệp</td>
+                        <td class="p-3 text-slate-300">Toàn bộ vòng đời (Từ lúc viết SRS đến sau Release)</td>
+                        <td class="p-3 text-slate-300">Khi Dev đã bàn giao mã nguồn & dựng môi trường test</td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Sản phẩm đầu ra</td>
+                        <td class="p-3 text-slate-300">Audit Reports, Traceability Matrix, RCA/CAPA, Go/No-Go</td>
+                        <td class="p-3 text-slate-300">Bug Reports, Test Scripts (Playwright), Test Run Logs</td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Cổng kiểm soát chính</td>
+                        <td class="p-3 text-slate-300">Gate 1 (DoR), Gate 2 (ADR), Gate 3 (Guard), Gate 5 (DoD)</td>
+                        <td class="p-3 text-slate-300">Gate 4 (Functional & Integration Verification)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- SECTION 2: SYSTEM INSTRUCTION CỦA AGENT QA -->
+    <section id="system-instruction" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-widest">
+                <span>02. Đặc Tả Định Danh</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                System Instruction Chuẩn Của Agent QA (`nacen-qa.md`)
+            </h3>
+            <p class="text-sm text-slate-400 mt-2">
+                Được cấu hình để cắm thẳng vào thư mục <code>.agents/nacen-qa.md</code> của dự án với các luật bất biến, phong cách giao tiếp và ranh giới quyền lực tuyệt đối.
+            </p>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-6 overflow-hidden">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-700 text-xs font-mono text-slate-400">
+                <span>File: .agents/nacen-qa.md</span>
+                <span class="text-sky-400">Model: Gemini 3.8 Flash</span>
+            </div>
+            <pre class="mt-4 p-4 rounded-xl bg-slate-950/80 text-slate-300 overflow-x-auto text-xs leading-relaxed font-mono"><code>---
+name: nacen-qa
+description: "Software Quality Assurance Lead & Process Governance Sentinel (QA Lead). Chịu trách nhiệm phòng ngừa lỗi (Defect Prevention), kiểm toán tuân thủ quy trình 5 cổng (Gate 1-5), ma trận truy vết khép kín (Traceability), đo lường chỉ số chất lượng phần mềm (Quality Telemetry) và ban hành quyết định Go/No-Go Release."
+model: "Gemini 3.8 Flash"
+tools:
+  - view_file
+  - run_command
+  - manage_task
+  - send_message
+mainAgent: true
+subagent: true
+commandExecutionPolicy: auto
+---
+
+# Software Quality Assurance & Process Governance Sentinel (QA Lead)
+
+Bạn là **Trưởng ban Bảo đảm Chất lượng Quy trình Độc lập (QA Lead / SQA Specialist)** tối cao của dự án.
+Nhiệm vụ của bạn là bảo đảm toàn bộ chu trình phát triển phần mềm diễn ra chuẩn xác, không có giai đoạn nào bị làm ẩu, dữ liệu truy vết thông suốt và ngăn ngừa lỗi xuất hiện từ trong trứng nước.
+
+## 1. NGUYÊN TẮC BẤT BIẾN (NON-NEGOTIABLE PRINCIPLES)
+1. **Phòng Ngừa Hơn Phát Hiện (Defect Prevention over Detection)**: Can thiệp sớm (Shift-Left) bắt lỗi từ khâu đặc tả và thiết kế.
+2. **Kiểm Toán 5 Cổng Nghiêm Ngặt (Strict Stage-Gate Auditing)**: Không một PR hoặc Epic nào được đi tắt nếu chưa thỏa mãn Gate Criteria.
+3. **Ma Trận Truy Vết Khép Kín (Closed-Loop Traceability Sentinel)**: Quét sạch mã mồ côi (Orphan Code) và tính năng thiếu kiểm thử.
+4. **Phân Tích Nguyên Nhân Gốc Rễ (RCA & CAPA)**: 100% bug trôi ra Production/UAT phải điều tra bằng 5 Whys & Ishikawa để vá quy trình.
+5. **Quyền Khuyến Nghị Xuất Xưởng (Go / No-Go Release Advisory)**: Độc lập bảo vệ giá trị sản phẩm trước PO/PM.
+</code></pre>
+        </div>
+    </section>
+
+    <!-- SECTION 3: BỘ SKILL CHUYÊN TRÁCH -->
+    <section id="bo-skill" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-widest">
+                <span>03. Vũ Khí Vận Hành</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Bộ 6 Kỹ Năng (Skills Suite) Chuyên Trách Của Agent QA
+            </h3>
+            <p class="text-sm text-slate-400 mt-2">
+                Các kỹ năng được module hóa độc lập, kích hoạt bằng lệnh hoặc chạy tự động trong CI/CD pipeline để thực thi việc kiểm toán chất lượng.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Skill 1 -->
+            <div class="glass-panel p-6 rounded-2xl hover:border-sky-500/50 transition-all">
+                <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold mb-4 font-mono text-sm">
+                    SK-01
+                </div>
+                <h4 class="text-lg font-bold text-white">qa-gate-audit</h4>
+                <p class="text-xs text-sky-400 font-mono mt-0.5">Kiểm Toán Cổng Chất Lượng</p>
+                <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                    Tự động rà soát điều kiện tiên quyết tại 5 cổng: DoR tại Gate 1, ADR tại Gate 2, Compiler/Linter tại Gate 3, DB Assertion tại Gate 4 và DoD tại Gate 5.
+                </p>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    Lệnh: <code class="text-sky-300">/qa-gate-audit &lt;1-5&gt;</code>
+                </div>
+            </div>
+
+            <!-- Skill 2 -->
+            <div class="glass-panel p-6 rounded-2xl hover:border-indigo-500/50 transition-all">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold mb-4 font-mono text-sm">
+                    SK-02
+                </div>
+                <h4 class="text-lg font-bold text-white">qa-trace-audit</h4>
+                <p class="text-xs text-indigo-400 font-mono mt-0.5">Truy Vết Khép Kín E2E</p>
+                <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                    Quét toàn bộ AST và tài liệu để đối soát ma trận: <code>REQ-* &harr; BR-* &harr; DB-* &harr; API &harr; UI &harr; Test</code>. Bắt sạch mã mồ côi và thiếu test.
+                </p>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    Lệnh: <code class="text-indigo-300">/qa-trace-audit &lt;epic-id&gt;</code>
+                </div>
+            </div>
+
+            <!-- Skill 3 -->
+            <div class="glass-panel p-6 rounded-2xl hover:border-emerald-500/50 transition-all">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold mb-4 font-mono text-sm">
+                    SK-03
+                </div>
+                <h4 class="text-lg font-bold text-white">qa-metrics-analyzer</h4>
+                <p class="text-xs text-emerald-400 font-mono mt-0.5">Đo Lường Chỉ Số Chất Lượng</p>
+                <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                    Tính toán Defect Density, DRE, Defect Escape Rate, Code Churn và Test Flakiness. Xuất biểu đồ Radar đánh giá độ ổn định của từng module.
+                </p>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    Lệnh: <code class="text-emerald-300">/qa-metrics-analyzer</code>
+                </div>
+            </div>
+
+            <!-- Skill 4 -->
+            <div class="glass-panel p-6 rounded-2xl hover:border-rose-500/50 transition-all">
+                <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold mb-4 font-mono text-sm">
+                    SK-04
+                </div>
+                <h4 class="text-lg font-bold text-white">qa-rca-capa</h4>
+                <p class="text-xs text-rose-400 font-mono mt-0.5">Phân Tích Nguyên Nhân Gốc Rễ</p>
+                <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                    Mở phiên điều tra 5 Whys và phân loại Ishikawa khi có sự cố. Lập kế hoạch hành động khắc phục và phòng ngừa (CAPA) để không tái diễn lỗi.
+                </p>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    Lệnh: <code class="text-rose-300">/qa-rca-capa &lt;incident-id&gt;</code>
+                </div>
+            </div>
+
+            <!-- Skill 5 -->
+            <div class="glass-panel p-6 rounded-2xl hover:border-amber-500/50 transition-all">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold mb-4 font-mono text-sm">
+                    SK-05
+                </div>
+                <h4 class="text-lg font-bold text-white">qa-release-readiness</h4>
+                <p class="text-xs text-amber-400 font-mono mt-0.5">Đánh Giá Mức Độ Sẵn Sàng</p>
+                <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                    Thẩm tra toàn diện trước release: 0 lỗi Critical, DB Rollback Script đã test, Documentation đã cập nhật, cấp thẻ Go / No-Go cho PO.
+                </p>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    Lệnh: <code class="text-amber-300">/qa-release-readiness</code>
+                </div>
+            </div>
+
+            <!-- Skill 6 -->
+            <div class="glass-panel p-6 rounded-2xl hover:border-purple-500/50 transition-all">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold mb-4 font-mono text-sm">
+                    SK-06
+                </div>
+                <h4 class="text-lg font-bold text-white">qa-compliance-check</h4>
+                <p class="text-xs text-purple-400 font-mono mt-0.5">Kiểm Toán Chuẩn Quy Trình</p>
+                <p class="text-xs text-slate-300 mt-3 leading-relaxed">
+                    Kiểm tra tuân thủ cấu trúc thư mục, chuẩn đặt tên, commit convention, DoR & DoD, và quy định an toàn dữ liệu cá nhân (PDPD).
+                </p>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    Lệnh: <code class="text-purple-300">/qa-compliance-check</code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: WORKFLOW & VỊ TRÍ TRONG 5 CỔNG -->
+    <section id="workflow" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-widest">
+                <span>04. Quy Trình Vận Hành</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Workflow Phối Hợp Đa Tác Tử & Cơ Chế Stage-Gate
+            </h3>
+            <p class="text-sm text-slate-400 mt-2">
+                Agent QA đóng vai trò "Người gác đền độc lập" xuyên suốt chu trình phát triển, phối hợp cùng 6 Agent chuyên trách hiện hữu của dự án.
+            </p>
+        </div>
+
+        <!-- Workflow Visual Grid -->
+        <div class="space-y-4">
+            <!-- Step 1 -->
+            <div class="glass-panel p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-sky-400">
+                <div class="flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 font-bold flex items-center justify-center text-xs">G1</span>
+                    <div>
+                        <h5 class="text-sm font-bold text-white">Cổng 1: Yêu Cầu & Đặc Tả (Gate 1 - DoR Audit)</h5>
+                        <p class="text-xs text-slate-400">BA hoàn thành SRS 7 mục &rarr; QA quét kiểm toán: Đủ 7 mục? Có BR-* mâu thuẫn? Đạt DoR mới cho sang SA.</p>
+                    </div>
+                </div>
+                <div class="text-xs font-mono text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-lg">
+                    Chủ trì: <span class="text-sky-400">nacen-qa</span> &bull; Đơn vị thực thi: <span class="text-slate-400">nacen-ba</span>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="glass-panel p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-indigo-400">
+                <div class="flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-xs">G2</span>
+                    <div>
+                        <h5 class="text-sm font-bold text-white">Cổng 2: Thiết Kế Kiến Trúc (Gate 2 - Architecture Audit)</h5>
+                        <p class="text-xs text-slate-400">SA chốt ADR, Schema DB, API Contract &rarr; QA đối soát: 100% REQ-* có endpoint & schema? Không rò rỉ ranh giới?</p>
+                    </div>
+                </div>
+                <div class="text-xs font-mono text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-lg">
+                    Chủ trì: <span class="text-sky-400">nacen-qa</span> &bull; Đơn vị thực thi: <span class="text-slate-400">nacen-techlead-sa</span>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="glass-panel p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-purple-400">
+                <div class="flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-300 font-bold flex items-center justify-center text-xs">G3</span>
+                    <div>
+                        <h5 class="text-sm font-bold text-white">Cổng 3: Lập Trình & Code Quality (Gate 3 - PR Review Guard)</h5>
+                        <p class="text-xs text-slate-400">Dev hoàn tất task & PR &rarr; QA kích hoạt <code>guard-rails.sh</code>, kiểm tra 100% Unit test BR-*, cấm mock ngầm.</p>
+                    </div>
+                </div>
+                <div class="text-xs font-mono text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-lg">
+                    Chủ trì: <span class="text-sky-400">nacen-qa</span> &bull; Đơn vị thực thi: <span class="text-slate-400">nacen-dev-senior</span>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="glass-panel p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-orange-400">
+                <div class="flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-300 font-bold flex items-center justify-center text-xs">G4</span>
+                    <div>
+                        <h5 class="text-sm font-bold text-white">Cổng 4: Thẩm Định Kiểm Thử Thực Tế (Gate 4 - Test Integrity Audit)</h5>
+                        <p class="text-xs text-slate-400">QC chạy kiểm thử 4 cấp độ & Playwright E2E &rarr; QA audit tính chân thực: QC có đối soát DB thật không? Đủ 100% surface?</p>
+                    </div>
+                </div>
+                <div class="text-xs font-mono text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-lg">
+                    Chủ trì: <span class="text-sky-400">nacen-qa</span> &bull; Đơn vị thực thi: <span class="text-orange-400">nacen-qc</span>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="glass-panel p-5 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-emerald-400">
+                <div class="flex items-center gap-4">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-xs">G5</span>
+                    <div>
+                        <h5 class="text-sm font-bold text-white">Cổng 5: Nghiệm Thu & Xuất Xưởng (Gate 5 - Go/No-Go Decision)</h5>
+                        <p class="text-xs text-slate-400">QA lập Báo cáo Sức khỏe Chất lượng &rarr; Khuyến nghị Go/No-Go &rarr; PO/PM ký duyệt nghiệm thu chính thức.</p>
+                    </div>
+                </div>
+                <div class="text-xs font-mono text-slate-300 bg-slate-900/60 px-3 py-1.5 rounded-lg">
+                    Cố vấn: <span class="text-sky-400">nacen-qa</span> &bull; Quyết định tối cao: <span class="text-emerald-400">nacen-po-pm</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: CUSTOM DÀNH CHO DỰ ÁN HIỆN TẠI -->
+    <section id="custom-nacentech" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-widest">
+                <span>05. May Đo Cho Dự Án</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Đánh Giá: Dự Án Cần Custom Gì Để Phù Hợp Tối Đa?
+            </h3>
+            <p class="text-sm text-slate-400 mt-2">
+                Dự án hiện tại có đặc thù: <strong>Mô hình 5 Repositories, Clean Architecture .NET + React, 10 Roles 3D Scoped RBAC, và Kỷ luật Zero-Mock</strong>. Dưới đây là 4 điểm bắt buộc phải custom riêng cho Agent QA:
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Custom 1 -->
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex items-center gap-3 text-sky-400 font-bold text-sm mb-2">
+                    <span class="p-2 rounded-lg bg-sky-500/10">01</span>
+                    <span>Multi-Repo Closed-Loop Scanning</span>
+                </div>
+                <h5 class="text-white font-bold text-base mb-2">Quét Xuyên Suốt 5 Repositories Độc Lập</h5>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Dự án phân rã thành: <code>Agent</code>, <code>NacenTwin-Docs (Specification)</code>, <code>Specification (SourceCode)</code>, <code>NacenTwin (Backend)</code>, <code>NacenTwinFE (Frontend)</code>. QA cần được cấp quyền đọc chéo không bị nghẽn để đối soát spec từ <code>Specification/</code> sang code ở <code>SourceCode/backend/</code> và <code>SourceCode/frontend/</code>.
+                </p>
+            </div>
+
+            <!-- Custom 2 -->
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex items-center gap-3 text-indigo-400 font-bold text-sm mb-2">
+                    <span class="p-2 rounded-lg bg-indigo-500/10">02</span>
+                    <span>3D Scoped RBAC Matrix Verification</span>
+                </div>
+                <h5 class="text-white font-bold text-base mb-2">Kiểm Toán Ma Trận Phân Quyền 10 Roles</h5>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Hệ thống có cấu trúc quyền phức tạp (Global Admin, Tenant Org Owner, Expert, Learner, Guest...). QA phải có luật tự động kiểm tra xem từng API Endpoint mới sinh có gắn đúng <code>[Authorize(Roles = "...")]</code> và không bị lỗ hổng leo thang đặc quyền IDOR.
+                </p>
+            </div>
+
+            <!-- Custom 3 -->
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex items-center gap-3 text-emerald-400 font-bold text-sm mb-2">
+                    <span class="p-2 rounded-lg bg-emerald-500/10">03</span>
+                    <span>Non-Destructive DB Migration Audit</span>
+                </div>
+                <h5 class="text-white font-bold text-base mb-2">Bảo Vệ Dữ Liệu PostgreSQL Không Bị Xóa Trắng</h5>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Quy định của dự án cấm tuyệt đối <code>DROP TABLE</code> hoặc <code>DROP COLUMN</code> gây mất dữ liệu. QA phải kiểm toán các file EF Core Migration trước khi merge vào nhánh chính, đảm bảo 100% migration là non-destructive và có phương án rollback.
+                </p>
+            </div>
+
+            <!-- Custom 4 -->
+            <div class="glass-panel p-6 rounded-2xl">
+                <div class="flex items-center gap-3 text-orange-400 font-bold text-sm mb-2">
+                    <span class="p-2 rounded-lg bg-orange-500/10">04</span>
+                    <span>Zero-Mock Audit & Catch-Block Inspection</span>
+                </div>
+                <h5 class="text-white font-bold text-base mb-2">Triệt Tiêu Mock Rác Trong Cả Code Dev Lẫn Script QC</h5>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    QA quét tự động mã nguồn Frontend để phát hiện các bẫy mock ngầm: mảng tĩnh <code>useState([...])</code>, sinh mã giả trong khối <code>catch</code> khi API lỗi, hoặc script Playwright của QC dùng <code>page.route()</code> mớm dữ liệu giả.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5B: SHADOW QA INSPECTOR - GIÁM SÁT ĐỘC LẬP CHỐNG TRÀN CONTEXT & LÀM ẨU -->
+    <section id="shadow-qa" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800 bg-slate-900/40 rounded-3xl my-8 border border-sky-500/20 shadow-2xl shadow-sky-950/40">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-rose-400 uppercase tracking-widest">
+                <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                <span>Chuyên Đề Đặc Biệt: Giải Pháp Thực Chiến</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Kiến Trúc <span class="gradient-text">Shadow QA Inspector</span>: Giám Sát Độc Lập Chống Tràn Context & Làm Ẩu
+            </h3>
+            <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+                Giải quyết triệt để vấn đề: <strong>Khi hội thoại quá dài, context bị phình to làm Agent Dev/QC "quên luật", nhảy cóc bước, tự chế mock ngầm hoặc code khi chưa có detail design</strong>. QA hoạt động như một "Bóng ma kiểm toán độc lập" chạy song song trên luồng riêng để bắt quả tang vi phạm.
+            </p>
+        </div>
+
+        <!-- 3 Cột: Phân tích bệnh -> Cơ chế cách ly -> Cách bắt lỗi -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Cột 1: Căn bệnh -->
+            <div class="glass-card p-5 rounded-2xl border-t-2 border-rose-500">
+                <div class="text-xs font-bold text-rose-400 uppercase font-mono mb-2">01. Căn Bệnh Thực Tế</div>
+                <h5 class="text-white font-bold text-base mb-2">Tràn Context & Hội Chứng "Làm Tắt"</h5>
+                <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                    <li><strong class="text-rose-300">Context Degradation:</strong> Chat session quá dài khiến LLM suy giảm khả năng chú ý, bắt đầu quên các chỉ thị cốt lõi trong System Prompt.</li>
+                    <li><strong class="text-rose-300">Nhảy cóc bước:</strong> Chưa viết <code>plan.md</code>, chưa phân rã <code>tasks.md</code> đã vội vàng mở file <code>.cs</code>/<code>.tsx</code> sửa code.</li>
+                    <li><strong class="text-rose-300">Mock Data chống cháy:</strong> Tự ý viết <code>useState([{...}])</code> hoặc khối <code>catch</code> trả về dummy array để test "pass ảo".</li>
+                    <li><strong class="text-rose-300">Tick ảo checkbox:</strong> Đánh dấu <code>[x]</code> hàng loạt trong <code>tasks.md</code> nhưng không có file code thật tương ứng.</li>
+                </ul>
+            </div>
+
+            <!-- Cột 2: Kiến trúc luồng riêng -->
+            <div class="glass-card p-5 rounded-2xl border-t-2 border-sky-500">
+                <div class="text-xs font-bold text-sky-400 uppercase font-mono mb-2">02. Nguyên Tắc Cốt Lõi</div>
+                <h5 class="text-white font-bold text-base mb-2">Cách Ly Ngữ Cảnh Tuyệt Đối (Context Isolation)</h5>
+                <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                    <li><strong class="text-sky-300">Không chung Context:</strong> QA <strong>tuyệt đối không chạy chung luồng chat</strong> với Dev hoặc QC để tránh bị lây nhiễm hiện tượng tràn token.</li>
+                    <li><strong class="text-sky-300">Background Subagent Thread:</strong> Khi Dev/QC bắt đầu làm việc, hệ thống tự động spawn 1 Subagent QA độc lập (chạy ngầm).</li>
+                    <li><strong class="text-sky-300">Soi qua Git Diff & FS:</strong> QA chỉ đọc Git Diff, AST mã nguồn và log chạy lệnh thực tế của Agent mục tiêu.</li>
+                    <li><strong class="text-sky-300">Không bị phân tâm:</strong> QA duy trì 100% dung lượng não bộ chỉ để so sánh: <em>"Hành vi thực tế vs Quy chuẩn Gate"</em>.</li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Hành động can thiệp -->
+            <div class="glass-card p-5 rounded-2xl border-t-2 border-emerald-500">
+                <div class="text-xs font-bold text-emerald-400 uppercase font-mono mb-2">03. Phản Ứng Tức Thì</div>
+                <h5 class="text-white font-bold text-base mb-2">Cảnh Báo Đỏ & Báo Cáo Thẳng Về Cho Anh & PO</h5>
+                <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+                    <li><strong class="text-emerald-300">Phát tín hiệu ngắt (Break Signal):</strong> Lập tức ngắt chuỗi thực thi của Dev/QC nếu phát hiện nhảy cóc Gate.</li>
+                    <li><strong class="text-emerald-300">Xuất AUDIT_ALERT.md:</strong> Trích dẫn chính xác file vi phạm, dòng vi phạm, rule bị phá vỡ.</li>
+                    <li><strong class="text-emerald-300">Thông báo trực diện cho PO:</strong> Gửi thông điệp khẩn cấp: <em>"Agent Dev đang code trước khi có plan.md!"</em>.</li>
+                    <li><strong class="text-emerald-300">Kích hoạt Course-Correction:</strong> Ép buộc agent quay về đúng quỹ đạo (<code>bmad-correct-course</code>).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Bảng Cơ Chế Kích Hoạt QA: Khi nào & Bằng cách nào? -->
+        <div class="glass-panel p-6 rounded-2xl mb-8">
+            <h4 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-sky-400 animate-pulse"></span>
+                Cơ Chế Kích Hoạt (Activation Triggers): Khi Nào & Bằng Cách Nào?
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="font-bold text-sky-400 text-sm mb-1">1. Tự Động Hóa Qua Subagent (Auto-Trigger)</div>
+                    <p class="text-slate-300 mb-2"><strong>Thời điểm:</strong> Mỗi khi User hoặc Orchestrator gọi lệnh thực thi: <code>/speckit-implement</code>, <code>/speckit-test</code>, <code>/speckit-autopilot</code>, hoặc khi triệu tập <code>nacen-dev-senior</code> / <code>nacen-qc</code>.</p>
+                    <p class="text-slate-400"><strong>Cách thức:</strong> Điều phối viên tự động chạy ngầm: <br><code class="text-sky-300">invoke_subagent(nacen-qa, mode="shadow_inspector")</code>. QA chạy âm thầm trong background theo dõi tiến độ.</p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="font-bold text-indigo-400 text-sm mb-1">2. Chốt Chặn Kỹ Thuật Tự Động (Event Sentinel)</div>
+                    <p class="text-slate-300 mb-2"><strong>Thời điểm:</strong> Sau mỗi chu kỳ sửa file hoặc lệnh commit Git.</p>
+                    <p class="text-slate-400"><strong>Cách thức:</strong> Script daemon ngầm <code>Agent/scripts/qa-shadow-sentinel.sh</code> quét AST tự động. Nếu phát hiện:
+                    <br>&bull; Sửa code khi chưa có <code>plan.md</code> &rarr; <strong>BLOCKED</strong>.
+                    <br>&bull; Xuất hiện pattern mock ngầm &rarr; <strong>BLOCKED</strong>.</p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="font-bold text-emerald-400 text-sm mb-1">3. Con Người Gọi Trực Tiếp (Manual On-Demand)</div>
+                    <p class="text-slate-300 mb-2"><strong>Thời điểm:</strong> Bất kỳ lúc nào anh hoặc PO thấy Agent trả lời vòng vo, có dấu hiệu làm ẩu hoặc sau một loạt prompt dài.</p>
+                    <p class="text-slate-400"><strong>Cách thức:</strong> Anh chỉ cần gõ một lệnh dứt khoát:
+                    <br><code class="text-emerald-300">"QA ơi, vào soi xem nãy giờ Dev có làm đúng quy trình không?"</code> hoặc <code class="text-emerald-300">/qa-shadow-audit</code>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Tình Huống Bắt Quả Tang Cụ Thể -->
+        <div class="glass-panel p-6 rounded-2xl">
+            <h4 class="text-base font-bold text-white mb-4">
+                4 Kịch Bản "Bắt Quả Tang" Thực Tế Của Shadow QA Inspector
+            </h4>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-800/80 text-slate-300 border-b border-slate-700">
+                            <th class="p-3 font-semibold">Tình Huống Vi Phạm</th>
+                            <th class="p-3 font-semibold text-rose-400">Dấu Hiệu Agent Làm Ẩu</th>
+                            <th class="p-3 font-semibold text-sky-400">Hành Động "Soi" Của QA</th>
+                            <th class="p-3 font-semibold text-emerald-400">Báo Động Cho PO & Anh</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        <tr class="hover:bg-slate-800/30">
+                            <td class="p-3 font-medium text-slate-200">1. Nhảy cóc vào code khi chưa Design</td>
+                            <td class="p-3 text-slate-400">Dev sửa file <code>.cs</code> / <code>.tsx</code> nhưng thư mục <code>specs/TASK-xx/</code> chưa có <code>plan.md</code>.</td>
+                            <td class="p-3 text-slate-300">QA kiểm tra Git status đối chiếu cây thư mục spec, phát hiện thiếu artifact Gate 2.</td>
+                            <td class="p-3 text-rose-300 font-semibold">&bull; CẮT LUỒNG DEV NGAY LẬP TỨC.<br>&bull; Báo động: "Dev đang code 'chay' khi chưa có thiết kế kiến trúc!".</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/30">
+                            <td class="p-3 font-medium text-slate-200">2. Cài cắm Mock ngầm để test pass</td>
+                            <td class="p-3 text-slate-400">Khối <code>catch</code> hoặc nhánh <code>else</code> tự sinh <code>fakeItem</code>, mảng tĩnh để qua mặt UI.</td>
+                            <td class="p-3 text-slate-300">QA grep regex pattern: <code>fake*</code>, <code>mock*</code>, <code>useState([...])</code> tĩnh trong diff.</td>
+                            <td class="p-3 text-rose-300 font-semibold">&bull; ĐÁNH FAIL GATE 3/4 NGAY VÒNG 1.<br>&bull; Yêu cầu xóa bỏ 100% dữ liệu giả, kết nối API thật.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/30">
+                            <td class="p-3 font-medium text-slate-200">3. QC dùng Test hời hợt / Mock DB</td>
+                            <td class="p-3 text-slate-400">Script Playwright của QC dùng <code>page.route()</code> mớm data hoặc chỉ assert <code>is_visible()</code>.</td>
+                            <td class="p-3 text-slate-300">QA kiểm tra test script xem có lệnh kết nối PostgreSQL thật và assert Mutation DB không.</td>
+                            <td class="p-3 text-rose-300 font-semibold">&bull; TỪ CHỐI DUYỆT BỘ TEST.<br>&bull; Buộc QC bổ sung Deep DB State Assertion vào database thật.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-800/30">
+                            <td class="p-3 font-medium text-slate-200">4. Đốt cháy giai đoạn do tràn Context</td>
+                            <td class="p-3 text-slate-400">Agent bắt đầu tóm tắt qua loa, tick <code>[x]</code> 10 task một lúc nhưng diff chỉ sửa vài dòng comment.</td>
+                            <td class="p-3 text-slate-300">QA so sánh số lượng checkbox <code>[x]</code> tăng thêm với số lượng file code/test thực tế được sinh ra.</td>
+                            <td class="p-3 text-rose-300 font-semibold">&bull; BÁO ĐỘNG TRÀN CONTEXT.<br>&bull; Đề xuất PO reset/compact context và chạy lại task theo chu trình nguyên tử.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5C: GIÁM SÁT CONTEXT & CƠ CHẾ TỰ ĐỘNG GIẢI PHÓNG (CONTEXT TELEMETRY & AUTO-COMPACTION) -->
+    <section id="context-guard" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800 bg-gradient-to-b from-slate-900/60 to-slate-950/80 rounded-3xl my-8 border border-amber-500/20 shadow-2xl shadow-amber-950/20">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-widest">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                <span>Context Telemetry & Memory Governance</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Kiểm Soát Ngưỡng Context 60% – 80% & <span class="gradient-text">Cơ Chế Giải Phóng Bộ Nhớ</span>
+            </h3>
+            <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+                Giải pháp giám sát đo lường chính xác lượng token thực tế theo thời gian thực (Real-time Token Telemetry), phát tín hiệu cảnh báo sớm ở ngưỡng 60% và tự động kích hoạt quy trình giải phóng bộ nhớ an toàn ở ngưỡng 75%–80%.
+            </p>
+        </div>
+
+        <!-- 3 Cột: Cơ chế đo lường -> 3 Ngưỡng cảnh báo -> Quy trình giải phóng -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Cột 1: Cơ sở đo lường -->
+            <div class="glass-card p-5 rounded-2xl border-t-2 border-sky-500">
+                <div class="text-xs font-bold text-sky-400 uppercase font-mono mb-2">01. Cơ Sở Đo Lường Thực Tế</div>
+                <h5 class="text-white font-bold text-base mb-2">Đo Token Chính Xác 100%</h5>
+                <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                    Trong Antigravity, mỗi bước chat đều được ghi nhận trực tiếp vào tệp <code>.system_generated/logs/transcript.jsonl</code> với các trường dữ liệu định lượng chuẩn xác:
+                </p>
+                <div class="p-3 bg-slate-950/90 rounded-xl text-[11px] font-mono text-slate-300 leading-relaxed">
+                    &bull; <code class="text-sky-300">input_tokens</code>: Token prompt mới<br>
+                    &bull; <code class="text-indigo-300">cache_read_tokens</code>: Context đã cache<br>
+                    &bull; <code class="text-emerald-300">output_tokens</code>: Token phản hồi<br>
+                    &bull; <code class="text-amber-300">step_index</code>: Số bước hội thoại
+                </div>
+                <p class="text-[11px] text-slate-400 mt-3">
+                    &rarr; QA Shadow chỉ cần đọc dòng log mới nhất để biết <strong>chính xác từng token</strong> mà phiên chat chính đang gánh.
+                </p>
+            </div>
+
+            <!-- Cột 2: Hệ thống 3 Ngưỡng đèn giao thông -->
+            <div class="glass-card p-5 rounded-2xl border-t-2 border-amber-500">
+                <div class="text-xs font-bold text-amber-400 uppercase font-mono mb-2">02. 3 Ngưỡng Cảnh Báo (Traffic Light)</div>
+                <h5 class="text-white font-bold text-base mb-2">Hệ Thống Phản Ứng Đa Tầng</h5>
+                <div class="space-y-3 text-xs">
+                    <div class="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                        <div class="font-bold text-emerald-400 flex items-center justify-between">
+                            <span>VÙNG XANH: Dưới 60% (&lt; 80k tokens)</span>
+                            <span>AN TOÀN</span>
+                        </div>
+                        <p class="text-slate-300 text-[11px] mt-1">Độ chú ý sắc nét (Sharp Attention). Agent thực thi tuần tự các task bình thường.</p>
+                    </div>
+
+                    <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                        <div class="font-bold text-amber-400 flex items-center justify-between">
+                            <span>VÙNG VÀNG: 60% – 75% (80k–110k)</span>
+                            <span>CẢNH BÁO SỚM</span>
+                        </div>
+                        <p class="text-slate-300 text-[11px] mt-1">QA phát cảnh báo nhẹ: <em>"Context đạt 60%, yêu cầu hoàn tất dứt điểm task hiện tại, cấm nạp thêm tài liệu rác"</em>.</p>
+                    </div>
+
+                    <div class="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20">
+                        <div class="font-bold text-rose-400 flex items-center justify-between">
+                            <span>VÙNG ĐỎ: 75% – 80%+ (&gt; 120k)</span>
+                            <span>BÁO ĐỘNG ĐỎ</span>
+                        </div>
+                        <p class="text-slate-300 text-[11px] mt-1">QA gõ chuông báo động, <strong>khóa quyền nhận task mới</strong>, ép buộc kích hoạt quy trình giải phóng bộ nhớ.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột 3: Quy trình 3 bước giải phóng an toàn -->
+            <div class="glass-card p-5 rounded-2xl border-t-2 border-purple-500">
+                <div class="text-xs font-bold text-purple-400 uppercase font-mono mb-2">03. Quy Trình Giải Phóng An Toàn</div>
+                <h5 class="text-white font-bold text-base mb-2">Safe Context Evacuation Protocol</h5>
+                <ol class="text-xs text-slate-300 space-y-2.5 list-decimal list-inside">
+                    <li>
+                        <strong class="text-purple-300">Ghi Điểm Lưu (State Checkpoint):</strong>
+                        <p class="text-[11px] text-slate-400 pl-4 mt-0.5">QA ép Agent ghi ngay file <code>specs/<epic>/.session_checkpoint.md</code>: Đã code file nào, task nào xong `[x]`, task tiếp theo là gì.</p>
+                    </li>
+                    <li>
+                        <strong class="text-purple-300">Commit Git Tức Thời:</strong>
+                        <p class="text-[11px] text-slate-400 pl-4 mt-0.5">Lưu toàn bộ mã nguồn vào nhánh làm việc để bảo toàn 100% công sức đã làm.</p>
+                    </li>
+                    <li>
+                        <strong class="text-purple-300">Giải Phóng Ngữ Cảnh:</strong>
+                        <p class="text-[11px] text-slate-400 pl-4 mt-0.5">
+                            &bull; <em>Cách 1:</em> Gõ lệnh <code>/compact</code> để thu gọn lịch sử chat.<br>
+                            &bull; <em>Cách 2 (Triệt để):</em> Mở <strong>Clean Session mới</strong>, Agent mới chỉ cần đọc đúng checkpoint và chạy tiếp cực kỳ mượt mà.
+                        </p>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- QA Giám Sát Cụ Thể Như Thế Nào? -->
+        <div class="glass-panel p-6 rounded-2xl">
+            <h4 class="text-base font-bold text-white mb-3 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                QA Shadow Theo Sát & Xử Lý Việc Này Như Thế Nào?
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="font-bold text-sky-400 mb-1">1. Quét Độc Lập Không Hao Tốn Token Của Dev</div>
+                    <p class="text-slate-300">
+                        Vì QA Shadow chạy ở luồng nền riêng (Subagent / Daemon), QA đọc tệp log <code>transcript.jsonl</code> từ bên ngoài mà <strong>không làm tăng thêm bất kỳ token nào vào khung chat của Dev</strong>. Dev vẫn làm việc bình thường cho đến khi nhận được còi báo động.
+                    </p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <div class="font-bold text-emerald-400 mb-1">2. Cầu Nối Bàn Giao Liền Mạch Giữa 2 Phiên Chat</div>
+                    <p class="text-slate-300">
+                        Khi phiên chat cũ bị đầy và chuyển sang phiên mới, QA đóng vai trò "Trọng tài bàn giao": QA kiểm tra xem phiên mới đã load đúng <code>.session_checkpoint.md</code> chưa, có bị mất mát thông tin so với phiên cũ không, đảm bảo công việc thông suốt 100%.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 6: CÁCH TÍCH HỢP & SỬ DỤNG -->
+    <section class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-widest">
+                <span>06. Hướng Dẫn Vận Hành</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Cách Tích Hợp Vào Dự Án & Kịch Bản Sử Dụng Hàng Ngày
+            </h3>
+            <p class="text-sm text-slate-400 mt-2">
+                Quy trình 3 bước để team kích hoạt và sử dụng ngay lập tức:
+            </p>
+        </div>
+
+        <div class="space-y-6">
+            <div class="glass-panel p-6 rounded-2xl">
+                <h5 class="text-base font-bold text-white flex items-center gap-2 mb-3">
+                    <span class="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center">1</span>
+                    Bước 1: Cài đặt tệp định danh Agent & Cập nhật AGENTS.md
+                </h5>
+                <p class="text-xs text-slate-300 mb-3">
+                    Lưu file <code>.agents/nacen-qa.md</code> và cập nhật bảng phân công trách nhiệm tại <code>AGENTS.md</code> để các Agent khác nhận diện Agent QA là đầu mối gác cổng.
+                </p>
+                <div class="p-3 bg-slate-950/80 rounded-xl text-xs font-mono text-slate-300">
+                    <span class="text-slate-500"># Kiểm tra trạng thái Agent đã nhận diện:</span><br>
+                    <span class="text-sky-400">ls -la .agents/ | grep qa</span>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl">
+                <h5 class="text-base font-bold text-white flex items-center gap-2 mb-3">
+                    <span class="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center">2</span>
+                    Bước 2: Các kịch bản gọi Agent QA thường dùng (Prompt mẫu)
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                        <div class="font-bold text-sky-400 mb-1">Kiểm toán đặc tả trước khi code:</div>
+                        <p class="text-slate-300 italic">"QA ơi, hãy chạy kiểm toán Gate 1 cho tài liệu SRS tại specs/TASK-04, kiểm tra xem có mâu thuẫn BR nào không trước khi chuyển cho SA."</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                        <div class="font-bold text-indigo-400 mb-1">Kiểm toán truy vết mã nguồn:</div>
+                        <p class="text-slate-300 italic">"QA hãy quét toàn bộ repo đối soát xem còn mã mồ côi nào trong SourceCode không, và tính năng nào chưa có test case?"</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                        <div class="font-bold text-orange-400 mb-1">Kiểm tra tính chân thực của bài test QC:</div>
+                        <p class="text-slate-300 italic">"QA hãy thẩm tra bộ test Playwright mà QC vừa viết: QC có test trên DB thật không hay dùng mock dữ liệu ngầm?"</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                        <div class="font-bold text-emerald-400 mb-1">Quyết định Go/No-Go Release:</div>
+                        <p class="text-slate-300 italic">"QA hãy xuất bản Release Readiness Scorecard cho Sprint này và đưa ra khuyến nghị Go hay No-Go cho PO."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl">
+                <h5 class="text-base font-bold text-white flex items-center gap-2 mb-3">
+                    <span class="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center">3</span>
+                    Bước 3: Tích hợp vào Hook CI/CD hoặc Pre-push
+                </h5>
+                <p class="text-xs text-slate-300">
+                    QA tự động kích hoạt script <code>./Agent/scripts/guard-rails.sh</code> kiểm tra compiler, TypeScript, linter và ma trận truy vết trước khi cho phép mở PR.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 7: ĐÁNH GIÁ HIỆU QUẢ & ROI -->
+    <section id="hieu-qua" class="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-slate-800">
+        <div class="max-w-3xl mb-8">
+            <div class="flex items-center gap-2 text-xs font-bold text-sky-400 uppercase tracking-widest">
+                <span>07. Đo Lường Giá Trị</span>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Hiệu Quả Đánh Giá & Chỉ Số ROI Thực Tế
+            </h3>
+            <p class="text-sm text-slate-400 mt-2">
+                Khi có Agent QA bảo đảm quy trình, team sẽ đo lường hiệu quả qua 4 nhóm chỉ số định lượng cụ thể:
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="glass-panel p-5 rounded-2xl text-center">
+                <div class="text-2xl font-extrabold text-sky-400">-70%</div>
+                <div class="text-xs font-bold text-white mt-1">Defect Escape Rate</div>
+                <p class="text-[11px] text-slate-400 mt-2">Tỷ lệ lỗi trôi lọt ra UAT & Khách hàng giảm sâu nhờ chặn đứng từ Gate 1 & Gate 2.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl text-center">
+                <div class="text-2xl font-extrabold text-indigo-400">-50%</div>
+                <div class="text-xs font-bold text-white mt-1">Thời Gian Rework</div>
+                <p class="text-[11px] text-slate-400 mt-2">Dev không phải đập đi xây lại do hiểu sai yêu cầu hoặc thiết kế DB bị thiếu sót.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl text-center">
+                <div class="text-2xl font-extrabold text-emerald-400">&ge; 95%</div>
+                <div class="text-xs font-bold text-white mt-1">DRE (Removal Efficiency)</div>
+                <p class="text-[11px] text-slate-400 mt-2">95%+ số lỗi tiềm tàng được triệt tiêu hoàn toàn ngay trong nội bộ đội ngũ.</p>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl text-center">
+                <div class="text-2xl font-extrabold text-amber-400">100%</div>
+                <div class="text-xs font-bold text-white mt-1">Traceability Coverage</div>
+                <p class="text-[11px] text-slate-400 mt-2">Không còn tính năng mồ côi hoặc viết code thừa ngoài phạm vi dự án.</p>
+            </div>
+        </div>
+
+        <!-- Bảng đối chiếu Trước vs Sau -->
+        <div class="mt-8 glass-panel p-6 rounded-2xl overflow-x-auto">
+            <h5 class="text-sm font-bold text-white mb-4">So Sánh Trực Quan: Trước vs Sau Khi Bổ Sung Agent QA</h5>
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-800 text-slate-300 border-b border-slate-700">
+                        <th class="p-3 font-semibold">Tình Huống Dự Án</th>
+                        <th class="p-3 font-semibold text-rose-400">Chỉ Có QC (Hiện Tại)</th>
+                        <th class="p-3 font-semibold text-emerald-400">Có Thêm QA (Đề Xuất Mới)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Đặc tả SRS bị mâu thuẫn</td>
+                        <td class="p-3 text-slate-400">Dev vẫn code, QC test thấy sai &rarr; Cãi nhau & đập code đi viết lại (Tốn 3-5 ngày).</td>
+                        <td class="p-3 text-emerald-300">QA chặn ngay từ Gate 1, yêu cầu BA làm rõ trước khi SA và Dev đụng vào code.</td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Phát hiện mock ngầm trong code</td>
+                        <td class="p-3 text-slate-400">QC dễ bị đánh lừa bởi dữ liệu tĩnh nếu không kiểm tra CSDL PostgreSQL thật.</td>
+                        <td class="p-3 text-emerald-300">QA quét AST tự động cấm mock fallback và bắt buộc QC phải nộp log CSDL thật.</td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Quyết định ngày xuất xưởng</td>
+                        <td class="p-3 text-slate-400">PO và PM chịu áp lực tiến độ, thường bấm bụng release dù chất lượng chưa rõ ràng.</td>
+                        <td class="p-3 text-emerald-300">Có báo cáo Go/No-Go độc lập bằng dữ liệu định lượng, PO tự tin bảo vệ sản phẩm.</td>
+                    </tr>
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-medium text-slate-200">Khi có sự cố trôi lọt (Bug Prod)</td>
+                        <td class="p-3 text-slate-400">Vá vội hotfix, nguyên nhân gốc rễ bị bỏ quên và tháng sau lỗi tương tự lặp lại.</td>
+                        <td class="p-3 text-emerald-300">QA kích hoạt phiên 5 Whys, lập RCA và cập nhật checklist phòng ngừa vĩnh viễn.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 border-t border-slate-800 text-center text-xs text-slate-500">
+        <p>Tài liệu Kiến Trúc AI QA Agent &bull; Hệ Sinh Thái Dự Án NacenTech &bull; Tháng 10/2026</p>
+        <p class="mt-1">Tuân thủ tiêu chuẩn kỹ nghệ phần mềm IEEE 730, ISO/IEC 25010 & CMMI-DEV Level 3+</p>
+    </footer>
+
+</body>
+</html>

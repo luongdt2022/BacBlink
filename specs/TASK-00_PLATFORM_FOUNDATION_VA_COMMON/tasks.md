@@ -255,4 +255,42 @@
   - [x] Xây dựng `src/app/portal/page.test.tsx` kiểm thử role-based routing đạt 2/2 PASS.
   - [x] Toàn bộ portal test suites đạt 100% Green (85/85 tests).
 
+---
+
+## Giai đoạn 9: Delta v10 — Tinh Gọn Onboarding & Bàn Làm Việc Public User [`[FE-PUBLIC-USER]`]
+
+- [x] `T-00.76` **[FE-DELTA-10-01]** Form Đăng ký: Xác nhận gỡ bỏ trường Organization, giữ vững PDPD và validation (`src/app/(auth)/register/page.tsx`):
+  - [x] Gỡ bỏ hoàn toàn trường nhập liệu Cơ quan / Đơn vị (`organization`) khỏi `initialFormData`, UI form và validation state.
+  - [x] Bảo toàn 100% các trường định danh cá nhân cốt lõi (`lastName`, `firstName`, `email`, `phone`, `password`, `confirmPassword`).
+  - [x] Giữ vững checkbox đồng thuận bảo vệ dữ liệu cá nhân (`acceptPdpd` theo Nghị định 13/2023/NĐ-CP).
+  - [x] Kiểm chứng endpoint tiếp nhận payload tinh gọn và kích hoạt tài khoản `PUBLIC_USER`.
+
+- [x] `T-00.77` **[FE-DELTA-10-02]** Sidebar Navigation: Cập nhật publicNavItems thành 5 mục chuẩn trong layout.tsx (`src/app/portal/layout.tsx`):
+  - [x] Chuẩn hóa danh mục `publicNavItems` thành đúng 5 mục:
+    1. Bàn làm việc (`/portal`, icon `LayoutDashboard`)
+    2. Nhu cầu & Sản phẩm quan tâm (`/portal/buyer/demands`, icon `ShoppingBag`)
+    3. Radar Ghép Nối AI (`/portal/matching/radar`, icon `Sparkles`, `badge: "Mới"`, `badgeType: "new"`)
+    4. Đăng ký Nâng hạng Vai trò (`/profile/upgrade`, icon `Rocket`)
+    5. Cài đặt Tài khoản (`/settings`, icon `FileCheck` hoặc `Settings`)
+  - [x] Triệt tiêu 100% các liên kết pháp nhân không phù hợp (Gian hàng `/portal/seller/technologies`, Đánh giá TT17 `/assessments/tt17`, Hồ sơ Doanh nghiệp `/portal/enterprise/profile`) khỏi menu của `PUBLIC_USER`.
+
+- [x] `T-00.78` **[FE-DELTA-10-03]** Dashboard Public User: Tái cấu trúc GeneralPortalDashboard trong page.tsx gồm 3 khối (`src/app/portal/page.tsx`):
+  - [x] Khối 1: Quick Action Hero Banner với lời chào cá nhân hóa (`user?.fullName`), nhãn định vị `"Thành viên Khám phá / Bên Mua tiềm năng"`, và 2 nút tắt dẫn tới `/khao-sat-nhu-cau` và `/portal/seller/technologies`.
+  - [x] Khối 2: Lưới 3 Thẻ Mua Sắm & Khám Phá AI (3-Card Explorer Grid):
+    * Thẻ 1: Khám phá Sàn Công nghệ & Gian hàng (`/portal/seller/technologies`, icon `Cpu`)
+    * Thẻ 2: Bài toán Đổi mới của Bạn (`/portal/buyer/demands`, icon `ShoppingBag`)
+    * Thẻ 3: Radar Ghép Nối AI (`/portal/matching/radar`, icon `Sparkles`, badge `"Mới"`)
+  - [x] Khối 3: Banner Nâng Hạng CTA nổi bật giới thiệu 4 lộ trình chuyển đổi (Bên Mua, Bên Bán, Chuyên gia, Doanh nghiệp ĐMST) kèm nút CTA dẫn tới `/profile/upgrade`.
+  - [x] Loại bỏ hoàn toàn mảng `generalModules` cũ 4 thẻ pháp nhân.
+
+- [x] `T-00.79` **[TEST-DELTA-10-01]** Cập nhật portal-navigation-delta.test.tsx và layout.test.tsx bao phủ 100% 5 menu và 3 thẻ mới:
+  - [x] Bổ sung test cases trong `src/app/portal/layout.test.tsx` kiểm chứng vai trò `PUBLIC_USER` hiển thị chính xác 5 mục sidebar và 0 rò rỉ module pháp nhân.
+  - [x] Bổ sung test cases trong `src/app/portal/portal-navigation-delta.test.tsx` kiểm thử nhãn, icon và badge mới của `publicNavItems`.
+  - [x] Bổ sung/Cập nhật test cases cho `GeneralPortalDashboard` trong `src/app/portal/page.test.tsx` kiểm chứng render 3 khối chức năng mới.
+
+- [x] `T-00.80` **[VERIFY-DELTA-10-01]** Chạy npm test kiểm chứng Zero Regression cho toàn bộ 70+ test cases cũ:
+  - [x] Chạy vitest trên toàn bộ test suites (`layout.test.tsx`, `portal-navigation-delta.test.tsx`, `buyer-dashboard.test.tsx`, `seller-dashboard.test.tsx`, `page.test.tsx`, `register/page.test.tsx`).
+  - [x] Đạt 100% Green, 0 regression cho các workspace BUYER, SELLER, EXPERT, ADMIN.
+
+
 

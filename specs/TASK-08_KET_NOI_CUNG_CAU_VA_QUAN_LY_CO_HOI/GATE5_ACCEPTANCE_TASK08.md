@@ -79,7 +79,41 @@
 
 ---
 
-## 4. KÝ BIÊN BẢN XUẤT XƯỞNG
+---
 
-- **Product Owner / Project Manager**: Đã thẩm định & Phê duyệt xuất xưởng (`Shipped`).
-- **Quality Control Specialist**: Đã kiểm định toàn trình 4 tầng Zero-Mock trên CSDL PostgreSQL thật (`Approved`).
+## 5. PHỤ LỤC NGHIỆM THU DELTA: CR-2026-012 (ENRICHED CONNECTION REQUESTS & SCOPED SELLER PIPELINE)
+
+**Căn cứ**: Quyết định PO `PO-DEC-20261030-05`, Hồ sơ Change Request `CR-2026-012`, và Master Plan `MASTER_PLAN_CR2026_012_SELLER_PIPELINE.md`.  
+**Ngày Nghiệm Thu Delta**: 30/10/2026  
+**Chủ Trì**: Product Owner / Project Manager (`nacen-po-pm`)
+
+### 5.1. Bảng Đối Soát 3 Vấn Đề Gốc Của User
+
+| Vấn đề gốc | Hiện trạng ban đầu | Giải pháp kỹ thuật đã triển khai | Trạng thái sau nâng cấp |
+| :--- | :--- | :--- | :---: |
+| **1. Số liệu thống kê (26 deal, 18.7 Tỷ, 5 thỏa thuận) là mock hay thực tế?** | Dữ liệu thật trong PostgreSQL nhưng bị rò rỉ toàn sàn do query `SELECT ... WHERE 1=1` không lọc theo `seller_organization_id`. | Áp dụng Scoped RBAC 3 chiều (`BR-BRK-08`): Khi User là SELLER, Backend và Frontend chỉ truy vấn các Cơ hội và Yêu cầu kết nối thuộc tổ chức của Seller (`organizationName` / `scope=my`). | **ĐÃ GIẢI QUYẾT TRIỆT ĐỂ**<br>(Dữ liệu thật 100%, bảo mật đa chủ thể) |
+| **2. Có "4 mới" nhưng nội dung không hiển thị đầy đủ?** | Badge "4 mới" hiển thị tổng yêu cầu `PENDING`, nhưng tab Inbound không có bộ lọc trạng thái và thẻ danh sách chỉ có lời nhắn thô. | Bổ sung thanh 4 sub-tabs lọc trạng thái (`ALL`, `PENDING`, `ACCEPTED`, `REJECTED`) kèm badges định lượng; enrich thẻ yêu cầu kết nối với tên công nghệ mục tiêu, TRL level, thông tin pháp nhân bên mua. | **ĐÃ GIẢI QUYẾT TRIỆT ĐỂ**<br>(4 sub-tabs lọc mượt mà, thông tin đa chiều) |
+| **3. Không click vào view chi tiết để xem khách hàng nào muốn mua sản phẩm nào?** | Không có nút xem chi tiết; Backend không JOIN với bảng `supply.offers` và `auth.enterprises`. | Viết mới component `ConnectionRequestDetailModal.tsx` (`UI-CONN-REQ-DETAIL-001`) hiển thị 3 khối hoàn chỉnh: (1) Công nghệ mục tiêu & TRL 1-9, (2) Hồ sơ pháp nhân bên mua (MST, ngành nghề, địa bàn), (3) Đề xuất & Liên hệ PDPD. | **ĐÃ GIẢI QUYẾT TRIỆT ĐỂ**<br>(Xem chi tiết 3 khối + Chấp thuận / Từ chối) |
+
+### 5.2. Kết Quả Kiểm Thử Đa Tầng Delta CR-2026-012
+
+1. **Backend Invariant Tests (`NacenTech.Tests.Invariants`)**:
+   - `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj`: **184/184 tests passed (100%)**, thời gian chạy 207 ms.
+   - Bao phủ: Hàm `MaskPhone`, `MaskEmail`, DTO PENDING không lộ số thật, DTO ACCEPTED unmask số thật, kiểm tra validation lý do từ chối $\ge 10$ ký tự (`ERR_INVALID_REJECTION_REASON`).
+2. **Frontend Type Check**:
+   - `pnpm tsc --noEmit`: **0 error, 100% Passed**.
+3. **Frontend Component & Integration Tests (Vitest)**:
+   - `ConnectionRequestDetailModal.test.tsx`: **4/4 tests passed (100%)** (render 3 khối, PDPD masking, validate từ chối $\ge 10$ ký tự, chấp thuận unmask & mở Deal Room).
+   - `page.test.tsx`: **4/4 tests passed (100%)** (chuyển đổi 4 sub-tabs lọc, format tiền tệ động `5,5 Tỷ VNĐ`, Scoped RBAC Seller, Zero-Mock).
+   - Tổng cộng: **8/8 tests passed (100%)**.
+4. **Backend API Endpoints (Cổng 5080)**:
+   - `GET /api/v1/brokerage/requests`: JOIN dữ liệu thành công, hỗ trợ `status`, `organizationName`, `search`.
+   - `GET /api/v1/brokerage/requests/{id}`: Trả về DTO 3 khối kèm PDPD masking.
+   - `PUT /api/v1/brokerage/requests/{id}/respond`: Validate lý do từ chối, tự động sinh Opportunity khi Accept.
+
+---
+
+## 6. KÝ BIÊN BẢN XUẤT XƯỞNG TOÀN DIỆN (GATE 5 SIGN-OFF)
+
+- **Product Owner / Project Manager (`nacen-po-pm`)**: Đã thẩm định toàn bộ bằng chứng kiểm thử (Backend 184/184, Frontend 8/8, tsc 0 error, DB PostgreSQL thật không mock). Phê duyệt xuất xưởng chính thức (`Shipped`).
+- **Trạng thái Epic TASK-08**: **100% Hoàn thành (40/40 Tasks)**.

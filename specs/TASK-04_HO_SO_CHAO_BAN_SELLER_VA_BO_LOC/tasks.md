@@ -321,3 +321,32 @@
   * Đối soát ma trận truy vết khép kín: Đảm bảo 100% các yêu cầu `REQ-DELTA-11` $\rightarrow$ `REQ-DELTA-14`, `BR-OFFER-COMMERCIAL-01` $\rightarrow$ `BR-OFFER-COMMERCIAL-03`, `UI-DELTA-04-05` $\rightarrow$ `UI-DELTA-04-06`, `AC-04-042` $\rightarrow$ `AC-04-046` được ánh xạ đầy đủ sang các tasks `T-04.109` đến `T-04.114`, không phát sinh nợ kỹ thuật và không có task mồ côi.
 
 - [ ] `TASK-04-CR115` **[CR]** [P1] (Người gửi: Lượng) Làm rõ 2 button mua hoặc nhận chuyển giao công nghệ — Vào trang chi tiết sản phẩm/ giải pháp thấy có 2 button mua/ kết nối có vẻ đang bin dublicate, hãy phân tích ý nghĩa và dưa ra giải pháp cải tiến [Đính kèm: ![screenshot_21h22m01_1.png](/static/uploads/TASK-04-CR115_1792678959_1_screenshot_21h22m01_1.png)]
+
+
+---
+
+## Giai đoạn 14: Delta v11 (CR-2026-010) — Xóa Bỏ Fallback Tĩnh Sàn Chào Bán & Khai Tử Mảng TT17_SECTORS 18 Ngành
+
+- [x] **T-04.115** `[FE]` Khai tử mảng `TT17_SECTORS` 18 ngành tự chế trong `SourceCode/frontend/src/types/technology-offer.ts` và loại bỏ `SECTORS_18_CATALOG` tĩnh trong `services/api/technology-offer.ts`:
+  - Chuyển sang dùng hàm/hook `getActiveSectors()` từ `lib/master-data-client.ts` (kết nối `GET /api/v1/master-data/sectors?activeOnly=true`).
+  - Cập nhật các component liên quan (`Tier3SectorDynamicForm.tsx`, `DynamicSpecTable.tsx`, `Step1CoreFields.tsx`) dùng danh mục chuẩn TT17 10 Lĩnh vực `LV01..LV17`.
+  - Tiêu chí kiểm chứng:
+    - [x] Không còn định nghĩa `TT17_SECTORS` 18 ngành tự chế với các mã tiền tố lạ (`AG, FOOD, MECH...`).
+    - [x] Type check `tsc --noEmit` đạt 0 lỗi type.
+- [x] **T-04.116** `[FE]` Refactor Hero Stats Strip trên Sàn Chào Bán (`SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`):
+  - Xóa bỏ hoàn toàn fallback ảo `"1.200+"`, `"680+" bằng sáng chế` và chuỗi cứng `"10 Ngành"`.
+  - Hiển thị trung thực:
+    * Khối 1: `globalTotal` thật (khi = 0 hiển thị `0`).
+    * Khối 2: Số ngành động tính từ dữ liệu hoặc `sectors.length`.
+    * Khối 3: `patentCount` thật (khi = 0 hiển thị `0`).
+  - Bọc khối qua component chuẩn `<Async>` đủ 5 UX States.
+  - Đồng bộ danh sách tab ngành sang nạp động từ CSDL thật.
+  - Tiêu chí kiểm chứng:
+    - [x] Không còn chuỗi `"1.200+"` hay `"680+"` trong file.
+    - [x] Khi API chưa có dữ liệu, hiển thị `0` trung thực (Zero-Mock).
+    - [x] Khi API lỗi, hiển thị thông báo lỗi và nút Retry.
+- [x] **T-04.117** `[TEST]` Bổ sung Unit Tests Vitest trong `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx`:
+  - Tiêu chí kiểm chứng:
+    - [x] Kiểm chứng Hero Stats hiển thị số đếm thật và không fallback về chuỗi dummy.
+    - [x] Kiểm chứng bộ lọc ngành lấy dữ liệu từ `getActiveSectors()`.
+    - [x] 100% Vitest suites pass.

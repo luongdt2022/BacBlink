@@ -556,3 +556,438 @@ Cập nhật toàn bộ các test cases hiện tại từ mô hình 7 bước sa
   * Quy trình 4 tab thông thường (1 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ Submit).
   * Quy trình fast-track bỏ qua Tab 3 (1 $\rightarrow$ 2 $\rightarrow$ 4 $\rightarrow$ Submit).
   * Đảm bảo tính tương thích với tính năng Auto-Prefill của tài khoản Demo Buyer Trường Hoan (`AC-03-07`).
+
+
+---
+
+## 10. KẾ HOẠCH KỸ THUẬT DELTA V1.1: MỞ QUYỀN ĐĂNG NHU CẦU CHO PUBLIC_USER (CR-TASK-03-DELTA-01)
+
+> **Mã thay đổi**: `CR-TASK-03-DELTA-01` / `PLAN-DELTA-V1.1`  
+> **Căn cứ**: Quyết định PO `PO-DEC-20261030-01` ngày 30/10/2026; Đặc tả Spec Delta v1.1 Mục 12 (`REQ-BUYER-DMD-004`, `BR-DMD-PUBLIC-01`, `AC-DELTA-DMD-05` -> `AC-DELTA-DMD-07`).  
+> **Mục tiêu**:
+> 1. Xóa bỏ rào cản pháp nhân bắt buộc đối với thành viên đại chúng (`PUBLIC_USER` / `USER`), cho phép kỹ sư, nhà sáng tạo và cá nhân đóng góp bài toán kỹ thuật từ thực tiễn sản xuất.
+> 2. Đảm bảo an toàn phân luồng: Mọi bài toán từ `PUBLIC_USER` đều có trạng thái khởi tạo `PENDING`, `IsPublicListed = false`, chuyển vào hàng đợi thẩm định của Sở KH&CN / Ban quản trị sàn trước khi niêm yết công khai.
+> 3. Tuyệt đối tuân thủ Zero-IDOR, bảo vệ dữ liệu cá nhân PDPD (NĐ 13/2023/NĐ-CP) và Clean Architecture không làm đứt gãy hợp đồng hiện hữu.
+
+---
+
+### 10.1 Phân Tích Ranh Giới Clean Architecture & Luồng Dữ Liệu
+
+```mermaid
+flowchart TD
+    subgraph Client["Frontend Client (Next.js 15)"]
+        PublicPage["Sàn Công Khai: /nhu-cau-cong-nghe\n(Nút Đăng bài toán nhanh)"]
+        PortalPublic["Bàn làm việc: /portal\n(Public User Dashboard)"]
+        Modal["QuickDemandModal.tsx\n(Form tạo bài toán nhanh)"]
+        Workspace["/portal/buyer/demands\n(Menu 'Bài toán Đã Đăng')"]
+    end
+
+    subgraph API["Presentation Layer (API Controller)"]
+        CreateEndpoint["POST /api/v1/demands/items\n(CreateQuickDemandItem)"]
+        GetDemandsEndpoint["GET /api/v1/buyer/demands\n(GetBuyerDemands)"]
+    end
+
+    subgraph AppDomain["Domain & Application Layer"]
+        DomainService["TniCalculationEngine.Calculate(K, L, N, O)"]
+        DemandEntity["DemandItem Entity\n(Status = PENDING, IsPublicListed = false)"]
+        IDORGuard["Zero-IDOR Guard\n(Where CreatedBy == Actor.PersonId)"]
+    end
+
+    subgraph Storage["Infrastructure Layer (PostgreSQL 16)"]
+        DBItems[("demand.demand_items\nCreatedBy = PersonId\nStatus = 'PENDING'")]
+        GovQueue[("Hàng đợi Thẩm định /gov/demands\n(Sở KH&CN Tỉnh / Sàn)")]
+    end
+
+    PublicPage -->|handleOpenQuickDemand\n(Allow PUBLIC_USER/USER)| Modal
+    PortalPublic -->|Quick Action CTA| Modal
+    Modal -->|Payload (No MST required)| CreateEndpoint
+    CreateEndpoint --> DomainService
+    DomainService --> DemandEntity
+    DemandEntity --> DBItems
+    DBItems -.-> GovQueue
+
+    Workspace -->|Token Bearer JWT| GetDemandsEndpoint
+    GetDemandsEndpoint --> IDORGuard
+    IDORGuard --> DBItems
+```
+
+#### 1. Ranh Giới Từng Tầng Clean Architecture
+- **Domain Layer (`NacenTech.Modules.Demand.Domain`)**:
+  - `DemandItem` tiếp tục bảo toàn bất biến cốt lõi: Khi khởi tạo không qua xét duyệt hành chính, `Status = DemandItemStatuses.Pending`, `IsPublicListed = false`.
+  - Điểm TNI được tính toán tập trung tại `TniCalculationEngine.Calculate(urgency, impact, investment, readiness)`, Client không thể can thiệp điểm số.
+  - Trường `CreatedBy` lưu định danh cá nhân `Actor.PersonId` của `PUBLIC_USER`.
+- **Application Layer (`NacenTech.Modules.Demand.Application`)**:
+  - Command `CreateQuickDemandItem`: Xác thực đầu vào $1 \le K, L, N, O \le 5$, tiêu đề bài toán và mục tiêu kỳ vọng không để trống. Miễn trừ ràng buộc mã số thuế doanh nghiệp (`TaxCode`).
+- **Infrastructure / Persistence Layer (`NacenTech.Persistence`)**:
+  - Dữ liệu lưu vào bảng `demand.demand_items`. Không yêu cầu khóa ngoại tới bảng `enterprise.enterprises`.
+- **Presentation Layer (`NacenTech.Api.V1Compat.DemandController`)**:
+  - `POST /api/v1/demands/items`: Tiếp nhận request từ người dùng đã xác thực (Bearer Token), gán `CreatedBy = Actor.PersonId`.
+  - `GET /api/v1/buyer/demands`: Đọc danh sách bài toán của người dùng hiện tại, tự động áp dụng bộ lọc Zero-IDOR.
+
+---
+
+### 10.2 Phân Tích Hợp Đồng API & Đảm Bảo Bảo Mật Zero-IDOR
+
+#### 1. Hợp đồng `POST /api/v1/demands/items` (Tạo Nhanh Bài Toán)
+- **Phương thức**: `POST`
+- **Xác thực**: Bearer Token (Yêu cầu đăng nhập; chấp nhận vai trò `PUBLIC_USER`, `USER`, `BUYER`, `SELLER`, `INNOVATION_ENTITY`, `ADMIN`, `SUPER_ADMIN`).
+- **Payload DTO (`CreateQuickDemandItemRequest`)**:
+  ```json
+  {
+    "stageName": "Gia công cơ khí chính xác",
+    "technicalProblem": "Tối ưu hóa hành trình dao phay CNC giảm mài mòn dụng cụ hợp kim cứng",
+    "desiredSolution": "Thuật toán tối ưu hóa đường chạy dao dựa trên AI/Machine Learning",
+    "needConsulting": true,
+    "expectedGoal": "Tăng tuổi thọ dao cắt thêm 35% và giảm thời gian gia công 15%",
+    "applicationScale": "Quy mô xưởng thực nghiệm cá nhân",
+    "sectorCode": "LV01",
+    "techGroupCode": "CN01",
+    "demandTypeCode": "NC01",
+    "budgetRange": "500 triệu – 1 tỷ đồng",
+    "targetTrlRange": "TRL_4_6",
+    "isConfidential": false,
+    "deadlineDate": "2026-12-31",
+    "rfpFileName": null,
+    "urgencyScore": 4,
+    "impactScore": 4,
+    "investmentCapacity": 3,
+    "adoptionReadiness": 3
+  }
+  ```
+- **Xử lý phía Server**:
+  - Gán `demandItem.CreatedBy = Actor.PersonId`.
+  - Gán `demandItem.Status = "PENDING"`.
+  - Gán `demandItem.IsPublicListed = false`.
+  - Tính `TniScore` và `TniClassification` tự động.
+- **Phản hồi 200 OK**:
+  ```json
+  {
+    "success": true,
+    "itemId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "itemCode": "DMD-20261030-9E2F1B",
+    "tniScore": 73,
+    "tniClassification": "HIGH",
+    "message": "Đăng bài toán nhu cầu công nghệ thành công. Bài toán đang ở trạng thái Chờ thẩm định (PENDING)."
+  }
+  ```
+
+#### 2. Hợp đồng `GET /api/v1/buyer/demands` & Phân Tích Zero-IDOR
+- **Phương thức**: `GET`
+- **Bảo Mật Zero-IDOR (In-Depth Analysis)**:
+  - Lỗ hổng IDOR (Insecure Direct Object Reference) xảy ra khi Client truyền định danh `userId` hoặc `tenantId` qua Query String / Route Param và Server tin cậy giá trị đó mà không kiểm tra quyền sở hữu.
+  - Tại `DemandController.cs`, phương thức `GetBuyerDemands` lấy danh tính trực tiếp từ **Claims của JWT Token** đã ký bảo mật (`Actor.PersonId`), tuyệt đối không chấp nhận tham số định danh từ Client:
+    ```csharp
+    if (Actor.PlatformRole != PlatformRoles.Admin &&
+        Actor.PlatformRole != PlatformRoles.SuperAdmin &&
+        Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
+        Actor.PlatformRole != PlatformRoles.ProvincialAdmin)
+    {
+        query = query.Where(i => i.CreatedBy == Actor.PersonId);
+    }
+    ```
+  - Với tài khoản mang vai trò `PUBLIC_USER` hoặc `USER`, truy vấn EF Core được ép chặt điều kiện `i.CreatedBy == Actor.PersonId`. Do đó, người dùng đại chúng chỉ xem được danh sách bài toán do chính mình tạo ra, hoàn toàn cách ly với bài toán của các Doanh nghiệp, Bên mua hay cá nhân khác.
+  - Không tồn tại nguy cơ rò rỉ dữ liệu chéo (Zero Data Leakage).
+
+---
+
+### 10.3 Thiết Kế Chi Tiết Bề Mặt Giao Diện Frontend (Components Design)
+
+#### 1. Cập nhật `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.tsx`
+- **Hàm `handleOpenQuickDemand`**:
+  - Mở rộng phân quyền cho phép `PUBLIC_USER` và `USER`:
+    ```typescript
+    const role = (user.role || "").toUpperCase();
+    if (
+      role === ROLES.BUYER ||
+      role === ROLES.SELLER ||
+      role === ROLES.INNOVATION_ENTITY ||
+      role === ROLES.ADMIN ||
+      role === ROLES.SUPER_ADMIN ||
+      role === "PUBLIC_USER" ||
+      role === "USER"
+    ) {
+      setIsModalOpen(true);
+    }
+    ```
+- **Xử lý thân thiện cho Guest (Khách vãng lai chưa đăng nhập)**:
+  - Thay vì thông báo cảnh báo khô cứng chỉ dành cho Doanh nghiệp, cập nhật thông báo hướng dẫn đa kênh văn minh:
+    * Toast / Modal thông báo: *"Bạn cần đăng nhập tài khoản NacenTech (Doanh nghiệp hoặc Thành viên đại chúng) để đăng bài toán kỹ thuật, hoặc có thể tham gia điền Phiếu Khảo Sát Nhu Cầu mở."*
+    * Cung cấp nút dẫn hướng tới trang Đăng Nhập (`/login?redirect=/nhu-cau-cong-nghe`) hoặc Đăng Ký tài khoản công chúng (`/register`).
+
+#### 2. Cập nhật `SourceCode/frontend/src/app/portal/layout.tsx`
+- **Cập nhật danh mục `publicNavItems`**:
+  - Chuẩn hóa nhãn menu trỏ tới `/portal/buyer/demands` thành **`"Bài toán Đã Đăng"`** (Icon `ShoppingBag`), giúp thành viên đại chúng dễ dàng theo dõi tiến độ thẩm định của các bài toán kỹ thuật mà họ đã gửi lên sàn.
+  ```typescript
+  const publicNavItems: NavItem[] = [
+    { href: "/portal", label: "Bàn làm việc", icon: LayoutDashboard },
+    { href: "/portal/buyer/demands", label: "Bài toán Đã Đăng", icon: ShoppingBag },
+    { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles, badge: "Mới", badgeType: "new" },
+    { href: "/profile/upgrade", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
+    { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
+  ];
+  ```
+
+---
+
+### 10.4 Tuân Thủ Bảo Vệ Dữ Liệu Cá Nhân PDPD (NĐ 13/2023/NĐ-CP)
+
+1. **Nguyên tắc Che Giấu Danh Tính Công Khai (Public Masking Invariant)**:
+   - Bài toán do `PUBLIC_USER` gửi lên sau khi được Sở KH&CN duyệt `VERIFIED` sẽ xuất hiện trên sàn `/nhu-cau-cong-nghe`.
+   - Toàn bộ thông tin cá nhân của người đề xuất (Họ tên, SĐT, Email, Địa chỉ chi tiết) được che giấu 100% trên `GET /api/v1/public/demands` và `GET /api/v1/public/demands/{id}`.
+   - Thẻ hiển thị định danh dạng: `[Kỹ sư / Nhà sáng chế - {Lĩnh vực} - {Tỉnh/TP}] (PDPD Masked)`.
+2. **Cơ Chế Bắt Tay Hai Chiều (Opt-in Handshake)**:
+   - Các bên bán (Seller) và Chuyên gia tư vấn không được xem số điện thoại hay email trực tiếp.
+   - Khi có nhà cung cấp chào giải pháp, hệ thống gửi thông báo tới người đề xuất trong Bàn làm việc `/portal/buyer/demands`. Chỉ khi người đề xuất bấm "Chấp thuận kết nối", thông tin liên hệ mới được mở khóa an toàn.
+
+---
+
+### 10.5 Chiến Lược Kiểm Thử Hồi Quy & Đảm Bảo Chất Lượng (Quality Strategy)
+
+1. **Kiểm Thử Đơn Vị (Vitest Unit Tests)**:
+   - File `frontend/src/app/nhu-cau-cong-nghe/page.test.tsx`:
+     * Test case: Người dùng có vai trò `PUBLIC_USER` hoặc `USER` bấm "Đăng Nhanh Bài Toán" $\rightarrow$ Modal `QuickDemandModal` mở thành công.
+     * Test case: Khách vãng lai (Guest) bấm "Đăng Nhanh Bài Toán" $\rightarrow$ Hiển thị thông báo dẫn hướng đăng nhập/đăng ký văn minh.
+   - File `frontend/src/app/portal/layout.test.tsx`:
+     * Test case: Kiểm tra `publicNavItems` hiển thị chính xác menu `"Bài toán Đã Đăng"` trỏ về `/portal/buyer/demands`.
+2. **Kịch Bản Kiểm Thử Black-Box 4 Tầng QC (Zero-Mock trên PostgreSQL Thật)**:
+   - **Tầng 1 (Invariants)**: Xác minh điểm TNI của bài toán gửi từ `PUBLIC_USER` được tính chuẩn hóa và trạng thái khởi tạo luôn là `PENDING`.
+   - **Tầng 2 (API Contract)**: Gọi `POST /api/v1/demands/items` với tài khoản `public.user@demo.nacentech.vn` không kèm MST $\rightarrow$ Trả về `200 OK`, `itemId`, `itemCode`, `tniScore`.
+   - **Tầng 3 (DB Integration & Zero-IDOR)**: Kiểm tra trực tiếp trong DB bảng `demand.demand_items` bản ghi mới có `created_by` khớp với `PersonId` của `public.user`. Gọi `GET /api/v1/buyer/demands` xác nhận chỉ trả về bài toán của chính tài khoản này.
+   - **Tầng 4 (E2E Verification)**: Đăng nhập `public.user@demo.nacentech.vn` trên UI, mở modal, nộp bài toán thành công, kiểm tra bài toán xuất hiện trong `/portal/buyer/demands` ở trạng thái Chờ thẩm định và không xuất hiện trên sàn công khai `/nhu-cau-cong-nghe` khi chưa được duyệt.
+
+
+---
+
+## Plan Delta v10 (CR-2026-010): Triệt Tiêu 100% Mock Số Tĩnh Tại Sàn Nhu Cầu & Tích Hợp `<Async>`
+
+### 1. Kiến Trúc Frontend Presentation & Zero-Mock (`app/nhu-cau-cong-nghe/page.tsx`)
+- **Vấn đề giải quyết**: Hiện trạng Hero Banner đang hardcode cứng 3 khối số liệu:
+  `"142 bài toán"`, `"68.5 tỷ"`, `"24 Giờ hỗ trợ kết nối"`.
+- **Giải pháp kỹ thuật chuẩn hóa**:
+  + Tích hợp gọi `portalClient.getStats()` song song với dữ liệu bài toán công khai.
+  + Bọc khối Hero Quick Metrics bằng component chuẩn `<Async>` đủ 5 UX States:
+    1. **Khối 1 · Bài toán đang tìm**: Nạp động `stats.totalDemands` (hoặc tổng số bài toán đang mở từ API), format `totalDemands.toLocaleString("vi-VN")`. Khi = 0, hiển thị `0`.
+    2. **Khối 2 · Tổng ngân sách mua**: Nạp động `stats.totalEstimatedValueMillionVnd` (hoặc tính tổng ngân sách từ các bài toán công khai), format rút gọn theo đơn vị Tỷ VNĐ / Triệu VNĐ.
+    3. **Khối 3 · Kết nối thành công & MOU**: Nạp động `stats.totalSuccessfulConnections`, thay thế hoàn toàn chữ cứng `"24 Giờ"`.
+  + **Fallback & Error Handling**: Khi API lỗi, hiển thị nút Retry tải lại; khi chưa có dữ liệu, hiển thị `0`, tuyệt đối không fallback sang số dummy `142` hay `68.5 tỷ`.
+
+### 2. Thống Nhất Danh Mục Ngành TT17
+- Đồng bộ bộ lọc ngành trên Sàn Tìm Mua sang dùng `getActiveSectors()` từ `master-data-client.ts` (10 Lĩnh vực chuẩn `LV01..LV17`), xóa bỏ mọi tham chiếu tới các mã ngành ngoài SSOT.
+
+
+---
+
+## Kế Hoạch Kỹ Thuật Delta v1.2 (CR-TASK-03-DELTA-02): Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User
+
+> **Mã thay đổi**: `CR-TASK-03-DELTA-02` / `PLAN-DELTA-V1.2`  
+> **Căn cứ pháp lý & Kế hoạch**: Quyết định PO `PO-DEC-20261030-03` ngày 30/10/2026; Đặc tả Spec Delta v1.2 (`REQ-BUYER-ORD-001` -> `REQ-BUYER-ORD-003`, `BR-ORD-AUTH-01`, `BR-ORD-TRACKING-01`, `AC-ORD-01` -> `AC-ORD-05`).  
+> **Mục tiêu**:
+> 1. Chuẩn hóa quy trình đặt mua sản phẩm thương mại & yêu cầu chuyển giao công nghệ cho Thành viên Đại chúng (`PUBLIC_USER` / `USER`).
+> 2. Triệt tiêu 100% đơn hàng mồ côi (Zero Orphaned Orders) bằng việc gắn kết bắt buộc JWT Bearer Token tại API Client, đảm bảo Backend trích xuất và gán chính xác `CreatedBy = Actor.PersonId`.
+> 3. Tái cấu trúc Bàn làm việc Bên Mua (`/portal/buyer/demands`) thành kiến trúc 2 Tabs độc lập: Tab 1 "Đơn mua sản phẩm thương mại" tích hợp Thanh tiến trình `OrderTrackingStepper` 4 bước; Tab 2 "Nhu cầu R&D / Bài toán công nghệ".
+> 4. Cung cấp nút CTA điều hướng trực tiếp vào Workspace tại Modal xác nhận đặt mua trên trang chi tiết công nghệ/sản phẩm (`/chao-ban-cong-nghe/[id]`).
+> 5. Bảo toàn tính toàn vẹn kiến trúc Clean Architecture, Zero-IDOR và tương thích ngược 100% với các vai trò hiện hữu (`BUYER`, `ENTERPRISE`, `SELLER`).
+
+---
+
+### 1. Phân Tích Ranh Giới Clean Architecture & Luồng Dữ Liệu Toàn Trình
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Public User / Buyer
+    participant DetailPage as /chao-ban-cong-nghe/[id]
+    participant Modal as Quick Demand Modal
+    participant ClientAPI as technology-offer.ts (Client API)
+    participant Auth as AuthClient (Token Provider)
+    participant Controller as DemandController (Presentation)
+    participant Domain as DemandItem (Domain Entity)
+    participant DB as PostgreSQL (demand.demand_items)
+    participant Workspace as /portal/buyer/demands (Workspace 2 Tabs)
+
+    User->>DetailPage: Xem chi tiết sản phẩm & bấm "Đặt mua ngay"
+    DetailPage->>Modal: Mở Quick Demand Modal (nạp offerId, title, code)
+    User->>Modal: Nhập thông tin & bấm "Gửi Đề Xuất Đặt Mua & Kết Nối"
+    Modal->>Auth: Lấy JWT Access Token (authClient.getToken())
+    Modal->>ClientAPI: submitQuickDemand(payload, token)
+    ClientAPI->>Controller: POST /api/v1/demands/items (Header: Authorization: Bearer <token>)
+    Controller->>Controller: Trích xuất Actor.PersonId từ JWT Claims
+    alt Actor.IsAuthenticated == true
+        Controller->>Domain: Khởi tạo DemandItem (CreatedBy = Actor.PersonId)
+        Controller->>DB: db.Set<DemandItem>().Add(demandItem) + CommitAsync()
+        Controller-->>ClientAPI: 200 OK { success: true, itemCode, itemId }
+        ClientAPI-->>Modal: Phản hồi thành công
+        Modal->>Modal: Hiển thị Success View kèm nút CTA "Theo dõi đơn hàng trong Workspace"
+        User->>Modal: Click CTA điều hướng
+        Modal->>Workspace: Chuyển hướng tới /portal/buyer/demands?tab=commercial
+        Workspace->>Controller: GET /api/v1/buyer/demands (Bearer Token)
+        Controller->>DB: Query WHERE CreatedBy == Actor.PersonId
+        DB-->>Controller: Danh sách đơn hàng & bài toán của User
+        Controller-->>Workspace: 200 OK (Data list)
+        Workspace->>Workspace: Phân loại Tab 1 (Đơn thương mại) & Tab 2 (Nhu cầu R&D)
+        Workspace-->>User: Render OrderTrackingStepper 4 bước trực quan
+    else Token thiếu hoặc không hợp lệ
+        Controller-->>ClientAPI: 401 Unauthorized
+        ClientAPI-->>Modal: Thông báo yêu cầu đăng nhập
+    end
+```
+
+---
+
+### 2. Thiết Kế Hợp Đồng API & Cơ Chế Xác Thực Bắt Buộc (API Contract & Auth)
+
+#### 2.1 Nâng Cấp Frontend Client `services/api/technology-offer.ts`
+- **Mở rộng giao diện `CreateQuickDemandPayload`**:
+  ```typescript
+  export interface CreateQuickDemandPayload {
+    stageName?: string;
+    technicalProblem: string;
+    desiredSolution?: string;
+    needConsulting: boolean;
+    expectedGoal: string;
+    applicationScale?: string;
+    sectorCode?: string;
+    techGroupCode?: string;
+    demandTypeCode?: string;
+    budgetRange?: string;
+    urgencyScore: number;
+    impactScore: number;
+    investmentCapacity: number;
+    adoptionReadiness: number;
+    // Metadata liên kết sản phẩm thương mại / chuyển giao (Delta v1.2)
+    offerId?: string;
+    offerTitle?: string;
+    offerCode?: string;
+    isCommercialOrder?: boolean;
+  }
+  ```
+- **Chuẩn hóa hàm `submitQuickDemand`**:
+  - Tự động lấy JWT Access Token thông qua `authClient.getToken()`.
+  - Gắn Header `Authorization: Bearer <token>` vào request gửi tới `${API_BASE}/api/v1/demands/items`.
+  - Nếu có `offerId` và `offerCode`, bổ sung vào metadata của trường `desiredSolution` hoặc payload gửi lên backend theo chuẩn cấu trúc rõ ràng:
+    `[Đơn hàng thương mại: Mã SP ${offerCode}] ...`.
+  - Xử lý mã lỗi `401 Unauthorized` thân thiện, trả về message hướng dẫn đăng nhập rõ ràng.
+
+#### 2.2 Backend Presentation Layer `DemandController.cs`
+- **Đảm bảo không còn đơn hàng mồ côi (Zero Orphaned Orders Invariant)**:
+  - Tại endpoint `POST /api/v1/demands/items`:
+    * Khi request mang Header `Authorization: Bearer <token>`, middleware xác thực ASP.NET Core nạp thông tin người dùng vào `Actor`.
+    * Backend lấy `submitterPersonId = Actor.IsAuthenticated ? Actor.PersonId : null`.
+    * Đối với luồng đặt mua thương mại từ người dùng đã đăng nhập, `CreatedBy` được lưu trữ chính xác là `Actor.PersonId`.
+  - Tại endpoint `GET /api/v1/buyer/demands`:
+    * Áp dụng bộ lọc bảo mật Zero-IDOR: `query = query.Where(i => i.CreatedBy == Actor.PersonId)`.
+    * Đảm bảo tài khoản `PUBLIC_USER` / `USER` truy vấn được toàn bộ đơn hàng và bài toán do chính họ khởi tạo từ bất kỳ màn hình nào (Sàn công nghệ, Gian hàng sản phẩm, Modal đặt nhanh).
+
+---
+
+### 3. Kiến Trúc Giao Diện Bề Mặt (Frontend UI Architecture)
+
+#### 3.1 Cập Nhật Sidebar Navigation `SourceCode/frontend/src/app/portal/layout.tsx`
+- **Chuẩn hóa nhãn menu `publicNavItems`**:
+  - Nhãn menu điều hướng trỏ tới `/portal/buyer/demands` được đổi thành **`"Đơn hàng & Yêu cầu mua"`** (thay thế nhãn cũ "Nhu cầu công nghệ" hoặc "Bài toán Đã Đăng").
+  - Icon: Giữ nguyên `ShoppingBag` mang ý nghĩa vừa là giỏ hàng/đơn hàng vừa là hồ sơ thu mua.
+  - Cấu trúc cập nhật:
+    ```typescript
+    const publicNavItems: NavItem[] = [
+      { href: "/portal", label: "Trang tổng quan", icon: LayoutDashboard },
+      { href: "/portal/buyer/demands", label: "Đơn hàng & Yêu cầu mua", icon: ShoppingBag },
+      { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles, badge: "Mới", badgeType: "new" },
+      { href: "/profile/upgrade", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
+      { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
+    ];
+    ```
+
+#### 3.2 Tái Cấu Trúc Bàn Làm Việc 2 Tabs Tại `SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`
+Tổ chức không gian làm việc thành 2 Tab cấp cao (High-Level Workspace Tabs):
+
+```text
+[Tab 1: Đơn mua sản phẩm thương mại]    [Tab 2: Nhu cầu R&D / Bài toán công nghệ]
+----------------------------------------------------------------------------------
+- Danh sách đơn đặt mua thiết bị/sản phẩm     - Danh sách bài toán kỹ thuật cần giải
+- Bảng Order Grid (Mã đơn, Tên SP, NCC...)    - Bộ chỉ số TNI 4 chiều, Phân loại TNI
+- Component OrderTrackingStepper (4 bước)     - Bộ lọc: Đang mở, Chờ duyệt, Đã đóng...
+- Nút Hủy đơn (khi đang ở bước SUBMITTED)     - Nút [Chỉnh sửa], [Đóng bài toán]
+```
+
+1. **Tab 1: "Đơn mua sản phẩm thương mại" (`COMMERCIAL_ORDERS`)**:
+   - **Tiêu chí lọc bản ghi thương mại**: Các bản ghi `demand_items` có thuộc tính:
+     * `desiredSolution` chứa tiền tố `[Đề xuất thương mại` hoặc `[Đơn hàng thương mại`, HOẶC
+     * `stageName` chứa từ khóa `"Sản xuất & Chuyển giao"` / `"Thương mại"`.
+   - **Giao diện bảng Đơn mua**:
+     * Cột 1: Mã đơn đặt hàng (`itemCode` hoặc format `ORD-*`).
+     * Cột 2: Sản phẩm thương mại & Nhà cung cấp.
+     * Cột 3: Hình thức đặt mua & Quy cách (Mua buôn / Hợp đồng cung ứng / Mua lẻ).
+     * Cột 4: Ngày đặt hàng & Thời hạn kỳ vọng.
+     * Cột 5: Trạng thái & Thanh tiến trình thu gọn (`OrderTrackingStepper` mini).
+     * Cột 6: Thao tác (Xem chi tiết đơn, Hủy đơn khi đang `SUBMITTED`).
+   - **Hộp thoại Chi tiết Đơn hàng (`OrderDetailModal`)**:
+     * Render toàn văn `OrderTrackingStepper` 4 bước chi tiết kèm dấu mốc thời gian (Timestamps).
+     * Thông tin đối tác cung cấp, người liên hệ, địa chỉ giao nhận và ghi chú đặt hàng.
+
+2. **Tab 2: "Nhu cầu R&D / Bài toán công nghệ" (`RD_DEMANDS`)**:
+   - Chứa toàn bộ các bài toán công nghệ chuyên sâu từ Khảo sát 4 tab `/khao-sat-nhu-cau` và `QuickDemandModal`.
+   - Bảo toàn 100% logic hiện hữu: Hàng 4 KPI Cards (Tổng nhu cầu, Điểm TNI TB, Nguồn cung tiềm năng, Chuyên gia Sở), Sub-tabs bộ lọc trạng thái (`ALL`, `VERIFIED`, `PENDING`, `CLOSED`, `BOOKMARKED`), phân trang 5 items/trang và 5 UX States qua `<Async>`.
+
+#### 3.3 Thiết Kế Component `OrderTrackingStepper` (`src/components/demand/OrderTrackingStepper.tsx`)
+- **Cấu trúc 4 bước tuyến tính**:
+  1. `SUBMITTED` — **Đã gửi đơn**: Khách hàng gửi yêu cầu mua sắm/chuyển giao thành công.
+  2. `PROCESSING` — **Đang xử lý**: Bên Bán hoặc Quản trị viên tiếp nhận đơn, kiểm tra năng lực đáp ứng / tồn kho.
+  3. `NEGOTIATING` — **Đang đàm phán**: Hai bên thương thảo hợp đồng, báo giá chi tiết, phương thức giao hàng và thanh toán.
+  4. `COMPLETED` — **Hoàn tất**: Ký kết hợp đồng / giao nhận nghiệm thu thành công.
+- **Trực quan hóa trạng thái (Visual States)**:
+  - *Bước đã hoàn thành*: Icon check tròn màu xanh lá (`bg-emerald-500 text-white`), đường nối xanh.
+  - *Bước hiện tại (Active)*: Icon nổi bật viền đậm (`border-brand-600 bg-brand-50 text-brand-700 animate-pulse`), kèm nhãn chú thích hành động tiếp theo.
+  - *Bước tương lai (Upcoming)*: Icon xám mờ (`bg-slate-100 text-slate-400`), đường nối xám mờ.
+  - *Trạng thái ngoại lệ*: Nếu đơn bị hủy (`CANCELLED`) hoặc từ chối (`REJECTED`), stepper hiển thị banner cảnh báo màu đỏ/xám kèm lý do hủy.
+
+#### 3.4 Bổ Sung CTA Điều Hướng Tại Modal `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx`
+- Tại giao diện xác nhận thành công (`connectSuccess === true`):
+  - Bên cạnh nút `"Hoàn tất & Đóng"`, bổ sung nút Call-To-Action nổi bật:
+    **`"Theo dõi đơn hàng trong Workspace →"`**
+  - Hành động click: Điều hướng người dùng trực tiếp tới `/portal/buyer/demands?tab=commercial`.
+  - Đảm bảo người dùng ngay lập tức nhìn thấy đơn hàng vừa tạo với trạng thái ban đầu `SUBMITTED` và thanh tiến trình Stepper 4 bước.
+
+---
+
+### 4. Thiết Kế Máy Trạng Thái Đơn Hàng (Order State Machine)
+
+```mermaid
+stateDiagram-v2
+    direction LR
+
+    [*] --> SUBMITTED: Buyer gửi đơn mua (submitQuickDemand)
+    
+    SUBMITTED --> PROCESSING: Seller / Admin tiếp nhận đơn
+    SUBMITTED --> CANCELLED: Buyer chủ động hủy đơn
+    
+    PROCESSING --> NEGOTIATING: Bắt đầu thương thảo báo giá & hợp đồng
+    PROCESSING --> REJECTED: Seller từ chối (hết hàng / không khả thi)
+    
+    NEGOTIATING --> COMPLETED: Ký kết hợp đồng & hoàn tất giao dịch
+    NEGOTIATING --> CANCELLED: Đàm phán bất thành / Hủy thỏa thuận
+
+    COMPLETED --> [*]
+    CANCELLED --> [*]
+    REJECTED --> [*]
+```
+
+- **Quy tắc ánh xạ trạng thái hệ thống (Mapping Rules)**:
+  * Trạng thái `PENDING` trong `DemandItem`: Ánh xạ sang bước `SUBMITTED` (Đã gửi đơn, chờ tiếp nhận) hoặc `PROCESSING` (khi đã phân công xử lý).
+  * Trạng thái `VERIFIED` / `CONNECTED`: Ánh xạ sang bước `NEGOTIATING` (Đang kết nối thương thảo).
+  * Trạng thái `CLOSED`: Ánh xạ sang bước `COMPLETED` (nếu hoàn tất thành công) hoặc `CANCELLED` (nếu người mua chủ động đóng).
+
+---
+
+### 5. Kỷ Luật Clean Architecture & Bảo Đảm Zero Regression
+
+1. **Tách Biệt Trách Nhiệm (Separation of Concerns)**:
+   - Client API (`technology-offer.ts`) chỉ thực hiện giao tiếp HTTP và đóng gói DTO, không can thiệp logic nghiệp vụ.
+   - Controller (`DemandController.cs`) giữ vai trò tiếp nhận request, xác thực danh tính qua `Actor.PersonId`, ủy quyền lưu trữ cho Entity và Unit of Work. Tuyệt đối không tiêm `DbContext` tràn lan hay thực thi truy vấn tùy tiện.
+2. **Nguyên Tắc Bất Biến Zero-IDOR**:
+   - Truy vấn đơn hàng tại Workspace luôn gắn chặt điều kiện `CreatedBy == Actor.PersonId` đối với các vai trò không có quyền quản trị tối cao.
+   - Người dùng `PUBLIC_USER` không thể xem hoặc can thiệp vào đơn hàng của tài khoản khác.
+3. **Bảo Toàn Khả Năng Tương Thích Ngược (Backward Compatibility)**:
+   - Các API `POST /api/v1/demands/items` và `GET /api/v1/buyer/demands` tiếp tục hỗ trợ đầy đủ các tham số cũ.
+   - Tài khoản Doanh nghiệp (`BUYER`, `ENTERPRISE`) khi sử dụng Bàn làm việc vẫn xem được đầy đủ các bài toán R&D tại Tab 2 mà không có bất kỳ thay đổi tiêu cực nào.
+
+---

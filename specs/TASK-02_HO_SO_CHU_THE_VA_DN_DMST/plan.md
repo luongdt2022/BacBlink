@@ -675,5 +675,104 @@ Script `seed_identity_demo_accounts.sql` đảm bảo 100% tính sẵn sàng cho
    - `capability_tier = 'SELLER'`, `is_buyer = false`, `is_seller = true`, `active_role = 'SELLER'`.
 3. Cả 2 tài khoản đều được cấp mật khẩu bcrypt tương thích với `Demo@2026` và thiết lập khóa ngoại liên kết vững chắc.
 
+---
+
+## 7. PLAN DELTA V4 (CR-2026-011): CHUẨN HÓA TAXONOMY 10 LĨNH VỰC TT17, KHAI TỬ MẢNG TĨNH `SECTORS_TT17` & ZERO-MOCK DASHBOARD DOANH NGHIỆP
+
+### 7.1. Bối Cảnh Kỹ Thuật & Thẩm Định Kiến Trúc (Architectural Assessment)
+- **Vấn đề phát hiện**: Component `EnterprisesDirectoryView.tsx` (`SourceCode/frontend/src/components/enterprise/EnterprisesDirectoryView.tsx`) sử dụng mảng tĩnh `SECTORS_TT17` gồm 11 phần tử hardcode sai lệch hoàn toàn so với CSDL PostgreSQL:
+  + `LV01` gán nhầm thành *"Cơ khí, Chế tạo máy & Tự động hóa"* (Trong khi CSDL SSOT: `LV01` là **Nông nghiệp**).
+  + `LV05` gán nhầm thành *"Nông nghiệp công nghệ cao, nông nghiệp số"* (CSDL SSOT: `LV05` là **Chế biến thực phẩm – đồ uống**).
+  + `LV07` gán nhầm thành *"Y - Dược, Sinh học & Thiết bị y tế"* (CSDL SSOT: `LV07` là **Cơ khí – chế tạo – công nghiệp hỗ trợ**).
+  + `LV08` gán nhầm thành *"Công nghệ thông tin, chuyển đổi số"* (CSDL SSOT: `LV08` là **Điện – điện tử – tự động hóa**).
+  + `LV11` gán nhầm thành *"Vật liệu mới, nano & hóa chất tiên tiến"* (CSDL SSOT: `LV11` là **Nước – môi trường – chất thải**).
+  + `LV12` gán nhầm thành *"Năng lượng tái tạo & Công nghệ môi trường"* (CSDL SSOT: `LV12` là **Xây dựng – vật liệu – hạ tầng**).
+  + `LV14` gán nhầm thành *"Điện - Điện tử & Viễn thông"* (CSDL SSOT: `LV14` là **Logistics – vận tải – kho bãi**).
+  + `LV15` gán nhầm thành *"Chế biến thực phẩm & Đồ uống"* (CSDL SSOT: `LV15` là **Du lịch – khách sạn – nhà hàng**).
+  + `LV16` gán nhầm thành *"Dệt may, da giày"* (CSDL SSOT: `LV16` là **CNTT – viễn thông – chuyển đổi số**).
+  + `LV17` gán nhầm thành *"Logistics, Chuỗi cung ứng"* (CSDL SSOT: `LV17` là **Khoa học – công nghệ – đổi mới sáng tạo**).
+- **Hệ quả**: Bộ lọc ngành gửi sai `sectorCode` xuống backend, làm sai lệch kết quả lọc của 304 DN ĐMST, vi phạm nghiêm trọng tính toàn vẹn dữ liệu.
+- **Giải pháp Clean Architecture**:
+  + **Frontend**: Khai tử 100% mảng tĩnh `SECTORS_TT17`. Tích hợp gọi động hàm `getActiveSectors()` từ `@/lib/master-data-client` (`GET /api/v1/sectors`), chuẩn hóa dropdown với 10 Lĩnh vực TT17 từ CSDL SSOT `policy.taxonomy_terms`.
+  + **Bảo đảm 5 UX States**: Quản lý `sectors: SectorOption[]`, `loadingSectors: boolean`, `sectorsError: string | null` khi tải danh mục.
+  + **Dashboard Doanh nghiệp**: Thẩm định endpoint `GET /api/v1/admin/enterprises/dashboard` bảo đảm 100% dữ liệu thống kê (`totalEnterprises`, `verifiedCount`, `byProvince`, `bySector`, `byTni`) được nạp trực tiếp thời gian thực từ CSDL PostgreSQL qua `EfEnterpriseRepository.cs` (Zero-Mock tuyệt đối).
+
+### 7.2. Thiết Kế Frontend Architecture (`EnterprisesDirectoryView.tsx`)
+1. **Module & Dependency Resolution**:
+   - Import `getActiveSectors`, `type SectorOption` từ `@/lib/master-data-client`.
+   - Xóa bỏ khai báo `const SECTORS_TT17 = [...]`.
+2. **State Management**:
+   ```typescript
+   const [sectorOptions, setSectorOptions] = useState<SectorOption[]>([]);
+   const [loadingSectors, setLoadingSectors] = useState<boolean>(true);
+   const [sectorsError, setSectorsError] = useState<string | null>(null);
+   ```
+3. **Data Fetching Lifecycle**:
+   ```typescript
+   useEffect(() => {
+     let mounted = true;
+     setLoadingSectors(true);
+     setSectorsError(null);
+     getActiveSectors()
+       .then((data) => {
+         if (mounted) {
+           setSectorOptions(data);
+         }
+       })
+       .catch((err) => {
+         if (mounted) {
+           console.error("Lỗi nạp danh mục lĩnh vực:", err);
+           setSectorsError("Không tải được danh mục lĩnh vực.");
+         }
+       })
+       .finally(() => {
+         if (mounted) setLoadingSectors(false);
+       });
+     return () => { mounted = false; };
+   }, []);
+   ```
+4. **Rendering & Combobox Selection**:
+   ```tsx
+   <select
+     value={sectorCode}
+     onChange={(e) => setSectorCode(e.target.value)}
+     className="form-control w-full"
+     disabled={loadingSectors}
+     data-testid="enterprise-sector-select"
+   >
+     <option value="">
+       {loadingSectors ? "Đang tải lĩnh vực..." : "Tất cả lĩnh vực công nghệ"}
+     </option>
+     {sectorOptions.map((s) => (
+       <option key={s.code} value={s.code}>
+         {s.code} - {s.name}
+       </option>
+     ))}
+   </select>
+   ```
+
+### 7.3. Thiết Kế Backend Architecture & Zero-Mock Audit (`EfEnterpriseRepository.cs`)
+1. **Hợp đồng DTO & API Endpoint**:
+   - `GET /api/v1/admin/enterprises/dashboard` $\rightarrow$ `EnterpriseDashboardStatsDto`.
+2. **Truy vấn CSDL Thật Thời Gian Thực**:
+   - `totalEnterprises`: `_db.Set<Domain.Enterprise>().AsNoTracking().CountAsync()`.
+   - `verifiedCount`: Lọc theo `IsVerified || VerificationStatus == "VERIFIED"`.
+   - `byProvince`: GroupBy `ProvinceCity` thực tế từ 304 DN.
+   - `bySector`: GroupBy `MainSectorName` thực tế.
+   - `byTni`: GroupBy `TniClassification`.
+3. **Kiểm tra Zero-Mock**:
+   - Kiểm tra `EnterpriseAdminDashboardPage.tsx` nạp dữ liệu qua `fetchDashboardStats()` gọi endpoint backend thật.
+   - Không tồn tại static fallback array hoặc fake data trong khối catch.
+
+### 7.4. Kế Hoạch Kiểm Thử Kỹ Thuật (Test Strategy)
+1. **Unit Test (Vitest)**:
+   - Kiểm tra `EnterprisesDirectoryView`: Mock API `/api/v1/sectors` trả về 10 lĩnh vực chuẩn SSOT, xác nhận dropdown render đúng 10 options, kiểm tra thay đổi `sectorCode` gửi đúng query param `sectorCode=LV01`.
+2. **API Contract Test**:
+   - Kiểm tra endpoint `GET /api/v1/admin/enterprises/dashboard` trả về mã HTTP 200, schema DTO đầy đủ, số liệu khớp với DB.
+3. **Playwright E2E**:
+   - Truy cập `/enterprises`, chọn lĩnh vực `LV01 - Nông nghiệp`, xác thực kết quả hiển thị các doanh nghiệp thuộc ngành nông nghiệp.
+   - Chọn lĩnh vực `LV07 - Cơ khí – chế tạo – công nghiệp hỗ trợ`, xác thực không còn hiển thị nhầm Y Dược.
+
+
 
 

@@ -256,3 +256,58 @@ Mở rộng `SECTOR_IMAGE_MAP` phủ trọn 17 mã ngành chuẩn Bộ Khoa họ
    - Tuyệt đối không dùng lệnh `DELETE` vật lý gây đứt gãy ràng buộc khóa ngoại với các bảng khảo sát hoặc hợp đồng.
    - Sử dụng cập nhật mềm: Đổi cờ `is_public_listed = false` đối với các bản ghi bài toán trùng lặp tiêu đề do quá trình test, chỉ giữ lại 1 bản ghi đại diện hợp lệ cho mỗi tiêu đề bài toán.
 
+
+
+---
+
+## 6. KẾ HOẠCH KIẾN TRÚC DELTA v3 (CR-2026-010): CHUẨN HÓA 4 MARKETPLACE METRICS & ZERO-MOCK
+
+### 6.1. Backend Architecture & Clean Architecture Separation
+- **Căn cứ**: Quyết định PO-DEC-20261030-01 và CR-2026-010.
+- **Nâng cấp DTO Contract** (`SourceCode/backend/modules/content/Application/PortalContracts.cs`):
+  ```csharp
+  public sealed record PortalOverviewStatsDto(
+      int TotalOffers,
+      int TotalDemands,
+      int TotalEnterprises,
+      int TotalExperts,
+      int TotalProvinces,
+      DateTimeOffset UpdatedAt,
+      long TotalSuccessfulConnections = 0,
+      decimal TotalEstimatedValueMillionVnd = 0m
+  );
+  ```
+- **Tái cấu trúc ReadModel Service** (`SourceCode/backend/apps/api/V1Compat/PortalOverviewService.cs`):
+  + Tuân thủ ranh giới Clean Architecture (§9.1 reporting read model facade): Truy vấn AsNoTracking, in-memory cache 5 phút `portal:overview:stats`.
+  + **totalOffers**: Đếm `SellerTechnologyOffer` có `Status = "APPROVED"` (nếu 0, đếm `TechnologyAsset` fallback).
+  + **totalDemands**: Đếm `DemandItem` có `Status = "VERIFIED"` và `IsPublicListed = true` (nếu 0, đếm `DemandSurvey` hoặc `DemandBrief`).
+  + **totalEnterprises**: Đếm `Enterprise`.
+  + **totalExperts**: Đếm `ExpertProfile`.
+  + **totalProvinces**: Tính toán động `COUNT(DISTINCT province_city)` từ `enterprise.enterprises` (bỏ hoàn toàn số tĩnh 34).
+  + **totalSuccessfulConnections**: Đếm số lượng kết nối thành công từ schema brokerage:
+    `COUNT(connection_requests WHERE status IN ("ACCEPTED", "COMPLETED")) + COUNT(mou_agreements WHERE status = "SIGNED")`.
+  + **totalEstimatedValueMillionVnd**: Tổng giá trị ước tính từ:
+    `SUM(opportunities.estimated_value_million_vnd WHERE stage != "CLOSED_LOST")` cộng với giá trị ngân sách từ các bài toán nhu cầu công khai.
+- **Controller**: `PortalControllers.cs` trả về `ApiResponse<PortalOverviewStatsDto>`.
+
+### 6.2. Frontend Presentation Architecture & Zero-Mock
+- **SDK Contract** (`SourceCode/frontend/src/lib/portal-client.ts`):
+  ```typescript
+  export interface PortalOverviewStats {
+    totalOffers: number;
+    totalDemands: number;
+    totalEnterprises: number;
+    totalExperts: number;
+    totalProvinces: number;
+    updatedAt: string;
+    totalSuccessfulConnections: number;
+    totalEstimatedValueMillionVnd: number;
+  }
+  ```
+- **Trang Chủ (`SourceCode/frontend/src/app/page.tsx`)**:
+  + Thay thế 4 thẻ số liệu cũ bằng 4 Marketplace Metrics chuẩn:
+    1. **Tổng Cung Công Nghệ**: `statsData.totalOffers` -> `/chao-ban-cong-nghe`
+    2. **Tổng Cầu Doanh Nghiệp**: `statsData.totalDemands` -> `/nhu-cau-cong-nghe`
+    3. **Kết Nối Thành Công & MOU**: `statsData.totalSuccessfulConnections` -> `/portal/matching/radar` (hoặc `/trien-lam`)
+    4. **Quy Mô Giao Dịch & Ngân Sách**: `statsData.totalEstimatedValueMillionVnd` (format tỷ/triệu VNĐ) -> `/portal/opportunities/pipeline`
+  + Bao bọc toàn bộ qua component chuẩn `<Async>` đủ 5 UX States (Loading Skeleton, Error Retry, Empty 0, Success formatted, Updating).

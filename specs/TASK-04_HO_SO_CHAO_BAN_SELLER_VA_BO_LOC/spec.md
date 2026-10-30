@@ -47,7 +47,7 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
 | **REQ-04-001** | Quản lý kho công nghệ Seller | Hiển thị bảng danh sách công nghệ do Seller sở hữu, lọc theo trạng thái (Bản nháp, Chờ duyệt, Đã niêm yết, Đã ẩn), thống kê KPI (Tổng công nghệ, Kết nối thành công, Lượt xem). | P1 |
 | **REQ-04-002** | Đăng mới hồ sơ chào bán (Form Wizard) | Cung cấp form nhập liệu chia bước: Thông tin chung, Phân loại loại hình (Sản phẩm/Thiết bị/Giải pháp), Toggle chuyển giao công nghệ & Bộ tứ SHTT, Giá bán & Thương mại, Tài liệu minh chứng. | P1 |
 | **REQ-04-003** | Ràng buộc điều kiện Bộ Tứ SHTT | Nếu `has_tech_transfer = true`, bắt buộc nhập đầy đủ 5 trường: Nguồn gốc nghiên cứu, Mức TRL (1-9), Tình trạng SHTT, Hình thức chuyển giao, Trạng thái thương mại hóa. | P1 |
-| **REQ-04-004** | Danh sách & Bộ lọc 18 ngành công khai | Trang chủ tab `/chao-ban-cong-nghe` hỗ trợ tìm kiếm từ khóa, bộ lọc phân loại (Tất cả, Thiết bị thương mại, Công nghệ chuyển giao SHTT), lọc theo 18 ngành kinh tế TT17, lọc TRL và Tình trạng SHTT. | P1 |
+| **REQ-04-004** | Danh sách & Bộ lọc 10 Lĩnh vực TT17 chuẩn SSOT | Trang chủ tab `/chao-ban-cong-nghe` hỗ trợ tìm kiếm từ khóa, bộ lọc phân loại (Tất cả, Thiết bị thương mại, Công nghệ chuyển giao SHTT), lọc theo 10 Lĩnh vực TT17 từ API `GET /api/v1/master-data/sectors?activeOnly=true`, lọc TRL và Tình trạng SHTT; thống kê Cung động từ CSDL thật. | P1 |
 | **REQ-04-005** | Chi tiết hồ sơ chào bán công nghệ | Trang `/chao-ban-cong-nghe/[id]` hiển thị trực quan thông số kỹ thuật, huy hiệu mức TRL, chứng nhận SHTT (IP Trust Badge), thông tin đơn vị nghiên cứu/sở hữu, nút Gửi yêu cầu chuyển giao và Yêu cầu DataRoom. | P1 |
 | **REQ-04-006** | Hỗ trợ 5 UX States | Mọi màn hình đáp ứng đầy đủ 5 trạng thái UX qua chuẩn `<Async>`: Loading, Empty, Error, Success, Partial. | P1 |
 | **REQ-04-007** | Chọn Cơ quan quản lý & Phân cấp thẩm định Cấp 2 | Form đăng ký bắt buộc chọn Sở KH&CN tiếp nhận thẩm định (`managing_authority_id`, `scope_id` 63 tỉnh/thành) và tích chọn cam kết pháp lý. Hệ thống tự động tạo phiếu duyệt `ApprovalRequest` đẩy về Cổng Tác Nghiệp Cấp 2 `/gov`. | P1 |
@@ -1237,3 +1237,25 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
     * Sidebar hiển thị `"MỨC GIÁ ĐỀ XUẤT CHUYỂN GIAO"` và `"Đầu Mối TTO Chuyển Giao"`.
     * Tab 1 hiển thị `"Bài Toán Kỹ Thuật & Giải Pháp Công Nghệ"`.
     * Modal kết nối hiển thị các hình thức li-xăng, chuyển giao trọn gói và mức ngân sách R&D lớn. Toàn bộ kịch bản nghiệp vụ chuyển giao công nghệ giữ nguyên vẹn 100%, không phát sinh lỗi hồi quy.
+
+---
+
+## Spec Delta v5: Chuẩn Hóa Chỉ Số Cung Dynamic & Taxonomy SSOT 10 Ngành Active TT17 (CR-2026-010)
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
+
+### 1. Bối cảnh & Mục tiêu
+- **Triệt tiêu fallback ảo trên Sàn Chào Bán**: Xóa sạch toàn bộ số giả định `"1.200+"`, `"680+" bằng sáng chế` và chữ cứng `"10 Ngành"` trên trang `/chao-ban-cong-nghe`.
+- **Nạp động 100% từ API**:
+  - *Chỉ số Cung (`totalOffers`)*: Đếm tổng số công nghệ chào bán thỏa mãn `Status == 'APPROVED'` và `IsPublic == true` trong `technology.seller_technology_offers`.
+  - *Số lượng ngành công nghệ*: Lấy từ số lượng bản ghi trả về của API `/api/v1/master-data/sectors?activeOnly=true`.
+- **Nguồn chân lý Taxonomy SSOT**:
+  - Dẹp bỏ hoàn toàn mảng `TT17_SECTORS` 18 ngành tự chế với các mã tiền tố `AG, FOOD, MECH...` trong `types/technology-offer.ts`.
+  - Thay thế bằng danh mục 10 Lĩnh vực TT17 chuẩn CSDL (`LV01, LV05, LV07, LV08, LV11, LV12, LV14, LV15, LV16, LV17`) nạp từ `GET /api/v1/master-data/sectors?activeOnly=true`.
+- **Xử lý 5 UX States qua `<Async>`**: Bắt buộc mọi khối thống kê và lưới sản phẩm chào bán phải bọc qua component chuẩn `<Async>`, cấm fallback ngầm trong khối `catch`.
+
+### 2. Tiêu chí Chấp Nhận Nghiệm Thu (Acceptance Criteria)
+- **`AC-04-047`**: Số lượng công nghệ chào bán trên trang `/chao-ban-cong-nghe` nạp động từ CSDL thật, khớp 100% với số lượng bản ghi có `Status = 'APPROVED'` và `IsPublic = true` trong PostgreSQL.
+- **`AC-04-048`**: Bộ lọc Lĩnh vực nạp đầy đủ 10 Lĩnh vực chuẩn TT17 từ API, không còn bất kỳ mã lạ hoặc mã tự chế nào.
+- **`AC-04-049`**: Khi hệ thống chưa có công nghệ nào được duyệt, hiển thị trung thực con số `0` công nghệ và thông điệp trống, tuyệt đối không hiển thị fallback `1.200+`.
+

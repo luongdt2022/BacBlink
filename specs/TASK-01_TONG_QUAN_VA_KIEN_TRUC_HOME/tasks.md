@@ -80,3 +80,34 @@
     - [x] Vitest kiểm thử component `technology-media.ts`: Đạt 100% độ phủ 17 mã ngành.
     - [x] Playwright E2E kiểm thử Trang chủ: Không phát hiện duplicate key warning và không có 2 thẻ trùng tiêu đề.
 
+
+
+---
+
+## Giai đoạn 5: Triển khai Delta v3 (CR-2026-010) — Chuẩn Hóa 4 Marketplace Metrics & Zero-Mock
+
+- [x] **T-01.26** `[BE]` Nâng cấp `PortalOverviewStatsDto` trong `SourceCode/backend/modules/content/Application/PortalContracts.cs`: Bổ sung `long TotalSuccessfulConnections` và `decimal TotalEstimatedValueMillionVnd`.
+  - Tiêu chí kiểm chứng:
+    - [x] DTO chứa đầy đủ 2 trường mới có giá trị mặc định tương thích ngược.
+    - [x] Build .NET không lỗi compiler.
+- [x] **T-01.27** `[BE]` Phẫu thuật `PortalOverviewService.cs` (`apps/api/V1Compat/`): Đếm động `totalOffers` (Status=APPROVED), `totalDemands` (Verified & PublicListed), `totalEnterprises`, `totalExperts`, `totalProvinces` (COUNT DISTINCT province_city từ `Enterprise`, xóa bỏ số 34), `totalSuccessfulConnections` (từ `brokerage.connection_requests` status ACCEPTED/COMPLETED và `mou_agreements` status SIGNED), `totalEstimatedValueMillionVnd` (từ `brokerage.opportunities` và ngân sách demand).
+  - Tiêu chí kiểm chứng:
+    - [x] `GET /api/v1/portal/stats` trả về 4 chỉ số tính toán thời gian thực từ CSDL PostgreSQL.
+    - [x] `totalProvinces` phản ánh số tỉnh thành thực tế của doanh nghiệp, không hardcode 34.
+    - [x] Tuân thủ ranh giới Clean Architecture, in-memory cache 5 phút hoạt động ổn định.
+- [x] **T-01.28** `[FE]` Cập nhật `PortalOverviewStats` trong `SourceCode/frontend/src/lib/portal-client.ts`: Bổ sung 2 trường `totalSuccessfulConnections: number` và `totalEstimatedValueMillionVnd: number`.
+  - Tiêu chí kiểm chứng:
+    - [x] TypeScript interface đồng bộ 100% với backend DTO.
+    - [x] `portalClient.getStats()` trả về đúng kiểu dữ liệu.
+- [x] **T-01.29** `[FE]` Refactor Hero Stats Strip trên Trang Chủ (`SourceCode/frontend/src/app/page.tsx`): Nối 4 thẻ hiển thị 4 Marketplace Metrics chuẩn (Tổng Cung, Tổng Cầu, Kết Nối Thành Công, Quy Mô Giao Dịch & Ngân Sách) bọc qua `<Async>` đủ 5 UX States, format tiền tệ Việt Nam linh hoạt.
+  - Tiêu chí kiểm chứng:
+    - [x] Thẻ 1 hiển thị Tổng Cung link tới `/chao-ban-cong-nghe`.
+    - [x] Thẻ 2 hiển thị Tổng Cầu link tới `/nhu-cau-cong-nghe`.
+    - [x] Thẻ 3 hiển thị Lượt Kết Nối & MOU link tới `/trien-lam`.
+    - [x] Thẻ 4 hiển thị Quy Mô Giao Dịch & Ngân Sách formatted (Tỷ / Triệu VNĐ) link tới `/portal/opportunities/pipeline`.
+    - [x] 0% số hardcode, đủ 5 trạng thái UX (Loading pulse, Error retry, Empty 0, Success, Updating).
+- [ ] **T-01.30** `[TEST]` Bổ sung Unit Tests & Integration Tests cho Portal Overview Stats mới:
+  - Tiêu chí kiểm chứng:
+    - [ ] Unit Test backend kiểm tra `PortalOverviewService`: Tính toán đúng các công thức đếm từ CSDL thật.
+    - [ ] Vitest component test cho `page.tsx`: Render đúng 4 thẻ số liệu qua `<Async>`.
+    - [ ] Playwright E2E: Xác nhận số liệu trên Trang chủ khớp 1:1 với kết quả truy vấn SQL PostgreSQL trực tiếp.

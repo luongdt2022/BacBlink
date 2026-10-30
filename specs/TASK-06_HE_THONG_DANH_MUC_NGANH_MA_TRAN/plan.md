@@ -56,3 +56,19 @@ Cung cấp các REST endpoints động kết nối qua `ITaxonomyService`:
 3. **Quality Gate**:
    - Chạy kiểm thử hồi quy 3 tầng: `dotnet test` (100% pass), `pnpm test` (100% pass), `tsc --noEmit` (0 error).
 
+
+
+---
+
+## 4. KẾ HOẠCH KIẾN TRÚC DELTA v3 (CR-2026-010): THIẾT LẬP TAXONOMY SSOT & ZERO-STATIC-ARRAY ENFORCEMENT
+
+### 4.1. Nguồn Chân Lý Duy Nhất (SSOT Invariant)
+- CSDL PostgreSQL bảng `policy.taxonomy_terms` (`kind = "SECTOR"`, `is_active = true`) là nguồn chân lý duy nhất cho toàn bộ hệ thống.
+- Runtime API: `GET /api/v1/master-data/sectors?activeOnly=true`.
+- Nghiêm cấm định nghĩa mảng ngành tĩnh trong mã nguồn Frontend hoặc Backend (`BR-SEC-005`).
+
+### 4.2. Kiến Trúc Tra Cứu & Client Cache
+- Cung cấp hàm chuẩn hóa `getActiveSectors()` trong `lib/master-data-client.ts`:
+  + Gọi API `/api/v1/master-data/sectors?activeOnly=true`.
+  + Trả về đúng 10 Lĩnh vực chuẩn TT17 (`LV01, LV05, LV07, LV08, LV11, LV12, LV14, LV15, LV16, LV17`).
+  + Cache kết quả tại client memory để tránh gọi trùng lặp nhiều lần giữa các components.

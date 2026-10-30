@@ -55,3 +55,17 @@
 - [x] T021 [FE] Admin taxonomy list/count/filter uses API response only; loading/empty/error states; create persists through API before optimistic UI update.
 - [x] T022 [FE] Admin TT17, matrix and filter options load taxonomy/API at runtime; remove duplicated sector and category arrays.
 - [x] T023 [TEST] Verify runtime add/rename/deactivate/empty/error taxonomy through integration and browser black-box cases.
+
+
+---
+
+## Phase 5: Delta v3 (CR-2026-010) — Thiết Lập Nguồn Chân Lý Duy Nhất (SSOT) & Cấm Mảng Ngành Tĩnh
+
+- [x] **T-06.024** `[ARCH]` Thiết lập quy chuẩn SSOT cho Taxonomy Lĩnh Vực: Bảo đảm `policy.taxonomy_terms` là nơi lưu trữ duy nhất, runtime qua `/api/v1/master-data/sectors?activeOnly=true`.
+  - Tiêu chí kiểm chứng:
+    - [x] Không có fallback mảng tĩnh khi DB trả về rỗng.
+    - [x] Rà soát toàn bộ các components không còn mảng ngành tự chế `SEC-*` hay `AG, FOOD...`.
+- [x] **T-06.025** `[TEST]` Bổ sung Invariant Test `SectorMasterDataInvariantsTests.cs` kiểm tra tính bất biến SSOT của 10 Lĩnh vực chuẩn TT17 và cấm mảng static (`BR-SEC-005`).
+  - Tiêu chí kiểm chứng:
+    - [x] Invariant test xác nhận đúng 10 mã `LV` chuẩn.
+    - [x] 100% test suites pass.

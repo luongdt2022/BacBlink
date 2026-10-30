@@ -1443,3 +1443,103 @@ Tích hợp hiển thị Badge Ngành và Chip Công nghệ cho từng item:
 | **Bảo Toàn 5 Trạng Thái UX** | Giữ trọn vẹn Loading Shimmer, Empty State, Error Retry, Success Grid, Updating mượt mà. | **PASS** |
 | **Phê Duyệt Thiết Kế Gate 2** | **ĐỦ ĐIỀU KIỆN PHÊ DUYỆT ĐỂ BƯỚC VÀO TRIỂN KHAI CHI TIẾT** | **APPROVED** |
 
+---
+
+## 20. PLAN DELTA V1.6 (CR-2026-011): CHUẨN HÓA ĐỒNG BỘ TAXONOMY 10 LĨNH VỰC TT17, BIỂU MẪU CÔNG NGHỆ, TRANG HƯỚNG DẪN & ADMIN LAYOUT
+
+### 20.1. Bối Cảnh Kỹ Thuật & Thẩm Định Kiến Trúc (Architectural Assessment)
+- **Vấn đề phát hiện**:
+  + Tại Form Tạo & Sửa Công Nghệ của Seller (`portal/seller/technologies/create` và `[id]/edit`): Nhãn Stepper Bước 2 vẫn hiển thị *"Bước 2: Thông số kỹ thuật & 18 Ngành TT17"*.
+  + Tại Trang Hướng Dẫn Sử Dụng (`huong-dan/guide-data.ts`): Còn tồn tại 8 vị trí đề cập cụm từ *"18 ngành TT17"*, *"18 ngành kỹ thuật"*, *"Sàn Chào Bán 18 Ngành"*.
+  + Tại Admin Navigation Layout (`admin/layout.tsx`): Nhãn menu còn hiển thị *"Danh mục 18 Ngành TT17 & TRL"*.
+  + Tại Danh bạ Chuyên gia (`experts/page.tsx`): Cần đảm bảo bộ lọc lĩnh vực sử dụng chung nguồn `getPublicExpertFilterOptions()` nạp từ API `/api/v1/sectors`, đồng bộ 100% với chuẩn 10 Lĩnh vực TT17 từ CSDL SSOT.
+- **Hệ quả**: Thuật ngữ "18 ngành" gây mâu thuẫn nhận thức cho người dùng và đối tác khi hệ thống đã chuẩn hóa sang 10 Lĩnh vực TT17 theo CSDL PostgreSQL.
+- **Giải pháp Clean Architecture**:
+  + Thống nhất thuật ngữ và nhãn hiển thị sang **"10 Lĩnh Vực TT17"** / **"Lĩnh vực công nghệ trọng điểm TT17"** trên toàn bộ các bề mặt frontend.
+  + Đảm bảo tính phi phá hủy (Non-destructive): Giữ nguyên mã `LVxx`, cấu trúc form stepper, và các luồng submit hiện có.
+
+### 20.2. Thiết Kế Chi Tiết Frontend Architecture Cho Từng Bề Mặt
+1. **Form Tạo & Sửa Công Nghệ Seller (`create/page.tsx` & `[id]/edit/page.tsx`)**:
+   - Vị trí sửa nhãn: Thay thế chuỗi `"Bước 2: Thông số kỹ thuật & 18 Ngành TT17"` thành `"Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17"`.
+   - Giữ nguyên mảng `TT17_SECTORS` trong `types/technology-offer.ts` (đã chứa đủ 10 Lĩnh vực `LV01` $\rightarrow$ `LV17`).
+2. **Trang Hướng Dẫn (`guide-data.ts`)**:
+   - Rà soát và thay thế 8 điểm xuất hiện chuỗi "18 ngành":
+     + Thay *"Bước 3: Chọn lĩnh vực chuyên môn (theo 18 ngành TT17)..."* $\rightarrow$ *"Bước 3: Chọn lĩnh vực chuyên môn (theo 10 Lĩnh Vực TT17)..."*
+     + Thay *"bộ lọc 18 ngành TT17..."* $\rightarrow$ *"bộ lọc 10 Lĩnh Vực TT17..."*
+     + Thay *"Sử dụng bộ lọc 18 ngành kỹ thuật..."* $\rightarrow$ *"Sử dụng bộ lọc 10 Lĩnh Vực kỹ thuật..."*
+     + Thay *"bảng màu nhận diện 18 ngành kỹ thuật..."* $\rightarrow$ *"bảng màu nhận diện 10 Lĩnh Vực kỹ thuật..."*
+     + Thay *"Sàn Chào Bán Công Nghệ Toàn Quốc 18 Ngành"* $\rightarrow$ *"Sàn Chào Bán Công Nghệ Toàn Quốc 10 Lĩnh Vực"*
+     + Thay *"18 ngành trọng điểm..."* $\rightarrow$ *"10 Lĩnh Vực trọng điểm..."*
+     + Thay *"ma trận 18 ngành kỹ thuật theo TT17/2019/TT-BKHCN..."* $\rightarrow$ *"ma trận 10 Lĩnh Vực kỹ thuật theo TT17/2019/TT-BKHCN..."*
+     + Thay *"Phân bổ theo 18 ngành..."* $\rightarrow$ *"Phân bổ theo 10 Lĩnh Vực..."*
+3. **Admin Layout Navigation (`admin/layout.tsx`)**:
+   - Thay đổi item menu tại dòng 154:
+     + `label: "Danh mục 18 Ngành TT17 & TRL"` $\rightarrow$ `label: "Danh mục 10 Lĩnh Vực TT17 & TRL"`.
+     + `keywords: "18 nganh tt17 trl tieu chi danh muc linh vuc"` $\rightarrow$ `keywords: "10 linh vuc tt17 trl tieu chi danh muc"`.
+4. **Danh Bạ Chuyên Gia (`experts/page.tsx`)**:
+   - Xác nhận `getPublicExpertFilterOptions()` nạp từ API `/api/v1/sectors`.
+   - Đảm bảo dropdown danh mục lĩnh vực hiển thị đầy đủ 10 Lĩnh vực TT17 và gửi đúng `sectorCodes` dạng `LVxx`.
+
+### 20.3. Kế Hoạch Kiểm Thử Kỹ Thuật (Test Strategy)
+1. **Grep-Check / Static Analysis**:
+   - Chạy lệnh quét toàn bộ `SourceCode/frontend/src/` để đảm bảo không còn chuỗi "18 Ngành TT17" hoặc "18 ngành" xuất hiện trên UI.
+2. **Component & Regression Tests**:
+   - Kiểm tra render Form Tạo/Sửa công nghệ hiển thị đúng nhãn Stepper mới.
+   - Kiểm tra trang Hướng dẫn hiển thị đúng nhãn 10 Lĩnh Vực.
+   - Kiểm tra thanh Sidebar Admin hiển thị nhãn "Danh mục 10 Lĩnh Vực TT17 & TRL".
+   - Kiểm tra bộ lọc chuyên gia nạp động 10 lĩnh vực và lọc dữ liệu chính xác.
+
+---
+
+## 21. KẾ HOẠCH TRIỂN KHAI DELTA V1.4 (CR-2026-012): MUA HÀNG & ĐĂNG NHU CẦU TRONG WORKSPACE CHUYÊN GIA
+
+### 21.1. Bối Cảnh Kiến Trúc & Phân Tích Hiện Trạng
+- **Căn cứ**: Spec Delta v1.4 tại `spec.md` Mục 24 và Quyết định PO `PO-DEC-20261030-04`.
+- **Hiện trạng**:
+  + Frontend Portal Layout (`src/app/portal/layout.tsx`): `expertNavItems` đang có 7 mục menu, thiếu lối vào quản lý Đơn mua hàng và Nhu cầu đã nộp.
+  + Sàn Chào Bán (`src/app/chao-ban-cong-nghe/[id]/page.tsx`): Sau khi gửi đơn kết nối/đặt mua thương mại thành công, nút CTA `"Theo dõi đơn hàng trong Workspace →"` dẫn tới `/portal/buyer/demands?tab=commercial`. Khi tài khoản là Chuyên gia truy cập URL này, layout hiển thị Sidebar Chuyên gia nhưng không có mục menu nào tương ứng được highlight, gây đứt gãy luồng điều hướng.
+  + Backend API & Database: Bảng `brokerage.demand_items` và controller `DemandController.cs` đã hỗ trợ đầy đủ `CreatedBy = Actor.PersonId`, nhận diện được mọi vai trò có Bearer Token (kể cả `EXPERT` / `VERIFIED_EXPERT`). Không phát sinh thay đổi schema CSDL PostgreSQL.
+
+### 21.2. Thiết Kế Chi Tiết Frontend Architecture
+1. **Cập nhật Navigation Sidebar Chuyên Gia (`src/app/portal/layout.tsx`)**:
+   - Mở rộng `expertNavItems` từ 7 mục lên **8 mục**:
+     ```typescript
+     // Khối 1: Tác nghiệp hàng ngày
+     { href: "/portal/expert/profile", label: "Tổng quan Chuyên gia", icon: LayoutDashboard, key: "profile", section: "Tác nghiệp hàng ngày" },
+     { href: "/portal/expert/consultations", label: "Hộp Thư Tư Vấn & Kết Nối", icon: Inbox, key: "consultations", badge: 2, badgeType: "count" },
+     { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles, key: "radar", badge: "Mới", badgeType: "new" },
+     { href: "/portal/expert/projects", label: "Dự án Đồng hành & Hợp tác", icon: Kanban, key: "projects" },
+     { href: "/portal/buyer/demands", label: "Đơn hàng & Nhu cầu đặt mua", icon: ShoppingBag, key: "orders-demands" }, // Mục 5 [MỚI]
+
+     // Khối 2: Kinh tế & Hợp đồng (Sắp ra mắt)
+     { href: "/portal/expert/contracts", label: "Hợp đồng & Thù lao", icon: FileText, key: "contracts", section: "Kinh tế & Hợp đồng", disabled: true, badge: "Sắp ra mắt", badgeType: "coming-soon", disabledMessage: "Tính năng Hợp đồng & Thù lao đang được phát triển theo lộ trình." },
+
+     // Khối 3: Hồ sơ & Quản trị
+     { href: "/portal/expert/profile/edit", label: "Hồ sơ LLKH của tôi", icon: GraduationCap, key: "profile-edit", section: "Hồ sơ & Quản trị" },
+     { href: "/portal/expert/account", label: "Cài đặt & Tài khoản", icon: ShieldCheck, key: "account" },
+     ```
+   - Logic active highlight: Khi `pathname === "/portal/buyer/demands"`, item "Đơn hàng & Nhu cầu đặt mua" được highlight chuẩn xác.
+
+2. **Tối Ưu Trải Nghiệm Trang Bàn Làm Việc Đơn Hàng (`src/app/portal/buyer/demands/page.tsx`)**:
+   - Tiêu đề động: Khi người dùng có role là `VERIFIED_EXPERT` hoặc `EXPERT`, tiêu đề trang hiển thị ngữ cảnh phù hợp: *"Quản lý Đơn hàng & Nhu cầu Đặt mua của Chuyên gia"*.
+   - Đảm bảo 2 Tabs vận hành trọn vẹn:
+     * Tab 1 (`tab=commercial`): Danh sách đơn mua hàng hóa/mẫu thử thương mại kèm `OrderTrackingStepper` 4 bước và chức năng Hủy đơn khi ở trạng thái `SUBMITTED`.
+     * Tab 2 (`tab=demands`): Danh sách bài toán nhu cầu R&D, nút mở `QuickDemandModal` tính điểm TNI và gửi duyệt.
+
+3. **Xác Thực Dẫn Hướng CTA Từ Sàn Chào Bán (`src/app/chao-ban-cong-nghe/[id]/page.tsx`)**:
+   - Đảm bảo nút CTA `"Theo dõi đơn hàng trong Workspace →"` dẫn thẳng về `/portal/buyer/demands?tab=commercial` và khớp hoàn toàn với Sidebar Chuyên gia.
+
+### 21.3. Kế Hoạch Kiểm Thử Kỹ Thuật (Test Strategy)
+1. **Unit & Component Testing (Vitest)**:
+   - Cập nhật `src/app/portal/layout.test.tsx`:
+     * Kiểm tra Workspace Chuyên gia render đủ 8 mục menu.
+     * Kiểm tra mục "Đơn hàng & Nhu cầu đặt mua" xuất hiện với icon `ShoppingBag` và liên kết đúng `/portal/buyer/demands`.
+     * Kiểm tra khi URL là `/portal/buyer/demands`, mục này nhận class active.
+   - Kiểm tra `src/app/portal/buyer/demands/page.test.tsx`:
+     * Đảm bảo các test case cho 2 Tabs, stepper 4 bước và hủy đơn tiếp tục pass 100%.
+2. **E2E Integration & IDOR Verification**:
+   - Kiểm tra Chuyên gia đăng nhập tạo đơn hàng thật, đối soát CSDL `CreatedBy == Actor.PersonId`.
+   - Kiểm tra Chuyên gia A không xem được đơn hàng của Chuyên gia B hoặc Doanh nghiệp C.
+
+
+

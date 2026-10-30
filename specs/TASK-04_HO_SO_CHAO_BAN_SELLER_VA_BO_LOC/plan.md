@@ -1899,3 +1899,24 @@ const desiredSolution = isCommercialProduct
    - `tsc --noEmit`: Đạt 0 lỗi type.
    - `npm test`: 100% test suites pass.
    - Quét ma trận truy vết khép kín: Không phát sinh task hay code mồ côi.
+
+
+---
+
+## 14. KẾ HOẠCH KIẾN TRÚC DELTA v11 (CR-2026-010): XÓA BỎ FALLBACK TĨNH SÀN CHÀO BÁN & KHAI TỬ MẢNG TT17_SECTORS 18 NGÀNH
+
+### 14.1. Khai Tử Mảng Ngành Tĩnh & Đồng Bộ Nguồn Chân Lý Taxonomy
+- **Vấn đề giải quyết**: `SourceCode/frontend/src/types/technology-offer.ts` và `services/api/technology-offer.ts` đang định nghĩa mảng `TT17_SECTORS` gồm 18 ngành tự chế và `SECTORS_18_CATALOG` tĩnh.
+- **Giải pháp kỹ thuật**:
+  + Khai tử mảng `TT17_SECTORS` 18 ngành tự chế trong `types/technology-offer.ts`.
+  + Refactor `services/api/technology-offer.ts`: Chuyển sang sử dụng `getActiveSectors()` từ `master-data-client.ts` hoặc nạp động danh mục ngành từ API `/api/v1/master-data/sectors?activeOnly=true`.
+  + Chuẩn hóa bộ lọc ngành tại Sàn Chào Bán (`app/chao-ban-cong-nghe/page.tsx`): Sử dụng danh sách Lĩnh vực nạp động từ CSDL thật (10 Lĩnh vực chuẩn `LV01..LV17`).
+
+### 14.2. Triệt Tiêu Fallback Ảo Tại Sàn Chào Bán (`app/chao-ban-cong-nghe/page.tsx`)
+- **Vấn đề giải quyết**: Hero Stats đang hiển thị fallback cứng:
+  `{globalTotal > 0 ? `${globalTotal}` : "1.200+"}`, chữ cứng `"10 Ngành"`, và `{patentCount > 0 ? `${patentCount}` : "680+"} Bằng Sáng Chế`.
+- **Giải pháp kỹ thuật**:
+  + Khối 1: Hiển thị chính xác `globalTotal` (số lượng hồ sơ niêm yết thật). Khi = 0, hiển thị `0`, tuyệt đối không dùng `"1.200+"`.
+  + Khối 2: Hiển thị số ngành có công nghệ niêm yết tính toán động từ dữ liệu thật, hoặc tổng số ngành hoạt động từ taxonomy (`sectors.length`), không hardcode chuỗi `"10 Ngành"`.
+  + Khối 3: Hiển thị chính xác `patentCount` (số lượng công nghệ có văn bằng bảo hộ SHTT). Khi = 0, hiển thị `0`, tuyệt đối không dùng `"680+"`.
+  + Bao bọc toàn bộ khối Hero Stats qua `<Async>` đủ 5 UX States.

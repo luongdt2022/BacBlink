@@ -593,6 +593,138 @@
   - **Hành động kỹ thuật**: Chạy `dotnet test` và `pnpm test`.
   - **Tiêu chí kiểm chứng**: 100% tests pass, không mock ngầm.
 
+---
+
+## Giai đoạn Delta v1.3: Smart AI CV Onboarding
+
+- [x] `T-DELTA-01` **[BE][PROMPT][REQ-EXP-CV-002] Thiết kế & chuẩn hóa Structured Output Prompt cho AI CV Extractor (Google Gemini Multimodal API)**
+  - **Mục tiêu**: Xây dựng system prompt và JSON Schema chặt chẽ trích xuất toàn diện 94 trường dữ liệu từ tệp CV/LLKH (PDF, DOCX, Ảnh scan) khớp Sheet `C.gia`.
+  - **Hành động kỹ thuật**:
+    + Định nghĩa JSON Schema đầu ra cho Gemini API bao gồm: `personalInfo` (22 trường), `expertiseAndHistory` (36 trường), `scientificAchievements` (36 trường).
+    + Tối ưu hóa prompt nhận diện tiếng Việt khoa học, phân loại học vị (TS/ThS/KS), nhận dạng 18 ngành TT17 và cấu trúc bảng công trình nghiên cứu.
+  - **Tiêu chí kiểm chứng**: Payload trả về đúng định dạng JSON 100%, không bị parse error.
+
+- [x] `T-DELTA-02` **[BE][API][REQ-EXP-CV-002][BR-EXP-CV-02][BR-EXP-CV-03] Xây dựng Endpoint phân tích CV in-memory `POST /api/v1/experts/ai-cv-scan`**
+  - **Mục tiêu**: Tiếp nhận tệp CV từ client, xử lý in-memory tuân thủ Nghị định 13/2023/NĐ-CP (PDPD) và trả về Draft Payload kèm confidence score.
+  - **Hành động kỹ thuật**:
+    + Tạo controller action nhận `multipart/form-data` (file $\le 20$MB), kiểm tra MIME type & magic bytes.
+    + Tích hợp Gemini API client với timeout 30s và cơ chế fallback (Zero-Lock Fallback).
+    + Trả về `ExpertProfileDraftDto` có danh sách `highlightFields` và độ tin cậy trích xuất.
+  - **Tiêu chí kiểm chứng**: Endpoint trả về HTTP 200 kèm DTO khi thành công; trả về HTTP 422/504 chuẩn khi file lỗi mà không crash server.
+
+- [x] `T-DELTA-03` **[FE][UI][REQ-EXP-CV-001][UI-EXP-CV-01] Nâng cấp Hero Dropzone Quét CV tại Bước 1 của Wizard `/profile/upgrade/expert`**
+  - **Mục tiêu**: Cập nhật Stepper và đưa Hero Dropzone lên đầu Bước 1 theo đúng bản dựng Basic Design `wireframe_expert_upgrade.html`.
+  - **Hành động kỹ thuật**:
+    + Đổi tên 3 bước Stepper: Bước 1: "Quét CV & Định danh", Bước 2: "Năng lực Chuyên môn", Bước 3: "Công bố & Cam kết".
+    + Xây dựng component `AiCvHeroDropzone` hỗ trợ kéo thả tệp, chọn tệp từ máy, hiển thị badge bóc tách 94 trường Sheet C.gia và chip bảo mật PDPD.
+  - **Tiêu chí kiểm chứng**: Giao diện responsive trên cả Desktop và Mobile, hiển thị chuẩn Tailwind CSS khớp wireframe.
+
+- [x] `T-DELTA-04` **[FE][STATE][REQ-EXP-CV-003][BR-EXP-CV-01][BR-EXP-CV-04] Tích hợp cơ chế Non-destructive Auto-fill và Human-in-the-Loop**
+  - **Mục tiêu**: Tự động đổ dữ liệu trích xuất vào form cả 3 bước mà không ghi đè dữ liệu người dùng đã nhập.
+  - **Hành động kỹ thuật**:
+    + Viết hàm merge dữ liệu `mergeCvDraftToFormState(currentForm, aiDraft)`: chỉ ghi vào các field rỗng, giữ nguyên field đã có giá trị.
+    + Đánh dấu visual badge `"✨ AI Gợi Ý"` và viền highlight màu xanh lá nhạt cho các ô do AI điền.
+    + Đảm bảo người dùng có thể tự do chỉnh sửa, xóa và kiểm duyệt lại trước khi submit hồ sơ.
+  - **Tiêu chí kiểm chứng**: Các trường người dùng gõ trước khi scan được bảo tồn 100%; các trường trống được điền chuẩn xác.
+
+- [x] `T-DELTA-05` **[FE][UX][REQ-EXP-CV-004][UI-EXP-CV-02] Hoàn thiện 5 UX States cho AI CV Scanner và luồng nhập tay không gián đoạn**
+  - **Mục tiêu**: Đảm bảo trải nghiệm mượt mà qua 5 trạng thái UX: Idle, Scanning Shimmer, Error Fallback Toast, Success Auto-fill, và Partial Review.
+  - **Hành động kỹ thuật**:
+    + State 1 (Idle): Dropzone sẵn sàng nhận tệp kèm phân cách "Hoặc nhập liệu thủ công từng bước bên dưới".
+    + State 2 (Scanning): Hiển thị thanh tiến trình 0% $\rightarrow$ 100% kèm Skeleton Shimmer.
+    + State 3 (Success): Hiển thị thông báo bóc tách thành công số trường và tự động fill form.
+    + State 4 (Error): Toast thông báo lỗi nhẹ nhàng khi AI timeout/quá tải, giữ nguyên form nhập tay (Zero-Lock).
+    + State 5 (Partial): Hiển thị cảnh báo các trường có confidence thấp để chuyên gia chú ý kiểm tra.
+  - **Tiêu chí kiểm chứng**: Khi tắt mạng hoặc giả lập lỗi API, form không bị đóng băng, người dùng chuyển bước và nhập tay bình thường.
+
+- [x] `T-DELTA-06` **[TEST][E2E][TEST-TASK-05-DELTA-v1.3-01] Bộ kiểm thử Unit & Playwright E2E cho luồng Smart AI CV Onboarding**
+  - **Mục tiêu**: Kiểm chứng toàn diện logic Non-destructive Auto-fill, Zero-Lock Fallback và tương tác form 3 bước.
+  - **Hành động kỹ thuật**:
+    + Unit tests (Vitest): Kiểm tra hàm `mergeCvDraftToFormState` với các edge cases (field đã có dữ liệu, format ngày tháng, danh mục mảng động).
+    + Component tests: Kiểm tra các trạng thái UX của Hero Dropzone.
+    + E2E tests (Playwright): Kịch bản tải lên CV $\rightarrow$ bóc tách thành công $\rightarrow$ kiểm tra dữ liệu điền ở cả 3 bước $\rightarrow$ chỉnh sửa thủ công $\rightarrow$ nộp hồ sơ.
+    + Edge-case test: Kịch bản upload file lỗi $\rightarrow$ kiểm chứng Zero-Lock, form nhập tay thông suốt.
+  - **Tiêu chí kiểm chứng**: 100% test cases Green, không shallow assertions.
+
+---
+
+## Giai đoạn 20: Delta CR-2026-011 — Chuẩn Hóa Taxonomy 10 Lĩnh Vực TT17 Cho Form Công Nghệ, Hướng Dẫn & Bộ Lọc Chuyên Gia [FE][TEST]
+
+- [x] `T-DELTA-07` **[FE] Chuẩn hóa nhãn Stepper Bước 2 tại Form Tạo & Sửa Công Nghệ Seller (`create/page.tsx` & `[id]/edit/page.tsx`)**
+  - **Mục tiêu**: Đổi nhãn Stepper Bước 2 từ "Bước 2: Thông số kỹ thuật & 18 Ngành TT17" thành "Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17".
+  - **Hành động kỹ thuật**:
+    + Sửa dòng 725 tại `app/portal/seller/technologies/create/page.tsx`.
+    + Sửa dòng 717 tại `app/portal/seller/technologies/[id]/edit/page.tsx`.
+  - **Tiêu chí kiểm chứng**: Giao diện form hiển thị nhãn "Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17", các trường spec động hoạt động bình thường.
+
+- [x] `T-DELTA-08` **[FE] Chuẩn hóa toàn bộ thuật ngữ "18 ngành" trong Trang Hướng Dẫn (`guide-data.ts`)**
+  - **Mục tiêu**: Thay thế 8 vị trí đề cập "18 ngành" sang "10 Lĩnh Vực TT17" / "10 Lĩnh Vực kỹ thuật".
+  - **Hành động kỹ thuật**:
+    + Cập nhật các chuỗi tại dòng 227, 244, 247, 336, 566, 669, 796, 1064 của `app/huong-dan/guide-data.ts`.
+  - **Tiêu chí kiểm chứng**: Không còn sót bất kỳ chuỗi "18 ngành" nào trong tệp `guide-data.ts`.
+
+- [x] `T-DELTA-09` **[FE] Chuẩn hóa nhãn Menu Admin Layout (`admin/layout.tsx`)**
+  - **Mục tiêu**: Sửa nhãn menu từ "Danh mục 18 Ngành TT17 & TRL" thành "Danh mục 10 Lĩnh Vực TT17 & TRL".
+  - **Hành động kỹ thuật**:
+    + Sửa dòng 154 và cập nhật keywords tìm kiếm tại `app/admin/layout.tsx`.
+  - **Tiêu chí kiểm chứng**: Sidebar Admin hiển thị nhãn "Danh mục 10 Lĩnh Vực TT17 & TRL".
+
+- [x] `T-DELTA-10` **[FE][AUDIT] Xác thực bộ lọc Lĩnh vực tại Danh Bạ Chuyên Gia (`experts/page.tsx`)**
+  - **Mục tiêu**: Đảm bảo bộ lọc nạp đúng 10 Lĩnh vực TT17 từ API `/api/v1/sectors` qua `getPublicExpertFilterOptions()`.
+  - **Hành động kỹ thuật**:
+    + Rà soát logic parse và gửi `sectorCodes` trong `experts/page.tsx`.
+    + Đảm bảo không còn tham chiếu nhãn cũ "18 ngành".
+  - **Tiêu chí kiểm chứng**: Dropdown lĩnh vực hiển thị đầy đủ 10 options chuẩn từ CSDL PostgreSQL.
+
+- [x] `T-DELTA-11` **[TEST] Kiểm thử Component & Grep Static Verification**
+  - **Mục tiêu**: Kiểm tra tự động toàn bộ codebase frontend không còn dư âm nhãn "18 Ngành TT17".
+  - **Hành động kỹ thuật**:
+    + Chạy grep toàn bộ thư mục `SourceCode/frontend/src/` đối soát chuỗi "18 Ngành TT17".
+    + Chạy bộ kiểm thử regression đảm bảo form seller và trang hướng dẫn hoạt động ổn định.
+  - **Tiêu chí kiểm chứng**: Grep trả về 0 kết quả cho chuỗi "18 Ngành TT17", 100% test cases Green.
+
+---
+
+## Giai đoạn 21: Delta CR-2026-012 — Mở Rộng Quyền Mua Hàng & Đăng Nhu Cầu Trong Workspace Chuyên Gia KH&CN [FE][TEST]
+
+- [x] `T-DELTA-12` **[FE] Cập nhật thanh Sidebar Workspace Chuyên Gia 8 mục (`src/app/portal/layout.tsx`)**
+  - **Mục tiêu**: Thêm mục số 5 "Đơn hàng & Nhu cầu đặt mua" vào Khối Tác nghiệp hàng ngày của Chuyên gia.
+  - **Hành động kỹ thuật**:
+    + Thêm item `{ href: "/portal/buyer/demands", label: "Đơn hàng & Nhu cầu đặt mua", icon: ShoppingBag, key: "orders-demands" }` vào mảng `expertNavItems` ngay sau mục Dự án Đồng hành & Hợp tác.
+    + Đảm bảo route active logic highlight chính xác khi `pathname === "/portal/buyer/demands"`.
+  - **Tiêu chí kiểm chứng**: Sidebar Chuyên gia hiển thị 8 mục menu, mục số 5 hiển thị icon `ShoppingBag` và chuyển đúng đến `/portal/buyer/demands`.
+
+- [x] `T-DELTA-13` **[FE] Tinh chỉnh hiển thị tiêu đề và ngữ cảnh Chuyên gia tại Bàn làm việc (`src/app/portal/buyer/demands/page.tsx`)**
+  - **Mục tiêu**: Đảm bảo giao diện 2 Tabs nhận diện linh hoạt khi người dùng đăng nhập là Chuyên gia KH&CN.
+  - **Hành động kỹ thuật**:
+    + Kiểm tra và điều chỉnh tiêu đề / phụ đề trang hiển thị phù hợp cho Chuyên gia: "Quản lý Đơn hàng & Nhu cầu Đặt mua của Chuyên gia".
+    + Xác nhận 2 Tabs (Tab 1: Đơn mua thương mại, Tab 2: Nhu cầu R&D) hiển thị đầy đủ các nút tác nghiệp (Hủy đơn SUBMITTED, Đăng bài toán mới qua `QuickDemandModal`).
+  - **Tiêu chí kiểm chứng**: Chuyên gia xem được đơn mua hàng hóa cá nhân và danh sách bài toán nghiên cứu cá nhân mà không gặp lỗi phân quyền.
+
+- [x] `T-DELTA-14` **[FE] Xác thực liên kết CTA từ Modal Đặt Mua Thành Công (`src/app/chao-ban-cong-nghe/[id]/page.tsx`)**
+  - **Mục tiêu**: Nút CTA "Theo dõi đơn hàng trong Workspace →" hoạt động mượt mà khi người đặt là Chuyên gia.
+  - **Hành động kỹ thuật**:
+    + Rà soát liên kết CTA tại dòng 1297 của `page.tsx` trỏ tới `/portal/buyer/demands?tab=commercial`.
+    + Kiểm tra luồng đóng modal và chuyển hướng trong Workspace Chuyên gia.
+  - **Tiêu chí kiểm chứng**: Chuyên gia bấm CTA sau khi đặt hàng thành công sẽ chuyển thẳng về Tab 1 của Workspace với Sidebar Chuyên gia active đúng mục 5.
+
+- [x] `T-DELTA-15` **[TEST] Cập nhật bộ kiểm thử Vitest cho Sidebar Chuyên Gia (`src/app/portal/layout.test.tsx`)**
+  - **Mục tiêu**: Kiểm thử tự động đảm bảo Workspace Chuyên gia có đủ 8 mục menu và active route chính xác.
+  - **Hành động kỹ thuật**:
+    + Cập nhật test case kiểm tra số lượng nav items của Chuyên gia (`VERIFIED_EXPERT` / `EXPERT`) là 8 mục.
+    + Kiểm tra sự hiện diện của nhãn "Đơn hàng & Nhu cầu đặt mua" và liên kết `/portal/buyer/demands`.
+  - **Tiêu chí kiểm chứng**: 100% test cases trong `layout.test.tsx` pass.
+
+- [x] `T-DELTA-16` **[TEST][E2E] Kiểm thử toàn trình Đơn hàng & Nhu cầu cho vai trò Chuyên Gia**
+  - **Mục tiêu**: Xác thực toàn trình luồng đặt mua sản phẩm, hiển thị Stepper 4 bước và đăng bài toán nhu cầu R&D.
+  - **Hành động kỹ thuật**:
+    + Chạy bộ test kiểm tra `buyer/demands/page.test.tsx` và `chao-ban-cong-nghe/[id]/page.test.tsx`.
+    + Chạy script kiểm tra guard rails `./Agent/scripts/guard-rails.sh`.
+  - **Tiêu chí kiểm chứng**: Toàn bộ kiểm thử xanh, không có lỗi biên dịch TypeScript, sẵn sàng xuất xưởng Gate 5.
+
+
+
+
 
 
 

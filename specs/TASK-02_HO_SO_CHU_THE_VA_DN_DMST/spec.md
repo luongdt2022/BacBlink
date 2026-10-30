@@ -493,4 +493,39 @@
 | **`REQ-02-DELTA-02`** | `BR-02-DELTA-01` | `DB-02-DELTA-01` | `UI-02-DELTA-01` | `AC-02-DELTA-02` |
 | **`REQ-02-DELTA-03`** | `BR-02-DELTA-01` | `DB-02-DELTA-01` | `UI-02-DELTA-01` | `AC-02-DELTA-03`, `AC-02-DELTA-04` |
 
+---
+
+## 12. PHỤ LỤC DELTA V4 (CR-2026-011): CHUẨN HÓA TAXONOMY 10 LĨNH VỰC TT17 & TRIỆT TIÊU MẢNG TĨNH SAI LỆCH MÃ TẠI DANH BẠ DOANH NGHIỆP
+
+### 12.1 Bối Cảnh & Mục Tiêu Phẫu Thuật
+- **Phát hiện lỗi nghiêm trọng**: `EnterprisesDirectoryView.tsx` đang sử dụng mảng tĩnh `SECTORS_TT17` với 11 phần tử gán sai lệch mã hoàn toàn so với CSDL PostgreSQL (`LV01` thành Cơ khí, `LV05` thành Nông nghiệp, `LV07` thành Y Dược...).
+- **Mục tiêu**: Xóa bỏ 100% mảng tĩnh này, chuyển sang nạp động từ service `getActiveSectors()` (`@/lib/master-data-client`), khôi phục tính chính xác tuyệt đối của bộ lọc Lĩnh vực công nghệ cho 304 DN.
+
+### 12.2 Danh Mục 10 Lĩnh Vực Công Nghệ Chuẩn TT17 SSOT
+Danh sách nạp động từ CSDL PostgreSQL (`policy.taxonomy_terms` với `kind = 'SECTOR'`, `is_active = true`):
+1. `LV01`: **Nông nghiệp**
+2. `LV05`: **Chế biến thực phẩm – đồ uống**
+3. `LV07`: **Cơ khí – chế tạo – công nghiệp hỗ trợ**
+4. `LV08`: **Điện – điện tử – tự động hóa**
+5. `LV11`: **Nước – môi trường – chất thải**
+6. `LV12`: **Xây dựng – vật liệu – hạ tầng**
+7. `LV14`: **Logistics – vận tải – kho bãi**
+8. `LV15`: **Du lịch – khách sạn – nhà hàng**
+9. `LV16`: **CNTT – viễn thông – chuyển đổi số**
+10. `LV17`: **Khoa học – công nghệ – đổi mới sáng tạo**
+
+### 12.3 Đặc Tả Yêu Cầu Kỹ Thuật Chi Tiết
+- **`REQ-02-DELTA-04` (Nạp Động Taxonomy Ngành Khớp 1:1 CSDL)**:
+  - Component `EnterprisesDirectoryView` nạp danh mục ngành thông qua `getActiveSectors()`.
+  - Dropdown lọc ngành gồm tùy chọn mặc định `{ code: "", name: "Tất cả lĩnh vực công nghệ" }` và 10 lĩnh vực chuẩn.
+  - Cấm khai báo mảng tĩnh, cấm gán nhãn sai lệch mã.
+- **`REQ-02-DELTA-05` (Zero-Mock Dashboard Thống Kê Doanh Nghiệp)**:
+  - Trang `/admin/enterprises/dashboard` nạp 100% số liệu từ endpoint `GET /api/v1/admin/enterprises/dashboard`.
+  - Số liệu `totalEnterprises`, `verifiedCount`, phân bổ `byProvince`, `bySector`, `byTni` phải được truy vấn thời gian thực từ bảng `enterprise.enterprises`.
+- **`AC-02-DELTA-05` (Kiểm Thử Khớp Mã Ngành Thực Tế)**:
+  - Given người dùng lọc theo "Nông nghiệp" tại Danh bạ Doanh nghiệp,
+  - When hệ thống thực hiện truy vấn,
+  - Then tham số gửi lên API là `sectorCode=LV01`, và danh sách chỉ hiển thị các doanh nghiệp nông nghiệp thực sự.
+
+
 

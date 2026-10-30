@@ -20,11 +20,11 @@
   - *Independent Test:* Click vào từng mục trong Menu 7 mục -> Điều hướng chính xác tới các route tương ứng (`/chao-ban-cong-nghe`, `/nhu-cau-cong-nghe`, `/enterprises`, `/experts`, `/dich-vu-khac`, `/portal`).
   - *Acceptance Scenario:* Given người dùng chưa đăng nhập, When xem Header, Then hiển thị nút "Đăng nhập" / "Đăng ký"; Given người dùng đã đăng nhập, When click Avatar, Then hiển thị menu tài khoản gồm "Cài đặt tài khoản" và "Đăng xuất" (kèm popup xác nhận trước khi kết thúc phiên).
 
-### P2 (Must-Have) — Cổng Thống Kê Chỉ Số Động (Dynamic Portal Stats) & Zero-Mock
-- **Là** một Khách truy cập hoặc Nhà đầu tư, **Tôi muốn** xem các chỉ số thống kê thực tế về quy mô sàn giao dịch (Số công nghệ chào bán, số nhu cầu đặt hàng, số doanh nghiệp ĐMST, số tỉnh thành kết nối) **Để** đánh giá mức độ uy tín và sự sôi động của hệ sinh thái.
-  - *Why this priority:* Loại bỏ hoàn toàn số liệu giả lập (mock cứng), phản ánh trung thực dữ liệu thật từ PostgreSQL.
-  - *Independent Test:* Gọi API `GET /api/v1/portal/stats` -> Trả về số liệu đếm trực tiếp từ các bảng `technology_offers`, `demand_surveys`, `enterprises`, `expert_profiles`.
-  - *Acceptance Scenario:* Given cơ sở dữ liệu đã nạp 304 DN thật, When tải trang chủ, Then bộ đếm phản ánh chính xác số lượng thực tế, tải dưới 200ms nhờ cache.
+### P2 (Must-Have) — Cổng Thống Kê Chỉ Số Động (Dynamic Marketplace Metrics) & Zero-Mock
+- **Là** một Khách truy cập hoặc Nhà đầu tư, **Tôi muốn** xem 4 chỉ số thống kê thực tế về quy mô toàn sàn (Tổng Cung công nghệ đã duyệt, Tổng Cầu bài toán đang tìm, Lượt kết nối thành công & MOU, Tổng giá trị giao dịch & ngân sách) **Để** đánh giá mức độ uy tín và sự sôi động của hệ sinh thái.
+  - *Why this priority:* Loại bỏ hoàn toàn số liệu giả lập (mock cứng), phản ánh trung thực dữ liệu thật từ CSDL PostgreSQL theo chuẩn CR-2026-010.
+  - *Independent Test:* Gọi API `GET /api/v1/portal/stats` -> Trả về 4 chỉ số tính toán thời gian thực từ các bảng `technology_offers`, `demand_surveys`, `brokerage.connection_requests`, `deal_mous` và giá trị ngân sách.
+  - *Acceptance Scenario:* Given cơ sở dữ liệu đã nạp dữ liệu thật, When tải trang chủ, Then 4 thẻ Marketplace Metrics phản ánh chính xác 100% số lượng thực tế, tải dưới 200ms nhờ cache, bọc qua `<Async>` đủ 5 UX States.
 
 ### P3 (Must-Have) — Sàn Trưng Bày Sự Kiện & Phiên Chào Giá Techmart (Showcase Listing)
 - **Là** một Doanh nghiệp có nhu cầu mua hoặc chuyển giao công nghệ, **Tôi muốn** tra cứu lịch các phiên chào giá Techmart sắp diễn ra, tải hồ sơ thể lệ/TRL dạng PDF và đăng ký tham gia nhận tư vấn trực tiếp **Để** tham gia giao dịch kết nối cung cầu tại triển lãm.
@@ -52,18 +52,22 @@
     7. Không gian làm việc (`/portal`, `/gov`, `/admin` theo RBAC)
   - Hỗ trợ menu Avatar tài khoản cá nhân khi đăng nhập (`/settings` và nút Đăng xuất).
 
-- **`REQ-HOME-002` [Dynamic Metrics & Portal Stats API]**:
-  - Backend cung cấp endpoint `GET /api/v1/portal/stats` tổng hợp:
-    - `totalOffers`: Tổng số công nghệ chào bán đã duyệt (`technology_offers`).
-    - `totalDemands`: Tổng số nhu cầu bài toán công nghệ (`demand_surveys`).
-    - `totalEnterprises`: Tổng số doanh nghiệp ĐMST trong kho CSDL (`enterprises`).
-    - `totalExperts`: Tổng số chuyên gia KH&CN đã được cấp thẩm định (`expert_profiles`).
-    - `totalProvinces`: Số lượng tỉnh/thành có kết nối dữ liệu (mặc định 63).
-  - Tích hợp in-memory cache 5 phút để bảo đảm SLA phản hồi dưới 200ms.
+- **`REQ-HOME-002` [Dynamic Marketplace Metrics & Portal Stats API - Zero-Mock]**:
+  - Backend cung cấp endpoint `GET /api/v1/portal/stats` tổng hợp thời gian thực (in-memory cache 5 phút, SLA < 200ms):
+    - **4 Chỉ Số Marketplace Metrics Toàn Sàn**:
+      1. `totalOffers` (Chỉ số CUNG): Tổng số công nghệ chào bán thỏa mãn `Status == 'APPROVED'` và `IsPublic == true` trong `technology.seller_technology_offers` (hoặc `technology_assets`).
+      2. `totalDemands` (Chỉ số CẦU): Tổng số bài toán nhu cầu thỏa mãn `Status == 'PUBLISHED'` trong `demand.demand_surveys` (hoặc `demand_items`).
+      3. `totalConnections` (Chỉ số KẾT NỐI): Tổng số yêu cầu kết nối `Status IN ('ACCEPTED', 'COMPLETED')` cộng với số biên bản ghi nhớ `MOU` đã ký trong schema `brokerage`.
+      4. `totalEstimatedValue` (Chỉ số QUY MÔ GIAO DỊCH / NGÂN SÁCH): Tổng giá trị ước tính ngân sách bài toán công khai và giá trị các thương vụ Deal Room (định dạng Triệu VNĐ / Tỷ VNĐ).
+    - **Các chỉ số bổ trợ**:
+      - `totalEnterprises`: Tổng số doanh nghiệp ĐMST trong kho CSDL (`enterprises`).
+      - `totalExperts`: Tổng số chuyên gia KH&CN đã được cấp thẩm định (`expert_profiles`).
+      - `totalProvinces`: Số lượng tỉnh/thành thực tế có dữ liệu (`COUNT(DISTINCT province_code)`), **tuyệt đối cấm số cứng 34 hay 63**.
+  - Frontend bọc 4 thẻ chỉ số qua component chuẩn `<Async>` đủ 5 UX States (Loading skeleton, Empty 0, Error retry, Success, Updating). Cấm tuyệt đối fallback số tĩnh giả lập.
 
 - **`REQ-HOME-003` [Trang Chủ Hero Banner, 4-Tab Quick Search & Sector Chips]**:
   - Thanh tìm kiếm 4 Tab: Chào bán (`seller`), Nhu cầu (`buyer`), Chuyên gia (`expert`), Phiên chào giá (`auction`).
-  - Nạp động 10 Lĩnh vực chuẩn `LV` (`LV01`–`LV17`) từ API `GET /api/v1/sectors` kết nối `policy.taxonomy_terms`.
+  - Nạp động 10 Lĩnh vực chuẩn TT17 (`LV01`–`LV17`) từ API nguồn chân lý duy nhất (SSOT): `GET /api/v1/master-data/sectors?activeOnly=true`. Cấm dùng mảng tự chế 18 ngành hoặc mã khuyết.
   - Lưới hiển thị 3 công nghệ chào bán mới nhất và 3 nhu cầu nổi bật tải qua component chuẩn `<Async>` (5 UX States).
 
 - **`REQ-HOME-004` [Showcase Sự Kiện & Phiên Chào Giá Techmart]**:
@@ -245,4 +249,25 @@
 - **`SC-DELTA-02`**: Không có bất kỳ 2 thẻ nào có tiêu đề giống nhau xuất hiện trên Trang chủ trong mọi kịch bản dữ liệu.
 - **`SC-DELTA-03`**: Danh sách Cung - Cầu trên Trang chủ thể hiện ít nhất 3 lĩnh vực công nghệ khác nhau khi cơ sở dữ liệu có từ 3 lĩnh vực trở lên.
 - **`SC-DELTA-04`**: 100% hình ảnh hiển thị trên card công nghệ/nhu cầu đúng ngữ cảnh ngành nghề hoặc có ảnh chụp thực tế từ doanh nghiệp.
+
+---
+
+## Spec Delta v2: Chuẩn Hóa 4 Chỉ Số Marketplace Metrics & Triệt Tiêu 100% Mock Số Tĩnh (CR-2026-010)
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
+
+### 1. Bối cảnh & Mục tiêu
+- **Loại bỏ hoàn toàn số liệu tĩnh (Zero-Mock)**: Xóa bỏ hardcode `34` tỉnh trong `PortalOverviewService.cs`, cấm fallback chữ ảo `"1.200+"`, `"680+"` trên trang chủ.
+- **Bổ sung đủ 4 Marketplace Metrics**: Cung (`totalOffers`), Cầu (`totalDemands`), Kết nối (`totalConnections`), Quy mô giao dịch/ngân sách (`totalEstimatedValue`).
+- **Nguồn chân lý Taxonomy SSOT**: Dùng duy nhất `GET /api/v1/master-data/sectors?activeOnly=true` (10 ngành active TT17), dẹp bỏ các mảng 18 ngành tự chế.
+
+### 2. Yêu cầu Chức năng Delta (FR-DELTA-01 -> FR-DELTA-03)
+- **`FR-DELTA-01` [Marketplace Metrics API Contract]**: API `GET /api/v1/portal/stats` trả về đầy đủ 4 chỉ số chính kèm chỉ số bổ trợ (`totalEnterprises`, `totalExperts`, `totalProvinces` đếm động từ CSDL thật).
+- **`FR-DELTA-02` [Frontend `<Async>` 5 UX States]**: Trang chủ hiển thị 4 thẻ Marketplace Metrics nạp động từ `portalClient.getStats()` bọc qua component `<Async>`. Không bao giờ fallback số giả khi API lỗi.
+- **`FR-DELTA-03` [Taxonomy Dynamic Chips]**: Sector chips dưới thanh Hero Search nạp động từ hook taxonomy, ánh xạ đúng 10 mã `LV` chuẩn.
+
+### 3. Tiêu chí Đo Lường Hoàn Thành Delta (Success Criteria)
+- **`SC-DELTA-05`**: API `GET /api/v1/portal/stats` trả về số liệu khớp 100% với các truy vấn SQL trực tiếp trên PostgreSQL thật.
+- **`SC-DELTA-06`**: Khi ngắt kết nối mạng hoặc server 500, Trang chủ hiển thị Error State kèm nút Thử lại, không hiển thị bất kỳ số dummy nào.
+
 

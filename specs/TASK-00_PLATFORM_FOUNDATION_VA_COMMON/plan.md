@@ -512,3 +512,102 @@ export const lora = Lora({
 - **Zero Regression**: Không thay đổi route URL hay logic xác thực vai trò (`RoleGuard`).
 - **Clean Architecture**: Toàn bộ nhãn và section tuân thủ cấu trúc hiển thị của `NavItem`, không làm rò rỉ state ngoài component.
 
+---
+
+## Kế Hoạch Triển Khai Delta v10 (Architecture & UI Mapping): Tinh Gọn Onboarding & Bàn Làm Việc Thành Viên Đại Chúng (PUBLIC_USER)
+
+### 1. Bối Cảnh & Kiến Trúc Phân Tách Component Frontend
+
+Theo phê duyệt của PO (`PO-DEC-20261030-01` / CR-2026-006), Thành viên Đại chúng (`PUBLIC_USER`) được định vị là **"Bên Mua tiềm năng (Buyer-leaning explorer)"**. Kiến trúc giao diện cần tách biệt hoàn toàn không gian khám phá cá nhân với không gian tác nghiệp pháp nhân có điều kiện (Bên Mua/Bên Bán/Chuyên gia/Doanh nghiệp ĐMST).
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                   PUBLIC USER WORKSPACE & ONBOARDING ARCHITECTURE           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  [1. Onboarding Form]                 [2. Navigation Tree]              [3. Dashboard /portal]
+src/app/(auth)/register/page.tsx     src/app/portal/layout.tsx         src/app/portal/page.tsx
+┌──────────────────────────────┐     ┌───────────────────────────┐     ┌────────────────────────────────┐
+│  - Họ và Tên đệm (lastName)  │     │ 1. Bàn làm việc (/portal) │     │ Khối 1: Quick Action Banner    │
+│  - Tên (firstName)           │     │ 2. Quan tâm (/saved)      │     │  - Lời chào cá nhân hóa        │
+│  - Email (RFC 5322)          │     │ 3. Radar AI (/radar) [Mới]│     │  - Lối tắt: Sàn & Nâng Hạng    │
+│  - Số điện thoại (VN mobile) │     │ 4. Nâng hạng (/upgrade)   │     ├────────────────────────────────┤
+│  - Mật khẩu & Xác nhận       │     │ 5. Cài đặt (/settings)    │     │ Khối 2: 3-Card Explorer Grid   │
+│  - Checkbox PDPD (NĐ13/2023) │     └───────────────────────────┘     │  - Thẻ 1: Khám phá Sàn CN      │
+│  [X] GỠ BỎ ORGANIZATION     │                   │                   │  - Thẻ 2: Bài toán ĐMST        │
+└──────────────┬───────────────┘                   │                   │  - Thẻ 3: Radar Ghép Nối AI    │
+               │                                   │                   ├────────────────────────────────┤
+               ▼                                   ▼                   │ Khối 3: Upgrade CTA Banner     │
+        Register Thành công                 Sidebar 5 mục              │  - 4 Lộ trình nâng hạng        │
+    (Tự động role: PUBLIC_USER)        (Zero Legal Entity Modules)     │  - Nút chuyển hướng /upgrade   │
+               │                                                       └────────────────────────────────┘
+               └───────────────────────> Chuyển hướng /portal
+```
+
+#### Chi tiết tái cấu trúc các Component:
+1. **Form Đăng Ký (`src/app/(auth)/register/page.tsx`)**:
+   - Loại bỏ thuộc tính `organization` trong `initialFormData`, interface state, JSX rendering, và client-side payload validation.
+   - Giữ nguyên vẹn cơ chế kiểm tra tính hợp lệ của họ tên, email chuẩn RFC, mật khẩu phức hợp (chữ hoa, chữ thường, số, ký tự đặc biệt) và checkbox tuân thủ Nghị định 13/2023/NĐ-CP (`acceptPdpd`).
+   - Đảm bảo endpoint API đăng ký tiếp nhận payload gọn nhẹ, tự động kích hoạt tài khoản `PUBLIC_USER` với phạm vi mặc định `scopeType = GLOBAL`.
+
+2. **Sidebar Navigation (`src/app/portal/layout.tsx`)**:
+   - Chuẩn hóa mảng `publicNavItems` gồm đúng 5 phần tử:
+     ```typescript
+     const publicNavItems: NavItem[] = [
+       { href: "/portal", label: "Bàn làm việc", icon: LayoutDashboard },
+       { href: "/portal/saved", label: "Nhu cầu & Sản phẩm quan tâm", icon: ShoppingBag },
+       { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles, badge: "Mới", badgeType: "new" },
+       { href: "/profile/upgrade", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
+       { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
+     ];
+     ```
+   - Cách ly tuyệt đối: Không còn hiển thị các route của Bên Bán (`/portal/seller/technologies`), Đánh giá TT17 (`/assessments/tt17`), hay Hồ sơ Doanh nghiệp (`/portal/enterprise/profile`) trong sidebar của `PUBLIC_USER`.
+
+3. **Dashboard Thành Viên Đại Chúng (`src/app/portal/page.tsx`)**:
+   - Tái cấu trúc component `GeneralPortalDashboard`:
+     + **Khối 1 (Quick Action Hero Banner)**: Lời chào mừng `Xin chào, {user?.fullName || "Quý Thành Viên"}!`, huy hiệu định vị `"Thành viên Khám phá / Bên Mua tiềm năng"`, đoạn giới thiệu truyền cảm hứng và các nút hành động nhanh trỏ về `/san-pham` và `/profile/upgrade`.
+     + **Khối 2 (3-Card Explorer Grid)**: Thay thế hoàn toàn 4 thẻ pháp nhân cũ (`generalModules`) bằng 3 thẻ khám phá hướng mua sắm & công nghệ:
+       * *Thẻ 1*: "Khám phá Sàn Công nghệ" (`/san-pham`) - Icon `Cpu`, dải TRL 1–9, thiết bị, sáng chế đã kiểm định.
+       * *Thẻ 2*: "Bài toán Đổi mới Công nghệ" (`/nhu-cau-cong-nghe` hoặc `/portal/buyer/demands`) - Icon `ShoppingBag`, cơ hội hợp tác R&D mở từ thị trường.
+       * *Thẻ 3*: "Radar Ghép Nối AI" (`/portal/matching/radar`) - Icon `Sparkles`, huy hiệu `"Mới"`, đề xuất cung - cầu thông minh.
+     + **Khối 3 (Upgrade CTA Banner)**: Khối truyền thông nổi bật về 4 lộ trình nâng hạng (Bên Mua, Bên Bán, Chuyên gia KH&CN, Doanh nghiệp ĐMST) với nút CTA dẫn trực tiếp đến `/profile/upgrade`.
+
+---
+
+### 2. Phân Tích Tính Độc Lập & Cam Kết Zero Impact (Zero Impact Analysis)
+
+Tuân thủ nghiêm ngặt nguyên tắc Clean Architecture và quy tắc nghiệp vụ `BR-DELTA-V10-01`:
+
+1. **Zero Database & EF Core Impact**:
+   - Không thay đổi bảng CSDL PostgreSQL, không bổ sung migration, không chỉnh sửa entity hay value object trong `SourceCode/backend/`.
+   - Thuộc tính `Organization` trong bảng `Users` (hoặc profile) vẫn giữ nguyên schema (đã là nullable trong DB). Việc frontend gỡ bỏ trường nhập liệu không ảnh hưởng đến bất kỳ constraint hay foreign key nào.
+
+2. **Zero MediatR & API Contract Impact**:
+   - Endpoint `POST /api/v1/auth/register` (hoặc command handler tương đương) tiếp nhận DTO với trường `Organization` tùy chọn (`null` hoặc rỗng).
+   - Không làm breaking contract đối với bất kỳ client SDK hay Zalo Mini App nào.
+
+3. **Zero Cross-Role Impact (Bảo toàn 100% không gian tác nghiệp các vai trò khác)**:
+   - **`BUYER`**: Giữ nguyên vẹn 100% cấu trúc 3 section (`buyerNavItems`) và component `<BuyerDashboard />` (Delta v13/v14).
+   - **`SELLER`**: Giữ nguyên vẹn 100% 7 mục chuyên biệt (`sellerNavItems`) và component `<SellerDashboard />` (Delta v12).
+   - **`EXPERT`**: Giữ nguyên vẹn 100% 6 mục chuyên biệt (`expertNavItems`) và component `<ExpertDashboard />` (Delta v8/v10).
+   - **`ADMIN` & `GOV`**: Giữ nguyên vẹn 100% Cổng Công vụ 7 màn hình (`PROVINCE_OFFICER`, `PROVINCE_LEADER`) và Cổng Quản trị Super Admin.
+
+---
+
+### 3. Thiết Kế 5 Trạng Thái UX (5 UX States) & Interactive Controls Cho 3 Khối Dashboard
+
+Áp dụng chuẩn component `<Async>` và quy chuẩn Design System NacenTech cho bàn làm việc `GeneralPortalDashboard`:
+
+| Trạng Thái UX | Hành Vi & Phản Ứng Giao Diện | Quy Chuẩn Kỹ Thuật (Implementation Details) |
+| :--- | :--- | :--- |
+| **1. Loading State** | Shimmer animation dạng Skeleton cho cả 3 khối: Banner chào mừng, Lưới 3 thẻ khám phá, và Banner CTA Nâng hạng. | Sử dụng `<div className="animate-pulse bg-slate-200 dark:bg-slate-800 ...">` giữ đúng kích thước khung hình, chống giật layout (CLS = 0). |
+| **2. Empty State** | Khi người dùng chưa lưu nhu cầu/công nghệ nào hoặc chưa có tương tác trước đó. | Hiển thị thông điệp gợi ý thân thiện: *"Bạn chưa có danh mục theo dõi. Hãy bắt đầu khám phá Sàn Công nghệ hoặc tìm kiếm Bài toán ĐMST bên dưới."* |
+| **3. Error State** | Khi xảy ra lỗi nạp phiên đăng nhập hoặc đứt kết nối mạng. | Khung cảnh báo lỗi mềm kèm nút `"Tải lại trang"` (`window.location.reload()`) và đường dẫn an toàn quay về trang chủ công khai `/`. |
+| **4. Success State** | Hiển thị hoàn chỉnh và sắc nét cả 3 khối chức năng với dữ liệu người dùng cá nhân hóa. | Các thẻ có hiệu ứng hover nâng card, border highlight `brand-600`, focus ring rõ ràng, typography chuẩn Design System. |
+| **5. Updating / Partial State** | Trạng thái chuyển đổi khi người dùng bấm nút CTA Nâng hạng hoặc click các thẻ điều hướng. | Hiệu ứng chuyển động mượt mà qua Next.js Link / App Router, không gây đơ giao diện hay màn hình trắng. |
+
+#### Quy chuẩn Interactive Controls & Accessibility:
+- **100% Controls Tương Tác Sống**: Toàn bộ nút CTA (`AppButton`, `Link`) và thẻ liên kết có sự kiện click, `href` hợp lệ trỏ tới đúng route chức năng (`/san-pham`, `/nhu-cau-cong-nghe`, `/portal/matching/radar`, `/profile/upgrade`, `/settings`).
+- **Touch Target & A11y**: Đảm bảo chiều cao tối thiểu `min-h-[44px]` (hoặc `min-h-11`) cho mọi tương tác chạm trên thiết bị di động, đường viền focus rõ ràng (`focus-ring`), tuân thủ chuẩn WCAG 2.1 AA.
+
+
