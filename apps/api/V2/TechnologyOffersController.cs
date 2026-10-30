@@ -549,10 +549,42 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
     public async Task<IActionResult> GetSellerOffers(
         [FromQuery] string? search,
         [FromQuery] string? status,
+        [FromQuery] string? trl,
+        [FromQuery] string? enterpriseTaxCode,
         [FromQuery] int page = 1,
         [FromQuery] int limit = 10,
         CancellationToken ct = default)
     {
+        // Xác định phạm vi doanh nghiệp của Seller (Scoped RBAC)
+        var resolvedTaxCodes = new List<string>();
+        if (!string.IsNullOrWhiteSpace(enterpriseTaxCode))
+        {
+            resolvedTaxCodes.Add(enterpriseTaxCode.Trim());
+        }
+        else if (Actor.IsAuthenticated)
+        {
+            if (Actor.PersonId.HasValue)
+            {
+                var taxCodes = await db.Set<NacenTech.Modules.Enterprise.Domain.Enterprise>()
+                    .AsNoTracking()
+                    .Where(e => e.OwnerPersonId == Actor.PersonId.Value || (Actor.Email != null && e.ContactEmail == Actor.Email))
+                    .Select(e => e.TaxCode)
+                    .Where(t => !string.IsNullOrEmpty(t))
+                    .ToListAsync(ct);
+                resolvedTaxCodes.AddRange(taxCodes!);
+            }
+            else if (!string.IsNullOrWhiteSpace(Actor.Email))
+            {
+                var taxCodes = await db.Set<NacenTech.Modules.Enterprise.Domain.Enterprise>()
+                    .AsNoTracking()
+                    .Where(e => e.ContactEmail == Actor.Email)
+                    .Select(e => e.TaxCode)
+                    .Where(t => !string.IsNullOrEmpty(t))
+                    .ToListAsync(ct);
+                resolvedTaxCodes.AddRange(taxCodes!);
+            }
+        }
+
         var dbQuery = db.Set<SellerTechnologyOffer>()
             .Include(x => x.SpecValues)
             .Include(x => x.Documents)
@@ -560,6 +592,20 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
         if (await dbQuery.AnyAsync(ct))
         {
+            // Nếu có MST liên kết hoặc user là Seller: bắt buộc scope theo dữ liệu của đơn vị đó
+            if (resolvedTaxCodes.Count > 0)
+            {
+                var lowerCodes = resolvedTaxCodes.Select(t => t.ToLowerInvariant()).ToList();
+                dbQuery = dbQuery.Where(x =>
+                    (x.EnterpriseTaxCode != null && lowerCodes.Contains(x.EnterpriseTaxCode.ToLower())) ||
+                    (Actor.PersonId.HasValue && x.CreatedBy.HasValue && x.CreatedBy == Actor.PersonId)
+                );
+            }
+            else if (Actor.IsAuthenticated && Actor.PlatformRole == "SELLER" && Actor.PersonId.HasValue)
+            {
+                dbQuery = dbQuery.Where(x => x.CreatedBy.HasValue && x.CreatedBy == Actor.PersonId);
+            }
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var s = search.Trim().ToLower();
@@ -572,21 +618,34 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 dbQuery = dbQuery.Where(x => x.Status.ToLower() == st);
             }
 
-            var total = await dbQuery.CountAsync(ct);
-            var entities = await dbQuery.OrderByDescending(x => x.CreatedAt)
-                                        .Skip((page - 1) * limit)
-                                        .Take(limit)
-                                        .ToListAsync(ct);
+            if (!string.IsNullOrWhiteSpace(trl) && trl != "ALL")
+            {
+                if (trl == "TRL_1_3") dbQuery = dbQuery.Where(x => x.TrlLevel >= 1 && x.TrlLevel <= 3);
+                else if (trl == "TRL_4_6") dbQuery = dbQuery.Where(x => x.TrlLevel >= 4 && x.TrlLevel <= 6);
+                else if (trl == "TRL_7_9") dbQuery = dbQuery.Where(x => x.TrlLevel >= 7 && x.TrlLevel <= 9);
+            }
 
-            var all = await db.Set<SellerTechnologyOffer>().AsNoTracking().ToListAsync(ct);
+            // Tính KPI trên TOÀN BỘ tập dữ liệu scoped của đơn vị này
+            var allScoped = await dbQuery.ToListAsync(ct);
             var kpi = new
             {
-                totalOffers = all.Count,
-                publishedOffers = all.Count(x => x.Status == "APPROVED"),
-                pendingOffers = all.Count(x => x.Status == "PENDING"),
-                draftOffers = all.Count(x => x.Status == "DRAFT"),
-                successfulConnections = all.Sum(x => x.SuccessfulConnections)
+                totalOffers = allScoped.Count,
+                publishedOffers = allScoped.Count(x => x.Status == "APPROVED"),
+                pendingOffers = allScoped.Count(x => x.Status == "PENDING"),
+                draftOffers = allScoped.Count(x => x.Status == "DRAFT"),
+                successfulConnections = allScoped.Sum(x => x.SuccessfulConnections)
             };
+
+            var total = allScoped.Count;
+            var pageSize = limit <= 0 ? 10 : limit;
+            var totalPages = (int)Math.Ceiling((double)total / pageSize);
+            if (totalPages == 0) totalPages = 1;
+
+            var entities = allScoped
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             return Ok(new
             {
@@ -594,12 +653,19 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 kpi,
                 total,
                 page,
-                limit,
+                limit = pageSize,
+                totalPages,
                 data = entities.Select(ToDto).ToList()
             });
         }
 
         var query = OffersStore.Values.AsEnumerable();
+
+        if (resolvedTaxCodes.Count > 0)
+        {
+            var lowerCodes = resolvedTaxCodes.Select(t => t.ToLowerInvariant()).ToList();
+            query = query.Where(x => x.EnterpriseTaxCode != null && lowerCodes.Contains(x.EnterpriseTaxCode.ToLowerInvariant()));
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -612,19 +678,31 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             query = query.Where(x => x.Status.Equals(status, StringComparison.OrdinalIgnoreCase));
         }
 
-        var totalFallback = query.Count();
-        var dataFallback = query.OrderByDescending(x => x.CreatedAt)
-                                .Skip((page - 1) * limit)
-                                .Take(limit)
+        if (!string.IsNullOrWhiteSpace(trl) && trl != "ALL")
+        {
+            if (trl == "TRL_1_3") query = query.Where(x => x.TrlLevel >= 1 && x.TrlLevel <= 3);
+            else if (trl == "TRL_4_6") query = query.Where(x => x.TrlLevel >= 4 && x.TrlLevel <= 6);
+            else if (trl == "TRL_7_9") query = query.Where(x => x.TrlLevel >= 7 && x.TrlLevel <= 9);
+        }
+
+        var allList = query.ToList();
+        var totalFallback = allList.Count;
+        var pageSizeFallback = limit <= 0 ? 10 : limit;
+        var totalPagesFallback = (int)Math.Ceiling((double)totalFallback / pageSizeFallback);
+        if (totalPagesFallback == 0) totalPagesFallback = 1;
+
+        var dataFallback = allList.OrderByDescending(x => x.CreatedAt)
+                                .Skip((page - 1) * pageSizeFallback)
+                                .Take(pageSizeFallback)
                                 .ToList();
 
         var kpiFallback = new
         {
-            totalOffers = OffersStore.Count,
-            publishedOffers = OffersStore.Values.Count(x => x.Status == "APPROVED"),
-            pendingOffers = OffersStore.Values.Count(x => x.Status == "PENDING"),
-            draftOffers = OffersStore.Values.Count(x => x.Status == "DRAFT"),
-            successfulConnections = OffersStore.Values.Sum(x => x.SuccessfulConnections)
+            totalOffers = allList.Count,
+            publishedOffers = allList.Count(x => x.Status == "APPROVED"),
+            pendingOffers = allList.Count(x => x.Status == "PENDING"),
+            draftOffers = allList.Count(x => x.Status == "DRAFT"),
+            successfulConnections = allList.Sum(x => x.SuccessfulConnections)
         };
 
         return Ok(new
@@ -633,7 +711,8 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             kpi = kpiFallback,
             total = totalFallback,
             page,
-            limit,
+            limit = pageSizeFallback,
+            totalPages = totalPagesFallback,
             data = dataFallback
         });
     }

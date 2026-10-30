@@ -133,25 +133,25 @@ public class EfEnterpriseRepository : IEnterpriseRepository
         {
             var sc = query.SectorCode.Trim().ToUpper();
             if (sc == "LV01")
-                qry = qry.Where(x => x.SectorCode == "LV01" || x.MainSectorName.ToLower().Contains("cơ khí") || x.MainSectorName.ToLower().Contains("chế tạo") || x.MainSectorName.ToLower().Contains("chế biến"));
+                qry = qry.Where(x => x.SectorCode == "LV01" || x.MainSectorName.ToLower().Contains("nông nghiệp"));
             else if (sc == "LV05")
-                qry = qry.Where(x => x.SectorCode == "LV05" || x.MainSectorName.ToLower().Contains("nông nghiệp"));
+                qry = qry.Where(x => x.SectorCode == "LV05" || x.MainSectorName.ToLower().Contains("thực phẩm") || x.MainSectorName.ToLower().Contains("đồ uống"));
             else if (sc == "LV07")
-                qry = qry.Where(x => x.SectorCode == "LV07" || x.MainSectorName.ToLower().Contains("dược") || x.MainSectorName.ToLower().Contains("y sinh"));
+                qry = qry.Where(x => x.SectorCode == "LV07" || x.MainSectorName.ToLower().Contains("cơ khí") || x.MainSectorName.ToLower().Contains("chế tạo") || x.MainSectorName.ToLower().Contains("công nghiệp hỗ trợ"));
             else if (sc == "LV08")
-                qry = qry.Where(x => x.SectorCode == "LV08" || x.MainSectorName.ToLower().Contains("thông tin") || x.MainSectorName.ToLower().Contains("chuyển đổi số"));
+                qry = qry.Where(x => x.SectorCode == "LV08" || x.MainSectorName.ToLower().Contains("điện") || x.MainSectorName.ToLower().Contains("điện tử") || x.MainSectorName.ToLower().Contains("tự động hóa"));
             else if (sc == "LV11")
-                qry = qry.Where(x => x.SectorCode == "LV11" || x.MainSectorName.ToLower().Contains("vật liệu") || x.MainSectorName.ToLower().Contains("hóa chất"));
+                qry = qry.Where(x => x.SectorCode == "LV11" || x.MainSectorName.ToLower().Contains("môi trường") || x.MainSectorName.ToLower().Contains("nước") || x.MainSectorName.ToLower().Contains("chất thải"));
             else if (sc == "LV12")
-                qry = qry.Where(x => x.SectorCode == "LV12" || x.MainSectorName.ToLower().Contains("năng lượng") || x.MainSectorName.ToLower().Contains("môi trường"));
+                qry = qry.Where(x => x.SectorCode == "LV12" || x.MainSectorName.ToLower().Contains("xây dựng") || x.MainSectorName.ToLower().Contains("vật liệu") || x.MainSectorName.ToLower().Contains("hạ tầng"));
             else if (sc == "LV14")
-                qry = qry.Where(x => x.SectorCode == "LV14" || x.MainSectorName.ToLower().Contains("điện tử") || x.MainSectorName.ToLower().Contains("viễn thông"));
+                qry = qry.Where(x => x.SectorCode == "LV14" || x.MainSectorName.ToLower().Contains("logistics") || x.MainSectorName.ToLower().Contains("vận tải") || x.MainSectorName.ToLower().Contains("kho bãi"));
             else if (sc == "LV15")
-                qry = qry.Where(x => x.SectorCode == "LV15" || x.MainSectorName.ToLower().Contains("thực phẩm") || x.MainSectorName.ToLower().Contains("đồ uống"));
+                qry = qry.Where(x => x.SectorCode == "LV15" || x.MainSectorName.ToLower().Contains("du lịch") || x.MainSectorName.ToLower().Contains("khách sạn") || x.MainSectorName.ToLower().Contains("nhà hàng"));
             else if (sc == "LV16")
-                qry = qry.Where(x => x.SectorCode == "LV16" || x.MainSectorName.ToLower().Contains("dệt may") || x.MainSectorName.ToLower().Contains("da giày"));
+                qry = qry.Where(x => x.SectorCode == "LV16" || x.MainSectorName.ToLower().Contains("cntt") || x.MainSectorName.ToLower().Contains("viễn thông") || x.MainSectorName.ToLower().Contains("chuyển đổi số") || x.MainSectorName.ToLower().Contains("công nghệ thông tin"));
             else if (sc == "LV17")
-                qry = qry.Where(x => x.SectorCode == "LV17" || x.MainSectorName.ToLower().Contains("logistics") || x.MainSectorName.ToLower().Contains("chuỗi cung ứng"));
+                qry = qry.Where(x => x.SectorCode == "LV17" || x.MainSectorName.ToLower().Contains("khoa học") || x.MainSectorName.ToLower().Contains("công nghệ") || x.MainSectorName.ToLower().Contains("đổi mới sáng tạo"));
             else
                 qry = qry.Where(x => x.SectorCode == sc || x.MainSectorName.ToLower().Contains(sc.ToLower()));
         }

@@ -25,12 +25,104 @@ public record CreateConnectionRequest(
     string SenderRole, // BUYER | SELLER | BROKER
     string ReceiverOrgName,
     string Message,
-    string? ProposedBudgetRange
+    string? ProposedBudgetRange,
+    Guid? BuyerOrganizationId = null,
+    Guid? SellerOrganizationId = null,
+    Guid? TargetOfferId = null
 );
 
 public record RespondConnectionRequest(
     string Action, // ACCEPT | REJECT
-    string? Note
+    string? Note = null,
+    string? RejectionReason = null
+);
+
+// DTO chi tiết công nghệ mục tiêu
+public sealed record TargetOfferSummaryDto(
+    Guid OfferId,
+    string OfferCode,
+    string OfferTitle,
+    int TrlLevel,
+    string TrlStage,        // Lab (TRL 1-3) | Pilot (TRL 4-6) | Commercial (TRL 7-9)
+    string IpStatus,        // PATENTED | PENDING | TRADE_SECRET | NONE
+    string? SectorCode,
+    string? SectorName,
+    decimal? PriceMillionVnd
+);
+
+// DTO chi tiết hồ sơ doanh nghiệp bên mua
+public sealed record BuyerEnterpriseProfileDto(
+    Guid? EnterpriseId,
+    Guid BuyerOrganizationId,
+    string CompanyName,
+    string? TaxCode,
+    string? Industry,
+    string? ProvinceCode,
+    string? ProvinceName,
+    string? Address,
+    string? ScaleCategory,   // MICRO | SMALL | MEDIUM | LARGE
+    int? EmployeeCountRange
+);
+
+// DTO thông tin liên hệ được quản lý PDPD
+public sealed record PdpdContactInfoDto(
+    string ContactPersonName,
+    string PhoneNumber,      // Masked "09****1234" nếu PENDING/REJECTED; Thật nếu ACCEPTED
+    string Email,            // Masked "a***@domain.com" nếu PENDING/REJECTED; Thật nếu ACCEPTED
+    string? IdentityNumber,  // "[Được bảo vệ theo NĐ 13/2023/NĐ-CP]" nếu PENDING; Thật nếu ACCEPTED
+    bool IsMasked,
+    string PdpdNotice
+);
+
+// DTO Danh Sách Yêu Cầu Kết Nối Nâng Cao (Enriched List DTO)
+public sealed record ConnectionRequestEnrichedDto(
+    Guid Id,
+    string RequestCode,
+    Guid SenderUserId,
+    Guid? BuyerOrganizationId,
+    string SenderOrgName,
+    string SenderRole,
+    Guid? ReceiverUserId,
+    Guid? SellerOrganizationId,
+    string ReceiverOrgName,
+    Guid? DemandId,
+    string? DemandCode,
+    string? DemandTitle,
+    Guid? TargetOfferId,
+    string? OfferCode,
+    string? OfferTitle,
+    int? OfferTrlLevel,
+    string? OfferIpStatus,
+    string? SenderTaxCode,
+    string? SenderIndustry,
+    string? SenderProvince,
+    string Message,
+    string? ProposedBudgetRange,
+    string Status,           // PENDING | ACCEPTED | REJECTED | EXPIRED
+    string? RejectionReason,
+    DateTime? SlaDeadline,
+    bool IsSlaWarning,       // true nếu PENDING và thời gian còn lại < 12h hoặc đã quá 48h
+    DateTime? RespondedAt,
+    DateTime CreatedAt
+);
+
+// DTO Chi Tiết Toàn Vẹn Yêu Cầu Kết Nối (Detail Modal DTO)
+public sealed record ConnectionRequestDetailDto(
+    Guid Id,
+    string RequestCode,
+    string Status,           // PENDING | ACCEPTED | REJECTED
+    string? RejectionReason,
+    string Message,
+    string? ProposedBudgetRange,
+    DateTime CreatedAt,
+    DateTime? RespondedAt,
+    DateTime? SlaDeadline,
+    bool IsSlaWarning,
+    Guid? CreatedOpportunityId,
+    string? CreatedOpportunityCode,
+    TargetOfferSummaryDto? TargetOffer,
+    BuyerEnterpriseProfileDto BuyerProfile,
+    PdpdContactInfoDto ContactInfo
 );
 
 public record UpdateOpportunityStageRequest(
@@ -166,6 +258,9 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
     [AllowAnonymous]
     public async Task<IActionResult> GetConnectionRequests(
         [FromQuery] string? status,
+        [FromQuery] string? scope,
+        [FromQuery] string? organizationName,
+        [FromQuery] string? search,
         CancellationToken ct)
     {
         var conn = db.Database.GetDbConnection();
@@ -173,48 +268,215 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
 
         using var cmd = conn.CreateCommand();
         var sql = @"
-            SELECT id, request_code, sender_user_id, sender_org_name, sender_role,
-                   receiver_user_id, receiver_org_name, demand_id, offer_id,
-                   message, proposed_budget_range, status, response_note, responded_at, created_at
-            FROM brokerage.connection_requests";
+            SELECT cr.id, cr.request_code, cr.sender_user_id, cr.buyer_organization_id, cr.sender_org_name, cr.sender_role,
+                   cr.receiver_user_id, cr.seller_organization_id, cr.receiver_org_name,
+                   cr.demand_id,
+                   COALESCE(cr.target_offer_id, cr.offer_id) AS target_offer_id,
+                   o.offer_code, o.title AS offer_title, o.trl_level AS offer_trl_level, o.ip_status AS offer_ip_status,
+                   ent.tax_code AS sender_tax_code, ent.main_sector_name AS sender_industry, ent.province_city AS sender_province,
+                   cr.message, cr.proposed_budget_range, cr.status, cr.rejection_reason, cr.sla_deadline,
+                   cr.responded_at, cr.created_at
+            FROM brokerage.connection_requests cr
+            LEFT JOIN technology.seller_technology_offers o ON o.id = COALESCE(cr.target_offer_id, cr.offer_id)
+            LEFT JOIN enterprise.enterprises ent ON ent.id = cr.buyer_organization_id OR ent.name = cr.sender_org_name OR ent.legal_name = cr.sender_org_name
+            WHERE 1=1";
 
-        if (!string.IsNullOrWhiteSpace(status))
+        if (!string.IsNullOrWhiteSpace(status) && !string.Equals(status, "ALL", StringComparison.OrdinalIgnoreCase))
         {
-            sql += " WHERE status = @status";
+            sql += " AND UPPER(cr.status) = @status";
             var p = cmd.CreateParameter();
             p.ParameterName = "@status";
-            p.Value = status.ToUpper();
+            p.Value = status.Trim().ToUpperInvariant();
             cmd.Parameters.Add(p);
         }
 
-        sql += " ORDER BY created_at DESC";
+        if (string.Equals(scope, "my", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(organizationName))
+        {
+            var orgFilter = organizationName?.Trim();
+            if (!string.IsNullOrWhiteSpace(orgFilter))
+            {
+                sql += " AND (cr.receiver_org_name ILIKE @orgFilter OR cr.sender_org_name ILIKE @orgFilter)";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@orgFilter";
+                p.Value = $"%{orgFilter}%";
+                cmd.Parameters.Add(p);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            sql += " AND (cr.request_code ILIKE @search OR cr.sender_org_name ILIKE @search OR cr.receiver_org_name ILIKE @search OR o.title ILIKE @search)";
+            var p = cmd.CreateParameter();
+            p.ParameterName = "@search";
+            p.Value = $"%{search.Trim()}%";
+            cmd.Parameters.Add(p);
+        }
+
+        sql += " ORDER BY cr.created_at DESC";
         cmd.CommandText = sql;
 
         var list = new List<object>();
         using var reader = await cmd.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
         {
+            var isSlaWarning = false;
+            DateTime? slaDeadline = null;
+            if (!reader.IsDBNull(22))
+            {
+                slaDeadline = reader.GetDateTime(22);
+                if (reader.GetString(20).ToUpperInvariant() == "PENDING")
+                {
+                    isSlaWarning = slaDeadline.Value <= DateTime.UtcNow.AddHours(12);
+                }
+            }
+
             list.Add(new
             {
                 id = reader.GetGuid(0),
                 requestCode = reader.GetString(1),
                 senderUserId = reader.GetGuid(2),
-                senderOrgName = reader.GetString(3),
-                senderRole = reader.GetString(4),
-                receiverUserId = reader.IsDBNull(5) ? (Guid?)null : reader.GetGuid(5),
-                receiverOrgName = reader.GetString(6),
-                demandId = reader.IsDBNull(7) ? (Guid?)null : reader.GetGuid(7),
-                offerId = reader.IsDBNull(8) ? (Guid?)null : reader.GetGuid(8),
-                message = reader.GetString(9),
-                proposedBudgetRange = reader.IsDBNull(10) ? null : reader.GetString(10),
-                status = reader.GetString(11),
-                responseNote = reader.IsDBNull(12) ? null : reader.GetString(12),
-                respondedAt = reader.IsDBNull(13) ? (DateTime?)null : reader.GetDateTime(13),
-                createdAt = reader.GetDateTime(14)
+                buyerOrganizationId = reader.IsDBNull(3) ? (Guid?)null : reader.GetGuid(3),
+                senderOrgName = reader.GetString(4),
+                senderRole = reader.GetString(5),
+                receiverUserId = reader.IsDBNull(6) ? (Guid?)null : reader.GetGuid(6),
+                sellerOrganizationId = reader.IsDBNull(7) ? (Guid?)null : reader.GetGuid(7),
+                receiverOrgName = reader.GetString(8),
+                demandId = reader.IsDBNull(9) ? (Guid?)null : reader.GetGuid(9),
+                targetOfferId = reader.IsDBNull(10) ? (Guid?)null : reader.GetGuid(10),
+                offerId = reader.IsDBNull(10) ? (Guid?)null : reader.GetGuid(10),
+                offerCode = reader.IsDBNull(11) ? null : reader.GetString(11),
+                offerTitle = reader.IsDBNull(12) ? null : reader.GetString(12),
+                offerTrlLevel = reader.IsDBNull(13) ? (int?)null : reader.GetInt32(13),
+                offerIpStatus = reader.IsDBNull(14) ? null : reader.GetString(14),
+                senderTaxCode = reader.IsDBNull(15) ? null : reader.GetString(15),
+                senderIndustry = reader.IsDBNull(16) ? null : reader.GetString(16),
+                senderProvince = reader.IsDBNull(17) ? null : reader.GetString(17),
+                message = reader.GetString(18),
+                proposedBudgetRange = reader.IsDBNull(19) ? null : reader.GetString(19),
+                status = reader.GetString(20),
+                rejectionReason = reader.IsDBNull(21) ? null : reader.GetString(21),
+                slaDeadline,
+                isSlaWarning,
+                respondedAt = reader.IsDBNull(23) ? (DateTime?)null : reader.GetDateTime(23),
+                createdAt = reader.GetDateTime(24)
             });
         }
 
         return Ok(Ok200(list));
+    }
+
+    [HttpGet("brokerage/requests/{id:guid}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetConnectionRequestById(
+        Guid id,
+        CancellationToken ct)
+    {
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT cr.id, cr.request_code, cr.status, cr.rejection_reason, cr.message, cr.proposed_budget_range,
+                   cr.created_at, cr.responded_at, cr.sla_deadline,
+                   COALESCE(cr.target_offer_id, cr.offer_id) AS target_offer_id,
+                   o.offer_code, o.title AS offer_title, o.trl_level AS offer_trl_level, o.ip_status AS offer_ip_status,
+                   o.sector_code, o.sector_name, o.price_amount,
+                   cr.buyer_organization_id, cr.sender_org_name,
+                   ent.id AS enterprise_id, ent.tax_code, ent.main_sector_name, ent.province_city,
+                   ent.address_detail, ent.workforce_scale, ent.contact_person, ent.contact_phone, ent.contact_email,
+                   opp.id AS created_opp_id, opp.opportunity_code AS created_opp_code
+            FROM brokerage.connection_requests cr
+            LEFT JOIN technology.seller_technology_offers o ON o.id = COALESCE(cr.target_offer_id, cr.offer_id)
+            LEFT JOIN enterprise.enterprises ent ON ent.id = cr.buyer_organization_id OR ent.name = cr.sender_org_name OR ent.legal_name = cr.sender_org_name
+            LEFT JOIN brokerage.opportunities opp ON opp.connection_request_id = cr.id
+            WHERE cr.id = @id";
+
+        var p = cmd.CreateParameter();
+        p.ParameterName = "@id";
+        p.Value = id;
+        cmd.Parameters.Add(p);
+
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct))
+        {
+            return NotFound(new { message = "Không tìm thấy yêu cầu kết nối." });
+        }
+
+        var status = reader.GetString(2);
+        var isAccepted = string.Equals(status, "ACCEPTED", StringComparison.OrdinalIgnoreCase);
+
+        TargetOfferSummaryDto? targetOffer = null;
+        if (!reader.IsDBNull(9))
+        {
+            var offerId = reader.GetGuid(9);
+            var offerCode = reader.IsDBNull(10) ? "" : reader.GetString(10);
+            var offerTitle = reader.IsDBNull(11) ? "" : reader.GetString(11);
+            var trlLevel = reader.IsDBNull(12) ? 1 : reader.GetInt32(12);
+            var trlStage = trlLevel >= 7 ? "Commercial" : trlLevel >= 4 ? "Pilot" : "Lab";
+            var ipStatus = reader.IsDBNull(13) ? "NONE" : reader.GetString(13);
+            var sectorCode = reader.IsDBNull(14) ? null : reader.GetString(14);
+            var sectorName = reader.IsDBNull(15) ? null : reader.GetString(15);
+            var priceMillionVnd = reader.IsDBNull(16) ? (decimal?)null : reader.GetDecimal(16);
+
+            targetOffer = new TargetOfferSummaryDto(
+                offerId, offerCode, offerTitle, trlLevel, trlStage, ipStatus, sectorCode, sectorName, priceMillionVnd
+            );
+        }
+
+        var enterpriseId = reader.IsDBNull(19) ? (Guid?)null : reader.GetGuid(19);
+        var buyerOrgId = reader.IsDBNull(17) ? (enterpriseId ?? Guid.Empty) : reader.GetGuid(17);
+        var companyName = reader.GetString(18);
+        var taxCode = reader.IsDBNull(20) ? null : reader.GetString(20);
+        var industry = reader.IsDBNull(21) ? null : reader.GetString(21);
+        var provinceCity = reader.IsDBNull(22) ? null : reader.GetString(22);
+        var address = reader.IsDBNull(23) ? null : reader.GetString(23);
+        var workforce = reader.IsDBNull(24) ? null : reader.GetString(24);
+
+        var buyerProfile = new BuyerEnterpriseProfileDto(
+            enterpriseId, buyerOrgId, companyName, taxCode, industry, null, provinceCity, address, workforce, null
+        );
+
+        var rawContactPerson = reader.IsDBNull(25) ? "Người đại diện kết nối" : reader.GetString(25);
+        var rawPhone = reader.IsDBNull(26) ? "0901234567" : reader.GetString(26);
+        var rawEmail = reader.IsDBNull(27) ? "buyer@company.vn" : reader.GetString(27);
+
+        var contactInfo = new PdpdContactInfoDto(
+            rawContactPerson,
+            isAccepted ? rawPhone : MaskPhone(rawPhone),
+            isAccepted ? rawEmail : MaskEmail(rawEmail),
+            isAccepted ? null : "[Được bảo vệ theo NĐ 13/2023/NĐ-CP]",
+            !isAccepted,
+            isAccepted
+                ? "Thông tin liên hệ đã được mở khóa do yêu cầu kết nối đã được chấp thuận."
+                : "Số điện thoại và Email được bảo vệ theo Nghị định 13/2023/NĐ-CP (PDPD) cho đến khi Bên Bán chấp thuận kết nối."
+        );
+
+        DateTime? slaDeadline = reader.IsDBNull(8) ? (DateTime?)null : reader.GetDateTime(8);
+        var isSlaWarning = false;
+        if (slaDeadline.HasValue && status.ToUpperInvariant() == "PENDING")
+        {
+            isSlaWarning = slaDeadline.Value <= DateTime.UtcNow.AddHours(12);
+        }
+
+        var detailDto = new ConnectionRequestDetailDto(
+            Id: reader.GetGuid(0),
+            RequestCode: reader.GetString(1),
+            Status: status,
+            RejectionReason: reader.IsDBNull(3) ? null : reader.GetString(3),
+            Message: reader.GetString(4),
+            ProposedBudgetRange: reader.IsDBNull(5) ? null : reader.GetString(5),
+            CreatedAt: reader.GetDateTime(6),
+            RespondedAt: reader.IsDBNull(7) ? (DateTime?)null : reader.GetDateTime(7),
+            SlaDeadline: slaDeadline,
+            IsSlaWarning: isSlaWarning,
+            CreatedOpportunityId: reader.IsDBNull(28) ? (Guid?)null : reader.GetGuid(28),
+            CreatedOpportunityCode: reader.IsDBNull(29) ? null : reader.GetString(29),
+            TargetOffer: targetOffer,
+            BuyerProfile: buyerProfile,
+            ContactInfo: contactInfo
+        );
+
+        return Ok(Ok200(detailDto));
     }
 
     [HttpPost("brokerage/requests")]
@@ -298,6 +560,11 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         if (action != "ACCEPT" && action != "REJECT")
             return BadRequest(new { message = "Hành động chỉ nhận ACCEPT hoặc REJECT" });
 
+        if (action == "REJECT" && !string.IsNullOrWhiteSpace(req.RejectionReason) && req.RejectionReason.Trim().Length < 10)
+        {
+            return BadRequest(new { message = "Lý do từ chối phải có ít nhất 10 ký tự để hỗ trợ đối tác cải thiện đề xuất." });
+        }
+
         var newStatus = action == "ACCEPT" ? "ACCEPTED" : "REJECTED";
 
         var conn = db.Database.GetDbConnection();
@@ -306,7 +573,10 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             UPDATE brokerage.connection_requests
-            SET status = @status, response_note = @note, responded_at = now()
+            SET status = @status,
+                response_note = @note,
+                rejection_reason = @rejectionReason,
+                responded_at = now()
             WHERE id = @id
             RETURNING id, request_code, sender_org_name, receiver_org_name, demand_id, offer_id, status;";
 
@@ -324,6 +594,11 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         pNote.ParameterName = "@note";
         pNote.Value = (object?)req.Note ?? DBNull.Value;
         cmd.Parameters.Add(pNote);
+
+        var pReason = cmd.CreateParameter();
+        pReason.ParameterName = "@rejectionReason";
+        pReason.Value = (object?)req.RejectionReason ?? DBNull.Value;
+        cmd.Parameters.Add(pReason);
 
         string? requestCode = null;
         string? senderOrg = null;
@@ -403,6 +678,8 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
     public async Task<IActionResult> GetOpportunities(
         [FromQuery] string? stage,
         [FromQuery] string? search,
+        [FromQuery] string? scope,
+        [FromQuery] string? organizationName,
         CancellationToken ct)
     {
         var conn = db.Database.GetDbConnection();
@@ -425,6 +702,19 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
             p.ParameterName = "@stage";
             p.Value = stage.ToUpper();
             cmd.Parameters.Add(p);
+        }
+
+        if (string.Equals(scope, "my", StringComparison.OrdinalIgnoreCase) || !string.IsNullOrWhiteSpace(organizationName))
+        {
+            var orgFilter = organizationName?.Trim();
+            if (!string.IsNullOrWhiteSpace(orgFilter))
+            {
+                sql += " AND (seller_org_name ILIKE @orgFilter OR buyer_org_name ILIKE @orgFilter)";
+                var p = cmd.CreateParameter();
+                p.ParameterName = "@orgFilter";
+                p.Value = $"%{orgFilter}%";
+                cmd.Parameters.Add(p);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(search))

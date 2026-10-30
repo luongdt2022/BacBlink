@@ -33,7 +33,9 @@ public sealed record PortalOverviewStatsDto(
     int TotalEnterprises,
     int TotalExperts,
     int TotalProvinces,
-    DateTimeOffset UpdatedAt
+    DateTimeOffset UpdatedAt,
+    long TotalSuccessfulConnections = 0,
+    decimal TotalEstimatedValueMillionVnd = 0m
 );
 
 public sealed record TechmartEventDto(

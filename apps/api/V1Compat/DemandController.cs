@@ -285,11 +285,24 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
     }
 
     [HttpPut("buyer/demands/{id}")]
-    [AllowAnonymous]
     public async Task<IActionResult> UpdateDemandItem(Guid id, [FromBody] UpdateDemandItemRequest req, CancellationToken ct)
     {
+        if (!Actor.IsAuthenticated || Actor.PersonId == null)
+        {
+            return Unauthorized(new { message = "Yêu cầu đăng nhập để thực hiện thao tác này." });
+        }
+
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
+
+        if (Actor.PlatformRole != PlatformRoles.Admin &&
+            Actor.PlatformRole != PlatformRoles.SuperAdmin &&
+            Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
+            Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
+            item.CreatedBy != Actor.PersonId)
+        {
+            return StatusCode(403, new { message = "Không có quyền thao tác trên bài toán của người khác." });
+        }
 
         if (item.Status != DemandItemStatuses.Pending && item.Status != DemandItemStatuses.Draft)
         {
@@ -351,11 +364,24 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
     }
 
     [HttpPost("buyer/demands/{id}/close")]
-    [AllowAnonymous]
     public async Task<IActionResult> CloseDemandItem(Guid id, CancellationToken ct)
     {
+        if (!Actor.IsAuthenticated || Actor.PersonId == null)
+        {
+            return Unauthorized(new { message = "Yêu cầu đăng nhập để thực hiện thao tác này." });
+        }
+
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
+
+        if (Actor.PlatformRole != PlatformRoles.Admin &&
+            Actor.PlatformRole != PlatformRoles.SuperAdmin &&
+            Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
+            Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
+            item.CreatedBy != Actor.PersonId)
+        {
+            return StatusCode(403, new { message = "Không có quyền thao tác trên bài toán của người khác." });
+        }
 
         item.Close();
         await uow.CommitAsync(ct);
