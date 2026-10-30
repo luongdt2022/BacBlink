@@ -308,7 +308,7 @@ function ExpertUpgradeForm() {
             setUxState("empty");
           } else if (data.status === "APPROVED") {
             setUxState("success");
-          } else if (data.status === "PENDING_APPROVAL") {
+          } else if (data.status === "PENDING_APPROVAL" || data.status === "PENDING_REVIEW") {
             setUxState("success");
           } else if (data.status === "CHANGES_REQUESTED") {
             setUxState("partial");

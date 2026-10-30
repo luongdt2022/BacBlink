@@ -109,6 +109,8 @@ function parseItem(raw: unknown): ApprovalItem {
     DEMAND: "DEMAND",
     TECH_DEMAND: "DEMAND",
     ACCOUNT: "ACCOUNT",
+    ENTERPRISE: "ACCOUNT",
+    ENTERPRISE_VERIFICATION: "ACCOUNT",
     FACILITY: "FACILITY",
     INSTITUTION: "FACILITY",
     INNOVATION_ENTITY: "FACILITY",
@@ -135,11 +137,13 @@ function parseItem(raw: unknown): ApprovalItem {
   const user = item.user as { firstName?: string; lastName?: string; email?: string; organization?: string } | undefined;
   const submitterName =
     String(item.submitterName || "") ||
+    str("enterprise_name") ||
     str("fullname") ||
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     "Chưa có tên chủ thể";
 
   const titleOrOrg =
+    (str("tax_code") ? `MST: ${str("tax_code")}` : "") ||
     str("organizationname") ||
     user?.organization ||
     str("technologytitle") ||

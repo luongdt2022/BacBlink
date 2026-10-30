@@ -202,7 +202,7 @@ function GovDashboardContent() {
 
     try {
       let mapped: GovApprovalItem[] = [];
-      const res = await fetch(`/api/v1/approvals?scopeType=PROVINCE&scopeId=${scopeId}`, {
+      const res = await fetch(`/api/v1/governance/approvals?scopeType=PROVINCE&scopeId=${scopeId}`, {
         headers: authClient.getAuthHeaders(),
       });
       if (res.ok) {
@@ -424,7 +424,7 @@ function GovDashboardContent() {
           reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ công nghệ hợp lệ, Sở KH&CN phê duyệt cấp cơ sở." : "Cần bổ sung hồ sơ.")
         );
       } else {
-        const res = await fetch(`/api/v1/approvals/${selectedItem.id}/review`, {
+        const res = await fetch(`/api/v1/governance/approvals/${selectedItem.id}/review`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
