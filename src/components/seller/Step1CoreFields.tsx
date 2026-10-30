@@ -170,10 +170,10 @@ export function Step1CoreFields({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-            Ngành công nghiệp (18 nhóm ngành TT17) <span className="text-rose-600">*</span>
+            Ngành công nghiệp (10 Lĩnh Vực TT17) <span className="text-rose-600">*</span>
           </label>
           <SearchableCombobox
-            ariaLabel="Ngành công nghiệp (18 nhóm ngành TT17)"
+            ariaLabel="Ngành công nghiệp (10 Lĩnh Vực TT17)"
             placeholder="Tìm và chọn ngành..."
             searchPlaceholder="Tìm ngành công nghiệp..."
             options={sectorOptions}

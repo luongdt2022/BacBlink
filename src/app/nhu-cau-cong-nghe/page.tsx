@@ -29,6 +29,7 @@ import { getTniClassification } from "@/components/demand/TniRealtimeCalculator"
 import { useToast } from "@/components/common/toast";
 import { authClient, ROLES } from "@/lib/auth-client";
 import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
+import { portalClient, PortalOverviewStats } from "@/lib/portal-client";
 import { SECTORS_18_CATALOG } from "@/services/api/technology-offer";
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 
@@ -57,6 +58,10 @@ export default function PublicDemandsPage() {
   const [publicDemands, setPublicDemands] = useState<PublicDemandItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 9; // Lưới 3 cột x 3 hàng
+  const [statsState, setStatsState] = useState<AsyncState>("loading");
+  const [statsData, setStatsData] = useState<PortalOverviewStats | null>(null);
+  const [statsVersion, setStatsVersion] = useState(0);
+
   const [sectors, setSectors] = useState<SectorOption[]>(
     SECTORS_18_CATALOG.filter((s) => s.code !== "ALL")
   );
@@ -98,6 +103,27 @@ export default function PublicDemandsPage() {
     fetchBookmarkedIds();
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    setStatsState("loading");
+    portalClient
+      .getStats()
+      .then((data) => {
+        if (!cancelled) {
+          setStatsData(data);
+          setStatsState("success");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setStatsState("error");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [statsVersion]);
+
   // Load 10 Lĩnh vực TT17 từ API Master Data
   useEffect(() => {
     getActiveSectors()
@@ -107,8 +133,8 @@ export default function PublicDemandsPage() {
         }
       })
       .catch(() => {
-        // Fallback an toàn với SECTORS_18_CATALOG
-        setSectors(SECTORS_18_CATALOG.filter((s) => s.code !== "ALL"));
+        // Fallback danh mục rỗng nếu API lỗi, chờ retry
+        setSectors([]);
       });
   }, []);
 
@@ -206,29 +232,37 @@ export default function PublicDemandsPage() {
     }
   };
 
-  // Xử lý bảo vệ phân quyền khi bấm "Đăng Nhanh Bài Toán"
+  // Xử lý bảo vệ phân quyền khi bấm "Đăng Nhanh Bài Toán" (CR-TASK-03-DELTA-01: T-03.DEL-01 & T-03.DEL-02)
   const handleOpenQuickDemand = () => {
     const user = authClient.getUser();
     if (!user) {
       toast.info(
-        "Quý đơn vị vui lòng đăng nhập tài khoản Doanh nghiệp (Buyer) để đăng bài toán, hoặc điền Phiếu Khảo Sát DNNVV mở.",
+        "Quý khách vui lòng đăng nhập hoặc đăng ký tài khoản thành viên công chúng miễn phí để đăng bài toán kỹ thuật, hoặc điền Phiếu Khảo Sát DNNVV mở.",
         "Yêu Cầu Xác Thực"
       );
       return;
     }
 
     const role = (user.role || "").toUpperCase();
-    if (
-      role === ROLES.BUYER ||
-      role === ROLES.SELLER ||
-      role === ROLES.INNOVATION_ENTITY ||
-      role === ROLES.ADMIN ||
-      role === ROLES.SUPER_ADMIN
-    ) {
+    const allowedRoles: string[] = [
+      ROLES.PUBLIC_USER,
+      ROLES.USER,
+      ROLES.BUYER,
+      ROLES.SELLER,
+      ROLES.INNOVATION_ENTITY,
+      ROLES.VERIFIED_EXPERT,
+      ROLES.EXPERT,
+      ROLES.ADMIN,
+      ROLES.SUPER_ADMIN,
+      ROLES.OPERATOR_ADMIN,
+      ROLES.PROVINCIAL_ADMIN,
+    ];
+
+    if (allowedRoles.includes(role)) {
       setIsModalOpen(true);
     } else {
       toast.warning(
-        `Tài khoản của bạn đang có vai trò [${user.role}]. Chỉ Doanh nghiệp (Bên Mua, Bên Bán hoặc Doanh nghiệp ĐMST) mới có quyền đăng bài toán kỹ thuật.`,
+        `Tài khoản của bạn đang có vai trò [${user.role}]. Vui lòng sử dụng tài khoản phù hợp để đăng bài toán kỹ thuật.`,
         "Chưa Đủ Thẩm Quyền"
       );
     }
@@ -330,26 +364,71 @@ export default function PublicDemandsPage() {
             </div>
           </div>
 
-          {/* Cột phải: 3 Khối Quick Metrics từ Basic Design Wireframe */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white/10 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/20 shrink-0 text-center shadow-lg">
-            <div className="px-1 sm:px-2">
-              <div className="text-xl sm:text-2xl font-black text-amber-300">142</div>
-              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                Bài Toán Đang Tìm
+          {/* Cột phải: 3 Khối Quick Metrics Động có chuẩn hóa 5 UX States qua <Async> */}
+          <div className="shrink-0">
+            <Async
+              state={statsState}
+              loadingSkeleton={
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white/10 p-3 sm:p-4 rounded-2xl border border-white/20 text-center animate-pulse">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="px-2">
+                      <div className="h-7 w-16 bg-white/20 rounded mx-auto mb-1" />
+                      <div className="h-3 w-20 bg-white/20 rounded mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              }
+              errorContent={
+                <div className="bg-white/10 p-3 sm:p-4 rounded-2xl border border-white/20 text-center text-white">
+                  <p className="text-xs text-rose-200">Không thể tải số liệu thống kê.</p>
+                  <button
+                    type="button"
+                    onClick={() => setStatsVersion((v) => v + 1)}
+                    className="mt-1 text-xs font-bold underline hover:text-white cursor-pointer"
+                  >
+                    Tải lại số liệu
+                  </button>
+                </div>
+              }
+            >
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white/10 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/20 text-center shadow-lg">
+                <div className="px-1 sm:px-2">
+                  <div className="text-xl sm:text-2xl font-black text-amber-300">
+                    {statsData?.totalDemands !== undefined
+                      ? statsData.totalDemands.toLocaleString("vi-VN")
+                      : (publicDemands.length > 0 ? publicDemands.length.toLocaleString("vi-VN") : "0")}
+                  </div>
+                  <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                    Bài Toán Đang Tìm
+                  </div>
+                </div>
+                <div className="border-x border-white/20 px-2 sm:px-3">
+                  <div className="text-xl sm:text-2xl font-black text-emerald-300">
+                    {(() => {
+                      const val = statsData?.totalEstimatedValueMillionVnd;
+                      if (!val || val === 0) return "0 VNĐ";
+                      if (val >= 1000) {
+                        return `${(val / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ`;
+                      }
+                      return `${val.toLocaleString("vi-VN", { maximumFractionDigits: 0 })} Triệu`;
+                    })()}
+                  </div>
+                  <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                    Tổng Ngân Sách Mua
+                  </div>
+                </div>
+                <div className="px-1 sm:px-2">
+                  <div className="text-xl sm:text-2xl font-black text-teal-300">
+                    {statsData?.totalSuccessfulConnections !== undefined
+                      ? statsData.totalSuccessfulConnections.toLocaleString("vi-VN")
+                      : "0"}
+                  </div>
+                  <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                    Kết Nối Sàn & MOU
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="border-x border-white/20 px-2 sm:px-3">
-              <div className="text-xl sm:text-2xl font-black text-emerald-300">68.5 tỷ</div>
-              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                Tổng Ngân Sách Mua
-              </div>
-            </div>
-            <div className="px-1 sm:px-2">
-              <div className="text-xl sm:text-2xl font-black text-teal-300">24 Giờ</div>
-              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                Sở KH&CN Kết Nối
-              </div>
-            </div>
+            </Async>
           </div>
         </div>
       </section>

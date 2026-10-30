@@ -57,6 +57,10 @@ function ProfileUpgradeHubContent() {
   const [sellerPledge, setSellerPledge] = useState(false);
   const [isSubmittingSeller, setIsSubmittingSeller] = useState(false);
 
+  // Existing Expert Upgrade Application State
+  const [expertApp, setExpertApp] = useState<any>(null);
+  const [loadingApp, setLoadingApp] = useState(true);
+
   useEffect(() => {
     const user = authClient.getUser();
     setSession(user);
@@ -67,6 +71,29 @@ function ProfileUpgradeHubContent() {
     } else if (actionParam === "seller") {
       setIsSellerModalOpen(true);
     }
+
+    // Tra cứu xem user đã có đơn nâng hạng Chuyên gia hay chưa
+    const fetchExpertApplication = async () => {
+      setLoadingApp(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/experts/my-profile`, {
+          headers: authClient.getAuthHeaders(),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const data = json.data ?? json;
+          if (data && (data.fullName || data.status)) {
+            setExpertApp(data);
+          }
+        }
+      } catch (err) {
+        console.error("Lỗi khi tra cứu hồ sơ nâng hạng:", err);
+      } finally {
+        setLoadingApp(false);
+      }
+    };
+
+    fetchExpertApplication();
   }, [actionParam]);
 
   // Tra cứu MST
@@ -176,7 +203,7 @@ function ProfileUpgradeHubContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full space-y-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* BREADCRUMB */}
@@ -228,6 +255,100 @@ function ProfileUpgradeHubContent() {
           </div>
         )}
 
+        {/* ACTIVE SUBMITTED APPLICATION BANNER */}
+        {expertApp && (
+          <div data-testid="submitted-application-banner" className="rounded-2xl border-2 border-brand-500 bg-white dark:bg-slate-900 p-6 shadow-lg shadow-brand-500/10 space-y-5 animate-in fade-in duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center font-bold">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Đơn Nâng Hạng Đang Xử Lý</span>
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                      {expertApp.expertCode || expertApp.id ? `MÃ: ${expertApp.expertCode || String(expertApp.id).slice(0, 8)}` : "HỒ SƠ KH&CN"}
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-0.5">
+                    Hồ Sơ Nâng Hạng Chuyên Gia KH&CN
+                  </h3>
+                </div>
+              </div>
+              {/* Status Badge */}
+              <div className="flex items-center gap-2">
+                {expertApp.status === "APPROVED" ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold dark:bg-emerald-950/60 dark:text-emerald-300">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Đã Phê Duyệt (VERIFIED_EXPERT)
+                  </span>
+                ) : expertApp.status === "CHANGES_REQUESTED" ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold dark:bg-rose-950/60 dark:text-rose-300">
+                    <AlertCircle className="w-4 h-4" />
+                    Hội Đồng Yêu Cầu Bổ Sung Hồ Sơ
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold dark:bg-amber-950/60 dark:text-amber-300">
+                    <Clock className="w-4 h-4" />
+                    Đang Chờ Hội Đồng Thẩm Định (SLA &le; 48h)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Summary Details Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                <span className="text-slate-500 font-medium">Họ và tên chuyên gia</span>
+                <p className="font-bold text-slate-900 dark:text-white text-sm">
+                  {expertApp.fullName}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                <span className="text-slate-500 font-medium">Học hàm / Học vị</span>
+                <p className="font-bold text-slate-900 dark:text-white text-sm">
+                  {expertApp.academicDegree || "Tiến sĩ (TS)"}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                <span className="text-slate-500 font-medium">Cơ quan công tác chính</span>
+                <p className="font-bold text-slate-900 dark:text-white text-sm truncate">
+                  {expertApp.primaryInstitution || "Viện / Trường / Doanh nghiệp"}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
+                <span className="text-slate-500 font-medium">Cơ quan thụ lý hồ sơ</span>
+                <p className="font-bold text-slate-900 dark:text-white text-sm">
+                  {expertApp.scopeId === "GLOBAL" || !expertApp.scopeId ? "NacenTech Trung Ương" : `Sở KH&CN (${expertApp.scopeId})`}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+              <p className="text-xs text-slate-500">
+                Bạn có thể cập nhật lại thông tin khoa học, công bố hoặc bằng sáng chế bất kỳ lúc nào trước khi có quyết định phê duyệt.
+              </p>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile/upgrade/expert"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Xem chi tiết hồ sơ</span>
+                </Link>
+                <Link
+                  href="/profile/upgrade/expert?edit=true"
+                  className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition shadow-md shadow-brand-500/20 flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Chỉnh sửa & Cập nhật đơn</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 4 UPGRADE ROUTE CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           
@@ -265,14 +386,32 @@ function ProfileUpgradeHubContent() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <Link
-                href="/profile/upgrade/expert"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition"
-              >
-                <span>Nâng hạng Chuyên gia (3 Bước)</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <div className="text-xs text-center text-slate-400 mt-2">Sở KH&CN thẩm định (SLA 48h)</div>
+              {expertApp ? (
+                <div className="space-y-2">
+                  <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900 text-[11px] text-amber-800 dark:text-amber-200 flex items-center gap-1.5 font-medium">
+                    <Clock className="w-3.5 h-3.5 shrink-0" />
+                    <span>Hồ sơ đã nộp ({expertApp.status === "APPROVED" ? "Đã duyệt" : expertApp.status === "CHANGES_REQUESTED" ? "Cần bổ sung" : "Đang chờ duyệt"})</span>
+                  </div>
+                  <Link
+                    href="/profile/upgrade/expert?edit=true"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition"
+                  >
+                    <span>Xem & Chỉnh sửa đơn đã nộp</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/profile/upgrade/expert"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition"
+                  >
+                    <span>Nâng hạng Chuyên gia (3 Bước)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <div className="text-xs text-center text-slate-400 mt-2">Sở KH&CN thẩm định (SLA 48h)</div>
+                </>
+              )}
             </div>
           </div>
 

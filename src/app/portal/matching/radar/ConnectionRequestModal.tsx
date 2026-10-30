@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Send, ShieldCheck, Lock, Sparkles, Building2, AlertCircle } from 'lucide-react';
+import { X, Send, ShieldCheck, Sparkles, Building2, AlertCircle } from 'lucide-react';
 import { MatchCandidate } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
+import { authClient } from '@/lib/auth-client';
 
 interface ConnectionRequestModalProps {
   isOpen: boolean;
@@ -18,12 +19,12 @@ export default function ConnectionRequestModal({
   onClose,
   onSuccess,
 }: ConnectionRequestModalProps) {
-  const [senderOrgName, setSenderOrgName] = useState('Công ty CP Nông Nghiệp Xanh Hà Nội');
-  const [senderRole, setSenderRole] = useState<'BUYER' | 'SELLER'>('BUYER');
-  const [proposedBudget, setProposedBudget] = useState('800 triệu - 1.2 tỷ VNĐ');
-  const [message, setMessage] = useState(
-    'Chúng tôi quan tâm sâu sắc tới công nghệ này và muốn kết nối để thảo luận thử nghiệm pilot trong quý tới.'
+  const [senderOrgName, setSenderOrgName] = useState(
+    () => authClient.getUser()?.organizationName || ''
   );
+  const [senderRole, setSenderRole] = useState<'BUYER' | 'SELLER'>('BUYER');
+  const [proposedBudget, setProposedBudget] = useState('');
+  const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,18 +32,31 @@ export default function ConnectionRequestModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError(null);
+
+    const trimmedOrgName = senderOrgName.trim();
+    if (trimmedOrgName.length < 3) {
+      setError('Tên tổ chức gửi yêu cầu phải có ít nhất 3 ký tự.');
+      return;
+    }
+
+    const trimmedMessage = message.trim();
+    if (trimmedMessage.length < 10) {
+      setError('Nội dung đề xuất hợp tác phải có ít nhất 10 ký tự.');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       const res = await brokerageApi.createConnectionRequest({
         demandId: candidate.demandId,
         offerId: candidate.offerId,
-        senderOrgName: senderOrgName.trim(),
+        senderOrgName: trimmedOrgName,
         senderRole,
         receiverOrgName:
           senderRole === 'BUYER' ? candidate.sellerOrganizationName : candidate.buyerOrganizationName,
-        message: message.trim(),
+        message: trimmedMessage,
         proposedBudgetRange: proposedBudget.trim(),
       });
       onSuccess(res);
@@ -131,13 +145,14 @@ export default function ConnectionRequestModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-caption font-medium text-text-secondary mb-1.5">
-                Tổ chức gửi yêu cầu
+                Tổ chức gửi yêu cầu <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={senderOrgName}
                 onChange={(e) => setSenderOrgName(e.target.value)}
+                placeholder="Nhập tên doanh nghiệp hoặc viện/trường..."
                 className="form-control w-full text-sm"
               />
             </div>
@@ -165,21 +180,21 @@ export default function ConnectionRequestModal({
               type="text"
               value={proposedBudget}
               onChange={(e) => setProposedBudget(e.target.value)}
-              placeholder="VD: 500 triệu - 1 tỷ VNĐ"
+              placeholder="Ví dụ: 500 triệu - 1 tỷ VNĐ hoặc Thỏa thuận"
               className="form-control w-full text-sm"
             />
           </div>
 
           <div>
             <label className="block text-caption font-medium text-text-secondary mb-1.5">
-              Nội dung đề xuất hợp tác / Câu hỏi ban đầu
+              Nội dung đề xuất hợp tác / Câu hỏi ban đầu <span className="text-rose-500">*</span>
             </label>
             <textarea
               required
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Mô tả mục tiêu thử nghiệm, bối cảnh bài toán và mong muốn phối hợp..."
+              placeholder="Mô tả mục tiêu kết nối, nhu cầu thử nghiệm hoặc đề xuất hợp tác..."
               className="w-full px-3.5 py-2.5 rounded-xl bg-surface-card border border-border text-text-primary text-caption focus:outline-none focus:ring-2 focus:ring-brand-primary resize-none"
             />
           </div>

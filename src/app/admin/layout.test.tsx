@@ -66,7 +66,7 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     expect(screen.getByRole("link", { name: /Phê duyệt Vượt cấp \/ Can thiệp/i })).toHaveAttribute("href", "/admin/approvals?tab=override");
     expect(screen.getByRole("link", { name: /Quản lý 10 Vai trò \(RBAC\)/i })).toHaveAttribute("href", "/admin/roles");
     expect(screen.getByRole("link", { name: /Cây Thư mục 34 Tỉnh\/Thành/i })).toHaveAttribute("href", "/admin/org-tree");
-    expect(screen.getByRole("link", { name: /Danh mục 18 Ngành TT17 & TRL/i })).toHaveAttribute("href", "/admin/sectors");
+    expect(screen.getByRole("link", { name: /Danh mục 10 Lĩnh Vực TT17 & TRL/i })).toHaveAttribute("href", "/admin/sectors");
     expect(screen.getByRole("link", { name: /Nhật ký Kiểm toán Toàn quốc/i })).toHaveAttribute("href", "/admin/audit-logs");
     expect(screen.getByRole("link", { name: /Cấu hình Tham số & SLA Hệ thống/i })).toHaveAttribute("href", "/admin/system-config");
   });

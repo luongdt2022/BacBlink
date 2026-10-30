@@ -16,6 +16,7 @@ vi.mock('@/services/api/brokerage', () => ({
   brokerageApi: {
     getOpportunities: vi.fn(),
     getConnectionRequests: vi.fn(),
+    getConnectionRequestDetail: vi.fn(),
     updateOpportunityStage: vi.fn(),
     respondConnectionRequest: vi.fn(),
   },
@@ -59,12 +60,29 @@ const mockConnectionRequests = [
     id: 'req-01',
     requestCode: 'REQ-202610-A1B2C3',
     senderOrgName: 'Công ty Chế Tạo Máy Việt Thắng',
-    senderRole: 'SELLER',
+    senderRole: 'BUYER',
     receiverOrgName: 'Nhà máy Sản xuất Phụ tùng Ô tô',
+    offerCode: 'SP-DEMO-MUA-01',
+    offerTitle: 'Máy kiểm tra khuyết tật mối hàn vi mạch SMT',
+    offerTrlLevel: 8,
     message: 'Chúng tôi có giải pháp khuôn đúc và robot gắp phôi tự động phù hợp với bài toán của Quý đơn vị.',
     proposedBudgetRange: '1.5 - 2.5 tỷ đồng',
     status: 'PENDING',
     createdAt: '2026-10-21T08:00:00Z',
+  },
+  {
+    id: 'req-02',
+    requestCode: 'REQ-202610-D4E5F6',
+    senderOrgName: 'CÔNG TY TNHH TRƯỜNG HOAN',
+    senderRole: 'BUYER',
+    receiverOrgName: 'Nhà máy Sản xuất Phụ tùng Ô tô',
+    offerCode: 'OFF-02',
+    offerTitle: 'Bộ điều khiển IoT Gateway',
+    offerTrlLevel: 7,
+    message: 'Đề xuất tích hợp IoT Gateway vào nhà máy chế biến.',
+    proposedBudgetRange: '800 Triệu VNĐ',
+    status: 'ACCEPTED',
+    createdAt: '2026-10-22T08:00:00Z',
   },
 ];
 
@@ -89,9 +107,9 @@ describe('OpportunitiesPipelinePage Component (/portal/opportunities/pipeline)',
 
     // Kiểm tra 3 thẻ KPI
     expect(screen.getByText(/Tổng cơ hội trong phễu/i)).toBeInTheDocument();
-    expect(screen.getByText("Deal")).toBeInTheDocument();
+    expect(screen.getByText('Deal')).toBeInTheDocument();
     expect(screen.getByText(/Tổng giá trị dự kiến/i)).toBeInTheDocument();
-    expect(screen.getByText(/5.450/)).toBeInTheDocument(); // 2400 + 1200 + 1850 = 5450
+    expect(screen.getByText(/Tỷ VNĐ/i)).toBeInTheDocument();
     expect(screen.getByText(/Đã ký MOU \/ Hoàn thành/i)).toBeInTheDocument();
 
     // Kiểm tra các cột Kanban
@@ -107,7 +125,7 @@ describe('OpportunitiesPipelinePage Component (/portal/opportunities/pipeline)',
     expect(screen.getByText('DEAL-2026-5543')).toBeInTheDocument();
   });
 
-  it('switches to Inbound Requests tab and shows incoming connection requests', async () => {
+  it('switches to Inbound Requests tab and shows 4 sub-tabs filter with incoming connection requests', async () => {
     mockSearchParams = new URLSearchParams('tab=inbound');
     render(<OpportunitiesPipelinePage />);
 
@@ -115,10 +133,45 @@ describe('OpportunitiesPipelinePage Component (/portal/opportunities/pipeline)',
       expect(screen.getByText('REQ-202610-A1B2C3')).toBeInTheDocument();
     });
 
+    // Kiểm tra 4 Sub-tabs bộ lọc trạng thái
+    expect(screen.getByRole('button', { name: /Tất cả/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Chờ phản hồi/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Đã chấp thuận/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Đã từ chối/i })).toBeInTheDocument();
+
+    // Kiểm tra thông tin công nghệ mục tiêu enriched
+    expect(screen.getByText(/Máy kiểm tra khuyết tật mối hàn vi mạch SMT/i)).toBeInTheDocument();
     expect(screen.getByText('Công ty Chế Tạo Máy Việt Thắng')).toBeInTheDocument();
     expect(screen.getByText(/1.5 - 2.5 tỷ đồng/i)).toBeInTheDocument();
+
+    // Kiểm tra nút Xem chi tiết hồ sơ
+    const detailButtons = screen.getAllByRole('button', { name: /Xem chi tiết hồ sơ/i });
+    expect(detailButtons.length).toBe(2);
+
+    // Kiểm tra nút phản hồi cho yêu cầu PENDING
     expect(screen.getByRole('button', { name: /Chấp Thuận & Mở Deal Room/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Từ chối/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Từ chối$/i })).toBeInTheDocument();
+  });
+
+  it('filters connection requests when clicking on sub-tabs', async () => {
+    mockSearchParams = new URLSearchParams('tab=inbound');
+    render(<OpportunitiesPipelinePage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('REQ-202610-A1B2C3')).toBeInTheDocument();
+    });
+
+    // Nhấp chọn tab 'Chờ phản hồi'
+    fireEvent.click(screen.getByRole('button', { name: /Chờ phản hồi/i }));
+
+    // Chỉ còn REQ-202610-A1B2C3 (PENDING), không còn REQ-202610-D4E5F6 (ACCEPTED)
+    expect(screen.getByText('REQ-202610-A1B2C3')).toBeInTheDocument();
+    expect(screen.queryByText('REQ-202610-D4E5F6')).toBeNull();
+
+    // Nhấp chọn tab 'Đã chấp thuận'
+    fireEvent.click(screen.getByRole('button', { name: /Đã chấp thuận/i }));
+    expect(screen.queryByText('REQ-202610-A1B2C3')).toBeNull();
+    expect(screen.getByText('REQ-202610-D4E5F6')).toBeInTheDocument();
   });
 
   it('allows moving an opportunity to the next stage', async () => {

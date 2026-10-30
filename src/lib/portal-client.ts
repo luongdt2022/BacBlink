@@ -7,6 +7,8 @@ export interface PortalOverviewStats {
   totalExperts: number;
   totalProvinces: number;
   updatedAt: string;
+  totalSuccessfulConnections?: number;
+  totalEstimatedValueMillionVnd?: number;
 }
 
 export interface TechmartEvent {

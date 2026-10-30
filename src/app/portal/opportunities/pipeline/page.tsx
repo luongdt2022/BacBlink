@@ -23,12 +23,18 @@ import {
   ExternalLink,
   Handshake,
   TrendingUp,
+  Eye,
+  Info,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Opportunity, ConnectionRequest } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
 import { useToast } from '@/components/common/toast';
+import { formatCurrencyMillionVnd } from '@/lib/currency';
+import { authClient } from '@/lib/auth-client';
+import ConnectionRequestDetailModal from './ConnectionRequestDetailModal';
 
 const KANBAN_STAGES = [
   {
@@ -88,6 +94,9 @@ export default function OpportunitiesPipelinePage() {
 
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [connectionRequests, setConnectionRequests] = useState<ConnectionRequest[]>([]);
+  const [inboundStatus, setInboundStatus] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'REJECTED'>('ALL');
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -98,9 +107,25 @@ export default function OpportunitiesPipelinePage() {
     setIsLoading(true);
     setError(null);
     try {
+      const currentUser = authClient.getUser();
+      const sellerOrg = currentUser?.organizationName;
+      const isPlatformAdmin =
+        currentUser?.role === 'ADMIN' ||
+        currentUser?.role === 'SUPER_ADMIN' ||
+        currentUser?.role === 'OPERATOR_ADMIN';
+
       const [opps, reqs] = await Promise.all([
-        brokerageApi.getOpportunities(undefined, search.trim() || undefined),
-        brokerageApi.getConnectionRequests(),
+        brokerageApi.getOpportunities(
+          undefined,
+          search.trim() || undefined,
+          isPlatformAdmin ? undefined : 'my',
+          isPlatformAdmin ? undefined : sellerOrg
+        ),
+        brokerageApi.getConnectionRequests({
+          search: search.trim() || undefined,
+          scope: isPlatformAdmin ? undefined : 'my',
+          organizationName: isPlatformAdmin ? undefined : sellerOrg,
+        }),
       ]);
       setOpportunities(opps);
       setConnectionRequests(reqs);
@@ -261,8 +286,7 @@ export default function OpportunitiesPipelinePage() {
               Tổng giá trị dự kiến
             </span>
             <div className="text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-0.5">
-              {totalValue.toLocaleString('vi-VN')}{' '}
-              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Triệu VNĐ</span>
+              {formatCurrencyMillionVnd(totalValue)}
             </div>
             <span className="text-caption text-emerald-700 dark:text-emerald-400 font-medium">
               Quy mô ngân sách chuyển giao
@@ -399,135 +423,238 @@ export default function OpportunitiesPipelinePage() {
       ) : activeTab === 'inbound' ? (
         /* TAB 2: YÊU CẦU KẾT NỐI NHẬN ĐƯỢC (INBOUND REQUESTS) */
         <div className="space-y-4">
-          {connectionRequests.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
-                <Inbox className="w-8 h-8" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Chưa có yêu cầu kết nối nào gửi đến bạn
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-                Khi các doanh nghiệp tìm thấy công nghệ của bạn hoặc gửi đề xuất cho bài toán của bạn, yêu cầu sẽ hiển thị ở đây để bạn phản hồi và mở Deal Room.
-              </p>
-              <div className="pt-2">
-                <Link
-                  href="/nhu-cau-cong-nghe"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 text-white text-xs font-bold hover:bg-brand-800 transition"
+          {/* Sub-tabs bộ lọc trạng thái */}
+          <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl w-full sm:w-auto">
+            {[
+              { key: 'ALL', label: 'Tất cả', count: connectionRequests.length },
+              {
+                key: 'PENDING',
+                label: 'Chờ phản hồi',
+                count: connectionRequests.filter((r) => r.status === 'PENDING').length,
+                badgeColor: 'bg-amber-500 text-white',
+              },
+              {
+                key: 'ACCEPTED',
+                label: 'Đã chấp thuận',
+                count: connectionRequests.filter((r) => r.status === 'ACCEPTED').length,
+                badgeColor: 'bg-emerald-600 text-white',
+              },
+              {
+                key: 'REJECTED',
+                label: 'Đã từ chối',
+                count: connectionRequests.filter((r) => r.status === 'REJECTED').length,
+                badgeColor: 'bg-slate-400 text-white',
+              },
+            ].map((subTab) => (
+              <button
+                key={subTab.key}
+                type="button"
+                onClick={() => setInboundStatus(subTab.key as any)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+                  inboundStatus === subTab.key
+                    ? 'bg-white dark:bg-slate-900 text-brand-700 dark:text-cyan-300 shadow-sm border border-slate-200 dark:border-slate-700'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>{subTab.label}</span>
+                <span
+                  className={`px-2 py-0.2 rounded-full text-caption font-black ${
+                    subTab.badgeColor || 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                  }`}
                 >
-                  <Search className="w-3.5 h-3.5" />
-                  Khám phá Sàn Nhu Cầu Đang Mở
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {connectionRequests.map((req) => {
-                const isPending = req.status === 'PENDING';
-                const isAccepted = req.status === 'ACCEPTED';
+                  {subTab.count}
+                </span>
+              </button>
+            ))}
+          </div>
 
-                return (
-                  <div
-                    key={req.id}
-                    className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition space-y-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black text-brand-700 dark:text-cyan-300 bg-brand-50 dark:bg-brand-950 px-2.5 py-1 rounded-lg border border-brand-200 dark:border-brand-800">
-                          {req.requestCode}
-                        </span>
-                        <span className="text-caption text-slate-400 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {new Date(req.createdAt).toLocaleDateString('vi-VN')}
-                        </span>
-                      </div>
+          {(() => {
+            const displayedRequests =
+              inboundStatus === 'ALL'
+                ? connectionRequests
+                : connectionRequests.filter((r) => r.status === inboundStatus);
 
-                      <div>
-                        {isPending ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                            Chờ phản hồi
-                          </span>
-                        ) : isAccepted ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Đã chấp thuận & Tạo Deal
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                            Đã từ chối
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      <div className="space-y-1.5">
-                        <div className="text-slate-500 font-medium">Bên gửi kết nối:</div>
-                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <Building2 className="w-4 h-4 text-brand-600 shrink-0" />
-                          <span>{req.senderOrgName}</span>
-                          <span className="text-caption px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-normal">
-                            {req.senderRole}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="text-slate-500 font-medium">Khoảng ngân sách đề xuất:</div>
-                        <div className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                          <DollarSign className="w-4 h-4 shrink-0" />
-                          <span>{req.proposedBudgetRange || 'Thỏa thuận trực tiếp'}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Message */}
-                    <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
-                      <span className="font-bold text-slate-500 block mb-1 uppercase tracking-wider text-caption">
-                        Nội dung trao đổi ban đầu:
-                      </span>
-                      <p className="leading-relaxed">{req.message}</p>
-                    </div>
-
-                    {/* Actions */}
-                    {isPending && (
-                      <div className="flex items-center justify-end gap-3 pt-2">
-                        <button
-                          type="button"
-                          disabled={processingRequestId === req.id}
-                          onClick={() => handleRespondRequest(req.id, 'REJECT')}
-                          className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-50"
-                        >
-                          Từ chối
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={processingRequestId === req.id}
-                          onClick={() => handleRespondRequest(req.id, 'ACCEPT')}
-                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-md transition disabled:opacity-50"
-                        >
-                          <Handshake className="w-4 h-4" />
-                          Chấp Thuận & Mở Deal Room
-                        </button>
-                      </div>
-                    )}
-
-                    {isAccepted && (
-                      <div className="flex items-center justify-end pt-2">
-                        <button
-                          type="button"
-                          onClick={() => handleTabChange('pipeline')}
-                          className="text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline flex items-center gap-1"
-                        >
-                          Xem Deal trong Kanban Pipeline &rarr;
-                        </button>
-                      </div>
-                    )}
+            if (displayedRequests.length === 0) {
+              return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                    <Inbox className="w-8 h-8" />
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {inboundStatus === 'ALL'
+                      ? 'Chưa có yêu cầu kết nối nào gửi đến bạn'
+                      : `Không có yêu cầu kết nối nào ở trạng thái "${
+                          inboundStatus === 'PENDING'
+                            ? 'Chờ phản hồi'
+                            : inboundStatus === 'ACCEPTED'
+                            ? 'Đã chấp thuận'
+                            : 'Đã từ chối'
+                        }"`}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Khi các doanh nghiệp tìm thấy công nghệ của bạn hoặc gửi đề xuất cho bài toán của bạn, yêu cầu sẽ hiển thị ở đây để bạn phản hồi và mở Deal Room.
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 gap-4">
+                {displayedRequests.map((req) => {
+                  const isPending = req.status === 'PENDING';
+                  const isAccepted = req.status === 'ACCEPTED';
+
+                  return (
+                    <div
+                      key={req.id}
+                      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition space-y-4"
+                    >
+                      {/* Request Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-black text-brand-700 dark:text-cyan-300 bg-brand-50 dark:bg-brand-950 px-2.5 py-1 rounded-lg border border-brand-200 dark:border-brand-800">
+                            {req.requestCode}
+                          </span>
+                          <span className="text-caption text-slate-400 flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            {new Date(req.createdAt).toLocaleDateString('vi-VN')}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {isPending ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              Chờ phản hồi
+                            </span>
+                          ) : isAccepted ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Đã chấp thuận & Tạo Deal
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                              Đã từ chối
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Công Nghệ Mục Tiêu (Enriched Target Offer) */}
+                      {req.offerTitle && (
+                        <div className="p-3 rounded-xl bg-brand-50/70 dark:bg-brand-950/40 border border-brand-200/70 dark:border-brand-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="space-y-0.5">
+                            <span className="text-caption font-bold text-brand-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5" /> Khách hàng quan tâm công nghệ:
+                            </span>
+                            <div className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-2">
+                              <span>{req.offerTitle}</span>
+                              {req.offerCode && (
+                                <span className="font-mono text-caption text-slate-500 font-bold">
+                                  ({req.offerCode})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {req.offerTrlLevel && (
+                            <span className="text-caption font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0 self-start sm:self-auto">
+                              TRL {req.offerTrlLevel}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Thông tin đối tác & Ngân sách */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div className="space-y-1.5">
+                          <div className="text-slate-500 font-medium">Bên gửi kết nối (Bên mua):</div>
+                          <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Building2 className="w-4 h-4 text-brand-600 shrink-0" />
+                            <span>{req.senderOrgName}</span>
+                            <span className="text-caption px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-normal">
+                              {req.senderRole}
+                            </span>
+                          </div>
+                          {(req.senderIndustry || req.senderProvince) && (
+                            <div className="text-caption text-slate-400 pl-5.5">
+                              {req.senderIndustry && <span>{req.senderIndustry}</span>}
+                              {req.senderIndustry && req.senderProvince && <span> • </span>}
+                              {req.senderProvince && <span>{req.senderProvince}</span>}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <div className="text-slate-500 font-medium">Khoảng ngân sách đề xuất:</div>
+                          <div className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                            <DollarSign className="w-4 h-4 shrink-0" />
+                            <span>{req.proposedBudgetRange || 'Thỏa thuận trực tiếp'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Message */}
+                      <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300">
+                        <span className="font-bold text-slate-500 block mb-1 uppercase tracking-wider text-caption">
+                          Nội dung trao đổi ban đầu:
+                        </span>
+                        <p className="leading-relaxed">{req.message}</p>
+                      </div>
+
+                      {/* Actions Toolbar */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                        {/* Nút Xem Chi Tiết luôn có mặt */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedRequestId(req.id);
+                            setIsDetailModalOpen(true);
+                          }}
+                          className="px-4 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/60 dark:hover:bg-brand-900/60 text-brand-700 dark:text-cyan-300 text-xs font-bold flex items-center gap-1.5 border border-brand-200 dark:border-brand-800 transition shadow-sm hover:scale-[1.02]"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>Xem chi tiết hồ sơ</span>
+                        </button>
+
+                        <div className="flex items-center gap-3">
+                          {isPending && (
+                            <>
+                              <button
+                                type="button"
+                                disabled={processingRequestId === req.id}
+                                onClick={() => handleRespondRequest(req.id, 'REJECT')}
+                                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-50"
+                              >
+                                Từ chối
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={processingRequestId === req.id}
+                                onClick={() => handleRespondRequest(req.id, 'ACCEPT')}
+                                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-md transition disabled:opacity-50"
+                              >
+                                <Handshake className="w-4 h-4" />
+                                Chấp Thuận & Mở Deal Room
+                              </button>
+                            </>
+                          )}
+
+                          {isAccepted && (
+                            <button
+                              type="button"
+                              onClick={() => handleTabChange('pipeline')}
+                              className="text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline flex items-center gap-1"
+                            >
+                              Xem Deal trong Kanban Pipeline &rarr;
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       ) : (
         /* TAB 1: KANBAN 5 COLUMNS BOARD */
@@ -583,7 +710,7 @@ export default function OpportunitiesPipelinePage() {
                           </span>
                           {opp.estimatedValueMillionVnd && (
                             <span className="text-caption font-extrabold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                              ~{opp.estimatedValueMillionVnd} Tr
+                              ~{formatCurrencyMillionVnd(opp.estimatedValueMillionVnd, { compact: true })}
                             </span>
                           )}
                         </div>
@@ -658,6 +785,19 @@ export default function OpportunitiesPipelinePage() {
           })}
         </div>
       )}
+
+      {/* 5. MODAL XEM CHI TIẾT YÊU CẦU KẾT NỐI (UI-CONN-REQ-DETAIL-001) */}
+      <ConnectionRequestDetailModal
+        isOpen={isDetailModalOpen}
+        requestId={selectedRequestId}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedRequestId(null);
+        }}
+        onResponded={async () => {
+          await fetchData();
+        }}
+      />
     </div>
   );
 }

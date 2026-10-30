@@ -143,7 +143,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByText("Kinh tế & Hợp đồng")).toBeInTheDocument();
     expect(screen.getByText("Hồ sơ & Quản trị")).toBeInTheDocument();
 
-    // 3. Khối 1: Tác nghiệp hàng ngày (4 items)
+    // 3. Khối 1: Tác nghiệp hàng ngày (5 items)
     expect(screen.getByText("Tổng quan Chuyên gia")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Tổng quan Chuyên gia/i })).toHaveAttribute("href", "/portal/expert/profile");
 
@@ -157,6 +157,9 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
 
     expect(screen.getByText("Dự án Đồng hành & Hợp tác")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Dự án Đồng hành & Hợp tác/i })).toHaveAttribute("href", "/portal/expert/projects");
+
+    expect(screen.getByText("Đơn hàng & Nhu cầu đặt mua")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Đơn hàng & Nhu cầu đặt mua/i })).toHaveAttribute("href", "/portal/buyer/demands");
 
     // 4. Khối 2: Kinh tế & Hợp đồng (1 item disabled)
     expect(screen.getByText("Hợp đồng & Thù lao")).toBeInTheDocument();
@@ -233,6 +236,29 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(consultationsLink.className).not.toContain("bg-brand-700");
   });
 
+  it("activates only orders-demands item on /portal/buyer/demands for VERIFIED_EXPERT (CR-2026-012 Delta v1.4)", () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u3",
+      email: "expert@example.com",
+      fullName: "PGS.TS Lê Chuyên Gia",
+      role: "VERIFIED_EXPERT",
+    });
+    mockPathname = "/portal/buyer/demands";
+
+    render(
+      <PortalLayout>
+        <div>Content</div>
+      </PortalLayout>
+    );
+
+    const ordersLink = screen.getByRole("link", { name: /Đơn hàng & Nhu cầu đặt mua/i });
+    const consultationsLink = screen.getByRole("link", { name: /Hộp Thư Tư Vấn & Kết Nối/i });
+
+    expect(ordersLink.className).toContain("bg-brand-700");
+    expect(ordersLink.className).toContain("text-white");
+    expect(consultationsLink.className).not.toContain("bg-brand-700");
+  });
+
   it("renders Innovation Entity grouped workspace menu for INNOVATION_ENTITY role", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u4",
@@ -256,7 +282,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByText("Tự Đánh giá TT17")).toBeInTheDocument();
   });
 
-  it("renders Public User onboarding workspace menu for PUBLIC_USER role", () => {
+  it("renders Public User onboarding workspace menu for PUBLIC_USER role (Delta v10: 5 items & zero legal entity modules)", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u5",
       email: "public@guest.com",
@@ -270,10 +296,26 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
       </PortalLayout>
     );
 
+    // 1. Header & Badge
     expect(screen.getByText("Thành Viên Đại Chúng")).toBeInTheDocument();
-    expect(screen.getByText("Bàn Làm Việc Cá Nhân")).toBeInTheDocument();
-    expect(screen.getByText("Radar Khám Phá AI")).toBeInTheDocument();
-    expect(screen.getByText("Đăng ký Nâng hạng Vai trò")).toBeInTheDocument();
+    expect(screen.getByText("Không Gian Thành Viên")).toBeInTheDocument();
+
+    // 2. 5 Nav Items
+    expect(screen.getByRole("link", { name: /^Trang tổng quan$/i })).toHaveAttribute("href", "/portal");
+    expect(screen.getByRole("link", { name: /Nhu cầu công nghệ|Đơn hàng & Yêu cầu mua/i })).toHaveAttribute("href", "/portal/buyer/demands");
+    const radarLink = screen.getByRole("link", { name: /Radar Ghép Nối AI/i });
+    expect(radarLink).toBeInTheDocument();
+    expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
+    expect(screen.getByText("Mới")).toBeInTheDocument();
+
+    expect(screen.getByRole("link", { name: /Đăng ký Nâng hạng Vai trò/i })).toHaveAttribute("href", "/profile/upgrade");
+    expect(screen.getByRole("link", { name: /Cài đặt Tài khoản/i })).toHaveAttribute("href", "/settings");
+
+    // 3. Zero legal entity modules
+    expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Đánh giá Năng lực TT17")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hồ sơ Doanh nghiệp")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tiến trình Chuyển giao & MOU")).not.toBeInTheDocument();
     expect(screen.queryByText("Pipeline Cơ Hội (Kanban)")).not.toBeInTheDocument();
   });
 

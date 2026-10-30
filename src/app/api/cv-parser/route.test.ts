@@ -18,5 +18,13 @@ describe("CV Parser dynamic taxonomy contract", () => {
  });
  it.each([[], null])("fails closed on empty or malformed taxonomy %j", async data => { const fetch = vi.fn().mockResolvedValue(response({ success: true, data })); vi.stubGlobal("fetch", fetch); expect((await POST(req({ textContent: "CV" }))).status).toBe(503); expect(fetch).toHaveBeenCalledTimes(1); });
  it("taxonomy network outage reports service unavailable without AI call", async () => { const fetch = vi.fn().mockRejectedValue(new Error("offline")); vi.stubGlobal("fetch", fetch); expect((await POST(req({ textContent: "CV" }))).status).toBe(503); expect(fetch).toHaveBeenCalledTimes(1); });
- it("rejects AI domain outside active options", async () => { vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(response({ success: true, data: sectors })).mockResolvedValueOnce(response({ candidates: [{ content: { parts: [{ text: '{"primaryDomain":"UNKNOWN"}' }] } }] }))); expect((await POST(req({ textContent: "CV" }))).status).toBe(502); });
+ it("handles AI domain outside active options gracefully without dropping draft (Zero-Lock)", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(response({ success: true, data: sectors })).mockResolvedValueOnce(response({ candidates: [{ content: { parts: [{ text: '{"fullName":"GS. Nguyễn Văn A","primaryDomain":"UNKNOWN"}' }] } }] })));
+    const res = await POST(req({ textContent: "CV" }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.data.fullName).toBe("GS. Nguyễn Văn A");
+    expect(body.data.primaryDomain).toBeUndefined();
+  });
 });

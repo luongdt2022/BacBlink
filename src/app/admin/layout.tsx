@@ -151,10 +151,10 @@ const MENU_GROUPS: MenuGroup[] = [
       },
       {
         href: "/admin/sectors",
-        label: "Danh mục 18 Ngành TT17 & TRL",
+        label: "Danh mục 10 Lĩnh Vực TT17 & TRL",
         icon: Database,
         iconColor: "text-cyan-300",
-        keywords: "18 nganh tt17 trl tieu chi danh muc linh vuc",
+        keywords: "10 linh vuc tt17 trl tieu chi danh muc linh vuc",
       },
     ],
   },

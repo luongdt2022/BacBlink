@@ -297,4 +297,53 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
   });
+
+  it("QC-TEST-08: renders complete 5-item menu for PUBLIC_USER role with 'Mới' badge on AI Radar and zero legal entity modules (Delta v10 CR-2026-006)", async () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u-public-qc",
+      email: "guest@individual.vn",
+      fullName: "Nguyễn Khám Phá",
+      role: "PUBLIC_USER",
+    });
+
+    render(
+      <PortalLayout>
+        <div>Public Portal Body</div>
+      </PortalLayout>
+    );
+
+    // 1. Header & Badge
+    expect(screen.getByText("Thành Viên Đại Chúng")).toBeInTheDocument();
+    expect(screen.getByText("Không Gian Thành Viên")).toBeInTheDocument();
+
+    // 2. 5 Nav Items
+    const homeLink = screen.getByRole("link", { name: /^Trang tổng quan$/i });
+    expect(homeLink).toBeInTheDocument();
+    expect(homeLink).toHaveAttribute("href", "/portal");
+
+    const demandsLink = screen.getByRole("link", { name: /Nhu cầu công nghệ|Đơn hàng & Yêu cầu mua/i });
+    expect(demandsLink).toBeInTheDocument();
+    expect(demandsLink).toHaveAttribute("href", "/portal/buyer/demands");
+
+    const radarLink = screen.getByRole("link", { name: /Radar Ghép Nối AI/i });
+    expect(radarLink).toBeInTheDocument();
+    expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
+    expect(screen.getByText("Mới")).toBeInTheDocument();
+
+    const upgradeLink = screen.getByRole("link", { name: /Đăng ký Nâng hạng Vai trò/i });
+    expect(upgradeLink).toBeInTheDocument();
+    expect(upgradeLink).toHaveAttribute("href", "/profile/upgrade");
+
+    const settingsLink = screen.getByRole("link", { name: /Cài đặt Tài khoản/i });
+    expect(settingsLink).toBeInTheDocument();
+    expect(settingsLink).toHaveAttribute("href", "/settings");
+
+    // 3. Negative checks: Zero legal entity modules
+    expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Đánh giá Năng lực TT17")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hồ sơ Doanh nghiệp")).not.toBeInTheDocument();
+    expect(screen.queryByText("Yêu cầu Kết nối Nhận được")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tiến trình Chuyển giao & MOU")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
+  });
 });

@@ -211,12 +211,20 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
 
     // Kiểm tra gọi API thật
     await waitFor(() => {
-      expect(mockSubmitQuickDemand).toHaveBeenCalled();
+      expect(mockSubmitQuickDemand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          offerId: "01928002-0000-7000-8000-000000000008",
+          offerCode: "OFF-202610-LV16-08",
+        })
+      );
     });
 
-    // Kiểm tra phản hồi mã phiếu nhu cầu thật từ CSDL PostgreSQL
+    // Kiểm tra phản hồi mã phiếu nhu cầu thật và nút CTA dẫn tới Workspace
     await waitFor(() => {
       expect(screen.getByText(/DMD-20261012-341205/i)).toBeInTheDocument();
+      const ctaLink = screen.getByRole("link", { name: /Theo dõi đơn hàng trong Workspace/i });
+      expect(ctaLink).toBeInTheDocument();
+      expect(ctaLink).toHaveAttribute("href", "/portal/buyer/demands?tab=commercial");
     });
   });
 

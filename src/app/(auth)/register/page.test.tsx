@@ -31,6 +31,7 @@ describe("RegisterPage", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body).not.toHaveProperty("platformRole");
     expect(body).not.toHaveProperty("scopeType");
+    expect(body).not.toHaveProperty("organization");
     expect(await screen.findByText(/Đăng ký thành công! Tài khoản công chúng/)).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Nguyễn Văn")).toHaveValue("");
     expect(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn")).toHaveValue("");

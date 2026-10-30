@@ -85,6 +85,36 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+vi.mock("@/lib/portal-client", () => ({
+  portalClient: {
+    getStats: vi.fn(async () => ({
+      totalOffers: 120,
+      totalDemands: 85,
+      totalEnterprises: 45,
+      totalExperts: 30,
+      totalProvinces: 15,
+      updatedAt: "2026-10-30T00:00:00Z",
+      totalSuccessfulConnections: 5,
+      totalEstimatedValueMillionVnd: 58400,
+    })),
+  },
+}));
+
+vi.mock("@/lib/master-data-client", () => ({
+  getActiveSectors: vi.fn(async () => [
+    { code: "LV01", name: "Nông nghiệp" },
+    { code: "LV05", name: "Chế biến thực phẩm – đồ uống" },
+    { code: "LV07", name: "Cơ khí – chế tạo – công nghiệp hỗ trợ" },
+    { code: "LV08", name: "Điện – điện tử – tự động hóa" },
+    { code: "LV11", name: "Nước – môi trường – chất thải" },
+    { code: "LV12", name: "Xây dựng – vật liệu – hạ tầng" },
+    { code: "LV14", name: "Logistics – vận tải – kho bãi" },
+    { code: "LV15", name: "Du lịch – khách sạn – nhà hàng" },
+    { code: "LV16", name: "CNTT – viễn thông – chuyển đổi số" },
+    { code: "LV17", name: "Khoa học – công nghệ – đổi mới sáng tạo" },
+  ]),
+}));
+
 vi.mock("@/services/api/technology-offer", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/services/api/technology-offer")>();
   return {

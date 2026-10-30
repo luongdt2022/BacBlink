@@ -111,4 +111,48 @@ describe("ProfileUpgradeHubPage (AC-DELTA-12..16)", () => {
       expect(screen.getByText(/Đăng Ký Mở Gian Hàng Seller Thành Công/i)).toBeInTheDocument();
     });
   });
+
+  it("displays existing submitted expert application banner and edit button when user has submitted", async () => {
+    const mockExpertProfile = {
+      id: "exp-001",
+      expertCode: "EXP-2026-001",
+      fullName: "TS. Nguyễn Minh Đức",
+      academicDegree: "TS",
+      primaryInstitution: "Viện Ứng Dụng Công Nghệ NacenTech",
+      status: "PENDING_APPROVAL",
+      scopeId: "HN",
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/experts/my-profile")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, data: mockExpertProfile }),
+        };
+      }
+      return { ok: true, status: 200, json: async () => ({ success: true }) };
+    }));
+
+    render(<ProfileUpgradeHubPage />);
+
+    // Verify submitted application banner appears
+    await waitFor(() => {
+      expect(screen.getByTestId("submitted-application-banner")).toBeInTheDocument();
+      expect(screen.getByText("TS. Nguyễn Minh Đức")).toBeInTheDocument();
+      expect(screen.getByText(/Đang Chờ Hội Đồng Thẩm Định/i)).toBeInTheDocument();
+      expect(screen.getByText(/Viện Ứng Dụng Công Nghệ NacenTech/i)).toBeInTheDocument();
+    });
+
+    // Verify Action links
+    const editBtn = screen.getByRole("link", { name: /Chỉnh sửa & Cập nhật đơn/i });
+    expect(editBtn).toHaveAttribute("href", "/profile/upgrade/expert?edit=true");
+
+    const detailBtn = screen.getByRole("link", { name: /Xem chi tiết hồ sơ/i });
+    expect(detailBtn).toHaveAttribute("href", "/profile/upgrade/expert");
+
+    // Card 1 button updated
+    const cardEditLink = screen.getByRole("link", { name: /Xem & Chỉnh sửa đơn đã nộp/i });
+    expect(cardEditLink).toHaveAttribute("href", "/profile/upgrade/expert?edit=true");
+  });
 });

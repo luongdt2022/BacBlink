@@ -18,6 +18,26 @@ export default function DashboardOrchestratorPage() {
   const [isZenMode, setIsZenMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Đảm bảo loading spinner tắt ngay khi dashboard sẵn sàng, không bị kẹt
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === "DASHBOARD_READY") {
+        setIsLoading(false);
+      }
+    };
+    window.addEventListener("message", handleMessage);
+
+    // Timeout dự phòng an toàn: tối đa 600ms tự động giải phóng giao diện
+    const safetyTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      clearTimeout(safetyTimer);
+    };
+  }, []);
+
   // Đồng bộ theme sáng/tối sang iframe dashboard
   useEffect(() => {
     const syncTheme = () => {

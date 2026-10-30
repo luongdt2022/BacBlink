@@ -48,4 +48,13 @@ describe("resolveExpertActiveMenu (T131 & T135)", () => {
     expect(resolveExpertActiveMenu("/portal/expert/contracts")).not.toBe("consultations");
     expect(resolveExpertActiveMenu("/portal/expert/contracts")).not.toBe("profile");
   });
+
+  it("resolves orders-demands route properly without colliding with other routes (CR-2026-012 Delta v1.4)", () => {
+    expect(resolveExpertActiveMenu("/portal/buyer/demands")).toBe("orders-demands");
+    expect(resolveExpertActiveMenu("/portal/buyer/demands?tab=commercial")).toBe("orders-demands");
+    expect(resolveExpertActiveMenu("/portal/buyer/demands?tab=demands")).toBe("orders-demands");
+    expect(resolveExpertActiveMenu("/portal/orders")).toBe("orders-demands");
+    expect(resolveExpertActiveMenu("/portal/buyer/demands")).not.toBe("projects");
+    expect(resolveExpertActiveMenu("/portal/buyer/demands")).not.toBe("profile");
+  });
 });

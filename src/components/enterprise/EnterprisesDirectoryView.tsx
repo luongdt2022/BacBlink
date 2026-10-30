@@ -34,25 +34,11 @@ import {
   type EnterpriseDirectoryItem,
   type EnterpriseDirectoryResponse
 } from "@/lib/enterprise-client";
+import { getActiveSectors, type SectorOption } from "@/lib/master-data-client";
 import { PROVINCES_34 } from "@/app/khao-sat-nhu-cau/types";
 import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
 import { SearchableProvinceCombobox } from "@/components/common/searchable-province-combobox";
 import { brokerageApi } from "@/services/api/brokerage";
-
-// 11 Lĩnh vực công nghệ trọng điểm theo Thông tư 17/2019/TT-BKHCN
-const SECTORS_TT17 = [
-  { code: "", label: "Tất cả lĩnh vực công nghệ" },
-  { code: "LV01", label: "Cơ khí, Chế tạo máy & Tự động hóa" },
-  { code: "LV05", label: "Nông nghiệp công nghệ cao, nông nghiệp số" },
-  { code: "LV07", label: "Y - Dược, Sinh học & Thiết bị y tế" },
-  { code: "LV08", label: "Công nghệ thông tin, chuyển đổi số" },
-  { code: "LV11", label: "Vật liệu mới, nano & hóa chất tiên tiến" },
-  { code: "LV12", label: "Năng lượng tái tạo & Công nghệ môi trường" },
-  { code: "LV14", label: "Điện - Điện tử & Viễn thông" },
-  { code: "LV15", label: "Chế biến thực phẩm & Đồ uống công nghệ cao" },
-  { code: "LV16", label: "Dệt may, da giày & thời trang kỹ thuật" },
-  { code: "LV17", label: "Logistics, Chuỗi cung ứng & Đô thị thông minh" },
-];
 
 const SUBJECT_TYPES = [
   { code: "", label: "Tất cả loại hình chủ thể" },
@@ -137,6 +123,33 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
   const [data, setData] = useState<EnterpriseDirectoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Sectors dynamic state (CR-2026-011)
+  const [sectors, setSectors] = useState<SectorOption[]>([]);
+  const [sectorsLoading, setSectorsLoading] = useState(true);
+  const [sectorsError, setSectorsError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setSectorsLoading(true);
+    setSectorsError(false);
+    getActiveSectors()
+      .then((items) => {
+        if (isMounted) {
+          setSectors(items);
+          setSectorsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setSectorsError(true);
+          setSectorsLoading(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filters & Sorting state
   const [q, setQ] = useState("");
@@ -440,16 +453,25 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
 
               {/* Lọc Lĩnh Vực TT17 */}
               <div>
-                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label htmlFor="filter-sector" className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
                   Lĩnh Vực Công Nghệ TT17
                 </label>
                 <select
+                  id="filter-sector"
                   value={sectorCode}
                   onChange={(e) => setSectorCode(e.target.value)}
                   className="form-control w-full"
+                  disabled={sectorsLoading}
                 >
-                  {SECTORS_TT17.map((s) => (
-                    <option key={s.code} value={s.code}>{s.label}</option>
+                  <option value="">
+                    {sectorsLoading
+                      ? "Đang tải danh mục lĩnh vực..."
+                      : sectorsError
+                      ? "Lỗi tải lĩnh vực (chọn tất cả)"
+                      : "Tất cả lĩnh vực công nghệ"}
+                  </option>
+                  {sectors.map((s) => (
+                    <option key={s.code} value={s.code}>{s.name}</option>
                   ))}
                 </select>
               </div>

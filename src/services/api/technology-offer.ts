@@ -7,6 +7,7 @@ import {
   TT17_SECTORS,
   IntellectualPropertyStatus,
 } from "@/types/technology-offer";
+import { authClient } from "@/lib/auth-client";
 
 export type { IntellectualPropertyStatus };
 
@@ -95,13 +96,36 @@ export async function fetchOfferById(id: string): Promise<TechnologyOffer | null
   return null;
 }
 
-export async function fetchSellerWorkspace(): Promise<{
+export async function fetchSellerWorkspace(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  trl?: string;
+  enterpriseTaxCode?: string;
+}): Promise<{
   kpi: SellerKpi;
   data: TechnologyOffer[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
 }> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/portal/seller/technologies`, {
+    const query = new URLSearchParams();
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.search) query.set("search", params.search);
+    if (params?.status && params.status !== "ALL") query.set("status", params.status);
+    if (params?.trl && params.trl !== "ALL") query.set("trl", params.trl);
+    if (params?.enterpriseTaxCode) query.set("enterpriseTaxCode", params.enterpriseTaxCode);
+
+    const queryString = query.toString();
+    const url = `${API_BASE}/api/v1/portal/seller/technologies${queryString ? `?${queryString}` : ""}`;
+
+    const res = await fetch(url, {
       cache: "no-store",
+      headers: authClient.getAuthHeaders(),
     });
     if (res.ok) {
       const json = await res.json();
@@ -119,7 +143,14 @@ export async function fetchSellerWorkspace(): Promise<{
             0
           ),
         };
-        return { kpi, data: items };
+        return {
+          kpi,
+          data: items,
+          total: json.total ?? items.length,
+          page: json.page ?? params?.page ?? 1,
+          limit: json.limit ?? params?.limit ?? 10,
+          totalPages: json.totalPages ?? 1,
+        };
       }
     }
   } catch (err) {
@@ -135,6 +166,10 @@ export async function fetchSellerWorkspace(): Promise<{
       successfulConnections: 0,
     },
     data: [],
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 1,
   };
 }
 
@@ -470,6 +505,10 @@ export interface CreateQuickDemandPayload {
   impactScore: number;
   investmentCapacity: number;
   adoptionReadiness: number;
+  offerId?: string;
+  offerTitle?: string;
+  offerCode?: string;
+  isCommercialOrder?: boolean;
 }
 
 export async function submitQuickDemand(payload: CreateQuickDemandPayload): Promise<{
@@ -479,9 +518,17 @@ export async function submitQuickDemand(payload: CreateQuickDemandPayload): Prom
   message?: string;
 }> {
   try {
+    const token = authClient.getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(`${API_BASE}/api/v1/demands/items`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(payload),
     });
     if (res.ok) {

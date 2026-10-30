@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { AppButton } from "@/components/ui/design-system";
 import Link from "next/link";
-import { UserPlus, Mail, Building2, Phone, AlertCircle, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
+import { UserPlus, Mail, Phone, AlertCircle, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
 import { API_BASE, readApiError, userFacingRequestError } from "@/lib/api-client";
 
 const initialFormData = {
@@ -13,7 +13,6 @@ const initialFormData = {
   firstName: "",
   lastName: "",
   phone: "",
-  organization: "",
   acceptPdpd: false,
 };
 
@@ -91,7 +90,6 @@ export default function RegisterPage() {
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim() || null,
           phone: formData.phone.trim() || null,
-          organization: formData.organization.trim() || null,
         }),
       });
 
@@ -259,38 +257,20 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Số điện thoại</label>
-                  <div className="mt-1 relative rounded-control">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-300">
-                      <Phone className="h-4 w-4" />
-                    </div>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="0912345678"
-                      className="block w-full pl-9 pr-3 py-2 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                    />
+              <div>
+                <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Số điện thoại</label>
+                <div className="mt-1 relative rounded-control">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-300">
+                    <Phone className="h-4 w-4" />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Cơ quan / Viện / Trường</label>
-                  <div className="mt-1 relative rounded-control">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-300">
-                      <Building2 className="h-4 w-4" />
-                    </div>
-                    <input
-                      type="text"
-                      name="organization"
-                      value={formData.organization}
-                      onChange={handleChange}
-                      placeholder="Viện Đổi Mới Sáng Tạo Quốc Gia"
-                      className="block w-full pl-9 pr-3 py-2 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                    />
-                  </div>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="0912345678"
+                    className="block w-full pl-9 pr-3 py-2 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
+                  />
                 </div>
               </div>
 

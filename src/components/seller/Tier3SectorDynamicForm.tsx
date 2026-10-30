@@ -100,7 +100,7 @@ export function Tier3SectorDynamicForm({
               Lớp 3: Bộ thông số chuyên môn ngành &ldquo;{currentSector.name}&rdquo;
             </h3>
             <p className="text-xs text-slate-500">
-              Tải động từ Sheet Bo_loc_Cban (Excel Master 18 ngành TT17)
+              Tải động từ Sheet Bo_loc_Cban (Excel Master 10 Lĩnh Vực TT17)
             </p>
           </div>
         </div>

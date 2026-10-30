@@ -1,9 +1,12 @@
 import { API_BASE } from "@/lib/api-client";
 
 export interface MasterDataOption {
+  id?: string;
   code: string;
   name: string;
   region?: string | null;
+  tt17Code?: string;
+  [key: string]: any;
 }
 
 export type SectorOption = MasterDataOption;

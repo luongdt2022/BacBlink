@@ -17,6 +17,8 @@ import {
   MoreVertical,
   Building2,
   RefreshCw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { fetchSellerWorkspace } from "@/services/api/technology-offer";
 import { TechnologyOffer, SellerKpi } from "@/types/technology-offer";
@@ -33,20 +35,26 @@ export default function SellerTechnologiesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [trlFilter, setTrlFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const loadData = async () => {
+  const loadData = async (page = 1) => {
     setIsLoading(true);
     try {
-      const res = await fetchSellerWorkspace();
+      const res = await fetchSellerWorkspace({ page, limit: 20 });
       setOffers(res.data);
       setKpi(res.kpi);
+      setTotalPages(res.totalPages ?? 1);
+      setTotalCount(res.total ?? res.data.length);
+      setCurrentPage(page);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadData(1);
   }, []);
 
   const filteredOffers = offers.filter((item) => {
@@ -191,7 +199,7 @@ export default function SellerTechnologiesPage() {
               </select>
 
               <button
-                onClick={loadData}
+                onClick={() => loadData(1)}
                 className="h-11 w-11 flex items-center justify-center text-slate-500 hover:text-slate-800 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-control shrink-0"
                 title="Tải lại"
               >
@@ -264,13 +272,16 @@ export default function SellerTechnologiesPage() {
                       <span className="font-bold text-slate-900">
                         {item.pricingType === "CONTACT" && "Thỏa thuận"}
                         {item.pricingType === "FIXED" &&
-                          item.priceAmount &&
-                          `${(item.priceAmount / 1_000_000).toLocaleString("vi-VN")} Tr`}
+                          (item.priceAmount
+                            ? `${(item.priceAmount / 1_000_000).toLocaleString("vi-VN")} Tr`
+                            : "Thỏa thuận")}
                         {item.pricingType === "RANGE" &&
-                          item.priceMin &&
-                          `${(item.priceMin / 1_000_000).toLocaleString("vi-VN")} - ${(
-                            (item.priceMax || 0) / 1_000_000
-                          ).toLocaleString("vi-VN")} Tr`}
+                          (item.priceMin
+                            ? `${(item.priceMin / 1_000_000).toLocaleString("vi-VN")} - ${(
+                                (item.priceMax || 0) / 1_000_000
+                              ).toLocaleString("vi-VN")} Tr`
+                            : "Thỏa thuận")}
+                        {!item.pricingType && "Thỏa thuận"}
                       </span>
                     </td>
 
@@ -330,6 +341,48 @@ export default function SellerTechnologiesPage() {
               </tbody>
             </table>
           </div>
+
+          {/* PAGINATION CONTROLS */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-xs text-slate-500 font-medium">
+                Hiển thị {filteredOffers.length} / {totalCount} giải pháp (Trang {currentPage}/{totalPages})
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => loadData(Math.max(1, currentPage - 1))}
+                  disabled={currentPage <= 1 || isLoading}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  Trang trước
+                </button>
+                <div className="flex items-center gap-1 text-xs font-bold">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => loadData(p)}
+                      className={`w-7 h-7 rounded-lg transition ${
+                        currentPage === p
+                          ? "bg-brand-700 text-white"
+                          : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => loadData(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage >= totalPages || isLoading}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  Trang sau
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

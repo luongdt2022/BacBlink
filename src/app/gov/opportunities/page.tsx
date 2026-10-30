@@ -25,6 +25,7 @@ import { GovPageHeader } from '@/components/gov/gov-page-header';
 import { resolveProvinceName } from '@/lib/gov-label-resolver';
 import { authClient } from '@/lib/auth-client';
 import { useToast } from '@/components/common/toast';
+import { formatCurrencyMillionVnd } from '@/lib/currency';
 
 export default function GovOpportunitiesPage() {
   const toast = useToast();
@@ -149,7 +150,7 @@ export default function GovOpportunitiesPage() {
           <div className="bg-surface-card p-4 rounded-xl border border-border shadow-sm">
             <span className="text-caption text-text-muted block">Tổng GT dự kiến</span>
             <span className="text-xl font-bold text-brand-primary">
-              {stats.totalEstimatedValueMillionVnd.toLocaleString('vi-VN')} Tr
+              {formatCurrencyMillionVnd(stats.totalEstimatedValueMillionVnd)}
             </span>
           </div>
         </div>
@@ -279,9 +280,7 @@ export default function GovOpportunitiesPage() {
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-text-primary">
-                        {opp.estimatedValueMillionVnd
-                          ? `${opp.estimatedValueMillionVnd.toLocaleString('vi-VN')} Tr`
-                          : '---'}
+                        {formatCurrencyMillionVnd(opp.estimatedValueMillionVnd, { emptyLabel: '---' })}
                       </td>
                       <td className="py-3.5 px-4">
                         {opp.isSlaWarning ? (
@@ -370,9 +369,7 @@ export default function GovOpportunitiesPage() {
                   <span className="text-text-muted block">Giai đoạn & Giá trị:</span>
                   <span className="font-bold text-text-primary text-sm">
                     {selectedDeal.stage} •{' '}
-                    {selectedDeal.estimatedValueMillionVnd
-                      ? `${selectedDeal.estimatedValueMillionVnd.toLocaleString('vi-VN')} Triệu VNĐ`
-                      : 'Chưa xác định'}
+                    {formatCurrencyMillionVnd(selectedDeal.estimatedValueMillionVnd, { emptyLabel: 'Chưa xác định' })}
                   </span>
                 </div>
                 <div>

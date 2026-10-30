@@ -22,7 +22,7 @@ export const FORM_STEPS = [
     step: 2,
     title: "Thông số kỹ thuật",
     badge: "Tùy chọn",
-    subtitle: "Lớp 2 (Chung) & Lớp 3 (18 ngành)",
+    subtitle: "Lớp 2 (Chung) & Lớp 3 (10 Lĩnh Vực)",
     icon: Sliders,
   },
   {

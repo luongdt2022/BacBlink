@@ -27,6 +27,7 @@ import { brokerageApi } from '@/services/api/brokerage';
 import ConnectionRequestModal from './ConnectionRequestModal';
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 import { useToast } from "@/components/common/toast";
+import { authClient } from '@/lib/auth-client';
 
 export default function MatchingRadarPage() {
   const toast = useToast();
@@ -35,6 +36,10 @@ export default function MatchingRadarPage() {
   const [requests, setRequests] = useState<ConnectionRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // User Demands Guard (REQ-DEL-08-01, REQ-DEL-08-02, BR-DEL-08-01)
+  const [userDemandsCount, setUserDemandsCount] = useState<number>(0);
+  const [isCheckingDemands, setIsCheckingDemands] = useState<boolean>(true);
 
   // Filters
   const [sector, setSector] = useState('ALL');
@@ -46,6 +51,64 @@ export default function MatchingRadarPage() {
   const [selectedCandidate, setSelectedCandidate] = useState<MatchCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
+
+  const user = authClient.getUser();
+  const effectiveRole =
+    (typeof window !== 'undefined' ? localStorage.getItem('nacentwin_active_role') : null) ||
+    user?.role ||
+    'PUBLIC_USER';
+
+  const isAdminOrGov = [
+    'SUPER_ADMIN',
+    'OPERATOR_ADMIN',
+    'ADMIN',
+    'PROVINCIAL_ADMIN',
+    'SECTOR_ADMIN',
+    'CLUSTER_ADMIN',
+    'PROVINCE_OFFICER',
+    'PROVINCE_LEADER',
+  ].includes(effectiveRole);
+
+  const isBuyerOrPublic =
+    !isAdminOrGov &&
+    (!user || ['PUBLIC_USER', 'USER', 'BUYER', 'GUEST'].includes(effectiveRole));
+
+  const isRadarInactive = isBuyerOrPublic && userDemandsCount === 0;
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkUserDemands = async () => {
+      setIsCheckingDemands(true);
+      try {
+        const token = authClient.getToken();
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const res = await fetch('/api/v1/buyer/demands', { headers });
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.data)
+            ? data.data
+            : [];
+          if (isMounted) setUserDemandsCount(list.length);
+        } else {
+          if (isMounted) setUserDemandsCount(0);
+        }
+      } catch {
+        if (isMounted) setUserDemandsCount(0);
+      } finally {
+        if (isMounted) setIsCheckingDemands(false);
+      }
+    };
+
+    checkUserDemands();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const fetchRadarData = async () => {
     setIsLoading(true);
@@ -70,11 +133,20 @@ export default function MatchingRadarPage() {
   };
 
   useEffect(() => {
+    if (isCheckingDemands) return;
+
+    if (activeTab === 'RADAR' && isRadarInactive) {
+      setCandidates([]);
+      setIsLoading(false);
+      return;
+    }
+
     fetchRadarData();
-  }, [activeTab, sector, minScore]);
+  }, [activeTab, sector, minScore, isCheckingDemands, isRadarInactive]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeTab === 'RADAR' && isRadarInactive) return;
     fetchRadarData();
   };
 
@@ -193,6 +265,52 @@ export default function MatchingRadarPage() {
 
       {/* TAB 1: RADAR CANDIDATES */}
       {activeTab === 'RADAR' && (
+        isCheckingDemands ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-80 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse p-6 space-y-4"
+              >
+                <div className="h-6 w-1/3 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                <div className="h-24 bg-slate-100 dark:bg-slate-800/50 rounded-2xl" />
+                <div className="h-24 bg-slate-100 dark:bg-slate-800/50 rounded-2xl" />
+              </div>
+            ))}
+          </div>
+        ) : isRadarInactive ? (
+          <div className="p-8 sm:p-14 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm max-w-3xl mx-auto space-y-6 animate-page-enter">
+            <div className="w-16 h-16 mx-auto rounded-3xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center text-brand-700 dark:text-brand-300 ring-8 ring-brand-50/50 dark:ring-brand-950/50">
+              <Sparkles className="w-8 h-8 text-brand-600 dark:text-brand-400" />
+            </div>
+
+            <div className="space-y-3 max-w-xl mx-auto">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Radar Ghép Nối AI Chưa Kích Hoạt
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                Thuật toán Radar AI cần ít nhất 01 Nhu cầu công nghệ làm tâm đối sánh để phân tích điểm TRL, TNI và đề xuất các giải pháp công nghệ phù hợp nhất.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link
+                href="/khao-sat-nhu-cau"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-700/20 hover:shadow-lg transition-all"
+              >
+                <span>+ Gửi Nhu Cầu Công Nghệ Đầu Tiên</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/chao-ban-cong-nghe"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm transition-all"
+              >
+                <Cpu className="w-4 h-4 text-brand-600 dark:text-brand-400" />
+                <span>Khám phá Sàn Công nghệ</span>
+              </Link>
+            </div>
+          </div>
+        ) : (
         <div className="space-y-6">
           {/* Polished Filter Toolbar */}
           <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
@@ -459,6 +577,7 @@ export default function MatchingRadarPage() {
             </div>
           )}
         </div>
+        )
       )}
 
       {/* TAB 2: CONNECTION REQUESTS */}

@@ -20,7 +20,7 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     const titleLabel = screen.getByText(/Tên sản phẩm \/ thiết bị \/ công nghệ/i);
     const summaryLabel = screen.getByText(/Mô tả ngắn giải pháp/i);
     const problemLabel = screen.getByText(/Công dụng \/ Bài toán kỹ thuật giải quyết/i);
-    const sectorLabel = screen.getByText(/Ngành công nghiệp \(18 nhóm ngành TT17\)/i);
+    const sectorLabel = screen.getByText(/Ngành công nghiệp \(10 Lĩnh Vực TT17\)/i);
 
     expect(
       titleLabel.compareDocumentPosition(sectorLabel) & Node.DOCUMENT_POSITION_FOLLOWING
@@ -33,7 +33,7 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     ).toBeTruthy();
 
     // Verify Sector SearchableCombobox does NOT display LV01 code on trigger
-    const sectorTrigger = screen.getByLabelText("Ngành công nghiệp (18 nhóm ngành TT17)");
+    const sectorTrigger = screen.getByLabelText("Ngành công nghiệp (10 Lĩnh Vực TT17)");
     expect(sectorTrigger.textContent).toContain("Nông nghiệp");
     expect(sectorTrigger.textContent).not.toContain("LV01");
 
@@ -69,7 +69,7 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     );
 
     fireEvent.click(nextBtn);
-    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & 18 Ngành TT17/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17/i)).toBeInTheDocument();
   });
 
   it("toggles the reactive yellow TRL panel when Chuyển giao công nghệ switch is toggled", () => {
@@ -180,7 +180,7 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     // Click directly on Step 2 in FormStepper
     fireEvent.click(stepButtons[0]); // Step 1
     fireEvent.click(stepButtons[1]); // Step 2
-    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & 18 Ngành TT17/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17/i)).toBeInTheDocument();
 
     // Click directly on Step 3 in FormStepper
     fireEvent.click(stepButtons[2]); // Step 3

@@ -10,7 +10,8 @@ export type ExpertMenuKey =
   | "consultations"
   | "radar"
   | "projects"
-  | "contracts";
+  | "contracts"
+  | "orders-demands";
 
 export function resolveExpertActiveMenu(pathname: string): ExpertMenuKey {
   if (!pathname) return "profile";
@@ -49,6 +50,15 @@ export function resolveExpertActiveMenu(pathname: string): ExpertMenuKey {
 
   if (cleanPath === "/portal/expert/projects" || cleanPath.startsWith("/portal/expert/projects/")) {
     return "projects";
+  }
+
+  if (
+    cleanPath === "/portal/buyer/demands" ||
+    cleanPath.startsWith("/portal/buyer/demands/") ||
+    cleanPath === "/portal/orders" ||
+    cleanPath === "/portal/expert/orders"
+  ) {
+    return "orders-demands";
   }
 
   if (cleanPath === "/portal/expert/contracts" || cleanPath.startsWith("/portal/expert/contracts/")) {

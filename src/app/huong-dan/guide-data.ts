@@ -224,7 +224,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     steps: [
       "Bước 1: Tải lên tệp Lý lịch khoa học (PDF/DOCX) để AI tự động phân tích và trích xuất dữ liệu.",
       "Bước 2: Đối soát và chuẩn hóa thông tin học hàm, học vị, công trình công bố quốc tế và sáng chế.",
-      "Bước 3: Chọn lĩnh vực chuyên môn (theo 18 ngành TT17), ký cam kết bảo mật PDPD và nộp hồ sơ xét duyệt.",
+      "Bước 3: Chọn lĩnh vực chuyên môn (theo 10 Lĩnh Vực TT17), ký cam kết bảo mật PDPD và nộp hồ sơ xét duyệt.",
     ],
     image: "/images/user_guide/16_nang_cap_chuyen_gia.png",
     isNew: true,
@@ -241,10 +241,10 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     moduleName: "Cổng Thông Tin Công Cộng, Techmart & Phiếu Dịch Vụ",
     roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN", "AUDITOR"],
     route: "/",
-    description: "Cổng giao tiếp quốc gia về ĐMST và kết nối cung cầu: Tìm kiếm thông minh kiểu DauThau.net, bộ lọc 18 ngành TT17, TRL 1-9 và thống kê chỉ số thời gian thực.",
+    description: "Cổng giao tiếp quốc gia về ĐMST và kết nối cung cầu: Tìm kiếm thông minh kiểu DauThau.net, bộ lọc 10 Lĩnh Vực TT17, TRL 1-9 và thống kê chỉ số thời gian thực.",
     steps: [
       "Sử dụng thanh tìm kiếm trung tâm để tra cứu nhanh công nghệ, bài toán nhu cầu hoặc chuyên gia.",
-      "Sử dụng bộ lọc 18 ngành kỹ thuật để khoanh vùng công nghệ trọng điểm.",
+      "Sử dụng bộ lọc 10 Lĩnh Vực kỹ thuật để khoanh vùng công nghệ trọng điểm.",
       "Nhấp vào các thẻ công nghệ tiêu biểu hoặc chuyên gia đầu ngành để xem thông tin chi tiết.",
     ],
     image: "/images/user_guide/01_trang_chu_portal.png",
@@ -333,7 +333,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     moduleName: "Cổng Thông Tin Công Cộng, Techmart & Phiếu Dịch Vụ",
     roles: ["ADMIN", "PUBLIC_USER"],
     route: "/design-preview",
-    description: "Không gian duyệt và kiểm thử trực quan các mẫu Banner chuyên ngành ĐMST, bảng màu nhận diện 18 ngành kỹ thuật và typography chuẩn.",
+    description: "Không gian duyệt và kiểm thử trực quan các mẫu Banner chuyên ngành ĐMST, bảng màu nhận diện 10 Lĩnh Vực kỹ thuật và typography chuẩn.",
     steps: [
       "Xem trước các biến thể banner đồ họa đại diện cho từng ngành công nghệ cao.",
       "Kiểm tra tính tương thích responsive trên các kích thước màn hình Mobile, Tablet, Desktop.",
@@ -563,7 +563,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
   // ==========================================
   {
     id: "5.1",
-    title: "Sàn Chào Bán Công Nghệ Toàn Quốc 18 Ngành",
+    title: "Sàn Chào Bán Công Nghệ Toàn Quốc 10 Lĩnh Vực TT17",
     moduleNumber: 5,
     moduleName: "Bên Bán, Kho Công Nghệ & Phiếu Chào Bán 4 Tầng",
     roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "GOV"],
@@ -666,7 +666,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     moduleName: "Mạng Lưới Chuyên Gia KH&CN & Phiếu Tư Vấn 1-1",
     roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "GOV", "ADMIN"],
     route: "/experts",
-    description: "Mạng lưới chuyên gia khoa học công nghệ quốc gia: Tra cứu theo học hàm (GS, PGS), học vị (TS, ThS), 18 ngành trọng điểm, số lượng sáng chế và điểm tín nhiệm chuyên môn.",
+    description: "Mạng lưới chuyên gia khoa học công nghệ quốc gia: Tra cứu theo học hàm (GS, PGS), học vị (TS, ThS), 10 Lĩnh Vực trọng điểm TT17, số lượng sáng chế và điểm tín nhiệm chuyên môn.",
     steps: [
       "Tìm kiếm chuyên gia theo họ tên, từ khóa chuyên môn hoặc đơn vị công tác (Viện, Trường ĐH).",
       "Lọc chuyên gia theo học hàm/học vị và chuyên ngành nghiên cứu sâu.",
@@ -793,7 +793,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     moduleName: "Danh Mục Ngành & Ma Trận Lĩnh Vực - Công Nghệ",
     roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "GOV", "ADMIN"],
     route: "/matrix",
-    description: "Bản đồ tương tác đa chiều ma trận 18 ngành kỹ thuật theo TT17/2019/TT-BKHCN, hiển thị mật độ phân bổ các cặp công nghệ trọng điểm và tiềm năng chuyển giao trên toàn quốc.",
+    description: "Bản đồ tương tác đa chiều ma trận 10 Lĩnh Vực kỹ thuật theo TT17/2019/TT-BKHCN, hiển thị mật độ phân bổ các cặp công nghệ trọng điểm và tiềm năng chuyển giao trên toàn quốc.",
     steps: [
       "Duyệt ma trận lĩnh vực - công nghệ theo giao diện trực quan.",
       "Nhấp vào giao điểm giữa ngành và công nghệ để xem danh sách các giải pháp chào bán và bài toán nhu cầu liên quan.",
@@ -1061,7 +1061,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     moduleName: "Quản Trị Hệ Thống Tối Cao - Super Admin Console",
     roles: ["ADMIN", "GOV"],
     route: "/admin/enterprises/dashboard",
-    description: "Phân tích số liệu toàn diện 304 doanh nghiệp ĐMST trọng điểm: Phân bổ theo 18 ngành, tỷ lệ sở hữu bằng độc quyền sáng chế, phân bố theo tỉnh thành và tiến độ số hóa dữ liệu.",
+    description: "Phân tích số liệu toàn diện 304 doanh nghiệp ĐMST trọng điểm: Phân bổ theo 10 Lĩnh Vực TT17, tỷ lệ sở hữu bằng độc quyền sáng chế, phân bố theo tỉnh thành và tiến độ số hóa dữ liệu.",
     steps: [
       "Xem biểu đồ phân bố 304 doanh nghiệp theo địa bàn và ngành nghề sản xuất.",
       "Theo dõi tỷ lệ doanh nghiệp đã kích hoạt tài khoản và tự quản trị hồ sơ trong portal.",

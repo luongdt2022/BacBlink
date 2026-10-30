@@ -420,28 +420,35 @@ export default function HomePage() {
                 </Link>
 
                 <Link
-                  href="/matrix"
+                  href="/trien-lam"
                   className="group block text-center rounded-xl bg-white/5 p-3.5 backdrop-blur-sm transition hover:bg-white/10 hover:shadow-md"
                 >
                   <dd className="text-3xl font-bold sm:text-4xl text-white group-hover:text-amber-300 transition">
-                    {statsData?.totalProvinces ?? 63}
+                    {statsData?.totalSuccessfulConnections !== undefined
+                      ? statsData.totalSuccessfulConnections.toLocaleString("vi-VN")
+                      : "0"}
                   </dd>
                   <dt className="mt-1.5 text-xs sm:text-sm font-medium text-white/80 group-hover:text-white transition">
-                    Tỉnh, thành kết nối &rarr;
+                    Kết nối thành công & MOU &rarr;
                   </dt>
                 </Link>
 
                 <Link
-                  href="/enterprises"
+                  href="/portal/opportunities/pipeline"
                   className="group block text-center rounded-xl bg-white/5 p-3.5 backdrop-blur-sm transition hover:bg-white/10 hover:shadow-md"
                 >
-                  <dd className="text-3xl font-bold sm:text-4xl text-white group-hover:text-brand-200 transition">
-                    {statsData?.totalEnterprises !== undefined
-                      ? statsData.totalEnterprises.toLocaleString("vi-VN")
-                      : "0"}
+                  <dd className="text-2xl font-bold sm:text-3xl lg:text-4xl text-white group-hover:text-brand-200 transition">
+                    {(() => {
+                      const val = statsData?.totalEstimatedValueMillionVnd;
+                      if (!val || val === 0) return "0 VNĐ";
+                      if (val >= 1000) {
+                        return `${(val / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ VNĐ`;
+                      }
+                      return `${val.toLocaleString("vi-VN", { maximumFractionDigits: 0 })} Triệu VNĐ`;
+                    })()}
                   </dd>
                   <dt className="mt-1.5 text-xs sm:text-sm font-medium text-white/80 group-hover:text-white transition">
-                    Doanh nghiệp tham gia &rarr;
+                    Quy mô giao dịch & Ngân sách &rarr;
                   </dt>
                 </Link>
               </dl>

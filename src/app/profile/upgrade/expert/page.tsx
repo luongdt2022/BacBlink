@@ -42,11 +42,58 @@ interface Patent {
   status: string;
 }
 
+const SAMPLE_CV_TEXT = `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+
+LÝ LỊCH KHOA HỌC CỦA CHUYÊN GIA KH&CN
+(Kèm theo Thông tư số 17/2021/TT-BKHCN)
+
+I. THÔNG TIN CHUNG
+1. Họ và tên: Nguyễn Văn Đức
+2. Email liên hệ: duc.nv@nacentech.vn
+3. Số điện thoại: 0912888999
+4. Năm sinh: 1980
+5. Giới tính: Nam
+6. Học hàm, học vị: Tiến sĩ (TS)
+   Năm đạt học vị: 2015
+5. Chức danh nghiên cứu / Chức vụ hiện tại: Trưởng phòng R&D, Nghiên cứu viên cao cấp
+6. Cơ quan công tác chính: Viện Ứng dụng Công nghệ NacenTech
+7. Địa chỉ cơ quan: 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội
+8. Số năm kinh nghiệm nghiên cứu, chuyển giao: 16 năm
+9. Định danh khoa học:
+   - Google Scholar: https://scholar.google.com/citations?user=nacentech_duc
+   - ORCID: 0000-0002-1823-9214
+   - Scopus ID: 57219842100
+
+II. NĂNG LỰC CHUYÊN MÔN VÀ HOẠT ĐỘNG KH&CN
+1. Lĩnh vực chuyên môn chính: Khoa học – công nghệ – đổi mới sáng tạo (LV17)
+2. Từ khóa chuyên sâu: Trí tuệ nhân tạo, Vật liệu bán dẫn, Quang điện tử, IoT công nghiệp
+3. Tóm tắt tiểu sử và năng lực thế mạnh:
+   Chuyên gia cao cấp có 16 năm kinh nghiệm trong lĩnh vực quang điện tử và vật liệu bán dẫn. Đã chủ trì và tham gia nhiều đề tài cấp Quốc gia, chuyển giao hơn 10 giải pháp công nghệ cho các doanh nghiệp sản xuất trong và ngoài nước.
+
+III. CÔNG BỐ KHOA HỌC TIÊU BIỂU VÀ SÁNG CHẾ
+1. Công bố khoa học tiêu biểu:
+   - "Advanced Nano Semiconductor Materials for Smart IoT Sensors", Tạp chí Khoa học & Công nghệ Việt Nam, Năm 2024, DOI: 10.1234/nano.semicon.2024
+   - "Deep Learning Applications in Industrial Quality Control", Kỷ yếu Hội nghị Quốc gia VAST, Năm 2023, DOI: 10.5678/qc.dl.2023
+2. Bằng sáng chế và Giải pháp hữu ích:
+   - "Hệ thống cảm biến quang điện tử đo độ ẩm nano nhúng", Số bằng: VN-1-002891, Năm cấp: 2023, Tình trạng: GRANTED
+   - "Mô-đun AI xử lý ảnh công nghiệp thời gian thực", Số bằng: VN-2-001245, Năm cấp: 2022, Tình trạng: GRANTED`;
+
 function ExpertUpgradeForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftToken = searchParams?.get("draftToken");
   const [isDraftPrefilled, setIsDraftPrefilled] = useState(false);
+  const [aiFilledFields, setAiFilledFields] = useState<Set<string>>(new Set());
+
+  const renderAiBadge = (fieldName: string) => {
+    if (!aiFilledFields.has(fieldName)) return null;
+    return (
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 ml-1.5">
+        ✨ AI Bóc tách
+      </span>
+    );
+  };
 
   // Authentication & UX States
   const [uxState, setUxState] = useState<UXState>("empty");
@@ -147,7 +194,7 @@ function ExpertUpgradeForm() {
   useEffect(() => { void loadSectors(); }, []);
 
   // CV Upload & AI Parse states
-  const [cvFile, setCvFile] = useState<{ name: string; size: string; rawFile?: File } | null>(null);
+  const [cvFile, setCvFile] = useState<{ name: string; size: string; rawFile?: File; sampleText?: string } | null>(null);
   const [scanModelUsed, setScanModelUsed] = useState<string>("");
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStatusMessage, setScanStatusMessage] = useState("");
@@ -183,6 +230,13 @@ function ExpertUpgradeForm() {
     if (user.fullName && !fullName) {
       setFullName(user.fullName);
     }
+    if (user.email && !email) {
+      setEmail(user.email);
+    }
+    const userPhone = user.phone || user.phoneNumber;
+    if (userPhone && !phone) {
+      setPhone(userPhone);
+    }
 
     // Fetch existing profile if available
     const fetchStatus = async () => {
@@ -199,7 +253,60 @@ function ExpertUpgradeForm() {
           const json = await res.json();
           const data = json.data ?? json;
           setExistingProfile(data);
-          if (data.status === "APPROVED") {
+
+          // Populate wizard form fields so edit mode has all data!
+          if (data.fullName) setFullName(data.fullName);
+          if (data.phone) setPhone(data.phone);
+          if (data.email) setEmail(data.email);
+          if (data.birthYear) setBirthYear(Number(data.birthYear));
+          if (data.gender) {
+            const g = String(data.gender).toLowerCase();
+            if (g.includes("nam")) setGender("male");
+            else if (g.includes("nữ") || g.includes("nu")) setGender("female");
+            else setGender("other");
+          }
+          if (data.academicDegree) setAcademicDegree(data.academicDegree);
+          if (data.degreeYear) setDegreeYear(Number(data.degreeYear));
+          if (data.primaryInstitution) setPrimaryInstitution(data.primaryInstitution);
+          if (data.workAddress) setWorkAddress(data.workAddress);
+          if (data.professionalTitle) setProfessionalTitle(data.professionalTitle);
+          if (data.googleScholarUrl) setGoogleScholarUrl(data.googleScholarUrl);
+          if (data.orcidId) setOrcidId(data.orcidId);
+          if (data.scopusAuthorId) setScopusAuthorId(data.scopusAuthorId);
+          if (data.primaryDomain) setPrimaryDomain(data.primaryDomain);
+          if (Array.isArray(data.specializedKeywords)) {
+            setSpecializedKeywords(data.specializedKeywords);
+          } else if (typeof data.specializedKeywords === "string") {
+            try {
+              const kws = JSON.parse(data.specializedKeywords);
+              if (Array.isArray(kws)) setSpecializedKeywords(kws);
+            } catch {}
+          }
+          if (data.yearsOfExperience) setYearsOfExperience(Number(data.yearsOfExperience));
+          if (data.bioSummary || data.consultingSummary) setBioSummary(data.bioSummary || data.consultingSummary);
+          if (data.publicationsJson) {
+            try {
+              const pubs = JSON.parse(data.publicationsJson);
+              if (Array.isArray(pubs)) setPublications(pubs);
+            } catch {}
+          } else if (Array.isArray(data.publications)) {
+            setPublications(data.publications);
+          }
+          if (data.patentsJson) {
+            try {
+              const pats = JSON.parse(data.patentsJson);
+              if (Array.isArray(pats)) setPatents(pats);
+            } catch {}
+          } else if (Array.isArray(data.patents)) {
+            setPatents(data.patents);
+          }
+          if (data.scopeId) setReceivingUnit(data.scopeId);
+          if (data.scopeType) setReceivingScopeType(data.scopeType);
+
+          const isEditParam = searchParams?.get("edit") === "true";
+          if (isEditParam) {
+            setUxState("empty");
+          } else if (data.status === "APPROVED") {
             setUxState("success");
           } else if (data.status === "PENDING_APPROVAL") {
             setUxState("success");
@@ -320,7 +427,11 @@ function ExpertUpgradeForm() {
   };
 
   const handleUseSampleCv = () => {
-    setCvFile({ name: "Ly_Lich_Khoa_Hoc_TS_NguyenVanDuc.pdf", size: "2.4 MB" });
+    setCvFile({
+      name: "Ly_Lich_Khoa_Hoc_TS_NguyenVanDuc.pdf",
+      size: "2.4 MB",
+      sampleText: SAMPLE_CV_TEXT,
+    });
     setScanSuccess(false);
     setScanProgress(0);
     setScanModelUsed("");
@@ -340,8 +451,8 @@ function ExpertUpgradeForm() {
     setScanProgress(20);
     setScanStatusMessage("Đang chuẩn bị tệp và xác thực bảo mật chuẩn PDPD...");
 
-    if (!cvFile?.rawFile) {
-      setScanStatusMessage("Vui lòng tải lên tệp CV thật để phân tích.");
+    if (!cvFile?.rawFile && !cvFile?.sampleText) {
+      setScanStatusMessage("Vui lòng tải lên tệp CV hoặc chọn tệp mẫu để phân tích.");
       setAiParsing(false);
       return;
     }
@@ -350,18 +461,31 @@ function ExpertUpgradeForm() {
       setScanProgress(35);
       setScanStatusMessage(`Đang tải tệp "${cvFile.name}" lên cổng bóc tách Google Gemini API...`);
 
-      // Đọc file thành chuỗi Base64
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const res = reader.result as string;
-          const base64Data = res.split(",")[1] || res;
-          resolve(base64Data);
+      let reqBody: Record<string, unknown>;
+      if (cvFile.rawFile) {
+        // Đọc file thành chuỗi Base64
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            const res = reader.result as string;
+            const base64Data = res.split(",")[1] || res;
+            resolve(base64Data);
+          };
+          reader.onerror = (err) => reject(err);
+        });
+        reader.readAsDataURL(cvFile.rawFile);
+        const base64Data = await base64Promise;
+        reqBody = {
+          fileBase64: base64Data,
+          mimeType: cvFile.rawFile.type || "application/pdf",
+          fileName: cvFile.rawFile.name,
         };
-        reader.onerror = (err) => reject(err);
-      });
-      reader.readAsDataURL(cvFile.rawFile);
-      const base64Data = await base64Promise;
+      } else {
+        reqBody = {
+          textContent: cvFile.sampleText,
+          fileName: cvFile.name,
+        };
+      }
 
       setScanProgress(60);
       setScanStatusMessage("Google Gemini AI đang bóc tách 94 trường theo chuẩn Thông tư 17/2021...");
@@ -369,11 +493,7 @@ function ExpertUpgradeForm() {
       const response = await fetch("/api/cv-parser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileBase64: base64Data,
-          mimeType: cvFile.rawFile.type || "application/pdf",
-          fileName: cvFile.rawFile.name,
-        }),
+        body: JSON.stringify(reqBody),
       });
 
       if (!response.ok) {
@@ -390,65 +510,148 @@ function ExpertUpgradeForm() {
       setScanProgress(85);
       setScanStatusMessage("Đang đối soát và tự động điền các trường hồ sơ...");
 
-      // Tự động điền dữ liệu bóc tách vào các trường
-      if (d.fullName) setFullName(d.fullName);
-      if (d.birthYear) setBirthYear(Number(d.birthYear));
+      // Non-destructive Auto-fill: Điền trước vào các trường và đánh dấu trạng thái AI Pre-fill
+      const newlyFilled = new Set(aiFilledFields);
+
+      // 1. Họ và tên: điền nếu trường chưa có hoặc mang giá trị mặc định
+      if (d.fullName && (!fullName.trim() || fullName === "Chuyên gia NacenTech")) {
+        setFullName(d.fullName);
+        newlyFilled.add("fullName");
+      }
+
+      // 1b. Email: nếu CV bóc tách được email -> điền email và đánh dấu AI; nếu không có -> fallback từ User context
+      const currentUser = authClient.getUser();
+      if (d.email && typeof d.email === "string" && d.email.trim()) {
+        setEmail(d.email.trim());
+        newlyFilled.add("email");
+      } else if (!email.trim() && currentUser?.email) {
+        setEmail(currentUser.email);
+      }
+
+      // 1c. Số điện thoại: nếu CV bóc tách được SĐT -> điền phone và đánh dấu AI; nếu không có -> fallback từ User context
+      const currentUserPhone = currentUser?.phone || currentUser?.phoneNumber;
+      if (d.phone && typeof d.phone === "string" && d.phone.trim()) {
+        setPhone(d.phone.trim());
+        newlyFilled.add("phone");
+      } else if (!phone.trim() && currentUserPhone) {
+        setPhone(currentUserPhone);
+      }
+
+      // 2. Năm sinh
+      if (d.birthYear) {
+        setBirthYear(Number(d.birthYear));
+        newlyFilled.add("birthYear");
+      }
+      // 3. Giới tính
       if (d.gender) {
         const g = String(d.gender).toLowerCase();
         if (g.includes("nam")) setGender("male");
         else if (g.includes("nữ") || g.includes("nu")) setGender("female");
         else setGender("other");
+        newlyFilled.add("gender");
       }
+      // 4. Học vị / Học hàm
       if (d.academicDegree) {
         const deg = String(d.academicDegree).toUpperCase();
         if (deg.includes("GS") && !deg.includes("PGS")) setAcademicDegree("GS");
         else if (deg.includes("PGS")) setAcademicDegree("PGS");
         else if (deg.includes("TS") || deg.includes("TIẾN SĨ")) setAcademicDegree("TS");
         else if (deg.includes("THS") || deg.includes("THẠC SĨ")) setAcademicDegree("ThS");
-        else if (deg.includes("KS") || deg.includes("KỸ SƯ")) setAcademicDegree("KySu");
+        else if (deg.includes("KS") || deg.includes("KỸ SƯ") || deg.includes("KYSU")) setAcademicDegree("KySu");
         else setAcademicDegree("Cử nhân");
+        newlyFilled.add("academicDegree");
       }
-      if (d.primaryInstitution) setPrimaryInstitution(d.primaryInstitution);
-      if (d.workAddress) setWorkAddress(d.workAddress);
-      if (d.professionalTitle) setProfessionalTitle(d.professionalTitle);
-      if (d.yearsOfExperience) setYearsOfExperience(Number(d.yearsOfExperience));
-      if (d.bioSummary) setBioSummary(d.bioSummary);
-      if (d.primaryDomain) setPrimaryDomain(d.primaryDomain);
+      // 5. Cơ quan công tác
+      if (d.primaryInstitution && !primaryInstitution.trim()) {
+        setPrimaryInstitution(d.primaryInstitution);
+        newlyFilled.add("primaryInstitution");
+      }
+      // 6. Địa chỉ cơ quan
+      if (d.workAddress && !workAddress.trim()) {
+        setWorkAddress(d.workAddress);
+        newlyFilled.add("workAddress");
+      }
+      // 7. Chức vụ chuyên môn
+      if (d.professionalTitle && !professionalTitle.trim()) {
+        setProfessionalTitle(d.professionalTitle);
+        newlyFilled.add("professionalTitle");
+      }
+      // 8. Định danh nghiên cứu quốc tế
+      if (d.googleScholarUrl && !googleScholarUrl.trim()) {
+        setGoogleScholarUrl(d.googleScholarUrl);
+        newlyFilled.add("googleScholarUrl");
+      }
+      if (d.orcidId && !orcidId.trim()) {
+        setOrcidId(d.orcidId);
+        newlyFilled.add("orcidId");
+      }
+      if (d.scopusAuthorId && !scopusAuthorId.trim()) {
+        setScopusAuthorId(d.scopusAuthorId);
+        newlyFilled.add("scopusAuthorId");
+      }
+
+      // 9. Lĩnh vực trụ cột (Bước 2)
+      if (d.primaryDomain && !primaryDomain) {
+        setPrimaryDomain(d.primaryDomain);
+        newlyFilled.add("primaryDomain");
+      }
+      // 10. Từ khóa chuyên sâu (Bước 2)
       if (d.specializedKeywords && Array.isArray(d.specializedKeywords) && d.specializedKeywords.length > 0) {
-        setSpecializedKeywords(d.specializedKeywords);
+        if (specializedKeywords.length === 0) {
+          setSpecializedKeywords(d.specializedKeywords);
+          newlyFilled.add("specializedKeywords");
+        }
       }
-      if (d.googleScholarUrl) setGoogleScholarUrl(d.googleScholarUrl);
-      if (d.orcidId) setOrcidId(d.orcidId);
+      // 11. Số năm kinh nghiệm (Bước 2)
+      if (d.yearsOfExperience) {
+        setYearsOfExperience(Number(d.yearsOfExperience));
+        newlyFilled.add("yearsOfExperience");
+      }
+      // 12. Bio summary (Bước 2)
+      if (d.bioSummary && !bioSummary.trim()) {
+        setBioSummary(d.bioSummary);
+        newlyFilled.add("bioSummary");
+      }
 
+      // 13. Công bố khoa học (Bước 3)
       if (d.publications && Array.isArray(d.publications) && d.publications.length > 0) {
-        setPublications(
-          d.publications.slice(0, 5).map((p: { title?: string; year?: number; journalOrConference?: string; doiOrUrl?: string }) => ({
-            title: p.title || "Công trình khoa học",
-            year: Number(p.year) || 2024,
-            journalOrConference: p.journalOrConference || "Tạp chí KH&CN",
-            doiOrUrl: p.doiOrUrl || undefined,
-          }))
-        );
+        if (publications.length === 0) {
+          setPublications(
+            d.publications.slice(0, 5).map((p: { title?: string; year?: number; journalOrConference?: string; doiOrUrl?: string }) => ({
+              title: p.title || "Công trình khoa học",
+              year: Number(p.year) || 2024,
+              journalOrConference: p.journalOrConference || "Tạp chí KH&CN",
+              doiOrUrl: p.doiOrUrl || undefined,
+            }))
+          );
+          newlyFilled.add("publications");
+        }
       }
 
+      // 14. Bằng độc quyền sáng chế / GPHI (Bước 3)
       if (d.patents && Array.isArray(d.patents) && d.patents.length > 0) {
-        setPatents(
-          d.patents.map((p: { title?: string; patentNumber?: string; year?: number; status?: string }) => ({
-            title: p.title || "Bằng sáng chế",
-            patentNumber: p.patentNumber || undefined,
-            year: Number(p.year) || 2023,
-            status: p.status || "GRANTED",
-          }))
-        );
+        if (patents.length === 0) {
+          setPatents(
+            d.patents.map((p: { title?: string; patentNumber?: string; year?: number; status?: string }) => ({
+              title: p.title || "Bằng sáng chế",
+              patentNumber: p.patentNumber || undefined,
+              year: Number(p.year) || 2023,
+              status: p.status || "GRANTED",
+            }))
+          );
+          newlyFilled.add("patents");
+        }
       }
+
+      setAiFilledFields(newlyFilled);
 
       setScanModelUsed(result.model || "Gemini Flash");
       setScanProgress(100);
-      setScanStatusMessage(`Bóc tách thành công qua Google Gemini AI (${result.model || "Flash"})!`);
+      setScanStatusMessage(`Bóc tách thành công qua Google Gemini AI (${result.model || "Flash"})! Đã tự động điền ${newlyFilled.size} trường trên cả 3 bước.`);
       setScanSuccess(true);
       setAiParsing(false);
     } catch (err: unknown) {
-      setScanStatusMessage(err instanceof Error ? err.message : "Không phân tích được CV. Vui lòng thử lại.");
+      setScanStatusMessage(err instanceof Error ? err.message : "Không phân tích được CV. Bạn có thể tiếp tục nhập liệu thủ công.");
       setScanSuccess(false);
       setAiParsing(false);
     }
@@ -560,7 +763,7 @@ function ExpertUpgradeForm() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 mb-8 dark:bg-slate-900 dark:border-slate-700">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
             <AppButton variant="ghost"
-              onClick={() => setCurrentStep(1)}
+              onClick={() => handleGoToStep(1)}
               className={`flex items-center justify-center gap-2 py-2 px-3 rounded-control text-label font-semibold transition ${
                 currentStep === 1
                   ? "bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-950 dark:text-brand-200"
@@ -570,11 +773,11 @@ function ExpertUpgradeForm() {
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-label ${
                 currentStep === 1 ? "bg-brand-700 text-white" : "bg-slate-200 text-slate-600 dark:text-slate-300"
               }`}>1</div>
-              <span className="text-label">Định danh & Học vị</span>
+              <span className="text-label">Quét CV & Định danh</span>
             </AppButton>
 
             <AppButton variant="ghost"
-              onClick={() => setCurrentStep(2)}
+              onClick={() => handleGoToStep(2)}
               className={`flex items-center justify-center gap-2 py-2 px-3 rounded-control text-label font-semibold transition ${
                 currentStep === 2
                   ? "bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-950 dark:text-brand-200"
@@ -584,11 +787,11 @@ function ExpertUpgradeForm() {
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-label ${
                 currentStep === 2 ? "bg-brand-700 text-white" : "bg-slate-200 text-slate-600 dark:text-slate-300"
               }`}>2</div>
-              <span className="text-label">Năng lực & AI CV Scan</span>
+              <span className="text-label">Năng lực Chuyên môn</span>
             </AppButton>
 
             <AppButton variant="ghost"
-              onClick={() => setCurrentStep(3)}
+              onClick={() => handleGoToStep(3)}
               className={`flex items-center justify-center gap-2 py-2 px-3 rounded-control text-label font-semibold transition ${
                 currentStep === 3
                   ? "bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-950 dark:text-brand-200"
@@ -628,10 +831,10 @@ function ExpertUpgradeForm() {
               </div>
               <div className="pt-4 flex flex-wrap justify-center gap-4">
                 <Link
-                  href="/"
+                  href="/profile/upgrade"
                   className="px-5 py-2.5 rounded-control border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition text-label focus-ring min-h-11 inline-flex items-center justify-center dark:text-slate-100 dark:border-slate-700 dark:bg-slate-800"
                 >
-                  Quay lại Cổng Portal
+                  Quay lại Cổng Nâng hạng
                 </Link>
                 <AppButton variant="primary"
                   onClick={() => setUxState("empty")}
@@ -687,271 +890,8 @@ function ExpertUpgradeForm() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Họ và tên đầy đủ *</label>
-                    <input
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => {
-                        setFullName(e.target.value);
-                        if (e.target.value.trim()) setFullNameError("");
-                      }}
-                      placeholder="TS. Nguyễn Văn An"
-                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 ${
-                        fullNameError ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-300 dark:border-slate-700"
-                      }`}
-                    />
-                    {fullNameError && (
-                      <p className="mt-1 text-label text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{fullNameError}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Số điện thoại liên hệ *</label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        if (phoneError) setPhoneError("");
-                      }}
-                      placeholder="0912345678"
-                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 ${
-                        phoneError ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-300 dark:border-slate-700"
-                      }`}
-                    />
-                    {phoneError && (
-                      <p className="mt-1 text-label text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{phoneError}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Email công tác *</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="chuyengia@nacentech.vn"
-                      className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Năm sinh *</label>
-                    <input
-                      type="number"
-                      min={1940}
-                      max={new Date().getFullYear()}
-                      value={birthYear}
-                      onChange={(e) => {
-                        setBirthYear(Number(e.target.value));
-                        if (birthYearError) setBirthYearError("");
-                      }}
-                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-body form-control dark:border-slate-700 ${
-                        birthYearError ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-300"
-                      }`}
-                    />
-                    {birthYearError && (
-                      <p className="mt-1 text-label text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{birthYearError}</span>
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Giới tính *</label>
-                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-body bg-white form-control dark:bg-slate-900 dark:border-slate-700"><option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option></select>
-                  </div>
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Năm đạt học vị *</label>
-                    <input required type="number" min={1950} max={new Date().getFullYear()} value={degreeYear} onChange={(e) => setDegreeYear(Number(e.target.value))} className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-body form-control dark:border-slate-700" />
-                  </div>
-
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Học vị / Học hàm cao nhất *</label>
-                    <select
-                      value={academicDegree}
-                      onChange={(e) => setAcademicDegree(e.target.value)}
-                      className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none bg-white form-control dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
-                    >
-                      <option value="GS">Giáo sư (GS)</option>
-                      <option value="PGS">Phó Giáo sư (PGS)</option>
-                      <option value="TS">Tiến sĩ (TS)</option>
-                      <option value="ThS">Thạc sĩ (ThS)</option>
-                      <option value="KySu">Kỹ sư / Cử nhân tài năng</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Cơ quan / Viện nghiên cứu công tác *</label>
-                    <div className="mt-1 relative rounded-control">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-300">
-                        <Building className="h-4 w-4" />
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        value={primaryInstitution}
-                        onChange={(e) => setPrimaryInstitution(e.target.value)}
-                        placeholder="Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)"
-                        className="block w-full pl-9 pr-3 py-2.5 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Phân cấp Cấp 2: Chọn Cơ quan / Sở KH&CN tiếp nhận thẩm định (Basic Design v2.6 & FR-ADM-007) */}
-                  <div className="bg-brand-50/50 dark:bg-slate-800/60 p-4 rounded-surface border border-brand-200 dark:border-brand-900/50">
-                    <label className="block text-label font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <ShieldCheck className="h-4 w-4 text-brand-700 dark:text-brand-300" />
-                        <span>Cơ quan / Sở KH&CN tiếp nhận thẩm định hồ sơ *</span>
-                      </span>
-                      <span className="text-caption text-brand-700 dark:text-brand-300 font-semibold bg-brand-100 dark:bg-brand-950 px-2 py-0.5 rounded-full">
-                        Phân cấp Cấp 2
-                      </span>
-                    </label>
-                    <p className="text-caption text-slate-500 dark:text-slate-400 mb-2">
-                      Theo cơ chế phân cấp quản lý đa cấp, hồ sơ của bạn sẽ được chuyển thẳng về Lãnh đạo Sở KH&CN hoặc Đơn vị chủ quản đã chọn để thẩm định trực tiếp (SLA &le; 48 giờ).
-                    </p>
-                    <select
-                      value={receivingUnit}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setReceivingUnit(val);
-                        setReceivingScopeType(val === "GLOBAL" ? "GLOBAL" : "PROVINCE");
-                      }}
-                      className="block w-full px-3 py-2.5 border border-brand-300 rounded-control text-slate-900 text-body font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900"
-                    >
-                      <optgroup label="Cấp Trung Ương (Hội đồng Toàn quốc)">
-                        <option value="GLOBAL">NacenTech Trung Ương (Bộ KH&CN - Toàn quốc)</option>
-                      </optgroup>
-                      <optgroup label="Sở KH&CN Miền Bắc (12 Tỉnh Trọng Điểm)">
-                        <option value="HN">Sở KH&CN Hà Nội</option>
-                        <option value="HP">Sở KH&CN Hải Phòng</option>
-                        <option value="QN">Sở KH&CN Quảng Ninh</option>
-                        <option value="BN">Sở KH&CN Bắc Ninh</option>
-                        <option value="HD">Sở KH&CN Hải Dương</option>
-                        <option value="TN">Sở KH&CN Thái Nguyên</option>
-                        <option value="VP">Sở KH&CN Vĩnh Phúc</option>
-                        <option value="ND">Sở KH&CN Nam Định</option>
-                        <option value="TB">Sở KH&CN Thái Bình</option>
-                        <option value="PT">Sở KH&CN Phú Thọ</option>
-                        <option value="TH">Sở KH&CN Thanh Hóa</option>
-                        <option value="NA">Sở KH&CN Nghệ An</option>
-                      </optgroup>
-                      <optgroup label="Sở KH&CN Miền Trung & Tây Nguyên (10 Tỉnh Trọng Điểm)">
-                        <option value="DN">Sở KH&CN Đà Nẵng</option>
-                        <option value="QNA">Sở KH&CN Quảng Nam</option>
-                        <option value="QNG">Sở KH&CN Quảng Ngãi</option>
-                        <option value="BD">Sở KH&CN Bình Định</option>
-                        <option value="PY">Sở KH&CN Phú Yên</option>
-                        <option value="KH">Sở KH&CN Khánh Hòa</option>
-                        <option value="GL">Sở KH&CN Gia Lai</option>
-                        <option value="DL">Sở KH&CN Đắk Lắk</option>
-                        <option value="KT">Sở KH&CN Kon Tum</option>
-                        <option value="LD">Sở KH&CN Lâm Đồng</option>
-                      </optgroup>
-                      <optgroup label="Sở KH&CN Miền Nam (12 Tỉnh Trọng Điểm)">
-                        <option value="HCM">Sở KH&CN TP. Hồ Chí Minh</option>
-                        <option value="BDG">Sở KH&CN Bình Dương</option>
-                        <option value="DNA">Sở KH&CN Đồng Nai</option>
-                        <option value="BRVT">Sở KH&CN Bà Rịa - Vũng Tàu</option>
-                        <option value="CT">Sở KH&CN Cần Thơ</option>
-                        <option value="AG">Sở KH&CN An Giang</option>
-                        <option value="TG">Sở KH&CN Tiền Giang</option>
-                        <option value="LA">Sở KH&CN Long An</option>
-                        <option value="DT">Sở KH&CN Đồng Tháp</option>
-                        <option value="BL">Sở KH&CN Bạc Liêu</option>
-                        <option value="CM">Sở KH&CN Cà Mau</option>
-                        <option value="KG">Sở KH&CN Kiên Giang</option>
-                      </optgroup>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Chức vụ chuyên môn / Nghiên cứu</label>
-                    <input
-                      type="text"
-                      value={professionalTitle}
-                      onChange={(e) => setProfessionalTitle(e.target.value)}
-                      placeholder="Nghiên cứu viên chính / Trưởng nhóm Lab"
-                      className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-100 pt-5 dark:border-slate-700">
-                  <h4 className="font-semibold text-slate-900 mb-3 text-card-title dark:text-slate-100">Liên kết Định danh Quốc tế (Tăng điểm tín nhiệm hồ sơ)</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-label font-medium text-slate-600 mb-1 dark:text-slate-300">Google Scholar URL</label>
-                      <input
-                        type="url"
-                        value={googleScholarUrl}
-                        onChange={(e) => setGoogleScholarUrl(e.target.value)}
-                        placeholder="https://scholar.google.com/..."
-                        className="w-full px-3 py-2 border border-slate-300 rounded-control text-body text-slate-900 focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-label font-medium text-slate-600 mb-1 dark:text-slate-300">ORCID iD</label>
-                      <input
-                        type="text"
-                        value={orcidId}
-                        onChange={(e) => setOrcidId(e.target.value)}
-                        placeholder="0000-0002-1825-0097"
-                        className="w-full px-3 py-2 border border-slate-300 rounded-control text-body text-slate-900 focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-label font-medium text-slate-600 mb-1 dark:text-slate-300">Scopus Author ID</label>
-                      <input
-                        type="text"
-                        value={scopusAuthorId}
-                        onChange={(e) => setScopusAuthorId(e.target.value)}
-                        placeholder="57201234567"
-                        className="w-full px-3 py-2 border border-slate-300 rounded-control text-body text-slate-900 focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-4">
-                  <AppButton variant="primary"
-                    type="button"
-                    onClick={handleStep1Next}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-control font-medium transition shadow-sm text-label focus-ring"
-                  >
-                    <span>Tiếp tục: Năng lực Chuyên môn</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </AppButton>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2: COMPETENCY & AI SCAN */}
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-bold text-slate-900 flex items-center gap-2 text-card-title dark:text-slate-100">
-                    <Sparkles className="w-5 h-5 text-brand-700 dark:text-brand-200" />
-                    <span>Bước 2: Năng lực Chuyên môn & AI CV Parser</span>
-                  </h3>
-                  <p className="text-body text-slate-500 mt-1 dark:text-slate-300">
-                    Hỗ trợ quét thông minh từ tệp CV khoa học để tự động phân rã kỹ năng và công bố.
-                  </p>
-                </div>
-
-                {/* AI CV Parser Feature Box */}
-                <div className="bg-brand-50/70 border border-brand-200 rounded-2xl p-6 dark:bg-brand-950/40 dark:border-brand-900">
+                {/* AI CV Parser Feature Box (Hero Dropzone - Bước 1) */}
+                <div className="bg-brand-50/70 border border-brand-200 rounded-2xl p-6 dark:bg-brand-950/40 dark:border-brand-900 shadow-sm">
                   <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-control bg-brand-700 text-white flex items-center justify-center shrink-0 shadow-sm">
@@ -965,7 +905,7 @@ function ExpertUpgradeForm() {
                           </span>
                         </h4>
                         <p className="text-body text-brand-800 dark:text-brand-300">
-                          Tải lên tệp Lý lịch khoa học (PDF hoặc Word) để AI bóc tách tự động và điền trước vào các trường bên dưới.
+                          Tải lên tệp Lý lịch khoa học (PDF hoặc Word) để AI tự động bóc tách và Pre-fill đầy đủ thông tin vào cả 3 bước.
                         </p>
                       </div>
                     </div>
@@ -1103,7 +1043,17 @@ function ExpertUpgradeForm() {
                           <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                           <div className="text-xs text-emerald-900 dark:text-emerald-200 leading-relaxed">
                             <strong className="font-bold">Trích xuất thành công{scanModelUsed ? ` (${scanModelUsed})` : ""}!</strong>{" "}
-                            Đã tự động đối soát và điền trước các thông tin Định danh, Học hàm/Học vị, Cơ quan viện nghiên cứu, Ngành chuyên môn, Số năm kinh nghiệm, Từ khóa thế mạnh và Danh mục công bố vào hồ sơ. Vui lòng rà soát lại thông tin trước khi tiếp tục.
+                            Đã tự động đối soát và điền trước thông tin vào cả 3 bước (Định danh, Năng lực chuyên môn, Công bố khoa học & Bằng sáng chế). Vui lòng rà soát lại thông tin bên dưới trước khi tiếp tục.
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Scan Error Notice (Zero-Lock Fallback) */}
+                      {!scanSuccess && !aiParsing && scanStatusMessage && (
+                        <div className="p-3.5 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-200 dark:border-amber-900 flex items-start gap-3">
+                          <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <div className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                            <strong className="font-bold">Lưu ý:</strong> {scanStatusMessage} Bạn có thể tiếp tục nhập liệu thủ công từng bước bên dưới mà không bị gián đoạn.
                           </div>
                         </div>
                       )}
@@ -1111,14 +1061,327 @@ function ExpertUpgradeForm() {
                   )}
                 </div>
 
+                {/* Divider phân tách rõ ràng */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-slate-200 dark:border-slate-700" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white dark:bg-slate-900 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider dark:text-slate-400">
+                      Hoặc nhập liệu thủ công từng bước bên dưới
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Họ và tên đầy đủ *</span>
+                      {renderAiBadge("fullName")}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => {
+                        setFullName(e.target.value);
+                        if (e.target.value.trim()) setFullNameError("");
+                      }}
+                      placeholder="TS. Nguyễn Văn An"
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 ${
+                        fullNameError ? "border-rose-500 ring-1 ring-rose-500" : aiFilledFields.has("fullName") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300 dark:border-slate-700"
+                      }`}
+                    />
+                    {fullNameError && (
+                      <p className="mt-1 text-label text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{fullNameError}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Số điện thoại liên hệ *</span>
+                      {renderAiBadge("phone")}
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (phoneError) setPhoneError("");
+                      }}
+                      placeholder="0912345678"
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 ${
+                        phoneError ? "border-rose-500 ring-1 ring-rose-500" : aiFilledFields.has("phone") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300 dark:border-slate-700"
+                      }`}
+                    />
+                    {phoneError && (
+                      <p className="mt-1 text-label text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{phoneError}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Email công tác *</span>
+                      {renderAiBadge("email")}
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="chuyengia@nacentech.vn"
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 ${
+                        aiFilledFields.has("email") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300 dark:border-slate-700"
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Năm sinh *</span>
+                      {renderAiBadge("birthYear")}
+                    </label>
+                    <input
+                      type="number"
+                      min={1940}
+                      max={new Date().getFullYear()}
+                      value={birthYear}
+                      onChange={(e) => {
+                        setBirthYear(Number(e.target.value));
+                        if (birthYearError) setBirthYearError("");
+                      }}
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-body form-control dark:border-slate-700 ${
+                        birthYearError ? "border-rose-500 ring-1 ring-rose-500" : aiFilledFields.has("birthYear") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"
+                      }`}
+                    />
+                    {birthYearError && (
+                      <p className="mt-1 text-label text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{birthYearError}</span>
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Giới tính *</span>
+                      {renderAiBadge("gender")}
+                    </label>
+                    <select value={gender} onChange={(e) => setGender(e.target.value)} className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-body bg-white form-control dark:bg-slate-900 dark:border-slate-700 ${aiFilledFields.has("gender") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}><option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option></select>
+                  </div>
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Năm đạt học vị *</label>
+                    <input required type="number" min={1950} max={new Date().getFullYear()} value={degreeYear} onChange={(e) => setDegreeYear(Number(e.target.value))} className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-body form-control dark:border-slate-700" />
+                  </div>
+
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Học vị / Học hàm cao nhất *</span>
+                      {renderAiBadge("academicDegree")}
+                    </label>
+                    <select
+                      value={academicDegree}
+                      onChange={(e) => setAcademicDegree(e.target.value)}
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none bg-white form-control dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("academicDegree") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
+                    >
+                      <option value="GS">Giáo sư (GS)</option>
+                      <option value="PGS">Phó Giáo sư (PGS)</option>
+                      <option value="TS">Tiến sĩ (TS)</option>
+                      <option value="ThS">Thạc sĩ (ThS)</option>
+                      <option value="KySu">Kỹ sư / Cử nhân tài năng</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Cơ quan / Viện nghiên cứu công tác *</span>
+                      {renderAiBadge("primaryInstitution")}
+                    </label>
+                    <div className="mt-1 relative rounded-control">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-300">
+                        <Building className="h-4 w-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={primaryInstitution}
+                        onChange={(e) => setPrimaryInstitution(e.target.value)}
+                        placeholder="Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)"
+                        className={`block w-full pl-9 pr-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("primaryInstitution") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phân cấp Cấp 2: Chọn Cơ quan / Sở KH&CN tiếp nhận thẩm định (Basic Design v2.6 & FR-ADM-007) */}
+                  <div className="bg-brand-50/50 dark:bg-slate-800/60 p-4 rounded-surface border border-brand-200 dark:border-brand-900/50">
+                    <label className="block text-label font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <ShieldCheck className="h-4 w-4 text-brand-700 dark:text-brand-300" />
+                        <span>Cơ quan / Sở KH&CN tiếp nhận thẩm định hồ sơ *</span>
+                      </span>
+                      <span className="text-caption text-brand-700 dark:text-brand-300 font-semibold bg-brand-100 dark:bg-brand-950 px-2 py-0.5 rounded-full">
+                        Phân cấp Cấp 2
+                      </span>
+                    </label>
+                    <p className="text-caption text-slate-500 dark:text-slate-400 mb-2">
+                      Theo cơ chế phân cấp quản lý đa cấp, hồ sơ của bạn sẽ được chuyển thẳng về Lãnh đạo Sở KH&CN hoặc Đơn vị chủ quản đã chọn để thẩm định trực tiếp (SLA &le; 48 giờ).
+                    </p>
+                    <select
+                      value={receivingUnit}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setReceivingUnit(val);
+                        setReceivingScopeType(val === "GLOBAL" ? "GLOBAL" : "PROVINCE");
+                      }}
+                      className="block w-full px-3 py-2.5 border border-brand-300 rounded-control text-slate-900 text-body font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900"
+                    >
+                      <optgroup label="Cấp Trung Ương (Hội đồng Toàn quốc)">
+                        <option value="GLOBAL">NacenTech Trung Ương (Bộ KH&CN - Toàn quốc)</option>
+                      </optgroup>
+                      <optgroup label="Sở KH&CN Miền Bắc (12 Tỉnh Trọng Điểm)">
+                        <option value="HN">Sở KH&CN Hà Nội</option>
+                        <option value="HP">Sở KH&CN Hải Phòng</option>
+                        <option value="QN">Sở KH&CN Quảng Ninh</option>
+                        <option value="BN">Sở KH&CN Bắc Ninh</option>
+                        <option value="HD">Sở KH&CN Hải Dương</option>
+                        <option value="TN">Sở KH&CN Thái Nguyên</option>
+                        <option value="VP">Sở KH&CN Vĩnh Phúc</option>
+                        <option value="ND">Sở KH&CN Nam Định</option>
+                        <option value="TB">Sở KH&CN Thái Bình</option>
+                        <option value="PT">Sở KH&CN Phú Thọ</option>
+                        <option value="TH">Sở KH&CN Thanh Hóa</option>
+                        <option value="NA">Sở KH&CN Nghệ An</option>
+                      </optgroup>
+                      <optgroup label="Sở KH&CN Miền Trung & Tây Nguyên (10 Tỉnh Trọng Điểm)">
+                        <option value="DN">Sở KH&CN Đà Nẵng</option>
+                        <option value="QNA">Sở KH&CN Quảng Nam</option>
+                        <option value="QNG">Sở KH&CN Quảng Ngãi</option>
+                        <option value="BD">Sở KH&CN Bình Định</option>
+                        <option value="PY">Sở KH&CN Phú Yên</option>
+                        <option value="KH">Sở KH&CN Khánh Hòa</option>
+                        <option value="GL">Sở KH&CN Gia Lai</option>
+                        <option value="DL">Sở KH&CN Đắk Lắk</option>
+                        <option value="KT">Sở KH&CN Kon Tum</option>
+                        <option value="LD">Sở KH&CN Lâm Đồng</option>
+                      </optgroup>
+                      <optgroup label="Sở KH&CN Miền Nam (12 Tỉnh Trọng Điểm)">
+                        <option value="HCM">Sở KH&CN TP. Hồ Chí Minh</option>
+                        <option value="BDG">Sở KH&CN Bình Dương</option>
+                        <option value="DNA">Sở KH&CN Đồng Nai</option>
+                        <option value="BRVT">Sở KH&CN Bà Rịa - Vũng Tàu</option>
+                        <option value="CT">Sở KH&CN Cần Thơ</option>
+                        <option value="AG">Sở KH&CN An Giang</option>
+                        <option value="TG">Sở KH&CN Tiền Giang</option>
+                        <option value="LA">Sở KH&CN Long An</option>
+                        <option value="DT">Sở KH&CN Đồng Tháp</option>
+                        <option value="BL">Sở KH&CN Bạc Liêu</option>
+                        <option value="CM">Sở KH&CN Cà Mau</option>
+                        <option value="KG">Sở KH&CN Kiên Giang</option>
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Chức vụ chuyên môn / Nghiên cứu</span>
+                      {renderAiBadge("professionalTitle")}
+                    </label>
+                    <input
+                      type="text"
+                      value={professionalTitle}
+                      onChange={(e) => setProfessionalTitle(e.target.value)}
+                      placeholder="Nghiên cứu viên chính / Trưởng nhóm Lab"
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("professionalTitle") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-100 pt-5 dark:border-slate-700">
+                  <h4 className="font-semibold text-slate-900 mb-3 text-card-title dark:text-slate-100">Liên kết Định danh Quốc tế (Tăng điểm tín nhiệm hồ sơ)</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-label font-medium text-slate-600 mb-1 dark:text-slate-300 flex items-center">
+                        <span>Google Scholar URL</span>
+                        {renderAiBadge("googleScholarUrl")}
+                      </label>
+                      <input
+                        type="url"
+                        value={googleScholarUrl}
+                        onChange={(e) => setGoogleScholarUrl(e.target.value)}
+                        placeholder="https://scholar.google.com/..."
+                        className={`w-full px-3 py-2 border rounded-control text-body text-slate-900 focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("googleScholarUrl") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-label font-medium text-slate-600 mb-1 dark:text-slate-300 flex items-center">
+                        <span>ORCID iD</span>
+                        {renderAiBadge("orcidId")}
+                      </label>
+                      <input
+                        type="text"
+                        value={orcidId}
+                        onChange={(e) => setOrcidId(e.target.value)}
+                        placeholder="0000-0002-1825-0097"
+                        className={`w-full px-3 py-2 border rounded-control text-body text-slate-900 focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("orcidId") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-label font-medium text-slate-600 mb-1 dark:text-slate-300 flex items-center">
+                        <span>Scopus Author ID</span>
+                        {renderAiBadge("scopusAuthorId")}
+                      </label>
+                      <input
+                        type="text"
+                        value={scopusAuthorId}
+                        onChange={(e) => setScopusAuthorId(e.target.value)}
+                        placeholder="57201234567"
+                        className={`w-full px-3 py-2 border rounded-control text-body text-slate-900 focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("scopusAuthorId") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <AppButton variant="primary"
+                    type="button"
+                    onClick={handleStep1Next}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-control font-medium transition shadow-sm text-label focus-ring"
+                  >
+                    <span>Tiếp tục: Năng lực Chuyên môn</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </AppButton>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: COMPETENCY */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-bold text-slate-900 flex items-center gap-2 text-card-title dark:text-slate-100">
+                    <Sparkles className="w-5 h-5 text-brand-700 dark:text-brand-200" />
+                    <span>Bước 2: Năng lực Chuyên môn</span>
+                  </h3>
+                  <p className="text-body text-slate-500 mt-1 dark:text-slate-300">
+                    Khai báo lĩnh vực công nghệ trụ cột, từ khóa chuyên sâu và số năm kinh nghiệm thực tiễn (đã được tự động điền sẵn từ CV nếu đã quét).
+                  </p>
+                </div>
+
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Lĩnh vực Trụ cột Công nghệ *</label>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Lĩnh vực Trụ cột Công nghệ *</span>
+                      {renderAiBadge("primaryDomain")}
+                    </label>
                     <select
                       value={primaryDomain}
                       disabled={sectorLoading || sectorLoadError || sectorOptions.length === 0}
                       onChange={(e) => setPrimaryDomain(e.target.value)}
-                      className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none bg-white font-medium form-control dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none bg-white font-medium form-control dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("primaryDomain") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
                     >
                       <option value="">Chọn lĩnh vực từ danh mục hiện hành</option>
                       {sectorOptions.map((sector) => <option key={sector.code} value={sector.code}>{sector.name}</option>)}
@@ -1130,7 +1393,10 @@ function ExpertUpgradeForm() {
                   </div>
 
                   <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Từ khóa chuyên sâu (Tags)</label>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Từ khóa chuyên sâu (Tags)</span>
+                      {renderAiBadge("specializedKeywords")}
+                    </label>
                     <div className="mt-1 flex gap-2">
                       <input
                         type="text"
@@ -1170,14 +1436,17 @@ function ExpertUpgradeForm() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Số năm kinh nghiệm nghiên cứu/thực tiễn *</label>
+                      <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                        <span>Số năm kinh nghiệm nghiên cứu/thực tiễn *</span>
+                        {renderAiBadge("yearsOfExperience")}
+                      </label>
                       <input
                         type="number"
                         min={1}
                         max={60}
                         value={yearsOfExperience}
                         onChange={(e) => setYearsOfExperience(Number(e.target.value))}
-                        className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
+                        className={`mt-1 block w-full px-3 py-2 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("yearsOfExperience") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
                       />
                     </div>
                     <div>
@@ -1195,13 +1464,16 @@ function ExpertUpgradeForm() {
                   </div>
 
                   <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Tóm tắt tiểu sử chuyên môn (Bio Summary)</label>
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Tóm tắt tiểu sử chuyên môn (Bio Summary)</span>
+                      {renderAiBadge("bioSummary")}
+                    </label>
                     <textarea
                       rows={3}
                       value={bioSummary}
                       onChange={(e) => setBioSummary(e.target.value)}
                       placeholder="Mô tả ngắn gọn về quá trình nghiên cứu, thành tựu tiêu biểu và thế mạnh thẩm định chuyển giao công nghệ..."
-                      className="mt-1 block w-full p-3 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
+                      className={`mt-1 block w-full p-3 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("bioSummary") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
                     />
                   </div>
                 </div>
@@ -1240,17 +1512,20 @@ function ExpertUpgradeForm() {
                 <div>
                   <h3 className="font-bold text-slate-900 flex items-center gap-2 text-card-title dark:text-slate-100">
                     <Award className="w-5 h-5 text-brand-700 dark:text-brand-200" />
-                    <span>Bước 3: Hồ Sơ Khoa Học & Cam Kết Pháp Lý</span>
+                    <span>Bước 3: Công bố & Cam kết</span>
                   </h3>
                   <p className="text-body text-slate-500 mt-1 dark:text-slate-300">
-                    Khai báo công bố khoa học tiêu biểu, bằng sáng chế và xác nhận cam kết theo Nghị định 13/2023/NĐ-CP.
+                    Khai báo công bố khoa học tiêu biểu, bằng sáng chế (đã được tự động điền sẵn từ CV nếu đã quét) và xác nhận cam kết theo Nghị định 13/2023/NĐ-CP.
                   </p>
                 </div>
 
                 {/* Publications Table */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-slate-900 text-card-title dark:text-slate-100">Công bố Khoa học Tiêu biểu ({publications.length})</h4>
+                    <h4 className="font-semibold text-slate-900 text-card-title dark:text-slate-100 flex items-center">
+                      <span>Công bố Khoa học Tiêu biểu ({publications.length})</span>
+                      {renderAiBadge("publications")}
+                    </h4>
                   </div>
 
                   <div className="space-y-2">
@@ -1315,6 +1590,7 @@ function ExpertUpgradeForm() {
                         />
                         <AppButton variant="primary"
                           type="button"
+                          aria-label="Thêm công bố"
                           onClick={handleAddPublication}
                           className="flex-1 inline-flex items-center justify-center gap-1 rounded-control text-label font-medium focus-ring"
                         >
@@ -1329,6 +1605,79 @@ function ExpertUpgradeForm() {
                         <span>{pubYearError}</span>
                       </p>
                     )}
+                  </div>
+                </div>
+
+                {/* Patents & Utility Solutions Table */}
+                <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-slate-900 text-card-title dark:text-slate-100 flex items-center">
+                      <span>Bằng Độc Quyền Sáng Chế & Giải Pháp Hữu Ích ({patents.length})</span>
+                      {renderAiBadge("patents")}
+                    </h4>
+                  </div>
+
+                  <div className="space-y-2">
+                    {patents.map((pat, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-slate-50 border border-slate-200 rounded-control flex items-center justify-between text-label dark:border-slate-700 dark:bg-slate-800"
+                      >
+                        <div className="space-y-0.5">
+                          <p className="font-semibold text-slate-900 dark:text-slate-100">{pat.title}</p>
+                          <p className="text-slate-500 dark:text-slate-300">
+                            {pat.patentNumber ? `Số văn bằng: ${pat.patentNumber} — ` : ""}Năm cấp: {pat.year} — Trạng thái: {pat.status === "GRANTED" ? "Đã cấp bằng" : pat.status}
+                          </p>
+                        </div>
+                        <AppButton variant="ghost"
+                          type="button"
+                          onClick={() => handleRemovePatent(idx)}
+                          className="text-slate-400 hover:text-rose-600 transition p-1 focus-ring dark:text-slate-300"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </AppButton>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add New Patent Form */}
+                  <div className="p-4 bg-slate-50/50 border border-dashed border-slate-300 rounded-xl space-y-3 dark:border-slate-700 dark:bg-slate-800">
+                    <div className="text-label font-semibold text-slate-700 dark:text-slate-100">Thêm bằng sáng chế / giải pháp hữu ích</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Tên sáng chế / giải pháp hữu ích"
+                        value={newPatentTitle}
+                        onChange={(e) => setNewPatentTitle(e.target.value)}
+                        className="sm:col-span-2 px-3 py-1.5 border border-slate-300 rounded-control text-body form-control dark:border-slate-700"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Số văn bằng (nếu có)"
+                        value={newPatentNumber}
+                        onChange={(e) => setNewPatentNumber(e.target.value)}
+                        className="px-3 py-1.5 border border-slate-300 rounded-control text-body form-control dark:border-slate-700"
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          min={1950}
+                          max={new Date().getFullYear()}
+                          value={newPatentYear}
+                          onChange={(e) => setNewPatentYear(Number(e.target.value))}
+                          className="w-20 px-2 py-1.5 border border-slate-300 rounded-control text-body form-control dark:border-slate-700"
+                        />
+                        <AppButton variant="primary"
+                          type="button"
+                          aria-label="Thêm sáng chế"
+                          onClick={handleAddPatent}
+                          className="flex-1 inline-flex items-center justify-center gap-1 rounded-control text-label font-medium focus-ring"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Thêm</span>
+                        </AppButton>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

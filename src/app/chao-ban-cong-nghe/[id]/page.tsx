@@ -1292,7 +1292,13 @@ export default function ChiTietChaoBanPage() {
                 <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
                   Hệ thống đã tự động ghi nhận nhu cầu công nghệ vào CSDL PostgreSQL liên kết với hồ sơ <b>{offer.offerCode}</b>. Đơn vị chủ quản ({offer.managingAuthorityName || "Sở KH&CN"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.
                 </p>
-                <div className="pt-2">
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+                  <Link
+                    href="/portal/buyer/demands?tab=commercial"
+                    className="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm inline-flex items-center gap-1.5"
+                  >
+                    Theo dõi đơn hàng trong Workspace &rarr;
+                  </Link>
                   <button
                     type="button"
                     onClick={() => {
@@ -1300,7 +1306,7 @@ export default function ChiTietChaoBanPage() {
                       setConnectSuccess(false);
                       setCreatedDemandCode(null);
                     }}
-                    className="bg-brand-700 hover:bg-brand-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm"
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-xl text-xs font-bold transition"
                   >
                     Hoàn tất & Đóng
                   </button>
@@ -1335,6 +1341,10 @@ export default function ChiTietChaoBanPage() {
                     impactScore: 4,
                     investmentCapacity: 4,
                     adoptionReadiness: 4,
+                    offerId: offer.id,
+                    offerTitle: offer.title,
+                    offerCode: offer.offerCode,
+                    isCommercialOrder: isCommercialProduct,
                   });
                   setIsSubmittingDemand(false);
                   if (res.success) {

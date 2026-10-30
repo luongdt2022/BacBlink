@@ -4,6 +4,15 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import BuyerDemandsPage from './page';
 import { authClient, ROLES } from '@/lib/auth-client';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 const mockDemands = [
   {
     id: 'dmd-01',
@@ -36,6 +45,9 @@ const mockBookmarkedDemands = [
 describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, '', '/portal/buyer/demands');
+    }
     authClient.setSession('test-token-jwt', {
       id: 'buyer-01',
       fullName: 'Doanh Nghiệp Buyer Demo',
@@ -126,12 +138,125 @@ describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
     render(<BuyerDemandsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ')).toBeInTheDocument();
+      expect(screen.getByText('Quản lý Nhu cầu Công nghệ')).toBeInTheDocument();
       expect(screen.getByText('BÊN MUA CÔNG NGHỆ')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /\+ Gửi Nhu cầu Công nghệ mới/i })).toBeInTheDocument();
+      expect(screen.getByText(/Quản lý các nhu cầu công nghệ, chỉ số cấp thiết TNI/i)).toBeInTheDocument();
     });
 
     // Zero Dev Badge
     expect(screen.queryByText('TASK-03')).not.toBeInTheDocument();
+  });
+
+  it('displays dynamic KPI summary cards correctly when demands data exists (Zero-Mock)', async () => {
+    const activeDemands = [
+      {
+        id: 'dmd-01',
+        itemCode: 'DMD-202610-001',
+        stageName: 'Đúc áp lực',
+        technicalProblem: 'Khắc phục hiện tượng rỗ khí',
+        sectorCode: 'LV01',
+        budgetRange: '500 triệu – 1 tỷ VNĐ',
+        tniScore: 85,
+        tniClassification: 'VERY_HIGH',
+        status: 'VERIFIED',
+        matchingCount: 3,
+        needConsulting: true,
+      },
+      {
+        id: 'dmd-02',
+        itemCode: 'DMD-202610-002',
+        stageName: 'Gia công nhiệt',
+        technicalProblem: 'Tối ưu hóa nhiệt luyện',
+        sectorCode: 'LV01',
+        budgetRange: '1 tỷ VNĐ',
+        tniScore: 75,
+        tniClassification: 'HIGH',
+        status: 'PENDING',
+        matchingCount: 5,
+        needConsulting: false,
+      },
+    ];
+
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands')) {
+        return { ok: true, json: async () => activeDemands } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      // Card 1
+      const card1 = screen.getByText('Tổng nhu cầu đã gửi').closest('.surface-card');
+      expect(card1).toBeInTheDocument();
+      expect(card1).toHaveTextContent('2');
+      expect(card1).toHaveTextContent('1 nhu cầu đã duyệt niêm yết');
+
+      // Card 2: avgTni = round((85 + 75) / 2) = 80
+      const card2 = screen.getByText('Điểm TNI trung bình').closest('.surface-card');
+      expect(card2).toBeInTheDocument();
+      expect(card2).toHaveTextContent('80');
+      expect(card2).toHaveTextContent('Nhu cầu rất cao');
+
+      // Card 3: matchingCount = 3 + 5 = 8
+      const card3 = screen.getByText('Nguồn cung tiềm năng').closest('.surface-card');
+      expect(card3).toBeInTheDocument();
+      expect(card3).toHaveTextContent('8');
+      expect(card3).toHaveTextContent('Tự động gợi ý từ Radar');
+
+      // Card 4: needConsulting count = 1
+      const card4 = screen.getByText('Chuyên gia Sở KH&CN').closest('.surface-card');
+      expect(card4).toBeInTheDocument();
+      expect(card4).toHaveTextContent('1');
+      expect(card4).toHaveTextContent('Nhu cầu đăng ký tư vấn 1-1');
+    });
+  });
+
+  it('displays Zero-Mock KPI summary defaults (0, --, 0, 0) and friendly subtext when demands list is empty', async () => {
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands')) {
+        return { ok: true, json: async () => [] } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      // Card 1: 0, "0 nhu cầu đã duyệt niêm yết"
+      const card1 = screen.getByText('Tổng nhu cầu đã gửi').closest('.surface-card');
+      expect(card1).toBeInTheDocument();
+      expect(card1).toHaveTextContent('0');
+      expect(card1).toHaveTextContent('0 nhu cầu đã duyệt niêm yết');
+
+      // Card 2: "--", "Chưa có dữ liệu đánh giá"
+      const card2 = screen.getByText('Điểm TNI trung bình').closest('.surface-card');
+      expect(card2).toBeInTheDocument();
+      expect(card2).toHaveTextContent('--');
+      expect(card2).toHaveTextContent('Chưa có dữ liệu đánh giá');
+
+      // Card 3: 0, "Chưa kích hoạt ghép nối"
+      const card3 = screen.getByText('Nguồn cung tiềm năng').closest('.surface-card');
+      expect(card3).toBeInTheDocument();
+      expect(card3).toHaveTextContent('0');
+      expect(card3).toHaveTextContent('Chưa kích hoạt ghép nối');
+
+      // Card 4: 0, "Chưa đăng ký tư vấn"
+      const card4 = screen.getByText('Chuyên gia Sở KH&CN').closest('.surface-card');
+      expect(card4).toBeInTheDocument();
+      expect(card4).toHaveTextContent('0');
+      expect(card4).toHaveTextContent('Chưa đăng ký tư vấn');
+    });
+
+    // Tuyệt đối không xuất hiện các số mock hardcode cũ: 80, 14, 1
+    expect(screen.queryByText('80')).not.toBeInTheDocument();
+    expect(screen.queryByText('14')).not.toBeInTheDocument();
+    expect(screen.queryByText('Mức Rất Cao (Ưu tiên P0)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Đã gán tư vấn 1-1')).not.toBeInTheDocument();
   });
 
   it('supports pagination controls when demands exceed pageSize of 5', async () => {
@@ -177,5 +302,178 @@ describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
       expect(screen.getByText('Vấn đề bài toán số 8')).toBeInTheDocument();
     });
     expect(screen.queryByText('Vấn đề bài toán số 1')).not.toBeInTheDocument();
+  });
+
+  it('includes Authorization header when fetching demands and displays friendly prompt when unauthenticated', async () => {
+    let capturedHeaders: any = null;
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands')) {
+        capturedHeaders = init?.headers;
+        return {
+          ok: true,
+          json: async () => mockDemands,
+        } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Khắc phục hiện tượng rỗ khí')).toBeInTheDocument();
+    });
+
+    expect(capturedHeaders).toEqual(
+      expect.objectContaining({
+        Authorization: 'Bearer test-token-jwt',
+      })
+    );
+
+    // Unauthenticated state
+    cleanup();
+    authClient.clearSession();
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Yêu cầu đăng nhập Doanh nghiệp')).toBeInTheDocument();
+      expect(screen.getByText('Đăng Nhập Ngay')).toBeInTheDocument();
+    });
+  });
+
+  it('isolates commercial orders into Tab 1 and R&D demands into Tab 2 (CR-TASK-03-DELTA-02 / Task 6.3)', async () => {
+    const mixedDemands = [
+      {
+        id: 'ord-comm-01',
+        itemCode: 'ORD-202610-001',
+        stageName: 'Sản xuất & Chuyển giao',
+        technicalProblem: '[DN: Demo] Nhu cầu đặt mua / kết nối thương phẩm: Dây chuyền sấy chè Thái Nguyên',
+        desiredSolution: '[Đề xuất thương mại: PURCHASE_COMMERCIAL] Khách hàng mua sản phẩm TECH-01',
+        budgetRange: '500 triệu VNĐ',
+        status: 'SUBMITTED',
+        isCommercialOrder: true,
+      },
+      {
+        id: 'rd-01',
+        itemCode: 'DMD-202610-999',
+        stageName: 'Nghiên cứu & Thiết kế',
+        technicalProblem: 'Nghiên cứu thuật toán AI tối ưu sấy chân không',
+        desiredSolution: 'Tìm kiếm viện nghiên cứu hợp tác R&D',
+        budgetRange: '1 – 3 tỷ VNĐ',
+        tniScore: 88,
+        tniClassification: 'VERY_HIGH',
+        status: 'VERIFIED',
+      },
+    ];
+
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands')) {
+        return { ok: true, json: async () => mixedDemands } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    // Mặc định do có đơn thương mại nên Tab 1 (Đơn mua sản phẩm thương mại) được chọn
+    await waitFor(() => {
+      expect(screen.getByText('Dây chuyền sấy chè Thái Nguyên')).toBeInTheDocument();
+      expect(screen.getByText('ORD-202610-001')).toBeInTheDocument();
+      expect(screen.getByText('Tiếp nhận đơn')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Hủy đơn/i })).toBeInTheDocument();
+    });
+
+    // Bài toán R&D không xuất hiện trong Tab 1
+    expect(screen.queryByText('Nghiên cứu thuật toán AI tối ưu sấy chân không')).not.toBeInTheDocument();
+
+    // Chuyển sang Tab 2: "Nhu cầu R&D / Bài toán công nghệ"
+    const rdTabBtn = screen.getByRole('button', { name: /Nhu cầu R&D \/ Bài toán công nghệ/i });
+    fireEvent.click(rdTabBtn);
+
+    // Tab 2 hiển thị bài toán R&D và không có đơn mua thương mại
+    await waitFor(() => {
+      expect(screen.getByText('Nghiên cứu thuật toán AI tối ưu sấy chân không')).toBeInTheDocument();
+      expect(screen.getByText('DMD-202610-999')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Dây chuyền sấy chè Thái Nguyên')).not.toBeInTheDocument();
+  });
+
+  it('allows cancelling a SUBMITTED commercial order via confirmation modal', async () => {
+    let cancelCalled = false;
+    const commercialList = [
+      {
+        id: 'ord-comm-02',
+        itemCode: 'ORD-CANCEL-002',
+        stageName: 'Sản xuất & Chuyển giao',
+        technicalProblem: 'Nhu cầu đặt mua / kết nối thương phẩm: Trà Tân Cương Thượng Hạng',
+        desiredSolution: '[Đề xuất thương mại: PURCHASE_COMMERCIAL] Đặt mua mẫu',
+        budgetRange: '20 triệu VNĐ',
+        status: 'SUBMITTED',
+        isCommercialOrder: true,
+      },
+    ];
+
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands/ord-comm-02/close') && init?.method === 'POST') {
+        cancelCalled = true;
+        return { ok: true, json: async () => ({ success: true }) } as Response;
+      }
+      if (url.includes('/api/v1/buyer/demands')) {
+        return { ok: true, json: async () => commercialList } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Trà Tân Cương Thượng Hạng')).toBeInTheDocument();
+    });
+
+    // Click nút "Hủy đơn"
+    const cancelBtn = screen.getByRole('button', { name: /Hủy đơn/i });
+    fireEvent.click(cancelBtn);
+
+    // Modal xác nhận xuất hiện
+    await waitFor(() => {
+      expect(screen.getByText('Xác nhận hủy đơn đặt mua')).toBeInTheDocument();
+    });
+
+    // Bấm nút "Xác nhận hủy đơn" trong modal
+    const confirmBtn = screen.getByRole('button', { name: /Xác nhận hủy đơn/i });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(cancelCalled).toBe(true);
+      expect(screen.getByText('Đã hủy đơn')).toBeInTheDocument();
+    });
+  });
+
+  it('renders expert customized subheader and title when user has VERIFIED_EXPERT role (CR-2026-012 Delta v1.4)', async () => {
+    authClient.setSession('test-token-jwt', {
+      id: 'exp-01',
+      email: 'expert@tech.vn',
+      fullName: 'GS.TS Nguyễn Văn Nghiên Cứu',
+      role: 'VERIFIED_EXPERT',
+    });
+
+    vi.spyOn(global, 'fetch').mockImplementation(async () => {
+      return {
+        ok: true,
+        json: async () => mockDemands,
+      } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Quản lý Đơn hàng & Nhu cầu Đặt mua')).toBeInTheDocument();
+      expect(screen.getByText('CHUYÊN GIA KH&CN')).toBeInTheDocument();
+      expect(screen.getByText(/Quản lý các đơn đặt mua sản phẩm thương mại, mẫu thử nghiệm/i)).toBeInTheDocument();
+      expect(screen.getByText('E')).toBeInTheDocument();
+    });
   });
 });

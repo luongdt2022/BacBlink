@@ -27,6 +27,9 @@ import {
   SECTORS_18_CATALOG,
 } from "@/services/api/technology-offer";
 import { TechnologyOffer, SectorItem } from "@/types/technology-offer";
+import { Async, AsyncState } from "@/components/ui/async";
+import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
+import { portalClient, PortalOverviewStats } from "@/lib/portal-client";
 import { getTechnologyImage } from "@/lib/technology-media";
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 
@@ -55,6 +58,12 @@ function ChaoBanCongNgheContent() {
   // Baseline platform data for dynamic counting & metrics
   const [baselineOffers, setBaselineOffers] = useState<TechnologyOffer[]>([]);
   const [globalTotal, setGlobalTotal] = useState(0);
+  const [activeSectors, setActiveSectors] = useState<SectorOption[]>(
+    SECTORS_18_CATALOG.filter((s) => s.code !== "ALL")
+  );
+  const [heroStatsState, setHeroStatsState] = useState<AsyncState>("loading");
+  const [portalStats, setPortalStats] = useState<PortalOverviewStats | null>(null);
+  const [heroStatsVersion, setHeroStatsVersion] = useState(0);
 
   // Filters state
   const [search, setSearch] = useState(initialSearch);
@@ -109,6 +118,37 @@ function ChaoBanCongNgheContent() {
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   };
+
+  // Load active sectors and portal stats dynamically
+  useEffect(() => {
+    let cancelled = false;
+    getActiveSectors()
+      .then((data) => {
+        if (!cancelled && Array.isArray(data) && data.length > 0) {
+          setActiveSectors(data);
+        }
+      })
+      .catch(() => {});
+
+    setHeroStatsState("loading");
+    portalClient
+      .getStats()
+      .then((data) => {
+        if (!cancelled) {
+          setPortalStats(data);
+          setHeroStatsState("success");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHeroStatsState("error");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [heroStatsVersion]);
 
   // Load baseline offers once to calculate dynamic counts
   useEffect(() => {
@@ -379,30 +419,73 @@ function ChaoBanCongNgheContent() {
             </div>
           </div>
 
-          {/* Quick Metrics Bar (Restored from Wireframe Basic Design) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white/10 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/20 shrink-0 text-center">
-            <div className="px-1 sm:px-2">
-              <div className="text-xl sm:text-2xl font-black text-emerald-300">
-                {globalTotal > 0 ? `${globalTotal}` : "1.200+"}
+          {/* Quick Metrics Bar có chuẩn hóa 5 UX States qua <Async> */}
+          <div className="shrink-0">
+            <Async
+              state={heroStatsState}
+              onRetry={() => setHeroStatsVersion((v) => v + 1)}
+              loadingSkeleton={
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white/10 p-3 sm:p-4 rounded-2xl border border-white/20 shrink-0 text-center animate-pulse">
+                  <div className="px-1 sm:px-2">
+                    <div className="h-7 w-12 bg-white/20 rounded mx-auto mb-1" />
+                    <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                      Hồ Sơ Niêm Yết
+                    </div>
+                  </div>
+                  <div className="border-x border-white/20 px-2 sm:px-3">
+                    <div className="h-7 w-12 bg-white/20 rounded mx-auto mb-1" />
+                    <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                      Phân Loại TT17
+                    </div>
+                  </div>
+                  <div className="px-1 sm:px-2">
+                    <div className="h-7 w-12 bg-white/20 rounded mx-auto mb-1" />
+                    <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                      Sáng Chế Độc Quyền
+                    </div>
+                  </div>
+                </div>
+              }
+              errorContent={
+                <div className="bg-white/10 p-3 sm:p-4 rounded-2xl border border-white/20 shrink-0 text-center text-white">
+                  <p className="text-xs text-rose-200">Không thể tải số liệu thống kê.</p>
+                  <button
+                    type="button"
+                    onClick={() => setHeroStatsVersion((v) => v + 1)}
+                    className="mt-1 text-xs font-bold underline hover:text-white cursor-pointer"
+                  >
+                    Tải lại số liệu
+                  </button>
+                </div>
+              }
+            >
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white/10 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/20 shrink-0 text-center shadow-lg">
+                <div className="px-1 sm:px-2">
+                  <div className="text-xl sm:text-2xl font-black text-emerald-300">
+                    {(portalStats?.totalOffers ?? globalTotal ?? 0).toLocaleString("vi-VN")}
+                  </div>
+                  <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                    Hồ Sơ Niêm Yết
+                  </div>
+                </div>
+                <div className="border-x border-white/20 px-2 sm:px-3">
+                  <div className="text-xl sm:text-2xl font-black text-teal-300">
+                    {activeSectors.length > 0 ? `${activeSectors.length} Lĩnh Vực` : "10 Lĩnh Vực"}
+                  </div>
+                  <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                    Phân Loại TT17
+                  </div>
+                </div>
+                <div className="px-1 sm:px-2">
+                  <div className="text-xl sm:text-2xl font-black text-amber-300">
+                    {(patentCount ?? 0).toLocaleString("vi-VN")} Bằng
+                  </div>
+                  <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
+                    Sáng Chế Độc Quyền
+                  </div>
+                </div>
               </div>
-              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                Hồ Sơ Niêm Yết
-              </div>
-            </div>
-            <div className="border-x border-white/20 px-2 sm:px-3">
-              <div className="text-xl sm:text-2xl font-black text-teal-300">10 Ngành</div>
-              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                Phân Loại TT17
-              </div>
-            </div>
-            <div className="px-1 sm:px-2">
-              <div className="text-xl sm:text-2xl font-black text-amber-300">
-                {patentCount > 0 ? `${patentCount}` : "680+"} Bằng
-              </div>
-              <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                Sáng Chế Độc Quyền
-              </div>
-            </div>
+            </Async>
           </div>
         </div>
       </section>
@@ -486,7 +569,7 @@ function ChaoBanCongNgheContent() {
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                 <Filter className="w-4 h-4 text-emerald-600" />
-                18 Lĩnh Vực Công Nghệ
+                {activeSectors.length > 0 ? `${activeSectors.length} Lĩnh Vực Công Nghệ` : "Lĩnh Vực Công Nghệ"}
               </h3>
               {selectedSector !== "ALL" && (
                 <button
@@ -499,32 +582,55 @@ function ChaoBanCongNgheContent() {
             </div>
 
             <div className="space-y-1">
-              {SECTORS_18_CATALOG.map((sec) => {
-                const count = sec.code === "ALL" ? globalTotal : (sectorCounts[sec.code] || 0);
-                const isSelected = selectedSector === sec.code;
-                return (
-                  <button
-                    key={sec.code}
-                    onClick={() => handleSectorChange(sec.code)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-left transition ${
-                      isSelected
-                        ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 font-bold border border-emerald-200 dark:border-emerald-800"
-                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                    }`}
-                  >
-                    <span className="truncate pr-2">{sec.name}</span>
-                    <span
-                      className={`text-caption px-2 py-0.5 rounded-full font-bold ${
+              <button
+                key="ALL"
+                onClick={() => handleSectorChange("ALL")}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-left transition ${
+                  selectedSector === "ALL"
+                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 font-bold border border-emerald-200 dark:border-emerald-800"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span className="truncate pr-2">Tất cả lĩnh vực</span>
+                <span
+                  className={`text-caption px-2 py-0.5 rounded-full font-bold ${
+                    selectedSector === "ALL"
+                      ? "bg-emerald-200 text-emerald-900 dark:bg-emerald-800 dark:text-emerald-100"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  {globalTotal}
+                </span>
+              </button>
+
+              {activeSectors
+                .filter((sec) => sec.code !== "ALL")
+                .map((sec) => {
+                  const count = sectorCounts[sec.code] || 0;
+                  const isSelected = selectedSector === sec.code;
+                  return (
+                    <button
+                      key={sec.code}
+                      onClick={() => handleSectorChange(sec.code)}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-left transition ${
                         isSelected
-                          ? "bg-emerald-200 text-emerald-900 dark:bg-emerald-800 dark:text-emerald-100"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 font-bold border border-emerald-200 dark:border-emerald-800"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                       }`}
                     >
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span className="truncate pr-2">{sec.name}</span>
+                      <span
+                        className={`text-caption px-2 py-0.5 rounded-full font-bold ${
+                          isSelected
+                            ? "bg-emerald-200 text-emerald-900 dark:bg-emerald-800 dark:text-emerald-100"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
             </div>
           </div>
 

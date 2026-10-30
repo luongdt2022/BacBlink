@@ -3,6 +3,8 @@ import { API_BASE } from "@/lib/api-client";
 
 export interface ParsedCvResult {
   fullName?: string;
+  email?: string;
+  phone?: string;
   birthYear?: number;
   gender?: "Nam" | "Nữ" | "Khác";
   academicDegree?: string;
@@ -15,6 +17,7 @@ export interface ParsedCvResult {
   specializedKeywords?: string[];
   googleScholarUrl?: string;
   orcidId?: string;
+  scopusAuthorId?: string;
   publications?: Array<{
     title: string;
     year: number;
@@ -42,18 +45,21 @@ Nhiệm vụ của bạn là đọc kỹ tệp đính kèm (hoặc văn bản CV
 Yêu cầu xuất ra DUY NHẤT một chuỗi JSON hợp lệ không bọc trong thẻ markdown, với cấu trúc:
 {
   "fullName": "Họ và tên chuyên gia (không kèm học hàm học vị ở đây)",
+  "email": "Địa chỉ email liên hệ hoặc công tác trong CV (nếu có)",
+  "phone": "Số điện thoại liên hệ trong CV (chuẩn 10 số, nếu có)",
   "birthYear": 1982,
   "gender": "Nam hoặc Nữ hoặc Khác",
-  "academicDegree": "TS hoặc PGS hoặc GS hoặc ThS hoặc Cử nhân",
+  "academicDegree": "GS hoặc PGS hoặc TS hoặc ThS hoặc KySu hoặc Cử nhân",
   "primaryInstitution": "Tên Viện, Trường, Doanh nghiệp công tác chính",
   "workAddress": "Địa chỉ cơ quan công tác",
-  "professionalTitle": "Chức danh nghiên cứu hoặc Chức vụ quản lý (VD: Trưởng phòng R&D, Giảng viên cao cấp)",
+  "professionalTitle": "Chức danh nghiên cứu hoặc Chức vụ quản lý (VD: Trưởng phòng R&D, Nghiên cứu viên chính, Giảng viên cao cấp)",
   "yearsOfExperience": 10,
   "bioSummary": "Tóm tắt tiểu sử khoa học và năng lực thế mạnh (khoảng 2-3 câu)",
   "primaryDomain": "Chọn mã lĩnh vực phù hợp nhất trong danh mục hiện hành: ${sectorOptions}",
   "specializedKeywords": ["Từ khóa chuyên sâu 1", "Từ khóa chuyên sâu 2"],
   "googleScholarUrl": "URL Google Scholar nếu có trong CV",
   "orcidId": "Mã ORCID (VD: 0000-0002-xxxx-xxxx) nếu có",
+  "scopusAuthorId": "Mã Scopus Author ID (VD: 57201234567) nếu có",
   "publications": [
     {
       "title": "Tên bài báo hoặc công trình khoa học",
@@ -81,9 +87,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Chưa cấu hình GEMINI_API_KEY trên máy chủ.",
+          error: "Chưa cấu hình GEMINI_API_KEY trên máy chủ. Bạn có thể tiếp tục nhập liệu thủ công.",
+          fallbackManual: true,
         },
-        { status: 500 }
+        { status: 503 }
       );
     }
 
@@ -177,7 +184,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Không thể hoàn thành phân tích AI qua các model Gemini: ${lastError}`,
+          error: `Không thể hoàn thành phân tích AI qua các model Gemini: ${lastError}. Bạn có thể tiếp tục nhập liệu thủ công.`,
+          fallbackManual: true,
         },
         { status: 502 }
       );
@@ -191,10 +199,35 @@ export async function POST(req: NextRequest) {
       cleanJson = cleanJson.replace(/^```\s*/, "").replace(/```$/, "").trim();
     }
 
-    const parsed: ParsedCvResult = JSON.parse(cleanJson);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) ||
-        (parsed.primaryDomain && !sectors.some((sector) => sector.code === parsed.primaryDomain))) {
-      return NextResponse.json({ success: false, error: "Kết quả AI không khớp danh mục lĩnh vực hiện hành. Vui lòng kiểm tra lại CV." }, { status: 502 });
+    let parsed: ParsedCvResult;
+    try {
+      parsed = JSON.parse(cleanJson);
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Không thể phân tích cấu trúc dữ liệu JSON từ phản hồi AI. Vui lòng tiếp tục nhập liệu thủ công.",
+          fallbackManual: true,
+        },
+        { status: 422 }
+      );
+    }
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Dữ liệu AI trích xuất không hợp lệ. Vui lòng tiếp tục nhập liệu thủ công.",
+          fallbackManual: true,
+        },
+        { status: 422 }
+      );
+    }
+
+    // Zero-Lock Graceful Handling: nếu primaryDomain không khớp chính xác danh mục hiện hành,
+    // bỏ qua trường này để chuyên gia tự chọn tại Bước 2 thay vì đánh trượt cả hồ sơ đã bóc tách.
+    if (parsed.primaryDomain && !sectors.some((sector) => sector.code === parsed.primaryDomain)) {
+      delete parsed.primaryDomain;
     }
 
     return NextResponse.json({

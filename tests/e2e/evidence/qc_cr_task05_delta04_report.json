@@ -1,0 +1,82 @@
+{
+  "cr_id": "CR-2026-012",
+  "task_id": "TASK-05",
+  "title": "Mở rộng quyền mua hàng & đăng nhu cầu trong Workspace Chuyên gia KH&CN",
+  "tested_at": "2026-10-30T15:14:37.754344",
+  "total_test_cases": 7,
+  "passed_cases": 7,
+  "failed_cases": 0,
+  "pass_rate": "100.0%",
+  "results": [
+    {
+      "tc_id": "TC-QC-EXP-01",
+      "title": "Vitest Unit & Component Suite: expert-nav & layout 8-item navigation",
+      "layer": "Tầng 1 (Unit/Contract)",
+      "status": "PASSED",
+      "actual": "19/19 tests pass: resolveExpertActiveMenu('orders-demands') + 8 items rendered",
+      "expected": "100% tests pass",
+      "evidence_path": null,
+      "timestamp": "2026-10-30T15:14:31.585681"
+    },
+    {
+      "tc_id": "TC-QC-EXP-02",
+      "title": "Vitest Component Suite: buyer/demands/page.tsx Expert Subheader & Tabs",
+      "layer": "Tầng 1 (Unit/Contract)",
+      "status": "PASSED",
+      "actual": "9/9 tests pass: Hiển thị CHUYÊN GIA KH&CN + Quản lý Đơn hàng & Nhu cầu Đặt mua",
+      "expected": "100% tests pass",
+      "evidence_path": null,
+      "timestamp": "2026-10-30T15:14:31.585707"
+    },
+    {
+      "tc_id": "TC-QC-EXP-03",
+      "title": "Subheader Workspace nhận diện đúng vai trò CHUYÊN GIA KH&CN",
+      "layer": "Tầng 3 (Visual QA)",
+      "status": "PASSED",
+      "actual": "Title: 'Quản lý Đơn hàng & Nhu cầu Đặt mua', Badge: 'CHUYÊN GIA KH&CN' xuất hiện",
+      "expected": "Tiêu đề chuẩn hóa theo ngữ cảnh Chuyên gia",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/qc_cr_task05_delta04_expert_workspace.png",
+      "timestamp": "2026-10-30T15:14:35.274999"
+    },
+    {
+      "tc_id": "TC-QC-EXP-04",
+      "title": "Sidebar Workspace Chuyên Gia hiển thị đủ 8 mục menu chuẩn hóa 3 khối",
+      "layer": "Tầng 3 (Visual QA)",
+      "status": "PASSED",
+      "actual": "Tổng số 8 mục: Tổng quan Chuyên gia, Hộp Thư Tư Vấn & Kết Nối2, Radar Cơ hội Phù hợp (AI)Mới, Dự án Đồng hành & Hợp tác, Đơn hàng & Nhu cầu đặt mua, Hợp đồng & Thù laoSắp ra mắt, Hồ sơ LLKH của tôi, Cài đặt & Tài khoản",
+      "expected": "8 mục menu với 'Đơn hàng & Nhu cầu đặt mua' tại vị trí số 5",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/qc_cr_task05_delta04_sidebar_8items.png",
+      "timestamp": "2026-10-30T15:14:35.437457"
+    },
+    {
+      "tc_id": "TC-QC-EXP-05",
+      "title": "Mục 'Đơn hàng & Nhu cầu đặt mua' được highlight active khi ở URL /portal/buyer/demands",
+      "layer": "Tầng 3 (Visual QA)",
+      "status": "PASSED",
+      "actual": "Classes active: bg-brand-700 / text-white",
+      "expected": "Active highlight chuẩn xác",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/qc_cr_task05_delta04_sidebar_8items.png",
+      "timestamp": "2026-10-30T15:14:35.440673"
+    },
+    {
+      "tc_id": "TC-QC-EXP-06",
+      "title": "Tương tác chuyển đổi mượt mà giữa Tab 1 (Đơn mua) và Tab 2 (Nhu cầu R&D)",
+      "layer": "Tầng 4 (Playwright E2E)",
+      "status": "PASSED",
+      "actual": "Cả 2 tab chuyển đổi thông suốt, kích hoạt đúng giao diện tương ứng",
+      "expected": "2 Tabs độc lập hoạt động trơn tru",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/qc_cr_task05_delta04_tabs_interaction.png",
+      "timestamp": "2026-10-30T15:14:36.828649"
+    },
+    {
+      "tc_id": "TC-QC-EXP-07",
+      "title": "Chuyên gia mở thành công biểu mẫu đăng nhanh bài toán nhu cầu R&D",
+      "layer": "Tầng 4 (Playwright E2E)",
+      "status": "PASSED",
+      "actual": "Modal Quick Demand mở mượt mà kèm các trường định lượng TNI",
+      "expected": "Modal mở và sẵn sàng tiếp nhận bài toán",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/qc_cr_task05_delta04_quick_demand_modal.png",
+      "timestamp": "2026-10-30T15:14:37.651879"
+    }
+  ]
+}

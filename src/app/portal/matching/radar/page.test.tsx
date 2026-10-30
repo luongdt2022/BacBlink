@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import MatchingRadarPage from "./page";
 import { brokerageApi } from "@/services/api/brokerage";
+import { authClient } from "@/lib/auth-client";
 
 const mockToastError = vi.fn();
 vi.mock("@/components/common/toast", () => ({
@@ -22,10 +23,25 @@ vi.mock("@/components/enterprise/SectorBannerBackground", () => ({
   SectorBannerBackground: () => <div data-testid="sector-banner-bg" />,
 }));
 
-describe("MatchingRadarPage - AI Matching & Toast Integration", () => {
+describe("MatchingRadarPage - AI Matching, Demands Guard & Toast Integration", () => {
   beforeEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    localStorage.clear();
+
+    // Default fetch mock for buyer demands
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/buyer/demands")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [{ id: "dem-1", title: "Nhu cầu kiểm thử" }],
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+      });
+    }) as any;
   });
 
   it("handles request error using toast.error without invoking window.alert", async () => {
@@ -78,7 +94,7 @@ describe("MatchingRadarPage - AI Matching & Toast Integration", () => {
     expect(alertSpy).not.toHaveBeenCalled();
   });
 
-  it("renders demand selection and Explainable AI (XAI) breakdown correctly", async () => {
+  it("renders demand selection and Explainable AI (XAI) breakdown correctly when user has >= 1 demand", async () => {
     vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([
       {
         id: "cand-1",
@@ -106,7 +122,7 @@ describe("MatchingRadarPage - AI Matching & Toast Integration", () => {
 
     // Check header and demand selector label
     expect(screen.getByText(/Radar Ghép Nối Cung–Cầu/i)).toBeInTheDocument();
-    expect(screen.getByText("Bài toán nguồn:")).toBeInTheDocument();
+    expect(await screen.findByText("Bài toán nguồn:")).toBeInTheDocument();
 
     // Check candidate card
     expect(await screen.findByText("Công nghệ sấy thăng hoa chân không")).toBeInTheDocument();
@@ -117,5 +133,98 @@ describe("MatchingRadarPage - AI Matching & Toast Integration", () => {
     expect(screen.getByText("100% Khớp")).toBeInTheDocument();
     expect(screen.getAllByText("TRL 7").length).toBeGreaterThan(0);
     expect(screen.getByText("85/100")).toBeInTheDocument();
+  });
+
+  it("renders Empty State 'Radar Ghép Nối AI Chưa Kích Hoạt' and does NOT call getRadarCandidates when user has 0 demands (REQ-DEL-08-01, REQ-DEL-08-02, BR-DEL-08-01)", async () => {
+    vi.spyOn(authClient, "getUser").mockReturnValue({
+      id: "u-buyer-0",
+      fullName: "Bên Mua Chưa Có Nhu Cầu",
+      role: "BUYER",
+      email: "buyer0@corp.vn",
+    });
+
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/buyer/demands")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [],
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    }) as any;
+
+    const getCandidatesSpy = vi.spyOn(brokerageApi, "getRadarCandidates");
+
+    render(<MatchingRadarPage />);
+
+    // Assert Interactive Guiding Empty State appears
+    expect(await screen.findByText("Radar Ghép Nối AI Chưa Kích Hoạt")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Thuật toán Radar AI cần ít nhất 01 Nhu cầu công nghệ làm tâm đối sánh để phân tích điểm TRL, TNI và đề xuất các giải pháp công nghệ phù hợp nhất/i
+      )
+    ).toBeInTheDocument();
+
+    // Primary Action CTA
+    const primaryCta = screen.getByRole("link", { name: /\+ Gửi Nhu Cầu Công Nghệ Đầu Tiên/i });
+    expect(primaryCta).toBeInTheDocument();
+    expect(primaryCta).toHaveAttribute("href", "/khao-sat-nhu-cau");
+
+    // Secondary Action CTA
+    const secondaryCta = screen.getByRole("link", { name: /Khám phá Sàn Công nghệ/i });
+    expect(secondaryCta).toBeInTheDocument();
+    expect(secondaryCta).toHaveAttribute("href", "/chao-ban-cong-nghe");
+
+    // Zero-Mock verification: Must NOT call getRadarCandidates()
+    expect(getCandidatesSpy).not.toHaveBeenCalled();
+  });
+
+  it("renders radar candidates normally for Admin supervisory role even if demands count is 0", async () => {
+    vi.spyOn(authClient, "getUser").mockReturnValue({
+      id: "u-admin",
+      fullName: "Quản Trị Viên Giám Sát",
+      role: "ADMIN",
+      email: "admin@gov.vn",
+    });
+
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/buyer/demands")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [],
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    }) as any;
+
+    const getCandidatesSpy = vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([
+      {
+        id: "cand-admin-1",
+        demandId: "dem-all-1",
+        demandCode: "DMD-ALL-001",
+        demandTitle: "Hệ thống giám sát vi khí hậu nông nghiệp",
+        buyerOrganizationId: "org-buyer-admin",
+        buyerOrganizationName: "DN Nông Nghiệp Xanh",
+        offerId: "off-admin-1",
+        offerCode: "OFF-002",
+        offerTitle: "Cảm biến IoT LoRaWAN công nghiệp",
+        sellerOrganizationId: "org-seller-admin",
+        sellerOrganizationName: "Viện Điện Tử Tin Học",
+        sectorCode: "LV01",
+        matchScore: 88,
+        tniScore: 82,
+        trlLevel: 8,
+        ipStatus: "PATENT_GRANTED",
+        isActive: true,
+        createdAt: "2026-10-25T00:00:00Z",
+      },
+    ]);
+
+    render(<MatchingRadarPage />);
+
+    expect(await screen.findByText("Bài toán nguồn:")).toBeInTheDocument();
+    expect(await screen.findByText("Cảm biến IoT LoRaWAN công nghiệp")).toBeInTheDocument();
+    expect(getCandidatesSpy).toHaveBeenCalled();
+    expect(screen.queryByText("Radar Ghép Nối AI Chưa Kích Hoạt")).not.toBeInTheDocument();
   });
 });

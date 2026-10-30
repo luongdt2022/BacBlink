@@ -2,6 +2,7 @@ import { authClient } from "@/lib/auth-client";
 import {
   MatchCandidate,
   ConnectionRequest,
+  ConnectionRequestDetail,
   Opportunity,
   DealRoomData,
   GovOpportunitiesOverview,
@@ -32,14 +33,36 @@ export const brokerageApi = {
     return body.data || [];
   },
 
-  async getConnectionRequests(status?: string): Promise<ConnectionRequest[]> {
-    const q = status ? `?status=${encodeURIComponent(status)}` : "";
-    const res = await fetch(`${API_BASE}/api/v1/brokerage/requests${q}`, {
+  async getConnectionRequests(params?: {
+    status?: string;
+    search?: string;
+    scope?: string;
+    organizationName?: string;
+  }): Promise<ConnectionRequest[]> {
+    const q = new URLSearchParams();
+    if (params?.status && params.status !== "ALL") q.append("status", params.status);
+    if (params?.search) q.append("search", params.search);
+    if (params?.scope) q.append("scope", params.scope);
+    if (params?.organizationName) q.append("organizationName", params.organizationName);
+
+    const queryStr = q.toString() ? `?${q.toString()}` : "";
+    const res = await fetch(`${API_BASE}/api/v1/brokerage/requests${queryStr}`, {
+      headers: authClient.getAuthHeaders(),
       cache: "no-store",
     });
     if (!res.ok) throw new Error("Không thể tải danh sách yêu cầu kết nối.");
     const body = await res.json();
     return body.data || [];
+  },
+
+  async getConnectionRequestDetail(id: string): Promise<ConnectionRequestDetail> {
+    const res = await fetch(`${API_BASE}/api/v1/brokerage/requests/${id}`, {
+      headers: authClient.getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error("Không thể tải chi tiết yêu cầu kết nối.");
+    const body = await res.json();
+    return body.data;
   },
 
   async createConnectionRequest(payload: {
@@ -53,7 +76,10 @@ export const brokerageApi = {
   }): Promise<{ id: string; requestCode: string; status: string }> {
     const res = await fetch(`${API_BASE}/api/v1/brokerage/requests`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...authClient.getAuthHeaders(),
+      },
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
@@ -67,12 +93,16 @@ export const brokerageApi = {
   async respondConnectionRequest(
     id: string,
     action: "ACCEPT" | "REJECT",
-    note?: string
-  ): Promise<{ requestId: string; status: string; createdOpportunityId?: string }> {
+    note?: string,
+    rejectionReason?: string
+  ): Promise<{ requestId: string; status: string; createdOpportunityId?: string; createdOpportunityCode?: string }> {
     const res = await fetch(`${API_BASE}/api/v1/brokerage/requests/${id}/respond`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, note }),
+      headers: {
+        "Content-Type": "application/json",
+        ...authClient.getAuthHeaders(),
+      },
+      body: JSON.stringify({ action, note, rejectionReason }),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -82,12 +112,21 @@ export const brokerageApi = {
     return body.data;
   },
 
-  async getOpportunities(stage?: string, search?: string): Promise<Opportunity[]> {
+  async getOpportunities(
+    stage?: string,
+    search?: string,
+    scope?: string,
+    organizationName?: string
+  ): Promise<Opportunity[]> {
     const q = new URLSearchParams();
     if (stage && stage !== "ALL") q.append("stage", stage);
     if (search) q.append("search", search);
+    if (scope) q.append("scope", scope);
+    if (organizationName) q.append("organizationName", organizationName);
 
-    const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities?${q.toString()}`, {
+    const queryStr = q.toString() ? `?${q.toString()}` : "";
+    const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities${queryStr}`, {
+      headers: authClient.getAuthHeaders(),
       cache: "no-store",
     });
     if (!res.ok) throw new Error("Không thể tải danh sách cơ hội hợp tác.");

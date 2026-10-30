@@ -1,0 +1,222 @@
+{
+  "feature": "Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User (CR-TASK-03-DELTA-02)",
+  "gate": "GATE 4 INDEPENDENT VERIFICATION",
+  "executed_at": "2026-10-30T14:27:46.312787",
+  "summary": {
+    "total": 19,
+    "passed": 19,
+    "failed": 0,
+    "pass_rate": "100.0%"
+  },
+  "results": [
+    {
+      "tc_id": "TC-G4-U01",
+      "title": "Vitest Unit & Contract Suite (23 test cases)",
+      "layer": "Tầng 1 (Unit/Contract)",
+      "status": "PASSED",
+      "actual": "23/23 unit tests PASSED (submitQuickDemand header/payload & OrderTrackingStepper 4 states & 2 tabs)",
+      "expected": "Tất cả unit tests đạt chuẩn 100%",
+      "evidence_path": null,
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:17.419174"
+    },
+    {
+      "tc_id": "TC-G4-DB01",
+      "title": "API POST /api/v1/demands/items tạo đơn từ Public User đăng nhập",
+      "layer": "Tầng 2 (Backend DB)",
+      "status": "PASSED",
+      "actual": "HTTP 200 OK, ItemCode: DMD-20261030-F5528F, ItemId: 01a18bb4-b1af-7726-bd04-609414de9990",
+      "expected": "HTTP 200 OK với ItemCode và ItemId hợp lệ",
+      "evidence_path": null,
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:17.431656"
+    },
+    {
+      "tc_id": "TC-G4-DB02",
+      "title": "Đối soát CSDL PostgreSQL: created_by == PersonId của Public User",
+      "layer": "Tầng 2 (Backend DB)",
+      "status": "PASSED",
+      "actual": "demand_items.created_by = 01a18bb4-a085-72a9-b8e8-6b773ee72565 trùng khớp 100% với persons.id = 01a18bb4-a085-72a9-b8e8-6b773ee72565",
+      "expected": "demand_items.created_by == 01a18bb4-a085-72a9-b8e8-6b773ee72565",
+      "evidence_path": null,
+      "sql_proof": "SELECT id, item_code, created_by, status, is_public_listed FROM demand.demand_items WHERE id = '01a18bb4-b1af-7726-bd04-609414de9990'; -> 01a18bb4-b1af-7726-bd04-609414de9990|DMD-20261030-F5528F|01a18bb4-a085-72a9-b8e8-6b773ee72565|PENDING|f",
+      "timestamp": "2026-10-30T14:27:17.563955"
+    },
+    {
+      "tc_id": "TC-G4-DB03",
+      "title": "Đối soát CSDL PostgreSQL: Khởi tạo trạng thái PENDING và is_public_listed=false",
+      "layer": "Tầng 2 (Backend DB)",
+      "status": "PASSED",
+      "actual": "status=PENDING, is_public_listed=f",
+      "expected": "status=PENDING, is_public_listed=f",
+      "evidence_path": null,
+      "sql_proof": "01a18bb4-b1af-7726-bd04-609414de9990|DMD-20261030-F5528F|01a18bb4-a085-72a9-b8e8-6b773ee72565|PENDING|f",
+      "timestamp": "2026-10-30T14:27:17.564000"
+    },
+    {
+      "tc_id": "TC-G4-DB04",
+      "title": "Khách vãng lai gửi đơn không token -> created_by IS NULL trong CSDL",
+      "layer": "Tầng 2 (Backend DB)",
+      "status": "PASSED",
+      "actual": "Bản ghi DMD-20261030-F4A73B được tạo thành công với created_by rỗng (NULL)",
+      "expected": "created_by IS NULL trong PostgreSQL",
+      "evidence_path": null,
+      "sql_proof": "SELECT id, item_code, created_by FROM demand.demand_items WHERE id = '01a18bb4-b23e-7d60-98f6-6b82ffd185c9'; -> 01a18bb4-b23e-7d60-98f6-6b82ffd185c9|DMD-20261030-F4A73B|",
+      "timestamp": "2026-10-30T14:27:17.705016"
+    },
+    {
+      "tc_id": "TC-G4-E2E01",
+      "title": "Đăng nhập Public User và truy cập Sàn Chào bán công nghệ",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "URL hiện tại: http://localhost:3000/chao-ban-cong-nghe",
+      "expected": "Điều hướng vào Sàn Chào Bán thành công",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_01_san_chao_ban_1793345242771.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:23.026703"
+    },
+    {
+      "tc_id": "TC-G4-E2E02",
+      "title": "Hiển thị nút 'Đặt mua sản phẩm / Kết nối thương mại' trên sản phẩm PRODUCT",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "Tìm thấy nút CTA chuyên biệt cho sản phẩm thương mại (1 nút)",
+      "expected": "Nút CTA 'Đặt mua sản phẩm / Kết nối thương mại' hiển thị rõ ràng",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_02_chi_tiet_san_pham_1793345244920.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:25.061147"
+    },
+    {
+      "tc_id": "TC-G4-E2E03",
+      "title": "Modal kết nối nhận diện phiên đăng nhập và hỗ trợ 'Tự động điền'",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "Modal hiển thị banner tài khoản và nút Tự động điền",
+      "expected": "Nhận diện phiên đăng nhập và hiển thị nút Tự động điền",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_03_modal_dat_mua_1793345246651.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:26.863447"
+    },
+    {
+      "tc_id": "TC-G4-E2E04",
+      "title": "Gửi đơn hàng thành công, hiển thị mã phiếu CSDL và nút CTA Workspace",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "Thông báo thành công: True, Nút CTA Workspace: True",
+      "expected": "Hiển thị thông báo thành công và nút CTA Theo dõi đơn hàng trong Workspace",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_04_thong_bao_thanh_cong_1793345247881.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:28.231317"
+    },
+    {
+      "tc_id": "TC-G4-E2E05",
+      "title": "Bấm CTA chuyển hướng sang Workspace và tự động active Tab 1 'Đơn mua sản phẩm'",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "URL: http://localhost:3000/portal/buyer/demands?tab=commercial, Tab 1 active: True",
+      "expected": "Chuyển hướng vào Workspace với Tab 1 Đơn mua được kích hoạt",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_05_workspace_don_mua_1793345250211.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:30.275539"
+    },
+    {
+      "tc_id": "TC-G4-E2E06",
+      "title": "Bảng hiển thị đơn hàng với OrderTrackingStepper ở Bước 1 (Tiếp nhận đơn)",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "Nhãn trạng thái stepper: Tiếp nhận đơn",
+      "expected": "Đơn hàng hiển thị với Stepper bước 1 (Tiếp nhận đơn / Chờ tiếp nhận)",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_05_workspace_don_mua_1793345250211.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:30.279016"
+    },
+    {
+      "tc_id": "TC-G4-UX01",
+      "title": "Kiểm tra chuyển đổi mượt mà giữa 2 Tabs cấp cao trong Workspace",
+      "layer": "Tầng 3 (Visual & UX)",
+      "status": "PASSED",
+      "actual": "Chuyển đổi tức thì giữa Tab Đơn mua và Tab Nhu cầu R&D, URL cập nhật searchParams",
+      "expected": "2 Tabs chuyển đổi trạng thái chính xác không reload trang",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_07_tab_commercial_demands_1793345252754.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:32.853745"
+    },
+    {
+      "tc_id": "TC-G4-UX02",
+      "title": "Modal Chi tiết đơn hàng hiển thị đầy đủ sơ đồ Stepper 4 bước tuyến tính",
+      "layer": "Tầng 3 (Visual & UX)",
+      "status": "PASSED",
+      "actual": "Modal Stepper render: True",
+      "expected": "Modal mở ra hiển thị Stepper 4 bước với thông số kỹ thuật và báo giá",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_08_modal_chi_tiet_stepper_lon_1793345253982.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:34.222520"
+    },
+    {
+      "tc_id": "TC-G4-E2E07",
+      "title": "Hủy đơn hàng DMD-20261030-A66802 ở trạng thái SUBMITTED -> Hiển thị badge 'Đã hủy đơn'",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "Giao diện hiển thị trạng thái: Đã hủy đơn",
+      "expected": "Đơn hàng cập nhật sang trạng thái Đã hủy đơn với badge màu đỏ/rose",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_10_sau_khi_huy_don_1793345258269.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:38.326283"
+    },
+    {
+      "tc_id": "TC-G4-DB05",
+      "title": "Đối soát CSDL PostgreSQL sau khi hủy đơn DMD-20261030-A66802: status == 'CLOSED'",
+      "layer": "Tầng 2 (Backend DB)",
+      "status": "PASSED",
+      "actual": "PostgreSQL demand_items.status = 'CLOSED'",
+      "expected": "demand_items.status == 'CLOSED'",
+      "evidence_path": null,
+      "sql_proof": "SELECT status FROM demand.demand_items WHERE item_code = 'DMD-20261030-A66802'; -> CLOSED",
+      "timestamp": "2026-10-30T14:27:38.616029"
+    },
+    {
+      "tc_id": "TC-G4-SEC01",
+      "title": "Bảo mật chống IDOR: User B không nhìn thấy đơn mua của User A",
+      "layer": "Tầng 4 (E2E Journey)",
+      "status": "PASSED",
+      "actual": "Đơn hàng của User A có xuất hiện trên màn hình User B không: KHÔNG (BẢO MẬT TUYỆT ĐỐI)",
+      "expected": "User B hoàn toàn không nhìn thấy bất kỳ đơn hàng nào của User A",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_11_user_b_isolation_1793345262424.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:42.527427"
+    },
+    {
+      "tc_id": "TC-G4-SEC02",
+      "title": "Tấn công phá hoại IDOR: User B gọi API hủy đơn của User A -> Backend chặn 403",
+      "layer": "Tầng 2 (Backend DB)",
+      "status": "PASSED",
+      "actual": "Backend trả về HTTP 403 Forbidden: Không có quyền thao tác trên bài toán của người khác.",
+      "expected": "HTTP 403 Forbidden ('Không có quyền thao tác trên bài toán của người khác.')",
+      "evidence_path": null,
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:42.545546"
+    },
+    {
+      "tc_id": "TC-G4-SEC03",
+      "title": "Truy cập API với Token giả mạo -> Backend chặn HTTP 401 Unauthorized",
+      "layer": "Tầng 2 (Backend DB)",
+      "status": "PASSED",
+      "actual": "HTTP status code: 401",
+      "expected": "HTTP 401 Unauthorized",
+      "evidence_path": null,
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:42.547947"
+    },
+    {
+      "tc_id": "TC-G4-UX03",
+      "title": "Kiểm tra giao diện Responsive Mobile trên màn hình 375px (iPhone X)",
+      "layer": "Tầng 3 (Visual & UX)",
+      "status": "PASSED",
+      "actual": "Layout co giãn mượt mà, bảng cuộn ngang an toàn (overflow-x-auto), không che khuất",
+      "expected": "Giao diện hiển thị trọn vẹn, không vỡ layout",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/gate4_delta02_12_responsive_mobile_375px_1793345266192.png",
+      "sql_proof": null,
+      "timestamp": "2026-10-30T14:27:46.225489"
+    }
+  ]
+}

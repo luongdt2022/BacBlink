@@ -4,6 +4,35 @@ import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/re
 import PublicDemandsPage from "./page";
 import { authClient, ROLES } from "@/lib/auth-client";
 
+vi.mock("@/lib/portal-client", () => ({
+  portalClient: {
+    getStats: vi.fn(async () => ({
+      totalOffers: 120,
+      totalDemands: 85,
+      totalEnterprises: 304,
+      totalExperts: 94,
+      totalProvinces: 36,
+      updatedAt: "2026-10-30T00:00:00Z",
+      totalSuccessfulConnections: 5,
+      totalEstimatedValueMillionVnd: 58400,
+    })),
+  },
+}));
+
+
+const mockToastInfo = vi.fn();
+const mockToastWarning = vi.fn();
+const mockToastSuccess = vi.fn();
+
+vi.mock("@/components/common/toast", () => ({
+  useToast: () => ({
+    info: mockToastInfo,
+    warning: mockToastWarning,
+    success: mockToastSuccess,
+    error: vi.fn(),
+  }),
+}));
+
 const mockDemands = [
   {
     id: "dem-001",
@@ -57,6 +86,24 @@ const setupFetch = (bookmarkedIds: string[] = []) => {
         json: async () => bookmarkedIds,
       } as Response;
     }
+    if (url.includes("/api/v1/portal/stats")) {
+      return {
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: {
+            totalOffers: 120,
+            totalDemands: 85,
+            totalEnterprises: 304,
+            totalExperts: 94,
+            totalProvinces: 36,
+            updatedAt: "2026-10-30T00:00:00Z",
+            totalSuccessfulConnections: 5,
+            totalEstimatedValueMillionVnd: 58400,
+          },
+        }),
+      } as Response;
+    }
     if (url.includes("/api/v1/public/demands")) {
       return {
         ok: true,
@@ -70,6 +117,9 @@ const setupFetch = (bookmarkedIds: string[] = []) => {
 describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockToastInfo.mockClear();
+    mockToastWarning.mockClear();
+    mockToastSuccess.mockClear();
     authClient.clearSession();
     window.scrollTo = vi.fn();
   });
@@ -80,7 +130,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     authClient.clearSession();
   });
 
-  it("renders Hero Banner with high-contrast text and 3 Quick Metrics from Basic Design", async () => {
+  it("renders Hero Banner with high-contrast text and 3 Quick Metrics from dynamic stats (Zero-Mock)", async () => {
     setupFetch();
     render(<PublicDemandsPage />);
 
@@ -89,13 +139,21 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
       screen.getByText("Nhu Cầu Đổi Mới Công Nghệ Từ Doanh Nghiệp")
     ).toBeInTheDocument();
 
-    // Kiểm tra 3 khối Quick Metrics
-    expect(screen.getByText("142")).toBeInTheDocument();
-    expect(screen.getByText("Bài Toán Đang Tìm")).toBeInTheDocument();
-    expect(screen.getByText("68.5 tỷ")).toBeInTheDocument();
-    expect(screen.getByText("Tổng Ngân Sách Mua")).toBeInTheDocument();
-    expect(screen.getByText("24 Giờ")).toBeInTheDocument();
-    expect(screen.getByText("Sở KH&CN Kết Nối")).toBeInTheDocument();
+    // Kiểm tra 3 khối Quick Metrics nạp động từ portalClient.getStats()
+    await waitFor(() => {
+      expect(screen.getByText("Bài Toán Đang Tìm")).toBeInTheDocument();
+      expect(screen.getByText("Tổng Ngân Sách Mua")).toBeInTheDocument();
+      expect(screen.getByText("Kết Nối Sàn & MOU")).toBeInTheDocument();
+    });
+
+    // Verify dynamic metrics rendered
+    expect(screen.getByText("85")).toBeInTheDocument();
+    expect(screen.getByText(/58[,.]4 Tỷ/)).toBeInTheDocument();
+    expect(screen.getByText("5")).toBeInTheDocument();
+
+    // Zero-mock: Tuyệt đối không còn số tĩnh 142 hay 68.5 tỷ
+    expect(screen.queryByText("142")).toBeNull();
+    expect(screen.queryByText("68.5 tỷ")).toBeNull();
   });
 
   it("loads and populates sector combobox dynamically", async () => {
@@ -137,19 +195,64 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     expect(screen.getAllByTitle(/Bảo vệ danh tính \(PDPD\)/i).length).toBe(2);
   });
 
-  it("guards 'Đăng Nhanh Bài Toán' button based on user authentication and role", async () => {
+  it("guards 'Đăng Nhanh Bài Toán' button: informs guest with friendly guidance toast, allows PUBLIC_USER, USER, BUYER, SELLER, ADMIN, and rejects unpermitted roles (CR-TASK-03-DELTA-01: T-03.DEL-01 & T-03.DEL-02)", async () => {
     setupFetch();
     render(<PublicDemandsPage />);
 
-    // 1. Khi chưa đăng nhập (Guest): bấm nút sẽ hiển thị hướng dẫn xác thực, không mở modal ngay
+    // 1. Khi chưa đăng nhập (Guest): bấm nút sẽ hiển thị toast hướng dẫn thân thiện, không mở modal ngay
     const postButton = screen.getByRole("button", { name: /Đăng Nhanh Bài Toán/i });
     fireEvent.click(postButton);
 
     // Modal không được mở khi chưa đăng nhập
     expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
+    expect(mockToastInfo).toHaveBeenCalledWith(
+      "Quý khách vui lòng đăng nhập hoặc đăng ký tài khoản thành viên công chúng miễn phí để đăng bài toán kỹ thuật, hoặc điền Phiếu Khảo Sát DNNVV mở.",
+      "Yêu Cầu Xác Thực"
+    );
 
-    // 2. Khi đăng nhập vai trò BUYER: bấm nút sẽ mở modal
-    authClient.setSession("test-token", {
+    // 2. Khi đăng nhập vai trò PUBLIC_USER: bấm nút sẽ mở modal
+    authClient.setSession("test-token-public", {
+      id: "u-public-01",
+      email: "public.user@demo.nacentech.vn",
+      fullName: "Nguyễn Văn Công Chúng",
+      role: ROLES.PUBLIC_USER,
+    });
+
+    fireEvent.click(postButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
+    });
+
+    // Đóng modal để kiểm tra role tiếp theo
+    const closeBtn = screen.getByLabelText("Đóng hộp thoại");
+    fireEvent.click(closeBtn);
+    await waitFor(() => {
+      expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
+    });
+
+    // 3. Khi đăng nhập vai trò USER: bấm nút cũng mở modal bình thường
+    authClient.setSession("test-token-user", {
+      id: "u-standard-01",
+      email: "user@demo.nacentech.vn",
+      fullName: "Trần Thành Viên",
+      role: ROLES.USER,
+    });
+
+    fireEvent.click(postButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
+    });
+
+    // Đóng modal
+    fireEvent.click(screen.getByLabelText("Đóng hộp thoại"));
+    await waitFor(() => {
+      expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
+    });
+
+    // 4. Khi đăng nhập vai trò BUYER: bấm nút sẽ mở modal
+    authClient.setSession("test-token-buyer", {
       id: "u-buyer-01",
       email: "buyer@dn.vn",
       fullName: "Đại diện Doanh Nghiệp Mua",
@@ -162,12 +265,18 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
       expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
     });
 
-    // 3. Khi đăng nhập vai trò SELLER: bấm nút cũng mở modal bình thường
-    authClient.setSession("test-token-seller", {
-      id: "u-seller-01",
-      email: "seller@dn.vn",
-      fullName: "Đại diện Doanh Nghiệp Bán",
-      role: ROLES.SELLER,
+    // Đóng modal
+    fireEvent.click(screen.getByLabelText("Đóng hộp thoại"));
+    await waitFor(() => {
+      expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
+    });
+
+    // 5. Khi đăng nhập vai trò Chuyên gia (EXPERT & VERIFIED_EXPERT): bấm nút sẽ mở modal theo ma trận 10 roles
+    authClient.setSession("test-token-expert", {
+      id: "u-expert-01",
+      email: "expert@nacentech.vn",
+      fullName: "Chuyên gia Tư vấn",
+      role: ROLES.EXPERT,
     });
 
     fireEvent.click(postButton);
@@ -175,6 +284,48 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     await waitFor(() => {
       expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
     });
+
+    // Đóng modal
+    fireEvent.click(screen.getByLabelText("Đóng hộp thoại"));
+    await waitFor(() => {
+      expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
+    });
+
+    // 5b. Khi đăng nhập vai trò VERIFIED_EXPERT: bấm nút cũng mở modal bình thường
+    authClient.setSession("test-token-verified-expert", {
+      id: "u-expert-02",
+      email: "verified.expert@nacentech.vn",
+      fullName: "Chuyên gia Thẩm định",
+      role: ROLES.VERIFIED_EXPERT,
+    });
+
+    fireEvent.click(postButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("1. Chi Tiết Bài Toán Kỹ Thuật")).toBeInTheDocument();
+    });
+
+    // Đóng modal
+    fireEvent.click(screen.getByLabelText("Đóng hộp thoại"));
+    await waitFor(() => {
+      expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
+    });
+
+    // 6. Khi đăng nhập vai trò không được cấp quyền (ví dụ: GUEST): không mở modal, hiển thị warning
+    authClient.setSession("test-token-guest", {
+      id: "u-guest-01",
+      email: "guest@nacentech.vn",
+      fullName: "Khách Vãng Lai",
+      role: ROLES.GUEST,
+    });
+
+    fireEvent.click(postButton);
+
+    expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
+    expect(mockToastWarning).toHaveBeenCalledWith(
+      expect.stringContaining("Vui lòng sử dụng tài khoản phù hợp để đăng bài toán kỹ thuật."),
+      "Chưa Đủ Thẩm Quyền"
+    );
   });
 
   it("handles client-side pagination (9 items per page) and page navigation correctly", async () => {

@@ -144,6 +144,7 @@ const expertNavItems: NavItem[] = [
   { href: "/portal/expert/consultations", label: "Hộp Thư Tư Vấn & Kết Nối", icon: Inbox, key: "consultations", badge: 2, badgeType: "count" },
   { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles, key: "radar", badge: "Mới", badgeType: "new" },
   { href: "/portal/expert/projects", label: "Dự án Đồng hành & Hợp tác", icon: Kanban, key: "projects" },
+  { href: "/portal/buyer/demands", label: "Đơn hàng & Nhu cầu đặt mua", icon: ShoppingBag, key: "orders-demands" },
 
   // Khối 2: Kinh tế & Hợp đồng (Sắp ra mắt)
   {
@@ -174,10 +175,11 @@ const innovationEntityNavItems: NavItem[] = [
   { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp ĐMST", icon: Building2 },
 ];
 
-// 5. Thành Viên Đại Chúng (PUBLIC_USER / USER) - Khám phá và hub đăng ký nâng hạng
+// 5. Thành Viên Đại Chúng (PUBLIC_USER / USER) - Khám phá và hub đăng ký nâng hạng (CR-TASK-03-DELTA-01: T-03.DEL-03, CR-TASK-03-DELTA-02)
 const publicNavItems: NavItem[] = [
-  { href: "/portal", label: "Bàn làm việc Cá nhân", icon: LayoutDashboard },
-  { href: "/portal/matching/radar", label: "Radar Khám Phá AI", icon: Sparkles },
+  { href: "/portal", label: "Trang tổng quan", icon: LayoutDashboard },
+  { href: "/portal/buyer/demands", label: "Nhu cầu công nghệ", icon: ShoppingBag },
+  { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles, badge: "Mới", badgeType: "new" },
   { href: "/profile/upgrade", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
   { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
 ];
@@ -240,7 +242,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     upperRole === "PROVINCE_LEADER";
 
   let navItems: NavItem[] = publicNavItems;
-  let workspaceTitle = "Bàn Làm Việc Cá Nhân";
+  let workspaceTitle = "Không Gian Thành Viên";
   let workspaceBadge = "Thành Viên Đại Chúng";
 
   if (isExpert) {

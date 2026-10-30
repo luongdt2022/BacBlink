@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExpertUpgradePage from "./page";
+import { authClient } from "@/lib/auth-client";
 
 const push = vi.fn();
 let mockSearchParams = new URLSearchParams();
@@ -46,7 +47,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     expect(screen.queryByText("Vui lòng nhập họ và tên đầy đủ.")).not.toBeInTheDocument();
 
     fireEvent.click(continueBtn);
-    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn & AI CV Parser/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn/i)).toBeInTheDocument();
   });
 
   it("restricts publication year to max 2026 and validates input (TC-C1-EXP-06)", async () => {
@@ -61,7 +62,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const step3Btn = await screen.findByRole("button", { name: /Tiếp tục: Công bố & Cam kết/i });
     fireEvent.click(step3Btn);
 
-    expect(await screen.findByText(/Bước 3: Hồ Sơ Khoa Học & Cam Kết Pháp Lý/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Bước 3: Công bố & Cam kết/i)).toBeInTheDocument();
 
     // Find publication inputs
     const titleInput = screen.getByPlaceholderText("Tên bài báo khoa học");
@@ -78,8 +79,8 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     fireEvent.change(titleInput, { target: { value: "Nghiên cứu công nghệ tương lai" } });
     fireEvent.change(journalInput, { target: { value: "Tạp chí KHCN" } });
 
-    // Click "Thêm"
-    const addPubBtn = screen.getByRole("button", { name: /Thêm/i });
+    // Click "Thêm công bố"
+    const addPubBtn = screen.getByRole("button", { name: /Thêm công bố/i });
     fireEvent.click(addPubBtn);
 
     // Publication with 2028 should NOT be added
@@ -122,6 +123,232 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const continueBtn = screen.getByRole("button", { name: /Tiếp tục: Năng lực Chuyên môn/i });
     fireEvent.click(continueBtn);
 
-    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn & AI CV Parser/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn/i)).toBeInTheDocument();
+  });
+
+  it("renders 3 updated Stepper step labels and Hero Dropzone at the top of Step 1 (T-DELTA-03)", async () => {
+    render(<ExpertUpgradePage />);
+
+    // 1. Check Stepper labels
+    expect(screen.getByText("Quét CV & Định danh")).toBeInTheDocument();
+    expect(screen.getByText("Năng lực Chuyên môn")).toBeInTheDocument();
+    expect(screen.getByText("Công bố & Cam kết")).toBeInTheDocument();
+
+    // 2. Check AI CV Hero Dropzone is rendered on Step 1
+    expect(screen.getByText(/AI Trích Xuất Dữ Liệu Hồ Sơ Tự Động \(AI CV Scan\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Kéo thả tệp CV \/ Lý lịch khoa học vào đây/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dùng tệp CV mẫu để thử nghiệm nhanh/i)).toBeInTheDocument();
+
+    // 3. Check Divider
+    expect(screen.getByText(/Hoặc nhập liệu thủ công từng bước bên dưới/i)).toBeInTheDocument();
+  });
+
+  it("performs Non-destructive Auto-fill across 3 steps and displays AI badges (T-DELTA-04 & T-DELTA-05)", async () => {
+    const mockCvData = {
+      fullName: "GS. TS. Lê Hoài Nam",
+      birthYear: 1978,
+      gender: "Nam",
+      academicDegree: "GS",
+      primaryInstitution: "Viện Hàn Lâm Khoa Học và Công Nghệ VN",
+      workAddress: "18 Hoàng Quốc Việt, Cầu Giấy, Hà Nội",
+      professionalTitle: "Nghiên cứu viên cao cấp",
+      primaryDomain: "LV91",
+      specializedKeywords: ["Trí tuệ nhân tạo", "Thị giác máy tính"],
+      yearsOfExperience: 18,
+      bioSummary: "Chuyên gia đầu ngành về xử lý ảnh và thị giác máy tính.",
+      googleScholarUrl: "https://scholar.google.com/citations?user=test1234",
+      orcidId: "0000-0001-2345-6789",
+      scopusAuthorId: "57211122233",
+      publications: [
+        {
+          title: "Deep Learning for Satellite Imagery",
+          year: 2024,
+          journalOrConference: "IEEE Transactions on Geoscience",
+          doiOrUrl: "10.1109/TGRS.2024.123456",
+        },
+      ],
+      patents: [
+        {
+          title: "Hệ thống phân loại ảnh tự động",
+          patentNumber: "VN-PAT-2023-9999",
+          year: 2023,
+          status: "GRANTED",
+        },
+      ],
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/cv-parser")) {
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            model: "Gemini 3.5 Flash",
+            data: mockCvData,
+          }),
+        };
+      }
+      return { ok: false, status: 404, json: async () => ({ message: "Not found" }) };
+    }));
+
+    render(<ExpertUpgradePage />);
+
+    // Fill sample CV
+    const sampleCvBtn = screen.getByRole("button", { name: /Dùng tệp CV mẫu để thử nghiệm nhanh/i });
+    fireEvent.click(sampleCvBtn);
+
+    // Mock file input with a real file to trigger scan
+    const file = new File(["dummy cv content"], "cv_sample.pdf", { type: "application/pdf" });
+    const fileInput = document.querySelector("#cv-file-upload") as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    // Trigger AI Scan
+    const scanBtn = screen.getByRole("button", { name: /Bắt đầu Quét & Bóc Tách AI/i });
+    fireEvent.click(scanBtn);
+
+    // Wait for scan success message
+    expect(await screen.findByText(/Trích xuất thành công/i)).toBeInTheDocument();
+
+    // Verify Step 1 fields prefilled
+    const fullNameInput = screen.getByPlaceholderText("TS. Nguyễn Văn An") as HTMLInputElement;
+    expect(fullNameInput.value).toBe("GS. TS. Lê Hoài Nam");
+
+    const instInput = screen.getByPlaceholderText("Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)") as HTMLInputElement;
+    expect(instInput.value).toBe("Viện Hàn Lâm Khoa Học và Công Nghệ VN");
+
+    // Verify AI badges are rendered
+    const badges = screen.getAllByText("✨ AI Bóc tách");
+    expect(badges.length).toBeGreaterThanOrEqual(3);
+
+    // Proceed to Step 2
+    fireEvent.click(screen.getByRole("button", { name: /Tiếp tục: Năng lực Chuyên môn/i }));
+    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn/i)).toBeInTheDocument();
+
+    // Verify Step 2 prefilled tags
+    expect(screen.getByText("Trí tuệ nhân tạo")).toBeInTheDocument();
+    expect(screen.getByText("Thị giác máy tính")).toBeInTheDocument();
+
+    // Proceed to Step 3
+    fireEvent.click(screen.getByRole("button", { name: /Tiếp tục: Công bố & Cam kết/i }));
+    expect(await screen.findByText(/Bước 3: Công bố & Cam kết/i)).toBeInTheDocument();
+
+    // Verify Step 3 prefilled publication and patent
+    expect(screen.getByText("Deep Learning for Satellite Imagery")).toBeInTheDocument();
+    expect(screen.getByText("Hệ thống phân loại ảnh tự động")).toBeInTheDocument();
+  });
+
+  it("handles AI scan error gracefully with Zero-Lock Fallback (T-DELTA-05)", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/cv-parser")) {
+        return {
+          ok: false,
+          status: 502,
+          json: async () => ({
+            success: false,
+            error: "Quá tải model AI. Bạn có thể tiếp tục nhập liệu thủ công.",
+            fallbackManual: true,
+          }),
+        };
+      }
+      return { ok: false, status: 404, json: async () => ({ message: "Not found" }) };
+    }));
+
+    render(<ExpertUpgradePage />);
+
+    // Upload a file and scan
+    const file = new File(["dummy content"], "cv.pdf", { type: "application/pdf" });
+    const fileInput = document.querySelector("#cv-file-upload") as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    const scanBtn = screen.getByRole("button", { name: /Bắt đầu Quét & Bóc Tách AI/i });
+    fireEvent.click(scanBtn);
+
+    // Verify error notification does not crash the form
+    expect(await screen.findByText(/Quá tải model AI/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bạn có thể tiếp tục nhập liệu thủ công từng bước bên dưới mà không bị gián đoạn./i)).toBeInTheDocument();
+
+    // Form remains completely usable for manual input
+    const fullNameInput = screen.getByPlaceholderText("TS. Nguyễn Văn An");
+    fireEvent.change(fullNameInput, { target: { value: "TS. Hoàng Minh Thủ Công" } });
+
+    const continueBtn = screen.getByRole("button", { name: /Tiếp tục: Năng lực Chuyên môn/i });
+    fireEvent.click(continueBtn);
+
+    // Successfully transitioned to Step 2
+    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn/i)).toBeInTheDocument();
+  });
+
+  it("prefills email and phone from user context on mount when available", async () => {
+    authClient.setSession("test_token", {
+      id: "u-123",
+      fullName: "Dang Tien Luong",
+      email: "luong.dt@nacentech.vn",
+      phone: "0987654321",
+      role: "USER",
+    });
+
+    render(<ExpertUpgradePage />);
+
+    const fullNameInput = (await screen.findByPlaceholderText("TS. Nguyễn Văn An")) as HTMLInputElement;
+    expect(fullNameInput.value).toBe("Dang Tien Luong");
+
+    const phoneInput = (await screen.findByPlaceholderText("0912345678")) as HTMLInputElement;
+    expect(phoneInput.value).toBe("0987654321");
+
+    const emailInput = (await screen.findByPlaceholderText("chuyengia@nacentech.vn")) as HTMLInputElement;
+    expect(emailInput.value).toBe("luong.dt@nacentech.vn");
+  });
+
+  it("falls back to user context for email and phone when AI scan does not extract them", async () => {
+    authClient.setSession("test_token", {
+      id: "u-123",
+      fullName: "Dang Tien Luong",
+      email: "fallback.user@nacentech.vn",
+      phone: "0911223344",
+      role: "USER",
+    });
+
+    const mockCvDataWithoutContact = {
+      fullName: "Dang Tien Luong",
+      birthYear: 1985,
+      gender: "Nam",
+      academicDegree: "TS",
+      primaryInstitution: "HBLab",
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/cv-parser")) {
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            model: "gemini-3.5-flash-lite",
+            data: mockCvDataWithoutContact,
+          }),
+        };
+      }
+      return { ok: false, status: 404, json: async () => ({ message: "Not found" }) };
+    }));
+
+    render(<ExpertUpgradePage />);
+
+    // Wait for form to load
+    await screen.findByPlaceholderText("TS. Nguyễn Văn An");
+
+    // Upload and scan
+    const file = new File(["dummy cv content"], "cv.pdf", { type: "application/pdf" });
+    const fileInput = document.querySelector("#cv-file-upload") as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    const scanBtn = screen.getByRole("button", { name: /Bắt đầu Quét & Bóc Tách AI/i });
+    fireEvent.click(scanBtn);
+
+    expect(await screen.findByText(/Trích xuất thành công/i)).toBeInTheDocument();
+
+    const phoneInput = (await screen.findByPlaceholderText("0912345678")) as HTMLInputElement;
+    expect(phoneInput.value).toBe("0911223344");
+
+    const emailInput = (await screen.findByPlaceholderText("chuyengia@nacentech.vn")) as HTMLInputElement;
+    expect(emailInput.value).toBe("fallback.user@nacentech.vn");
   });
 });

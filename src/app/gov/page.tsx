@@ -472,7 +472,7 @@ export default function GovExecutiveDashboard() {
         </div>
       </div>
 
-      {/* KHỐI 3: PHÂN BỔ THEO 18 NGÀNH CÔNG NGHỆ TT17 & LỐI TẮT ĐIỀU HÀNH */}
+      {/* KHỐI 3: PHÂN BỔ THEO 10 LĨNH VỰC CÔNG NGHỆ TT17 & LỐI TẮT ĐIỀU HÀNH */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Phân bổ ngành TT17 địa phương */}
         <div className="lg:col-span-2 p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">

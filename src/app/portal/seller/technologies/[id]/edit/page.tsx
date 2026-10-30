@@ -714,7 +714,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-extrabold text-slate-900">
-                      Bước 2: Thông số kỹ thuật & 18 Ngành TT17
+                      Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17
                     </h2>
                     <p className="text-xs text-slate-500">
                       Lớp 2 (Kỹ thuật chung) & Lớp 3 (Đặc thù ngành) theo ma trận 1.479 quy tắc Excel Master.
