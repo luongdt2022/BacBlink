@@ -5,7 +5,7 @@
 BEGIN;
 
 -- Xóa dữ liệu cũ của NacenTech để đảm bảo tính Idempotent (chạy nhiều lần an toàn)
-DELETE FROM technology.seller_technology_offers WHERE developer_origin = 'Viện Ứng dụng Công nghệ (NacenTech)';
+DELETE FROM technology.seller_technology_offers WHERE developer_origin LIKE '%NacenTech%' OR enterprise_tax_code LIKE '0100109968-%';
 DELETE FROM enterprise.enterprises WHERE tax_code LIKE '0100109968-%';
 DELETE FROM identity.persons WHERE email LIKE '%@nacentech.vn' OR email = 'agritechvn@gmail.com' OR email = 'quangdientu@cfoc.vn';
 
