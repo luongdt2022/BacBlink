@@ -15,7 +15,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    '086c0743-202b-53b2-8aa1-ceca7ff45e2d', 'imet@nacentech.vn', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    '086c0743-202b-53b2-8aa1-ceca7ff45e2d', 'imet@nacentech.vn', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'IMET', 'Ban Giám đốc', '024.38549424',
     'Trung tâm Vi điện tử (IMET) - Viện Ứng dụng Công nghệ', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
@@ -38,7 +38,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    '1f80174a-c4a8-5df5-b83a-8f81119db1ea', 'vatlieu@nacentech.vn', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    '1f80174a-c4a8-5df5-b83a-8f81119db1ea', 'vatlieu@nacentech.vn', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'liệu', 'Ban Giám đốc Trung tâm Vật', '024.35545023',
     'Trung tâm Công nghệ Vật liệu - Viện Ứng dụng Công nghệ', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
@@ -61,7 +61,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    '79b678d4-786a-5f55-923a-c449f9c1e5a6', 'quangdientu@cfoc.vn', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    '79b678d4-786a-5f55-923a-c449f9c1e5a6', 'quangdientu@cfoc.vn', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'Vũ', 'ThS. Nguyễn Tuấn', '024.38549425',
     'Trung tâm Quang điện tử (CFOC) - Viện Ứng dụng Công nghệ', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
@@ -84,7 +84,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    '4b26a55c-1d7b-5a7e-b727-59e88a7ad48c', 'laser@nacentech.vn', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    '4b26a55c-1d7b-5a7e-b727-59e88a7ad48c', 'laser@nacentech.vn', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'Khôi', 'ThS. Giang Mạnh', '024.38549064',
     'Trung tâm Công nghệ Laser - Viện Ứng dụng Công nghệ', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
@@ -107,7 +107,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    '3c32f6cc-1f55-5e38-8860-246bc0031d74', 'ceb@nacentech.vn', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    '3c32f6cc-1f55-5e38-8860-246bc0031d74', 'ceb@nacentech.vn', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'CEB', 'Ban Giám đốc', '024.38549438',
     'Trung tâm Sinh học Thực nghiệm (CEB) - Viện Ứng dụng Công nghệ', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
@@ -130,7 +130,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    '29e217d3-ab5e-5812-a07d-c85c88bd9e38', 'agritechvn@gmail.com', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    '29e217d3-ab5e-5812-a07d-c85c88bd9e38', 'agritechvn@gmail.com', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'Quang', 'Ông Võ Đình', '028.38109196',
     'Chi nhánh Viện Ứng dụng Công nghệ tại TP.HCM (NACENHO)', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
@@ -153,7 +153,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    'f8cfc037-7e9d-5325-94d4-dad3030e9dc6', 'ntbic@nacentech.vn', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    'f8cfc037-7e9d-5325-94d4-dad3030e9dc6', 'ntbic@nacentech.vn', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'NTBIC', 'Ban Giám đốc', '0221.3764888',
     'Trung tâm Ươm tạo Công nghệ & DN KHCN (NTBIC)', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
@@ -176,7 +176,7 @@ INSERT INTO identity.persons (
     organization_name, platform_role, is_active, matching_auto, preferences_updated_at,
     version, created_at, updated_at, scope_type, scope_id
 ) VALUES (
-    'b1826e4c-3531-5791-a6a7-ea84af317376', 'labs@nacentech.vn', 'AQAAAAIAAYagAAAAEK35mHdqt3N+vBpfGZA13wLl1MkgPS+tXQYXbmSGue26SlXcajxLammsl/B0XtYBvw==',
+    'b1826e4c-3531-5791-a6a7-ea84af317376', 'labs@nacentech.vn', 'AQAAAAIAAYagAAAAECGeM+JuEl8dlQY7IuGwj+DWI8MwxOaTohWQt/PtljLpSXB1Ib8s5toy2tkr+PAkKw==',
     'pbkdf2-v3', 'PTN', 'Ban Phụ trách', '024.38549000',
     'Khối PTN Nghiên cứu Chuyên sâu (Tự động hóa & MEMS Hòa Lạc)', 'SELLER', true, true, now(),
     1, now(), now(), 'GLOBAL', null
