@@ -17,17 +17,22 @@ public sealed class AddEnterpriseTt17Fields : Migration
 
             CREATE INDEX IF NOT EXISTS ix_enterprises_latest_tt17_classification ON enterprise.enterprises(latest_tt17_classification);
 
-            UPDATE enterprise.enterprises e
-            SET 
-                latest_tt17_score = COALESCE((a.scores_json->>'TotalScore')::numeric, (a.scores_json->>'totalScore')::numeric),
-                latest_tt17_classification = CASE 
-                    WHEN COALESCE(a.scores_json->>'Classification', a.scores_json->>'classification') = 'CAN_THAM_DINH' THEN 'LAC_HAU'
-                    ELSE COALESCE(a.scores_json->>'Classification', a.scores_json->>'classification')
-                END,
-                latest_tt17_sync_coeff = COALESCE((a.scores_json->>'SyncCoefficient')::numeric, (a.scores_json->>'syncCoefficient')::numeric)
-            FROM assessment.tt17_assessments a
-            WHERE (e.id = a.enterprise_id OR (e.tax_code IS NOT NULL AND e.tax_code = a.tax_code))
-              AND a.scores_json IS NOT NULL;
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.columns 
+                    WHERE table_schema = 'assessment' AND table_name = 'tt17_assessments' AND column_name = 'total_score'
+                ) THEN
+                    EXECUTE '
+                        UPDATE enterprise.enterprises e
+                        SET 
+                            latest_tt17_score = a.total_score,
+                            latest_tt17_classification = a.classification
+                        FROM assessment.tt17_assessments a
+                        WHERE e.id = a.enterprise_id;
+                    ';
+                END IF;
+            END $$;
         """);
     }
 

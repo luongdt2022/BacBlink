@@ -485,12 +485,12 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         [FromBody] CreateConnectionRequest req,
         CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(req.SenderOrgName))
-            return BadRequest(new { message = "Đơn vị gửi kết nối không được để trống" });
+        if (string.IsNullOrWhiteSpace(req.SenderOrgName) || req.SenderOrgName.Trim().Length < 3)
+            return BadRequest(new { message = "Tên tổ chức gửi yêu cầu phải có ít nhất 3 ký tự." });
         if (string.IsNullOrWhiteSpace(req.ReceiverOrgName))
             return BadRequest(new { message = "Đơn vị tiếp nhận không được để trống" });
-        if (string.IsNullOrWhiteSpace(req.Message))
-            return BadRequest(new { message = "Nội dung đề xuất kết nối không được để trống" });
+        if (string.IsNullOrWhiteSpace(req.Message) || req.Message.Trim().Length < 10)
+            return BadRequest(new { message = "Nội dung đề xuất hợp tác phải có ít nhất 10 ký tự." });
 
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
