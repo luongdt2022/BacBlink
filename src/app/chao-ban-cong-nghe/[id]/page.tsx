@@ -92,7 +92,7 @@ export default function ChiTietChaoBanPage() {
     }
   }, []);
 
-  const handleOpenConnectModal = () => {
+  const handleOpenConnectModal = (defaultMethod?: string) => {
     const user = authClient.getUser();
     if (user) {
       setCurrentUser(user);
@@ -115,7 +115,12 @@ export default function ChiTietChaoBanPage() {
       }
       if (changed) setAutoFilled(true);
     }
-    if (offer && (!offer.hasTechTransfer || offer.offerType === "PRODUCT")) {
+    if (defaultMethod) {
+      setDemandMethod(defaultMethod);
+      if (defaultMethod === "PURCHASE_COMMERCIAL" && demandBudget === "500M_1B") {
+        setDemandBudget("20M_100M");
+      }
+    } else if (offer && (!offer.hasTechTransfer || offer.offerType === "PRODUCT")) {
       if (demandMethod === "TRANSFER") {
         setDemandMethod("PURCHASE_COMMERCIAL");
       }
@@ -559,7 +564,7 @@ export default function ChiTietChaoBanPage() {
                       <div className="flex flex-col sm:flex-row gap-3">
                         <button
                           type="button"
-                          onClick={handleOpenConnectModal}
+                          onClick={() => handleOpenConnectModal(isCommercialProduct ? "PURCHASE_COMMERCIAL" : "TRANSFER")}
                           className="flex-1 rounded-xl bg-brand-700 hover:bg-brand-800 text-white px-5 py-3 text-sm font-bold shadow-md shadow-brand-900/15 transition flex items-center justify-center gap-2"
                         >
                           {isCommercialProduct ? (
@@ -1012,7 +1017,7 @@ export default function ChiTietChaoBanPage() {
                             ) : doc.accessScope === "AFTER_CONNECTION" ? (
                               <button
                                 type="button"
-                                onClick={handleOpenConnectModal}
+                                onClick={() => handleOpenConnectModal()}
                                 className="text-xs font-bold text-amber-800 hover:text-amber-900 flex items-center gap-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-lg transition"
                               >
                                 <Lock className="w-3 h-3 text-amber-600" /> Cần cấp quyền (Ký NDA)
@@ -1040,7 +1045,7 @@ export default function ChiTietChaoBanPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={handleOpenConnectModal}
+                          onClick={() => handleOpenConnectModal()}
                           className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 transition shadow-sm"
                         >
                           <Send className="w-3.5 h-3.5 text-brand-600" />
@@ -1090,7 +1095,8 @@ export default function ChiTietChaoBanPage() {
 
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <button
-                onClick={handleOpenConnectModal}
+                type="button"
+                onClick={() => handleOpenConnectModal(isCommercialProduct ? "PURCHASE_COMMERCIAL" : "TRANSFER")}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-xs font-extrabold transition shadow-md shadow-emerald-950/20 flex items-center justify-center gap-2"
               >
                 {isCommercialProduct ? (

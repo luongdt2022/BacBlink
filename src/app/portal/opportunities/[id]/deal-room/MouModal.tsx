@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X, FileSignature, CheckCircle2, AlertCircle, Building2, ShieldCheck, Calendar, Clock } from 'lucide-react';
 import { Opportunity, MouAgreement } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
+import { formatCurrencyMillionVnd } from '@/lib/currency';
 
 interface MouModalProps {
   isOpen: boolean;
@@ -20,6 +21,10 @@ export default function MouModal({
   onClose,
   onSuccess,
 }: MouModalProps) {
+  const formattedEstimatedValue = opportunity.estimatedValueMillionVnd
+    ? formatCurrencyMillionVnd(opportunity.estimatedValueMillionVnd)
+    : 'thỏa thuận theo phụ lục hợp đồng';
+
   const [scopeOfWork, setScopeOfWork] = useState(
     existingMou?.scopeOfWork ||
       `Hai bên thống nhất triển khai dự án thử nghiệm thực tế (Pilot Testing) giải pháp tại nhà máy trong giai đoạn mùa vụ tới.\n1. Bên Bán cung cấp 01 tổ hợp thiết bị mẫu và cử chuyên gia kỹ thuật hướng dẫn vận hành.\n2. Bên Mua chuẩn bị hạ tầng kết nối điện, mặt bằng lắp đặt và bố trí nhân sự kỹ thuật tiếp nhận.`
@@ -27,7 +32,7 @@ export default function MouModal({
   const [pilotDuration, setPilotDuration] = useState(existingMou?.pilotDurationMonths || 6);
   const [commercialTerms, setCommercialTerms] = useState(
     existingMou?.commercialTerms ||
-      `Chi phí thử nghiệm thực địa do hai bên đồng tài trợ. Nếu đạt chỉ số KPI sau thời gian thử nghiệm, hai bên sẽ tiến hành đàm phán hợp đồng chuyển giao công nghệ trọn gói trị giá dự kiến ${opportunity.estimatedValueMillionVnd || 1000} triệu VNĐ.`
+      `Chi phí thử nghiệm thực địa do hai bên đồng tài trợ. Nếu đạt chỉ số KPI sau thời gian thử nghiệm, hai bên sẽ tiến hành đàm phán hợp đồng chuyển giao công nghệ trọn gói trị giá dự kiến ${formattedEstimatedValue}.`
   );
   const [ipTerms, setIpTerms] = useState(
     existingMou?.intellectualPropertyTerms ||

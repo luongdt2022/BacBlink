@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import DealRoomPage from './page';
 import { brokerageApi } from '@/services/api/brokerage';
+import { authClient } from '@/lib/auth-client';
 
 const mockToastSuccess = vi.fn();
 const mockToastError = vi.fn();
@@ -64,6 +65,7 @@ describe('DealRoomPage Component (/portal/opportunities/[id]/deal-room)', () => 
   beforeEach(() => {
     vi.clearAllMocks();
     cleanup();
+    vi.spyOn(authClient, 'getUser').mockReturnValue({ fullName: 'Kỹ sư Vũ Quang Hải' } as any);
     vi.spyOn(brokerageApi, 'getDealRoomDetails').mockResolvedValue(mockDealRoomData as any);
     vi.spyOn(brokerageApi, 'postDealDiscussion').mockResolvedValue({
       id: 'disc-2',

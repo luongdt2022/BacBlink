@@ -11,6 +11,29 @@ from playwright.sync_api import sync_playwright
 
 BASE_URL = "http://localhost:3000"
 
+def wait_for_hydration(page, selector=None):
+    try:
+        if selector:
+            page.wait_for_function(
+                f"""() => {{
+                    const el = document.querySelector("{selector}");
+                    if (!el) return false;
+                    return Object.keys(el).some(k => k.startsWith('__reactFiber') || k.startsWith('__reactProps'));
+                }}""",
+                timeout=15000
+            )
+        else:
+            page.wait_for_function(
+                """() => {
+                    const btn = document.querySelector("button[aria-label='Mở Trợ lý Ảo AI NacentTwin']") || document.querySelector("button");
+                    if (!btn) return false;
+                    return Object.keys(btn).some(k => k.startsWith('__reactFiber') || k.startsWith('__reactProps'));
+                }""",
+                timeout=15000
+            )
+    except Exception:
+        pass
+
 def run_task01_e2e():
     print("======================================================================")
     print("🛡️ KIỂM THỬ E2E BLACK-BOX QC 4 TẦNG: TASK-01 CỔNG THÔNG TIN & TECHMART")
@@ -30,7 +53,7 @@ def run_task01_e2e():
         # ------------------------------------------------------------------
         tests_run += 1
         print("▶ [BB-01] Kiểm tra Trang chủ & Thống kê thời gian thực...")
-        page.goto(f"{BASE_URL}/", wait_until="networkidle")
+        page.goto(f"{BASE_URL}/", wait_until="domcontentloaded")
         time.sleep(1)
 
         body_text = page.locator("body").inner_text()
@@ -63,11 +86,12 @@ def run_task01_e2e():
         # ------------------------------------------------------------------
         tests_run += 1
         print("\n▶ [BB-02] Kiểm tra Widget nổi Trợ lý ảo AI NacentTwin...")
+        wait_for_hydration(page)
         ai_btn = page.locator("button[aria-label='Mở Trợ lý Ảo AI NacentTwin']").first
         if ai_btn.is_visible():
             print("  ✅ PASS: FAB Button Trợ lý AI hiển thị nổi góc phải.")
             ai_btn.click()
-            time.sleep(0.5)
+            time.sleep(1)
 
             modal_title = page.locator("h3:has-text('Trợ Lý Ảo AI NacentTwin')").first
             if modal_title.is_visible():
@@ -94,7 +118,8 @@ def run_task01_e2e():
         # ------------------------------------------------------------------
         tests_run += 1
         print("\n▶ [BB-03] Kiểm tra Showcase Listing Sàn Sự Kiện Techmart (/trien-lam)...")
-        page.goto(f"{BASE_URL}/trien-lam", wait_until="networkidle")
+        page.goto(f"{BASE_URL}/trien-lam")
+        wait_for_hydration(page)
         time.sleep(1)
 
         trien_lam_text = page.locator("body").inner_text()
@@ -110,11 +135,20 @@ def run_task01_e2e():
             print("  ✅ PASS: Trang Showcase Techmart hiển thị đúng thiết kế cơ sở.")
 
         # Kiểm tra nút Đăng ký tham gia
+        page.wait_for_selector("button:has-text('Đăng Ký Tham Gia')", timeout=10000)
+        page.wait_for_function(
+            """() => {
+                const b = Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Đăng Ký Tham Gia'));
+                if (!b) return false;
+                return Object.keys(b).some(k => k.startsWith('__reactFiber') || k.startsWith('__reactProps'));
+            }""",
+            timeout=15000
+        )
         reg_btn = page.locator("button:has-text('Đăng Ký Tham Gia')").first
         if reg_btn.is_visible():
             print("  ✅ PASS: Nút 'Đăng Ký Tham Gia' có mặt trên trang sự kiện.")
             reg_btn.click()
-            time.sleep(0.5)
+            time.sleep(1)
 
             reg_modal = page.locator("h3:has-text('Đăng Ký Tham Gia Phiên Chào Giá Techmart')").first
             if reg_modal.is_visible():
@@ -135,7 +169,7 @@ def run_task01_e2e():
         # ------------------------------------------------------------------
         tests_run += 1
         print("\n▶ [BB-04] Kiểm tra Trang Đăng Ký Tham Quan (/trien-lam/dang-ky-tham-quan)...")
-        page.goto(f"{BASE_URL}/trien-lam/dang-ky-tham-quan", wait_until="networkidle")
+        page.goto(f"{BASE_URL}/trien-lam/dang-ky-tham-quan", wait_until="domcontentloaded")
         time.sleep(1)
 
         dk_text = page.locator("body").inner_text()
@@ -158,7 +192,7 @@ def run_task01_e2e():
         console_warnings = []
         page.on("console", lambda msg: console_warnings.append(msg.text) if msg.type in ["warning", "error"] else None)
 
-        page.goto(f"{BASE_URL}/", wait_until="networkidle")
+        page.goto(f"{BASE_URL}/", wait_until="domcontentloaded")
         time.sleep(1.5)
 
         # Tab Chào bán

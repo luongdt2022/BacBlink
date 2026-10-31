@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import RegisterPage from "./page";
 
 const push = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+const replace = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
 vi.mock("next/link", () => ({ default: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 
 describe("RegisterPage", () => {
@@ -11,6 +12,8 @@ describe("RegisterPage", () => {
     cleanup();
     vi.restoreAllMocks();
     push.mockReset();
+    replace.mockReset();
+    localStorage.clear();
   });
 
   it("submits no role/scope, resets the form, and confirms immediate PUBLIC_USER sign-in", async () => {

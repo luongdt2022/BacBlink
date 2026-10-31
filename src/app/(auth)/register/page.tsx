@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AppButton } from "@/components/ui/design-system";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { UserPlus, Mail, Phone, AlertCircle, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
 import { API_BASE, readApiError, userFacingRequestError } from "@/lib/api-client";
+import { authClient, getRedirectPathByRole } from "@/lib/auth-client";
 
 const initialFormData = {
   email: "",
@@ -17,11 +19,20 @@ const initialFormData = {
 };
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState(initialFormData);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const user = authClient.getUser();
+    const token = authClient.getToken();
+    if (user && token) {
+      router.replace(getRedirectPathByRole(user.role));
+    }
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

@@ -21,17 +21,18 @@ export const ROLE_LABELS: Record<string, string> = {
   GUEST: "Khách Vãng Lai",
 };
 
-// Từ điển loại hồ sơ kiểm duyệt
+// Từ điển loại hồ sơ kiểm duyệt theo chuẩn hành chính công V7
 export const REQUEST_TYPE_LABELS: Record<string, string> = {
-  EXPERT: "Hồ sơ Chuyên gia KH&CN",
-  SHOP: "Gian hàng Công nghệ (Shop)",
-  TECH_SUPPLY: "Công nghệ Chào bán",
-  DEMAND: "Bài toán Nhu cầu Công nghệ",
-  TECH_DEMAND: "Bài toán Nhu cầu Công nghệ",
-  ACCOUNT: "Kích hoạt Tài khoản Thành viên",
-  FACILITY: "Cơ sở Đổi mới Sáng tạo / Viện Trường",
+  EXPERT: "Chuyên Gia KH&CN",
+  SHOP: "Chào Bán Công Nghệ",
+  TECH_SUPPLY: "Chào Bán Công Nghệ",
+  DEMAND: "Nhu Cầu Công Nghệ",
+  TECH_DEMAND: "Nhu Cầu Công Nghệ",
+  ACCOUNT: "Tài Khoản Tổ Chức",
+  FACILITY: "Doanh Nghiệp ĐMST",
+  ENTERPRISE: "Doanh Nghiệp ĐMST",
   INSTITUTION: "Viện / Trường Đại học Liên kết",
-  INNOVATION_ENTITY: "Doanh nghiệp Đổi mới Sáng tạo",
+  INNOVATION_ENTITY: "Doanh Nghiệp ĐMST",
 };
 
 // Từ điển 18 lĩnh vực công nghệ theo TT17/2019/TT-BKHCN
@@ -177,4 +178,21 @@ export function resolveActionBadge(action?: string | null): {
         badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
       };
   }
+}
+
+/**
+ * Rút gọn mã định danh hồ sơ phê duyệt sang mã thân thiện dễ nhớ chuẩn V7 (VD: #HS-058915)
+ * @param id UUID hoặc ID gốc
+ * @param type Loại hồ sơ (tùy chọn)
+ * @param scope Phạm vi (tùy chọn)
+ */
+export function formatApprovalRecordCode(
+  id?: string | null,
+  type?: string | null,
+  scope?: string | null
+): string {
+  if (!id) return "#HS-000000";
+  const clean = id.trim().replace(/-/g, "");
+  const suffix = clean.length >= 6 ? clean.slice(-6).toUpperCase() : clean.toUpperCase();
+  return `#HS-${suffix}`;
 }

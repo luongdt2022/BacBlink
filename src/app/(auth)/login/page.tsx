@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AppButton } from "@/components/ui/design-system";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const user = authClient.getUser();
+    const token = authClient.getToken();
+    if (user && token) {
+      router.replace(getRedirectPathByRole(user.role));
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

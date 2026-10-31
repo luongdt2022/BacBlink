@@ -27,6 +27,7 @@ import { brokerageApi } from '@/services/api/brokerage';
 import MouModal from './MouModal';
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 import { useToast } from '@/components/common/toast';
+import { authClient } from '@/lib/auth-client';
 
 export default function DealRoomPage() {
   const params = useParams();
@@ -38,7 +39,7 @@ export default function DealRoomPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Discussion Form
-  const [senderName, setSenderName] = useState('Kỹ sư Vũ Quang Hải');
+  const [senderName, setSenderName] = useState(() => authClient.getUser()?.fullName || '');
   const [senderRole, setSenderRole] = useState<'BUYER' | 'SELLER' | 'EXPERT'>('BUYER');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);

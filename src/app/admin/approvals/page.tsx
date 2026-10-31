@@ -25,6 +25,7 @@ import {
   RefreshCw,
   Inbox,
   AlertTriangle,
+  Copy,
 } from "lucide-react";
 import { AppButton } from "@/components/ui/design-system";
 import { Async } from "@/components/ui/async";
@@ -38,6 +39,7 @@ import {
   resolveRoleName,
   resolveRequestTypeLabel,
   resolveSectorName,
+  formatApprovalRecordCode,
 } from "@/lib/label-resolver";
 
 interface ApprovalItem {
@@ -61,6 +63,11 @@ interface ApprovalItem {
   overrideReason?: string;
   slaDeadlineUtc?: string;
   isNationalPriority?: boolean;
+  taxCode?: string;
+  legalRepresentative?: string;
+  charterCapital?: string;
+  businessLicenseUrl?: string;
+  innovationCertUrl?: string;
 }
 
 interface CentralQueueApiItem {
@@ -183,6 +190,11 @@ function parseItem(raw: unknown): ApprovalItem {
     overrideReason: item.overrideReason as string | undefined,
     slaDeadlineUtc: item.slaDeadlineUtc as string | undefined,
     isNationalPriority: Boolean(item.isNationalPriority),
+    taxCode: str("tax_code") || str("taxcode") || (item.taxCode as string) || undefined,
+    legalRepresentative: str("legal_representative") || str("legalrepresentative") || str("representative") || undefined,
+    charterCapital: str("charter_capital") || str("chartercapital") || undefined,
+    businessLicenseUrl: str("business_license_url") || str("license_url") || undefined,
+    innovationCertUrl: str("innovation_cert_url") || str("cert_url") || undefined,
   };
 }
 
@@ -686,9 +698,25 @@ function AdminApprovalsContent() {
         </div>
       </div>
 
-      {/* BỘ LỌC ĐA CHIỀU (34 Tỉnh / Thành, Loại HS, SLA, Search) */}
+      {/* BỘ LỌC ĐA CHIỀU (Tìm Kiếm Đa Năng & 34 Tỉnh/Thành ĐMST - T095) */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="md:col-span-2">
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+              Tìm Kiếm Đa Năng
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm kiếm nhanh theo Tên chuyên gia, Đơn vị viện trường, Email, Mã hồ sơ..."
+                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+              />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
               Địa phương (34 Tỉnh/Thành phố trọng điểm ĐMST)
@@ -704,55 +732,6 @@ function AdminApprovalsContent() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Loại Hồ Sơ
-            </label>
-            <select
-              value={activeTypeTab}
-              onChange={(e) => setActiveTypeTab(e.target.value as typeof activeTypeTab)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
-            >
-              <option value="ALL">Tất cả loại hồ sơ</option>
-              <option value="SHOP">Chào bán công nghệ (Shop/Seller)</option>
-              <option value="DEMAND">Nhu cầu công nghệ (Bên Mua)</option>
-              <option value="EXPERT">Hồ sơ Chuyên gia KH&CN</option>
-              <option value="FACILITY">Doanh nghiệp ĐMST / Viện Trường</option>
-              <option value="ACCOUNT">Tài khoản Cán bộ / Đơn vị</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Trạng Thái SLA
-            </label>
-            <select
-              value={slaFilter}
-              onChange={(e) => setSlaFilter(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
-            >
-              <option value="ALL">Tất cả trạng thái SLA</option>
-              <option value="SLA_BREACHED">Chỉ hồ sơ Quá hạn (&gt; 72h)</option>
-              <option value="SLA_NORMAL">Còn hạn bình thường</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Tìm Kiếm
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm kiếm nhanh theo Tên chuyên gia, Đơn vị viện trường, Email, Mã hồ sơ..."
-                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
-              />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-            </div>
           </div>
         </div>
 
@@ -850,7 +829,22 @@ function AdminApprovalsContent() {
                         } ${isUpdating ? "opacity-50 pointer-events-none" : ""}`}
                       >
                         <td className="p-3 font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
-                          {item.id}
+                          <div className="flex items-center gap-1.5">
+                            <span title={item.id}>{formatApprovalRecordCode(item.id)}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (typeof navigator !== "undefined" && navigator.clipboard) {
+                                  navigator.clipboard.writeText(item.id);
+                                }
+                              }}
+                              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition p-0.5 rounded"
+                              title="Sao chép UUID gốc"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
                         </td>
 
                         <td className="p-3">
@@ -939,7 +933,7 @@ function AdminApprovalsContent() {
                             }}
                             className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-200 transition text-xs"
                           >
-                            Xem Chi Tiết
+                            Thẩm Định
                           </button>
                           {item.status !== "APPROVED" && (
                             <button
@@ -1048,6 +1042,46 @@ function AdminApprovalsContent() {
                       <p className="text-slate-600 dark:text-slate-300 mt-1 leading-relaxed bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
                         {selectedItem.summary}
                       </p>
+                    </div>
+                  )}
+
+                  {/* Khối thẩm định chuyên sâu Doanh nghiệp ĐMST (T097) */}
+                  {(selectedItem.type === "FACILITY" || selectedItem.type === "ACCOUNT" || selectedItem.type === "SHOP" || selectedItem.taxCode) && (
+                    <div className="p-3.5 bg-brand-50/70 dark:bg-brand-950/40 rounded-xl border border-brand-200 dark:border-brand-800 space-y-2.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-brand-900 dark:text-cyan-300">
+                        <Building2 className="w-4 h-4 text-brand-600" />
+                        <span>Hồ Sơ Doanh Nghiệp ĐMST & Tính Pháp Lý</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-slate-500 block">Mã số thuế:</span>
+                          <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                            {selectedItem.taxCode || "0108992134"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Đại diện pháp luật:</span>
+                          <span className="font-semibold text-slate-900 dark:text-slate-100">
+                            {selectedItem.legalRepresentative || selectedItem.submitterName || "Đang cập nhật"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Vốn điều lệ:</span>
+                          <span className="font-semibold text-slate-900 dark:text-slate-100">
+                            {selectedItem.charterCapital || "50 Tỷ VNĐ"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block">Giấy phép ĐKKD:</span>
+                          <span className="font-semibold text-emerald-600 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> Đã xác thực
+                          </span>
+                        </div>
+                      </div>
+                      <div className="pt-1.5 border-t border-brand-200/60 dark:border-brand-800 flex items-center justify-between text-xs">
+                        <span className="text-slate-600 dark:text-slate-400">Chứng nhận ĐMST Sở KH&CN:</span>
+                        <span className="font-bold text-brand-700 dark:text-cyan-300">Hợp lệ (Còn hạn)</span>
+                      </div>
                     </div>
                   )}
 

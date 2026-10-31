@@ -875,7 +875,11 @@ function ChaoBanCongNgheContent() {
                   >
                     <div>
                       {/* Media Thumbnail Container (Responsive Aspect Ratio) */}
-                      <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-brand-700">
+                      <Link
+                        href={`/chao-ban-cong-nghe/${offer.id}`}
+                        className="relative block aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-brand-700"
+                        title={offer.title}
+                      >
                         <Image
                           src={coverImage}
                           alt={offer.title}
@@ -915,7 +919,7 @@ function ChaoBanCongNgheContent() {
                             </span>
                           )}
                         </div>
-                      </div>
+                      </Link>
 
                       {/* Card Content Body */}
                       <div className="p-3.5 sm:p-4 space-y-2.5">

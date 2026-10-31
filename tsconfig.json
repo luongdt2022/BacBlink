@@ -32,11 +32,12 @@
     "**/*.ts",
     "**/*.tsx",
     ".next-build-delta/types/**/*.ts",
+    ".next-prod/types/**/*.ts",
     ".next-qc-delta/types/**/*.ts",
     ".next/types/**/*.ts",
     "/tmp/nacentwin-next-build/types/**/*.ts",
     "next-env.d.ts",
-    ".next-prod/types/**/*.ts"
+    "/tmp/nacentech-frontend-dist/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

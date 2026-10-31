@@ -4,8 +4,9 @@ import LoginPage from "./page";
 import { authClient } from "@/lib/auth-client";
 
 const push = vi.fn();
+const replace = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
 vi.mock("next/link", () => ({ default: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 
 describe("LoginPage", () => {
@@ -13,6 +14,7 @@ describe("LoginPage", () => {
     cleanup();
     vi.restoreAllMocks();
     push.mockReset();
+    replace.mockReset();
     localStorage.clear();
   });
 
@@ -65,6 +67,17 @@ describe("LoginPage", () => {
     expect(await screen.findByText("Tài khoản hoặc mật khẩu không chính xác.")).toBeInTheDocument();
     expect(authClient.getToken()).toBeNull();
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it("redirects authenticated user to role path immediately if already logged in", () => {
+    localStorage.setItem("nacentwin_access_token", "existing-jwt");
+    localStorage.setItem(
+      "nacentwin_user_context",
+      JSON.stringify({ id: "user-1", email: "user@test.local", role: "VERIFIED_EXPERT" })
+    );
+
+    render(<LoginPage />);
+    expect(replace).toHaveBeenCalledWith("/portal");
   });
 
   it("populates inputs correctly when clicking quick-fill for Doanh Nghiệp ĐMST", () => {

@@ -5,6 +5,7 @@ import {
   resolveRequestTypeLabel,
   resolveSectorName,
   resolveActionBadge,
+  formatApprovalRecordCode,
 } from "./label-resolver";
 
 describe("T068 [FE-LabelResolver] Universal Label Resolver Verification", () => {
@@ -25,11 +26,21 @@ describe("T068 [FE-LabelResolver] Universal Label Resolver Verification", () => 
     expect(resolveRoleName(null)).toBe("Chưa xác định vai trò");
   });
 
-  it("resolves request type codes to user-friendly titles", () => {
-    expect(resolveRequestTypeLabel("EXPERT")).toBe("Hồ sơ Chuyên gia KH&CN");
-    expect(resolveRequestTypeLabel("SHOP")).toBe("Gian hàng Công nghệ (Shop)");
-    expect(resolveRequestTypeLabel("DEMAND")).toBe("Bài toán Nhu cầu Công nghệ");
+  it("resolves request type codes to user-friendly titles according to V7 standards", () => {
+    expect(resolveRequestTypeLabel("EXPERT")).toBe("Chuyên Gia KH&CN");
+    expect(resolveRequestTypeLabel("SHOP")).toBe("Chào Bán Công Nghệ");
+    expect(resolveRequestTypeLabel("DEMAND")).toBe("Nhu Cầu Công Nghệ");
+    expect(resolveRequestTypeLabel("FACILITY")).toBe("Doanh Nghiệp ĐMST");
+    expect(resolveRequestTypeLabel("ENTERPRISE")).toBe("Doanh Nghiệp ĐMST");
+    expect(resolveRequestTypeLabel("ACCOUNT")).toBe("Tài Khoản Tổ Chức");
     expect(resolveRequestTypeLabel(null)).toBe("Hồ sơ Thẩm định");
+  });
+
+  it("T094: formatApprovalRecordCode formats UUIDs into friendly #HS-XXXXXX codes", () => {
+    expect(formatApprovalRecordCode("01928001-0000-7000-8000-000000058915")).toBe("#HS-058915");
+    expect(formatApprovalRecordCode("abc-123456")).toBe("#HS-123456");
+    expect(formatApprovalRecordCode("short")).toBe("#HS-SHORT");
+    expect(formatApprovalRecordCode(null)).toBe("#HS-000000");
   });
 
   it("resolves sector numbers and codes to TT17 domain names", () => {

@@ -474,10 +474,10 @@ describe("AdminApprovalsPage (TASK-07)", () => {
       render(<AdminApprovalsPage />);
       await screen.findByText("Đặng Tiến Lượng");
 
-      // Verify human-readable request type labels in table badges (also present in dropdown option)
-      expect(screen.getAllByText("Hồ sơ Chuyên gia KH&CN").length).toBeGreaterThanOrEqual(2);
-      expect(screen.getByText("Gian hàng Công nghệ (Shop)")).toBeInTheDocument();
-      expect(screen.getByText("Bài toán Nhu cầu Công nghệ")).toBeInTheDocument();
+      // Verify human-readable request type labels in table badges (V7 administrative labels)
+      expect(screen.getAllByText("Chuyên Gia KH&CN").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("Chào Bán Công Nghệ")).toBeInTheDocument();
+      expect(screen.getByText("Nhu Cầu Công Nghệ")).toBeInTheDocument();
 
       // Verify human-readable province names
       expect(screen.getAllByText("Sở KH&CN TP. Hà Nội").length).toBeGreaterThanOrEqual(1);
@@ -487,7 +487,7 @@ describe("AdminApprovalsPage (TASK-07)", () => {
       fireEvent.click(screen.getByText("Đặng Tiến Lượng"));
 
       // Verify detail drawer header uses resolved type name
-      expect(screen.getByText(/Thẩm định Hồ sơ Chuyên gia KH&CN/i)).toBeInTheDocument();
+      expect(screen.getByText(/Thẩm định Chuyên Gia KH&CN/i)).toBeInTheDocument();
       // Verify detail drawer displays human-readable province
       expect(screen.getAllByText("Sở KH&CN TP. Hà Nội").length).toBeGreaterThanOrEqual(1);
     });
@@ -537,6 +537,35 @@ describe("AdminApprovalsPage (TASK-07)", () => {
       // Check for scrollbar-thin on table wrapper and drawer
       const scrollables = container.querySelectorAll(".scrollbar-thin");
       expect(scrollables.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe("T098 [QC-Verification-V7] Master Grid, Slide-over Drawer & Segmented Filter", () => {
+    it("renders friendly #HS-XXXXXX record codes and Thẩm Định action buttons in Master Grid", async () => {
+      render(<AdminApprovalsPage />);
+      await screen.findByText("Đặng Tiến Lượng");
+
+      // Verify friendly record code exists (#HS-1 for id="1")
+      expect(screen.getByText("#HS-1")).toBeInTheDocument();
+      expect(screen.getAllByText(/#HS-/).length).toBeGreaterThanOrEqual(1);
+
+      // Verify Thẩm Định action buttons are rendered
+      const thamDinhBtns = screen.getAllByRole("button", { name: /Thẩm Định/i });
+      expect(thamDinhBtns.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("renders enterprise review block with tax code and legal representative for enterprise records", async () => {
+      render(<AdminApprovalsPage />);
+      await screen.findByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom");
+
+      // Click on enterprise record to inspect drawer
+      fireEvent.click(screen.getByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom"));
+
+      // Verify enterprise review block
+      expect(screen.getByText(/Hồ Sơ Doanh Nghiệp ĐMST & Tính Pháp Lý/i)).toBeInTheDocument();
+      expect(screen.getByText("0108992134")).toBeInTheDocument();
+      expect(screen.getByText("Vốn điều lệ:")).toBeInTheDocument();
+      expect(screen.getByText("Chứng nhận ĐMST Sở KH&CN:")).toBeInTheDocument();
     });
   });
 });
