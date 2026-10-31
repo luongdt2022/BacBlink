@@ -980,7 +980,7 @@ flowchart TD
 
 ---
 
-## Giai đoạn 11: Spec Delta v9 — Chuẩn Hóa Hiển Thị Trung Thực Theo CSDL (Triệt Phá Mock DataRoom & Technical Specs Dynamic Display)
+## Giai đoạn 11: Spec Delta v10 — Chuẩn Hóa Hiển Thị Trung Thực Theo CSDL (Triệt Phá Mock DataRoom & Technical Specs Dynamic Display)
 
 ### 15.1. Bối Cảnh & Phân Tích Nguyên Nhân Gốc Rễ (Context & Root Cause Analysis)
 
@@ -1102,7 +1102,7 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 
 ---
 
-## Giai đoạn 13: Spec Delta v10 — Phân Nhánh Nghiệp Vụ Tường Minh Giữa Sản Phẩm Thương Mại & Công Nghệ Chuyển Giao (Commercial Goods vs Tech Transfer)
+## Giai đoạn 13: Spec Delta v11 — Phân Nhánh Nghiệp Vụ Tường Minh Giữa Sản Phẩm Thương Mại & Công Nghệ Chuyển Giao (Commercial Goods vs Tech Transfer)
 
 ### 16.1. Bối Cảnh & Phân Tích Nguyên Nhân Gốc Rễ (Context & Root Cause Analysis)
 
@@ -1242,22 +1242,21 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 
 ---
 
-## Spec Delta v5: Chuẩn Hóa Chỉ Số Cung Dynamic & Taxonomy SSOT 10 Ngành Active TT17 (CR-2026-010)
+## Spec Delta v12: Chuẩn Hóa Chỉ Số Cung Dynamic & Bộ Lọc Đa Tầng 18 Ngành/Lĩnh Vực TT17 (CR-2026-010)
 
 > **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
 
 ### 1. Bối cảnh & Mục tiêu
-- **Triệt tiêu fallback ảo trên Sàn Chào Bán**: Xóa sạch toàn bộ số giả định `"1.200+"`, `"680+" bằng sáng chế` và chữ cứng `"10 Ngành"` trên trang `/chao-ban-cong-nghe`.
+- **Triệt tiêu fallback ảo trên Sàn Chào Bán**: Xóa sạch toàn bộ số giả định `"1.200+"`, `"680+" bằng sáng chế` trên trang `/chao-ban-cong-nghe`.
 - **Nạp động 100% từ API**:
   - *Chỉ số Cung (`totalOffers`)*: Đếm tổng số công nghệ chào bán thỏa mãn `Status == 'APPROVED'` và `IsPublic == true` trong `technology.seller_technology_offers`.
   - *Số lượng ngành công nghệ*: Lấy từ số lượng bản ghi trả về của API `/api/v1/master-data/sectors?activeOnly=true`.
-- **Nguồn chân lý Taxonomy SSOT**:
-  - Dẹp bỏ hoàn toàn mảng `TT17_SECTORS` 18 ngành tự chế với các mã tiền tố `AG, FOOD, MECH...` trong `types/technology-offer.ts`.
-  - Thay thế bằng danh mục 10 Lĩnh vực TT17 chuẩn CSDL (`LV01, LV05, LV07, LV08, LV11, LV12, LV14, LV15, LV16, LV17`) nạp từ `GET /api/v1/master-data/sectors?activeOnly=true`.
+- **Nguồn chân lý Taxonomy SSOT 18 Ngành / Lĩnh vực TT17**:
+  - Chuẩn hóa danh mục 18 ngành/lĩnh vực TT17 kết nối trực tiếp với CSDL và API master data `GET /api/v1/master-data/sectors?activeOnly=true`.
 - **Xử lý 5 UX States qua `<Async>`**: Bắt buộc mọi khối thống kê và lưới sản phẩm chào bán phải bọc qua component chuẩn `<Async>`, cấm fallback ngầm trong khối `catch`.
 
 ### 2. Tiêu chí Chấp Nhận Nghiệm Thu (Acceptance Criteria)
 - **`AC-04-047`**: Số lượng công nghệ chào bán trên trang `/chao-ban-cong-nghe` nạp động từ CSDL thật, khớp 100% với số lượng bản ghi có `Status = 'APPROVED'` và `IsPublic = true` trong PostgreSQL.
-- **`AC-04-048`**: Bộ lọc Lĩnh vực nạp đầy đủ 10 Lĩnh vực chuẩn TT17 từ API, không còn bất kỳ mã lạ hoặc mã tự chế nào.
+- **`AC-04-048`**: Bộ lọc Lĩnh vực nạp đầy đủ danh mục ngành/lĩnh vực chuẩn TT17 từ API, đồng bộ danh mục 18 ngành theo chỉ đạo PO.
 - **`AC-04-049`**: Khi hệ thống chưa có công nghệ nào được duyệt, hiển thị trung thực con số `0` công nghệ và thông điệp trống, tuyệt đối không hiển thị fallback `1.200+`.
 

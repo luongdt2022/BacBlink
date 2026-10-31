@@ -1,7 +1,8 @@
 # Đặc Tả Yêu Cầu Kỹ Thuật (spec.md) — TASK-01: Tổng Quan Hệ Thống, Cổng Điều Hướng Home & Sự Kiện Techmart
 
 > **Mã phân hệ**: `TASK-01`  
-> **Trạng thái**: `🔵 Đang thi công (Spec Kit In-Progress)`  
+> **Trạng thái**: `🟢 Completed (Shipped Gate 5)`  
+> **Version**: `1.3.0`  
 > **Ánh xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/`](../../../Specification/02_BASIC_DESIGN/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/)  
 > **Tài liệu nguồn gốc (SSOT)**: 
 > 1. Sheet `HOME1` & `Giới thiệu` (60 dòng dữ liệu gốc) trong `Nacentwin_20260924_bo_loc_da_sua.xlsx`.
@@ -269,5 +270,17 @@
 ### 3. Tiêu chí Đo Lường Hoàn Thành Delta (Success Criteria)
 - **`SC-DELTA-05`**: API `GET /api/v1/portal/stats` trả về số liệu khớp 100% với các truy vấn SQL trực tiếp trên PostgreSQL thật.
 - **`SC-DELTA-06`**: Khi ngắt kết nối mạng hoặc server 500, Trang chủ hiển thị Error State kèm nút Thử lại, không hiển thị bất kỳ số dummy nào.
+
+---
+
+## 4. MA TRẬN TIÊU CHÍ CHẤP NHẬN (ACCEPTANCE CRITERIA MATRIX)
+
+| Mã AC | Tiêu đề & Phạm vi | Điều kiện Tiền đề (Given) | Hành động Kích hoạt (When) | Kết quả Kỳ vọng (Then) |
+| :--- | :--- | :--- | :--- | :--- |
+| **`AC-01-001`** | Mega-Menu Navigation 7 mục | Khách truy cập hoặc người dùng đã đăng nhập ở bất kỳ trang nào | Click vào các mục Menu chính trên Header | Điều hướng chính xác 1:1 tới các route `/gioi-thieu`, `/chao-ban-cong-nghe`, `/nhu-cau-cong-nghe`, `/enterprises`, `/experts`, `/dich-vu-khac`, `/trien-lam`. |
+| **`AC-01-002`** | Dynamic Metrics Zero-Mock | CSDL PostgreSQL đã có dữ liệu thật (Cung, Cầu, Kết nối, Ngân sách) | Tải Trang chủ (`/`) | Hiển thị 4 thẻ Marketplace Metrics lấy từ `GET /api/v1/portal/stats`, bọc qua `<Async>` đủ 5 UX States, 0% fallback số giả lập. |
+| **`AC-01-003`** | Techmart Showcase Listing | Người dùng truy cập phân hệ Triển lãm (`/trien-lam`) | Xem danh sách sự kiện và click "Đăng ký tham gia" | Modal đăng ký hiển thị, submit form lưu vào `portal_event_registrations` và cấp mã đăng ký xác nhận. |
+| **`AC-01-004`** | AI Virtual Assistant Widget | Người dùng mở trang chủ | Bấm widget FAB góc phải màn hình | Hộp thoại trợ lý AI mở ra, hiển thị các câu hỏi mẫu gợi ý (TRL 1-9, định giá công nghệ) và phản hồi theo tri thức nền tảng. |
+| **`AC-01-005`** | Sector Chips Taxonomy | Dữ liệu Master Data trả về danh mục lĩnh vực | Tải thanh Hero Search trang chủ | Hiển thị các chip lĩnh vực động nạp từ API Master Data, click chip tự động filter kết quả tìm kiếm tương ứng. |
 
 

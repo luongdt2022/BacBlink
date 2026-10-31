@@ -365,4 +365,17 @@ Theo kết luận Party Mode và chỉ đạo PO ngày 23/10/2026 về việc l�
 | **REQ-BRK-07** | `BR-BRK-07`, `BR-BRK-08` | `AC-BRK-07-01`, `AC-BRK-07-02`, `AC-BRK-07-03`, `AC-BRK-07-04` | `UI-CONN-REQ-DETAIL-001` (`ConnectionRequestDetailModal.tsx`) | `API-BRK-REQ-002` (`GET /requests/{id}`), `PUT /requests/{id}/respond` | `DB-BRK-CONN-REQ-001` (`brokerage.connection_requests`) | `ConnectionRequestDetailModal.test.tsx`, `pdpd-masking.test.ts` |
 | **REQ-BRK-08** | `BR-BRK-08` | `AC-BRK-08-01`, `AC-BRK-08-02`, `AC-BRK-08-03` | `UI-CONN-REQ-FILTER-001` (`ConnectionRequestTabs.tsx`), `pipeline/page.tsx` | `API-BRK-REQ-003` (`GET /requests?status=...`), `GET /pipeline` | `DB-BRK-CONN-REQ-001` (`brokerage.connection_requests`), `opportunities` | `scoped-pipeline.test.tsx`, `connection-requests-filter.test.tsx` |
 
+---
+
+## 8. Chuẩn Hóa 5 Trạng Thái UX (5 UX States Standard via `<Async>`)
+
+Phân hệ tuân thủ nghiêm ngặt chuẩn hiển thị 5 UX States qua component dùng chung `<Async>`:
+
+| Màn Hình / Khối Chức Năng | 1. Loading State | 2. Empty State | 3. Error State | 4. Success State | 5. Updating / Action State |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Radar Ghép Nối Cung-Cầu** (`/portal/matching/radar`) | Skeleton thẻ Radar đa tia, radar chart dạng wireframe xám nhấp nháy (`animate-pulse`). | EmptyIllustration với thông điệp: "Chưa có ứng viên phù hợp với tiêu chí hiện tại. Hãy nới lỏng bộ lọc hoặc cập nhật hồ sơ". | Card cảnh báo lỗi đỏ kèm mã lỗi (`ERR_MATCHING_ENGINE`) và nút `Thử lại`. | Hiển thị danh sách ứng viên đạt điểm matching, thẻ Radar Chart đa chiều và nút Kết nối. | Lớp phủ mờ (Dimmer) 40% kèm spinner xoay nhẹ khi thay đổi trọng số thuật toán. |
+| **Pipeline Cơ Hội Kanban** (`/portal/opportunities/pipeline`) | 5 cột Kanban hiển thị mỗi cột 3 card xám nhạt với chiều cao giả lập. | Cột trống hiển thị vùng drop rỗng viền nét đứt kèm nhãn "Chưa có thương vụ ở giai đoạn này". | Banner lỗi đầu trang kèm nút `Tải lại bảng Kanban`. | Hiển thị đầy đủ các thẻ cơ hội theo 5 bước, kéo thả mượt mà, badge đếm số lượng mỗi cột. | Card đang kéo thả hiển thị hiệu ứng bóng mờ (Shadow-lg) và opacity 70% khi đang ghi nhận trạng thái mới. |
+| **Phòng Đàm Phán Deal Room 1-1** (`/portal/dealroom/[id]`) | Khung chat và khung tài liệu hiển thị skeleton dòng chữ và icon tải tài liệu. | Vùng tin nhắn trống hiển thị hướng dẫn: "Phiên đàm phán đã bắt đầu. Hãy gửi lời chào và đề xuất điều khoản đầu tiên". | Hộp thoại thông báo mất kết nối thời gian thực, nút `Tái kết nối Deal Room`. | Khung chat đàm phán 2 chiều hiển thị thông tin đối tác đã unmask, thanh công cụ MOU và lịch sử thương lượng. | Nút gửi tin nhắn / cập nhật điều khoản chuyển sang trạng thái loading spinner ngăn chặn double click. |
+| **Danh Sách Yêu Cầu Kết Nối** (`/portal/brokerage/requests`) | Bảng dữ liệu 5 hàng skeleton giả lập cột Buyer, Sản phẩm, Thời gian, Trạng thái. | Bảng rỗng hiển thị icon hộp thư rỗng: "Không có yêu cầu kết nối nào trong mục này". | Cảnh báo lỗi tải danh sách kèm nút `Làm mới`. | Bảng danh sách chi tiết kèm bộ lọc 4 tabs (`ALL`, `PENDING`, `ACCEPTED`, `REJECTED`) và nút Thao tác. | Nút Chấp thuận / Từ chối hiển thị spinner và khóa tương tác các nút xung quanh khi đang gửi request. |
+
 

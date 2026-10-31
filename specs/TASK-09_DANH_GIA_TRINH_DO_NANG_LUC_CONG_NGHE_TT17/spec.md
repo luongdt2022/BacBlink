@@ -4,7 +4,8 @@
 > **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
 > **Căn cứ pháp lý**: [Thông tư 17/2019/TT-BKHCN](https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm) của Bộ Khoa học và Công nghệ  
 > **Phạm vi áp dụng**: Doanh nghiệp ngành công nghiệp chế biến, chế tạo (mã ngành C.10 – C.32 theo VSIC)  
-> **Trạng thái**: 🟡 In-Progress (Đang thực hiện Spec Kit & Phát triển)  
+> **Trạng thái**: 🟢 Completed (Shipped Gate 5)  
+> **Version**: 1.3.0  
 > **Độ ưu tiên**: P1 (Trọng tâm Đánh giá Năng lực Doanh nghiệp Sản xuất)
 
 ---
