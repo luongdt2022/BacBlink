@@ -89,7 +89,9 @@ describe("TASK-09 TT17 Delta: Public Intake & Zero Mock Leak & Profile Integrati
     render(<Tt17WizardPage />);
 
     // Phải mở được bình thường, không có màn hình chặn RoleGuard
-    expect(screen.getByText(/Kê Khai Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất/i)).toBeInTheDocument();
+    expect(screen.getByText(/PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT/i)).toBeInTheDocument();
+    expect(screen.getByText(/Thông tư số 17\/2019\/TT-BKHCN/i)).toBeInTheDocument();
+    expect(screen.getByText(/Các thông tin cung cấp theo phiếu này chỉ nhằm phục vụ công tác thống kê/i)).toBeInTheDocument();
 
     // Phải hiển thị đầy đủ các trường Mục A định danh doanh nghiệp & người liên hệ
     expect(screen.getByLabelText(/Tên Doanh Nghiệp/i)).toBeInTheDocument();

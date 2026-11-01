@@ -521,11 +521,14 @@ export default function AssessmentWizardPage() {
           {/* Bottom Title & Action Section: Button cùng hàng dịch sang bên phải ngoài cùng */}
           <div className="pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="max-w-3xl">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Kê Khai Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT
               </h1>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
-                Biểu mẫu thu thập số liệu thực tế từ Báo cáo tài chính & hiện trạng nhà máy. Hệ thống tự động đối soát với định mức ngành (C.10 - C.32), tự động tính toán 26 tiêu chí và cấp tài khoản Doanh nghiệp sau khi hoàn tất.
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium italic mt-1">
+                (Ban hành kèm theo Thông tư số 17/2019/TT-BKHCN ngày 10 tháng 12 năm 2019 của Bộ trưởng Bộ Khoa học và Công nghệ)
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                Các thông tin cung cấp theo phiếu này chỉ nhằm phục vụ công tác thống kê, sửa đổi, cải thiện cơ chế, chính sách KH&CN và chỉ được công bố khi có sự cho phép của doanh nghiệp
               </p>
             </div>
 

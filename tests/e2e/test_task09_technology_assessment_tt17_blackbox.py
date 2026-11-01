@@ -296,7 +296,7 @@ def run_tier4_playwright_e2e():
         page.goto(f"{BASE_WEB_URL}/assessments/tt17/wizard", timeout=15000)
         page.wait_for_load_state("networkidle")
 
-        page.wait_for_selector("text=Kê Khai Đánh Giá Trình Độ", timeout=10000)
+        page.wait_for_selector("text=PHIẾU ĐIỀU TRA TRÌNH ĐỘ", timeout=10000)
         assert page.is_visible("text=Mục A · Thông Tin"), "Màn 2 thiếu Mục A"
         assert page.is_visible("text=Tính Điểm Tức Thời"), "Màn 2 thiếu Sticky Realtime Scorecard"
         assert page.is_visible("text=Hệ số đồng bộ T_ĐB"), "Màn 2 thiếu realtime sync indicator"
