@@ -14,7 +14,13 @@ import {
   FileText,
   Clock,
   Send,
-  HelpCircle
+  HelpCircle,
+  Target,
+  Flame,
+  Award,
+  Sparkles,
+  ClipboardCheck,
+  Cpu
 } from "lucide-react";
 import { useToast } from "@/components/common/toast";
 import { brokerageApi } from "@/services/api/brokerage";
@@ -76,6 +82,210 @@ export default function DichVuKhacPage() {
           <p className="text-white/80 text-xs sm:text-sm max-w-2xl leading-relaxed">
             Đồng hành cùng các nhà khoa học, trường viện và doanh nghiệp bảo vệ tài sản trí tuệ, định giá thương mại hóa công nghệ và hoàn thiện thủ tục chứng nhận Doanh nghiệp KH&CN trực thuộc Viện NacenTech.
           </p>
+        </div>
+      </section>
+
+      {/* KHẢO SÁT NHU CẦU & ĐÁNH GIÁ NĂNG LỰC CÔNG NGHỆ (TASK-01-CR68) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6 space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+            Khảo Sát Nhu Cầu & Đánh Giá Năng Lực Công Nghệ
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            Hệ thống công cụ đo lường và định vị chuẩn hóa theo quy chuẩn Bộ Khoa học & Công nghệ, giúp doanh nghiệp, viện nghiên cứu và nhà khoa học đánh giá trình độ công nghệ, bắt mạch nhu cầu và kết nối chuyển giao trực tiếp.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* CARD 1: CHỈ SỐ TNI */}
+          <div className="bg-amber-50/30 border border-amber-200/80 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition dark:bg-amber-950/20 dark:border-amber-800/60">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
+                  <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  Chỉ số TNI
+                </span>
+                <span className="text-sm font-bold text-amber-400">01</span>
+              </div>
+
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center my-3 dark:bg-amber-900/40 dark:text-amber-300">
+                <Target className="w-6 h-6" />
+              </div>
+
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Khảo Sát Nhu Cầu (TNI)
+              </h3>
+              <p className="text-xs text-amber-700 dark:text-amber-400 font-medium mb-3">
+                Technology Needs Index
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                Bắt mạch nhu cầu doanh nghiệp, tự động tính toán chỉ số nhu cầu công nghệ (TNI) và kết nối nguồn cung chuyển giao phù hợp.
+              </p>
+
+              <div className="space-y-2 border-t border-amber-100 dark:border-amber-900/40 pt-3 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <span>Form 4 bước tinh gọn & Auto-lookup MST</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <span>Đo lường mức độ cấp thiết đổi mới</span>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/khao-sat-nhu-cau"
+              className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
+            >
+              Làm Khảo Sát TNI Ngay <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* CARD 2: THÔNG TƯ 17/2019 */}
+          <div className="bg-indigo-50/30 border border-indigo-200/80 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition dark:bg-indigo-950/20 dark:border-indigo-800/60">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200">
+                  <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  Thông tư 17/2019
+                </span>
+                <span className="text-sm font-bold text-indigo-400">02</span>
+              </div>
+
+              <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center my-3 dark:bg-indigo-900/40 dark:text-indigo-300">
+                <Award className="w-6 h-6" />
+              </div>
+
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Đánh Giá Năng Lực TT17
+              </h3>
+              <p className="text-xs text-indigo-700 dark:text-indigo-400 font-medium mb-3">
+                26 Tiêu Chí • 5 Nhóm THIOC
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                Đánh giá trình độ và năng lực công nghệ doanh nghiệp theo Thông tư 17/2019/TT-BKHCN, xếp hạng Tiên tiến, Trung bình hoặc Lạc hậu.
+              </p>
+
+              <div className="space-y-2 border-t border-indigo-100 dark:border-indigo-900/40 pt-3 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                  <span>Tính điểm tự động 26 chỉ tiêu định lượng</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                  <span>Cấp báo cáo thẩm định hồ sơ chính thức</span>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/assessments/tt17/wizard"
+              className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
+            >
+              Tự Đánh Giá TT17 Ngay <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* CARD 3: 43 TIÊU CHUẨN ĐMST */}
+          <div className="bg-teal-50/30 border border-teal-200/80 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition dark:bg-teal-950/20 dark:border-teal-800/60">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-800 dark:bg-teal-900/60 dark:text-teal-200">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                  43 Tiêu Chuẩn ĐMST
+                </span>
+                <span className="text-sm font-bold text-teal-400">03</span>
+              </div>
+
+              <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-700 flex items-center justify-center my-3 dark:bg-teal-900/40 dark:text-teal-300">
+                <ClipboardCheck className="w-6 h-6" />
+              </div>
+
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Khảo Sát ĐMST (43 Câu)
+              </h3>
+              <p className="text-xs text-teal-700 dark:text-teal-400 font-medium mb-3">
+                8 Nhóm Năng Lực • Chỉ Số TNI
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                Tự động chấm điểm 8 nhóm năng lực, tính toán chỉ số TNI tức thời và xuất hồ sơ Radar Chart trong 1-click.
+              </p>
+
+              <div className="space-y-2 border-t border-teal-100 dark:border-teal-900/40 pt-3 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                  <span>Autofill hồ sơ pháp nhân SSOT & Khóa MST an toàn</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                  <span>Biểu đồ Radar Chart 8 trục & Huy hiệu ĐMST</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Link
+                href="/khao-sat-dmst"
+                className="w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
+              >
+                Làm Khảo Sát ĐMST Ngay <ArrowRight className="w-4 h-4" />
+              </Link>
+              <div className="mt-2 text-center">
+                <Link
+                  href="/doanh-nghiep-dmst"
+                  className="text-[11px] text-teal-700 hover:text-teal-800 dark:text-teal-400 font-medium inline-flex items-center gap-1"
+                >
+                  Xem bảng xếp hạng & danh bạ DN <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 4: THANG ĐO TRL 1-9 */}
+          <div className="bg-emerald-50/30 border border-emerald-200/80 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition dark:bg-emerald-950/20 dark:border-emerald-800/60">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
+                  <Cpu className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Thang Đo TRL 1–9
+                </span>
+                <span className="text-sm font-bold text-emerald-400">04</span>
+              </div>
+
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center my-3 dark:bg-emerald-900/40 dark:text-emerald-300">
+                <Cpu className="w-6 h-6" />
+              </div>
+
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Thẩm Định Thang Đo TRL
+              </h3>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium mb-3">
+                Technology Readiness Level
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                Chuẩn hóa 9 cấp độ hoàn thiện công nghệ từ phòng lab (TRL 1-3), thử nghiệm (TRL 4-6) đến sẵn sàng thương mại hóa (TRL 7-9).
+              </p>
+
+              <div className="space-y-2 border-t border-emerald-100 dark:border-emerald-900/40 pt-3 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Thẩm định độc lập bởi Hội đồng Viện</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                  <span>Gắn nhãn TRL và bảo hộ sở hữu trí tuệ</span>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/chao-ban-cong-nghe"
+              className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
+            >
+              Khám Phá Công Nghệ TRL <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 

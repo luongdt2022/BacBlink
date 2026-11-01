@@ -38,6 +38,35 @@ describe("DichVuKhacPage (Dịch Vụ Khác)", () => {
     expect(screen.getByText(/4. Môi Giới & Hợp Đồng Chuyển Giao/i)).toBeInTheDocument();
   });
 
+  it("renders 4 national survey and assessment service cards with clickable links (TASK-01-CR68)", () => {
+    render(<DichVuKhacPage />);
+
+    // Section title
+    expect(screen.getByText(/Khảo Sát Nhu Cầu & Đánh Giá Năng Lực Công Nghệ/i)).toBeInTheDocument();
+
+    // 4 Cards
+    expect(screen.getByText(/Khảo Sát Nhu Cầu \(TNI\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Đánh Giá Năng Lực TT17/i)).toBeInTheDocument();
+    expect(screen.getByText(/Khảo Sát ĐMST \(43 Câu\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Thẩm Định Thang Đo TRL/i)).toBeInTheDocument();
+
+    // Buttons / Links
+    const tniLink = screen.getByRole("link", { name: /Làm Khảo Sát TNI Ngay/i });
+    expect(tniLink).toHaveAttribute("href", "/khao-sat-nhu-cau");
+
+    const tt17Link = screen.getByRole("link", { name: /Tự Đánh Giá TT17 Ngay/i });
+    expect(tt17Link).toHaveAttribute("href", "/assessments/tt17/wizard");
+
+    const dmstLink = screen.getByRole("link", { name: /Làm Khảo Sát ĐMST Ngay/i });
+    expect(dmstLink).toHaveAttribute("href", "/khao-sat-dmst");
+
+    const trlLink = screen.getByRole("link", { name: /Khám Phá Công Nghệ TRL/i });
+    expect(trlLink).toHaveAttribute("href", "/chao-ban-cong-nghe");
+
+    const danhBaLink = screen.getByRole("link", { name: /Xem bảng xếp hạng & danh bạ DN/i });
+    expect(danhBaLink).toHaveAttribute("href", "/doanh-nghiep-dmst");
+  });
+
   it("validates mandatory fields on consultation form submit", () => {
     render(<DichVuKhacPage />);
 

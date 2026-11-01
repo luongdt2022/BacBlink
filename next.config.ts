@@ -71,6 +71,10 @@ const config: NextConfig = {
         destination: "http://127.0.0.1:8420/wireframes/:path*",
       },
       {
+        source: "/static/uploads/:path*",
+        destination: "http://127.0.0.1:8420/static/uploads/:path*",
+      },
+      {
         source: "/api/stream",
         destination: "http://127.0.0.1:8420/api/stream",
       },

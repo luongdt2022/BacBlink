@@ -152,13 +152,13 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
         "href",
         "/nhu-cau-cong-nghe"
       );
-      expect(screen.getByRole("link", { name: /Tỉnh, thành kết nối/i })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: /Kết nối thành công & MOU/i })).toHaveAttribute(
         "href",
-        "/matrix"
+        "/trien-lam"
       );
-      expect(screen.getByRole("link", { name: /Doanh nghiệp tham gia/i })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: /Quy mô giao dịch & Ngân sách/i })).toHaveAttribute(
         "href",
-        "/enterprises"
+        "/portal/opportunities/pipeline"
       );
     });
 
@@ -177,7 +177,11 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       "href",
       "/assessments/tt17/wizard"
     );
-    expect(screen.getByRole("link", { name: /Tra Cứu & Đánh Giá ĐMST/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Làm Khảo Sát ĐMST Ngay/i })).toHaveAttribute(
+      "href",
+      "/khao-sat-dmst"
+    );
+    expect(screen.getByRole("link", { name: /Xem bảng xếp hạng & danh bạ DN/i })).toHaveAttribute(
       "href",
       "/doanh-nghiep-dmst"
     );
