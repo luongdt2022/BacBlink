@@ -259,3 +259,5 @@
     5. Kiểm tra đơn hàng mới xuất hiện tại Tab 1 với mã đơn chuẩn hóa, thông tin sản phẩm chính xác và Stepper hiển thị bước 1 `SUBMITTED`.
     6. Kiểm tra chuyển sang Tab 2 dữ liệu bài toán R&D được cách ly độc lập, không bị ảnh hưởng.
   - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-03`, `AC-ORD-04`, `AC-ORD-05`.
+
+- [x] `TASK-03-CR94` **[CR]** [P1] (Người gửi: LuongDang) Sử cho tôi tiêu đề — Sửa tiêu đề nội dung như comment ở ảnh [Đính kèm: ![screenshot_11h41m14_1.png](/static/uploads/TASK-03-CR94_1793508098_1_screenshot_11h41m14_1.png)]
