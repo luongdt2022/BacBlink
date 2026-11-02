@@ -83,7 +83,9 @@ public sealed record SubmitExpertUpgradeRequest(
     string? ScopeType = null,
     string? ScopeId = null,
     string? DraftToken = null,
-    IReadOnlyList<string>? SpecializedKeywords = null);
+    IReadOnlyList<string>? SpecializedKeywords = null,
+    string? Phone = null,
+    string? Email = null);
 
 public sealed record ExpertProfileDto(
     Guid Id,
@@ -110,7 +112,9 @@ public sealed record ExpertProfileDto(
     string? ReviewerNote,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
-    IReadOnlyList<string>? SpecializedKeywords = null);
+    IReadOnlyList<string>? SpecializedKeywords = null,
+    string? Phone = null,
+    string? Email = null);
 
 public sealed record UpdateExpertProfileRequest(
     string? AcademicRank,

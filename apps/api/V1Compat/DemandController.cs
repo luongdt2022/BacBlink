@@ -11,6 +11,7 @@ using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Demand.Domain;
 using NacenTech.Modules.Identity.Application;
+using NacenTech.Modules.Technology.Domain;
 using NacenTech.Persistence;
 
 namespace NacenTech.Api.V1Compat;
@@ -242,6 +243,158 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             req.AdoptionReadiness,
             Actor.IsAuthenticated ? Actor.PersonId : null
         );
+
+        if (req.OfferId.HasValue && req.OfferId.Value != Guid.Empty)
+        {
+            var offer = await db.Set<SellerTechnologyOffer>()
+                .AsNoTracking()
+                .Where(o => o.Id == req.OfferId.Value && !o.IsDeleted)
+                .Select(o => new
+                {
+                    o.Id,
+                    o.Title,
+                    o.OfferCode,
+                    o.EnterpriseName,
+                    o.CreatedBy,
+                    o.Status
+                })
+                .FirstOrDefaultAsync(ct);
+
+            if (offer == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    code = "ERR_OFFER_NOT_FOUND",
+                    message = "Sản phẩm công nghệ yêu cầu đặt mua không tồn tại hoặc đã bị xóa."
+                });
+            }
+
+            if (offer.Status != "APPROVED")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    code = "ERR_OFFER_NOT_APPROVED",
+                    message = "Sản phẩm công nghệ chưa được phê duyệt hoặc đang tạm khóa, không thể tạo đơn đặt mua."
+                });
+            }
+
+            var connReqId = Guid.NewGuid();
+            var requestCode = $"REQ-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+            var senderUserId = Actor.PersonId ?? Guid.NewGuid();
+
+            var platformRole = Actor.PlatformRole;
+            var senderRole = "BUYER";
+            var senderName = Actor.IsAuthenticated ? (Actor.Email ?? "[Khách hàng cá nhân]") : "[Khách hàng cá nhân]";
+
+            if (Actor.PersonId.HasValue)
+            {
+                var person = await personService.FindAsync(Actor.PersonId.Value, ct);
+                if (person != null)
+                {
+                    var fullName = $"{person.LastName} {person.FirstName}".Trim();
+                    if (!string.IsNullOrWhiteSpace(fullName))
+                    {
+                        senderName = fullName;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(person.Email))
+                    {
+                        senderName = person.Email;
+                    }
+                }
+            }
+
+            string senderOrgName;
+            if (string.Equals(platformRole, PlatformRoles.PublicUser, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(platformRole, "GUEST", StringComparison.OrdinalIgnoreCase) ||
+                !Actor.IsAuthenticated)
+            {
+                senderOrgName = !string.IsNullOrWhiteSpace(req.ApplicationScale) && req.ApplicationScale != "Doanh nghiệp"
+                    ? req.ApplicationScale
+                    : senderName;
+                senderRole = "PUBLIC_USER";
+            }
+            else if (string.Equals(platformRole, PlatformRoles.VerifiedExpert, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(platformRole, "EXPERT", StringComparison.OrdinalIgnoreCase))
+            {
+                senderOrgName = !string.IsNullOrWhiteSpace(req.ApplicationScale) && req.ApplicationScale != "Doanh nghiệp"
+                    ? req.ApplicationScale
+                    : senderName;
+                senderRole = "EXPERT";
+            }
+            else
+            {
+                senderOrgName = !string.IsNullOrWhiteSpace(req.ApplicationScale)
+                    ? req.ApplicationScale
+                    : senderName;
+                senderRole = "BUYER";
+            }
+
+            var receiverOrgName = offer.EnterpriseName;
+            var receiverUserId = offer.CreatedBy;
+            var targetOfferId = offer.Id;
+            var offerId = offer.Id;
+            var message = req.DesiredSolution ?? $"[Đơn hàng thương mại] Khách hàng đặt mua sản phẩm {offer.OfferCode} - {offer.Title}.";
+            var proposedBudgetRange = req.BudgetRange ?? "Thỏa thuận";
+            var status = "PENDING";
+            var slaDeadline = DateTime.UtcNow.AddHours(48);
+            var createdAt = DateTime.UtcNow;
+
+            var strategy = db.Database.CreateExecutionStrategy();
+            try
+            {
+                await strategy.ExecuteAsync(async () =>
+                {
+                    await using var transaction = await db.Database.BeginTransactionAsync(ct);
+                    try
+                    {
+                        db.Set<DemandItem>().Add(demandItem);
+                        await db.SaveChangesAsync(ct);
+
+                        await db.Database.ExecuteSqlInterpolatedAsync($@"
+                            INSERT INTO brokerage.connection_requests (
+                                id, request_code, sender_user_id, sender_org_name, sender_role,
+                                receiver_org_name, receiver_user_id, demand_id, target_offer_id, offer_id,
+                                message, proposed_budget_range, status, sla_deadline, created_at
+                            ) VALUES (
+                                {connReqId}, {requestCode}, {senderUserId}, {senderOrgName}, {senderRole},
+                                {receiverOrgName}, {receiverUserId}, {demandItem.Id}, {targetOfferId}, {offerId},
+                                {message}, {proposedBudgetRange}, {status}, {slaDeadline}, {createdAt}
+                            );", ct);
+
+                        await transaction.CommitAsync(ct);
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync(ct);
+                        throw;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                var detail = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return StatusCode(500, new
+                {
+                    success = false,
+                    code = "ERR_ATOMIC_COMMERCIAL_ORDER_FAILED",
+                    message = "Lỗi xử lý giao dịch đặt mua sản phẩm thương mại: " + detail
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                itemId = demandItem.Id,
+                itemCode = demandItem.ItemCode,
+                tniScore = demandItem.TniScore,
+                tniClassification = demandItem.TniClassification,
+                connectionRequestId = connReqId,
+                requestCode = requestCode,
+                message = "Đặt mua sản phẩm công nghệ thương mại và tạo yêu cầu kết nối thành công."
+            });
+        }
 
         db.Set<DemandItem>().Add(demandItem);
         await uow.CommitAsync(ct);
@@ -480,6 +633,11 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         var item = await db.Set<DemandItem>().AsNoTracking().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
 
+        var isOwner = Actor.IsAuthenticated && Actor.PersonId.HasValue && item.CreatedBy.HasValue && Actor.PersonId.Value == item.CreatedBy.Value;
+        var isGovOrAdmin = Actor.PlatformRole == PlatformRoles.ProvincialAdmin || Actor.PlatformRole == PlatformRoles.SuperAdmin || Actor.PlatformRole == PlatformRoles.OperatorAdmin || Actor.PlatformRole == PlatformRoles.Admin;
+        var canViewDraft = isOwner || isGovOrAdmin;
+        var canSubmitOffer = item.Status == DemandItemStatuses.Verified;
+
         return Ok(new
         {
             id = item.Id,
@@ -496,7 +654,12 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             tniScore = item.TniScore,
             tniClassification = item.TniClassification,
             status = item.Status,
-            createdAt = item.CreatedAt
+            createdAt = item.CreatedAt,
+            isOwner = isOwner,
+            isPendingReview = item.Status == DemandItemStatuses.Pending,
+            canViewDraft = canViewDraft,
+            canSubmitOffer = canSubmitOffer,
+            reviewUnit = "Sở Khoa học và Công nghệ tỉnh / Ban Quản trị NacenTech"
         });
     }
 
@@ -781,6 +944,16 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
 
+        if (item.Status != DemandItemStatuses.Verified)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                code = "ERR_DEMAND_NOT_VERIFIED",
+                message = "Bài toán công nghệ chưa được Sở KH&CN phê duyệt niêm yết, không thể gửi hồ sơ chào bán giải pháp."
+            });
+        }
+
         var oppCode = $"DEAL-{DateTime.UtcNow:yyyy}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}";
         try
         {
@@ -915,7 +1088,11 @@ public sealed record CreateQuickDemandItemRequest(
     int UrgencyScore,
     int ImpactScore,
     int InvestmentCapacity,
-    int AdoptionReadiness
+    int AdoptionReadiness,
+    Guid? OfferId = null,
+    string? OfferTitle = null,
+    string? OfferCode = null,
+    bool? IsCommercialOrder = null
 );
 
 public sealed record AssignExpertRequest(Guid ExpertId);

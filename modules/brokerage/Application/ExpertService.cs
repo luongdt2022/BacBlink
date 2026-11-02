@@ -63,6 +63,11 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             legalOath: request.LegalOath,
             specializedKeywords: request.SpecializedKeywords);
 
+        if (!string.IsNullOrWhiteSpace(request.Phone) || !string.IsNullOrWhiteSpace(request.Email))
+        {
+            profile.SetContactInfo(request.Phone, request.Email);
+        }
+
         if (draft is not null)
         {
             draft.CompleteDraft(personId, profile);
@@ -431,5 +436,7 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             ReviewerNote: p.ReviewerNote,
             CreatedAtUtc: p.CreatedAt,
             UpdatedAtUtc: p.UpdatedAt,
-            SpecializedKeywords: p.SpecializedKeywords);
+            SpecializedKeywords: p.SpecializedKeywords,
+            Phone: p.Phone,
+            Email: p.Email);
 }

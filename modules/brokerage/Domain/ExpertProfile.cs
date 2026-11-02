@@ -204,6 +204,13 @@ public sealed class ExpertProfile : AggregateRoot
         Touch();
     }
 
+    public void SetContactInfo(string? phone, string? email)
+    {
+        if (!string.IsNullOrWhiteSpace(phone)) Phone = phone.Trim();
+        if (!string.IsNullOrWhiteSpace(email)) Email = email.Trim();
+        Touch();
+    }
+
     public void RequestChanges(string note)
     {
         if (string.IsNullOrWhiteSpace(note)) throw new ValidationException("Lý do yêu cầu bổ sung không được để trống.");
