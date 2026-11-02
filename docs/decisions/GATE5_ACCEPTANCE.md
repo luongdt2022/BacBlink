@@ -1,13 +1,13 @@
 # BIÊN BẢN NGHIỆM THU XUẤT XƯỞNG CỔNG 3 (GATE 5 DoD SIGN-OFF)
-**Mã Task**: TASK-05-T036
-**Tiêu Đề**: Thực thi TASK-05-T036
-**Thời Điểm**: 2026-10-22 13:24:00
+**Mã Task**: TASK-01-CR68
+**Tiêu Đề**: Thêm các dịch vụ vào Tab dịch vụ — Thêm các mục, đường dẫn về Tab Dịch Vụ (/static/uploads/TASK-01-CR68_1793502383_1_screenshot_10h06m19_1.png)]
+**Thời Điểm**: 2026-11-01 10:53:02
 **Chủ Thể Ký Duyệt**: nacen-po-pm (PO Lead) & Người Dùng (Human PO/PM)
 
 ---
 
 ## 1. Kết Quả Vận Hành 3 Cổng Duyệt Con Người (Human Gates)
-- [x] **Cổng 1 (Human Gate 1 - Basic Design)**: Đã đối soát và duyệt Wireframe HTML `06_mang_luoi_chuyen_gia.html`.
+- [x] **Cổng 1 (Human Gate 1 - Basic Design)**: Đã đối soát và duyệt Wireframe HTML `01_trang_chu.html`.
 - [x] **Cổng 2 (Human Gate 2 - Detail Plan)**: Đã phê duyệt phương án thi công Clean Architecture & phân rã tasks.md.
 - [x] **Cổng 3 (Human Gate 3 - Release DoD)**: Đã ký biên bản nghiệm thu hoàn tất sản phẩm thực tế.
 

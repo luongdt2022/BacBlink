@@ -110,3 +110,5 @@
     - [x] Unit Test backend kiểm tra `PortalOverviewService`: Tính toán đúng các công thức đếm từ CSDL thật (`PortalHomeInvariantsTests.cs`).
     - [x] Vitest component test cho `page.tsx`: Render đúng 4 thẻ số liệu qua `<Async>`.
     - [x] Playwright E2E: Xác nhận số liệu trên Trang chủ khớp 1:1 với kết quả truy vấn SQL PostgreSQL trực tiếp.
+
+- [x] `TASK-01-CR68` **[CR]** [P1] (Người gửi: Luongdt) Thêm các dịch vụ vào Tab dịch vụ — Thêm các mục, đường dẫn về Tab Dịch Vụ [Đính kèm: ![screenshot_10h06m19_1.png](/static/uploads/TASK-01-CR68_1793502383_1_screenshot_10h06m19_1.png)]
