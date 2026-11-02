@@ -515,6 +515,8 @@ export async function submitQuickDemand(payload: CreateQuickDemandPayload): Prom
   success: boolean;
   itemId?: string;
   itemCode?: string;
+  connectionRequestId?: string;
+  requestCode?: string;
   message?: string;
 }> {
   try {
@@ -537,6 +539,8 @@ export async function submitQuickDemand(payload: CreateQuickDemandPayload): Prom
         success: true,
         itemId: json.itemId,
         itemCode: json.itemCode,
+        connectionRequestId: json.connectionRequestId,
+        requestCode: json.requestCode,
         message: json.message || "Đăng bài toán nhu cầu công nghệ thành công.",
       };
     }

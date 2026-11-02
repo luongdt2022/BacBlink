@@ -1456,9 +1456,9 @@
                 <td><code>MSG-AUTH-001</code></td>
                 <td><span class="tag tag-pass">Success</span></td>
                 <td>/register</td>
-                <td>Alert Banner Xanh</td>
-                <td><strong>Đăng ký thành công! Tài khoản công chúng của bạn đã sẵn sàng để đăng nhập.</strong></td>
-                <td>Đăng ký thành công với role PUBLIC_USER; form được tự động reset sạch sẽ.</td>
+                <td>Toast & Auto-Login</td>
+                <td><strong>Tự động đăng nhập & chuyển hướng về Trang chủ (CR-2026-020)</strong></td>
+                <td>Đăng ký thành công, tự động thiết lập phiên làm việc JWT Bearer, lưu Session và chuyển hướng.</td>
               </tr>
               <tr>
                 <td><code>MSG-AUTH-002</code></td>
@@ -1970,7 +1970,7 @@
         pre: "Đang mở màn hình /register",
         steps: "1. Nhập thông tin đầy đủ, email mới toanh\n2. Tích chọn cam kết PDPD\n3. Bấm 'Đăng ký thành viên'\n4. Quan sát giao diện",
         data: "Họ: 'Trần'; Tên: 'Văn Test'; Email: 'tester.nacen@gmail.com'; Pass: 'Pass@123456'",
-        expected: "Hiển thị Banner xanh lá: 'Đăng ký thành công! Tài khoản công chúng của bạn đã sẵn sàng để đăng nhập.'; Toàn bộ form được reset sạch.",
+        expected: "Tự động thiết lập phiên đăng nhập (Session JWT Bearer lưu LocalStorage), hiển thị Toast 'Đăng ký thành công!' và chuyển hướng an toàn về Trang chủ (Header hiển thị tài khoản).",
         priority: "High",
         type: "Positive"
       },

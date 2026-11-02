@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { UserPlus, Mail, Phone, AlertCircle, CheckCircle2, ShieldCheck, ArrowLeft } from "lucide-react";
 import { API_BASE, readApiError, userFacingRequestError } from "@/lib/api-client";
 import { authClient, getRedirectPathByRole } from "@/lib/auth-client";
+import { useToast } from "@/components/common/toast";
 
 const initialFormData = {
   email: "",
@@ -20,9 +21,11 @@ const initialFormData = {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const toast = useToast();
   const [formData, setFormData] = useState(initialFormData);
 
   const [loading, setLoading] = useState(false);
+  const [submittingPhase, setSubmittingPhase] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -89,6 +92,7 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
+    setSubmittingPhase("Đang tạo tài khoản...");
 
     try {
       const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
@@ -108,14 +112,45 @@ export default function RegisterPage() {
         throw new Error(await readApiError(res, "Đăng ký không thành công."));
       }
 
-      setSuccessMessage(
-        "Đăng ký thành công! Tài khoản công chúng của bạn đã sẵn sàng để đăng nhập. Thông tin trên form đã được xoá."
-      );
-      setFormData(initialFormData);
+      // Đăng ký thành công -> Bắt đầu giai đoạn tự động đăng nhập (Seamless Auto-Login)
+      setSubmittingPhase("Đang khởi tạo phiên làm việc...");
+
+      try {
+        const loginRes = await fetch(`${API_BASE}/api/v1/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email.trim(),
+            password: formData.password,
+          }),
+        });
+
+        if (!loginRes.ok) {
+          throw new Error(await readApiError(loginRes, "Đăng nhập tự động không thành công."));
+        }
+
+        const loginData = await loginRes.json();
+        if (loginData?.accessToken && loginData?.user?.id && loginData?.user?.role) {
+          authClient.setSession(loginData.accessToken, loginData.user);
+          toast.success("Đăng ký thành công! Chào mừng bạn gia nhập NacenTech.", "Xin chào!");
+          const targetPath = getRedirectPathByRole(loginData.user.role) || "/";
+          router.push(targetPath);
+          return;
+        } else {
+          throw new Error("Dữ liệu phản hồi đăng nhập không hợp lệ.");
+        }
+      } catch (loginErr: unknown) {
+        // Fallback an toàn khi register thành công trong DB nhưng login gặp sự cố kết nối mạng
+        setSuccessMessage(
+          "Tài khoản của bạn đã được khởi tạo thành công! Vui lòng bấm vào liên kết bên dưới để đăng nhập."
+        );
+        setFormData(initialFormData);
+      }
     } catch (err: unknown) {
       setError(userFacingRequestError(err, "Lỗi máy chủ khi đăng ký tài khoản."));
     } finally {
       setLoading(false);
+      setSubmittingPhase(null);
     }
   };
 
@@ -310,7 +345,10 @@ export default function RegisterPage() {
                   className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border rounded-control shadow-sm text-label font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-innovation-500 disabled:opacity-50 transition focus-ring"
                 >
                   {loading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>{submittingPhase || "Đang xử lý..."}</span>
+                    </>
                   ) : (
                     <>
                       <UserPlus className="w-4 h-4" />

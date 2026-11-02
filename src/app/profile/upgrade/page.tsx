@@ -287,6 +287,11 @@ function ProfileUpgradeHubContent() {
                     <AlertCircle className="w-4 h-4" />
                     Hội Đồng Yêu Cầu Bổ Sung Hồ Sơ
                   </span>
+                ) : expertApp.status === "REJECTED" ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold dark:bg-rose-950/60 dark:text-rose-300">
+                    <AlertCircle className="w-4 h-4" />
+                    Hồ Sơ Đã Bị Từ Chối (REJECTED)
+                  </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold dark:bg-amber-950/60 dark:text-amber-300">
                     <Clock className="w-4 h-4" />
@@ -324,10 +329,29 @@ function ProfileUpgradeHubContent() {
               </div>
             </div>
 
+            {/* Reviewer Note Banner for REJECTED or CHANGES_REQUESTED */}
+            {(expertApp.status === "REJECTED" || expertApp.status === "CHANGES_REQUESTED") && (expertApp.reviewerNote || expertApp.reviewNote) && (
+              <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-200 space-y-1">
+                <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wide">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>
+                    {expertApp.status === "REJECTED"
+                      ? "Lý do từ chối từ Hội đồng Thẩm định:"
+                      : "Ý kiến yêu cầu bổ sung từ Hội đồng Thẩm định:"}
+                  </span>
+                </div>
+                <p className="text-xs leading-relaxed pl-6">
+                  {expertApp.reviewerNote || expertApp.reviewNote}
+                </p>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
               <p className="text-xs text-slate-500">
-                Bạn có thể cập nhật lại thông tin khoa học, công bố hoặc bằng sáng chế bất kỳ lúc nào trước khi có quyết định phê duyệt.
+                {expertApp.status === "REJECTED"
+                  ? "Bạn có thể chỉnh sửa và nộp lại hồ sơ sau khi đã hoàn thiện các điều kiện còn thiếu."
+                  : "Bạn có thể cập nhật lại thông tin khoa học, công bố hoặc bằng sáng chế bất kỳ lúc nào trước khi có quyết định phê duyệt."}
               </p>
               <div className="flex items-center gap-3">
                 <Link
@@ -342,7 +366,7 @@ function ProfileUpgradeHubContent() {
                   className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition shadow-md shadow-brand-500/20 flex items-center gap-1.5"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>Chỉnh sửa & Cập nhật đơn</span>
+                  <span>{expertApp.status === "REJECTED" ? "Chỉnh sửa & Nộp lại" : "Chỉnh sửa & Cập nhật đơn"}</span>
                 </Link>
               </div>
             </div>
@@ -388,15 +412,23 @@ function ProfileUpgradeHubContent() {
             <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
               {expertApp ? (
                 <div className="space-y-2">
-                  <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900 text-[11px] text-amber-800 dark:text-amber-200 flex items-center gap-1.5 font-medium">
-                    <Clock className="w-3.5 h-3.5 shrink-0" />
-                    <span>Hồ sơ đã nộp ({expertApp.status === "APPROVED" ? "Đã duyệt" : expertApp.status === "CHANGES_REQUESTED" ? "Cần bổ sung" : "Đang chờ duyệt"})</span>
+                  <div className={`p-2 rounded-lg border text-[11px] flex items-center gap-1.5 font-medium ${
+                    expertApp.status === "REJECTED"
+                      ? "bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200"
+                      : "bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200"
+                  }`}>
+                    {expertApp.status === "REJECTED" ? (
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+                    ) : (
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                    )}
+                    <span>Hồ sơ đã nộp ({expertApp.status === "APPROVED" ? "Đã duyệt" : expertApp.status === "CHANGES_REQUESTED" ? "Cần bổ sung" : expertApp.status === "REJECTED" ? "Bị từ chối" : "Đang chờ duyệt"})</span>
                   </div>
                   <Link
                     href="/profile/upgrade/expert?edit=true"
                     className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-500/20 transition"
                   >
-                    <span>Xem & Chỉnh sửa đơn đã nộp</span>
+                    <span>{expertApp.status === "REJECTED" ? "Chỉnh sửa & Nộp lại đơn" : "Xem & Chỉnh sửa đơn đã nộp"}</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>

@@ -148,6 +148,20 @@ export const brokerageApi = {
     return body.data;
   },
 
+  async getOpportunityByDemand(demandId: string): Promise<{ opportunityId: string; opportunityCode: string; dealRoomUrl: string } | null> {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities/by-demand/${demandId}`, {
+        headers: authClient.getAuthHeaders(),
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      const body = await res.json();
+      return body.data;
+    } catch {
+      return null;
+    }
+  },
+
   async getDealRoomDetails(id: string): Promise<DealRoomData> {
     const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities/${id}/deal-room`, {
       headers: authClient.getAuthHeaders(),

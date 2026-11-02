@@ -31,6 +31,8 @@ export interface TargetOfferSummary {
   priceMillionVnd?: number | null;
 }
 
+export type BuyerType = "INDIVIDUAL" | "EXPERT" | "ENTERPRISE";
+
 export interface BuyerEnterpriseProfile {
   enterpriseId?: string | null;
   buyerOrganizationId?: string;
@@ -42,6 +44,10 @@ export interface BuyerEnterpriseProfile {
   address?: string | null;
   scaleCategory?: string | null;
   employeeCountRange?: number | null;
+  buyerType?: BuyerType;
+  academicTitle?: string | null;
+  specializedField?: string | null;
+  expertProfileId?: string | null;
 }
 
 export interface PdpdContactInfo {
@@ -84,6 +90,10 @@ export interface ConnectionRequest {
   isSlaWarning?: boolean;
   respondedAt: string | null;
   createdAt: string;
+  buyerType?: BuyerType;
+  academicTitle?: string | null;
+  specializedField?: string | null;
+  expertProfileId?: string | null;
 }
 
 export interface ConnectionRequestDetail {
@@ -102,6 +112,10 @@ export interface ConnectionRequestDetail {
   targetOffer?: TargetOfferSummary | null;
   buyerProfile: BuyerEnterpriseProfile;
   contactInfo: PdpdContactInfo;
+  buyerType?: BuyerType;
+  academicTitle?: string | null;
+  specializedField?: string | null;
+  expertProfileId?: string | null;
 }
 
 export interface Opportunity {

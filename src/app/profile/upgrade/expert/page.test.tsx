@@ -351,4 +351,195 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const emailInput = (await screen.findByPlaceholderText("chuyengia@nacentech.vn")) as HTMLInputElement;
     expect(emailInput.value).toBe("fallback.user@nacentech.vn");
   });
+
+  it("executes CR-2026-021 enhancements: overrides demo name, prefills degreeYear, selects suggested receiving unit, and renders click-to-add sector keyword pills", async () => {
+    // 1. Initial user has demo placeholder name
+    authClient.setSession("test_token", {
+      id: "u-demo",
+      fullName: "Dang Lanm",
+      email: "demo@nacentech.vn",
+      phone: "0987654321",
+      role: "USER",
+    });
+
+    const mockB14Data = {
+      fullName: "Bành Quốc Tuấn",
+      birthYear: 1980,
+      gender: "Nam",
+      academicDegree: "TS",
+      degreeYear: 2011,
+      primaryInstitution: "Viện Ứng dụng Công nghệ - Bộ Khoa học và Công nghệ",
+      workAddress: "C6 Thanh Xuân Bắc, Thanh Xuân, Hà Nội",
+      suggestedReceivingUnit: {
+        code: "GLOBAL",
+        type: "GLOBAL",
+        name: "Hội đồng KH&CN NacenTech / Trung ương",
+        reason: "Thuộc Viện/Bộ/Cơ quan Nghiên cứu Trung ương",
+      },
+      primaryDomain: "LV08",
+      rawSectorKeywords: ["Quang điện tử", "Laser", "Vật liệu bán dẫn"],
+      yearsOfExperience: 15,
+      specializedKeywords: [],
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/cv-parser")) {
+        return {
+          ok: true,
+          json: async () => ({
+            success: true,
+            model: "gemini-3.8-flash",
+            data: mockB14Data,
+          }),
+        };
+      }
+      return { ok: false, status: 404, json: async () => ({ message: "Not found" }) };
+    }));
+
+    render(<ExpertUpgradePage />);
+
+    // Wait for form mount with initial demo name
+    const fullNameInput = (await screen.findByPlaceholderText("TS. Nguyễn Văn An")) as HTMLInputElement;
+    expect(fullNameInput.value).toBe("Dang Lanm");
+
+    // Upload & Scan
+    const file = new File(["cv B1-4 content"], "B1-4-BanhQuocTuan.doc", { type: "application/msword" });
+    const fileInput = document.querySelector("#cv-file-upload") as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    const scanBtn = screen.getByRole("button", { name: /Bắt đầu Quét & Bóc Tách AI/i });
+    fireEvent.click(scanBtn);
+
+    expect(await screen.findByText(/Trích xuất thành công/i)).toBeInTheDocument();
+
+    // Verify overridden demo name to parsed real name
+    expect(fullNameInput.value).toBe("Bành Quốc Tuấn");
+
+    // Verify degreeYear prefilled to 2011
+    const degreeYearInput = screen.getByDisplayValue("2011") as HTMLInputElement;
+    expect(degreeYearInput).toBeInTheDocument();
+
+    // Verify receivingUnit prefilled to GLOBAL
+    const receivingSelect = screen.getByDisplayValue("NacenTech Trung Ương (Bộ KH&CN - Toàn quốc)") as HTMLSelectElement;
+    expect(receivingSelect.value).toBe("GLOBAL");
+
+    // Proceed to Step 2
+    fireEvent.click(screen.getByRole("button", { name: /Tiếp tục: Năng lực Chuyên môn/i }));
+    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn/i)).toBeInTheDocument();
+
+    // Verify raw suggested sector keywords block appears with pill buttons
+    expect(screen.getByText(/Từ khóa chuyên ngành AI phát hiện từ CV \(Nhấp để thêm nhanh\):/i)).toBeInTheDocument();
+    const optoPill = screen.getByRole("button", { name: /\+ Quang điện tử/i });
+    expect(optoPill).toBeInTheDocument();
+
+    // Click pill to add to specializedKeywords
+    fireEvent.click(optoPill);
+    expect(screen.getByText("Quang điện tử")).toBeInTheDocument();
+  });
+
+  it("blocks step 1 progression when degreeYear is before or too close to birthYear (DEF-05-CR021-03)", async () => {
+    render(<ExpertUpgradePage />);
+
+    // Fill valid name
+    const fullNameInput = screen.getByPlaceholderText("TS. Nguyễn Văn An");
+    fireEvent.change(fullNameInput, { target: { value: "TS. Hoàng Quốc Bảo" } });
+
+    // Set birthYear = 2000
+    const birthYearInput = screen.getByDisplayValue("1985");
+    fireEvent.change(birthYearInput, { target: { value: "2000" } });
+
+    // Set degreeYear = 2010 (< birthYear + 20 = 2020)
+    const degreeYearInputs = screen.getAllByRole("spinbutton");
+    // Find degreeYear input
+    const degreeYearInput = degreeYearInputs.find(
+      (input) => (input as HTMLInputElement).min === "1950"
+    ) as HTMLInputElement;
+    expect(degreeYearInput).toBeInTheDocument();
+
+    fireEvent.change(degreeYearInput, { target: { value: "2010" } });
+
+    // Click continue
+    const continueBtn = screen.getByRole("button", { name: /Tiếp tục: Năng lực Chuyên môn/i });
+    fireEvent.click(continueBtn);
+
+    // Verify step 2 is blocked and error message appears
+    expect(
+      screen.getByText("Năm đạt học vị không thể trước hoặc quá gần năm sinh (tối thiểu 20 năm).")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Bước 2: Năng lực Chuyên môn/i)).not.toBeInTheDocument();
+
+    // Now fix degreeYear to 2024 (>= 2000 + 20)
+    fireEvent.change(degreeYearInput, { target: { value: "2024" } });
+    expect(
+      screen.queryByText("Năm đạt học vị không thể trước hoặc quá gần năm sinh (tối thiểu 20 năm).")
+    ).not.toBeInTheDocument();
+
+    // Click continue again -> successfully advances to Step 2
+    fireEvent.click(continueBtn);
+    expect(await screen.findByText(/Bước 2: Năng lực Chuyên môn/i)).toBeInTheDocument();
+  });
+
+  it("handles REJECTED status with backend DTO mapping and pre-fills form without data loss", async () => {
+    authClient.setSession("test_token", {
+      id: "p-001",
+      fullName: "TS. Nguyễn Minh An",
+      email: "minhan@nacentech.vn",
+      phone: "0912345678",
+      role: "USER",
+    });
+
+    const mockRejectedBackendData = {
+      id: "exp-rej-001",
+      personId: "p-001",
+      fullName: "TS. Nguyễn Minh An",
+      birthYear: 1982,
+      gender: "male",
+      degree: "DOCTOR",
+      degreeYear: 2012,
+      organizationName: "Viện Hàn Lâm Khoa Học và Công Nghệ VN",
+      organizationAddress: "18 Hoàng Quốc Việt, Cầu Giấy, Hà Nội",
+      researchTitle: "Chuyên gia Trí tuệ Nhân tạo Cao cấp",
+      expertiseSectors: ["LV05"],
+      consultingSummary: "Tư vấn chuyển đổi số và kiến trúc AI cho các doanh nghiệp",
+      reviewerNote: "Hồ sơ chưa có đủ bài báo Scopus Q1 theo tiêu chí nâng hạng.",
+      status: "REJECTED",
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/experts/my-profile")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, data: mockRejectedBackendData }),
+        };
+      }
+      return { ok: false, status: 404, json: async () => ({ message: "Not found" }) };
+    }));
+
+    render(<ExpertUpgradePage />);
+
+    // 1. Phải hiển thị màn hình chi tiết thông báo hồ sơ bị từ chối
+    expect(await screen.findByText(/Hồ Sơ Đã Bị Từ Chối Phê Duyệt/i)).toBeInTheDocument();
+    // Phải hiển thị lý do từ chối
+    expect(screen.getByText(/Hồ sơ chưa có đủ bài báo Scopus Q1 theo tiêu chí nâng hạng/i)).toBeInTheDocument();
+
+    // 2. Click "Chỉnh sửa & Nộp lại hồ sơ"
+    const editBtn = screen.getByRole("button", { name: /Chỉnh sửa & Nộp lại hồ sơ/i });
+    fireEvent.click(editBtn);
+
+    // Form Step 1 phải xuất hiện và giữ nguyên dữ liệu đã nộp (Zero Data Loss)
+    expect(await screen.findByText(/Bước 1: Thông tin Định danh & Học vị Khoa học/i)).toBeInTheDocument();
+    const nameInput = screen.getByPlaceholderText("TS. Nguyễn Văn An") as HTMLInputElement;
+    expect(nameInput.value).toBe("TS. Nguyễn Minh An");
+
+    const orgInput = screen.getByPlaceholderText("Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)") as HTMLInputElement;
+    expect(orgInput.value).toBe("Viện Hàn Lâm Khoa Học và Công Nghệ VN");
+
+    const titleInput = screen.getByPlaceholderText("Nghiên cứu viên chính / Trưởng nhóm Lab") as HTMLInputElement;
+    expect(titleInput.value).toBe("Chuyên gia Trí tuệ Nhân tạo Cao cấp");
+
+    // Học vị DOCTOR map thành TS
+    const degreeSelect = screen.getByDisplayValue("Tiến sĩ (TS)") as HTMLSelectElement;
+    expect(degreeSelect.value).toBe("TS");
+  });
 });

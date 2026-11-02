@@ -130,8 +130,8 @@ const buyerNavItems: NavItem[] = [
 const sellerNavItems: NavItem[] = [
   { href: "/portal", label: "Tổng quan Gian hàng", icon: LayoutDashboard },
   { href: "/portal/seller/technologies", label: "Kho Công nghệ (TRL)", icon: Cpu },
-  { href: "/portal/opportunities/pipeline?tab=inbound", label: "Yêu cầu Kết nối Nhận được", icon: Inbox },
   { href: "/portal/matching/radar", label: "Radar Tìm Kiếm Nhu Cầu (AI)", icon: Sparkles },
+  { href: "/portal/seller/connection-requests", label: "Yêu cầu Kết nối Nhận được", icon: Inbox },
   { href: "/portal/opportunities/pipeline", label: "Tiến trình Chuyển giao & MOU", icon: Kanban },
   { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck },
   { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2 },
@@ -352,8 +352,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               } else if (pathname === basePath || pathname?.startsWith(basePath + "/")) {
                 if (itemQuery && itemQuery.has("tab")) {
                   isActive = currentTab === itemQuery.get("tab");
-                } else if (basePath === "/portal/opportunities/pipeline") {
-                  isActive = currentTab !== "inbound";
                 } else {
                   isActive = true;
                 }

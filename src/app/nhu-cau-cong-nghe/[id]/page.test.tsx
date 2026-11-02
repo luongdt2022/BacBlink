@@ -156,4 +156,62 @@ describe("PublicDemandDetailPage Component (/nhu-cau-cong-nghe/[id])", () => {
     const pipelineLink = screen.getByRole("link", { name: /Xem Tiến Trình Hợp Tác Trong Pipeline/i });
     expect(pipelineLink).toHaveAttribute("href", "/portal/opportunities/pipeline");
   });
+
+  it("renders pending approval banner and locks offer form when status is PENDING", async () => {
+    vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/v1/public/demands/dem-test-01")) {
+        return {
+          ok: true,
+          json: async () => ({
+            ...mockDemandDetail,
+            status: "PENDING",
+            canSubmitOffer: false,
+          }),
+        } as Response;
+      }
+      return { ok: true, json: async () => ({}) } as Response;
+    });
+
+    render(<PublicDemandDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Hồ Sơ Nhu Cầu Đang Chờ Thẩm Định")).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText(/Hồ sơ bài toán đang chờ Cán bộ Sở KH&CN thẩm định/i)
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("CHỜ SỞ KH&CN THẨM ĐỊNH").length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(/Bài toán đang trong quy trình thẩm định sơ bộ của Sở KH&CN. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết./i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Nộp Đề Xuất Giải Pháp")).not.toBeInTheDocument();
+  });
+
+  it("renders VERIFIED status and opens offer form when status is VERIFIED", async () => {
+    vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/v1/public/demands/dem-test-01")) {
+        return {
+          ok: true,
+          json: async () => ({
+            ...mockDemandDetail,
+            status: "VERIFIED",
+            canSubmitOffer: true,
+          }),
+        } as Response;
+      }
+      return { ok: true, json: async () => ({}) } as Response;
+    });
+
+    render(<PublicDemandDetailPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("ĐANG MỞ TÌM CUNG").length).toBeGreaterThan(0);
+    });
+
+    expect(screen.queryByText("Hồ Sơ Nhu Cầu Đang Chờ Thẩm Định")).not.toBeInTheDocument();
+    expect(screen.getByText("Nộp Đề Xuất Giải Pháp")).toBeInTheDocument();
+  });
 });

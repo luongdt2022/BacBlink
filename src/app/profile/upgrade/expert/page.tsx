@@ -8,6 +8,7 @@ import { authClient } from "@/lib/auth-client";
 import { API_BASE } from "@/lib/api-client";
 import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
 import { Async, UXState } from "@/components/ui/async";
+import { shouldOverrideFullName } from "@/lib/cv-parser-helper";
 import {
   GraduationCap,
   Sparkles,
@@ -89,7 +90,7 @@ function ExpertUpgradeForm() {
   const renderAiBadge = (fieldName: string) => {
     if (!aiFilledFields.has(fieldName)) return null;
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 ml-1.5">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 ml-1.5">
         ✨ AI Bóc tách
       </span>
     );
@@ -105,6 +106,7 @@ function ExpertUpgradeForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [fullNameError, setFullNameError] = useState("");
   const [birthYearError, setBirthYearError] = useState("");
+  const [degreeYearError, setDegreeYearError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [pubYearError, setPubYearError] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -130,6 +132,15 @@ function ExpertUpgradeForm() {
       hasError = true;
     } else {
       setBirthYearError("");
+    }
+
+    // 2b. Validate tương quan Năm đạt học vị và Năm sinh (DEF-05-CR021-03)
+    const dYear = Number(degreeYear);
+    if (!degreeYear || isNaN(dYear) || dYear < bYear + 20) {
+      setDegreeYearError("Năm đạt học vị không thể trước hoặc quá gần năm sinh (tối thiểu 20 năm).");
+      hasError = true;
+    } else {
+      setDegreeYearError("");
     }
 
     // 3. Validate Số điện thoại (10 chữ số chuẩn VN)
@@ -166,8 +177,8 @@ function ExpertUpgradeForm() {
   const [academicDegree, setAcademicDegree] = useState("TS");
   const [primaryInstitution, setPrimaryInstitution] = useState("");
   const [workAddress, setWorkAddress] = useState("");
-  const [receivingUnit, setReceivingUnit] = useState("HP");
-  const [receivingScopeType, setReceivingScopeType] = useState("PROVINCE");
+  const [receivingUnit, setReceivingUnit] = useState("GLOBAL");
+  const [receivingScopeType, setReceivingScopeType] = useState("GLOBAL");
   const [professionalTitle, setProfessionalTitle] = useState("");
   const [googleScholarUrl, setGoogleScholarUrl] = useState("");
   const [orcidId, setOrcidId] = useState("");
@@ -179,6 +190,7 @@ function ExpertUpgradeForm() {
   const [sectorLoadError, setSectorLoadError] = useState(false);
   const [sectorLoading, setSectorLoading] = useState(true);
   const [specializedKeywords, setSpecializedKeywords] = useState<string[]>([]);
+  const [rawSuggestedSectors, setRawSuggestedSectors] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState("");
   const [yearsOfExperience, setYearsOfExperience] = useState(5);
   const [bioSummary, setBioSummary] = useState("");
@@ -254,7 +266,7 @@ function ExpertUpgradeForm() {
           const data = json.data ?? json;
           setExistingProfile(data);
 
-          // Populate wizard form fields so edit mode has all data!
+          // Populate wizard form fields so edit mode has all data (supports both BE & FE naming standards)!
           if (data.fullName) setFullName(data.fullName);
           if (data.phone) setPhone(data.phone);
           if (data.email) setEmail(data.email);
@@ -265,15 +277,23 @@ function ExpertUpgradeForm() {
             else if (g.includes("nữ") || g.includes("nu")) setGender("female");
             else setGender("other");
           }
-          if (data.academicDegree) setAcademicDegree(data.academicDegree);
+          const rawDegree = data.academicDegree || data.degree;
+          if (rawDegree) {
+            const mappedDegree = ({ DOCTOR: "TS", MASTER: "ThS", ENGINEER_BACHELOR: "KySu" } as Record<string, string>)[rawDegree] || rawDegree;
+            setAcademicDegree(mappedDegree);
+          }
           if (data.degreeYear) setDegreeYear(Number(data.degreeYear));
-          if (data.primaryInstitution) setPrimaryInstitution(data.primaryInstitution);
-          if (data.workAddress) setWorkAddress(data.workAddress);
-          if (data.professionalTitle) setProfessionalTitle(data.professionalTitle);
+          const org = data.primaryInstitution || data.organizationName || data.organization;
+          if (org) setPrimaryInstitution(org);
+          const addr = data.workAddress || data.organizationAddress;
+          if (addr) setWorkAddress(addr);
+          const title = data.professionalTitle || data.researchTitle || data.positionTitle;
+          if (title) setProfessionalTitle(title);
           if (data.googleScholarUrl) setGoogleScholarUrl(data.googleScholarUrl);
           if (data.orcidId) setOrcidId(data.orcidId);
           if (data.scopusAuthorId) setScopusAuthorId(data.scopusAuthorId);
-          if (data.primaryDomain) setPrimaryDomain(data.primaryDomain);
+          const domain = data.primaryDomain || (Array.isArray(data.expertiseSectors) ? data.expertiseSectors[0] : data.sectorCode);
+          if (domain) setPrimaryDomain(domain);
           if (Array.isArray(data.specializedKeywords)) {
             setSpecializedKeywords(data.specializedKeywords);
           } else if (typeof data.specializedKeywords === "string") {
@@ -283,7 +303,8 @@ function ExpertUpgradeForm() {
             } catch {}
           }
           if (data.yearsOfExperience) setYearsOfExperience(Number(data.yearsOfExperience));
-          if (data.bioSummary || data.consultingSummary) setBioSummary(data.bioSummary || data.consultingSummary);
+          const bio = data.bioSummary || data.consultingSummary || data.publicBio;
+          if (bio) setBioSummary(bio);
           if (data.publicationsJson) {
             try {
               const pubs = JSON.parse(data.publicationsJson);
@@ -312,6 +333,8 @@ function ExpertUpgradeForm() {
             setUxState("success");
           } else if (data.status === "CHANGES_REQUESTED") {
             setUxState("partial");
+          } else if (data.status === "REJECTED") {
+            setUxState("success");
           } else {
             setUxState("empty");
           }
@@ -367,6 +390,13 @@ function ExpertUpgradeForm() {
 
   const handleRemoveKeyword = (tag: string) => {
     setSpecializedKeywords(specializedKeywords.filter((k) => k !== tag));
+  };
+
+  const handleAddSuggestedSectorKeyword = (tag: string) => {
+    const trimmed = tag.trim();
+    if (trimmed && !specializedKeywords.includes(trimmed)) {
+      setSpecializedKeywords([...specializedKeywords, trimmed]);
+    }
   };
 
   const handleAddPublication = () => {
@@ -513,9 +543,9 @@ function ExpertUpgradeForm() {
       // Non-destructive Auto-fill: Điền trước vào các trường và đánh dấu trạng thái AI Pre-fill
       const newlyFilled = new Set(aiFilledFields);
 
-      // 1. Họ và tên: điền nếu trường chưa có hoặc mang giá trị mặc định
-      if (d.fullName && (!fullName.trim() || fullName === "Chuyên gia NacenTech")) {
-        setFullName(d.fullName);
+      // 1. Họ và tên: điền nếu trường chưa có hoặc mang giá trị placeholder/demo hoặc quét lại
+      if (d.fullName && (shouldOverrideFullName(fullName) || scanSuccess)) {
+        setFullName(d.fullName.trim());
         newlyFilled.add("fullName");
       }
 
@@ -561,6 +591,11 @@ function ExpertUpgradeForm() {
         else setAcademicDegree("Cử nhân");
         newlyFilled.add("academicDegree");
       }
+      // 4b. Năm đạt học vị (BR-EXP-CV-012)
+      if (d.degreeYear && Number(d.degreeYear) > 1950 && Number(d.degreeYear) <= new Date().getFullYear()) {
+        setDegreeYear(Number(d.degreeYear));
+        newlyFilled.add("degreeYear");
+      }
       // 5. Cơ quan công tác
       if (d.primaryInstitution && !primaryInstitution.trim()) {
         setPrimaryInstitution(d.primaryInstitution);
@@ -570,6 +605,12 @@ function ExpertUpgradeForm() {
       if (d.workAddress && !workAddress.trim()) {
         setWorkAddress(d.workAddress);
         newlyFilled.add("workAddress");
+      }
+      // 6b. Cơ quan tiếp nhận thẩm định Cấp 2 gợi ý (BR-EXP-CV-013)
+      if (d.suggestedReceivingUnit?.code) {
+        setReceivingUnit(d.suggestedReceivingUnit.code);
+        setReceivingScopeType(d.suggestedReceivingUnit.type);
+        newlyFilled.add("receivingUnit");
       }
       // 7. Chức vụ chuyên môn
       if (d.professionalTitle && !professionalTitle.trim()) {
@@ -594,6 +635,9 @@ function ExpertUpgradeForm() {
       if (d.primaryDomain && !primaryDomain) {
         setPrimaryDomain(d.primaryDomain);
         newlyFilled.add("primaryDomain");
+      }
+      if (d.rawSectorKeywords && Array.isArray(d.rawSectorKeywords) && d.rawSectorKeywords.length > 0) {
+        setRawSuggestedSectors(d.rawSectorKeywords);
       }
       // 10. Từ khóa chuyên sâu (Bước 2)
       if (d.specializedKeywords && Array.isArray(d.specializedKeywords) && d.specializedKeywords.length > 0) {
@@ -811,39 +855,104 @@ function ExpertUpgradeForm() {
           state={uxState}
           loadingText="Đang xác thực thông tin hồ sơ chuyên gia..."
           successContent={
-            <div className="bg-white rounded-surface p-8 border border-emerald-200 shadow-lg text-center space-y-4 dark:bg-slate-900 dark:border-emerald-900">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto dark:bg-emerald-950/60">
-                <CheckCircle2 className="w-10 h-10" />
+            existingProfile?.status === "REJECTED" ? (
+              <div className="bg-white rounded-surface p-8 border border-rose-200 shadow-lg text-center space-y-5 dark:bg-slate-900 dark:border-rose-900">
+                <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto dark:bg-rose-950/60">
+                  <AlertCircle className="w-10 h-10" />
+                </div>
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold dark:bg-rose-950/60 dark:text-rose-300">
+                    <span>Hồ Sơ Đã Bị Từ Chối Phê Duyệt (REJECTED)</span>
+                  </div>
+                  <h2 className="font-bold text-slate-900 text-card-title dark:text-slate-100">
+                    Hồ Sơ Nâng Hạng Của Bạn Chưa Được Phê Duyệt
+                  </h2>
+                  <p className="text-slate-600 max-w-lg mx-auto text-body leading-relaxed dark:text-slate-300">
+                    Hội đồng Thẩm định đã xem xét hồ sơ nâng hạng Chuyên gia KH&CN của <strong>{existingProfile?.fullName || fullName}</strong> và đưa ra kết luận chưa đạt yêu cầu.
+                  </p>
+                </div>
+
+                {/* Reviewer Note Banner */}
+                <div className="max-w-2xl mx-auto p-4 rounded-xl bg-rose-50 border border-rose-200 text-left text-rose-900 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-200 space-y-1.5">
+                  <div className="flex items-center gap-2 font-bold text-sm">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Lý do từ chối từ Hội đồng Thẩm định:</span>
+                  </div>
+                  <p className="text-sm leading-relaxed pl-6 font-medium">
+                    {existingProfile?.reviewerNote || existingProfile?.reviewNote || "Hồ sơ chưa đáp ứng đầy đủ tiêu chí thẩm định theo quy chuẩn Bộ KH&CN."}
+                  </p>
+                </div>
+
+                {/* Summary Grid of submitted data */}
+                <div className="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 text-left text-xs bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <div>
+                    <span className="text-slate-500 font-medium">Họ và tên:</span>
+                    <p className="font-bold text-slate-900 dark:text-white text-sm">{fullName}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-medium">Học hàm / Học vị:</span>
+                    <p className="font-bold text-slate-900 dark:text-white text-sm">{academicDegree}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-medium">Cơ quan công tác:</span>
+                    <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{primaryInstitution}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-medium">Chức danh / Vị trí:</span>
+                    <p className="font-bold text-slate-900 dark:text-white text-sm">{professionalTitle || "Nghiên cứu viên"}</p>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-wrap justify-center gap-4">
+                  <Link
+                    href="/profile/upgrade"
+                    className="px-5 py-2.5 rounded-control border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition text-label focus-ring min-h-11 inline-flex items-center justify-center dark:text-slate-100 dark:border-slate-700 dark:bg-slate-800"
+                  >
+                    Quay lại Cổng Nâng hạng
+                  </Link>
+                  <AppButton variant="primary"
+                    onClick={() => setUxState("empty")}
+                    className="px-5 py-2.5 rounded-control font-medium transition text-label focus-ring"
+                  >
+                    Chỉnh sửa & Nộp lại hồ sơ
+                  </AppButton>
+                </div>
               </div>
-              <h2 className="font-bold text-slate-900 text-card-title dark:text-slate-100">Hồ Sơ Đã Được Gửi Thành Công!</h2>
-              <p className="text-slate-600 max-w-lg mx-auto text-body leading-relaxed dark:text-slate-300">
-                Hồ sơ nâng hạng Chuyên gia KH&CN của <strong>{existingProfile?.fullName || fullName}</strong> đã được chuyển sang Hàng đợi Thẩm định (Approval Queue) thuộc Phân hệ Quản trị <strong>TASK-07</strong>.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-label text-slate-600 dark:text-slate-300">
-                <span className="font-semibold text-brand-700 dark:text-brand-300">Cơ quan tiếp nhận thẩm định (Cấp 2):</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 font-bold border border-brand-200 dark:border-brand-900">
-                  {receivingUnit === "GLOBAL" ? "NacenTech Trung Ương (Toàn quốc)" : `Sở KH&CN (${receivingUnit})`}
-                </span>
+            ) : (
+              <div className="bg-white rounded-surface p-8 border border-emerald-200 shadow-lg text-center space-y-4 dark:bg-slate-900 dark:border-emerald-900">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto dark:bg-emerald-950/60">
+                  <CheckCircle2 className="w-10 h-10" />
+                </div>
+                <h2 className="font-bold text-slate-900 text-card-title dark:text-slate-100">Hồ Sơ Đã Được Gửi Thành Công!</h2>
+                <p className="text-slate-600 max-w-lg mx-auto text-body leading-relaxed dark:text-slate-300">
+                  Hồ sơ nâng hạng Chuyên gia KH&CN của <strong>{existingProfile?.fullName || fullName}</strong> đã được chuyển sang Hàng đợi Thẩm định (Approval Queue) thuộc Phân hệ Quản trị <strong>TASK-07</strong>.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-label text-slate-600 dark:text-slate-300">
+                  <span className="font-semibold text-brand-700 dark:text-brand-300">Cơ quan tiếp nhận thẩm định (Cấp 2):</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 font-bold border border-brand-200 dark:border-brand-900">
+                    {receivingUnit === "GLOBAL" ? "NacenTech Trung Ương (Toàn quốc)" : `Sở KH&CN (${receivingUnit})`}
+                  </span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-label font-semibold dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-900">
+                  <Clock className="w-4 h-4" />
+                  <span>Trạng thái: Đang chờ Hội đồng Thẩm định xét duyệt (SLA &le; 48 giờ)</span>
+                </div>
+                <div className="pt-4 flex flex-wrap justify-center gap-4">
+                  <Link
+                    href="/profile/upgrade"
+                    className="px-5 py-2.5 rounded-control border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition text-label focus-ring min-h-11 inline-flex items-center justify-center dark:text-slate-100 dark:border-slate-700 dark:bg-slate-800"
+                  >
+                    Quay lại Cổng Nâng hạng
+                  </Link>
+                  <AppButton variant="primary"
+                    onClick={() => setUxState("empty")}
+                    className="px-5 py-2.5 rounded-control font-medium transition text-label focus-ring"
+                  >
+                    Chỉnh sửa / Cập nhật hồ sơ
+                  </AppButton>
+                </div>
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-label font-semibold dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-900">
-                <Clock className="w-4 h-4" />
-                <span>Trạng thái: Đang chờ Hội đồng Thẩm định xét duyệt (SLA &le; 48 giờ)</span>
-              </div>
-              <div className="pt-4 flex flex-wrap justify-center gap-4">
-                <Link
-                  href="/profile/upgrade"
-                  className="px-5 py-2.5 rounded-control border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition text-label focus-ring min-h-11 inline-flex items-center justify-center dark:text-slate-100 dark:border-slate-700 dark:bg-slate-800"
-                >
-                  Quay lại Cổng Nâng hạng
-                </Link>
-                <AppButton variant="primary"
-                  onClick={() => setUxState("empty")}
-                  className="px-5 py-2.5 rounded-control font-medium transition text-label focus-ring"
-                >
-                  Chỉnh sửa / Cập nhật hồ sơ
-                </AppButton>
-              </div>
-            </div>
+            )
           }
           partialContent={
             <div className="bg-white rounded-surface p-6 border border-amber-300 shadow-md mb-6 dark:bg-slate-900 dark:border-amber-900">
@@ -1154,6 +1263,7 @@ function ExpertUpgradeForm() {
                       onChange={(e) => {
                         setBirthYear(Number(e.target.value));
                         if (birthYearError) setBirthYearError("");
+                        if (degreeYearError) setDegreeYearError("");
                       }}
                       className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-body form-control dark:border-slate-700 ${
                         birthYearError ? "border-rose-500 ring-1 ring-rose-500" : aiFilledFields.has("birthYear") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"
@@ -1174,8 +1284,34 @@ function ExpertUpgradeForm() {
                     <select value={gender} onChange={(e) => setGender(e.target.value)} className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-body bg-white form-control dark:bg-slate-900 dark:border-slate-700 ${aiFilledFields.has("gender") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}><option value="male">Nam</option><option value="female">Nữ</option><option value="other">Khác</option></select>
                   </div>
                   <div>
-                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100">Năm đạt học vị *</label>
-                    <input required type="number" min={1950} max={new Date().getFullYear()} value={degreeYear} onChange={(e) => setDegreeYear(Number(e.target.value))} className="mt-1 block w-full px-3 py-2.5 border border-slate-300 rounded-control text-body form-control dark:border-slate-700" />
+                    <label className="block text-label font-medium text-slate-700 dark:text-slate-100 flex items-center">
+                      <span>Năm đạt học vị *</span>
+                      {renderAiBadge("degreeYear")}
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      min={1950}
+                      max={new Date().getFullYear()}
+                      value={degreeYear}
+                      onChange={(e) => {
+                        setDegreeYear(Number(e.target.value));
+                        if (degreeYearError) setDegreeYearError("");
+                      }}
+                      className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-body form-control dark:border-slate-700 ${
+                        degreeYearError
+                          ? "border-rose-500 ring-1 ring-rose-500"
+                          : aiFilledFields.has("degreeYear")
+                          ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20"
+                          : "border-slate-300"
+                      }`}
+                    />
+                    {degreeYearError && (
+                      <p className="mt-1 text-label text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{degreeYearError}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -1217,11 +1353,16 @@ function ExpertUpgradeForm() {
                   </div>
 
                   {/* Phân cấp Cấp 2: Chọn Cơ quan / Sở KH&CN tiếp nhận thẩm định (Basic Design v2.6 & FR-ADM-007) */}
-                  <div className="bg-brand-50/50 dark:bg-slate-800/60 p-4 rounded-surface border border-brand-200 dark:border-brand-900/50">
+                  <div className={`p-4 rounded-surface border transition-colors ${
+                    aiFilledFields.has("receivingUnit")
+                      ? "bg-emerald-50/30 border-emerald-300 dark:bg-emerald-950/20 dark:border-emerald-800"
+                      : "bg-brand-50/50 dark:bg-slate-800/60 border-brand-200 dark:border-brand-900/50"
+                  }`}>
                     <label className="block text-label font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
+                      <span className="flex items-center gap-1.5 flex-wrap">
                         <ShieldCheck className="h-4 w-4 text-brand-700 dark:text-brand-300" />
                         <span>Cơ quan / Sở KH&CN tiếp nhận thẩm định hồ sơ *</span>
+                        {renderAiBadge("receivingUnit")}
                       </span>
                       <span className="text-caption text-brand-700 dark:text-brand-300 font-semibold bg-brand-100 dark:bg-brand-950 px-2 py-0.5 rounded-full">
                         Phân cấp Cấp 2
@@ -1432,6 +1573,28 @@ function ExpertUpgradeForm() {
                         </span>
                       ))}
                     </div>
+
+                    {/* Khối gợi ý từ khóa chuyên ngành phát hiện từ CV (BR-EXP-CV-014) */}
+                    {rawSuggestedSectors.length > 0 && (
+                      <div className="mt-3 p-3 bg-amber-50/70 border border-amber-200 rounded-lg dark:bg-amber-950/30 dark:border-amber-800">
+                        <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mb-1.5 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Từ khóa chuyên ngành AI phát hiện từ CV (Nhấp để thêm nhanh):</span>
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {rawSuggestedSectors.map((tag, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleAddSuggestedSectorKeyword(tag)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition-colors focus-ring"
+                            >
+                              + {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

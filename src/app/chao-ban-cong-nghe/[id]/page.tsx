@@ -73,6 +73,7 @@ export default function ChiTietChaoBanPage() {
   // Trạng thái & Dữ liệu Form Quick Demand Modal
   const [isSubmittingDemand, setIsSubmittingDemand] = useState(false);
   const [createdDemandCode, setCreatedDemandCode] = useState<string | null>(null);
+  const [createdRequestCode, setCreatedRequestCode] = useState<string | null>(null);
   const [demandProblem, setDemandProblem] = useState("");
   const [demandCompany, setDemandCompany] = useState("");
   const [demandContact, setDemandContact] = useState("");
@@ -96,10 +97,16 @@ export default function ChiTietChaoBanPage() {
     const user = authClient.getUser();
     if (user) {
       setCurrentUser(user);
+      const isPublic = user.role === "PUBLIC_USER" || user.role === "GUEST";
       let changed = false;
       if (!demandCompany) {
-        setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
-        changed = true;
+        if (!isPublic) {
+          setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+          changed = true;
+        } else if (user.organizationName) {
+          setDemandCompany(user.organizationName);
+          changed = true;
+        }
       }
       if (!demandContact) {
         setDemandContact(user.fullName || "");
@@ -137,7 +144,12 @@ export default function ChiTietChaoBanPage() {
       toast.warning("Bạn chưa đăng nhập tài khoản.", "Chưa đăng nhập");
       return;
     }
-    setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+    const isPublic = user.role === "PUBLIC_USER" || user.role === "GUEST";
+    if (!isPublic) {
+      setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+    } else {
+      setDemandCompany(user.organizationName || "");
+    }
     setDemandContact(user.fullName || "");
     setDemandPhone(user.phone || user.phoneNumber || "0912345678");
     setDemandEmail(user.email || "");
@@ -150,10 +162,16 @@ export default function ChiTietChaoBanPage() {
     if (val.trim().length > 0) {
       const user = currentUser || authClient.getUser();
       if (user) {
+        const isPublic = user.role === "PUBLIC_USER" || user.role === "GUEST";
         let changed = false;
         if (!demandCompany) {
-          setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
-          changed = true;
+          if (!isPublic) {
+            setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+            changed = true;
+          } else if (user.organizationName) {
+            setDemandCompany(user.organizationName);
+            changed = true;
+          }
         }
         if (!demandContact) {
           setDemandContact(user.fullName || "");
@@ -179,7 +197,12 @@ export default function ChiTietChaoBanPage() {
         setOffer(data);
         setIsLoading(false);
         if (data) {
-          setDemandProblem(`Nhu cầu ứng dụng / chuyển giao: ${data.title}`);
+          const isComm = !data.hasTechTransfer || data.offerType === "PRODUCT";
+          setDemandProblem(
+            isComm
+              ? `[Đơn đặt mua] Sản phẩm: ${data.title}`
+              : `Nhu cầu ứng dụng / chuyển giao: ${data.title}`
+          );
         }
       });
     }
@@ -1289,14 +1312,28 @@ export default function ChiTietChaoBanPage() {
                 <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h4 className="text-sm font-bold text-slate-900">Đã Tạo Nhu Cầu & Gửi Đề Xuất Kết Nối Thành Công!</h4>
-                {createdDemandCode && (
-                  <div className="mono text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg inline-block">
-                    Mã phiếu nhu cầu CSDL: <strong>{createdDemandCode}</strong>
-                  </div>
-                )}
-                <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
-                  Hệ thống đã tự động ghi nhận nhu cầu công nghệ vào CSDL PostgreSQL liên kết với hồ sơ <b>{offer.offerCode}</b>. Đơn vị chủ quản ({offer.managingAuthorityName || "Sở KH&CN"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {isCommercialProduct
+                    ? "Đã Gửi Đơn Đặt Mua & Yêu Cầu Kết Nối Tới Bên Bán Thành Công!"
+                    : "Đã Tạo Nhu Cầu & Gửi Đề Xuất Kết Nối Thành Công!"}
+                </h4>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {createdDemandCode && (
+                    <div className="mono text-xs font-bold text-emerald-800 bg-emerald-50 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 rounded-lg inline-block">
+                      Mã đơn mua: <strong>{createdDemandCode}</strong>
+                    </div>
+                  )}
+                  {createdRequestCode && (
+                    <div className="mono text-xs font-bold text-cyan-800 bg-cyan-50 dark:bg-cyan-950/80 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 px-3 py-1.5 rounded-lg inline-block">
+                      Mã tiếp nhận Bên Bán: <strong>{createdRequestCode}</strong>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto leading-relaxed">
+                  {isCommercialProduct
+                    ? `Đơn đặt mua sản phẩm của bạn đã được gửi trực tiếp đến gian hàng tiếp nhận của ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Bên bán sẽ tiếp nhận xử lý và phản hồi trong 24 - 48 giờ làm việc.`
+                    : `Hồ sơ nhu cầu của bạn đã được gửi trực tiếp đến đơn vị ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Đơn vị chủ quản (${offer.managingAuthorityName || "Sở KH&CN"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.`
+                  }
                 </p>
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
                   <Link
@@ -1311,6 +1348,7 @@ export default function ChiTietChaoBanPage() {
                       setShowConnectModal(false);
                       setConnectSuccess(false);
                       setCreatedDemandCode(null);
+                      setCreatedRequestCode(null);
                     }}
                     className="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-xl text-xs font-bold transition"
                   >
@@ -1323,25 +1361,34 @@ export default function ChiTietChaoBanPage() {
                 onSubmit={async (e) => {
                   e.preventDefault();
                   setIsSubmittingDemand(true);
+                  const isPublic = Boolean(
+                    currentUser && (currentUser.role === 'PUBLIC_USER' || currentUser.role === 'GUEST')
+                  );
+                  const effectiveCompany =
+                    demandCompany?.trim() ||
+                    (isPublic ? currentUser?.fullName || 'Khách hàng cá nhân' : 'Doanh nghiệp');
+
                   const technicalProblem = demandProblem || (
                     isCommercialProduct
-                      ? `Nhu cầu đặt mua / kết nối thương phẩm: ${offer.title}`
+                      ? `[Đơn đặt mua] Sản phẩm: ${offer.title}`
                       : `Nhu cầu ứng dụng / chuyển giao: ${offer.title}`
                   );
                   const expectedGoal = isCommercialProduct
-                    ? `Cung cấp và tiêu thụ sản phẩm tại cơ sở của ${demandCompany || "doanh nghiệp"}`
-                    : `Triển khai ứng dụng công nghệ tại cơ sở của ${demandCompany || "doanh nghiệp"}`;
+                    ? `Cung cấp và tiêu thụ sản phẩm tại cơ sở của ${effectiveCompany}`
+                    : `Triển khai ứng dụng công nghệ tại cơ sở của ${effectiveCompany}`;
                   const desiredSolution = isCommercialProduct
-                    ? `[Đề xuất thương mại: ${demandMethod}] Khách hàng ${demandCompany || "cá nhân"} đăng ký mua sản phẩm ${offer.offerCode} - ${offer.title}. Người liên hệ: ${demandContact} (${demandPhone}, ${demandEmail || "N/A"}). Hình thức: ${demandMethod}. Ghi chú: ${demandNotes || "Không có"}`
-                    : `Đăng ký chuyển giao / nhận quyền khai thác công nghệ ${offer.offerCode} - ${offer.title}. Người liên hệ: ${demandContact} (${demandPhone}, ${demandEmail || "N/A"}). Hình thức: ${demandMethod}. Ghi chú: ${demandNotes || "Không có"}`;
+                    ? `[Đề xuất thương mại: ${demandMethod}] Khách hàng ${effectiveCompany} đăng ký mua sản phẩm ${offer.offerCode} - ${offer.title}. Người liên hệ: ${demandContact} (${demandPhone}, ${demandEmail || 'N/A'}). Hình thức: ${demandMethod}. Ghi chú: ${demandNotes || 'Không có'}`
+                    : `Đăng ký chuyển giao / nhận quyền khai thác công nghệ ${offer.offerCode} - ${offer.title}. Người liên hệ: ${demandContact} (${demandPhone}, ${demandEmail || 'N/A'}). Hình thức: ${demandMethod}. Ghi chú: ${demandNotes || 'Không có'}`;
                   const res = await submitQuickDemand({
-                    stageName: "Sản xuất & Chuyển giao",
-                    technicalProblem: `[DN: ${demandCompany || "Chưa cung cấp"}] ${technicalProblem}`,
+                    stageName: isCommercialProduct ? 'Thương mại & Tiêu thụ' : 'Sản xuất & Chuyển giao',
+                    technicalProblem: isCommercialProduct
+                      ? `[Đơn hàng - ${effectiveCompany}] ${technicalProblem}`
+                      : `[DN: ${effectiveCompany}] ${technicalProblem}`,
                     desiredSolution: desiredSolution,
                     needConsulting: true,
                     expectedGoal: expectedGoal,
-                    applicationScale: demandCompany || "Doanh nghiệp",
-                    sectorCode: offer.sectorCode || "LV16",
+                    applicationScale: effectiveCompany,
+                    sectorCode: offer.sectorCode || 'LV16',
                     budgetRange: demandBudget,
                     urgencyScore: 4,
                     impactScore: 4,
@@ -1355,10 +1402,15 @@ export default function ChiTietChaoBanPage() {
                   setIsSubmittingDemand(false);
                   if (res.success) {
                     setCreatedDemandCode(res.itemCode || null);
+                    setCreatedRequestCode(res.requestCode || null);
                     setConnectSuccess(true);
-                    toast.success(res.message || "Đã gửi đề xuất kết nối và tạo phiếu nhu cầu thành công!");
+                    toast.success(
+                      isCommercialProduct
+                        ? 'Đã gửi đơn đặt mua sản phẩm tới Bên Bán thành công!'
+                        : (res.message || 'Đã gửi đề xuất kết nối và tạo phiếu nhu cầu thành công!')
+                    );
                   } else {
-                    toast.error(res.message || "Gửi kết nối không thành công, vui lòng thử lại.");
+                    toast.error(res.message || 'Gửi kết nối không thành công, vui lòng thử lại.');
                   }
                 }}
                 className="space-y-3.5 text-xs max-h-[75vh] overflow-y-auto pr-1"
@@ -1413,17 +1465,36 @@ export default function ChiTietChaoBanPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Doanh nghiệp / Tổ chức của bạn: <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      required
-                      value={demandCompany}
-                      onChange={(e) => setDemandCompany(e.target.value)}
-                      placeholder="VD: Công ty CP Nông Sản Sạch"
-                      className="form-control w-full"
-                    />
-                  </div>
+                  {(() => {
+                    const isPublicOrGuest = Boolean(
+                      currentUser && (currentUser.role === 'PUBLIC_USER' || currentUser.role === 'GUEST')
+                    );
+                    return (
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">
+                          {isPublicOrGuest ? (
+                            'Đơn vị công tác (Không bắt buộc với cá nhân):'
+                          ) : (
+                            <>
+                              Doanh nghiệp / Tổ chức của bạn: <span className="text-red-500">*</span>
+                            </>
+                          )}
+                        </label>
+                        <input
+                          type="text"
+                          required={!isPublicOrGuest}
+                          value={demandCompany}
+                          onChange={(e) => setDemandCompany(e.target.value)}
+                          placeholder={
+                            isPublicOrGuest
+                              ? 'VD: Cá nhân / Viện / Doanh nghiệp (nếu có)'
+                              : 'VD: Công ty CP Nông Sản Sạch'
+                          }
+                          className="form-control w-full"
+                        />
+                      </div>
+                    );
+                  })()}
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">Người liên hệ: <span className="text-red-500">*</span></label>
                     <input

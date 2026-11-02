@@ -17,7 +17,8 @@ import {
   Clock,
   Sparkles,
   Kanban,
-  ArrowRight
+  ArrowRight,
+  ShoppingBag
 } from "lucide-react";
 import { Async, AsyncState } from "@/components/ui/async";
 import { getTniClassification } from "@/components/demand/TniRealtimeCalculator";
@@ -42,6 +43,61 @@ export default function PublicDemandDetailPage() {
     const found = SECTORS_18_CATALOG.find((s) => s.code.toUpperCase() === code.toUpperCase());
     return found?.name || code;
   };
+
+  const isCommercialOrder = Boolean(
+    item?.stageName === "Thương mại & Tiêu thụ" ||
+    item?.desiredSolution?.includes("PURCHASE_COMMERCIAL") ||
+    item?.desiredSolution?.includes("SUPPLY_CONTRACT") ||
+    item?.desiredSolution?.includes("DISTRIBUTION_AGENT") ||
+    item?.desiredSolution?.includes("SAMPLE_ORDER") ||
+    item?.technicalProblem?.startsWith("[Đơn đặt mua]") ||
+    item?.technicalProblem?.startsWith("[Đơn hàng")
+  );
+
+  const getStatusDisplay = () => {
+    if (isCommercialOrder) {
+      return {
+        badgeText: "ĐƠN MUA HÀNG THƯƠNG MẠI",
+        badgeClass: "text-brand-600 dark:text-cyan-400",
+        pillClass: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300",
+        description: "Đã chuyển tiếp tới Bên Bán mục tiêu",
+      };
+    }
+    const status = (item?.status || "").toUpperCase();
+    switch (status) {
+      case "PENDING":
+        return {
+          badgeText: "CHỜ SỞ KH&CN THẨM ĐỊNH",
+          badgeClass: "text-amber-600 dark:text-amber-400",
+          pillClass: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300",
+          description: "Hồ sơ đang được Cán bộ Sở KH&CN thẩm định trước khi niêm yết",
+        };
+      case "CONNECTED":
+        return {
+          badgeText: "ĐÃ KẾT NỐI CUNG - CẦU",
+          badgeClass: "text-blue-600 dark:text-blue-400",
+          pillClass: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300",
+          description: "Đã kết nối cung - cầu",
+        };
+      case "CLOSED":
+        return {
+          badgeText: "ĐÃ ĐÓNG HỒ SƠ",
+          badgeClass: "text-slate-600 dark:text-slate-400",
+          pillClass: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-400",
+          description: "Đã đóng hồ sơ",
+        };
+      case "VERIFIED":
+      default:
+        return {
+          badgeText: "ĐANG MỞ TÌM CUNG",
+          badgeClass: "text-emerald-600 dark:text-emerald-400",
+          pillClass: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300",
+          description: "Ưu tiên kết nối chuyển giao trong 15 ngày",
+        };
+    }
+  };
+
+  const statusDisplay = getStatusDisplay();
 
   // Form chào bán giải pháp
   const [solutionTitle, setSolutionTitle] = useState("");
@@ -124,6 +180,13 @@ export default function PublicDemandDetailPage() {
   const handleSendOffer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!item?.id) return;
+    if (item?.status === "PENDING" || item?.canSubmitOffer === false) {
+      toast.warning(
+        "Bài toán đang trong quy trình thẩm định sơ bộ của Sở KH&CN. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết.",
+        "Chưa mở tiếp nhận"
+      );
+      return;
+    }
     if (!solutionTitle.trim()) {
       toast.warning("Vui lòng nhập tên công nghệ hoặc giải pháp đề xuất.", "Thiếu thông tin");
       return;
@@ -231,6 +294,11 @@ export default function PublicDemandDetailPage() {
                           </span>
                         );
                       })()}
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${statusDisplay.pillClass}`}
+                      >
+                        {statusDisplay.badgeText}
+                      </span>
                     </div>
 
                     <div className="text-xs text-slate-400 flex items-center gap-1">
@@ -238,6 +306,26 @@ export default function PublicDemandDetailPage() {
                       <span>Thông tin DN bảo vệ theo Nghị định 13 (PDPD)</span>
                     </div>
                   </div>
+
+                  {/* Pending Approval Banner */}
+                  {item.status === "PENDING" && (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/80 flex items-start gap-3.5 text-amber-900 dark:text-amber-200 shadow-sm">
+                      <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-sm sm:text-base">
+                            Hồ Sơ Nhu Cầu Đang Chờ Thẩm Định
+                          </span>
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-200">
+                            Chờ thẩm định
+                          </span>
+                        </div>
+                        <p className="text-xs text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
+                          Hồ sơ bài toán đang chờ Cán bộ Sở KH&CN thẩm định. Sau khi được phê duyệt tại phân hệ Quản lý Nhà nước (/gov/demands), bài toán sẽ chính thức xuất hiện trên Sàn để các Nhà cung ứng và Viện/Trường gửi hồ sơ giải pháp.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Title & Stage */}
                   <div>
@@ -292,8 +380,15 @@ export default function PublicDemandDetailPage() {
                       </span>
                     </div>
                     <div className="text-right text-xs text-text-secondary dark:text-slate-400">
-                      <p>Trạng thái: <strong className="text-emerald-600 dark:text-emerald-400">ĐANG MỞ TÌM CUNG</strong></p>
-                      <p className="text-xs mt-0.5">Ưu tiên kết nối chuyển giao trong 15 ngày</p>
+                      <p>
+                        Trạng thái:{" "}
+                        <strong className={statusDisplay.badgeClass}>
+                          {statusDisplay.badgeText}
+                        </strong>
+                      </p>
+                      <p className="text-xs mt-0.5">
+                        {statusDisplay.description}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -311,8 +406,74 @@ export default function PublicDemandDetailPage() {
                 </div>
               </div>
 
-              {/* CỘT PHẢI (4 CỘT): FORM NỘP ĐỀ XUẤT CHÀO BÁN / GIẢI PHÁP */}
+              {/* CỘT PHẢI (4 CỘT): FORM NỘP ĐỀ XUẤT CHÀO BÁN HOẶC THÔNG TIN ĐƠN HÀNG */}
               <div className="lg:col-span-4 sticky top-24">
+                {isCommercialOrder ? (
+                  <div className="surface-card p-6 space-y-5">
+                    <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
+                        ĐƠN HÀNG THƯƠNG MẠI
+                      </span>
+                      <h3 className="text-lg font-extrabold text-text-primary dark:text-white mt-2">
+                        Đơn Đặt Mua Trực Tiếp
+                      </h3>
+                      <p className="text-xs text-text-secondary dark:text-slate-400 mt-1 leading-relaxed">
+                        Hồ sơ này là đơn hàng đặt mua sản phẩm thương mại trực tiếp giữa Bên Mua và Bên Bán. Không tiếp nhận đề xuất giải pháp công nghệ đại trà.
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl text-xs space-y-2 border border-slate-200 dark:border-slate-700">
+                      <p className="font-bold text-slate-800 dark:text-slate-200">
+                        Tiến trình xử lý:
+                      </p>
+                      <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Yêu cầu đặt mua đã được điều phối tới Bàn làm việc tiếp nhận của Bên Bán để thực hiện báo giá và thương thảo giao dịch.
+                      </p>
+                    </div>
+
+                    <div className="pt-2">
+                      <Link
+                        href="/chao-ban-cong-nghe"
+                        className="w-full bg-brand-700 hover:bg-brand-800 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition text-xs"
+                      >
+                        <ShoppingBag className="w-4 h-4" /> Khám Phá Gian Hàng Công Nghệ
+                      </Link>
+                    </div>
+                  </div>
+                ) : item?.status === "PENDING" || item?.canSubmitOffer === false ? (
+                  <div className="surface-card p-6 space-y-5">
+                    <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <span className="text-xs font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full">
+                        TẠM KHÓA TIẾP NHẬN
+                      </span>
+                      <h3 className="text-lg font-extrabold text-text-primary dark:text-white mt-2">
+                        Chào Bán Giải Pháp
+                      </h3>
+                      <p className="text-xs text-text-secondary dark:text-slate-400 mt-1 leading-relaxed">
+                        Chào bán giải pháp cho bài toán này
+                      </p>
+                    </div>
+
+                    <div className="p-5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-3 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
+                      <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+                        <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <span>Hồ sơ đang trong quy trình thẩm định</span>
+                      </div>
+                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                        Bài toán đang trong quy trình thẩm định sơ bộ của Sở KH&CN. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết.
+                      </p>
+                    </div>
+
+                    <div className="pt-2">
+                      <Link
+                        href="/nhu-cau-cong-nghe"
+                        className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition text-xs"
+                      >
+                        <ArrowLeft className="w-4 h-4" /> Khám Phá Bài Toán Đang Mở
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
                 <div className="surface-card p-6 space-y-5">
                   <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
                     <span className="text-xs font-extrabold uppercase tracking-widest text-nacen-green-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
@@ -477,6 +638,7 @@ export default function PublicDemandDetailPage() {
                     </form>
                   )}
                 </div>
+                )}
               </div>
             </div>
           )}

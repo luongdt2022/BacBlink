@@ -28,6 +28,8 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
       },
     });
 
+    window.HTMLElement.prototype.scrollIntoView = vi.fn();
+
     authClient.setSession("test-token", {
       id: "gov-user-1",
       email: "lanhdao@hanoi.gov.vn",
@@ -167,7 +169,7 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     });
   });
 
-  it("displays both 'Xem Chi Tiết' and 'Phê Duyệt' action buttons and opens full dossier modal", async () => {
+  it("displays both 'Xem Chi Tiết' and 'Thẩm Định' action buttons and opens full dossier modal", async () => {
     render(<GovApprovalQueue />);
 
     await waitFor(() => {
@@ -178,7 +180,7 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     const detailBtns = screen.getAllByRole("button", { name: /Xem Chi Tiết/i });
     expect(detailBtns.length).toBeGreaterThan(0);
 
-    const reviewBtns = screen.getAllByRole("button", { name: /Phê Duyệt/i });
+    const reviewBtns = screen.getAllByRole("button", { name: /Thẩm Định/i });
     expect(reviewBtns.length).toBeGreaterThan(0);
 
     // Click 'Xem Chi Tiết' for the expert item
@@ -203,6 +205,133 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     await waitFor(() => {
       expect(screen.getByText("Thẩm Định Hồ Sơ Chuyên Gia: TS. Nguyễn Minh Triết")).toBeInTheDocument();
       expect(screen.getByText(/Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN/i)).toBeInTheDocument();
+    });
+  });
+
+  it("reproduces bug: rejects or requests changes without >= 10 chars must show toast error, scroll/focus, and block submission", async () => {
+    const fetchMock = global.fetch as any;
+    render(<GovApprovalQueue />);
+
+    await waitFor(() => {
+      expect(screen.getByText("TS. Nguyễn Minh Triết")).toBeInTheDocument();
+    });
+
+    // Bấm nút thẩm định ngoài danh sách
+    const reviewBtn = screen.getByTestId("btn-review-appr-exp-001");
+    expect(reviewBtn).toHaveTextContent("Thẩm Định");
+    fireEvent.click(reviewBtn);
+
+    // Modal thẩm định mở ra
+    await waitFor(() => {
+      expect(screen.getByText("Thẩm Định Hồ Sơ Chuyên Gia: TS. Nguyễn Minh Triết")).toBeInTheDocument();
+    });
+
+    // Chọn "Từ Chối Hồ Sơ"
+    const rejectBtn = screen.getByRole("button", { name: /Từ Chối Hồ Sơ/i });
+    fireEvent.click(rejectBtn);
+
+    // Kiểm tra ô textarea nhập lý do xuất hiện
+    const textarea = screen.getByPlaceholderText(/Nhập lý do cụ thể/i) as HTMLTextAreaElement;
+    expect(textarea).toBeInTheDocument();
+
+    // Reset fetchMock calls count để kiểm tra không bị gọi nhầm
+    fetchMock.mockClear();
+
+    // Bấm "Xác Nhận Quyết Định" khi chưa nhập lý do (< 10 ký tự)
+    const submitBtn = screen.getByRole("button", { name: /Xác Nhận Quyết Định/i });
+    fireEvent.click(submitBtn);
+
+    // Phải hiển thị toast thông báo lỗi rõ ràng theo BR-ADM-004
+    await waitFor(() => {
+      expect(screen.getByText("Vui lòng nhập lý do quyết định có ít nhất 10 ký tự theo Quy tắc BR-ADM-004.")).toBeInTheDocument();
+      expect(screen.getByText("Lý do xử lý bắt buộc phải có ít nhất 10 ký tự hợp lệ theo Quy tắc BR-ADM-004.")).toBeInTheDocument();
+    });
+
+    // Cuộn tới và focus vào ô textarea
+    expect(window.HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
+    expect(document.activeElement).toBe(textarea);
+
+    // fetch không được gửi đi khi validate thất bại
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    // Nhập nội dung < 10 ký tự
+    fireEvent.change(textarea, { target: { value: "Từ chối" } });
+    fireEvent.click(submitBtn);
+
+    // Vẫn bị chặn và báo toast
+    await waitFor(() => {
+      expect(screen.getByText("Vui lòng nhập lý do quyết định có ít nhất 10 ký tự theo Quy tắc BR-ADM-004.")).toBeInTheDocument();
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    // Nhập hợp lệ >= 10 ký tự
+    fireEvent.change(textarea, { target: { value: "Hồ sơ không đáp ứng đủ điều kiện theo quy định của Sở." } });
+    fireEvent.click(submitBtn);
+
+    // Lần này fetch phải được gọi với action REJECT và lý do đầy đủ
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/governance/approvals/appr-exp-001/review"),
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({
+            action: "REJECT",
+            expectedVersion: 1,
+            reviewNote: "Hồ sơ không đáp ứng đủ điều kiện theo quy định của Sở.",
+          }),
+        })
+      );
+    });
+  });
+
+  it("handles 'Yêu Cầu Bổ Sung' with validation and successful submission", async () => {
+    const fetchMock = global.fetch as any;
+    render(<GovApprovalQueue />);
+
+    await waitFor(() => {
+      expect(screen.getByText("TS. Nguyễn Minh Triết")).toBeInTheDocument();
+    });
+
+    const reviewBtn = screen.getByTestId("btn-review-appr-exp-001");
+    fireEvent.click(reviewBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Thẩm Định Hồ Sơ Chuyên Gia: TS. Nguyễn Minh Triết")).toBeInTheDocument();
+    });
+
+    // Chọn "Yêu Cầu Bổ Sung"
+    const reqChangesBtn = screen.getByRole("button", { name: /Yêu Cầu Bổ Sung/i });
+    fireEvent.click(reqChangesBtn);
+
+    const textarea = screen.getByPlaceholderText(/Nhập lý do cụ thể/i);
+    expect(textarea).toBeInTheDocument();
+
+    fetchMock.mockClear();
+    const submitBtn = screen.getByRole("button", { name: /Xác Nhận Quyết Định/i });
+    fireEvent.click(submitBtn);
+
+    // Bị chặn vì thiếu lý do
+    await waitFor(() => {
+      expect(screen.getByText("Vui lòng nhập lý do quyết định có ít nhất 10 ký tự theo Quy tắc BR-ADM-004.")).toBeInTheDocument();
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    // Nhập đủ >= 10 ký tự
+    fireEvent.change(textarea, { target: { value: "Đề nghị bổ sung thêm bản sao bằng cấp tiến sĩ có công chứng." } });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/governance/approvals/appr-exp-001/review"),
+        expect.objectContaining({
+          method: "PUT",
+          body: JSON.stringify({
+            action: "REQUEST_CHANGES",
+            expectedVersion: 1,
+            reviewNote: "Đề nghị bổ sung thêm bản sao bằng cấp tiến sĩ có công chứng.",
+          }),
+        })
+      );
     });
   });
 });

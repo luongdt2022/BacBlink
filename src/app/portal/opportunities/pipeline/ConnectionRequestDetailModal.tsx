@@ -19,6 +19,7 @@ import {
   Award,
   ArrowRight,
   Handshake,
+  User,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -26,6 +27,7 @@ import { ConnectionRequestDetail } from '@/types/brokerage';
 import { brokerageApi } from '@/services/api/brokerage';
 import { useToast } from '@/components/common/toast';
 import { formatCurrencyMillionVnd } from '@/lib/currency';
+import BuyerProfileCard from '@/components/brokerage/BuyerProfileCard';
 
 interface ConnectionRequestDetailModalProps {
   isOpen: boolean;
@@ -244,63 +246,11 @@ export default function ConnectionRequestDetailModal({
                 )}
               </div>
 
-              {/* KHỐI 2: HỒ SƠ PHÁP NHÂN BÊN MUA */}
-              <div className="bg-white dark:bg-slate-800/70 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">
-                <span className="text-caption font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4 text-brand-600" /> Hồ Sơ Pháp Nhân Bên Mua (Bên Có Nhu Cầu)
-                </span>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  <div className="space-y-1">
-                    <span className="text-slate-400 font-medium">Tên doanh nghiệp:</span>
-                    <div className="font-extrabold text-slate-900 dark:text-white text-sm">
-                      {detail.buyerProfile.companyName}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-slate-400 font-medium">Mã số thuế:</span>
-                    <div className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                      {detail.buyerProfile.taxCode || 'Đang cập nhật'}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-slate-400 font-medium">Lĩnh vực hoạt động:</span>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">
-                      {detail.buyerProfile.industry || 'Đa ngành nghề'}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-slate-400 font-medium">Quy mô nhân sự:</span>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">
-                      {detail.buyerProfile.scaleCategory || 'Doanh nghiệp vừa và nhỏ (SME)'}
-                    </div>
-                  </div>
-
-                  <div className="md:col-span-2 space-y-1">
-                    <span className="text-slate-400 font-medium">Địa chỉ trụ sở / Nhà máy:</span>
-                    <div className="font-medium text-slate-700 dark:text-slate-300 flex items-start gap-1.5">
-                      <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                      <span>{detail.buyerProfile.address || detail.buyerProfile.provinceName || 'Toàn quốc'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {detail.buyerProfile.enterpriseId && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60">
-                    <Link
-                      href={`/doanh-nghiep/${detail.buyerProfile.enterpriseId}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline"
-                    >
-                      <span>Xem hồ sơ năng lực doanh nghiệp đầy đủ trên Cổng</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                )}
-              </div>
+              {/* KHỐI 2: HỒ SƠ PHÁP NHÂN / CÁ NHÂN / CHUYÊN GIA BÊN MUA (POLYMORPHIC PROFILE CARD) */}
+              <BuyerProfileCard
+                profile={detail.buyerProfile}
+                buyerType={detail.buyerType || detail.buyerProfile.buyerType}
+              />
 
               {/* KHỐI 3: ĐỀ XUẤT HỢP TÁC & THÔNG TIN LIÊN HỆ PDPD */}
               <div className="bg-white dark:bg-slate-800/70 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">
@@ -362,7 +312,12 @@ export default function ConnectionRequestDetailModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-amber-200/60 dark:border-amber-800/40">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-amber-200/60 dark:border-amber-800/40">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="font-bold truncate">Họ tên: {detail.contactInfo.contactPersonName}</span>
+                    </div>
+
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-slate-400 shrink-0" />
                       <span className="font-bold">SĐT: {detail.contactInfo.phoneNumber}</span>
@@ -370,7 +325,7 @@ export default function ConnectionRequestDetailModal({
 
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span className="font-bold">Email: {detail.contactInfo.email}</span>
+                      <span className="font-bold truncate">Email: {detail.contactInfo.email}</span>
                     </div>
                   </div>
                 </div>

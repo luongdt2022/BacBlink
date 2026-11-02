@@ -276,49 +276,6 @@ export function CommercialProfile({
               </button>
             </div>
           </div>
-
-          {/* 3 Core Commercial Highlights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-4 border-t border-slate-100 text-xs">
-            <div className="flex items-start gap-3 bg-gradient-to-br from-emerald-50/70 to-slate-50 p-3.5 rounded-2xl border border-emerald-100">
-              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <BadgeCheck className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="font-extrabold text-slate-900">Chứng Chỉ Tiêu Chuẩn Quốc Tế</p>
-                <p className="text-slate-600 text-xs mt-0.5 font-medium leading-relaxed">
-                  Đạt chứng nhận <strong>ISO 22000:2018, HACCP Codex, FDA Hoa Kỳ</strong> và tiêu chuẩn <strong>OCOP 4 Sao</strong>.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 bg-gradient-to-br from-teal-50/70 to-slate-50 p-3.5 rounded-2xl border border-teal-100">
-              <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Factory className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="font-extrabold text-slate-900">Năng Lực Cung Ứng & Cơ Sở</p>
-                <p className="text-slate-600 text-xs mt-0.5 font-medium leading-relaxed">
-                  <strong>500 tấn thành phẩm/tháng</strong> • {data.operatingZone || "Nhà máy 12.000m² đạt chuẩn vệ sinh an toàn thực phẩm với hệ thống dây chuyền khép kín."}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 bg-gradient-to-br from-slate-100 to-slate-50 p-3.5 rounded-2xl border border-slate-200">
-              <div className="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Globe2 className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="font-extrabold text-slate-900">Thị Trường Tiêu Thụ Trọng Điểm</p>
-                <p className="text-slate-600 text-xs mt-0.5 font-medium leading-relaxed">
-                  {data.isExporting ? (
-                    <>Xuất khẩu <strong>Nhật Bản, Hàn Quốc, EU (45%)</strong> & Phân phối <strong>300+ siêu thị toàn quốc (55%)</strong>.</>
-                  ) : (
-                    <>Cung ứng <strong>Hệ thống phân phối toàn quốc (85%)</strong> & Mở rộng xuất khẩu khu vực Đông Nam Á.</>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -621,6 +578,49 @@ export function CommercialProfile({
           {/* TAB 3: COMPANY & CAPABILITIES */}
           {activeTab === "overview" && (
             <div className="space-y-6">
+              {/* 3 Core Commercial Highlights */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+                <div className="flex items-start gap-3 bg-gradient-to-br from-emerald-50/70 to-slate-50 p-3.5 rounded-2xl border border-emerald-100 shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <BadgeCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900">Chứng Chỉ Tiêu Chuẩn Quốc Tế</p>
+                    <p className="text-slate-600 text-xs mt-0.5 font-medium leading-relaxed">
+                      Đạt chứng nhận <strong>ISO 22000:2018, HACCP Codex, FDA Hoa Kỳ</strong> và tiêu chuẩn <strong>OCOP 4 Sao</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-gradient-to-br from-teal-50/70 to-slate-50 p-3.5 rounded-2xl border border-teal-100 shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Factory className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900">Năng Lực Cung Ứng & Cơ Sở</p>
+                    <p className="text-slate-600 text-xs mt-0.5 font-medium leading-relaxed">
+                      <strong>500 tấn thành phẩm/tháng</strong> • {data.operatingZone || "Nhà máy 12.000m² đạt chuẩn vệ sinh an toàn thực phẩm với hệ thống dây chuyền khép kín."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 bg-gradient-to-br from-slate-100 to-slate-50 p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Globe2 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900">Thị Trường Tiêu Thụ Trọng Điểm</p>
+                    <p className="text-slate-600 text-xs mt-0.5 font-medium leading-relaxed">
+                      {data.isExporting ? (
+                        <>Xuất khẩu <strong>Nhật Bản, Hàn Quốc, EU (45%)</strong> & Phân phối <strong>300+ siêu thị toàn quốc (55%)</strong>.</>
+                      ) : (
+                        <>Cung ứng <strong>Hệ thống phân phối toàn quốc (85%)</strong> & Mở rộng xuất khẩu khu vực Đông Nam Á.</>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Company Story & About */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-3">
                 <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">

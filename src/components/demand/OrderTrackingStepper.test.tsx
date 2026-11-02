@@ -35,6 +35,22 @@ describe('OrderTrackingStepper (CR-TASK-03-DELTA-02 / Task 6.3)', () => {
     expect(screen.getByText(/2\.\s*Xử lý & Báo giá/i)).toBeInTheDocument();
     expect(screen.getByText(/3\.\s*Thỏa thuận giao dịch/i)).toBeInTheDocument();
     expect(screen.getByText(/4\.\s*Hoàn tất/i)).toBeInTheDocument();
+    expect(ORDER_STEPS[1].description).toBe('Bên bán đã tiếp nhận & đang kiểm tra năng lực / lập báo giá');
+  });
+
+  it('renders correctly for PROCESSING status (step 2 active, step 1 completed with checkmark)', () => {
+    const { container } = render(<OrderTrackingStepper status="PROCESSING" compact={false} />);
+
+    expect(screen.getByText(/2\.\s*Xử lý & Báo giá/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bên bán đã tiếp nhận & đang kiểm tra năng lực \/ lập báo giá/i)).toBeInTheDocument();
+
+    // Bước 1 có icon hoàn tất CheckCircle2 trong nền xanh ngọc emerald
+    const completedBadge = container.querySelector('.bg-emerald-600');
+    expect(completedBadge).not.toBeNull();
+
+    // Bước 2 có hiệu ứng active pulse ring
+    const activePulse = container.querySelector('.animate-pulse');
+    expect(activePulse).not.toBeNull();
   });
 
   it('renders correctly for NEGOTIATING status (step 3 active, step 1 & 2 completed)', () => {

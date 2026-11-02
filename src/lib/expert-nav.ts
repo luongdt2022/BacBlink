@@ -18,7 +18,12 @@ export function resolveExpertActiveMenu(pathname: string): ExpertMenuKey {
 
   const cleanPath = pathname.split("?")[0].replace(/\/+$/, "") || "/";
 
-  if (cleanPath === "/portal/expert/account" || cleanPath.startsWith("/portal/expert/account/")) {
+  if (
+    cleanPath === "/portal/expert/account" ||
+    cleanPath.startsWith("/portal/expert/account/") ||
+    cleanPath === "/settings" ||
+    cleanPath.startsWith("/settings/")
+  ) {
     return "account";
   }
 

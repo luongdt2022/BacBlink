@@ -6,6 +6,8 @@ describe("resolveExpertActiveMenu (T131 & T135)", () => {
     expect(resolveExpertActiveMenu("/portal/expert/account")).toBe("account");
     expect(resolveExpertActiveMenu("/portal/expert/account/settings")).toBe("account");
     expect(resolveExpertActiveMenu("/portal/expert/account?tab=security")).toBe("account");
+    expect(resolveExpertActiveMenu("/settings")).toBe("account");
+    expect(resolveExpertActiveMenu("/settings/profile")).toBe("account");
   });
 
   it("resolves profile overview and fallback routes properly", () => {

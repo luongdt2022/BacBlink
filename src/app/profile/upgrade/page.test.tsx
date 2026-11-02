@@ -155,4 +155,43 @@ describe("ProfileUpgradeHubPage (AC-DELTA-12..16)", () => {
     const cardEditLink = screen.getByRole("link", { name: /Xem & Chỉnh sửa đơn đã nộp/i });
     expect(cardEditLink).toHaveAttribute("href", "/profile/upgrade/expert?edit=true");
   });
+
+  it("displays REJECTED status badge, reviewer note and re-apply links when expert application was rejected", async () => {
+    const mockRejectedProfile = {
+      id: "exp-999",
+      expertCode: "EXP-REJECTED-001",
+      fullName: "PGS.TS. Trần Đình Long",
+      academicDegree: "PGS",
+      primaryInstitution: "Viện Hàn Lâm KH&CN",
+      status: "REJECTED",
+      reviewerNote: "Hồ sơ thiếu minh chứng công bố khoa học trong 3 năm gần nhất theo Quyết định 15/QĐ-BKHCN.",
+      scopeId: "GLOBAL",
+    };
+
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/experts/my-profile")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ success: true, data: mockRejectedProfile }),
+        };
+      }
+      return { ok: true, status: 200, json: async () => ({ success: true }) };
+    }));
+
+    render(<ProfileUpgradeHubPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("submitted-application-banner")).toBeInTheDocument();
+      expect(screen.getByText("PGS.TS. Trần Đình Long")).toBeInTheDocument();
+      // Phải hiển thị badge REJECTED
+      expect(screen.getByText(/Hồ Sơ Đã Bị Từ Chối \(REJECTED\)/i)).toBeInTheDocument();
+      // Không được hiển thị "Đang chờ Hội đồng thẩm định"
+      expect(screen.queryByText(/Đang Chờ Hội Đồng Thẩm Định/i)).not.toBeInTheDocument();
+      // Phải hiển thị lý do từ chối từ reviewerNote
+      expect(screen.getByText(/Hồ sơ thiếu minh chứng công bố khoa học/i)).toBeInTheDocument();
+      // Nút chỉnh sửa chuyển thành "Chỉnh sửa & Nộp lại"
+      expect(screen.getByRole("link", { name: /^Chỉnh sửa & Nộp lại$/i })).toHaveAttribute("href", "/profile/upgrade/expert?edit=true");
+    });
+  });
 });

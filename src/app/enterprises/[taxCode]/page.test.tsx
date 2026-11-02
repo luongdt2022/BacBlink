@@ -179,12 +179,9 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
       expect(screen.getByRole("heading", { name: mockCommercialEnterprise.name, level: 1 })).toBeInTheDocument();
     });
 
-    // Verify Commercial Badges & Highlights
+    // Verify Commercial Badges
     expect(screen.getByText("MST Đã Xác Thực")).toBeInTheDocument();
     expect(screen.getByText("Thành Viên Vàng B2B")).toBeInTheDocument();
-    expect(screen.getByText("Chứng Chỉ Tiêu Chuẩn Quốc Tế")).toBeInTheDocument();
-    expect(screen.getByText("Năng Lực Cung Ứng & Cơ Sở")).toBeInTheDocument();
-    expect(screen.getByText("Thị Trường Tiêu Thụ Trọng Điểm")).toBeInTheDocument();
 
     // Verify Commercial 3 Tabs
     expect(screen.getByText("1. Sản Phẩm & Dịch Vụ Cung Cấp")).toBeInTheDocument();
@@ -240,6 +237,11 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
     // Switch to Tab 3: Giới Thiệu & Năng Lực
     const overviewTabBtn = screen.getByText("3. Giới Thiệu & Năng Lực Doanh Nghiệp");
     fireEvent.click(overviewTabBtn);
+
+    // Verify 3 Core Commercial Highlights are displayed in Tab 3
+    expect(screen.getByText("Chứng Chỉ Tiêu Chuẩn Quốc Tế")).toBeInTheDocument();
+    expect(screen.getByText("Năng Lực Cung Ứng & Cơ Sở")).toBeInTheDocument();
+    expect(screen.getByText("Thị Trường Tiêu Thụ Trọng Điểm")).toBeInTheDocument();
 
     expect(screen.getByText("Giới Thiệu Chung Về Doanh Nghiệp")).toBeInTheDocument();
     expect(screen.getByText("12.000 m²")).toBeInTheDocument();

@@ -476,4 +476,126 @@ describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
       expect(screen.getByText('E')).toBeInTheDocument();
     });
   });
+
+  it('renders clickable product title, icon, and modal links to view product detail (Tab 1 & Modal)', async () => {
+    const commercialItem = [
+      {
+        id: 'ord-comm-scan-01',
+        itemCode: 'DMD-20261102-1D30F8',
+        stageName: 'Sản xuất & Chuyển giao',
+        technicalProblem: '[DN: Dang Luong Luong] Nhu cầu ứng dụng / chuyển giao: Máy quét 3D nha khoa',
+        desiredSolution: '[Đề xuất thương mại: PURCHASE_COMMERCIAL] Khách hàng mua sản phẩm OFF-20261021-00023 - Máy quét 3D',
+        budgetRange: '20M_100M',
+        status: 'SUBMITTED',
+        isCommercialOrder: true,
+      },
+    ];
+
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands')) {
+        return { ok: true, json: async () => commercialItem } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    // 1. Tên sản phẩm được làm sạch và là một liên kết dẫn tới chi tiết sản phẩm chào bán
+    await waitFor(() => {
+      const productLink = screen.getByRole('link', { name: /Máy quét 3D nha khoa/i });
+      expect(productLink).toBeInTheDocument();
+      expect(productLink).toHaveAttribute('href', '/chao-ban-cong-nghe/OFF-20261021-00023');
+    });
+
+    // 2. Nút thao tác trực tiếp "Sản phẩm" ở cột Thao tác cũng liên kết đến sản phẩm
+    const actionProductLink = screen.getByRole('link', { name: /^Sản phẩm$/i });
+    expect(actionProductLink).toHaveAttribute('href', '/chao-ban-cong-nghe/OFF-20261021-00023');
+
+    // 3. Phân biệt rõ đơn mua hàng, không hiển thị nhầm liên kết hồ sơ bài toán R&D
+    expect(screen.getByText('Đơn mua hàng')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Xem hồ sơ nhu cầu/i })).not.toBeInTheDocument();
+
+    // 4. Bấm vào nút "Chi tiết" mở Modal chi tiết đơn hàng
+    const detailBtn = screen.getByRole('button', { name: /Chi tiết/i });
+    fireEvent.click(detailBtn);
+
+    // 5. Trong Modal, nút CTA mở chi tiết sản phẩm xuất hiện, không chứa nút Phiếu Nhu Cầu
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /Xem Chi Tiết Sản Phẩm/i })).toHaveAttribute(
+        'href',
+        '/chao-ban-cong-nghe/OFF-20261021-00023'
+      );
+      expect(screen.queryByRole('link', { name: /Xem Phiếu Nhu Cầu/i })).not.toBeInTheDocument();
+    });
+  });
+
+  it('renders clickable technical problem title and itemCode in Tab 2 to open demand details', async () => {
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands')) {
+        return { ok: true, json: async () => mockDemands } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    // Mặc định do chỉ có mockDemands (R&D) nên tự động chọn Tab 2
+    await waitFor(() => {
+      const problemLink = screen.getByRole('link', { name: /Khắc phục hiện tượng rỗ khí/i });
+      expect(problemLink).toBeInTheDocument();
+      expect(problemLink).toHaveAttribute('href', '/nhu-cau-cong-nghe/dmd-01');
+
+      const codeLink = screen.getByRole('link', { name: /DMD-202610-001/i });
+      expect(codeLink).toBeInTheDocument();
+      expect(codeLink).toHaveAttribute('href', '/nhu-cau-cong-nghe/dmd-01');
+    });
+  });
+
+  it('renders Deal Room CTA and disables Cancel Order button when order is PROCESSING (T050 / CR-TASK-08-DELTA-02)', async () => {
+    const acceptedOrder = [
+      {
+        id: 'ord-comm-accepted-01',
+        itemCode: 'DMD-20261102-ACCEPTED',
+        stageName: 'Sản xuất & Chuyển giao',
+        technicalProblem: '[DN: Công ty ABC] Nhu cầu ứng dụng / chuyển giao: Dây chuyền chiết rót tự động',
+        desiredSolution: '[Đơn hàng thương mại] Khách hàng đặt mua sản phẩm OFF-20261021-00088',
+        budgetRange: '500M_1B',
+        status: 'PROCESSING',
+        isCommercialOrder: true,
+      },
+    ];
+
+    vi.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/api/v1/buyer/demands')) {
+        return { ok: true, json: async () => acceptedOrder } as Response;
+      }
+      return { ok: true, json: async () => [] } as Response;
+    });
+
+    render(<BuyerDemandsPage />);
+
+    // Đơn hàng xuất hiện trong Tab 1
+    await waitFor(() => {
+      expect(screen.getByText('Dây chuyền chiết rót tự động')).toBeInTheDocument();
+    });
+
+    // Mở modal chi tiết đơn hàng
+    const detailBtn = screen.getByRole('button', { name: /Chi tiết/i });
+    fireEvent.click(detailBtn);
+
+    // Kiểm tra trong Modal
+    await waitFor(() => {
+      // 1. Nút CTA "Vào Deal Room Thảo Luận ->" xuất hiện và trỏ tới pipeline Deal Room
+      const dealRoomBtn = screen.getByRole('link', { name: /Vào Deal Room Thảo Luận/i });
+      expect(dealRoomBtn).toBeInTheDocument();
+      expect(dealRoomBtn).toHaveAttribute('href', '/portal/opportunities/pipeline');
+
+      // 2. Nút "Hủy đơn" tuyệt đối bị khóa/ẩn, hiển thị thông báo ghi chú
+      expect(screen.queryByRole('button', { name: /Hủy đơn/i })).not.toBeInTheDocument();
+      expect(screen.getByText('Đơn hàng đã được bên bán tiếp nhận và đang xử lý.')).toBeInTheDocument();
+    });
+  });
 });

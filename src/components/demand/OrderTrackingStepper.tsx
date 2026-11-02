@@ -43,7 +43,7 @@ export const ORDER_STEPS: OrderTrackingStep[] = [
     key: 'PROCESSING',
     stepNumber: 2,
     label: 'Xử lý & Báo giá',
-    description: 'Kiểm tra năng lực / Lập báo giá',
+    description: 'Bên bán đã tiếp nhận & đang kiểm tra năng lực / lập báo giá',
     icon: FileText,
   },
   {

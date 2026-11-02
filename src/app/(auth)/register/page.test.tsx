@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RegisterPage from "./page";
+import { authClient } from "@/lib/auth-client";
 
 const push = vi.fn();
 const replace = vi.fn();
@@ -16,8 +17,29 @@ describe("RegisterPage", () => {
     localStorage.clear();
   });
 
-  it("submits no role/scope, resets the form, and confirms immediate PUBLIC_USER sign-in", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ code: "REGISTER_SUCCESS" }) });
+  it("submits no role/scope, automatically logs in, sets session, and routes to /", async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("/api/v1/auth/register")) {
+        return { ok: true, json: async () => ({ code: "REGISTER_SUCCESS" }) };
+      }
+      if (url.includes("/api/v1/auth/login")) {
+        return {
+          ok: true,
+          json: async () => ({
+            accessToken: "auto-login-jwt-token",
+            user: {
+              id: "user-123",
+              email: "public@test.local",
+              fullName: "Nguyễn An",
+              role: "PUBLIC_USER",
+              scopeType: "GLOBAL",
+              scopeId: null,
+            },
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    });
     vi.stubGlobal("fetch", fetchMock);
     render(<RegisterPage />);
 
@@ -30,15 +52,46 @@ describe("RegisterPage", () => {
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body).not.toHaveProperty("platformRole");
-    expect(body).not.toHaveProperty("scopeType");
-    expect(body).not.toHaveProperty("organization");
-    expect(await screen.findByText(/Đăng ký thành công! Tài khoản công chúng/)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Nguyễn Văn")).toHaveValue("");
-    expect(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn")).toHaveValue("");
-    expect(screen.getByRole("button", { name: "Đăng ký thành viên" })).toBeInTheDocument();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    const registerBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(registerBody).not.toHaveProperty("platformRole");
+    expect(registerBody).not.toHaveProperty("scopeType");
+    expect(registerBody).not.toHaveProperty("organization");
+
+    const loginBody = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(loginBody.email).toBe("public@test.local");
+    expect(loginBody.password).toBe("Password-2026!");
+
+    expect(authClient.getToken()).toBe("auto-login-jwt-token");
+    expect(authClient.getUser()?.role).toBe("PUBLIC_USER");
+    expect(push).toHaveBeenCalledWith("/");
+  });
+
+  it("shows fallback message when register succeeds but auto-login encounters network error", async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("/api/v1/auth/register")) {
+        return { ok: true, json: async () => ({ code: "REGISTER_SUCCESS" }) };
+      }
+      if (url.includes("/api/v1/auth/login")) {
+        throw new TypeError("Login network failed");
+      }
+      return { ok: false };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<RegisterPage />);
+
+    fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Nguyễn" } });
+    fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "An" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "public@test.local" } });
+    const passwords = screen.getAllByPlaceholderText("••••••••");
+    fireEvent.change(passwords[0], { target: { value: "Password-2026!" } });
+    fireEvent.change(passwords[1], { target: { value: "Password-2026!" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
+
+    expect(await screen.findByText(/Tài khoản của bạn đã được khởi tạo thành công!/)).toBeInTheDocument();
+    expect(screen.getByText("Đi đến trang Đăng nhập")).toBeInTheDocument();
+    expect(authClient.getToken()).toBeNull();
   });
 
   it("shows Vietnamese validation in the form instead of the browser validation bubble", async () => {

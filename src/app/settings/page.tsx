@@ -46,7 +46,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 lg:py-12 dark:bg-slate-950">
+    <main className="w-full">
       <div className="mx-auto max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-700 dark:text-teal-300">Tài khoản NacenTech</p>
         <h1 className="mt-2 type-page-title text-slate-950 dark:text-white">Cài đặt tài khoản</h1>
@@ -141,6 +141,7 @@ export default function SettingsPage() {
         </section>
 
         <section className="mt-5 rounded-surface border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-card-title font-bold text-slate-950 dark:text-white">Phiên làm việc</h2>
           <p className="mt-2 text-body text-slate-600 dark:text-slate-300">Đăng xuất khỏi thiết bị này khi bạn đã hoàn tất công việc hoặc đang dùng thiết bị chung.</p>
           <AppButton variant="outline" type="button" onClick={() => setLogoutModalOpen(true)} className="mt-4">
             <LogOut className="size-4" aria-hidden="true" />

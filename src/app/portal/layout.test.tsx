@@ -359,20 +359,22 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     const pipelineLink = screen.getByRole("link", { name: /Tiến trình Chuyển giao & MOU/i });
     const inboundLink = screen.getByRole("link", { name: /Yêu cầu Kết nối Nhận được/i });
 
+    expect(pipelineLink).toHaveAttribute("href", "/portal/opportunities/pipeline");
+    expect(inboundLink).toHaveAttribute("href", "/portal/seller/connection-requests");
     expect(pipelineLink.className).toContain("bg-brand-700");
     expect(pipelineLink.className).toContain("text-white");
     expect(inboundLink.className).not.toContain("bg-brand-700");
   });
 
-  it("activates only 'Yêu cầu Kết nối Nhận được' when on /portal/opportunities/pipeline?tab=inbound", () => {
+  it("activates only 'Yêu cầu Kết nối Nhận được' when on dedicated route /portal/seller/connection-requests", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u2",
       email: "seller@example.com",
       fullName: "Trần Văn Seller",
       role: "SELLER",
     });
-    mockPathname = "/portal/opportunities/pipeline";
-    mockSearchParams = new URLSearchParams("tab=inbound");
+    mockPathname = "/portal/seller/connection-requests";
+    mockSearchParams = new URLSearchParams("");
 
     render(
       <PortalLayout>
@@ -383,6 +385,8 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     const pipelineLink = screen.getByRole("link", { name: /Tiến trình Chuyển giao & MOU/i });
     const inboundLink = screen.getByRole("link", { name: /Yêu cầu Kết nối Nhận được/i });
 
+    expect(inboundLink).toHaveAttribute("href", "/portal/seller/connection-requests");
+    expect(pipelineLink).toHaveAttribute("href", "/portal/opportunities/pipeline");
     expect(inboundLink.className).toContain("bg-brand-700");
     expect(inboundLink.className).toContain("text-white");
     expect(pipelineLink.className).not.toContain("bg-brand-700");

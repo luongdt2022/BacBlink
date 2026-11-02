@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo, Suspense } from "react";
+import React, { useEffect, useState, useMemo, useRef, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { AppButton } from "@/components/ui/design-system";
 import { authClient, UserContext } from "@/lib/auth-client";
@@ -315,6 +315,16 @@ function GovDashboardContent() {
   const [reviewError, setReviewError] = useState("");
   const [processing, setProcessing] = useState(false);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
+  const reviewNoteRef = useRef<HTMLTextAreaElement>(null);
+
+  const focusAndScrollToReviewNote = () => {
+    setTimeout(() => {
+      if (reviewNoteRef.current) {
+        reviewNoteRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        reviewNoteRef.current.focus();
+      }
+    }, 50);
+  };
 
   // Bổ sung State Sắp xếp & Lọc tương tác trên tiêu đề bảng
   const [sortColumn, setSortColumn] = useState<"id" | "submitter" | "title" | "sector" | "date" | "status" | null>("date");
@@ -587,6 +597,11 @@ function GovDashboardContent() {
       const trimmedNote = reviewNote.trim();
       if (!trimmedNote || trimmedNote.length < 10) {
         setReviewError("Lý do xử lý bắt buộc phải có ít nhất 10 ký tự hợp lệ theo Quy tắc BR-ADM-004.");
+        showToast("Vui lòng nhập lý do quyết định có ít nhất 10 ký tự theo Quy tắc BR-ADM-004.", "error");
+        if (reviewNoteRef.current) {
+          reviewNoteRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          reviewNoteRef.current.focus();
+        }
         return;
       }
     }
@@ -1328,7 +1343,7 @@ function GovDashboardContent() {
                               data-testid={`btn-review-${item.id}`}
                             >
                               <ShieldCheck className="w-3.5 h-3.5" />
-                              <span>Phê Duyệt</span>
+                              <span>Thẩm Định</span>
                             </AppButton>
                           </div>
                         </td>
@@ -1779,6 +1794,7 @@ function GovDashboardContent() {
                       onClick={() => {
                         setReviewAction("REQUEST_CHANGES");
                         setReviewError("");
+                        focusAndScrollToReviewNote();
                       }}
                       className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
                         reviewAction === "REQUEST_CHANGES"
@@ -1795,6 +1811,7 @@ function GovDashboardContent() {
                       onClick={() => {
                         setReviewAction("REJECT");
                         setReviewError("");
+                        focusAndScrollToReviewNote();
                       }}
                       className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
                         reviewAction === "REJECT"
@@ -1816,6 +1833,8 @@ function GovDashboardContent() {
                         )}
                       </label>
                       <textarea
+                        ref={reviewNoteRef}
+                        data-testid="review-note-textarea"
                         rows={3}
                         value={reviewNote}
                         onChange={(e) => {

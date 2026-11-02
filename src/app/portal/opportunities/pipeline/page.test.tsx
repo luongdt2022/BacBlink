@@ -6,19 +6,18 @@ import { brokerageApi } from '@/services/api/brokerage';
 
 let mockSearchParams = new URLSearchParams('');
 const mockPush = vi.fn();
+const mockReplace = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useSearchParams: () => mockSearchParams,
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
 }));
 
 vi.mock('@/services/api/brokerage', () => ({
   brokerageApi: {
     getOpportunities: vi.fn(),
     getConnectionRequests: vi.fn(),
-    getConnectionRequestDetail: vi.fn(),
     updateOpportunityStage: vi.fn(),
-    respondConnectionRequest: vi.fn(),
   },
 }));
 
@@ -55,43 +54,11 @@ const mockOpportunities = [
   },
 ];
 
-const mockConnectionRequests = [
-  {
-    id: 'req-01',
-    requestCode: 'REQ-202610-A1B2C3',
-    senderOrgName: 'Công ty Chế Tạo Máy Việt Thắng',
-    senderRole: 'BUYER',
-    receiverOrgName: 'Nhà máy Sản xuất Phụ tùng Ô tô',
-    offerCode: 'SP-DEMO-MUA-01',
-    offerTitle: 'Máy kiểm tra khuyết tật mối hàn vi mạch SMT',
-    offerTrlLevel: 8,
-    message: 'Chúng tôi có giải pháp khuôn đúc và robot gắp phôi tự động phù hợp với bài toán của Quý đơn vị.',
-    proposedBudgetRange: '1.5 - 2.5 tỷ đồng',
-    status: 'PENDING',
-    createdAt: '2026-10-21T08:00:00Z',
-  },
-  {
-    id: 'req-02',
-    requestCode: 'REQ-202610-D4E5F6',
-    senderOrgName: 'CÔNG TY TNHH TRƯỜNG HOAN',
-    senderRole: 'BUYER',
-    receiverOrgName: 'Nhà máy Sản xuất Phụ tùng Ô tô',
-    offerCode: 'OFF-02',
-    offerTitle: 'Bộ điều khiển IoT Gateway',
-    offerTrlLevel: 7,
-    message: 'Đề xuất tích hợp IoT Gateway vào nhà máy chế biến.',
-    proposedBudgetRange: '800 Triệu VNĐ',
-    status: 'ACCEPTED',
-    createdAt: '2026-10-22T08:00:00Z',
-  },
-];
-
 describe('OpportunitiesPipelinePage Component (/portal/opportunities/pipeline)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSearchParams = new URLSearchParams('');
     vi.mocked(brokerageApi.getOpportunities).mockResolvedValue(mockOpportunities as any);
-    vi.mocked(brokerageApi.getConnectionRequests).mockResolvedValue(mockConnectionRequests as any);
   });
 
   afterEach(() => {
@@ -102,7 +69,7 @@ describe('OpportunitiesPipelinePage Component (/portal/opportunities/pipeline)',
     render(<OpportunitiesPipelinePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Pipeline Vòng Đời Cơ Hội Hợp Tác')).toBeInTheDocument();
+      expect(screen.getByText('Tiến Trình Chuyển Giao & Ký Kết MOU')).toBeInTheDocument();
     });
 
     // Kiểm tra 3 thẻ KPI
@@ -125,53 +92,13 @@ describe('OpportunitiesPipelinePage Component (/portal/opportunities/pipeline)',
     expect(screen.getByText('DEAL-2026-5543')).toBeInTheDocument();
   });
 
-  it('switches to Inbound Requests tab and shows 4 sub-tabs filter with incoming connection requests', async () => {
+  it('automatically redirects to /portal/seller/connection-requests when tab=inbound param is present', async () => {
     mockSearchParams = new URLSearchParams('tab=inbound');
     render(<OpportunitiesPipelinePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('REQ-202610-A1B2C3')).toBeInTheDocument();
+      expect(mockReplace).toHaveBeenCalledWith('/portal/seller/connection-requests');
     });
-
-    // Kiểm tra 4 Sub-tabs bộ lọc trạng thái
-    expect(screen.getByRole('button', { name: /Tất cả/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Chờ phản hồi/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Đã chấp thuận/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Đã từ chối/i })).toBeInTheDocument();
-
-    // Kiểm tra thông tin công nghệ mục tiêu enriched
-    expect(screen.getByText(/Máy kiểm tra khuyết tật mối hàn vi mạch SMT/i)).toBeInTheDocument();
-    expect(screen.getByText('Công ty Chế Tạo Máy Việt Thắng')).toBeInTheDocument();
-    expect(screen.getByText(/1.5 - 2.5 tỷ đồng/i)).toBeInTheDocument();
-
-    // Kiểm tra nút Xem chi tiết hồ sơ
-    const detailButtons = screen.getAllByRole('button', { name: /Xem chi tiết hồ sơ/i });
-    expect(detailButtons.length).toBe(2);
-
-    // Kiểm tra nút phản hồi cho yêu cầu PENDING
-    expect(screen.getByRole('button', { name: /Chấp Thuận & Mở Deal Room/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^Từ chối$/i })).toBeInTheDocument();
-  });
-
-  it('filters connection requests when clicking on sub-tabs', async () => {
-    mockSearchParams = new URLSearchParams('tab=inbound');
-    render(<OpportunitiesPipelinePage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('REQ-202610-A1B2C3')).toBeInTheDocument();
-    });
-
-    // Nhấp chọn tab 'Chờ phản hồi'
-    fireEvent.click(screen.getByRole('button', { name: /Chờ phản hồi/i }));
-
-    // Chỉ còn REQ-202610-A1B2C3 (PENDING), không còn REQ-202610-D4E5F6 (ACCEPTED)
-    expect(screen.getByText('REQ-202610-A1B2C3')).toBeInTheDocument();
-    expect(screen.queryByText('REQ-202610-D4E5F6')).toBeNull();
-
-    // Nhấp chọn tab 'Đã chấp thuận'
-    fireEvent.click(screen.getByRole('button', { name: /Đã chấp thuận/i }));
-    expect(screen.queryByText('REQ-202610-A1B2C3')).toBeNull();
-    expect(screen.getByText('REQ-202610-D4E5F6')).toBeInTheDocument();
   });
 
   it('allows moving an opportunity to the next stage', async () => {

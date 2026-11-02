@@ -1,36 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_BASE } from "@/lib/api-client";
+import {
+  matchSectors,
+  inferReceivingUnit,
+  type SuggestedReceivingUnit,
+  type ParsedCvResult
+} from "@/lib/cv-parser-helper";
 
-export interface ParsedCvResult {
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  birthYear?: number;
-  gender?: "Nam" | "Nữ" | "Khác";
-  academicDegree?: string;
-  primaryInstitution?: string;
-  workAddress?: string;
-  professionalTitle?: string;
-  yearsOfExperience?: number;
-  bioSummary?: string;
-  primaryDomain?: string;
-  specializedKeywords?: string[];
-  googleScholarUrl?: string;
-  orcidId?: string;
-  scopusAuthorId?: string;
-  publications?: Array<{
-    title: string;
-    year: number;
-    journalOrConference: string;
-    doiOrUrl?: string;
-  }>;
-  patents?: Array<{
-    title: string;
-    patentNumber?: string;
-    year: number;
-    status: string;
-  }>;
-}
+export type { SuggestedReceivingUnit, ParsedCvResult };
 
 const CANDIDATE_MODELS = [
   "gemini-3.5-flash-lite",
@@ -44,18 +21,20 @@ Nhiệm vụ của bạn là đọc kỹ tệp đính kèm (hoặc văn bản CV
 
 Yêu cầu xuất ra DUY NHẤT một chuỗi JSON hợp lệ không bọc trong thẻ markdown, với cấu trúc:
 {
-  "fullName": "Họ và tên chuyên gia (không kèm học hàm học vị ở đây)",
+  "fullName": "Họ và tên chuyên gia (trích xuất chính xác tên đầy đủ, KHÔNG kèm học hàm học vị)",
   "email": "Địa chỉ email liên hệ hoặc công tác trong CV (nếu có)",
   "phone": "Số điện thoại liên hệ trong CV (chuẩn 10 số, nếu có)",
   "birthYear": 1982,
   "gender": "Nam hoặc Nữ hoặc Khác",
   "academicDegree": "GS hoặc PGS hoặc TS hoặc ThS hoặc KySu hoặc Cử nhân",
-  "primaryInstitution": "Tên Viện, Trường, Doanh nghiệp công tác chính",
-  "workAddress": "Địa chỉ cơ quan công tác",
+  "degreeYear": 2011,
+  "primaryInstitution": "Tên Viện, Trường, Doanh nghiệp công tác chính (VD: Viện Ứng dụng Công nghệ - Bộ Khoa học và Công nghệ)",
+  "workAddress": "Địa chỉ cơ quan công tác (VD: C6 Thanh Xuân Bắc, Thanh Xuân, Hà Nội)",
   "professionalTitle": "Chức danh nghiên cứu hoặc Chức vụ quản lý (VD: Trưởng phòng R&D, Nghiên cứu viên chính, Giảng viên cao cấp)",
   "yearsOfExperience": 10,
   "bioSummary": "Tóm tắt tiểu sử khoa học và năng lực thế mạnh (khoảng 2-3 câu)",
   "primaryDomain": "Chọn mã lĩnh vực phù hợp nhất trong danh mục hiện hành: ${sectorOptions}",
+  "rawSectorKeywords": ["Quang điện tử", "Laser", "Đo lường điều khiển", "Vật liệu bán dẫn"],
   "specializedKeywords": ["Từ khóa chuyên sâu 1", "Từ khóa chuyên sâu 2"],
   "googleScholarUrl": "URL Google Scholar nếu có trong CV",
   "orcidId": "Mã ORCID (VD: 0000-0002-xxxx-xxxx) nếu có",
@@ -78,7 +57,11 @@ Yêu cầu xuất ra DUY NHẤT một chuỗi JSON hợp lệ không bọc trong
   ]
 }
 
-Lưu ý: Nếu không tìm thấy thông tin nào đó trong văn bản, hãy để trống chuỗi rỗng "" hoặc mảng rỗng [], KHÔNG tự bịa đặt dữ liệu (Zero Hallucination).`;
+Quy tắc bóc tách bắt buộc:
+1. 'degreeYear': Tìm năm cấp bằng tốt nghiệp hoặc năm bảo vệ luận án thành công của học vị cao nhất trong phần Đào tạo/Học vị. Ví dụ: 'Tiến sĩ năm 2011' -> degreeYear = 2011. Tuyệt đối không để trống nếu CV có ghi rõ năm tốt nghiệp.
+2. 'rawSectorKeywords': Trích xuất toàn bộ các cụm từ mô tả chuyên ngành, hướng nghiên cứu chính, công nghệ thế mạnh trong mục Chuyên môn hoặc Hoạt động KH&CN (ví dụ: 'Quang điện tử', 'laser', 'bán dẫn', 'trí tuệ nhân tạo'...).
+3. 'primaryInstitution' & 'workAddress': Phải bóc tách đầy đủ cả tên cơ quan lẫn địa chỉ hành chính (quận/huyện, tỉnh/thành phố) để phục vụ suy luận cơ quan thẩm định.
+4. Nếu không tìm thấy thông tin nào đó trong văn bản, hãy để trống chuỗi rỗng "" hoặc mảng rỗng [], KHÔNG tự bịa đặt dữ liệu (Zero Hallucination).`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -224,11 +207,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Zero-Lock Graceful Handling: nếu primaryDomain không khớp chính xác danh mục hiện hành,
-    // bỏ qua trường này để chuyên gia tự chọn tại Bước 2 thay vì đánh trượt cả hồ sơ đã bóc tách.
-    if (parsed.primaryDomain && !sectors.some((sector) => sector.code === parsed.primaryDomain)) {
-      delete parsed.primaryDomain;
-    }
+    // Đối soát Lĩnh vực TT17 phân tầng (Multi-tier Anti-destructive Matching)
+    const rawKeywords = Array.isArray(parsed.rawSectorKeywords) ? parsed.rawSectorKeywords : [];
+    const matched = matchSectors(parsed.primaryDomain, rawKeywords, sectors);
+    parsed.primaryDomain = matched.primaryDomain;
+    parsed.matchedSectorCodes = matched.matchedSectorCodes;
+    parsed.rawSectorKeywords = matched.rawSectorKeywords;
+
+    // Suy luận cơ quan tiếp nhận thẩm định Cấp 2
+    parsed.suggestedReceivingUnit = inferReceivingUnit(parsed.primaryInstitution, parsed.workAddress);
 
     return NextResponse.json({
       success: true,
