@@ -2,10 +2,11 @@
 
 **Feature Branch**: `expert-profile-llkh-upgrade`  
 **Feature Directory**: `specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
-**Version**: 1.18.0  
+**Version**: 1.19.0  
 **Created**: 25/09/2026  
-**Status**: Completed (Shipped Gate 5)  
-**Ánh Xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md)  
+**Last Updated**: 02/11/2026 (CR-2026-021: AI CV Scan Precision & Context Enrichment)  
+**Status**: Shipped (Gate 5 Approved - Delta v1.5 Implemented)  
+**Ánh Xạ Basic Design**: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 10 & Mục 20)  
 **Bản Dựng Wireframe Tương Tác**: [`wireframe_expert_upgrade.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_upgrade.html)  
 **Nguồn Dữ Liệu Gốc**: Sheet `C.gia` (94 dòng dữ liệu, 6 cột) trong Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`  
 **Phân Hệ Quản Trị Liên Thông**: [`specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`](../TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/) (Kiểm duyệt hồ sơ)  
@@ -77,6 +78,10 @@ Nhằm xây dựng mạng lưới chuyên gia khoa học và công nghệ phục
 | **BR-EXP-004** | **Bắt Buộc Đồng Ý PDPD (Nghị Định 13)** | Hồ sơ không thể submit nếu chưa tích chọn đồng ý lưu trữ và xử lý dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP. Ghi nhận `pdpd_consent_at = UTC_NOW`. | `400 Bad Request` (`ERR_PDPD_CONSENT_REQUIRED`) |
 | **BR-EXP-005** | **Tự Động Đẩy Sang Hàng Đợi Kiểm Duyệt TASK-07** | Khi submit hồ sơ thành công, hệ thống tự động sinh 1 bản ghi vào bảng `approval_requests` với `request_type = 'EXPERT'`, `scope_type = 'PROVINCE'` (hoặc `GLOBAL`). | Giao dịch nguyên tử (ACID) |
 | **BR-EXP-006** | **Khóa Chỉnh Sửa Khi Đang Chờ Duyệt** | Khi hồ sơ mang trạng thái `PENDING_REVIEW`, mọi thao tác chỉnh sửa dữ liệu của chuyên gia đều bị khóa tạm thời để đảm bảo tính toàn vẹn thẩm định. | `403 Forbidden` (`ERR_PROFILE_LOCKED_FOR_REVIEW`) |
+| **BR-EXP-CV-011** | **Ghi Đè Tên Demo Mặc Định** | Khi AI trích xuất họ tên từ CV, tự động điền đè lên tên demo/placeholder ("Dang Lanm"). Không chặn ghi đè nếu giá trị cũ là demo. | `200 OK` (Auto-fill with badge "✨ AI Gợi Ý") |
+| **BR-EXP-CV-012** | **Trích Xuất Bắt Buộc Năm Đạt Học Vị** | Schema & Prompt của Gemini bắt buộc có `degree_year`. Trích xuất chính xác năm cấp bằng (ví dụ: 2011), không rơi về năm 2026. | `200 OK` (Valid Integer YYYY) |
+| **BR-EXP-CV-013** | **Gợi Ý Cơ Quan Thẩm Định Cấp 2** | Suy luận `target_review_scope` từ cơ quan/địa chỉ công tác: Trực thuộc Bộ KH&CN -> `GLOBAL`, Tỉnh/thành -> `HN`, `HCM`, `HP`... Cấm hardcode 'HP'. | `200 OK` (Context Scope Mapping) |
+| **BR-EXP-CV-014** | **Đối Soát Ngữ Nghĩa Lĩnh Vực Công Nghệ** | Áp dụng Multi-tier match (Exact -> Keyword -> Fuzzy Similarity >= 0.6) map sang 10 Lĩnh vực TT17. Bảo lưu `raw_extracted_sectors`, không xóa trắng. | `200 OK` (Taxonomy Semantic Match) |
 
 ---
 
@@ -1624,6 +1629,147 @@ Thanh điều hướng Sidebar cho vai trò Chuyên gia (`expertNavItems`) đư�
 | **`AC-EXP-ORD-02`** | Acceptance Criteria | Kiểm Thử Quản Lý Đơn Mua | Test case bảng đơn hàng và stepper 4 bước | `[CONFIRMED]` |
 | **`AC-EXP-DMD-01`** | Acceptance Criteria | Kiểm Thử Đăng Nhu Cầu | Test case tạo nhu cầu và tính điểm TNI cho Chuyên gia | `[CONFIRMED]` |
 | **`AC-EXP-NAV-01`** | Acceptance Criteria | Kiểm Thử Sidebar 8 Mục | Test case hiển thị và active route mục 5 Sidebar | `[CONFIRMED]` |
+
+---
+
+## 25. PHỤ LỤC DELTA V1.5 (CR-2026-021): NÂNG CAO ĐỘ CHÍNH XÁC & LÀM GIÀU NGỮ CẢNH BÓC TÁCH AI CV SCAN CHO HỒ SƠ CHUYÊN GIA KH&CN
+
+### 25.1. Bối Cảnh & Cơ Sở Quyết Định PO
+- **Căn cứ quyết định**: Quyết định PO `PO-DEC-20261102-03` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 20; Hồ sơ Change Request `deltas/CR-2026-021_ai_cv_scan_precision_enhancement.md`.
+- **Dữ liệu thực tế đối soát**: Tệp lý lịch khoa học thực tế `Specification/01_DATA_RAW/LLKH CN/1. B1-4-LLCN- Bành Quốc Tuấn (Chủ trì).doc`.
+- **4 Khiếm khuyết bóc tách thực tế**:
+  1. *Họ và tên*: AI bóc tách được "Bành Quốc Tuấn" nhưng bị Frontend chặn ghi đè vì form khởi tạo sẵn giá trị demo "Dang Lanm".
+  2. *Năm đạt học vị*: Học vị Tiến sĩ năm 2011 trong CV không được trích xuất do Schema và Prompt của Gemini thiếu trường `degreeYear` / `degree_year`, dẫn đến UI rơi về năm hiện tại mặc định (2026).
+  3. *Cơ quan thẩm định Cấp 2*: Dropdown bị gán cứng 'HP', thiếu logic tự động suy luận theo cơ quan công tác (Viện Ứng dụng Công nghệ, Bộ KH&CN tại Hà Nội phải được gợi ý Cấp 2 là `GLOBAL` hoặc `HN`).
+  4. *Lĩnh vực trụ cột công nghệ*: Bị xóa trắng tại backend khi chuyên môn trong CV ("Quang điện tử, laser, bán dẫn") không khớp chính xác 100% chuỗi ký tự với mã danh mục TT17.
+
+---
+
+### 25.2. Yêu Cầu Chức Năng Mới (Functional Requirements)
+
+#### `REQ-EXP-CV-010` — Nâng Cấp Năng Lực Trích Xuất & Tự Động Điền Dữ Liệu Thông Minh Từ Tệp CV/LLKH
+Hệ thống nâng cấp toàn diện pipeline trích xuất AI CV Scan tại Bước 1 Wizard `/profile/upgrade/expert`:
+1. **Tiếp Nhận Đa Định Dạng**: Tiếp nhận tệp .doc, .docx, .pdf, .png, .jpg (dung lượng $\le 20$MB), chuyển đổi và xử lý in-memory tuân thủ Nghị định 13/2023/NĐ-CP (PDPD).
+2. **Bóc Tách Chuẩn Xác 100% Thực Thể Định Danh**: Trích xuất chính xác Họ và tên, Năm sinh, Giới tính, Học vị cao nhất, Năm đạt học vị, Cơ quan công tác, Địa chỉ cơ quan, Chức danh nghiên cứu, Chức vụ quản lý theo chuẩn mẫu B1-4 của Bộ KH&CN.
+3. **Làm Giàu Ngữ Cảnh & Tự Động Gợi Ý Phân Cấp (Context Enrichment)**: Tự động phân tích tên và địa chỉ cơ quan công tác để suy luận Cơ quan tiếp nhận thẩm định Cấp 2 (`suggested_review_scope`).
+4. **Chuẩn Hóa Ngữ Nghĩa Lĩnh Vực Công Nghệ (Semantic Taxonomy Normalization)**: Tự động ánh xạ lĩnh vực chuyên môn từ văn bản tự nhiên trong CV sang 10 Lĩnh vực trọng điểm TT17 (`LV01` - `LV17`) bằng thuật toán phân tầng (Exact $\rightarrow$ Dictionary $\rightarrow$ Fuzzy Similarity), bảo lưu từ khóa gốc khi không thể map chắc chắn.
+5. **Giao Diện Trực Quan Phản Hồi Trạng Thái**: Gắn visual badge `"✨ AI Gợi Ý"` tại các trường được điền tự động để Chuyên gia dễ dàng nhận diện và kiểm chứng.
+
+---
+
+### 25.3. Quy Tắc Nghiệp Vụ Bắt Buộc (Business Rules)
+
+#### `BR-EXP-CV-011` — Quy Tắc Ưu Tiên Cập Nhật Họ Tên Từ CV & Ghi Đè Dữ Liệu Demo/Mặc Định
+- Khi AI CV Scan trích xuất thành công trường họ tên (`extracted_full_name`), hệ thống MUST tự động điền vào ô "Họ và tên" nếu giá trị hiện tại trên form là:
+  1. Chuỗi rỗng, null hoặc chưa được khởi tạo.
+  2. Giá trị demo/placeholder mặc định của hệ thống (ví dụ: `"Dang Lanm"`, `"Người dùng"`, `"Chuyên gia"`, `"User"`).
+  3. Hoặc khi người dùng chủ động nhấn nút "Quét lại CV" / "Tải CV mới".
+- Frontend TUYỆT ĐỐI KHÔNG được chặn ghi đè đối với các giá trị placeholder/demo này.
+- Trường hợp người dùng đã tự tay chỉnh sửa một tên riêng hợp lệ khác với tên demo, hệ thống hiển thị tooltip/banner xác nhận: *"AI phát hiện tên trong CV: [extracted_full_name]. Bấm để áp dụng."*
+
+#### `BR-EXP-CV-012` — Quy Tắc Trích Xuất Bắt Buộc Năm Đạt Học Vị (`degreeYear` / `degree_year`) Trong Schema & Prompt
+- Schema trích xuất có cấu trúc (Structured Outputs JSON Schema) gửi lên Gemini Multimodal API và System Prompt BẮT BUỘC định nghĩa trường:
+  ```json
+  "degree_year": {
+    "type": "integer",
+    "description": "Năm tốt nghiệp hoặc năm cấp bằng của học vị cao nhất (ví dụ: 2011)"
+  }
+  ```
+- Prompt chỉ dẫn: *"Tìm kiếm năm cấp bằng tốt nghiệp hoặc năm bảo vệ luận án thành công của học vị cao nhất trong phần Đào tạo hoặc Văn bằng chứng chỉ. Ví dụ: 'Tiến sĩ Quang học năm 2011' -> degree_year = 2011"*.
+- Frontend Form Wizard Bước 1 bắt buộc ánh xạ trường `degree_year` vào ô "Năm đạt học vị". TUYỆT ĐỐI KHÔNG fallback về năm hiện tại (2026) nếu AI đã trích xuất được giá trị hợp lệ.
+
+#### `BR-EXP-CV-013` — Quy Tắc Tự Động Gợi Ý Cơ Quan Tiếp Nhận Thẩm Định Cấp 2 (Target Review Scope Auto-mapping)
+- Hệ thống tự động phân tích ngữ cảnh từ `organization_name` và `organization_address` trích xuất từ CV để suy luận Cơ quan tiếp nhận thẩm định Cấp 2 (`target_review_scope`):
+  * **Khối Trung ương / Bộ KH&CN (`GLOBAL`)**:
+    - Nếu tên hoặc địa chỉ cơ quan chứa các từ khóa: `"Viện Ứng dụng Công nghệ"`, `"NacenTech"`, `"Bộ Khoa học và Công nghệ"`, `"Bộ KH&CN"`, `"Viện Hàn lâm KH&CN"`, `"Đại học Quốc gia"`, `"Viện Năng lượng nguyên tử"`, các Viện/Cục trực thuộc Bộ KH&CN $\rightarrow$ Tự động gợi ý mã `'GLOBAL'` (Hội đồng KH&CN NacenTech / Trung ương).
+  * **Khối Địa phương / Cấp Sở KH&CN Tỉnh (`PROVINCE`)**:
+    - Nếu địa chỉ hoặc tên cơ quan thuộc địa bàn tỉnh/thành phố cụ thể $\rightarrow$ Tự động ánh xạ về mã tỉnh/thành tương ứng:
+      + Chứa `"Hà Nội"` / `"Ha Noi"` $\rightarrow$ Gợi ý mã `'HN'` (Sở KH&CN TP. Hà Nội).
+      + Chứa `"Hải Phòng"` / `"Hai Phong"` $\rightarrow$ Gợi ý mã `'HP'` (Sở KH&CN TP. Hải Phòng).
+      + Chứa `"Hồ Chí Minh"` / `"TP.HCM"` / `"TP. Hồ Chí Minh"` $\rightarrow$ Gợi ý mã `'HCM'` (Sở KH&CN TP. Hồ Chí Minh).
+      + Chứa `"Đà Nẵng"` / `"Da Nang"` $\rightarrow$ Gợi ý mã `'DN'` (Sở KH&CN TP. Đà Nẵng).
+      + Tương tự cho các tỉnh thành khác theo Master Data `ProvinceCodes`.
+  * **Cấm hardcode**: Tuyệt đối không gán mặc định `'HP'` cho mọi trường hợp.
+  * Dropdown hiển thị giá trị được gợi ý kèm badge `"✨ AI Gợi Ý"`, cho phép chuyên gia thay đổi trước khi submit.
+
+#### `BR-EXP-CV-014` — Quy Tắc Đối Soát Ngữ Nghĩa Cho Lĩnh Vực Trụ Cột Công Nghệ (Semantic/Fuzzy Taxonomy Matching)
+- Backend TUYỆT ĐỐI KHÔNG xóa trắng khi chuyên ngành từ CV không khớp chính xác 100% chuỗi ký tự danh mục TT17.
+- Quy trình đối soát phân tầng:
+  1. *Tầng 1 (Exact Match)*: Khớp chính xác mã ngành (`LV01`..) hoặc tên ngành tiếng Việt.
+  2. *Tầng 2 (Keyword/Alias Dictionary)*: Tra cứu từ điển từ khóa chuyên ngành (ví dụ: `"quang điện tử"`, `"laser"`, `"bán dẫn"` $\rightarrow$ `LV08` Vật liệu & Vi điện tử; `"phần mềm"`, `"trí tuệ nhân tạo"`, `"AI"`, `"IoT"` $\rightarrow$ `LV01` CNTT & Truyền thông; `"cảm biến y sinh"` $\rightarrow$ `LV14` Y dược).
+  3. *Tầng 3 (Fuzzy Semantic Similarity)*: Tính toán khoảng cách Levenshtein / Token Similarity với ngưỡng tin cậy $\ge 0.60$.
+  4. *Tầng 4 (Preserve Raw Extraction)*: Nếu không tự động map được với độ tin cậy cao, Backend MUST giữ nguyên mảng văn bản thô (`raw_extracted_sectors`), trả về cho Frontend hiển thị dưới dạng Badge gợi ý màu vàng để Chuyên gia nhấp chọn 1 click, không làm mất thông tin.
+
+---
+
+### 25.4. Đặc Tả Giao Diện & Trải Nghiệm (UI/UX Specification)
+
+#### `UI-EXP-CV-003` — Trải Nghiệm Điền Form Thông Minh & Gợi Ý Lĩnh Vực
+1. **Highlight Trường Điền Tự Động**: Các ô Họ và tên, Năm sinh, Năm đạt học vị, Cơ quan công tác, Cơ quan thẩm định Cấp 2 hiển thị nhãn `"✨ AI Gợi Ý"` cùng hiệu ứng viền màu xanh lá nhạt (`border-emerald-300 bg-emerald-50/30`).
+2. **Khối Lĩnh Vực Chuyên Môn**:
+   - Các ngành TT17 được AI tự động nhận diện thành công sẽ được tích chọn sẵn trong danh sách checkbox.
+   - Bên dưới hiển thị khối gợi ý phụ: *"Từ khóa phát hiện từ CV:"* kèm các thẻ tag pill (`badge`) có thể nhấp để thêm nhanh vào danh sách từ khóa chuyên môn hoặc lĩnh vực tương ứng.
+3. **Cơ Chế Dự Phòng (Zero-Lock Fallback)**:
+   - Nếu quá trình gọi AI bị lỗi mạng hoặc lỗi tệp, giao diện hiển thị thông báo Toast hướng dẫn và mở toàn bộ các trường để người dùng tự gõ tay, không chặn điều hướng của Wizard.
+
+---
+
+### 25.5. Tiêu Chuẩn Nghiệm Thu & Kịch Bản Kiểm Thử (Acceptance Criteria & Test Suite)
+
+#### `TEST-EXP-CV-005` — Bộ Kịch Bản Kiểm Thử Bóc Tách Tệp LLKH Thực Tế B1-4
+- **`AC-EXP-CV-01` (Kiểm Thử Ghi Đè Họ Tên Demo)**:
+  * **Given** người dùng truy cập `/profile/upgrade/expert` với tên demo mặc định "Dang Lanm",
+  * **When** tải lên tệp `1. B1-4-LLCN- Bành Quốc Tuấn (Chủ trì).doc` và kích hoạt AI Scan,
+  * **Then** ô "Họ và tên" được cập nhật thành "Bành Quốc Tuấn", hiển thị badge `"✨ AI Gợi Ý"`.
+- **`AC-EXP-CV-02` (Kiểm Thử Trích Xuất Năm Đạt Học Vị)**:
+  * **Given** tệp CV có thông tin tốt nghiệp Tiến sĩ năm 2011,
+  * **When** quá trình bóc tách hoàn tất,
+  * **Then** ô "Năm đạt học vị" hiển thị giá trị `2011`, tuyệt đối không rơi về `2026`.
+- **`AC-EXP-CV-03` (Kiểm Thử Gợi Ý Cơ Quan Thẩm Định Cấp 2)**:
+  * **Given** CV ghi cơ quan "Viện Ứng dụng Công nghệ - Bộ KH&CN, C6 Thanh Xuân Bắc, Thanh Xuân, Hà Nội",
+  * **When** hệ thống phân tích ngữ cảnh,
+  * **Then** dropdown Cơ quan tiếp nhận thẩm định tự động chọn `GLOBAL` (hoặc `HN`), không còn bị gán cứng `HP`.
+- **`AC-EXP-CV-04` (Kiểm Thử Đối Soát Ngữ Nghĩa Lĩnh Vực Công Nghệ)**:
+  * **Given** CV chứa các từ khóa chuyên môn "Quang điện tử, laser, đo lường điều khiển, vật liệu bán dẫn",
+  * **When** backend đối soát với danh mục TT17,
+  * **Then** hệ thống tự động ánh xạ vào `LV08` (Vật liệu mới & Vi điện tử) hoặc hiển thị mảng `raw_extracted_sectors` dạng thẻ tag, không bị xóa trắng.
+- **`AC-EXP-CV-05` (Kiểm Thử Dự Phòng Zero-Lock Fallback)**:
+  * **Given** dịch vụ AI gặp lỗi kết nối hoặc timeout,
+  * **When** quét CV thất bại,
+  * **Then** hệ thống thông báo Toast nhẹ nhàng, form mở 100% cho nhập tay, nút "Tiếp tục" không bị khóa.
+
+---
+
+### 25.6. Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt Kỹ Thuật (Surface) | Vị Trí Tệp Mã Nguồn / Schema | Bản Chất Tác Động | Chi Tiết Thay Đổi Cần Thực Hiện |
+| :--- | :--- | :--- | :--- |
+| **Basic Design (`Specification`)** | `Specification/BASIC_DESIGN_NACENTECH.md` Mục 20 & Mục 10 | Chuẩn Hóa SSOT | Bổ sung `PO-DEC-20261102-03`, `REQ-EXP-CV-010`, `BR-EXP-CV-011..014`. |
+| **Delta Ledger (`TASK-05`)** | `specs/TASK-05_.../deltas/CR-2026-021...` | Sổ cái CR | Lưu vết đầy đủ 4 trạng thái vòng đời CR-2026-021 theo chuẩn Hiến pháp Spec. |
+| **AI Prompt & Schema** | `NacenTech.Infrastructure.AI/Prompts/ResumePrompt.cs`<br>`DD-02-ai-extractor-contracts.md` | DTO & Prompt Contract | Bổ sung `degree_year`, `suggested_review_scope`, `raw_extracted_sectors` vào Schema trích xuất. |
+| **Backend Service Logic** | `NacenTech.Application/Experts/Services/ExpertService.cs`<br>`TaxonomyMatcher.cs` | Logic Đối Soát & Gợi Ý | Thêm thuật toán Fuzzy Match cho lĩnh vực và bộ phân tích địa chỉ cơ quan gợi ý Cấp 2. |
+| **Frontend Form Wizard** | `SourceCode/frontend/src/app/(auth)/profile/upgrade/expert/page.tsx` | View & State Management | Hỗ trợ ghi đè tên demo "Dang Lanm"; map `degreeYear`; tự động chọn scope; hiển thị badge AI. |
+| **Kiểm Thử 4 Tầng** | `test_cases_4_tier.md` & Playwright E2E | Verification | Xây dựng test suite với tệp mẫu B1-4 kiểm chứng 100% AC-CR-021.1 đến AC-CR-021.6. |
+
+---
+
+### 25.7. Ma Trận Truy Vết Nghiệp Vụ Delta v1.5 (Traceability Matrix)
+
+| Mã Định Danh | Loại Yêu Cầu | Tên Quy Chuẩn | Mô Tả & Căn Cứ Kiểm Thử | Trạng Thái |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-EXP-CV-010`** | Functional Req | AI CV Scan B1-4 Precision | Nâng cấp độ chính xác và làm giàu ngữ cảnh AI CV Scan từ tệp B1-4 | `[APPLIED]` |
+| **`BR-EXP-CV-011`** | Business Rule | Ghi Đè Tên Demo Mặc Định | Ưu tiên tên từ CV, ghi đè lên giá trị demo "Dang Lanm" | `[APPLIED]` |
+| **`BR-EXP-CV-012`** | Business Rule | Trích Xuất Bắt Buộc degreeYear | Định nghĩa degree_year trong schema và prompt, map đúng năm 2011 | `[APPLIED]` |
+| **`BR-EXP-CV-013`** | Business Rule | Gợi Ý Cơ Quan Thẩm Định Cấp 2 | Suy luận scope_id (GLOBAL/HN) theo địa chỉ cơ quan, không hardcode HP | `[APPLIED]` |
+| **`BR-EXP-CV-014`** | Business Rule | Đối Soát Ngữ Nghĩa Lĩnh Vực | Fuzzy match ngành TT17, bảo lưu raw sectors, không xóa trắng | `[APPLIED]` |
+| **`UI-EXP-CV-003`** | UI/UX Spec | Highlight & Visual Badges | Gắn badge "✨ AI Gợi Ý", thẻ tag unmapped sectors | `[APPLIED]` |
+| **`TEST-EXP-CV-005`** | Test Spec | Bộ Test Case Tệp B1-4 | 5 kịch bản kiểm thử Happy Path, Boundary và Zero-Lock Fallback | `[APPLIED]` |
+| **`AC-EXP-CV-01`** | Acceptance Criteria | Kiểm Thử Ghi Đè Họ Tên | Kiểm chứng form cập nhật tên "Bành Quốc Tuấn" | `[APPLIED]` |
+| **`AC-EXP-CV-02`** | Acceptance Criteria | Kiểm Thử Năm Đạt Học Vị | Kiểm chứng form hiển thị đúng năm 2011 | `[APPLIED]` |
+| **`AC-EXP-CV-03`** | Acceptance Criteria | Kiểm Thử Gợi Ý Cấp 2 | Kiểm chứng dropdown gợi ý GLOBAL / HN | `[APPLIED]` |
+| **`AC-EXP-CV-04`** | Acceptance Criteria | Kiểm Thử Đối Soát Ngành | Kiểm chứng ngành được map hoặc gợi ý dạng badge | `[APPLIED]` |
+| **`AC-EXP-CV-05`** | Acceptance Criteria | Kiểm Thử Zero-Lock Fallback | Kiểm chứng form nhập tay mở 100% khi lỗi AI | `[APPLIED]` |
+
 
 
 

@@ -628,3 +628,62 @@ Tuân thủ nghiêm ngặt nguyên tắc Clean Architecture và quy tắc nghi�
 - **Touch Target & A11y**: Đảm bảo chiều cao tối thiểu `min-h-[44px]` (hoặc `min-h-11`) cho mọi tương tác chạm trên thiết bị di động, đường viền focus rõ ràng (`focus-ring`), tuân thủ chuẩn WCAG 2.1 AA.
 
 
+
+
+---
+
+## Technical Plan: Spec Delta v16 (CR-2026-020) — Tự Động Thiết Lập Phiên Đăng Nhập Sau Khi Đăng Ký (Seamless Auto-Login)
+
+### 1. Kiến Trúc Luồng Tuần Tự & Phục Hồi Lỗi (Resilience Sequence Diagram)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Người dùng
+    participant Page as RegisterPage (Client UI)
+    participant AuthClient as authClient (LocalStorage)
+    participant RegAPI as POST /api/v1/auth/register
+    participant LoginAPI as POST /api/v1/auth/login
+    participant Router as Next.js App Router
+
+    User->>Page: Nhập biểu mẫu & Bấm "Đăng ký thành viên"
+    Page->>Page: Validate Client-side (PDPD, password >= 8, email regex)
+    Page->>Page: Set loading=true, disable button, phase="Tạo tài khoản..."
+    Page->>RegAPI: Gửi payload đăng ký
+    
+    alt Trường hợp 1: Register thất bại (ví dụ: Trùng Email)
+        RegAPI-->>Page: 409 Conflict / Error
+        Page->>Page: Set error message, loading=false, giữ nguyên form
+        Page-->>User: Hiển thị lỗi (ví dụ: "Email is already in use")
+    else Trường hợp 2: Register thành công (HTTP 201 Created)
+        RegAPI-->>Page: 201 Created { code: "REGISTER_SUCCESS" }
+        Page->>Page: Chuyển phase="Đang thiết lập phiên đăng nhập..."
+        Page->>LoginAPI: Tự động gửi email + password
+        
+        alt Nhánh 2A: Auto-Login thành công
+            LoginAPI-->>Page: 200 OK { accessToken, user }
+            Page->>AuthClient: setSession(accessToken, user)
+            Page->>Page: Bắn Toast chào mừng "Đăng ký thành công!"
+            Page->>Router: push("/") (hoặc getRedirectPathByRole)
+            Router-->>User: Điều hướng về Trang chủ, Header hiển thị Avatar & Menu
+        else Nhánh 2B: Auto-Login thất bại (Gián đoạn mạng đột xuất)
+            LoginAPI-->>Page: Network Error / Timeout
+            Page->>Page: loading=false, hiển thị Fallback banner hướng dẫn
+            Page-->>User: "Tài khoản đã tạo thành công! Vui lòng bấm để đăng nhập"
+        end
+    end
+```
+
+### 2. Thiết Kế 5 Trạng Thái UX Cho Nút Submit & Form Đăng Ký
+
+| Trạng Thái UX | Hành Vi & Phản Ứng Giao Diện | Chi Tiết Kỹ Thuật |
+| :--- | :--- | :--- |
+| **1. Idle / Normal** | Nút CTA xanh `AppButton variant="cta"` sẵn sàng, icon `UserPlus`, nhãn *"Đăng ký thành viên"*. | `disabled = false`, trạng thái mặc định. |
+| **2. Submitting Phase 1** | Người dùng bấm đăng ký $\rightarrow$ Nút bị khóa, icon đổi thành Spinner quay vòng, nhãn *"Đang tạo tài khoản..."*. | Ngăn chặn Double-Submit, chống spam click. |
+| **3. Submitting Phase 2** | Register API trả về 201 $\rightarrow$ Nút vẫn bị khóa, Spinner duy trì, nhãn *"Đang khởi tạo phiên làm việc..."*. | Người dùng hiểu hệ thống đang xử lý đăng nhập, không giật màn hình. |
+| **4. Success State** | Toast thông báo thành công xanh lá bắn lên góc màn hình, URL chuyển sang `/`, Header hiển thị tên và avatar. | `authClient.setSession()`, `toast.success()`, `router.push('/')`. |
+| **5. Error / Fallback State** | Nếu Register lỗi: Banner đỏ hiển thị lỗi cụ thể.<br>Nếu Register xong mà Login lỗi mạng: Banner vàng hiển thị *"Tài khoản đã tạo thành công! Vui lòng đăng nhập"* kèm nút sang `/login`. | Xử lý ngoại lệ an toàn (Graceful Degradation), bảo vệ trải nghiệm người dùng. |
+
+### 3. Cam Kết Độc Lập Kiến Trúc & Zero Breaking Changes
+1. **Zero Backend API Break**: `POST /api/v1/auth/register` và `POST /api/v1/auth/login` giữ nguyên vẹn 100% hợp đồng API v1.
+2. **Zero Storage Pollution**: Dữ liệu lưu trong LocalStorage sử dụng đúng hai key chuẩn mực: `nacentwin_access_token` và `nacentwin_user_context`.

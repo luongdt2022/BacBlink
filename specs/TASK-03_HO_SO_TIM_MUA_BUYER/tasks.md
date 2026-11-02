@@ -261,3 +261,50 @@
   - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-03`, `AC-ORD-04`, `AC-ORD-05`.
 
 - [x] `TASK-03-CR94` **[CR]** [P1] (Người gửi: LuongDang) Sử cho tôi tiêu đề — Sửa tiêu đề nội dung như comment ở ảnh [Đính kèm: ![screenshot_11h41m14_1.png](/static/uploads/TASK-03-CR94_1793508098_1_screenshot_11h41m14_1.png)]
+
+---
+
+## 7. DANH SÁCH CÔNG VIỆC THỰC THI CR-TASK-03-DELTA-01: VÒNG ĐỜI BÀI TOÁN & PDPD PREVIEW GUARD
+
+- [x] **Task 7.1** `[BE]` Nâng Cấp API Chi Tiết `GET /api/v1/public/demands/{id}` (`DemandController.cs`):
+  - Trích xuất định danh người gọi từ `Actor.PersonId` và `Actor.PlatformRole`.
+  - Bổ sung các trường vào DTO trả về:
+    * `status`: Trạng thái thực tế từ CSDL (`PENDING`, `VERIFIED`, `CONNECTED`, `CLOSED`).
+    * `isOwner`: `bool` — `true` nếu `Actor.PersonId == item.CreatedBy`.
+    * `isPendingReview`: `bool` — `true` nếu `item.Status == DemandItemStatuses.Pending`.
+    * `canViewDraft`: `bool` — `true` nếu là Chủ bài toán hoặc Cán bộ Sở/Admin (`PROVINCIAL_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`).
+    * `canSubmitOffer`: `bool` — `true` chỉ khi `item.Status == DemandItemStatuses.Verified`.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`, `AC-DMD-03`.
+
+- [x] **Task 7.2** `[FE]` Xóa Bỏ Hardcode Nhãn Trạng Thái & Render 4 Badge Chuẩn (`nhu-cau-cong-nghe/[id]/page.tsx`):
+  - Xóa bỏ việc gán cứng `{isCommercialOrder ? "ĐƠN MUA HÀNG THƯƠNG MẠI" : "ĐANG MỞ TÌM CUNG"}`.
+  - Xây dựng hàm ánh xạ trạng thái sang giao diện:
+    * `PENDING`: Badge vàng hổ phách `"CHỜ SỞ KH&CN THẨM ĐỊNH"`, phụ đề: *"Hồ sơ đang được Cán bộ Sở KH&CN thẩm định trước khi niêm yết"*.
+    * `VERIFIED`: Badge xanh ngọc `"ĐANG MỞ TÌM CUNG"`, phụ đề: *"Đang mở tiếp nhận giải pháp công nghệ từ Viện/Trường/Doanh nghiệp"*.
+    * `CONNECTED`: Badge xanh dương `"ĐÃ KẾT NỐI CUNG - CẦU"`.
+    * `CLOSED`: Badge xám `"ĐÃ ĐÓNG HỒ SƠ"`.
+    * Nếu `isCommercialOrder`: Giữ nhãn `"ĐƠN MUA HÀNG THƯƠNG MẠI"`.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`.
+
+- [x] **Task 7.3** `[FE]` Bổ Sung Banner Cảnh Báo Chờ Duyệt & Tạm Khóa Form Chào Giá Khi `PENDING` (`[id]/page.tsx`):
+  - Khi `item.status === 'PENDING'`, hiển thị Banner nổi bật ở đầu trang bài toán:
+    * Tiêu đề: **Hồ Sơ Nhu Cầu Đang Chờ Thẩm Định**.
+    * Nội dung: *"Bài toán công nghệ này đã được tiếp nhận thành công và đang được Cán bộ Sở Khoa học & Công nghệ thẩm định trước khi niêm yết chính thức lên Sàn."*
+  - Nếu `item.status === 'PENDING'` hoặc `canSubmitOffer === false`: Vô hiệu hóa hoặc ẩn form "Chào bán giải pháp" ở chân trang, thay bằng thông báo giải thích rõ ràng.
+  - Tiêu chí nghiệm thu: `AC-DMD-02`, `AC-DMD-03`.
+
+- [x] **Task 7.4** `[Test/BE]` Viết Kiểm Thử Unit / Integration Cho API Demand Chi Tiết:
+  - Tạo / Cập nhật file test kiểm chứng:
+    * Trả về đúng `status = 'PENDING'` khi tạo bài toán mới.
+    * Gắn cờ `isOwner = true` khi gọi API bằng token của người tạo.
+    * Gắn cờ `canViewDraft = true` đối với `PROVINCIAL_ADMIN` và `SUPER_ADMIN`.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`, `AC-DMD-03`.
+
+- [x] **Task 7.5** `[Test/E2E & QC]` Kiểm Thử Tương Tác Sống & Thẩm Tra Trạng Thái Duyệt (Playwright):
+  - Kịch bản kiểm thử:
+    1. Đăng nhập tài khoản `public1` tạo bài toán nhanh.
+    2. Truy cập chi tiết bài toán: Xác nhận hiển thị Badge `CHỜ SỞ KH&CN THẨM ĐỊNH` và Banner cảnh báo; form chào giá bị khóa.
+    3. Đăng nhập tài khoản Cán bộ Sở Hà Nội (`hanoi.admin@demo.nacentech.vn`), vào `/gov/demands` bấm "Phê duyệt & Niêm yết".
+    4. Quay lại trang chi tiết bài toán F5: Xác nhận Badge chuyển sang `ĐANG MỞ TÌM CUNG` màu xanh lá và mở form chào giá.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`, `AC-DMD-02`, `AC-DMD-03`, `AC-DMD-04`.
+

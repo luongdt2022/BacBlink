@@ -2,9 +2,9 @@
 
 **Feature Branch**: `brokerage-matching-dealroom`  
 **Feature Directory**: `specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI`  
-**Version**: 1.12.0  
+**Version**: 1.14.0  
 **Created**: 11/10/2026  
-**Status**: Completed (Shipped Gate 5)  
+**Status**: In Progress (Gate 1 - DoR Approved for CR-TASK-08-DELTA-02)  
 **Ánh Xạ Basic Design**: 
 - Master Basic Design: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 5.4 Phân hệ 08 & Mục 17 PO-DEC-20261030-05)
 - Phân hệ Basic Design: [`Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md`](../../Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md)  
@@ -377,5 +377,71 @@ Phân hệ tuân thủ nghiêm ngặt chuẩn hiển thị 5 UX States qua compo
 | **Pipeline Cơ Hội Kanban** (`/portal/opportunities/pipeline`) | 5 cột Kanban hiển thị mỗi cột 3 card xám nhạt với chiều cao giả lập. | Cột trống hiển thị vùng drop rỗng viền nét đứt kèm nhãn "Chưa có thương vụ ở giai đoạn này". | Banner lỗi đầu trang kèm nút `Tải lại bảng Kanban`. | Hiển thị đầy đủ các thẻ cơ hội theo 5 bước, kéo thả mượt mà, badge đếm số lượng mỗi cột. | Card đang kéo thả hiển thị hiệu ứng bóng mờ (Shadow-lg) và opacity 70% khi đang ghi nhận trạng thái mới. |
 | **Phòng Đàm Phán Deal Room 1-1** (`/portal/dealroom/[id]`) | Khung chat và khung tài liệu hiển thị skeleton dòng chữ và icon tải tài liệu. | Vùng tin nhắn trống hiển thị hướng dẫn: "Phiên đàm phán đã bắt đầu. Hãy gửi lời chào và đề xuất điều khoản đầu tiên". | Hộp thoại thông báo mất kết nối thời gian thực, nút `Tái kết nối Deal Room`. | Khung chat đàm phán 2 chiều hiển thị thông tin đối tác đã unmask, thanh công cụ MOU và lịch sử thương lượng. | Nút gửi tin nhắn / cập nhật điều khoản chuyển sang trạng thái loading spinner ngăn chặn double click. |
 | **Danh Sách Yêu Cầu Kết Nối** (`/portal/brokerage/requests`) | Bảng dữ liệu 5 hàng skeleton giả lập cột Buyer, Sản phẩm, Thời gian, Trạng thái. | Bảng rỗng hiển thị icon hộp thư rỗng: "Không có yêu cầu kết nối nào trong mục này". | Cảnh báo lỗi tải danh sách kèm nút `Làm mới`. | Bảng danh sách chi tiết kèm bộ lọc 4 tabs (`ALL`, `PENDING`, `ACCEPTED`, `REJECTED`) và nút Thao tác. | Nút Chấp thuận / Từ chối hiển thị spinner và khóa tương tác các nút xung quanh khi đang gửi request. |
+
+---
+
+## 9. ĐẶC TẢ DELTA CR-TASK-08-DELTA-02: QUY CHUẨN 3 NHÓM CHỦ THỂ BÊN MUA & PHÂN TÁCH HỘP THƯ KẾT NỐI VỚI PIPELINE KANBAN
+
+> **Căn cứ**: [`CR-TASK-08-DELTA-02.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/deltas/CR-TASK-08-DELTA-02.md), Quyết định `PO-DEC-20261102-03` tại [`Specification/BASIC_DESIGN_NACENTECH.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/BASIC_DESIGN_NACENTECH.md) Mục 21, & [`BD_DELTA_CR_025_TACH_INBOX_YEU_CAU_KET_NOI_VA_PIPELINE.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/BD_DELTA_CR_025_TACH_INBOX_YEU_CAU_KET_NOI_VA_PIPELINE.md)  
+> **SemVer Target**: `1.14.0`  
+> **Trạng thái**: `APPROVED` (Gate 1 - DoR Approved)
+
+### 9.1. Các Mỏ Neo Nghiệp Vụ Bất Biến Bổ Sung
+
+#### 1. Quy Chuẩn 3 Nhóm Chủ Thể Bên Mua (Buyer Subject Typing)
+- **`REQ-BUYER-TYPE-001` (Quy Chuẩn 3 Nhóm Chủ Thể Bên Mua)**:
+  * Loại bỏ triệt để giả định cứng "100% Bên Mua là Doanh Nghiệp".
+  * Mọi yêu cầu kết nối Inbound Lead và cơ hội thương mại bắt buộc phân loại theo 3 nhóm chủ thể:
+    1. `INDIVIDUAL`: Cá nhân / Đại chúng (`PUBLIC_USER`, `GUEST`). Chỉ hiển thị Họ tên, Tỉnh thành, SĐT (masked), Email (masked). Tuyệt đối cấm hiển thị MST, Quy mô doanh nghiệp, Trụ sở nhà máy. Badge nhận diện: `[Khách Hàng Cá Nhân]`.
+    2. `EXPERT`: Chuyên gia KH&CN (`EXPERT`, `VERIFIED_EXPERT`). Hiển thị Họ tên, Học vị/Học hàm, Cơ quan công tác, Lĩnh vực chuyên môn, SĐT/Email (masked), và Liên kết đến Hồ sơ Chuyên gia. Badge nhận diện: `[Chuyên Gia KH&CN]`.
+    3. `ENTERPRISE`: Doanh nghiệp / Tổ chức (`BUYER`, `INNOVATION_ENTITY`, `SELLER`). Hiển thị Tên pháp nhân, MST, Ngành nghề, Quy mô, Trụ sở nhà máy, Người đại diện pháp luật, và Hồ sơ năng lực. Badge nhận diện: `[Doanh Nghiệp / Tổ Chức]`.
+- **`BR-BUYER-TYPE-01` (Quy Tắc Phân Loại & Bảo Mật PDPD Theo Nghị Định 13/2023/NĐ-CP)**:
+  * Tự động suy luận `buyer_type` từ ngữ cảnh tài khoản người gửi (`sender_user_id` $\rightarrow$ Profile chuyên gia / Doanh nghiệp / Cá nhân).
+  * Đối với Cá nhân và Chuyên gia: SĐT và Email bắt buộc che mờ (Masked: `09****1234`, `a***@domain.com`) khi ở trạng thái `PENDING`. Chỉ mở thông tin (Unmasked) sau khi Bên Bán bấm "Chấp thuận" (`ACCEPTED`).
+  * Đối với Doanh nghiệp: Thông tin pháp nhân công khai; thông tin liên hệ của Người đại diện áp dụng quy tắc che mờ tương tự.
+- **`API-BUYER-TYPE-01` (Hợp Đồng Giao Tiếp API Dữ Liệu Bên Mua Đa Hình)**:
+  * `GET /api/v1/brokerage/requests` và `GET /api/v1/brokerage/requests/{id}` trả về cấu trúc phân cấp đa hình:
+    `buyerType` (`INDIVIDUAL` | `EXPERT` | `ENTERPRISE`), kèm các khối object tương ứng `buyerProfile`, `expertProfile`, `enterpriseProfile`.
+- **`UI-BUYER-CARD-01` (Thành Phần UI Thẻ Bên Mua Đa Hình `<BuyerProfileCard>`)**:
+  * Tái sử dụng trên: Card danh sách Hộp thư kết nối, Modal chi tiết yêu cầu `ConnectionRequestDetailModal`, và Bàn đàm phán Deal Room.
+  * Tự động render chính xác trường thông tin theo `buyerType`, không có trường trống `N/A`, tuân thủ 5 UX States qua `<Async>`.
+- **`TEST-BUYER-TYPE-01` (Chiến Lược Kiểm Thử Chống Hồi Quy 4 Tầng)**:
+  * Unit test cho `<BuyerProfileCard>` (Cá nhân, Chuyên gia, Doanh nghiệp).
+  * Kiểm thử che mờ PDPD (Masked / Unmasked).
+  * Contract test endpoint API `/api/v1/brokerage/requests`.
+  * E2E test Playwright toàn trình từ 3 loại tài khoản gửi lead đến khi Seller duyệt và vào Deal Room.
+
+#### 2. Phân Tách Tuyến Định Tuyến Hộp Thư Kết Nối & Pipeline
+- **`REQ-BRK-09` (Màn hình Hộp Thư Yêu Cầu Kết Nối Chuyên Biệt - `UI-SELLER-INBOX-001`)**:
+  * Tuyến đường dẫn riêng: `/portal/seller/connection-requests`.
+  * Quản lý tập trung mọi Inbound Lead gửi đến Nhà cung ứng (`SELLER`).
+  * Bộ lọc 4 trạng thái: `Tất cả` (`ALL`), `Chờ phản hồi` (`PENDING`), `Đã chấp thuận` (`ACCEPTED`), `Đã từ chối` (`REJECTED`).
+  * Bộ 3 KPI Inbound: Tổng yêu cầu nhận được, Chờ phản hồi, Đã chấp thuận.
+  * Tích hợp Component `<BuyerProfileCard>` và Modal chi tiết yêu cầu `UI-CONN-REQ-DETAIL-001`.
+- **`REQ-BRK-10` (Màn hình Pipeline Chuyển Giao & MOU Tinh Gọn - `UI-SELLER-KANBAN-001`)**:
+  * Tuyến đường dẫn: `/portal/opportunities/pipeline`.
+  * Bảng Kanban 5 cột chuẩn (`SUGGESTED`, `INITIATED`, `NEGOTIATING`, `MOU_SIGNED`, `COMPLETED`), loại bỏ hoàn toàn tab inbound lồng bên trong.
+  * Bộ 3 KPI Pipeline: Tổng thương vụ đang đàm phán, Quy mô ngân sách chuyển giao (Tỷ/Triệu VNĐ), Số MOU đã ký.
+  * Nút mở phòng đàm phán bảo mật `/portal/opportunities/{id}/deal-room` và ký kết MOU.
+- **`REQ-BRK-11` (Chuẩn Hóa Sidebar Navigation Phễu Bán Hàng & Active Highlight)**:
+  * Thanh điều hướng Sidebar phân định 2 mục menu riêng biệt với đường dẫn URL tách rời:
+    1. `Yêu Cầu Kết Nối Nhận Được` trỏ `/portal/seller/connection-requests` (có badge số lượng lead chờ duyệt).
+    2. `Tiến Trình Chuyển Giao & MOU` trỏ `/portal/opportunities/pipeline` (có badge tổng số deal).
+  * Hàm nhận diện `isActive` sáng đèn 1:1 theo URL hiện hành, loại bỏ kiểm tra query parameter.
+- **`BR-BRK-08` (Cầu Nối 1-Click Từ Yêu Cầu Kết Nối Sang Deal Room)**:
+  * Khi bấm "Chấp thuận", hệ thống tự động sinh `Opportunity` ở bước `INITIATED` và hiển thị Toast thành công kèm nút bấm *"Vào Deal Room Thảo Luận Ngay ->"* dẫn thẳng sang Deal Room tương ứng.
+- **`BR-BRK-09` (Tương Thích Ngược & Client-side Redirect)**:
+  * Truy cập URL cũ `/portal/opportunities/pipeline?tab=inbound` tự động chuyển tiếp sang `/portal/seller/connection-requests`.
+
+### 9.2. Ma Trận Truy Vết Khép Kín Bổ Sung (Traceability Matrix Delta CR-02)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Thành Phần UI (UI Component) | Hợp Đồng API (API Endpoint) | Kiểm Thử Tự Động (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`REQ-BUYER-TYPE-001`** | `BR-BUYER-TYPE-01` | `AC-BUYER-01`, `AC-BUYER-02`, `AC-BUYER-03`, `AC-BUYER-08` | `UI-BUYER-CARD-01` (`BuyerProfileCard.tsx`), `ConnectionRequestDetailModal.tsx` | `API-BUYER-TYPE-01` (`GET /api/v1/brokerage/requests/{id}`) | `TEST-BUYER-TYPE-01` (`buyer-profile-card.test.tsx`, `pdpd-masking.test.ts`) |
+| **`REQ-BRK-09`** | `BR-BRK-08` | `AC-BUYER-04`, `AC-BUYER-06` | `UI-SELLER-INBOX-001` (`/portal/seller/connection-requests/page.tsx`) | `GET /api/v1/brokerage/requests`, `PUT /requests/{id}/respond` | `seller-connection-requests.test.tsx` |
+| **`REQ-BRK-10`** | `BR-BRK-08` | `AC-BUYER-05` | `UI-SELLER-KANBAN-001` (`/portal/opportunities/pipeline/page.tsx`) | `GET /api/v1/brokerage/opportunities`, `PUT /opportunities/{id}/stage` | `opportunities-pipeline.test.tsx` |
+| **`REQ-BRK-11`** | `BR-BRK-09` | `AC-BUYER-04`, `AC-BUYER-05`, `AC-BUYER-07` | `SourceCode/frontend/src/app/portal/layout.tsx` | N/A (Frontend Router & Layout) | `portal-layout-navigation.test.tsx` |
+
+
 
 

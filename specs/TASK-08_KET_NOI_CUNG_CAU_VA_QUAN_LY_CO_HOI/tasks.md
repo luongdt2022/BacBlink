@@ -211,3 +211,132 @@
   - Kiểm tra không rò rỉ mock ngầm (Zero-Mock Assurance) cho toàn bộ màn hình Pipeline và Tab Inbound.
   - Tiêu chí kiểm chứng: Toàn bộ suite `page.test.tsx` chạy đạt 100% Pass, không có warning hay lỗi console.
 
+---
+
+## Phase 8: Delta v5 (CR-TASK-08-DELTA-01) — Khép Kín Luồng Giao Dịch Cung - Cầu 2 Chiều (Đặt Mua Sản Phẩm Thương Mại & Inbound Lead)
+
+> **Mục tiêu**: Thực thi thiết kế kỹ thuật của Delta `CR-TASK-08-DELTA-01` theo quyết định `PO-DEC-20261102-02` (WS-05), bảo đảm cơ chế Atomic Dual-Write (ACID transaction) ghi đồng thời `DemandItem` và `ConnectionRequest`, khép kín phễu chuyển đổi 2 chiều giữa Bên Mua và Bên Bán.
+
+### 1. Phân Hệ Backend Core API (.NET)
+
+- [x] T041 [BE] [CONTRACT] Mở rộng DTO `CreateQuickDemandItemRequest` trong `SourceCode/backend/apps/api/V1Compat/DemandController.cs`:
+  - Bổ sung các trường tùy chọn: `Guid? OfferId = null`, `string? OfferTitle = null`, `string? OfferCode = null`, `bool? IsCommercialOrder = null`.
+  - Tiêu chí kiểm chứng: Build solution `dotnet build SourceCode/backend/apps/api/NacenTech.Api.csproj` thành công, không phát sinh cảnh báo hay lỗi biên dịch.
+
+- [x] T042 [BE] Triển khai giao dịch nguyên tử Atomic Dual-Write trong `DemandController.CreateQuickDemandItem`:
+  - Sử dụng `await using var transaction = await db.Database.BeginTransactionAsync(ct);` bao bọc toàn bộ khối xử lý.
+  - Thao tác 1: Ghi bản ghi `DemandItem` vào bảng `demand.demand_items`.
+  - Thao tác 2: Khi `req.OfferId.HasValue && req.OfferId.Value != Guid.Empty`, tra cứu `SellerTechnologyOffer` từ `technology.seller_technology_offers`. Nếu tìm thấy, thực hiện INSERT trực tiếp vào `brokerage.connection_requests`:
+    * `request_code = $"REQ-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}"`
+    * `sender_user_id = Actor.PersonId ?? Guid.NewGuid()`
+    * `sender_org_name = req.ApplicationScale ?? Actor.OrganizationName ?? "Khách hàng Bên Mua"`
+    * `sender_role = "BUYER"`
+    * `receiver_org_name = offer.EnterpriseName ?? "Nhà Cung Ứng"`
+    * `receiver_user_id = offer.CreatedBy`
+    * `demand_id = demandItem.Id`
+    * `target_offer_id = offer.Id`
+    * `offer_id = offer.Id`
+    * `seller_organization_id = offer.EnterpriseId`
+    * `message = req.DesiredSolution ?? req.TechnicalProblem`
+    * `proposed_budget_range = req.BudgetRange ?? "Thỏa thuận"`
+    * `status = "PENDING"`
+    * `sla_deadline = DateTimeOffset.UtcNow.AddHours(48)`
+  - Thao tác 3: `await transaction.CommitAsync(ct);`. Bắt ngoại lệ trong khối `catch` để `await transaction.RollbackAsync(ct);` và trả về HTTP 500 kèm mã `ERR_ATOMIC_COMMERCIAL_ORDER_FAILED`.
+  - Trả về HTTP 200 payload chứa cả: `itemId`, `itemCode`, `connectionRequestId`, `requestCode`.
+  - Tiêu chí kiểm chứng: Gọi API với `offerId` hợp lệ, kiểm tra CSDL PostgreSQL có đúng 1 bản ghi `demand_items` và 1 bản ghi `connection_requests` liên kết qua `demand_id`.
+
+---
+
+### 2. Phân Hệ Frontend Web Portal (Next.js)
+
+- [x] T043 [FE] Cập nhật API client `submitQuickDemand` trong `SourceCode/frontend/src/services/api/technology-offer.ts`:
+  - Bổ sung các trường trả về vào interface: `connectionRequestId?: string`, `requestCode?: string`.
+  - Đảm bảo trích xuất đúng `connectionRequestId` và `requestCode` từ JSON response của API.
+  - Tiêu chí kiểm chứng: Function trả về đầy đủ object có `itemCode` và `requestCode`.
+
+- [x] T044 [FE] Nâng cấp Màn hình Chi tiết Chào Bán `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx`:
+  - Khai báo state `createdRequestCode` để lưu trữ mã kết nối trả về từ `submitQuickDemand`.
+  - Cập nhật modal thông báo thành công: Hiển thị cả Mã đơn mua (`DMD-*`) và Mã yêu cầu kết nối Bên Bán (`REQ-*`).
+  - Hiển thị thông báo hướng dẫn khách hàng theo dõi đơn mua tại `/portal/buyer/demands?tab=commercial`.
+  - Tiêu chí kiểm chứng: Mở form đặt mua sản phẩm thương mại, submit thành công modal hiển thị 2 mã định danh rõ ràng.
+
+- [x] T045 [FE] Nâng cấp Màn hình Quản Lý Cơ Hội Pipeline `SourceCode/frontend/src/app/portal/opportunities/pipeline/page.tsx`:
+  - Kiểm tra điều kiện render thẻ Inbound: Khi thẻ có `req.targetOfferId || req.offerId`:
+    * Hiển thị badge màu xanh ngọc bích (Emerald): `[Đơn Mua Hàng Thương Mại]`.
+    * Thêm liên kết click vào tiêu đề sản phẩm mở chi tiết `/chao-ban-cong-nghe/[id]`.
+    * Hiển thị đồng hồ đếm ngược hạn phản hồi SLA 48h.
+  - Tiêu chí kiểm chứng: Thẻ Inbound sinh ra từ đơn đặt mua thương mại hiển thị đầy đủ badge và link chào bán.
+
+---
+
+### 3. Phân Hệ Kiểm Thử Tự Động & Quality Gate [Test]
+
+- [x] T046 [TEST] Bộ Kiểm Thử Nghiệm Thu 4 Tầng & Đối Soát PostgreSQL Toàn Vẹn:
+  - Unit Test: Chạy invariant tests xác nhận quy tắc che mờ PDPD và SLA.
+  - Contract & DB Audit Test: Viết integration test gửi request `POST /api/v1/demands/items` và truy vấn trực tiếp PostgreSQL xác thực tính toàn vẹn 2 chiều (`CommercialOrderDemandBridgeTests.cs`).
+  - Component Test: Cập nhật `page.test.tsx` tại pipeline để bao phủ kịch bản render thẻ `[Đơn Mua Hàng Thương Mại]`.
+  - Tiêu chí kiểm chứng: 100% tests passed (223/223 passed), 0 lỗi hồi quy. Đã bóc trần và vá lỗi rò rỉ dữ liệu khi offer không tồn tại (`BUG-QC-CR01-01`). Báo cáo nghiệm thu đã lưu tại `QC_EXECUTION_REPORT_CR01.json`.
+
+---
+
+## Phase 9: Delta CR-TASK-08-DELTA-02 — Máy Trạng Thái Đồng Bộ 2 Chiều Trạng Thái Đơn Hàng Thương Mại & Vòng Đời Deal Room
+
+> **Căn cứ**: [`CR-TASK-08-DELTA-02.md`](./deltas/CR-TASK-08-DELTA-02.md), [`ADR-0013-BI-DIRECTIONAL-ORDER-STATE-MACHINE-SYNC.md`](../../docs/decisions/ADR-0013-BI-DIRECTIONAL-ORDER-STATE-MACHINE-SYNC.md), và [`plan_delta_cr02.md`](./plan_delta_cr02.md).  
+> **Mục tiêu**: Thiết lập máy trạng thái đồng bộ 2 chiều nguyên tử (ACID Transaction) giữa `demand.demand_items.status`, `brokerage.connection_requests.status` và `brokerage.opportunities.stage`. Phía Bên Mua tự động nhảy sang Bước 2 ("Đang xử lý & Báo giá"), Bước 1 tích xanh [✓], hiển thị nút CTA *"Vào Deal Room Thảo Luận &rarr;"*, và khóa nút Hủy đơn khi Bên Bán đã tiếp nhận.
+
+### 1. Phân Hệ Backend Core API (.NET) & CSDL PostgreSQL
+
+- [x] T047 [BE] Mở rộng `BrokerageControllers.cs` endpoint `PUT /api/v1/brokerage/requests/{id}/respond`:
+  * Tích hợp CSDL transaction nguyên tử (`conn.BeginTransactionAsync()` hoặc `IDbContextTransaction`).
+  * Khi `action == "ACCEPT"`: Lấy `demand_id` từ `connection_requests`. Nếu `demand_id != null`, thực thi `UPDATE demand.demand_items SET status = 'PROCESSING', updated_at = now() WHERE id = @demandId;`.
+  * Khi `action == "REJECT"`: Nếu `demand_id != null`, thực thi `UPDATE demand.demand_items SET status = 'REJECTED', updated_at = now() WHERE id = @demandId;`.
+  * Khởi tạo bản ghi thương vụ `brokerage.opportunities` (`stage = 'INITIATED'`).
+  * Rollback 100% nếu có lỗi, trả về HTTP 200 kèm `syncedDemandStatus`.
+  * Tiêu chí kiểm chứng: Bên Bán tiếp nhận hoặc từ chối, bản ghi `demand.demand_items` tương ứng cập nhật đúng trạng thái `PROCESSING` / `REJECTED` trong cùng transaction.
+
+- [x] T048 [BE] Mở rộng `BrokerageControllers.cs` endpoint `PUT /api/v1/brokerage/opportunities/{id}/stage` (`UpdateOpportunityStage`):
+  * Thẩm định FSM chuyển giai đoạn hợp lệ theo quy tắc `BR-BRK-06`.
+  * Tích hợp CSDL transaction nguyên tử.
+  * Khi `stage` chuyển sang `NEGOTIATING`: Tra cứu `connection_request_id` từ `opportunities`, lấy `demand_id`. Nếu `demand_id != null`, thực thi `UPDATE demand.demand_items SET status = 'NEGOTIATING', updated_at = now() WHERE id = @demandId;`.
+  * Khi `stage` chuyển sang `MOU_SIGNED` hoặc `COMPLETED`: Nếu `demand_id != null`, thực thi `UPDATE demand.demand_items SET status = 'COMPLETED', updated_at = now() WHERE id = @demandId;`.
+  * Commit transaction, trả về response kèm `syncedDemandStatus`.
+  * Tiêu chí kiểm chứng: Chuyển giai đoạn trong Deal Room / Pipeline, `demand_items.status` tự động đồng bộ sang `NEGOTIATING` hoặc `COMPLETED`.
+
+---
+
+### 2. Phân Hệ Frontend Web Portal (Next.js 15)
+
+- [x] T049 [FE] Cập nhật `OrderTrackingStepper.tsx` (`SourceCode/frontend/src/components/demand/OrderTrackingStepper.tsx`):
+  * Cập nhật mô tả Bước 2: nhãn chuẩn *"Bên bán đã tiếp nhận & đang xử lý"*.
+  * Đảm bảo hiển thị trực quan: Khi `status === 'PROCESSING'`, Bước 1 tích xanh `CheckCircle2` [✓], Bước 2 sáng đèn đang xử lý (active ring, pulse).
+  * Đảm bảo `mapStatusToStepIndex` phân giải chính xác `stepIndex = 1` cho `PROCESSING`, `stepIndex = 2` cho `NEGOTIATING`, `stepIndex = 3` cho `COMPLETED`.
+  * Tiêu chí kiểm chứng: Mở Stepper với `status="PROCESSING"`, Bước 1 hiển thị tích xanh và Bước 2 sáng đèn.
+
+- [x] T050 [FE] Cập nhật Bàn Làm Việc Bên Mua (`SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`):
+  * Tại Modal Chi Tiết Đơn Hàng (`selectedOrder`): Nếu `isCommercialDemandItem(selectedOrder)` và trạng thái là `PROCESSING`, `NEGOTIATING`, hoặc `COMPLETED`:
+    - Tra cứu hoặc liên kết tới Deal Room tương ứng (qua `GET /api/v1/brokerage/opportunities?search={selectedOrder.itemCode}` hoặc liên kết ID).
+    - Hiển thị nút CTA nổi bật: **"Vào Deal Room Thảo Luận &rarr;"** (icon `Handshake`, phong cách Emerald).
+  * Khóa nút "Hủy đơn": Chỉ cho phép hủy khi đơn còn ở Bước 1 (`SUBMITTED` / `PENDING`). Khi đã chuyển sang Bước 2 trở đi, nút "Hủy đơn" tuyệt đối bị ẩn.
+  * Tiêu chí kiểm chứng: Modal chi tiết đơn hàng hiển thị nút Vào Deal Room khi đơn đã được tiếp nhận, và nút Hủy đơn bị ẩn.
+
+---
+
+### 3. Phân Hệ Kiểm Thử Tự Động & Quality Gate (DoD)
+
+- [x] T051 [TEST/INT] Xây dựng Integration Tests xUnit và DB Verification Tests:
+  * Viết bộ test `OrderStateMachineSyncTests.cs` kiểm chứng:
+    - Gọi API `PUT /requests/{id}/respond` với `ACCEPT` $\rightarrow$ DB `demand.demand_items` chuyển sang `PROCESSING`.
+    - Gọi API `PUT /requests/{id}/respond` với `REJECT` $\rightarrow$ DB `demand.demand_items` chuyển sang `REJECTED`.
+    - Gọi API `PUT /opportunities/{id}/stage` với `NEGOTIATING` $\rightarrow$ DB `demand.demand_items` chuyển sang `NEGOTIATING`.
+    - Kiểm chứng tính nguyên tử: Giả lập lỗi DB cập nhật `demand_items` $\rightarrow$ Rollback toàn bộ, `connection_requests` giữ nguyên trạng thái cũ.
+  * Tiêu chí kiểm chứng: 100% integration tests passed.
+
+- [x] T052 [TEST/E2E] Xây dựng Unit tests Vitest và Kịch bản Kiểm Thử Playwright E2E Toàn Trình:
+  * Unit test: `OrderTrackingStepper.test.tsx` và `buyer/demands/page.test.tsx` kiểm tra render Stepper và nút CTA Deal Room.
+  * Playwright E2E: Kịch bản Bên Mua đặt mua $\rightarrow$ Bên Bán nhấn Tiếp nhận đơn $\rightarrow$ Bên Mua tải lại trang thấy đơn hàng chuyển sang Bước 2 [✓] Bước 1 $\rightarrow$ Bấm nút "Vào Deal Room" chuyển hướng thành công.
+  * Tiêu chí kiểm chứng: Toàn bộ test suite màu xanh 100%, 0 lỗi hồi quy.
+
+
+
+
+

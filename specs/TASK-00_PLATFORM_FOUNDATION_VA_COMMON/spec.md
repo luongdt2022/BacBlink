@@ -3,9 +3,11 @@
 **Feature Branch**: `foundation-platform-common`  
 **Feature Directory**: `specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Created**: 25/09/2026  
-**Status**: Completed (Shipped Gate 5)  
+**Version**: 1.16.0 (Delta v16 - CR-2026-020 Auto-Login On Register)  
+**Status**: Completed (Shipped Gate 5 - CR-2026-020)  
+**Last Updated**: 02/11/2026  
 **Ánh Xạ Kỹ Thuật**: Nền tảng hạ tầng, Modular Monolith Clean Architecture, Shared Kernel & Docker Compose  
-**Phạm Vi**: Backend .NET Core (`backend/`), Docker Dev Environment, Shared Contracts & Base Entities  
+**Phạm Vi**: Backend .NET Core (`backend/`), Frontend Next.js (`frontend/`), JWT Auth Session, Role Gateway Routing  
 
 ---
 
@@ -753,3 +755,60 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 | **REQ-DEL-00-05** | `BR-DEL-00-01` | `AC-DEL-00-05` | `src/app/portal/page.tsx` | `src/app/portal/page.test.tsx`, `portal-dashboard.test.tsx` |
 
 
+
+
+---
+
+## Spec Delta v16 (CR-2026-020): Tự Động Thiết Lập Phiên Đăng Nhập Sau Khi Đăng Ký Thành Công (Auto-Login On Register)
+
+> **Căn cứ phê duyệt:** Quyết định phê duyệt của Product Owner (`nacen-po-pm`) và Senior BA (`nacen-ba`) theo Quyết định `PO-DEC-20261102-01` (CR-2026-020) tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 18; Chuẩn hóa Onboarding Gov-Tech không gián đoạn (Zero Friction).
+
+### 1. Bối Cảnh & Lý Do Thay Đổi (Background & Problem Statement)
+
+1. **Loại bỏ quy trình gián đoạn (Broken Flow)**: Ở phiên bản trước, sau khi đăng ký tài khoản thành công tại `/register`, hệ thống bắt người dùng phải chuyển sang `/login` rồi nhập lại thủ công Email và Mật khẩu vừa tạo. Điều này gây ma sát lớn (UX Friction) và giảm tỷ lệ Onboarding thành công.
+2. **Kỳ vọng trải nghiệm chuẩn hóa**: Ngay khi tài khoản được tạo thành công trên hệ thống, phiên làm việc (JWT Session) phải được tự động thiết lập và chuyển hướng người dùng thẳng về trang chủ hoặc không gian làm việc mà không cần nhập lại mật khẩu.
+
+### 2. Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+
+- **REQ-AUTH-008 (Tự Động Thiết Lập Phiên Đăng Nhập Sau Khi Đăng Ký)**:
+  - Khi form đăng ký tại `src/app/(auth)/register/page.tsx` nhận được phản hồi HTTP 201 (Created) từ `POST /api/v1/auth/register`, hệ thống MUST tự động thực thi chuỗi đăng nhập tiếp theo bằng thông tin Email và Password người dùng vừa cung cấp.
+  - Lưu trữ an toàn JWT Bearer Token vào LocalStorage (`nacentwin_access_token`) và ngữ cảnh người dùng (`nacentwin_user_context`) với role `PUBLIC_USER`.
+  - Hiển thị Toast thông báo thành công: *"Đăng ký thành công! Chào mừng bạn gia nhập NacenTech."*
+  - Tự động điều hướng an toàn qua `router.push("/")` (hoặc đường dẫn theo `getRedirectPathByRole(user.role)`).
+  - Không xóa trắng form trước khi phiên đăng nhập được thiết lập thành công.
+
+- **BR-AUTH-009 (Quy Tắc Xử Lý Trạng Thái Nút Bấm, Chống Double-Submit & Fallback Mạng)**:
+  - **Trạng thái xử lý (5 UX States)**: Nút "Đăng ký thành viên" MUST bị vô hiệu hóa (disabled) và hiển thị Spinner trong suốt chu trình 2 giai đoạn:
+    * Giai đoạn 1: *"Đang tạo tài khoản..."*
+    * Giai đoạn 2: *"Đang khởi tạo phiên làm việc..."*
+  - **Chống spam / Click đúp**: Ngăn chặn người dùng bấm nhiều lần gây trùng lặp request hoặc rate-limit.
+  - **Graceful Fallback**: Trong trường hợp tạo tài khoản thành công nhưng cuộc gọi đăng nhập tiếp theo thất bại do gián đoạn mạng đột xuất:
+    * Giữ nguyên dữ liệu form.
+    * Hiển thị thông báo hướng dẫn người dùng: *"Tài khoản của bạn đã được khởi tạo thành công! Vui lòng bấm để đăng nhập"* kèm nút chuyển hướng sang `/login?registered=true&email=...`.
+
+- **UI-AUTH-003 (Phản Hồi Giao Diện Người Dùng)**:
+  - Loại bỏ hoàn toàn khối banner tĩnh màu xanh lá bắt người dùng bấm link đăng nhập khi luồng auto-login hoạt động bình thường.
+  - Tích hợp Toast notification thông báo chào mừng từ Design System.
+
+- **TEST-AUTH-004 (Tiêu Chuẩn Kiểm Thử Khép Kín)**:
+  - `src/app/(auth)/register/page.test.tsx` cập nhật kiểm thử xác nhận:
+    1. Cuộc gọi register thành công kích hoạt tiếp cuộc gọi login.
+    2. LocalStorage được ghi nhận token và user context.
+    3. `router.push` được gọi để chuyển hướng.
+    4. Xử lý fallback an toàn khi mock login thất bại.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-CR-020.1 (Seamless Auto-Login)**: Người dùng sau khi đăng ký thành công không còn phải nhập lại mật khẩu tại `/login`.
+- **AC-CR-020.2 (Session Persistence)**: Sau khi tự động đăng nhập, `localStorage` chứa đầy đủ `nacentwin_access_token` và `nacentwin_user_context` với vai trò `PUBLIC_USER`.
+- **AC-CR-020.3 (Header Sync)**: Header của trang web tự động nhận diện danh tính và hiển thị menu tài khoản ngay khi chuyển trang.
+- **AC-CR-020.4 (Double-submit Prevention)**: Nút submit bị khóa trong toàn bộ quá trình register & auto-login.
+- **AC-CR-020.5 (Network Fallback)**: Nếu auto-login gặp sự cố mạng, hiển thị thông báo chuyển hướng sang trang login rõ ràng.
+
+### 4. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-AUTH-008** | `BR-AUTH-009` | `AC-CR-020.1`, `AC-CR-020.2` | `src/app/(auth)/register/page.tsx` | `src/app/(auth)/register/page.test.tsx` |
+| **BR-AUTH-009** | `BR-AUTH-009` | `AC-CR-020.4`, `AC-CR-020.5` | `src/app/(auth)/register/page.tsx` | `src/app/(auth)/register/page.test.tsx` |
+| **UI-AUTH-003** | `BR-AUTH-009` | `AC-CR-020.3` | `src/app/(auth)/register/page.tsx`, Header | `page.test.tsx`, Playwright E2E |

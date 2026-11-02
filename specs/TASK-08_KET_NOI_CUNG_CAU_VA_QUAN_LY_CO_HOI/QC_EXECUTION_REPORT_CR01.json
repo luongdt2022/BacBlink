@@ -1,0 +1,133 @@
+{
+  "taskId": "T046",
+  "changeRequest": "CR-2026-TASK08-01",
+  "role": "Quality Control & Verification Specialist (QC)",
+  "executionDate": "2026-11-02T11:04:00+07:00",
+  "environment": {
+    "database": {
+      "type": "PostgreSQL 16 with pgvector",
+      "container": "nacentech-postgres-1",
+      "port": 55440,
+      "databaseName": "nacentech"
+    },
+    "backend": {
+      "framework": ".NET 10.0 (C# 13)",
+      "server": "Kestrel",
+      "port": 5080,
+      "environment": "Development"
+    },
+    "frontend": {
+      "framework": "Next.js 15.2.1 (React 19)",
+      "port": 3000
+    },
+    "testMethodology": "Zero-Mock, Real Database Transactions, Real JWT Authentication"
+  },
+  "summary": {
+    "totalTestCases": 223,
+    "passed": 223,
+    "failed": 0,
+    "criticalBugsFoundAndFixed": 1,
+    "gate4Status": "RECOMMENDED_PASS"
+  },
+  "testSuites": [
+    {
+      "suite": "NacenTech.Tests.Invariants",
+      "framework": "xUnit (.NET 10)",
+      "scope": "Kiểm thử bất biến kiến trúc và domain logic",
+      "total": 184,
+      "passed": 184,
+      "failed": 0
+    },
+    {
+      "suite": "NacenTech.Modules.Demand.Tests",
+      "framework": "xUnit (.NET 10)",
+      "scope": "Kiểm thử vòng đời nhu cầu công nghệ & TNI scoring engine",
+      "total": 21,
+      "passed": 21,
+      "failed": 0
+    },
+    {
+      "suite": "NacenTech.Tests.Integration (CommercialOrderDemandBridgeTests)",
+      "framework": "xUnit (.NET 10) + Real PostgreSQL container",
+      "scope": "Kiểm thử tích hợp luồng Đặt mua thương mại CSDL PostgreSQL thật (Atomicity, Rollback, RBAC)",
+      "total": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "suite": "Frontend Unit & Component Tests (Vitest)",
+      "framework": "Vitest 5.0.2 / Testing Library",
+      "scope": "Pipeline Inbound UI, ConnectionRequestDetailModal, TechnologyOffer API Service",
+      "total": 15,
+      "passed": 15,
+      "failed": 0
+    }
+  ],
+  "deepDatabaseVerification": {
+    "buyer": {
+      "email": "public1@gmail.com",
+      "userId": "01a19a28-9b8b-79a7-8998-9535a4d22266",
+      "role": "PUBLIC_USER"
+    },
+    "targetOffer": {
+      "id": "07a6560f-c928-51b4-8631-fd7966d3a457",
+      "offerCode": "OFF-CFOC-001",
+      "title": "Máy quét 3D quang học độ chính xác cao Made in Vietnam",
+      "enterpriseName": "Trung tâm Quang điện tử (CFOC) - Viện Ứng dụng Công nghệ",
+      "status": "APPROVED"
+    },
+    "seller": {
+      "email": "quangdientu@cfoc.vn",
+      "userId": "79b678d4-786a-5f55-923a-c449f9c1e5a6",
+      "role": "SELLER",
+      "organizationName": "Trung tâm Quang điện tử (CFOC) - Viện Ứng dụng Công nghệ"
+    },
+    "generatedArtifacts": {
+      "demandItem": {
+        "id": "01a19a66-e864-7fd7-9ca9-234213ac4bcb",
+        "itemCode": "DMD-20261102-C474BE",
+        "tniScore": 91,
+        "tniClassification": "VeryHigh",
+        "technicalProblem": "Cần máy quét 3D phục vụ đo kiểm chính xác khuôn mẫu cơ khí",
+        "createdBy": "01a19a28-9b8b-79a7-8998-9535a4d22266",
+        "createdAt": "2026-11-02 03:56:37.861553+00"
+      },
+      "connectionRequest": {
+        "id": "2ca55485-c7fe-4b2a-ac9b-e5201627941b",
+        "requestCode": "REQ-20261102-F8D83D",
+        "senderUserId": "01a19a28-9b8b-79a7-8998-9535a4d22266",
+        "receiverOrgName": "Trung tâm Quang điện tử (CFOC) - Viện Ứng dụng Công nghệ",
+        "demandId": "01a19a66-e864-7fd7-9ca9-234213ac4bcb",
+        "targetOfferId": "07a6560f-c928-51b4-8631-fd7966d3a457",
+        "message": "[Đơn Hàng Thương Mại] Đặt mua thiết bị máy quét 3D OFF-CFOC-001 chuyển giao công nghệ kèm đào tạo",
+        "status": "ACCEPTED",
+        "createdAt": "2026-11-02 03:56:37.940822+00"
+      },
+      "createdDeal": {
+        "id": "7669792a-8535-4135-bdae-fe386080ab35",
+        "opportunityCode": "DEAL-2026-9A55",
+        "connectionRequestId": "2ca55485-c7fe-4b2a-ac9b-e5201627941b",
+        "stage": "INITIATED",
+        "title": "Cơ hội hợp tác chuyển giao công nghệ giữa Công ty TNHH Cơ Khí Chính Xác Alpha và Trung tâm Quang điện tử (CFOC) - Viện Ứng dụng Công nghệ"
+      }
+    },
+    "crossVerificationResults": {
+      "demandIdMatchesConnectionRequestDemandId": true,
+      "targetOfferIdMatches": true,
+      "receiverOrgNameMatchesSeller": true,
+      "statusTransitionPendingToAccepted": true,
+      "dealRoomGeneratedAutomatically": true
+    }
+  },
+  "destructiveTestingAndBugs": [
+    {
+      "bugId": "BUG-QC-CR01-01",
+      "severity": "HIGH",
+      "description": "Lỗ hổng rò rỉ dữ liệu mồ côi (Business Integrity Leak) khi người dùng truyền OfferId không tồn tại hoặc Offer chưa APPROVED.",
+      "rootCause": "DemandController.CreateQuickDemandItem không validate offer != null và offer.Status == APPROVED trước khi ghi connection_request, dẫn đến tạo connection_request rác với receiver_org_name generic 'Nhà Cung Ứng' và target_offer_id ma.",
+      "reproductionSteps": "Gọi POST /api/v1/demands/items với offerId='99999999-9999-9999-9999-999999999999'. Kết quả trước khi sửa: Trả về HTTP 200 OK và sinh bản ghi ma trong connection_requests.",
+      "resolution": "Bổ sung guard clause: Trả về 404 Not Found (ERR_OFFER_NOT_FOUND) nếu offer không tồn tại; trả về 400 Bad Request (ERR_OFFER_NOT_APPROVED) nếu offer chưa được duyệt. Thực hiện rollback sạch sẽ.",
+      "verificationAfterFix": "Chạy test phá hoại với fake OfferId: Trả về HTTP 404. Truy vấn CSDL xác nhận 0 bản ghi rác trong demand.demand_items và 0 bản ghi rác trong brokerage.connection_requests."
+    }
+  ]
+}

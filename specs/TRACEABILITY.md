@@ -357,6 +357,19 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **GeneralPortalDashboard 3 Khối Cá Nhân Hóa** | `REQ-PUB-DASH-001`, `AC-PUB-03` | `T-00.78` | `src/app/portal/page.tsx` | Hero Banner chào mừng cá nhân hóa, 3-Card Explorer Grid, Banner CTA Nâng Hạng 4 Lộ Trình |
 | **Kiểm thử hồi quy toàn diện Zero Regression** | `AC-PUB-04..05`, `QC-4-TIERS` | `T-00.79`, `T-00.80` | `layout.test.tsx`, `portal-navigation-delta.test.tsx`, `register/page.test.tsx` | 100% tests PASS, bảo vệ an toàn toàn diện |
 
+---
+
+## 28. TASK-03 Delta v14 (CR-TASK-03-DELTA-01): Vòng Đời Trạng Thái Bài Toán, Thẩm Định Sở KH&CN & PDPD Preview Guard
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Nâng cấp API chi tiết kiểm soát quyền Actor & trạng thái PENDING** | `REQ-BUYER-DMD-004`, `BR-DMD-PRIV-01`, `AC-DMD-01..03` | `Task 7.1` | `backend/apps/api/V1Compat/DemandController.cs` | Trả về `status`, `isOwner`, `isPendingReview`, `canViewDraft`, `canSubmitOffer`, `reviewUnit`; chặn submit chào giá khi chưa VERIFIED |
+| **Xóa bỏ hardcode, render chuẩn 4 Badges trạng thái & mô tả** | `REQ-BUYER-DMD-004`, `BR-DMD-STAT-01`, `AC-DMD-01` | `Task 7.2` | `src/app/nhu-cau-cong-nghe/[id]/page.tsx` | 4 Badge: `PENDING` (vàng), `VERIFIED` (xanh), `CONNECTED` (lam), `CLOSED` (xám); Vitest 5/5 PASS |
+| **Banner cảnh báo chờ duyệt & Tạm khóa form chào giải pháp** | `REQ-BUYER-DMD-004`, `BR-DMD-PRIV-01`, `AC-DMD-02..03` | `Task 7.3` | `src/app/nhu-cau-cong-nghe/[id]/page.tsx` | `PendingApprovalBanner` hiển thị rõ thẩm quyền Cán bộ Sở KH&CN; form chào giá bị tạm khóa khi PENDING |
+| **Bộ kiểm thử Unit/Integration Backend & Frontend** | `AC-DMD-01..04`, `QC-4-TIERS` | `Task 7.4` | `DemandApprovalLifecycleAndPrivacyTests.cs`, `page.test.tsx` | 29/29 .NET tests PASS, 5/5 Vitest PASS, Type check 0 lỗi |
+| **Kiểm định 4 tầng Black-box & E2E Playwright trên PostgreSQL thật** | `QC-4-TIERS`, `BR-DMD-STAT-01` | `Task 7.5` | `test_qc_cr_task03_delta01_lifecycle_and_privacy.py` | 4/4 User Journeys PASS 100% trên container `nacentech-postgres-1` (Guest, Owner, Cán bộ Sở duyệt, Hậu duyệt) |
+
+
 
 
 

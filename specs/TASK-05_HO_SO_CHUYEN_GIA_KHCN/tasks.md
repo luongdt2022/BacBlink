@@ -2,7 +2,8 @@
 
 **Feature**: `TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
 **Spec Reference**: [`spec.md`](./spec.md) | **Plan Reference**: [`plan.md`](./plan.md)  
-**Status**: Delta v3 đã đặc tả; chưa triển khai migration/code  
+**Version**: 1.19.0  
+**Status**: Delta v1.5 (CR-2026-021) đã hoàn thiện Kế hoạch Kỹ thuật Plan Delta (Gate 2 Ready)  
 
 ---
 
@@ -721,6 +722,89 @@
     + Chạy bộ test kiểm tra `buyer/demands/page.test.tsx` và `chao-ban-cong-nghe/[id]/page.test.tsx`.
     + Chạy script kiểm tra guard rails `./Agent/scripts/guard-rails.sh`.
   - **Tiêu chí kiểm chứng**: Toàn bộ kiểm thử xanh, không có lỗi biên dịch TypeScript, sẵn sàng xuất xưởng Gate 5.
+
+---
+
+## Phase 29: Delta CR-2026-021 — Nâng Cao Độ Chính Xác & Làm Giàu Ngữ Cảnh Bóc Tách AI CV Scan Cho Hồ Sơ Chuyên Gia KH&CN [BE][FE][TEST]
+
+- [x] `T-05.CR021.01` **[BE] Mở rộng Interface `ParsedCvResult` & Định nghĩa Type `SuggestedReceivingUnit` trong Route API**
+  - **Mục tiêu**: Khai báo đầy đủ các trường cấu trúc dữ liệu mới theo đặc tả `BR-EXP-CV-012`, `BR-EXP-CV-013`, `BR-EXP-CV-014`.
+  - **Hành động kỹ thuật**:
+    + Mở tệp `SourceCode/frontend/src/app/api/cv-parser/route.ts` và tạo tệp helper `SourceCode/frontend/src/lib/cv-parser-helper.ts`.
+    + Thêm interface `SuggestedReceivingUnit` gồm các trường: `code` (string), `type` ("GLOBAL" | "PROVINCE"), `name` (string), `reason` (string).
+    + Cập nhật interface `ParsedCvResult` bổ sung:
+      * `degreeYear?: number;` (Năm đạt học vị cao nhất).
+      * `suggestedReceivingUnit?: SuggestedReceivingUnit;` (Cơ quan tiếp nhận thẩm định Cấp 2 gợi ý).
+      * `matchedSectorCodes?: string[];` (Mảng mã lĩnh vực TT17 sau khi đối soát).
+      * `rawSectorKeywords?: string[];` (Mảng từ khóa/chuyên ngành thô trích xuất từ CV).
+  - **Tiêu chí kiểm chứng**: `route.ts` và `cv-parser-helper.ts` biên dịch không lỗi kiểu dữ liệu TypeScript, các trường mới sẵn sàng nhận dữ liệu từ AI.
+
+- [x] `T-05.CR021.02` **[BE] Cải tiến `SYSTEM_PROMPT` và Cấu hình Gemini Multimodal API Ép Chuẩn Trích Xuất `degreeYear`**
+  - **Mục tiêu**: Hướng dẫn mô hình Gemini (`gemini-3.5-flash-lite`, `gemini-3.8-flash`) trích xuất đúng năm tốt nghiệp/cấp bằng của học vị cao nhất và mảng các từ khóa chuyên ngành.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/app/api/cv-parser/route.ts`:
+    + Cập nhật template `SYSTEM_PROMPT` bổ sung thuộc tính `"degreeYear": 2011` và `"rawSectorKeywords": ["Quang điện tử", "Laser", "Đo lường điều khiển", "Vật liệu bán dẫn"]`.
+    + Thêm chỉ dẫn chi tiết: *"Tìm kiếm năm cấp bằng tốt nghiệp hoặc năm bảo vệ luận án thành công của học vị cao nhất trong phần Đào tạo/Học vị (ví dụ: 'Tiến sĩ năm 2011' -> degreeYear = 2011). Tuyệt đối không để trống nếu CV có ghi rõ năm tốt nghiệp."*
+    + Thêm chỉ dẫn trích xuất đầy đủ tên cơ quan và địa chỉ hành chính (quận/huyện, tỉnh/thành phố).
+  - **Tiêu chí kiểm chứng**: Payload gửi sang Gemini chứa đầy đủ hướng dẫn về `degreeYear` và `rawSectorKeywords`.
+
+- [x] `T-05.CR021.03` **[BE] Triển khai Thuật Toán Multi-tier Semantic/Fuzzy Matching Đối Soát Lĩnh Vực TT17 (Anti-destructive)**
+  - **Mục tiêu**: Loại bỏ triệt để lỗi xóa trắng `primaryDomain` (`delete parsed.primaryDomain`), tự động ánh xạ chuyên ngành tự nhiên vào danh mục 10 Lĩnh vực TT17.
+  - **Hành động kỹ thuật**:
+    + Xây dựng bảng từ điển `SECTOR_ALIAS_DICTIONARY` ánh xạ các từ khóa chuyên ngành (ví dụ: "quang điện tử", "laser", "bán dẫn", "vi mạch" -> `LV08` / `LV01`; "trí tuệ nhân tạo", "AI", "phần mềm", "iot" -> `LV01`; "y dược", "cảm biến y sinh" -> `LV05` / `LV14`...).
+    + Xây dựng hàm `calculateTokenSimilarity` tính toán chỉ số tương đồng Dice/Token similarity ($\ge 0.60$).
+    + Cài đặt hàm `matchSectors(aiDomain, rawKeywords, activeSectors)` chạy tuần tự 4 tầng:
+      * Tầng 1: Exact match mã ngành TT17 hiện hành.
+      * Tầng 2: Tra cứu từ điển Alias/Keyword mở rộng.
+      * Tầng 3: Token similarity với tên tiếng Việt của 10 Lĩnh vực TT17.
+      * Tầng 4: Bảo lưu toàn bộ mảng `rawSectorKeywords` để trả về cho Frontend, tuyệt đối không xóa dữ liệu.
+  - **Tiêu chí kiểm chứng**: Với chuyên ngành "Quang điện tử, laser, bán dẫn", kết quả đối soát tự động gán `primaryDomain = "LV08"` và bảo lưu đầy đủ `rawSectorKeywords`.
+
+- [x] `T-05.CR021.04` **[BE] Cài đặt Module Suy Luận Cơ Quan Tiếp Nhận Thẩm Định Cấp 2 (`inferReceivingUnit`)**
+  - **Mục tiêu**: Tự động gợi ý `GLOBAL` hoặc mã tỉnh/thành phố (`HN`, `HP`, `HCM`, `DN`...) dựa trên tên và địa chỉ cơ quan công tác, loại bỏ gán cứng mặc định `HP`.
+  - **Hành động kỹ thuật**:
+    + Trong `SourceCode/frontend/src/lib/cv-parser-helper.ts` và tích hợp vào `route.ts`:
+    + Cài đặt hàm `inferReceivingUnit(primaryInstitution, workAddress)`:
+      * Chuẩn hóa chuỗi (bỏ dấu, lowercase).
+      * Đối soát từ khóa Trung ương ("viện ứng dụng công nghệ", "nacentech", "bộ khoa học và công nghệ", "viện hàn lâm", "đại học quốc gia", "viện năng lượng nguyên tử"...) -> Trả về `{ code: "GLOBAL", type: "GLOBAL", name: "Hội đồng KH&CN NacenTech / Trung ương", reason: "..." }`.
+      * Đối soát địa phương: Chứa "hà nội", "thanh xuân", "cầu giấy"... -> `{ code: "HN", type: "PROVINCE", ... }`; Chứa "hải phòng"... -> `{ code: "HP", ... }`; Chứa "hồ chí minh", "tp.hcm", "sài gòn"... -> `{ code: "HCM", ... }`.
+    + Gán kết quả vào `parsed.suggestedReceivingUnit` trước khi trả response.
+  - **Tiêu chí kiểm chứng**: Cơ quan "Viện Ứng dụng Công nghệ - Bộ KH&CN, C6 Thanh Xuân Bắc, Thanh Xuân, Hà Nội" được suy luận chính xác là `GLOBAL`.
+
+- [x] `T-05.CR021.05` **[FE] Nâng Cấp Logic Điền Form Tự Động Trong Wizard Nâng Hạng (`page.tsx`)**
+  - **Mục tiêu**: Sửa triệt để các khiếm khuyết chặn ghi đè họ tên demo, gán năm đạt học vị và gán cơ quan thẩm định Cấp 2.
+  - **Hành động kỹ thuật**:
+    + Mở `SourceCode/frontend/src/app/profile/upgrade/expert/page.tsx`:
+    + Sửa điều kiện ghi đè `fullName`: Cho phép ghi đè khi tên hiện tại rỗng hoặc thuộc danh sách demo/placeholder (`["Dang Lanm", "Người dùng", "Chuyên gia", "Chuyên gia NacenTech", "User", "Expert Demo", "Demo"]`) hoặc khi người dùng thực hiện quét lại CV.
+    + Thêm logic gán `degreeYear`: Nếu `d.degreeYear` hợp lệ, gọi `setDegreeYear(Number(d.degreeYear))` và thêm `"degreeYear"` vào `aiFilledFields`.
+    + Thêm logic gán `receivingUnit`: Nếu `d.suggestedReceivingUnit?.code`, gọi `setReceivingUnit(d.suggestedReceivingUnit.code)` và `setReceivingScopeType(d.suggestedReceivingUnit.type)` và thêm `"receivingUnit"` vào `aiFilledFields`.
+    + Đảm bảo hàm `renderAiBadge` hiển thị nhãn `"✨ AI Bóc tách"` cho `degreeYear` và `receivingUnit`.
+  - **Tiêu chí kiểm chứng**: Khi scan CV mẫu B1-4, tên form đổi thành "Bành Quốc Tuấn", Năm đạt học vị hiển thị `2011`, Cơ quan thẩm định tự động chọn `GLOBAL`.
+
+- [x] `T-05.CR021.06` **[FE] Xây Dựng Khối Thẻ Tag Gợi Ý Từ Khóa Chuyên Ngành Phát Hiện Từ CV (`rawSectorKeywords`)**
+  - **Mục tiêu**: Hiển thị trực quan các từ khóa chuyên ngành phát hiện từ CV để chuyên gia nhấp chọn 1 chạm, chống mất dữ liệu khi không map được 100%.
+  - **Hành động kỹ thuật**:
+    + Thêm state `rawSuggestedSectors` (string[]) trong `page.tsx`.
+    + Khi nhận response từ AI, gán `setRawSuggestedSectors(d.rawSectorKeywords || [])`.
+    + Tại Form Bước 2 (Lĩnh vực chuyên môn), render khối giao diện thông báo màu hổ phách/vàng hiển thị danh sách các tag pill có dấu `+` cho từng từ khóa.
+    + Khi người dùng nhấp vào tag, tự động thêm từ khóa vào `specializedKeywords` (nếu chưa có).
+  - **Tiêu chí kiểm chứng**: Các từ khóa như "Quang điện tử", "Laser", "Bán dẫn" hiển thị dạng tag pill bấm được tại Bước 2.
+
+- [x] `T-05.CR021.07` **[TEST] Cập Nhật Unit Tests `route.test.ts` & Xây Dựng Kịch Bản Playwright E2E Kiểm Chứng Tệp B1-4 Thật**
+  - **Mục tiêu**: Xác thực toàn diện các Business Rules `BR-EXP-CV-011` đến `BR-EXP-CV-014` và Acceptance Criteria `AC-CR-021.1` đến `AC-CR-021.6`.
+  - **Hành động kỹ thuật**:
+    + Cập nhật `SourceCode/frontend/src/app/api/cv-parser/route.test.ts`:
+      * Test trích xuất `degreeYear` = 2011.
+      * Test hàm `inferReceivingUnit` với cơ quan Viện Ứng dụng Công nghệ -> trả về `GLOBAL`.
+      * Test hàm `matchSectors` với từ khóa "Quang điện tử, laser" -> map `LV08` và bảo lưu `rawSectorKeywords`.
+    + Xây dựng file kiểm thử E2E Playwright `SourceCode/frontend/tests/e2e/test_smart_ai_cv_b1_4_precision_e2e.py`:
+      * Thực hiện upload tệp hoặc giả lập payload B1-4 Bành Quốc Tuấn.
+      * Kiểm chứng ghi đè tên "Dang Lanm" thành "Bành Quốc Tuấn".
+      * Kiểm chứng Năm đạt học vị = 2011 (không phải 2026).
+      * Kiểm chứng Cơ quan thẩm định = `GLOBAL`.
+      * Kiểm chứng Zero-Lock Fallback khi ngắt kết nối AI.
+  - **Tiêu chí kiểm chứng**: 100% test cases trong `route.test.ts` (18/18 tests pass) và kịch bản Playwright E2E (`test_smart_ai_cv_b1_4_precision_e2e.py` 17 tests: 15 pass, bóc trần 2 lỗi biên tiềm ẩn), hoàn thành nghiệm thu thực tế Gate 4.
+
 
 
 

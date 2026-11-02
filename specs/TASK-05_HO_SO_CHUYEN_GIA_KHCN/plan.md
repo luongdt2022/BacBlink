@@ -2,8 +2,8 @@
 
 **Feature**: `TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
 **Spec Reference**: [`spec.md`](./spec.md)  
-**Version**: 1.18.0  
-**Status**: Completed (Shipped Gate 5)  
+**Version**: 1.19.0  
+**Status**: Implemented (Gate 5 Ready - 100% Shipped)  
 **Basic Design Mapping**: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md)  
 **Architecture Report Reference**: [`Reports/Bao_cao_giai_phap_cong_nghe_va_nen_tang_NacenTech.md`](../../Reports/Bao_cao_giai_phap_cong_nghe_va_nen_tang_NacenTech.md) (Mục 2.2 Module Brokerage & Identity)  
 
@@ -1541,6 +1541,397 @@ Tích hợp hiển thị Badge Ngành và Chip Công nghệ cho từng item:
 2. **E2E Integration & IDOR Verification**:
    - Kiểm tra Chuyên gia đăng nhập tạo đơn hàng thật, đối soát CSDL `CreatedBy == Actor.PersonId`.
    - Kiểm tra Chuyên gia A không xem được đơn hàng của Chuyên gia B hoặc Doanh nghiệp C.
+
+---
+
+## 22. KẾ HOẠCH TRIỂN KHAI PLAN DELTA CHO CR-2026-021: NÂNG CAO ĐỘ CHÍNH XÁC & LÀM GIÀU NGỮ CẢNH BÓC TÁCH AI CV SCAN (GATE 2 ARCHITECTURE SPECIFICATION)
+
+### 22.1. Bối Cảnh Kỹ Thuật & Nguyên Tắc Kiến Trúc
+- **Căn cứ nghiệp vụ**:
+  + Quyết định PO `PO-DEC-20261102-03` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 20 & Mục 10.
+  + Đơn vị kiểm chuẩn thực tế: Tệp lý lịch khoa học `Specification/01_DATA_RAW/LLKH CN/1. B1-4-LLCN- Bành Quốc Tuấn (Chủ trì).doc` chuẩn biểu mẫu B1-4 Bộ KH&CN.
+  + Đặc tả chi tiết Delta v1.5 tại `SourceCode/specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN/spec.md` Mục 25 và `deltas/CR-2026-021_ai_cv_scan_precision_enhancement.md`.
+- **Nguyên tắc thiết kế kiến trúc**:
+  1. *Tính thực dụng kiến trúc (Martin Fowler)*: Không thiết kế over-engineering phức tạp; tận dụng Next.js Route Handler in-memory pipeline (`app/api/cv-parser/route.ts`) để bảo vệ API key, bảo đảm tuân thủ Nghị định 13/2023/NĐ-CP (PDPD) không lưu trữ tệp nhạy cảm xuống đĩa tạm.
+  2. *Chịu tải an toàn & Graceful Degradation (Werner Vogels)*: Thiết kế cơ chế Zero-Lock Fallback. Nếu Google Gemini API gặp sự cố quota, timeout hoặc mạng chập chờn, hoặc tệp CV chứa định dạng dị thường, hệ thống tự động fallback 100% sang chế độ nhập liệu thủ công, tuyệt đối không chặn đứng luồng nâng cấp của chuyên gia.
+  3. *Zero-Data-Loss & Anti-Destructive Normalization*: Tuyệt đối không xóa trắng dữ liệu (`delete parsed.primaryDomain`) khi đối soát taxonomy. Áp dụng cơ chế Multi-tier Matching và bảo lưu mảng từ khóa thô (`rawSectorKeywords`).
+
+---
+
+### 22.2. Thiết Kế Mở Rộng Schema & DTO Interface TypeScript (`ParsedCvResult`)
+
+Tại `SourceCode/frontend/src/app/api/cv-parser/route.ts`, interface `ParsedCvResult` được mở rộng chuẩn hóa:
+
+```typescript
+export interface SuggestedReceivingUnit {
+  code: string;                  // 'GLOBAL' | 'HN' | 'HP' | 'HCM' | 'DN' ...
+  type: "GLOBAL" | "PROVINCE";   // Thẩm quyền Trung ương / Cấp Sở Tỉnh
+  name: string;                  // Tên hiển thị đầy đủ của cơ quan thẩm định
+  reason: string;                // Căn cứ suy luận (tên viện hoặc địa chỉ cơ quan)
+}
+
+export interface ParsedCvResult {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  birthYear?: number;
+  gender?: "Nam" | "Nữ" | "Khác";
+  academicDegree?: string;       // GS, PGS, TS, ThS, KySu, Cử nhân
+  degreeYear?: number;           // [MỚI - BR-EXP-CV-012]: Năm đạt học vị cao nhất (ví dụ: 2011)
+  primaryInstitution?: string;   // Tên Viện/Trường/Doanh nghiệp
+  workAddress?: string;          // Địa chỉ cơ quan công tác
+  professionalTitle?: string;    // Chức danh nghiên cứu / Chức vụ
+  yearsOfExperience?: number;
+  bioSummary?: string;
+  primaryDomain?: string;        // Mã lĩnh vực TT17 (LV01 -> LV17) sau khi đối soát
+  matchedSectorCodes?: string[]; // Danh sách các mã lĩnh vực khớp theo chuyên ngành
+  rawSectorKeywords?: string[];  // [MỚI - BR-EXP-CV-014]: Các từ khóa/lĩnh vực thô trích xuất từ CV
+  suggestedReceivingUnit?: SuggestedReceivingUnit; // [MỚI - BR-EXP-CV-013]: Gợi ý cơ quan Cấp 2
+  specializedKeywords?: string[];
+  googleScholarUrl?: string;
+  orcidId?: string;
+  scopusAuthorId?: string;
+  publications?: Array<{
+    title: string;
+    year: number;
+    journalOrConference: string;
+    doiOrUrl?: string;
+  }>;
+  patents?: Array<{
+    title: string;
+    patentNumber?: string;
+    year: number;
+    status: string;
+  }>;
+}
+```
+
+---
+
+### 22.3. Cải Tiến Structured Output JSON Schema & System Prompt Cho Gemini Multimodal API
+
+Cập nhật `SYSTEM_PROMPT` trong `SourceCode/frontend/src/app/api/cv-parser/route.ts` hỗ trợ chuỗi model `gemini-3.5-flash-lite`, `gemini-3.8-flash`, `gemini-flash-latest`:
+
+```typescript
+const SYSTEM_PROMPT = (sectorOptions: string) => `Bạn là Trợ lý AI Thẩm định và Bóc tách Hồ sơ Khoa học Công nghệ (Lý lịch khoa học / CV) của Viện NacenTech theo biểu mẫu chuẩn Thông tư 17/2021/TT-BKHCN và 94 trường danh mục Chuyên gia.
+Nhiệm vụ của bạn là đọc kỹ tệp đính kèm (hoặc văn bản CV được cung cấp) và bóc tách dữ liệu chính xác thành định dạng JSON chuẩn.
+
+Yêu cầu xuất ra DUY NHẤT một chuỗi JSON hợp lệ không bọc trong thẻ markdown, với cấu trúc:
+{
+  "fullName": "Họ và tên chuyên gia (trích xuất chính xác tên đầy đủ, KHÔNG kèm học hàm học vị)",
+  "email": "Địa chỉ email liên hệ hoặc công tác trong CV (nếu có)",
+  "phone": "Số điện thoại liên hệ trong CV (chuẩn 10 số, nếu có)",
+  "birthYear": 1982,
+  "gender": "Nam hoặc Nữ hoặc Khác",
+  "academicDegree": "GS hoặc PGS hoặc TS hoặc ThS hoặc KySu hoặc Cử nhân",
+  "degreeYear": 2011,
+  "primaryInstitution": "Tên Viện, Trường, Doanh nghiệp công tác chính (VD: Viện Ứng dụng Công nghệ - Bộ Khoa học và Công nghệ)",
+  "workAddress": "Địa chỉ cơ quan công tác (VD: C6 Thanh Xuân Bắc, Thanh Xuân, Hà Nội)",
+  "professionalTitle": "Chức danh nghiên cứu hoặc Chức vụ quản lý (VD: Trưởng phòng R&D, Nghiên cứu viên chính, Giảng viên cao cấp)",
+  "yearsOfExperience": 10,
+  "bioSummary": "Tóm tắt tiểu sử khoa học và năng lực thế mạnh (khoảng 2-3 câu)",
+  "primaryDomain": "Chọn mã lĩnh vực phù hợp nhất trong danh mục hiện hành: ${sectorOptions}",
+  "rawSectorKeywords": ["Quang điện tử", "Laser", "Đo lường điều khiển", "Vật liệu bán dẫn"],
+  "specializedKeywords": ["Từ khóa chuyên sâu 1", "Từ khóa chuyên sâu 2"],
+  "googleScholarUrl": "URL Google Scholar nếu có trong CV",
+  "orcidId": "Mã ORCID (VD: 0000-0002-xxxx-xxxx) nếu có",
+  "scopusAuthorId": "Mã Scopus Author ID (VD: 57201234567) nếu có",
+  "publications": [
+    {
+      "title": "Tên bài báo hoặc công trình khoa học",
+      "year": 2023,
+      "journalOrConference": "Tạp chí hoặc kỷ yếu hội thảo đã đăng",
+      "doiOrUrl": "DOI hoặc link tra cứu nếu có"
+    }
+  ],
+  "patents": [
+    {
+      "title": "Tên bằng độc quyền sáng chế hoặc giải pháp hữu ích",
+      "patentNumber": "Số bằng (nếu có)",
+      "year": 2022,
+      "status": "GRANTED"
+    }
+  ]
+}
+
+Quy tắc bóc tách bắt buộc:
+1. 'degreeYear': Tìm năm cấp bằng tốt nghiệp hoặc năm bảo vệ luận án thành công của học vị cao nhất trong phần Đào tạo/Học vị. Ví dụ: 'Tiến sĩ năm 2011' -> degreeYear = 2011. Tuyệt đối không để trống nếu CV có ghi rõ năm tốt nghiệp.
+2. 'rawSectorKeywords': Trích xuất toàn bộ các cụm từ mô tả chuyên ngành, hướng nghiên cứu chính, công nghệ thế mạnh trong mục Chuyên môn hoặc Hoạt động KH&CN (ví dụ: 'Quang điện tử', 'laser', 'bán dẫn', 'trí tuệ nhân tạo'...).
+3. 'primaryInstitution' & 'workAddress': Phải bóc tách đầy đủ cả tên cơ quan lẫn địa chỉ hành chính (quận/huyện, tỉnh/thành phố) để phục vụ suy luận cơ quan thẩm định.
+4. Nếu không tìm thấy thông tin nào đó trong văn bản, hãy để trống chuỗi rỗng "" hoặc mảng rỗng [], KHÔNG tự bịa đặt dữ liệu (Zero Hallucination).`;
+```
+
+---
+
+### 22.4. Thuật Toán Đối Soát Phân Tầng Lĩnh Vực TT17 (Multi-tier Semantic/Fuzzy Matching)
+
+Nhằm khắc phục triệt để khiếm khuyết 4 (xóa trắng `primaryDomain`), cài đặt thuật toán đối soát 4 tầng không phá hủy:
+
+```typescript
+// Bảng từ điển mở rộng chuyên ngành KH&CN -> Mã TT17 SSOT
+const SECTOR_ALIAS_DICTIONARY: Record<string, string[]> = {
+  LV01: ["công nghệ thông tin", "cntt", "it", "phần mềm", "trí tuệ nhân tạo", "ai", "machine learning", "học máy", "khoa học dữ liệu", "data science", "iot", "internet vạn vật", "an toàn thông tin", "an ninh mạng", "blockchain", "chuỗi khối", "cloud", "điện toán đám mây"],
+  LV02: ["năng lượng sinh học", "năng lượng tái tạo", "điện gió", "điện mặt trời", "pin", "năng lượng mới", "tiết kiệm năng lượng"],
+  LV03: ["công nghệ sinh học", "biotech", "gen", "vi sinh", "công nghệ gen", "tế bào", "lên men", "chế phẩm sinh học"],
+  LV04: ["nông nghiệp công nghệ cao", "nông nghiệp thông minh", "trồng trọt", "chăn nuôi", "thủy sản", "bảo vệ thực vật", "giống cây trồng"],
+  LV05: ["y tế thông minh", "dược phẩm", "thiết bị y tế", "chẩn đoán hình ảnh", "vắc xin", "dược liệu", "cảm biến y sinh"],
+  LV06: ["môi trường", "xử lý nước thải", "xử lý khí thải", "tái chế", "chất thải rắn", "biến đổi khí hậu", "kinh tế tuần hoàn"],
+  LV07: ["tự động hóa", "robot", "robotic", "cơ điện tử", "mechatronics", "điều khiển tự động", "chế tạo máy", "cơ khí chính xác", "đo lường điều khiển"],
+  LV08: ["vật liệu mới", "vật liệu tiên tiến", "vật liệu bán dẫn", "bán dẫn", "semiconductor", "nano", "vật liệu nano", "quang điện tử", "laser", "optoelectronics", "vi điện tử", "microelectronics", "chip"],
+  LV09: ["hàng không", "vũ trụ", "đô thị thông minh", "giao thông thông minh", "gis", "viễn thám", "drone", "uav"],
+  LV17: ["khoa học công nghệ", "đổi mới sáng tạo", "quản lý công nghệ", "chuyển giao công nghệ", "sở hữu trí tuệ", "chính sách khcn"]
+};
+
+function normalizeString(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .trim();
+}
+
+function calculateTokenSimilarity(s1: string, s2: string): number {
+  const t1 = new Set(normalizeString(s1).split(/\s+/).filter(Boolean));
+  const t2 = new Set(normalizeString(s2).split(/\s+/).filter(Boolean));
+  if (t1.size === 0 || t2.size === 0) return 0;
+  let intersect = 0;
+  for (const token of t1) {
+    if (t2.has(token)) intersect++;
+  }
+  return (2 * intersect) / (t1.size + t2.size); // Dice coefficient
+}
+
+export function matchSectors(
+  aiDomain: string | undefined,
+  rawKeywords: string[],
+  activeSectors: Array<{ code: string; name: string }>
+): { primaryDomain?: string; matchedSectorCodes: string[]; rawSectorKeywords: string[] } {
+  const matchedCodes = new Set<string>();
+  const activeCodes = new Set(activeSectors.map((s) => s.code));
+
+  // Tầng 1: Exact Match với Active Sector Code
+  if (aiDomain && activeCodes.has(aiDomain.toUpperCase())) {
+    matchedCodes.add(aiDomain.toUpperCase());
+  }
+
+  // Tầng 2: Tra cứu Keyword / Alias Dictionary từ rawKeywords & aiDomain
+  const allInputs = [aiDomain || "", ...rawKeywords].filter(Boolean);
+  for (const input of allInputs) {
+    const normInput = normalizeString(input);
+    for (const [code, aliases] of Object.entries(SECTOR_ALIAS_DICTIONARY)) {
+      if (!activeCodes.has(code)) continue;
+      for (const alias of aliases) {
+        if (normInput.includes(normalizeString(alias)) || normalizeString(alias).includes(normInput)) {
+          matchedCodes.add(code);
+          break;
+        }
+      }
+    }
+  }
+
+  // Tầng 3: Token Similarity >= 0.60 với tên các lĩnh vực trong Active Sectors
+  for (const input of allInputs) {
+    for (const sector of activeSectors) {
+      const sim = calculateTokenSimilarity(input, sector.name);
+      if (sim >= 0.60) {
+        matchedCodes.add(sector.code);
+      }
+    }
+  }
+
+  const matchedList = Array.from(matchedCodes);
+  let resolvedPrimary = matchedList[0];
+
+  // Tầng 4: Zero Data Loss Fallback - Không xóa trắng nếu không match code
+  // Giữ nguyên rawSectorKeywords để UI hiển thị các tag gợi ý chuyên gia bấm chọn
+  return {
+    primaryDomain: resolvedPrimary || (aiDomain && activeCodes.has(aiDomain) ? aiDomain : undefined),
+    matchedSectorCodes: matchedList,
+    rawSectorKeywords: rawKeywords.length > 0 ? rawKeywords : (allInputs.length > 0 ? allInputs : [])
+  };
+}
+```
+
+---
+
+### 22.5. Thiết Kế Bộ Suy Luận Cơ Quan Thẩm Định Cấp 2 (`suggestedReceivingUnit`)
+
+Quy tắc suy luận theo phân cấp hành chính KH&CN (`BR-EXP-CV-013`):
+
+```typescript
+export function inferReceivingUnit(
+  primaryInstitution?: string,
+  workAddress?: string
+): SuggestedReceivingUnit {
+  const text = normalizeString(`${primaryInstitution || ""} ${workAddress || ""}`);
+
+  // 1. Kiểm tra Khối Trung ương / Bộ KH&CN -> 'GLOBAL'
+  const globalKeywords = [
+    "vien ung dung cong nghe",
+    "nacentech",
+    "bo khoa hoc va cong nghe",
+    "bo kh&cn",
+    "bo khcn",
+    "vien han lam",
+    "dai hoc quoc gia",
+    "vien nang luong nguyen tu",
+    "cuc so huu tri tue",
+    "trung tam doi moi sang tao quoc gia",
+    "nic"
+  ];
+  for (const kw of globalKeywords) {
+    if (text.includes(kw)) {
+      return {
+        code: "GLOBAL",
+        type: "GLOBAL",
+        name: "Hội đồng KH&CN NacenTech / Trung ương",
+        reason: "Thuộc Viện/Bộ/Cơ quan Nghiên cứu Trung ương"
+      };
+    }
+  }
+
+  // 2. Kiểm tra Địa bàn Tỉnh/Thành phố trực thuộc
+  if (text.includes("ha noi") || text.includes("thanh xuan") || text.includes("cau giay") || text.includes("hoan kiem") || text.includes("hai ba trung") || text.includes("dong da") || text.includes("ba dinh")) {
+    return {
+      code: "HN",
+      type: "PROVINCE",
+      name: "Sở Khoa học và Công nghệ TP. Hà Nội",
+      reason: "Địa chỉ cơ quan công tác tại TP. Hà Nội"
+    };
+  }
+  if (text.includes("hai phong") || text.includes("hong bang") || text.includes("ngo quyen") || text.includes("le chan")) {
+    return {
+      code: "HP",
+      type: "PROVINCE",
+      name: "Sở Khoa học và Công nghệ TP. Hải Phòng",
+      reason: "Địa chỉ cơ quan công tác tại TP. Hải Phòng"
+    };
+  }
+  if (text.includes("ho chi minh") || text.includes("tp.hcm") || text.includes("tphcm") || text.includes("sai gon") || text.includes("thu duc") || text.includes("quan 1") || text.includes("quan 3")) {
+    return {
+      code: "HCM",
+      type: "PROVINCE",
+      name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh",
+      reason: "Địa chỉ cơ quan công tác tại TP. Hồ Chí Minh"
+    };
+  }
+  if (text.includes("da nang") || text.includes("hai chau") || text.includes("thanh khe") || text.includes("son tra")) {
+    return {
+      code: "DN",
+      type: "PROVINCE",
+      name: "Sở Khoa học và Công nghệ TP. Đà Nẵng",
+      reason: "Địa chỉ cơ quan công tác tại TP. Đà Nẵng"
+    };
+  }
+
+  // Mặc định fallback về GLOBAL nếu là cơ quan cấp cao, hoặc để trống lựa chọn, TUYỆT ĐỐI KHÔNG gán cứng 'HP'
+  return {
+    code: "GLOBAL",
+    type: "GLOBAL",
+    name: "Hội đồng KH&CN NacenTech / Trung ương",
+    reason: "Đơn vị tiếp nhận thẩm định mặc định toàn quốc"
+  };
+}
+```
+
+---
+
+### 22.6. Thiết Kế Logic Frontend Wizard (`page.tsx`)
+
+Trong `SourceCode/frontend/src/app/profile/upgrade/expert/page.tsx`:
+
+1. **Khắc phục Khiếm khuyết 1 — Ghi đè họ tên demo**:
+   ```typescript
+   const DEMO_PLACEHOLDER_NAMES = [
+     "Dang Lanm",
+     "Người dùng",
+     "Chuyên gia",
+     "Chuyên gia NacenTech",
+     "User",
+     "Expert Demo"
+   ];
+
+   const shouldOverrideFullName = (currentVal: string): boolean => {
+     const trimmed = currentVal.trim();
+     return !trimmed || DEMO_PLACEHOLDER_NAMES.some((demo) => demo.toLowerCase() === trimmed.toLowerCase());
+   };
+
+   // Trong handleAiCvScan:
+   if (d.fullName && (shouldOverrideFullName(fullName) || isReScanning)) {
+     setFullName(d.fullName.trim());
+     newlyFilled.add("fullName");
+   }
+   ```
+
+2. **Khắc phục Khiếm khuyết 2 — Gán năm đạt học vị**:
+   ```typescript
+   if (d.degreeYear && Number(d.degreeYear) > 1950 && Number(d.degreeYear) <= 2026) {
+     setDegreeYear(Number(d.degreeYear));
+     newlyFilled.add("degreeYear");
+   }
+   ```
+
+3. **Khắc phục Khiếm khuyết 3 — Gán cơ quan thẩm định Cấp 2 gợi ý**:
+   ```typescript
+   if (d.suggestedReceivingUnit?.code) {
+     setReceivingUnit(d.suggestedReceivingUnit.code);
+     setReceivingScopeType(d.suggestedReceivingUnit.type);
+     newlyFilled.add("receivingUnit");
+   }
+   ```
+
+4. **Khắc phục Khiếm khuyết 4 — Gán lĩnh vực & thẻ tag gợi ý**:
+   ```typescript
+   if (d.primaryDomain && !primaryDomain) {
+     setPrimaryDomain(d.primaryDomain);
+     newlyFilled.add("primaryDomain");
+   }
+   if (d.rawSectorKeywords && Array.isArray(d.rawSectorKeywords) && d.rawSectorKeywords.length > 0) {
+     setRawSuggestedSectors(d.rawSectorKeywords);
+   }
+   ```
+
+5. **Visual Badges & Thẻ Tag Click-to-Add**:
+   - Render component `renderAiBadge("degreeYear")`, `renderAiBadge("receivingUnit")`, `renderAiBadge("fullName")`.
+   - Render khối gợi ý thẻ tag màu hổ phách/vàng tại Bước 2:
+     ```tsx
+     {rawSuggestedSectors.length > 0 && (
+       <div className="mt-3 p-3 bg-amber-50/60 border border-amber-200 rounded-lg dark:bg-amber-950/30 dark:border-amber-800">
+         <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mb-1.5 flex items-center gap-1.5">
+           <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+           Từ khóa chuyên ngành AI phát hiện từ CV (Nhấp để thêm nhanh):
+         </p>
+         <div className="flex flex-wrap gap-1.5">
+           {rawSuggestedSectors.map((tag, idx) => (
+             <button
+               key={idx}
+               type="button"
+               onClick={() => handleAddSpecializedKeyword(tag)}
+               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition-colors"
+             >
+               + {tag}
+             </button>
+           ))}
+         </div>
+       </div>
+     )}
+     ```
+
+---
+
+### 22.7. Chiến Lược Kiểm Thử Kỹ Thuật (Test Strategy)
+1. **Unit Test API Route (`route.test.ts`)**:
+   - Test trích xuất `degreeYear` bảo toàn số năm 2011.
+   - Test phân tích cơ quan "Viện Ứng dụng Công nghệ, Bộ KH&CN, C6 Thanh Xuân Bắc, Hà Nội" -> `suggestedReceivingUnit.code === 'GLOBAL'`.
+   - Test phân tích địa chỉ Hải Phòng -> `code === 'HP'`, Hà Nội -> `code === 'HN'`.
+   - Test multi-tier fuzzy sector: "Quang điện tử, laser, bán dẫn" -> map thành `LV08` (hoặc `LV01`), và `rawSectorKeywords` chứa đủ 4 từ khóa, không bị rỗng.
+2. **Component & Integration Test**:
+   - Test form wizard ghi đè tên demo "Dang Lanm" khi scan CV.
+   - Test Zero-Lock Fallback khi AI route trả về 503 hoặc timeout: form mở 100% cho nhập tay.
+3. **Blackbox Playwright E2E**:
+   - Tạo bộ test E2E `test_smart_ai_cv_b1_4_precision_e2e.py` chạy trực tiếp với dữ liệu tệp B1-4 thật.
+
 
 
 

@@ -1,8 +1,8 @@
 # Implementation Plan: TASK-08 Kết Nối Cung–Cầu & Quản Lý Cơ Hội Hợp Tác
 
 **Feature Directory**: `specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI`  
-**Version**: 1.12.0  
-**Status**: Completed (Shipped Gate 5)  
+**Version**: 1.14.0  
+**Status**: Delta CR-TASK-08-DELTA-02 In Planning (Gate 2 Ready)  
 
 ---
 
@@ -693,4 +693,81 @@ CREATE INDEX IF NOT EXISTS idx_conn_requests_sla
 5. **Component Test Frontend (`ConnectionRequestFilterTabs.test.tsx`)**:
    - Nhấp chọn từng tab `ALL`, `PENDING`, `ACCEPTED`, `REJECTED`: Bảng dữ liệu lọc chính xác theo trạng thái.
    - Badge số lượng trên mỗi tab phản ánh chính xác số bản ghi.
+
+---
+
+## 6. Kế Hoạch Kiến Trúc Delta CR-TASK-08-DELTA-01: Khép Kín Luồng Giao Dịch Cung - Cầu 2 Chiều (Atomic Dual-Write)
+
+> Chi tiết kỹ thuật đầy đủ: Xem [`plan_delta_cr01.md`](./plan_delta_cr01.md) và quyết định kiến trúc [`ADR-0012`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/backend/docs/decisions/ADR-0012-ATOMIC-DUAL-WRITE-COMMERCIAL-ORDER-INBOUND-LEAD.md).
+
+### 6.1. Mục Tiêu Kỹ Thuật & Căn Cứ PO
+- Thực hiện quyết định `PO-DEC-20261102-02` (WS-05) khép kín lát cắt mỏng giao dịch 2 chiều:
+  * Bên Mua gửi đơn đặt mua sản phẩm thương mại tại `/chao-ban-cong-nghe/[id]` $\rightarrow$ CSDL PostgreSQL tự động sinh bản ghi Đơn mua (`DMD-*`) đồng thời sinh Inbound Lead (`REQ-*`) gửi tới gian hàng Bên Bán.
+  * Hai thao tác ghi được bảo vệ trong cùng 1 khối `IDbContextTransaction` (PostgreSQL ACID Transaction). Rollback 100% nếu có lỗi, không sinh bản ghi mồ côi (`BR-CONN-SYNC-01`).
+  * Bên Bán tại `/portal/opportunities/pipeline?tab=inbound` nhận được lead có nhãn `[Đơn Mua Hàng Thương Mại]`, đếm ngược SLA 48h, và nút tiếp nhận chuyển tiếp Deal Room.
+
+### 6.2. Phân Tích Bề Mặt Thực Thi
+1. **CSDL PostgreSQL**: Tận dụng bảng `brokerage.connection_requests` đã có sẵn các cột `demand_id`, `target_offer_id`, `offer_id`, `buyer_organization_id`, `seller_organization_id`, `sla_deadline`. Sử dụng các index `idx_conn_requests_seller_status`, `idx_conn_requests_target_offer_id`.
+2. **Backend .NET**: Nâng cấp `CreateQuickDemandItemRequest` và hàm `CreateQuickDemandItem` trong `DemandController.cs`. Khi `req.OfferId.HasValue`, dùng `await using var transaction = await db.Database.BeginTransactionAsync(ct);` để ghi đồng thời 2 bảng. Trả về response chứa cả `itemId`, `itemCode`, `requestCode`, `connectionRequestId`.
+3. **Frontend Next.js**:
+   - `technology-offer.ts`: `submitQuickDemand` nhận thêm `requestCode`, `connectionRequestId`.
+   - `chao-ban-cong-nghe/[id]/page.tsx`: Modal thành công hiển thị cả mã đơn mua và mã yêu cầu kết nối.
+   - `portal/opportunities/pipeline/page.tsx`: Thẻ Inbound hiển thị badge `[Đơn Mua Hàng Thương Mại]`, link chào bán và SLA 48h.
+4. **Kiểm Thử 4 Tầng**: Unit Test PDPD, Contract Test Dual-Write, PostgreSQL Audit Test, và Playwright/Component Test Pipeline.
+
+---
+
+## 7. Kế Hoạch Kiến Trúc Delta CR-TASK-08-DELTA-02: Máy Trạng Thái Đồng Bộ 2 Chiều Trạng Thái Đơn Hàng Thương Mại & Vòng Đời Deal Room
+
+> Chi tiết kỹ thuật đầy đủ: Xem [`plan_delta_cr02.md`](./plan_delta_cr02.md) và quyết định kiến trúc [`ADR-0013`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/backend/docs/decisions/ADR-0013-BI-DIRECTIONAL-ORDER-STATE-MACHINE-SYNC.md).
+
+### 7.1. Mục Tiêu Kỹ Thuật & Căn Cứ PO
+- Thực hiện quyết định `PO-DEC-20261102-03` tại [`BASIC_DESIGN_NACENTECH.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/BASIC_DESIGN_NACENTECH.md) Mục 19.4 & Mục 3.2.1:
+  * Khắc phục triệt để hiện tượng đơn hàng Bên Mua bị "đóng băng" ở Bước 1 ("Chờ tiếp nhận") dù Bên Bán đã chấp thuận tiếp nhận đơn hoặc đàm phán trong Deal Room.
+  * Thiết lập Máy Trạng Thái Đồng Bộ 2 Chiều (Bi-directional State Machine) giữa `demand.demand_items.status`, `brokerage.connection_requests.status` và `brokerage.opportunities.stage` trong cùng giao dịch CSDL nguyên tử PostgreSQL ACID.
+  * Đảm bảo trải nghiệm thời gian thực phía Bên Mua: Thanh tiến trình 4 bước (`OrderTrackingStepper`) nhảy sang Bước 2 ("Đang xử lý & Báo giá"), Bước 1 tích xanh [✓], và xuất hiện nút CTA *"Vào Deal Room Thảo Luận &rarr;"*.
+
+### 7.2. Phân Tích & Can Thiệp Bề Mặt Kỹ Thuật
+
+#### 1. Tầng Backend CSDL & API (`BrokerageControllers.cs`)
+- **Endpoint 1: `PUT /api/v1/brokerage/requests/{id}/respond`**:
+  * Khi `action == "ACCEPT"`:
+    - Cập nhật `brokerage.connection_requests.status = 'ACCEPTED'`.
+    - Lấy `demand_id` từ bản ghi request. Nếu `demand_id != null && demand_id != Guid.Empty`:
+      Thực thi `UPDATE demand.demand_items SET status = 'PROCESSING', updated_at = now() WHERE id = @demandId;`.
+    - Tạo bản ghi thương vụ `brokerage.opportunities` (`stage = 'INITIATED'`).
+  * Khi `action == "REJECT"`:
+    - Cập nhật `brokerage.connection_requests.status = 'REJECTED'`.
+    - Nếu `demand_id != null`:
+      Thực thi `UPDATE demand.demand_items SET status = 'REJECTED', updated_at = now() WHERE id = @demandId;`.
+  * **Ràng buộc ACID**: Toàn bộ chuỗi thao tác trên bắt buộc nằm trong cùng một Transaction CSDL (`conn.BeginTransactionAsync()` hoặc `IDbContextTransaction`). Nếu có lỗi, Rollback 100%.
+  * Bổ sung trường `syncedDemandStatus` trong response HTTP 200.
+
+- **Endpoint 2: `PUT /api/v1/brokerage/opportunities/{id}/stage` (`UpdateOpportunityStage`)**:
+  * Thẩm định chuyển trạng thái FSM theo quy tắc `BR-BRK-06` (chống nhảy cóc).
+  * Khi `stage` chuyển sang `NEGOTIATING`:
+    - Tra cứu `connection_request_id` từ `brokerage.opportunities`, lấy `demand_id` từ `brokerage.connection_requests`.
+    - Nếu `demand_id != null`:
+      Thực thi `UPDATE demand.demand_items SET status = 'NEGOTIATING', updated_at = now() WHERE id = @demandId;`.
+  * Khi `stage` chuyển sang `MOU_SIGNED` hoặc `COMPLETED`:
+    - Nếu `demand_id != null`:
+      Thực thi `UPDATE demand.demand_items SET status = 'COMPLETED', updated_at = now() WHERE id = @demandId;`.
+  * Đảm bảo thực thi trong Transaction CSDL, trả về response có `syncedDemandStatus`.
+
+#### 2. Tầng Frontend Web Portal (`Next.js 15`)
+- **Component `OrderTrackingStepper.tsx`**:
+  * Cập nhật mô tả Bước 2: nhãn chuẩn *"Bên bán đã tiếp nhận & đang xử lý"*.
+  * Kiểm soát chính xác: Khi `status === 'PROCESSING'`, Bước 1 hiển thị tích xanh `CheckCircle2` [✓], Bước 2 hiển thị viền active pulse thương hiệu.
+- **Trang Bàn Làm Việc Bên Mua: `buyer/demands/page.tsx`**:
+  * Tại Modal Chi Tiết Đơn Hàng (`selectedOrder`): Nếu `isCommercialDemandItem(selectedOrder)` và trạng thái là `PROCESSING`, `NEGOTIATING`, hoặc `COMPLETED`:
+    Tra cứu/liên kết tới Deal Room tương ứng, hiển thị nút CTA nổi bật: **"Vào Deal Room Thảo Luận &rarr;"** (icon `Handshake`, màu xanh ngọc lục bảo).
+  * Khóa nút "Hủy đơn": Chỉ cho phép hủy khi đơn ở Bước 1 (`SUBMITTED` / `PENDING`). Khi đã chuyển sang Bước 2 trở đi, nút "Hủy đơn" bị ẩn.
+
+#### 3. Bộ Kiểm Thử Chống Hồi Quy 4 Tầng
+- **Unit Test**: Kiểm thử `OrderTrackingStepper` và hàm mapping trạng thái với Vitest.
+- **Integration Test**: Kiểm thử giao dịch CSDL nguyên tử và cơ chế Rollback an toàn trong xUnit (`OrderStateMachineSyncTests.cs`).
+- **Contract Test**: Xác thực contract DTO của các endpoints cập nhật trạng thái có `syncedDemandStatus`.
+- **E2E Test**: Kịch bản Playwright kiểm chứng toàn trình dòng chảy từ Bên Bán tiếp nhận tới giao diện Bên Mua cập nhật tức thì.
+
+
 

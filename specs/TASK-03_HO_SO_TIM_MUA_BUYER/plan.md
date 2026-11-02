@@ -1,9 +1,9 @@
 # Kế Hoạch Kỹ Thuật (plan.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
 **Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
-**Version**: 1.13.0  
+**Version**: 1.14.0  
 **Status**: Completed (Shipped Gate 5)  
-**Last Updated**: 2026-10-30  
+**Last Updated**: 2026-11-02  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
 
@@ -998,3 +998,30 @@ stateDiagram-v2
    - Tài khoản Doanh nghiệp (`BUYER`, `ENTERPRISE`) khi sử dụng Bàn làm việc vẫn xem được đầy đủ các bài toán R&D tại Tab 2 mà không có bất kỳ thay đổi tiêu cực nào.
 
 ---
+
+## 6. THIẾT KẾ KỸ THUẬT CR-TASK-03-DELTA-01: VÒNG ĐỜI BÀI TOÁN & PDPD PREVIEW GUARD
+
+### 6.1. Backend API (`DemandController.cs`)
+1. **Nâng cấp `GET /api/v1/public/demands/{id}`**:
+   - Trích xuất thông tin người dùng từ `Actor`.
+   - Kiểm tra trạng thái bài toán:
+     * Nếu `item.Status != DemandItemStatuses.Verified`:
+       - Xác định quyền xem:
+         + `isOwner = Actor.IsAuthenticated && Actor.PersonId.HasValue && Actor.PersonId.Value == item.CreatedBy;`
+         + `isGovOrAdmin = Actor.PlatformRole == PlatformRoles.ProvincialAdmin || Actor.PlatformRole == PlatformRoles.SuperAdmin || Actor.PlatformRole == PlatformRoles.OperatorAdmin || Actor.PlatformRole == PlatformRoles.Admin;`
+       - Trả về DTO kèm cờ:
+         `isPendingReview: item.Status == DemandItemStatuses.Pending`
+         `isOwner: isOwner`
+         `canViewDraft: isOwner || isGovOrAdmin`
+         `canSubmitOffer: item.Status == DemandItemStatuses.Verified`
+2. **Giữ vững nguyên tắc Không phá vỡ tương thích ngược (Backward Compatibility)**:
+   - Toàn bộ các trường dữ liệu hiện hữu vẫn được giữ nguyên để không làm gãy các test contract cũ.
+
+### 6.2. Frontend UI (`SourceCode/frontend/src/app/nhu-cau-cong-nghe/[id]/page.tsx`)
+1. **Loại bỏ Hardcode nhãn trạng thái**:
+   - Thay thế dòng `{isCommercialOrder ? "ĐƠN MUA HÀNG THƯƠNG MẠI" : "ĐANG MỞ TÌM CUNG"}` bằng hàm render đa trạng thái `resolveStatusBadge(item.status, isCommercialOrder)`.
+2. **Thêm Component Banner Cảnh Báo Cho Chính Chủ**:
+   - Khi `item.status === 'PENDING'`, hiển thị Banner phía trên tiêu đề bài toán cảnh báo hồ sơ đang chờ Cán bộ Sở KH&CN thẩm định.
+3. **Tạm Khóa Form Gửi Chào Giải Pháp Khi Bài Toán `PENDING`**:
+   - Nếu `item.status !== 'VERIFIED'`, ẩn hoặc vô hiệu hóa form nộp hồ sơ giải pháp kèm thông báo giải thích rõ ràng.
+

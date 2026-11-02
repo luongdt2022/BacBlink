@@ -294,3 +294,32 @@
 
 
 
+
+
+---
+
+## Giai đoạn 20: Delta v16 (CR-2026-020) — Tự Động Thiết Lập Phiên Đăng Nhập Sau Khi Đăng Ký (Seamless Auto-Login) [`[FE-AUTO-LOGIN]`]
+
+- [x] `T-00.81` **[FE-AUTO-LOGIN-01]** Xử lý chuỗi liên hoàn Auto-login tại `src/app/(auth)/register/page.tsx`:
+  - [x] Khi `POST /api/v1/auth/register` trả về HTTP 201 Created, không xóa trắng form ngay mà gọi tiếp `POST /api/v1/auth/login` với email và password vừa nhập.
+  - [x] Khi login thành công, gọi `authClient.setSession(data.accessToken, data.user)`.
+  - [x] Kích hoạt Toast notification thông báo: *"Đăng ký thành công! Chào mừng bạn gia nhập NacenTech."*
+  - [x] Điều hướng an toàn bằng `router.push("/")` (hoặc theo `getRedirectPathByRole(data.user.role)`).
+
+- [x] `T-00.82` **[FE-AUTO-LOGIN-02]** Chuẩn hóa 5 UX states cho nút Đăng ký & Chống Double-Submit:
+  - [x] Nút submit hiển thị trạng thái động 2 giai đoạn: Giai đoạn 1 *"Đang tạo tài khoản..."* $\rightarrow$ Giai đoạn 2 *"Đang khởi tạo phiên làm việc..."*.
+  - [x] Vô hiệu hóa nút (disabled) và hiển thị Spinner trong suốt quá trình xử lý, chống spam click đúp.
+  - [x] Loại bỏ khối banner tĩnh màu xanh lá bắt người dùng bấm link đăng nhập khi luồng auto-login hoạt động bình thường.
+
+- [x] `T-00.83` **[FE-AUTO-LOGIN-03]** Cơ chế Fallback an toàn khi Login gặp sự cố mạng:
+  - [x] Nếu Register thành công nhưng Login gặp lỗi kết nối mạng (Network Error / Timeout), giữ nguyên form dữ liệu.
+  - [x] Hiển thị thông báo hướng dẫn rõ ràng: *"Tài khoản của bạn đã được khởi tạo thành công! Vui lòng bấm để đăng nhập"* kèm nút điều hướng sang `/login?registered=true&email=...`.
+
+- [x] `T-00.84` **[TEST-QC-01]** Cập nhật Unit & Component tests trong `src/app/(auth)/register/page.test.tsx`:
+  - [x] Cập nhật test case happy path: Kiểm chứng `fetch` được gọi 2 lần (register $\rightarrow$ login), `authClient.setSession` được gọi, và `router.push` được gọi với `/`.
+  - [x] Bổ sung test case fallback: Register thành công nhưng Login ném lỗi mạng $\rightarrow$ Kiểm chứng hiển thị thông báo fallback chuyển sang login.
+  - [x] Kiểm chứng các validation client-side cũ (Họ tên, Email regex, Password < 8, Checkbox PDPD) tiếp tục pass 100%.
+
+- [x] `T-00.85` **[VERIFY-E2E-01]** Chạy kiểm thử toàn diện và đối soát Zero Regression:
+  - [x] Chạy Vitest trên toàn bộ frontend test suites xác nhận 100% Green.
+  - [x] Kiểm tra build Next.js (`pnpm build` hoặc `npm run build`) đạt exit code 0.

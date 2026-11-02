@@ -1,9 +1,9 @@
 # Đặc Tả Kỹ Thuật (Spec Kit): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
 **Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
-**Version**: 1.13.0  
+**Version**: 1.14.0  
 **Status**: Completed (Shipped Gate 5)  
-**Last Updated**: 2026-10-30  
+**Last Updated**: 2026-11-02  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
 
@@ -759,4 +759,59 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 | **REQ-BUYER-ORD-001** | `BR-ORD-AUTH-01` | `AC-ORD-01`, `AC-ORD-02` | `demand.demand_orders`, `demand.order_items` | `QuickBuyModal.tsx`, `ProductDetailPage.tsx` | `POST /api/v1/demands/orders` |
 | **REQ-BUYER-ORD-002** | `BR-ORD-AUTH-01`, `BR-ORD-TRACKING-01` | `AC-ORD-03` | `demand.demand_orders`, `demand.demand_items` | `OrdersWorkspaceTabs.tsx`, `/portal/saved/page.tsx` | `GET /api/v1/demands/my-orders`, `GET /api/v1/demands/items` |
 | **REQ-BUYER-ORD-003** | `BR-ORD-TRACKING-01` | `AC-ORD-04`, `AC-ORD-05` | `demand.demand_orders`, `demand.order_status_logs` | `OrderTrackingStepper.tsx`, `OrderDetailModal.tsx` | `GET /api/v1/demands/orders/{id}`, `PATCH /api/v1/demands/orders/{id}/status` |
+
+---
+
+## 9. DELTA V1.4: CR-TASK-03-DELTA-01 CHUẨN HÓA VÒNG ĐỜI TRẠNG THÁI BÀI TOÁN & RÀO CHẮN QUYỀN RIÊNG TƯ (PDPD PREVIEW GUARD)
+
+### 1. Bối cảnh & Căn cứ Quyết định
+- **Căn cứ**: Quyết định `PO-DEC-20261102-04` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 22 và Hồ sơ `CR-TASK-03-DELTA-01`.
+- **Mục tiêu**: Xóa bỏ hoàn toàn hardcode nhãn trạng thái trên trang chi tiết bài toán, hiển thị chuẩn 4 Badge trạng thái theo `DemandItemStatuses`, bổ sung Banner cảnh báo chờ Cán bộ Sở KH&CN thẩm định cho tác giả bài toán và áp dụng Preview Guard bảo vệ quyền riêng tư theo Nghị định 13/2023/NĐ-CP (PDPD).
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-BUYER-DMD-004` [Vòng Đời Trạng Thái Bài Toán & Quản Trị Thẩm Định Sở KH&CN]**:
+  - Bài toán nhu cầu khi tạo qua `POST /api/v1/demands/items` khởi tạo ở trạng thái `Status = 'PENDING'`, `IsPublicListed = false`.
+  - Bài toán tự động xuất hiện trong danh sách thẩm định của Cán bộ Sở KH&CN tại `/gov/demands`.
+  - Khi Cán bộ Sở bấm "Phê duyệt & Niêm yết", trạng thái bài toán chuyển sang `VERIFIED`, `IsPublicListed = true` và xuất hiện công khai trên Sàn.
+
+### 3. Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+- **`BR-DMD-STAT-01` [Quy Tắc Chuyển Đổi & Render 4 Trạng Thái Hiển Thị (Status Badges)]**:
+  1. `PENDING`: Badge vàng hổ phách `CHỜ SỞ KH&CN THẨM ĐỊNH` (`bg-amber-50 text-amber-700 border-amber-200`). Phụ đề: *"Hồ sơ đang được Cán bộ Sở KH&CN thẩm định trước khi niêm yết"*.
+  2. `VERIFIED`: Badge xanh ngọc `ĐANG MỞ TÌM CUNG` (`bg-emerald-50 text-emerald-700 border-emerald-200`). Phụ đề: *"Đang mở tiếp nhận giải pháp công nghệ từ Viện/Trường/Doanh nghiệp"*.
+  3. `CONNECTED`: Badge xanh dương `ĐÃ KẾT NỐI CUNG - CẦU` (`bg-blue-50 text-blue-700 border-blue-200`).
+  4. `CLOSED`: Badge xám `ĐÃ ĐÓNG HỒ SƠ` (`bg-slate-100 text-slate-700 border-slate-300`).
+
+- **`BR-DMD-PRIV-01` [Rào Chắn Quyền Riêng Tư & Bảo Vệ Bản Nháp (PDPD Preview Guard)]**:
+  1. Khi bài toán ở trạng thái `PENDING`:
+     - **Chính chủ sở hữu (`Actor.PersonId == item.CreatedBy`)**: Xem toàn bộ nội dung dưới dạng Author Preview kèm Banner cảnh báo màu vàng ở đầu trang.
+     - **Cán bộ Sở / Quản trị viên (`PROVINCIAL_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`)**: Xem đầy đủ để thực hiện thẩm định và gán chuyên gia.
+     - **Khách ngoài (Guest hoặc tài khoản khác)**: Hiển thị giao diện thông báo hồ sơ đang trong quá trình thẩm định của Sở KH&CN, ẩn thông tin kỹ thuật chi tiết và ẩn form chào giải pháp.
+  2. Form gửi chào giải pháp của Bên Bán ở chân trang bắt buộc tạm khóa khi bài toán chưa `VERIFIED`.
+
+### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **`AC-DMD-01` [Hiển Thị Chuẩn Badge Trạng Thái Theo CSDL]**:
+  - **Given** người dùng mở bài toán nhu cầu có `status = 'PENDING'`,
+  - **Then** giao diện KHÔNG hiển thị nhãn "ĐANG MỞ TÌM CUNG",
+  - **And** hiển thị đúng Badge màu vàng `CHỜ SỞ KH&CN THẨM ĐỊNH`.
+
+- **`AC-DMD-02` [Banner Cảnh Báo Cho Chính Chủ Bài Toán]**:
+  - **Given** người dùng `public1` (chủ bài toán) mở bài toán vừa tạo,
+  - **Then** đầu trang hiển thị Banner cảnh báo: *"Hồ sơ bài toán nhu cầu đã được tiếp nhận và đang trong quá trình thẩm định của Cán bộ Sở KH&CN trước khi niêm yết rộng rãi."*
+
+- **`AC-DMD-03` [Khóa Form Chào Giải Pháp Khi Chưa Duyệt]**:
+  - **Given** bài toán đang ở trạng thái `PENDING`,
+  - **Then** form chào bán giải pháp ở chân trang bị tạm khóa kèm thông báo: *"Bài toán đang chờ duyệt niêm yết, tính năng gửi hồ sơ giải pháp tạm thời chưa khả dụng."*
+
+- **`AC-DMD-04` [Cán Bộ Sở Duyệt Chuyển Trạng Thái Thành Công]**:
+  - **Given** Cán bộ Sở Hà Nội đăng nhập và mở `/gov/demands`,
+  - **When** bấm "Phê duyệt & Niêm yết" cho bài toán `PENDING`,
+  - **Then** bài toán chuyển sang `status = 'VERIFIED'`, `is_public_listed = true`,
+  - **And** khi F5 trang chi tiết, Badge tự động đổi sang `ĐANG MỞ TÌM CUNG` màu xanh và mở form chào giải pháp.
+
+### 5. Ma Trận Truy Vết Bổ Sung (Traceability Matrix Delta)
+
+| Mã Yêu Cầu (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Bảng CSDL Tác Động | Giao Diện Triển Khai | API Endpoint Ánh Xạ |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-BUYER-DMD-004** | `BR-DMD-STAT-01`, `BR-DMD-PRIV-01` | `AC-DMD-01`, `AC-DMD-02`, `AC-DMD-03`, `AC-DMD-04` | `demand.demand_items` | `SourceCode/frontend/src/app/nhu-cau-cong-nghe/[id]/page.tsx` | `GET /api/v1/public/demands/{id}`, `POST /api/v1/gov/demands/{id}/verify` |
+
 
