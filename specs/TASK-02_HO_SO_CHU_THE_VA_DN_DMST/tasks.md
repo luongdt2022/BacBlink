@@ -151,4 +151,33 @@
     + Kiểm tra trang `/admin/enterprises/dashboard` hiển thị đầy đủ các thẻ chỉ số và biểu đồ phân bố từ dữ liệu thật.
   - **Tiêu chí kiểm chứng**: 100% test cases Green, không shallow assertions.
 
+---
+
+## Phase 11: Delta CR-2026-024-PART2 — Chuẩn Hóa Phê Duyệt Nâng Cấp DN ĐMST & Thăng Hạng Role INNOVATION_ENTITY [BE][INT][TEST]
+
+- [x] **T-02.38** `[BE]` **Chuẩn hóa Side Effect khi duyệt hồ sơ INSTITUTION (Role Upgrade & Entity Creation)**:
+  - **Mục tiêu**: Khắc phục dứt điểm lỗi parse `ScopeId` sang Guid thất bại, thăng hạng role `INNOVATION_ENTITY` và tạo/liên kết thực thể `Enterprise` `VERIFIED`.
+  - **Hành động kỹ thuật**:
+    + Cập nhật `ApprovalService.ApplyApprovalSideEffectsAsync`: Tại nhánh `ApprovalRequestTypes.Institution`, gọi `person.AssignRoleAndScope(PlatformRoles.InnovationEntity, request.ScopeType, request.ScopeId)` để nâng cấp tài khoản người nộp lên vai trò `INNOVATION_ENTITY` với scope cấp Tỉnh.
+    + Trích xuất `taxCode` và `companyName` (hoặc `orgName`) từ `request.PayloadJson`.
+    + Kiểm tra bảng `enterprise.enterprises`: Nếu đã có theo `taxCode`, liên kết `OwnerPersonId = request.UserId`, chuyển `Status = "ACTIVE"`, `VerificationStatus = "VERIFIED"`, `IsVerified = true`, gọi `Approve(...)`. Nếu chưa có, tạo mới bản ghi `Enterprise` với các thông tin trên và `OwnerPersonId = request.UserId`, `IsVerified = true`.
+    + Cập nhật `RevokeApprovalSideEffectsAsync`: Hạ cấp về `PUBLIC_USER` và set `IsVerified = false` cho doanh nghiệp liên kết khi bị thu hồi.
+  - **Tiêu chí kiểm chứng**: Duyệt thành công hồ sơ `INSTITUTION` với `ScopeId` mã tỉnh ("HN", "HCM"), người dùng nhận vai trò `INNOVATION_ENTITY` và có bản ghi `Enterprise` mang `IsVerified = true`.
+
+- [x] **T-02.39** `[INT]` **Tích hợp liên thông luồng duyệt Cổng Công Vụ Cấp Sở sang Bàn làm việc Doanh nghiệp**:
+  - **Mục tiêu**: Đảm bảo trải nghiệm người dùng liền mạch sau khi Cán bộ Sở bấm "Duyệt".
+  - **Hành động kỹ thuật**:
+    + Kiểm tra luồng Cổng Công Vụ (`/gov/approvals`): Cán bộ Sở Hà Nội/TP.HCM duyệt hồ sơ Đơn vị/DN ĐMST chuyển trạng thái `APPROVED` ngay lập tức trên UI và cập nhật số đếm badge hàng đợi.
+    + Kiểm tra Bàn làm việc Doanh nghiệp (`/portal/enterprise/profile`): Tài khoản người dùng sau khi duyệt đăng nhập lại nhận token mới với vai trò `INNOVATION_ENTITY`, truy cập trực tiếp form quản lý 10 nhóm trường mà không bị Auth Guard chặn lỗi 403 Forbidden.
+  - **Tiêu chí kiểm chứng**: End-to-end flow từ Nộp hồ sơ -> Cán bộ Sở duyệt -> Đăng nhập vào Portal Doanh nghiệp thành công 100%.
+
+- [x] **T-02.40** `[TEST]` **Xây dựng bộ kiểm thử tích hợp & kiểm thử bất biến TEST-02-009**:
+  - **Mục tiêu**: Bảo vệ chất lượng mã nguồn bằng bộ kiểm thử tự động, ngăn chặn hồi quy.
+  - **Hành động kỹ thuật**:
+    + Viết Unit Invariant Test kiểm tra xử lý `ScopeId` là chuỗi mã tỉnh không bị crash bởi `Guid.TryParse`.
+    + Viết Integration Test với CSDL PostgreSQL: Khởi tạo hồ sơ `INSTITUTION`, Cán bộ Sở gọi `POST /api/v1/governance/approvals/{id}/review` với action `APPROVE`, truy vấn kiểm tra `Person.PlatformRole == "INNOVATION_ENTITY"` và `Enterprise.IsVerified == true`.
+    + Viết Test trường hợp `REVOKE`: SuperAdmin thu hồi -> Tài khoản hạ cấp `PUBLIC_USER`, `Enterprise.IsVerified == false`.
+  - **Tiêu chí kiểm chứng**: 100% test cases Green, bao phủ đầy đủ các tiêu chuẩn chấp thuận từ `AC-02-040` đến `AC-02-045`.
+
+
 

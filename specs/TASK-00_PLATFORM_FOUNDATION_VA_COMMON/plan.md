@@ -687,3 +687,145 @@ sequenceDiagram
 ### 3. Cam Kết Độc Lập Kiến Trúc & Zero Breaking Changes
 1. **Zero Backend API Break**: `POST /api/v1/auth/register` và `POST /api/v1/auth/login` giữ nguyên vẹn 100% hợp đồng API v1.
 2. **Zero Storage Pollution**: Dữ liệu lưu trong LocalStorage sử dụng đúng hai key chuẩn mực: `nacentwin_access_token` và `nacentwin_user_context`.
+
+---
+
+## Technical Plan: Spec Delta v17 (CR-2026-021) — Chuẩn Hóa Bắt Buộc Định Danh Pháp Nhân Khi Mở Gian Hàng Seller (Legal Entity Mandate for Seller Onboarding)
+
+### 1. Kiến Trúc Luồng Đăng Ký Gian Hàng Seller & Xác Thực Pháp Nhân
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Người dùng (PUBLIC_USER / BUYER)
+    participant Page as UpgradeHub (/profile/upgrade)
+    participant Modal as SellerModal (#sellerModal)
+    participant TaxAPI as TaxLookupService (VietQR/CSDL Quốc Gia)
+    participant Storage as ObjectStorage (/api/v1/storage/upload)
+    participant GovAPI as POST /api/v1/governance/approvals
+    participant DB as PostgreSQL (approval_requests)
+
+    User->>Page: Nhấp "Đăng ký mở gian hàng Seller"
+    Page->>Modal: Mở #sellerModal (mặc định Tab ENTERPRISE)
+    
+    alt Trường hợp 1: Pháp nhân Doanh nghiệp (ENTERPRISE)
+        User->>Modal: Nhập MST và bấm "Tra cứu MST"
+        Modal->>TaxAPI: GET /api/v1/master-data/tax-lookup/{taxCode}
+        TaxAPI-->>Modal: 200 OK { companyName, address, province }
+        Modal->>Modal: Auto-fill Tên Doanh nghiệp & thông báo đối soát thành công
+        User->>Modal: Chọn tệp Giấy phép ĐKKD (.pdf, <= 10MB)
+        Modal->>Modal: Validate Client-side (PDF MIME type, size <= 10MB)
+        Modal->>Storage: Tải lên tệp ĐKKD PDF
+        Storage-->>Modal: { fileUrl, fileName }
+    else Trường hợp 2: Viện Nghiên Cứu / Trường Đại Học / R&D (INSTITUTION_RND)
+        User->>Modal: Chuyển Tab sang "Viện / Trường / R&D"
+        Modal->>Modal: Toggle UI sang Branch INSTITUTION_RND
+        User->>Modal: Nhập Số QĐ thành lập & Tên Viện/Trường
+        User->>Modal: Chọn tệp Quyết định thành lập / GP KH&CN (.pdf, <= 10MB)
+        Modal->>Modal: Validate Client-side (PDF MIME type, size <= 10MB)
+        Modal->>Storage: Tải lên tệp QĐ PDF
+        Storage-->>Modal: { fileUrl, fileName }
+    end
+
+    User->>Modal: Chọn Lĩnh vực TT17, Sở KH&CN, Nhập mô tả TRL & Tích cam kết SHTT
+    User->>Modal: Bấm "Nộp Đơn Đăng Ký Gian Hàng (SLA 24h)"
+    Modal->>Modal: Kiểm tra toàn diện Client-side (Không rỗng, đúng regex, có PDF)
+    Modal->>GovAPI: POST /api/v1/governance/approvals (requestType: "SHOP", payloadJson)
+    GovAPI->>GovAPI: FluentValidation kiểm tra cấu trúc SubmitShopApprovalPayloadDto
+    GovAPI->>DB: INSERT INTO identity.approval_requests (request_type='SHOP', sla_deadline=NOW()+24h)
+    DB-->>GovAPI: Bản ghi khởi tạo thành công (Status: PENDING)
+    GovAPI-->>Modal: 201 Created { id, trackingCode: "REQ-SHOP-XXXXXX", slaHours: 24 }
+    Modal->>Page: Đóng modal, hiển thị Success Card với mã hồ sơ và đếm ngược SLA 24h
+```
+
+### 2. Thiết Kế Mô Hình DTO & FluentValidation C# (.NET Core)
+
+#### 2.1. DTO Định Danh Pháp Nhân Gian Hàng (`SubmitShopApprovalPayloadDto`)
+```csharp
+namespace NacenTech.Modules.Identity.Application.Dtos;
+
+public enum ShopEntityType
+{
+    ENTERPRISE = 1,
+    INSTITUTION_RND = 2
+}
+
+public sealed record SubmitShopApprovalPayloadDto(
+    string EntityType,
+    string? TaxCode,
+    string? EstablishmentDecisionNo,
+    string OrgName,
+    string LegalDocUrl,
+    string LegalDocFileName,
+    string MainSector,
+    string Province,
+    string Description,
+    bool PledgeAgreed,
+    DateTimeOffset SubmittedAt
+);
+```
+
+#### 2.2. Quy Tắc FluentValidation Cho Payload `SHOP`
+```csharp
+public sealed class SubmitShopApprovalPayloadValidator : AbstractValidator<SubmitShopApprovalPayloadDto>
+{
+    public SubmitShopApprovalPayloadValidator()
+    {
+        RuleFor(x => x.EntityType)
+            .NotEmpty().WithMessage("Loại hình pháp nhân không được để trống.")
+            .Must(x => x == "ENTERPRISE" || x == "INSTITUTION_RND")
+            .WithMessage("Loại hình pháp nhân phải là 'ENTERPRISE' hoặc 'INSTITUTION_RND'.");
+
+        RuleFor(x => x.OrgName)
+            .NotEmpty().WithMessage("Tên đơn vị không được để trống.")
+            .MinimumLength(5).MaximumLength(255).WithMessage("Tên đơn vị phải từ 5 đến 255 ký tự.");
+
+        RuleFor(x => x.LegalDocUrl)
+            .NotEmpty().WithMessage("Tệp văn bản pháp lý minh chứng không được để trống.")
+            .Must(url => url.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("Tệp văn bản pháp lý bắt buộc phải là định dạng PDF.");
+
+        RuleFor(x => x.MainSector)
+            .NotEmpty().WithMessage("Lĩnh vực công nghệ TT17 không được để trống.");
+
+        RuleFor(x => x.Province)
+            .NotEmpty().WithMessage("Sở KH&CN tiếp nhận thẩm định không được để trống.");
+
+        RuleFor(x => x.Description)
+            .NotEmpty().WithMessage("Mô tả năng lực cung ứng không được để trống.")
+            .MinimumLength(10).WithMessage("Mô tả năng lực cung ứng phải từ 10 ký tự trở lên.");
+
+        RuleFor(x => x.PledgeAgreed)
+            .Equal(true).WithMessage("Đơn vị bắt buộc phải tích cam kết tuân thủ quy chế và bản quyền SHTT.");
+
+        // Ràng buộc có điều kiện cho Doanh nghiệp
+        When(x => x.EntityType == "ENTERPRISE", () =>
+        {
+            RuleFor(x => x.TaxCode)
+                .NotEmpty().WithMessage("Mã số thuế doanh nghiệp không được để trống.")
+                .Matches(@"^\d{10}(\d{3})?$").WithMessage("Mã số thuế phải gồm 10 hoặc 13 chữ số.");
+        });
+
+        // Ràng buộc có điều kiện cho Viện / Trường / R&D
+        When(x => x.EntityType == "INSTITUTION_RND", () =>
+        {
+            RuleFor(x => x.EstablishmentDecisionNo)
+                .NotEmpty().WithMessage("Số Quyết định thành lập / Giấy phép KH&CN không được để trống.")
+                .MinimumLength(5).WithMessage("Số Quyết định thành lập phải có ít nhất 5 ký tự.");
+        });
+    }
+}
+```
+
+### 3. Thiết Kế Frontend Client State Machine (`page.tsx`)
+
+| Trạng Thái / State Variable | Kiểu Dữ Liệu | Mục Đích Sử Dụng |
+| :--- | :--- | :--- |
+| `sellerEntityType` | `'ENTERPRISE' \| 'INSTITUTION_RND'` | Quản lý Tab pháp nhân đang kích hoạt, điều khiển hiển thị nhánh nhập liệu tương ứng. |
+| `sellerTaxCode` | `string` | Lưu MST người dùng nhập cho nhánh Doanh nghiệp. |
+| `sellerDecisionNo` | `string` | Lưu Số QĐ thành lập / Giấy phép KH&CN cho nhánh Viện/Trường R&D. |
+| `sellerOrgName` | `string` | Tên đơn vị (được tự động điền khi tra cứu MST thành công hoặc nhập tay theo QĐ). |
+| `sellerFile` | `File \| null` | Quản lý tệp PDF được chọn, kiểm tra MIME type `application/pdf` và `size <= 10MB`. |
+| `sellerTaxLookupMsg` | `string \| null` | Phản hồi thông tin đối soát từ API CSDL Doanh nghiệp Quốc gia. |
+| `isSubmittingSeller` | `boolean` | Khóa nút nộp đơn, hiển thị spinner chống double-submit trong khi gửi request. |
+

@@ -350,3 +350,27 @@
     - [x] Kiểm chứng Hero Stats hiển thị số đếm thật và không fallback về chuỗi dummy.
     - [x] Kiểm chứng bộ lọc ngành lấy dữ liệu từ `getActiveSectors()`.
     - [x] 100% Vitest suites pass.
+
+---
+
+## Giai đoạn 15: Delta v13 (CR-2026-024) — Khắc Phục Lỗi Phê Duyệt Chào Bán Cấp Sở & Xuất Bản Sàn Chào Bán
+
+- [x] **T-04.118** `[BE]` Mở rộng phân quyền Scoped RBAC tại endpoint `ReviewOffer` (`TechnologyOffersController.cs`):
+  - Bổ sung `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN` vào thuộc tính `[Authorize(Roles = "...")]`.
+  - Cưỡng chế quy tắc địa bàn hành chính: `PROVINCIAL_ADMIN` / `CLUSTER_ADMIN` chỉ phê duyệt các hồ sơ thuộc địa bàn quản lý (`Offer.ScopeId == CurrentUser.ScopeId`).
+  - Tiêu chí kiểm chứng:
+    - [x] Tài khoản `PROVINCIAL_ADMIN` gọi `POST /api/v1/portal/seller/technologies/{id}/review` không còn nhận 403 Forbidden.
+    - [x] `APPROVE` cập nhật `status = 'APPROVED'` và `published_at = UtcNow`.
+- [x] **T-04.119** `[FE]` Cưỡng chế Bearer Token Authentication trong SDK `reviewOffer` (`technology-offer.ts`):
+  - Tự động lấy JWT token từ `authClient.getAccessToken()` (hoặc `nacentwin_access_token`) và inject vào header `Authorization: Bearer ${token}`.
+  - Xử lý mượt mà trên UI Hàng đợi kiểm duyệt (`GovApprovalQueue` tại `/gov/approvals`): Toast thành công, xóa hàng, cập nhật badge.
+  - Tiêu chí kiểm chứng:
+    - [x] Mọi cuộc gọi `reviewOffer` từ client đều đính kèm Bearer token hợp lệ.
+    - [x] Cổng công vụ `/gov/approvals` phê duyệt thành công không phát sinh lỗi 401 hay 403.
+- [ ] **T-04.120** `[FE/E2E]` Đồng bộ hiển thị tức thời trên Sàn Chào Bán (`/san-pham`, `/chao-ban-cong-nghe`):
+  - Đảm bảo hồ sơ sau khi được `PROVINCIAL_ADMIN` duyệt xuất hiện ngay lập tức trên sàn giao dịch công khai.
+- [ ] **T-04.121** `[TEST]` Bổ sung kịch bản kiểm thử Scoped RBAC và Bearer Token cho `ReviewOffer`:
+  - Unit/Integration tests kiểm tra `PROVINCIAL_ADMIN` phê duyệt thành công (HTTP 200).
+  - Kiểm tra 401 Unauthorized khi thiếu header `Authorization`.
+  - Kiểm tra 403 Forbidden khi vai trò không phải Admin/Cán bộ Sở (ví dụ `SELLER`, `BUYER`).
+

@@ -3,9 +3,9 @@
 
 > **Mã Epic**: `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`  
 > **Căn cứ**: Quyết định PO `PO-DEC-20261008-01` & `PO-DEC-20261008-04`, Basic Design `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/README.md`  
-> **Version**: 1.10.0  
-> **Status**: Completed (Shipped Gate 5)  
-> **Trạng thái**: ✅ **Shipped (2026-10-10)** — Quality Gate 5 Final Accepted  
+> **Version**: 1.11.0  
+> **Status**: In Review / Delta Applied (CR-2026-024)  
+> **Trạng thái**: 🟡 **In Review / Delta Applied (2026-11-03)** — CR-2026-024 Seller Approval & Publishing Fix  
 > **Độ ưu tiên**: P1 (Core Business Capability - Trọng tâm Sàn Giao Dịch Công Nghệ)
 
 ---
@@ -55,6 +55,7 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
 | **REQ-04-007** | Chọn Cơ quan quản lý & Phân cấp thẩm định Cấp 2 | Form đăng ký bắt buộc chọn Sở KH&CN tiếp nhận thẩm định (`managing_authority_id`, `scope_id` 63 tỉnh/thành) và tích chọn cam kết pháp lý. Hệ thống tự động tạo phiếu duyệt `ApprovalRequest` đẩy về Cổng Tác Nghiệp Cấp 2 `/gov`. | P1 |
 | **REQ-04-008** | Chỉnh sửa hồ sơ chào bán Seller (`[id]/edit`) | Màn hình `/portal/seller/technologies/[id]/edit` theo wireframe chuẩn, cho phép Seller chỉnh sửa thông tin công nghệ, Bộ tứ SHTT, điều kiện giá, tạm ẩn/mở lại niêm yết hoặc xóa hồ sơ. | P1 |
 | **REQ-04-009** | Quick Demand Modal (1 phút) kết nối 2 chiều | Modal tại `/chao-ban-cong-nghe/[id]` cho phép Bên mua nhập nhanh nhu cầu công nghệ (tiêu đề bài toán, ngân sách, tiến độ, hình thức hợp tác) để tạo liên kết tự động với hồ sơ chào bán. | P1 |
+| **REQ-04-010** | Thẩm định & Phê duyệt hồ sơ chào bán cấp Sở | Cho phép Cán bộ/Lãnh đạo Sở KH&CN (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) tại Cổng Công Vụ (`/gov/approvals`, Tab SHOP) phê duyệt (`APPROVE`), từ chối (`REJECT`) hoặc yêu cầu chỉnh sửa (`REQUEST_CHANGES`) hồ sơ chào bán địa bàn; yêu cầu Bearer token và cập nhật xuất bản Sàn Chào Bán. | P1 |
 
 ---
 
@@ -78,10 +79,10 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
 - **`BR-SELLER-05`**: **Quy tắc xuất bản & Cổng kiểm duyệt 2 Cấp (Multi-Level Governance & Publication Gate)**:
   - Khi Seller gửi hồ sơ: Hồ sơ khởi tạo với trạng thái **`PENDING` (Chờ thẩm định)**. Hệ thống tạo liên kết `ApprovalRequest (Type = TECHNOLOGY_OFFER, ScopeType = PROVINCE, ScopeId = scope_id)`.
   - Nghiêm cấm Auto-approve trong môi trường Production thương mại.
-  - Cán bộ/Lãnh đạo Sở KH&CN phụ trách địa bàn (Roles `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) tại Cổng Tác Nghiệp Cấp 2 (`/gov/approvals`) thực hiện thẩm định:
-    * `APPROVE`: Hồ sơ chuyển sang `APPROVED`, cập nhật `published_at`, chính thức niêm yết trên sàn công khai `/chao-ban-cong-nghe`.
-    * `REJECT`: Hồ sơ chuyển sang `REJECTED`, ghi nhận lý do thẩm định của Sở, gửi thông báo cho Seller.
-    * `REQUEST_CHANGES`: Hồ sơ chuyển sang `CHANGES_REQUESTED` để Seller cập nhật và nộp lại.
+  - Cán bộ/Lãnh đạo Sở KH&CN phụ trách địa bàn (Roles `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) hoặc Quản trị viên Trung ương (`SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`) tại Cổng Tác Nghiệp Cấp Sở (`/gov/approvals`) thực hiện thẩm định:
+    * `APPROVE`: Hồ sơ chuyển sang `APPROVED`, cập nhật `published_at = UtcNow`, chính thức niêm yết trên sàn công khai `/chao-ban-cong-nghe` và `/san-pham`.
+    * `REJECT`: Hồ sơ chuyển sang `REJECTED`, `published_at = null`, ghi nhận lý do thẩm định của Sở ($\ge 10$ ký tự), gửi thông báo cho Seller.
+    * `REQUEST_CHANGES`: Hồ sơ chuyển sang `CHANGES_REQUESTED`, `published_at = null`, ghi nhận nội dung cần bổ sung ($\ge 10$ ký tự) để Seller cập nhật và nộp lại.
 - **`BR-SELLER-06`**: **Quyền Hậu Kiểm & Thu Hồi Trung Ương (Super Admin Oversight - BR-ADM-007)**:
   - Chỉ Quản trị viên Tối cao (`SUPER_ADMIN` / `OPERATOR_ADMIN`) mới có thẩm quyền can thiệp thu hồi (`REVOKE`) một hồ sơ công nghệ đã được Sở KH&CN duyệt, nếu phát hiện tranh chấp văn bằng SHTT hoặc vi phạm quy chế sàn. Yêu cầu nhập `ReviewNote` tối thiểu 10 ký tự lưu vào `ApprovalAuditLog`.
 - **`BR-SELLER-07`**: **Kiểm Soát Vòng Đời & Tự Động Tái Thẩm Định (Life-Cycle Re-Audit Trigger)**:
@@ -90,6 +91,11 @@ Tuân thủ ma trận phân quyền 3D Scoped RBAC của hệ sinh thái NacenTe
     2. Reset `published_at = null` (tạm ẩn khỏi Sàn giao dịch công khai cho đến khi được duyệt lại).
     3. Cập nhật lý do thay đổi và gửi thông báo cảnh báo rõ ràng cho Seller trong response API.
     4. Các chỉnh sửa về mô tả tóm tắt, văn phong hoặc khoảng giá thông thường được cập nhật ngay mà không kích hoạt tái thẩm định.
+- **`BR-SELLER-08`**: **Quy tắc xác thực Bearer Token & Phân quyền Scoped RBAC cho Thao tác Kiểm duyệt (Review Offer Auth Invariant)**:
+  - Mọi yêu cầu thẩm định hồ sơ (`POST /api/v1/portal/seller/technologies/{id}/review` & v2) bắt buộc phải đính kèm JWT Bearer Token hợp lệ trong HTTP header `Authorization`. Thiếu header hoặc token không hợp lệ bị từ chối với HTTP 401 Unauthorized.
+  - Endpoint cưỡng chế kiểm tra danh sách vai trò quản trị thẩm quyền theo 10 Core Roles 3D Scoped RBAC: Chỉ chấp nhận các vai trò `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN` (và legacy `DEPT_ADMIN`, `DEPT_OFFICER`). Các vai trò khác (`SELLER`, `BUYER`, `PUBLIC_USER`...) nhận HTTP 403 Forbidden.
+  - Scoping địa bàn: Cán bộ Sở (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) chỉ thẩm định hồ sơ thuộc địa bàn phụ trách (`Offer.ScopeId == CurrentUser.ScopeId` hoặc `managing_authority_id`).
+  - Khi duyệt `APPROVE`: Hệ thống bắt buộc cập nhật đồng thời `status = 'APPROVED'` và `published_at = UtcNow`, tự động đưa hồ sơ lên Sàn Chào Bán công khai (`/san-pham`, `/chao-ban-cong-nghe`).
 
 ---
 
@@ -1259,4 +1265,62 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 - **`AC-04-047`**: Số lượng công nghệ chào bán trên trang `/chao-ban-cong-nghe` nạp động từ CSDL thật, khớp 100% với số lượng bản ghi có `Status = 'APPROVED'` và `IsPublic = true` trong PostgreSQL.
 - **`AC-04-048`**: Bộ lọc Lĩnh vực nạp đầy đủ danh mục ngành/lĩnh vực chuẩn TT17 từ API, đồng bộ danh mục 18 ngành theo chỉ đạo PO.
 - **`AC-04-049`**: Khi hệ thống chưa có công nghệ nào được duyệt, hiển thị trung thực con số `0` công nghệ và thông điệp trống, tuyệt đối không hiển thị fallback `1.200+`.
+
+---
+
+## Spec Delta v13: Chuẩn Hóa Quy Trình Phê Duyệt Chào Bán Cấp Sở & Phân Quyền 3D Scoped RBAC (CR-2026-024)
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261103-01` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 25; Sổ cái thay đổi [`CR-2026-024`](./deltas/CR-2026-024_seller_approval_and_publishing_fix.md).  
+> **Phiên bản áp dụng**: v1.11.0  
+> **Trạng thái**: APPLIED (Ready for Implementation)  
+
+### 1. Bối Cảnh & Điểm Nghẽn Cần Khắc Phục
+- **Lỗi 403 Forbidden tại Backend**: Endpoint `POST /api/v1/portal/seller/technologies/{id}/review` và `/api/v2/portal/seller/technologies/{id}/review` khai báo `[Authorize(Roles = "DEPT_ADMIN,DEPT_OFFICER,ADMIN")]`. Khi tài khoản Cán bộ/Lãnh đạo Sở KH&CN thuộc 10 Core Roles 3D Scoped RBAC (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) bấm duyệt thì bị từ chối 403 Forbidden.
+- **Lỗi 401 Unauthorized do thiếu Bearer Token**: Hàm `reviewOffer` trong SDK Frontend (`technology-offer.ts`) thiếu header `Authorization: Bearer <token>`, gửi payload không có danh tính người dùng.
+- **Nghẽn luồng xuất bản Sàn Chào Bán**: Hồ sơ kẹt ở trạng thái `PENDING`, không thể chuyển sang `APPROVED` và `published_at = null`, dẫn đến Sàn Chào Bán (`/san-pham`, `/chao-ban-cong-nghe`) không hiển thị sản phẩm mới.
+
+### 2. Chi Tiết Yêu Cầu & Quy Tắc Quy Chuẩn
+
+#### [ADD] REQ-04-010: Thẩm Định & Phê Duyệt Hồ Sơ Chào Bán Cấp Sở KH&CN
+- Cung cấp khả năng thẩm định hồ sơ chào bán tại Cổng Công Vụ (`/gov/approvals`, Tab SHOP) cho Cán bộ Sở (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) và Quản trị viên Trung ương (`SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`).
+- Cho phép ra quyết định: Phê duyệt (`APPROVE`), Yêu cầu sửa đổi (`REQUEST_CHANGES`), hoặc Từ chối (`REJECT`) kèm lý do thẩm định $\ge 10$ ký tự.
+
+#### [ADD] BR-SELLER-08: Chuẩn Hóa Xác Thực Bearer Token & Phân Quyền Scoped RBAC Cho Thao Tác Kiểm Duyệt
+1. Bắt buộc có header `Authorization: Bearer <token>`; thiếu token trả về HTTP 401 Unauthorized.
+2. Token phải chứa một trong các vai trò: `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN` (và legacy `DEPT_ADMIN`, `DEPT_OFFICER`). Các vai trò khác nhận HTTP 403 Forbidden.
+3. Cán bộ Sở (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) chỉ duyệt hồ sơ thuộc phạm vi địa bàn hành chính tỉnh/thành mình quản lý (`ScopeId == user.ScopeId`).
+4. Khi duyệt `APPROVE`: Tự động cập nhật `status = 'APPROVED'` và `published_at = UtcNow`, hồ sơ lập tức hiển thị công khai trên Sàn Chào Bán.
+
+#### [ADD] API-04-006: Contract Endpoint ReviewOffer Có Xác Thực Scoped RBAC
+- **Method & Route**: `POST /api/v1/portal/seller/technologies/{id}/review` & `POST /api/v2/portal/seller/technologies/{id}/review`
+- **Headers**:
+  - `Content-Type: application/json`
+  - `Authorization: Bearer <jwt_access_token>`
+- **Body**:
+  ```json
+  {
+    "action": "APPROVE" | "REJECT" | "REQUEST_CHANGES" | "REVOKE",
+    "reviewNote": "string (bắt buộc >= 10 ký tự nếu REJECT hoặc REQUEST_CHANGES)"
+  }
+  ```
+- **Response**: `200 OK` (thành công), `400 Bad Request` (lỗi validation), `401 Unauthorized` (thiếu token), `403 Forbidden` (sai role), `404 Not Found` (không tìm thấy ID).
+
+#### [ADD] UI-04-004: Giao Diện Hàng Đợi Phê Duyệt Cổng Công Vụ (`/gov/approvals`)
+- Nút bấm phê duyệt gửi token xác thực qua `reviewOffer` SDK.
+- Trạng thái loading spinner và chặn double submit trong thời gian xử lý.
+- Xóa bản ghi khỏi danh sách hàng đợi và hiển thị thông báo Toast thành công khi nhận HTTP 200.
+
+#### [ADD] TEST-04-008: Bộ Kịch Bản Kiểm Thử Phê Duyệt & Xuất Bản Sàn Chào Bán
+- `TC-REV-01`: `PROVINCIAL_ADMIN` duyệt hồ sơ `PENDING` $\rightarrow$ 200 OK, `status == 'APPROVED'`, hiển thị trên `/san-pham`.
+- `TC-REV-02`: Gọi API thiếu header `Authorization` $\rightarrow$ 401 Unauthorized.
+- `TC-REV-03`: `SELLER` hoặc `BUYER` gọi API duyệt $\rightarrow$ 403 Forbidden.
+- `TC-REV-04`: Yêu cầu sửa đổi có ghi chú $< 10$ ký tự $\rightarrow$ 400 Bad Request; $\ge 10$ ký tự $\rightarrow$ 200 OK, `status == 'CHANGES_REQUESTED'`.
+
+### 3. Tiêu Chí Chấp Nhận Nghiệm Thu (Acceptance Criteria)
+- **`AC-04-050`**: Tài khoản mang vai trò `PROVINCIAL_ADMIN` hoặc `CLUSTER_ADMIN` duyệt hồ sơ chào bán thành công, nhận mã HTTP 200, triệt tiêu hoàn toàn lỗi 403 Forbidden.
+- **`AC-04-051`**: SDK `reviewOffer` trên Frontend luôn truyền header `Authorization: Bearer <token>`; nếu thiếu token hệ thống từ chối với HTTP 401.
+- **`AC-04-052`**: Các vai trò không thuộc thẩm quyền công vụ (`SELLER`, `BUYER`, `PUBLIC_USER`) bị chặn 403 Forbidden khi gọi endpoint review.
+- **`AC-04-053`**: Sau khi phê duyệt `APPROVE`, hồ sơ có `status == 'APPROVED'` và `published_at` mang giá trị thời gian thực.
+- **`AC-04-054`**: Hồ sơ vừa được phê duyệt lập tức hiển thị trên Sàn Chào Bán (`/san-pham` và `/chao-ban-cong-nghe`) với trạng thái niêm yết công khai.
+
 

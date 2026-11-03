@@ -4,8 +4,10 @@
 > **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
 > **Căn cứ pháp lý**: [Thông tư 17/2019/TT-BKHCN](https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm) của Bộ Khoa học và Công nghệ  
 > **Phạm vi áp dụng**: Doanh nghiệp ngành công nghiệp chế biến, chế tạo (mã ngành C.10 – C.32 theo VSIC)  
-> **Trạng thái**: 🟢 Completed (Shipped Gate 5)  
-> **Version**: 1.3.0  
+> **Trạng thái**: 🟢 Active / Implementing Delta  
+> **Version**: 1.4.0 (Bumped from 1.3.0 via CR-2026-021)  
+> **Last Updated**: 2026-11-03  
+> **Change Requests Reference**: [CR-2026-021](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/specs/TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-2026-021_admin_survey_records_and_doc_export.md) (PO-DEC-20261103-01)  
 > **Độ ưu tiên**: P1 (Trọng tâm Đánh giá Năng lực Doanh nghiệp Sản xuất)
 
 ---
@@ -86,6 +88,17 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
     * $K_{chuẩn 3}$: Hệ số chi phí nguyên vật liệu trung bình ($G_{nvl} / G_{dt}$).
     * $K_{chuẩn 4}$: Năng suất lao động trung bình (triệu đồng/người/năm).
   - Cung cấp API `GET /api/v1/assessments/tt17/benchmarks` trả về danh mục 23 ngành và hệ số benchmark để Frontend tính live score đồng bộ 100% với Backend.
+- **`REQ-SURVEY-DOC-001` (Tải Mẫu Phiếu Thu Thập TT17 Trắng Dạng Word .docx Chuẩn A4)**:
+  - Cung cấp nút tải biểu mẫu chuẩn văn bản hành chính khổ A4 phục vụ in ấn mang đi khảo sát thực địa tại các tỉnh/thành phố và doanh nghiệp.
+  - Cấu trúc đầy đủ các bảng biểu Mục A đến Mục E theo Thông tư 17/2019/TT-BKHCN, chừa dòng trống kẻ chấm để ghi tay, có hướng dẫn trích lục tài chính từ BCTC.
+- **`REQ-SURVEY-DOC-002` (Tải Mẫu Phiếu Khảo Sát Nhu Cầu DNNVV Trắng Dạng Word .docx Chuẩn A4)**:
+  - Cung cấp nút tải biểu mẫu khảo sát hiện trạng, khó khăn và nhu cầu đổi mới sáng tạo, chuyển đổi số của Doanh nghiệp nhỏ và vừa theo Luật Hỗ trợ DNNVV.
+- **`REQ-SURVEY-DOC-003` (Danh Sách Quản Lý Bản Ghi Phiếu Đã Điền Tại `/admin/assessments/records`)**:
+  - Xây dựng giao diện danh sách tập trung toàn quốc các bản ghi phiếu khảo sát & đánh giá của doanh nghiệp.
+  - Tích hợp bộ lọc 34 Tỉnh/Thành phố trọng điểm ĐMST (`province`), loại phiếu (`surveyType`), trạng thái (`status`), và ô tìm kiếm tức thời theo MST / Tên DN.
+- **`REQ-SURVEY-DOC-004` (Xuất File Word .docx Từng Phiếu Có Dữ Liệu Điền Sẵn Của Doanh Nghiệp)**:
+  - Cung cấp nút hành động *"Xuất file Word"* tại mỗi dòng bản ghi trong danh sách quản trị.
+  - Tự động nạp dữ liệu thực tế từ CSDL, điền đầy đủ thông tin định danh pháp nhân, danh mục dây chuyền thiết bị, số liệu 3 năm, kết quả điểm 26 tiêu chí TT17, hệ số $T_{ĐB}$ và xếp loại phục vụ in ấn lưu trữ hồ sơ công vụ.
 
 ---
 
@@ -109,6 +122,14 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
   2. Nếu $M_{tt} = 0 \rightarrow K_{tđh} = 0$ (chấm 1 điểm), $K_{ns} = 0$ (chấm 1 điểm).
   3. Nếu $G_{dt} = 0 \rightarrow K_{cđ} = 0, K_{nl} = 0, K_{nvl} = 0, K_{tt} = 0, K_{R\&D} = 0$.
   4. Tuyệt đối không sinh lỗi `NaN` hoặc `Infinity` trên giao diện người dùng; hiển thị cảnh báo hướng dẫn người dùng nhập doanh thu để hệ thống tính toán các chỉ số kinh tế.
+- **`BR-SURVEY-DOC-01 (Định dạng file Word .docx xuất ra hợp lệ & thẩm mỹ)`**:
+  * Định dạng file xuất bắt buộc là `.docx` (Office OpenXML) hợp lệ, mở mượt mà trên MS Word, LibreOffice, Google Docs, không gặp lỗi XML hoặc corrupt file.
+  * Bộ mã Unicode font chữ tiêu chuẩn (Times New Roman / Calibri), cỡ chữ 12-13pt.
+  * Khổ giấy A4 dọc, căn lề chuẩn văn bản hành chính Việt Nam (Trên/Dưới 20mm, Trái 30mm, Phải 15-20mm), bảng biểu có lặp lại tiêu đề dòng khi ngắt trang (`tblHeader`).
+- **`BR-SURVEY-DOC-02 (Đảm bảo toàn vẹn dữ liệu cá nhân & pháp nhân Zero-Mock)`**:
+  * File Word xuất ra chứa đúng 100% dữ liệu thực tế do Doanh nghiệp kê khai hoặc Cán bộ Sở KH&CN thẩm định đã lưu trong CSDL.
+  * Tuyệt đối không sinh dữ liệu giả (Zero-Mock Data Leakage). Trường dữ liệu trống hiển thị `"---"` hoặc dòng kẻ chấm `"................"` để phục vụ ghi chép.
+  * Tuân thủ quy định bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP (PDPD), chỉ cho phép các vai trò quản trị có thẩm quyền thực hiện thao tác kết xuất.
 
 ---
 
@@ -137,4 +158,60 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
 - `k_chuan_3`: NUMERIC(6,4) (Hệ số chi phí nguyên vật liệu trung bình)
 - `k_chuan_4`: NUMERIC(10,2) (Năng suất lao động trung bình - triệu đồng/người/năm)
 - `created_at`, `updated_at`: TIMESTAMPTZ
+
+---
+
+## 6. GIAO DIỆN & TRẢI NGHIỆM NGƯỜI DÙNG (UI SPECIFICATION)
+
+### `UI-SURVEY-DOC-001`: Menu Item Sidebar & Bố Cục Trang Quản Trị `/admin/assessments/records` Chuẩn 5 UX States Qua `<Async>`
+
+1. **Điều Hướng Sidebar Quản Trị (Admin Navigation)**:
+   - **Vị trí tích hợp**: Thuộc **Mục 1: TRUNG TÂM ĐIỀU HÀNH** trên Sidebar Cổng Quản trị Admin.
+   - **Tên hiển thị (Label)**: `"Danh sách Phiếu Thu thập & Đánh giá DN"`
+   - **Đường dẫn (Route)**: `/admin/assessments/records`
+   - **Huy hiệu (Badge)**: `"Bản ghi DN"`
+   - **Icon**: `FileSpreadsheet` hoặc `ClipboardList`
+   - **Active State**: Nền Deep Teal, font chữ đậm khi truy cập route này.
+
+2. **Bố Cục Giao Diện Trang `/admin/assessments/records`**:
+   - **Khu vực Header & Actions**:
+     * Tiêu đề: *"Quản Lý Bản Ghi Phiếu Thu Thập TT17 & Nhu Cầu ĐMST"*.
+     * Hai nút hành động tải template trắng:
+       - Nút 1: `[Tải Mẫu Phiếu TT17 (A4 .docx)]`
+       - Nút 2: `[Tải Mẫu Nhu Cầu DNNVV (A4 .docx)]`
+   - **Thanh Công Cụ Bộ Lọc (Filter Toolbar)**:
+     * Dropdown lọc theo 34 Tỉnh/Thành phố trọng điểm ĐMST (`province`).
+     * Dropdown lọc theo Loại phiếu (`surveyType`: Tất cả, TT17, Nhu cầu DNNVV).
+     * Dropdown lọc theo Trạng thái (`status`: DRAFT, SUBMITTED, IN_REVIEW, APPROVED).
+     * Ô tìm kiếm tức thời (Search Input) theo MST hoặc Tên Doanh nghiệp.
+   - **Bảng Danh Sách Bản Ghi Chuẩn 5 UX States Qua Component Wrapper `<Async>`**:
+     * **State 1 (Loading)**: Render 5-7 dòng Skeleton Table với hiệu ứng shimmer màu xám nhạt, các nút thao tác disabled.
+     * **State 2 (Empty)**: Minh họa SVG chiếc hộp rỗng kèm thông báo *"Không tìm thấy bản ghi phiếu nào phù hợp với bộ lọc"* và nút *"Đặt lại bộ lọc"*.
+     * **State 3 (Error)**: Khung Alert cảnh báo đỏ hiển thị thông báo lỗi mạng kèm nút *"Thử lại"* (`retry()`).
+     * **State 4 (Success)**: Bảng dữ liệu hoàn chỉnh hiển thị các cột (Mã phiếu, Tên DN, MST, Tỉnh/Thành, Loại phiếu, Ngày cập nhật, Điểm/Xếp loại, Trạng thái, Thao tác), phân trang 10/25/50 bản ghi, nút *"Xuất file Word"* (Icon `Download`) hoạt động tức thì.
+     * **State 5 (Updating / Exporting)**: Spinner xoay nhẹ tại nút bấm, tạm thời vô hiệu hóa double-click trong khi tệp Word đang được sinh từ server.
+
+---
+
+## 7. HỢP ĐỒNG API CONTRACTS & DỮ LIỆU DELTA
+
+- **`API-SURVEY-DOC-001`**: `GET /api/v1/assessments/templates/blank-docx?type={tt17|demand}`
+  - Tải về tệp Word trắng (.docx) chuẩn A4 phục vụ in ấn khảo sát thực địa.
+- **`API-SURVEY-DOC-002`**: `GET /api/v1/assessments/records`
+  - Truy vấn danh sách bản ghi phiếu thu thập & đánh giá (hỗ trợ phân trang, lọc theo tỉnh/thành, loại phiếu, tìm kiếm MST / Tên DN).
+- **`API-SURVEY-DOC-003`**: `GET /api/v1/assessments/records/{id}/export-docx?type={tt17|demand}`
+  - Xuất tệp Word (.docx) bản ghi đã điền sẵn 100% dữ liệu thực tế của doanh nghiệp để in ấn lưu trữ hồ sơ công vụ.
+
+---
+
+## 8. LỊCH SỬ THAY ĐỔI & CHANGE REQUESTS LEDGER (DELTA TRACKING)
+
+| Version | Ngày | Mã Change Request | Quyết Định PO Căn Cứ | Tóm Tắt Nội Dung Thay Đổi | Trạng Thái |
+| :---: | :---: | :---: | :---: | :--- | :---: |
+| `1.0.0` | 2026-09-25 | Baseline | - | Ban hành đặc tả kiến trúc ban đầu theo Thông tư 17/2019/TT-BKHCN. | Shipped |
+| `1.1.0` | 2026-10-12 | `CR-2026-009` | `PO-DEC-20261012-08` | Bổ sung Public Intake Form, Auto-Provisioning tài khoản DN vãng lai. | Shipped |
+| `1.2.0` | 2026-10-15 | `CR-2026-010` | `PO-DEC-20261012-09` | Đồng bộ Form Wizard 6 bước tương thích Form Nhu cầu, Tra cứu MST qua API. | Shipped |
+| `1.3.0` | 2026-10-25 | `CR-2026-015` | `PO-DEC-20261025-01` | Cập nhật bộ định mức 23 ngành chế biến chế tạo và bộ tính Defensive Math. | Shipped |
+| **`1.4.0`** | **2026-11-03** | [**`CR-2026-021`**](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/specs/TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-2026-021_admin_survey_records_and_doc_export.md) | `PO-DEC-20261103-01` | **Quản trị hồ sơ phiếu thu thập TT17 & nhu cầu ĐMST tại `/admin/assessments/records`, tải mẫu trắng Word A4 phục vụ thực địa và xuất file Word từng phiếu đã điền.** | **Approved** |
+
 

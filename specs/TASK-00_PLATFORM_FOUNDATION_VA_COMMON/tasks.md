@@ -320,6 +320,62 @@
   - [x] Bổ sung test case fallback: Register thành công nhưng Login ném lỗi mạng $\rightarrow$ Kiểm chứng hiển thị thông báo fallback chuyển sang login.
   - [x] Kiểm chứng các validation client-side cũ (Họ tên, Email regex, Password < 8, Checkbox PDPD) tiếp tục pass 100%.
 
-- [x] `T-00.85` **[VERIFY-E2E-01]** Chạy kiểm thử toàn diện và đối soát Zero Regression:
+- [x] `T-00.84B` **[VERIFY-E2E-01]** Chạy kiểm thử toàn diện và đối soát Zero Regression:
   - [x] Chạy Vitest trên toàn bộ frontend test suites xác nhận 100% Green.
   - [x] Kiểm tra build Next.js (`pnpm build` hoặc `npm run build`) đạt exit code 0.
+
+---
+
+## Giai đoạn 21 (Phase 18): Delta v17 (CR-2026-021) — Chuẩn Hóa Bắt Buộc Định Danh Pháp Nhân Khi Mở Gian Hàng Seller (Legal Entity Mandate for Seller Onboarding) [`[SELLER-ONBOARDING]`]
+
+- [x] `T-00.85` **[BE] Mở rộng SubmitApprovalRequestDto và FluentValidation cho requestType SHOP**:
+  - [x] Khởi tạo DTO `SubmitShopApprovalPayload` trong `NacenTech.Modules.Identity.Application`.
+  - [x] Xây dựng bộ quy tắc validation cho payload `SHOP`:
+    * Validate `entityType` thuộc `ENTERPRISE` hoặc `INSTITUTION_RND`.
+    * Validate `orgName` (5–255 ký tự), `mainSector` (TT17), `province`, `description` ($\ge 10$ ký tự), `pledgeAgreed == true`.
+    * Validate có điều kiện: Nếu `ENTERPRISE` $\rightarrow$ `taxCode` regex 10 hoặc 13 chữ số; Nếu `INSTITUTION_RND` $\rightarrow$ `establishmentDecisionNo` $\ge 5$ ký tự.
+    * Validate `legalDocUrl` bắt buộc có đuôi `.pdf`.
+  - [x] Tích hợp validator vào pipeline xử lý của `ApprovalService.SubmitRequestAsync` cho `requestType == "SHOP"`.
+
+- [x] `T-00.86` **[BE] Unit tests cho validation payload SHOP có pháp nhân hợp lệ**:
+  - [x] Viết bộ Unit test C# cho validation payload SHOP (`Task00DeltaV17ShopApprovalValidationTests.cs`):
+    * Case 1 (Happy Path - Doanh nghiệp): Payload `ENTERPRISE` có MST hợp lệ và tệp PDF $\rightarrow$ Submit thành công, SLA deadline 24h.
+    * Case 2 (Happy Path - Viện/Trường R&D): Payload `INSTITUTION_RND` có Số QĐ và tệp PDF $\rightarrow$ Submit thành công, SLA deadline 24h.
+    * Case 3 (Boundary): `taxCode` sai định dạng (chứa chữ cái hoặc ít hơn 10 số) $\rightarrow$ Ném ValidationException.
+    * Case 4 (Boundary): `establishmentDecisionNo` để trống hoặc $< 5$ ký tự $\rightarrow$ Ném ValidationException.
+    * Case 5 (Security): `legalDocUrl` không phải đuôi `.pdf` (ví dụ: `.exe`, `.png`) $\rightarrow$ Ném ValidationException.
+    * Case 6: Chưa tích cam kết `pledgeAgreed` $\rightarrow$ Ném ValidationException.
+  - [x] Chạy kiểm thử hồi quy `Task07DeltaV4ApprovalQcTests.cs` đạt 7/7 passed (100% Green).
+
+- [x] `T-00.87` **[FE] Nâng cấp UI Modal Seller trong `src/app/profile/upgrade/page.tsx` chuẩn 1:1 theo Wireframe mới (2 tab pháp nhân, tra cứu MST, upload file PDF)**:
+  - [x] Thiết kế lại modal `#sellerModal` tại `src/app/profile/upgrade/page.tsx` bám sát 1:1 Wireframe SSOT:
+    * Thêm bộ chuyển đổi 2 tabs: Tab 1 "Doanh Nghiệp / DN KH&CN" (icon `Building2`), Tab 2 "Viện / Trường / R&D" (icon `Landmark`).
+    * Nhánh Doanh nghiệp: Ô nhập MST, nút "Tra cứu MST", ô Tên Doanh nghiệp (auto-fill), khối upload tệp ĐKKD PDF max 10MB.
+    * Nhánh Viện/Trường R&D: Ô nhập Số QĐ thành lập / Mã GP KH&CN, ô Tên Viện/Trường, khối upload tệp Quyết định PDF max 10MB.
+    * Khối thông tin chung: Lĩnh vực TT17, Sở KH&CN tiếp nhận, Mô tả năng lực TRL 1-9, Checkbox cam kết pháp lý & SHTT.
+    * Nút "Hủy Bỏ" và "Nộp Đơn Đăng Ký (SLA 24h)".
+
+- [x] `T-00.88` **[FE] Client-side validation chặn submit khi thiếu MST/QĐ thành lập hoặc file PDF**:
+  - [x] Xây dựng logic kiểm tra chặt chẽ phía Client trước khi gửi request:
+    * Nếu chọn Doanh nghiệp: Chặn submit khi MST rỗng, sai định dạng 10/13 số, hoặc chưa chọn tệp ĐKKD PDF.
+    * Nếu chọn Viện/Trường: Chặn submit khi Số QĐ rỗng, Tên Viện/Trường rỗng, hoặc chưa chọn tệp Quyết định PDF.
+    * Kiểm tra dung lượng tệp: Chặn và cảnh báo ngay nếu tệp $> 10$MB hoặc không phải MIME type `application/pdf`.
+    * Chặn submit nếu chưa tích cam kết pháp lý & SHTT.
+  - [x] Hiển thị trạng thái loading, khóa nút submit và hiển thị spinner trong khi gửi request.
+
+- [x] `T-00.89` **[Test] Vitest + Playwright E2E kiểm thử form nâng cấp Seller mới**:
+  - [x] Cập nhật/Bổ sung Unit tests trong `src/app/profile/upgrade/page.test.tsx`:
+    * Kiểm chứng chuyển tab Doanh nghiệp $\leftrightarrow$ Viện/Trường hiển thị đúng các trường tương ứng.
+    * Kiểm chứng nút Tra cứu MST tự động điền Tên doanh nghiệp.
+    * Kiểm chứng validation lỗi khi chọn file $> 10$MB hoặc sai định dạng.
+    * Kiểm chứng mock submit gửi đúng cấu trúc `payloadJson` chuẩn `SHOP` mới.
+  - [x] Viết kịch bản Playwright E2E mô phỏng hành trình người dùng nộp đơn Seller thành công và nhận mã tracking `REQ-SHOP-...`.
+
+- [x] `T-00.90` **[Gate] Kiểm toán đối soát PostgreSQL thật, xác minh Zero-Mock và nghiệm thu Gate 5**:
+  - [x] Đối soát dữ liệu ghi nhận trực tiếp trong bảng `identity.approval_requests` trên CSDL PostgreSQL thật:
+    * `request_type = 'SHOP'`.
+    * `status = 'PENDING'`.
+    * `sla_deadline` đúng mốc thời gian $+24$ giờ.
+    * `payload_json` chứa đầy đủ `entityType`, mã định danh pháp nhân, `legalDocUrl`, `legalDocFileName` và không có mock ngầm.
+  - [x] Ký biên bản nghiệm thu Quality Gate 5 theo chuẩn hiến pháp NacenTech.
+

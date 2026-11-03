@@ -3,9 +3,9 @@
 **Feature Branch**: `foundation-platform-common`  
 **Feature Directory**: `specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Created**: 25/09/2026  
-**Version**: 1.16.0 (Delta v16 - CR-2026-020 Auto-Login On Register)  
-**Status**: Completed (Shipped Gate 5 - CR-2026-020)  
-**Last Updated**: 02/11/2026  
+**Version**: 1.17.0 (Delta v17 - CR-2026-021 Seller Legal Entity Onboarding)  
+**Status**: Completed (Shipped Gate 5 - CR-2026-021)  
+**Last Updated**: 03/11/2026  
 **Ánh Xạ Kỹ Thuật**: Nền tảng hạ tầng, Modular Monolith Clean Architecture, Shared Kernel & Docker Compose  
 **Phạm Vi**: Backend .NET Core (`backend/`), Frontend Next.js (`frontend/`), JWT Auth Session, Role Gateway Routing  
 
@@ -812,3 +812,70 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 | **REQ-AUTH-008** | `BR-AUTH-009` | `AC-CR-020.1`, `AC-CR-020.2` | `src/app/(auth)/register/page.tsx` | `src/app/(auth)/register/page.test.tsx` |
 | **BR-AUTH-009** | `BR-AUTH-009` | `AC-CR-020.4`, `AC-CR-020.5` | `src/app/(auth)/register/page.tsx` | `src/app/(auth)/register/page.test.tsx` |
 | **UI-AUTH-003** | `BR-AUTH-009` | `AC-CR-020.3` | `src/app/(auth)/register/page.tsx`, Header | `page.test.tsx`, Playwright E2E |
+
+---
+
+## Spec Delta v17 (CR-2026-021): Nâng Cấp Bắt Buộc Định Danh Pháp Nhân Khi Mở Gian Hàng Seller [PO-DEC-20261103-01]
+
+> **Căn cứ phê duyệt:** Quyết định điều hành của Product Owner (`nacen-po-pm`) và Senior BA (`nacen-ba`) theo Quyết định `PO-DEC-20261103-01` (CR-2026-021) tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 26; Chuẩn hóa định danh pháp nhân, bảo vệ quyền SHTT và ngăn chặn triệt để rủi ro mạo danh viện trường/doanh nghiệp trên sàn giao dịch quốc gia.
+
+### 1. Bối Cảnh & Lý Do Thay Đổi (Background & Problem Statement)
+
+1. **Rủi ro mạo danh nghiêm trọng**: Form đăng ký gian hàng Seller cũ trên Web Portal (`#sellerModal`) chỉ cho phép nhập chuỗi văn bản tự do tên đơn vị cung ứng, không có Mã số thuế, không có tra cứu pháp nhân và không yêu cầu bất kỳ tài liệu chứng minh nào. Bất kỳ tài khoản cá nhân nào cũng có thể tự xưng là Viện Hàn lâm KH&CN, Đại học Quốc gia hoặc Tập đoàn lớn để mở gian hàng và chào bán giải pháp.
+2. **Lỗ hổng pháp lý & Bản quyền SHTT**: Nền tảng thiếu cơ sở pháp lý để xác minh quyền sở hữu hoặc quyền đại diện thương mại đối với các sáng chế, giải pháp hữu ích niêm yết lên Sàn Chào Bán Quốc Gia (`/san-pham`).
+3. **Yêu cầu chuẩn hóa**: Phải bắt buộc phân định 2 nhóm chủ thể pháp nhân (Doanh nghiệp có MST và Giấy ĐKKD PDF vs Viện/Trường/Tổ chức R&D có Số QĐ thành lập và File QĐ PDF) mới được tiếp nhận thẩm định quyền `SELLER` với cam kết SLA 24 giờ.
+
+### 2. Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+
+- **REQ-UPG-05 (Bắt Buộc Định Danh Pháp Nhân Khi Mở Gian Hàng Seller)**:
+  - Khi người dùng gửi yêu cầu mở gian hàng Bên Bán (`SELLER`) tại `/profile/upgrade`, hệ thống MUST cưỡng chế người dùng chọn chính xác một trong 2 loại hình pháp nhân:
+    1. `ENTERPRISE` (Doanh nghiệp, Doanh nghiệp KH&CN).
+    2. `INSTITUTION_RND` (Viện Nghiên cứu, Trường Đại học, Trung tâm R&D).
+  - Khóa nút gửi đơn nếu chưa chọn loại pháp nhân hoặc để trống các trường định danh bắt buộc tương ứng.
+
+- **REQ-UPG-06 (Thu Thập & Kiểm Chứng Tài Liệu Minh Chứng Pháp Lý)**:
+  - Nhánh `ENTERPRISE`:
+    * Thu thập Mã số thuế (MST) hợp lệ và cung cấp nút *"Tra cứu MST"* tự động điền Tên Doanh nghiệp từ CSDL Quốc gia.
+    * Thu thập tệp Giấy chứng nhận ĐKKD định dạng PDF, dung lượng tối đa 10MB.
+  - Nhánh `INSTITUTION_RND`:
+    * Thu thập Số Quyết định thành lập hoặc Mã Giấy phép hoạt động KH&CN chính thức.
+    * Thu thập tệp Quyết định thành lập / Giấy phép hoạt động KH&CN định dạng PDF, dung lượng tối đa 10MB.
+
+- **BR-UPG-03 (Quy Tắc Xác Thực Mã Định Danh Pháp Nhân)**:
+  - `taxCode`: Chuẩn regex `^\d{10}(\d{3})?$`. Khi bấm tra cứu MST thành công, tự động khóa hoặc điền Tên doanh nghiệp.
+  - `establishmentDecisionNo`: Chuỗi ký tự độ dài tối thiểu 5 ký tự, không chứa chuỗi rỗng hoặc ký tự đặc biệt vô nghĩa.
+  - `orgName`: Tên đơn vị có độ dài từ 5 đến 255 ký tự, thể hiện đúng tên pháp nhân đã đăng ký.
+
+- **BR-UPG-04 (Ràng Buộc Tệp Văn Bản Pháp Lý PDF & Cam Kết Bản Quyền SHTT)**:
+  - Tệp tải lên MUST có MIME type `application/pdf`, dung lượng $> 0$ và $\le 10$MB ($10 \times 1024 \times 1024$ bytes).
+  - Tệp được lưu trữ an toàn, URL/Key được nhúng vào `payload_json` của yêu cầu thẩm định.
+  - Checkbox cam kết tuân thủ quy chế sàn, chịu trách nhiệm pháp lý và bảo đảm quyền sở hữu trí tuệ hợp pháp (`pledgeAgreed = true`) là trường bắt buộc.
+
+- **UI-UPG-002 (Giao Diện Modal Seller 2 Tabs & Upload File Drag-and-Drop)**:
+  - Cập nhật modal `#sellerModal` tại `src/app/profile/upgrade/page.tsx` chuẩn 1:1 theo Wireframe SSOT.
+  - Bộ chuyển đổi 2 tabs: Tab Doanh nghiệp (icon `Building2`) và Tab Viện/Trường R&D (icon `Landmark`).
+  - Khu vực tải file trực quan, hiển thị tên tệp và dung lượng MB sau khi chọn, hỗ trợ nút xóa/chọn lại tệp.
+
+- **TEST-UPG-003 (Tiêu Chuẩn Kiểm Thử Khép Kín)**:
+  - Unit tests backend: Xác nhận FluentValidation bắt lỗi khi thiếu MST, thiếu QĐ thành lập, thiếu file URL hoặc file không phải PDF.
+  - Component tests frontend: Kiểm thử chuyển đổi tab, tra cứu MST, upload file PDF và client-side validation.
+  - E2E tests: Kiểm thử luồng toàn trình nộp đơn Seller thành công và ghi nhận bản ghi vào CSDL PostgreSQL.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-CR-021.1 (Entity Type Mandate)**: Bắt buộc chọn loại hình pháp nhân (Doanh nghiệp hoặc Viện/Trường R&D). Form không cho phép submit khi chưa chọn.
+- **AC-CR-021.2 (Tax Code & Lookup for Enterprise)**: Nhánh Doanh nghiệp bắt buộc nhập MST 10 hoặc 13 số. Nút "Tra cứu MST" phản hồi tên doanh nghiệp và hiển thị thông báo đối soát thành công.
+- **AC-CR-021.3 (Decision Number for Institution)**: Nhánh Viện/Trường bắt buộc nhập Số QĐ thành lập hoặc Mã GP KH&CN hợp lệ.
+- **AC-CR-021.4 (Mandatory PDF Upload)**: Cả 2 nhánh đều bắt buộc phải đính kèm tệp PDF minh chứng ($\le 10$MB). Hệ thống từ chối ngay lập tức các tệp không phải PDF hoặc vượt quá 10MB.
+- **AC-CR-021.5 (Zero-Mock Payload Persistence)**: Bản ghi yêu cầu thẩm định được lưu thành công vào bảng `identity.approval_requests` với `request_type = 'SHOP'`, `payload_json` chứa đầy đủ cấu trúc pháp nhân và SLA thời hạn 24 giờ.
+
+### 4. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-UPG-05** | `BR-UPG-03` | `AC-CR-021.1`, `AC-CR-021.2`, `AC-CR-021.3` | `src/app/profile/upgrade/page.tsx`, `ApprovalService.cs` | `profile/upgrade/page.test.tsx`, `Task07DeltaV4ApprovalQcTests.cs` |
+| **REQ-UPG-06** | `BR-UPG-04` | `AC-CR-021.4` | `src/app/profile/upgrade/page.tsx`, `SubmitApprovalRequestValidator.cs` | `profile/upgrade/page.test.tsx`, Unit Tests C# |
+| **UI-UPG-002** | `BR-UPG-03`, `BR-UPG-04` | `AC-CR-021.1`, `AC-CR-021.4` | `src/app/profile/upgrade/page.tsx`, Wireframe SSOT | `page.test.tsx`, Playwright E2E |
+| **BR-UPG-03** | `BR-UPG-03` | `AC-CR-021.2`, `AC-CR-021.3` | `src/app/profile/upgrade/page.tsx`, Backend Validator | FluentValidation Unit Tests |
+| **BR-UPG-04** | `BR-UPG-04` | `AC-CR-021.4`, `AC-CR-021.5` | `src/app/profile/upgrade/page.tsx`, `ApprovalService.cs` | Vitest, Backend Integration Tests |
+

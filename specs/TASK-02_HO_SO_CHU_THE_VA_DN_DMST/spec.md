@@ -1,13 +1,16 @@
 # Đặc Tả Yêu Cầu Kỹ Thuật (spec.md) — TASK-02: Hồ Sơ Chủ Thể & 304 Doanh Nghiệp ĐMST
 
-> **Mã phân hệ**: `TASK-02`  
-> **Trạng thái**: `Shipped 2026-10-09` (Quality Gate 4 & 5 Pass)  
-> **Ánh xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/)  
+**Epic**: TASK-02 Hồ Sơ Chủ Thể & 304 Doanh Nghiệp ĐMST  
+**Version**: 1.12.0  
+**Status**: In Implementation (CR-2026-024-PART2 Approved)  
+**Last Updated**: 2026-11-03  
+> **Ánh xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) & `Specification/BASIC_DESIGN_NACENTECH.md` Mục 27  
 > **Căn cứ pháp lý & Dữ liệu gốc (SSOT)**: 
 > 1. Sheet `DN ĐMST` (225 dòng dữ liệu, 10 nhóm trường) trong `Nacentwin_20260924_bo_loc_da_sua.xlsx`.
 > 2. Kho dữ liệu thực tế 304 Doanh nghiệp có MST từ `Specification/01_DATA_RAW/Khảo sát 304 DN-final-2408.xlsx`.
 > 3. Quyết định PO `PO-DEC-20261008-05` (Phê duyệt nạp 304 DN thật, mô hình Hybrid Schema và Wireframe 5 màn hình).
-> 4. Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân (PDPD).
+> 4. Quyết định PO `PO-DEC-20261103-02` (Chuẩn hóa side effect phê duyệt nâng cấp DN ĐMST cấp Tỉnh - CR-2026-024-PART2).
+> 5. Nghị định 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân (PDPD).
 
 ---
 
@@ -526,6 +529,99 @@ Danh sách nạp động từ CSDL PostgreSQL (`policy.taxonomy_terms` với `ki
   - Given người dùng lọc theo "Nông nghiệp" tại Danh bạ Doanh nghiệp,
   - When hệ thống thực hiện truy vấn,
   - Then tham số gửi lên API là `sectorCode=LV01`, và danh sách chỉ hiển thị các doanh nghiệp nông nghiệp thực sự.
+
+---
+
+## 13. PHỤ LỤC DELTA V6 (CR-2026-024-PART2): NÂNG CẤP VÀ CẤP QUYỀN DN ĐMST QUA CỔNG KIỂM DUYỆT CẤP TỈNH (ENTERPRISE APPROVAL & ROLE UPGRADE)
+
+### 13.1 Bối Cảnh & Mục Tiêu Phẫu Thuật Nghiệp Vụ
+- **Hiện trạng cũ (As-Is)** [VERIFIED]:
+  * Khi người dùng nộp yêu cầu nâng cấp vai trò Doanh nghiệp ĐMST (`INSTITUTION`), backend tạo bản ghi vào `identity.approval_requests` với `ScopeType = 'PROVINCE'`, `ScopeId = '<ProvinceCode>'` (ví dụ `"HN"`, `"HCM"`).
+  * Khi Cán bộ Sở KH&CN (`PROVINCIAL_ADMIN`) phê duyệt hồ sơ trên Cổng Công Vụ (`/gov/approvals`), backend cố gắng parse `ScopeId` sang Guid (`Guid.TryParse(request.ScopeId, out var orgId)`), dẫn đến thất bại vì `ScopeId` là chuỗi mã tỉnh.
+  * Backend hoàn toàn không gán role `INNOVATION_ENTITY` cho người dùng (`Person`), cũng không tạo mới hoặc liên kết thực thể `Enterprise` trong CSDL.
+  * Hậu quả: Tài khoản người dùng vẫn bị kẹt vĩnh viễn ở `PUBLIC_USER`, không thể truy cập Bàn làm việc Doanh nghiệp (`/portal/enterprise/profile`), và không được cấp Huy hiệu Xác thực.
+- **Mục tiêu đề xuất (To-Be)** [PROPOSAL]:
+  * Chuẩn hóa side effect: Khi phê duyệt hồ sơ `INSTITUTION`, tự động thăng hạng role `INNOVATION_ENTITY` kèm Scope Tỉnh cho tài khoản người nộp.
+  * Tự động trích xuất `taxCode` và `companyName` từ `PayloadJson` để tạo mới hoặc liên kết thực thể `Enterprise` ở trạng thái xác thực `VERIFIED` (`IsVerified = true`, `VerificationStatus = "VERIFIED"`, `OwnerPersonId = user.Id`).
+
+### 13.2 Quy Chuẩn Nghiệp Vụ & Yêu Cầu Kỹ Thuật Chi Tiết
+
+- **`REQ-02-011` [Thẩm Định & Phê Duyệt Nâng Cấp Doanh Nghiệp ĐMST Cấp Tỉnh Từ Cổng Công Vụ]**:
+  - Cán bộ/Lãnh đạo Sở KH&CN (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`) tại Cổng Công Vụ (`/gov/approvals`, Tab ĐƠN VỊ / DOANH NGHIỆP ĐMST) tiếp nhận, thẩm định hồ sơ nâng cấp loại `INSTITUTION` thuộc phạm vi tỉnh quản lý.
+  - Khi phê duyệt (`APPROVE`), hệ thống tự động kích hoạt chuỗi side effects: thăng hạng vai trò `INNOVATION_ENTITY` và tạo/liên kết thực thể `Enterprise` đã xác thực (`IsVerified = true`).
+  - Khi từ chối (`REJECT`) hoặc yêu cầu sửa đổi (`REQUEST_CHANGES`), cán bộ bắt buộc nhập lý do tối thiểu 10 ký tự; trạng thái vai trò người dùng được giữ nguyên.
+
+- **`BR-02-007` [Chuẩn Hóa Liên Thông Hạt Nhân & Kích Hoạt Quyền Hạn Doanh Nghiệp ĐMST Khi Thẩm Định Cấp Tỉnh Phê Duyệt]**:
+  1. Khi hồ sơ nâng cấp `INSTITUTION` được phê duyệt:
+     - **Thăng hạng vai trò**: Gọi `person.AssignRoleAndScope(PlatformRoles.InnovationEntity, request.ScopeType, request.ScopeId)` để nâng cấp tài khoản nộp đơn thành `INNOVATION_ENTITY` với phạm vi cấp Tỉnh (`ScopeType = "PROVINCE"`, `ScopeId = request.ScopeId`).
+     - **Trích xuất thông tin định danh**: Trích xuất `taxCode` và `companyName` (hoặc `orgName`) từ `request.PayloadJson`.
+     - **Đồng bộ thực thể `Enterprise`**:
+       * Nếu `taxCode` đã tồn tại trong CSDL `enterprise.enterprises`: Liên kết `OwnerPersonId = request.UserId`, chuyển trạng thái `Status = "ACTIVE"`, `VerificationStatus = "VERIFIED"`, `IsVerified = true`, gọi `Approve(...)`.
+       * Nếu `taxCode` chưa tồn tại trong CSDL: Khởi tạo mới bản ghi `Enterprise` với các thông tin đã trích xuất, `OwnerPersonId = request.UserId`, `Status = "ACTIVE"`, `VerificationStatus = "VERIFIED"`, `IsVerified = true`.
+  2. Tuyệt đối không parse `ScopeId` sang Guid khi `ScopeType == ScopeTypes.Province`.
+  3. Khi hồ sơ bị thu hồi (`REVOKE`), hệ thống hạ cấp tài khoản về `PUBLIC_USER` và hủy kích hoạt `IsVerified = false` của doanh nghiệp liên kết.
+
+- **`API-02-008` [Hợp Đồng Endpoint Phê Duyệt Nâng Cấp DN ĐMST (Review Approval Contract)]**:
+  - Route: `POST /api/v1/governance/approvals/{id}/review`
+  - Headers: `Authorization: Bearer <token>` (Yêu cầu vai trò `PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`)
+  - Request Body:
+    ```json
+    {
+      "action": "APPROVE" | "REJECT" | "REQUEST_CHANGES" | "REVOKE",
+      "reviewNote": "string (>= 10 ký tự nếu REJECT, REQUEST_CHANGES, REVOKE)",
+      "expectedVersion": 1
+    }
+    ```
+  - Xử lý Atomicity: Cập nhật `approval_requests`, thăng hạng `Person`, và tạo/kích hoạt `Enterprise` trong cùng một Database Transaction.
+
+- **`TEST-02-009` [Bộ Kiểm Thử Bất Biến & Tích Hợp Duyệt Nâng Cấp DN ĐMST]**:
+  - Test Invariant: Đảm bảo khi duyệt `INSTITUTION` với `ScopeId` là chuỗi mã tỉnh (ví dụ `"HN"`), không ném exception format Guid, tài khoản chuyển thành `INNOVATION_ENTITY`.
+  - Test Integration: Gửi hồ sơ nâng cấp kèm MST và tên DN -> Cán bộ Sở duyệt -> Kiểm tra CSDL thực tế: `Person.PlatformRole == "INNOVATION_ENTITY"`, `Enterprise.OwnerPersonId == Person.Id`, `Enterprise.IsVerified == true`.
+  - Test Revoke: SuperAdmin thu hồi -> Tài khoản hạ cấp `PUBLIC_USER`, doanh nghiệp chuyển `IsVerified == false`.
+
+### 13.3 Tiêu Chuẩn Chấp Thuận Định Lượng (Acceptance Criteria)
+
+- **`AC-02-040` (Thăng Hạng Role INNOVATION_ENTITY Cấp Tỉnh)**:
+  - Given người dùng mang vai trò `PUBLIC_USER` nộp hồ sơ nâng cấp loại `INSTITUTION` với địa bàn `"HN"`,
+  - When Cán bộ Sở Hà Nội (`PROVINCIAL_ADMIN`, Scope `"HN"`) phê duyệt hồ sơ (`APPROVE`),
+  - Then tài khoản người dùng được gán vai trò `INNOVATION_ENTITY`, `ScopeType = "PROVINCE"`, `ScopeId = "HN"`.
+
+- **`AC-02-041` (Trích Xuất PayloadJson & Liên Kết OwnerPersonId)**:
+  - Given hồ sơ `INSTITUTION` chứa `payloadJson` có `taxCode` và `companyName`,
+  - When hệ thống thực thi side effect phê duyệt,
+  - Then hệ thống trích xuất chính xác `taxCode` và `companyName`, gán `OwnerPersonId = request.UserId` cho thực thể `Enterprise`.
+
+- **`AC-02-042` (Kích Hoạt Trạng Thái Doanh Nghiệp VERIFIED)**:
+  - Given thực thể doanh nghiệp được liên kết hoặc tạo mới từ yêu cầu duyệt,
+  - When side effect hoàn tất,
+  - Then thuộc tính `IsVerified` của doanh nghiệp mang giá trị `true`, `VerificationStatus = "VERIFIED"`, `Status = "ACTIVE"`.
+
+- **`AC-02-043` (Xử Lý ScopeId Chuỗi Không Phải Guid)**:
+  - Given hồ sơ nâng cấp có `ScopeId` là chuỗi mã tỉnh (ví dụ `"HN"`, `"HCM"`),
+  - When hàm xử lý side effect được triệu gọi,
+  - Then hệ thống xử lý trơn tru mà không dùng `Guid.TryParse`, không gây lỗi hoặc bỏ qua bước kích hoạt quyền hạn.
+
+- **`AC-02-044` (Quyền Truy Cập Tức Thời Bàn Làm Việc Doanh Nghiệp)**:
+  - Given người dùng vừa được phê duyệt nâng cấp thành công,
+  - When người dùng đăng nhập hoặc làm mới token tại `/portal/enterprise/profile`,
+  - Then người dùng được cấp quyền truy cập Bàn làm việc Doanh nghiệp 10 nhóm trường mà không bị từ chối 403 Forbidden.
+
+- **`AC-02-045` (Kiểm Toán Bất Biến Before/After Đầy Đủ)**:
+  - Given hành động phê duyệt hồ sơ `INSTITUTION`,
+  - When giao dịch lưu trữ CSDL hoàn tất,
+  - Then một bản ghi `identity.approval_audit_logs` được tạo mới với `action = "REVIEW_APPROVE"`, ghi nhận đầy đủ ActorId, Role, Timestamp, IP và Payload chi tiết.
+
+### 13.4 Ma Trận Truy Vết Toàn Trình (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Hợp Đồng API (API) | Kịch Bản Kiểm Thử (TEST) | Tiêu Chuẩn Chấp Thuận (AC) |
+| :--- | :--- | :--- | :--- | :--- |
+| **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-040` (Thăng hạng Role INNOVATION_ENTITY) |
+| **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-041` (Trích xuất Payload & Liên kết Owner) |
+| **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-042` (Kích hoạt Enterprise VERIFIED) |
+| **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-043` (ScopeId String Handler) |
+| **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-044` (Truy cập Portal Enterprise) |
+| **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-045` (Kiểm toán Audit Log) |
+
 
 
 
