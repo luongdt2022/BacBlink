@@ -127,29 +127,29 @@ export default function GovOpportunitiesPage() {
       {/* KPI Stats Overview */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div className="bg-surface-card p-4 rounded-xl border border-border shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <span className="text-caption text-text-muted block">Tổng cơ hội</span>
             <span className="text-xl font-bold text-text-primary">{stats.total}</span>
           </div>
-          <div className="bg-surface-card p-4 rounded-xl border border-border shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <span className="text-caption text-text-muted block">Gợi ý AI</span>
-            <span className="text-xl font-bold text-brand-primary">{stats.suggested}</span>
+            <span className="text-xl font-bold text-brand-700 dark:text-cyan-400">{stats.suggested}</span>
           </div>
-          <div className="bg-surface-card p-4 rounded-xl border border-border shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <span className="text-caption text-text-muted block">Đang tiếp cận</span>
-            <span className="text-xl font-bold text-amber-700">{stats.initiated}</span>
+            <span className="text-xl font-bold text-amber-700 dark:text-amber-400">{stats.initiated}</span>
           </div>
-          <div className="bg-surface-card p-4 rounded-xl border border-border shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <span className="text-caption text-text-muted block">Đang đàm phán</span>
-            <span className="text-xl font-bold text-amber-700">{stats.negotiating}</span>
+            <span className="text-xl font-bold text-amber-700 dark:text-amber-400">{stats.negotiating}</span>
           </div>
-          <div className="bg-surface-card p-4 rounded-xl border border-border shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <span className="text-caption text-text-muted block">Đã ký MOU</span>
-            <span className="text-xl font-bold text-emerald-700">{stats.mouSigned}</span>
+            <span className="text-xl font-bold text-emerald-700 dark:text-emerald-400">{stats.mouSigned}</span>
           </div>
-          <div className="bg-surface-card p-4 rounded-xl border border-border shadow-sm">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <span className="text-caption text-text-muted block">Tổng GT dự kiến</span>
-            <span className="text-xl font-bold text-brand-primary">
+            <span className="text-xl font-bold text-brand-700 dark:text-cyan-400">
               {formatCurrencyMillionVnd(stats.totalEstimatedValueMillionVnd)}
             </span>
           </div>
@@ -157,7 +157,7 @@ export default function GovOpportunitiesPage() {
       )}
 
       {/* Table & Controls */}
-      <div className="bg-surface-card rounded-2xl border border-border shadow-sm p-6 space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Quick Filter Buttons */}
           <div className="flex items-center gap-2">

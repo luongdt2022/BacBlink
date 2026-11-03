@@ -35,9 +35,10 @@
     ".next-prod/types/**/*.ts",
     ".next-qc-delta/types/**/*.ts",
     ".next/types/**/*.ts",
+    "/tmp/nacentech-frontend-dist/types/**/*.ts",
     "/tmp/nacentwin-next-build/types/**/*.ts",
     "next-env.d.ts",
-    "/tmp/nacentech-frontend-dist/types/**/*.ts"
+    "/tmp/nacentwin_next_cache/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

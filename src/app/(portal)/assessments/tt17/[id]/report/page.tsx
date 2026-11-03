@@ -9,6 +9,7 @@ import {
   CriterionScore,
 } from "@/services/api/assessment-tt17";
 import { Tt17SurveyDetailView } from "@/components/assessments/tt17-survey-detail-view";
+import { BlockchainZkpBadge } from "@/components/blockchain/BlockchainZkpBadge";
 
 export default function AssessmentReportPage() {
   const params = useParams();
@@ -169,9 +170,14 @@ export default function AssessmentReportPage() {
               </svg>
             </Link>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-lg font-bold text-slate-800">Báo Cáo Đánh Giá Trình Độ Công Nghệ</h1>
                 {getStatusBadge(assessment.status)}
+                <BlockchainZkpBadge
+                  entityType="TT17_ASSESSMENT"
+                  entityId={assessment.id}
+                  entityCode={assessment.taxCode}
+                />
               </div>
               <p className="text-xs text-slate-500">
                 {assessment.enterpriseName} | MST: {assessment.taxCode} | Niên độ: {assessment.assessmentYear} | Mã ngành: {assessment.industryCode}

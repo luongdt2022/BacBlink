@@ -1,0 +1,255 @@
+{
+  "report_id": "QC-REPORT-CR022-20261103074227",
+  "feature": "TASK-05_HO_SO_CHUYEN_GIA_KHCN",
+  "change_request": "CR-2026-022",
+  "phase": "Phase 24 (Delta v1.20.0)",
+  "timestamp": "2026-11-03T07:42:27.516566",
+  "standards": [
+    "Pure Black-Box Testing (Tuyệt đối mù code)",
+    "Zero-Mock E2E (Bearer JWT thật)",
+    "Deep DB Persistence Assertion (PostgreSQL container nacentech-postgres-1)",
+    "3D Scoped RBAC & PDPD Nghị định 13/2023/NĐ-CP"
+  ],
+  "summary": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "pass_rate": "100.0%",
+    "verdict": "CONDITIONAL_APPROVAL (ĐẠT KÈM CẢNH BÁO DEFECT)",
+    "gate": "Gate 4 Ready"
+  },
+  "defects_and_findings": [
+    {
+      "id": "DEF-CR022-01",
+      "severity": "HIGH",
+      "title": "Sai lệch tên Database trong tài liệu bàn giao (nacentech_dev vs nacentech)",
+      "description": "Tài liệu bàn giao và prompt ghi database là 'nacentech_dev', nhưng thực tế database là 'nacentech'. Cần chuẩn hóa cấu hình CI/CD tránh crash kết nối.",
+      "status": "OPEN",
+      "recommendation": "Cập nhật biến môi trường POSTGRES_DB=nacentech trong tài liệu và scripts."
+    },
+    {
+      "id": "DEF-CR022-02",
+      "severity": "MEDIUM",
+      "title": "Thiếu phân trang (Pagination) tại giao diện Cán bộ Sở /governance/approvals",
+      "description": "Frontend fetch approvals không truyền param limit, backend mặc định trả limit=20. Khi số lượng hồ sơ > 20 (Hà Nội hiện có 27 hồ sơ), các hồ sơ từ vị trí 21 trở đi bị khuất khỏi giao diện nếu không dùng tìm kiếm.",
+      "status": "OPEN",
+      "recommendation": "Bổ sung thanh phân trang (Pagination) hoặc truyền limit=100 trong gov-approval-queue.tsx."
+    },
+    {
+      "id": "DEF-CR022-03",
+      "severity": "MEDIUM",
+      "title": "Form /login có thuộc tính action='#' làm reload trang khi submit nhanh trước hydration",
+      "description": "Thuộc tính action='#' trên form đăng nhập có thể kích hoạt native submit nếu người dùng gõ Enter hoặc click trước khi React hoàn tất hydrat hóa.",
+      "status": "OPEN",
+      "recommendation": "Bỏ action='#' hoặc thay bằng action='javascript:void(0);' và đảm bảo form submit hoàn toàn qua React onSubmit."
+    },
+    {
+      "id": "DEF-CR022-04",
+      "severity": "LOW",
+      "title": "Tồn tại các bản ghi test probe cũ gây nhiễu danh sách phê duyệt",
+      "description": "Bảng approval_requests còn chứa các bản ghi test probe (qc.fut.year.ed47@nacentech.test) mang tên Bành Quốc Tuấn nhưng không có tệp CV liên kết.",
+      "status": "INFORMATIONAL",
+      "recommendation": "Dọn dẹp (cleanup) các bản ghi test probe khỏi môi trường staging."
+    }
+  ],
+  "test_cases": [
+    {
+      "tc_id": "TC-QC-PHYS-01",
+      "title": "Đối soát 12 tệp gốc với kho lưu trữ root storage/experts/documents/",
+      "layer": "Tầng 1 (Physical Storage)",
+      "status": "PASSED",
+      "expected": "12/12 tệp gốc khớp 100% SHA-256 và dung lượng byte",
+      "actual": "12/12 tệp khớp SHA-256 trên đĩa vật lý",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:42.646099"
+    },
+    {
+      "tc_id": "TC-QC-PHYS-02",
+      "title": "Đối soát 12 tệp gốc với Backend API Local Storage",
+      "layer": "Tầng 1 (Physical Storage)",
+      "status": "PASSED",
+      "expected": "12/12 tệp gốc khớp 100% SHA-256 và dung lượng byte trong API storage",
+      "actual": "12/12 tệp khớp SHA-256 trên thư mục API storage",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:42.677212"
+    },
+    {
+      "tc_id": "TC-QC-DB-01",
+      "title": "Kiểm tra số lượng bản ghi CURRICULUM_VITAE trong brokerage.expert_documents",
+      "layer": "Tầng 2 (DB Persistence)",
+      "status": "PASSED",
+      "expected": "Đúng 12 bản ghi tương ứng 12 chuyên gia KH&CN",
+      "actual": "Thực tế CSDL ghi nhận: 12 bản ghi",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:43.051376"
+    },
+    {
+      "tc_id": "TC-QC-DB-02",
+      "title": "Kiểm tra trạng thái is_active=true và malware_scan_status='CLEAN'",
+      "layer": "Tầng 2 (DB Persistence)",
+      "status": "PASSED",
+      "expected": "12/12 bản ghi đạt trạng thái active và an toàn mã độc CLEAN",
+      "actual": "12/12 bản ghi thỏa mãn điều kiện",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:43.051841"
+    },
+    {
+      "tc_id": "TC-QC-DB-03",
+      "title": "Kiểm tra đối soát Checksum SHA-256 và kích thước byte trong CSDL với file gốc",
+      "layer": "Tầng 2 (DB Persistence)",
+      "status": "PASSED",
+      "expected": "12/12 bản ghi trong DB có sha256 và size_bytes khớp 100% với file gốc",
+      "actual": "12/12 bản ghi khớp chính xác hoàn toàn",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:43.082785"
+    },
+    {
+      "tc_id": "TC-QC-API-01",
+      "title": "Chuyên gia tra cứu danh sách chứng từ cá nhân GET /api/v1/experts/me/documents",
+      "layer": "Tầng 3 (API Integration)",
+      "status": "PASSED",
+      "expected": "HTTP 200 OK, trả về danh sách có id, documentType='CURRICULUM_VITAE', sha256",
+      "actual": "HTTP 200, doc_id=9d50c96e-2fb4-4298-a25c-a62c2c27f3a3",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:45.029868"
+    },
+    {
+      "tc_id": "TC-QC-API-02",
+      "title": "Chuyên gia tải stream CV gốc GET /api/v1/experts/me/documents/{id}/download",
+      "layer": "Tầng 3 (API Integration)",
+      "status": "PASSED",
+      "expected": "HTTP 200 OK, Content-Type: application/pdf, SHA-256 khớp file gốc (2717464 bytes)",
+      "actual": "HTTP 200, Size=2717464B, Hash=5128d01a01aaac26... (Khớp file gốc: True)",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:45.214441"
+    },
+    {
+      "tc_id": "TC-QC-API-03",
+      "title": "Kiểm tra hoàn thiện hồ sơ đạt 100 điểm sau khi có chứng từ CV gốc",
+      "layer": "Tầng 3 (API Integration)",
+      "status": "PASSED",
+      "expected": "HTTP 200 OK, score = 100, grade = 'EXCELLENT', missingCriteria = []",
+      "actual": "HTTP 200, score=100, grade=EXCELLENT, missing=[]",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:45.259224"
+    },
+    {
+      "tc_id": "TC-QC-API-04",
+      "title": "Cán bộ Sở Hà Nội tra cứu tài liệu chuyên gia địa bàn GET /admin/experts/{code}/documents",
+      "layer": "Tầng 3 (API Integration)",
+      "status": "PASSED",
+      "expected": "HTTP 200 OK, danh sách tài liệu chuyên gia thuộc thẩm quyền",
+      "actual": "HTTP 200",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:45.943402"
+    },
+    {
+      "tc_id": "TC-QC-API-05",
+      "title": "Cán bộ Sở Hà Nội tải stream CV đối soát GET /admin/experts/{code}/documents/{id}/download",
+      "layer": "Tầng 3 (API Integration)",
+      "status": "PASSED",
+      "expected": "HTTP 200 OK, stream nhị phân tải về nguyên vẹn 2,717,464 bytes",
+      "actual": "HTTP 200, Size=2717464 bytes",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:46.022577"
+    },
+    {
+      "tc_id": "TC-QC-API-06",
+      "title": "Bảo mật: Khách vãng lai (Anonymous) cố tình tải CV gốc không có Token",
+      "layer": "Tầng 3 (Security & RBAC)",
+      "status": "PASSED",
+      "expected": "HTTP 401 Unauthorized",
+      "actual": "HTTP 401",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:46.030025"
+    },
+    {
+      "tc_id": "TC-QC-API-07",
+      "title": "Bảo mật Scoped RBAC: Cán bộ Sở Sài Gòn cố tình tải CV chuyên gia Hà Nội",
+      "layer": "Tầng 3 (Security & RBAC)",
+      "status": "PASSED",
+      "expected": "HTTP 403 Forbidden (Chặn duyệt chéo tỉnh theo 3D Scope)",
+      "actual": "HTTP 403",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:46.779192"
+    },
+    {
+      "tc_id": "TC-QC-API-08",
+      "title": "Bảo mật: Truy vấn documentId GUID ngẫu nhiên không tồn tại",
+      "layer": "Tầng 3 (Security & RBAC)",
+      "status": "PASSED",
+      "expected": "HTTP 404 Not Found",
+      "actual": "HTTP 404",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:46.816179"
+    },
+    {
+      "tc_id": "TC-QC-API-09",
+      "title": "Bảo mật IDOR: Chuyên gia Tuấn cố tình tải tài liệu của chuyên gia khác qua /me",
+      "layer": "Tầng 3 (Security & RBAC)",
+      "status": "PASSED",
+      "expected": "HTTP 404 Not Found (Bảo vệ sở hữu tài liệu, chống rò rỉ IDOR)",
+      "actual": "HTTP 404",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:46.832811"
+    },
+    {
+      "tc_id": "TC-QC-API-10",
+      "title": "Bảo mật Leo quyền: Chuyên gia cố tình gọi API Quản trị cấp Sở",
+      "layer": "Tầng 3 (Security & RBAC)",
+      "status": "PASSED",
+      "expected": "HTTP 403 Forbidden (Chặn leo quyền truy cập hành chính)",
+      "actual": "HTTP 403",
+      "evidence_path": null,
+      "notes": null,
+      "timestamp": "2026-11-03T07:41:46.853925"
+    },
+    {
+      "tc_id": "TC-QC-E2E-01",
+      "title": "Playwright E2E: Cán bộ Sở duyệt hàng đợi, mở modal chi tiết và hiển thị nút tải CV",
+      "layer": "Tầng 4 (E2E & Visual QA)",
+      "status": "PASSED",
+      "expected": "Nút data-testid='btn-download-expert-cv' hiển thị rõ ràng với nhãn '📄 Tải CV gốc đối soát'",
+      "actual": "Button text: '📄 Tải CV gốc đối soát'",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/cv_storage/evidence_gov_expert_cv_download_button.png",
+      "notes": null,
+      "timestamp": "2026-11-03T07:42:00.159994"
+    },
+    {
+      "tc_id": "TC-QC-E2E-02",
+      "title": "Playwright E2E: Trình duyệt kích hoạt tải tệp nhị phân stream từ Backend Kestrel",
+      "layer": "Tầng 4 (E2E & Visual QA)",
+      "status": "PASSED",
+      "expected": "Tệp PDF tải về nguyên vẹn 2,717,464 bytes",
+      "actual": "Tải thành công tệp 'CURRICULUM_VITAE-9d50c96e2fb44298a25ca62c2c27f3a3.pdf', Dung lượng=2717464 bytes",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/cv_storage/CURRICULUM_VITAE-9d50c96e2fb44298a25ca62c2c27f3a3.pdf",
+      "notes": null,
+      "timestamp": "2026-11-03T07:42:00.160112"
+    },
+    {
+      "tc_id": "TC-QC-E2E-03",
+      "title": "Playwright Visual QA: Không gian cá nhân chuyên gia hiển thị đầy đủ chứng từ xác minh",
+      "layer": "Tầng 4 (E2E & Visual QA)",
+      "status": "PASSED",
+      "expected": "Giao diện cá nhân chuyên gia hiển thị hồ sơ đạt chuẩn, có nút '📄 Tải Lý lịch khoa học gốc'",
+      "actual": "Button text: '📄 Tải Lý lịch khoa học gốc'",
+      "evidence_path": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/cv_storage/evidence_expert_me_cv_download_button.png",
+      "notes": null,
+      "timestamp": "2026-11-03T07:42:27.227871"
+    }
+  ]
+}

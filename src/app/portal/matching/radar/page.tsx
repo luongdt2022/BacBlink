@@ -20,6 +20,7 @@ import {
   ArrowDownUp,
   Layers,
   SlidersHorizontal,
+  AlertTriangle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { MatchCandidate, ConnectionRequest } from '@/types/brokerage';
@@ -37,8 +38,9 @@ export default function MatchingRadarPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // User Demands Guard (REQ-DEL-08-01, REQ-DEL-08-02, BR-DEL-08-01)
+  // User Demands Guard (REQ-DEL-08-01, REQ-DEL-08-02, BR-DEL-08-01, T062)
   const [userDemandsCount, setUserDemandsCount] = useState<number>(0);
+  const [userDemands, setUserDemands] = useState<Array<{ id: string; itemCode: string; title: string }>>([]);
   const [isCheckingDemands, setIsCheckingDemands] = useState<boolean>(true);
 
   // Filters
@@ -46,6 +48,7 @@ export default function MatchingRadarPage() {
   const [minScore, setMinScore] = useState<number>(0);
   const [search, setSearch] = useState('');
   const [selectedDemandCode, setSelectedDemandCode] = useState<string>('ALL');
+  const [isRecomputing, setIsRecomputing] = useState(false);
 
   // Modal State
   const [selectedCandidate, setSelectedCandidate] = useState<MatchCandidate | null>(null);
@@ -73,6 +76,7 @@ export default function MatchingRadarPage() {
     !isAdminOrGov &&
     (!user || ['PUBLIC_USER', 'USER', 'BUYER', 'GUEST'].includes(effectiveRole));
 
+  const isBuyer = effectiveRole === 'BUYER';
   const isRadarInactive = isBuyerOrPublic && userDemandsCount === 0;
 
   useEffect(() => {
@@ -93,12 +97,29 @@ export default function MatchingRadarPage() {
             : Array.isArray(data?.data)
             ? data.data
             : [];
-          if (isMounted) setUserDemandsCount(list.length);
+          if (isMounted) {
+            setUserDemandsCount(list.length);
+            const mapped = list.map((d: any) => ({
+              id: d.id,
+              itemCode: d.itemCode || d.item_code || d.code || d.demandCode || d.id,
+              title: d.title || d.technicalProblem || d.expectedGoal || d.name || d.itemCode || "Bài toán công nghệ",
+            }));
+            setUserDemands(mapped);
+            if (isBuyer && mapped.length > 0) {
+              setSelectedDemandCode((prev) => (prev === 'ALL' ? mapped[0].itemCode : prev));
+            }
+          }
         } else {
-          if (isMounted) setUserDemandsCount(0);
+          if (isMounted) {
+            setUserDemandsCount(0);
+            setUserDemands([]);
+          }
         }
       } catch {
-        if (isMounted) setUserDemandsCount(0);
+        if (isMounted) {
+          setUserDemandsCount(0);
+          setUserDemands([]);
+        }
       } finally {
         if (isMounted) setIsCheckingDemands(false);
       }
@@ -109,6 +130,15 @@ export default function MatchingRadarPage() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (isBuyer && userDemands.length > 0) {
+      const validCodes = new Set(userDemands.flatMap((d) => [d.itemCode, d.id]));
+      if (selectedDemandCode === 'ALL' || !validCodes.has(selectedDemandCode)) {
+        setSelectedDemandCode(userDemands[0].itemCode);
+      }
+    }
+  }, [isBuyer, userDemands, selectedDemandCode]);
 
   const fetchRadarData = async () => {
     setIsLoading(true);
@@ -148,6 +178,28 @@ export default function MatchingRadarPage() {
     e.preventDefault();
     if (activeTab === 'RADAR' && isRadarInactive) return;
     fetchRadarData();
+  };
+
+  const handleRecompute = async () => {
+    setIsRecomputing(true);
+    try {
+      const demandCodeParam =
+        selectedDemandCode !== 'ALL' && selectedDemandCode !== 'ALL_MINE'
+          ? selectedDemandCode
+          : isBuyer && userDemands.length > 0
+          ? userDemands[0].itemCode
+          : undefined;
+      const result = await brokerageApi.recomputeRadar(demandCodeParam);
+      toast.success(
+        `Đã hoàn tất tính toán đối soát AI (${result.computedMatchesCount} cặp khớp trong ${result.tookMs}ms)!`,
+        "Đối Soát Thành Công"
+      );
+      await fetchRadarData();
+    } catch (err: any) {
+      toast.error(err.message || "Lỗi khi kích hoạt tính toán đối soát AI.", "Thao Tác Thất Bại");
+    } finally {
+      setIsRecomputing(false);
+    }
   };
 
   const handleRespondRequest = async (id: string, action: 'ACCEPT' | 'REJECT') => {
@@ -335,18 +387,33 @@ export default function MatchingRadarPage() {
                   className="h-11 px-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer max-w-[200px] truncate"
                   title="Chọn bài toán nguồn để lọc kết quả Radar"
                 >
-                  <option value="ALL">Tất cả bài toán ({candidates.length})</option>
-                  {Array.from(
-                    new Map(
-                      candidates
-                        .filter((c) => c.demandCode)
-                        .map((c) => [c.demandCode, c.demandTitle || c.demandCode])
-                    ).entries()
-                  ).map(([code, title]) => (
-                    <option key={code} value={code}>
-                      {code}: {title}
-                    </option>
-                  ))}
+                  {isBuyer ? (
+                    <>
+                      {userDemands.length > 1 && (
+                        <option value="ALL_MINE">Tất cả bài toán của tôi ({userDemands.length})</option>
+                      )}
+                      {userDemands.map((d) => (
+                        <option key={d.id} value={d.itemCode}>
+                          {d.itemCode}: {d.title}
+                        </option>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <option value="ALL">Tất cả bài toán ({candidates.length})</option>
+                      {Array.from(
+                        new Map(
+                          candidates
+                            .filter((c) => c.demandCode)
+                            .map((c) => [c.demandCode, c.demandTitle || c.demandCode])
+                        ).entries()
+                      ).map(([code, title]) => (
+                        <option key={code} value={code}>
+                          {code}: {title}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -378,6 +445,17 @@ export default function MatchingRadarPage() {
                   <option value={90}>&ge; 90% Rất cao</option>
                 </select>
               </div>
+
+              <button
+                type="button"
+                onClick={handleRecompute}
+                disabled={isRecomputing}
+                className="h-11 px-4 rounded-xl bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/80 dark:hover:bg-brand-900 border border-brand-200 dark:border-brand-800 text-brand-700 dark:text-cyan-400 text-xs font-bold flex items-center gap-2 transition shadow-xs disabled:opacity-50 shrink-0"
+                title="Kích hoạt công cụ AI quét lại toàn bộ dữ liệu Cung - Cầu mới nhất"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRecomputing ? 'animate-spin text-brand-600' : ''}`} />
+                <span>{isRecomputing ? 'Đang tính toán...' : 'Tính toán lại đối soát'}</span>
+              </button>
 
               <button
                 type="button"
@@ -427,7 +505,22 @@ export default function MatchingRadarPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {candidates
-                .filter((c) => selectedDemandCode === 'ALL' || c.demandCode === selectedDemandCode)
+                .filter((c) => {
+                  if (isBuyer) {
+                    const buyerCodes = new Set(userDemands.flatMap((d) => [d.itemCode, d.id]));
+                    const isOwned =
+                      (c.demandCode && buyerCodes.has(c.demandCode)) ||
+                      (c.demandId && buyerCodes.has(c.demandId));
+                    if (!isOwned) return false;
+
+                    if (selectedDemandCode !== 'ALL' && selectedDemandCode !== 'ALL_MINE') {
+                      return c.demandCode === selectedDemandCode || c.demandId === selectedDemandCode;
+                    }
+                    return true;
+                  }
+
+                  return selectedDemandCode === 'ALL' || c.demandCode === selectedDemandCode || c.demandId === selectedDemandCode;
+                })
                 .map((c) => {
                 const isHighMatch = c.matchScore >= 90;
                 const isMediumMatch = c.matchScore >= 80;
@@ -458,9 +551,19 @@ export default function MatchingRadarPage() {
                           <span className="px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-950/60 text-brand-800 dark:text-brand-300 border border-brand-200 dark:border-brand-800 text-xs font-black flex items-center gap-1">
                             <Zap className="w-3.5 h-3.5 text-brand-600" /> TNI {c.tniScore}/100
                           </span>
-                          {c.ipStatus === 'PATENT_GRANTED' && (
+                          {(c.ipStatus === 'PATENT_GRANTED' || c.ipStatus === 'Đã cấp bằng sáng chế') && (
                             <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-black flex items-center gap-1">
                               <ShieldCheck className="w-3.5 h-3.5 text-amber-600" /> Có bằng SHTT
+                            </span>
+                          )}
+                          {(c.isDegraded || c.xaiBreakdown?.semanticEngine === 'POSTGRES_FTS_FALLBACK') && (
+                            <span
+                              data-testid="fts-fallback-badge"
+                              className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-xs font-black flex items-center gap-1"
+                              title="Sidecar AI offline - đang chạy chế độ đối soát dự phòng FTS"
+                            >
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                              <span>[Chế độ dự phòng FTS]</span>
                             </span>
                           )}
                         </div>
@@ -526,29 +629,91 @@ export default function MatchingRadarPage() {
                       </div>
 
                       {/* Explainable AI Breakdown (XAI) */}
-                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1.5 text-xs">
+                      <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2 text-xs">
                         <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 font-bold">
-                          <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300">
-                            <Sparkles className="w-3.5 h-3.5 text-brand-600" /> Giải trình độ tương thích AI:
+                          <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                            <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
+                            <span>Giải trình độ tương thích AI (XAI 4 trục):</span>
                           </span>
-                          <span className="text-brand-700 dark:text-cyan-400 font-extrabold">{c.matchScore}% Tổng Hợp</span>
+                          <span className="text-brand-700 dark:text-cyan-400 font-black">{c.matchScore}% Tổng Hợp</span>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-semibold text-slate-600 dark:text-slate-300">
-                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-xs text-slate-400">Lĩnh vực:</span>
-                            <span className="text-emerald-700 dark:text-emerald-400 font-bold">100% Khớp</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 font-semibold text-slate-600 dark:text-slate-300">
+                          {/* Trục 1: Ngữ nghĩa AI (40%) */}
+                          <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="block text-[11px] text-slate-400 font-medium">Ngữ nghĩa AI:</span>
+                              <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
+                                {c.xaiBreakdown ? `${c.xaiBreakdown.semanticScore}%` : '100% Khớp'}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.semanticScore ?? 100))}%` }}
+                              />
+                            </div>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                              {c.xaiBreakdown?.semanticEngine === 'POSTGRES_FTS_FALLBACK' ? 'FTS Lexical' : 'AI BGE-M3'}
+                            </span>
                           </div>
-                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-xs text-slate-400">Mức TRL:</span>
-                            <span className="text-brand-700 dark:text-cyan-400 font-bold">TRL {c.trlLevel}</span>
+
+                          {/* Trục 2: Mức TRL (30%) */}
+                          <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="block text-[11px] text-slate-400 font-medium">Mức TRL:</span>
+                              <span className="text-brand-700 dark:text-cyan-400 font-extrabold">
+                                {c.xaiBreakdown ? `TRL ${c.xaiBreakdown.trlLevel}` : `TRL ${c.trlLevel}`}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-brand-500 h-full rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.trlScore ?? ((c.trlLevel / 9) * 100)))}%` }}
+                              />
+                            </div>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                              {c.xaiBreakdown?.trlStage ?? (c.trlLevel >= 7 ? 'Thương mại hóa' : 'Thử nghiệm')}
+                            </span>
                           </div>
-                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-xs text-slate-400">Cấp thiết TNI:</span>
-                            <span className="text-rose-600 dark:text-rose-400 font-bold">{c.tniScore}/100</span>
+
+                          {/* Trục 3: Cấp thiết TNI (15%) */}
+                          <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="block text-[11px] text-slate-400 font-medium">Cấp thiết TNI:</span>
+                              <span className="text-rose-600 dark:text-rose-400 font-extrabold">
+                                {c.xaiBreakdown ? `${c.xaiBreakdown.tniScore}/100` : `${c.tniScore}/100`}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-rose-500 h-full rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.tniScore ?? c.tniScore))}%` }}
+                              />
+                            </div>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                              {c.xaiBreakdown?.tniBand ?? (c.tniScore >= 80 ? 'Cấp thiết rất cao' : 'Cấp thiết cao')}
+                            </span>
                           </div>
-                          <div className="bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200/60 dark:border-slate-700">
-                            <span className="block text-xs text-slate-400">Bảo hộ SHTT:</span>
-                            <span className="text-amber-700 dark:text-amber-400 font-bold">{c.ipStatus === 'PATENT_GRANTED' ? 'Đã cấp bằng' : 'Đang xét'}</span>
+
+                          {/* Trục 4: Bảo hộ SHTT (15%) */}
+                          <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="block text-[11px] text-slate-400 font-medium">Bảo hộ SHTT:</span>
+                              <span className="text-amber-700 dark:text-amber-400 font-extrabold">
+                                {c.xaiBreakdown
+                                  ? `${c.xaiBreakdown.ipScore}%`
+                                  : (c.ipStatus === 'PATENT_GRANTED' || c.ipStatus === 'Đã cấp bằng sáng chế' ? 'Đã cấp bằng' : 'Đang xét')}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.ipScore ?? (c.ipStatus === 'PATENT_GRANTED' ? 100 : 60)))}%` }}
+                              />
+                            </div>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                              {c.xaiBreakdown?.ipDescription ?? (c.ipStatus === 'PATENT_GRANTED' || c.ipStatus === 'Đã cấp bằng sáng chế' ? 'Đã cấp bằng' : 'Đang xét')}
+                            </span>
                           </div>
                         </div>
                       </div>

@@ -15,11 +15,6 @@ const modules = {
     description: "Không gian hồ sơ doanh nghiệp ĐMST, phân tích theo vùng/ngành và kết nối hệ sinh thái.",
     icon: Building2,
   },
-  elearning: {
-    title: "eLearning",
-    description: "Học liệu số và đào tạo trực tuyến, kết nối chuyên gia tư vấn và đào tạo tri thức cho AI.",
-    icon: GraduationCap,
-  },
   "chuyen-gia": {
     title: "Chuyên gia KH&CN",
     description: "Tìm kiếm hồ sơ chuyên gia và kết nối tư vấn công nghệ.",
@@ -40,6 +35,9 @@ export default async function PublicModulePage({ params }: { params: Promise<{ m
   }
   if (module === "doanh-nghiep-dmst") {
     redirect("/enterprises");
+  }
+  if (module === "elearning") {
+    redirect("/elearning");
   }
 
   const item = modules[module as ModuleSlug];

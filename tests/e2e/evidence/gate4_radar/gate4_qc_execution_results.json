@@ -1,0 +1,68 @@
+[
+  {
+    "tc_id": "TC-E2E-01.1",
+    "title": "Hero Banner TT17/2019/TT-BKHCN hiển thị",
+    "status": "FAIL",
+    "notes": "Không tìm thấy banner TT17"
+  },
+  {
+    "tc_id": "TC-E2E-01.2",
+    "title": "Degradation Warning Badge [Chế độ dự phòng FTS] kích hoạt",
+    "status": "FAIL",
+    "notes": "Badge FTS không xuất hiện"
+  },
+  {
+    "tc_id": "TC-E2E-01.3",
+    "title": "Zero-Mock: Chuỗi mock tĩnh 'Lĩnh vực: 100% Khớp' bị triệt tiêu 100%",
+    "status": "PASS",
+    "notes": "0 chuỗi mock tìm thấy"
+  },
+  {
+    "tc_id": "TC-E2E-01.4",
+    "title": "XAI Breakdown 4 trục",
+    "status": "FAIL",
+    "notes": "Thiếu trục: xai=0, sem=0, trl=1, tni=0, ip=0"
+  },
+  {
+    "tc_id": "TC-E2E-01.5",
+    "title": "Nút CTA 'Tính toán lại đối soát'",
+    "status": "FAIL",
+    "notes": "Không tìm thấy nút Recompute"
+  },
+  {
+    "tc_id": "TC-E2E-02.1",
+    "title": "Empty State khi chưa có bài toán",
+    "status": "FAIL",
+    "notes": "Không hiển thị màn hình Empty State chuẩn"
+  },
+  {
+    "tc_id": "TC-E2E-03.1",
+    "title": "Super Admin xem được toàn cảnh Radar giám sát thị trường B2B",
+    "status": "PASS",
+    "notes": "Tìm thấy 1 supervisory indicators"
+  },
+  {
+    "tc_id": "TC-E2E-04.1",
+    "title": "Seller truy cập Radar vẫn bị lỗi",
+    "status": "FAIL",
+    "notes": "error_count=0, seller_heading=0"
+  },
+  {
+    "tc_id": "TC-E2E-05.1",
+    "title": "RBAC Fuzzing: Buyer B không thể recompute bài toán của Buyer A (matches = 0)",
+    "status": "PASS",
+    "notes": "Bảo vệ IDOR hoàn hảo"
+  },
+  {
+    "tc_id": "TC-E2E-05.2",
+    "title": "RBAC Scoping: Buyer B không thấy candidates của Buyer A (Data count = 0)",
+    "status": "PASS",
+    "notes": "Dữ liệu được cách ly an toàn"
+  },
+  {
+    "tc_id": "TC-E2E-05.3",
+    "title": "BẢO MẬT: Anonymous Access bị chặn thành công bằng HTTP 401 Unauthorized",
+    "status": "PASS",
+    "notes": "Bảo mật [Authorize] hoạt động"
+  }
+]

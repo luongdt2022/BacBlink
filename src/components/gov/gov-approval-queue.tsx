@@ -233,7 +233,8 @@ export function parseGovPayload(payload: any, fallbackUser?: any): GovParsedExpe
     documents = rawDocs;
   }
 
-  const expertCode = p.ExpertCode || p.expertCode || "";
+  const rawId = p.ExpertCode || p.expertCode || p.Id || p.id;
+  const expertCode = p.ExpertCode || p.expertCode || (rawId ? `CG-NACEN-${String(rawId).replace(/-/g, '').slice(-8).toUpperCase()}` : "");
   const phone = p.Phone || p.phone || fallbackUser?.phoneNumber || fallbackUser?.phone || "";
   const email = p.Email || p.email || fallbackUser?.email || "";
 
@@ -276,6 +277,82 @@ export interface GovApprovalItem {
   version: number;
   rawOffer?: TechnologyOffer;
   expertPayload?: GovParsedExpert;
+}
+
+function ExpertDocumentsSection({ expertCode, fallbackDocName }: { expertCode: string; fallbackDocName?: string }) {
+  const [docs, setDocs] = useState<any[]>([]);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!expertCode) return;
+    fetch(`/api/v1/admin/experts/${encodeURIComponent(expertCode)}/documents`, {
+      headers: authClient.getAuthHeaders(),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.data) setDocs(json.data);
+      })
+      .catch(() => {});
+  }, [expertCode]);
+
+  const handleDownload = async (docId: string, downloadName?: string) => {
+    try {
+      setDownloadingId(docId);
+      const res = await fetch(`/api/v1/admin/experts/${encodeURIComponent(expertCode)}/documents/${docId}/download`, {
+        headers: authClient.getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error("Tải tệp không thành công");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = downloadName ? `${downloadName}.pdf` : `CV_Goc_${expertCode}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert("Không thể tải tài liệu đối soát. Vui lòng thử lại sau.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const cvDoc = docs.find((d) => d.documentType === "CURRICULUM_VITAE") || docs[0];
+
+  return (
+    <div className="space-y-2">
+      <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
+        <FileText className="w-4 h-4 text-brand-600" />
+        <span>Hồ Sơ Minh Chứng &amp; Pháp Lý Công Vụ</span>
+      </h4>
+      <div className="p-3.5 rounded-control bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-300 font-medium">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>
+            {cvDoc ? `Lý lịch khoa học gốc (${(cvDoc.sizeBytes / 1024 / 1024).toFixed(2)} MB)` : (fallbackDocName || "Hồ sơ đăng ký chuyên gia đã được ký số công vụ qua Cổng Dịch vụ công.")}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {cvDoc && (
+            <AppButton
+              variant="cta"
+              onClick={() => handleDownload(cvDoc.id, cvDoc.downloadName)}
+              disabled={downloadingId === cvDoc.id}
+              className="text-xs py-1 px-3 inline-flex items-center gap-1.5"
+              data-testid="btn-download-expert-cv"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>{downloadingId === cvDoc.id ? "Đang tải..." : "📄 Tải CV gốc đối soát"}</span>
+            </AppButton>
+          )}
+          <span className="text-caption text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-100 dark:bg-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+            Xác thực CCCD &amp; CKS
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function GovDashboardContent() {
@@ -2336,23 +2413,7 @@ function GovDashboardContent() {
                     )}
 
                     {/* Hồ sơ minh chứng & Tài liệu đính kèm */}
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-brand-600" />
-                        <span>Hồ Sơ Minh Chứng &amp; Pháp Lý Công Vụ</span>
-                      </h4>
-                      <div className="p-3.5 rounded-control bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-300 font-medium">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>
-                            {detailItem.cvOrDocName || "Hồ sơ đăng ký chuyên gia đã được ký số công vụ qua Cổng Dịch vụ công."}
-                          </span>
-                        </div>
-                        <span className="text-caption text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-100 dark:bg-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
-                          Xác thực CCCD &amp; CKS
-                        </span>
-                      </div>
-                    </div>
+                    <ExpertDocumentsSection expertCode={expert?.expertCode || ""} fallbackDocName={detailItem.cvOrDocName} />
                   </div>
                 )}
               </div>

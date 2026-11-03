@@ -16,6 +16,8 @@ import {
   Database,
   History,
   Sliders,
+  GraduationCap,
+  ShieldCheck,
   ChevronDown,
   ChevronRight,
   Search,
@@ -156,6 +158,13 @@ const MENU_GROUPS: MenuGroup[] = [
         iconColor: "text-cyan-300",
         keywords: "10 linh vuc tt17 trl tieu chi danh muc linh vuc",
       },
+      {
+        href: "/admin/elearning",
+        label: "Quản trị Đào tạo & Học liệu số",
+        icon: GraduationCap,
+        iconColor: "text-amber-300",
+        keywords: "hoc lieu so dao tao elearning lms khoa hoc bai giang",
+      },
     ],
   },
   {
@@ -175,6 +184,18 @@ const MENU_GROUPS: MenuGroup[] = [
         icon: Sliders,
         iconColor: "text-pink-300",
         keywords: "cau hinh tham so sla he thong thiet lap nd 85",
+      },
+      {
+        href: "/admin/blockchain",
+        label: "Trung tâm Blockchain & ZKP",
+        icon: ShieldCheck,
+        iconColor: "text-emerald-400",
+        badge: () => (
+          <span className="shrink-0 whitespace-nowrap text-xs font-bold px-2 py-0.5 rounded-full leading-none ml-auto bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            NDAChain
+          </span>
+        ),
+        keywords: "blockchain zkp ndachain so cai mat ma merkle zero knowledge proof an toan chuoi khoi bo cong an",
       },
     ],
   },

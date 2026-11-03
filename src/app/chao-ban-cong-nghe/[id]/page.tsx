@@ -33,6 +33,7 @@ import { fetchOfferById, submitQuickDemand } from "@/services/api/technology-off
 import { TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyGallery } from "@/lib/technology-media";
 import { authClient, UserContext } from "@/lib/auth-client";
+import { BlockchainZkpBadge } from "@/components/blockchain/BlockchainZkpBadge";
 
 function formatDocSize(bytes?: number): string {
   if (!bytes || bytes <= 0) return "1.2 MB";
@@ -484,6 +485,13 @@ export default function ChiTietChaoBanPage() {
                             ? `SHTT: ${offer.ipRegistrationNumber}`
                             : "Chưa đăng ký SHTT"}
                         </span>
+
+                        {/* Bảo chứng Mật mã học ZKP & Chuỗi khối NDAChain */}
+                        <BlockchainZkpBadge
+                          entityType="SELLER_OFFER"
+                          entityId={offer.id}
+                          entityCode={offer.offerCode}
+                        />
                       </div>
 
                       {/* Main Title */}

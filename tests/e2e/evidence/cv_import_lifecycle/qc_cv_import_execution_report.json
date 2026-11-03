@@ -1,0 +1,185 @@
+{
+  "timestamp": "2026-11-02T11:16:09.034797Z",
+  "elapsedSeconds": 12.274823904037476,
+  "totalCases": 25,
+  "passedCases": 25,
+  "defectsCount": 0,
+  "cases": [
+    {
+      "code": "TC-CV-01",
+      "title": "Bước 1: Đăng ký Public User & xác nhận role CSDL",
+      "status": "PASSED",
+      "details": "User ID: 01a19bf9-1e8b-7825-88b5-6643eea04b06, Email: qc.flow.0cd879@nacentech.test, DB Role: PUBLIC_USER",
+      "evidence": ""
+    },
+    {
+      "code": "TC-CV-02",
+      "title": "Bước 2: Nộp hồ sơ nâng cấp & sinh ticket PENDING_REVIEW",
+      "status": "PASSED",
+      "details": "Expert Code: CG-NACEN-07523AE2, Ticket ID: 01a19bf9-1f16-74e4-80c1-52631a90a222, Scope: HN",
+      "evidence": ""
+    },
+    {
+      "code": "TC-CV-03",
+      "title": "Bước 3: Cán bộ Sở duyệt & đối soát CSDL 4 tầng hoàn chỉnh",
+      "status": "PASSED",
+      "details": "Person Role: VERIFIED_EXPERT, Expert Status: APPROVED, Audit Log: REVIEW_APPROVE",
+      "evidence": ""
+    },
+    {
+      "code": "TC-CV-04A",
+      "title": "Bước 4A: Hiển thị chuyên gia trên Danh bạ công khai (/experts)",
+      "status": "PASSED",
+      "details": "Tìm thấy card 'Bành Quốc Tuấn' trên /experts",
+      "evidence": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/cv_import_lifecycle/evidence_step4_directory.png"
+    },
+    {
+      "code": "TC-CV-04B",
+      "title": "Bước 4B: Hiển thị trang chi tiết chuyên gia (CG-NACEN-07523AE2)",
+      "status": "PASSED",
+      "details": "Trang chi tiết /experts/CG-NACEN-07523AE2 tải thành công, đầy đủ Quá trình đào tạo & Công tác",
+      "evidence": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/cv_import_lifecycle/evidence_step4_detail.png"
+    },
+    {
+      "code": "TC-EDGE-01",
+      "title": "Chặn đăng ký khi không đồng ý PDPD",
+      "status": "PASSED",
+      "details": "Phản hồi đúng HTTP 400",
+      "evidence": ""
+    },
+    {
+      "code": "TC-EDGE-02",
+      "title": "Chặn nộp hồ sơ khi Họ tên rỗng",
+      "status": "PASSED",
+      "details": "HTTP 400 Bad Request: Họ và tên không được để trống.",
+      "evidence": ""
+    },
+    {
+      "code": "TC-EDGE-03",
+      "title": "Chặn nâng cấp chuyên gia khi thiếu PDPD Consent",
+      "status": "PASSED",
+      "details": "HTTP 400: Bắt buộc đồng ý cam kết PDPD theo Nghị định 13/2023/NĐ-CP.",
+      "evidence": ""
+    },
+    {
+      "code": "TC-EDGE-04",
+      "title": "Chặn ngành lĩnh vực ngoài danh mục TT17",
+      "status": "PASSED",
+      "details": "HTTP 400: Lĩnh vực phải thuộc danh mục đang hoạt động.",
+      "evidence": ""
+    },
+    {
+      "code": "TC-EDGE-05",
+      "title": "Chặn năm sinh âm",
+      "status": "PASSED",
+      "details": "HTTP 400",
+      "evidence": ""
+    },
+    {
+      "code": "TC-EDGE-06",
+      "title": "Chặn năm sinh tương lai",
+      "status": "PASSED",
+      "details": "HTTP 400",
+      "evidence": ""
+    },
+    {
+      "code": "TC-SEC-01",
+      "title": "Bảo mật RLS: Chặn duyệt chéo địa bàn (Cross-Province IDOR Blocked)",
+      "status": "PASSED",
+      "details": "HTTP 403 Forbidden: Bạn không có quyền thẩm định hồ sơ thuộc địa bàn tỉnh/thành khác.",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-01",
+      "title": "Chuyên gia thực tế #1: Bành Quốc Tuấn",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-07523AE2, Degree: Tiến sĩ, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-02",
+      "title": "Chuyên gia thực tế #2: Giang Mạnh Khôi",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-AF974777, Degree: Thạc sĩ, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-03",
+      "title": "Chuyên gia thực tế #3: Nguyễn Văn Đông",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-F2A2C93B, Degree: Tiến sĩ, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-04",
+      "title": "Chuyên gia thực tế #4: Vũ Văn Liệu",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-E258A8DA, Degree: Thạc sĩ, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-05",
+      "title": "Chuyên gia thực tế #5: Phạm Chí Hiếu",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-1B8FBAC6, Degree: Kỹ sư, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-06",
+      "title": "Chuyên gia thực tế #6: Đinh Văn Giang",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-870E3CAD, Degree: Kỹ sư, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-07",
+      "title": "Chuyên gia thực tế #7: Trương Đức Toàn",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-38E7CC8E, Degree: Kỹ sư, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-08",
+      "title": "Chuyên gia thực tế #8: Nguyễn Phương Đông",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-98EBFB47, Degree: Kỹ sư, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-09",
+      "title": "Chuyên gia thực tế #9: Trần Xuân Thịnh",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-04A4E87A, Degree: Kỹ sư, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-10",
+      "title": "Chuyên gia thực tế #10: Vũ Thanh Tùng",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-C51155B1, Degree: Tiến sĩ, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-11",
+      "title": "Chuyên gia thực tế #11: Trương Công Tuấn",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-34265B47, Degree: Tiến sĩ, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-EXP-12",
+      "title": "Chuyên gia thực tế #12: Trần Thị Vân Anh",
+      "status": "PASSED",
+      "details": "Code: CG-NACEN-E8C6BB58, Degree: Thạc sĩ, Status: APPROVED, Visibility: PUBLIC",
+      "evidence": ""
+    },
+    {
+      "code": "TC-RAW-12EXP-SUMMARY",
+      "title": "Đối soát trọn vẹn 12/12 hồ sơ CV bóc tách từ Raw Data",
+      "status": "PASSED",
+      "details": "Cả 12 hồ sơ đều mang trạng thái APPROVED và PUBLIC trong PostgreSQL",
+      "evidence": "/Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My Drive/NacenTechProject/SourceCode/frontend/tests/e2e/evidence/cv_import_lifecycle/evidence_12_experts_directory.png"
+    }
+  ],
+  "defects": []
+}

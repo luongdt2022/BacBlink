@@ -165,21 +165,21 @@ export function AIAssistantWidget() {
   return (
     <>
       {/* Floating Action Button (FAB) */}
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className="group relative flex size-14 items-center justify-center rounded-full bg-gradient-to-tr from-brand-700 to-brand-900 text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-brand-300 dark:focus:ring-brand-900"
+          className="group relative flex size-12 sm:size-14 items-center justify-center rounded-full bg-gradient-to-tr from-brand-700 to-brand-900 text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-brand-300 dark:focus:ring-brand-900"
           aria-label="Mở Trợ lý Ảo AI NacentTwin"
         >
           {isOpen ? (
-            <X className="size-6 transition-transform group-hover:rotate-90" />
+            <X className="size-5 sm:size-6 transition-transform group-hover:rotate-90" />
           ) : (
             <>
-              <Bot className="size-7" />
-              <span className="absolute -top-1 -right-1 flex size-4">
+              <Bot className="size-6 sm:size-7" />
+              <span className="absolute -top-1 -right-1 flex size-3.5 sm:size-4">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex size-4 rounded-full bg-emerald-500" />
+                <span className="relative inline-flex size-3.5 sm:size-4 rounded-full bg-emerald-500" />
               </span>
             </>
           )}
@@ -188,7 +188,7 @@ export function AIAssistantWidget() {
 
       {/* Slide-over Chat Box Modal */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 flex w-[94vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all sm:max-w-md dark:border-slate-800 dark:bg-slate-900">
+        <div className="fixed bottom-18 sm:bottom-24 right-3 sm:right-6 z-50 flex w-[calc(100vw-1.5rem)] sm:w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all sm:max-w-md dark:border-slate-800 dark:bg-slate-900">
           {/* Header */}
           <div className="flex items-center justify-between bg-gradient-to-r from-brand-800 via-brand-700 to-brand-900 px-4 py-3.5 text-white">
             <div className="flex items-center gap-2.5">

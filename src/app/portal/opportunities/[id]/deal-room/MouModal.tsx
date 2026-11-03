@@ -85,66 +85,66 @@ export default function MouModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl bg-surface-card rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface-subtle/80">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-cyan-400 flex items-center justify-center shrink-0">
               <FileSignature className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-text-primary text-base flex items-center gap-2">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
                 Biên Bản Ghi Nhớ Hợp Tác & Ký Kết Chuyển Giao (MOU)
                 {existingMou?.status === 'SIGNED' && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                     Đã Ký Kết
                   </span>
                 )}
               </h3>
-              <p className="text-caption text-text-muted">
-                Deal: <strong className="text-text-primary">{opportunity.opportunityCode}</strong> • {opportunity.title}
+              <p className="text-caption text-slate-500 dark:text-slate-400">
+                Deal: <strong className="text-slate-900 dark:text-white">{opportunity.opportunityCode}</strong> • {opportunity.title}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-xl hover:bg-surface-elevated text-text-muted hover:text-text-primary flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content Form */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-5 bg-white dark:bg-slate-900">
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-caption flex items-center gap-2">
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-caption flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Parties Preview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-surface-subtle border border-border text-caption">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-caption">
             <div className="space-y-1">
-              <span className="font-bold text-brand-primary uppercase flex items-center gap-1.5">
+              <span className="font-bold text-brand-700 dark:text-cyan-400 uppercase flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5" /> Bên Mua (Bên A):
               </span>
-              <p className="font-semibold text-text-primary text-sm">{opportunity.buyerOrgName}</p>
-              <p className="text-text-muted">Đại diện: {opportunity.buyerContactName}</p>
+              <p className="font-semibold text-slate-900 dark:text-white text-sm">{opportunity.buyerOrgName}</p>
+              <p className="text-slate-500 dark:text-slate-400">Đại diện: {opportunity.buyerContactName}</p>
             </div>
-            <div className="space-y-1 md:border-l md:border-border md:pl-4">
-              <span className="font-bold text-emerald-600 uppercase flex items-center gap-1.5">
+            <div className="space-y-1 md:border-l md:border-slate-200 dark:md:border-slate-700 md:pl-4">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 uppercase flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" /> Bên Bán (Bên B):
               </span>
-              <p className="font-semibold text-text-primary text-sm">{opportunity.sellerOrgName}</p>
-              <p className="text-text-muted">Đại diện: {opportunity.sellerContactName}</p>
+              <p className="font-semibold text-slate-900 dark:text-white text-sm">{opportunity.sellerOrgName}</p>
+              <p className="text-slate-500 dark:text-slate-400">Đại diện: {opportunity.sellerContactName}</p>
             </div>
           </div>
 
           {/* Scope of Work */}
           <div>
-            <label className="block text-caption font-bold text-text-secondary mb-1.5">
+            <label className="block text-caption font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               1. Phạm vi hợp tác & Kế hoạch thử nghiệm thực địa (Scope of Work)
             </label>
             <textarea
@@ -152,14 +152,14 @@ export default function MouModal({
               rows={4}
               value={scopeOfWork}
               onChange={(e) => setScopeOfWork(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-card border border-border text-text-primary text-caption focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-caption focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 transition-all placeholder:text-slate-400"
             />
           </div>
 
           {/* Pilot Duration & Status */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-caption font-bold text-text-secondary mb-1.5">
+              <label className="block text-caption font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Thời gian thử nghiệm Pilot (tháng)
               </label>
               <input
@@ -169,18 +169,18 @@ export default function MouModal({
                 required
                 value={pilotDuration}
                 onChange={(e) => setPilotDuration(Number(e.target.value))}
-                className="w-full h-10 px-3.5 rounded-xl bg-surface-card border border-border text-text-primary text-caption focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all"
+                className="w-full h-10 px-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-caption focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-caption font-bold text-text-secondary mb-1.5">
+              <label className="block text-caption font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                 Quy trình & Trạng thái văn bản
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full h-10 px-3.5 rounded-xl bg-surface-card border border-border text-text-primary text-caption font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all cursor-pointer"
+                className="w-full h-10 px-3.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-caption font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 transition-all cursor-pointer"
               >
                 <option value="DRAFT">Lưu Bản Thảo (Bước 3: Đang thảo luận)</option>
                 <option value="SIGNED">Ký Kết Chính Thức (Bước 4: Hoàn tất đơn hàng)</option>
@@ -190,7 +190,7 @@ export default function MouModal({
 
           {/* Commercial Terms */}
           <div>
-            <label className="block text-caption font-bold text-text-secondary mb-1.5">
+            <label className="block text-caption font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               2. Điều khoản tài chính & Giá trị dự kiến (Commercial Terms)
             </label>
             <textarea
@@ -198,13 +198,13 @@ export default function MouModal({
               rows={3}
               value={commercialTerms}
               onChange={(e) => setCommercialTerms(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-card border border-border text-text-primary text-caption focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-caption focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 transition-all placeholder:text-slate-400"
             />
           </div>
 
           {/* Intellectual Property Terms */}
           <div>
-            <label className="block text-caption font-bold text-text-secondary mb-1.5">
+            <label className="block text-caption font-bold text-slate-700 dark:text-slate-300 mb-1.5">
               3. Quyền Sở hữu trí tuệ & Bảo mật thông tin (IP & NDA)
             </label>
             <textarea
@@ -212,28 +212,28 @@ export default function MouModal({
               rows={3}
               value={ipTerms}
               onChange={(e) => setIpTerms(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-card border border-border text-text-primary text-caption focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-caption focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 transition-all placeholder:text-slate-400"
             />
           </div>
 
           {/* Note hướng dẫn chuyển bước 4 */}
-          <div className="p-3.5 rounded-xl bg-brand-primary/5 border border-brand-primary/20 text-xs text-text-secondary flex items-start gap-2.5">
-            <Award className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-xl bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 text-caption text-slate-600 dark:text-slate-300 flex items-start gap-2.5">
+            <Award className="w-4 h-4 text-brand-700 dark:text-cyan-400 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-brand-primary">Lưu ý về quy trình hoàn tất:</strong>
-              <p className="mt-0.5 text-text-muted">
+              <strong className="text-brand-700 dark:text-cyan-400">Lưu ý về quy trình hoàn tất:</strong>
+              <p className="mt-0.5 text-slate-500 dark:text-slate-400">
                 Khi chọn <strong>&quot;Ký Kết Chính Thức (Bước 4: Hoàn Tất)&quot;</strong>, hệ thống sẽ tự động cập nhật thương vụ sang giai đoạn <strong>MOU_SIGNED</strong> và đánh dấu đơn hàng của Bên Mua thành <strong>COMPLETED (Hoàn tất 4 bước)</strong>.
               </p>
             </div>
           </div>
 
           {/* Footer Action */}
-          <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl border border-border text-text-secondary hover:bg-surface-elevated text-caption font-medium transition-colors"
+              className="h-10 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-caption font-medium transition-colors"
             >
               Đóng
             </button>
@@ -241,7 +241,7 @@ export default function MouModal({
               type="button"
               onClick={() => doSubmit('DRAFT')}
               disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/5 text-caption font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              className="h-10 px-4 rounded-xl border border-brand-700/40 text-brand-700 dark:text-cyan-400 hover:bg-brand-50 dark:hover:bg-brand-950/50 text-caption font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
             >
               <FileSignature className="w-4 h-4" />
               Lưu Bản Thảo (Bước 3: Đàm Phán)
@@ -250,7 +250,7 @@ export default function MouModal({
               type="button"
               onClick={() => doSubmit('SIGNED')}
               disabled={isSubmitting}
-              className="h-10 px-5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 text-caption font-bold flex items-center gap-2 shadow-sm transition-colors disabled:opacity-50"
+              className="h-10 px-5 rounded-xl bg-nacen-green-500 text-white hover:bg-nacen-green-600 text-caption font-bold flex items-center gap-2 shadow-sm transition-colors disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
               Ký Kết Chính Thức (Bước 4: Hoàn Tất)

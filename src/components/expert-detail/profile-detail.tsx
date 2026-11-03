@@ -71,7 +71,96 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
   </div>;
 }
 
-function PrivatePanel({ detail }: { detail: ExpertPrivateDetail }) { return <section className="rounded-surface border border-brand-800 bg-brand-700 p-5 text-white"><div className="flex items-center gap-2"><LockKeyhole className="h-5 w-5 text-brand-200" /><h2 className="font-bold text-card-title">Khu vực dữ liệu riêng tư</h2></div><p className="mt-1 text-body text-brand-100">Chỉ chủ hồ sơ hoặc quản trị viên được phân quyền mới xem được. Lượt truy cập được ghi nhận.</p><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"><div><p className="text-body text-brand-200">SĐT</p><p className="text-body font-bold">{detail.phone || "Chưa cập nhật"}</p></div><div><p className="text-body text-brand-200">Email</p><p className="text-body font-bold">{detail.email || "Chưa cập nhật"}</p></div><div><p className="text-body text-brand-200">PDPD / Cam kết</p><p className="text-body font-bold">{detail.pdpdConsent && detail.legalOath ? "Đã xác nhận" : "Chưa đủ"}</p></div></div><div className="mt-4 border-t border-white/20 pt-3 text-label text-brand-100">Chứng từ: {detail.activeDocumentTypes.length ? detail.activeDocumentTypes.join(", ") : "Chưa có chứng từ đã kích hoạt"}</div></section>; }
+function PrivatePanel({ detail }: { detail: ExpertPrivateDetail }) {
+  const [documents, setDocuments] = useState<{ id: string; documentType: string; mimeType: string; downloadName?: string }[]>([]);
+  const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    if (detail.activeDocumentTypes?.includes("CURRICULUM_VITAE")) {
+      const token = authClient.getToken();
+      if (token) {
+        fetch(`${API_BASE}/api/v1/experts/me/documents`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((json) => {
+            if (json?.data) setDocuments(json.data);
+          })
+          .catch(() => {});
+      }
+    }
+  }, [detail.activeDocumentTypes]);
+
+  const handleDownloadCv = async (docId: string, downloadName?: string) => {
+    try {
+      setDownloading(true);
+      const token = authClient.getToken();
+      const res = await fetch(`${API_BASE}/api/v1/experts/me/documents/${docId}/download`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (!res.ok) throw new Error("Tải tệp không thành công");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = downloadName ? `${downloadName}.pdf` : "Ly_lich_khoa_hoc_goc.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert("Không thể tải tài liệu. Vui lòng thử lại sau.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const cvDoc = documents.find((d) => d.documentType === "CURRICULUM_VITAE");
+
+  return (
+    <section className="rounded-surface border border-brand-800 bg-brand-700 p-5 text-white">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <LockKeyhole className="h-5 w-5 text-brand-200" />
+          <h2 className="font-bold text-card-title">Khu vực dữ liệu riêng tư</h2>
+        </div>
+        {detail.activeDocumentTypes.includes("CURRICULUM_VITAE") && (
+          <AppButton
+            variant="cta"
+            disabled={downloading || !cvDoc}
+            onClick={() => cvDoc && handleDownloadCv(cvDoc.id, cvDoc.downloadName)}
+            className="inline-flex items-center gap-2 text-xs py-1.5 px-3 bg-white text-brand-900 hover:bg-brand-50"
+            data-testid="btn-download-my-cv"
+          >
+            <FileText className="w-4 h-4 text-brand-700" />
+            <span>{downloading ? "Đang tải tệp..." : "📄 Tải Lý lịch khoa học gốc"}</span>
+          </AppButton>
+        )}
+      </div>
+      <p className="mt-1 text-body text-brand-100">Chỉ chủ hồ sơ hoặc quản trị viên được phân quyền mới xem được. Lượt truy cập được ghi nhận.</p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <p className="text-body text-brand-200">SĐT</p>
+          <p className="text-body font-bold">{detail.phone || "Chưa cập nhật"}</p>
+        </div>
+        <div>
+          <p className="text-body text-brand-200">Email</p>
+          <p className="text-body font-bold">{detail.email || "Chưa cập nhật"}</p>
+        </div>
+        <div>
+          <p className="text-body text-brand-200">PDPD / Cam kết</p>
+          <p className="text-body font-bold">{detail.pdpdConsent && detail.legalOath ? "Đã xác nhận" : "Chưa đủ"}</p>
+        </div>
+      </div>
+      <div className="mt-4 border-t border-white/20 pt-3 text-label text-brand-100 flex items-center justify-between flex-wrap gap-2">
+        <span>Chứng từ: {detail.activeDocumentTypes.length ? detail.activeDocumentTypes.join(", ") : "Chưa có chứng từ đã kích hoạt"}</span>
+        {detail.activeDocumentTypes.includes("CURRICULUM_VITAE") && cvDoc && (
+          <span className="text-xs text-brand-200">Đã quét an toàn & sẵn sàng tải về</span>
+        )}
+      </div>
+    </section>
+  );
+}
 
 function CompletenessAlert({ detail, completeness }: { detail: ExpertPrivateDetail; completeness?: ExpertCompleteness | null }) {
   if (completeness && typeof completeness.score === "number" && Array.isArray(completeness.missingCriteria)) {

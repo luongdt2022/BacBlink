@@ -1,6 +1,7 @@
 import { authClient } from "@/lib/auth-client";
 import {
   MatchCandidate,
+  RecomputeRadarResult,
   ConnectionRequest,
   ConnectionRequestDetail,
   Opportunity,
@@ -26,11 +27,29 @@ export const brokerageApi = {
     if (params?.search) q.append("search", params.search);
 
     const res = await fetch(`${API_BASE}/api/v1/brokerage/radar?${q.toString()}`, {
+      headers: {
+        ...authClient.getAuthHeaders(),
+        "Content-Type": "application/json",
+      },
       cache: "no-store",
     });
     if (!res.ok) throw new Error("Không thể tải danh sách gợi ý ghép nối.");
     const body = await res.json();
     return body.data || [];
+  },
+
+  async recomputeRadar(demandCode?: string): Promise<RecomputeRadarResult> {
+    const res = await fetch(`${API_BASE}/api/v1/brokerage/radar/recompute`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authClient.getAuthHeaders(),
+      },
+      body: JSON.stringify({ demandCode: demandCode || null }),
+    });
+    if (!res.ok) throw new Error("Không thể kích hoạt tính toán đối soát AI.");
+    const body = await res.json();
+    return body.data;
   },
 
   async getConnectionRequests(params?: {

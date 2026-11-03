@@ -69,62 +69,62 @@ export default function ConnectionRequestModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-2xl bg-surface-card rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface-subtle">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-brand-primary/10 text-brand-primary">
+            <div className="p-2 rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-cyan-400">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-text-primary text-base">
+              <h3 className="font-semibold text-slate-900 dark:text-white text-base">
                 Khởi tạo Yêu cầu Kết nối Cung–Cầu
               </h3>
-              <p className="text-caption text-text-muted">
+              <p className="text-caption text-slate-500 dark:text-slate-400">
                 Mã ghép nối: {candidate.id.slice(0, 8)} • Điểm khớp: {candidate.matchScore}%
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-text-muted hover:text-text-primary hover:bg-surface-elevated rounded-lg transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-5 bg-white dark:bg-slate-900">
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 text-caption flex items-center gap-2">
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-caption flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Cặp Cung - Cầu */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-surface-subtle border border-border">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
             <div className="space-y-1">
-              <span className="text-caption font-medium text-brand-primary uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-caption font-medium text-brand-700 dark:text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5" /> Bên Mua (Nhu cầu)
               </span>
-              <p className="text-caption font-semibold text-text-primary line-clamp-1">
+              <p className="text-caption font-semibold text-slate-900 dark:text-white line-clamp-1">
                 {candidate.buyerOrganizationName}
               </p>
-              <p className="text-caption text-text-muted line-clamp-2">
+              <p className="text-caption text-slate-500 dark:text-slate-400 line-clamp-2">
                 {candidate.demandTitle}
               </p>
             </div>
 
-            <div className="space-y-1 md:border-l md:border-border md:pl-4">
-              <span className="text-caption font-medium text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="space-y-1 md:border-l md:border-slate-200 dark:md:border-slate-700 md:pl-4">
+              <span className="text-caption font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" /> Bên Bán (Giải pháp)
               </span>
-              <p className="text-caption font-semibold text-text-primary line-clamp-1">
+              <p className="text-caption font-semibold text-slate-900 dark:text-white line-clamp-1">
                 {candidate.sellerOrganizationName}
               </p>
-              <p className="text-caption text-text-muted line-clamp-2">
+              <p className="text-caption text-slate-500 dark:text-slate-400 line-clamp-2">
                 {candidate.offerTitle}
               </p>
             </div>
@@ -195,24 +195,24 @@ export default function ConnectionRequestModal({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Mô tả mục tiêu kết nối, nhu cầu thử nghiệm hoặc đề xuất hợp tác..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-surface-card border border-border text-text-primary text-caption focus:outline-none focus:ring-2 focus:ring-brand-primary resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-caption focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 resize-none transition-all placeholder:text-slate-400"
             />
           </div>
 
           {/* Footer Action */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-11 px-5 rounded-control border border-border text-text-secondary hover:bg-surface-elevated text-sm font-medium transition-colors"
+              className="h-11 px-5 rounded-control border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors"
             >
               Hủy bỏ
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="h-11 px-6 rounded-control bg-brand-primary text-white hover:bg-brand-primary/90 text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors disabled:opacity-50"
+              className="h-11 px-6 rounded-control bg-brand-700 text-white hover:bg-brand-800 text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>Đang gửi yêu cầu...</>

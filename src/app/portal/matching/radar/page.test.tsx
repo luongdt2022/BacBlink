@@ -6,11 +6,12 @@ import { brokerageApi } from "@/services/api/brokerage";
 import { authClient } from "@/lib/auth-client";
 
 const mockToastError = vi.fn();
+const mockToastSuccess = vi.fn();
 vi.mock("@/components/common/toast", () => ({
   useToast: () => ({
     error: mockToastError,
     warning: vi.fn(),
-    success: vi.fn(),
+    success: mockToastSuccess,
     info: vi.fn(),
   }),
 }));
@@ -226,5 +227,354 @@ describe("MatchingRadarPage - AI Matching, Demands Guard & Toast Integration", (
     expect(await screen.findByText("Cảm biến IoT LoRaWAN công nghiệp")).toBeInTheDocument();
     expect(getCandidatesSpy).toHaveBeenCalled();
     expect(screen.queryByText("Radar Ghép Nối AI Chưa Kích Hoạt")).not.toBeInTheDocument();
+  });
+
+  it("renders zero-mock Explainable AI (XAI) 4-axis scores and FTS fallback degradation badge", async () => {
+    vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([
+      {
+        id: "cand-xai-1",
+        demandId: "dem-xai-1",
+        demandCode: "DMD-XAI-001",
+        demandTitle: "Thu hồi nhiệt khí thải lò hơi công nghiệp",
+        buyerOrganizationId: "org-buyer-xai",
+        buyerOrganizationName: "Tập Đoàn Dệt May",
+        offerId: "off-xai-1",
+        offerCode: "OFF-XAI-001",
+        offerTitle: "Hệ thống ống nhiệt trọng lực siêu dẫn trao đổi nhiệt",
+        sellerOrganizationId: "org-seller-xai",
+        sellerOrganizationName: "Viện Khoa Học Năng Lượng",
+        sectorCode: "LV11",
+        matchScore: 89,
+        tniScore: 88,
+        trlLevel: 6,
+        ipStatus: "PATENT_GRANTED",
+        isActive: true,
+        createdAt: "2026-11-02T10:00:00Z",
+        isDegraded: true,
+        xaiBreakdown: {
+          semanticScore: 84.5,
+          semanticEngine: "POSTGRES_FTS_FALLBACK",
+          trlScore: 85,
+          trlLevel: 6,
+          trlStage: "Thử nghiệm Pilot (TRL 4-6)",
+          tniScore: 88,
+          tniBand: "Cấp thiết rất cao (TNI >= 80)",
+          ipScore: 100,
+          ipStatus: "PATENT_GRANTED",
+          ipDescription: "Đã được cấp bằng độc quyền sáng chế",
+        },
+      },
+    ]);
+
+    render(<MatchingRadarPage />);
+
+    // Assert Candidate details
+    expect(await screen.findByText("Hệ thống ống nhiệt trọng lực siêu dẫn trao đổi nhiệt")).toBeInTheDocument();
+    expect(screen.getByText("89%")).toBeInTheDocument();
+
+    // Assert FTS degradation badge
+    expect(screen.getByTestId("fts-fallback-badge")).toBeInTheDocument();
+    expect(screen.getByText("[Chế độ dự phòng FTS]")).toBeInTheDocument();
+
+    // Assert 4-axis XAI real scores
+    expect(screen.getByText("84.5%")).toBeInTheDocument();
+    expect(screen.getByText("FTS Lexical")).toBeInTheDocument();
+    expect(screen.getAllByText(/TRL 6/).length).toBeGreaterThan(0);
+    expect(screen.getByText("88/100")).toBeInTheDocument();
+    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getByText("Đã được cấp bằng độc quyền sáng chế")).toBeInTheDocument();
+  });
+
+  it("triggers recompute radar when clicking Recompute CTA button", async () => {
+    vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([]);
+    const recomputeSpy = vi.spyOn(brokerageApi, "recomputeRadar").mockResolvedValue({
+      computedMatchesCount: 8,
+      tookMs: 145,
+      isDegraded: false,
+      engineVersion: "BGE-M3_HYBRID_4AXIS",
+      timestamp: "2026-11-02T10:00:00Z",
+    });
+
+    render(<MatchingRadarPage />);
+
+    const recomputeBtn = await screen.findByRole("button", { name: /Tính toán lại đối soát/i });
+    expect(recomputeBtn).toBeInTheDocument();
+
+    fireEvent.click(recomputeBtn);
+
+    await waitFor(() => {
+      expect(recomputeSpy).toHaveBeenCalled();
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        expect.stringContaining("Đã hoàn tất tính toán đối soát AI (8 cặp khớp trong 145ms)!"),
+        "Đối Soát Thành Công"
+      );
+    });
+  });
+
+  it("locks dropdown context strictly to Buyer Demands and filters out third-party candidates (T062)", async () => {
+    vi.spyOn(authClient, "getUser").mockReturnValue({
+      id: "u-buyer-t062",
+      fullName: "Đại Diện Bên Mua A",
+      role: "BUYER",
+      email: "buyer_a@corp.vn",
+    });
+
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/buyer/demands")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { id: "dem-buyer-1", itemCode: "DMD-BUYER-01", title: "Máy thu hoạch thanh long tự động" },
+            { id: "dem-buyer-2", itemCode: "DMD-BUYER-02", title: "Hệ thống tưới nhỏ giọt thông minh" },
+          ],
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    }) as any;
+
+    vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([
+      {
+        id: "cand-buyer-1",
+        demandId: "dem-buyer-1",
+        demandCode: "DMD-BUYER-01",
+        demandTitle: "Máy thu hoạch thanh long tự động",
+        buyerOrganizationId: "org-buyer-a",
+        buyerOrganizationName: "Doanh Nghiệp A",
+        offerId: "off-1",
+        offerCode: "OFF-001",
+        offerTitle: "Robot thu hái nông sản đa năng",
+        sellerOrganizationId: "org-seller-1",
+        sellerOrganizationName: "Viện Cơ Khí Nông Nghiệp",
+        sectorCode: "LV01",
+        matchScore: 94,
+        tniScore: 88,
+        trlLevel: 7,
+        ipStatus: "PATENT_GRANTED",
+        isActive: true,
+        createdAt: "2026-11-02T10:00:00Z",
+      },
+      {
+        id: "cand-other-99",
+        demandId: "dem-other-99",
+        demandCode: "DMD-OTHER-99",
+        demandTitle: "Bài toán của Doanh nghiệp khác",
+        buyerOrganizationId: "org-buyer-b",
+        buyerOrganizationName: "Doanh Nghiệp B (Đối thủ)",
+        offerId: "off-99",
+        offerCode: "OFF-099",
+        offerTitle: "Công nghệ đối thủ không được phép lộ",
+        sellerOrganizationId: "org-seller-99",
+        sellerOrganizationName: "Đối tác khác",
+        sectorCode: "LV01",
+        matchScore: 91,
+        tniScore: 80,
+        trlLevel: 6,
+        ipStatus: "PATENT_GRANTED",
+        isActive: true,
+        createdAt: "2026-11-02T10:00:00Z",
+      },
+    ]);
+
+    render(<MatchingRadarPage />);
+
+    // 1. Candidate của chính Buyer phải xuất hiện
+    expect(await screen.findByText("Robot thu hái nông sản đa năng")).toBeInTheDocument();
+
+    // 2. Candidate của Bên thứ ba / Đối thủ TUYỆT ĐỐI KHÔNG xuất hiện (Zero IDOR)
+    expect(screen.queryByText("Công nghệ đối thủ không được phép lộ")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bài toán của Doanh nghiệp khác")).not.toBeInTheDocument();
+
+    // 3. Dropdown chỉ chứa bài toán của Buyer, không có bài toán của bên thứ ba
+    const selector = screen.getByTitle("Chọn bài toán nguồn để lọc kết quả Radar") as HTMLSelectElement;
+    expect(selector).toBeInTheDocument();
+
+    // Dropdown tự động chọn bài toán đầu tiên của Buyer
+    expect(selector.value).toBe("DMD-BUYER-01");
+
+    // Danh sách options chỉ gồm bài toán của Buyer
+    const options = Array.from(selector.options).map((o) => o.value);
+    expect(options).toContain("DMD-BUYER-01");
+    expect(options).toContain("DMD-BUYER-02");
+    expect(options).not.toContain("DMD-OTHER-99");
+    expect(options).not.toContain("ALL");
+  });
+
+  it("switches context and invokes recomputeRadar scoped to selected Buyer demand (T062)", async () => {
+    vi.spyOn(authClient, "getUser").mockReturnValue({
+      id: "u-buyer-t062-2",
+      fullName: "Đại Diện Bên Mua B",
+      role: "BUYER",
+      email: "buyer_b@corp.vn",
+    });
+
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === "string" && url.includes("/api/v1/buyer/demands")) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { id: "dem-buyer-1", itemCode: "DMD-BUYER-01", title: "Máy sấy lạnh" },
+            { id: "dem-buyer-2", itemCode: "DMD-BUYER-02", title: "Cảm biến vi khí hậu" },
+          ],
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({}) });
+    }) as any;
+
+    vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([
+      {
+        id: "cand-1",
+        demandId: "dem-buyer-1",
+        demandCode: "DMD-BUYER-01",
+        demandTitle: "Máy sấy lạnh",
+        buyerOrganizationId: "org-buyer",
+        buyerOrganizationName: "Doanh Nghiệp B",
+        offerId: "off-1",
+        offerCode: "OFF-001",
+        offerTitle: "Máy sấy bơm nhiệt",
+        sellerOrganizationId: "org-seller-1",
+        sellerOrganizationName: "Viện Sấy",
+        sectorCode: "LV01",
+        matchScore: 90,
+        tniScore: 85,
+        trlLevel: 7,
+        ipStatus: "PATENT_GRANTED",
+        isActive: true,
+        createdAt: "2026-11-02T10:00:00Z",
+      },
+      {
+        id: "cand-2",
+        demandId: "dem-buyer-2",
+        demandCode: "DMD-BUYER-02",
+        demandTitle: "Cảm biến vi khí hậu",
+        buyerOrganizationId: "org-buyer",
+        buyerOrganizationName: "Doanh Nghiệp B",
+        offerId: "off-2",
+        offerCode: "OFF-002",
+        offerTitle: "Sensor IoT nông nghiệp LoRa",
+        sellerOrganizationId: "org-seller-2",
+        sellerOrganizationName: "Viện IoT",
+        sectorCode: "LV01",
+        matchScore: 88,
+        tniScore: 82,
+        trlLevel: 8,
+        ipStatus: "PATENT_GRANTED",
+        isActive: true,
+        createdAt: "2026-11-02T10:00:00Z",
+      },
+    ]);
+
+    const recomputeSpy = vi.spyOn(brokerageApi, "recomputeRadar").mockResolvedValue({
+      computedMatchesCount: 3,
+      tookMs: 95,
+      isDegraded: false,
+      engineVersion: "BGE-M3_HYBRID_4AXIS",
+      timestamp: "2026-11-02T10:00:00Z",
+    });
+
+    render(<MatchingRadarPage />);
+
+    // Ban đầu chọn DMD-BUYER-01
+    expect(await screen.findByText("Máy sấy bơm nhiệt")).toBeInTheDocument();
+    expect(screen.queryByText("Sensor IoT nông nghiệp LoRa")).not.toBeInTheDocument();
+
+    // Chuyển dropdown sang DMD-BUYER-02
+    const selector = screen.getByTitle("Chọn bài toán nguồn để lọc kết quả Radar") as HTMLSelectElement;
+    fireEvent.change(selector, { target: { value: "DMD-BUYER-02" } });
+
+    // Giao diện chuyển sang candidate của DMD-BUYER-02
+    expect(await screen.findByText("Sensor IoT nông nghiệp LoRa")).toBeInTheDocument();
+    expect(screen.queryByText("Máy sấy bơm nhiệt")).not.toBeInTheDocument();
+
+    // Nhấn Recompute -> phải gọi recomputeRadar với đúng param 'DMD-BUYER-02'
+    const recomputeBtn = screen.getByRole("button", { name: /Tính toán lại đối soát/i });
+    fireEvent.click(recomputeBtn);
+
+    await waitFor(() => {
+      expect(recomputeSpy).toHaveBeenCalledWith("DMD-BUYER-02");
+    });
+  });
+
+  it("renders 4 XAI progress bars, readiness badges and handles recomputing loading state (T066)", async () => {
+    vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([
+      {
+        id: "cand-e2e-1",
+        demandId: "dem-1",
+        demandCode: "DMD-E2E-001",
+        demandTitle: "Chế tạo vật liệu nano composite y sinh",
+        buyerOrganizationId: "org-buyer",
+        buyerOrganizationName: "Viện Quân Y",
+        offerId: "off-e2e-1",
+        offerCode: "OFF-E2E-001",
+        offerTitle: "Công nghệ sản xuất nano Hydroxyapatite tinh khiết cao",
+        sellerOrganizationId: "org-seller",
+        sellerOrganizationName: "Viện Hóa học",
+        sectorCode: "LV14",
+        matchScore: 95,
+        tniScore: 90,
+        trlLevel: 8,
+        ipStatus: "PATENT_GRANTED",
+        isActive: true,
+        createdAt: "2026-11-02T10:00:00Z",
+        isDegraded: false,
+        xaiBreakdown: {
+          semanticScore: 92.0,
+          semanticEngine: "BGE-M3_RERANK",
+          trlScore: 100,
+          trlLevel: 8,
+          trlStage: "Thương mại hóa (TRL 7-9)",
+          tniScore: 90,
+          tniBand: "Cấp thiết rất cao (TNI >= 80)",
+          ipScore: 100,
+          ipStatus: "PATENT_GRANTED",
+          ipDescription: "Đã được cấp bằng độc quyền sáng chế / GPHI",
+        },
+      },
+    ]);
+
+    let resolveRecompute: (value: any) => void;
+    const recomputePromise = new Promise((resolve) => {
+      resolveRecompute = resolve;
+    });
+
+    vi.spyOn(brokerageApi, "recomputeRadar").mockImplementation(() => recomputePromise as any);
+
+    render(<MatchingRadarPage />);
+
+    // 1. Kiểm tra render thông tin ứng viên
+    expect(await screen.findByText("Công nghệ sản xuất nano Hydroxyapatite tinh khiết cao")).toBeInTheDocument();
+    expect(screen.getByText("95%")).toBeInTheDocument();
+
+    // 2. Kiểm tra khối Explainable AI (XAI) và 4 trục điểm số
+    expect(screen.getByText(/Giải trình độ tương thích AI/i)).toBeInTheDocument();
+    expect(screen.getByText("92%")).toBeInTheDocument();
+    expect(screen.getByText("AI BGE-M3")).toBeInTheDocument();
+    expect(screen.getByText("Thương mại hóa (TRL 7-9)")).toBeInTheDocument();
+    expect(screen.getByText("90/100")).toBeInTheDocument();
+    expect(screen.getByText("Cấp thiết rất cao (TNI >= 80)")).toBeInTheDocument();
+    expect(screen.getByText("Đã được cấp bằng độc quyền sáng chế / GPHI")).toBeInTheDocument();
+
+    // 3. Kiểm tra tương tác Recompute & Loading state
+    const recomputeBtn = screen.getByRole("button", { name: /Tính toán lại đối soát/i });
+    fireEvent.click(recomputeBtn);
+
+    // Khi đang recompute: xuất hiện text "Đang tính toán..."
+    expect(await screen.findByText("Đang tính toán...")).toBeInTheDocument();
+
+    // Kết thúc promise recompute
+    resolveRecompute!({
+      computedMatchesCount: 5,
+      tookMs: 120,
+      isDegraded: false,
+      engineVersion: "BGE-M3_HYBRID_4AXIS",
+      timestamp: "2026-11-02T10:00:00Z",
+    });
+
+    // Sau khi recompute thành công: toast thông báo xuất hiện
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        expect.stringContaining("Đã hoàn tất tính toán đối soát AI (5 cặp khớp trong 120ms)!"),
+        "Đối Soát Thành Công"
+      );
+    });
   });
 });

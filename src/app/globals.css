@@ -29,6 +29,10 @@
   --color-nacen-green-700: #1f7668;
   --color-surface-page: #f8fafc;
   --color-surface-subtle: #f7f9fc;
+  --color-surface-card: #ffffff;
+  --color-surface-elevated: #f1f5f9;
+  --color-brand-primary: #3c5999;
+  --color-border: #e2e8f0;
   --color-text-primary: #0f172a;
   --color-text-secondary: #64748b;
   --color-border-default: #e2e8f0;
@@ -68,6 +72,12 @@
   .dark body {
     background-color: #020617;
     color: #f8fafc;
+  }
+  .dark {
+    --color-surface-card: #0f172a;
+    --color-surface-elevated: #1e293b;
+    --color-brand-primary: #6680b3;
+    --color-border: #334155;
   }
 
   /* Adaptive density for compact HD laptop viewports (1366x768, 1280x800, or scaled 1080p) */
@@ -255,6 +265,37 @@
 
   .animate-page-enter {
     animation: pageFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Top Navbar Dropdown Menu - Native CSS Hover, Focus & State */
+  .nav-has-dropdown {
+    position: relative;
+  }
+  .nav-has-dropdown .nav-dropdown-menu {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+    pointer-events: none;
+  }
+  .nav-has-dropdown:hover .nav-dropdown-menu,
+  .nav-has-dropdown:focus-within .nav-dropdown-menu,
+  .nav-has-dropdown.is-open .nav-dropdown-menu {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+  }
+  /* Invisible hover bridge between trigger and dropdown */
+  .nav-has-dropdown .nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
   }
 }
 

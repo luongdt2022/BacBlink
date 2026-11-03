@@ -105,6 +105,7 @@ export default function RegisterPage() {
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim() || null,
           phone: formData.phone.trim() || null,
+          acceptPdpd: formData.acceptPdpd,
         }),
       });
 

@@ -141,6 +141,7 @@ const sellerNavItems: NavItem[] = [
 const expertNavItems: NavItem[] = [
   // Khối 1: Tác nghiệp hàng ngày
   { href: "/portal/expert/profile", label: "Tổng quan Chuyên gia", icon: LayoutDashboard, key: "profile", section: "Tác nghiệp hàng ngày" },
+  { href: "/portal/expert/elearning", label: "Đào tạo & Học liệu số", icon: GraduationCap, key: "elearning", badge: "LMS", badgeType: "new" },
   { href: "/portal/expert/consultations", label: "Hộp Thư Tư Vấn & Kết Nối", icon: Inbox, key: "consultations", badge: 2, badgeType: "count" },
   { href: "/portal/matching/radar", label: "Radar Cơ hội Phù hợp (AI)", icon: Sparkles, key: "radar", badge: "Mới", badgeType: "new" },
   { href: "/portal/expert/projects", label: "Dự án Đồng hành & Hợp tác", icon: Kanban, key: "projects" },

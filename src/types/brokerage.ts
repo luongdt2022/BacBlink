@@ -1,3 +1,24 @@
+export interface RadarXaiBreakdown {
+  semanticScore: number;
+  semanticEngine: string; // 'BGE-M3_RERANK' | 'POSTGRES_FTS_FALLBACK'
+  trlScore: number;
+  trlLevel: number;
+  trlStage: string;
+  tniScore: number;
+  tniBand: string;
+  ipScore: number;
+  ipStatus: string;
+  ipDescription: string;
+}
+
+export interface RecomputeRadarResult {
+  computedMatchesCount: number;
+  tookMs: number;
+  isDegraded: boolean;
+  engineVersion: string;
+  timestamp: string;
+}
+
 export interface MatchCandidate {
   id: string;
   demandId: string;
@@ -17,6 +38,9 @@ export interface MatchCandidate {
   ipStatus: string;
   isActive: boolean;
   createdAt: string;
+  xaiBreakdown?: RadarXaiBreakdown;
+  isDegraded?: boolean;
+  computedAt?: string;
 }
 
 export interface TargetOfferSummary {

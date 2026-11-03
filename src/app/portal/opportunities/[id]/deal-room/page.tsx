@@ -32,6 +32,7 @@ import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBack
 import { useToast } from '@/components/common/toast';
 import { authClient } from '@/lib/auth-client';
 import OrderTrackingStepper, { OrderStepStatus } from '@/components/demand/OrderTrackingStepper';
+import { BlockchainZkpBadge } from '@/components/blockchain/BlockchainZkpBadge';
 
 export default function DealRoomPage() {
   const params = useParams();
@@ -109,11 +110,11 @@ export default function DealRoomPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-surface-subtle p-6 space-y-6">
-        <div className="h-20 bg-surface-card rounded-2xl animate-pulse" />
-        <div className="h-32 bg-surface-card rounded-2xl animate-pulse" />
+        <div className="h-20 bg-white dark:bg-slate-800 rounded-2xl animate-pulse" />
+        <div className="h-32 bg-white dark:bg-slate-800 rounded-2xl animate-pulse" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="h-96 bg-surface-card rounded-2xl animate-pulse" />
-          <div className="lg:col-span-2 h-96 bg-surface-card rounded-2xl animate-pulse" />
+          <div className="h-96 bg-white dark:bg-slate-800 rounded-2xl animate-pulse" />
+          <div className="lg:col-span-2 h-96 bg-white dark:bg-slate-800 rounded-2xl animate-pulse" />
         </div>
       </div>
     );
@@ -122,13 +123,13 @@ export default function DealRoomPage() {
   if (error || !data) {
     return (
       <div className="min-h-screen bg-surface-subtle p-6 flex items-center justify-center">
-        <div className="bg-surface-card p-8 rounded-2xl border border-border text-center space-y-4 max-w-md shadow-lg">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4 max-w-md shadow-lg">
           <AlertCircle className="w-10 h-10 text-rose-600 mx-auto" />
           <h2 className="text-lg font-bold text-text-primary">Không thể truy cập Deal Room</h2>
           <p className="text-caption text-text-muted">{error || 'Không tìm thấy dữ liệu.'}</p>
           <Link
             href="/portal/opportunities/pipeline"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-primary text-white text-caption font-medium hover:bg-brand-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-700 text-white text-caption font-medium hover:bg-brand-800 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Quay lại Pipeline
           </Link>
@@ -203,11 +204,11 @@ export default function DealRoomPage() {
       </div>
 
       {/* 2. Stepper 4 Bước & Hướng Dẫn Hành Động Chuyển Giao */}
-      <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
           <div>
             <h3 className="font-bold text-text-primary text-sm uppercase tracking-wider flex items-center gap-2">
-              <Handshake className="w-4 h-4 text-brand-primary" /> Tiến Trình Giao Dịch & Đàm Phán (4 Bước)
+              <Handshake className="w-4 h-4 text-brand-700 dark:text-cyan-400" /> Tiến Trình Giao Dịch & Đàm Phán (4 Bước)
             </h3>
             <p className="text-caption text-text-muted mt-0.5">
               Hệ thống đồng bộ tự động giữa Đơn hàng của Bên Mua, Phiếu xử lý của Bên Bán và Thỏa thuận Deal Room.
@@ -225,7 +226,7 @@ export default function DealRoomPage() {
               <button
                 type="button"
                 onClick={() => setIsMouOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-caption font-bold shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-nacen-green-500 hover:bg-nacen-green-600 text-white text-caption font-bold shadow-xs transition-colors"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Ký Kết MOU Để Hoàn Tất
@@ -240,8 +241,8 @@ export default function DealRoomPage() {
         </div>
 
         {/* Hướng dẫn khi nào chuyển sang kết thúc */}
-        <div className="p-3.5 rounded-xl bg-surface-subtle border border-border text-xs text-text-secondary flex items-start gap-2.5">
-          <Award className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-text-secondary flex items-start gap-2.5">
+          <Award className="w-4 h-4 text-brand-700 dark:text-cyan-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <strong className="text-text-primary">Quy định kết thúc & hoàn tất giao dịch:</strong>
             <p className="text-text-muted">
@@ -260,32 +261,32 @@ export default function DealRoomPage() {
         {/* Left Column: Stakeholders Info & MOU Summary */}
         <div className="space-y-6">
           {/* Card: Parties Details */}
-          <div className="bg-surface-card rounded-2xl border border-border p-5 space-y-4 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-sm">
             <h3 className="font-semibold text-text-primary text-caption uppercase tracking-wider flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-600" /> Các Bên Tham Gia Đàm Phán
             </h3>
 
             {/* Bên Mua */}
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border space-y-2.5">
-              <div className="flex items-center justify-between text-caption font-bold text-brand-primary">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5">
+              <div className="flex items-center justify-between text-caption font-bold text-brand-700 dark:text-cyan-400">
                 <span className="flex items-center gap-1.5">
                   <Building2 className="w-3.5 h-3.5" /> BÊN MUA (DOANH NGHIỆP)
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-primary/10 text-brand-primary">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-cyan-400 border border-brand-200 dark:border-brand-800">
                   BUYER
                 </span>
               </div>
               <p className="text-sm font-bold text-text-primary">{opportunity.buyerOrgName}</p>
-              <div className="text-caption text-text-secondary space-y-1.5 pt-2 border-t border-border">
+              <div className="text-caption text-text-secondary space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-700">
                 <p className="flex items-center gap-2">
                   <UserCheck className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <span>Đại diện: <strong>{opportunity.buyerContactName}</strong></span>
                 </p>
-                <p className="flex items-center gap-2 text-brand-primary font-medium">
+                <p className="flex items-center gap-2 text-brand-700 dark:text-cyan-400 font-medium">
                   <Phone className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <span>{opportunity.buyerContactPhone}</span>
                 </p>
-                <p className="flex items-center gap-2 text-brand-primary font-medium">
+                <p className="flex items-center gap-2 text-brand-700 dark:text-cyan-400 font-medium">
                   <Mail className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <span>{opportunity.buyerContactEmail}</span>
                 </p>
@@ -293,26 +294,26 @@ export default function DealRoomPage() {
             </div>
 
             {/* Bên Bán */}
-            <div className="p-4 rounded-xl bg-surface-subtle border border-border space-y-2.5">
-              <div className="flex items-center justify-between text-caption font-bold text-emerald-600">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5">
+              <div className="flex items-center justify-between text-caption font-bold text-emerald-600 dark:text-emerald-400">
                 <span className="flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" /> BÊN BÁN (ĐƠN VỊ CÔNG NGHỆ)
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                   SELLER
                 </span>
               </div>
               <p className="text-sm font-bold text-text-primary">{opportunity.sellerOrgName}</p>
-              <div className="text-caption text-text-secondary space-y-1.5 pt-2 border-t border-border">
+              <div className="text-caption text-text-secondary space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-700">
                 <p className="flex items-center gap-2">
                   <UserCheck className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <span>Đại diện: <strong>{opportunity.sellerContactName}</strong></span>
                 </p>
-                <p className="flex items-center gap-2 text-emerald-700 font-medium">
+                <p className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-medium">
                   <Phone className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <span>{opportunity.sellerContactPhone}</span>
                 </p>
-                <p className="flex items-center gap-2 text-emerald-700 font-medium">
+                <p className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-medium">
                   <Mail className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <span>{opportunity.sellerContactEmail}</span>
                 </p>
@@ -321,12 +322,12 @@ export default function DealRoomPage() {
 
             {/* Chuyên gia cố vấn */}
             {opportunity.assignedExpertName && (
-              <div className="p-4 rounded-xl bg-brand-primary/5 border border-brand-primary/20 space-y-1.5 text-caption">
+              <div className="p-4 rounded-xl bg-brand-50 dark:bg-brand-950/50 border border-brand-200 dark:border-brand-800 space-y-1.5 text-caption">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-brand-primary flex items-center gap-1.5">
+                  <span className="font-bold text-brand-700 dark:text-cyan-400 flex items-center gap-1.5">
                     <UserCheck className="w-3.5 h-3.5" /> CHUYÊN GIA CỐ VẤN ĐỘC LẬP
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
                     EXPERT
                   </span>
                 </div>
@@ -337,10 +338,10 @@ export default function DealRoomPage() {
           </div>
 
           {/* Card: MOU Agreement Status */}
-          <div className="bg-surface-card rounded-2xl border border-border p-5 space-y-4 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-text-primary text-caption uppercase tracking-wider flex items-center gap-2">
-                <FileSignature className="w-4 h-4 text-brand-primary" /> Biên Bản Ghi Nhớ MOU
+                <FileSignature className="w-4 h-4 text-brand-700 dark:text-cyan-400" /> Biên Bản Ghi Nhớ MOU
               </h3>
               {mou && (
                 <span
@@ -357,19 +358,28 @@ export default function DealRoomPage() {
 
             {mou ? (
               <div className="space-y-3 text-caption">
-                <div className="p-3.5 rounded-xl bg-surface-subtle border border-border space-y-1.5">
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-1.5">
                   <p className="font-bold text-text-primary">Mã văn bản: <span className="font-mono">{mou.mouCode}</span></p>
                   <p className="text-text-secondary">Thời gian thử nghiệm: <strong>{mou.pilotDurationMonths} tháng</strong></p>
                   {mou.signedDate && (
-                    <p className="text-emerald-700 font-bold flex items-center gap-1">
+                    <p className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Ngày ký: {new Date(mou.signedDate).toLocaleDateString('vi-VN')}
                     </p>
                   )}
+
+                  {/* Bảo chứng Chuỗi Khối & ZKP */}
+                  <div className="pt-1">
+                    <BlockchainZkpBadge
+                      entityType="DEAL_ROOM_MOU"
+                      entityId={mou.id}
+                      entityCode={mou.mouCode}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1">
                   <span className="text-text-muted font-bold text-xs">Phạm vi công việc đã thỏa thuận:</span>
-                  <p className="text-text-secondary line-clamp-3 bg-surface-subtle p-3 rounded-xl border border-border text-xs leading-relaxed">
+                  <p className="text-text-secondary line-clamp-3 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs leading-relaxed">
                     {mou.scopeOfWork}
                   </p>
                 </div>
@@ -379,8 +389,8 @@ export default function DealRoomPage() {
                   onClick={() => setIsMouOpen(true)}
                   className={`w-full py-2.5 rounded-xl font-bold text-caption transition-colors flex items-center justify-center gap-1.5 ${
                     mou.status === 'SIGNED'
-                      ? 'border border-border text-brand-primary hover:bg-surface-elevated'
-                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'
+                      ? 'border border-slate-200 dark:border-slate-700 text-brand-700 dark:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-nacen-green-500 hover:bg-nacen-green-600 text-white shadow-xs'
                   }`}
                 >
                   <FileSignature className="w-4 h-4" />
@@ -388,13 +398,13 @@ export default function DealRoomPage() {
                 </button>
               </div>
             ) : (
-              <div className="p-6 text-center border border-dashed border-border rounded-xl space-y-3">
+              <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-700 rounded-xl space-y-3">
                 <FileText className="w-8 h-8 text-text-muted mx-auto" />
                 <p className="text-caption text-text-muted">Chưa có biên bản ghi nhớ nào được lập.</p>
                 <button
                   type="button"
                   onClick={() => setIsMouOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-caption font-bold shadow-xs transition-colors"
+                  className="px-4 py-2 rounded-xl bg-nacen-green-500 hover:bg-nacen-green-600 text-white text-caption font-bold shadow-xs transition-colors"
                 >
                   Soạn Thảo & Ký MOU
                 </button>
@@ -404,8 +414,8 @@ export default function DealRoomPage() {
         </div>
 
         {/* Right Column: Discussion Thread 1-1 */}
-        <div className="lg:col-span-2 bg-surface-card rounded-2xl border border-border p-6 shadow-sm flex flex-col space-y-4 min-h-[620px]">
-          <div className="flex items-center justify-between pb-3 border-b border-border">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col space-y-4 min-h-[620px]">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
             <div>
               <h3 className="font-bold text-text-primary text-base">
                 {opportunity.assignedExpertName ? 'Nhật Ký Đàm Phán & Thảo Luận 3 Bên' : 'Nhật Ký Đàm Phán & Thảo Luận 1-1'}
@@ -416,7 +426,7 @@ export default function DealRoomPage() {
                   : 'Kênh bảo mật kết nối trực tiếp 1-1 giữa Bên Mua và Bên Bán.'}
               </p>
             </div>
-            <span className="px-2.5 py-1 rounded-full text-caption font-medium bg-surface-subtle border border-border text-text-muted">
+            <span className="px-2.5 py-1 rounded-full text-caption font-medium bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
               {discussions.length} tin nhắn
             </span>
           </div>
@@ -425,7 +435,7 @@ export default function DealRoomPage() {
           <div className="flex-1 overflow-y-auto space-y-4 max-h-[460px] pr-2">
             {discussions.length === 0 ? (
               <div className="h-56 flex flex-col items-center justify-center text-caption text-text-muted space-y-2">
-                <Handshake className="w-10 h-10 text-border" />
+                <Handshake className="w-10 h-10 text-slate-300 dark:text-slate-600" />
                 <p className="font-medium">Chưa có trao đổi nào trong phòng đàm phán.</p>
                 <p className="text-xs">Hãy gửi lời chào hoặc đặt câu hỏi đầu tiên để bắt đầu thảo luận điều khoản.</p>
               </div>
@@ -440,7 +450,7 @@ export default function DealRoomPage() {
                     key={msg.id}
                     className={`p-4 rounded-2xl border space-y-2 transition-all ${
                       isBuyer
-                        ? 'bg-brand-primary/5 border-brand-primary/20'
+                        ? 'bg-brand-50 dark:bg-brand-950/40 border-brand-200 dark:border-brand-800'
                         : isSeller
                         ? 'bg-emerald-500/5 border-emerald-500/20'
                         : 'bg-amber-500/5 border-amber-500/20'
@@ -450,19 +460,19 @@ export default function DealRoomPage() {
                       <div className="flex items-center gap-2.5">
                         <div
                           className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0 ${
-                            isBuyer ? 'bg-brand-primary' : isSeller ? 'bg-emerald-600' : 'bg-amber-600'
+                            isBuyer ? 'bg-brand-700' : isSeller ? 'bg-emerald-600' : 'bg-amber-600'
                           }`}
                         >
                           {isBuyer ? 'BM' : isSeller ? 'BB' : 'CG'}
                         </div>
                         <span className="font-bold text-text-primary text-sm">{msg.senderName}</span>
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                             isBuyer
-                              ? 'bg-brand-primary/10 text-brand-primary'
+                              ? 'bg-brand-100 text-brand-800 dark:bg-brand-950/70 dark:text-cyan-400 border border-brand-200 dark:border-brand-800'
                               : isSeller
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                              : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                              : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                           }`}
                         >
                           {isBuyer ? 'BÊN MUA' : isSeller ? 'BÊN BÁN' : 'CHUYÊN GIA'}
@@ -488,7 +498,7 @@ export default function DealRoomPage() {
           </div>
 
           {/* Message Input Box with Synchronized Form Controls */}
-          <form onSubmit={handleSendMessage} className="pt-4 border-t border-border space-y-3">
+          <form onSubmit={handleSendMessage} className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-caption font-bold text-text-secondary mb-1">
@@ -500,7 +510,7 @@ export default function DealRoomPage() {
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
                   placeholder="Họ tên người gửi..."
-                  className="w-full h-10 px-3.5 rounded-xl bg-surface-subtle border border-border text-caption font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all shadow-xs"
+                  className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-caption font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 transition-all shadow-xs"
                 />
               </div>
 
@@ -511,7 +521,7 @@ export default function DealRoomPage() {
                 <select
                   value={senderRole}
                   onChange={(e) => setSenderRole(e.target.value as any)}
-                  className="w-full h-10 px-3.5 rounded-xl bg-surface-subtle border border-border text-caption font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all cursor-pointer shadow-xs"
+                  className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-caption font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 transition-all cursor-pointer shadow-xs"
                 >
                   <option value="BUYER">Bên Mua (Doanh nghiệp)</option>
                   <option value="SELLER">Bên Bán (Đơn vị công nghệ)</option>
@@ -530,16 +540,16 @@ export default function DealRoomPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Nhập nội dung trao đổi, câu hỏi kỹ thuật hoặc phản hồi về hợp đồng... (Ctrl + Enter để gửi)"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-subtle border border-border text-caption text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary resize-none transition-all shadow-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-caption text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-700 resize-none transition-all shadow-xs placeholder:text-slate-400"
               />
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-text-muted">
-                  Mẹo: Nhấn <kbd className="px-1.5 py-0.5 rounded bg-surface-elevated border border-border text-[10px] font-mono">Ctrl + Enter</kbd> để gửi tin nhắn nhanh.
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  Mẹo: Nhấn <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">Ctrl + Enter</kbd> để gửi tin nhắn nhanh.
                 </span>
                 <button
                   type="submit"
                   disabled={isSending || !message.trim()}
-                  className="px-5 py-2 rounded-xl bg-brand-primary text-white hover:bg-brand-primary/90 text-caption font-bold flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-brand-700 text-white hover:bg-brand-800 text-caption font-bold flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" /> Gửi Tin Nhắn
                 </button>
