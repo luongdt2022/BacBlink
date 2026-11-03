@@ -63,5 +63,14 @@
 - [x] T-09.34 [QC] Viết và thực thi test suite kiểm thử toàn diện (Vitest Unit, DB Integration, Playwright E2E) đối soát điểm số 1:1 với Excel `Bảng khảo sát`.
 - [x] T-09.35 [INT] Trình nghiệm thu Gate 5 (`po-gate`), cập nhật `ROADMAP.md` và `TRACEABILITY.md`.
 
+---
+
+### Phase 7: Quản Trị Bản Ghi Phiếu & Xuất Văn Bản DOCX Khảo Sát Thực Địa [CR-2026-021]
+- [x] T-09.21 [FE] Tạo 2 file template DOCX mẫu trắng chuẩn A4 hành chính (`phieu_thu_thap_tt17_mau_trang.docx` và `phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx`) lưu tại `SourceCode/frontend/public/templates/surveys/`.
+- [ ] T-09.22 [FE] Xây dựng module/service sinh file Word (.docx) điền dữ liệu thực của DN (`SourceCode/frontend/src/services/survey-docx-exporter.ts`) bao gồm Phiếu TT17 (bảng 26 tiêu chí, xếp loại) và Phiếu Nhu cầu DNNVV.
+- [ ] T-09.23 [FE] Cập nhật menu Admin Sidebar trong `SourceCode/frontend/src/app/admin/layout.tsx` (Mục 1 TRUNG TÂM ĐIỀU HÀNH, link `/admin/assessments/records`, badge "Bản ghi DN").
+- [ ] T-09.24 [FE] Xây dựng trang `/admin/assessments/records/page.tsx` chuẩn 5 UX States qua `<Async>`, bộ lọc 34 tỉnh thành, loại phiếu, tìm kiếm MST/Tên DN, nút tải template trắng và nút xuất file Word từng dòng.
+- [ ] T-09.25 [Test] Viết Unit Test & Playwright E2E kiểm chứng tải file DOCX thật.
+
 
 

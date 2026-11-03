@@ -102,3 +102,78 @@ public sealed class Tt17ScoreResultDto
   - Thay vào đó hiển thị **Hero Banner Khảo Sát Năng Lực Công Nghệ** + nút CTA lớn *"Bắt Đầu Kê Khai Khảo Sát"* dẫn thẳng vào Wizard.
   - Khi Doanh nghiệp đã nộp bài: Hiển thị bảng tổng hợp và lịch sử các năm của chính DN đó.
 
+---
+
+## 5. THIẾT KẾ KỸ THUẬT CR-2026-021: QUẢN TRỊ BẢN GHI PHIẾU & XUẤT VĂN BẢN WORD (.DOCX) CHUẨN A4
+
+```mermaid
+flowchart TD
+    User["Admin / Cán Bộ Khảo Sát"] --> RecordsUI["Trang /admin/assessments/records"]
+    
+    subgraph StaticTemplates ["1. Tải Mẫu Khảo Sát Trắng"]
+        RecordsUI -->|Click Tải Mẫu TT17 / Nhu Cầu| StaticAssets["frontend/public/templates/surveys/<br/>• phieu_thu_thap_tt17_mau_trang.docx<br/>• phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx"]
+        StaticAssets -->|Direct Download 0ms latency| DocxFile1["File Word Trắng A4 In Thực Địa"]
+    end
+
+    subgraph DynamicExport ["2. Xuất Phiếu Có Dữ Liệu Thực Tế"]
+        RecordsUI -->|Click Xuất File Word từng dòng| DocxService["frontend/src/services/survey-docx-exporter.ts"]
+        DocxService -->|Read DB / State| SurveyData["Dữ liệu thực tế DN (Zero-Mock)"]
+        SurveyData --> ExportTT17["exportTt17SurveyDocx(assessment)"]
+        SurveyData --> ExportSME["exportDemandSmeDocx(survey)"]
+        ExportTT17 & ExportSME --> Packer["Packer.toBlob() (docx 9.x)"]
+        Packer --> DocxFile2["File Word .docx Đầy Đủ Số Liệu & Bảng Điểm 26 TC"]
+    end
+
+    subgraph AdminNav ["3. Điều Hướng Sidebar"]
+        AdminLayout["frontend/src/app/admin/layout.tsx"] -->|Mục 1: TRUNG TÂM ĐIỀU HÀNH| NavItem["Menu: Danh sách Phiếu Thu thập & Đánh giá DN<br/>(Badge: Bản ghi DN)"]
+        NavItem --> RecordsUI
+    end
+```
+
+### 5.1. Kiến Trúc Lưu Trữ Mẫu Biểu Tĩnh (`frontend/public/templates/surveys/`)
+- **Vị trí vật lý**: `SourceCode/frontend/public/templates/surveys/`
+- **Tập tin định dạng sẵn**:
+  * `phieu_thu_thap_tt17_mau_trang.docx`: Mẫu phiếu thu thập hiện trạng công nghệ theo Phụ lục I Thông tư 17/2019/TT-BKHCN khổ A4 dọc, có Quốc hiệu Tiêu ngữ, bảng thiết bị máy móc, ma trận số liệu tài chính 3 năm, tiêu chí Mục A-E, dòng trống kẻ chấm và khu vực ký 3 bên.
+  * `phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx`: Mẫu phiếu khảo sát nhu cầu đổi mới sáng tạo, chuyển đổi số DNNVV theo Luật Hỗ trợ DNNVV và Nghị định 80/2021/NĐ-CP, bảng khảo sát nhu cầu 15 nhóm công nghệ, biểu mẫu ngân sách và đề xuất kết nối.
+- **Ưu điểm kiến trúc**: Tải trực tiếp qua Web Server / CDN tĩnh với header `Content-Disposition: attachment`, không tiêu tốn tài nguyên tính toán server, mở mượt mà 100% không cảnh báo XML.
+
+### 5.2. Kiến Trúc Service Sinh DOCX Động (`SourceCode/frontend/src/services/survey-docx-exporter.ts`)
+- **Thư viện chuẩn**: Sử dụng `docx` (Office OpenXML JS engine) tạo cấu trúc văn bản phân cấp gồm: `Document`, `Paragraph`, `Table`, `TableRow`, `TableCell`, `WidthType`, `BorderStyle`.
+- **Cấu trúc hàm & Interface**:
+  ```typescript
+  export async function exportTt17SurveyDocx(assessment: Tt17Assessment): Promise<Blob>;
+  export async function exportDemandSmeDocx(record: DemandSmeSurveyRecord): Promise<Blob>;
+  export function downloadDocxBlob(blob: Blob, filename: string): void;
+  ```
+- **Nội dung sinh động cho Phiếu TT17**:
+  1. **Quốc hiệu & Tiêu ngữ**: Bảng 2 cột không viền chuẩn thể thức văn bản hành chính Việt Nam (Nghị định 30/2020/NĐ-CP).
+  2. **Tiêu đề & Căn cứ**: Khổ A4, font Times New Roman, lề Trái 30mm, Trên/Dưới 20mm, Phải 20mm.
+  3. **Mục A (Pháp nhân)**: Tên DN, MST, Địa chỉ trụ sở, Nhà máy, Vốn, Lao động, Ngành cấp 2 C.10-C.32.
+  4. **Mục B (Máy móc thiết bị)**: Bảng chi tiết danh mục dây chuyền thiết bị đã nhập kèm chỉ tiêu tài chính nguyên giá $G_{bđ}$, giá trị còn lại $G_{sx}$, đầu tư mới $G_{tbm1}, G_{tbm2}$, thiết bị số hóa $G_{sh}$.
+  5. **Mục C (Tài chính 3 năm)**: Ma trận số liệu 3 năm $G_{sp}, G_{dt}, G_{cp}, P, G_{nl}, G_{nvl}, M_{tt}$ và tiêu chuẩn chất lượng sản phẩm.
+  6. **Mục D & Đ (Nhân lực, Quản trị, R&D)**: Cơ cấu lao động, chi phí đào tạo, phần mềm quản lý, CNTT và R&D.
+  7. **Mục E & Bảng Tổng Hợp Điểm 26 Tiêu Chí TT17**:
+     - Bảng điểm chi tiết 26 tiêu chí phân theo 5 nhóm T-E-O-R-I với Cột: Mã TC, Tên tiêu chí, Điểm tối đa, Điểm đạt được, Ghi chú/Điểm nghẽn.
+     - Hộp tóm tắt xếp loại: Điểm tổng kết $\tau$ (Thang 100), Hệ số đồng bộ $T_{ĐB}$, và Phân hạng trình độ công nghệ (`TIEN_TIEN`, `TRUNG_BINH_TIEN_TIEN`, `TRUNG_BINH`, `LAC_HAU`, `CAN_THAM_DINH`).
+- **Nội dung sinh động cho Phiếu Khảo Sát Nhu Cầu DNNVV**:
+  - Thông tin DN, người liên hệ, lĩnh vực hoạt động, quy mô DNNVV.
+  - Hiện trạng máy móc thiết bị và phần mềm quản lý.
+  - Bảng tổng hợp nhu cầu công nghệ tìm kiếm: tên giải pháp, hình thức nhu cầu, dự toán kinh phí, thời gian triển khai.
+  - Nhu cầu kết nối chuyên gia và chính sách hỗ trợ từ Nhà nước.
+- **Nguyên tắc bảo vệ dữ liệu Zero-Mock (`BR-SURVEY-DOC-02`)**:
+  - Trích xuất 100% dữ liệu có thật từ hồ sơ doanh nghiệp.
+  - Các trường rỗng hiển thị `"---"` hoặc dòng kẻ chấm `"................"`.
+  - MIME type: `application/vnd.openxmlformats-officedocument.wordprocessingml.document`.
+
+### 5.3. Kiến Trúc Giao Diện `/admin/assessments/records`
+- **Vị trí menu Sidebar**: Thêm vào `SourceCode/frontend/src/app/admin/layout.tsx` tại **Mục 1: TRUNG TÂM ĐIỀU HÀNH**, URL `/admin/assessments/records`, nhãn `"Danh sách Phiếu Thu thập & Đánh giá DN"`, badge `"Bản ghi DN"`.
+- **Trang quản trị**: `SourceCode/frontend/src/app/admin/assessments/records/page.tsx`:
+  * **Header**: Tiêu đề trang + 2 nút tải template trắng A4 (kết nối trực tiếp tới `/templates/surveys/*.docx`).
+  * **Filter Bar**: Dropdown 34 Tỉnh/Thành phố (`PROVINCES_34`), Loại phiếu (`ALL`, `TT17`, `SME_DEMAND`), Trạng thái (`ALL`, `DRAFT`, `SUBMITTED`, `IN_REVIEW`, `APPROVED`), và Ô tìm kiếm MST / Tên DN.
+  * **Component `<Async>` 5 UX States**:
+    1. *Loading*: 6 dòng Skeleton Table với hiệu ứng shimmer.
+    2. *Empty*: Empty State box khi bộ lọc không có bản ghi phù hợp.
+    3. *Error*: Khung cảnh báo đỏ kèm nút retry.
+    4. *Success*: Bảng bản ghi đầy đủ, phân trang 10/25/50, nút *"Xuất file Word"* (Icon `Download`) kích hoạt hàm export realtime.
+    5. *Updating/Exporting*: Spinner hiển thị tại nút xuất, disable chống double-click.
+
