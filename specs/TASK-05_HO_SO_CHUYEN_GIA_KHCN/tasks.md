@@ -805,6 +805,60 @@
       * Kiểm chứng Zero-Lock Fallback khi ngắt kết nối AI.
   - **Tiêu chí kiểm chứng**: 100% test cases trong `route.test.ts` (18/18 tests pass) và kịch bản Playwright E2E (`test_smart_ai_cv_b1_4_precision_e2e.py` 17 tests: 15 pass, bóc trần 2 lỗi biên tiềm ẩn), hoàn thành nghiệm thu thực tế Gate 4.
 
+---
+
+## Phase 30: Delta CR-2026-022 — Lưu Trữ Tệp CV Gốc Vào Storage & Cung Cấp Chu Kỳ Tải Chứng Từ Xác Minh [CR-2026-022]
+
+- [x] `T-05.CR022.01` **[BA][SPEC] Soạn thảo Basic Design Delta BD-DELTA-CR-022 & Change Request CR-2026-022**
+  - **Mục tiêu**: Thiết lập SSOT cho việc lưu trữ tệp vật lý gốc và chu trình tải chứng từ theo chuẩn Clean Architecture và PDPD.
+  - **Hành động kỹ thuật**:
+    + Tạo `Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/BD_DELTA_CR_022_RAW_CV_STORAGE_AND_DOCUMENT_LIFECYCLE.md`.
+    + Tạo `SourceCode/specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN/deltas/CR-2026-022_expert_raw_cv_storage_and_document_download.md`.
+  - **Tiêu chí kiểm chứng**: Đã tạo đầy đủ 2 tệp spec delta, được PO phê duyệt.
+
+- [x] `T-05.CR022.02` **[BE][STORAGE] Xây dựng script `store_original_expert_cvs.py` nạp 12 tệp vật lý vào Storage & CSDL**
+  - **Mục tiêu**: Lưu trữ vật lý 12 tệp CV từ `Specification/01_DATA_RAW/` vào `storage/experts/documents/` và nạp bản ghi `brokerage.expert_documents`.
+  - **Hành động kỹ thuật**:
+    + Tính toán SHA-256 và kích thước byte thực tế của từng tệp.
+    + Sinh StorageKey định dạng `experts/documents/{guid:N}{ext}` và lưu vào thư mục storage của Backend API.
+    + Insert 12 bản ghi vào `brokerage.expert_documents` với `document_type = 'CURRICULUM_VITAE'`, `malware_scan_status = 'CLEAN'`, `is_active = true`.
+  - **Tiêu chí kiểm chứng**: Check `SELECT count(*) FROM brokerage.expert_documents;` = 12, SHA-256 khớp 100% với tệp gốc.
+
+- [x] `T-05.CR022.03` **[BE][API] Kiểm thử & Tối ưu hóa 2 Endpoint Stream Tải Tài Liệu Kèm Phân Quyền Scoped RBAC**
+  - **Mục tiêu**: Đảm bảo tệp nhị phân được stream mượt mà, đúng Content-Type, Content-Disposition và bảo vệ PDPD.
+  - **Hành động kỹ thuật**:
+    + Endpoint Chuyên gia: `GET /api/v1/experts/me/documents/{documentId}/download`.
+    + Endpoint Quản trị / Sở: `GET /api/v1/admin/experts/{expertCode}/documents/{documentId}/download`.
+    + Kiểm tra và ngăn chặn các lỗi rò rỉ IDOR, trả về 401 cho anonymous và 403 cho cán bộ trái thẩm quyền.
+  - **Tiêu chí kiểm chứng**: Tải file qua curl trả về đúng byte stream nguyên vẹn, HTTP 200.
+
+- [x] `T-05.CR022.04` **[FE][UI] Cập Nhật Giao Diện Hồ Sơ Cá Nhân Chuyên Gia: Nút Tải CV Gốc & Thỏa Mãn Chứng Từ**
+  - **Mục tiêu**: Hiển thị nút tải CV gốc trong Private Panel và xóa cảnh báo thiếu chứng từ xác minh.
+  - **Hành động kỹ thuật**:
+    + Cập nhật `profile-detail.tsx`: Khi `activeDocumentTypes` chứa `CURRICULUM_VITAE`, render nút bấm "Tải Lý lịch khoa học gốc (.pdf/.doc)".
+    + Đảm bảo alert `CompletenessAlert` tính đủ điểm chứng từ và nâng hạng hồ sơ lên Hạng A.
+  - **Tiêu chí kiểm chứng**: Màn hình cá nhân có nút tải CV hoạt động, không còn alert cảnh báo thiếu chứng từ.
+
+- [x] `T-05.CR022.05` **[FE][UI] Cập Nhật Giao Diện Quản Trị Thẩm Định Của Cán Bộ Sở: Tải CV Đối Soát**
+  - **Mục tiêu**: Cho phép Cán bộ Sở bấm nút tải CV gốc trực tiếp tại hàng đợi duyệt hồ sơ `gov-approval-queue.tsx`.
+  - **Hành động kỹ thuật**:
+    + Tích hợp nút "Xem/Tải CV đính kèm" gọi API `/admin/experts/{code}/documents/{id}/download`.
+  - **Tiêu chí kiểm chứng**: Cán bộ Sở nhấp nút tải về đúng file PDF/DOC tương ứng của chuyên gia.
+
+- [x] `T-05.CR022.06` **[QC][TEST] Xây Dựng Bộ Test Tự Động Độc Lập `test_qc_expert_cv_storage_and_download.py` (Gate 4)**
+  - **Mục tiêu**: Thẩm định độc lập 4 tầng theo kỷ luật Zero-Mock.
+  - **Hành động kỹ thuật**:
+    + Kiểm tra SHA-256 và kích thước 12 tệp vật lý trong storage.
+    + Kiểm tra 12 bản ghi DB PostgreSQL.
+    + Kiểm tra stream tải file API chuyên gia và admin.
+    + Săn lỗi biên IDOR và kiểm tra visual evidence Playwright.
+  - **Tiêu chí kiểm chứng**: 100% test cases pass (18/18 test cases PASSED), xuất báo cáo `qc_cv_storage_execution_report.json` và chụp 2 ảnh bằng chứng Visual QA.
+
+- [x] `T-05.CR022.07` **[PO][GATE5] Nghiệm Thu Xuất Xưởng Gate 5 & Cập Nhật Master Roadmap**
+  - **Mục tiêu**: Thẩm định toàn trình Definition of Done và đóng Delta CR-2026-022.
+  - **Tiêu chí kiểm chứng**: Biên bản nghiệm thu Gate 5 có đầy đủ chữ ký PO và bằng chứng kiểm định của QC. Đạt chuẩn xuất xưởng 100%.
+
+
 
 
 

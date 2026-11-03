@@ -369,6 +369,38 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Bộ kiểm thử Unit/Integration Backend & Frontend** | `AC-DMD-01..04`, `QC-4-TIERS` | `Task 7.4` | `DemandApprovalLifecycleAndPrivacyTests.cs`, `page.test.tsx` | 29/29 .NET tests PASS, 5/5 Vitest PASS, Type check 0 lỗi |
 | **Kiểm định 4 tầng Black-box & E2E Playwright trên PostgreSQL thật** | `QC-4-TIERS`, `BR-DMD-STAT-01` | `Task 7.5` | `test_qc_cr_task03_delta01_lifecycle_and_privacy.py` | 4/4 User Journeys PASS 100% trên container `nacentech-postgres-1` (Guest, Owner, Cán bộ Sở duyệt, Hậu duyệt) |
 
+---
+
+## 29. TASK-08 Delta v3 (CR-TASK-08-DELTA-03): Hợp Nhất Hybrid Vector AI + Rule Engine 4 Trục & Zero-Mock Radar
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Động Cơ Ghép Nối Lai 4 Trục & Graceful Degradation Fallback** | `REQ-BRK-D3-01`, `BR-BRK-D3-01`, `API-BRK-D3-01` | `T058`, `T065` | `BrokerageMatchingEngineService.cs`, `DemandItemSubjectProvider.cs`, `SellerOfferSubjectProvider.cs` | Invariant Unit Tests `BrokerageHybridMatchingEngineInvariantsTests.cs` (38/38 PASS), Chaos Test `GracefulDegradationTests.cs` |
+| **Zero-Mock Radar XAI Breakdown & Tái Đối Soát Re-match** | `REQ-BRK-D3-02`, `API-BRK-D3-01` | `T057`, `T062`, `T066` | `src/app/portal/matching/radar/page.tsx`, `ConnectionRequestModal.tsx`, `services/api/brokerage.ts` | Vitest `page.test.tsx` (9/9 PASS), Playwright E2E TC-E2E-01 (triệt tiêu 100% mock text `"Lĩnh vực: 100% Khớp"`) |
+| **3D Scoped RBAC trên Radar Ghép Nối & Chống IDOR** | `REQ-BRK-D3-03` | `T059` | `BrokerageMatchingEngineService.cs`, `BrokerageControllers.cs` | Playwright E2E TC-E2E-05 (Buyer A vs B cách ly hoàn hảo, 401 Unauthorized khi thiếu Token) |
+| **Loại bỏ Concurrency Mutable State & Batch SQL Optimization** | `TEST-BRK-D3-03` | `T060`, `T063` | `MatchingService.cs`, `PostgresSearchIndex.cs` | Xóa bỏ `_lastReranked`, chuyển sang `SearchExecution.RerankedSubjects`, tối ưu `DeleteSubjectsBatchAsync` & chunk bulk upsert |
+| **Khắc phục 8 Khiếm Khuyết QC (DEFECT-BRK-01..08)** | `QC-GATE4-AUDIT` | Hotfix Rounds 1 & 2 | `BrokerageMatchingEngineService.cs`, `BrokerageControllers.cs`, `services/api/brokerage.ts` | QC Gate 4 phúc tra 3 vòng: 100% DEFECTs RESOLVED, Gate 4 PASS duyệt chính thức |
+
+---
+
+## 30. TASK-11: Hạ Tầng Liên Thông NDAChain & Bảo Chứng ZKProof (Phase 1 & Phase 2 Gate 3 Pass)
+
+| Yêu Cầu / Quy Tắc | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Động cơ Canonical JSON RFC 8785 (JCS)** | `REQ-BC-01`, `ADR-0017` | `T-11.02` | `CanonicalJsonSerializer.cs` | 5/5 Unit tests xUnit kiểm tra tính tất định tuyệt đối và băm SHA-256 đồng nhất; PASS |
+| **Động cơ Cây Merkle Nhị Phân Cân Bằng** | `REQ-BC-02`, `ADR-0017` | `T-11.03` | `BinaryMerkleTreeEngine.cs`, `IMerkleTreeEngine.cs` | 5/5 Unit tests xUnit dựng cây từ 1..100 lá, nhân đôi lá lẻ và verify Audit Path $O(\log N)$; PASS |
+| **Động cơ Mật mã học Native ZKProof** | `REQ-BC-03`, `ADR-0017` | `T-11.04` | `NativeZkProofEngine.cs`, `IZkProofService.cs` | 3/3 Unit tests xUnit sinh Salt ngẫu nhiên 256-bit, Salted Commitment và SnarkJS Groth16 Envelope; PASS |
+| **Domain Aggregates & Invariants BR-BC-01..08** | `REQ-BC-04`, `BR-BC-01..08` | `T-11.05` | `AnchorPolicy.cs`, `AnchorRecord.cs`, `LedgerBlock.cs`, `ZkProofVaultRecord.cs`, `BridgeSyncLog.cs` | 9/9 Invariant tests xUnit bao phủ 100% quy tắc bất biến; PASS |
+| **Schema CSDL `blockchain.*` 5 Bảng PostgreSQL 16** | `REQ-BC-05`, `FACT_TASK11` | `T-11.01`, `T-11.06` | `BlockchainDbContextConfig.cs`, `20261103000000_AddBlockchainModuleSchema.cs` | CSDL PostgreSQL 16 thật (`nacentech-postgres-1`) tạo đủ 5 bảng; `fact-forcing-guard.py` PASS; PASS |
+| **Local Sovereign Ledger Adapter & ECDSA Signing** | `REQ-BC-06`, `BR-BC-03..06` | `T-11.07` | `PlatformKeyManager.cs`, `LocalSovereignLedgerAdapter.cs` | 4/4 Unit tests xUnit tạo Genesis #0, xâu chuỗi PreviousHash SHA-256, khóa `pg_advisory_xact_lock(778899)`; PASS |
+| **Đầu Chờ NDAChain Gateway EVM PoA & did:nda** | `REQ-BC-07`, `ADR-0017` | `T-11.08` | `NdaChainGatewayAdapter.cs`, `INdaChainGatewayAdapter.cs` | 4/4 Unit tests xUnit encode ABI `anchorMerkleRoot`, định danh `did:nda`, Circuit Breaker timeout 3000ms; PASS |
+| **Transactional Outbox Job Handler** | `REQ-BC-08`, `BR-BC-01..02` | `T-11.09` | `BlockchainAnchorJobHandler.cs`, `BlockchainAnchorJob.cs` | 2/2 Unit tests xUnit gom lô theo threshold $\ge 10$ hoặc timeout 5 phút, tự động flush khối; PASS |
+| **NdaChain Bridge Sync Background Worker** | `REQ-BC-09` | `T-11.10` | `NdaChainBridgeSyncWorker.cs`, `BridgeSyncLog.cs` | 1/1 Unit test xUnit quét khối nội bộ, đồng bộ bù lên NDAChain và ghi log CSDL; PASS |
+| **Thuật Toán Kiểm Chứng 4 Bước Tamper-Evidence** | `REQ-BC-10`, `ADR-0017` | `T-11.11` | `BlockchainVerificationService.cs` | 2/2 Unit tests xUnit: dữ liệu toàn vẹn $\rightarrow$ `VERIFIED`, sửa 1 ký tự payload $\rightarrow$ phát hiện `TAMPERED`; PASS |
+| **REST API Controllers & 3D Scoped RBAC** | `REQ-BC-11..12` | `T-11.12` | `BlockchainAdminController.cs`, `BlockchainPublicController.cs` | 3/3 Unit tests xUnit: Admin 200 OK, Unauthorized 403 Forbid, Public verify live 200 OK; PASS |
+
+
+
 
 
 

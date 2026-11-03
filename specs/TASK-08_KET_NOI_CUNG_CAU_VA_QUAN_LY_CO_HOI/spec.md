@@ -2,9 +2,9 @@
 
 **Feature Branch**: `brokerage-matching-dealroom`  
 **Feature Directory**: `specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI`  
-**Version**: 1.14.0  
+**Version**: 1.15.0  
 **Created**: 11/10/2026  
-**Status**: In Progress (Gate 1 - DoR Approved for CR-TASK-08-DELTA-02)  
+**Status**: In Progress (Gate 1 - DoR Approved for CR-TASK-08-DELTA-03)  
 **Ánh Xạ Basic Design**: 
 - Master Basic Design: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 5.4 Phân hệ 08 & Mục 17 PO-DEC-20261030-05)
 - Phân hệ Basic Design: [`Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md`](../../Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md)  
@@ -441,6 +441,58 @@ Phân hệ tuân thủ nghiêm ngặt chuẩn hiển thị 5 UX States qua compo
 | **`REQ-BRK-09`** | `BR-BRK-08` | `AC-BUYER-04`, `AC-BUYER-06` | `UI-SELLER-INBOX-001` (`/portal/seller/connection-requests/page.tsx`) | `GET /api/v1/brokerage/requests`, `PUT /requests/{id}/respond` | `seller-connection-requests.test.tsx` |
 | **`REQ-BRK-10`** | `BR-BRK-08` | `AC-BUYER-05` | `UI-SELLER-KANBAN-001` (`/portal/opportunities/pipeline/page.tsx`) | `GET /api/v1/brokerage/opportunities`, `PUT /opportunities/{id}/stage` | `opportunities-pipeline.test.tsx` |
 | **`REQ-BRK-11`** | `BR-BRK-09` | `AC-BUYER-04`, `AC-BUYER-05`, `AC-BUYER-07` | `SourceCode/frontend/src/app/portal/layout.tsx` | N/A (Frontend Router & Layout) | `portal-layout-navigation.test.tsx` |
+
+---
+
+## 10. ĐẶC TẢ DELTA CR-TASK-08-DELTA-03: HỢP NHẤT HYBRID VECTOR AI + RULE ENGINE 4 TRỤC & ZERO-MOCK RADAR
+
+> **Căn cứ**: [`CR-TASK-08-DELTA-03.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/deltas/CR-TASK-08-DELTA-03.md), Quyết định `PO-DEC-20261102-05` tại [`Specification/BASIC_DESIGN_NACENTECH.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/BASIC_DESIGN_NACENTECH.md) Mục 5.4.1, 5.4.3 & Mục 23.  
+> **SemVer Target**: `1.15.0`  
+> **Trạng thái**: `APPROVED` (Gate 1 - DoR Approved)
+
+### 10.1. Các Mỏ Neo Nghiệp Vụ Bất Biến Bổ Sung (Immutable Anchors)
+
+- **`REQ-BRK-D3-01` (Động Cơ Ghép Nối Lai Hybrid Vector AI + Rule Engine 4 Trục & Graceful Degradation)**:
+  * Backend MUST cung cấp `BrokerageMatchingEngineService` kết hợp nguồn dữ liệu Cung - Cầu thực tế từ `demand.demand_items` và `technology.seller_technology_offers` thông qua `DemandItemSubjectProvider` và `SellerOfferSubjectProvider` kế thừa `ISubjectResolver` của Kernel.
+  * Tổng điểm ghép nối (`OverallMatchScore`) MUST được tính toán theo tỷ lệ chuẩn hóa 4 trục của `BR-BRK-D3-01`: Semantic Vector AI 40%, TRL tương thích 30%, TNI cấp thiết 15%, IP bảo hộ SHTT 15%.
+  * Cơ chế tự động suy biến khả dụng (**Graceful Degradation**): Khi Python AI Sidecar (port 8003) gặp sự cố hoặc timeout quá 1.5s, hệ thống tự động fallback về PostgreSQL Full-Text Search (`tsvector` kết hợp `immutable_unaccent`), gán cờ `isDegraded = true` và `semanticEngine = "POSTGRES_FTS_FALLBACK"`, tuyệt đối không báo lỗi HTTP 500 ra client.
+
+- **`REQ-BRK-D3-02` (Zero-Mock Radar XAI Breakdown & Tái Đối Soát Re-match)**:
+  * Màn hình Radar (`/portal/matching/radar`) MUST hiển thị thẻ giải trình AI (XAI Breakdown) bóc tách chính xác 4 chỉ số thành phần thực tế từ Backend DTO (`API-BRK-D3-01`).
+  * Triệt tiêu 100% dòng text mock tĩnh (`"Lĩnh vực: 100% Khớp"`).
+  * Giao diện MUST cung cấp nút CTA "Tính toán lại đối soát (Re-match)" gọi endpoint `POST /api/v1/brokerage/radar/recompute` để kích hoạt engine quét lại Cung - Cầu theo thời gian thực.
+
+- **`REQ-BRK-D3-03` (3D Scoped RBAC trên Radar Ghép Nối)**:
+  * Bên Mua (`BUYER`): Chỉ thấy các gợi ý ghép nối gắn với bài toán nhu cầu do mình sở hữu (`CreatedBy == Actor.PersonId` hoặc `BuyerOrgId == Actor.OrganizationId`).
+  * Bên Bán (`SELLER`): Chỉ thấy các gợi ý ghép nối gắn với công nghệ chào bán do tổ chức mình sở hữu.
+  * Cán bộ Sở KH&CN (`PROVINCIAL_ADMIN`): Xem toàn cảnh địa bàn tỉnh phụ trách.
+  * Quản trị Toàn quốc (`SUPER_ADMIN`): Xem toàn cảnh toàn sàn.
+
+- **`BR-BRK-D3-01` (Công Thức Tính Điểm 4 Trục & Thuật Toán Fallback)**:
+  $$\text{MatchScore} = \text{Round}\left(0.40 \times S_{\text{semantic}} + 0.30 \times S_{\text{trl}} + 0.15 \times S_{\text{tni}} + 0.15 \times S_{\text{ip}}\right)$$
+  * $S_{\text{semantic}} \in [0, 100]$: Normalized BGE-M3 Vector Cosine + Rerank; khi fallback: $S_{\text{semantic}} = \text{Clamp}(\text{ts\_rank\_cd} \times 120, 0, 100) + 15$ điểm nếu cùng `sector_code`.
+  * $S_{\text{trl}} \in [0, 100]$: Seller TRL $\ge 7 \rightarrow 100$; TRL lệch $0 \rightarrow 100, 1 \rightarrow 85, 2 \rightarrow 65, \ge 3 \rightarrow 40$.
+  * $S_{\text{tni}} \in [0, 100]$: Trực tiếp từ `demand.demand_items.tni_score`.
+  * $S_{\text{ip}} \in [0, 100]$: `PATENT_GRANTED` (100), `PATENT_PENDING` (60), `TRADE_SECRET` (50), `NONE` (20).
+
+- **`API-BRK-D3-01` (Hợp Đồng API Radar XAI DTOs & Recompute Endpoint)**:
+  * `GET /api/v1/brokerage/radar`: Trả về danh sách ứng viên mang khối `xaiBreakdown` 4 trục thực tế và cờ `isDegraded`.
+  * `POST /api/v1/brokerage/radar/recompute`: Kích hoạt engine quét lại và trả về kết quả số lượng cặp đối soát mới.
+
+- **`TEST-BRK-D3-01..04` (Kiểm Thử 4 Tầng Toàn Diện)**:
+  * `TEST-BRK-D3-01`: Unit test thuật toán 4 trục và các giá trị biên.
+  * `TEST-BRK-D3-02`: Contract test Radar XAI DTO không có giá trị null hoặc mock.
+  * `TEST-BRK-D3-03`: Concurrency test cho `MatchingService` chứng minh thread-safety khi bỏ `_lastReranked`.
+  * `TEST-BRK-D3-04`: Chaos test ngắt Python sidecar chứng minh hệ thống tự động fallback FTS mà không crash.
+
+### 10.2. Ma Trận Truy Vết Khép Kín Bổ Sung (Traceability Matrix Delta CR-03)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Thành Phần UI (UI Component) | Hợp Đồng API (API Endpoint) | Kiểm Thử Tự Động (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`REQ-BRK-D3-01`** | **`BR-BRK-D3-01`** | Điểm 4 trục tính đúng trọng số; tự động fallback PostgreSQL FTS khi sidecar lỗi | N/A (Backend Core Engine) | `BrokerageMatchingEngineService` | `TEST-BRK-D3-01`, `TEST-BRK-D3-04` (`HybridMatchingEngineTests.cs`, `GracefulDegradationTests.cs`) |
+| **`REQ-BRK-D3-02`** | **`BR-BRK-D3-01`** | Radar hiển thị 4 điểm số thật; 0% mock text; nút Re-match hoạt động mượt mà | `SourceCode/frontend/.../matching/radar/page.tsx` | `API-BRK-D3-01` (`GET /api/v1/brokerage/radar`, `POST /radar/recompute`) | `TEST-BRK-D3-02` (`radar/page.test.tsx`) |
+| **`REQ-BRK-D3-03`** | `BR-08.12` | Buyer chỉ thấy demand của mình; Seller chỉ thấy offer của mình | `SourceCode/frontend/.../matching/radar/page.tsx` | `GET /api/v1/brokerage/radar` (Scoped RBAC) | `ScopedRadarRbacTests.cs` |
+
 
 
 
