@@ -17,6 +17,10 @@ const config: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/assessments/tt17/wizard",
+        destination: "/dieu-tra-trinh-do-nang-luc",
+      },
+      {
         source: "/api/v1/:path*",
         destination: "http://localhost:5080/api/v1/:path*",
       },

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-describe("QC Gate 4 Typography Verification (Nunito Sans + Lora Standard DVCQG)", () => {
+describe("QC Gate 4 Typography Verification (Be Vietnam Pro + JetBrains Mono Standard DVCQG)", () => {
   const layoutContent = readFileSync(resolve("src/app/layout.tsx"), "utf8");
   const globalsContent = readFileSync(resolve("src/app/globals.css"), "utf8");
   const navbarContent = readFileSync(resolve("src/components/common/navbar.tsx"), "utf8");
@@ -10,9 +10,9 @@ describe("QC Gate 4 Typography Verification (Nunito Sans + Lora Standard DVCQG)"
   const fontsizeContent = readFileSync(resolve("src/components/common/fontsize-control.tsx"), "utf8");
 
   describe("Item 1: Header & Navigation Breakpoints", () => {
-    it("configures desktop navigation to flex at xl (1280px) and hide below xl to prevent mid-screen menu wrapping", () => {
-      expect(navbarContent).toContain("hidden flex-1 items-center justify-center gap-0.5 2xl:gap-1 xl:flex");
-      expect(navbarContent).toContain("xl:hidden");
+    it("configures desktop navigation to flex at lg (1024px) and hide below lg to prevent mid-screen menu wrapping", () => {
+      expect(navbarContent).toContain("hidden flex-1 items-center justify-center gap-0.5 2xl:gap-1 lg:flex");
+      expect(navbarContent).toContain("lg:hidden");
     });
 
     it("uses whitespace-nowrap and compact spacing on desktop links to prevent line breaks", () => {
@@ -55,18 +55,18 @@ describe("QC Gate 4 Typography Verification (Nunito Sans + Lora Standard DVCQG)"
   });
 
   describe("Item 5: UTF-8 Vietnamese Font Subsets & Typography Setup", () => {
-    it("loads Nunito Sans and Lora from next/font/google with vietnamese subsets and swap display", () => {
-      expect(layoutContent).toContain('import { Nunito_Sans, Lora } from "next/font/google";');
+    it("loads Be Vietnam Pro and JetBrains Mono from next/font/google with vietnamese subsets and swap display", () => {
+      expect(layoutContent).toContain('import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";');
       expect(layoutContent).toContain('subsets: ["vietnamese", "latin"]');
       expect(layoutContent).toContain('display: "swap"');
-      expect(layoutContent).toContain("--font-nunito-sans");
-      expect(layoutContent).toContain("--font-lora");
+      expect(layoutContent).toContain("--font-be-vietnam-pro");
+      expect(layoutContent).toContain("--font-jetbrains-mono");
     });
 
-    it("maps --font-sans to Nunito Sans and --font-heading/--font-serif to Lora", () => {
-      expect(globalsContent).toContain("--font-sans: var(--font-nunito-sans), ui-sans-serif, system-ui, sans-serif;");
-      expect(globalsContent).toContain("--font-heading: var(--font-lora), ui-serif, Georgia, serif;");
-      expect(globalsContent).toContain("--font-serif: var(--font-lora), ui-serif, Georgia, serif;");
+    it("maps --font-sans to Be Vietnam Pro and --font-heading/--font-serif to Be Vietnam Pro", () => {
+      expect(globalsContent).toContain("--font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;");
+      expect(globalsContent).toContain("--font-heading: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;");
+      expect(globalsContent).toContain("--font-serif: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;");
     });
   });
 

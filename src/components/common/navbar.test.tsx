@@ -127,7 +127,7 @@ describe("Navbar account menu", () => {
     expect(dmstLink).toHaveAttribute("href", "/khao-sat-dmst");
 
     const tt17Link = within(mainNav).getByRole("link", { name: /Đánh giá Năng lực TT 17/i });
-    expect(tt17Link).toHaveAttribute("href", "/assessments/tt17/wizard");
+    expect(tt17Link).toHaveAttribute("href", "/dieu-tra-trinh-do-nang-luc");
   });
 
   it("renders Dịch vụ khác dropdown containing TT17, SHTT, valuation, enterprise and Radar links", () => {
@@ -138,7 +138,7 @@ describe("Navbar account menu", () => {
     expect(servicesTrigger).toHaveAttribute("href", "/dich-vu-khac");
 
     const tt17ServicesLink = within(mainNav).getByRole("link", { name: /Đánh giá Trình độ DN \(TT 17\)/i });
-    expect(tt17ServicesLink).toHaveAttribute("href", "/assessments/tt17/wizard");
+    expect(tt17ServicesLink).toHaveAttribute("href", "/dieu-tra-trinh-do-nang-luc");
     expect(within(tt17ServicesLink).getByText("TT 17")).toBeInTheDocument();
 
     const shttLink = within(mainNav).getByRole("link", { name: /Tư vấn & Bảo hộ SHTT/i });
@@ -175,5 +175,31 @@ describe("Navbar account menu", () => {
     // Click trigger toggles dropdown back on
     fireEvent.click(expertTrigger);
     expect(expertTrigger).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("renders Giới thiệu dropdown containing guide, wireframes, and legal framework, and excludes top-level Hướng dẫn", () => {
+    render(<Navbar />);
+
+    const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
+
+    // Top-level item Hướng dẫn must be removed
+    expect(within(mainNav).queryByRole("link", { name: /^Hướng dẫn$/i })).not.toBeInTheDocument();
+
+    // Giới thiệu trigger exists
+    const aboutTrigger = within(mainNav).getByRole("link", { name: /^Giới thiệu$/i });
+    expect(aboutTrigger).toHaveAttribute("href", "/gioi-thieu");
+
+    // Contains the 2 moved items and original items
+    const guideLink = within(mainNav).getByRole("link", { name: /Trung tâm Hướng dẫn Toàn trình/i });
+    expect(guideLink).toHaveAttribute("href", "/huong-dan");
+
+    const wireframesLink = within(mainNav).getByRole("link", { name: /Sơ đồ Kiến trúc Chức năng/i });
+    expect(wireframesLink).toHaveAttribute("href", "/wireframes");
+
+    const aboutSubLink = within(mainNav).getByRole("link", { name: /Về Viện NacenTech & NacenTwin/i });
+    expect(aboutSubLink).toHaveAttribute("href", "/gioi-thieu");
+
+    const matrixLink = within(mainNav).getByRole("link", { name: /Khung Pháp lý & Chuẩn mực/i });
+    expect(matrixLink).toHaveAttribute("href", "/matrix");
   });
 });

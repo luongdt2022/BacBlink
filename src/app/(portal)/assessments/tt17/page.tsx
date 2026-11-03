@@ -67,7 +67,7 @@ export default function AssessmentDashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/assessments/tt17/wizard">
+          <Link href="/dieu-tra-trinh-do-nang-luc">
             <AppButton variant="primary">
               <Sparkles className="w-4 h-4 mr-2" />
               {displayLatest ? "Kê Khai Kỳ Mới" : "Bắt Đầu Kê Khai Khảo Sát"}
@@ -152,7 +152,7 @@ export default function AssessmentDashboardPage() {
               </div>
 
               <div className="pt-3 flex flex-wrap items-center gap-4">
-                <Link href="/assessments/tt17/wizard">
+                <Link href="/dieu-tra-trinh-do-nang-luc">
                   <AppButton variant="primary" className="px-6 py-3 text-base font-bold shadow-md hover:shadow-lg transition">
                     <Sparkles className="w-5 h-5 mr-2" />
                     Bắt Đầu Kê Khai Khảo Sát Ngay (Mở Form)
@@ -438,7 +438,7 @@ export default function AssessmentDashboardPage() {
                               </button>
                             </Link>
                             {item.status === "DRAFT" && (
-                              <Link href="/assessments/tt17/wizard">
+                              <Link href="/dieu-tra-trinh-do-nang-luc">
                                 <button className="px-3 py-1.5 rounded-lg bg-brand-700 text-white text-xs font-semibold hover:bg-brand-800">
                                   Kê Khai Tiếp
                                 </button>

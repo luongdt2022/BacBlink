@@ -4,9 +4,10 @@
 
 /* NacenTwin design tokens: shared by public, member and administration surfaces. */
 @theme {
-  --font-sans: var(--font-nunito-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-lora), ui-serif, Georgia, serif;
-  --font-serif: var(--font-lora), ui-serif, Georgia, serif;
+  --font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-be-vietnam-pro: var(--font-sans);
   --color-brand-50: #f0f3f9;
   --color-brand-100: #e0e6f2;

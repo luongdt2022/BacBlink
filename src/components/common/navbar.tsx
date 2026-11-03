@@ -85,7 +85,6 @@ export function Navbar() {
     "/doanh-nghiep-dmst": false,
     "/chuyen-gia": true,
     "/dich-vu-khac": false,
-    "/huong-dan": false,
   });
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
@@ -192,15 +191,21 @@ export function Navbar() {
         },
         {
           href: "/huong-dan",
-          label: "Cẩm nang Hướng dẫn Sử dụng",
-          description: "Tài liệu thao tác chuẩn hóa cho Doanh nghiệp, Viện trường & Chuyên gia",
+          label: "Trung tâm Hướng dẫn Toàn trình",
+          description: "Cẩm nang thao tác chuẩn hóa cho Doanh nghiệp, Chuyên gia & Cán bộ",
           icon: Compass,
+        },
+        {
+          href: "/wireframes",
+          label: "Sơ đồ Kiến trúc Chức năng",
+          description: "Sơ đồ wireframe và phân rã các luồng giao diện hệ thống",
+          icon: Layers,
         },
         {
           href: "/matrix",
           label: "Khung Pháp lý & Chuẩn mực",
           description: "Nghị định 13/2023, Thông tư 17/2019 và Thang đo TRL 1-9",
-          icon: Layers,
+          icon: ShieldCheck,
         },
       ],
     },
@@ -294,7 +299,7 @@ export function Navbar() {
           icon: Sparkles,
         },
         {
-          href: "/assessments/tt17/wizard",
+          href: "/dieu-tra-trinh-do-nang-luc",
           label: "Đánh giá Năng lực TT 17/2019",
           description: "Tự đánh giá 26 tiêu chí định lượng 5 nhóm THIOC theo Thông tư 17",
           icon: Award,
@@ -334,7 +339,7 @@ export function Navbar() {
       alignRight: true,
       children: [
         {
-          href: "/assessments/tt17/wizard",
+          href: "/dieu-tra-trinh-do-nang-luc",
           label: "Đánh giá Trình độ DN (TT 17)",
           description: "Tự đánh giá 26 tiêu chí định lượng 5 nhóm THIOC theo Thông tư 17/2019/TT-BKHCN",
           icon: FileText,
@@ -364,26 +369,6 @@ export function Navbar() {
           description: "Bản đồ radar thuật toán AI tự động tìm đối tác công nghệ tương thích",
           icon: Radar,
           badge: "AI",
-        },
-      ],
-    },
-    {
-      href: "/huong-dan",
-      label: t("user_guide") || "Hướng dẫn",
-      icon: Compass,
-      alignRight: true,
-      children: [
-        {
-          href: "/huong-dan",
-          label: "Trung tâm Hướng dẫn Toàn trình",
-          description: "Cẩm nang thao tác chuẩn hóa cho Doanh nghiệp, Chuyên gia & Cán bộ",
-          icon: Compass,
-        },
-        {
-          href: "/wireframes",
-          label: "Sơ đồ Kiến trúc Chức năng",
-          description: "Sơ đồ wireframe và phân rã các luồng giao diện hệ thống",
-          icon: Layers,
         },
       ],
     },

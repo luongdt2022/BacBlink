@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
-import { Nunito_Sans, Lora } from "next/font/google";
+import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/common/theme-provider";
 import { I18nProvider } from "@/components/common/i18n-provider";
@@ -10,17 +10,17 @@ import { Footer } from "@/components/common/footer";
 import { AIAssistantWidget } from "@/components/home/AIAssistantWidget";
 import { NavigationProgress } from "@/components/common/navigation-progress";
 
-const nunitoSans = Nunito_Sans({
+const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["vietnamese", "latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-nunito-sans",
+  variable: "--font-be-vietnam-pro",
   display: "swap",
 });
 
-const lora = Lora({
-  subsets: ["vietnamese", "latin"],
-  weight: ["600", "700"],
-  variable: "--font-lora",
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jetbrains-mono",
   display: "swap",
 });
 
@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${nunitoSans.variable} ${lora.variable}`} suppressHydrationWarning>
+    <html lang="vi" className={`${beVietnamPro.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
         <ThemeProvider>
           <I18nProvider>

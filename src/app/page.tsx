@@ -269,11 +269,6 @@ export default function HomePage() {
     }
   };
 
-  const handleKeywordClick = (kw: string) => {
-    setQuery(kw);
-    router.push(`/chao-ban-cong-nghe?q=${encodeURIComponent(kw)}`);
-  };
-
   const listings = listingType === "offers" ? offers : demands;
 
   const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
@@ -301,71 +296,28 @@ export default function HomePage() {
               Kết nối cung – cầu công nghệ, <br className="hidden sm:block" />
               thúc đẩy đổi mới sáng tạo
             </h1>
-            <p className="mx-auto mt-3 sm:mt-5 max-w-2xl text-xs sm:text-body lg:text-body-lg text-white/85 leading-relaxed">
-              Nền tảng do Viện Đổi Mới Sáng Tạo Quốc Gia vận hành, giúp doanh nghiệp, nhà khoa học và nhà đầu tư tìm kiếm,
-              chuyển giao và ứng dụng công nghệ một cách nhanh chóng, minh bạch.
+            <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-xs sm:text-base text-white/85 leading-relaxed">
+              Cổng kết nối cung – cầu, chuyển giao và thương mại hóa công nghệ Quốc gia do Viện Đổi Mới Sáng Tạo Quốc Gia vận hành.
             </p>
 
-            <form className="mx-auto mt-5 sm:mt-8 flex max-w-xl flex-col gap-2.5 sm:flex-row sm:gap-3" onSubmit={handleSearch}>
+            <form className="mx-auto mt-6 sm:mt-8 flex max-w-xl flex-col gap-2.5 sm:flex-row sm:gap-3" onSubmit={handleSearch}>
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3.5 sm:left-4 top-1/2 size-4.5 sm:size-5 -translate-y-1/2 text-slate-400" />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Tìm công nghệ, lĩnh vực, đơn vị chuyển giao..."
+                  placeholder="Tìm kiếm công nghệ, nhu cầu kết nối, chuyên gia..."
                   className="focus-ring h-11 sm:h-12 w-full rounded-xl border-0 bg-white py-2.5 sm:py-3 pl-10 sm:pl-11 pr-4 text-sm sm:text-base text-text-primary shadow-lg placeholder:text-slate-400"
                 />
               </div>
               <button
                 type="submit"
-                className="focus-ring h-11 sm:h-12 rounded-xl bg-nacen-green-500 px-5 sm:px-6 text-sm font-bold text-white transition hover:bg-nacen-green-600 shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+                className="focus-ring h-11 sm:h-12 rounded-xl bg-nacen-green-500 px-5 sm:px-6 text-sm font-bold text-white transition hover:bg-nacen-green-600 shadow-md cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
               >
                 <Search className="size-4 sm:hidden" />
                 <span>Tìm kiếm</span>
               </button>
             </form>
-
-            <div className="mt-3.5 sm:mt-4 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs text-white/80">
-              <span className="text-white/60 text-[11px] sm:text-xs">Gợi ý tìm kiếm:</span>
-              {["AI thị giác máy", "Năng lượng xanh", "Tự động hóa", "Vật liệu Nano"].map((kw) => (
-                <button
-                  key={kw}
-                  type="button"
-                  onClick={() => handleKeywordClick(kw)}
-                  className="rounded-full bg-white/10 px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs text-white/90 hover:bg-white/20 transition backdrop-blur-sm cursor-pointer"
-                >
-                  {kw}
-                </button>
-              ))}
-            </div>
-
-            {/* Quick National Tool Links */}
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
-              <Link
-                href="/khao-sat-dmst"
-                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-emerald-300 hover:text-emerald-200 hover:bg-white/15 transition backdrop-blur-xs"
-              >
-                <ClipboardCheck className="size-3.5" /> Khảo sát ĐMST (43 câu) &rarr;
-              </Link>
-              <Link
-                href="/khao-sat-nhu-cau"
-                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-white/15 transition backdrop-blur-xs"
-              >
-                <Target className="size-3.5" /> Khảo sát TNI &rarr;
-              </Link>
-              <Link
-                href="/assessments/tt17/wizard"
-                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-cyan-300 hover:text-cyan-200 hover:bg-white/15 transition backdrop-blur-xs"
-              >
-                <Award className="size-3.5" /> Đánh giá TT17 &rarr;
-              </Link>
-              <Link
-                href="/trien-lam"
-                className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-amber-200 hover:text-white hover:bg-white/15 transition backdrop-blur-xs"
-              >
-                <Sparkles className="size-3.5" /> Sàn Sự Kiện Techmart &rarr;
-              </Link>
-            </div>
           </div>
 
           {/* REALTIME METRICS STRIP (Khối Thống kê thời gian thực có chuẩn 5 UX States) */}
@@ -373,13 +325,15 @@ export default function HomePage() {
             <Async
               state={statsState}
               loadingSkeleton={
-                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-4 animate-pulse">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="text-center bg-white/10 rounded-xl p-3 sm:p-4">
-                      <div className="h-6 sm:h-8 w-20 sm:w-24 bg-white/20 rounded mx-auto mb-2" />
-                      <div className="h-3 sm:h-4 w-28 sm:w-32 bg-white/20 rounded mx-auto" />
-                    </div>
-                  ))}
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md p-1.5 sm:p-2 animate-pulse">
+                  <div className="grid grid-cols-2 divide-y divide-white/10 sm:grid-cols-4 sm:divide-y-0 sm:divide-x sm:divide-white/10">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="flex flex-col items-center justify-center p-3 sm:py-4 px-2">
+                        <div className="h-7 sm:h-9 w-16 sm:w-20 bg-white/20 rounded-lg mb-2" />
+                        <div className="h-3.5 sm:h-4 w-24 sm:w-28 bg-white/15 rounded-md" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               }
               errorContent={
@@ -395,64 +349,78 @@ export default function HomePage() {
                 </div>
               }
             >
-              <dl className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-4">
-                <Link
-                  href="/chao-ban-cong-nghe"
-                  className="group block text-center rounded-xl bg-white/5 p-2.5 sm:p-3.5 backdrop-blur-sm transition hover:bg-white/10 hover:shadow-md"
-                >
-                  <dd className="text-2xl font-bold sm:text-3xl lg:text-4xl text-white group-hover:text-cyan-300 transition">
-                    {statsData?.totalOffers !== undefined ? statsData.totalOffers.toLocaleString("vi-VN") : "0"}
-                  </dd>
-                  <dt className="mt-1 sm:mt-1.5 text-[11px] sm:text-xs font-medium text-white/80 group-hover:text-white transition">
-                    Công nghệ chào bán &rarr;
-                  </dt>
-                </Link>
+              <div className="rounded-2xl border border-white/15 bg-white/[0.06] backdrop-blur-md p-1 sm:p-1.5 shadow-xl shadow-brand-950/20">
+                <dl className="grid grid-cols-2 divide-y divide-white/10 sm:grid-cols-4 sm:divide-y-0 sm:divide-x sm:divide-white/10">
+                  <Link
+                    href="/chao-ban-cong-nghe"
+                    title="Sàn chào bán công nghệ"
+                    aria-label="Công nghệ chào bán"
+                    className="group flex flex-col items-center justify-center p-3 sm:py-4 px-2 sm:px-3 rounded-xl transition duration-200 hover:bg-white/[0.08]"
+                  >
+                    <dd className="text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl text-white group-hover:text-cyan-300 transition">
+                      {statsData?.totalOffers !== undefined ? statsData.totalOffers.toLocaleString("vi-VN") : "0"}
+                    </dd>
+                    <dt className="mt-1 sm:mt-1.5 text-xs sm:text-sm font-medium text-white/75 group-hover:text-white transition flex items-center justify-center gap-1">
+                      <span>Công nghệ chào bán</span>
+                      <ArrowRight className="size-3 opacity-50 transition-transform group-hover:opacity-100 group-hover:translate-x-0.5" />
+                    </dt>
+                  </Link>
 
-                <Link
-                  href="/nhu-cau-cong-nghe"
-                  className="group block text-center rounded-xl bg-white/5 p-2.5 sm:p-3.5 backdrop-blur-sm transition hover:bg-white/10 hover:shadow-md"
-                >
-                  <dd className="text-2xl font-bold sm:text-3xl lg:text-4xl text-white group-hover:text-emerald-300 transition">
-                    {statsData?.totalDemands !== undefined ? statsData.totalDemands.toLocaleString("vi-VN") : "0"}
-                  </dd>
-                  <dt className="mt-1 sm:mt-1.5 text-[11px] sm:text-xs font-medium text-white/80 group-hover:text-white transition">
-                    Nhu cầu đặt hàng &rarr;
-                  </dt>
-                </Link>
+                  <Link
+                    href="/nhu-cau-cong-nghe"
+                    title="Bảng nhu cầu công nghệ"
+                    aria-label="Nhu cầu đặt hàng"
+                    className="group flex flex-col items-center justify-center p-3 sm:py-4 px-2 sm:px-3 rounded-xl transition duration-200 hover:bg-white/[0.08]"
+                  >
+                    <dd className="text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl text-white group-hover:text-emerald-300 transition">
+                      {statsData?.totalDemands !== undefined ? statsData.totalDemands.toLocaleString("vi-VN") : "0"}
+                    </dd>
+                    <dt className="mt-1 sm:mt-1.5 text-xs sm:text-sm font-medium text-white/75 group-hover:text-white transition flex items-center justify-center gap-1">
+                      <span>Nhu cầu đặt hàng</span>
+                      <ArrowRight className="size-3 opacity-50 transition-transform group-hover:opacity-100 group-hover:translate-x-0.5" />
+                    </dt>
+                  </Link>
 
-                <Link
-                  href="/trien-lam"
-                  className="group block text-center rounded-xl bg-white/5 p-2.5 sm:p-3.5 backdrop-blur-sm transition hover:bg-white/10 hover:shadow-md"
-                >
-                  <dd className="text-2xl font-bold sm:text-3xl lg:text-4xl text-white group-hover:text-amber-300 transition">
-                    {statsData?.totalSuccessfulConnections !== undefined
-                      ? statsData.totalSuccessfulConnections.toLocaleString("vi-VN")
-                      : "0"}
-                  </dd>
-                  <dt className="mt-1 sm:mt-1.5 text-[11px] sm:text-xs font-medium text-white/80 group-hover:text-white transition">
-                    Kết nối thành công & MOU &rarr;
-                  </dt>
-                </Link>
+                  <Link
+                    href="/trien-lam"
+                    title="Kết nối cung cầu và ký kết MOU"
+                    aria-label="Kết nối thành công & MOU"
+                    className="group flex flex-col items-center justify-center p-3 sm:py-4 px-2 sm:px-3 rounded-xl transition duration-200 hover:bg-white/[0.08]"
+                  >
+                    <dd className="text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl text-white group-hover:text-amber-300 transition">
+                      {statsData?.totalSuccessfulConnections !== undefined
+                        ? statsData.totalSuccessfulConnections.toLocaleString("vi-VN")
+                        : "0"}
+                    </dd>
+                    <dt className="mt-1 sm:mt-1.5 text-xs sm:text-sm font-medium text-white/75 group-hover:text-white transition flex items-center justify-center gap-1">
+                      <span>Kết nối & MOU</span>
+                      <ArrowRight className="size-3 opacity-50 transition-transform group-hover:opacity-100 group-hover:translate-x-0.5" />
+                    </dt>
+                  </Link>
 
-                <Link
-                  href="/portal/opportunities/pipeline"
-                  className="group block text-center rounded-xl bg-white/5 p-2.5 sm:p-3.5 backdrop-blur-sm transition hover:bg-white/10 hover:shadow-md"
-                >
-                  <dd className="text-xl font-bold sm:text-2xl lg:text-4xl text-white group-hover:text-brand-200 transition">
-                    {(() => {
-                      const val = statsData?.totalEstimatedValueMillionVnd;
-                      if (!val || val === 0) return "0 VNĐ";
-                      if (val >= 1000) {
-                        return `${(val / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ VNĐ`;
-                      }
-                      return `${val.toLocaleString("vi-VN", { maximumFractionDigits: 0 })} Triệu VNĐ`;
-                    })()}
-                  </dd>
-                  <dt className="mt-1 sm:mt-1.5 text-[11px] sm:text-xs font-medium text-white/80 group-hover:text-white transition">
-                    Quy mô giao dịch & Ngân sách &rarr;
-                  </dt>
-                </Link>
-              </dl>
+                  <Link
+                    href="/portal/opportunities/pipeline"
+                    title="Quy mô giao dịch và ngân sách kết nối"
+                    aria-label="Quy mô giao dịch & Ngân sách"
+                    className="group flex flex-col items-center justify-center p-3 sm:py-4 px-2 sm:px-3 rounded-xl transition duration-200 hover:bg-white/[0.08]"
+                  >
+                    <dd className="text-xl font-extrabold tracking-tight sm:text-2xl lg:text-3xl text-white group-hover:text-brand-200 transition whitespace-nowrap">
+                      {(() => {
+                        const val = statsData?.totalEstimatedValueMillionVnd;
+                        if (!val || val === 0) return "0 VNĐ";
+                        if (val >= 1000) {
+                          return `${(val / 1000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} Tỷ VNĐ`;
+                        }
+                        return `${val.toLocaleString("vi-VN", { maximumFractionDigits: 0 })} Triệu VNĐ`;
+                      })()}
+                    </dd>
+                    <dt className="mt-1 sm:mt-1.5 text-xs sm:text-sm font-medium text-white/75 group-hover:text-white transition flex items-center justify-center gap-1">
+                      <span>Quy mô giao dịch</span>
+                      <ArrowRight className="size-3 opacity-50 transition-transform group-hover:opacity-100 group-hover:translate-x-0.5" />
+                    </dt>
+                  </Link>
+                </dl>
+              </div>
             </Async>
           </div>
         </div>
