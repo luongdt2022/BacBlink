@@ -42,9 +42,9 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     expect(screen.getByText("3. Quản Trị Danh Mục & Cơ Cấu")).toBeInTheDocument();
     expect(screen.getByText("4. Giám Sát & Vận Hành")).toBeInTheDocument();
 
-    // Badges in headers
-    expect(screen.getByText("BI 360°")).toBeInTheDocument();
-    expect(screen.getByText("HUB")).toBeInTheDocument();
+    // Badges đã được gỡ bỏ hoàn toàn theo yêu cầu tối giản đồng bộ Workspace
+    expect(screen.queryByText("BI 360°")).not.toBeInTheDocument();
+    expect(screen.queryByText("HUB")).not.toBeInTheDocument();
 
     // Footer
     expect(screen.getByText("An Toàn TT: Cấp 3")).toBeInTheDocument();
@@ -61,6 +61,7 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
 
     // 8 links
     expect(screen.getByRole("link", { name: /Tổng quan Dashboard 360°/i })).toHaveAttribute("href", "/admin");
+    expect(screen.getByRole("link", { name: /Danh sách Phiếu Thu thập & Đánh giá DN/i })).toHaveAttribute("href", "/admin/assessments/records");
     expect(screen.getByRole("link", { name: /Tất cả Hàng đợi Phê duyệt/i })).toHaveAttribute("href", "/admin/approvals");
     expect(screen.getByRole("link", { name: /Cảnh báo Quá hạn SLA Sở Tỉnh/i })).toHaveAttribute("href", "/admin/approvals?tab=sla");
     expect(screen.getByRole("link", { name: /Phê duyệt Vượt cấp \/ Can thiệp/i })).toHaveAttribute("href", "/admin/approvals?tab=override");
@@ -71,7 +72,7 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     expect(screen.getByRole("link", { name: /Cấu hình Tham số & SLA Hệ thống/i })).toHaveAttribute("href", "/admin/system-config");
   });
 
-  it("renders non-wrapping badges correctly (SLA 72h, Tầng 0, 34 Tỉnh)", () => {
+  it("removes distracting badges (SLA 72h, Tầng 0, 34 Tỉnh, Bản ghi DN) to ensure clean typography", () => {
     mockPathname = "/admin";
     render(
       <AdminLayout>
@@ -79,19 +80,14 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
       </AdminLayout>
     );
 
-    const slaBadge = screen.getByText("SLA 72h");
-    expect(slaBadge).toBeInTheDocument();
-    expect(slaBadge.className).toContain("whitespace-nowrap");
-    expect(slaBadge.className).toContain("shrink-0");
-
-    const tang0Badge = screen.getByText("Tầng 0");
-    expect(tang0Badge).toBeInTheDocument();
-    expect(tang0Badge.className).toContain("whitespace-nowrap");
-    expect(tang0Badge.className).toContain("shrink-0");
-
-    const tinhBadge = screen.getByText("34 Tỉnh");
-    expect(tinhBadge).toBeInTheDocument();
-    expect(tinhBadge.className).toContain("whitespace-nowrap");
+    // Toàn bộ badge gây dày/rối đã được gỡ bỏ để nhãn menu hiển thị trọn vẹn
+    expect(screen.queryByText("SLA 72h")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tầng 0")).not.toBeInTheDocument();
+    expect(screen.queryByText("34 Tỉnh")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bản ghi DN")).not.toBeInTheDocument();
+    expect(screen.queryByText("TT17")).not.toBeInTheDocument();
+    expect(screen.queryByText("Live")).not.toBeInTheDocument();
+    expect(screen.queryByText("NDAChain")).not.toBeInTheDocument();
   });
 
   it("allows searching/filtering menu items dynamically", () => {

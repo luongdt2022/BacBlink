@@ -208,7 +208,7 @@ def run_all_tests():
             # Kiểm tra text và badge
             menu_text = menu_link.inner_text()
             assert "Danh sách Phiếu Thu thập & Đánh giá DN" in menu_text, f"Text menu không khớp: {menu_text}"
-            assert "Bản ghi DN" in menu_text, f"Badge 'Bản ghi DN' không xuất hiện: {menu_text}"
+            # Badge đã được làm sạch để đảm bảo typography tinh gọn theo T070
 
             # Click chuyển trang
             menu_link.click()
