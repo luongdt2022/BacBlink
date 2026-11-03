@@ -20,5 +20,11 @@ public sealed class BrokerageModule : IModule
         services.AddScoped<IBrokerService, BrokerService>();
         services.AddScoped<IExpertService, ExpertService>();
         services.AddScoped<IExpertApprovalSynchronizer, ExpertApprovalSynchronizer>();
+        services.AddScoped<ISubjectSummaryProvider, DemandItemSubjectProvider>();
+        services.AddScoped<ISubjectContentProvider, DemandItemSubjectProvider>();
+        services.AddScoped<ISubjectSummaryProvider, SellerOfferSubjectProvider>();
+        services.AddScoped<ISubjectContentProvider, SellerOfferSubjectProvider>();
+        services.AddHttpClient();
+        services.AddScoped<IBrokerageMatchingEngineService, BrokerageMatchingEngineService>();
     }
 }

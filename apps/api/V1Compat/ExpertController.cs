@@ -11,6 +11,7 @@ using NacenTech.Modules.Communication.Application;
 using NacenTech.Modules.Identity.Application;
 using NacenTech.Modules.Identity.Domain;
 using NacenTech.Modules.Brokerage.Application;
+using NacenTech.Modules.Brokerage.Domain;
 using NacenTech.Modules.Policy.Application;
 
 namespace NacenTech.Api.V1Compat;
@@ -204,6 +205,14 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
         var result = await experts.GetMyDetailAsync(PersonId, ct);
         if (result is null) return NotFound();
         Audit("EXPERT_PRIVATE_PROFILE_READ", result.PublicProfile.ExpertCode, "OWNER");
+        return Ok(Ok200(result));
+    }
+
+    [HttpGet("me/documents")]
+    [Authorize]
+    public async Task<IActionResult> GetMyDocuments(CancellationToken ct)
+    {
+        var result = await experts.GetMyDocumentsAsync(PersonId, ct);
         return Ok(Ok200(result));
     }
 
@@ -714,11 +723,60 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
         return NoContent();
     }
 
+    private async Task EnsureCanAccessExpertAsync(string expertCode, CancellationToken ct)
+    {
+        var isGlobalAdmin = Actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin
+            && Actor.ScopeType == ScopeTypes.Global && string.IsNullOrWhiteSpace(Actor.ScopeId);
+
+        if (isGlobalAdmin) return;
+
+        if (Actor.PlatformRole == PlatformRoles.ProvincialAdmin && Actor.ScopeType == ScopeTypes.Province && !string.IsNullOrWhiteSpace(Actor.ScopeId))
+        {
+            var expert = await db.Set<ExpertProfile>().AsNoTracking()
+                .FirstOrDefaultAsync(x => x.ExpertCode == expertCode, ct);
+            if (expert is null) throw new NotFoundException("Không tìm thấy hồ sơ chuyên gia.");
+
+            string? expertProvince = null;
+            if (expert.PersonId.HasValue)
+            {
+                expertProvince = await db.Set<Person>().AsNoTracking()
+                    .Where(p => p.Id == expert.PersonId.Value)
+                    .Select(p => p.ScopeId)
+                    .FirstOrDefaultAsync(ct);
+            }
+            if (string.IsNullOrWhiteSpace(expertProvince))
+            {
+                expertProvince = await db.Set<ApprovalRequest>().AsNoTracking()
+                    .Where(r => r.UserId == expert.PersonId && r.ScopeType == ScopeTypes.Province)
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.ScopeId)
+                    .FirstOrDefaultAsync(ct);
+            }
+
+            if (!string.Equals(Actor.ScopeId, expertProvince, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ForbiddenException("Cán bộ Sở không có quyền truy cập hồ sơ chuyên gia ngoài phạm vi quản lý địa bàn.");
+            }
+            return;
+        }
+
+        throw new ForbiddenException("Admin access required");
+    }
+
+    [HttpGet("/api/v1/admin/experts/{expertCode}/documents")]
+    [Authorize]
+    public async Task<IActionResult> GetAdminDocuments(string expertCode, CancellationToken ct)
+    {
+        await EnsureCanAccessExpertAsync(expertCode, ct);
+        var result = await experts.GetAdminDocumentsAsync(expertCode, ct);
+        return Ok(Ok200(result));
+    }
+
     [HttpGet("/api/v1/admin/experts/{expertCode}/documents/{documentId:guid}/download")]
     [Authorize]
     public async Task<IActionResult> DownloadAdminDocument(string expertCode, Guid documentId, CancellationToken ct)
     {
-        RequireAdmin();
+        await EnsureCanAccessExpertAsync(expertCode, ct);
         var result = await experts.OpenAdminDocumentAsync(expertCode, documentId, ct);
         if (result is null) return NotFound();
         Audit("EXPERT_DOCUMENT_DOWNLOAD", documentId.ToString("N"), "ADMIN_REVIEW");

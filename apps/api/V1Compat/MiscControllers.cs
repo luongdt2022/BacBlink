@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.DataRoom.Application;
@@ -70,10 +71,23 @@ public sealed class FilesController(IDataRoomService dataRoom) : V1ControllerBas
 /// <summary>
 /// Phục vụ file đã upload. Legacy dùng `app.useStaticAssets('/uploads')` — không kiểm quyền.
 /// V2 đi qua data room nên tài liệu mật được gate (AC 5); file PUBLIC vẫn mở như cũ.
+/// Hỗ trợ HTTP 206 Partial Content (enableRangeProcessing: true) cho video streaming (TASK-10).
 /// </summary>
 [Route("files")]
 public sealed class FileContentController(IDataRoomService dataRoom) : ControllerBase
 {
+    private static readonly FileExtensionContentTypeProvider ContentTypeProvider = CreateContentTypeProvider();
+
+    private static FileExtensionContentTypeProvider CreateContentTypeProvider()
+    {
+        var provider = new FileExtensionContentTypeProvider();
+        provider.Mappings[".mp4"] = "video/mp4";
+        provider.Mappings[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        provider.Mappings[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        provider.Mappings[".pdf"] = "application/pdf";
+        return provider;
+    }
+
     [HttpGet("{**key}")]
     public async Task<IActionResult> Get(string key, [FromServices] ICurrentActor actor, CancellationToken ct)
     {
@@ -81,7 +95,21 @@ public sealed class FileContentController(IDataRoomService dataRoom) : Controlle
         if (doc is null) return NotFound();
         var opened = await dataRoom.OpenAsync(doc.Id, actor.PersonId, ct);
         if (opened is null) return NotFound();
-        return File(opened.Value.Content, doc.ContentType ?? "application/octet-stream", doc.FileName);
+
+        var contentType = doc.ContentType;
+        if (string.IsNullOrWhiteSpace(contentType) || contentType == "application/octet-stream")
+        {
+            if (!string.IsNullOrWhiteSpace(doc.FileName) && ContentTypeProvider.TryGetContentType(doc.FileName, out var resolvedContentType))
+            {
+                contentType = resolvedContentType;
+            }
+        }
+        if (string.IsNullOrWhiteSpace(contentType))
+        {
+            contentType = "application/octet-stream";
+        }
+
+        return File(opened.Value.Content, contentType, doc.FileName, enableRangeProcessing: true);
     }
 }
 

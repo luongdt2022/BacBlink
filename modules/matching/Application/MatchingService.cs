@@ -135,7 +135,10 @@ public sealed class MatchingService(
     /// </summary>
     private sealed record ExcludedCandidate(SubjectRef Subject, double? Score, string ReasonCode, string? Detail);
 
-    private sealed record SearchExecution(SearchResultDto Result, IReadOnlyList<ExcludedCandidate> Exclusions);
+    private sealed record SearchExecution(
+        SearchResultDto Result,
+        IReadOnlyList<ExcludedCandidate> Exclusions,
+        IReadOnlySet<SubjectRef> RerankedSubjects);
 
     private async Task<SearchExecution> ExecuteSearchAsync(SearchQuery query, Guid? actorPersonId, CancellationToken ct)
     {
@@ -218,16 +221,8 @@ public sealed class MatchingService(
             hits.Select(h => h.Subject.Id).ToArray(), hits.Select(h => h.Score).ToArray(), raw.TookMs, clock.UtcNow);
         db.Add(log);
 
-        _lastReranked = reranked;
-        return new SearchExecution(new SearchResultDto(hits, hits.Count, raw.TookMs, log.Id), excluded);
+        return new SearchExecution(new SearchResultDto(hits, hits.Count, raw.TookMs, log.Id), excluded, reranked);
     }
-
-    /// <summary>
-    /// Ứng viên đã đi qua bước xếp lại của lần thu hồi gần nhất trong cùng scope. Dùng để gắn
-    /// <see cref="MatchReasonCodes.RerankedTop"/>; scope của service là scope của một request/job nên không có
-    /// tranh chấp giữa hai lần chạy.
-    /// </summary>
-    private HashSet<SubjectRef> _lastReranked = [];
 
     /// <summary>
     /// §26.6.5. Ba luật ở đây có lý do:
@@ -397,7 +392,7 @@ public sealed class MatchingService(
             ? (_options.UseSparse ? "rrf_dense_lexical_exact_sparse" : "rrf_dense_lexical_exact") + (_options.UseRerank ? "_rerank" : string.Empty)
             : "hybrid_knn_bm25";
 
-        var reasonCodes = await ReasonCodesAsync(result.Hits, summary.SectorIds, ct);
+        var reasonCodes = await ReasonCodesAsync(result.Hits, summary.SectorIds, execution.RerankedSubjects, ct);
 
         var round = MatchRound.Complete(subject, EngineVersion, _options.EmbeddingModelVersion, _options.ScoringMode, queryText,
             result.Hits.Select(h => (h.Subject, h.Score, h.MatchedChunk, h.ChunkIndex, reason,
@@ -421,7 +416,7 @@ public sealed class MatchingService(
     /// shortlist thành vòng lặp tự củng cố.
     /// </summary>
     private async Task<Dictionary<SubjectRef, string[]>> ReasonCodesAsync(
-        IReadOnlyList<SearchHitDto> hits, IReadOnlyList<Guid> subjectSectorIds, CancellationToken ct)
+        IReadOnlyList<SearchHitDto> hits, IReadOnlyList<Guid> subjectSectorIds, IReadOnlySet<SubjectRef> rerankedSubjects, CancellationToken ct)
     {
         var subjectSectors = subjectSectorIds.ToHashSet();
         var summaries = await subjects.SummariesAsync(hits.Select(h => h.Subject).ToList(), ct);
@@ -439,7 +434,7 @@ public sealed class MatchingService(
             if (subjectSectors.Count > 0 && hit.SectorIds.Any(subjectSectors.Contains))
                 codes.Add(MatchReasonCodes.SectorOverlap);
 
-            if (_lastReranked.Contains(hit.Subject))
+            if (rerankedSubjects.Contains(hit.Subject))
                 codes.Add(MatchReasonCodes.RerankedTop);
 
             var owner = summaries.GetValueOrDefault(hit.Subject)?.OwnerPersonId;

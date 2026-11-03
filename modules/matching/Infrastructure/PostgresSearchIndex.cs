@@ -40,38 +40,67 @@ public sealed class PostgresSearchIndex(DbContext db) : ISearchIndex
 
     public async Task IndexChunksAsync(IReadOnlyList<IndexedChunk> chunks, CancellationToken ct)
     {
-        foreach (var c in chunks)
+        if (chunks.Count == 0) return;
+
+        const int batchSize = 50;
+        for (var offset = 0; offset < chunks.Count; offset += batchSize)
         {
-            await db.Database.ExecuteSqlRawAsync($"""
+            var batch = chunks.Skip(offset).Take(batchSize).ToList();
+            var sqlBuilder = new StringBuilder();
+            sqlBuilder.Append($"""
                 INSERT INTO {Table}
                     (subject_kind, subject_id, chunk_index, text, embedding, sparse, title, ai_title, sector_ids, sector_names, owner_person_id, is_published)
                 VALUES
-                    (@kind, @id, @idx, @text, @vec::vector, @sparse::sparsevec, @title, @aiTitle, @sectorIds, @sectorNames, @owner, @published)
+
+                """);
+
+            var parameters = new List<NpgsqlParameter>();
+            for (var i = 0; i < batch.Count; i++)
+            {
+                var c = batch[i];
+                if (i > 0) sqlBuilder.AppendLine(",");
+                sqlBuilder.Append($"(@kind{i}, @id{i}, @idx{i}, @text{i}, @vec{i}::vector, @sparse{i}::sparsevec, @title{i}, @aiTitle{i}, @sectorIds{i}, @sectorNames{i}, @owner{i}, @published{i})");
+
+                parameters.Add(new NpgsqlParameter($"kind{i}", c.Subject.Kind));
+                parameters.Add(new NpgsqlParameter($"id{i}", c.Subject.Id));
+                parameters.Add(new NpgsqlParameter($"idx{i}", c.ChunkIndex));
+                parameters.Add(new NpgsqlParameter($"text{i}", VietnameseText.Canonical(c.Text)));
+                parameters.Add(new NpgsqlParameter($"vec{i}", VectorLiteral(c.Embedding)));
+                parameters.Add(new NpgsqlParameter($"sparse{i}", NpgsqlDbType.Text) { Value = c.Sparse is { Count: > 0 } ? SparseLiteral(c.Sparse) : DBNull.Value });
+                parameters.Add(new NpgsqlParameter($"title{i}", VietnameseText.Canonical(c.Title)));
+                parameters.Add(new NpgsqlParameter($"aiTitle{i}", (object?)c.AiTitle ?? DBNull.Value));
+                parameters.Add(new NpgsqlParameter($"sectorIds{i}", NpgsqlDbType.Array | NpgsqlDbType.Uuid) { Value = c.SectorIds.ToArray() });
+                parameters.Add(new NpgsqlParameter($"sectorNames{i}", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = c.SectorNames.ToArray() });
+                parameters.Add(new NpgsqlParameter($"owner{i}", NpgsqlDbType.Uuid) { Value = (object?)c.OwnerPersonId ?? DBNull.Value });
+                parameters.Add(new NpgsqlParameter($"published{i}", c.IsPublished));
+            }
+
+            sqlBuilder.Append("""
+
                 ON CONFLICT (subject_kind, subject_id, chunk_index) DO UPDATE SET
                     text = EXCLUDED.text, embedding = EXCLUDED.embedding, sparse = EXCLUDED.sparse, title = EXCLUDED.title, ai_title = EXCLUDED.ai_title,
                     sector_ids = EXCLUDED.sector_ids, sector_names = EXCLUDED.sector_names,
                     owner_person_id = EXCLUDED.owner_person_id, is_published = EXCLUDED.is_published
-                """,
-                [
-                    new NpgsqlParameter("kind", c.Subject.Kind),
-                    new NpgsqlParameter("id", c.Subject.Id),
-                    new NpgsqlParameter("idx", c.ChunkIndex),
-                    new NpgsqlParameter("text", VietnameseText.Canonical(c.Text)),
-                    new NpgsqlParameter("vec", VectorLiteral(c.Embedding)),
-                    new NpgsqlParameter("sparse", NpgsqlDbType.Text) { Value = c.Sparse is { Count: > 0 } ? SparseLiteral(c.Sparse) : DBNull.Value },
-                    new NpgsqlParameter("title", VietnameseText.Canonical(c.Title)),
-                    new NpgsqlParameter("aiTitle", (object?)c.AiTitle ?? DBNull.Value),
-                    new NpgsqlParameter("sectorIds", NpgsqlDbType.Array | NpgsqlDbType.Uuid) { Value = c.SectorIds.ToArray() },
-                    new NpgsqlParameter("sectorNames", NpgsqlDbType.Array | NpgsqlDbType.Text) { Value = c.SectorNames.ToArray() },
-                    new NpgsqlParameter("owner", NpgsqlDbType.Uuid) { Value = (object?)c.OwnerPersonId ?? DBNull.Value },
-                    new NpgsqlParameter("published", c.IsPublished),
-                ], ct);
+                """);
+
+            await db.Database.ExecuteSqlRawAsync(sqlBuilder.ToString(), parameters.Cast<object>().ToArray(), ct);
         }
     }
 
     public Task DeleteSubjectAsync(SubjectRef subject, CancellationToken ct)
         => db.Database.ExecuteSqlRawAsync($"DELETE FROM {Table} WHERE subject_kind = @kind AND subject_id = @id",
             [new NpgsqlParameter("kind", subject.Kind), new NpgsqlParameter("id", subject.Id)], ct);
+
+    public async Task DeleteSubjectsBatchAsync(string subjectKind, IReadOnlyList<Guid> subjectIds, CancellationToken ct)
+    {
+        if (subjectIds.Count == 0) return;
+        await db.Database.ExecuteSqlRawAsync(
+            $"DELETE FROM {Table} WHERE subject_kind = @kind AND subject_id = ANY(@ids)",
+            [
+                new NpgsqlParameter("kind", subjectKind),
+                new NpgsqlParameter("ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid) { Value = subjectIds.ToArray() }
+            ], ct);
+    }
 
     public async Task<RawSearchResult> SearchAsync(RawSearchRequest request, CancellationToken ct)
     {

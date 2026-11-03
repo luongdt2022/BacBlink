@@ -67,7 +67,7 @@ public sealed record PersonPreferencesDto(Guid Id, Guid PersonId, bool MatchingA
 
 public sealed record AuthResult(string AccessToken, PersonDto Person);
 
-public sealed record RegisterCommand(string Email, string Password, string ConfirmPassword, string FirstName, string? LastName, string? Phone, string? Organization);
+public sealed record RegisterCommand(string Email, string Password, string ConfirmPassword, string FirstName, string? LastName, string? Phone, string? Organization, bool AcceptPdpd = true);
 
 public sealed record UpdateProfileCommand(string? FirstName, string? LastName, string? Phone, string? Organization);
 

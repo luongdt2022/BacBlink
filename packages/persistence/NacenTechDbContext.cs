@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using NacenTech.Kernel.Domain;
+using NacenTech.Modules.Lms.Domain;
 using NacenTech.Persistence.Platform;
 
 namespace NacenTech.Persistence;
@@ -18,6 +19,23 @@ public sealed partial class NacenTechDbContext(DbContextOptions<NacenTechDbConte
     public DbSet<JobQueueEntry> JobQueue => Set<JobQueueEntry>();
     public DbSet<ScheduledObligation> ScheduledObligations => Set<ScheduledObligation>();
     public DbSet<IdempotencyRecord> IdempotencyRecords => Set<IdempotencyRecord>();
+
+    // LMS Module (TASK-10)
+    public DbSet<LearningMaterial> LearningMaterials => Set<LearningMaterial>();
+    public DbSet<LearningMaterialInstructor> LearningMaterialInstructors => Set<LearningMaterialInstructor>();
+    public DbSet<LearningQuizQuestion> LearningQuizQuestions => Set<LearningQuizQuestion>();
+    public DbSet<LearningAttachment> LearningAttachments => Set<LearningAttachment>();
+    public DbSet<LearningDbLink> LearningDbLinks => Set<LearningDbLink>();
+    public DbSet<LearningModerationLog> LearningModerationLogs => Set<LearningModerationLog>();
+    public DbSet<LearnerProgress> LearnerProgresses => Set<LearnerProgress>();
+    public DbSet<LearnerQuizAttempt> LearnerQuizAttempts => Set<LearnerQuizAttempt>();
+
+    // Blockchain & ZKProof Module (TASK-11)
+    public DbSet<Modules.Blockchain.Domain.Entities.AnchorPolicy> AnchorPolicies => Set<Modules.Blockchain.Domain.Entities.AnchorPolicy>();
+    public DbSet<Modules.Blockchain.Domain.Entities.AnchorRecord> AnchorRecords => Set<Modules.Blockchain.Domain.Entities.AnchorRecord>();
+    public DbSet<Modules.Blockchain.Domain.Entities.LedgerBlock> LedgerBlocks => Set<Modules.Blockchain.Domain.Entities.LedgerBlock>();
+    public DbSet<Modules.Blockchain.Domain.Entities.ZkProofVaultRecord> ZkProofVaultRecords => Set<Modules.Blockchain.Domain.Entities.ZkProofVaultRecord>();
+    public DbSet<Modules.Blockchain.Domain.Entities.BridgeSyncLog> BridgeSyncLogs => Set<Modules.Blockchain.Domain.Entities.BridgeSyncLog>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {

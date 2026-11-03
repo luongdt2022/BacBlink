@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\modules\communication\NacenTech.Modules.Communication.csproj" />
     <ProjectReference Include="..\..\modules\audit\NacenTech.Modules.Audit.csproj" />
     <ProjectReference Include="..\..\modules\policy\NacenTech.Modules.Policy.csproj" />
+    <ProjectReference Include="..\..\modules\lms\NacenTech.Lms.csproj" />
     <ProjectReference Include="..\..\apps\api\NacenTech.Api.csproj" />
   </ItemGroup>
   <ItemGroup>

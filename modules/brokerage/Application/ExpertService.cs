@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using NacenTech.Kernel.Application;
@@ -14,6 +15,8 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             throw new ValidationException("Bắt buộc đồng ý cam kết PDPD theo Nghị định 13/2023/NĐ-CP.");
         if (!request.LegalOath)
             throw new ValidationException("Bắt buộc cam kết tính chính xác của hồ sơ.");
+
+        ValidateTimelineAndYears(request);
 
         ExpertProfile? draft = null;
         if (!string.IsNullOrWhiteSpace(request.DraftToken))
@@ -337,6 +340,36 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         return document is null ? null : await OpenDocumentAsync(document, ct);
     }
 
+    public async Task<IReadOnlyList<ExpertDocumentInfoDto>> GetMyDocumentsAsync(Guid personId, CancellationToken ct)
+    {
+        return await (from d in db.Set<ExpertDocument>()
+                      join p in db.Set<ExpertProfile>() on d.ExpertProfileId equals p.Id
+                      where d.IsActive && p.PersonId == personId
+                      orderby d.Id descending
+                      select new ExpertDocumentInfoDto(
+                          d.Id,
+                          d.DocumentType,
+                          d.MimeType,
+                          d.SizeBytes,
+                          d.Sha256,
+                          $"{d.DocumentType}-{d.Id:N}")).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<ExpertDocumentInfoDto>> GetAdminDocumentsAsync(string expertCode, CancellationToken ct)
+    {
+        return await (from d in db.Set<ExpertDocument>()
+                      join p in db.Set<ExpertProfile>() on d.ExpertProfileId equals p.Id
+                      where d.IsActive && p.ExpertCode == expertCode
+                      orderby d.Id descending
+                      select new ExpertDocumentInfoDto(
+                          d.Id,
+                          d.DocumentType,
+                          d.MimeType,
+                          d.SizeBytes,
+                          d.Sha256,
+                          $"{d.DocumentType}-{d.Id:N}")).ToListAsync(ct);
+    }
+
     public async Task<ExpertProfileDto> UpdateMyProfileAsync(Guid personId, UpdateExpertProfileRequest request, CancellationToken ct)
     {
         var profile = await db.Set<ExpertProfile>().FirstOrDefaultAsync(p => p.PersonId == personId, ct)
@@ -396,6 +429,15 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         var awards = await db.Set<ExpertAward>().AsNoTracking().Where(x => x.ExpertProfileId == p.Id && x.IsPublic && x.IsActive)
             .Select(x => new ExpertAchievementDto("AWARD", x.Name, x.AwardLevel ?? x.Form, x.Description ?? (x.AwardedYear == null ? null : x.AwardedYear.ToString()))).ToListAsync(ct);
 
+        if (training.Count == 0 && !string.IsNullOrWhiteSpace(p.TrainingHistoryJson))
+            training = ParseTrainingHistoryJson(p.TrainingHistoryJson);
+
+        if (employment.Count == 0 && !string.IsNullOrWhiteSpace(p.EmploymentHistoryJson))
+            employment = ParseEmploymentHistoryJson(p.EmploymentHistoryJson);
+
+        if (publications.Count == 0 && !string.IsNullOrWhiteSpace(p.PublicationsJson))
+            publications = ParsePublicationsJson(p.PublicationsJson);
+
         return new ExpertPublicDetailDto(p.ExpertCode, p.FullName, p.AcademicRank, p.Degree, p.BirthYear, p.Gender,
             p.OrganizationName, p.PositionTitle, p.PublicBio, p.ExpertiseSectors, p.MasteredTechCodes,
             p.Status == ExpertStatuses.Approved, p.IsAcceptingConsultation, training, employment, patents, projects, publications, practical, awards, p.SpecializedKeywords);
@@ -439,4 +481,185 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             SpecializedKeywords: p.SpecializedKeywords,
             Phone: p.Phone,
             Email: p.Email);
+
+    private static void ValidateTimelineAndYears(SubmitExpertUpgradeRequest request)
+    {
+        var currentYear = DateTime.UtcNow.Year;
+        if (request.BirthYear < 1920 || request.BirthYear > currentYear - 18)
+            throw new ValidationException($"Năm sinh không hợp lệ. Phải từ 1920 đến {currentYear - 18}.");
+
+        if (request.DegreeYear > currentYear)
+            throw new ValidationException($"Năm tốt nghiệp không được vượt quá năm hiện tại ({currentYear}).");
+
+        if (request.AcademicRankYear.HasValue && request.AcademicRankYear.Value > currentYear)
+            throw new ValidationException($"Năm phong học hàm không được vượt quá năm hiện tại ({currentYear}).");
+
+        if (!string.IsNullOrWhiteSpace(request.TrainingHistoryJson))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(request.TrainingHistoryJson);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in doc.RootElement.EnumerateArray())
+                    {
+                        if (item.ValueKind == JsonValueKind.Object)
+                        {
+                            var year = ExtractYear(item, "graduationYear", "year", "năm");
+                            if (year.HasValue && year.Value > currentYear)
+                                throw new ValidationException($"Năm đào tạo ({year.Value}) không được vượt quá năm hiện tại ({currentYear}).");
+                        }
+                    }
+                }
+            }
+            catch (JsonException) { }
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.PublicationsJson))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(request.PublicationsJson);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in doc.RootElement.EnumerateArray())
+                    {
+                        if (item.ValueKind == JsonValueKind.Object)
+                        {
+                            var year = ExtractYear(item, "year", "năm", "publicationYear");
+                            if (year.HasValue && year.Value > currentYear)
+                                throw new ValidationException($"Năm ấn phẩm ({year.Value}) không được vượt quá năm hiện tại ({currentYear}).");
+                        }
+                    }
+                }
+            }
+            catch (JsonException) { }
+        }
+    }
+
+    private static List<ExpertTimelineDto> ParseTrainingHistoryJson(string json)
+    {
+        var list = new List<ExpertTimelineDto>();
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var el in doc.RootElement.EnumerateArray())
+                {
+                    if (el.ValueKind != JsonValueKind.Object) continue;
+                    var degree = GetStringProperty(el, "degree", "level", "bậc", "degreeName") ?? string.Empty;
+                    var institution = GetStringProperty(el, "institution", "school", "university", "nơi đào tạo") ?? string.Empty;
+                    var major = GetStringProperty(el, "major", "chuyên ngành");
+                    var year = ExtractYear(el, "graduationYear", "year", "năm")?.ToString();
+
+                    var title = !string.IsNullOrWhiteSpace(degree)
+                        ? (!string.IsNullOrWhiteSpace(major) ? $"{degree} - {major}" : degree)
+                        : (major ?? "Đào tạo");
+                    list.Add(new ExpertTimelineDto(title, institution, year));
+                }
+            }
+        }
+        catch (JsonException) { }
+        return list;
+    }
+
+    private static List<ExpertTimelineDto> ParseEmploymentHistoryJson(string json)
+    {
+        var list = new List<ExpertTimelineDto>();
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var el in doc.RootElement.EnumerateArray())
+                {
+                    if (el.ValueKind != JsonValueKind.Object) continue;
+                    var position = GetStringProperty(el, "positionTitle", "position", "chức danh", "vị trí", "role") ?? string.Empty;
+                    var org = GetStringProperty(el, "organization", "org", "cơ quan", "đơn vị", "công ty") ?? string.Empty;
+                    var period = GetStringProperty(el, "period", "giai đoạn", "duration");
+                    if (string.IsNullOrWhiteSpace(period))
+                    {
+                        var from = GetStringProperty(el, "fromDate", "from", "bắt đầu") ?? ExtractYear(el, "fromYear", "startYear")?.ToString();
+                        var to = GetStringProperty(el, "toDate", "to", "kết thúc") ?? ExtractYear(el, "toYear", "endYear")?.ToString();
+                        if (from is not null && to is not null) period = $"{from} - {to}";
+                        else period = from ?? to ?? ExtractYear(el, "year", "năm")?.ToString();
+                    }
+
+                    var title = !string.IsNullOrWhiteSpace(position) ? position : org;
+                    list.Add(new ExpertTimelineDto(title, org, period));
+                }
+            }
+        }
+        catch (JsonException) { }
+        return list;
+    }
+
+    private static List<ExpertAchievementDto> ParsePublicationsJson(string json)
+    {
+        var list = new List<ExpertAchievementDto>();
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var el in doc.RootElement.EnumerateArray())
+                {
+                    if (el.ValueKind != JsonValueKind.Object) continue;
+                    var title = GetStringProperty(el, "title", "tên", "tên công trình") ?? string.Empty;
+                    var journal = GetStringProperty(el, "journal", "tạp chí", "publisher", "nơi xuất bản", "role");
+                    var doi = GetStringProperty(el, "doi");
+                    var year = ExtractYear(el, "year", "năm", "publicationYear")?.ToString();
+
+                    string? desc = null;
+                    if (!string.IsNullOrWhiteSpace(doi) && !string.IsNullOrWhiteSpace(year))
+                        desc = $"{year} · DOI: {doi}";
+                    else if (!string.IsNullOrWhiteSpace(doi))
+                        desc = doi;
+                    else if (!string.IsNullOrWhiteSpace(year))
+                        desc = year;
+
+                    list.Add(new ExpertAchievementDto("PUBLICATION", title, journal, desc));
+                }
+            }
+        }
+        catch (JsonException) { }
+        return list;
+    }
+
+    private static int? ExtractYear(JsonElement element, params string[] propertyNames)
+    {
+        foreach (var prop in propertyNames)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (property.Name.Equals(prop, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Number && property.Value.TryGetInt32(out var y))
+                        return y;
+                    if (property.Value.ValueKind == JsonValueKind.String && int.TryParse(property.Value.GetString(), out var ys))
+                        return ys;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static string? GetStringProperty(JsonElement element, params string[] propertyNames)
+    {
+        foreach (var prop in propertyNames)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (property.Name.Equals(prop, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.String)
+                        return property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Number)
+                        return property.Value.ToString();
+                }
+            }
+        }
+        return null;
+    }
 }

@@ -37,6 +37,7 @@ public sealed class RegisterDto
     [MaxLength(100)] public string? LastName { get; set; }
     [MaxLength(20)] public string? Phone { get; set; }
     [MaxLength(255)] public string? Organization { get; set; }
+    public bool? AcceptPdpd { get; set; }
 }
 
 public sealed class ActivateAccountDto
@@ -78,7 +79,7 @@ public sealed class AuthController(IAuthenticationService auth, IPersonService p
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto, CancellationToken ct)
     {
-        var person = await auth.RegisterAsync(new RegisterCommand(dto.Email.Trim(), dto.Password, dto.ConfirmPassword, dto.FirstName, dto.LastName, dto.Phone, dto.Organization),
+        var person = await auth.RegisterAsync(new RegisterCommand(dto.Email.Trim(), dto.Password, dto.ConfirmPassword, dto.FirstName, dto.LastName, dto.Phone, dto.Organization, dto.AcceptPdpd ?? false),
             Infrastructure.ClientIp.Resolve(HttpContext), ct);
         return StatusCode(201, new
         {

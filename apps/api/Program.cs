@@ -102,7 +102,9 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 builder.Services.AddControllers(o =>
 {
     o.Filters.Add<V1ValidationFilter>();
-}).ConfigureApiBehaviorOptions(o => o.SuppressModelStateInvalidFilter = true)
+}).AddApplicationPart(typeof(NacenTech.Modules.Lms.Api.LmsController).Assembly)
+  .AddApplicationPart(typeof(NacenTech.Modules.Blockchain.Api.BlockchainPublicController).Assembly)
+  .ConfigureApiBehaviorOptions(o => o.SuppressModelStateInvalidFilter = true)
   .AddJsonOptions(o =>
   {
       o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;

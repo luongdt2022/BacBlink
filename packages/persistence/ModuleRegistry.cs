@@ -25,5 +25,7 @@ public static class ModuleRegistry
         new Modules.Entitlement.EntitlementModule(),
         new Modules.Enterprise.EnterpriseModule(),
         new Modules.Assessment.AssessmentModule(),
+        new Modules.Lms.LmsModule(),
+        new Modules.Blockchain.BlockchainModule(),
     ];
 }

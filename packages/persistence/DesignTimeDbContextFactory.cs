@@ -12,6 +12,7 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Nac
                  ?? "Host=localhost;Port=5432;Database=nacentech;Username=postgres;Password=postgres";
         var options = new DbContextOptionsBuilder<NacenTechDbContext>()
             .UseNpgsql(cs, npg => npg.MigrationsHistoryTable("__ef_migrations_history", NacenTechDbContext.PlatformSchema))
+            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning))
             .Options;
         return new NacenTechDbContext(options);
     }

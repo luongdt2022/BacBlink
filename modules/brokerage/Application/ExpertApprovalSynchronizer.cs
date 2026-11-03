@@ -25,7 +25,10 @@ public sealed class ExpertApprovalSynchronizer(DbContext db) : IExpertApprovalSy
             ?? throw new NotFoundException("Không tìm thấy hồ sơ chuyên gia khớp yêu cầu thẩm định.");
         switch (action)
         {
-            case "APPROVE": profile.Approve(reviewNote); break;
+            case "APPROVE":
+                profile.Approve(reviewNote);
+                profile.SetPublicListing(true, true, profile.PublicBio);
+                break;
             case "REQUEST_CHANGES": profile.RequestChanges(reviewNote!); break;
             case "REJECT": profile.Reject(reviewNote!); break;
             case "REVOKE":

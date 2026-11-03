@@ -12,7 +12,7 @@ namespace NacenTech.Modules.Matching.Application;
 public sealed class MatchingOptions
 {
     public const string Section = "Matching";
-    public string ScoringMode { get; set; } = ScoringModes.Legacy;
+    public string ScoringMode { get; set; } = ScoringModes.Corrected;
     public string EmbeddingBaseUrl { get; set; } = "http://localhost:8003";
     public string EmbeddingModelVersion { get; set; } = "bge-m3";
     public int ChunkSize { get; set; } = 1500;
@@ -25,7 +25,7 @@ public sealed class MatchingOptions
     /// ngưỡng 1.0 của chế độ cũ loại mọi kết quả. Mặc định 0: RRF không có thang tuyệt đối, giới hạn bằng số
     /// kết quả (`MatchLimit`), không bằng điểm.
     /// </summary>
-    public double MatchMinScoreCorrected { get; set; } = 0;
+    public double MatchMinScoreCorrected { get; set; } = 0.01;
     /// <summary>
     /// Bật kênh sparse (§26.6.7 bước 4): client xin `return_sparse` từ sidecar, chỉ mục giữ `sparsevec`, chế độ
     /// đã sửa hợp nhất BA kênh. Cờ vận hành; đổi cờ đổi nhãn engine của vòng tính sau đó (D2-26).
@@ -41,6 +41,35 @@ public sealed class MatchingOptions
     /// <summary>Kích thước từ vựng BGE-M3 (XLM-R). Cố định theo mô hình; đổi mô hình là đổi migration.</summary>
     public const int SparseDims = 250002;
     public int QueryContentChars { get; set; } = 1500;
+    /// <summary>Thời gian timeout tối đa gọi sang Python AI Sidecar trước khi Graceful Degradation (ms).</summary>
+    public int SidecarTimeoutMs { get; set; } = 1500;
+
+    /// <summary>
+    /// Chuẩn hóa điểm số thô từ RRF, Reranker hoặc Cosine về dải [0, 100] phục vụ tính toán 4 trục BR-BRK-D3-01.
+    /// </summary>
+    public static double NormalizeToPercentage(double rawScore, bool isReranked = false)
+    {
+        if (isReranked)
+        {
+            // Điểm reranker từ cross-encoder nằm trong dải [0, 1]
+            return Math.Round(Math.Clamp(rawScore * 100.0, 0.0, 100.0), 1);
+        }
+
+        if (rawScore <= 0.1)
+        {
+            // Điểm RRF: tổng các 1/(60 + rank), tối đa ~0.05
+            var rrfNormalized = rawScore * 2000.0;
+            return Math.Round(Math.Clamp(rrfNormalized, 0.0, 100.0), 1);
+        }
+
+        if (rawScore <= 1.0)
+        {
+            return Math.Round(Math.Clamp(rawScore * 100.0, 0.0, 100.0), 1);
+        }
+
+        // Chế độ cũ (thang 1-10)
+        return Math.Round(Math.Clamp((rawScore / 10.0) * 100.0, 0.0, 100.0), 1);
+    }
 }
 
 public static class ScoringModes
@@ -198,6 +227,7 @@ public interface ISearchIndex
     Task EnsureIndexAsync(CancellationToken ct);
     Task IndexChunksAsync(IReadOnlyList<IndexedChunk> chunks, CancellationToken ct);
     Task DeleteSubjectAsync(SubjectRef subject, CancellationToken ct);
+    Task DeleteSubjectsBatchAsync(string subjectKind, IReadOnlyList<Guid> subjectIds, CancellationToken ct);
     Task<RawSearchResult> SearchAsync(RawSearchRequest request, CancellationToken ct);
 }
 

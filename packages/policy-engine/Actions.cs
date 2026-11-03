@@ -81,4 +81,12 @@ public static class Actions
     public const string CaseRead = "case.read";
     public const string CaseTransition = "case.transition";
     public const string CaseAssignBroker = "case.assign_broker";
+
+    // lms (TASK-10)
+    public const string LmsCreate = "lms.create";
+    public const string LmsReadManagement = "lms.read_management";
+    public const string LmsUpdate = "lms.update";
+    public const string LmsUnpublish = "lms.unpublish";
+    public const string LmsDelete = "lms.delete";
+    public const string LmsSubmitQuiz = "lms.submit_quiz";
 }

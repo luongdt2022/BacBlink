@@ -209,6 +209,14 @@ public sealed record ExpertPrivateDetailDto(
 
 public sealed record ExpertDocumentContent(Stream Content, string ContentType, string DownloadName);
 
+public sealed record ExpertDocumentInfoDto(
+    Guid Id,
+    string DocumentType,
+    string MimeType,
+    long SizeBytes,
+    string? Sha256 = null,
+    string? DownloadName = null);
+
 public sealed record ExpertPublicCardDto(
     string ExpertCode,
     string FullName,
@@ -250,7 +258,72 @@ public interface IExpertService
     Task SetPublicListingAsync(string expertCode, bool isPublic, bool isAcceptingConsultation, string? publicBio, CancellationToken ct);
     Task<ExpertDocumentContent?> OpenMyDocumentAsync(Guid personId, Guid documentId, CancellationToken ct);
     Task<ExpertDocumentContent?> OpenAdminDocumentAsync(string expertCode, Guid documentId, CancellationToken ct);
+    Task<IReadOnlyList<ExpertDocumentInfoDto>> GetMyDocumentsAsync(Guid personId, CancellationToken ct);
+    Task<IReadOnlyList<ExpertDocumentInfoDto>> GetAdminDocumentsAsync(string expertCode, CancellationToken ct);
     Task<ExpertProfileDto> UpdateMyProfileAsync(Guid personId, UpdateExpertProfileRequest request, CancellationToken ct);
     Task<ExpertCompletenessDto> GetMyCompletenessAsync(Guid personId, CancellationToken ct);
 }
+
+// =========================================================================
+// RADAR EXPLAINABLE AI (XAI) & MATCHING ENGINE CONTRACTS (CR-TASK-08-DELTA-03)
+// =========================================================================
+
+public sealed record RadarXaiBreakdownDto(
+    double SemanticScore,
+    string SemanticEngine,     // BGE-M3_RERANK | POSTGRES_FTS_FALLBACK
+    double TrlScore,
+    int TrlLevel,
+    string TrlStage,           // Thử nghiệm Lab (TRL 1-3) | Thử nghiệm Pilot (TRL 4-6) | Thương mại hóa (TRL 7-9)
+    double TniScore,
+    string TniBand,            // Rất cao (TNI >= 80) | Cao (60-79) | Trung bình (< 60)
+    double IpScore,
+    string IpStatus,           // PATENT_GRANTED | PATENT_PENDING | TRADE_SECRET | NONE
+    string IpDescription
+);
+
+public sealed record BrokerageRadarCandidateDto(
+    Guid Id,
+    Guid DemandId,
+    string DemandCode,
+    string DemandTitle,
+    Guid? BuyerOrganizationId,
+    string BuyerOrganizationName,
+    Guid OfferId,
+    string OfferCode,
+    string OfferTitle,
+    Guid? SellerOrganizationId,
+    string SellerOrganizationName,
+    string SectorCode,
+    int OverallMatchScore,
+    RadarXaiBreakdownDto XaiBreakdown,
+    bool IsDegraded,
+    DateTime ComputedAt
+);
+
+public sealed record RecomputeRadarResultDto(
+    int ComputedMatchesCount,
+    long TookMs,
+    bool IsDegraded,
+    string EngineVersion,
+    DateTime Timestamp
+);
+
+public sealed record RadarUserContext(
+    Guid? PersonId,
+    Guid? OrganizationId,
+    string PlatformRole,
+    string? ProvinceCode = null
+);
+
+public interface IBrokerageMatchingEngineService
+{
+    int ComputeHybridScore(double semanticScore, double trlScore, double tniScore, double ipScore);
+    double CalculateTrlScore(int sellerTrl, int buyerExpectedTrl = 7);
+    double CalculateIpScore(string? ipStatus);
+    Task<IReadOnlyList<BrokerageRadarCandidateDto>> GetRadarCandidatesAsync(
+        string? sector, int? minScore, string? search, RadarUserContext? userContext, CancellationToken ct);
+    Task<RecomputeRadarResultDto> RecomputeRadarForDemandAsync(
+        string? demandCode, RadarUserContext? userContext, CancellationToken ct);
+}
+
 

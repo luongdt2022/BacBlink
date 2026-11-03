@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NacenTech.Kernel.Application;
+using NacenTech.Modules.Brokerage.Application;
 using NacenTech.Persistence;
 
 namespace NacenTech.Api.V1Compat;
@@ -157,13 +158,19 @@ public record SaveMouRequest(
     string? Status // DRAFT | SIGNED
 );
 
+public record RecomputeRadarRequest(
+    string? DemandCode = null
+);
+
 // =========================================================================
 // CONTROLLER
 // =========================================================================
 
 [ApiController]
 [Route("api/v1")]
-public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBase
+public sealed class BrokerageControllers(
+    NacenTechDbContext db,
+    IBrokerageMatchingEngineService? matchingEngine = null) : V1ControllerBase
 {
     private static string MaskPhone(string? phone)
     {
@@ -181,86 +188,71 @@ public sealed class BrokerageControllers(NacenTechDbContext db) : V1ControllerBa
         return $"{name[0]}***{name[^1]}@{domain}";
     }
 
+    private RadarUserContext ResolveRadarUserContext()
+    {
+        Guid? personId = null;
+        try
+        {
+            if (Actor.IsAuthenticated && Actor.PersonId.HasValue)
+            {
+                personId = Actor.PersonId;
+            }
+        }
+        catch
+        {
+            // Anonymous fallback
+        }
+
+        Guid? orgId = null;
+        var orgClaim = User.FindFirst("organizationId")?.Value 
+                       ?? User.FindFirst("org_id")?.Value 
+                       ?? User.FindFirst("tenant_id")?.Value
+                       ?? (Actor.ScopeType == ScopeTypes.OrgUnit ? Actor.ScopeId : null);
+
+        if (Guid.TryParse(orgClaim, out var parsedOrgId))
+        {
+            orgId = parsedOrgId;
+        }
+
+        var provinceCode = User.FindFirst("provinceCode")?.Value 
+                           ?? User.FindFirst("province")?.Value
+                           ?? (Actor.ScopeType == ScopeTypes.Province ? Actor.ScopeId : null);
+
+        var role = Actor.PlatformRole ?? PlatformRoles.PublicUser;
+
+        return new RadarUserContext(personId, orgId, role, provinceCode);
+    }
+
+    private IBrokerageMatchingEngineService ResolveMatchingEngine()
+        => matchingEngine ?? HttpContext.RequestServices.GetRequiredService<IBrokerageMatchingEngineService>();
+
     // -------------------------------------------------------------------------
     // 1. RADAR GHÉP NỐI CUNG–CẦU
     // -------------------------------------------------------------------------
     [HttpGet("brokerage/radar")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> GetRadarCandidates(
         [FromQuery] string? sector,
         [FromQuery] int? minScore,
         [FromQuery] string? search,
         CancellationToken ct)
     {
-        var conn = db.Database.GetDbConnection();
-        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+        var userContext = ResolveRadarUserContext();
+        var engine = ResolveMatchingEngine();
+        var candidates = await engine.GetRadarCandidatesAsync(sector, minScore, search, userContext, ct);
+        return Ok(Ok200(candidates));
+    }
 
-        using var cmd = conn.CreateCommand();
-        var sql = @"
-            SELECT id, demand_id, demand_code, demand_title, buyer_organization_id, buyer_organization_name,
-                   offer_id, offer_code, offer_title, seller_organization_id, seller_organization_name,
-                   sector_code, match_score, tni_score, trl_level, ip_status, is_active, created_at
-            FROM brokerage.match_candidates
-            WHERE is_active = true";
-
-        if (!string.IsNullOrWhiteSpace(sector))
-        {
-            sql += " AND sector_code = @sector";
-            var p = cmd.CreateParameter();
-            p.ParameterName = "@sector";
-            p.Value = sector;
-            cmd.Parameters.Add(p);
-        }
-
-        if (minScore.HasValue)
-        {
-            sql += " AND match_score >= @minScore";
-            var p = cmd.CreateParameter();
-            p.ParameterName = "@minScore";
-            p.Value = minScore.Value;
-            cmd.Parameters.Add(p);
-        }
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            sql += " AND (demand_title ILIKE @search OR offer_title ILIKE @search OR buyer_organization_name ILIKE @search OR seller_organization_name ILIKE @search)";
-            var p = cmd.CreateParameter();
-            p.ParameterName = "@search";
-            p.Value = $"%{search}%";
-            cmd.Parameters.Add(p);
-        }
-
-        sql += " ORDER BY match_score DESC, created_at DESC";
-        cmd.CommandText = sql;
-
-        var list = new List<object>();
-        using var reader = await cmd.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct))
-        {
-            list.Add(new
-            {
-                id = reader.GetGuid(0),
-                demandId = reader.GetGuid(1),
-                demandCode = reader.GetString(2),
-                demandTitle = reader.GetString(3),
-                buyerOrganizationId = reader.IsDBNull(4) ? (Guid?)null : reader.GetGuid(4),
-                buyerOrganizationName = reader.GetString(5),
-                offerId = reader.GetGuid(6),
-                offerCode = reader.GetString(7),
-                offerTitle = reader.GetString(8),
-                sellerOrganizationId = reader.IsDBNull(9) ? (Guid?)null : reader.GetGuid(9),
-                sellerOrganizationName = reader.GetString(10),
-                sectorCode = reader.GetString(11),
-                matchScore = reader.GetInt32(12),
-                tniScore = reader.GetInt32(13),
-                trlLevel = reader.GetInt32(14),
-                ipStatus = reader.GetString(15),
-                isActive = reader.GetBoolean(16),
-                createdAt = reader.GetDateTime(17)
-            });
-        }
-
-        return Ok(Ok200(list));
+    [HttpPost("brokerage/radar/recompute")]
+    [Authorize]
+    public async Task<IActionResult> RecomputeRadar(
+        [FromBody] RecomputeRadarRequest? request,
+        CancellationToken ct)
+    {
+        var userContext = ResolveRadarUserContext();
+        var engine = ResolveMatchingEngine();
+        var result = await engine.RecomputeRadarForDemandAsync(request?.DemandCode, userContext, ct);
+        return Ok(Ok200(result));
     }
 
     // -------------------------------------------------------------------------

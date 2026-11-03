@@ -18,5 +18,7 @@
     <ProjectReference Include="..\..\modules\assessment\NacenTech.Modules.Assessment\NacenTech.Modules.Assessment.csproj" />
     <ProjectReference Include="..\..\modules\content\NacenTech.Modules.Content.csproj" />
     <ProjectReference Include="..\..\modules\demand\NacenTech.Modules.Demand.csproj" />
+    <ProjectReference Include="..\..\modules\lms\NacenTech.Lms.csproj" />
+    <ProjectReference Include="..\..\modules\blockchain\NacenTech.Blockchain.csproj" />
   </ItemGroup>
 </Project>

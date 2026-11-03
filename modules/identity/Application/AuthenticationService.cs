@@ -62,6 +62,9 @@ public sealed class AuthenticationService(
 
     public async Task<PersonDto> RegisterAsync(RegisterCommand command, string requesterIp, CancellationToken ct)
     {
+        if (!command.AcceptPdpd)
+            throw new ValidationException("Bắt buộc đồng ý cam kết bảo vệ dữ liệu cá nhân (PDPD) theo Nghị định 13/2023/NĐ-CP.");
+
         if (command.Password != command.ConfirmPassword)
             throw ValidationException.WithCode(AuthCodes.ConfirmPasswordMismatch, "Confirm password does not match");
 
