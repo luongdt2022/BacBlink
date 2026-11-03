@@ -173,6 +173,21 @@ public sealed record SubmitApprovalRequestCommand(
     string PayloadJson,
     DateTimeOffset? SlaDeadlineUtc = null);
 
+/// <summary>CR-2026-021 (Delta v17): Định danh pháp nhân và minh chứng tài liệu khi mở gian hàng Seller.</summary>
+public sealed class SubmitShopApprovalPayload
+{
+    public string EntityType { get; set; } = "ENTERPRISE"; // ENTERPRISE | INSTITUTION_RND
+    public string? TaxCode { get; set; }
+    public string? EstablishmentDecisionNo { get; set; }
+    public string OrgName { get; set; } = string.Empty;
+    public string LegalDocUrl { get; set; } = string.Empty;
+    public string MainSector { get; set; } = string.Empty;
+    public string Province { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public bool PledgeAgreed { get; set; }
+    public string? SubmittedAt { get; set; }
+}
+
 public sealed record ReviewApprovalRequestCommand(
     string Action,
     int ExpectedVersion,

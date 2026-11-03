@@ -77,7 +77,8 @@ public sealed class ApprovalController(IApprovalService approvals) : V1Controlle
     [HttpPost]
     public async Task<IActionResult> Submit([FromBody] SubmitApprovalDto dto, CancellationToken ct)
     {
-        var targetUserId = dto.UserId ?? PersonId;
+        var isAdministrative = Actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin;
+        var targetUserId = (isAdministrative && dto.UserId.HasValue) ? dto.UserId.Value : PersonId;
         var result = await approvals.SubmitRequestAsync(
             new SubmitApprovalRequestCommand(
                 targetUserId,

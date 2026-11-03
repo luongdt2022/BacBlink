@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Lms.Domain;
 
@@ -50,7 +51,8 @@ public interface ILmsManagementService
 
 public sealed class LmsManagementService(
     DbContext db,
-    ILmsRagIndexer ragIndexer) : ILmsManagementService
+    ILmsRagIndexer ragIndexer,
+    IObjectStorage? storage = null) : ILmsManagementService
 {
     public async Task<PagedResult<LmsMaterialListItemDto>> GetManagementListAsync(
         LmsMaterialFilterRequest filter,
@@ -438,8 +440,12 @@ public sealed class LmsManagementService(
         return $"MAT-{datePart}-{randPart}";
     }
 
-    private static LearningMaterialDetailDto MapToDetailDto(LearningMaterial m)
+    private LearningMaterialDetailDto MapToDetailDto(LearningMaterial m)
     {
+        var videoDownloadUrl = !string.IsNullOrWhiteSpace(m.VideoStorageKey)
+            ? (storage != null ? storage.PublicUrl(m.VideoStorageKey) : $"/files/{m.VideoStorageKey}")
+            : null;
+
         return new LearningMaterialDetailDto(
             m.Id,
             m.MaterialCode,
@@ -478,10 +484,12 @@ public sealed class LmsManagementService(
             m.QuizQuestions.Select(q => new QuizQuestionDto(
                 q.Id, q.DisplayOrder, q.QuestionText, q.OptionA, q.OptionB, q.OptionC, q.OptionD, q.CorrectOption, q.Explanation, q.HasLengthWarning)).ToList(),
             m.Attachments.Select(a => new AttachmentDto(
-                a.Id, a.Category, a.FileName, a.StorageKey, a.ContentType, a.FileSizeBytes, a.Sha256Hash, a.DisplayOrder)).ToList(),
+                a.Id, a.Category, a.FileName, a.StorageKey, a.ContentType, a.FileSizeBytes, a.Sha256Hash, a.DisplayOrder,
+                !string.IsNullOrWhiteSpace(a.StorageKey) ? (storage != null ? storage.PublicUrl(a.StorageKey) : $"/files/{a.StorageKey}") : null)).ToList(),
             m.DbLinks.Select(l => new DbLinkDto(
                 l.Id, l.TargetUrl, l.DisplayLabel, l.Description, l.TargetEntityType, l.TargetId, l.TargetCode, l.DisplayOrder)).ToList(),
             m.ModerationLogs.Select(log => new ModerationLogDto(
-                log.Id, log.Action, log.Reason, log.ActorId, log.ActorName, log.OldStatus, log.NewStatus, log.OccurredAt)).ToList());
+                log.Id, log.Action, log.Reason, log.ActorId, log.ActorName, log.OldStatus, log.NewStatus, log.OccurredAt)).ToList(),
+            videoDownloadUrl);
     }
 }

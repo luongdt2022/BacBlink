@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Lms.Domain;
 
@@ -35,7 +36,7 @@ public interface ILmsCatalogService
         CancellationToken ct = default);
 }
 
-public sealed class LmsCatalogService(DbContext db) : ILmsCatalogService
+public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = null) : ILmsCatalogService
 {
     public async Task<LmsCatalogResponse> GetCatalogAsync(
         LmsMaterialFilterRequest filter,
@@ -153,6 +154,10 @@ public sealed class LmsCatalogService(DbContext db) : ILmsCatalogService
                 isStaffOrAuthor && q.HasLengthWarning);
         }).ToList();
 
+        var videoDownloadUrl = !string.IsNullOrWhiteSpace(material.VideoStorageKey)
+            ? (storage != null ? storage.PublicUrl(material.VideoStorageKey) : $"/files/{material.VideoStorageKey}")
+            : null;
+
         return new LearningMaterialDetailDto(
             material.Id,
             material.MaterialCode,
@@ -190,10 +195,12 @@ public sealed class LmsCatalogService(DbContext db) : ILmsCatalogService
                 i.Id, i.ExpertProfileId, i.FullName, i.TitleDegree, i.OrgName, i.AvatarUrl, i.DisplayOrder, i.IsLead, i.RoleDescription)).ToList(),
             questions,
             material.Attachments.Select(a => new AttachmentDto(
-                a.Id, a.Category, a.FileName, a.StorageKey, a.ContentType, a.FileSizeBytes, a.Sha256Hash, a.DisplayOrder)).ToList(),
+                a.Id, a.Category, a.FileName, a.StorageKey, a.ContentType, a.FileSizeBytes, a.Sha256Hash, a.DisplayOrder,
+                !string.IsNullOrWhiteSpace(a.StorageKey) ? (storage != null ? storage.PublicUrl(a.StorageKey) : $"/files/{a.StorageKey}") : null)).ToList(),
             material.DbLinks.Select(l => new DbLinkDto(
                 l.Id, l.TargetUrl, l.DisplayLabel, l.Description, l.TargetEntityType, l.TargetId, l.TargetCode, l.DisplayOrder)).ToList(),
-            []);
+            [],
+            videoDownloadUrl);
     }
 
     public async Task<LearnerProgress?> GetLearnerProgressAsync(

@@ -74,7 +74,8 @@ public sealed record AttachmentDto(
     string ContentType,
     long FileSizeBytes,
     string? Sha256Hash,
-    int DisplayOrder);
+    int DisplayOrder,
+    string? DownloadUrl = null);
 
 public sealed record DbLinkDto(
     Guid? Id,
@@ -133,7 +134,8 @@ public sealed record LearningMaterialDetailDto(
     IReadOnlyList<QuizQuestionDto> QuizQuestions,
     IReadOnlyList<AttachmentDto> Attachments,
     IReadOnlyList<DbLinkDto> DbLinks,
-    IReadOnlyList<ModerationLogDto> ModerationLogs);
+    IReadOnlyList<ModerationLogDto> ModerationLogs,
+    string? VideoDownloadUrl = null);
 
 public sealed class CreateLearningMaterialRequest
 {

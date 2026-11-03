@@ -81,7 +81,17 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
             ApprovalRequestTypes.Shop,
             ScopeTypes.Province,
             "HP",
-            JsonSerializer.Serialize(new { shopName = "Cửa hàng KH&CN Hải Phòng", taxCode = "0201234567" }),
+            JsonSerializer.Serialize(new SubmitShopApprovalPayload
+            {
+                EntityType = "ENTERPRISE",
+                TaxCode = "0201234567",
+                OrgName = "Cửa hàng KH&CN Hải Phòng",
+                LegalDocUrl = "https://storage.nacentech.vn/legal-docs/dkkd_hp.pdf",
+                MainSector = "LV01",
+                Province = "HP",
+                Description = "Cung cấp thiết bị và công nghệ đo lường KH&CN.",
+                PledgeAgreed = true
+            }),
             DateTimeOffset.UtcNow.AddHours(48));
 
         var created = await service.SubmitRequestAsync(submitCmd, CancellationToken.None);

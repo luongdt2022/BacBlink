@@ -5,7 +5,12 @@ using NacenTech.Modules.Identity.Domain;
 
 namespace NacenTech.Modules.Identity.Application;
 
-public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock, IExpertApprovalSynchronizer expertApproval) : IApprovalService
+public sealed class ApprovalService(
+    DbContext db,
+    IUnitOfWork uow,
+    IClock clock,
+    IExpertApprovalSynchronizer expertApproval,
+    IEnterpriseApprovalSynchronizer enterpriseApproval) : IApprovalService
 {
     public async Task<PagedResult<ApprovalRequestDto>> GetApprovalsAsync(ApprovalListFilter filter, ICurrentActor actor, CancellationToken ct)
     {
@@ -71,6 +76,11 @@ public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock,
 
     public async Task<ApprovalRequestDto> SubmitRequestAsync(SubmitApprovalRequestCommand cmd, CancellationToken ct)
     {
+        if (cmd.RequestType == ApprovalRequestTypes.Shop)
+        {
+            ValidateShopApprovalPayload(cmd.PayloadJson);
+        }
+
         var slaDeadline = cmd.SlaDeadlineUtc ?? cmd.RequestType switch
         {
             ApprovalRequestTypes.Account => clock.UtcNow.AddHours(4),
@@ -167,6 +177,9 @@ public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock,
 
         if (request.RequestType == ApprovalRequestTypes.Expert && normalizedAction != "FORWARD")
             await expertApproval.ApplyAsync(request.UserId, request.PayloadJson, normalizedAction, cmd.ReviewNote, ct);
+
+        if (request.RequestType == ApprovalRequestTypes.Institution && normalizedAction != "FORWARD")
+            await enterpriseApproval.ApplyAsync(request.UserId, request.ScopeId, request.PayloadJson, normalizedAction, cmd.ReviewNote, ct);
 
         // BR-ADM-003: Immutable Audit Trail
         var audit = new ApprovalAuditLog(
@@ -321,6 +334,11 @@ public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock,
             await expertApproval.ApplyAsync(request.UserId, request.PayloadJson, "APPROVE", $"[ADMIN_OVERRIDE]: {cmd.OverrideReason.Trim()}", ct);
         }
 
+        if (request.RequestType == ApprovalRequestTypes.Institution)
+        {
+            await enterpriseApproval.ApplyAsync(request.UserId, request.ScopeId, request.PayloadJson, "APPROVE", $"[ADMIN_OVERRIDE]: {cmd.OverrideReason.Trim()}", ct);
+        }
+
         var audit = new ApprovalAuditLog(
             actorId,
             actor.PlatformRole,
@@ -442,6 +460,7 @@ public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock,
                 break;
 
             case ApprovalRequestTypes.Institution:
+                person.AssignRoleAndScope(PlatformRoles.InnovationEntity, ScopeTypes.Province, request.ScopeId);
                 if (Guid.TryParse(request.ScopeId, out var orgId))
                 {
                     var org = await db.Set<OrganizationUnit>().FirstOrDefaultAsync(o => o.Id == orgId, ct);
@@ -456,8 +475,87 @@ public sealed class ApprovalService(DbContext db, IUnitOfWork uow, IClock clock,
         var person = await db.Set<Person>().FirstOrDefaultAsync(p => p.Id == request.UserId, ct);
         if (person is null) return;
 
-        // BR-ADM-007: Khi Super Admin thu hồi quyền chuyên gia, tài khoản bị hạ cấp về PUBLIC_USER
+        // BR-ADM-007: Khi Super Admin thu hồi quyền, tài khoản bị hạ cấp về PUBLIC_USER
         person.AssignRoleAndScope(PlatformRoles.PublicUser, ScopeTypes.Global, null);
+
+        if (request.RequestType == ApprovalRequestTypes.Institution)
+        {
+            await enterpriseApproval.ApplyAsync(request.UserId, request.ScopeId, request.PayloadJson, "REVOKE", null, ct);
+        }
+    }
+
+    private static void ValidateShopApprovalPayload(string payloadJson)
+    {
+        if (string.IsNullOrWhiteSpace(payloadJson))
+            throw new ValidationException("Dữ liệu hồ sơ (PayloadJson) không được để trống.");
+
+        SubmitShopApprovalPayload? payload;
+        try
+        {
+            payload = System.Text.Json.JsonSerializer.Deserialize<SubmitShopApprovalPayload>(
+                payloadJson,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            throw new ValidationException("Dữ liệu hồ sơ (PayloadJson) không đúng định dạng JSON.");
+        }
+
+        if (payload is null)
+            throw new ValidationException("Dữ liệu hồ sơ (PayloadJson) không được để trống.");
+
+        if (string.IsNullOrWhiteSpace(payload.EntityType) ||
+            (payload.EntityType != "ENTERPRISE" && payload.EntityType != "INSTITUTION_RND"))
+        {
+            throw new ValidationException("Loại hình pháp nhân không hợp lệ. Bắt buộc là 'ENTERPRISE' hoặc 'INSTITUTION_RND'.");
+        }
+
+        if (string.IsNullOrWhiteSpace(payload.OrgName) || payload.OrgName.Trim().Length < 5)
+        {
+            throw new ValidationException("Tên đơn vị bắt buộc và phải có ít nhất 5 ký tự.");
+        }
+
+        if (payload.EntityType == "ENTERPRISE")
+        {
+            if (string.IsNullOrWhiteSpace(payload.TaxCode) ||
+                !System.Text.RegularExpressions.Regex.IsMatch(payload.TaxCode.Trim(), @"^\d{10}(\d{3})?$"))
+            {
+                throw new ValidationException("Mã số thuế doanh nghiệp không được để trống và phải gồm 10 hoặc 13 chữ số.");
+            }
+        }
+        else if (payload.EntityType == "INSTITUTION_RND")
+        {
+            if (string.IsNullOrWhiteSpace(payload.EstablishmentDecisionNo) || payload.EstablishmentDecisionNo.Trim().Length < 5)
+            {
+                throw new ValidationException("Số Quyết định thành lập / Giấy phép KH&CN không được để trống và phải từ 5 ký tự trở lên.");
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(payload.LegalDocUrl) ||
+            !payload.LegalDocUrl.Trim().EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ValidationException("Tệp văn bản pháp lý minh chứng bắt buộc phải là định dạng PDF.");
+        }
+
+        if (string.IsNullOrWhiteSpace(payload.MainSector))
+        {
+            throw new ValidationException("Lĩnh vực công nghệ TT17 không được để trống.");
+        }
+
+        if (string.IsNullOrWhiteSpace(payload.Province))
+        {
+            throw new ValidationException("Sở KH&CN tiếp nhận thẩm định không được để trống.");
+        }
+
+        if (string.IsNullOrWhiteSpace(payload.Description) || payload.Description.Trim().Length < 10)
+        {
+            throw new ValidationException("Mô tả năng lực cung ứng phải từ 10 ký tự trở lên.");
+        }
+
+        if (!payload.PledgeAgreed)
+        {
+            throw new ValidationException("Đơn vị bắt buộc phải cam kết tuân thủ quy chế và quyền SHTT.");
+        }
     }
 
     private static ApprovalRequestDto ToDto(ApprovalRequest x, PersonDto? user) => new(

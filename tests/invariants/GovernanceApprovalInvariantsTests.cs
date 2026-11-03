@@ -357,5 +357,25 @@ public sealed class GovernanceApprovalInvariantsTests
         var sameDayHours = NacenTech.Persistence.Workers.ApprovalSlaMonitorWorker.CalculateWorkingHours(monday10AmSameDay, monday2PmSameDay);
         sameDayHours.ShouldBe(3.0);
     }
+
+    [Fact]
+    public void Institution_approval_scope_with_province_code_preserves_innovation_entity_role()
+    {
+        var person = Person.Register("ent@example.vn", "hash", "PBKDF2_V3", "First", "Last", "0900000000", "Org", true, PlatformRoles.PublicUser);
+
+        // ScopeId là chuỗi mã tỉnh ("HN", "HCM") không phải Guid
+        const string provinceScopeId = "HN";
+        person.AssignRoleAndScope(PlatformRoles.InnovationEntity, ScopeTypes.Province, provinceScopeId);
+
+        person.PlatformRole.ShouldBe(PlatformRoles.InnovationEntity);
+        person.ScopeType.ShouldBe(ScopeTypes.Province);
+        person.ScopeId.ShouldBe("HN");
+
+        // Khi revoke: hạ cấp về PUBLIC_USER
+        person.AssignRoleAndScope(PlatformRoles.PublicUser, ScopeTypes.Global, null);
+        person.PlatformRole.ShouldBe(PlatformRoles.PublicUser);
+        person.ScopeType.ShouldBe(ScopeTypes.Global);
+        person.ScopeId.ShouldBeNull();
+    }
 }
 

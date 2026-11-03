@@ -157,6 +157,15 @@ public class EnterpriseService : IEnterpriseService
         var ent = await ResolveEnterpriseByPersonAsync(personId, email, ct);
         if (ent is null) return null;
 
+        // Tự động đảm bảo chế độ DUAL cho tài khoản ĐMST (INNOVATION_ENTITY)
+        if ((ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true) && (!ent.IsBuyer || !ent.IsSeller))
+        {
+            ent.IsBuyer = true;
+            ent.IsSeller = true;
+            ent.CapabilityTier = "DUAL";
+            await _repository.UpdateAsync(ent, ct);
+        }
+
         return MapToFullDto(ent);
     }
 
@@ -177,7 +186,24 @@ public class EnterpriseService : IEnterpriseService
         if (ent is null)
             throw new InvalidOperationException("Không tìm thấy hồ sơ doanh nghiệp tương ứng để chuyển vai trò.");
 
-        ent.SwitchActiveRole(targetRole);
+        var normalizedTarget = (targetRole ?? string.Empty).Trim().ToUpperInvariant();
+        // Self-healing: Nếu doanh nghiệp có tier DUAL hoặc là INNOVATION_ENTITY mà cờ năng lực chưa được bật đồng bộ
+        if (normalizedTarget == "BUYER" && !ent.IsBuyer)
+        {
+            if (ent.CapabilityTier == "DUAL" || ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true)
+            {
+                ent.ActivateCapability("BUYER");
+            }
+        }
+        else if (normalizedTarget == "SELLER" && !ent.IsSeller)
+        {
+            if (ent.CapabilityTier == "DUAL" || ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true)
+            {
+                ent.ActivateCapability("SELLER");
+            }
+        }
+
+        ent.SwitchActiveRole(normalizedTarget);
         await _repository.UpdateAsync(ent, ct);
         return MapToFullDto(ent);
     }

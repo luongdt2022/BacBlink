@@ -74,7 +74,7 @@ public sealed class FilesController(IDataRoomService dataRoom) : V1ControllerBas
 /// Hỗ trợ HTTP 206 Partial Content (enableRangeProcessing: true) cho video streaming (TASK-10).
 /// </summary>
 [Route("files")]
-public sealed class FileContentController(IDataRoomService dataRoom) : ControllerBase
+public sealed class FileContentController(IDataRoomService dataRoom, IObjectStorage storage) : ControllerBase
 {
     private static readonly FileExtensionContentTypeProvider ContentTypeProvider = CreateContentTypeProvider();
 
@@ -92,24 +92,38 @@ public sealed class FileContentController(IDataRoomService dataRoom) : Controlle
     public async Task<IActionResult> Get(string key, [FromServices] ICurrentActor actor, CancellationToken ct)
     {
         var doc = await dataRoom.FindByStorageKeyAsync(key, ct);
-        if (doc is null) return NotFound();
-        var opened = await dataRoom.OpenAsync(doc.Id, actor.PersonId, ct);
-        if (opened is null) return NotFound();
-
-        var contentType = doc.ContentType;
-        if (string.IsNullOrWhiteSpace(contentType) || contentType == "application/octet-stream")
+        if (doc is not null)
         {
-            if (!string.IsNullOrWhiteSpace(doc.FileName) && ContentTypeProvider.TryGetContentType(doc.FileName, out var resolvedContentType))
+            var opened = await dataRoom.OpenAsync(doc.Id, actor.PersonId, ct);
+            if (opened is null) return NotFound();
+
+            var contentType = doc.ContentType;
+            if (string.IsNullOrWhiteSpace(contentType) || contentType == "application/octet-stream")
             {
-                contentType = resolvedContentType;
+                if (!string.IsNullOrWhiteSpace(doc.FileName) && ContentTypeProvider.TryGetContentType(doc.FileName, out var resolvedContentType))
+                {
+                    contentType = resolvedContentType;
+                }
             }
-        }
-        if (string.IsNullOrWhiteSpace(contentType))
-        {
-            contentType = "application/octet-stream";
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            return File(opened.Value.Content, contentType, doc.FileName, enableRangeProcessing: true);
         }
 
-        return File(opened.Value.Content, contentType, doc.FileName, enableRangeProcessing: true);
+        // Fallback trực tiếp tới IObjectStorage cho học liệu LMS và các file lưu trữ tĩnh
+        var directStream = await storage.OpenReadAsync(key, ct);
+        if (directStream is null) return NotFound();
+
+        var fileName = Path.GetFileName(key);
+        if (!ContentTypeProvider.TryGetContentType(fileName, out var directContentType))
+        {
+            directContentType = "application/octet-stream";
+        }
+
+        return File(directStream, directContentType, fileName, enableRangeProcessing: true);
     }
 }
 

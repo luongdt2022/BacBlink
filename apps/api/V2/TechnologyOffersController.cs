@@ -905,7 +905,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
     // DEFECT-06: Phê duyệt công nghệ chỉ dành cho Cán bộ Sở KH&CN, cấm AllowAnonymous
     [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/review")]
     [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/review")]
-    [Authorize(Roles = "DEPT_ADMIN,DEPT_OFFICER,ADMIN")]
+    [Authorize(Roles = "PROVINCIAL_ADMIN,CLUSTER_ADMIN,SUPER_ADMIN,OPERATOR_ADMIN,ADMIN,DEPT_ADMIN,DEPT_OFFICER")]
     public async Task<IActionResult> ReviewOffer(Guid id, [FromBody] ReviewOfferDto dto, CancellationToken ct = default)
     {
         // DEFECT-07: Đọc trực tiếp từ CSDL PostgreSQL để đảm bảo kiến trúc Stateless
@@ -918,6 +918,30 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         if (entity == null && !hasInStore)
         {
             return NotFound(new { success = false, message = "Không tìm thấy hồ sơ công nghệ." });
+        }
+
+        // T-04.118: Kiểm tra quy tắc phân quyền địa bàn (Scoped RBAC)
+        var offerScopeId = entity?.ScopeId ?? existing?.ScopeId;
+        var isGlobalAdmin = Actor.PlatformRole is "SUPER_ADMIN" or "OPERATOR_ADMIN" or "ADMIN"
+            || User.IsInRole("SUPER_ADMIN") || User.IsInRole("OPERATOR_ADMIN") || User.IsInRole("ADMIN");
+        var isProvincialAdmin = string.Equals(Actor.PlatformRole, "PROVINCIAL_ADMIN", StringComparison.OrdinalIgnoreCase)
+            || User.IsInRole("PROVINCIAL_ADMIN");
+
+        if (!isGlobalAdmin && isProvincialAdmin)
+        {
+            var normOfferScope = offerScopeId?.Trim().Replace("VN-", "", StringComparison.OrdinalIgnoreCase).ToUpperInvariant();
+            var normActorScope = Actor.ScopeId?.Trim().Replace("VN-", "", StringComparison.OrdinalIgnoreCase).ToUpperInvariant();
+
+            if (!string.IsNullOrWhiteSpace(normOfferScope) &&
+                !string.Equals(normOfferScope, "GLOBAL", StringComparison.OrdinalIgnoreCase) &&
+                normOfferScope != normActorScope)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    success = false,
+                    message = "Cán bộ Quản trị địa bàn không có quyền phê duyệt hồ sơ ngoài phạm vi địa bàn quản lý."
+                });
+            }
         }
 
         var action = dto.Action.ToUpperInvariant();
@@ -957,22 +981,10 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 entity.Review(action, dto.ReviewNote);
             }
 
-            // DEFECT-10: Bắt DbUpdateConcurrencyException khi nhiều cán bộ review đồng thời
-            try
-            {
-                // DEFECT-10: Bắt DbUpdateConcurrencyException khi cập nhật đồng thời
+            // DEFECT-10: Bắt DbUpdateConcurrencyException khi cập nhật đồng thời
             try
             {
                 await uow.CommitAsync(ct);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return Conflict(new
-                {
-                    success = false,
-                    message = "Hồ sơ công nghệ đã được thay đổi bởi một phiên làm việc khác. Vui lòng tải lại và thử lại."
-                });
-            }
             }
             catch (DbUpdateConcurrencyException)
             {
