@@ -2,7 +2,7 @@
 
 **CR-ID**: CR-2026-021  
 **Epic**: TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17  
-**Status**: APPROVED  
+**Status**: SHIPPED  
 **Target Version**: 1.4.0  
 **Author**: PO kiêm Senior BA (`nacen-po-pm` & `nacen-ba`)  
 **Date**: 2026-11-03  

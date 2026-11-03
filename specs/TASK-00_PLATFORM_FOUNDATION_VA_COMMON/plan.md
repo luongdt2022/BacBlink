@@ -829,3 +829,73 @@ public sealed class SubmitShopApprovalPayloadValidator : AbstractValidator<Submi
 | `sellerTaxLookupMsg` | `string \| null` | Phản hồi thông tin đối soát từ API CSDL Doanh nghiệp Quốc gia. |
 | `isSubmittingSeller` | `boolean` | Khóa nút nộp đơn, hiển thị spinner chống double-submit trong khi gửi request. |
 
+---
+
+## Plan Delta v18: Thiết Kế Kỹ Thuật Typography Be Vietnam Pro & JetBrains Mono (CR-2026-022)
+
+**Căn cứ thiết kế:** Quyết định PO-DEC-20261103-03; Đồng bộ 100% typography hệ thống với Cục Thông tin KH&CN Quốc gia (`sti.gov.vn`) và nền tảng số `trace.nacencheck.com`.
+
+### 1. Kiến Trúc Tích Hợp Font Next.js (`src/app/layout.tsx`)
+
+Thay thế toàn bộ việc nhập khẩu `Nunito_Sans` và `Lora` bằng `Be_Vietnam_Pro` và `JetBrains_Mono` thông qua module `next/font/google`:
+
+```typescript
+import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-be-vietnam-pro",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="vi" className={`${beVietnamPro.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
+        {/* providers & components */}
+      </body>
+    </html>
+  );
+}
+```
+
+### 2. Cấu Hình Design Tokens Toàn Cục (`src/app/globals.css`)
+
+Ánh xạ lại các token typography trong `@theme` Tailwind CSS v4:
+
+```css
+@theme {
+  --font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-be-vietnam-pro: var(--font-sans);
+}
+```
+
+### 3. Ma Trận Kỹ Thuật Bảo Toàn Kỷ Luật Hiển Thị
+
+1. **Zero CLS**: Sử dụng thuộc tính `display: "swap"` nạp font tĩnh tự lưu trữ nội bộ qua Next.js font optimization, triệt tiêu CLS trong Core Web Vitals.
+2. **Zero Horizontal Overflow**: Đã cấu hình `overflow-x: clip` trên `html`, `body` và quản lý breakpoint menu điều hướng `hidden xl:flex` kết hợp `whitespace-nowrap`, bảo đảm không bao giờ tràn ngang hay gãy menu ở độ phân giải 1024px – 1366px hay khi zoom A+ 110%.
+3. **Touch Targets $\ge 44\text{px}$**: Duy trì chuẩn `min-h-11 min-w-11` (2.75rem = 44px) trên toàn bộ buttons, controls, select triggers.
+
+### 4. Kế Hoạch Kiểm Thử Tự Động (QC Test Plan)
+
+Cập nhật `src/test/qc-gate4-typography.test.ts`:
+- Kiểm tra `layout.tsx` nhập khẩu `Be_Vietnam_Pro` và `JetBrains_Mono` với đầy đủ cấu hình subset, display và variable.
+- Kiểm tra `globals.css` định nghĩa `--font-sans` và `--font-heading` ánh xạ tới `--font-be-vietnam-pro`, `--font-mono` ánh xạ tới `--font-jetbrains-mono`.
+- Chạy Vitest test suite xác nhận 100% Green.
+
+

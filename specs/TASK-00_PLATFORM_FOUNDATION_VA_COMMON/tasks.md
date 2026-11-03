@@ -379,3 +379,30 @@
     * `payload_json` chứa đầy đủ `entityType`, mã định danh pháp nhân, `legalDocUrl`, `legalDocFileName` và không có mock ngầm.
   - [x] Ký biên bản nghiệm thu Quality Gate 5 theo chuẩn hiến pháp NacenTech.
 
+---
+
+## Giai đoạn 22: Delta v18 (CR-2026-022) — Chuyển Đổi Typography Toàn Hệ Thống Sang Be Vietnam Pro Đồng Bộ 100% sti.gov.vn và trace.nacencheck.com [`[CR-2026-022]`]
+
+- [x] `T-00.91` **[CR-2026-022] [FE] Tích hợp Be_Vietnam_Pro và JetBrains_Mono trong `src/app/layout.tsx`**:
+  - [x] Nhập khẩu `Be_Vietnam_Pro` và `JetBrains_Mono` từ `next/font/google`.
+  - [x] Cấu hình `subsets: ["vietnamese", "latin"]`, `display: "swap"`, gán biến `--font-be-vietnam-pro` và `--font-jetbrains-mono`.
+  - [x] Gán biến font lên thẻ `<html>` gốc trong `RootLayout`.
+
+- [x] `T-00.92` **[CR-2026-022] [FE] Cập nhật Token CSS Variables tại `src/app/globals.css`**:
+  - [x] Ánh xạ `--font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;`.
+  - [x] Ánh xạ `--font-heading: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;`.
+  - [x] Ánh xạ `--font-serif: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;`.
+  - [x] Ánh xạ `--font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;`.
+  - [x] Giữ `--font-be-vietnam-pro: var(--font-sans);` để tương thích ngược.
+
+- [x] `T-00.93` **[CR-2026-022] [Test] Cập nhật và thực thi kiểm thử đơn vị `qc-gate4-typography.test.ts`**:
+  - [x] Cập nhật các test assertion trong `src/test/qc-gate4-typography.test.ts` để kiểm chứng việc nạp đúng `Be_Vietnam_Pro` và `JetBrains_Mono`.
+  - [x] Kiểm chứng các ràng buộc: `--font-sans`, `--font-heading`, `--font-mono`, `display: swap`, `subsets: ["vietnamese", "latin"]`.
+  - [x] Chạy Vitest xác nhận 100% PASS (Green).
+
+- [x] `T-00.94` **[CR-2026-022] [QC/Gate] Kiểm tra hồi quy không vỡ giao diện & nghiệm thu Gate 1/2**:
+  - [x] Kiểm chứng không xuất hiện thanh cuộn ngang khi co giãn chữ A+ 110% (`overflow-x: clip`).
+  - [x] Kiểm chứng Touch Target tối thiểu $\ge 44 \times 44\text{px}$ trên các nút điều khiển cỡ chữ.
+  - [x] Xác nhận toàn bộ hệ thống sẵn sàng bàn giao cho Dev triển khai Đợt 2.
+
+

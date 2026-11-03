@@ -879,3 +879,61 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 | **BR-UPG-03** | `BR-UPG-03` | `AC-CR-021.2`, `AC-CR-021.3` | `src/app/profile/upgrade/page.tsx`, Backend Validator | FluentValidation Unit Tests |
 | **BR-UPG-04** | `BR-UPG-04` | `AC-CR-021.4`, `AC-CR-021.5` | `src/app/profile/upgrade/page.tsx`, `ApprovalService.cs` | Vitest, Backend Integration Tests |
 
+---
+
+## Spec Delta v18 (CR-2026-022): Chuyển Đổi Typography Toàn Hệ Thống Sang Be Vietnam Pro Đồng Bộ 100% sti.gov.vn và trace.nacencheck.com
+
+**Căn cứ pháp lý & Thiết kế cơ sở:** Quyết định PO-DEC-20261103-03 tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 7.3 & Mục 10; Hệ sinh thái Cục Thông tin KH&CN Quốc gia (`sti.gov.vn`) và Nền tảng Truy xuất Nguồn gốc Quốc gia (`trace.nacencheck.com`).
+
+### 1. Bối Cảnh & Lý Do Thay Đổi (Context & Problem Statement)
+
+1. **Yêu cầu Đồng Bộ 100% Nhận Diện Hệ Sinh Thái KH&CN**: Cổng Dữ liệu số Quốc gia NacenTwin (Viện Ứng Dụng Công Nghệ NacenTech - Bộ KH&CN) là nền tảng số cốt lõi kết nối các dịch vụ trong hệ sinh thái Bộ KH&CN. Để đảm bảo nhận diện thương hiệu số đồng nhất với Cục Thông tin KH&CN Quốc gia (`sti.gov.vn`) và nền tảng số liên kết `trace.nacencheck.com`, toàn bộ hệ thống chuyển đổi thống nhất sang sử dụng **Be Vietnam Pro** cho toàn bộ UI và Headings.
+2. **Font Dữ Liệu Kỹ Thuật JetBrains Mono**: Bổ sung font monospaced **JetBrains Mono** cho các khối số liệu, mã định danh `REQ-`, `DMD-`, MST, Hash blockchain/ZK-proofs để chống nhầm lẫn số và ký tự.
+3. **Bảo toàn Kỷ Luật Hiển Thị Bất Biến**: Bảo toàn tuyệt đối cơ chế Zero CLS (`display: 'swap'`), Zero Horizontal Overflow ở nấc co giãn chữ A+ 110% (`overflow-x: clip`), và Touch Target tối thiểu $\ge 44 \times 44\text{px}$.
+
+### 2. Yêu Cầu Kỹ Thuật & Điểm Neo Nghiệp Vụ Bất Biến (Invariant Invariants)
+
+- **REQ-UI-FONT-01 (Chuẩn Hóa Font Be Vietnam Pro Toàn Hệ Thống)**:
+  - Hệ thống Frontend MUST sử dụng font chữ **`Be Vietnam Pro`** làm font chữ chính thức duy nhất cho toàn bộ giao diện người dùng (body text, inputs, buttons, tables, badges, cards, dialogs) và toàn bộ các cấp tiêu đề (headings `h1` đến `h6`, display banners, quốc hiệu, tiêu ngữ), nạp trực tiếp qua `next/font/google` với đầy đủ subset `vietnamese` và `latin`.
+  - Hỗ trợ các weights: `400 (Regular)`, `500 (Medium)`, `600 (SemiBold)`, `700 (Bold)`, `800 (ExtraBold)`.
+
+- **REQ-UI-FONT-02 (Chuẩn Hóa Font JetBrains Mono Cho Dữ Liệu Kỹ Thuật)**:
+  - Hệ thống Frontend MUST sử dụng font chữ **`JetBrains Mono`** cho các khối dữ liệu kỹ thuật, mã định danh, số liệu blockchain/zk-proof, mã số thuế (MST), mã hồ sơ và mã hash bảo mật, đảm bảo độ rộng ký tự đồng đều (monospace) và phân biệt tuyệt đối giữa số 0 và chữ O, số 1 và chữ l.
+  - Hỗ trợ các weights: `400 (Regular)`, `500 (Medium)`, `600 (SemiBold)`.
+
+- **BR-UI-01 (Kỷ Luật Zero Cumulative Layout Shift - Zero CLS)**:
+  - Nạp font thông qua `next/font/google` với `display: 'swap'` và định nghĩa CSS variables tĩnh trên thẻ `<html>` gốc để triệt tiêu hoàn toàn hiện tượng giật khung hình tải trang ban đầu (Cumulative Layout Shift = 0).
+
+- **BR-UI-02 (Kỷ Luật Zero Horizontal Overflow Khi Co Giãn Chữ A+ 110%)**:
+  - Tại mọi độ phân giải màn hình từ di động (320px) đến 4K, khi người dùng kích hoạt nấc phóng to cỡ chữ toàn cục A+ (110% qua `html[data-text-scale="lg"]`), hệ thống MUST bảo đảm không xuất hiện thanh cuộn ngang ngoài ý muốn (`overflow-x: clip` trên `html`, `body`), không vỡ khối điều hướng và không đè chữ lẫn nhau.
+
+- **UI-FONT-01 (Cấu Hình Token CSS Variables Nền Tảng)**:
+  - Cấu hình các biến CSS design tokens toàn cục tại `src/app/globals.css`:
+    * `--font-sans`: trỏ về `var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;`
+    * `--font-heading`: trỏ về `var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;`
+    * `--font-mono`: trỏ về `var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;`
+    * `--font-be-vietnam-pro`: biến kế thừa tương thích ngược.
+
+- **TEST-FONT-01 (Bộ Kiểm Thử Đơn Vị QC Gate 4 Typography Đạt 100% Pass)**:
+  - Tích hợp kiểm chứng trong `src/test/qc-gate4-typography.test.ts` và bắt buộc phải đạt kết quả 100% PASS (Green) cho toàn bộ các tiêu chí: nạp Google fonts Be Vietnam Pro + JetBrains Mono, CSS variables, scale 3 nấc A-/A/A+, Touch Target $\ge 44\text{px}$, chống tràn menu `xl:flex` và `overflow-x: clip`.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-CR-022.1**: Tệp `src/app/layout.tsx` nạp đúng `Be_Vietnam_Pro` và `JetBrains_Mono` từ `next/font/google` với `display: 'swap'` và `subsets: ['vietnamese', 'latin']`.
+- **AC-CR-022.2**: Tệp `src/app/globals.css` ánh xạ `--font-sans` và `--font-heading` về `var(--font-be-vietnam-pro)`, `--font-mono` về `var(--font-jetbrains-mono)`.
+- **AC-CR-022.3**: Giao diện người dùng trên toàn hệ thống áp dụng font Be Vietnam Pro đồng bộ, không còn class hoặc khai báo rác trỏ tới Nunito Sans hoặc Lora.
+- **AC-CR-022.4 (Zero Horizontal Overflow)**: Kích hoạt nút cỡ chữ A+ (110%) không xuất hiện cuộn ngang (`window.scrollX === 0`) trên các độ phân giải từ 320px đến 4K.
+- **AC-CR-022.5 (Touch Targets $\ge 44\text{px}$)**: Các nút điều khiển cỡ chữ và các nút tương tác đạt diện tích chạm tối thiểu $44 \times 44\text{px}$.
+- **AC-CR-022.6 (QC Verification)**: Bộ kiểm thử `qc-gate4-typography.test.ts` đạt kết quả 100% Green (PASS).
+- **AC-CR-022.7 (Build Success)**: Lệnh `pnpm build` tại `SourceCode/frontend` kết thúc thành công với mã lỗi 0.
+
+### 4. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-UI-FONT-01** | `BR-UI-01`, `BR-UI-02` | `AC-CR-022.1`, `AC-CR-022.2`, `AC-CR-022.3` | `src/app/layout.tsx`, `src/app/globals.css` | `src/test/qc-gate4-typography.test.ts` |
+| **REQ-UI-FONT-02** | `BR-UI-01` | `AC-CR-022.1`, `AC-CR-022.2` | `src/app/layout.tsx`, `src/app/globals.css` | `src/test/qc-gate4-typography.test.ts` |
+| **UI-FONT-01** | `BR-UI-01` | `AC-CR-022.2` | `src/app/globals.css` | `src/test/qc-gate4-typography.test.ts` |
+| **TEST-FONT-01** | `BR-UI-01`, `BR-UI-02` | `AC-CR-022.4`, `AC-CR-022.5`, `AC-CR-022.6` | `src/test/qc-gate4-typography.test.ts` | Vitest Test Suite |
+
+
