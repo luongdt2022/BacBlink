@@ -249,6 +249,29 @@ export async function fetchLmsCatalog(params?: {
   };
 }
 
+function normalizeMaterialDetail(raw: any): LmsMaterialDetailDto {
+  if (!raw) return raw;
+  const data = raw.data ?? raw;
+  const videoDownloadUrl =
+    data.videoDownloadUrl ||
+    (data.videoStorageKey ? `${API_BASE}/files/${data.videoStorageKey}` : null);
+
+  const attachments = Array.isArray(data.attachments)
+    ? data.attachments.map((att: any) => ({
+        ...att,
+        downloadUrl:
+          att.downloadUrl ||
+          (att.storageKey ? `${API_BASE}/files/${att.storageKey}` : null),
+      }))
+    : [];
+
+  return {
+    ...data,
+    videoDownloadUrl,
+    attachments,
+  };
+}
+
 export async function fetchLmsCatalogDetail(id: string): Promise<LmsMaterialDetailDto> {
   const res = await fetch(`${API_BASE}/api/v1/lms/catalog/${id}`, {
     headers: getAuthHeaders(),
@@ -258,7 +281,7 @@ export async function fetchLmsCatalogDetail(id: string): Promise<LmsMaterialDeta
     throw new Error(await readApiError(res, "Không thể tải chi tiết học liệu số."));
   }
   const raw = await res.json();
-  return raw.data ?? raw;
+  return normalizeMaterialDetail(raw);
 }
 
 export async function recordLearnerProgress(id: string, watchedSeconds: number): Promise<void> {
@@ -352,7 +375,7 @@ export async function fetchLmsMaterialDetail(id: string): Promise<LmsMaterialDet
     throw new Error(await readApiError(res, "Không thể tải chi tiết học liệu quản trị."));
   }
   const raw = await res.json();
-  return raw.data ?? raw;
+  return normalizeMaterialDetail(raw);
 }
 
 export async function createLmsMaterial(payload: CreateLearningMaterialRequest): Promise<LmsMaterialDetailDto> {
@@ -367,7 +390,7 @@ export async function createLmsMaterial(payload: CreateLearningMaterialRequest):
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể tạo mới học liệu số."));
   }
-  return res.json();
+  return normalizeMaterialDetail(await res.json());
 }
 
 export async function updateLmsMaterial(
@@ -388,7 +411,7 @@ export async function updateLmsMaterial(
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể cập nhật học liệu số."));
   }
-  return res.json();
+  return normalizeMaterialDetail(await res.json());
 }
 
 export async function unpublishLmsMaterial(id: string, reason: string): Promise<void> {

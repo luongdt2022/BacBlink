@@ -7,7 +7,7 @@ import {
   TT17_SECTORS,
   IntellectualPropertyStatus,
 } from "@/types/technology-offer";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getStoredSession } from "@/lib/auth-client";
 
 export type { IntellectualPropertyStatus };
 
@@ -395,9 +395,17 @@ export async function reviewOffer(
   reviewNote?: string
 ): Promise<{ success: boolean; message?: string; data?: TechnologyOffer }> {
   try {
+    const token = authClient.getToken() || getStoredSession()?.accessToken;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const res = await fetch(`${API_BASE}/api/v1/portal/seller/technologies/${id}/review`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ action, reviewNote }),
     });
     if (res.ok) {

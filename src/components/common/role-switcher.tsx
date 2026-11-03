@@ -61,6 +61,23 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
     localStorage.setItem('nacentwin_active_role', targetRole);
 
     try {
+      // Tự động kích hoạt năng lực nếu chưa bật trên hồ sơ
+      if (targetRole === 'BUYER' && profile && !profile.isBuyer) {
+        try {
+          const updated = await activateEnterpriseCapability('BUYER');
+          setProfile(updated);
+        } catch {
+          // Bỏ qua nếu backend đã tự hồi phục năng lực
+        }
+      } else if (targetRole === 'SELLER' && profile && !profile.isSeller) {
+        try {
+          const updated = await activateEnterpriseCapability('SELLER');
+          setProfile(updated);
+        } catch {
+          // Bỏ qua nếu backend đã tự hồi phục năng lực
+        }
+      }
+
       await switchEnterpriseActiveRole(targetRole);
 
       // Cập nhật session user role nếu cần
@@ -68,6 +85,11 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
       if (user) {
         user.role = targetRole;
         authClient.setSession(authClient.getToken() || '', user);
+      }
+
+      // Phát sự kiện toàn cục để layout và menu sidebar đồng bộ ngay lập tức
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('nacentwin_role_switched', { detail: { role: targetRole } }));
       }
 
       toast.success(

@@ -346,4 +346,51 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(screen.queryByText("Tiến trình Chuyển giao & MOU")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
   });
+
+  it("QC-TEST-09: dynamically updates sidebar menu and workspace badge when switching between BUYER and SELLER in Dual Mode", async () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u-innovation",
+      email: "innovation.entity@demo.nacentech.vn",
+      fullName: "Đổi Mới Sáng Tạo Demo",
+      role: "INNOVATION_ENTITY",
+      organizationName: "Viện ĐMST Quốc Gia",
+    });
+
+    vi.mocked(enterpriseClient.fetchMyEnterpriseProfile).mockResolvedValue({
+      id: "ent-inno",
+      name: "Viện ĐMST Quốc Gia",
+      subjectType: "Doanh nghiệp ĐMST",
+      capabilityTier: "DUAL",
+      isBuyer: true,
+      isSeller: true,
+      activeRole: "SELLER",
+    });
+
+    const { act } = await import("@testing-library/react");
+
+    render(
+      <PortalLayout>
+        <div>Dual Mode Body</div>
+      </PortalLayout>
+    );
+
+    // Initial state: SELLER perspective
+    await waitFor(() => {
+      expect(screen.getByText("Workspace Nhà Cung Ứng")).toBeInTheDocument();
+      expect(screen.getByText("Nhà Cung Ứng Công Nghệ")).toBeInTheDocument();
+      expect(screen.getByText("Kho Công nghệ (TRL)")).toBeInTheDocument();
+    });
+
+    // Simulate role switch event to BUYER
+    act(() => {
+      window.dispatchEvent(new CustomEvent("nacentwin_role_switched", { detail: { role: "BUYER" } }));
+    });
+
+    // Expect sidebar menu and badge to update to BUYER perspective immediately
+    await waitFor(() => {
+      expect(screen.getByText("Workspace Bên Mua")).toBeInTheDocument();
+      expect(screen.getByText("Bên Mua Công Nghệ")).toBeInTheDocument();
+      expect(screen.getByText("Bài toán Đổi mới Công nghệ")).toBeInTheDocument();
+    });
+  });
 });

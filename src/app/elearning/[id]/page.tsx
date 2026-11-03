@@ -297,26 +297,34 @@ export default function ElearningDetailPage() {
                 <div className="lg:col-span-2 space-y-6">
                   {/* VIDEO PLAYER HTTP 206 */}
                   <div className="bg-black rounded-3xl overflow-hidden shadow-xl aspect-video relative flex items-center justify-center">
-                    {material.videoDownloadUrl ? (
-                      <video
-                        ref={videoRef}
-                        controls
-                        playsInline
-                        poster={material.thumbnailUrl || undefined}
-                        onTimeUpdate={handleVideoTimeUpdate}
-                        src={material.videoDownloadUrl}
-                        className="w-full h-full object-contain"
-                      >
-                        Trình duyệt của bạn không hỗ trợ phát thẻ video HTML5.
-                      </video>
-                    ) : (
-                      <div className="text-center p-8 space-y-3">
-                        <Film className="w-12 h-12 text-slate-600 mx-auto" />
-                        <p className="text-xs text-slate-400">
-                          Video bài giảng đang được đồng bộ và xử lý lưu trữ.
-                        </p>
-                      </div>
-                    )}
+                    {(() => {
+                      const videoSrc =
+                        material.videoDownloadUrl ||
+                        (material.videoStorageKey
+                          ? `${process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"}/files/${material.videoStorageKey}`
+                          : null);
+
+                      return videoSrc ? (
+                        <video
+                          ref={videoRef}
+                          controls
+                          playsInline
+                          poster={material.thumbnailUrl || undefined}
+                          onTimeUpdate={handleVideoTimeUpdate}
+                          src={videoSrc}
+                          className="w-full h-full object-contain"
+                        >
+                          Trình duyệt của bạn không hỗ trợ phát thẻ video HTML5.
+                        </video>
+                      ) : (
+                        <div className="text-center p-8 space-y-3">
+                          <Film className="w-12 h-12 text-slate-600 mx-auto" />
+                          <p className="text-xs text-slate-400">
+                            Video bài giảng đang được đồng bộ và xử lý lưu trữ.
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* 5 TABS NỘI DUNG CHI TIẾT */}

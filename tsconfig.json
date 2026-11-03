@@ -37,8 +37,9 @@
     ".next/types/**/*.ts",
     "/tmp/nacentech-frontend-dist/types/**/*.ts",
     "/tmp/nacentwin-next-build/types/**/*.ts",
+    "/tmp/nacentwin_next_cache/types/**/*.ts",
     "next-env.d.ts",
-    "/tmp/nacentwin_next_cache/types/**/*.ts"
+    "/tmp/nacentwin_frontend_build/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

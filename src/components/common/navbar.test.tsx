@@ -130,18 +130,29 @@ describe("Navbar account menu", () => {
     expect(tt17Link).toHaveAttribute("href", "/assessments/tt17/wizard");
   });
 
-  it("renders Dịch vụ khác dropdown containing SHTT, Radar and buyer assessment links", () => {
+  it("renders Dịch vụ khác dropdown containing TT17, SHTT, valuation, enterprise and Radar links", () => {
     render(<Navbar />);
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
     const servicesTrigger = within(mainNav).getByRole("link", { name: /^Dịch vụ$/i });
     expect(servicesTrigger).toHaveAttribute("href", "/dich-vu-khac");
 
+    const tt17ServicesLink = within(mainNav).getByRole("link", { name: /Đánh giá Trình độ DN \(TT 17\)/i });
+    expect(tt17ServicesLink).toHaveAttribute("href", "/assessments/tt17/wizard");
+    expect(within(tt17ServicesLink).getByText("TT 17")).toBeInTheDocument();
+
+    const shttLink = within(mainNav).getByRole("link", { name: /Tư vấn & Bảo hộ SHTT/i });
+    expect(shttLink).toHaveAttribute("href", "/dich-vu-khac");
+
+    const valuationLink = within(mainNav).getByRole("link", { name: /Thẩm định & Định giá Công nghệ/i });
+    expect(valuationLink).toHaveAttribute("href", "/assessments/buyer");
+
+    const enterpriseKhcnLink = within(mainNav).getByRole("link", { name: /Hồ sơ Doanh nghiệp KH&CN/i });
+    expect(enterpriseKhcnLink).toHaveAttribute("href", "/dich-vu-khac#doanh-nghiep-khcn");
+
     const radarLink = within(mainNav).getByRole("link", { name: /Radar Ghép nối Cung - Cầu/i });
     expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
-
-    const buyerLink = within(mainNav).getByRole("link", { name: /Thẩm định Hồ sơ Công nghệ/i });
-    expect(buyerLink).toHaveAttribute("href", "/assessments/buyer");
+    expect(within(radarLink).getByText("AI")).toBeInTheDocument();
   });
 
   it("handles mouse hover and click toggle on Chuyên gia dropdown", async () => {

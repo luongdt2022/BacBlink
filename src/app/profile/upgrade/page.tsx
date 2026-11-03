@@ -24,6 +24,7 @@ import {
   Check,
   AlertCircle,
   FileText,
+  Landmark,
 } from "lucide-react";
 
 function ProfileUpgradeHubContent() {
@@ -49,8 +50,15 @@ function ProfileUpgradeHubContent() {
   const [isSubmittingEnterprise, setIsSubmittingEnterprise] = useState(false);
   const [taxLookupMessage, setTaxLookupMessage] = useState<string | null>(null);
 
-  // Seller Form State
+  // Seller Form State (CR-2026-021)
+  const [sellerEntityType, setSellerEntityType] = useState<"ENTERPRISE" | "INSTITUTION_RND">("ENTERPRISE");
+  const [sellerTaxCode, setSellerTaxCode] = useState("");
+  const [sellerDecisionNo, setSellerDecisionNo] = useState("");
   const [sellerOrgName, setSellerOrgName] = useState("");
+  const [sellerFile, setSellerFile] = useState<File | null>(null);
+  const [sellerFileError, setSellerFileError] = useState<string | null>(null);
+  const [sellerTaxLookupMsg, setSellerTaxLookupMsg] = useState<string | null>(null);
+  const [isLookingUpSellerTax, setIsLookingUpSellerTax] = useState(false);
   const [sellerSector, setSellerSector] = useState("LV01");
   const [sellerProvince, setSellerProvince] = useState("HN");
   const [sellerDescription, setSellerDescription] = useState("");
@@ -97,7 +105,7 @@ function ProfileUpgradeHubContent() {
   }, [actionParam]);
 
   // Tra cứu MST
-  const handleTaxLookup = () => {
+  const handleTaxLookup = async () => {
     const cleanTax = taxCode.trim();
     if (!cleanTax) {
       setTaxLookupMessage("Vui lòng nhập Mã số thuế để tra cứu.");
@@ -106,11 +114,45 @@ function ProfileUpgradeHubContent() {
     setIsLookingUpTax(true);
     setTaxLookupMessage(null);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/enterprises/lookup-tax/${encodeURIComponent(cleanTax)}`);
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data ?? json;
+        if (data && data.found) {
+          setCompanyName(data.name || "");
+          const sourceLabel = data.source === "INTERNAL"
+            ? "CSDL Doanh nghiệp ĐMST Quốc gia"
+            : "Hệ thống ĐKKD Quốc gia (VietQR)";
+          setTaxLookupMessage(`✓ Đã tìm thấy dữ liệu: ${data.name}${data.province ? ` (${data.province})` : ""} - Nguồn: ${sourceLabel}`);
+          if (data.province) {
+            const p = data.province.toLowerCase();
+            if (p.includes("hà nội") || p.includes("ha noi") || p.includes("hn")) {
+              setEnterpriseProvince("HN");
+              setEnterpriseAuthority("HN");
+            } else if (p.includes("hồ chí minh") || p.includes("ho chi minh") || p.includes("sg") || p.includes("hcm")) {
+              setEnterpriseProvince("SG");
+              setEnterpriseAuthority("SG");
+            } else if (p.includes("đà nẵng") || p.includes("da nang") || p.includes("dn")) {
+              setEnterpriseProvince("DN");
+              setEnterpriseAuthority("DN");
+            } else if (p.includes("bình dương") || p.includes("binh duong")) {
+              setEnterpriseProvince("BD");
+            } else if (p.includes("hải phòng") || p.includes("hai phong")) {
+              setEnterpriseProvince("HP");
+            }
+          }
+        } else {
+          setTaxLookupMessage(data?.message || `Không tìm thấy thông tin doanh nghiệp với mã số thuế ${cleanTax}.`);
+        }
+      } else {
+        setTaxLookupMessage("Không thể tra cứu thông tin mã số thuế lúc này.");
+      }
+    } catch {
+      setTaxLookupMessage("Lỗi kết nối khi tra cứu mã số thuế.");
+    } finally {
       setIsLookingUpTax(false);
-      setCompanyName(`CÔNG TY TNHH PHÁT TRIỂN CÔNG NGHỆ ĐMST QUỐC GIA (MST: ${cleanTax})`);
-      setTaxLookupMessage("✓ Đã tìm thấy dữ liệu doanh nghiệp hợp lệ từ CSDL ĐKKD Quốc Gia.");
-    }, 600);
+    }
   };
 
   // Submit Doanh nghiệp ĐMST
@@ -158,13 +200,117 @@ function ProfileUpgradeHubContent() {
     }
   };
 
-  // Submit Gian hàng Seller
+  // Tra cứu MST cho Gian Hàng Seller (CR-2026-021)
+  const handleLookupSellerTaxCode = async () => {
+    const cleanTax = sellerTaxCode.trim();
+    if (!cleanTax) {
+      setSellerTaxLookupMsg("Vui lòng nhập Mã số thuế để tra cứu.");
+      return;
+    }
+    if (!/^\d{10}(\d{3})?$/.test(cleanTax)) {
+      setSellerTaxLookupMsg("Mã số thuế không hợp lệ. Bắt buộc gồm 10 hoặc 13 chữ số.");
+      return;
+    }
+    setIsLookingUpSellerTax(true);
+    setSellerTaxLookupMsg(null);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/enterprises/lookup-tax/${encodeURIComponent(cleanTax)}`);
+      if (res.ok) {
+        const json = await res.json();
+        const data = json.data ?? json;
+        if (data && data.found) {
+          setSellerOrgName(data.name || "");
+          const sourceLabel = data.source === "INTERNAL"
+            ? "CSDL Doanh nghiệp ĐMST Quốc gia"
+            : "Hệ thống ĐKKD Quốc gia (VietQR)";
+          setSellerTaxLookupMsg(`✓ Đã tìm thấy dữ liệu: ${data.name}${data.province ? ` (${data.province})` : ""} - Nguồn: ${sourceLabel}`);
+        } else {
+          setSellerTaxLookupMsg(data?.message || `Không tìm thấy thông tin doanh nghiệp với mã số thuế ${cleanTax}.`);
+        }
+      } else {
+        setSellerTaxLookupMsg("Không thể tra cứu thông tin mã số thuế lúc này.");
+      }
+    } catch {
+      setSellerTaxLookupMsg("Lỗi kết nối khi tra cứu mã số thuế.");
+    } finally {
+      setIsLookingUpSellerTax(false);
+    }
+  };
+
+  // Xử lý tệp PDF minh chứng Seller
+  const handleSellerFileChange = (file: File | null) => {
+    setSellerFileError(null);
+    if (!file) {
+      setSellerFile(null);
+      return;
+    }
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      setSellerFileError("Tệp văn bản pháp lý minh chứng bắt buộc phải là định dạng PDF.");
+      setSellerFile(null);
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setSellerFileError("Dung lượng tệp vượt quá giới hạn 10MB cho phép.");
+      setSellerFile(null);
+      return;
+    }
+    setSellerFile(file);
+  };
+
+  // Submit Gian hàng Seller (CR-2026-021: Bắt buộc định danh pháp nhân)
   const handleSubmitSeller = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sellerOrgName || !sellerDescription || !sellerPledge) return;
+    setSellerFileError(null);
+
+    if (sellerEntityType === "ENTERPRISE") {
+      if (!sellerTaxCode.trim() || !/^\d{10}(\d{3})?$/.test(sellerTaxCode.trim())) {
+        alert("Mã số thuế doanh nghiệp không được để trống và phải gồm 10 hoặc 13 chữ số.");
+        return;
+      }
+    } else {
+      if (!sellerDecisionNo.trim() || sellerDecisionNo.trim().length < 5) {
+        alert("Số Quyết định thành lập / Giấy phép KH&CN không được để trống và phải từ 5 ký tự trở lên.");
+        return;
+      }
+    }
+
+    if (!sellerOrgName.trim() || sellerOrgName.trim().length < 5) {
+      alert("Tên đơn vị bắt buộc và phải có ít nhất 5 ký tự.");
+      return;
+    }
+
+    if (!sellerFile) {
+      setSellerFileError("Tệp văn bản pháp lý minh chứng bắt buộc phải là định dạng PDF.");
+      return;
+    }
+
+    if (!sellerDescription.trim() || sellerDescription.trim().length < 10) {
+      alert("Mô tả năng lực cung ứng phải từ 10 ký tự trở lên.");
+      return;
+    }
+
+    if (!sellerPledge) {
+      alert("Đơn vị bắt buộc phải cam kết tuân thủ quy chế và quyền SHTT.");
+      return;
+    }
 
     setIsSubmittingSeller(true);
     const trackingCode = `REQ-SHOP-${Date.now().toString().slice(-6)}`;
+
+    const payload = {
+      entityType: sellerEntityType,
+      taxCode: sellerEntityType === "ENTERPRISE" ? sellerTaxCode.trim() : null,
+      establishmentDecisionNo: sellerEntityType === "INSTITUTION_RND" ? sellerDecisionNo.trim() : null,
+      orgName: sellerOrgName.trim(),
+      legalDocUrl: sellerFile.name.endsWith(".pdf") ? sellerFile.name : `${sellerFile.name}.pdf`,
+      legalDocFileName: sellerFile.name,
+      mainSector: sellerSector,
+      province: sellerProvince,
+      description: sellerDescription.trim(),
+      pledgeAgreed: sellerPledge,
+      submittedAt: new Date().toISOString(),
+    };
 
     try {
       const token = authClient.getToken();
@@ -179,13 +325,7 @@ function ProfileUpgradeHubContent() {
             requestType: "SHOP",
             scopeType: "PROVINCE",
             scopeId: sellerProvince,
-            payloadJson: JSON.stringify({
-              orgName: sellerOrgName,
-              mainSector: sellerSector,
-              province: sellerProvince,
-              description: sellerDescription,
-              submittedAt: new Date().toISOString(),
-            }),
+            payloadJson: JSON.stringify(payload),
           }),
         }).catch(() => null);
       }
@@ -796,10 +936,10 @@ function ProfileUpgradeHubContent() {
         </div>
       )}
 
-      {/* MODAL: ĐĂNG KÝ GIAN HÀNG BÊN BÁN (SELLER) */}
+      {/* MODAL: ĐĂNG KÝ GIAN HÀNG BÊN BÁN (SELLER) - CR-2026-021 */}
       {isSellerModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 flex items-center justify-center font-bold">
@@ -819,26 +959,168 @@ function ProfileUpgradeHubContent() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmitSeller} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tên Đơn Vị Cung Ứng / Viện Trường / Trung Tâm R&D *</label>
-                <input
-                  type="text"
-                  required
-                  value={sellerOrgName}
-                  onChange={(e) => setSellerOrgName(e.target.value)}
-                  placeholder="Viện Nghiên cứu & Phát triển Công nghệ Nano"
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                />
-              </div>
+            {/* BỘ CHỌN 2 TABS PHÁP NHÂN (ENTERPRISE | INSTITUTION_RND) */}
+            <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl">
+              <button
+                type="button"
+                aria-label="Doanh Nghiệp / DN KH&CN"
+                data-testid="seller-tab-enterprise"
+                onClick={() => {
+                  setSellerEntityType("ENTERPRISE");
+                  setSellerFile(null);
+                  setSellerFileError(null);
+                }}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${
+                  sellerEntityType === "ENTERPRISE"
+                    ? "bg-teal-600 text-white shadow-sm"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50"
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                Doanh Nghiệp / DN KH&CN
+              </button>
+              <button
+                type="button"
+                aria-label="Viện / Trường / R&D"
+                data-testid="seller-tab-institution"
+                onClick={() => {
+                  setSellerEntityType("INSTITUTION_RND");
+                  setSellerFile(null);
+                  setSellerFileError(null);
+                }}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition ${
+                  sellerEntityType === "INSTITUTION_RND"
+                    ? "bg-teal-600 text-white shadow-sm"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50"
+                }`}
+              >
+                <Landmark className="w-4 h-4" />
+                Viện / Trường / R&D
+              </button>
+            </div>
 
+            <form onSubmit={handleSubmitSeller} className="space-y-4 text-xs">
+              {sellerEntityType === "ENTERPRISE" ? (
+                <>
+                  {/* NHÁNH DOANH NGHIỆP: MST, TRA CỨU, TÊN, FILE ĐKKD */}
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Mã Số Thuế (MST) *</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        required
+                        value={sellerTaxCode}
+                        onChange={(e) => setSellerTaxCode(e.target.value)}
+                        placeholder="0101234567"
+                        className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-mono text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleLookupSellerTaxCode}
+                        disabled={isLookingUpSellerTax}
+                        className="px-4 py-2 bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 hover:bg-teal-100 font-bold rounded-xl transition disabled:opacity-50"
+                      >
+                        {isLookingUpSellerTax ? "Đang tra cứu..." : "Tra Cứu MST"}
+                      </button>
+                    </div>
+                    {sellerTaxLookupMsg && (
+                      <p className="text-xs text-teal-600 dark:text-teal-400 font-medium mt-1">
+                        {sellerTaxLookupMsg}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tên Doanh Nghiệp / Đơn Vị Cung Ứng *</label>
+                    <input
+                      type="text"
+                      required
+                      value={sellerOrgName}
+                      onChange={(e) => setSellerOrgName(e.target.value)}
+                      placeholder="CÔNG TY TNHH PHÁT TRIỂN CÔNG NGHỆ ĐMST"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tệp Giấy Phép ĐKKD (PDF, max 10MB) *</label>
+                    <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-teal-500 transition relative">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        data-testid="seller-file-input"
+                        onChange={(e) => handleSellerFileChange(e.target.files?.[0] || null)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                      <UploadCloud className="w-6 h-6 text-slate-400 mx-auto mb-1" />
+                      <span className="text-slate-600 dark:text-slate-300 font-semibold">
+                        {sellerFile ? sellerFile.name : "Kéo thả tệp PDF ĐKKD hoặc bấm vào đây để chọn"}
+                      </span>
+                      <div className="text-xs text-slate-400 mt-1">Định dạng hỗ trợ: .pdf (Dưới 10MB)</div>
+                    </div>
+                    {sellerFileError && (
+                      <p className="text-xs text-rose-500 font-medium mt-1">{sellerFileError}</p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* NHÁNH VIỆN / TRƯỜNG / R&D: SỐ QĐ, TÊN ĐƠN VỊ, FILE QĐ */}
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số Quyết Định Thành Lập / Mã GP KH&CN *</label>
+                    <input
+                      type="text"
+                      required
+                      value={sellerDecisionNo}
+                      onChange={(e) => setSellerDecisionNo(e.target.value)}
+                      placeholder="Ví dụ: 128/QĐ-BKHCN"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-mono text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tên Viện / Trường / Trung Tâm R&D *</label>
+                    <input
+                      type="text"
+                      required
+                      value={sellerOrgName}
+                      onChange={(e) => setSellerOrgName(e.target.value)}
+                      placeholder="Ví dụ: Viện Hàn Lâm Khoa Học & Công Nghệ Việt Nam"
+                      className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tệp Quyết Định Thành Lập / GP KH&CN (PDF, max 10MB) *</label>
+                    <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center hover:border-teal-500 transition relative">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        data-testid="seller-file-input"
+                        onChange={(e) => handleSellerFileChange(e.target.files?.[0] || null)}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                      <UploadCloud className="w-6 h-6 text-slate-400 mx-auto mb-1" />
+                      <span className="text-slate-600 dark:text-slate-300 font-semibold">
+                        {sellerFile ? sellerFile.name : "Kéo thả tệp PDF Quyết định thành lập hoặc bấm vào đây để chọn"}
+                      </span>
+                      <div className="text-xs text-slate-400 mt-1">Định dạng hỗ trợ: .pdf (Dưới 10MB)</div>
+                    </div>
+                    {sellerFileError && (
+                      <p className="text-xs text-rose-500 font-medium mt-1">{sellerFileError}</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* KHỐI TRƯỜNG DÙNG CHUNG */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Lĩnh Vực Công Nghệ Trọng Tâm (TT17) *</label>
                   <select
                     value={sellerSector}
                     onChange={(e) => setSellerSector(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   >
                     <option value="LV01">Công nghệ Thông tin & Truyền thông</option>
                     <option value="LV05">Công nghệ Sinh học & Nông nghiệp</option>
@@ -852,7 +1134,7 @@ function ProfileUpgradeHubContent() {
                   <select
                     value={sellerProvince}
                     onChange={(e) => setSellerProvince(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   >
                     <option value="HN">Sở KH&CN TP. Hà Nội</option>
                     <option value="SG">Sở KH&CN TP. Hồ Chí Minh</option>
@@ -869,7 +1151,7 @@ function ProfileUpgradeHubContent() {
                   value={sellerDescription}
                   onChange={(e) => setSellerDescription(e.target.value)}
                   placeholder="Tóm tắt các sáng chế, sản phẩm TRL 6-9 sẵn sàng chuyển giao thương mại..."
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl font-medium focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 />
               </div>
 
@@ -880,7 +1162,7 @@ function ProfileUpgradeHubContent() {
                   id="sellerPledgeCheck"
                   checked={sellerPledge}
                   onChange={(e) => setSellerPledge(e.target.checked)}
-                  className="mt-0.5 rounded text-teal-600 focus:ring-brand-500"
+                  className="mt-0.5 rounded text-teal-600 focus:ring-teal-500"
                 />
                 <label htmlFor="sellerPledgeCheck" className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs">
                   Đơn vị cam kết tuân thủ quy chế hoạt động của Sàn Giao dịch Công nghệ NacentTwin và chịu trách nhiệm về quyền sở hữu trí tuệ của các giải pháp đăng tải.

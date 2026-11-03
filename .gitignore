@@ -12,3 +12,5 @@ dist/
 .next-*/
 __pycache__/
 *.pyc
+
+tmp/

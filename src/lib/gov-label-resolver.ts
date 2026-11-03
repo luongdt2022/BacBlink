@@ -296,6 +296,7 @@ export function resolveGovRequestType(type?: string | null): {
         label: "Tài khoản Pháp nhân",
         badgeClass: "bg-slate-100 text-slate-800 border-slate-300",
       };
+    case "INSTITUTION":
     case "ENTERPRISE":
       return {
         label: "Doanh nghiệp ĐMST",
@@ -366,7 +367,7 @@ export function formatGovRecordCode(
     prefix = "CG"; // Chuyên gia KH&CN
   } else if (cleanType === "DEMAND") {
     prefix = "NC"; // Nhu cầu công nghệ
-  } else if (cleanType === "ACCOUNT" || cleanType === "ENTERPRISE") {
+  } else if (cleanType === "ACCOUNT" || cleanType === "ENTERPRISE" || cleanType === "INSTITUTION") {
     prefix = "DN"; // Doanh nghiệp ĐMST
   }
 

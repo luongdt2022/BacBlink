@@ -85,7 +85,7 @@ describe("ProfileUpgradeHubPage (AC-DELTA-12..16)", () => {
     });
   });
 
-  it("opens Seller modal and submits shop registration with SLA 24h (AC-DELTA-15)", async () => {
+  it("opens Seller modal and verifies 2 legal entity tabs (CR-2026-021)", () => {
     render(<ProfileUpgradeHubPage />);
 
     // Click open seller modal
@@ -93,15 +93,37 @@ describe("ProfileUpgradeHubPage (AC-DELTA-12..16)", () => {
     fireEvent.click(openBtn);
 
     expect(screen.getByText("Đăng Ký Mở Gian Hàng — Bên Bán (Seller)")).toBeInTheDocument();
+    expect(screen.getByTestId("seller-tab-enterprise")).toBeInTheDocument();
+    expect(screen.getByTestId("seller-tab-institution")).toBeInTheDocument();
+  });
 
-    // Fill seller form
-    const orgInput = screen.getByPlaceholderText("Viện Nghiên cứu & Phát triển Công nghệ Nano");
-    fireEvent.change(orgInput, { target: { value: "Trung tâm R&D Robotics Việt Nam" } });
+  it("submits shop registration as Enterprise with tax lookup and PDF file (AC-DELTA-15 / CR-2026-021)", async () => {
+    render(<ProfileUpgradeHubPage />);
 
+    const openBtn = screen.getByRole("button", { name: /Đăng Ký Gian Hàng Seller/i });
+    fireEvent.click(openBtn);
+
+    // Điền MST và tra cứu
+    const mstInput = screen.getByPlaceholderText("0101234567");
+    fireEvent.change(mstInput, { target: { value: "0101234567" } });
+
+    const lookupBtn = screen.getByRole("button", { name: /Tra Cứu MST/i });
+    fireEvent.click(lookupBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/✓ Đã tìm thấy dữ liệu doanh nghiệp hợp lệ/i)).toBeInTheDocument();
+    });
+
+    // Upload tệp ĐKKD PDF
+    const fileInput = screen.getByTestId("seller-file-input");
+    const pdfFile = new File(["dummy pdf content"], "dkkd_seller.pdf", { type: "application/pdf" });
+    fireEvent.change(fileInput, { target: { files: [pdfFile] } });
+
+    // Mô tả năng lực và cam kết
     const descInput = screen.getByPlaceholderText(/Tóm tắt các sáng chế/i);
-    fireEvent.change(descInput, { target: { value: "Sản phẩm robot tự hành TRL 7" } });
+    fireEvent.change(descInput, { target: { value: "Cung cấp nền tảng số và hệ sinh thái IoT công nghiệp đạt TRL 8." } });
 
-    const pledgeCheckbox = screen.getByRole("checkbox");
+    const pledgeCheckbox = screen.getByLabelText(/Đơn vị cam kết tuân thủ quy chế/i);
     fireEvent.click(pledgeCheckbox);
 
     const submitBtn = screen.getByRole("button", { name: /Nộp Đơn Đăng Ký/i });
@@ -110,6 +132,65 @@ describe("ProfileUpgradeHubPage (AC-DELTA-12..16)", () => {
     await waitFor(() => {
       expect(screen.getByText(/Đăng Ký Mở Gian Hàng Seller Thành Công/i)).toBeInTheDocument();
     });
+  });
+
+  it("submits shop registration as Institution R&D with decision number and PDF file (CR-2026-021)", async () => {
+    render(<ProfileUpgradeHubPage />);
+
+    const openBtn = screen.getByRole("button", { name: /Đăng Ký Gian Hàng Seller/i });
+    fireEvent.click(openBtn);
+
+    // Chuyển sang Tab Viện / Trường / R&D
+    const instTab = screen.getByTestId("seller-tab-institution");
+    fireEvent.click(instTab);
+
+    // Điền Số QĐ và Tên Viện
+    const decisionInput = screen.getByPlaceholderText("Ví dụ: 128/QĐ-BKHCN");
+    fireEvent.change(decisionInput, { target: { value: "128/QĐ-BKHCN" } });
+
+    const orgInput = screen.getByPlaceholderText("Ví dụ: Viện Hàn Lâm Khoa Học & Công Nghệ Việt Nam");
+    fireEvent.change(orgInput, { target: { value: "Viện Hàn Lâm Khoa Học & Công Nghệ Việt Nam" } });
+
+    // Upload tệp Quyết định PDF
+    const fileInput = screen.getByTestId("seller-file-input");
+    const pdfFile = new File(["decision pdf content"], "quyet_dinh_128.pdf", { type: "application/pdf" });
+    fireEvent.change(fileInput, { target: { files: [pdfFile] } });
+
+    // Mô tả năng lực và cam kết
+    const descInput = screen.getByPlaceholderText(/Tóm tắt các sáng chế/i);
+    fireEvent.change(descInput, { target: { value: "Sở hữu 05 Bằng độc quyền sáng chế về vật liệu Graphene TRL 6-7." } });
+
+    const pledgeCheckbox = screen.getByLabelText(/Đơn vị cam kết tuân thủ quy chế/i);
+    fireEvent.click(pledgeCheckbox);
+
+    const submitBtn = screen.getByRole("button", { name: /Nộp Đơn Đăng Ký/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Đăng Ký Mở Gian Hàng Seller Thành Công/i)).toBeInTheDocument();
+    });
+  });
+
+  it("validates file format and blocks non-pdf or oversized files in Seller modal (CR-2026-021)", async () => {
+    render(<ProfileUpgradeHubPage />);
+
+    const openBtn = screen.getByRole("button", { name: /Đăng Ký Gian Hàng Seller/i });
+    fireEvent.click(openBtn);
+
+    const fileInput = screen.getByTestId("seller-file-input");
+
+    // Tệp không phải PDF (.exe)
+    const invalidFile = new File(["evil code"], "malware.exe", { type: "application/x-msdownload" });
+    fireEvent.change(fileInput, { target: { files: [invalidFile] } });
+
+    expect(screen.getByText(/Tệp văn bản pháp lý minh chứng bắt buộc phải là định dạng PDF/i)).toBeInTheDocument();
+
+    // Tệp dung lượng > 10MB
+    const largeFile = new File(["huge"], "big_document.pdf", { type: "application/pdf" });
+    Object.defineProperty(largeFile, "size", { value: 12 * 1024 * 1024 });
+    fireEvent.change(fileInput, { target: { files: [largeFile] } });
+
+    expect(screen.getByText(/Dung lượng tệp vượt quá giới hạn 10MB cho phép/i)).toBeInTheDocument();
   });
 
   it("displays existing submitted expert application banner and edit button when user has submitted", async () => {

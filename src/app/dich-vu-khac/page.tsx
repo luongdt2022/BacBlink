@@ -143,7 +143,7 @@ export default function DichVuKhacPage() {
           </div>
 
           {/* CARD 2: THÔNG TƯ 17/2019 */}
-          <div className="bg-indigo-50/30 border border-indigo-200/80 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition dark:bg-indigo-950/20 dark:border-indigo-800/60">
+          <div id="danh-gia-tt17" className="bg-indigo-50/30 border border-indigo-200/80 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition dark:bg-indigo-950/20 dark:border-indigo-800/60 scroll-mt-24">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200">
@@ -293,7 +293,7 @@ export default function DichVuKhacPage() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* DỊCH VỤ 1 */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900">
+          <div id="bao-ho-shtt" className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900 scroll-mt-24">
             <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center dark:bg-brand-950 dark:text-cyan-300">
               <ShieldCheck className="w-6 h-6" />
             </div>
@@ -317,7 +317,7 @@ export default function DichVuKhacPage() {
           </div>
 
           {/* DỊCH VỤ 2 */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900">
+          <div id="dinh-gia-cong-nghe" className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900 scroll-mt-24">
             <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center dark:bg-cyan-950 dark:text-cyan-300">
               <Calculator className="w-6 h-6" />
             </div>
@@ -341,7 +341,7 @@ export default function DichVuKhacPage() {
           </div>
 
           {/* DỊCH VỤ 3 */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900">
+          <div id="doanh-nghiep-khcn" className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900 scroll-mt-24">
             <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center dark:bg-emerald-950 dark:text-emerald-300">
               <Building2 className="w-6 h-6" />
             </div>
@@ -365,7 +365,7 @@ export default function DichVuKhacPage() {
           </div>
 
           {/* DỊCH VỤ 4 */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900">
+          <div id="chuyen-giao-cong-nghe" className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900 scroll-mt-24">
             <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center dark:bg-amber-950 dark:text-amber-300">
               <Briefcase className="w-6 h-6" />
             </div>

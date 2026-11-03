@@ -44,6 +44,7 @@ import {
   ShieldCheck,
   Ticket,
   Layers,
+  Calculator,
 } from "lucide-react";
 
 interface SubNavItem {
@@ -333,22 +334,36 @@ export function Navbar() {
       alignRight: true,
       children: [
         {
+          href: "/assessments/tt17/wizard",
+          label: "Đánh giá Trình độ DN (TT 17)",
+          description: "Tự đánh giá 26 tiêu chí định lượng 5 nhóm THIOC theo Thông tư 17/2019/TT-BKHCN",
+          icon: FileText,
+          badge: "TT 17",
+        },
+        {
           href: "/dich-vu-khac",
-          label: "Tư vấn & Sở hữu Trí tuệ",
+          label: "Tư vấn & Bảo hộ SHTT",
           description: "Định giá công nghệ, bảo hộ sáng chế & dịch vụ pháp lý SHTT",
           icon: Scale,
+        },
+        {
+          href: "/assessments/buyer",
+          label: "Thẩm định & Định giá Công nghệ",
+          description: "Xác định giá trị chuyển giao công nghệ, chuẩn hóa thang đo TRL 1-9",
+          icon: Calculator,
+        },
+        {
+          href: "/dich-vu-khac#doanh-nghiep-khcn",
+          label: "Hồ sơ Doanh nghiệp KH&CN",
+          description: "Tư vấn phương án sản xuất kinh doanh từ kết quả KH&CN và ưu đãi thuế",
+          icon: Building2,
         },
         {
           href: "/portal/matching/radar",
           label: "Radar Ghép nối Cung - Cầu",
           description: "Bản đồ radar thuật toán AI tự động tìm đối tác công nghệ tương thích",
           icon: Radar,
-        },
-        {
-          href: "/assessments/buyer",
-          label: "Thẩm định Hồ sơ Công nghệ",
-          description: "Thẩm định độc lập hỗ trợ thương mại hóa, mua bán & sáp nhập",
-          icon: ShieldCheck,
+          badge: "AI",
         },
       ],
     },

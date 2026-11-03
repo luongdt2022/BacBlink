@@ -263,7 +263,7 @@ export interface GovApprovalItem {
   id: string;
   submitterName: string;
   submitterEmail: string;
-  type: "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "FACILITY" | "TECHNOLOGY_OFFER";
+  type: "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "FACILITY" | "TECHNOLOGY_OFFER" | "INSTITUTION";
   titleOrOrg: string;
   scopeType: string;
   scopeId: string;
@@ -277,6 +277,7 @@ export interface GovApprovalItem {
   version: number;
   rawOffer?: TechnologyOffer;
   expertPayload?: GovParsedExpert;
+  institutionPayload?: any;
 }
 
 function ExpertDocumentsSection({ expertCode, fallbackDocName }: { expertCode: string; fallbackDocName?: string }) {
@@ -361,12 +362,13 @@ function GovDashboardContent() {
   const pathname = usePathname();
 
   const tabParam = searchParams.get("tab")?.toUpperCase();
-  const activeTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" = useMemo(() => {
+  const activeTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "INSTITUTION" = useMemo(() => {
     if (
       tabParam === "EXPERT" ||
       tabParam === "SHOP" ||
       tabParam === "DEMAND" ||
       tabParam === "ACCOUNT" ||
+      tabParam === "INSTITUTION" ||
       tabParam === "ALL"
     ) {
       return tabParam;
@@ -374,7 +376,7 @@ function GovDashboardContent() {
     return "ALL";
   }, [tabParam]);
 
-  const handleTabChange = (newTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT") => {
+  const handleTabChange = (newTab: "ALL" | "EXPERT" | "SHOP" | "DEMAND" | "ACCOUNT" | "INSTITUTION") => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", newTab);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -459,6 +461,14 @@ function GovDashboardContent() {
         const dataList = json.data?.items || json.data || json;
         if (Array.isArray(dataList)) {
           mapped = dataList.map((x: any) => {
+            const rawType = (x.requestType || "EXPERT").toUpperCase();
+            let parsedPayload: any = {};
+            if (typeof x.payloadJson === "string") {
+              try { parsedPayload = JSON.parse(x.payloadJson); } catch { parsedPayload = {}; }
+            } else if (x.payloadJson && typeof x.payloadJson === "object") {
+              parsedPayload = x.payloadJson;
+            }
+
             const parsed = parseGovPayload(x.payloadJson, x.user);
 
             // Chuẩn hóa trạng thái: map PENDING, PENDING_REVIEW, PENDING_APPROVAL -> PENDING_APPROVAL
@@ -469,25 +479,40 @@ function GovDashboardContent() {
             else if (rawSt === "CHANGES_REQUESTED") normStatus = "CHANGES_REQUESTED";
             else normStatus = "PENDING_APPROVAL";
 
-            const sector = parsed.expertiseSectors[0] || "";
+            let submitterName = parsed.fullName;
+            let titleOrOrg = parsed.organizationName;
+            let sector = parsed.expertiseSectors[0] || "";
+            let summary = parsed.consultingSummary;
+            let cvOrDocName = parsed.documents?.[0]?.fileName || undefined;
+
+            if (rawType === "INSTITUTION") {
+              submitterName = parsedPayload.companyName || parsedPayload.CompanyName || parsed.fullName || x.user?.fullName || "Doanh Nghiệp ĐMST";
+              titleOrOrg = parsedPayload.taxCode ? `MST: ${parsedPayload.taxCode}` : (parsedPayload.companyName || "Doanh Nghiệp ĐMST");
+              cvOrDocName = parsedPayload.fileName || parsedPayload.FileName || undefined;
+              summary = parsedPayload.companyName
+                ? `Hồ sơ đăng ký Doanh nghiệp ĐMST: ${parsedPayload.companyName}${parsedPayload.taxCode ? ` (MST: ${parsedPayload.taxCode})` : ""}`
+                : "";
+              sector = parsedPayload.sector || sector;
+            }
 
             return {
               id: x.id,
-              submitterName: parsed.fullName,
+              submitterName,
               submitterEmail: parsed.email || x.user?.email || "chuyengia@haiphong.gov.vn",
-              type: x.requestType || "EXPERT",
-              titleOrOrg: parsed.organizationName,
+              type: rawType as any,
+              titleOrOrg,
               scopeType: x.scopeType || "PROVINCE",
               scopeId: x.scopeId || scopeId,
-              provinceName: resolveProvinceName(x.scopeId) || resolveProvinceName(scopeId),
+              provinceName: resolveProvinceName(x.scopeId) || resolveProvinceName(parsedPayload.province) || resolveProvinceName(scopeId),
               sector: sector,
               submittedAt: new Date(x.createdAt).toLocaleDateString("vi-VN"),
               status: normStatus,
               degree: parsed.degree || "Tiến sĩ (TS)",
-              summary: parsed.consultingSummary,
+              summary: summary,
               version: x.version || 1,
-              cvOrDocName: parsed.documents?.[0]?.fileName || undefined,
+              cvOrDocName: cvOrDocName,
               expertPayload: parsed,
+              institutionPayload: rawType === "INSTITUTION" ? parsedPayload : undefined,
             };
           });
         }
@@ -664,6 +689,7 @@ function GovDashboardContent() {
       shop: items.filter((x) => x.type === "SHOP" || (x.type as string) === "TECHNOLOGY_OFFER").length,
       demand: items.filter((x) => x.type === "DEMAND").length,
       account: items.filter((x) => x.type === "ACCOUNT").length,
+      institution: items.filter((x) => x.type === "INSTITUTION").length,
     };
   }, [items]);
 
@@ -738,18 +764,25 @@ function GovDashboardContent() {
       );
 
       const isOffer = selectedItem.type === "TECHNOLOGY_OFFER" || selectedItem.type === "SHOP";
+      const isInstitution = selectedItem.type === "INSTITUTION";
       let successMessage = `Đã chuyển trạng thái hồ sơ sang ${nextStatus}.`;
       if (reviewAction === "APPROVE") {
         successMessage = isOffer
           ? `Đã phê duyệt sản phẩm "${selectedItem.titleOrOrg}"! Công nghệ đã sẵn sàng niêm yết trên Sàn.`
+          : isInstitution
+          ? `Đã phê duyệt Doanh nghiệp ĐMST "${selectedItem.submitterName}" (MST: ${selectedItem.institutionPayload?.taxCode || ""}) thành công!`
           : `Đã phê duyệt hồ sơ chuyên gia ${selectedItem.submitterName}! Cấp role VERIFIED_EXPERT thành công.`;
       } else if (reviewAction === "REQUEST_CHANGES") {
         successMessage = isOffer
           ? `Đã gửi yêu cầu hoàn thiện hồ sơ cho sản phẩm "${selectedItem.titleOrOrg}".`
+          : isInstitution
+          ? `Đã gửi yêu cầu bổ sung hồ sơ cho Doanh nghiệp ${selectedItem.submitterName}.`
           : `Đã gửi yêu cầu bổ sung hồ sơ cho chuyên gia ${selectedItem.submitterName}.`;
       } else if (reviewAction === "REJECT") {
         successMessage = isOffer
           ? `Đã từ chối niêm yết sản phẩm "${selectedItem.titleOrOrg}".`
+          : isInstitution
+          ? `Đã từ chối phê duyệt hồ sơ Doanh nghiệp ${selectedItem.submitterName}.`
           : `Đã từ chối phê duyệt hồ sơ của ${selectedItem.submitterName}.`;
       }
 
@@ -836,11 +869,12 @@ function GovDashboardContent() {
         </div>
       </div>
 
-      {/* 5 Tabs Navigation with Badges */}
+      {/* 6 Tabs Navigation with Badges */}
       <div role="tablist" aria-label="Bộ lọc hồ sơ kiểm duyệt" className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800">
         <div className="flex flex-wrap gap-2">
           {[
             { id: "EXPERT", label: "Chuyên Gia KH&CN", count: stats.expert, icon: GraduationCap },
+            { id: "INSTITUTION", label: "Doanh Nghiệp ĐMST", count: stats.institution, icon: Building },
             { id: "SHOP", label: "Shop Chào Bán", count: stats.shop, icon: Building2 },
             { id: "DEMAND", label: "Nhu Cầu Công Nghệ", count: stats.demand, icon: ShoppingBag },
             { id: "ACCOUNT", label: "Tài Khoản Pháp Nhân", count: stats.account, icon: Users },
@@ -1039,6 +1073,8 @@ function GovDashboardContent() {
                             ? "Đơn Vị Chào Bán / Sở Hữu"
                             : activeTab === "EXPERT"
                             ? "Chuyên Gia Đăng Ký"
+                            : activeTab === "INSTITUTION"
+                            ? "Doanh Nghiệp / Chủ Thể"
                             : "Chủ Thể / Người Nộp"}
                         </span>
                         {sortColumn === "submitter" ? (
@@ -1066,6 +1102,8 @@ function GovDashboardContent() {
                             ? "Tên Sản Phẩm / Công Nghệ"
                             : activeTab === "EXPERT"
                             ? "Đơn Vị Công Tác"
+                            : activeTab === "INSTITUTION"
+                            ? "Mã Số Thuế (MST)"
                             : "Tên Hồ Sơ / Cơ Quan"}
                         </span>
                         {sortColumn === "title" ? (
@@ -1326,9 +1364,15 @@ function GovDashboardContent() {
                         {/* Cột 2: Đơn vị chào bán / Sở hữu */}
                         <td className="py-3.5 px-4">
                           <div className="font-bold text-slate-900 dark:text-white">
-                            {item.submitterName}
+                            {item.type === "INSTITUTION"
+                              ? (item.institutionPayload?.companyName || item.submitterName)
+                              : item.submitterName}
                           </div>
-                          <div className="text-xs text-slate-400">{item.submitterEmail}</div>
+                          <div className="text-xs text-slate-400">
+                            {item.type === "INSTITUTION" && item.institutionPayload?.taxCode
+                              ? `MST: ${item.institutionPayload.taxCode}`
+                              : item.submitterEmail}
+                          </div>
                         </td>
 
                         {/* Cột 3: Tên sản phẩm / công nghệ (Clickable để xem chi tiết đầy đủ) */}
@@ -1340,7 +1384,16 @@ function GovDashboardContent() {
                               className="text-left font-bold text-slate-900 dark:text-white hover:text-brand-700 dark:hover:text-brand-300 hover:underline transition leading-snug cursor-pointer group"
                               title="Click để xem chi tiết đầy đủ hồ sơ trước khi ký duyệt"
                             >
-                              <span>{item.titleOrOrg}</span>
+                              <span>
+                                {item.type === "INSTITUTION"
+                                  ? (item.institutionPayload?.taxCode ? `MST: ${item.institutionPayload.taxCode}` : item.titleOrOrg)
+                                  : item.titleOrOrg}
+                              </span>
+                              {item.type === "INSTITUTION" && item.provinceName && (
+                                <span className="block text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                                  Địa bàn: {item.provinceName}
+                                </span>
+                              )}
                               <Eye className="w-3.5 h-3.5 inline-block ml-1 opacity-0 group-hover:opacity-100 text-brand-600 transition-opacity" />
                             </button>
                             {isOffer && (
@@ -1361,7 +1414,9 @@ function GovDashboardContent() {
                         {/* Cột 4: Lĩnh vực công nghệ */}
                         <td className="py-3.5 px-4">
                           <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-caption font-semibold">
-                            {resolveSectorName(item.sector, sectorNames)}
+                            {item.type === "INSTITUTION"
+                              ? (item.provinceName || "Toàn quốc")
+                              : resolveSectorName(item.sector, sectorNames)}
                           </span>
                         </td>
 
@@ -1436,6 +1491,7 @@ function GovDashboardContent() {
       {/* Review Modal / Pane Chi Tiết Hồ Sơ */}
       {selectedItem && (() => {
         const isOffer = selectedItem.type === "TECHNOLOGY_OFFER" || selectedItem.type === "SHOP";
+        const isInstitution = selectedItem.type === "INSTITUTION";
         return (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-900 rounded-surface border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -1445,6 +1501,10 @@ function GovDashboardContent() {
                   {isOffer ? (
                     <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center shrink-0">
                       <ShoppingBag className="w-5 h-5" />
+                    </div>
+                  ) : isInstitution ? (
+                    <div className="w-9 h-9 rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300 flex items-center justify-center shrink-0">
+                      <Building className="w-5 h-5" />
                     </div>
                   ) : (
                     <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center shrink-0">
@@ -1456,6 +1516,8 @@ function GovDashboardContent() {
                       <span className="truncate">
                         {isOffer
                           ? `Thẩm Định Sản Phẩm Chào Bán: ${selectedItem.titleOrOrg}`
+                          : isInstitution
+                          ? `Thẩm Định Doanh Nghiệp ĐMST: ${selectedItem.institutionPayload?.companyName || selectedItem.submitterName}`
                           : `Thẩm Định Hồ Sơ Chuyên Gia: ${selectedItem.submitterName}`}
                       </span>
                     </h3>
@@ -1718,6 +1780,47 @@ function GovDashboardContent() {
                         </span>
                       </div>
                     )}
+                  </div>
+                ) : isInstitution ? (
+                  /* Layout Thẩm Định Hồ Sơ Doanh Nghiệp ĐMST */
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
+                      <div>
+                        <span className="text-caption text-slate-400 block">Tên Doanh Nghiệp ĐMST:</span>
+                        <span className="font-bold text-slate-900 dark:text-white text-body">
+                          {selectedItem.institutionPayload?.companyName || selectedItem.submitterName}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Mã Số Thuế (MST):</span>
+                        <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 text-body">
+                          {selectedItem.institutionPayload?.taxCode || "N/A"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Địa Bàn Tỉnh / Thành Phố:</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {selectedItem.provinceName || resolveProvinceName(selectedItem.scopeId)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-caption text-slate-400 block">Cơ Quan Tiếp Nhận Thẩm Định:</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                          {resolveProvinceName(selectedItem.scopeId)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Giấy chứng nhận ĐKKD / Tài liệu đính kèm */}
+                    <div className="p-3.5 rounded-control bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-medium">
+                        <FileText className="w-4 h-4" />
+                        <span>Giấy phép ĐKKD: {selectedItem.cvOrDocName || selectedItem.institutionPayload?.fileName || "Giay_Phep_DKKD.pdf"}</span>
+                      </div>
+                      <span className="text-caption text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        Đã kiểm tra hợp lệ
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   /* Layout Thẩm Định Hồ Sơ Chuyên Gia KH&CN */
@@ -1993,6 +2096,7 @@ function GovDashboardContent() {
       {/* Dossier Detail Modal / Cửa Sổ Xem Chi Tiết Toàn Bộ Hồ Sơ */}
       {detailItem && (() => {
         const isOffer = detailItem.type === "TECHNOLOGY_OFFER" || detailItem.type === "SHOP";
+        const isInstitution = detailItem.type === "INSTITUTION";
         const codeInfo = formatGovRecordCode(detailItem.id, detailItem.type, detailItem.scopeId);
         const authorityDisplay = detailItem.provinceName.startsWith("Sở")
           ? detailItem.provinceName
@@ -2014,6 +2118,10 @@ function GovDashboardContent() {
                     <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center shrink-0">
                       <ShoppingBag className="w-5 h-5" />
                     </div>
+                  ) : isInstitution ? (
+                    <div className="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300 flex items-center justify-center shrink-0">
+                      <Building className="w-5 h-5" />
+                    </div>
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center shrink-0">
                       <GraduationCap className="w-5 h-5" />
@@ -2027,6 +2135,8 @@ function GovDashboardContent() {
                       >
                         {isOffer
                           ? `Chi Tiết Sản Phẩm Chào Bán: ${detailItem.titleOrOrg}`
+                          : isInstitution
+                          ? `Hồ Sơ Doanh Nghiệp ĐMST: ${detailItem.institutionPayload?.companyName || detailItem.submitterName}`
                           : `Hồ Sơ Chuyên Gia KH&CN: ${detailItem.submitterName}`}
                       </h3>
                       <span className="font-mono text-caption text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
@@ -2247,6 +2357,77 @@ function GovDashboardContent() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  </div>
+                ) : isInstitution ? (
+                  /* Layout Chi Tiết Hồ Sơ Doanh Nghiệp ĐMST */
+                  <div className="space-y-6">
+                    <div className="p-5 rounded-surface bg-gradient-to-r from-cyan-50/70 via-slate-50 to-white dark:from-cyan-950/40 dark:via-slate-800/40 dark:to-slate-900 border border-cyan-200/80 dark:border-cyan-900/60 flex flex-col md:flex-row gap-5 items-start">
+                      <div className="w-20 h-20 rounded-2xl bg-cyan-600 text-white flex flex-col items-center justify-center font-bold text-2xl shadow-md shrink-0">
+                        <Building className="w-8 h-8" />
+                        <span className="text-[10px] font-normal uppercase tracking-widest text-cyan-100 mt-0.5">
+                          DN-ĐMST
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                            {detailItem.institutionPayload?.companyName || detailItem.submitterName}
+                          </h2>
+                          <span className="px-3 py-0.5 rounded-full bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800 font-bold text-caption">
+                            Doanh Nghiệp ĐMST
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-1.5 gap-x-6 text-body">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400 font-medium">Mã số thuế:</span>
+                            <strong className="font-mono text-slate-800 dark:text-slate-200">
+                              {detailItem.institutionPayload?.taxCode || "N/A"}
+                            </strong>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                            <span className="text-slate-400">Địa bàn tỉnh / thành phố:</span>
+                            <strong className="text-slate-800 dark:text-slate-200">
+                              {detailItem.provinceName || resolveProvinceName(detailItem.scopeId)}
+                            </strong>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                            <span>{detailItem.submitterEmail}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                            <span>Thời điểm nộp hồ sơ: {detailItem.submittedAt}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Giấy chứng nhận ĐKKD / Tài liệu đính kèm */}
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-cyan-600" />
+                        <span>Hồ Sơ Minh Chứng &amp; Giấy Phép ĐKKD</span>
+                      </h4>
+                      <div className="p-4 rounded-surface bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 rounded-xl bg-cyan-50 dark:bg-cyan-950 text-cyan-600 border border-cyan-200 dark:border-cyan-800">
+                            <FileCheck2 className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white text-body">
+                              {detailItem.cvOrDocName || detailItem.institutionPayload?.fileName || "Giay_Phep_DKKD.pdf"}
+                            </p>
+                            <p className="text-caption text-slate-400">Giấy chứng nhận Đăng ký Doanh nghiệp / Pháp nhân ĐMST</p>
+                          </div>
+                        </div>
+                        <span className="text-caption font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                          Hợp lệ
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ) : (

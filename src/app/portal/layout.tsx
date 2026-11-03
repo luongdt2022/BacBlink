@@ -219,21 +219,54 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const toast = useToast();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [activeRole, setActiveRole] = useState<string | null>(null);
 
   useEffect(() => {
-    setUserRole(authClient.getUser()?.role ?? null);
+    const user = authClient.getUser();
+    setUserRole(user?.role ?? null);
+
+    // Nạp vai trò đang kích hoạt từ localStorage cho chế độ kép
+    const savedActiveRole = typeof window !== "undefined" ? localStorage.getItem("nacentwin_active_role") : null;
+    if (savedActiveRole) {
+      setActiveRole(savedActiveRole);
+    }
+
     fetchMyEnterpriseProfile()
       .then((p) => {
-        if (p) setUserProfile(p);
+        if (p) {
+          setUserProfile(p);
+          if (p.activeRole) {
+            setActiveRole(p.activeRole);
+            localStorage.setItem("nacentwin_active_role", p.activeRole);
+          }
+        }
       })
       .catch(() => {});
+
+    // Lắng nghe sự kiện chuyển đổi vai trò tức thì từ RoleSwitcher
+    const handleRoleSwitched = (e: Event) => {
+      const customEvent = e as CustomEvent<{ role: string }>;
+      if (customEvent.detail?.role) {
+        setActiveRole(customEvent.detail.role);
+      }
+    };
+
+    window.addEventListener("nacentwin_role_switched", handleRoleSwitched);
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "nacentwin_active_role" && e.newValue) {
+        setActiveRole(e.newValue);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("nacentwin_role_switched", handleRoleSwitched);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, [pathname]);
 
   const upperRole = (userRole ?? "").toUpperCase();
   const isExpert = upperRole === "VERIFIED_EXPERT" || upperRole === "EXPERT";
-  const isBuyer = upperRole === "BUYER";
-  const isSeller = upperRole === "SELLER";
-  const isInnovationEntity = upperRole === "INNOVATION_ENTITY";
   const isAdmin = upperRole === "SUPER_ADMIN" || upperRole === "OPERATOR_ADMIN" || upperRole === "ADMIN";
   const isGov =
     upperRole === "PROVINCIAL_ADMIN" ||
@@ -241,6 +274,16 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     upperRole === "CLUSTER_ADMIN" ||
     upperRole === "PROVINCE_OFFICER" ||
     upperRole === "PROVINCE_LEADER";
+
+  // Nhóm doanh nghiệp (BUYER, SELLER, INNOVATION_ENTITY) có thể chuyển đổi linh hoạt qua RoleSwitcher
+  const isEnterpriseRole = ["BUYER", "SELLER", "INNOVATION_ENTITY"].includes(upperRole);
+  const effectiveRole = isEnterpriseRole
+    ? (activeRole?.toUpperCase() || (upperRole === "SELLER" ? "SELLER" : "BUYER"))
+    : upperRole;
+
+  const isBuyer = effectiveRole === "BUYER";
+  const isSeller = effectiveRole === "SELLER";
+  const isInnovationEntity = upperRole === "INNOVATION_ENTITY" && !activeRole;
 
   let navItems: NavItem[] = publicNavItems;
   let workspaceTitle = "Không Gian Thành Viên";
@@ -273,7 +316,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   }
 
   const dynamicProfileLabel = resolveProfileLabel(
-    userRole,
+    effectiveRole || userRole,
     userProfile?.subjectType,
     authClient.getUser()?.organizationName
   );

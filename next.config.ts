@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
-  // Parallel local dev/QC sessions must not share generated bundles or build locks.
-  distDir: process.env.NACEN_NEXT_DIST_DIR || ".next",
+  distDir: ".next",
   images: {
     remotePatterns: [
       {
@@ -26,10 +25,13 @@ const config: NextConfig = {
         destination: "http://localhost:5080/api/v2/:path*",
       },
       {
+        source: "/files/:path*",
+        destination: "http://localhost:5080/files/:path*",
+      },
+      {
         source: "/health",
         destination: "http://localhost:5080/health",
       },
-      // NacenTech Agent Orchestrator & CR Dashboard (Port 8420)
       {
         source: "/orchestrator-app",
         destination: "http://127.0.0.1:8420/",
