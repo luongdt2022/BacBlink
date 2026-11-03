@@ -397,6 +397,39 @@
   - Test case xác thực Slide-over Drawer mở/đóng và kiểm tra validation khoảng trắng.
 - [x] `T099` **[QC-FullRegression-V7]** Chạy toàn bộ test suites (`npx vitest run src/app/admin/`) và build Next.js 66 routes đảm bảo 100% Green.
 
+---
+
+## Phase 20: Delta v13 (CR-2026-025) — Nạp Toàn Diện 34 Sở KH&CN và Kiểm Thử Toàn Trình 4 Thao Tác CRUD Cây Hành Chính
+
+- [x] `T100` **[BE-DB-Seed34]** Soạn thảo và thực thi script SQL `scripts/seed_34_provinces_and_org_units.sql`:
+  - Nạp đủ 34 Sở KH&CN 3 miền vào `identity.organization_units` trực thuộc `NACENTECH-CENTRAL` (idempotent `ON CONFLICT DO NOTHING`).
+  - Nạp các Viện/Trường trọng điểm cấp cơ sở trực thuộc các Sở.
+  - Khởi tạo 34 tài khoản Lãnh đạo Sở (`PROVINCIAL_ADMIN`, `Scope = PROVINCE`) với mật khẩu chuẩn `Password@123`.
+  - Thực thi nạp trực tiếp vào Docker PostgreSQL `nacentech-postgres-1`.
+
+- [x] `T101` **[QC-CRUD-Read]** Kiểm thử hiển thị toàn bộ 34 Sở Tỉnh trên giao diện cây 3 cấp (`/admin/org-tree`):
+  - Kiểm tra đối soát 1:1 với PostgreSQL: Badge đếm hiển thị đủ 34 Sở Tỉnh trực thuộc Trung ương.
+  - Kiểm tra các nhánh 3 miền hiển thị đầy đủ tên, mã Sở, địa bàn và trạng thái.
+
+- [x] `T102` **[QC-CRUD-Create]** Kiểm thử tạo mới đơn vị cơ sở (Create):
+  - Mở Modal Thêm Cơ Sở trực thuộc một Sở Tỉnh trên Web UI sống.
+  - Điền form, bấm submit và đối soát CSDL thật sinh bản ghi mới và audit log `CREATE_ORG_UNIT`.
+
+- [x] `T103` **[QC-CRUD-Update]** Kiểm thử chỉnh sửa thông tin đơn vị (Update):
+  - Bấm nút Sửa trên dòng đơn vị vừa tạo, mở Modal Sửa Đơn Vị.
+  - Cập nhật tên đơn vị mới, bấm Xác Nhận và đối soát CSDL thật cập nhật đúng tên mới kèm audit log `UPDATE_ORG_UNIT`.
+
+- [x] `T104` **[QC-CRUD-Deactivate]** Kiểm thử vô hiệu hóa đơn vị (Deactivate):
+  - Kiểm chứng ràng buộc `BR-TREE-003`: Thử vô hiệu hóa Sở có cơ sở con, xác nhận hệ thống chặn và trả thông báo lỗi hợp lệ.
+  - Vô hiệu hóa đơn vị lá không có con trực thuộc, xác nhận CSDL cập nhật `status = INACTIVE` kèm audit log `DEACTIVATE_ORG_UNIT`.
+
+- [x] `T105` **[QC-CRUD-Provision]** Kiểm thử cấp quyền Lãnh đạo Sở (Provision Leader):
+  - Bấm nút "Cấp Quyền Sở" trên Sở chưa có tài khoản, mở Modal Cấp Quyền Lãnh Đạo Sở.
+  - Điền thông tin và mật khẩu, bấm Xác Nhận và đối soát CSDL thật sinh tài khoản `PROVINCIAL_ADMIN` đúng scope địa bàn.
+
+- [x] `T106` **[QC-FullPass-DoD]** Chạy trọn bộ kịch bản kiểm thử tự động Playwright E2E, chụp ảnh Evidence và nghiệm thu xuất xưởng Quality Gate 4 & 5.
+
+
 
 
 

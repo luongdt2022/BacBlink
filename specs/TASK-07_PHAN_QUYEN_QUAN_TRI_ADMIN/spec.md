@@ -667,4 +667,59 @@ Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản 
 - **AC-DELTA-V7-04**: Thẩm định Doanh nghiệp ĐMST hiển thị đầy đủ MST, Người đại diện và hồ sơ pháp lý.
 - **AC-DELTA-V7-05**: Toàn bộ unit tests tại `approvals/page.test.tsx` và admin suite đạt 100% Green.
 
+---
+
+## Spec Delta v13 (CR-2026-025) — Nạp Toàn Diện 34 Sở KH&CN và Kiểm Thử Toàn Trình 4 Thao Tác CRUD Cây Hành Chính
+
+**Căn cứ phê duyệt**: Quyết định PO `PO-DEC-20261103-ORG-TREE-34PROV` & Kế hoạch Thực thi Mục tiêu `/goal`.  
+**Kỹ năng áp dụng**: `speckit-delta` kết hợp `nacen-basic-design`.
+
+### 1. Bối Cảnh & Mục Tiêu
+1. **Khắc phục khoảng trống CSDL sống**: Bảng `identity.organization_units` trước đây mới chỉ có 5 Sở Tỉnh mẫu (`HN`, `HP`, `DN`, `SG`, `BN`) do seeder baseline chưa nạp 29 tỉnh còn lại; danh sách 34 tỉnh mới nằm ở lớp controller/hằng số tĩnh. Cần nạp toàn diện 34 Sở KH&CN và các Viện/Trường liên kết trực tiếp vào PostgreSQL thật.
+2. **Khởi tạo tài khoản Lãnh đạo Sở (`PROVINCIAL_ADMIN`)**: Tạo sẵn 34 tài khoản lãnh đạo Sở với email chuẩn `so.<code_lower>@nacentech.local` và mật khẩu chuẩn hóa `Password@123` để sẵn sàng bàn giao vận hành phân cấp.
+3. **Kiểm thử toàn trình 4 thao tác CRUD & Cấp quyền trên Web UI thật (Playwright Zero-Mock)**:
+   - **[C] Create**: Tạo đơn vị cơ sở mới trực thuộc Sở Tỉnh -> Đối soát bản ghi CSDL và Audit Log `CREATE_ORG_UNIT`.
+   - **[R] Read**: Tải cây hành chính 3 cấp hiển thị đầy đủ 34 Sở Tỉnh 3 miền và các đơn vị cơ sở liên thông CSDL thật.
+   - **[U] Update**: Chỉnh sửa tên đơn vị và mã địa bàn qua Modal -> Đối soát cập nhật CSDL và Audit Log `UPDATE_ORG_UNIT`.
+   - **[D] Deactivate**: Vô hiệu hóa đơn vị qua Modal (kiểm chứng chặn bởi `BR-TREE-003` khi có cơ sở con active, và vô hiệu hóa thành công đơn vị lá) -> Đối soát CSDL và Audit Log `DEACTIVATE_ORG_UNIT`.
+   - **[P] Provision**: Cấp quyền Lãnh đạo Sở qua Modal -> Đối soát tài khoản mới sinh trong `identity.persons` kèm Audit Log `PROVISION_PROVINCE_ADMIN`.
+
+### 2. Yêu Cầu Chức Năng Chi Tiết (Functional Requirements)
+
+#### REQ-ADM-18: Nạp Đầy Đủ 34 Sở KH&CN & Viện Trường Vào CSDL PostgreSQL
+- **Bảng CSDL**: `identity.organization_units`
+- **Cơ cấu**:
+  * 1 Node gốc Trung ương: `NACENTECH-CENTRAL` (`NATIONAL`, `status = ACTIVE`).
+  * 34 Node Sở Tỉnh: `SO-KHCN-<CODE>` (`PROVINCIAL`, `parentId = NACENTECH-CENTRAL`, `status = ACTIVE`) bao gồm:
+    - 12 Tỉnh/Thành Miền Bắc: `HN`, `HP`, `QN`, `BN`, `VP`, `TN`, `HD`, `HY`, `ND`, `PT`, `NB`, `BG`.
+    - 10 Tỉnh/Thành Miền Trung & Tây Nguyên: `DN`, `TH`, `NA`, `TTH`, `QNA`, `QNG`, `BD`, `KH`, `DL`, `LD`.
+    - 12 Tỉnh/Thành Miền Nam: `SG`, `BDG`, `DNA`, `BRVT`, `CT`, `LA`, `TG`, `AG`, `DT`, `KG`, `TNH`, `CM`.
+  * Các Viện/Trường nghiên cứu trọng điểm: `DH-BACHKHOA-HN`, `DHQG-HCM`, `VIEN-NACENTECH`, `DH-CANTHO`, `DH-DANANG`, `DH-THAINGUYEN`, `VIEN-VAST`.
+- **Tính lũy kế (Idempotent)**: Dùng `ON CONFLICT (code) DO NOTHING` bảo toàn dữ liệu hiện có.
+
+#### REQ-ADM-19: Khởi Tạo 34 Tài Khoản Lãnh Đạo Sở KH&CN
+- **Bảng CSDL**: `identity.persons`
+- **Cấu trúc**:
+  * Email: `so.<code_lower>@nacentech.local`
+  * Mật khẩu: `Password@123` (băm PBKDF2 chuẩn hệ thống)
+  * Vai trò: `PlatformRoles.ProvincialAdmin` (`PROVINCIAL_ADMIN`)
+  * Scope: `ScopeTypes.Province` (`PROVINCE`), `ScopeId = <CODE>`
+  * Trạng thái: `is_active = true`
+
+#### REQ-ADM-20: Thẩm Định 4 Thao Tác CRUD Sống Của Cây Hành Chính
+- **Vị trí**: `/admin/org-tree`
+- **Quy tắc**:
+  - `BR-TREE-001`: Cây luôn duy trì đúng 1 node gốc Trung ương.
+  - `BR-TREE-002`: Mã đơn vị (`Code`) là duy nhất trên toàn hệ thống (Upper case, không dấu).
+  - `BR-TREE-003`: Không cho phép vô hiệu hóa đơn vị cha khi còn bất kỳ cơ sở con nào đang `ACTIVE`.
+  - `BR-TREE-004`: 100% thao tác biến đổi (Create, Update, Deactivate, Provision) đều phải ghi vết vào `identity.approval_audit_logs`.
+
+### 3. Tiêu Chuẩn Chấp Thuận Delta v13 (Acceptance Criteria)
+- **AC-DELTA-V13-01**: CSDL PostgreSQL có đủ 34 Sở Tỉnh trạng thái `ACTIVE` trực thuộc Trung ương NacenTech.
+- **AC-DELTA-V13-02**: Màn hình `/admin/org-tree` tải từ CSDL thật và hiển thị đầy đủ 34 Sở Tỉnh kèm số lượng cơ sở trực thuộc.
+- **AC-DELTA-V13-03**: Thao tác Thêm đơn vị (Create) và Sửa tên đơn vị (Update) ghi nhận thành công và đối soát khớp 1:1 với PostgreSQL.
+- **AC-DELTA-V13-04**: Thao tác Vô hiệu hóa (Deactivate) kích hoạt đúng ràng buộc `BR-TREE-003` và vô hiệu hóa thành công đơn vị lá.
+- **AC-DELTA-V13-05**: Thao tác Cấp quyền Lãnh đạo Sở (Provision) qua modal tạo thành công tài khoản `PROVINCIAL_ADMIN` đúng scope địa bàn.
+
+
 
