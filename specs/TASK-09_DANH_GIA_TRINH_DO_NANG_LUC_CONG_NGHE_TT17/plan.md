@@ -241,3 +241,83 @@ flowchart TD
   };
   ```
 - **Hành vi Reset**: Khi thay đổi `surveyTypeFilter`, hệ thống tự động reset `classificationFilter` về `'ALL'` để tránh xung đột dữ liệu giữa các thang đo.
+
+---
+
+## 9. KẾ HOẠCH THIẾT KẾ KIẾN TRÚC CR-2026-027 (ARCHITECTURE PLAN)
+
+### 9.1. Backend API DTO Enrichment (`DemandController.cs`)
+- Bổ sung projection `items` vào DTO trả về của `GET /api/v1/gov/demands/surveys`:
+  ```csharp
+  items = s.Items.Select(i => new
+  {
+      id = i.Id,
+      itemCode = i.ItemCode,
+      stageName = i.StageName,
+      technicalProblem = i.TechnicalProblem,
+      desiredSolution = i.DesiredSolution,
+      needConsulting = i.NeedConsulting,
+      expectedGoal = i.ExpectedGoal,
+      applicationScale = i.ApplicationScale,
+      budgetRange = i.BudgetRange,
+      urgencyScore = i.UrgencyScore,
+      impactScore = i.ImpactScore,
+      investmentCapacity = i.InvestmentCapacity,
+      adoptionReadiness = i.AdoptionReadiness,
+      tniScore = i.TniScore
+  }).ToList(),
+  tniScore = s.TniScore ?? (s.Items.Any() ? s.Items.Max(i => (decimal?)i.TniScore) : null),
+  tniClassification = s.TniClassification ?? (
+      (s.TniScore ?? (s.Items.Any() ? s.Items.Max(i => (decimal?)i.TniScore) : null)) switch
+      {
+          >= 75 => "VERY_HIGH",
+          >= 50 => "HIGH",
+          >= 25 => "MEDIUM",
+          > 0 => "LOW",
+          _ => null
+      }
+  )
+  ```
+
+### 9.2. Frontend Type & Modal Enrichment (`page.tsx` & `assessment-tt17.ts`)
+- Cập nhật `DemandSurveyItem` trong `assessment-tt17.ts`:
+  ```typescript
+  export interface DemandSurveyDetailItem {
+    id: string;
+    itemCode?: string;
+    stageName?: string;
+    technicalProblem?: string;
+    desiredSolution?: string;
+    needConsulting?: boolean;
+    expectedGoal?: string;
+    applicationScale?: string;
+    budgetRange?: string;
+    urgencyScore?: number;
+    impactScore?: number;
+    investmentCapacity?: number;
+    adoptionReadiness?: number;
+    tniScore?: number;
+  }
+
+  // Bổ sung vào DemandSurveyItem:
+  items?: DemandSurveyDetailItem[];
+  ```
+- Parser an toàn `surveyDetails` trong React component:
+  ```typescript
+  const details = useMemo(() => {
+    if (!inspectingDemandItem?.surveyDetails) return null;
+    if (typeof inspectingDemandItem.surveyDetails === "object") return inspectingDemandItem.surveyDetails;
+    try {
+      return JSON.parse(inspectingDemandItem.surveyDetails);
+    } catch {
+      return null;
+    }
+  }, [inspectingDemandItem]);
+  ```
+
+### 9.3. Dynamic DOCX Generator (`survey-docx-exporter.ts`)
+- Nâng cấp `exportDemandSmeDocx(target: DemandSurveyItem)`:
+  - Sinh toàn bộ 7 phần chuẩn mực A4 theo OpenXML.
+  - Sử dụng `safeText`, `createAdministrativeHeader`, `createParagraph`, `makeTableCell`.
+  - Nhúng ảnh chữ ký điện tử nếu có URL hợp lệ.
+

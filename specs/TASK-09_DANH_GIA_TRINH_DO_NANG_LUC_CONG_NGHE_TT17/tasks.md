@@ -84,3 +84,17 @@
 - [x] T-09.28 [FE] Cài đặt logic Bộ lọc điều kiện động (Dynamic Context Filtering) cho cột 3: Hoán đổi tiêu đề và options theo ngữ cảnh (Xếp loại TT17 / Phân tầng ĐMST 8 nhóm / Cấp độ TNI).
 - [x] T-09.29 [FE] Cập nhật hàm reset filters và phân loại bản ghi để bảo toàn tương thích đa nguồn.
 - [x] T-09.30 [QC] Viết & chạy bộ kiểm thử Unit Test Vitest (`page.test.tsx`) và kịch bản Playwright E2E kiểm tra cả 3 nút tải file Word và chuyển đổi bộ lọc. (Đạt 8/8 Vitest tests pass 100%, 11/11 E2E tests pass 100%).
+
+---
+
+### GIAI ĐOẠN 8: CR-2026-027 — CHUẨN HÓA DỮ LIỆU BẢN GHI PHIẾU NHU CẦU DNNVV & XUẤT WORD (.DOCX) ĐỘNG
+
+- [x] T-09.31 [BA/PO] Cập nhật Basic Design, soạn thảo Delta Spec `CR-2026-027.md`, cập nhật `spec.md` và `plan.md`.
+- [x] T-09.32 [BE] Cập nhật `DemandController.cs`: Projection `items` vào DTO trả về của API `GET /api/v1/gov/demands/surveys`, fallback đồng bộ `tniScore` từ `items.Max(i => i.TniScore)` và gán `tniClassification`. (Đã test curl endpoint live: SUR-20261104-B12C06 trả TNI=86, VERY_HIGH, items=[AI Vision]).
+- [x] T-09.33 [FE] Cập nhật `assessment-tt17.ts`: Khai báo interface `DemandSurveyDetailItem` và cập nhật `DemandSurveyItem` chứa `items?: DemandSurveyDetailItem[]`.
+- [x] T-09.34 [FE] Cập nhật `records/page.tsx`: Nâng cấp Modal "Xem chi tiết" bóc tách toàn diện 7 khối thông tin (`items`, `surveyDetails`, máy móc, 8 tiêu chí, nhân lực, năng lực hấp thụ, định hướng).
+- [x] T-09.35 [FE] Cập nhật `records/page.tsx`: Cột "ĐIỂM TT17 / XẾP LOẠI" hiển thị đúng điểm TNI (86) và xếp loại cấp thiết; đổi nhãn nút từng dòng thành `Xuất Word (.docx)`.
+- [x] T-09.36 [FE] Cập nhật `survey-docx-exporter.ts`: Triển khai generator `exportDemandSmeDocx` nạp 100% dữ liệu thực tế từ `DemandSurveyItem` xuất file Word A4 chuẩn OpenXML.
+- [x] T-09.37 [QC] Viết kịch bản kiểm thử Vitest & Playwright E2E: Verify API trả về `items`, verify modal 7 phần hiển thị dữ liệu, click xuất Word và giải nén kiểm tra nội dung file XML trong file DOCX. Đã hoàn thành 100% Pass: Vitest 11/11 tests pass, Playwright E2E 12/12 tests pass.
+- [x] T-09.38 [QA/PO] Shadow Audit Zero-Mock, nghiệm thu evidence và ký Quality Gate 5 đóng CR-2026-027. Đã đối soát CSDL PostgreSQL thật, API live, xuất XML DOCX thật và biên bản nghiệm thu.
+

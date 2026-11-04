@@ -5,9 +5,9 @@
 > **Căn cứ pháp lý**: [Thông tư 17/2019/TT-BKHCN](https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm) của Bộ Khoa học và Công nghệ  
 > **Phạm vi áp dụng**: Doanh nghiệp ngành công nghiệp chế biến, chế tạo (mã ngành C.10 – C.32 theo VSIC)  
 > **Trạng thái**: 🟢 Active / Implementing Delta  
-> **Version**: 1.4.0 (Bumped from 1.3.0 via CR-2026-021)  
-> **Last Updated**: 2026-11-03  
-> **Change Requests Reference**: [CR-2026-021](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/specs/TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-2026-021_admin_survey_records_and_doc_export.md) (PO-DEC-20261103-01)  
+> **Version**: 1.6.0 (Bumped from 1.5.0 via CR-2026-027)  
+> **Last Updated**: 2026-11-04  
+> **Change Requests Reference**: [CR-2026-026](./deltas/CR-2026-026.md), [CR-2026-027](./deltas/CR-2026-027.md) (PO-DEC-20261104-01)  
 > **Độ ưu tiên**: P1 (Trọng tâm Đánh giá Năng lực Doanh nghiệp Sản xuất)
 
 ---
@@ -219,7 +219,7 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
 
 ---
 
-## 9. SPEC DELTA V5 (CR-2026-026): BỘ TAM HỢP PHIẾU KHẢO SÁT & ĐÁNH GIÁ DOANH NGHIỆP THỰC ĐỊA
+## Spec Delta v5 (CR-2026-026): Bộ Tam Hợp Phiếu Khảo Sát & Đánh Giá Doanh Nghiệp Thực Địa
 
 > **Mã CR**: `CR-2026-026`  
 > **Căn cứ**: Quyết định Điều hành `PO-DEC-20261104-02` (Mục 30 `Specification/BASIC_DESIGN_NACENTECH.md`) & Delta Ledger [`deltas/CR-2026-026.md`](./deltas/CR-2026-026.md).  
@@ -247,3 +247,36 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
 
 ### Bổ sung vào Bảng Lịch Sử Thay Đổi (Delta Tracking):
 | **`1.5.0`** | **2026-11-04** | [**`CR-2026-026`**](./deltas/CR-2026-026.md) | `PO-DEC-20261104-02` | **Chuẩn hóa Bộ Tam Hợp 3 Phiếu khảo sát thực địa (TT17, ĐMST 43 câu, Nhu cầu DNNVV) tại `/admin/assessments/records`, cụm 3 nút tải mẫu Word và bộ lọc phân loại động.** | **Approved by PO** |
+| **`1.6.0`** | **2026-11-04** | [**`CR-2026-027`**](./deltas/CR-2026-027.md) | `PO-DEC-20261104-01` | **Chuẩn hóa toàn diện dữ liệu bản ghi Phiếu Nhu cầu DNNVV: DTO trả items, đồng bộ TNI, Modal 7 phần chi tiết và xuất Word (.docx) động có dữ liệu DN thật.** | **Approved by PO** |
+
+---
+
+## Spec Delta v6 (CR-2026-027): Chuẩn Hóa Dữ Liệu Bản Ghi Phiếu Nhu Cầu DNNVV — Modal 7 Phần & Xuất Word (.docx) Động
+
+> **Mã CR**: `CR-2026-027`  
+> **Căn cứ**: Quyết định Điều hành `PO-DEC-20261104-01` (Mục 11 `Specification/02_BASIC_DESIGN/TASK-03_HO_SO_TIM_MUA_BUYER/SPEC_PHIEU_KHAO_SAT_NHU_CAU_CONG_NGHE_DNNVV.md`) & Delta Ledger [`deltas/CR-2026-027.md`](./deltas/CR-2026-027.md).  
+> **Target Version**: `1.6.0`  
+
+### 10.1 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-09-SURVEY-RECORD-001` [Backend DTO Items & TNI Synchronization]**:
+  * API `GET /api/v1/gov/demands/surveys` và `GET /api/v1/demands/surveys` trả về mảng `items` gồm: `id`, `itemCode`, `stageName`, `technicalProblem`, `desiredSolution`, `expectedGoal`, `budgetRange`, `urgencyScore`, `impactScore`, `investmentCapacity`, `adoptionReadiness`, `tniScore`.
+  * Tự động đồng bộ `tniScore` của bản ghi cha từ `items.Max(i => i.TniScore)` khi `s.TniScore == null`, chấm dứt tình trạng "Chờ tính TNI".
+- **`REQ-09-SURVEY-RECORD-002` [Modal Chi Tiết 7 Khối Thông Tin]**:
+  * Modal `inspectingDemandItem` parse an toàn `surveyDetails` và hiển thị 7 khối thông tin:
+    1. Bài toán kỹ thuật, giải pháp, ngân sách, mục tiêu, điểm TNI 4 chiều và điểm tổng.
+    2. Thông tin pháp nhân và người liên hệ.
+    3. Hiện trạng thiết bị máy móc chủ lực và 8 tiêu chí trình độ công nghệ.
+    4. Khâu sản xuất khó nhất, nguyên nhân và mức độ điểm nghẽn.
+    5. Thống kê 6 nhóm nhân lực kỹ thuật và 9 tiêu chí năng lực hấp thụ.
+    6. Định hướng công nghệ tiên tiến 2026–2030 và nhu cầu hỗ trợ.
+    7. Chữ ký điện tử người đại diện và dấu thời gian.
+- **`REQ-09-SURVEY-RECORD-003` [Nút Xuất Word Động Cho Từng Bản Ghi]**:
+  * Đổi nhãn nút từng dòng thành `Xuất Word (.docx)`.
+  * Khi click, gọi generator `exportDemandSmeDocx` nạp 100% dữ liệu thực tế từ database sinh file `.docx` A4 tải về máy người dùng.
+
+### 10.2 Quy Tắc Nghiệp Vụ Bất Biến (Business Rules)
+- **`BR-09-SURVEY-RECORD-01` [Tính Toàn Vẹn File Word & Zero Corrupt XML]**:
+  * File Word xuất ra phải hợp lệ OpenXML, font Unicode tiếng Việt, kích thước $\ge 15\text{ KB}$, không corrupt cấu trúc.
+- **`BR-09-SURVEY-RECORD-02` [Kỷ Luật Zero-Mock]**:
+  * Dữ liệu trong modal và trong file Word phải lấy từ PostgreSQL thật, không mock cứng.
+
