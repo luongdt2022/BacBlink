@@ -44,6 +44,11 @@ public sealed class AdminResetPasswordDto
     [Required] public string NewPassword { get; set; } = string.Empty;
 }
 
+public sealed class AdminDeactivateUserDto
+{
+    public string? Reason { get; set; }
+}
+
 [Route("api/v1/users")]
 [Authorize]
 public sealed class UsersController(IPersonService persons) : V1ControllerBase
@@ -169,7 +174,39 @@ public sealed class AdminUsersController(
     public async Task<IActionResult> Update(Guid id, [FromBody] AdminUpdateUserDto dto, CancellationToken ct)
     {
         RequireAdmin();
+        if (dto.IsActive == false && id == PersonId)
+        {
+            throw new Kernel.Domain.ValidationException("Cannot deactivate your own account");
+        }
+        var current = await persons.GetAsync(id, ct);
+        if (dto.IsActive == false && string.Equals(current.Email, "admin@nacentech.gov.vn", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Kernel.Domain.ForbiddenException("Cannot deactivate the root administrator account");
+        }
         return Ok(V1Mappers.User(await persons.AdminUpdateAsync(id, new AdminUpdatePersonCommand(dto.FirstName, dto.LastName, dto.Phone, dto.Organization, dto.IsActive), ct)));
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Deactivate(Guid id, [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] AdminDeactivateUserDto? dto, CancellationToken ct)
+    {
+        RequireAdmin();
+        if (id == PersonId)
+        {
+            throw new Kernel.Domain.ValidationException("Cannot deactivate your own account");
+        }
+        var current = await persons.GetAsync(id, ct);
+        if (string.Equals(current.Email, "admin@nacentech.gov.vn", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new Kernel.Domain.ForbiddenException("Cannot deactivate the root administrator account");
+        }
+        var updated = await persons.AdminUpdateAsync(id, new AdminUpdatePersonCommand(null, null, null, null, false), ct);
+        return Ok(new
+        {
+            success = true,
+            message = "User has been deactivated successfully",
+            user = V1Mappers.User(updated),
+            reason = dto?.Reason
+        });
     }
 
     [HttpPost("{id:guid}/reset-password")]

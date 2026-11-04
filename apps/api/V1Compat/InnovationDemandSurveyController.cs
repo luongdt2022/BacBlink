@@ -234,6 +234,7 @@ public sealed class InnovationDemandSurveyController(
         List<string> supportNeeds = ExtractStringArray(answersElem, "c38_support_needs", "support_needs");
         List<string> impactOutcomes = ExtractStringArray(answersElem, "c23_impact_outcomes", "recorded_impacts");
         string? recommendations = TryGetString(answersElem, "c43_recommendations", "recommendations");
+        string? signatureUrl = TryGetString(answersElem, "signature_data_url", "signatureDataUrl", "representative_signature_url");
 
         // Đồng bộ dữ liệu vào Enterprise
         enterprise.HasRdUnit = hasRdUnit;
@@ -412,7 +413,8 @@ public sealed class InnovationDemandSurveyController(
             confirmedByName: enterprise.ContactPerson ?? enterprise.Name,
             confirmedByTitle: null,
             pdpdConsentAt: DateTimeOffset.UtcNow,
-            surveyDetails: answersJson
+            surveyDetails: answersJson,
+            representativeSignatureUrl: signatureUrl
         );
 
         survey.SetInnovationDemandDetails(

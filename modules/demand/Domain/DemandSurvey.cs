@@ -34,7 +34,8 @@ public sealed class DemandSurvey : AggregateRoot
         string? confirmedByName = null,
         string? confirmedByTitle = null,
         DateTimeOffset? pdpdConsentAt = null,
-        string? surveyDetails = null)
+        string? surveyDetails = null,
+        string? representativeSignatureUrl = null)
     {
         SurveyCode = surveyCode;
         SurveyType = surveyType;
@@ -60,6 +61,7 @@ public sealed class DemandSurvey : AggregateRoot
         ConfirmedByTitle = confirmedByTitle;
         PdpdConsentAt = pdpdConsentAt;
         SurveyDetails = surveyDetails;
+        RepresentativeSignatureUrl = representativeSignatureUrl;
         Status = "SUBMITTED";
         SubmittedAt = DateTimeOffset.UtcNow;
     }
@@ -84,6 +86,7 @@ public sealed class DemandSurvey : AggregateRoot
     public string? MainProducts { get; private set; }
     public string? ConfirmedByName { get; private set; }
     public string? ConfirmedByTitle { get; private set; }
+    public string? RepresentativeSignatureUrl { get; private set; }
     public DateTimeOffset? PdpdConsentAt { get; private set; }
     public string? SurveyDetails { get; private set; }
     public string Status { get; private set; } = "DRAFT";

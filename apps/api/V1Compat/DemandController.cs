@@ -33,6 +33,15 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         if (string.IsNullOrWhiteSpace(req.ContactName) || string.IsNullOrWhiteSpace(req.ContactPhone) || string.IsNullOrWhiteSpace(req.ContactEmail))
             return BadRequest(new { message = "Thông tin liên hệ (Họ tên, SĐT, Email) là bắt buộc." });
 
+        var signatureUrl = req.SignatureDataUrl ?? req.RepresentativeSignatureUrl;
+        if (!string.IsNullOrWhiteSpace(signatureUrl))
+        {
+            if (!signatureUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase) || signatureUrl.Length < 30)
+            {
+                return BadRequest(new { message = "Chữ ký điện tử không hợp lệ. Vui lòng cung cấp định dạng ảnh hợp lệ." });
+            }
+        }
+
         // Xác định người gửi và tự động cấp tài khoản BUYER nếu chưa tồn tại (Kênh triển lãm / khảo sát công khai)
         Guid? submitterPersonId = null;
         bool isNewAccountProvisioned = false;
@@ -128,7 +137,8 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             req.ConfirmedByName,
             req.ConfirmedByTitle,
             req.PdpdConsentAt ?? DateTimeOffset.UtcNow,
-            surveyDetailsJson
+            surveyDetailsJson,
+            signatureUrl
         );
 
         db.Set<DemandSurvey>().Add(survey);
@@ -1046,7 +1056,9 @@ public sealed record SubmitDeepSurveyRequest(
     Dictionary<string, int>? AdoptionCapacity = null,
     List<string>? FutureDirections = null,
     Dictionary<string, int>? SupportNeeds = null,
-    List<string>? DesiredPartners = null
+    List<string>? DesiredPartners = null,
+    string? SignatureDataUrl = null,
+    string? RepresentativeSignatureUrl = null
 );
 
 public sealed record DeepSurveyEquipmentRequest(
