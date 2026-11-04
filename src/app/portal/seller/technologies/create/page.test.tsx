@@ -94,8 +94,40 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     expect(screen.getByText(/Hồ Sơ Chuyển Giao Công Nghệ & SHTT \(IP Quad\)/i)).toBeInTheDocument();
   });
 
-  it("supports Fast-Track submission directly from Step 1 via modal", () => {
+  const fillStep1Valid = () => {
+    fireEvent.change(
+      screen.getByPlaceholderText(/Máy sấy thăng hoa chân không/i),
+      { target: { value: "Robot hàn laser tự động 6 bậc tự do" } }
+    );
+    fireEvent.change(
+      screen.getByPlaceholderText(/Nêu ngắn gọn đặc điểm chính/i),
+      { target: { value: "Hệ thống hàn laser độ chính xác cao tích hợp camera AI." } }
+    );
+    fireEvent.change(
+      screen.getByPlaceholderText(/Sản phẩm giải quyết nỗi đau/i),
+      { target: { value: "Giảm 90% tỷ lệ rỗ khí mối hàn kim loại tấm mỏng." } }
+    );
+  };
+
+  it("blocks Fast-Track modal and displays validation error when Step 1 required fields are missing", () => {
     render(<TaoHoSoChaoBanPage />);
+
+    const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });
+    fireEvent.click(fastTrackBtn);
+
+    // Modal should NOT open
+    expect(screen.queryByText(/Xác Nhận Nộp Hồ Sơ Nhanh \(Fast-Track\)/i)).toBeNull();
+    // Error feedback should be displayed
+    expect(
+      screen.getByText(/Vui lòng hoàn thiện các trường bắt buộc ở Bước 1 trước khi gửi hồ sơ Fast-Track/i)
+    ).toBeInTheDocument();
+  });
+
+  it("supports Fast-Track submission directly from Step 1 via modal when Step 1 is valid", () => {
+    render(<TaoHoSoChaoBanPage />);
+
+    // Fill valid Step 1
+    fillStep1Valid();
 
     // Find Fast-Track button in Step 1
     const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });
@@ -130,6 +162,9 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     // Change authority to VN-TN (Thái Nguyên)
     fireEvent.change(authoritySelect!, { target: { value: "VN-TN" } });
 
+    // Fill valid Step 1 to allow Fast-Track modal
+    fillStep1Valid();
+
     // Open Fast Track modal and verify VN-TN is selected
     const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });
     fireEvent.click(fastTrackBtn);
@@ -144,6 +179,9 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
 
   it("allows selecting Sở KH&CN Thái Nguyên (VN-TN) directly inside FastTrackSubmitModal and updates authority state", () => {
     render(<TaoHoSoChaoBanPage />);
+
+    // Fill valid Step 1
+    fillStep1Valid();
 
     // Open Fast Track modal directly
     const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });

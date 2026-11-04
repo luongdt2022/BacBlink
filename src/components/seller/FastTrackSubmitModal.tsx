@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Send, ShieldAlert, CheckCircle2, X } from "lucide-react";
+import { Send, ShieldAlert, CheckCircle2, X, AlertCircle } from "lucide-react";
 import { PROVINCIAL_AUTHORITIES_CATALOG } from "@/services/api/technology-offer";
 
 interface FastTrackSubmitModalProps {
@@ -16,6 +16,7 @@ interface FastTrackSubmitModalProps {
   managingAuthorityId?: string;
   managingAuthorityName?: string;
   onAuthorityChange?: (id: string, name: string) => void;
+  errorMessage?: string | null;
 }
 
 export function FastTrackSubmitModal({
@@ -30,6 +31,7 @@ export function FastTrackSubmitModal({
   managingAuthorityId,
   managingAuthorityName,
   onAuthorityChange,
+  errorMessage,
 }: FastTrackSubmitModalProps) {
   const [agreed, setAgreed] = useState(true);
 
@@ -58,6 +60,13 @@ export function FastTrackSubmitModal({
         </div>
 
         <div className="p-6 space-y-4">
+          {errorMessage && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3.5 flex items-start gap-2.5 text-xs text-rose-800 animate-in fade-in">
+              <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="font-semibold leading-5">{errorMessage}</div>
+            </div>
+          )}
+
           <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-3.5 space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="text-slate-500">Tên công nghệ:</span>

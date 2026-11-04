@@ -340,6 +340,23 @@ export default function TaoHoSoChaoBanPage() {
     }
   };
 
+  // Mở modal Fast-Track: Bắt buộc kiểm tra tính hợp lệ của Bước 1 trước khi mở
+  const handleOpenFastTrackModal = () => {
+    if (!validateStep1()) {
+      setStatusFeedback({
+        type: "error",
+        message: "Vui lòng hoàn thiện các trường bắt buộc ở Bước 1 trước khi gửi hồ sơ Fast-Track.",
+      });
+      if (currentStep !== 1) {
+        setCurrentStep(1);
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setStatusFeedback(null);
+    setIsFastTrackModalOpen(true);
+  };
+
   // Nộp hồ sơ chờ duyệt (Fast-Track từ Bước 1 hoặc Hoàn tất 4 bước)
   const handleSubmitReview = async () => {
     if (!validateStep1()) {
@@ -416,12 +433,17 @@ export default function TaoHoSoChaoBanPage() {
         contactEmail,
       };
 
-      await createSellerOffer(payload);
+      const res = await createSellerOffer(payload);
+      if (!res.success) {
+        throw new Error(res.message || "Lỗi nộp hồ sơ.");
+      }
+
       setIsFastTrackModalOpen(false);
       localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY);
       router.push("/portal/seller/technologies?status=pending&success=1");
     } catch (err: any) {
       setStatusFeedback({ type: "error", message: err.message || "Lỗi nộp hồ sơ." });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -485,7 +507,7 @@ export default function TaoHoSoChaoBanPage() {
             {/* QUY TẮC ĐỘT PHÁ UX: Nút Gửi chờ duyệt trên Topbar luôn khả dụng khi Bước 1 hợp lệ */}
             <button
               type="button"
-              onClick={() => setIsFastTrackModalOpen(true)}
+              onClick={handleOpenFastTrackModal}
               className="rounded-lg bg-brand-700 hover:bg-brand-800 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm transition flex items-center gap-1.5"
             >
               <Send className="h-3.5 w-3.5" />
@@ -697,7 +719,7 @@ export default function TaoHoSoChaoBanPage() {
                     <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
                       <button
                         type="button"
-                        onClick={() => setIsFastTrackModalOpen(true)}
+                        onClick={handleOpenFastTrackModal}
                         className="w-full sm:w-auto rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-extrabold shadow-sm transition flex items-center justify-center gap-1.5"
                       >
                         <Send className="h-3.5 w-3.5" />
@@ -781,7 +803,7 @@ export default function TaoHoSoChaoBanPage() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setIsFastTrackModalOpen(true)}
+                      onClick={handleOpenFastTrackModal}
                       className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm"
                     >
                       Gửi chờ duyệt ngay
@@ -848,7 +870,7 @@ export default function TaoHoSoChaoBanPage() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setIsFastTrackModalOpen(true)}
+                      onClick={handleOpenFastTrackModal}
                       className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-extrabold shadow-sm"
                     >
                       Gửi chờ duyệt ngay
@@ -952,6 +974,7 @@ export default function TaoHoSoChaoBanPage() {
             : `${priceMin?.toLocaleString() || 0} - ${priceMax?.toLocaleString() || 0} ${currency} / ${unit}`
         }
         isSubmitting={isSubmitting}
+        errorMessage={statusFeedback?.type === "error" ? statusFeedback.message : null}
         managingAuthorityId={managingAuthorityId}
         managingAuthorityName={managingAuthorityName}
         onAuthorityChange={(id, name) => {
