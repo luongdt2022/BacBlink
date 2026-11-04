@@ -33,13 +33,19 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Divider & Sub-footer: Bản quyền & Lượt truy cập */}
+        {/* Divider & Sub-footer: Bản quyền, Trạng thái thử nghiệm & Lượt truy cập */}
         <div className="mt-5 sm:mt-7 pt-4 border-t border-white/20 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/80 dark:text-slate-400">
           <div>{t("footer_rights")}</div>
-          <div className="flex items-center gap-1.5 text-white/90 dark:text-slate-300">
-            <Eye className="size-3.5 text-white/70" />
-            <span>Lượt truy cập:</span>
-            <span className="font-semibold text-white tracking-wider">2,689,450</span>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 sm:gap-3 text-white/90 dark:text-slate-300">
+            <span className="text-white/85 font-normal">
+              {t("footer_system_status") || "Hệ thống đang trong giai đoạn thử nghiệm."}
+            </span>
+            <span className="hidden sm:inline text-white/40">|</span>
+            <div className="flex items-center gap-1.5">
+              <Eye className="size-3.5 text-white/70" />
+              <span>Lượt truy cập:</span>
+              <span className="font-semibold text-white tracking-wider">2,689,450</span>
+            </div>
           </div>
         </div>
       </div>

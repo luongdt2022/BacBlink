@@ -12,6 +12,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  ChevronDown,
   ClipboardCheck,
   Clock,
   Cpu,
@@ -50,6 +51,17 @@ type Listing = {
   image: string;
   type: "offers" | "demands";
 };
+
+const SEARCH_CATEGORIES = [
+  { value: "all", label: "Tất cả danh mục", path: "/chao-ban-cong-nghe" },
+  { value: "cong-nghe", label: "Công nghệ chào bán", path: "/chao-ban-cong-nghe" },
+  { value: "nhu-cau", label: "Nhu cầu công nghệ & ĐMST", path: "/nhu-cau-cong-nghe" },
+  { value: "chuyen-gia", label: "Chuyên gia & Nhà khoa học", path: "/experts" },
+  { value: "doanh-nghiep", label: "Doanh nghiệp ĐMST", path: "/doanh-nghiep-dmst" },
+  { value: "sang-che", label: "Sáng chế & Bằng độc quyền", path: "/chao-ban-cong-nghe" },
+  { value: "trien-lam", label: "Sàn Triển lãm Techmart", path: "/trien-lam" },
+  { value: "dao-tao", label: "Đào tạo & Chuyển giao tri thức", path: "/elearning" },
+] as const;
 
 const features = [
   [ShieldCheck, "Công nghệ được kiểm định", "Mỗi công nghệ đăng tải đều được Viện thẩm định mức độ sẵn sàng (TRL) và pháp lý sở hữu trí tuệ trước khi công bố."],
@@ -128,6 +140,7 @@ export default function HomePage() {
 
   // Search state
   const [query, setQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState("all");
 
   const [listingType, setListingType] = useState<"offers" | "demands">("offers");
   const [offers, setOffers] = useState<Listing[]>([]);
@@ -262,11 +275,19 @@ export default function HomePage() {
   const handleSearch = (event?: FormEvent<HTMLFormElement>) => {
     if (event) event.preventDefault();
     const q = query.trim();
-    if (q) {
-      router.push(`/chao-ban-cong-nghe?q=${encodeURIComponent(q)}`);
-    } else {
-      router.push("/chao-ban-cong-nghe");
+    const matchedCategory = SEARCH_CATEGORIES.find((c) => c.value === searchCategory);
+    const targetPath = matchedCategory?.path || "/chao-ban-cong-nghe";
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (searchCategory !== "all") {
+      if (searchCategory === "sang-che") {
+        params.set("type", "patent");
+      } else {
+        params.set("category", searchCategory);
+      }
     }
+    const qs = params.toString();
+    router.push(`${targetPath}${qs ? `?${qs}` : ""}`);
   };
 
   const listings = listingType === "offers" ? offers : demands;
@@ -285,43 +306,63 @@ export default function HomePage() {
   return (
     <div className="w-full bg-white dark:bg-slate-950">
       {/* HERO BANNER SECTION */}
-      <section className="relative overflow-hidden bg-brand-700 px-4 py-8 text-white sm:py-16 lg:px-8 lg:py-20 [@media(min-height:850px)]:lg:py-24 [@media(max-height:780px)]:py-7 [@media(max-height:780px)]:sm:py-11">
+      <section className="relative overflow-hidden bg-brand-700 px-4 py-6 text-white sm:py-12 lg:px-8 lg:py-14 [@media(min-height:850px)]:lg:py-16 [@media(max-height:780px)]:py-5 [@media(max-height:780px)]:sm:py-8">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="relative mx-auto max-w-7xl">
           <div className="mx-auto max-w-4xl text-center">
             <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-white">
               Sàn giao dịch công nghệ Quốc gia
             </span>
-            <h1 className="mt-4 sm:mt-6 type-hero text-2xl sm:text-4xl lg:text-5xl font-bold font-serif leading-tight text-white">
-              Kết nối cung – cầu công nghệ, <br className="hidden sm:block" />
-              thúc đẩy đổi mới sáng tạo
+            <h1 className="mt-3.5 sm:mt-5 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold font-sans uppercase tracking-normal sm:tracking-wide leading-snug sm:leading-tight text-white">
+              <span className="block">KẾT NỐI CUNG – CẦU CÔNG NGHỆ,</span>
+              <span className="block mt-1.5 sm:mt-2">THÚC ĐẨY ĐỔI MỚI SÁNG TẠO</span>
             </h1>
-            <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-xs sm:text-base text-white/85 leading-relaxed">
-              Cổng kết nối cung – cầu, chuyển giao và thương mại hóa công nghệ Quốc gia do Viện Đổi Mới Sáng Tạo Quốc Gia vận hành.
-            </p>
 
-            <form className="mx-auto mt-6 sm:mt-8 flex max-w-xl flex-col gap-2.5 sm:flex-row sm:gap-3" onSubmit={handleSearch}>
+            <form
+              className="mx-auto mt-7 sm:mt-9 lg:mt-10 flex w-full max-w-3xl lg:max-w-4xl flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 p-2 sm:p-2.5 shadow-2xl transition"
+              onSubmit={handleSearch}
+            >
+              {/* Combobox danh mục chuẩn hệ sinh thái NacenTwin */}
+              <div className="relative w-full sm:w-56 md:w-64 lg:w-72 shrink-0">
+                <select
+                  value={searchCategory}
+                  onChange={(e) => setSearchCategory(e.target.value)}
+                  className="focus-ring h-11 sm:h-12 w-full appearance-none rounded-xl bg-white/20 hover:bg-white/25 border border-white/20 pl-3.5 sm:pl-4 pr-9 text-xs sm:text-sm font-medium text-white cursor-pointer truncate transition focus:bg-white/30 focus:outline-none"
+                  aria-label="Chọn danh mục tìm kiếm"
+                >
+                  {SEARCH_CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value} className="text-slate-900 bg-white dark:bg-slate-900 dark:text-white py-1.5">
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-white/80" />
+              </div>
+
+              {/* Ô nhập từ khóa tìm kiếm */}
               <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3.5 sm:left-4 top-1/2 size-4.5 sm:size-5 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-3 sm:left-3.5 top-1/2 size-4.5 sm:size-5 -translate-y-1/2 text-white/60" />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Tìm kiếm công nghệ, nhu cầu kết nối, chuyên gia..."
-                  className="focus-ring h-11 sm:h-12 w-full rounded-xl border-0 bg-white py-2.5 sm:py-3 pl-10 sm:pl-11 pr-4 text-sm sm:text-base text-text-primary shadow-lg placeholder:text-slate-400"
+                  placeholder="Nhập từ khóa tìm kiếm"
+                  className="h-11 sm:h-12 w-full border-0 bg-transparent py-2.5 sm:py-3 pl-9 sm:pl-10 pr-3 text-sm sm:text-base text-white placeholder:text-white/65 focus:outline-none focus:ring-0"
                 />
               </div>
+
+              {/* Nút Tìm kiếm (Trắng chữ xanh đồng bộ theo mẫu ảnh 2) */}
               <button
                 type="submit"
-                className="focus-ring h-11 sm:h-12 rounded-xl bg-nacen-green-500 px-5 sm:px-6 text-sm font-bold text-white transition hover:bg-nacen-green-600 shadow-md cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                className="focus-ring h-11 sm:h-12 rounded-xl bg-white hover:bg-white/95 px-6 sm:px-7 text-sm sm:text-base font-bold text-brand-700 transition shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 shrink-0"
               >
-                <Search className="size-4 sm:hidden" />
+                <Search className="size-4 text-brand-700" />
                 <span>Tìm kiếm</span>
               </button>
             </form>
           </div>
 
           {/* REALTIME METRICS STRIP (Khối Thống kê thời gian thực có chuẩn 5 UX States) */}
-          <div className="mx-auto mt-8 sm:mt-12 [@media(min-height:850px)]:mt-14 max-w-4xl">
+          <div className="mx-auto mt-6 sm:mt-9 [@media(min-height:850px)]:mt-10 max-w-4xl">
             <Async
               state={statsState}
               loadingSkeleton={

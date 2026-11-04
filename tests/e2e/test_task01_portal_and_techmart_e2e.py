@@ -57,7 +57,7 @@ def run_task01_e2e():
         time.sleep(1)
 
         body_text = page.locator("body").inner_text()
-        if "Kết nối cung – cầu công nghệ" not in body_text:
+        if "KẾT NỐI CUNG – CẦU CÔNG NGHỆ" not in body_text.upper() and "Kết nối cung – cầu công nghệ" not in body_text:
             defects.append({
                 "id": "DEFECT-01",
                 "severity": "CRITICAL",

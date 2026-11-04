@@ -9,7 +9,10 @@ import {
   Check,
   CheckCircle2,
   Sparkles,
+  ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Send,
   X,
   Award,
@@ -68,6 +71,41 @@ const DEGREE_OPTIONS = [
   { value: "MASTER", label: "Thạc sĩ / Kỹ sư chính" },
 ];
 
+function getPaginationRange(currentPage: number, totalPages: number, siblingCount = 1): (number | "...")[] {
+  const totalPageNumbers = siblingCount * 2 + 5;
+  if (totalPages <= totalPageNumbers) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+  const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+  const shouldShowLeftDots = leftSiblingIndex > 2;
+  const shouldShowRightDots = rightSiblingIndex < totalPages - 1;
+
+  if (!shouldShowLeftDots && shouldShowRightDots) {
+    const leftItemCount = 3 + 2 * siblingCount;
+    const leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
+    return [...leftRange, "...", totalPages];
+  }
+
+  if (shouldShowLeftDots && !shouldShowRightDots) {
+    const rightItemCount = 3 + 2 * siblingCount;
+    const rightRange = Array.from({ length: rightItemCount }, (_, i) => totalPages - rightItemCount + i + 1);
+    return [1, "...", ...rightRange];
+  }
+
+  if (shouldShowLeftDots && shouldShowRightDots) {
+    const middleRange = Array.from(
+      { length: rightSiblingIndex - leftSiblingIndex + 1 },
+      (_, i) => leftSiblingIndex + i
+    );
+    return [1, "...", ...middleRange, "...", totalPages];
+  }
+
+  return Array.from({ length: totalPages }, (_, i) => i + 1);
+}
+
 export default function ExpertsDirectoryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDegrees, setSelectedDegrees] = useState<string[]>([]);
@@ -84,6 +122,8 @@ export default function ExpertsDirectoryPage() {
   const [filterDataError, setFilterDataError] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(9);
+  const [jumpPageInput, setJumpPageInput] = useState<string>("");
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -230,7 +270,7 @@ export default function ExpertsDirectoryPage() {
       }
       if (acceptingConsultation) params.set("acceptingConsultation", "true");
       params.set("page", pageVal.toString());
-      params.set("pageSize", "9");
+      params.set("pageSize", pageSize.toString());
 
       const res = await fetch(`${API_BASE}/api/v1/public/experts?${params.toString()}`, { signal: request.signal });
       if (!res.ok) {
@@ -240,6 +280,9 @@ export default function ExpertsDirectoryPage() {
       if (request.signal.aborted) return;
       if (json.success && json.data) {
         setDirectoryData(json.data);
+        if (json.data.page && json.data.page !== pageVal) {
+          setCurrentPage(json.data.page);
+        }
       } else {
         throw new Error(json.message || "Dữ liệu không hợp lệ");
       }
@@ -254,7 +297,7 @@ export default function ExpertsDirectoryPage() {
 
   useEffect(() => {
     fetchDirectory();
-  }, [currentPage, selectedDegrees, selectedSectors, selectedProvinces, acceptingConsultation]);
+  }, [currentPage, pageSize, selectedDegrees, selectedSectors, selectedProvinces, acceptingConsultation]);
 
   const loadFilterData = async () => {
     setFilterDataError(null);
@@ -1279,47 +1322,168 @@ export default function ExpertsDirectoryPage() {
               </div>
             )}
 
-            {directoryData.totalPages > 1 && (
-              <div className="flex items-center justify-between pt-6 border-t border-slate-200 text-caption dark:border-slate-800">
-                <span className="text-slate-500 dark:text-slate-400">
-                  Trang <span className="font-bold text-slate-700 dark:text-slate-200">{directoryData.page}</span> /{" "}
-                  <span className="font-bold text-slate-700 dark:text-slate-200">{directoryData.totalPages}</span> (Tổng số{" "}
-                  <span className="font-bold text-slate-700 dark:text-slate-200">{directoryData.totalCount}</span> chuyên gia)
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
-                  >
-                    Trước
-                  </button>
-                  {Array.from({ length: directoryData.totalPages }, (_, i) => i + 1).map((pg) => (
-                    <button
-                      key={pg}
-                      type="button"
-                      onClick={() => setCurrentPage(pg)}
-                      className={`px-3 py-1.5 rounded-lg text-caption font-bold ${
-                        currentPage === pg
-                          ? "bg-brand-700 text-white"
-                          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
-                      }`}
+            {directoryData.totalPages > 1 && (() => {
+              const activePage = directoryData.page || currentPage;
+              const range = getPaginationRange(activePage, directoryData.totalPages);
+              return (
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200 text-caption dark:border-slate-800">
+                {/* 1. Left Summary & PageSize Selector */}
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-3 gap-y-2 text-slate-500 dark:text-slate-400">
+                  <span className="whitespace-nowrap">
+                    Hiển thị{" "}
+                    <strong className="text-slate-800 dark:text-slate-200">
+                      {((directoryData.page - 1) * pageSize) + 1}–{Math.min(directoryData.page * pageSize, directoryData.totalCount)}
+                    </strong>{" "}
+                    trên{" "}
+                    <strong className="text-slate-800 dark:text-slate-200">
+                      {directoryData.totalCount.toLocaleString("vi-VN")}
+                    </strong>{" "}
+                    chuyên gia
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold text-xs whitespace-nowrap dark:bg-slate-800 dark:text-slate-300">
+                    Trang {directoryData.page} / {directoryData.totalPages}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-slate-400 hidden sm:inline whitespace-nowrap">Hiển thị:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      aria-label="Số bản ghi mỗi trang"
+                      className="h-8 px-2 text-xs rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-slate-300 focus:outline-hidden focus:border-brand-500 transition dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
                     >
-                      {pg}
-                    </button>
-                  ))}
+                      <option value={9}>9 / trang</option>
+                      <option value={18}>18 / trang</option>
+                      <option value={36}>36 / trang</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* 2. Center/Right Windowed Pagination */}
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  {/* First page button */}
                   <button
                     type="button"
-                    disabled={currentPage >= directoryData.totalPages}
-                    onClick={() => setCurrentPage((p) => Math.min(directoryData.totalPages, p + 1))}
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+                    disabled={activePage <= 1}
+                    onClick={() => setCurrentPage(1)}
+                    aria-label="Trang đầu tiên"
+                    title="Trang đầu tiên"
+                    className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-brand-300 disabled:opacity-40 disabled:cursor-not-allowed transition dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    Sau
+                    <ChevronsLeft className="w-4 h-4" />
                   </button>
+
+                  {/* Previous button */}
+                  <button
+                    type="button"
+                    disabled={activePage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    aria-label="Trang trước"
+                    className="h-9 px-3 flex items-center gap-1 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-brand-300 font-semibold text-caption disabled:opacity-40 disabled:cursor-not-allowed transition dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline">Trước</span>
+                  </button>
+
+                  {/* Number buttons for sm and up */}
+                  <div className="hidden sm:flex items-center gap-1.5">
+                    {range.map((item, idx) => {
+                      if (item === "...") {
+                        return (
+                          <span
+                            key={`dots-${idx}`}
+                            className="h-9 w-7 flex items-center justify-center text-slate-400 select-none font-bold"
+                          >
+                            …
+                          </span>
+                        );
+                      }
+                      const pageNum = item as number;
+                      const isActive = activePage === pageNum;
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setCurrentPage(pageNum)}
+                          aria-current={isActive ? "page" : undefined}
+                          className={`h-9 min-w-9 px-3 rounded-lg text-caption font-bold transition ${
+                            isActive
+                              ? "bg-brand-700 text-white shadow-xs border border-brand-700 dark:bg-brand-600 dark:border-brand-600"
+                              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-brand-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Mobile active indicator */}
+                  <span className="sm:hidden px-2 text-caption font-semibold text-slate-700 dark:text-slate-300">
+                    {activePage} / {directoryData.totalPages}
+                  </span>
+
+                  {/* Next button */}
+                  <button
+                    type="button"
+                    disabled={activePage >= directoryData.totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(directoryData.totalPages, p + 1))}
+                    aria-label="Trang sau"
+                    className="h-9 px-3 flex items-center gap-1 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-brand-300 font-semibold text-caption disabled:opacity-40 disabled:cursor-not-allowed transition dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <span className="hidden sm:inline">Sau</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  {/* Last page button */}
+                  <button
+                    type="button"
+                    disabled={activePage >= directoryData.totalPages}
+                    onClick={() => setCurrentPage(directoryData.totalPages)}
+                    aria-label="Trang cuối cùng"
+                    title="Trang cuối cùng"
+                    className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-brand-300 disabled:opacity-40 disabled:cursor-not-allowed transition dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <ChevronsRight className="w-4 h-4" />
+                  </button>
+
+                  {/* 3. Quick Jump Form */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const target = parseInt(jumpPageInput, 10);
+                      if (!isNaN(target) && target >= 1 && target <= directoryData.totalPages) {
+                        setCurrentPage(target);
+                        setJumpPageInput("");
+                      }
+                    }}
+                    className="hidden xl:flex items-center gap-1.5 ml-2 pl-3 border-l border-slate-200 dark:border-slate-800"
+                  >
+                    <span className="text-xs text-slate-400 whitespace-nowrap">Đến trang:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={directoryData.totalPages}
+                      value={jumpPageInput}
+                      onChange={(e) => setJumpPageInput(e.target.value)}
+                      placeholder={String(activePage)}
+                      aria-label="Nhập số trang cần đến"
+                      className="w-14 h-8 px-2 text-xs text-center rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-hidden focus:border-brand-500 transition dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!jumpPageInput.trim()}
+                      className="h-8 px-2.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-40 transition dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      Đi
+                    </button>
+                  </form>
                 </div>
               </div>
-            )}
+            );
+            })()}
           </section>
 
         </div>

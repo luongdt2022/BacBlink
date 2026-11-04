@@ -16,6 +16,7 @@ vi.mock("./i18n-provider", () => ({
         footer_address: "Địa chỉ: Số 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội",
         footer_contact: "Email: contact@nacentech.gov.vn | Hotline: 024.3933.1234",
         footer_rights: "© 2026 NacenTwin - Mạng lưới Đổi mới sáng tạo & Chuyển giao Công nghệ Quốc gia.",
+        footer_system_status: "Hệ thống đang trong giai đoạn thử nghiệm.",
       };
       return translations[key] || key;
     },
@@ -40,11 +41,12 @@ describe("Footer Component (STI.gov.vn style for NacenTwin)", () => {
     expect(screen.getByText(/E-mail: contact@nacentech.gov.vn/i)).toBeInTheDocument();
   });
 
-  it("renders copyright and live visitor counter", () => {
+  it("renders copyright, live visitor counter and system testing phase notice", () => {
     render(<Footer />);
 
     expect(screen.getByText(/© 2026 NacenTwin/i)).toBeInTheDocument();
     expect(screen.getByText(/Lượt truy cập:/i)).toBeInTheDocument();
     expect(screen.getByText("2,689,450")).toBeInTheDocument();
+    expect(screen.getByText("Hệ thống đang trong giai đoạn thử nghiệm.")).toBeInTheDocument();
   });
 });

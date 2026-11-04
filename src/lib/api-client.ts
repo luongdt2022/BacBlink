@@ -12,7 +12,16 @@ export const API_BASE =
 export async function readApiError(response: Response, fallback: string): Promise<string> {
   const payload = await response.json().catch(() => null);
   if (Array.isArray(payload?.message)) return payload.message.join(" ");
-  return payload?.message || payload?.title || fallback;
+  if (payload?.message) return payload.message;
+  if (payload?.title) return payload.title;
+
+  if (response.status === 401) {
+    return "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.";
+  }
+  if (response.status === 403) {
+    return "Truy cập bị từ chối (403 Forbidden). Tài khoản không có thẩm quyền quản trị hoặc phiên đã hết hạn.";
+  }
+  return fallback;
 }
 
 /** Lỗi fetch không có HTTP response (API chưa chạy/CORS/network) phải nói rõ cho người dùng, không lộ "Load failed". */

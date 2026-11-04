@@ -10,6 +10,7 @@ vi.mock("@/services/api/assessment-tt17", async () => {
   return {
     ...actual,
     getGovAssessmentQueue: vi.fn(),
+    getGovDemandSurveys: vi.fn(),
   };
 });
 
@@ -18,6 +19,7 @@ vi.mock("@/services/survey-docx-exporter", async () => {
   return {
     ...actual,
     exportTt17SurveyDocx: vi.fn(),
+    exportDemandSmeDocx: vi.fn(),
   };
 });
 
@@ -117,11 +119,75 @@ describe("CR-2026-026 AdminAssessmentRecordsPage — Bộ Tam Hợp 3 Phiếu Kh
     },
   ];
 
+  const mockDemandSurveys: assessmentApi.DemandSurveyItem[] = [
+    {
+      id: "demand-001",
+      surveyCode: "SURV-2026-001",
+      companyName: "Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh",
+      taxCode: "0108992134",
+      province: "Hà Nội",
+      tniScore: 86,
+      tniClassification: "VERY_HIGH",
+      status: "COMPLETED",
+      submittedAt: "2026-10-28T09:00:00Z",
+      createdAt: "2026-10-28T09:00:00Z",
+      topBottlenecks: ["Thiếu nhân lực R&D", "Công nghệ CNC cũ"],
+      supportNeeds: ["Hỗ trợ chuyên gia ĐMST", "Kết nối viện trường"],
+      representativeSignatureUrl: "data:image/png;base64,mockSign",
+      items: [
+        {
+          id: "item-01",
+          itemCode: "DMD-20261104-01",
+          stageName: "Gia công & Lắp ráp",
+          technicalProblem: "Tự động hóa phát hiện khuyết tật bề mặt mối hàn bằng AI Vision",
+          desiredSolution: "Cánh tay Robot gắn Camera 3D kèm AI Deep Learning",
+          expectedGoal: "Giảm tỷ lệ phế phẩm từ 4.5% xuống dưới 0.3%",
+          budgetRange: "1–5 tỷ đồng",
+          urgencyScore: 4,
+          impactScore: 5,
+          investmentCapacity: 4,
+          adoptionReadiness: 4,
+          tniScore: 86,
+        },
+      ],
+      surveyDetails: JSON.stringify({
+        hardestStage: "Kiểm tra chất lượng ngoại quan và đóng gói",
+        primaryCause: "Thiếu hệ thống cảm biến quang học kiểm tra tự động",
+        currentEquipments: [
+          {
+            StageName: "Đúc phôi & gia công tinh",
+            MachineName: "Máy đúc áp lực buồng lạnh 650 tấn",
+            TechOrigin: "Nhật Bản / G7",
+            InvestmentYear: 2021,
+            DepreciationStatus: "Đang hoạt động tốt (50–80%)",
+          },
+        ],
+        criteria8: {
+          "Mức độ hiện đại của dây chuyền & thiết bị": 4,
+          "Chất lượng và độ đồng đều của sản phẩm": 4,
+        },
+        technicalPersonnel: {
+          technicians: 12,
+          engineers: 6,
+          it: 2,
+          automation: 3,
+          rd: 2,
+          quality: 4,
+        },
+        futureDirections: ["[Tự động hóa] Robot công nghiệp", "[Chuyển đổi số] AI Vision"],
+      }),
+    },
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(assessmentApi.getGovAssessmentQueue).mockResolvedValue(mockAssessments);
+    vi.mocked(assessmentApi.getGovDemandSurveys).mockResolvedValue(mockDemandSurveys);
     vi.mocked(exporterApi.exportTt17SurveyDocx).mockResolvedValue(
       new Blob(["fake docx data"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" })
+    );
+    vi.mocked(exporterApi.exportDemandSmeDocx).mockResolvedValue(
+      new Blob(["fake demand docx data"], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" })
     );
   });
 
@@ -160,8 +226,8 @@ describe("CR-2026-026 AdminAssessmentRecordsPage — Bộ Tam Hợp 3 Phiếu Kh
       "phieu_khao_sat_dmst_43_cau_mau_trang.docx"
     );
 
-    // 3. Nút Tải mẫu Nhu cầu DNNVV
-    const demandTemplateBtn = screen.getByRole("link", { name: /Tải mẫu Nhu cầu DNNVV/i });
+    // 3. Nút Tải mẫu Nhu cầu DN
+    const demandTemplateBtn = screen.getByRole("link", { name: /Tải mẫu Nhu cầu DN/i });
     expect(demandTemplateBtn).toBeInTheDocument();
     expect(demandTemplateBtn).toHaveAttribute(
       "href",
@@ -183,7 +249,7 @@ describe("CR-2026-026 AdminAssessmentRecordsPage — Bộ Tam Hợp 3 Phiếu Kh
     expect(screen.getByRole("option", { name: /Tất cả loại phiếu \(3 loại\)/i })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: /Phiếu TT17 \(Công nghệ sản xuất\)/i })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: /Phiếu ĐMST \(43 câu hỏi ĐMST\)/i })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /Phiếu Nhu cầu ĐMST \(DNNVV\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Phiếu Nhu cầu DN/i })).toBeInTheDocument();
 
     // Default label: "Phân loại / Xếp loại"
     expect(screen.getByText("Phân loại / Xếp loại")).toBeInTheDocument();
@@ -318,6 +384,88 @@ describe("CR-2026-026 AdminAssessmentRecordsPage — Bộ Tam Hợp 3 Phiếu Kh
     await waitFor(() => {
       expect(exporterApi.exportTt17SurveyDocx).toHaveBeenCalledWith(mockAssessments[0]);
       expect(global.URL.createObjectURL).toHaveBeenCalled();
+    });
+  });
+
+  it("filters and displays Demand Survey records when selecting Phiếu Nhu cầu DN and opens its modal", async () => {
+    render(<AdminAssessmentRecordsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh")).toBeInTheDocument();
+    });
+
+    const surveyTypeSelect = screen.getByLabelText(/Loại phiếu khảo sát/i);
+    fireEvent.change(surveyTypeSelect, { target: { value: "SME_DEMAND" } });
+
+    // Minh Anh is present, TT17 items are filtered out
+    expect(screen.getByText("Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh")).toBeInTheDocument();
+    expect(screen.queryByText("Tập Đoàn Công Nghệ Nacen Hưng Yên")).not.toBeInTheDocument();
+    expect(screen.getByText("TNI: 86")).toBeInTheDocument();
+
+    // Click "Xem chi tiết" for Demand Survey
+    const detailBtn = screen.getByRole("button", { name: /Xem chi tiết/i });
+    fireEvent.click(detailBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Bản ghi Phiếu Nhu cầu DN/i)).toBeInTheDocument();
+      expect(screen.getByText(/Chỉ số TNI/i)).toBeInTheDocument();
+      // CR-2026-027 Section I: Bài toán kỹ thuật AI Vision
+      expect(screen.getByText(/Tự động hóa phát hiện khuyết tật bề mặt mối hàn bằng AI Vision/i)).toBeInTheDocument();
+      expect(screen.getByText(/Cánh tay Robot gắn Camera 3D/i)).toBeInTheDocument();
+      // CR-2026-027 Section III: Máy móc thiết bị
+      expect(screen.getByText(/Máy đúc áp lực buồng lạnh 650 tấn/i)).toBeInTheDocument();
+      // CR-2026-027 Section IV: Khâu khó nhất
+      expect(screen.getByText(/Kiểm tra chất lượng ngoại quan và đóng gói/i)).toBeInTheDocument();
+      // CR-2026-027 Section V: Thống kê nhân lực
+      expect(screen.getByText(/12 người/i)).toBeInTheDocument();
+      // CR-2026-027 Section VI: Định hướng công nghệ
+      expect(screen.getByText(/\[Tự động hóa\] Robot công nghiệp/i)).toBeInTheDocument();
+    });
+  });
+
+  it("CR-2026-027 triggers exportDemandSmeDocx when clicking 'Xuất Word (.docx)' button on Demand row", async () => {
+    render(<AdminAssessmentRecordsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh")).toBeInTheDocument();
+    });
+
+    const surveyTypeSelect = screen.getByLabelText(/Loại phiếu khảo sát/i);
+    fireEvent.change(surveyTypeSelect, { target: { value: "SME_DEMAND" } });
+
+    const exportDemandBtn = screen.getByRole("button", { name: /Xuất Word \(\.docx\)/i });
+    expect(exportDemandBtn).toBeInTheDocument();
+    fireEvent.click(exportDemandBtn);
+
+    await waitFor(() => {
+      expect(exporterApi.exportDemandSmeDocx).toHaveBeenCalledWith(mockDemandSurveys[0]);
+      expect(global.URL.createObjectURL).toHaveBeenCalled();
+    });
+  });
+
+  it("CR-2026-027 triggers exportDemandSmeDocx inside Modal Footer when clicking 'Xuất file Word (.docx)'", async () => {
+    render(<AdminAssessmentRecordsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh")).toBeInTheDocument();
+    });
+
+    const surveyTypeSelect = screen.getByLabelText(/Loại phiếu khảo sát/i);
+    fireEvent.change(surveyTypeSelect, { target: { value: "SME_DEMAND" } });
+
+    // Mở modal
+    const detailBtn = screen.getByRole("button", { name: /Xem chi tiết/i });
+    fireEvent.click(detailBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Xuất file Word \(\.docx\)/i })).toBeInTheDocument();
+    });
+
+    const modalExportBtn = screen.getByRole("button", { name: /Xuất file Word \(\.docx\)/i });
+    fireEvent.click(modalExportBtn);
+
+    await waitFor(() => {
+      expect(exporterApi.exportDemandSmeDocx).toHaveBeenCalledWith(mockDemandSurveys[0]);
     });
   });
 });

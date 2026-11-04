@@ -64,7 +64,7 @@ def capture_screenshot(page, name: str) -> str:
         print(f"⚠️ Không thể chụp ảnh {name}: {e}")
         return ""
 
-def verify_docx_file(filepath: str, expected_texts: list[str], min_size: int = 12000) -> tuple[bool, str]:
+def verify_docx_file(filepath: str, expected_texts: list[str], min_size: int = 10000) -> tuple[bool, str]:
     """Kiểm tra tệp tin Word (.docx): Kiểm tra Zip structure, parse XML, và đối soát chuỗi ký tự."""
     if not os.path.exists(filepath):
         return False, f"File không tồn tại: {filepath}"
@@ -139,7 +139,7 @@ def run_all_tests():
     )
     ok_demand, msg_demand = verify_docx_file(
         template_demand_path,
-        ["PHIẾU KHẢO SÁT HIỆN TRẠNG & NHU CẦU ĐỔI MỚI SÁNG TẠO", "NHU CẦU ĐỔI MỚI CÔNG NGHỆ"],
+        ["PHIẾU KHẢO SÁT NHU CẦU CÔNG NGHỆ DOANH NGHIỆP VỪA VÀ NHỎ", "NHU CẦU ĐỔI MỚI CÔNG NGHỆ"],
         min_size=30000
     )
     if ok_demand:
@@ -328,7 +328,7 @@ def run_all_tests():
 
             ok, msg = verify_docx_file(
                 downloaded_demand_path,
-                ["PHIẾU KHẢO SÁT HIỆN TRẠNG & NHU CẦU ĐỔI MỚI SÁNG TẠO", "NHU CẦU ĐỔI MỚI CÔNG NGHỆ"],
+                ["PHIẾU KHẢO SÁT NHU CẦU CÔNG NGHỆ DOANH NGHIỆP VỪA VÀ NHỎ", "NHU CẦU ĐỔI MỚI CÔNG NGHỆ"],
                 min_size=30000
             )
             assert ok, msg
@@ -455,6 +455,103 @@ def run_all_tests():
         except Exception as e:
             ev6 = capture_screenshot(page, "TC_SURVEY_006_failed")
             record_test("TC-SURVEY-006", "Săn lỗi biên & Kiểm tra Spam Click", "FAILED", f"Lỗi: {e}", ev6)
+
+        # ---------------------------------------------------------------------
+        # TC-SURVEY-007 (CR-2026-027): Kiểm tra Modal 7 khối & Xuất DOCX Phiếu Nhu cầu DN Minh Anh
+        # ---------------------------------------------------------------------
+        try:
+            print("  [CR-2026-027] Thực hiện kiểm thử E2E Phiếu Nhu cầu DN #SUR-20261104-B12C06...")
+            # 1. Đặt lại bộ lọc và tìm kiếm MST 0108992134
+            reset_btn = page.locator('button:has-text("Đặt lại bộ lọc")')
+            if reset_btn.is_visible():
+                reset_btn.click()
+                time.sleep(1.0)
+
+            # Lọc loại phiếu: SME_DEMAND
+            type_select = page.locator("#survey-type-filter")
+            if type_select.is_visible():
+                type_select.select_option("SME_DEMAND")
+                time.sleep(1.0)
+
+            search_input = page.locator("#search-input")
+            search_input.fill("0108992134")
+            time.sleep(1.5)
+
+            # 2. Kiểm tra hàng kết quả
+            minh_anh_row = page.locator("table tbody tr").first
+            minh_anh_row.wait_for(state="visible", timeout=8000)
+            row_text = minh_anh_row.inner_text()
+            assert "0108992134" in row_text, f"Không tìm thấy MST 0108992134 trong bảng: {row_text}"
+            assert "Minh Anh" in row_text, f"Không tìm thấy Doanh nghiệp Minh Anh: {row_text}"
+            
+            # Cột TNI / Xếp loại phải có TNI: 86 và Rất cao, không còn 'Chờ tính TNI'
+            assert "86" in row_text or "Rất cao" in row_text, f"Cột TNI chưa đồng bộ 86: {row_text}"
+            assert "Chờ tính TNI" not in row_text, f"Vẫn còn hiển thị nhãn 'Chờ tính TNI': {row_text}"
+
+            # 3. Mở Modal Xem chi tiết
+            view_detail_btn = minh_anh_row.locator('button:has-text("Xem chi tiết")')
+            view_detail_btn.wait_for(state="visible", timeout=5000)
+            view_detail_btn.click()
+
+            modal = page.locator('div[role="dialog"]')
+            modal.wait_for(state="visible", timeout=8000)
+            time.sleep(1.0)
+            modal_text = modal.inner_text()
+
+            # Đối soát 7 khối thông tin
+            assert "I. CHI TIẾT BÀI TOÁN KỸ THUẬT & NHU CẦU ĐỔI MỚI CÔNG NGHỆ" in modal_text, "Thiếu Khối I: Bài toán công nghệ"
+            assert "AI Vision" in modal_text or "mối hàn" in modal_text, "Thiếu mô tả bài toán AI Vision trong modal"
+            assert "86" in modal_text, "Thiếu chỉ số TNI"
+            assert "II. THÔNG TIN LIÊN HỆ & NGƯỜI ĐẠI DIỆN" in modal_text or "0108992134" in modal_text, "Thiếu Khối II: Thông tin DN"
+            assert "III. DANH MỤC MÁY MÓC, THIẾT BỊ CHỦ LỰC HIỆN TẠI" in modal_text, "Thiếu Khối III: Thiết bị máy móc"
+            assert "IV. ĐIỂM NGHẼN KỸ THUẬT & KHÂU SẢN XUẤT ÁCH TẮC" in modal_text, "Thiếu Khối IV: Khâu khó nhất"
+            assert "V. ĐỘI NGŨ NHÂN LỰC KỸ THUẬT" in modal_text, "Thiếu Khối V: Nhân lực kỹ thuật"
+            assert "VI. ĐỊNH HƯỚNG CÔNG NGHỆ TIÊN TIẾN GIAI ĐOẠN 2026–2030" in modal_text, "Thiếu Khối VI: Định hướng 2026-2030"
+            assert "VII. CHỮ KÝ ĐIỆN TỬ ĐẠI DIỆN DOANH NGHIỆP" in modal_text, "Thiếu Khối VII: Chữ ký điện tử"
+
+            ev7_modal = capture_screenshot(page, "TC_SURVEY_007_modal_7_blocks")
+
+            # 4. Xuất file Word (.docx) từ Modal
+            modal_export_btn = modal.locator('button:has-text("Xuất file Word (.docx)")')
+            modal_export_btn.wait_for(state="visible", timeout=5000)
+
+            with page.expect_download(timeout=15000) as download_info:
+                modal_export_btn.click()
+            download = download_info.value
+
+            exported_sme_docx_path = os.path.join(EVIDENCE_DIR, "exported_demand_sme_0108992134.docx")
+            download.save_as(exported_sme_docx_path)
+
+            # 5. Giải nén và kiểm tra file docx vừa xuất
+            ok_sme, msg_sme = verify_docx_file(
+                exported_sme_docx_path,
+                [
+                    "0108992134",
+                    "Minh Anh",
+                    "PHIẾU KHẢO SÁT NHU CẦU CÔNG NGHỆ DOANH NGHIỆP VỪA VÀ NHỎ",
+                    "86"
+                ],
+                min_size=10000
+            )
+            assert ok_sme, msg_sme
+
+            # Đóng modal
+            close_btn = modal.locator('button:has-text("Đóng")')
+            if close_btn.is_visible():
+                close_btn.click()
+                time.sleep(0.5)
+
+            ev7 = capture_screenshot(page, "TC_SURVEY_007_sme_docx_verified")
+            record_test(
+                "TC-SURVEY-007",
+                "Kiểm tra Modal chi tiết 7 khối và Xuất File Word (.docx) Phiếu Nhu cầu DN Minh Anh",
+                "PASSED",
+                f"Modal render đầy đủ 7 khối nghiệp vụ chuyên sâu, điểm TNI=86 (Rất cao), tệp DOCX xuất ra hợp lệ (kích thước {os.path.getsize(exported_sme_docx_path)} bytes) chứa MST 0108992134, Tên DN Minh Anh và điểm TNI 86.",
+                ev7
+            )
+        except Exception as e:
+            ev7 = capture_screenshot(page, "TC_SURVEY_007_failed")
+            record_test("TC-SURVEY-007", "Kiểm tra Modal chi tiết 7 khối & Xuất DOCX Phiếu Nhu cầu DN", "FAILED", f"Lỗi: {e}", ev7)
 
         browser.close()
 

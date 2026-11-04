@@ -461,5 +461,56 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     // Chuyên gia 2 (connectionCount = 0) và Chuyên gia 3 (undefined) -> TUYỆT ĐỐI KHÔNG hiển thị badge
     expect(screen.queryByText(/0 lượt kết nối/i)).toBeNull();
   });
+
+  it("renders elegant sliding window pagination with ellipsis, quick jump, and page size selector when totalPages > 1 (TASK-05-PAGINATION)", async () => {
+    const multiPageData = {
+      ...mockExpertsData,
+      data: {
+        ...mockExpertsData.data,
+        totalCount: 1081,
+        page: 24,
+        pageSize: 9,
+        totalPages: 121,
+      },
+    };
+    setupFetch(multiPageData);
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+    });
+
+    // 1. Kiểm tra summary bên trái: hiển thị gọn gàng, không bị ép chữ dọc
+    expect(screen.getAllByText(/Hiển thị/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("1.081")).toBeDefined();
+    expect(screen.getByText("Trang 24 / 121")).toBeDefined();
+
+    // 2. Kiểm tra bộ chọn pageSize
+    const pageSizeSelect = screen.getByLabelText("Số bản ghi mỗi trang") as HTMLSelectElement;
+    expect(pageSizeSelect).toBeDefined();
+    expect(pageSizeSelect.value).toBe("9");
+
+    // 3. Kiểm tra sliding window: Trang hiện tại 24 -> có nút 1, dots, 23, 24, 25, dots, 121
+    expect(screen.getByRole("button", { name: "1" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "23" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "24" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "25" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "121" })).toBeDefined();
+
+    // Tuyệt đối KHÔNG render tràn lan 121 nút số (ví dụ trang 10 hay 50 không nằm trong sliding window)
+    expect(screen.queryByRole("button", { name: "10" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "50" })).toBeNull();
+
+    // 4. Kiểm tra nút điều hướng
+    expect(screen.getByLabelText("Trang đầu tiên")).toBeDefined();
+    expect(screen.getByLabelText("Trang trước")).toBeDefined();
+    expect(screen.getByLabelText("Trang sau")).toBeDefined();
+    expect(screen.getByLabelText("Trang cuối cùng")).toBeDefined();
+
+    // 5. Kiểm tra form quick jump
+    const jumpInput = screen.getByLabelText("Nhập số trang cần đến");
+    expect(jumpInput).toBeDefined();
+  });
 });
 

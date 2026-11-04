@@ -565,6 +565,80 @@ export async function getGovAssessmentQueue(scopeId?: string, status?: string): 
   return [];
 }
 
+export interface DemandSurveyDetailItem {
+  id: string;
+  itemCode?: string;
+  stageName?: string;
+  technicalProblem?: string;
+  desiredSolution?: string;
+  needConsulting?: boolean;
+  expectedGoal?: string;
+  applicationScale?: string;
+  sectorCode?: string;
+  techGroupCode?: string;
+  demandTypeCode?: string;
+  budgetRange?: string;
+  urgencyScore?: number;
+  impactScore?: number;
+  investmentCapacity?: number;
+  adoptionReadiness?: number;
+  tniScore?: number;
+}
+
+export interface DemandSurveyItem {
+  id: string;
+  surveyCode?: string;
+  companyName: string;
+  taxCode?: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  province?: string;
+  headquartersAddress?: string;
+  surveyedFacility?: string;
+  contactTitle?: string;
+  businessType?: string;
+  enterpriseSize?: string;
+  employeeScale?: string;
+  revenueRange3y?: string;
+  topBottlenecks?: string[];
+  supportNeeds?: string[];
+  tniScore?: number;
+  tniClassification?: string;
+  status?: string;
+  surveyType?: string;
+  submittedAt?: string;
+  createdAt?: string;
+  surveyAnswers?: any;
+  surveyDetails?: any;
+  representativeSignatureUrl?: string;
+  hasRdUnit?: boolean;
+  hasTechTraining?: boolean;
+  hasMachineryUpgrade?: boolean;
+  hasRdBudget?: boolean;
+  isExporting?: boolean;
+  inValueChain?: boolean;
+  recommendations?: string;
+  items?: DemandSurveyDetailItem[];
+}
+
+export async function getGovDemandSurveys(scopeId?: string): Promise<DemandSurveyItem[]> {
+  try {
+    const p = new URLSearchParams();
+    if (scopeId) p.set("scopeId", scopeId);
+    const res = await fetch(`/api/v1/gov/demands/surveys?${p.toString()}`, {
+      headers: authClient.getAuthHeaders(),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json.data || [];
+    }
+  } catch (err) {
+    console.error("Lỗi khi tải danh sách phiếu nhu cầu doanh nghiệp:", err);
+  }
+  return [];
+}
+
 export async function reviewAssessment(id: string, action: "APPROVE" | "REJECT" | "REQUEST_CHANGES", reviewNotes?: string): Promise<Tt17Assessment> {
   const res = await fetch(`/api/v1/gov/assessments/tt17/${id}/review`, {
     method: "POST",

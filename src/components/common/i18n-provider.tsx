@@ -33,6 +33,7 @@ const dictionary: Record<Language, Record<string, string>> = {
     footer_address: "Địa chỉ: Số 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội",
     footer_contact: "Email: contact@nacentech.gov.vn | Hotline: 024.3933.1234",
     footer_rights: "© 2026 NacenTwin - Mạng lưới Đổi mới sáng tạo & Chuyển giao Công nghệ Quốc gia.",
+    footer_system_status: "Hệ thống đang trong giai đoạn thử nghiệm.",
   },
   en: {
     brand_title: "Innovation & Technology Transfer Portal",
@@ -61,6 +62,7 @@ const dictionary: Record<Language, Record<string, string>> = {
     footer_address: "Address: 25 Le Thanh Tong, Hoan Kiem, Hanoi, Vietnam",
     footer_contact: "Email: contact@nacentech.gov.vn | Hotline: +84.24.3933.1234",
     footer_rights: "© 2026 NacenTwin - National Innovation & Technology Transfer Network.",
+    footer_system_status: "Hệ thống đang trong giai đoạn thử nghiệm.",
   },
 };
 

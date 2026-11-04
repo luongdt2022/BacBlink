@@ -22,8 +22,10 @@ import {
   MachineryItem,
   FinancialSeriesItem,
   INDUSTRY_BENCHMARKS,
+  DemandSurveyItem,
 } from "@/services/api/assessment-tt17";
 import { generateTt17OutDocxFromTemplate } from "./tt17-docx-template-filler";
+import { generateDemandSmeDocxFromTemplate } from "./demand-sme-docx-template-filler";
 
 // =========================================================================
 // TYPE DEFINITIONS & INTERFACES FOR EXPORT
@@ -1820,25 +1822,62 @@ export async function exportTt17SurveyDocxLegacy(
 
 
 export async function exportDemandSmeDocx(
-  record: DemandSmeSurveyRecord
+  input: DemandSurveyItem | DemandSmeSurveyRecord
 ): Promise<Blob> {
+  // Ưu tiên nạp và điền dữ liệu trực tiếp vào tệp mẫu trắng chuẩn: phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx
+  try {
+    return await generateDemandSmeDocxFromTemplate(input);
+  } catch (err) {
+    console.warn("Không thể dùng template gốc điền phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx, chuyển sang fallback generator:", err);
+  }
+
   const children: (Paragraph | Table)[] = [];
 
-  // Header & Quoc hieu
+  // Parse raw fields
+  const rec = input as any;
+  const companyName = rec.companyName || rec.enterpriseName || "Doanh nghiệp khảo sát";
+  const taxCode = rec.taxCode || "---";
+  const province = rec.province || rec.provinceName || "Toàn quốc";
+  const address = rec.headquartersAddress || rec.address || province;
+  const contactName = rec.contactName || rec.contactPerson || "---";
+  const contactTitle = rec.contactTitle || "";
+  const contactPhone = rec.contactPhone || "---";
+  const contactEmail = rec.contactEmail || "---";
+  const surveyCode = rec.surveyCode || `SUR-${rec.id.substring(0, 8).toUpperCase()}`;
+  const status = rec.status || "SUBMITTED";
+  const employeeScale = rec.employeeScale || rec.workforceScale || "---";
+  const revenueRange = rec.revenueRange3y || rec.revenueScale || "---";
+  const submittedAt = rec.submittedAt ? new Date(rec.submittedAt).toLocaleDateString("vi-VN") : "---";
+
+  // Parse surveyDetails if available
+  let details: any = null;
+  if ("surveyDetails" in input && input.surveyDetails) {
+    if (typeof input.surveyDetails === "object") {
+      details = input.surveyDetails;
+    } else {
+      try {
+        details = JSON.parse(input.surveyDetails);
+      } catch {
+        details = null;
+      }
+    }
+  }
+
+  // Header & Quốc hiệu
   children.push(createAdministrativeHeader("CỤC PHÁT TRIỂN CÔNG NGHỆ VÀ ĐỔI MỚI SÁNG TẠO"));
 
   // Title
   children.push(
     createParagraph(
       [
-        createTextRun("PHIẾU KHẢO SÁT HIỆN TRẠNG VÀ NHU CẦU ĐỔI MỚI SÁNG TẠO,\n", {
+        createTextRun("PHIẾU KHẢO SÁT HIỆN TRẠNG & NHU CẦU ĐỔI MỚI SÁNG TẠO\n", {
           bold: true,
           size: 26,
           color: "0F172A",
         }),
-        createTextRun("CHUYỂN ĐỔI SỐ CỦA DOANH NGHIỆP NHỎ VÀ VỪA", {
+        createTextRun("KHẢO SÁT NHU CẦU ĐỔI MỚI CÔNG NGHỆ & ĐIỂM NGHẼN KỸ THUẬT (DNNVV)", {
           bold: true,
-          size: 26,
+          size: 24,
           color: "0F172A",
         }),
       ],
@@ -1849,105 +1888,80 @@ export async function exportDemandSmeDocx(
   children.push(
     createParagraph(
       createTextRun(
-        "(Căn cứ Luật Hỗ trợ Doanh nghiệp nhỏ và vừa 2017 & Nghị định số 80/2021/NĐ-CP)",
-        { italic: true, size: 21, color: "475569" }
+        "(Bộ công cụ khảo sát toàn diện giúp DNNVV chuẩn hóa bài toán kỹ thuật, tính toán chỉ số cấp thiết TNI và kết nối giải pháp công nghệ)",
+        { italic: true, size: 20, color: "475569" }
       ),
-      { align: AlignmentType.CENTER, spaceAfter: 180 }
-    )
-  );
-
-  // Status Banner
-  children.push(
-    createParagraph(
-      [
-        createTextRun("Mã phiếu: ", { bold: true }),
-        createTextRun(`${record.id.substring(0, 8).toUpperCase()}   |   `),
-        createTextRun("Trạng thái: ", { bold: true }),
-        createTextRun(`${record.status}   |   `),
-        createTextRun("Tỉnh/Thành phố: ", { bold: true }),
-        createTextRun(`${record.provinceName || record.province || "Toàn quốc"}`),
-      ],
       { align: AlignmentType.CENTER, spaceAfter: 140 }
     )
   );
 
-  // PHẦN I: THÔNG TIN DOANH NGHIỆP
+  // Status Banner
+  const tniScore = ("tniScore" in input ? input.tniScore : null);
+  const tniLabel = tniScore !== null && tniScore !== undefined ? `${tniScore}/100` : "Chờ tính TNI";
+
   children.push(
     createParagraph(
-      createTextRun("PHẦN I. THÔNG TIN CHUNG VỀ DOANH NGHIỆP", { bold: true, size: 24 }),
+      [
+        createTextRun("Mã phiếu: ", { bold: true }),
+        createTextRun(`${surveyCode}   |   `),
+        createTextRun("Trạng thái: ", { bold: true }),
+        createTextRun(`${status}   |   `),
+        createTextRun("Địa bàn: ", { bold: true }),
+        createTextRun(`${province}   |   `),
+        createTextRun("Chỉ số TNI: ", { bold: true, color: "0D9488" }),
+        createTextRun(`${tniLabel}`, { bold: true, color: "0D9488" }),
+      ],
+      { align: AlignmentType.CENTER, spaceAfter: 180 }
+    )
+  );
+
+  // =========================================================================
+  // I. BÀI TOÁN KỸ THUẬT & NHU CẦU ĐỔI MỚI CÔNG NGHỆ CỤ THỂ (TNI)
+  // =========================================================================
+  children.push(
+    createParagraph(
+      createTextRun("I. CHI TIẾT BÀI TOÁN KỸ THUẬT & CHỈ SỐ CẤP THIẾT (TNI)", { bold: true, size: 24 }),
       { spaceBefore: 160, spaceAfter: 80 }
     )
   );
 
-  const p1Fields = [
-    `1. Tên doanh nghiệp: ${safeText(record.enterpriseName)}`,
-    `2. Mã số thuế: ${safeText(record.taxCode)}`,
-    `3. Địa chỉ trụ sở: ${safeText(record.address)} (Địa bàn: ${record.provinceName || record.province || "---"})`,
-    `4. Người đại diện / Đầu mối liên hệ: ${safeText(record.contactPerson)}`,
-    `   Điện thoại: ${safeText(record.contactPhone)}   |   Email: ${safeText(record.contactEmail)}`,
-    `5. Lĩnh vực hoạt động chính: ${safeText(record.sectorName, "Cơ khí, Chế tạo & Tự động hóa")}`,
-    `6. Loại hình sở hữu: ${safeText(record.ownershipType, "Doanh nghiệp tư nhân / Cổ phần")}`,
-    `7. Quy mô doanh nghiệp: Lao động: ${safeText(record.workforceScale, "10 - 50 người")}; Doanh thu: ${safeText(record.revenueScale, "3 - 50 tỷ đồng")}.`,
-  ];
-  for (const f of p1Fields) {
-    children.push(createParagraph(f, { spaceBefore: 30, spaceAfter: 30 }));
-  }
-
-  // PHẦN II: HIỆN TRẠNG CÔNG NGHỆ & MỨC ĐỘ SỐ HÓA
-  children.push(
-    createParagraph(
-      createTextRun("PHẦN II. HIỆN TRẠNG ÁP DỤNG CÔNG NGHỆ VÀ MỨC ĐỘ SỐ HÓA", {
-        bold: true,
-        size: 24,
-      }),
-      { spaceBefore: 200, spaceAfter: 80 }
-    )
-  );
-
-  const p2Fields = [
-    `1. Hiện trạng thiết bị máy móc: ${safeText(record.currentTechStatus, "Máy móc hoạt động ổn định, cần cải tiến nâng cao công suất")}.`,
-    `2. Mức độ tự động hóa: ${safeText(record.automationLevel, "Bán tự động (30% - 70% quy trình)")}.`,
-    `3. Ứng dụng phần mềm số hóa: ${safeText(record.softwareStatus, "Đã có phần mềm kế toán và bán hàng")}.`,
-    `4. Rào cản, khó khăn kỹ thuật lớn nhất: ${record.barriers && record.barriers.length > 0 ? record.barriers.join("; ") : "Thiếu vốn đầu tư công nghệ mới và thiếu nhân lực vận hành"}.`,
-  ];
-  for (const f of p2Fields) {
-    children.push(createParagraph(f, { spaceBefore: 30, spaceAfter: 30 }));
-  }
-
-  // PHẦN III: NHU CẦU CÔNG NGHỆ CHI TIẾT
-  children.push(
-    createParagraph(
-      createTextRun("PHẦN III. NHU CẦU CÔNG NGHỆ VÀ ĐỔI MỚI SÁNG TẠO CỤ THỂ", {
-        bold: true,
-        size: 24,
-      }),
-      { spaceBefore: 200, spaceAfter: 80 }
-    )
-  );
+  // Extract items/demands
+  const demandItems: any[] = ("items" in input && input.items && input.items.length > 0)
+    ? input.items
+    : ("demands" in input && input.demands && input.demands.length > 0)
+    ? input.demands
+    : [];
 
   const demandRows: TableRow[] = [
     new TableRow({
       tableHeader: true,
       children: [
-        makeTableCell("STT", { widthPercent: 8, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell("Nội dung nhu cầu công nghệ / giải pháp", { widthPercent: 44, isHeader: true }),
-        makeTableCell("Hình thức", { widthPercent: 16, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell("Dự toán ngân sách", { widthPercent: 16, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell("Thời gian", { widthPercent: 16, isHeader: true, align: AlignmentType.CENTER }),
+        makeTableCell("STT", { widthPercent: 6, isHeader: true, align: AlignmentType.CENTER }),
+        makeTableCell("Công đoạn & Vấn đề kỹ thuật", { widthPercent: 32, isHeader: true }),
+        makeTableCell("Giải pháp công nghệ mong muốn", { widthPercent: 32, isHeader: true }),
+        makeTableCell("Mục tiêu kỳ vọng", { widthPercent: 18, isHeader: true }),
+        makeTableCell("Dự toán & TNI", { widthPercent: 12, isHeader: true, align: AlignmentType.CENTER }),
       ],
     }),
   ];
 
-  if (record.demands && record.demands.length > 0) {
-    record.demands.forEach((d, idx) => {
+  if (demandItems.length > 0) {
+    demandItems.forEach((d, idx) => {
+      const prob = d.technicalProblem || d.title || "---";
+      const stage = d.stageName ? `[${d.stageName}]\n` : "";
+      const sol = d.desiredSolution || d.description || "---";
+      const goal = d.expectedGoal || "Nâng cao năng suất & giảm tỷ lệ phế phẩm";
+      const budget = d.budgetRange || d.budget || "Thương lượng";
+      const itemTni = d.tniScore !== undefined ? `\nTNI: ${d.tniScore}/100` : "";
+
       demandRows.push(
         new TableRow({
           children: [
-            makeTableCell(String(idx + 1), { widthPercent: 8, align: AlignmentType.CENTER }),
-            makeTableCell(safeText(d.title) + (d.description ? `\n(${d.description})` : ""), { widthPercent: 44 }),
-            makeTableCell(safeText(d.demandType, "Mua mới"), { widthPercent: 16, align: AlignmentType.CENTER }),
-            makeTableCell(safeText(d.budget, "Thương lượng"), { widthPercent: 16, align: AlignmentType.RIGHT }),
-            makeTableCell(safeText(d.timeline, "Năm 2026"), { widthPercent: 16, align: AlignmentType.CENTER }),
+            makeTableCell(String(idx + 1), { widthPercent: 6, align: AlignmentType.CENTER }),
+            makeTableCell(stage + prob, { widthPercent: 32 }),
+            makeTableCell(sol, { widthPercent: 32 }),
+            makeTableCell(goal, { widthPercent: 18 }),
+            makeTableCell(`${budget}${itemTni}`, { widthPercent: 12, align: AlignmentType.CENTER }),
           ],
         })
       );
@@ -1956,11 +1970,11 @@ export async function exportDemandSmeDocx(
     demandRows.push(
       new TableRow({
         children: [
-          makeTableCell("1", { widthPercent: 8, align: AlignmentType.CENTER }),
-          makeTableCell("Nhu cầu nâng cấp hệ thống điều khiển tự động hóa dây chuyền sản xuất", { widthPercent: 44 }),
-          makeTableCell("Nâng cấp", { widthPercent: 16, align: AlignmentType.CENTER }),
-          makeTableCell("500 tr - 1 tỷ", { widthPercent: 16, align: AlignmentType.RIGHT }),
-          makeTableCell("Quý II/2026", { widthPercent: 16, align: AlignmentType.CENTER }),
+          makeTableCell("1", { widthPercent: 6, align: AlignmentType.CENTER }),
+          makeTableCell("Hiện đại hóa công nghệ sản xuất & tự động hóa", { widthPercent: 32 }),
+          makeTableCell("Cải tiến dây chuyền máy móc và số hóa quy trình vận hành", { widthPercent: 32 }),
+          makeTableCell("Tăng năng suất và nâng cao chất lượng sản phẩm", { widthPercent: 18 }),
+          makeTableCell("Thương lượng", { widthPercent: 12, align: AlignmentType.CENTER }),
         ],
       })
     );
@@ -1973,37 +1987,279 @@ export async function exportDemandSmeDocx(
     })
   );
 
-  // PHẦN IV: NHU CẦU HỖ TRỢ TỪ CƠ QUAN NHÀ NƯỚC & CHUYÊN GIA
+  // 4 Chiều TNI nếu có item đầu tiên
+  if (demandItems.length > 0 && demandItems[0].urgencyScore) {
+    const d0 = demandItems[0];
+    const tniMatrixRows: TableRow[] = [
+      new TableRow({
+        tableHeader: true,
+        children: [
+          makeTableCell("K (Cấp thiết - 35%)", { widthPercent: 25, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("L (Tác động - 30%)", { widthPercent: 25, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("N (Đầu tư - 20%)", { widthPercent: 25, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("O (Sẵn sàng - 15%)", { widthPercent: 25, isHeader: true, align: AlignmentType.CENTER }),
+        ],
+      }),
+      new TableRow({
+        children: [
+          makeTableCell(`${d0.urgencyScore ?? 3} / 5`, { widthPercent: 25, align: AlignmentType.CENTER }),
+          makeTableCell(`${d0.impactScore ?? 3} / 5`, { widthPercent: 25, align: AlignmentType.CENTER }),
+          makeTableCell(`${d0.investmentCapacity ?? 3} / 5`, { widthPercent: 25, align: AlignmentType.CENTER }),
+          makeTableCell(`${d0.adoptionReadiness ?? 3} / 5`, { widthPercent: 25, align: AlignmentType.CENTER }),
+        ],
+      }),
+    ];
+    children.push(
+      createParagraph(createTextRun("Chỉ số thành phần tính toán TNI (Thang điểm 1 - 5):", { italic: true, size: 21 }), {
+        spaceBefore: 60,
+        spaceAfter: 40,
+      })
+    );
+    children.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: tniMatrixRows,
+      })
+    );
+  }
+
+  // =========================================================================
+  // II. THÔNG TIN DOANH NGHIỆP & QUY MÔ SẢN XUẤT
+  // =========================================================================
   children.push(
     createParagraph(
-      createTextRun("PHẦN IV. ĐỀ XUẤT KẾT NỐI VÀ HỖ TRỢ TỪ CƠ QUAN NHÀ NƯỚC", {
-        bold: true,
-        size: 24,
-      }),
+      createTextRun("II. THÔNG TIN DOANH NGHIỆP & QUY MÔ SẢN XUẤT", { bold: true, size: 24 }),
       { spaceBefore: 200, spaceAfter: 80 }
     )
   );
 
-  const p4Fields = [
-    `1. Nhu cầu hỗ trợ tư vấn từ Chuyên gia: ${record.consultingNeeds && record.consultingNeeds.length > 0 ? record.consultingNeeds.join(", ") : "Tư vấn lựa chọn giải pháp kỹ thuật và thẩm định thiết bị"}.`,
-    `2. Nhu cầu tiếp cận các chính sách hỗ trợ: ${record.govSupportNeeds && record.govSupportNeeds.length > 0 ? record.govSupportNeeds.join(", ") : "Hỗ trợ lãi suất vay vốn đổi mới công nghệ và kết nối Sàn NacenTwin"}.`,
+  const p2Fields = [
+    `1. Tên Doanh nghiệp: ${safeText(companyName)}`,
+    `2. Mã số thuế: ${safeText(taxCode)}   |   Địa bàn: ${safeText(province)}`,
+    `3. Địa chỉ trụ sở: ${safeText(address)}`,
+    `4. Người đại diện / Đầu mối liên hệ: ${safeText(contactName)}${contactTitle ? ` (${contactTitle})` : ""}`,
+    `   Điện thoại: ${safeText(contactPhone)}   |   Email: ${safeText(contactEmail)}`,
+    `5. Quy mô doanh nghiệp: Lao động: ${safeText(employeeScale)}; Doanh thu 3 năm: ${safeText(revenueRange)}.`,
   ];
-  for (const f of p4Fields) {
-    children.push(createParagraph(f, { spaceBefore: 30, spaceAfter: 30 }));
+  if ("hasRdUnit" in input) {
+    p2Fields.push(
+      `6. Hiện trạng ĐMST: Bộ phận R&D: ${input.hasRdUnit ? "Đã có" : "Chưa có"} | Đào tạo CN: ${input.hasTechTraining ? "Đang tổ chức" : "Chưa có"} | Ngân sách R&D: ${input.hasRdBudget ? "Có phân bổ" : "Không"} | Xuất khẩu: ${input.isExporting ? "Có" : "Nội địa"} | Chuỗi cung ứng: ${input.inValueChain ? "Trong chuỗi" : "Độc lập"}.`
+    );
+  }
+  for (const f of p2Fields) {
+    children.push(createParagraph(f, { spaceBefore: 25, spaceAfter: 25 }));
+  }
+
+  // =========================================================================
+  // III. HIỆN TRẠNG DÂY CHUYỀN, MÁY MÓC THIẾT BỊ & 8 TIÊU CHÍ
+  // =========================================================================
+  children.push(
+    createParagraph(
+      createTextRun("III. HIỆN TRẠNG DÂY CHUYỀN, MÁY MÓC THIẾT BỊ VÀ TRÌNH ĐỘ CÔNG NGHỆ", { bold: true, size: 24 }),
+      { spaceBefore: 200, spaceAfter: 80 }
+    )
+  );
+
+  // Danh mục máy móc
+  if (details && details.currentEquipments && Array.isArray(details.currentEquipments) && details.currentEquipments.length > 0) {
+    children.push(
+      createParagraph(createTextRun("1. Danh mục máy móc, thiết bị chủ lực hiện có:", { bold: true, size: 22 }), {
+        spaceBefore: 60,
+        spaceAfter: 40,
+      })
+    );
+    const equipRows: TableRow[] = [
+      new TableRow({
+        tableHeader: true,
+        children: [
+          makeTableCell("STT", { widthPercent: 8, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("Công đoạn sản xuất", { widthPercent: 26, isHeader: true }),
+          makeTableCell("Tên thiết bị, máy móc chủ lực", { widthPercent: 32, isHeader: true }),
+          makeTableCell("Xuất xứ / Năm ĐT", { widthPercent: 18, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("Tình trạng khấu hao", { widthPercent: 16, isHeader: true, align: AlignmentType.CENTER }),
+        ],
+      }),
+    ];
+    details.currentEquipments.forEach((eq: any, idx: number) => {
+      equipRows.push(
+        new TableRow({
+          children: [
+            makeTableCell(String(idx + 1), { widthPercent: 8, align: AlignmentType.CENTER }),
+            makeTableCell(safeText(eq.StageName), { widthPercent: 26 }),
+            makeTableCell(safeText(eq.MachineName), { widthPercent: 32 }),
+            makeTableCell(`${safeText(eq.TechOrigin)} / ${eq.InvestmentYear || "---"}`, { widthPercent: 18, align: AlignmentType.CENTER }),
+            makeTableCell(safeText(eq.DepreciationStatus), { widthPercent: 16, align: AlignmentType.CENTER }),
+          ],
+        })
+      );
+    });
+    children.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: equipRows,
+      })
+    );
+  }
+
+  // 8 Tiêu chí trình độ công nghệ
+  if (details && details.criteria8 && typeof details.criteria8 === "object") {
+    children.push(
+      createParagraph(createTextRun("2. Đánh giá hiện trạng trình độ công nghệ (Thang điểm 1 - 5):", { bold: true, size: 22 }), {
+        spaceBefore: 80,
+        spaceAfter: 40,
+      })
+    );
+    const critRows: TableRow[] = [
+      new TableRow({
+        tableHeader: true,
+        children: [
+          makeTableCell("STT", { widthPercent: 8, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("Tiêu chí đánh giá", { widthPercent: 72, isHeader: true }),
+          makeTableCell("Điểm số (1-5)", { widthPercent: 20, isHeader: true, align: AlignmentType.CENTER }),
+        ],
+      }),
+    ];
+    let cIdx = 1;
+    for (const [key, val] of Object.entries(details.criteria8)) {
+      critRows.push(
+        new TableRow({
+          children: [
+            makeTableCell(String(cIdx++), { widthPercent: 8, align: AlignmentType.CENTER }),
+            makeTableCell(key, { widthPercent: 72 }),
+            makeTableCell(`${val} / 5`, { widthPercent: 20, align: AlignmentType.CENTER }),
+          ],
+        })
+      );
+    }
+    children.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: critRows,
+      })
+    );
+  }
+
+  // =========================================================================
+  // IV. KHÂU KHÓ NHẤT & ĐIỂM NGHẼN KỸ THUẬT
+  // =========================================================================
+  children.push(
+    createParagraph(
+      createTextRun("IV. ĐIỂM NGHẼN KỸ THUẬT VÀ KHÂU SẢN XUẤT CẦN THÁO GỠ", { bold: true, size: 24 }),
+      { spaceBefore: 200, spaceAfter: 80 }
+    )
+  );
+
+  if (details && details.hardestStage) {
+    children.push(createParagraph(`1. Khâu sản xuất gặp nhiều khó khăn, ách tắc nhất: ${details.hardestStage}`, { spaceBefore: 30, spaceAfter: 20 }));
+  }
+  if (details && details.primaryCause) {
+    children.push(createParagraph(`2. Nguyên nhân cốt lõi gây ra ách tắc: ${details.primaryCause}`, { spaceBefore: 20, spaceAfter: 30 }));
+  }
+
+  const bottlenecksList: string[] = ("topBottlenecks" in input && input.topBottlenecks && input.topBottlenecks.length > 0)
+    ? input.topBottlenecks
+    : (details && details.bottlenecksDetail ? Object.keys(details.bottlenecksDetail) : []);
+
+  if (bottlenecksList.length > 0) {
+    children.push(createParagraph(`3. Danh mục các điểm nghẽn kỹ thuật ưu tiên tháo gỡ:`, { spaceBefore: 20, spaceAfter: 20 }));
+    bottlenecksList.forEach((b) => {
+      const severity = details && details.bottlenecksDetail && details.bottlenecksDetail[b] ? ` (Mức độ nghiêm trọng: ${details.bottlenecksDetail[b]}/5)` : "";
+      children.push(createParagraph(`   • ${b}${severity}`, { spaceBefore: 15, spaceAfter: 15 }));
+    });
+  }
+
+  // =========================================================================
+  // V. THỐNG KÊ NHÂN LỰC & NĂNG LỰC HẤP THỤ CÔNG NGHỆ
+  // =========================================================================
+  children.push(
+    createParagraph(
+      createTextRun("V. ĐỘI NGŨ NHÂN LỰC KỸ THUẬT VÀ NĂNG LỰC HẤP THỤ CÔNG NGHỆ", { bold: true, size: 24 }),
+      { spaceBefore: 200, spaceAfter: 80 }
+    )
+  );
+
+  if (details && details.technicalPersonnel && typeof details.technicalPersonnel === "object") {
+    const tp = details.technicalPersonnel;
+    children.push(
+      createParagraph(
+        `1. Thống kê nhân lực: Kỹ thuật viên/thợ giỏi: ${tp.technicians ?? 0} người; Kỹ sư/cử nhân: ${tp.engineers ?? 0} người; CNTT: ${tp.it ?? 0} người; Tự động hóa: ${tp.automation ?? 0} người; R&D: ${tp.rd ?? 0} người; Kiểm soát chất lượng (QC): ${tp.quality ?? 0} người.`,
+        { spaceBefore: 20, spaceAfter: 30 }
+      )
+    );
+  }
+
+  if (details && details.adoptionCapacity && typeof details.adoptionCapacity === "object") {
+    children.push(
+      createParagraph(createTextRun("2. Đánh giá năng lực hấp thụ và làm chủ công nghệ (Thang điểm 1 - 5):", { bold: true, size: 22 }), {
+        spaceBefore: 60,
+        spaceAfter: 40,
+      })
+    );
+    const adoptRows: TableRow[] = [
+      new TableRow({
+        tableHeader: true,
+        children: [
+          makeTableCell("STT", { widthPercent: 8, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("Tiêu chí năng lực hấp thụ công nghệ", { widthPercent: 72, isHeader: true }),
+          makeTableCell("Mức độ (1-5)", { widthPercent: 20, isHeader: true, align: AlignmentType.CENTER }),
+        ],
+      }),
+    ];
+    let aIdx = 1;
+    for (const [key, val] of Object.entries(details.adoptionCapacity)) {
+      adoptRows.push(
+        new TableRow({
+          children: [
+            makeTableCell(String(aIdx++), { widthPercent: 8, align: AlignmentType.CENTER }),
+            makeTableCell(key, { widthPercent: 72 }),
+            makeTableCell(`${val} / 5`, { widthPercent: 20, align: AlignmentType.CENTER }),
+          ],
+        })
+      );
+    }
+    children.push(
+      new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: adoptRows,
+      })
+    );
+  }
+
+  // =========================================================================
+  // VI. ĐỊNH HƯỚNG CÔNG NGHỆ 2026–2030 & ĐỀ XUẤT HỖ TRỢ
+  // =========================================================================
+  children.push(
+    createParagraph(
+      createTextRun("VI. ĐỊNH HƯỚNG CÔNG NGHỆ 2026–2030 VÀ ĐỀ XUẤT HỖ TRỢ", { bold: true, size: 24 }),
+      { spaceBefore: 200, spaceAfter: 80 }
+    )
+  );
+
+  if (details && details.futureDirections && Array.isArray(details.futureDirections) && details.futureDirections.length > 0) {
+    children.push(createParagraph("1. Các nhóm công nghệ tiên tiến dự kiến tiếp cận:", { spaceBefore: 20, spaceAfter: 15 }));
+    details.futureDirections.forEach((fd: string) => {
+      children.push(createParagraph(`   • ${fd}`, { spaceBefore: 10, spaceAfter: 10 }));
+    });
+  }
+
+  if (details && details.desiredPartners && Array.isArray(details.desiredPartners) && details.desiredPartners.length > 0) {
+    children.push(
+      createParagraph(`2. Đối tác mong muốn kết nối giải pháp: ${details.desiredPartners.join(", ")}.`, { spaceBefore: 20, spaceAfter: 20 })
+    );
   }
 
   // Signatures
   children.push(
     createParagraph(
-      createTextRun(".............., Ngày ..... tháng ..... năm 20....   ", {
+      createTextRun(`.............., Ngày nộp: ${submittedAt}   `, {
         italic: true,
         size: 21,
       }),
-      { align: AlignmentType.RIGHT, spaceBefore: 280, spaceAfter: 100 }
+      { align: AlignmentType.RIGHT, spaceBefore: 240, spaceAfter: 80 }
     )
   );
   children.push(
-    createSignatureBlock("NGƯỜI LẬP PHIẾU KHẢO SÁT", "ĐẠI DIỆN DOANH NGHIỆP")
+    createSignatureBlock("NGƯỜI LẬP PHIẾU KHẢO SÁT", "ĐẠI DIỆN DOANH NGHIỆP\n(Ký điện tử & Đóng dấu)")
   );
 
   const doc = new Document({

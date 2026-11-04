@@ -25,9 +25,12 @@ import {
 import {
   Tt17Assessment,
   getGovAssessmentQueue,
+  DemandSurveyItem,
+  getGovDemandSurveys,
 } from "@/services/api/assessment-tt17";
 import {
   exportTt17SurveyDocx,
+  exportDemandSmeDocx,
   downloadDocxBlob,
 } from "@/services/survey-docx-exporter";
 import { PROVINCES_34 } from "@/lib/constants/provinces";
@@ -241,8 +244,66 @@ function SearchableProvinceCombobox({
   );
 }
 
+function resolveProvinceCodeFromText(raw?: string): string {
+  if (!raw) return "ALL";
+  const s = raw.toLowerCase().trim();
+  if (s.includes("hà nội") || s === "hn") return "HN";
+  if (s.includes("tiền giang") || s === "tg") return "TG";
+  if (s.includes("ninh thuận") || s === "nt") return "NT";
+  if (s.includes("hải phòng") || s === "hp") return "HP";
+  if (s.includes("đà nẵng") || s === "dn") return "DN";
+  if (s.includes("hồ chí minh") || s.includes("tp. hcm") || s === "sg") return "SG";
+  if (s.includes("thái nguyên") || s === "tn") return "TN";
+  return "ALL";
+}
+
+function resolveDemandTniBadge(classification?: string, score?: number) {
+  const c = (classification || "").toUpperCase();
+  if (c === "VERY_HIGH" || c === "CAP_THIET" || (score !== undefined && score !== null && score >= 75)) {
+    return {
+      label: "Rất cao (TNI ≥ 75)",
+      badgeClass: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800",
+    };
+  }
+  if (c === "HIGH" || c === "STRATEGIC" || (score !== undefined && score !== null && score >= 60)) {
+    return {
+      label: "Cao (TNI 60–74)",
+      badgeClass: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800",
+    };
+  }
+  if (c === "MEDIUM" || (score !== undefined && score !== null && score >= 45)) {
+    return {
+      label: "Trung bình (TNI 45–59)",
+      badgeClass: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800",
+    };
+  }
+  return {
+    label: "Thấp (TNI < 45)",
+    badgeClass: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
+  };
+}
+
+export interface UnifiedSurveyRecord {
+  id: string;
+  surveyCode?: string;
+  surveyType: "TT17" | "SME_DEMAND" | "INNOVATION";
+  surveyTypeLabel: string;
+  enterpriseName: string;
+  taxCode: string;
+  scopeId: string;
+  provinceDisplay: string;
+  submittedAt?: string;
+  createdAt?: string;
+  scoreDisplay: string;
+  classification: string;
+  classificationBadge: { label: string; badgeClass: string };
+  originalTt17?: Tt17Assessment;
+  originalDemand?: DemandSurveyItem;
+}
+
 export default function AdminAssessmentRecordsPage() {
   const [assessments, setAssessments] = useState<Tt17Assessment[]>([]);
+  const [demandSurveys, setDemandSurveys] = useState<DemandSurveyItem[]>([]);
   const [asyncState, setAsyncState] = useState<AsyncState>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isExportingId, setIsExportingId] = useState<string | null>(null);
@@ -259,16 +320,29 @@ export default function AdminAssessmentRecordsPage() {
 
   // Modal xem chi tiết
   const [inspectingItem, setInspectingItem] = useState<Tt17Assessment | null>(null);
+  const [inspectingDemandItem, setInspectingDemandItem] = useState<DemandSurveyItem | null>(null);
   const [modalTab, setModalTab] = useState<"FORM" | "SCORES">("FORM");
+
+  const inspectingDemandDetails = useMemo(() => {
+    if (!inspectingDemandItem?.surveyDetails) return null;
+    if (typeof inspectingDemandItem.surveyDetails === "object") return inspectingDemandItem.surveyDetails;
+    try {
+      return JSON.parse(inspectingDemandItem.surveyDetails);
+    } catch {
+      return null;
+    }
+  }, [inspectingDemandItem]);
 
   const loadData = useCallback(async () => {
     setAsyncState("loading");
     setErrorMessage("");
     try {
-      const data = await getGovAssessmentQueue(
-        scopeFilter === "ALL" ? undefined : scopeFilter
-      );
-      setAssessments(data || []);
+      const [tt17Data, demandData] = await Promise.all([
+        getGovAssessmentQueue(scopeFilter === "ALL" ? undefined : scopeFilter),
+        getGovDemandSurveys(scopeFilter === "ALL" ? undefined : scopeFilter),
+      ]);
+      setAssessments(tt17Data || []);
+      setDemandSurveys(demandData || []);
       setAsyncState("success");
     } catch (err) {
       console.error("Lỗi khi tải danh sách bản ghi phiếu:", err);
@@ -281,47 +355,107 @@ export default function AdminAssessmentRecordsPage() {
     loadData();
   }, [loadData]);
 
+  // Hợp nhất dữ liệu các loại phiếu
+  const unifiedRecords: UnifiedSurveyRecord[] = useMemo(() => {
+    const list: UnifiedSurveyRecord[] = [];
+
+    // 1. Bản ghi Phiếu TT17
+    for (const item of assessments) {
+      const cls = (item.scoreResult?.classification || item.scoreResult?.classificationLabel || "").toUpperCase();
+      const clsInfo = resolveTt17Classification(cls);
+      list.push({
+        id: item.id,
+        surveyCode: `TT17-${item.id.slice(0, 8)}`,
+        surveyType: "TT17",
+        surveyTypeLabel: "Phiếu TT17",
+        enterpriseName: item.enterpriseName || item.surveyData?.companyName || "Chưa cập nhật tên DN",
+        taxCode: item.taxCode || item.surveyData?.taxCode || "—",
+        scopeId: item.scopeId || "HN",
+        provinceDisplay: resolveProvinceName(item.scopeId),
+        submittedAt: item.submittedAt,
+        createdAt: item.createdAt,
+        scoreDisplay: `${item.scoreResult?.totalScore ?? 0}/100`,
+        classification: cls,
+        classificationBadge: { label: clsInfo.label.split("(")[0].trim(), badgeClass: clsInfo.badgeClass },
+        originalTt17: item,
+      });
+    }
+
+    // 2. Bản ghi Phiếu Nhu cầu DN (SME Demand)
+    for (const item of demandSurveys) {
+      const score = item.tniScore;
+      const cls = (item.tniClassification || (score !== undefined && score !== null && score >= 75 ? "VERY_HIGH" : score !== undefined && score !== null && score >= 60 ? "HIGH" : score !== undefined && score !== null && score >= 45 ? "MEDIUM" : "LOW")).toUpperCase();
+      const badge = resolveDemandTniBadge(cls, score);
+      const provCode = resolveProvinceCodeFromText(item.province);
+      list.push({
+        id: item.id,
+        surveyCode: item.surveyCode || `SUR-${item.id.slice(0, 8)}`,
+        surveyType: "SME_DEMAND",
+        surveyTypeLabel: "Phiếu Nhu cầu DN",
+        enterpriseName: item.companyName || "Doanh nghiệp khảo sát",
+        taxCode: item.taxCode || "—",
+        scopeId: provCode,
+        provinceDisplay: item.province || (provCode !== "ALL" ? resolveProvinceName(provCode) : "Toàn quốc"),
+        submittedAt: item.submittedAt,
+        createdAt: item.createdAt,
+        scoreDisplay: score !== undefined && score !== null ? `TNI: ${score}` : "Chờ tính TNI",
+        classification: cls,
+        classificationBadge: badge,
+        originalDemand: item,
+      });
+    }
+
+    return list;
+  }, [assessments, demandSurveys]);
+
   // Bộ lọc tổng hợp
   const filteredRecords = useMemo(() => {
-    return assessments.filter((item) => {
+    return unifiedRecords.filter((item) => {
       // 1. Lọc Tỉnh thành
       if (scopeFilter !== "ALL") {
-        const itemProv = (item.scopeId || (item as any).province || (item.surveyData as any)?.province || "").toUpperCase();
-        if (itemProv !== scopeFilter.toUpperCase()) return false;
+        if (item.scopeId.toUpperCase() !== scopeFilter.toUpperCase()) return false;
       }
 
       // 2. Lọc loại phiếu
-      if (surveyTypeFilter === "SME_DEMAND" || surveyTypeFilter === "INNOVATION") {
-        // Queue hiện tại từ API TT17 không chứa SME demand hoặc Innovation thuần túy
-        return false;
+      if (surveyTypeFilter !== "ALL") {
+        if (item.surveyType !== surveyTypeFilter) return false;
       }
 
       // 3. Lọc Xếp loại / Phân tầng
       if (classificationFilter !== "ALL") {
-        const cls = (item.scoreResult?.classification || item.scoreResult?.classificationLabel || "").toUpperCase();
-        if (classificationFilter === "TIEN_TIEN" || classificationFilter === "LEADING") {
-          if (cls !== "TIEN_TIEN" && cls !== "TRUNG_BINH_TIEN_TIEN") return false;
-        } else if (classificationFilter === "KHA" || classificationFilter === "DEVELOPING") {
-          if (cls !== "KHA" && cls !== "TRUNG_BINH_TIEN_TIEN") return false;
-        } else if (classificationFilter === "TRUNG_BINH" || classificationFilter === "POTENTIAL") {
-          if (cls !== "TRUNG_BINH") return false;
-        } else if (classificationFilter === "LAC_HAU" || classificationFilter === "UNRATED") {
-          if (cls !== "LAC_HAU") return false;
+        if (item.surveyType === "TT17") {
+          const cls = item.classification;
+          if (classificationFilter === "TIEN_TIEN" || classificationFilter === "LEADING") {
+            if (cls !== "TIEN_TIEN" && cls !== "TRUNG_BINH_TIEN_TIEN") return false;
+          } else if (classificationFilter === "KHA" || classificationFilter === "DEVELOPING") {
+            if (cls !== "KHA" && cls !== "TRUNG_BINH_TIEN_TIEN") return false;
+          } else if (classificationFilter === "TRUNG_BINH" || classificationFilter === "POTENTIAL") {
+            if (cls !== "TRUNG_BINH") return false;
+          } else if (classificationFilter === "LAC_HAU" || classificationFilter === "UNRATED") {
+            if (cls !== "LAC_HAU") return false;
+          }
+        } else if (item.surveyType === "SME_DEMAND") {
+          const cls = item.classification;
+          if (classificationFilter === "VERY_HIGH" && cls !== "VERY_HIGH" && cls !== "CAP_THIET") return false;
+          if (classificationFilter === "HIGH" && cls !== "HIGH" && cls !== "STRATEGIC") return false;
+          if (classificationFilter === "MEDIUM" && cls !== "MEDIUM") return false;
+          if (classificationFilter === "LOW" && cls !== "LOW") return false;
         }
       }
 
-      // 4. Tìm kiếm Tên DN hoặc MST
+      // 4. Tìm kiếm Tên DN hoặc MST hoặc Mã phiếu
       if (searchTerm.trim()) {
         const term = searchTerm.trim().toLowerCase();
-        const matchName = (item.enterpriseName || item.surveyData?.companyName || "").toLowerCase().includes(term);
-        const matchTax = (item.taxCode || item.surveyData?.taxCode || "").toLowerCase().includes(term);
-        const matchId = (item.id || "").toLowerCase().includes(term);
-        if (!matchName && !matchTax && !matchId) return false;
+        const matchName = item.enterpriseName.toLowerCase().includes(term);
+        const matchTax = item.taxCode.toLowerCase().includes(term);
+        const matchId = item.id.toLowerCase().includes(term);
+        const matchCode = (item.surveyCode || "").toLowerCase().includes(term);
+        if (!matchName && !matchTax && !matchId && !matchCode) return false;
       }
 
       return true;
     });
-  }, [assessments, scopeFilter, surveyTypeFilter, classificationFilter, searchTerm]);
+  }, [unifiedRecords, scopeFilter, surveyTypeFilter, classificationFilter, searchTerm]);
 
   // Phân trang
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
@@ -339,24 +473,63 @@ export default function AdminAssessmentRecordsPage() {
   }, [asyncState, filteredRecords.length]);
 
   // Xử lý xuất file Word (.docx)
-  const handleExportDocx = async (assessment: Tt17Assessment) => {
+  const handleExportDocx = async (target: UnifiedSurveyRecord | Tt17Assessment | DemandSurveyItem) => {
     try {
-      setIsExportingId(assessment.id);
-      const blob = await exportTt17SurveyDocx(assessment);
-      const safeTax = (assessment.taxCode || assessment.surveyData?.taxCode || "MST").replace(
-        /[^a-zA-Z0-9_-]/g,
-        "_"
-      );
-      const safeName = (assessment.enterpriseName || assessment.surveyData?.companyName || "DN")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/đ/g, "d")
-        .replace(/Đ/g, "D")
-        .replace(/[^a-zA-Z0-9_-]/g, "_")
-        .replace(/_+/g, "_")
-        .replace(/^_|_$/g, "")
-        .substring(0, 30);
-      downloadDocxBlob(blob, `Phieu_TT17_${safeTax}_${safeName || "DN"}.docx`);
+      const targetId = target.id;
+      setIsExportingId(targetId);
+
+      let isDemand = false;
+      let demandItem: DemandSurveyItem | null = null;
+      let tt17Item: Tt17Assessment | null = null;
+
+      if ("surveyType" in target) {
+        const sType = (target as any).surveyType;
+        if (sType === "SME_DEMAND" || sType === "DEEP_SURVEY") {
+          isDemand = true;
+          demandItem = (target as any).originalDemand || (target as DemandSurveyItem);
+        } else if (sType === "TT17") {
+          isDemand = false;
+          tt17Item = (target as any).originalTt17 || (target as unknown as Tt17Assessment);
+        }
+      }
+
+      if (!demandItem && !tt17Item) {
+        if ("evaluationLevels" in target || "enterpriseName" in target) {
+          isDemand = false;
+          tt17Item = target as unknown as Tt17Assessment;
+        } else {
+          isDemand = true;
+          demandItem = target as unknown as DemandSurveyItem;
+        }
+      }
+
+      if (isDemand && demandItem) {
+        const blob = await exportDemandSmeDocx(demandItem);
+        const safeTax = (demandItem.taxCode || "MST").replace(/[^a-zA-Z0-9_-]/g, "_");
+        const safeName = (demandItem.companyName || "DN")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/Đ/g, "D")
+          .replace(/[^a-zA-Z0-9_-]/g, "_")
+          .replace(/_+/g, "_")
+          .replace(/^_|_$/g, "")
+          .substring(0, 30);
+        downloadDocxBlob(blob, `Phieu_Nhu_Cau_DN_${safeTax}_${safeName || "DN"}.docx`);
+      } else if (tt17Item) {
+        const blob = await exportTt17SurveyDocx(tt17Item);
+        const safeTax = (tt17Item.taxCode || tt17Item.surveyData?.taxCode || "MST").replace(/[^a-zA-Z0-9_-]/g, "_");
+        const safeName = (tt17Item.enterpriseName || tt17Item.surveyData?.companyName || "DN")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/Đ/g, "D")
+          .replace(/[^a-zA-Z0-9_-]/g, "_")
+          .replace(/_+/g, "_")
+          .replace(/^_|_$/g, "")
+          .substring(0, 30);
+        downloadDocxBlob(blob, `Phieu_TT17_${safeTax}_${safeName || "DN"}.docx`);
+      }
     } catch (err) {
       console.error("Lỗi khi xuất văn bản DOCX:", err);
       alert("Đã xảy ra lỗi khi tạo file Word (.docx). Vui lòng thử lại!");
@@ -419,7 +592,7 @@ export default function AdminAssessmentRecordsPage() {
               title="Mẫu phiếu khảo sát hiện trạng & nhu cầu công nghệ DNNVV (Tính toán chỉ số TNI)"
             >
               <Download className="w-4 h-4 shrink-0" />
-              <span>Tải mẫu Nhu cầu DNNVV (.docx)</span>
+              <span>Tải mẫu Nhu cầu DN (.docx)</span>
             </a>
           </div>
         </div>
@@ -484,7 +657,7 @@ export default function AdminAssessmentRecordsPage() {
               <option value="ALL">Tất cả loại phiếu (3 loại)</option>
               <option value="TT17">Phiếu TT17 (Công nghệ sản xuất)</option>
               <option value="INNOVATION">Phiếu ĐMST (43 câu hỏi ĐMST)</option>
-              <option value="SME_DEMAND">Phiếu Nhu cầu ĐMST (DNNVV)</option>
+              <option value="SME_DEMAND">Phiếu Nhu cầu DN</option>
             </select>
           </div>
 
@@ -651,9 +824,6 @@ export default function AdminAssessmentRecordsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {paginatedRecords.map((item) => {
-                  const classificationInfo = resolveTt17Classification(
-                    item.scoreResult?.classification || item.scoreResult?.classificationLabel
-                  );
                   const isExporting = isExportingId === item.id;
                   const dateDisplay = item.submittedAt
                     ? new Date(item.submittedAt).toLocaleDateString("vi-VN")
@@ -663,25 +833,25 @@ export default function AdminAssessmentRecordsPage() {
 
                   return (
                     <tr
-                      key={item.id}
+                      key={`${item.surveyType}-${item.id}`}
                       className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       {/* Cột 1: Mã hồ sơ */}
                       <td className="px-4 py-3.5 font-mono font-semibold text-slate-800 dark:text-slate-200">
                         <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] text-slate-700 dark:text-slate-300">
-                          #{item.id.slice(0, 8)}
+                          #{item.surveyCode || item.id.slice(0, 8)}
                         </span>
                       </td>
 
                       {/* Cột 2: Tên DN & MST */}
                       <td className="px-4 py-3.5">
-                        <div className="font-bold text-slate-900 dark:text-white max-w-xs truncate" title={item.enterpriseName || item.surveyData?.companyName}>
-                          {item.enterpriseName || item.surveyData?.companyName || "Chưa cập nhật tên DN"}
+                        <div className="font-bold text-slate-900 dark:text-white max-w-xs truncate" title={item.enterpriseName}>
+                          {item.enterpriseName}
                         </div>
                         <div className="flex items-center gap-1.5 text-slate-500 font-mono text-[11px] mt-0.5">
                           <span>MST:</span>
                           <span className="font-semibold text-slate-700 dark:text-slate-300">
-                            {item.taxCode || item.surveyData?.taxCode || "—"}
+                            {item.taxCode}
                           </span>
                         </div>
                       </td>
@@ -690,15 +860,21 @@ export default function AdminAssessmentRecordsPage() {
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <div className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-medium">
                           <MapPin className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                          <span>{resolveProvinceName(item.scopeId)}</span>
+                          <span>{item.provinceDisplay}</span>
                         </div>
                       </td>
 
                       {/* Cột 4: Loại phiếu */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                          item.surveyType === "SME_DEMAND"
+                            ? "bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800"
+                            : item.surveyType === "INNOVATION"
+                            ? "bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800"
+                            : "bg-cyan-50 text-cyan-800 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800"
+                        }`}>
                           <FileText className="w-3 h-3" />
-                          <span>Phiếu TT17</span>
+                          <span>{item.surveyTypeLabel}</span>
                         </span>
                       </td>
 
@@ -710,17 +886,21 @@ export default function AdminAssessmentRecordsPage() {
                         </div>
                       </td>
 
-                      {/* Cột 6: Điểm TT17 / Xếp loại */}
+                      {/* Cột 6: Điểm TT17 / Xếp loại hoặc Điểm TNI */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-400">
-                            {item.scoreResult?.totalScore ?? 0}/100
+                          <span className={`font-mono font-black text-sm ${
+                            item.surveyType === "SME_DEMAND"
+                              ? "text-teal-700 dark:text-teal-400"
+                              : "text-emerald-700 dark:text-emerald-400"
+                          }`}>
+                            {item.scoreDisplay}
                           </span>
                           <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border truncate max-w-[140px] ${classificationInfo.badgeClass}`}
-                            title={classificationInfo.label}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border truncate max-w-[140px] ${item.classificationBadge.badgeClass}`}
+                            title={item.classificationBadge.label}
                           >
-                            {classificationInfo.label.split("(")[0].trim()}
+                            {item.classificationBadge.label.split("(")[0].trim()}
                           </span>
                         </div>
                       </td>
@@ -732,8 +912,12 @@ export default function AdminAssessmentRecordsPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              setInspectingItem(item);
-                              setModalTab("FORM");
+                              if (item.surveyType === "TT17" && item.originalTt17) {
+                                setInspectingItem(item.originalTt17);
+                                setModalTab("FORM");
+                              } else if (item.originalDemand) {
+                                setInspectingDemandItem(item.originalDemand);
+                              }
                             }}
                             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition cursor-pointer"
                             title="Xem chi tiết Form & Điểm"
@@ -748,7 +932,7 @@ export default function AdminAssessmentRecordsPage() {
                             disabled={isExporting}
                             onClick={() => handleExportDocx(item)}
                             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-50 hover:bg-cyan-100 text-cyan-800 dark:bg-cyan-950/60 dark:hover:bg-cyan-900/60 dark:text-cyan-300 text-xs font-bold border border-cyan-200 dark:border-cyan-800 transition cursor-pointer disabled:opacity-50"
-                            title="Xuất file Word (.docx) để in thực địa"
+                            title={item.surveyType === "TT17" ? "Xuất file Word (.docx) để in thực địa" : "Xuất file Word (.docx) chứa dữ liệu doanh nghiệp"}
                           >
                             {isExporting ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -799,7 +983,7 @@ export default function AdminAssessmentRecordsPage() {
         </div>
       </Async>
 
-      {/* 4. MODAL XEM CHI TIẾT BẢN GHI PHIẾU */}
+      {/* 4. MODAL XEM CHI TIẾT BẢN GHI PHIẾU TT17 */}
       {inspectingItem && (
         <div
           role="dialog"
@@ -962,6 +1146,427 @@ export default function AdminAssessmentRecordsPage() {
                 <button
                   type="button"
                   onClick={() => setInspectingItem(null)}
+                  className="px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. MODAL XEM CHI TIẾT PHIẾU NHU CẦU DN */}
+      {inspectingDemandItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+        >
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-start justify-between bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
+              <div className="space-y-1 pr-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 text-xs font-bold">
+                    Bản ghi Phiếu Nhu cầu DN #{inspectingDemandItem.surveyCode || inspectingDemandItem.id.slice(0, 8)}
+                  </span>
+                  <span className="text-xs text-slate-500 font-mono">
+                    MST: {inspectingDemandItem.taxCode || "—"}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    · Địa bàn: <strong>{inspectingDemandItem.province || "Toàn quốc"}</strong>
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                  {inspectingDemandItem.companyName}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInspectingDemandItem(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                title="Đóng cửa sổ"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
+              {/* Thống kê chỉ số nhanh */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-center">
+                  <div className="text-teal-700 dark:text-teal-300 text-[11px] font-bold">Chỉ số TNI</div>
+                  <div className="font-black text-lg text-teal-800 dark:text-teal-200 mt-0.5">
+                    {inspectingDemandItem.tniScore !== undefined && inspectingDemandItem.tniScore !== null ? inspectingDemandItem.tniScore : "—"}
+                  </div>
+                  <div className="text-[10px] text-teal-600 dark:text-teal-400 font-medium mt-0.5">
+                    {resolveDemandTniBadge(inspectingDemandItem.tniClassification, inspectingDemandItem.tniScore).label}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center">
+                  <div className="text-slate-500 text-[11px] font-semibold">Quy mô lao động</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">
+                    {inspectingDemandItem.employeeScale || inspectingDemandItem.enterpriseSize || "—"}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center">
+                  <div className="text-slate-500 text-[11px] font-semibold">Doanh thu 3 năm</div>
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-sm mt-1">
+                    {inspectingDemandItem.revenueRange3y || "—"}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center">
+                  <div className="text-slate-500 text-[11px] font-semibold">Trạng thái hồ sơ</div>
+                  <div className="font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-1">
+                    {inspectingDemandItem.status || "SUBMITTED"}
+                  </div>
+                </div>
+              </div>
+
+              {/* I. CHI TIẾT BÀI TOÁN KỸ THUẬT & NHU CẦU ĐỔI MỚI CÔNG NGHỆ */}
+              {inspectingDemandItem.items && inspectingDemandItem.items.length > 0 && (
+                <div className="border border-teal-200 dark:border-teal-800 rounded-xl p-4 bg-teal-50/20 dark:bg-teal-950/20 space-y-3">
+                  <div className="font-bold text-teal-800 dark:text-teal-200 text-xs uppercase tracking-wider flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-teal-600" />
+                      <span>I. Chi tiết bài toán kỹ thuật & Nhu cầu đổi mới công nghệ</span>
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 font-bold text-[11px]">
+                      {inspectingDemandItem.items.length} bài toán
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {inspectingDemandItem.items.map((it, idx) => (
+                      <div key={idx} className="p-3.5 bg-white dark:bg-slate-900 rounded-xl border border-teal-200/80 dark:border-teal-800/80 space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                          <div className="font-bold text-slate-900 dark:text-white text-xs">
+                            #{it.itemCode || `DMD-${idx + 1}`} · <span className="text-teal-600">{it.stageName || "Sản xuất chính"}</span>
+                          </div>
+                          {it.tniScore !== undefined && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200">
+                              TNI: {it.tniScore}/100
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-slate-500 font-medium">Vấn đề kỹ thuật / Khuyết tật:</span>{" "}
+                          <span className="font-bold text-rose-700 dark:text-rose-400">{it.technicalProblem}</span>
+                        </div>
+                        {it.desiredSolution && (
+                          <div>
+                            <span className="text-slate-500 font-medium">Giải pháp công nghệ mong muốn:</span>{" "}
+                            <span className="text-slate-800 dark:text-slate-200">{it.desiredSolution}</span>
+                          </div>
+                        )}
+                        {it.expectedGoal && (
+                          <div>
+                            <span className="text-slate-500 font-medium">Mục tiêu kỳ vọng:</span>{" "}
+                            <span className="text-slate-700 dark:text-slate-300">{it.expectedGoal}</span>
+                          </div>
+                        )}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-[11px] text-slate-500 border-t border-slate-100 dark:border-slate-800">
+                          <div>
+                            Dự toán ngân sách: <strong className="text-slate-800 dark:text-slate-200">{it.budgetRange || "Thương lượng"}</strong>
+                          </div>
+                          {it.urgencyScore && (
+                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded">
+                              <span>4 Chiều TNI:</span>
+                              <strong>K={it.urgencyScore}</strong>
+                              <span>·</span>
+                              <strong>L={it.impactScore}</strong>
+                              <span>·</span>
+                              <strong>N={it.investmentCapacity}</strong>
+                              <span>·</span>
+                              <strong>O={it.adoptionReadiness}</strong>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* II. THÔNG TIN DOANH NGHIỆP & NGƯỜI ĐẠI DIỆN */}
+              <div className="bg-slate-50 dark:bg-slate-800/40 rounded-xl p-4 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <Building2 className="w-4 h-4 text-teal-600" />
+                  <span>II. Thông tin liên hệ & Người đại diện</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <span className="text-slate-500">Người liên hệ:</span>{" "}
+                    <strong className="text-slate-800 dark:text-slate-200">
+                      {inspectingDemandItem.contactName || "—"}
+                    </strong>
+                    {inspectingDemandItem.contactTitle && (
+                      <span className="text-slate-400"> ({inspectingDemandItem.contactTitle})</span>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Số điện thoại:</span>{" "}
+                    <strong className="text-slate-800 dark:text-slate-200">
+                      {inspectingDemandItem.contactPhone || "—"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Email:</span>{" "}
+                    <strong className="text-slate-800 dark:text-slate-200">
+                      {inspectingDemandItem.contactEmail || "—"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">Trụ sở chính:</span>{" "}
+                    <span className="text-slate-700 dark:text-slate-300">
+                      {inspectingDemandItem.headquartersAddress || inspectingDemandItem.province || "—"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* III. HIỆN TRẠNG MÁY MÓC & 8 TIÊU CHÍ TRÌNH ĐỘ CÔNG NGHỆ */}
+              {inspectingDemandDetails && inspectingDemandDetails.currentEquipments && Array.isArray(inspectingDemandDetails.currentEquipments) && inspectingDemandDetails.currentEquipments.length > 0 && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-3">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-cyan-600" />
+                    <span>III. Danh mục máy móc, thiết bị chủ lực hiện tại</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 text-[11px]">
+                          <th className="py-2 pr-2">Công đoạn</th>
+                          <th className="py-2 px-2">Tên thiết bị / Máy móc</th>
+                          <th className="py-2 px-2">Xuất xứ / Năm ĐT</th>
+                          <th className="py-2 pl-2 text-right">Khấu hao / Tình trạng</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {inspectingDemandDetails.currentEquipments.map((eq: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                            <td className="py-2 pr-2 font-medium text-slate-700 dark:text-slate-300">{eq.StageName || "—"}</td>
+                            <td className="py-2 px-2 font-bold text-slate-900 dark:text-white">{eq.MachineName || "—"}</td>
+                            <td className="py-2 px-2 text-slate-600 dark:text-slate-400">{eq.TechOrigin || "—"} ({eq.InvestmentYear || "—"})</td>
+                            <td className="py-2 pl-2 text-right text-emerald-600 font-semibold">{eq.DepreciationStatus || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* 8 TIÊU CHÍ TRÌNH ĐỘ CÔNG NGHỆ */}
+              {inspectingDemandDetails && inspectingDemandDetails.criteria8 && typeof inspectingDemandDetails.criteria8 === "object" && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-3">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider">
+                    Đánh giá hiện trạng trình độ công nghệ (8 Tiêu chí)
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {Object.entries(inspectingDemandDetails.criteria8).map(([key, val], idx) => {
+                      const num = Number(val) || 0;
+                      return (
+                        <div key={idx} className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                          <span className="text-slate-700 dark:text-slate-300 font-medium text-[11px] leading-tight">{key}</span>
+                          <span className="px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 font-bold shrink-0">
+                            {num} / 5
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* IV. KHÂU KHÓ NHẤT & ĐIỂM NGHẼN KỸ THUẬT */}
+              <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-3">
+                <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider text-rose-600 flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>IV. Điểm nghẽn kỹ thuật & Khâu sản xuất ách tắc</span>
+                </div>
+                {inspectingDemandDetails && inspectingDemandDetails.hardestStage && (
+                  <div className="p-3 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-lg space-y-1">
+                    <div className="text-[11px] text-rose-600 font-bold">Khâu sản xuất gặp nhiều khó khăn nhất:</div>
+                    <div className="font-bold text-slate-900 dark:text-white">{inspectingDemandDetails.hardestStage}</div>
+                    {inspectingDemandDetails.primaryCause && (
+                      <div className="text-slate-600 dark:text-slate-400 text-[11px] pt-1 border-t border-rose-200/50 dark:border-rose-900/50 mt-1">
+                        Nguyên nhân cốt lõi: <em>{inspectingDemandDetails.primaryCause}</em>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {inspectingDemandItem.topBottlenecks && inspectingDemandItem.topBottlenecks.length > 0 && (
+                  <div>
+                    <div className="text-[11px] text-slate-500 font-semibold mb-1.5">Danh mục điểm nghẽn kỹ thuật nhận diện:</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {inspectingDemandItem.topBottlenecks.map((b, idx) => {
+                        const sev = inspectingDemandDetails?.bottlenecksDetail?.[b];
+                        return (
+                          <span key={idx} className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-semibold text-xs">
+                            {b} {sev ? `(Mức độ: ${sev}/5)` : ""}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* V. NHÂN LỰC KỸ THUẬT & NĂNG LỰC HẤP THỤ CÔNG NGHỆ */}
+              {inspectingDemandDetails && inspectingDemandDetails.technicalPersonnel && typeof inspectingDemandDetails.technicalPersonnel === "object" && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-3">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>V. Đội ngũ nhân lực kỹ thuật</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 text-[11px] block">Kỹ thuật viên / Thợ giỏi:</span>
+                      <strong className="text-slate-800 dark:text-slate-200 text-sm">{inspectingDemandDetails.technicalPersonnel.technicians ?? 0} người</strong>
+                    </div>
+                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 text-[11px] block">Kỹ sư / Cử nhân kỹ thuật:</span>
+                      <strong className="text-slate-800 dark:text-slate-200 text-sm">{inspectingDemandDetails.technicalPersonnel.engineers ?? 0} người</strong>
+                    </div>
+                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 text-[11px] block">Nhân sự CNTT:</span>
+                      <strong className="text-slate-800 dark:text-slate-200 text-sm">{inspectingDemandDetails.technicalPersonnel.it ?? 0} người</strong>
+                    </div>
+                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 text-[11px] block">Nhân sự Tự động hóa:</span>
+                      <strong className="text-slate-800 dark:text-slate-200 text-sm">{inspectingDemandDetails.technicalPersonnel.automation ?? 0} người</strong>
+                    </div>
+                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 text-[11px] block">Nhân sự Nghiên cứu R&D:</span>
+                      <strong className="text-slate-800 dark:text-slate-200 text-sm">{inspectingDemandDetails.technicalPersonnel.rd ?? 0} người</strong>
+                    </div>
+                    <div className="p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 text-[11px] block">Kiểm soát chất lượng (QC):</span>
+                      <strong className="text-slate-800 dark:text-slate-200 text-sm">{inspectingDemandDetails.technicalPersonnel.quality ?? 0} người</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NĂNG LỰC HẤP THỤ CÔNG NGHỆ (9 TIÊU CHÍ) */}
+              {inspectingDemandDetails && inspectingDemandDetails.adoptionCapacity && typeof inspectingDemandDetails.adoptionCapacity === "object" && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-3">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider">
+                    Đánh giá năng lực hấp thụ & làm chủ công nghệ (Thang 1-5)
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {Object.entries(inspectingDemandDetails.adoptionCapacity).map(([key, val], idx) => {
+                      const num = Number(val) || 0;
+                      return (
+                        <div key={idx} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                          <span className="text-slate-700 dark:text-slate-300 font-medium text-[11px] leading-tight">{key}</span>
+                          <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold shrink-0">
+                            {num} / 5
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* VI. ĐỊNH HƯỚNG CÔNG NGHỆ 2026–2030 & ĐỀ XUẤT HỖ TRỢ */}
+              {inspectingDemandDetails && inspectingDemandDetails.futureDirections && Array.isArray(inspectingDemandDetails.futureDirections) && inspectingDemandDetails.futureDirections.length > 0 && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider text-teal-600 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" />
+                    <span>VI. Định hướng công nghệ tiên tiến giai đoạn 2026–2030</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {inspectingDemandDetails.futureDirections.map((fd: string, idx: number) => (
+                      <span key={idx} className="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-medium text-xs">
+                        {fd}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ĐỐI TÁC MONG MUỐN & NHU CẦU HỖ TRỢ */}
+              {inspectingDemandDetails && inspectingDemandDetails.desiredPartners && Array.isArray(inspectingDemandDetails.desiredPartners) && inspectingDemandDetails.desiredPartners.length > 0 && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4" />
+                    <span>Đối tác mong muốn kết nối giải pháp</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {inspectingDemandDetails.desiredPartners.map((dp: string, idx: number) => (
+                      <span key={idx} className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-medium text-xs">
+                        {dp}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Nhu cầu hỗ trợ từ cơ quan nhà nước */}
+              {inspectingDemandItem.supportNeeds && inspectingDemandItem.supportNeeds.length > 0 && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider text-teal-600 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Nhu cầu hỗ trợ từ Sở KH&CN / Viện / Chuyên gia</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {inspectingDemandItem.supportNeeds.map((s, idx) => (
+                      <span key={idx} className="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-semibold text-xs">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* VII. CHỮ KÝ ĐIỆN TỬ ĐẠI DIỆN DOANH NGHIỆP */}
+              {inspectingDemandItem.representativeSignatureUrl && (
+                <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2">
+                  <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>VII. Chữ ký điện tử Đại diện Doanh nghiệp</span>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={inspectingDemandItem.representativeSignatureUrl}
+                      alt="Chữ ký điện tử"
+                      className="max-h-24 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 flex flex-wrap items-center justify-between gap-3 shrink-0">
+              <div className="text-xs text-slate-500">
+                Ngày gửi: <strong>{inspectingDemandItem.submittedAt ? new Date(inspectingDemandItem.submittedAt).toLocaleDateString("vi-VN") : "—"}</strong>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isExportingId === inspectingDemandItem.id}
+                  onClick={() => handleExportDocx(inspectingDemandItem)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                >
+                  {isExportingId === inspectingDemandItem.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isExportingId === inspectingDemandItem.id ? "Đang xuất..." : "Xuất file Word (.docx)"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInspectingDemandItem(null)}
                   className="px-3.5 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Đóng

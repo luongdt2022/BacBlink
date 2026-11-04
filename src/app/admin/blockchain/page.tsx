@@ -459,6 +459,7 @@ function TabLedger() {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [totalBlocks, setTotalBlocks] = useState<number>(0);
   const [state, setState] = useState<AsyncState>("loading");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isFlushing, setIsFlushing] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -483,7 +484,8 @@ function TabLedger() {
       setTotalBlocks(res.total);
       setPage(res.page);
       setState(res.items.length === 0 ? "empty" : "idle");
-    } catch {
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Không thể tải danh sách khối.");
       setState("error");
     }
   }, []);
@@ -647,6 +649,7 @@ function TabLedger() {
 
           <Async
             state={state}
+            errorMessage={errorMessage}
             onRetry={() => loadBlocks(page)}
             emptyContent={
               <div className="p-8 text-center text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
@@ -994,6 +997,7 @@ function TabLedger() {
 function TabBridge() {
   const [gatewayStatus, setGatewayStatus] = useState<GatewayStatusDto | null>(null);
   const [state, setState] = useState<AsyncState>("loading");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<BridgeSyncResultDto | null>(null);
 
@@ -1003,7 +1007,8 @@ function TabBridge() {
       const status = await fetchBridgeStatus();
       setGatewayStatus(status);
       setState("idle");
-    } catch {
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Không thể tải trạng thái cổng liên thông.");
       setState("error");
     }
   }, []);
@@ -1029,7 +1034,7 @@ function TabBridge() {
   return (
     <div className="space-y-6">
       {/* Gateway Connection Card */}
-      <Async state={state} onRetry={loadStatus}>
+      <Async state={state} errorMessage={errorMessage} onRetry={loadStatus}>
         {gatewayStatus && (
           <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
