@@ -35,6 +35,7 @@ import { useToast } from "@/components/common/toast";
 import { authClient, getStoredSession } from "@/lib/auth-client";
 import { lookupTaxCode, fetchMyEnterpriseProfile } from "@/lib/enterprise-client";
 import { PROVINCES_34 } from "@/app/khao-sat-nhu-cau/types";
+import { TouchSignatureField } from "@/components/ui/signature-pad-modal";
 
 // =========================================================================
 // DATA CATALOGS & CONSTANTS
@@ -493,6 +494,7 @@ export default function KhaoSatDmstPage() {
   const [c41WillingUpdate, setC41WillingUpdate] = useState("");
   const [c42RequestedFeatures, setC42RequestedFeatures] = useState<string[]>([]);
   const [c43Recommendations, setC43Recommendations] = useState("");
+  const [signatureData, setSignatureData] = useState("");
 
   // -------------------------------------------------------------------------
   // SMART PROFILE PREFILL & TAX LOOKUP
@@ -731,6 +733,7 @@ export default function KhaoSatDmstPage() {
       if (d.c41WillingUpdate) setC41WillingUpdate(d.c41WillingUpdate);
       if (d.c42RequestedFeatures) setC42RequestedFeatures(d.c42RequestedFeatures);
       if (d.c43Recommendations) setC43Recommendations(d.c43Recommendations);
+      if (d.signatureData) setSignatureData(d.signatureData);
       setDraftPromptVisible(false);
       toast.success("Đã khôi phục thành công bản nháp đã lưu trước đó.");
     } catch {
@@ -805,6 +808,7 @@ export default function KhaoSatDmstPage() {
         c41WillingUpdate,
         c42RequestedFeatures,
         c43Recommendations,
+        signatureData,
         timestamp: new Date().toISOString(),
       };
 
@@ -871,6 +875,7 @@ export default function KhaoSatDmstPage() {
     c41WillingUpdate,
     c42RequestedFeatures,
     c43Recommendations,
+    signatureData,
   ]);
 
   // -------------------------------------------------------------------------
@@ -979,6 +984,7 @@ export default function KhaoSatDmstPage() {
         c41_willing_update_db: c41WillingUpdate,
         c42_requested_features: c42RequestedFeatures,
         c43_recommendations: c43Recommendations.trim(),
+        signature_data_url: signatureData || undefined,
       },
     };
 
@@ -2747,6 +2753,18 @@ export default function KhaoSatDmstPage() {
               <div className="text-right text-[11px] text-slate-400 mt-1">
                 {c43Recommendations.length} / 1000 ký tự
               </div>
+            </div>
+
+            {/* Chữ ký điện tử cảm ứng (Touch Digital Signature Pad) */}
+            <div className="pt-2">
+              <TouchSignatureField
+                id="signature-trigger-box-dmst"
+                value={signatureData}
+                onChange={setSignatureData}
+                required={false}
+                label="Chữ ký điện tử của người đại diện (Tùy chọn)"
+                helperText="(Hỗ trợ ngón tay/bút cảm ứng trên điện thoại, tablet hoặc chuột trên máy tính)"
+              />
             </div>
 
             {/* Error Message */}

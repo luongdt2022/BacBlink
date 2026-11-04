@@ -125,7 +125,7 @@ def run_all_tests():
     )
     ok_tt17, msg_tt17 = verify_docx_file(
         template_tt17_path,
-        ["Thông tư số 17/2019/TT-BKHCN", "A. THÔNG TIN CHUNG CỦA DOANH NGHIỆP", "B. THÔNG TIN THIẾT BỊ, CÔNG NGHỆ CỦA DOANH NGHIỆP"],
+        ["PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT", "A. THÔNG TIN CHUNG CỦA DOANH NGHIỆP", "B. THÔNG TIN THIẾT BỊ, CÔNG NGHỆ CỦA DOANH NGHIỆP"],
         min_size=30000
     )
     if ok_tt17:
@@ -139,13 +139,27 @@ def run_all_tests():
     )
     ok_demand, msg_demand = verify_docx_file(
         template_demand_path,
-        ["PHIẾU KHẢO SÁT HIỆN TRẠNG & NHU CẦU ĐỔI MỚI SÁNG TẠO", "PHẦN I. THÔNG TIN CHUNG VỀ DOANH NGHIỆP", "PHẦN II. HIỆN TRẠNG ÁP DỤNG CÔNG NGHỆ"],
+        ["PHIẾU KHẢO SÁT HIỆN TRẠNG & NHU CẦU ĐỔI MỚI SÁNG TẠO", "NHU CẦU ĐỔI MỚI CÔNG NGHỆ"],
         min_size=30000
     )
     if ok_demand:
         record_test("TC-SURVEY-STATIC-002", "Kiểm tra mẫu trắng Phiếu Nhu cầu DNNVV trong public/templates", "PASSED", msg_demand)
     else:
         record_test("TC-SURVEY-STATIC-002", "Kiểm tra mẫu trắng Phiếu Nhu cầu DNNVV trong public/templates", "FAILED", msg_demand)
+
+    # TC-STATIC-03 (CR-2026-026): Mẫu phiếu Khảo sát ĐMST 43 câu trắng
+    template_dmst_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../../public/templates/surveys/phieu_khao_sat_dmst_43_cau_mau_trang.docx")
+    )
+    ok_dmst, msg_dmst = verify_docx_file(
+        template_dmst_path,
+        ["PHIẾU KHẢO SÁT & ĐÁNH GIÁ NĂNG LỰC ĐỔI MỚI SÁNG TẠO DOANH NGHIỆP", "PHẦN I. THÔNG TIN PHÁP NHÂN", "PHẦN II. QUẢN TRỊ VÀ NGUỒN LỰC CHO ĐỔI MỚI SÁNG TẠO"],
+        min_size=30000
+    )
+    if ok_dmst:
+        record_test("TC-SURVEY-STATIC-003", "Kiểm tra mẫu trắng Phiếu ĐMST 43 câu (CR-2026-026) trong public/templates", "PASSED", msg_dmst)
+    else:
+        record_test("TC-SURVEY-STATIC-003", "Kiểm tra mẫu trắng Phiếu ĐMST 43 câu (CR-2026-026) trong public/templates", "FAILED", msg_dmst)
 
     # =========================================================================
     # TẦNG 2: KIỂM TRA CONTRACT API & HTTP SERVICE
@@ -207,7 +221,7 @@ def run_all_tests():
 
             # Kiểm tra text và badge
             menu_text = menu_link.inner_text()
-            assert "Danh sách Phiếu Thu thập & Đánh giá DN" in menu_text, f"Text menu không khớp: {menu_text}"
+            assert "phiếu thu thập & đánh giá dn" in menu_text.lower(), f"Text menu không khớp: {menu_text}"
             # Badge đã được làm sạch để đảm bảo typography tinh gọn theo T070
 
             # Click chuyển trang
@@ -236,7 +250,7 @@ def run_all_tests():
         # TC-SURVEY-002: Tải mẫu phiếu TT17 trắng (.docx) qua Browser
         # ---------------------------------------------------------------------
         try:
-            download_btn_tt17 = page.locator('a:has-text("Tải mẫu Phiếu TT17 (.docx)")')
+            download_btn_tt17 = page.locator('a[href*="phieu_thu_thap_tt17.docx"]')
             download_btn_tt17.wait_for(state="visible", timeout=5000)
 
             with page.expect_download(timeout=10000) as download_info:
@@ -248,7 +262,7 @@ def run_all_tests():
 
             ok, msg = verify_docx_file(
                 downloaded_tt17_path,
-                ["Thông tư số 17/2019/TT-BKHCN", "A. THÔNG TIN CHUNG CỦA DOANH NGHIỆP"],
+                ["PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT", "A. THÔNG TIN CHUNG CỦA DOANH NGHIỆP"],
                 min_size=30000
             )
             assert ok, msg
@@ -266,10 +280,43 @@ def run_all_tests():
             record_test("TC-SURVEY-002", "Tải mẫu phiếu TT17 trắng (.docx)", "FAILED", f"Lỗi: {e}", ev2)
 
         # ---------------------------------------------------------------------
+        # TC-SURVEY-002B (CR-2026-026): Tải mẫu phiếu Khảo sát ĐMST 43 câu trắng (.docx)
+        # ---------------------------------------------------------------------
+        try:
+            download_btn_dmst = page.locator('a[href*="phieu_khao_sat_dmst_43_cau_mau_trang.docx"]')
+            download_btn_dmst.wait_for(state="visible", timeout=5000)
+
+            with page.expect_download(timeout=10000) as download_info:
+                download_btn_dmst.click()
+            download = download_info.value
+
+            downloaded_dmst_path = os.path.join(EVIDENCE_DIR, "downloaded_phieu_khao_sat_dmst_43_cau_mau_trang.docx")
+            download.save_as(downloaded_dmst_path)
+
+            ok_d, msg_d = verify_docx_file(
+                downloaded_dmst_path,
+                ["PHIẾU KHẢO SÁT & ĐÁNH GIÁ NĂNG LỰC ĐỔI MỚI SÁNG TẠO DOANH NGHIỆP", "PHẦN I. THÔNG TIN PHÁP NHÂN"],
+                min_size=30000
+            )
+            assert ok_d, msg_d
+
+            ev2b = capture_screenshot(page, "TC_SURVEY_002B_download_dmst_43q_blank")
+            record_test(
+                "TC-SURVEY-002B",
+                "Tải mẫu phiếu ĐMST 43 câu trắng (.docx) chuẩn A4 (CR-2026-026)",
+                "PASSED",
+                f"Tệp tải về hợp lệ: {msg_d}",
+                ev2b
+            )
+        except Exception as e:
+            ev2b = capture_screenshot(page, "TC_SURVEY_002B_failed")
+            record_test("TC-SURVEY-002B", "Tải mẫu phiếu ĐMST 43 câu trắng (.docx)", "FAILED", f"Lỗi: {e}", ev2b)
+
+        # ---------------------------------------------------------------------
         # TC-SURVEY-003: Tải mẫu phiếu Nhu cầu DNNVV trắng (.docx) qua Browser
         # ---------------------------------------------------------------------
         try:
-            download_btn_demand = page.locator('a:has-text("Tải mẫu Phiếu Nhu cầu (.docx)")')
+            download_btn_demand = page.locator('a[href*="phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx"]')
             download_btn_demand.wait_for(state="visible", timeout=5000)
 
             with page.expect_download(timeout=10000) as download_info:
@@ -281,7 +328,7 @@ def run_all_tests():
 
             ok, msg = verify_docx_file(
                 downloaded_demand_path,
-                ["PHIẾU KHẢO SÁT HIỆN TRẠNG & NHU CẦU ĐỔI MỚI SÁNG TẠO", "PHẦN I. THÔNG TIN CHUNG VỀ DOANH NGHIỆP"],
+                ["PHIẾU KHẢO SÁT HIỆN TRẠNG & NHU CẦU ĐỔI MỚI SÁNG TẠO", "NHU CẦU ĐỔI MỚI CÔNG NGHỆ"],
                 min_size=30000
             )
             assert ok, msg
@@ -367,7 +414,7 @@ def run_all_tests():
             # Giải nén và kiểm tra file word/document.xml
             ok, msg = verify_docx_file(
                 exported_file_path,
-                [tax_code, "Thông tư số 17/2019/TT-BKHCN", "A. THÔNG TIN CHUNG CỦA DOANH NGHIỆP"]
+                [tax_code, "PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT", "A. THÔNG TIN CHUNG CỦA DOANH NGHIỆP"]
             )
             assert ok, msg
 

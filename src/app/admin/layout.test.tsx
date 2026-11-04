@@ -23,7 +23,7 @@ vi.mock("@/components/auth/role-guard", () => ({
 }));
 
 describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
-  it("renders 4 Accordion groups, header Tầng 0 and enterprise security badge", () => {
+  it("renders 4 Accordion groups, header and enterprise security badge", () => {
     mockPathname = "/admin";
     render(
       <AdminLayout>
@@ -32,9 +32,9 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     );
 
     // Header
-    expect(screen.getByText("Tầng 0: Quản Trị Tối Cao")).toBeInTheDocument();
+    expect(screen.queryByText("Tầng 0: Quản Trị Tối Cao")).not.toBeInTheDocument();
     expect(screen.getByText("Trung Tâm Quản Trị Hệ Thống")).toBeInTheDocument();
-    expect(screen.getByText("Phân hệ quản trị 34 tỉnh/thành trọng điểm")).toBeInTheDocument();
+    expect(screen.queryByText("Phân hệ quản trị 34 tỉnh/thành trọng điểm")).not.toBeInTheDocument();
 
     // 4 Group Headers
     expect(screen.getByText("1. Trung Tâm Điều Hành")).toBeInTheDocument();
@@ -60,16 +60,16 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     );
 
     // 8 links
-    expect(screen.getByRole("link", { name: /Tổng quan Dashboard 360°/i })).toHaveAttribute("href", "/admin");
-    expect(screen.getByRole("link", { name: /Danh sách Phiếu Thu thập & Đánh giá DN/i })).toHaveAttribute("href", "/admin/assessments/records");
-    expect(screen.getByRole("link", { name: /Tất cả Hàng đợi Phê duyệt/i })).toHaveAttribute("href", "/admin/approvals");
-    expect(screen.getByRole("link", { name: /Cảnh báo Quá hạn SLA Sở Tỉnh/i })).toHaveAttribute("href", "/admin/approvals?tab=sla");
-    expect(screen.getByRole("link", { name: /Phê duyệt Vượt cấp \/ Can thiệp/i })).toHaveAttribute("href", "/admin/approvals?tab=override");
-    expect(screen.getByRole("link", { name: /Quản lý 10 Vai trò \(RBAC\)/i })).toHaveAttribute("href", "/admin/roles");
-    expect(screen.getByRole("link", { name: /Cây Thư mục 34 Tỉnh\/Thành/i })).toHaveAttribute("href", "/admin/org-tree");
-    expect(screen.getByRole("link", { name: /Danh mục 10 Lĩnh Vực TT17 & TRL/i })).toHaveAttribute("href", "/admin/sectors");
-    expect(screen.getByRole("link", { name: /Nhật ký Kiểm toán Toàn quốc/i })).toHaveAttribute("href", "/admin/audit-logs");
-    expect(screen.getByRole("link", { name: /Cấu hình Tham số & SLA Hệ thống/i })).toHaveAttribute("href", "/admin/system-config");
+    expect(screen.getByRole("link", { name: /Tổng quan hệ thống/i })).toHaveAttribute("href", "/admin");
+    expect(screen.getByRole("link", { name: /Phiếu thu thập & đánh giá DN/i })).toHaveAttribute("href", "/admin/assessments/records");
+    expect(screen.getByRole("link", { name: /Hàng đợi phê duyệt/i })).toHaveAttribute("href", "/admin/approvals");
+    expect(screen.getByRole("link", { name: /Cảnh báo quá hạn SLA/i })).toHaveAttribute("href", "/admin/approvals?tab=sla");
+    expect(screen.getByRole("link", { name: /Phê duyệt vượt cấp/i })).toHaveAttribute("href", "/admin/approvals?tab=override");
+    expect(screen.getByRole("link", { name: /Phân quyền \(RBAC\)/i })).toHaveAttribute("href", "/admin/roles");
+    expect(screen.getByRole("link", { name: /Cơ cấu 34 tỉnh\/thành/i })).toHaveAttribute("href", "/admin/org-tree");
+    expect(screen.getByRole("link", { name: /Lĩnh vực TT17 & TRL/i })).toHaveAttribute("href", "/admin/sectors");
+    expect(screen.getByRole("link", { name: /Nhật ký kiểm toán/i })).toHaveAttribute("href", "/admin/audit-logs");
+    expect(screen.getByRole("link", { name: /Cấu hình hệ thống/i })).toHaveAttribute("href", "/admin/system-config");
   });
 
   it("removes distracting badges (SLA 72h, Tầng 0, 34 Tỉnh, Bản ghi DN) to ensure clean typography", () => {
@@ -103,16 +103,16 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     fireEvent.change(searchInput, { target: { value: "RBAC" } });
 
     // Matching item visible
-    expect(screen.getByText("Quản lý 10 Vai trò (RBAC)")).toBeInTheDocument();
+    expect(screen.getByText("Phân quyền (RBAC)")).toBeInTheDocument();
 
     // Non-matching items hidden
-    expect(screen.queryByText("Nhật ký Kiểm toán Toàn quốc (Audit Logs)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nhật ký kiểm toán")).not.toBeInTheDocument();
 
     // Clear search
     const clearButton = screen.getByTitle("Xóa tìm kiếm");
     fireEvent.click(clearButton);
 
-    expect(screen.getByText("Nhật ký Kiểm toán Toàn quốc (Audit Logs)")).toBeInTheDocument();
+    expect(screen.getByText("Nhật ký kiểm toán")).toBeInTheDocument();
   });
 
   it("toggles all accordion groups with the master expand/collapse button", () => {
@@ -126,10 +126,25 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
 
     // Initially open, click to collapse all
     fireEvent.click(toggleAllBtn);
-    expect(screen.queryByText("Tổng quan Dashboard 360° & BI Toàn quốc")).not.toBeInTheDocument();
+    expect(screen.queryByText("Tổng quan hệ thống")).not.toBeInTheDocument();
 
     // Click again to expand all
     fireEvent.click(toggleAllBtn);
-    expect(screen.getByText("Tổng quan Dashboard 360° & BI Toàn quốc")).toBeInTheDocument();
+    expect(screen.getByText("Tổng quan hệ thống")).toBeInTheDocument();
+  });
+
+  it("activates only 'Quản lý người dùng' when pathname is /admin/users and does NOT activate 'Phân quyền (RBAC)'", () => {
+    mockPathname = "/admin/users";
+    render(
+      <AdminLayout>
+        <div>Admin Content</div>
+      </AdminLayout>
+    );
+
+    const usersLink = screen.getByRole("link", { name: /Quản lý người dùng/i });
+    const rolesLink = screen.getByRole("link", { name: /Phân quyền \(RBAC\)/i });
+
+    expect(usersLink.className).toContain("bg-brand-700");
+    expect(rolesLink.className).not.toContain("bg-brand-700");
   });
 });

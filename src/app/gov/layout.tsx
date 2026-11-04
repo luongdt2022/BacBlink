@@ -187,14 +187,14 @@ function GovSidebarNav({
   };
 
   return (
-    <aside className="w-full shrink-0 border-r border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:w-80 flex flex-col justify-between h-full shadow-xs">
+    <aside className="w-full shrink-0 border-r border-slate-200 bg-white text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:w-72 flex flex-col justify-between h-full shadow-xs">
       {/* KHỐI TRÊN: HEADER + STATUS + TÌM KIẾM + NAV */}
       <div className="flex flex-col min-h-0 flex-1">
         {/* Header Tầng 1: Quản Trị Nhà Nước */}
-        <div className="p-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="p-3.5 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200 text-caption font-bold">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200 text-[11px] font-bold">
+              <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Tầng 1: Quản Trị Nhà Nước</span>
             </div>
             <div className="flex items-center gap-1">
@@ -202,7 +202,7 @@ function GovSidebarNav({
                 type="button"
                 onClick={toggleAllGroups}
                 title="Thu gọn / Mở rộng tất cả"
-                className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 p-1.5 rounded-lg transition"
+                className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 p-1 rounded-lg transition"
               >
                 <ChevronsUpDown className="w-3.5 h-3.5" />
               </button>
@@ -210,7 +210,7 @@ function GovSidebarNav({
                 <button
                   type="button"
                   onClick={onCloseMobile}
-                  className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                  className="lg:hidden p-1 rounded-lg hover:bg-slate-100 text-slate-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                   title="Đóng menu"
                 >
                   <X className="w-4 h-4" />
@@ -219,25 +219,25 @@ function GovSidebarNav({
             </div>
           </div>
 
-          <h3 className="font-bold text-slate-900 dark:text-white mt-2 text-card-title flex items-center justify-between gap-2">
+          <h3 className="font-bold text-slate-900 dark:text-white mt-1.5 text-sm flex items-center justify-between gap-2">
             <span className="truncate">{orgTitle}</span>
-            <span className="text-caption bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 font-bold shrink-0">
+            <span className="text-[10px] bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 font-bold shrink-0">
               {scopeCode}
             </span>
           </h3>
-          <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
             Cổng Công Vụ & Thẩm Định Địa Bàn
           </p>
 
           {/* Quick Menu Filter Input */}
-          <div className="relative mt-3">
+          <div className="relative mt-2.5">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm nhanh tác vụ (Hồ sơ, TT17, SLA...)"
-              className="form-control w-full pl-8 pr-7 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition"
+              className="form-control w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition"
             />
             {searchQuery && (
               <button
@@ -253,7 +253,7 @@ function GovSidebarNav({
         </div>
 
         {/* 4 NHÓM ACCORDION MENU (SCROLLABLE NỘI BỘ) */}
-        <nav className="p-3 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
+        <nav className="p-2.5 space-y-3 overflow-y-auto flex-1 scrollbar-thin">
           {filteredGroups.length === 0 ? (
             <div className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">
               <p>Không tìm thấy tác vụ phù hợp với &quot;{searchQuery}&quot;</p>
@@ -269,18 +269,18 @@ function GovSidebarNav({
             filteredGroups.map((group) => {
               const open = isGroupOpen(group.key);
               return (
-                <div key={group.key} className="space-y-1">
+                <div key={group.key} className="space-y-0.5">
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.key)}
-                    className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-caption font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 hover:bg-slate-100/70 dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800/50 transition group text-left"
+                    className="w-full flex items-center justify-between px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-700 hover:bg-slate-100/70 dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-800/50 transition group text-left"
                   >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
                       <span className="shrink-0 text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300 transition-transform duration-200">
                         {open ? (
-                          <ChevronDown className="w-3.5 h-3.5" />
+                          <ChevronDown className="w-3 h-3" />
                         ) : (
-                          <ChevronRight className="w-3.5 h-3.5" />
+                          <ChevronRight className="w-3 h-3" />
                         )}
                       </span>
                       <span className="truncate">{group.title}</span>
@@ -288,7 +288,7 @@ function GovSidebarNav({
                   </button>
 
                   {open && (
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       {group.items.map((item) => {
                         const Icon = item.icon;
                         const active = isLinkActive(item.href);
@@ -301,20 +301,20 @@ function GovSidebarNav({
                             onClick={() => {
                               if (onCloseMobile) onCloseMobile();
                             }}
-                            className={`focus-ring flex min-h-11 items-center gap-2.5 px-3 py-2 rounded-control text-label font-semibold transition ${
+                            className={`focus-ring flex min-h-9 items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
                               active
-                                ? "bg-brand-700 text-white shadow-sm shadow-brand-700/20"
-                                : "text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 hover:text-brand-700 dark:hover:text-white"
+                                ? "bg-brand-700 text-white shadow-xs font-semibold"
+                                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-brand-700 dark:hover:text-white"
                             }`}
                           >
                             <Icon
-                              className={`w-4 h-4 shrink-0 transition-colors ${
+                              className={`w-3.5 h-3.5 shrink-0 transition-colors ${
                                 active
                                   ? "text-white"
                                   : "text-slate-400 group-hover:text-brand-600 dark:text-slate-400 dark:group-hover:text-brand-400"
                               }`}
                             />
-                            <span className="truncate leading-normal">{item.label}</span>
+                            <span className="truncate leading-tight flex-1">{item.label}</span>
                           </Link>
                         );
                       })}
@@ -328,18 +328,18 @@ function GovSidebarNav({
       </div>
 
       {/* FOOTER CÁN BỘ SỞ & CHUẨN AN TOÀN */}
-      <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 shrink-0 space-y-2.5">
+      <div className="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 shrink-0 space-y-2">
         {/* User Card */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="w-8 h-8 rounded-full bg-brand-50 border border-brand-200 dark:bg-brand-950/60 dark:border-brand-800 flex items-center justify-center font-bold text-xs text-brand-700 dark:text-brand-300 shrink-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="w-7 h-7 rounded-full bg-brand-50 border border-brand-200 dark:bg-brand-950/60 dark:border-brand-800 flex items-center justify-center font-bold text-xs text-brand-700 dark:text-brand-300 shrink-0">
               {user?.fullName?.charAt(0) || "S"}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold truncate text-slate-900 dark:text-white">
                 {user?.fullName || "Cán bộ Sở KH&CN"}
               </p>
-              <p className="text-caption text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                 {userRoleDisplay}
               </p>
             </div>
@@ -351,24 +351,24 @@ function GovSidebarNav({
               authClient.clearSession();
               router.push("/login");
             }}
-            className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-rose-400 transition shrink-0"
+            className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-rose-400 transition shrink-0"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Security & Standard Badge */}
-        <div className="p-2.5 rounded-lg bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-700 text-slate-700 dark:text-slate-300 space-y-1 shadow-2xs">
-          <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between text-caption">
+        <div className="p-2 rounded-lg bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-700 text-slate-700 dark:text-slate-300 space-y-0.5 shadow-2xs">
+          <div className="font-bold text-slate-900 dark:text-white flex items-center justify-between text-[11px]">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>An Toàn TT: Cấp 3</span>
             </span>
-            <span className="text-caption bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono">
+            <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-mono">
               NĐ 85/2016
             </span>
           </div>
-          <p className="text-caption leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
             Cơ chế Maker-Checker 2 cấp · Lưu vết kiểm toán địa bàn
           </p>
         </div>
@@ -376,9 +376,9 @@ function GovSidebarNav({
         {/* Cổng Khám Phá Link */}
         <Link
           href="/"
-          className="flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-slate-100 hover:bg-slate-200/70 text-slate-700 hover:text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition duration-150"
+          className="flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/70 text-slate-700 hover:text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition duration-150"
         >
-          <ExternalLink className="w-3.5 h-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
+          <ExternalLink className="w-3 h-3 shrink-0 text-slate-500 dark:text-slate-400" />
           <span>Về Cổng Khám Phá Quốc Gia</span>
         </Link>
       </div>

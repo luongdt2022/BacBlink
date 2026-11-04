@@ -19,6 +19,8 @@ import {
   ExternalLink,
   Loader2,
   Sparkles,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import {
   Tt17Assessment,
@@ -26,6 +28,7 @@ import {
 } from "@/services/api/assessment-tt17";
 import {
   exportTt17SurveyDocx,
+  downloadDocxBlob,
 } from "@/services/survey-docx-exporter";
 import { PROVINCES_34 } from "@/lib/constants/provinces";
 import {
@@ -37,6 +40,206 @@ import {
 } from "@/components/assessments/tt17-survey-detail-view";
 import { Async, AsyncState } from "@/components/ui/async";
 import { AppButton } from "@/components/ui/design-system";
+
+function normalizeText(str: string): string {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .trim();
+}
+
+interface SearchableProvinceComboboxProps {
+  value: string;
+  onChange: (value: string) => void;
+  id?: string;
+}
+
+function SearchableProvinceCombobox({
+  value,
+  onChange,
+  id = "scope-filter",
+}: SearchableProvinceComboboxProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setQuery("");
+      setTimeout(() => searchInputRef.current?.focus(), 50);
+    }
+  }, [isOpen]);
+
+  const selectedProvince = useMemo(() => {
+    return PROVINCES_34.find((p) => p.code.toUpperCase() === value.toUpperCase()) || PROVINCES_34[0];
+  }, [value]);
+
+  const filteredList = useMemo(() => {
+    if (!query.trim()) return PROVINCES_34;
+    const qNorm = normalizeText(query);
+    const qRaw = query.toLowerCase().trim();
+    return PROVINCES_34.filter((p) => {
+      const nameNorm = normalizeText(p.name);
+      const codeNorm = p.code.toLowerCase();
+      return nameNorm.includes(qNorm) || p.name.toLowerCase().includes(qRaw) || codeNorm.includes(qRaw);
+    });
+  }, [query]);
+
+  const groupedProvinces = useMemo(() => {
+    const groups: { title: string; items: typeof PROVINCES_34 }[] = [
+      { title: "Toàn quốc", items: [] },
+      { title: "Miền Bắc (12 Tỉnh/Thành)", items: [] },
+      { title: "Miền Trung & Tây Nguyên (11 Tỉnh/Thành)", items: [] },
+      { title: "Miền Nam & Liên kết (11 Tỉnh/Thành)", items: [] },
+    ];
+    for (const p of filteredList) {
+      if (p.code === "ALL") {
+        groups[0].items.push(p);
+      } else if (p.region === "BAC") {
+        groups[1].items.push(p);
+      } else if (p.region === "TRUNG_TAY_NGUYEN") {
+        groups[2].items.push(p);
+      } else {
+        groups[3].items.push(p);
+      }
+    }
+    return groups.filter((g) => g.items.length > 0);
+  }, [filteredList]);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      {/* Hidden native select for test automation & accessibility */}
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        {PROVINCES_34.map((p) => (
+          <option key={p.code} value={p.code}>
+            {p.code === "ALL" ? "Toàn quốc (34 Tỉnh / Thành phố)" : `${p.name} (${p.code})`}
+          </option>
+        ))}
+      </select>
+
+      {/* Trigger Button: Exact h-10 balanced with other inputs */}
+      <button
+        type="button"
+        data-testid="province-combobox-trigger"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`h-10 w-full text-xs font-semibold px-3 bg-slate-50 dark:bg-slate-800 border rounded-xl flex items-center justify-between gap-1.5 transition text-left cursor-pointer ${
+          isOpen
+            ? "border-cyan-500 ring-2 ring-cyan-500/20 bg-white dark:bg-slate-900"
+            : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+        }`}
+      >
+        <span className="truncate text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+          <MapPin className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+          <span className="truncate">
+            {selectedProvince.code === "ALL"
+              ? "Toàn quốc (34 Tỉnh / Thành phố)"
+              : `${selectedProvince.name} (${selectedProvince.code})`}
+          </span>
+        </span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-150 ${
+            isOpen ? "rotate-180 text-cyan-600 dark:text-cyan-400" : ""
+          }`}
+        />
+      </button>
+
+      {/* Dropdown Popover */}
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 w-full min-w-[280px] sm:min-w-[320px] rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+          {/* Search box inside dropdown */}
+          <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60">
+            <div className="relative flex items-center">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tìm tỉnh thành (nhập tên hoặc mã)..."
+                className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    searchInputRef.current?.focus();
+                  }}
+                  className="absolute right-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* List items */}
+          <div className="max-h-60 overflow-y-auto p-1 divide-y divide-slate-100/60 dark:divide-slate-800/60 text-xs">
+            {groupedProvinces.length === 0 ? (
+              <div className="py-6 px-3 text-center text-xs text-slate-400">
+                Không tìm thấy tỉnh/thành nào khớp với &quot;{query}&quot;
+              </div>
+            ) : (
+              groupedProvinces.map((group) => (
+                <div key={group.title} className="py-1">
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {group.title}
+                  </div>
+                  {group.items.map((p) => {
+                    const isSelected = p.code.toUpperCase() === value.toUpperCase();
+                    return (
+                      <button
+                        key={p.code}
+                        type="button"
+                        onClick={() => {
+                          onChange(p.code);
+                          setIsOpen(false);
+                        }}
+                        className={`w-full px-2.5 py-1.5 rounded-lg text-left text-xs flex items-center justify-between gap-2 transition cursor-pointer ${
+                          isSelected
+                            ? "bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 font-bold"
+                            : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <span className="truncate">
+                          {p.code === "ALL" ? p.name : `${p.name} (${p.code})`}
+                        </span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminAssessmentRecordsPage() {
   const [assessments, setAssessments] = useState<Tt17Assessment[]>([]);
@@ -81,27 +284,33 @@ export default function AdminAssessmentRecordsPage() {
   // Bộ lọc tổng hợp
   const filteredRecords = useMemo(() => {
     return assessments.filter((item) => {
-      // 1. Lọc loại phiếu
-      if (surveyTypeFilter === "SME_DEMAND") {
-        // Queue hiện tại từ API TT17 không chứa SME demand thuần túy
+      // 1. Lọc Tỉnh thành
+      if (scopeFilter !== "ALL") {
+        const itemProv = (item.scopeId || (item as any).province || (item.surveyData as any)?.province || "").toUpperCase();
+        if (itemProv !== scopeFilter.toUpperCase()) return false;
+      }
+
+      // 2. Lọc loại phiếu
+      if (surveyTypeFilter === "SME_DEMAND" || surveyTypeFilter === "INNOVATION") {
+        // Queue hiện tại từ API TT17 không chứa SME demand hoặc Innovation thuần túy
         return false;
       }
 
-      // 2. Lọc Xếp loại TT17
+      // 3. Lọc Xếp loại / Phân tầng
       if (classificationFilter !== "ALL") {
         const cls = (item.scoreResult?.classification || item.scoreResult?.classificationLabel || "").toUpperCase();
-        if (classificationFilter === "TIEN_TIEN") {
+        if (classificationFilter === "TIEN_TIEN" || classificationFilter === "LEADING") {
           if (cls !== "TIEN_TIEN" && cls !== "TRUNG_BINH_TIEN_TIEN") return false;
-        } else if (classificationFilter === "KHA") {
+        } else if (classificationFilter === "KHA" || classificationFilter === "DEVELOPING") {
           if (cls !== "KHA" && cls !== "TRUNG_BINH_TIEN_TIEN") return false;
-        } else if (classificationFilter === "TRUNG_BINH") {
+        } else if (classificationFilter === "TRUNG_BINH" || classificationFilter === "POTENTIAL") {
           if (cls !== "TRUNG_BINH") return false;
-        } else if (classificationFilter === "LAC_HAU") {
+        } else if (classificationFilter === "LAC_HAU" || classificationFilter === "UNRATED") {
           if (cls !== "LAC_HAU") return false;
         }
       }
 
-      // 3. Tìm kiếm Tên DN hoặc MST
+      // 4. Tìm kiếm Tên DN hoặc MST
       if (searchTerm.trim()) {
         const term = searchTerm.trim().toLowerCase();
         const matchName = (item.enterpriseName || item.surveyData?.companyName || "").toLowerCase().includes(term);
@@ -112,7 +321,7 @@ export default function AdminAssessmentRecordsPage() {
 
       return true;
     });
-  }, [assessments, surveyTypeFilter, classificationFilter, searchTerm]);
+  }, [assessments, scopeFilter, surveyTypeFilter, classificationFilter, searchTerm]);
 
   // Phân trang
   const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
@@ -134,18 +343,20 @@ export default function AdminAssessmentRecordsPage() {
     try {
       setIsExportingId(assessment.id);
       const blob = await exportTt17SurveyDocx(assessment);
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      const safeTax = assessment.taxCode || assessment.surveyData?.taxCode || "MST";
+      const safeTax = (assessment.taxCode || assessment.surveyData?.taxCode || "MST").replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_"
+      );
       const safeName = (assessment.enterpriseName || assessment.surveyData?.companyName || "DN")
-        .replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9-]/g, "_")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_|_$/g, "")
         .substring(0, 30);
-      link.download = `Phieu_TT17_${safeTax}_${safeName}.docx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      downloadDocxBlob(blob, `Phieu_TT17_${safeTax}_${safeName || "DN"}.docx`);
     } catch (err) {
       console.error("Lỗi khi xuất văn bản DOCX:", err);
       alert("Đã xảy ra lỗi khi tạo file Word (.docx). Vui lòng thử lại!");
@@ -181,23 +392,34 @@ export default function AdminAssessmentRecordsPage() {
             </p>
           </div>
 
-          {/* 2 Nút CTA tải template trắng */}
+          {/* 3 Nút CTA tải template trắng */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <a
-              href="/templates/surveys/phieu_thu_thap_tt17_mau_trang.docx"
-              download="phieu_thu_thap_tt17_mau_trang.docx"
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold transition shadow-xs hover:shadow"
+              href="/templates/surveys/phieu_thu_thap_tt17.docx"
+              download="phieu_thu_thap_tt17.docx"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold transition shadow-xs hover:shadow"
+              title="Mẫu phiếu thu thập số liệu đánh giá trình độ và năng lực công nghệ sản xuất (TT17/2019/TT-BKHCN)"
             >
               <Download className="w-4 h-4 shrink-0" />
-              <span>Tải mẫu Phiếu TT17 (.docx)</span>
+              <span>Tải mẫu Đánh giá TT17 (.docx)</span>
+            </a>
+            <a
+              href="/templates/surveys/phieu_khao_sat_dmst_43_cau_mau_trang.docx"
+              download="phieu_khao_sat_dmst_43_cau_mau_trang.docx"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition shadow-xs hover:shadow"
+              title="Mẫu phiếu khảo sát & đánh giá năng lực đổi mới sáng tạo doanh nghiệp (43 câu hỏi / 8 nhóm năng lực)"
+            >
+              <Download className="w-4 h-4 shrink-0" />
+              <span>Tải mẫu Khảo sát ĐMST (.docx)</span>
             </a>
             <a
               href="/templates/surveys/phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx"
               download="phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx"
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition shadow-xs hover:shadow"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition shadow-xs hover:shadow"
+              title="Mẫu phiếu khảo sát hiện trạng & nhu cầu công nghệ DNNVV (Tính toán chỉ số TNI)"
             >
               <Download className="w-4 h-4 shrink-0" />
-              <span>Tải mẫu Phiếu Nhu cầu (.docx)</span>
+              <span>Tải mẫu Nhu cầu DNNVV (.docx)</span>
             </a>
           </div>
         </div>
@@ -222,37 +444,30 @@ export default function AdminAssessmentRecordsPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Lọc Tỉnh/Thành 34 tỉnh */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+          {/* 1. Lọc Tỉnh thành (Searchable Combobox) */}
           <div>
             <label
               htmlFor="scope-filter"
-              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1"
+              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5 h-4 flex items-center truncate"
             >
-              Địa bàn 34 Tỉnh/Thành
+              Tỉnh thành
             </label>
-            <select
+            <SearchableProvinceCombobox
               id="scope-filter"
               value={scopeFilter}
-              onChange={(e) => {
-                setScopeFilter(e.target.value);
+              onChange={(val) => {
+                setScopeFilter(val);
                 setCurrentPage(1);
               }}
-              className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-            >
-              {PROVINCES_34.map((p) => (
-                <option key={p.code} value={p.code}>
-                  {p.code === "ALL" ? "Toàn quốc (34 Tỉnh / Thành phố)" : `${p.name} (${p.code})`}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
-          {/* Lọc Loại phiếu */}
+          {/* 2. Lọc Loại phiếu */}
           <div>
             <label
               htmlFor="survey-type-filter"
-              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1"
+              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5 h-4 flex items-center truncate"
             >
               Loại phiếu khảo sát
             </label>
@@ -261,23 +476,31 @@ export default function AdminAssessmentRecordsPage() {
               value={surveyTypeFilter}
               onChange={(e) => {
                 setSurveyTypeFilter(e.target.value);
+                setClassificationFilter("ALL");
                 setCurrentPage(1);
               }}
-              className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+              className="h-10 w-full text-xs font-semibold px-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none cursor-pointer"
             >
-              <option value="ALL">Tất cả loại phiếu</option>
+              <option value="ALL">Tất cả loại phiếu (3 loại)</option>
               <option value="TT17">Phiếu TT17 (Công nghệ sản xuất)</option>
+              <option value="INNOVATION">Phiếu ĐMST (43 câu hỏi ĐMST)</option>
               <option value="SME_DEMAND">Phiếu Nhu cầu ĐMST (DNNVV)</option>
             </select>
           </div>
 
-          {/* Lọc Xếp loại TT17 */}
+          {/* 3. Lọc Xếp loại / Phân tầng động theo loại phiếu */}
           <div>
             <label
               htmlFor="classification-filter"
-              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1"
+              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5 h-4 flex items-center truncate"
             >
-              Xếp loại trình độ TT17
+              {surveyTypeFilter === "INNOVATION"
+                ? "Phân tầng năng lực ĐMST"
+                : surveyTypeFilter === "SME_DEMAND"
+                ? "Mức độ cấp thiết TNI"
+                : surveyTypeFilter === "TT17"
+                ? "Xếp loại trình độ TT17"
+                : "Phân loại / Xếp loại"}
             </label>
             <select
               id="classification-filter"
@@ -286,25 +509,53 @@ export default function AdminAssessmentRecordsPage() {
                 setClassificationFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full text-xs font-semibold px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+              className="h-10 w-full text-xs font-semibold px-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none cursor-pointer"
             >
-              <option value="ALL">Tất cả xếp loại</option>
-              <option value="TIEN_TIEN">Tiên tiến (≥ 75đ & T_ĐB ≥ 0.75)</option>
-              <option value="KHA">Khá / TB Tiên tiến (60–74đ)</option>
-              <option value="TRUNG_BINH">Trung bình (50–59đ)</option>
-              <option value="LAC_HAU">Lạc hậu (&lt; 50đ)</option>
+              {surveyTypeFilter === "INNOVATION" ? (
+                <>
+                  <option value="ALL">Tất cả phân tầng</option>
+                  <option value="LEADING">Dẫn đầu (Leading - ≥ 75đ)</option>
+                  <option value="DEVELOPING">Đang phát triển (Developing - 50–74đ)</option>
+                  <option value="POTENTIAL">Tiềm năng (Potential - &lt; 50đ)</option>
+                  <option value="UNRATED">Chưa đánh giá (Unrated)</option>
+                </>
+              ) : surveyTypeFilter === "SME_DEMAND" ? (
+                <>
+                  <option value="ALL">Tất cả mức độ</option>
+                  <option value="VERY_HIGH">Rất cao (TNI ≥ 75)</option>
+                  <option value="HIGH">Cao (TNI 60–74)</option>
+                  <option value="MEDIUM">Trung bình (TNI 45–59)</option>
+                  <option value="LOW">Thấp (TNI &lt; 45)</option>
+                </>
+              ) : surveyTypeFilter === "TT17" ? (
+                <>
+                  <option value="ALL">Tất cả xếp loại</option>
+                  <option value="TIEN_TIEN">Tiên tiến (≥ 75đ & T_ĐB ≥ 0.75)</option>
+                  <option value="KHA">Khá / TB Tiên tiến (60–74đ)</option>
+                  <option value="TRUNG_BINH">Trung bình (50–59đ)</option>
+                  <option value="LAC_HAU">Lạc hậu (&lt; 50đ)</option>
+                </>
+              ) : (
+                <>
+                  <option value="ALL">Tất cả phân loại</option>
+                  <option value="TIEN_TIEN">Tiên tiến / Dẫn đầu (≥ 75đ)</option>
+                  <option value="KHA">Khá / Đang phát triển (50–74đ)</option>
+                  <option value="TRUNG_BINH">Trung bình / Tiềm năng</option>
+                  <option value="LAC_HAU">Lạc hậu / Thấp (&lt; 50đ)</option>
+                </>
+              )}
             </select>
           </div>
 
-          {/* Ô Input tìm kiếm theo Tên DN / MST */}
+          {/* 4. Ô Input tìm kiếm theo Tên DN / MST */}
           <div>
             <label
               htmlFor="search-input"
-              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1"
+              className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5 h-4 flex items-center truncate"
             >
               Tìm theo Tên DN / Mã số thuế
             </label>
-            <div className="relative">
+            <div className="relative h-10 w-full">
               <input
                 id="search-input"
                 type="text"
@@ -314,14 +565,18 @@ export default function AdminAssessmentRecordsPage() {
                   setCurrentPage(1);
                 }}
                 placeholder="Nhập tên DN hoặc MST..."
-                className="w-full text-xs font-semibold pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none placeholder:text-slate-400"
+                className="h-10 w-full text-xs font-semibold pl-8 pr-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none placeholder:text-slate-400"
               />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               {searchTerm && (
                 <button
                   type="button"
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setCurrentPage(1);
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                  title="Xóa tìm kiếm"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>

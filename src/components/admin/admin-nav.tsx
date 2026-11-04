@@ -9,7 +9,8 @@ import {
   Network,
   Layers,
   ArrowLeft,
-  Workflow
+  Workflow,
+  Users
 } from "lucide-react";
 
 export function AdminNav() {
@@ -21,6 +22,12 @@ export function AdminNav() {
       label: "Hàng Đợi Thẩm Định",
       icon: ClipboardCheck,
       badge: "5 Luồng",
+    },
+    {
+      href: "/admin/users",
+      label: "Quản Lý Người Dùng",
+      icon: Users,
+      badge: "Toàn quốc",
     },
     {
       href: "/admin/roles",

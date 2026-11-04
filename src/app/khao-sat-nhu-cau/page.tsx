@@ -33,6 +33,7 @@ import {
 import { useToast } from '@/components/common/toast';
 import TniRealtimeCalculator, { TniValues } from '@/components/demand/TniRealtimeCalculator';
 import SearchableCombobox from '@/components/ui/searchable-combobox';
+import { TouchSignatureField } from '@/components/ui/signature-pad-modal';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
 import { lookupTaxCode, fetchMyEnterpriseProfile, updateMyEnterpriseProfile } from '@/lib/enterprise-client';
 import { getStoredSession } from '@/lib/auth-client';
@@ -186,6 +187,8 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
   const [confirmName, setConfirmName] = useState('');
   const [confirmPosition, setConfirmPosition] = useState('');
   const [confirmDate, setConfirmDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [signatureData, setSignatureData] = useState<string>('');
+  const [signatureError, setSignatureError] = useState<string>('');
   const [pdpdConsent, setPdpdConsent] = useState(false);
 
   // -------------------------------------------------------------
@@ -229,6 +232,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
         if (d.supportRatings) setSupportRatings(d.supportRatings);
         if (d.confirmName) setConfirmName(d.confirmName);
         if (d.confirmPosition) setConfirmPosition(d.confirmPosition);
+        if (d.signatureData) setSignatureData(d.signatureData);
         toast.info('Đã khôi phục dữ liệu bản nháp từ phiên làm việc trước.', 'Khôi phục bản nháp');
       }
     } catch {
@@ -349,7 +353,8 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
         partnersSelected,
         supportRatings,
         confirmName,
-        confirmPosition
+        confirmPosition,
+        signatureData
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
       toast.success('Đã lưu bản nháp khảo sát vào trình duyệt.', 'Lưu thành công');
@@ -431,6 +436,8 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
     setConfirmName('');
     setConfirmPosition('');
     setConfirmDate(new Date().toISOString().slice(0, 10));
+    setSignatureData('');
+    setSignatureError('');
     setPdpdConsent(false);
     toast.info('Đã xóa dữ liệu bản nháp và làm mới toàn bộ biểu mẫu.', 'Đã làm mới');
   };
@@ -540,6 +547,8 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
     });
     setConfirmName('Nguyễn Văn Tuấn');
     setConfirmPosition('Phó Giám đốc Kỹ thuật');
+    setSignatureData('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+    setSignatureError('');
     setPdpdConsent(true);
     toast.success('Đã nạp bộ dữ liệu thử nghiệm chuẩn doanh nghiệp cơ khí.', 'Nạp dữ liệu mẫu');
   };
@@ -685,6 +694,19 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
         toast.error('Vui lòng tích chọn đồng ý cam kết xử lý dữ liệu PDPD để hoàn tất.', 'Cam kết bảo mật');
         return false;
       }
+      if (!signatureData || !signatureData.trim()) {
+        setSignatureError('Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!');
+        toast.error('Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!', 'Chưa ký xác nhận');
+        if (typeof window !== 'undefined') {
+          setTimeout(() => {
+            const el = document.getElementById('signature-trigger-box');
+            if (el && typeof el.scrollIntoView === 'function') {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        }
+        return false;
+      }
     }
     return true;
   };
@@ -738,6 +760,8 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
         topBottlenecks: selectedBottlenecks,
         confirmedByName: confirmName,
         confirmedByTitle: confirmPosition,
+        signatureDataUrl: signatureData,
+        representativeSignatureUrl: signatureData,
         pdpdConsentAt: new Date().toISOString(),
 
         currentEquipments: equipments.map(e => ({
@@ -927,6 +951,26 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                 ))}
               </div>
             </div>
+            {signatureData && (
+              <div className="text-xs pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <span className="text-slate-500 dark:text-slate-400 font-semibold block mb-0.5">
+                    Đại diện xác nhận đã ký điện tử:
+                  </span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                    {confirmName} {confirmPosition ? `(${confirmPosition})` : ''}
+                  </span>
+                </div>
+                <div className="bg-white rounded-lg p-1.5 border border-slate-200 dark:border-slate-700 shadow-sm max-h-14 flex items-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={signatureData}
+                    alt="Chữ ký điện tử người đại diện"
+                    className="max-h-10 max-w-[140px] object-contain"
+                  />
+                </div>
+              </div>
+            )}
             <div className="text-caption text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Dữ liệu đã được mã hóa PII theo Nghị định 13/2023/NĐ-CP và chuyển Cổng Thẩm định Sở KH&CN.</span>
@@ -990,6 +1034,15 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                 </Link>
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') window.print();
+              }}
+              className="border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <FileText className="w-4 h-4 text-brand-600 dark:text-cyan-400" /> In phiếu tiếp nhận
+            </button>
             <button
               onClick={() => {
                 setSubmitResult(null);
@@ -1085,10 +1138,10 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
           <div className="flex items-center justify-between mb-2 text-xs font-bold">
             <span className="text-brand-700 dark:text-cyan-400">
               Bước {currentStep}/4: {[
-                'E. Nhu Cầu & Thuật Toán TNI (Bắt buộc)',
-                'A. Thông Tin Doanh Nghiệp (Bắt buộc)',
+                'Nhu Cầu & Thuật Toán TNI (Bắt buộc)',
+                'Thông Tin Doanh Nghiệp (Bắt buộc)',
                 'Thông Tin Bổ Sung / Hiện Trạng & Năng Lực (Tùy chọn)',
-                'G. Rà Soát & Xác Nhận PDPD'
+                'Rà Soát & Xác Nhận PDPD'
               ][currentStep - 1]}
             </span>
             <span className="text-slate-500">
@@ -1106,10 +1159,10 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
           {/* Stepper Buttons (Responsive Horizontal Scroll) */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
             {[
-              { num: 1, label: 'E. Nhu Cầu & TNI' },
-              { num: 2, label: 'A. Doanh Nghiệp' },
+              { num: 1, label: 'Nhu Cầu & TNI' },
+              { num: 2, label: 'Doanh Nghiệp' },
               { num: 3, label: 'Thông Tin Bổ Sung' },
-              { num: 4, label: 'G. Xác Nhận' }
+              { num: 4, label: 'Xác Nhận' }
             ].map((step) => {
               const isCurrent = currentStep === step.num;
               return (
@@ -1153,7 +1206,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                   <div>
                     <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                      PHẦN E.1 (BƯỚC 1) • DEMAND TICKETS & TNI ENGINE
+                      BƯỚC 1.1 • DEMAND TICKETS & TNI ENGINE
                     </span>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                       Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết ({demandItems.length} Bài toán)
@@ -1434,7 +1487,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
               <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN E.2 (BƯỚC 1) • NGUỒN VỐN & HÌNH THỨC (TÙY CHỌN)
+                    BƯỚC 1.2 • NGUỒN VỐN & HÌNH THỨC (TÙY CHỌN)
                   </span>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                     Phương Thức Tiếp Nhận & Cơ Cấu Vốn Dự Kiến
@@ -1506,7 +1559,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
               <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                    PHẦN A (BƯỚC 2) • THÔNG TIN CHUNG
+                    BƯỚC 2 • THÔNG TIN CHUNG
                   </span>
                   <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                     Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất
@@ -2476,7 +2529,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between">
                   <div>
                     <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
-                      PHẦN G (BƯỚC 4) • RÀ SOÁT TỔNG THỂ
+                      BƯỚC 4 • RÀ SOÁT TỔNG THỂ
                     </span>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
                       Bản Tóm Tắt Phiếu Khảo Sát Nhu Cầu DNNVV
@@ -2572,6 +2625,21 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                       className="form-control w-full px-3 py-2 text-xs"
                     />
                   </div>
+                </div>
+
+                {/* KHUNG KÝ TAY CẢM ỨNG ĐIỆN TỬ (BR-SIG-01 / REQ-SIG-01) */}
+                <div className="pt-2">
+                  <TouchSignatureField
+                    id="signature-trigger-box"
+                    value={signatureData}
+                    onChange={(val) => {
+                      setSignatureData(val);
+                      if (val) setSignatureError('');
+                    }}
+                    errorMessage={signatureError}
+                    required
+                    label="Chữ ký điện tử của người đại diện xác nhận"
+                  />
                 </div>
 
                 {/* CHECKBOX CAM KẾT PDPD BẮT BUỘC (BR-Delta-05) */}

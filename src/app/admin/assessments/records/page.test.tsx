@@ -25,7 +25,7 @@ vi.mock("@/services/survey-docx-exporter", async () => {
 global.URL.createObjectURL = vi.fn(() => "blob:http://localhost/test-blob-url");
 global.URL.revokeObjectURL = vi.fn();
 
-describe("T-09.24 [FE] AdminAssessmentRecordsPage — Quản Lý Bản Ghi Phiếu Thu Thập & Đánh Giá", () => {
+describe("CR-2026-026 AdminAssessmentRecordsPage — Bộ Tam Hợp 3 Phiếu Khảo Sát & Đánh Giá Thực Địa", () => {
   const mockAssessments: assessmentApi.Tt17Assessment[] = [
     {
       id: "tt17-rec-001",
@@ -129,26 +129,79 @@ describe("T-09.24 [FE] AdminAssessmentRecordsPage — Quản Lý Bản Ghi Phi�
     cleanup();
   });
 
-  it("renders Header, title, and 2 CTA buttons with correct download templates", async () => {
+  it("renders Header, title, and exactly 3 CTA download buttons for the Triad Surveys", async () => {
     render(<AdminAssessmentRecordsPage />);
 
     expect(
       screen.getByText("Quản Lý Bản Ghi Phiếu Thu Thập & Đánh Giá Doanh Nghiệp")
     ).toBeInTheDocument();
 
-    const tt17TemplateBtn = screen.getByRole("link", { name: /Tải mẫu Phiếu TT17/i });
+    // 1. Nút Tải mẫu TT17
+    const tt17TemplateBtn = screen.getByRole("link", { name: /Tải mẫu Đánh giá TT17/i });
     expect(tt17TemplateBtn).toBeInTheDocument();
     expect(tt17TemplateBtn).toHaveAttribute(
       "href",
-      "/templates/surveys/phieu_thu_thap_tt17_mau_trang.docx"
+      "/templates/surveys/phieu_thu_thap_tt17.docx"
+    );
+    expect(tt17TemplateBtn).toHaveAttribute(
+      "download",
+      "phieu_thu_thap_tt17.docx"
     );
 
-    const demandTemplateBtn = screen.getByRole("link", { name: /Tải mẫu Phiếu Nhu cầu/i });
+    // 2. Nút Tải mẫu Khảo sát ĐMST 43 câu (CR-2026-026)
+    const dmstTemplateBtn = screen.getByRole("link", { name: /Tải mẫu Khảo sát ĐMST/i });
+    expect(dmstTemplateBtn).toBeInTheDocument();
+    expect(dmstTemplateBtn).toHaveAttribute(
+      "href",
+      "/templates/surveys/phieu_khao_sat_dmst_43_cau_mau_trang.docx"
+    );
+    expect(dmstTemplateBtn).toHaveAttribute(
+      "download",
+      "phieu_khao_sat_dmst_43_cau_mau_trang.docx"
+    );
+
+    // 3. Nút Tải mẫu Nhu cầu DNNVV
+    const demandTemplateBtn = screen.getByRole("link", { name: /Tải mẫu Nhu cầu DNNVV/i });
     expect(demandTemplateBtn).toBeInTheDocument();
     expect(demandTemplateBtn).toHaveAttribute(
       "href",
       "/templates/surveys/phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx"
     );
+    expect(demandTemplateBtn).toHaveAttribute(
+      "download",
+      "phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx"
+    );
+  });
+
+  it("supports dynamic context filtering when switching survey type", async () => {
+    render(<AdminAssessmentRecordsPage />);
+
+    const surveyTypeSelect = screen.getByLabelText(/Loại phiếu khảo sát/i);
+    expect(surveyTypeSelect).toBeInTheDocument();
+
+    // Verify 4 options exist
+    expect(screen.getByRole("option", { name: /Tất cả loại phiếu \(3 loại\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Phiếu TT17 \(Công nghệ sản xuất\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Phiếu ĐMST \(43 câu hỏi ĐMST\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Phiếu Nhu cầu ĐMST \(DNNVV\)/i })).toBeInTheDocument();
+
+    // Default label: "Phân loại / Xếp loại"
+    expect(screen.getByText("Phân loại / Xếp loại")).toBeInTheDocument();
+
+    // Switch to TT17 -> Label changes to "Xếp loại trình độ TT17"
+    fireEvent.change(surveyTypeSelect, { target: { value: "TT17" } });
+    expect(screen.getByText("Xếp loại trình độ TT17")).toBeInTheDocument();
+
+    // Switch to INNOVATION -> Label changes to "Phân tầng năng lực ĐMST"
+    fireEvent.change(surveyTypeSelect, { target: { value: "INNOVATION" } });
+    expect(screen.getByText("Phân tầng năng lực ĐMST")).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Dẫn đầu \(Leading - ≥ 75đ\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Đang phát triển \(Developing - 50–74đ\)/i })).toBeInTheDocument();
+
+    // Switch to SME_DEMAND -> Label changes to "Mức độ cấp thiết TNI"
+    fireEvent.change(surveyTypeSelect, { target: { value: "SME_DEMAND" } });
+    expect(screen.getByText("Mức độ cấp thiết TNI")).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Rất cao \(TNI ≥ 75\)/i })).toBeInTheDocument();
   });
 
   it("loads and displays list of records with 5 UX states discipline", async () => {
@@ -217,7 +270,10 @@ describe("T-09.24 [FE] AdminAssessmentRecordsPage — Quản Lý Bản Ghi Phi�
       expect(screen.getByText("Công ty Cơ Khí Chế Tạo Tiền Giang")).toBeInTheDocument();
     });
 
-    // Filter by TIEN_TIEN
+    // Switch to TT17 and filter by TIEN_TIEN
+    const surveyTypeSelect = screen.getByLabelText(/Loại phiếu khảo sát/i);
+    fireEvent.change(surveyTypeSelect, { target: { value: "TT17" } });
+
     const classSelect = screen.getByLabelText(/Xếp loại trình độ TT17/i);
     fireEvent.change(classSelect, { target: { value: "TIEN_TIEN" } });
 

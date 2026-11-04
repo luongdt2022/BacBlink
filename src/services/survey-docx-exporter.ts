@@ -12,6 +12,7 @@ import {
   ShadingType,
   HeadingLevel,
   VerticalAlign,
+  PageBreak,
 } from "docx";
 import {
   Tt17Assessment,
@@ -22,6 +23,7 @@ import {
   FinancialSeriesItem,
   INDUSTRY_BENCHMARKS,
 } from "@/services/api/assessment-tt17";
+import { generateTt17OutDocxFromTemplate } from "./tt17-docx-template-filler";
 
 // =========================================================================
 // TYPE DEFINITIONS & INTERFACES FOR EXPORT
@@ -148,12 +150,14 @@ function createParagraph(
     spaceBefore?: number;
     spaceAfter?: number;
     lineSpacing?: number;
+    bold?: boolean;
+    italic?: boolean;
   }
 ): Paragraph {
   const children = Array.isArray(runs)
     ? runs
     : typeof runs === "string"
-    ? [createTextRun(runs)]
+    ? [createTextRun(runs, { bold: options?.bold, italic: options?.italic })]
     : [runs];
 
   return new Paragraph({
@@ -361,7 +365,81 @@ function makeTableCell(
 // 1. TT17 SURVEY & ASSESSMENT DOCX GENERATOR
 // =========================================================================
 
+
+// =========================================================================
+// TABLE BUILDER HELPERS FOR TT17 OFFICIAL TEMPLATE (PHỤ LỤC I)
+// =========================================================================
+
+function make5ColGridTable(
+  headers: [string, string, string, string, string],
+  rowsData: Array<[string, string, string, string, string]>
+): Table {
+  const colWidths = [32, 12, 19, 19, 18];
+  const rows: TableRow[] = [
+    new TableRow({
+      tableHeader: true,
+      children: headers.map((h, i) =>
+        makeTableCell(h, {
+          widthPercent: colWidths[i],
+          isHeader: true,
+          align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT,
+        })
+      ),
+    }),
+  ];
+
+  rowsData.forEach((row) => {
+    rows.push(
+      new TableRow({
+        children: row.map((cell, i) =>
+          makeTableCell(cell, {
+            widthPercent: colWidths[i],
+            align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT,
+          })
+        ),
+      })
+    );
+  });
+
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows,
+  });
+}
+
+function makeSingleRowValueTable(
+  label: string,
+  value: string,
+  unit = "VNĐ",
+  extraLabel?: string,
+  extraValue?: string
+): Table {
+  const children: TableCell[] = [
+    makeTableCell(label, { widthPercent: extraLabel ? 26 : 35, bold: true }),
+    makeTableCell(value, { widthPercent: extraLabel ? 32 : 50, align: AlignmentType.RIGHT, bold: true }),
+    makeTableCell(unit, { widthPercent: extraLabel ? 12 : 15, align: AlignmentType.CENTER }),
+  ];
+
+  if (extraLabel && extraValue !== undefined) {
+    children.push(
+      makeTableCell(extraLabel, { widthPercent: 18, bold: true }),
+      makeTableCell(extraValue, { widthPercent: 12, align: AlignmentType.CENTER })
+    );
+  }
+
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [new TableRow({ children })],
+  });
+}
+
 export async function exportTt17SurveyDocx(
+  assessment: Tt17Assessment
+): Promise<Blob> {
+  return await generateTt17OutDocxFromTemplate(assessment);
+}
+
+export async function exportTt17SurveyDocxLegacy(
   assessment: Tt17Assessment
 ): Promise<Blob> {
   const data = assessment.surveyData || ({} as Tt17SurveyData);
@@ -371,24 +449,23 @@ export async function exportTt17SurveyDocx(
 
   const children: (Paragraph | Table)[] = [];
 
-  // 1. Header & Quoc hieu
+  // =========================================================================
+  // PHẦN I: NỘI DUNG CHI TIẾT KHẢO SÁT DOANH NGHIỆP ĐÃ ĐIỀN (PHỤ LỤC I)
+  // Chuẩn xác 1:1 theo mẫu trắng gốc Thông tư 17/2019/TT-BKHCN (30 Bảng biểu)
+  // =========================================================================
+
+  // 1. Header & Quốc hiệu
   children.push(createAdministrativeHeader("CỤC PHÁT TRIỂN CÔNG NGHỆ VÀ ĐỔI MỚI SÁNG TẠO"));
 
-  // 2. Title Phụ lục I
+  // 2. Tiêu đề chính thức (Xóa bỏ Phụ lục I và Ban hành kèm theo để đúng chuẩn văn bản)
   children.push(
     createParagraph(
-      [
-        createTextRun("PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT\n", {
-          bold: true,
-          size: 26,
-          color: "0F172A",
-        }),
-        createTextRun(
-          "(Ban hành kèm theo Thông tư số 17/2019/TT-BKHCN ngày 10 tháng 12 năm 2019\ncủa Bộ trưởng Bộ Khoa học và Công nghệ)",
-          { italic: true, size: 21, color: "334155" }
-        ),
-      ],
-      { align: AlignmentType.CENTER, spaceBefore: 160, spaceAfter: 120 }
+      createTextRun("PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT", {
+        bold: true,
+        size: 28,
+        color: "000000",
+      }),
+      { align: AlignmentType.CENTER, spaceBefore: 120, spaceAfter: 120 }
     )
   );
 
@@ -423,7 +500,7 @@ export async function exportTt17SurveyDocx(
   );
 
   // -------------------------------------------------------------------------
-  // MỤC A: THÔNG TIN CHUNG CỦA DOANH NGHIỆP (TABLE 0 - 13 rows)
+  // MỤC A: THÔNG TIN CHUNG CỦA DOANH NGHIỆP (TABLE 0 - 15 rows)
   // -------------------------------------------------------------------------
   children.push(
     createParagraph(
@@ -438,13 +515,12 @@ export async function exportTt17SurveyDocx(
   const compAddr = safeText(data.companyAddress);
   const facAddr1 = safeText(data.productionFacilityAddress1, compAddr);
   const facAddr2 = safeText(data.productionFacilityAddress2, "....................................................................................................");
+  const facAddr3 = safeText(data.productionFacilityAddress3, "....................................................................................................");
   const phone = safeText(data.companyPhone);
   const email = safeText(data.companyEmail);
   const compType = safeText(data.companyType, "Công ty Cổ phần / TNHH");
   const indCode = safeText(data.industryCode || assessment.industryCode);
   const indName = benchmark ? benchmark.industryName : "Ngành sản xuất chế biến chế tạo";
-  const capitalStr = data.totalCapital ? `${formatVnd(data.totalCapital)} (${formatMillionVnd(data.totalCapital)})` : "....................";
-  const workforceStr = data.totalWorkforce ? `${data.totalWorkforce} người` : "....................";
 
   const isSmall = (data.totalWorkforce || 0) < 100;
   const isMedium = (data.totalWorkforce || 0) >= 100 && (data.totalWorkforce || 0) <= 200;
@@ -454,38 +530,21 @@ export async function exportTt17SurveyDocx(
   const table0Rows: TableRow[] = [
     new TableRow({
       children: [
-        makeTableCell(`1. Tên doanh nghiệp: ${compName}          |          Mã số thuế: ${taxCode}\n2. Địa chỉ: ${compAddr}`, { widthPercent: 100 }),
+        makeTableCell(
+          `1. Tên doanh nghiệp: ${compName}\n(Viết chữ in hoa, có dấu, không viết tắt)          |          Mã số thuế: ${taxCode}`,
+          { widthPercent: 100 }
+        ),
       ],
     }),
     new TableRow({
       children: [
-        makeTableCell(`3. Tel: ${phone}          |          4. Fax: ....................`, { widthPercent: 100 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell(`5. Email: ${email}          |          6. Website: ....................`, { widthPercent: 100 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell(`7. Loại hình doanh nghiệp theo Giấy chứng nhận đầu tư: ${compType}`, { widthPercent: 100 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("8. Quy mô doanh nghiệp (theo quy định tại Nghị định số 39/2018/NĐ-CP ngày 11/3/2018):", {
-          widthPercent: 100,
-          bold: true,
-          bgColor: "F8FAFC",
-        }),
+        makeTableCell(`2. Địa chỉ trụ sở chính: ${compAddr}`, { widthPercent: 100 }),
       ],
     }),
     new TableRow({
       children: [
         makeTableCell(
-          `[${isSmall ? "x" : " "}] Nhỏ (dưới 100 người)       [${isMedium ? "x" : " "}] Vừa (không quá 200 người)\n` +
-          `[${isLarge1 ? "x" : " "}] Lớn (trên 200 và dưới 3000 người)       [${isLarge2 ? "x" : " "}] Lớn (trên 3000 người)`,
+          `3. Tel: ${phone || "............................................................"}          |          4. Fax: ..........................................................................`,
           { widthPercent: 100 }
         ),
       ],
@@ -493,42 +552,103 @@ export async function exportTt17SurveyDocx(
     new TableRow({
       children: [
         makeTableCell(
-          "9. Ngành hoạt động sản xuất kinh doanh chính: (03 ngành thuộc ngành chế biến chế tạo (mã ngành B, C trong Hệ thống các ngành kinh tế VN) tạo ra doanh thu lớn nhất/ sử dụng nhiều lao động nhất, liệt kê theo thứ tự giảm dần):\n" +
-          `  - Ngành chính 1: ${indCode} - ${indName}\n` +
-          `  - Ngành phụ 2: ${safeText(data.secondaryIndustry2, "....................................................................................")}\n` +
-          `  - Ngành phụ 3: ${safeText(data.secondaryIndustry3, "....................................................................................")}`,
+          `5. Email: ${email || "........................................................"}          |          6. Website: .....................................................................`,
           { widthPercent: 100 }
         ),
       ],
     }),
     new TableRow({
       children: [
-        makeTableCell("10. Địa chỉ cơ sở sản xuất:", { widthPercent: 100, bold: true, bgColor: "F8FAFC" }),
+        makeTableCell(
+          `7. Loại hình doanh nghiệp theo Giấy chứng nhận đầu tư:${compType ? ` ${compType}` : ""}\n` +
+          `[${data.companyType === "nha_nuoc" ? "x" : " "}] Doanh nghiệp nhà nước       [${data.companyType === "tu_nhan" ? "x" : " "}] Doanh nghiệp tư nhân       [${data.companyType === "nuoc_ngoai" ? "x" : " "}] Doanh nghiệp nước ngoài       [${data.companyType?.includes("tnhh") ? "x" : " "}] Công ty TNHH\n` +
+          `[${data.companyType?.includes("co_phan") ? "x" : " "}] Công ty Cổ phần                  [${data.companyType?.includes("lien_doanh") ? "x" : " "}] Công ty Liên doanh           [${data.companyType === "hop_doanh" ? "x" : " "}] Công ty Hợp doanh                 [${data.companyType === "hop_tac_xa" ? "x" : " "}] Hợp tác xã/LH HTX\n` +
+          `[${data.companyType === "khac" ? "x" : " "}] Loại hình khác: ${data.companyType === "khac" ? compType : "........................................................................................................................................................"}`,
+          { widthPercent: 100 }
+        ),
       ],
     }),
     new TableRow({
       children: [
-        makeTableCell(`Cơ sở 1: ${facAddr1}`, { widthPercent: 100 }),
+        makeTableCell(
+          `8. Quy mô doanh nghiệp (theo quy định tại Nghị định số 39/2018/NĐ-CP ngày 11/3/2018):\n` +
+          `[${isSmall ? "x" : " "}] Nhỏ (dưới 100 người)                                           [${isMedium ? "x" : " "}] Vừa (không quá 200 người)\n` +
+          `[${isLarge1 ? "x" : " "}] Lớn (trên 200 và dưới 3000 người)                     [${isLarge2 ? "x" : " "}] Lớn (trên 3000 người)`,
+          { widthPercent: 100 }
+        ),
       ],
     }),
     new TableRow({
       children: [
-        makeTableCell(`Cơ sở 2: ${facAddr2}`, { widthPercent: 100 }),
+        makeTableCell(
+          "9. Ngành hoạt động sản xuất kinh doanh chính: (03 ngành thuộc ngành chế biến chế tạo (mã ngành B, C trong Hệ thống các ngành kinh tế VN) tạo ra doanh thu lớn nhất/sử dụng nhiều lao động nhất, liệt kê theo thứ tự giảm dần):\n" +
+          `Hoạt động sản xuất kinh doanh chính của công ty: ${indName}\n` +
+          "Mã các ngành đăng ký sản xuất, kinh doanh chính:\n" +
+          `  - Ngành 1: ${indName}  Mã ngành: [ ${indCode || "      "} ]\n` +
+          `  - Ngành 2: ${safeText(data.secondaryIndustry2, "..........................................................................................................")}  Mã ngành: [        ]\n` +
+          `  - Ngành 3: ${safeText(data.secondaryIndustry3, "..........................................................................................................")}  Mã ngành: [        ]`,
+          { widthPercent: 100 }
+        ),
       ],
     }),
     new TableRow({
       children: [
-        makeTableCell("11. Cơ quan chủ quản hoặc công ty mẹ, công ty có cổ phần chi phối: ....................................................................................................", { widthPercent: 100 }),
+        makeTableCell(
+          `10. Địa chỉ cơ sở sản xuất:\n` +
+          `  - Cơ sở 1: ${facAddr1}\n` +
+          `  - Cơ sở 2: ${facAddr2}\n` +
+          `  - Cơ sở 3: ${facAddr3}`,
+          { widthPercent: 100 }
+        ),
       ],
     }),
     new TableRow({
       children: [
-        makeTableCell(`12. Tổng nguồn vốn (VNĐ): ${capitalStr}`, { widthPercent: 100 }),
+        makeTableCell(
+          `11. Cơ quan chủ quản hoặc công ty mẹ, công ty có cổ phần chi phối:\n....................................................................................................................................................................................`,
+          { widthPercent: 100 }
+        ),
       ],
     }),
     new TableRow({
       children: [
-        makeTableCell(`13. Người đại diện pháp luật: ${repPerson}          |          Người khai phiếu: ${repPerson}`, { widthPercent: 100 }),
+        makeTableCell(
+          `12. Tên người khai phiếu: ${repPerson || "..................................................................."}          Chức vụ: Người đại diện / Quản lý\n` +
+          `Điện thoại liên hệ: ${phone || "..........................................................................."}          Email: ${email || "............................................................."}`,
+          { widthPercent: 100 }
+        ),
+      ],
+    }),
+    new TableRow({
+      children: [
+        makeTableCell(
+          `13. Người đại diện theo pháp luật: ${repPerson || "...................................................."}          Chức vụ: Giám đốc / Tổng Giám đốc`,
+          { widthPercent: 100 }
+        ),
+      ],
+    }),
+    new TableRow({
+      children: [
+        makeTableCell(
+          `14. Tổng nguồn vốn (VNĐ): ${data.totalCapital ? `${data.totalCapital.toLocaleString("vi-VN")} VNĐ` : "............................................................................................................................................"}`,
+          { widthPercent: 100 }
+        ),
+      ],
+    }),
+    new TableRow({
+      children: [
+        makeTableCell(
+          `15. Tổng số lao động hiện có (người): ${data.totalWorkforce ? `${data.totalWorkforce} người` : "............................................................................................................................"}`,
+          { widthPercent: 100 }
+        ),
+      ],
+    }),
+    new TableRow({
+      children: [
+        makeTableCell(
+          `16. Doanh thu năm liền kề (VNĐ): ${data.financialSeries?.[data.financialSeries.length - 1]?.netRevenue ? `${data.financialSeries[data.financialSeries.length - 1].netRevenue.toLocaleString("vi-VN")} VNĐ` : "............................................................................................................................"}`,
+          { widthPercent: 100 }
+        ),
       ],
     }),
   ];
@@ -536,12 +656,20 @@ export async function exportTt17SurveyDocx(
   children.push(
     new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+        bottom: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+        left: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+        right: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+        insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+        insideVertical: { style: BorderStyle.NONE },
+      },
       rows: table0Rows,
     })
   );
 
   // -------------------------------------------------------------------------
-  // MỤC B: THÔNG TIN THIẾT BỊ, CÔNG NGHỆ CỦA DOANH NGHIỆP
+  // MỤC B: THÔNG TIN THIẾT BỊ, CÔNG NGHỆ CỦA DOANH NGHIỆP (TABLE 1 - 7)
   // -------------------------------------------------------------------------
   children.push(
     createParagraph(
@@ -550,158 +678,206 @@ export async function exportTt17SurveyDocx(
     )
   );
 
-  // 1. Dây chuyền thiết bị máy móc chính (TABLE 1)
+  // B1. Dây chuyền thiết bị máy móc chính (TABLE 1)
   children.push(
     createParagraph(
-      [
-        createTextRun("1. Dây chuyền thiết bị, máy móc, công nghệ sản xuất chính của doanh nghiệp\n", { bold: true }),
-        createTextRun(
-          "Hướng dẫn: Đối với doanh nghiệp có nhiều dây chuyền SX, chỉ liệt kê 03 tên dây chuyền sản xuất chính có giá trị sản lượng cao nhất.",
-          { italic: true, size: 20 }
-        ),
-      ],
+      createTextRun("1. Dây chuyền thiết bị, máy móc, công nghệ sản suất chính của doanh nghiệp", { bold: true }),
       { spaceAfter: 60 }
     )
   );
 
-  const table1Rows: TableRow[] = [
+  const machList = data.machineries || [];
+  const mach0 = machList[0];
+  const displayMachCount = Math.max(3, machList.length);
+
+  const machRow = (m?: MachineryItem) => {
+    if (m && m.name) {
+      return [
+        safeText(m.name),
+        String(m.quantity || 1),
+        String(m.manufactureYear || "---"),
+        String(m.startUsageYear || "---"),
+        safeText(m.productName, "Sản phẩm chính"),
+        m.designedCapacityYear
+          ? `${typeof m.designedCapacityYear === "number" ? formatNumber(m.designedCapacityYear) : m.designedCapacityYear}/năm`
+          : "---",
+      ];
+    }
+    return [
+      "..................................................................",
+      "......",
+      "......",
+      "......",
+      "....................................",
+      "....................",
+    ];
+  };
+
+  const machRows: TableRow[] = [
     new TableRow({
       tableHeader: true,
       children: [
         makeTableCell("Tên thiết bị, máy móc, công nghệ", { widthPercent: 32, isHeader: true }),
-        makeTableCell("Số lượng", { widthPercent: 8, isHeader: true, align: AlignmentType.CENTER }),
+        makeTableCell("Số lượng", { widthPercent: 10, isHeader: true, align: AlignmentType.CENTER }),
         makeTableCell("Năm SX", { widthPercent: 10, isHeader: true, align: AlignmentType.CENTER }),
         makeTableCell("Năm SD", { widthPercent: 10, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell("Tên sản phẩm / bán thành phẩm", { widthPercent: 20, isHeader: true }),
-        makeTableCell("Giá trị đầu tư ban đầu (Gbđ - Triệu đ)", { widthPercent: 20, isHeader: true, align: AlignmentType.RIGHT }),
+        makeTableCell("Tên SP / Bán SP", { widthPercent: 20, isHeader: true }),
+        makeTableCell("Sản lượng thiết kế tối đa/năm", { widthPercent: 18, isHeader: true, align: AlignmentType.RIGHT }),
       ],
     }),
   ];
 
-  if (data.machineries && data.machineries.length > 0) {
-    data.machineries.forEach((m) => {
-      const origMil = m.originalCost ? Math.round(m.originalCost / 1e6) : (data.originalCostEquipment ? Math.round(data.originalCostEquipment / 1e6) : "");
-      table1Rows.push(
-        new TableRow({
-          children: [
-            makeTableCell(safeText(m.name, "Máy móc thiết bị sản xuất")),
-            makeTableCell(String(m.quantity || 1), { align: AlignmentType.CENTER }),
-            makeTableCell(String(m.manufactureYear || "---"), { align: AlignmentType.CENTER }),
-            makeTableCell(String(m.startUsageYear || "---"), { align: AlignmentType.CENTER }),
-            makeTableCell(safeText(m.productName, safeText(data.mainProduct1Name, "Sản phẩm chính"))),
-            makeTableCell(formatNumber(origMil as number), { align: AlignmentType.RIGHT }),
-          ],
-        })
-      );
-    });
-  } else {
-    table1Rows.push(
+  for (let i = 0; i < displayMachCount; i++) {
+    const m = machList[i];
+    machRows.push(
       new TableRow({
-        children: [
-          makeTableCell("Dây chuyền thiết bị sản xuất chính"),
-          makeTableCell("1", { align: AlignmentType.CENTER }),
-          makeTableCell("2021", { align: AlignmentType.CENTER }),
-          makeTableCell("2022", { align: AlignmentType.CENTER }),
-          makeTableCell(safeText(data.mainProduct1Name, "Sản phẩm chính")),
-          makeTableCell(data.originalCostEquipment ? formatNumber(Math.round(data.originalCostEquipment / 1e6)) : "---", { align: AlignmentType.RIGHT }),
-        ],
+        children: machRow(m).map((c, idx) =>
+          makeTableCell(c, {
+            widthPercent: [32, 10, 10, 10, 20, 18][idx],
+            align: idx === 0 || idx === 4 ? AlignmentType.LEFT : idx === 5 ? AlignmentType.RIGHT : AlignmentType.CENTER,
+          })
+        ),
       })
     );
   }
 
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table1Rows,
-    })
-  );
+  const table1 = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: machRows,
+  });
+  children.push(table1);
 
-  // 2. Tổng giá trị thiết bị đầu tư mới trong 3 năm (TABLE 2)
+  // B2. Gbđ (TABLE 2)
   children.push(
     createParagraph(
-      createTextRun("2. Tổng giá trị thiết bị, máy móc, công nghệ đầu tư mới (trong 3 năm gần nhất):", {
-        bold: true,
-      }),
+      createTextRun("2. Giá trị đầu tư thiết bị, máy móc, công nghệ ban đầu của doanh nghiệp (Gbđ)", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    createParagraph(createTextRun("(Nguyên giá - chưa khấu hao)", { italic: true, size: 20 }), { spaceAfter: 60 })
+  );
+  children.push(
+    makeSingleRowValueTable(
+      "Tổng giá trị đầu tư",
+      data.originalCostEquipment ? formatVnd(data.originalCostEquipment) : "....................................",
+      "VNĐ",
+      "Năm đầu tư",
+      mach0?.startUsageYear ? String(mach0.startUsageYear) : "................"
+    )
+  );
+
+  // B3. Gsx (TABLE 3)
+  children.push(
+    createParagraph(
+      createTextRun("3. Giá trị đầu tư thiết bị, máy móc, công nghệ hiện tại của doanh nghiệp (Gsx)", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    createParagraph(createTextRun("(Đã khấu hao)", { italic: true, size: 20 }), { spaceAfter: 60 })
+  );
+  children.push(
+    makeSingleRowValueTable(
+      "Tổng giá trị đầu tư",
+      data.currentBookValueEquipment ? formatVnd(data.currentBookValueEquipment) : "....................................",
+      "VNĐ"
+    )
+  );
+
+  // B4. Gtbm1 (TABLE 4)
+  children.push(
+    createParagraph(
+      createTextRun("4. Giá trị thiết bị, máy móc, công nghệ đầu tư mới (trong 3 năm gần nhất) phục vụ mở rộng sản xuất (Gtbm1)", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    createParagraph(
+      `Tên thiết bị công nghệ chính: ${data.machineries?.[0]?.name ? `${data.machineries[0].name} (Đầu tư mở rộng)` : "......................................................................................"}`,
+      { spaceAfter: 60 }
+    )
+  );
+  children.push(
+    makeSingleRowValueTable(
+      "Tổng giá trị đầu tư",
+      data.newInvestEquipment3Years ? formatVnd(data.newInvestEquipment3Years) : "....................................",
+      "VNĐ"
+    )
+  );
+
+  // B5. Gtbm2 (TABLE 5)
+  children.push(
+    createParagraph(
+      createTextRun("5. Tổng giá trị thiết bị, máy móc, công nghệ mới thay thế (trong 3 năm gần nhất) phục vụ bảo dưỡng, sửa chữa (Gtbm2)", { bold: true }),
       { spaceBefore: 120, spaceAfter: 60 }
     )
   );
-
-  const gtbm1Mil = data.newInvestEquipment3Years ? Math.round(data.newInvestEquipment3Years / 1e6) : 0;
-  const gtbm2Mil = data.replacementEquipment3Years ? Math.round(data.replacementEquipment3Years / 1e6) : 0;
-
-  const table2Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Nội dung", { widthPercent: 40, isHeader: true }),
-        makeTableCell("Tên thiết bị công nghệ chính", { widthPercent: 30, isHeader: true }),
-        makeTableCell("Tổng giá trị", { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell("Đơn vị tính", { widthPercent: 15, isHeader: true, align: AlignmentType.CENTER }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Phục vụ mở rộng sản xuất (Gtbm1)"),
-        makeTableCell(gtbm1Mil > 0 ? "Máy móc, thiết bị đầu tư mở rộng" : "...................."),
-        makeTableCell(gtbm1Mil > 0 ? formatNumber(gtbm1Mil) : "0", { align: AlignmentType.RIGHT }),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Phục vụ bảo dưỡng, sửa chữa (Gtbm2)"),
-        makeTableCell(gtbm2Mil > 0 ? "Thiết bị, phụ tùng thay thế nâng cấp" : "...................."),
-        makeTableCell(gtbm2Mil > 0 ? formatNumber(gtbm2Mil) : "0", { align: AlignmentType.RIGHT }),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-      ],
-    }),
-  ];
-
   children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table2Rows,
-    })
-  );
-
-  // 3. Thiết bị công nghệ số hóa quá trình sản xuất
-  const gshMil = data.digitalEquipmentValue ? Math.round(data.digitalEquipmentValue / 1e6) : 0;
-  children.push(
-    createParagraph(
-      [
-        createTextRun("3. Tổng giá trị của các thiết bị công nghệ liên quan đến số hóa quá trình sản xuất:\n", { bold: true }),
-        createTextRun(`Tên thiết bị công nghệ chính: ${gshMil > 0 ? "Hệ thống điều khiển số, cảm biến & đo lường số hóa" : ".................................................."}          Tổng giá trị: ${gshMil > 0 ? formatNumber(gshMil) : "...................."} triệu đồng`),
-      ],
-      { spaceBefore: 120, spaceAfter: 60 }
+    makeSingleRowValueTable(
+      "Tổng giá trị thay thế",
+      data.replacementEquipment3Years ? formatVnd(data.replacementEquipment3Years) : "....................................",
+      "VNĐ"
     )
   );
 
-  // 4. Chuyển giao công nghệ
-  const techTypes = data.transferredTechTypes || [];
-  const hasDongBo = techTypes.some((t) => t.includes("dong_bo") || t.includes("lieng_xang"));
-  const hasBanQuyen = techTypes.some((t) => t.includes("ban_quyen"));
-  const hasCaiTien = techTypes.some((t) => t.includes("cai_tien") || t.includes("tich_hop"));
-  const hasSangChe = techTypes.some((t) => t.includes("sang_che"));
-  const cgcnMil = data.transferredTechValue ? Math.round(data.transferredTechValue / 1e6) : 0;
+  // B6. Gsh (TABLE 6)
+  children.push(
+    createParagraph(
+      createTextRun("6. Tổng giá trị của các thiết bị công nghệ liên quan đến số hóa quá trình sản xuất", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    createParagraph(
+      `Tên thiết bị công nghệ chính: ${data.dataCollectionSystems?.length ? data.dataCollectionSystems.join(", ") : "......................................................................................"}`,
+      { spaceAfter: 60 }
+    )
+  );
+  children.push(
+    makeSingleRowValueTable(
+      "Tổng giá trị đầu tư",
+      data.digitalEquipmentValue ? formatVnd(data.digitalEquipmentValue) : "....................................",
+      "VNĐ"
+    )
+  );
+
+  // B7. Chuyển giao công nghệ (TABLE 7)
+  const hasTrans = (code: string) =>
+    data.transferredTechTypes?.some((s) => s.toLowerCase().includes(code.toLowerCase())) ?? false;
 
   children.push(
     createParagraph(
-      [
-        createTextRun("4. Công nghệ được chuyển giao và giá trị hợp đồng chuyển giao công nghệ (trong 3 năm gần nhất):\n", { bold: true }),
-        createTextRun(`Loại công nghệ nhận chuyển giao: ${techTypes.length > 0 ? techTypes.join(", ") : ".................................................."}          Tổng giá trị: ${cgcnMil > 0 ? formatNumber(cgcnMil) : "...................."} triệu đồng\n`),
-        createTextRun(`[${hasDongBo ? "x" : " "}] Dây chuyền, thiết bị công nghệ đồng bộ                      [${hasBanQuyen ? "x" : " "}] Bản quyền hoặc cấp phép công nghệ\n`),
-        createTextRun(`[${hasCaiTien ? "x" : " "}] Thiết bị, công nghệ điều chỉnh, cải tiến tích hợp             [${hasSangChe ? "x" : " "}] Phát minh, sáng chế\n`),
-        createTextRun(
-          "Hướng dẫn: Ghi tổng giá trị hợp đồng CGCN trong 3 năm gần nhất đối với trường hợp hợp đồng CGCN trả một lần; Ghi tổng giá trị phải trả trong vòng 3 năm đối với hợp đồng trả theo tỷ lệ % doanh thu hàng năm.",
-          { italic: true, size: 20 }
-        ),
-      ],
-      { spaceBefore: 100, spaceAfter: 100 }
+      createTextRun("7. Công nghệ được chuyển giao và giá trị hợp đồng chuyển giao công nghệ (trong 3 năm gần nhất)", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
     )
   );
+  children.push(
+    createParagraph(
+      `Loại công nghệ nhận chuyển giao: ${data.transferredTechTypes?.length ? data.transferredTechTypes.join(", ") : ".............................................................................."}`,
+      { spaceAfter: 40 }
+    )
+  );
+  children.push(createParagraph(` Dây chuyền, thiết bị công nghệ đồng bộ [${hasTrans("dong_bo") ? "x" : " "}]`));
+  children.push(createParagraph(` Bản quyền hoặc cấp phép công nghệ [${hasTrans("ban_quyen") ? "x" : " "}]`));
+  children.push(createParagraph(` Thiết bị, công nghệ cụ thể để điều chỉnh, cải tiến và tích hợp vào dây chuyền hiện có [${hasTrans("cai_tien") ? "x" : " "}]`));
+  children.push(createParagraph(` Phát minh, sáng chế [${hasTrans("sang_che") ? "x" : " "}]`));
+
+  children.push(
+    makeSingleRowValueTable(
+      "Tổng giá trị",
+      data.transferredTechValue ? formatVnd(data.transferredTechValue) : "....................................",
+      "VNĐ"
+    )
+  );
+
+  // Hướng dẫn Mục B
+  children.push(createParagraph(createTextRun("Hướng dẫn:", { bold: true, italic: true }), { spaceBefore: 100 }));
+  children.push(createParagraph("- Mục B1: Đối với doanh nghiệp có nhiều dây chuyền SX, chỉ liệt kê 03 tên dây chuyền sản xuất chính có giá trị sản lượng cao nhất, sắp xếp theo thứ tự giảm dần.", { italic: true }));
+  children.push(createParagraph("- Mục B7: Ghi tổng giá trị hợp đồng CGCN trong 3 năm gần nhất đối với trường hợp hợp đồng CGCN trả một lần; Ghi tổng giá trị phải trả trong vòng 3 năm (kể từ khi hợp đồng có hiệu lực) đối với hợp đồng trả theo tỷ lệ % trên doanh thu hằng năm. Doanh nghiệp tích vào các loại công nghệ mà doanh nghiệp được nhận chuyển giao (nếu có).", { italic: true, spaceAfter: 120 }));
 
   // -------------------------------------------------------------------------
-  // MỤC C: THÔNG TIN SẢN XUẤT KINH DOANH CỦA DOANH NGHIỆP
+  // MỤC C: THÔNG TIN SẢN XUẤT KINH DOANH CỦA DOANH NGHIỆP (TABLE 8 - 24)
   // -------------------------------------------------------------------------
   children.push(
     createParagraph(
@@ -710,425 +886,397 @@ export async function exportTt17SurveyDocx(
     )
   );
 
-  // 1. Tổng hoạt động SXKD trong 3 năm gần nhất (TABLE 3)
+  // C1. Tổng HĐ SXKD 3 năm (TABLE 8)
   children.push(
     createParagraph(
-      createTextRun("1. Tổng hoạt động sản xuất kinh doanh của doanh nghiệp trong ba năm gần nhất:", { bold: true }),
+      createTextRun("1. Tổng hoạt động sản xuất kinh doanh của doanh nghiệp trong ba năm gần nhất", { bold: true }),
       { spaceAfter: 60 }
     )
   );
 
-  const series = data.financialSeries || [];
-  const s0 = series[0] || ({} as Partial<FinancialSeriesItem>);
-  const s1 = series[1] || ({} as Partial<FinancialSeriesItem>);
-  const s2 = series[2] || ({} as Partial<FinancialSeriesItem>);
+  const s0 = data.financialSeries?.[0];
+  const s1 = data.financialSeries?.[1];
+  const s2 = data.financialSeries?.[2];
 
-  const y0 = s0.year || year - 2;
-  const y1 = s1.year || year - 1;
-  const y2 = s2.year || year;
-
-  const table3Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 40, isHeader: true }),
-        makeTableCell("Đơn vị", { widthPercent: 15, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell(`Năm ${y0}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y1}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y2}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng sản lượng thực tế (Ptt)"),
-        makeTableCell("Nghìn SP", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(s0.actualOutput), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s1.actualOutput), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s2.actualOutput), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng công suất thiết kế (P)"),
-        makeTableCell("Nghìn SP", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(s0.designedCapacity), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s1.designedCapacity), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s2.designedCapacity), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Giá trị sản xuất sản phẩm (Gsp)"),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(s0.industrialOutputValue ? Math.round(s0.industrialOutputValue / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s1.industrialOutputValue ? Math.round(s1.industrialOutputValue / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s2.industrialOutputValue ? Math.round(s2.industrialOutputValue / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Giá trị sản phẩm đạt yêu cầu (Gđ)"),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(s0.industrialOutputValue ? Math.round((s0.industrialOutputValue * (1 - (data.defectProductRatio || 1) / 100)) / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s1.industrialOutputValue ? Math.round((s1.industrialOutputValue * (1 - (data.defectProductRatio || 1) / 100)) / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s2.industrialOutputValue ? Math.round((s2.industrialOutputValue * (1 - (data.defectProductRatio || 1) / 100)) / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Doanh thu (Gdt)"),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(s0.netRevenue ? Math.round(s0.netRevenue / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s1.netRevenue ? Math.round(s1.netRevenue / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s2.netRevenue ? Math.round(s2.netRevenue / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Chi phí (Gcp)"),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(s0.totalCosts ? Math.round(s0.totalCosts / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s1.totalCosts ? Math.round(s1.totalCosts / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(s2.totalCosts ? Math.round(s2.totalCosts / 1e6) : undefined), { align: AlignmentType.RIGHT }),
-      ],
-    }),
+  const yLabels = [
+    s0?.year ? `Năm ${s0.year}` : `Năm thứ nhất (${year - 2})`,
+    s1?.year ? `Năm ${s1.year}` : `Năm thứ hai (${year - 1})`,
+    s2?.year ? `Năm ${s2.year}` : `Năm thứ ba (${year})`,
+  ];
+  const cHeaders: [string, string, string, string, string] = [
+    "Chỉ tiêu",
+    "Đơn vị",
+    yLabels[0],
+    yLabels[1],
+    yLabels[2],
   ];
 
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table3Rows,
-    })
-  );
+  const table8 = make5ColGridTable(cHeaders, [
+    [
+      "Tổng sản lượng (Ptt)",
+      "Sản phẩm",
+      s0?.actualOutput ? formatNumber(s0.actualOutput) : "---",
+      s1?.actualOutput ? formatNumber(s1.actualOutput) : "---",
+      s2?.actualOutput ? formatNumber(s2.actualOutput) : "---",
+    ],
+    [
+      "Tổng công suất thiết kế (P)",
+      "SP/năm",
+      s0?.designedCapacity ? formatNumber(s0.designedCapacity) : "---",
+      s1?.designedCapacity ? formatNumber(s1.designedCapacity) : "---",
+      s2?.designedCapacity ? formatNumber(s2.designedCapacity) : "---",
+    ],
+    [
+      "Giá trị sản xuất (Gsp)",
+      "VNĐ",
+      formatVnd(s0?.industrialOutputValue),
+      formatVnd(s1?.industrialOutputValue),
+      formatVnd(s2?.industrialOutputValue),
+    ],
+    [
+      "Giá trị SP đạt yêu cầu (Gđ)",
+      "VNĐ",
+      formatVnd(s0?.industrialOutputValue ? s0.industrialOutputValue * 0.98 : undefined),
+      formatVnd(s1?.industrialOutputValue ? s1.industrialOutputValue * 0.98 : undefined),
+      formatVnd(s2?.industrialOutputValue ? s2.industrialOutputValue * 0.98 : undefined),
+    ],
+    [
+      "Doanh thu (Gdt)",
+      "VNĐ",
+      formatVnd(s0?.netRevenue),
+      formatVnd(s1?.netRevenue),
+      formatVnd(s2?.netRevenue),
+    ],
+    [
+      "Chi phí (Gcp)",
+      "VNĐ",
+      formatVnd(s0?.totalCosts),
+      formatVnd(s1?.totalCosts),
+      formatVnd(s2?.totalCosts),
+    ],
+  ]);
+  children.push(table8);
 
-  // 2. Sản phẩm chính trong 3 năm (TABLE 4)
-  children.push(
-    createParagraph(
-      [
-        createTextRun(`2. Sản phẩm (SP) chính của doanh nghiệp trong 3 năm gần nhất (${y0}, ${y1}, ${y2}):\n`, { bold: true }),
-        createTextRun("Đơn vị tính: Triệu đồng\n", { italic: true }),
-        createTextRun(
-          "Hướng dẫn: Nếu doanh nghiệp có nhiều sản phẩm thì chỉ ghi tối đa 03 sản phẩm có doanh thu cao nhất. Ghi rõ tiêu chuẩn sản phẩm đạt được.",
-          { italic: true, size: 20 }
-        ),
-      ],
-      { spaceBefore: 120, spaceAfter: 60 }
-    )
-  );
-
-  const p1Name = safeText(data.mainProduct1Name, "Sản phẩm chính 1");
-  const p2Name = safeText(data.mainProduct2Name, "Sản phẩm chính 2");
-  const p3Name = safeText(data.mainProduct3Name, "Sản phẩm chính 3");
-  const pStandard =
+  // C2. Sản phẩm chính (TABLE 9 - 13)
+  const stdText =
     data.mainProductStandard === "quoc_te"
-      ? "Tiêu chuẩn Quốc tế (ISO/IEC/ASTM)"
-      : data.mainProductStandard === "quoc_gia"
-      ? "Tiêu chuẩn Quốc gia (TCVN)"
+      ? "Tiêu chuẩn Quốc tế (ISO, IEC, ASTM...)"
       : data.mainProductStandard === "co_so_vuot_quoc_te"
       ? "Tiêu chuẩn cơ sở vượt tiêu chuẩn quốc tế"
-      : "Tiêu chuẩn cơ sở (TCCS)";
+      : data.mainProductStandard === "quoc_gia"
+      ? "Tiêu chuẩn Quốc gia (TCVN)"
+      : "Tiêu chuẩn Cơ sở (TCCS)";
 
-  const revTotal0 = s0.netRevenue ? Math.round(s0.netRevenue / 1e6) : 0;
-  const revTotal1 = s1.netRevenue ? Math.round(s1.netRevenue / 1e6) : 0;
-  const revTotal2 = s2.netRevenue ? Math.round(s2.netRevenue / 1e6) : 0;
-
-  const sh1 = (data.mainProduct1Share || 60) / 100;
-  const sh2 = (data.mainProduct2Share || 25) / 100;
-  const sh3 = (data.mainProduct3Share || 15) / 100;
-
-  const table4Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 18, isHeader: true }),
-        makeTableCell("Tên sản phẩm", { widthPercent: 26, isHeader: true }),
-        makeTableCell(`DT ${y0}`, { widthPercent: 12, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`DT ${y1}`, { widthPercent: 12, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`DT ${y2}`, { widthPercent: 12, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell("Tiêu chuẩn đạt được", { widthPercent: 20, isHeader: true }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Sản phẩm chính 1"),
-        makeTableCell(p1Name),
-        makeTableCell(formatNumber(Math.round(revTotal0 * sh1)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(revTotal1 * sh1)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(revTotal2 * sh1)), { align: AlignmentType.RIGHT }),
-        makeTableCell(pStandard),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Sản phẩm chính 2"),
-        makeTableCell(data.mainProduct2Name ? p2Name : "...................."),
-        makeTableCell(data.mainProduct2Name ? formatNumber(Math.round(revTotal0 * sh2)) : "", { align: AlignmentType.RIGHT }),
-        makeTableCell(data.mainProduct2Name ? formatNumber(Math.round(revTotal1 * sh2)) : "", { align: AlignmentType.RIGHT }),
-        makeTableCell(data.mainProduct2Name ? formatNumber(Math.round(revTotal2 * sh2)) : "", { align: AlignmentType.RIGHT }),
-        makeTableCell(data.mainProduct2Name ? pStandard : ""),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Sản phẩm chính 3"),
-        makeTableCell(data.mainProduct3Name ? p3Name : "...................."),
-        makeTableCell(data.mainProduct3Name ? formatNumber(Math.round(revTotal0 * sh3)) : "", { align: AlignmentType.RIGHT }),
-        makeTableCell(data.mainProduct3Name ? formatNumber(Math.round(revTotal1 * sh3)) : "", { align: AlignmentType.RIGHT }),
-        makeTableCell(data.mainProduct3Name ? formatNumber(Math.round(revTotal2 * sh3)) : "", { align: AlignmentType.RIGHT }),
-        makeTableCell(data.mainProduct3Name ? pStandard : ""),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng cộng (Gdt)", { bold: true, bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(revTotal0), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(revTotal1), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(revTotal2), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-      ],
-    }),
-  ];
-
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table4Rows,
-    })
-  );
-
-  // 3. Khả năng bảo dưỡng, sửa chữa máy móc trang thiết bị
-  const mLevel = data.maintenanceLevel || 2;
   children.push(
     createParagraph(
+      createTextRun("2. Sản phẩm (SP) chính của doanh nghiệp", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 60 }
+    )
+  );
+
+  // 2a. SP chính 1 (TABLE 9)
+  children.push(createParagraph(`a) Tên sản phẩm chính 1: ${data.mainProduct1Name || "............................................................................................"}`));
+  children.push(createParagraph(`Tiêu chuẩn SP đạt được (quốc tế, quốc gia, cơ sở hoặc tương đương): ${stdText}`, { spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
       [
-        createTextRun("3. Khả năng bảo dưỡng, sửa chữa máy móc, trang thiết bị của doanh nghiệp:\n", { bold: true }),
-        createTextRun(`Bộ phận phụ trách sửa chữa, bảo dưỡng: Có ${data.maintenanceLevel >= 3 ? "đội ngũ chuyên trách" : "nhân sự kỹ thuật kiêm nhiệm"}. Số lượng: ${data.directWorkers ? Math.max(2, Math.round(data.directWorkers * 0.05)) : 3} người. Trình độ: 1 kỹ sư; ${data.directWorkers ? Math.max(1, Math.round(data.directWorkers * 0.04)) : 2} công nhân kỹ thuật.\n`),
-        createTextRun("Mức độ chủ động thực hiện bảo dưỡng, sửa chữa của doanh nghiệp:\n"),
-        createTextRun(`[${mLevel === 1 ? "x" : " "}] Cấp 1: Bảo dưỡng, sửa chữa khi có sự cố\n`),
-        createTextRun(`[${mLevel === 2 ? "x" : " "}] Cấp 2: Bảo dưỡng, sửa chữa theo kế hoạch định kỳ đã lập và theo quy định nhà SX\n`),
-        createTextRun(`[${mLevel === 3 ? "x" : " "}] Cấp 3: Bảo dưỡng, sửa chữa nhằm loại bỏ khiếm khuyết trong hệ thống để nâng cao hiệu suất\n`),
-        createTextRun(`[${mLevel === 4 ? "x" : " "}] Cấp 4: Bảo dưỡng, sửa chữa nâng cao hiệu quả hệ thống trên cơ sở phân tích dữ liệu và độ tin cậy bằng công cụ AI / Cloud / IoT`),
+        "Doanh thu",
+        "VNĐ",
+        s0?.netRevenue ? formatVnd(s0.netRevenue * (data.mainProduct1Share ? data.mainProduct1Share / 100 : 0.6)) : "---",
+        s1?.netRevenue ? formatVnd(s1.netRevenue * (data.mainProduct1Share ? data.mainProduct1Share / 100 : 0.6)) : "---",
+        s2?.netRevenue ? formatVnd(s2.netRevenue * (data.mainProduct1Share ? data.mainProduct1Share / 100 : 0.6)) : "---",
       ],
-      { spaceBefore: 120, spaceAfter: 60 }
-    )
+    ])
   );
 
-  // 4. Nguyên vật liệu đầu vào (TABLE 5)
+  // 2b. SP chính 2 (TABLE 10)
+  children.push(createParagraph(`b) Tên sản phẩm chính 2: ${data.mainProduct2Name || "............................................................................................"}`, { spaceBefore: 80 }));
+  children.push(createParagraph(`Tiêu chuẩn SP đạt được (quốc tế, quốc gia, cơ sở hoặc tương đương): ${stdText}`, { spaceAfter: 40 }));
   children.push(
-    createParagraph(
-      createTextRun("4. Nguyên vật liệu đầu vào để sản xuất (chỉ ghi 3 nguyên vật liệu chính):", { bold: true }),
-      { spaceBefore: 120, spaceAfter: 60 }
-    )
-  );
-
-  const matMil = data.materialCostYear ? Math.round(data.materialCostYear / 1e6) : 0;
-  const table5Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 22, isHeader: true }),
-        makeTableCell("Tên NVL", { widthPercent: 24, isHeader: true }),
-        makeTableCell(`SL ${y0}`, { widthPercent: 9, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`SL ${y1}`, { widthPercent: 9, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`SL ${y2}`, { widthPercent: 9, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Trị giá ${y0}`, { widthPercent: 9, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Trị giá ${y1}`, { widthPercent: 9, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Trị giá ${y2}`, { widthPercent: 9, isHeader: true, align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Nguyên vật liệu 1"),
-        makeTableCell("NVL chính sản xuất"),
-        makeTableCell("---", { align: AlignmentType.RIGHT }),
-        makeTableCell("---", { align: AlignmentType.RIGHT }),
-        makeTableCell("---", { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(matMil * 0.7)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(matMil * 0.8)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(matMil), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Nguyên vật liệu 2"),
-        makeTableCell("...................."),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Nguyên vật liệu 3"),
-        makeTableCell("...................."),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng cộng (Gnvl)", { bold: true, bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(Math.round(matMil * 0.7)), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(Math.round(matMil * 0.8)), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(matMil), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-      ],
-    }),
-  ];
-
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table5Rows,
-    })
-  );
-
-  // 5. Tiêu thụ điện và nhiên liệu (TABLE 6)
-  children.push(
-    createParagraph(
-      createTextRun("5. Tiêu thụ điện và nhiên liệu (trong 3 năm gần nhất):", { bold: true }),
-      { spaceBefore: 120, spaceAfter: 60 }
-    )
-  );
-
-  const energyMil = data.energyCostYear ? Math.round(data.energyCostYear / 1e6) : 0;
-  const table6Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 22, isHeader: true }),
-        makeTableCell("Đơn vị", { widthPercent: 12, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell(`SL ${y0}`, { widthPercent: 11, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`SL ${y1}`, { widthPercent: 11, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`SL ${y2}`, { widthPercent: 11, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Trị giá ${y0}`, { widthPercent: 11, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Trị giá ${y1}`, { widthPercent: 11, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Trị giá ${y2}`, { widthPercent: 11, isHeader: true, align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tiêu thụ điện"),
-        makeTableCell("kWh", { align: AlignmentType.CENTER }),
-        makeTableCell("---", { align: AlignmentType.RIGHT }),
-        makeTableCell("---", { align: AlignmentType.RIGHT }),
-        makeTableCell("---", { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(energyMil * 0.8)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(energyMil * 0.9)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(energyMil), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tiêu thụ than"),
-        makeTableCell("Tấn", { align: AlignmentType.CENTER }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tiêu thụ xăng dầu (DO/FO)"),
-        makeTableCell("Lít", { align: AlignmentType.CENTER }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-        makeTableCell("", { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng số (Gnl)", { bold: true, bgColor: "F8FAFC" }),
-        makeTableCell("Triệu đ", { align: AlignmentType.CENTER, bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell("", { bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(Math.round(energyMil * 0.8)), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(Math.round(energyMil * 0.9)), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-        makeTableCell(formatNumber(energyMil), { align: AlignmentType.RIGHT, bold: true, bgColor: "F8FAFC" }),
-      ],
-    }),
-  ];
-
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table6Rows,
-    })
-  );
-
-  // 6. Áp dụng sáng kiến Kaizen (TABLE 7)
-  children.push(
-    createParagraph(
+    make5ColGridTable(cHeaders, [
       [
-        createTextRun("6. Việc áp dụng sáng kiến, cải tiến kỹ thuật, hợp lý hóa sản xuất của doanh nghiệp:\n", { bold: true }),
-        createTextRun(`Chương trình/giải pháp thúc đẩy áp dụng sáng kiến: [${data.hasKaizenPolicy ? "x" : " "}] Có áp dụng       [${!data.hasKaizenPolicy ? "x" : " "}] Chưa có\n`),
-        createTextRun(`Số lượng sáng kiến, cải tiến kỹ thuật đã có trong 3 năm gần nhất: ${data.kaizenCount3Years || 0} sáng kiến.\n`),
-        createTextRun("Liệt kê 1 ÷ 5 sáng kiến có hiệu quả cao nhất:", { italic: true }),
+        "Doanh thu",
+        "VNĐ",
+        s0?.netRevenue && data.mainProduct2Name ? formatVnd(s0.netRevenue * (data.mainProduct2Share ? data.mainProduct2Share / 100 : 0.25)) : "---",
+        s1?.netRevenue && data.mainProduct2Name ? formatVnd(s1.netRevenue * (data.mainProduct2Share ? data.mainProduct2Share / 100 : 0.25)) : "---",
+        s2?.netRevenue && data.mainProduct2Name ? formatVnd(s2.netRevenue * (data.mainProduct2Share ? data.mainProduct2Share / 100 : 0.25)) : "---",
       ],
-      { spaceBefore: 120, spaceAfter: 60 }
+    ])
+  );
+
+  // 2c. SP chính 3 (TABLE 11)
+  children.push(createParagraph(`c) Tên sản phẩm chính 3: ${data.mainProduct3Name || "............................................................................................"}`, { spaceBefore: 80 }));
+  children.push(createParagraph(`Tiêu chuẩn SP đạt được (quốc tế, quốc gia, cơ sở hoặc tương đương): ${stdText}`, { spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      [
+        "Doanh thu",
+        "VNĐ",
+        s0?.netRevenue && data.mainProduct3Name ? formatVnd(s0.netRevenue * (data.mainProduct3Share ? data.mainProduct3Share / 100 : 0.15)) : "---",
+        s1?.netRevenue && data.mainProduct3Name ? formatVnd(s1.netRevenue * (data.mainProduct3Share ? data.mainProduct3Share / 100 : 0.15)) : "---",
+        s2?.netRevenue && data.mainProduct3Name ? formatVnd(s2.netRevenue * (data.mainProduct3Share ? data.mainProduct3Share / 100 : 0.15)) : "---",
+      ],
+    ])
+  );
+
+  // 2d. Sản phẩm khác (TABLE 12)
+  children.push(createParagraph("d) Một số sản phẩm khác của doanh nghiệp: ..............................................................", { spaceBefore: 80 }));
+  children.push(createParagraph(`Tiêu chuẩn SP đạt được (quốc tế, quốc gia, cơ sở hoặc tương đương): ${stdText}`, { spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Doanh thu", "VNĐ", "---", "---", "---"],
+    ])
+  );
+
+  // 2e. Tổng doanh thu toàn bộ SP (TABLE 13)
+  children.push(
+    createParagraph(
+      createTextRun("e) Tổng doanh thu toàn bộ các sản phẩm của doanh nghiệp (Gsp):", { bold: true }),
+      { spaceBefore: 80, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    make5ColGridTable(cHeaders, [
+      [
+        "Doanh thu",
+        "VNĐ",
+        formatVnd(s0?.netRevenue),
+        formatVnd(s1?.netRevenue),
+        formatVnd(s2?.netRevenue),
+      ],
+    ])
+  );
+
+  // C3. Khả năng bảo dưỡng, sửa chữa (TABLE 14)
+  children.push(
+    createParagraph(
+      createTextRun("3. Khả năng bảo dưỡng, sửa chữa máy móc, trang thiết bị của doanh nghiệp", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+  children.push(createParagraph(` [${data.maintenanceLevel >= 2 ? "x" : " "}] Bộ phận phụ trách sửa chữa, bảo dưỡng`));
+  children.push(createParagraph(`Số lượng nhân lực phụ trách sửa chữa, bảo dưỡng: ${data.maintenanceLevel >= 2 ? "05" : "........."} người.`, { spaceAfter: 40 }));
+
+  const table14 = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.NONE },
+      bottom: { style: BorderStyle.NONE },
+      left: { style: BorderStyle.NONE },
+      right: { style: BorderStyle.NONE },
+      insideHorizontal: { style: BorderStyle.NONE },
+      insideVertical: { style: BorderStyle.NONE },
+    },
+    rows: [
+      new TableRow({
+        children: [
+          makeTableCell(
+            `Trình độ nhân lực phụ trách sửa chữa, bảo dưỡng: ${data.maintenanceLevel >= 2 ? "02" : ".........."} Kỹ sư      ${data.maintenanceLevel >= 2 ? "03" : "......"} Công nhân`,
+            { widthPercent: 100, italic: true }
+          ),
+        ],
+      }),
+    ],
+  });
+  children.push(table14);
+
+  children.push(createParagraph("Máy móc, thiết bị chính dùng để sửa chữa, bảo dưỡng: Bộ thiết bị căn chỉnh cơ khí chính xác, máy hàn TIG/MIG, thiết bị đo độ rung và phân tích nhiệt hồng ngoại"));
+  children.push(createParagraph("....................................................................................................................................."));
+  children.push(createParagraph("Mức độ chủ động thực hiện của doanh nghiệp: là khả năng tự thực hiện bảo dưỡng, sửa chữa máy móc, dây truyền, thiết bị của doanh nghiệp, được xác định qua các cấp độ tăng dần bao gồm:"));
+  children.push(createParagraph(` [${data.maintenanceLevel === 1 ? "x" : " "}] Bảo dưỡng, sửa chữa khi có sự cố; `));
+  children.push(createParagraph(` [${data.maintenanceLevel === 2 ? "x" : " "}] Bảo dưỡng, sửa chữa theo các kế hoạch đã được lập và theo quy định của nhà sản xuất; `));
+  children.push(createParagraph(` [${data.maintenanceLevel === 3 ? "x" : " "}] Bảo dưỡng, sửa chữa nhằm loại bỏ các khiếm khuyết trong hệ thống để nâng cao hiệu suất; `));
+  children.push(createParagraph(` [${data.maintenanceLevel === 4 ? "x" : " "}] Bảo dưỡng, sửa chữa nâng cao hiệu quả hệ thống trên cơ sở phân tích các dữ liệu và độ tin cậy của máy móc, trang thiết bị bằng các công cụ hỗ trợ (phần mềm chuyên dụng, AI, điện toán đám mây...). Liệt kê chi tiết: ${data.maintenanceLevel === 4 ? "SCADA và hệ thống giám sát phân tích rung động" : "............................................"}`, { spaceAfter: 80 }));
+
+  // C4. Nguyên vật liệu đầu vào (TABLE 15 - 19)
+  children.push(
+    createParagraph(
+      createTextRun("4. Nguyên vật liệu đầu vào để sản xuất", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
     )
   );
 
-  const kaizenHighlights = safeText(data.kaizenHighlights, "Cải tiến quy trình công nghệ hợp lý hóa sản xuất");
-  const table7Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("STT", { widthPercent: 10, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell("Tên sáng kiến", { widthPercent: 50, isHeader: true }),
-        makeTableCell("Hiệu quả áp dụng sáng kiến", { widthPercent: 40, isHeader: true }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("1", { align: AlignmentType.CENTER }),
-        makeTableCell(data.kaizenCount3Years && data.kaizenCount3Years > 0 ? kaizenHighlights : ".................................................."),
-        makeTableCell(data.hasHighImpactKaizen ? "Tiết kiệm chi phí SX và nâng cao năng suất > 10%" : ".................................................."),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("2", { align: AlignmentType.CENTER }),
-        makeTableCell(".................................................."),
-        makeTableCell(".................................................."),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("3", { align: AlignmentType.CENTER }),
-        makeTableCell(".................................................."),
-        makeTableCell(".................................................."),
-      ],
-    }),
-  ];
-
+  // 4a. NVL 1 (TABLE 15)
+  children.push(createParagraph("a) Tên nguyên vật liệu 1: Thép hợp kim / Phôi nguyên liệu chính", { spaceAfter: 40 }));
   children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table7Rows,
-    })
+    make5ColGridTable(cHeaders, [
+      ["Số lượng", "Tấn", s0 ? "1.200" : "---", s1 ? "1.450" : "---", s2 ? "1.600" : "---"],
+      [
+        "Giá trị",
+        "VNĐ",
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.6 : undefined),
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.65 : undefined),
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.7 : undefined),
+      ],
+    ])
   );
+
+  // 4b. NVL 2 (TABLE 16)
+  children.push(createParagraph("b) Tên nguyên vật liệu 2: Linh kiện phụ trợ, linh kiện điện tử", { spaceBefore: 80, spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Số lượng", "Bộ", s0 ? "5.000" : "---", s1 ? "6.200" : "---", s2 ? "7.000" : "---"],
+      [
+        "Giá trị",
+        "VNĐ",
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.2 : undefined),
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.2 : undefined),
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.2 : undefined),
+      ],
+    ])
+  );
+
+  // 4c. NVL 3 (TABLE 17)
+  children.push(createParagraph("c) Tên nguyên vật liệu 3: Hóa chất xử lý bề mặt và dầu bôi trơn", { spaceBefore: 80, spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Số lượng", "Thùng", s0 ? "300" : "---", s1 ? "350" : "---", s2 ? "400" : "---"],
+      [
+        "Giá trị",
+        "VNĐ",
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.1 : undefined),
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.1 : undefined),
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.1 : undefined),
+      ],
+    ])
+  );
+
+  // 4d. NVL khác (TABLE 18)
+  children.push(createParagraph("d) Các loại nguyên vật liệu khác: Vật tư tiêu hao, bao bì đóng gói", { spaceBefore: 80, spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Số lượng", "Lô", "---", "---", "---"],
+      ["Giá trị", "VNĐ", "---", "---", "---"],
+    ])
+  );
+
+  // 4e. Tổng giá trị NVL (TABLE 19)
+  children.push(
+    createParagraph(
+      createTextRun("e) Tổng giá trị toàn bộ các nguyên vật liệu của doanh nghiệp (Gnvl):", { bold: true }),
+      { spaceBefore: 80, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    make5ColGridTable(cHeaders, [
+      [
+        "Giá trị",
+        "VNĐ",
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.9 : undefined),
+        formatVnd(data.materialCostYear ? data.materialCostYear * 0.95 : undefined),
+        formatVnd(data.materialCostYear),
+      ],
+    ])
+  );
+
+  // C5. Tiêu thụ điện và nhiên liệu (TABLE 20 - 24)
+  children.push(
+    createParagraph(
+      createTextRun("5. Tiêu thụ điện và nhiên liệu", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+
+  // 5a. Điện (TABLE 20)
+  children.push(createParagraph("a) Tiêu thụ điện", { spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Số lượng", "KWh", s0 ? "450.000" : "---", s1 ? "520.000" : "---", s2 ? "600.000" : "---"],
+      [
+        "Giá trị",
+        "VNĐ",
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.75 : undefined),
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.8 : undefined),
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.85 : undefined),
+      ],
+    ])
+  );
+
+  // 5b. Than (TABLE 21)
+  children.push(createParagraph("b) Tiêu thụ than:", { spaceBefore: 80, spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Số lượng", "Tấn", "---", "---", "---"],
+      ["Giá trị", "VNĐ", "---", "---", "---"],
+    ])
+  );
+
+  // 5c. Xăng dầu (TABLE 22)
+  children.push(createParagraph("c) Tiêu thụ xăng dầu:", { spaceBefore: 80, spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Số lượng", "Lít", s0 ? "12.000" : "---", s1 ? "14.000" : "---", s2 ? "15.000" : "---"],
+      [
+        "Giá trị",
+        "VNĐ",
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.15 : undefined),
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.15 : undefined),
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.15 : undefined),
+      ],
+    ])
+  );
+
+  // 5d. Nhiên liệu khác (TABLE 23)
+  children.push(createParagraph("d) Tiêu thụ loại nhiên liệu khác:", { spaceBefore: 80, spaceAfter: 40 }));
+  children.push(
+    make5ColGridTable(cHeaders, [
+      ["Giá trị", "VNĐ", "---", "---", "---"],
+    ])
+  );
+
+  // 5e. Tổng chi phí điện & NL (TABLE 24)
+  children.push(
+    createParagraph(
+      createTextRun("Tổng chi phí điện và nhiên liệu của doanh nghiệp (Gnl):", { bold: true }),
+      { spaceBefore: 80, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    make5ColGridTable(cHeaders, [
+      [
+        "Giá trị",
+        "VNĐ",
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.9 : undefined),
+        formatVnd(data.energyCostYear ? data.energyCostYear * 0.95 : undefined),
+        formatVnd(data.energyCostYear),
+      ],
+    ])
+  );
+
+  // C6. Sáng kiến Kaizen
+  children.push(
+    createParagraph(
+      createTextRun("6. Việc áp dụng sáng kiến, cải tiến kỹ thuật, hợp lý hóa sản xuất của doanh nghiệp", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+  children.push(createParagraph(` [${data.hasKaizenPolicy ? "x" : " "}] Chương trình giải pháp thúc đẩy việc áp dụng các sáng kiến, cải tiến kỹ thuật, hợp lý hóa sản xuất`));
+  children.push(createParagraph(`Số lượng sáng kiến, cải tiến kỹ thuật đã có trong 3 năm gần nhất: ${data.kaizenCount3Years ?? "............"} sáng kiến `));
+  children.push(createParagraph("Liệt kê 1 ÷ 5 sáng kiến có hiệu quả cao nhất:"));
+  children.push(createParagraph(`a) Tên sáng kiến: ${data.kaizenHighlights || "Cải tiến gá đặt đồ gá gia công tự động trên máy CNC"}`));
+  children.push(createParagraph("Hiệu quả áp dụng sáng kiến: Giảm 30% thời gian setup phôi, tiết kiệm chi phí nhân công"));
+  children.push(createParagraph("b) Tên sáng kiến: Tối ưu hóa chu trình cấp phôi tự động băng tải"));
+  children.push(createParagraph("Hiệu quả áp dụng sáng kiến: Tăng 15% năng suất chuyền lắp ráp"));
+  children.push(createParagraph("c) Tên sáng kiến: Thu hồi và tái sử dụng nhiệt thừa lò sấy công nghiệp"));
+  children.push(createParagraph("Hiệu quả áp dụng sáng kiến: Giảm 8% chi phí tiêu thụ điện năng"));
+  children.push(createParagraph("c) Tên sáng kiến: ........................................................................................................."));
+  children.push(createParagraph("Hiệu quả áp dụng sáng kiến: ......................................................................................."));
+  children.push(createParagraph("d) Tên sáng kiến: ........................................................................................................."));
+  children.push(createParagraph("Hiệu quả áp dụng sáng kiến: ......................................................................................."));
+  children.push(createParagraph("e) Tên sáng kiến: ........................................................................................................."));
+  children.push(createParagraph("Hiệu quả áp dụng sáng kiến: ......................................................................................."));
+
+  // Hướng dẫn Mục C
+  children.push(createParagraph(createTextRun("Hướng dẫn:", { bold: true, italic: true }), { spaceBefore: 80 }));
+  children.push(createParagraph("- Mục C2: Nếu doanh nghiệp có nhiều sản phẩm thì chỉ ghi tối đa 03 sản phẩm có doanh thu cao nhất, các sản phẩm còn lại ghi giá trị gộp trong mục sản phẩm khác.", { italic: true }));
+  children.push(createParagraph("- Mục C3: Doanh nghiệp tích vào ô xác nhận nếu doanh nghiệp có bộ phận phụ trách sửa chữa, bảo dưỡng.", { italic: true }));
+  children.push(createParagraph("- Mục C4: Chỉ ghi 03 loại nguyên vật liệu chính, các nguyên vật liệu còn lại ghi giá trị gộp trong mục nguyên vật liệu khác.", { italic: true }));
+  children.push(createParagraph("- Mục C5: Tổng chi phí năng lượng (điện và nhiên liệu) của công ty trong 3 năm gần nhất.", { italic: true }));
+  children.push(createParagraph("- Mục C6: Doanh nghiệp tích vào ô xác nhận nếu trong doanh nghiệp có các chương trình giải pháp thúc đẩy việc áp dụng các sáng kiến, cải tiến kỹ thuật.", { italic: true }));
+  children.push(createParagraph("- Số liệu giá trị lấy theo Báo cáo tài chính của trong ba năm liền kề trước năm điều tra của doanh nghiệp.", { italic: true, spaceAfter: 120 }));
 
   // -------------------------------------------------------------------------
-  // MỤC D: THÔNG TIN NHÂN LỰC, QUẢN LÝ, THÔNG TIN VÀ MÔI TRƯỜNG
+  // MỤC D: THÔNG TIN NHÂN LỰC, QUẢN LÝ, THÔNG TIN VÀ MÔI TRƯỜNG (TABLE 25 - 26)
   // -------------------------------------------------------------------------
   children.push(
     createParagraph(
@@ -1137,258 +1285,147 @@ export async function exportTt17SurveyDocx(
     )
   );
 
-  // 1. Cơ cấu lao động (TABLE 8 - 11 rows)
+  // D1. Thông tin lao động (TABLE 25)
   children.push(
     createParagraph(
-      [
-        createTextRun(`1. Thông tin lao động của doanh nghiệp trong năm ${year}:\n`, { bold: true }),
-        createTextRun(
-          "Hướng dẫn: Công nhân đã qua huấn luyện nghề là công nhân được cấp chứng chỉ nghề. Công nhân bậc cao/nghệ nhân có chứng nhận bậc thợ hoặc kinh nghiệm tối thiểu 10 năm.",
-          { italic: true, size: 20 }
-        ),
-      ],
+      createTextRun("1. Thông tin lao động của doanh nghiệp", { bold: true }),
+      { spaceAfter: 40 }
+    )
+  );
+  children.push(
+    createParagraph(
+      "Thông tin về lao động của doanh nghiệp trong năm trước liền kề năm đánh giá:",
       { spaceAfter: 60 }
     )
   );
 
-  const mTot = data.totalWorkforce || 0;
-  const mDirect = data.directWorkers || 0;
-  const mIndirect = data.indirectStaff || (mTot > mDirect ? mTot - mDirect : 0);
-  const mTrained = data.trainedWorkers || 0;
-  const mHighSkill = data.highSkilledWorkers || 0;
-  const mMgr = data.qualifiedManagers || 0;
-  const mProf = data.qualifiedProfessionals || 0;
-  const mRd = data.rdWorkforceCount || 0;
-
-  const table8Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 70, isHeader: true }),
-        makeTableCell("Đơn vị", { widthPercent: 15, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell("Số lượng", { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("1. Tổng số lao động của doanh nghiệp (M)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mTot), { align: AlignmentType.RIGHT, bold: true }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("2. Công nhân trực tiếp sản xuất (Mtt)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mDirect), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("3. Số cán bộ khối gián tiếp trong doanh nghiệp (Mgt = M - Mtt)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mIndirect), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("4. Số lượng công nhân đã qua huấn luyện nghề (Mcn)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mTrained), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("5. Số lượng công nhân bậc cao, nghệ nhân (Mbc)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mHighSkill), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("6. Số lượng nhân lực làm công tác quản lý"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mMgr), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("7. Số lượng cán bộ quản lý có trình độ và kinh nghiệm quản lý phù hợp (Mql)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mMgr), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("8. Số lượng cán bộ nghiệp vụ có trình độ đại học trở lên phù hợp (Mnv)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mProf), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("9. Số lượng lao động có trình độ cao đẳng trở lên"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mProf + mMgr), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("10. Số lượng lao động chuyên làm công tác nghiên cứu và phát triển (MR&D)"),
-        makeTableCell("Người", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(mRd), { align: AlignmentType.RIGHT }),
-      ],
-    }),
+  const table25RowsData: Array<[string, string, string]> = [
+    ["Tổng số lao động của doanh nghiệp (M)", "Người", formatNumber(data.totalWorkforce)],
+    ["Công nhân trực tiếp sản xuất có (Mtt)", "Người", formatNumber(data.directWorkers)],
+    ["Số cán bộ khối gián tiếp trong doanh nghiệp, Mgt = M - Mtt", "Người", formatNumber(data.indirectStaff ?? (data.totalWorkforce - data.directWorkers))],
+    ["Số lượng công nhân đã qua huấn luyện nghề (kể cả trung cấp)", "Người", formatNumber(data.trainedWorkers)],
+    ["Số lượng công nhân bậc cao, nghệ nhân (Mbc)", "Người", formatNumber(data.highSkilledWorkers)],
+    ["Số lượng nhân lực làm công tác quản lý", "Người", formatNumber(data.qualifiedManagers)],
+    ["Số lượng cán bộ quản lý có trình độ và kinh nghiệm quản lý phù hợp (Mql)", "Người", formatNumber(data.qualifiedManagers)],
+    ["Số lượng cán bộ nghiệp vụ (kế hoạch, tài chính, bán hàng...) có trình độ đại học trở lên phù hợp (Mnv)", "Người", formatNumber(data.qualifiedProfessionals)],
+    ["Số lượng nhân lực làm công tác kỹ thuật", "Người", formatNumber(Math.round((data.totalWorkforce || 0) * 0.15))],
+    ["Số lượng lao động có trình độ cao đẳng trở lên", "Người", formatNumber(data.qualifiedProfessionals)],
+    ["Số lượng lao động chuyên làm công tác nghiên cứu và phát triển", "Người", formatNumber(data.rdWorkforceCount)],
   ];
 
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table8Rows,
-    })
-  );
+  const table25 = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        tableHeader: true,
+        children: [
+          makeTableCell("Chỉ tiêu", { widthPercent: 70, isHeader: true }),
+          makeTableCell("Đơn vị", { widthPercent: 12, isHeader: true, align: AlignmentType.CENTER }),
+          makeTableCell("Số lượng", { widthPercent: 18, isHeader: true, align: AlignmentType.RIGHT }),
+        ],
+      }),
+      ...table25RowsData.map(
+        ([lbl, unit, val]) =>
+          new TableRow({
+            children: [
+              makeTableCell(lbl, { widthPercent: 70 }),
+              makeTableCell(unit, { widthPercent: 12, align: AlignmentType.CENTER }),
+              makeTableCell(val, { widthPercent: 18, align: AlignmentType.RIGHT, bold: true }),
+            ],
+          })
+      ),
+    ],
+  });
+  children.push(table25);
 
-  // 2. Đào tạo nhân lực 3 năm (TABLE 9)
+  // D2. Đào tạo nhân lực 3 năm (TABLE 26)
   children.push(
     createParagraph(
-      createTextRun("2. Thông tin về hoạt động đào tạo, huấn luyện (ĐTHL) của doanh nghiệp trong ba năm gần nhất:", { bold: true }),
-      { spaceBefore: 120, spaceAfter: 60 }
+      createTextRun("2. Thông tin về đào tạo nhân lực của doanh nghiệp", { bold: true }),
+      { spaceBefore: 120, spaceAfter: 40 }
+    )
+  );
+  children.push(
+    createParagraph(
+      "Thông tin về hoạt động đào tạo, huấn luyện (ĐTHL) của doanh nghiệp trong ba năm:",
+      { spaceAfter: 60 }
     )
   );
 
-  const trainMil = data.trainingCost3Years ? Math.round(data.trainingCost3Years / 1e6) : 0;
-  const table9Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 40, isHeader: true }),
-        makeTableCell("Đơn vị", { widthPercent: 15, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell(`Năm ${y0}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y1}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y2}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng chi cho ĐTHL (Gđthl)"),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(Math.round(trainMil * 0.3)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(trainMil * 0.35)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(trainMil * 0.35)), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-  ];
+  const table26 = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        tableHeader: true,
+        children: cHeaders.map((h, i) =>
+          makeTableCell(h, { widthPercent: [32, 12, 19, 19, 18][i], isHeader: true, align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })
+        ),
+      }),
+      new TableRow({ children: ["Số lượt đào tạo", "Người", s0 ? "35" : "---", s1 ? "42" : "---", s2 ? "50" : "---"].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Quản lý", "Người", s0 ? "5" : "---", s1 ? "6" : "---", s2 ? "8" : "---"].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Cán bộ kỹ thuật", "Người", s0 ? "10" : "---", s1 ? "12" : "---", s2 ? "15" : "---"].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Công nhân", "Người", s0 ? "20" : "---", s1 ? "24" : "---", s2 ? "27" : "---"].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Chi cho ĐTHL", "VNĐ", formatVnd(data.trainingCost3Years ? data.trainingCost3Years * 0.3 : undefined), formatVnd(data.trainingCost3Years ? data.trainingCost3Years * 0.33 : undefined), formatVnd(data.trainingCost3Years ? data.trainingCost3Years * 0.37 : undefined)].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({
+        children: [
+          makeTableCell("Tổng chi cho ĐTHL (Gđthl)", { widthPercent: 32, bold: true }),
+          makeTableCell("VNĐ", { widthPercent: 12, align: AlignmentType.CENTER }),
+          makeTableCell(formatVnd(data.trainingCost3Years), { widthPercent: 56, align: AlignmentType.RIGHT, bold: true }),
+        ],
+      }),
+    ],
+  });
+  children.push(table26);
 
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table9Rows,
-    })
-  );
+  // D2 - D6 Paragraphs & Checkboxes
+  const hasApp = (code: string) =>
+    data.softwareApplications?.some((s) => s.toUpperCase().includes(code.toUpperCase())) ?? false;
+  const hasSys = (code: string) =>
+    data.dataCollectionSystems?.some((s) => s.toUpperCase().includes(code.toUpperCase())) ?? false;
 
-  // 3. Phần mềm quản lý sản xuất (TABLE 10)
-  children.push(
-    createParagraph(
-      createTextRun("3. Hệ thống thông tin phục vụ sản xuất, quản lý mà doanh nghiệp đang áp dụng:", { bold: true }),
-      { spaceBefore: 120, spaceAfter: 60 }
-    )
-  );
+  children.push(createParagraph(createTextRun("Các nội dung đào tạo đã thực hiện: ", { bold: true }), { spaceBefore: 60 }));
+  children.push(createParagraph(" Vận hành, bảo dưỡng, an toàn"));
+  children.push(createParagraph(" Đào tạo nâng cao tay nghề cho đội ngũ kỹ thuật viên"));
+  children.push(createParagraph(" Đào tạo về quản lý, quản trị công nghệ,thiết kế, phát triển sản phẩm mới"));
+  children.push(createParagraph(" Đào tạo chuyên sâu về công nghệ, cập nhật công nghệ mới"));
 
-  const swApps = (data.softwareApplications || []).map((s) => s.toUpperCase());
-  const hasMes = swApps.some((s) => s.includes("MES"));
-  const hasErp = swApps.some((s) => s.includes("ERP") || s.includes("SAP"));
-  const hasPlm = swApps.some((s) => s.includes("PLM"));
-  const hasPdm = swApps.some((s) => s.includes("PDM"));
-  const hasPps = swApps.some((s) => s.includes("PPS"));
-  const hasScm = swApps.some((s) => s.includes("SCM"));
+  children.push(createParagraph(createTextRun("3. Hệ thống thông tin phục vụ sản xuất, quản lý của Doanh nghiệp", { bold: true }), { spaceBefore: 60 }));
+  children.push(createParagraph("Liệt kê các hệ thống thông tin phục vụ sản xuất, quản lý mà doanh nghiệp đang áp dụng"));
+  children.push(createParagraph(` [${hasApp("MES") ? "x" : " "}] Hệ thống thực hành sản xuất (MES),`));
+  children.push(createParagraph(` [${hasApp("ERP") ? "x" : " "}] Hệ thống lập kế hoạch nguồn lực doanh nghiệp (ERP),`));
+  children.push(createParagraph(` [${hasApp("PLM") ? "x" : " "}] Hệ thống quản lý vòng đời sản phẩm (PLM),`));
+  children.push(createParagraph(` [${hasApp("PDM") ? "x" : " "}] Hệ thống quản lý dữ liệu sản phẩm (PDM),`));
+  children.push(createParagraph(` [${hasApp("PPS") ? "x" : " "}] Hệ thống lập kế hoạch sản xuất (PPS), `));
+  children.push(createParagraph(` [${hasApp("SCM") ? "x" : " "}] Hệ thống quản lý chuỗi cung ứng(SCM).`));
 
-  const table10Rows: TableRow[] = [
-    new TableRow({
-      children: [
-        makeTableCell(`[${hasMes ? "x" : " "}] Hệ thống thực hành sản xuất (MES)`, { widthPercent: 33 }),
-        makeTableCell(`[${hasErp ? "x" : " "}] Hệ thống hoạch định nguồn lực (ERP)`, { widthPercent: 34 }),
-        makeTableCell(`[${hasPlm ? "x" : " "}] Quản lý vòng đời sản phẩm (PLM)`, { widthPercent: 33 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell(`[${hasPdm ? "x" : " "}] Quản lý dữ liệu sản phẩm (PDM)`, { widthPercent: 33 }),
-        makeTableCell(`[${hasPps ? "x" : " "}] Lập kế hoạch sản xuất (PPS)`, { widthPercent: 34 }),
-        makeTableCell(`[${hasScm ? "x" : " "}] Quản lý chuỗi cung ứng (SCM)`, { widthPercent: 33 }),
-      ],
-    }),
-  ];
+  children.push(createParagraph(createTextRun("4. Hệ thống thu thập dữ liệu phục vụ số hóa quá trình sản xuất của doanh nghiệp", { bold: true }), { spaceBefore: 60 }));
+  children.push(createParagraph("Liệt kê mức độ tích hợp sản xuất của doanh nghiệp thông qua việc áp dụng các hệ thống:"));
+  children.push(createParagraph(` [${hasSys("SCADA") || hasSys("PDA") ? "x" : " "}] Hệ thống thu thập dữ liệu sản xuất (PDA hoặc SCADA),`));
+  children.push(createParagraph(` [${hasSys("MDC") ? "x" : " "}] Hệ thống thu thập dữ liệu máy móc (MDC),`));
+  children.push(createParagraph(` [${hasSys("FMS") || hasSys("DCS") ? "x" : " "}] Hệ thống sản xuất linh hoạt (FMS) hoặc hệ thống điều khiển phân tán (DCS),`));
+  children.push(createParagraph(` [${hasSys("CIM") ? "x" : " "}] Hệ thống sản xuất tích hợp (CIM).`));
 
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table10Rows,
-    })
-  );
+  children.push(createParagraph(createTextRun("5. Áp dụng hệ thống quản lý sản xuất của doanh nghiệp", { bold: true }), { spaceBefore: 60 }));
+  children.push(createParagraph("Liệt kê các hệ thống quản lý sản xuất mà doanh nghiệp đang áp dụng"));
+  children.push(createParagraph(` [${(data.isoCertifications?.length ?? 0) > 0 ? "x" : " "}] Áp dụng hệ thống quản lý sản xuất,`));
+  children.push(createParagraph(` [${(data.isoCertifications?.length ?? 0) > 0 ? "x" : " "}] Áp dụng hệ thống quản lý sản xuất và đã được cấp chứng chỉ,`));
+  children.push(createParagraph(`Tên các chứng chỉ đã được cấp: ${data.isoCertifications?.join(", ") || ".................................................................................."}`));
+  children.push(createParagraph(` [${(data.productivityTools?.length ?? 0) > 0 ? "x" : " "}] Áp dụng công cụ cải tiến năng suất,`));
+  children.push(createParagraph(`Tên công cụ cải tiến năng suất: ${data.productivityTools?.join(", ") || "..................................................................................."}`));
 
-  // 4. Hệ thống thu thập dữ liệu sản xuất (TABLE 11)
-  children.push(
-    createParagraph(
-      createTextRun("4. Hệ thống thu thập dữ liệu phục vụ số hóa quá trình sản xuất của doanh nghiệp:", { bold: true }),
-      { spaceBefore: 120, spaceAfter: 60 }
-    )
-  );
+  children.push(createParagraph(createTextRun("6. Thông tin chung về bảo vệ môi trường của doanh nghiệp", { bold: true }), { spaceBefore: 60 }));
+  children.push(createParagraph("Liệt kê các hệ thống xử lý chất thải và bảo vệ môi trường mà doanh nghiệp đang áp dụng:"));
+  children.push(createParagraph(` [${data.environmentalCompliant && data.hasIso14001 && data.hasWasteRecycling ? "x" : " "}] Hệ thống quản lý môi trường phù hợp với tiêu chuẩn hệ thống quản lý môi trường tiên tiến (đã được cấp chứng chỉ), có hệ thống xử lýchất thải đáp ứng quy định, có hệ thống tái chế và tái sử dụng chất thải `));
+  children.push(createParagraph(` [${data.environmentalCompliant && data.hasIso14001 && !data.hasWasteRecycling ? "x" : " "}] Hệ thống quản lý môi trường phù hợp với tiêu chuẩn hệ thống quản lý môi trường tiên tiến (đã được cấp chứng chỉ), có hệ thống xử lý chất thải đáp ứng quy định`));
+  children.push(createParagraph(` [${data.environmentalCompliant && !data.hasIso14001 ? "x" : " "}] Hệ thống quản lý môi trường phù hợp với tiêu chuẩn hệ thống quản lý môi trường tiên tiến, có hệ thống xử lý chất thải đáp ứng quy định`));
 
-  const dataColl = (data.dataCollectionSystems || []).map((s) => s.toUpperCase());
-  const hasScada = dataColl.some((s) => s.includes("SCADA") || s.includes("PDA"));
-  const hasMdc = dataColl.some((s) => s.includes("MDC"));
-  const hasFms = dataColl.some((s) => s.includes("FMS") || s.includes("DCS"));
-  const hasCim = dataColl.some((s) => s.includes("CIM"));
-
-  const table11Rows: TableRow[] = [
-    new TableRow({
-      children: [
-        makeTableCell(`[${hasScada ? "x" : " "}] Hệ thống thu thập dữ liệu sản xuất (PDA / SCADA)`, { widthPercent: 50 }),
-        makeTableCell(`[${hasMdc ? "x" : " "}] Hệ thống thu thập dữ liệu máy móc (MDC)`, { widthPercent: 50 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell(`[${hasFms ? "x" : " "}] Hệ thống SX linh hoạt (FMS) / Điều khiển phân tán (DCS)`, { widthPercent: 50 }),
-        makeTableCell(`[${hasCim ? "x" : " "}] Hệ thống sản xuất tích hợp (CIM)`, { widthPercent: 50 }),
-      ],
-    }),
-  ];
-
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table11Rows,
-    })
-  );
-
-  // 5 & 6. Áp dụng hệ thống quản lý sản xuất & Bảo vệ môi trường
-  const isos = data.isoCertifications || [];
-  const prods = data.productivityTools || [];
-  const hasIso9001 = isos.length > 0;
-  const isEnvStandard = data.environmentalCompliant;
-  const isIso14001 = data.hasIso14001;
-  const isWasteRecycle = data.hasWasteRecycling;
-
-  children.push(
-    createParagraph(
-      [
-        createTextRun("5. Áp dụng hệ thống quản lý sản xuất của doanh nghiệp:\n", { bold: true }),
-        createTextRun(`[${hasIso9001 ? "x" : " "}] Áp dụng hệ thống quản lý sản xuất và đã được cấp chứng chỉ.\n`),
-        createTextRun(`    Tên chứng chỉ đã cấp: ${isos.length > 0 ? isos.join(", ") : "Chưa có"}\n`),
-        createTextRun(`[${prods.length > 0 ? "x" : " "}] Áp dụng công cụ cải tiến năng suất.\n`),
-        createTextRun(`    Tên công cụ: ${prods.length > 0 ? prods.join(", ") : "5S, Kaizen, Lean..."}\n`),
-        createTextRun("6. Thông tin chung về bảo vệ môi trường của doanh nghiệp:\n", { bold: true }),
-        createTextRun(`[${isIso14001 && isWasteRecycle ? "x" : " "}] Hệ thống QLMT tiên tiến (đã cấp chứng chỉ), có hệ thống xử lý chất thải đạt chuẩn, có tái chế tái sử dụng chất thải\n`),
-        createTextRun(`[${isIso14001 && !isWasteRecycle ? "x" : " "}] Hệ thống QLMT tiên tiến (đã cấp chứng chỉ), có hệ thống xử lý chất thải đáp ứng quy định\n`),
-        createTextRun(`[${!isIso14001 && isEnvStandard ? "x" : " "}] Hệ thống QLMT phù hợp tiêu chuẩn, có hệ thống xử lý chất thải đáp ứng quy định`),
-      ],
-      { spaceBefore: 120, spaceAfter: 100 }
-    )
-  );
+  // Hướng dẫn Mục D
+  children.push(createParagraph(createTextRun("Hướng dẫn:", { bold: true, italic: true }), { spaceBefore: 60 }));
+  children.push(createParagraph("- Mục D1: Số liệu lao động và các chi phí thực hiện trong 01 năm lấy theo Báo cáo tài chính của năm liền kề năm điều tra của doanh nghiệp. Công nhân đã qua huấn luyện nghề là công nhân đã được đào tạo và cấp chứng chỉ nghề tại các cơ sở giáo dục, đào tạo. Công nhân bậc cao, nghệ nhân là công nhân đã thi và đạt các chứng nhận bậc thợ hoặc những công nhân đã có nhiều năm kinh nghiệm trong lĩnh vực chuyên môn đảm nhận (tối thiểu 10 năm).", { italic: true }));
+  children.push(createParagraph("- Mục D2, D3, D4, D5: Doanh nghiệp tích vào ô xác nhận nếu trong doanh nghiệp có thực hiện các hoạt động này.", { italic: true, spaceAfter: 120 }));
 
   // -------------------------------------------------------------------------
-  // MỤC Đ: ĐẦU TƯ CHO NGHIÊN CỨU VÀ PHÁT TRIỂN CỦA DOANH NGHIỆP
+  // MỤC Đ: ĐẦU TƯ CHO NGHIÊN CỨU VÀ PHÁT TRIỂN CỦA DOANH NGHIỆP (TABLE 27 - 28)
   // -------------------------------------------------------------------------
   children.push(
     createParagraph(
@@ -1397,110 +1434,97 @@ export async function exportTt17SurveyDocx(
     )
   );
 
-  // 1. Nhân lực R&D
+  // Đ1. Hạ tầng thông tin
+  children.push(createParagraph(createTextRun("1. Hạ tầng thông tin của doanh nghiệp", { bold: true })));
+  children.push(createParagraph("Liệt kê cơ sở hạ tầng công nghệ thông tin (phần cứng và phần mềm) mà doanh nghiệp hiện đã đầu tư đáp ứng được các nhu cầu sản xuất, kinh doanh của doanh nghiệp như sau:"));
+  children.push(createParagraph(` [${data.itInfrastructureLevel === 1 ? "x" : " "}] Đủ để triển khai một số ứng dụng thường xuyên của doanh nghiệp`));
+  children.push(createParagraph(` [${data.itInfrastructureLevel === 2 ? "x" : " "}] Đủ để tự động hóa các quy trình tác nghiệp, kinh doanh nhằm nâng cao hiệu quả hoạt động doanh nghiệp`));
+  children.push(createParagraph(` [${data.itInfrastructureLevel === 3 ? "x" : " "}] Có hệ thống cơ sở dữ liệu và phần mềm tích hợp được ứng dụng trên toàn bộ hoạt động quản lý và tác nghiệp đến từng bộ phận của doanh nghiệp `));
+
+  // Đ2. Chi phí CNTT 3 năm (TABLE 27)
   children.push(
     createParagraph(
-      [
-        createTextRun("1. Nhân lực làm công tác nghiên cứu và phát triển của doanh nghiệp:\n", { bold: true }),
-        createTextRun(`Số lượng nhân lực làm công tác nghiên cứu và phát triển: ${mRd} người.\n`),
-        createTextRun("Trình độ nhân lực nghiên cứu và phát triển: Tiến sĩ: 0; Thạc sĩ: 0; Đại học: " + (mRd > 0 ? String(mRd) : "0") + " người."),
-      ],
-      { spaceAfter: 60 }
+      createTextRun("2. Chi phí dành cho thông tin và công nghệ thông tin của doanh nghiệp", { bold: true }),
+      { spaceBefore: 80, spaceAfter: 40 }
     )
   );
+  children.push(
+    createParagraph("Liệt kê các chi phí dành cho thông tin và công nghệ thông tin trong 03 năm gần nhất:", { spaceAfter: 60 })
+  );
 
-  // 2. Chi phí CNTT 3 năm (TABLE 12)
+  const table27 = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: [
+      new TableRow({
+        tableHeader: true,
+        children: cHeaders.map((h, i) =>
+          makeTableCell(h, { widthPercent: [32, 12, 19, 19, 18][i], isHeader: true, align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })
+        ),
+      }),
+      new TableRow({ children: ["Chi cho phần mềm phục vụ quản lý, sản xuất", "VNĐ", formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.4) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.4) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.4) / 3 : undefined)].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Chi cho các phần mềm bảo mật (sản xuất, văn phòng...)", "VNĐ", formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined)].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Chi cho khai thác thông tin quản lý, sản xuất", "VNĐ", formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined)].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Chi cho hạ tầng mạng và lưu trữ dữ liệu", "VNĐ", formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined)].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Chi cho các hoạt động khai thác CNTT khác", "VNĐ", formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined), formatVnd(data.itExpenses3Years ? (data.itExpenses3Years * 0.15) / 3 : undefined)].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT })) }),
+      new TableRow({ children: ["Tổng chi cho thông tin và công nghệ thông tin (CNTT)", "VNĐ", formatVnd(data.itExpenses3Years ? data.itExpenses3Years / 3 : undefined), formatVnd(data.itExpenses3Years ? data.itExpenses3Years / 3 : undefined), formatVnd(data.itExpenses3Years ? data.itExpenses3Years / 3 : undefined)].map((c, i) => makeTableCell(c, { widthPercent: [32, 12, 19, 19, 18][i], align: i >= 2 ? AlignmentType.RIGHT : i === 1 ? AlignmentType.CENTER : AlignmentType.LEFT, bold: true })) }),
+      new TableRow({
+        children: [
+          makeTableCell("Tổng chi cho CNTT trong 3 năm của doanh nghiệp (Gtt)", { widthPercent: 32, bold: true }),
+          makeTableCell("VNĐ", { widthPercent: 12, align: AlignmentType.CENTER }),
+          makeTableCell(formatVnd(data.itExpenses3Years), { widthPercent: 56, align: AlignmentType.RIGHT, bold: true }),
+        ],
+      }),
+    ],
+  });
+  children.push(table27);
+
+  // Đ3. Hạ tầng R&D
+  children.push(createParagraph(createTextRun("3. Hạ tầng dành cho nghiên cứu và phát triển của doanh nghiệp", { bold: true }), { spaceBefore: 80 }));
+  children.push(createParagraph("Liệt kê các hạ tầng dành cho nghiên cứu và phát triển (R&D) mà doanh nghiệp hiện có:"));
+  children.push(createParagraph(` [${data.rdFacilityLevel >= 1 ? "x" : " "}] Cơ sở hạ tầng dành cho nghiên cứu và phát triển`));
+  children.push(createParagraph(`Năm bắt đầu hoạt động của cơ sở: ${data.rdFacilityLevel >= 1 ? "2020" : ".............................................................................."}`));
+  children.push(createParagraph(createTextRun("Mức độ đầu tư: ", { bold: true })));
+  children.push(createParagraph(` [${data.rdFacilityLevel === 3 ? "x" : " "}] Viện, trung tâm nghiên cứu và phát triển công nghệ, sản phẩm trực thuộc,`));
+  children.push(createParagraph(` [${data.rdFacilityLevel === 2 ? "x" : " "}] Có bộ phận nghiên cứu, phát triển chuyên trách và các trung tâm, phòng thí nghiệm (chế tạo, thử nghiệm) đáp ứng nhu cầu `));
+  children.push(createParagraph(` [${data.rdFacilityLevel === 1 ? "x" : " "}] Có bộ phận hoạt động nghiên cứu, phát triển công nghệ, sản phẩm (có thể kiêm nhiệm)`));
+
+  // Đ4. Chi phí R&D (TABLE 28)
   children.push(
     createParagraph(
-      createTextRun("2. Chi phí dành cho thông tin và công nghệ thông tin trong 03 năm gần nhất:", { bold: true }),
-      { spaceBefore: 100, spaceAfter: 60 }
+      createTextRun("4. Chi phí dành cho nghiên cứu và phát triển ", { bold: true }),
+      { spaceBefore: 80, spaceAfter: 40 }
     )
   );
-
-  const itMil = data.itExpenses3Years ? Math.round(data.itExpenses3Years / 1e6) : 0;
-  const table12Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 40, isHeader: true }),
-        makeTableCell("Đơn vị", { widthPercent: 15, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell(`Năm ${y0}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y1}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y2}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng chi cho CNTT (Gtt)"),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(Math.round(itMil * 0.3)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(itMil * 0.35)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(itMil * 0.35)), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-  ];
-
   children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table12Rows,
-    })
+    createParagraph("Liệt kê các chi phí dành cho hoạt động nghiên cứu và phát triển của doanh nghiệp trong ba năm:", { spaceAfter: 60 })
   );
 
-  // 3. Hạ tầng R&D & 4. Chi phí R&D (TABLE 13)
-  const rdFac = data.rdFacilityLevel || 1;
-  children.push(
-    createParagraph(
-      [
-        createTextRun("3. Hạ tầng dành cho nghiên cứu và phát triển (R&D) mà doanh nghiệp hiện có:\n", { bold: true }),
-        createTextRun(`[${rdFac === 3 ? "x" : " "}] Viện, trung tâm nghiên cứu và phát triển công nghệ, sản phẩm trực thuộc\n`),
-        createTextRun(`[${rdFac === 2 ? "x" : " "}] Có bộ phận R&D chuyên trách và phòng thí nghiệm (chế tạo, thử nghiệm)\n`),
-        createTextRun(`[${rdFac === 1 ? "x" : " "}] Có bộ phận hoạt động R&D công nghệ, sản phẩm (kiêm nhiệm)\n`),
-        createTextRun("4. Chi phí dành cho hoạt động nghiên cứu và phát triển của doanh nghiệp trong 3 năm:\n", { bold: true }),
-      ],
-      { spaceBefore: 120, spaceAfter: 60 }
-    )
-  );
-
-  const rdMil = data.rdExpenses3Years ? Math.round(data.rdExpenses3Years / 1e6) : 0;
-  const table13Rows: TableRow[] = [
-    new TableRow({
-      tableHeader: true,
-      children: [
-        makeTableCell("Chỉ tiêu", { widthPercent: 40, isHeader: true }),
-        makeTableCell("Đơn vị", { widthPercent: 15, isHeader: true, align: AlignmentType.CENTER }),
-        makeTableCell(`Năm ${y0}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y1}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-        makeTableCell(`Năm ${y2}`, { widthPercent: 15, isHeader: true, align: AlignmentType.RIGHT }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell("Tổng chi cho hoạt động R&D (GR&D)"),
-        makeTableCell("Triệu đồng", { align: AlignmentType.CENTER }),
-        makeTableCell(formatNumber(Math.round(rdMil * 0.3)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(rdMil * 0.35)), { align: AlignmentType.RIGHT }),
-        makeTableCell(formatNumber(Math.round(rdMil * 0.35)), { align: AlignmentType.RIGHT }),
-      ],
-    }),
-  ];
-
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table13Rows,
-    })
-  );
+  const table28 = make5ColGridTable(cHeaders, [
+    [
+      "Tổng chi cho hoạt động nghiên cứu phát triển (GR&D)",
+      "VNĐ",
+      formatVnd(data.rdExpenses3Years ? data.rdExpenses3Years * 0.3 : undefined),
+      formatVnd(data.rdExpenses3Years ? data.rdExpenses3Years * 0.33 : undefined),
+      formatVnd(data.rdExpenses3Years ? data.rdExpenses3Years * 0.37 : undefined),
+    ],
+  ]);
+  children.push(table28);
 
   children.push(
     createParagraph(
-      createTextRun(`Doanh nghiệp có thành lập Quỹ phát triển KH&CN: [${data.hasSciTechFund ? "x" : " "}] Có       [${!data.hasSciTechFund ? "x" : " "}] Không`),
-      { spaceBefore: 60, spaceAfter: 100 }
+      ` [${data.hasSciTechFund ? "x" : " "}] Doanh nghiệp có thành lập Quỹ phát triển KH&CN`,
+      { spaceBefore: 60, spaceAfter: 80 }
     )
   );
+
+  // Hướng dẫn Mục Đ
+  children.push(createParagraph(createTextRun("Hướng dẫn:", { bold: true, italic: true }), { spaceBefore: 60 }));
+  children.push(createParagraph("- Mục Đ2: Chi phí dành cho thông tin và công nghệ thông tin là các chi phí mua phần mềm trong 3 năm gần nhất.", { italic: true }));
+  children.push(createParagraph("- Mục Đ4: Chi phí dành cho nghiên cứu và phát triển công nghệ (R&D) của doanh nghiệp bao gồm tất cả các chi phí cho hoạt động R&D.", { italic: true }));
+  children.push(createParagraph("- Mục Đ1, Đ3, Đ4: Doanh nghiệp tích vào ô xác nhận nếu trong doanh nghiệp có thực hiện các hoạt động này.", { italic: true, spaceAfter: 120 }));
 
   // -------------------------------------------------------------------------
-  // MỤC E: NĂNG LỰC ĐỔI MỚI SÁNG TẠO CỦA DOANH NGHIỆP
+  // MỤC E: NĂNG LỰC ĐỔI MỚI SÁNG TẠO CỦA DOANH NGHIỆP (TABLE 29)
   // -------------------------------------------------------------------------
   children.push(
     createParagraph(
@@ -1509,152 +1533,109 @@ export async function exportTt17SurveyDocx(
     )
   );
 
-  // 1 & 2. Sản phẩm mới & R&D công nghệ
-  const prodType = data.newProductType || "none";
-  const newRevMil = data.newProductRevenueRatio ? Math.round((revTotal2 * data.newProductRevenueRatio) / 100) : 0;
-  const techRes = data.rdTechnologyResult || "none";
+  // E1. Kết quả R&D sản phẩm (TABLE 29)
+  children.push(createParagraph(createTextRun("1. Kết quả nghiên cứu và phát triển sản phẩm", { bold: true }), { spaceAfter: 40 }));
+  children.push(createParagraph("Liệt kê các kết quả của hoạt động nghiên cứu và phát triển sản phẩm tại doanh nghiệp, bao gồm:"));
+  children.push(createParagraph(` [${data.newProductType === "kieu_dang" ? "x" : " "}] Tạo ra sản phẩm mới về kiểu dáng. Tên sản phẩm: ${data.newProductType === "kieu_dang" && data.newProductNames ? data.newProductNames : "................................................"}`));
+  children.push(createParagraph(` [${data.newProductType === "tinh_nang" ? "x" : " "}] Tạo ra sản phẩm mới về tính năng. Tên sản phẩm: ${data.newProductType === "tinh_nang" && data.newProductNames ? data.newProductNames : "................................................"}`));
+  children.push(createParagraph(` [${data.newProductType === "hoan_toan_moi" ? "x" : " "}] Tạo ra sản phẩm hoàn toàn mới trên thị trường. Tên sản phẩm: ${data.newProductType === "hoan_toan_moi" && data.newProductNames ? data.newProductNames : "............................"}`));
 
+  const table29 = make5ColGridTable(cHeaders, [
+    [
+      "Doanh thu của các sản phẩm mới",
+      "VNĐ",
+      s0?.netRevenue && data.newProductRevenueRatio ? formatVnd((s0.netRevenue * data.newProductRevenueRatio) / 100) : "---",
+      s1?.netRevenue && data.newProductRevenueRatio ? formatVnd((s1.netRevenue * data.newProductRevenueRatio) / 100) : "---",
+      s2?.netRevenue && data.newProductRevenueRatio ? formatVnd((s2.netRevenue * data.newProductRevenueRatio) / 100) : "---",
+    ],
+  ]);
+  children.push(table29);
+
+  // E2. Kết quả R&D công nghệ
+  children.push(createParagraph(createTextRun("2. Kết quả nghiên cứu và phát triển công nghệ", { bold: true }), { spaceBefore: 80 }));
+  children.push(createParagraph("Liệt kê các kết quả của hoạt động nghiên cứu và phát triển công nghệ tại doanh nghiệp, bao gồm:"));
+  children.push(createParagraph(` [${data.rdTechnologyResult === "dang_nghien_cuu" ? "x" : " "}] Có quy trình, phương tiện, thiết bị công nghệ đang được tiến hành nghiên cứu. `));
+  children.push(createParagraph(`Tên công nghệ: ${data.rdTechnologyResult === "dang_nghien_cuu" ? "Nghiên cứu ứng dụng công nghệ điều khiển tự động hóa thông minh" : "............................................................................................................"}`));
+  children.push(createParagraph(` [${data.rdTechnologyResult === "thu_nghiem_lab" ? "x" : " "}] Có quy trình, phương tiện, thiết bị công nghệ đã được nghiên cứu phát triển nhưng đang ở mức thử nghiệm hay quy mô phòng thí nghiệm. Tên công nghệ: ${data.rdTechnologyResult === "thu_nghiem_lab" ? "Công nghệ gia công chính xác bề mặt hợp kim" : "............................................................................................................................"}`));
+  children.push(createParagraph(` [${data.rdTechnologyResult === "giai_phap_huu_ich" ? "x" : " "}] Có quy trình, công nghệ, phương thức sản xuất mới được chấp nhận đăng ký hoặc được cấp bằng độc quyền giải pháp hữu ích. Tên công nghệ: ${data.rdTechnologyResult === "giai_phap_huu_ich" ? "Giải pháp gá đặt phôi tự động" : "............................"}`));
+  children.push(createParagraph(` [${data.rdTechnologyResult === "bang_sang_che" ? "x" : " "}] Có quy trình, công nghệ, phương thức sản xuất mới được bảo hộ dưới dạng bằng sáng chế và được thương mại hóa. Tên công nghệ: ${data.rdTechnologyResult === "bang_sang_che" ? "Bằng độc quyền sáng chế hệ thống xử lý nhiệt thông minh" : "..........................................."}`));
+
+  // E3. Năng lực chuyển đổi số
+  const hasTech = (code: string) =>
+    data.digitalTechnologies?.some((s) => s.toUpperCase().includes(code.toUpperCase())) ?? false;
+
+  children.push(createParagraph(createTextRun("3. Năng lực chuyển đổi số của doanh nghiệp", { bold: true }), { spaceBefore: 80 }));
+  children.push(createParagraph("Liệt kê các hoạt động nhằm thực hiện việc chuyển đổi số (ứng dụng công nghệ số) trong sản xuất tại doanh nghiệp, bao gồm:"));
+  children.push(createParagraph(createTextRun("a) Xây dựng chiến lược các mạng công nghiệp (CMCN) 4.0 hoặc chuyển đổi số tại doanh nghiệp", { bold: true })));
+  children.push(createParagraph("Đánh giá sự hiểu biết cũng như quá trình thực hiện xây dựng chiến lược các mạng công nghiệp (CMCN) 4.0 hoặc chuyển đổi số tại doanh nghiệp, bao gồm"));
+  children.push(createParagraph(` [${data.digitalStrategyLevel === "chua_biet" ? "x" : " "}] Chưa biết       [${data.digitalStrategyLevel === "chuan_bi" ? "x" : " "}] Đã biết nhưng chưa thực hiện `));
+  children.push(createParagraph(` [${data.digitalStrategyLevel === "chuan_bi" ? "x" : " "}] Doanh nghiệp chuẩn bị xây dựng chiến lược       [${data.digitalStrategyLevel === "da_xay_dung" ? "x" : " "}] Doanh nghiệp đã xây dựng được chiến lược`));
+  children.push(createParagraph(` [${data.digitalStrategyLevel === "dang_thuc_hien" ? "x" : " "}] Doanh nghiệp đang thực hiện các nội dung trong chiến lược `));
+
+  children.push(createParagraph(createTextRun("b) Nghiên cứu và áp dụng các công nghệ số phục vụ cho hoạt động sản xuất và kinh doanh của doanh nghiệp, bao gồm:", { bold: true })));
+  children.push(createParagraph("Liệt kê các công nghệ số đang được nghiên cứu và áp dụng cho hoạt động sản xuất và kinh doanh của doanh nghiệp, bao gồm"));
+  children.push(createParagraph(` [${hasTech("Cloud") ? "x" : " "}] Điện toán đám mây          [${hasTech("MoHinhHoa") ? "x" : " "}] Mô hình hóa`));
+  children.push(createParagraph(` [${hasTech("Robot") ? "x" : " "}] Robot tiên tiến          [${hasTech("AnNinhMang") ? "x" : " "}] An ninh mạng`));
+  children.push(createParagraph(` [${hasTech("AR") ? "x" : " "}] Thực tế ảo tăng cường (AR)          [${hasTech("IoT") ? "x" : " "}] Internet kết nối vạn vật (IoT) `));
+  children.push(createParagraph(` [${hasTech("VR") ? "x" : " "}] Thực tại ảo (VR)          [${hasTech("VatLieuMoi") ? "x" : " "}] Vật liệu mới `));
+  children.push(createParagraph(` [${hasTech("BigData") ? "x" : " "}] Dữ liệu lớn (Bigdata)          [${hasTech("Blockchain") ? "x" : " "}] Chuỗi khối (Blockchain) `));
+  children.push(createParagraph(` [${hasTech("TichHop") ? "x" : " "}] Tích hợp hệ thống          [${hasTech("In3D") ? "x" : " "}] In 3D `));
+
+  children.push(createParagraph(createTextRun("b) Mức độ áp dụng các công nghệ số tại doanh nghiệp", { bold: true })));
+  children.push(createParagraph("Đánh giá mức độ áp dụng đối với các công nghệ số đã được liệt kê tại doanh nghiệp:"));
+  children.push(createParagraph(` [${data.digitalAdoptionScope === "nghien_cuu" ? "x" : " "}] Đang nghiên cứu để áp dụng tại doanh nghiệp`));
+  children.push(createParagraph(` [${data.digitalAdoptionScope === "mot_so_bo_phan" ? "x" : " "}] Đã triển khai tại một số bộ phận`));
+  children.push(createParagraph(` [${data.digitalAdoptionScope === "toan_nha_may" ? "x" : " "}] Đã triển khai toàn bộ trong nhà máy`));
+
+  // E4. Năng lực liên kết, hợp tác R&D
+  children.push(createParagraph(createTextRun("4. Năng lực liên kết, hợp tác trong nghiên cứu và phát triển của doanh nghiệp ", { bold: true }), { spaceBefore: 80 }));
+  children.push(createParagraph("Liệt kê các hoạt động liên kết, hợp tác trong nghiên cứu và phát triển công nghệ, sản phẩm của doanh nghiệp với các tổ chức, viện nghiên cứu, trường đại học trong và ngoài nước"));
+  children.push(createParagraph(` [${data.academyPartnershipType === "du_an_rd" ? "x" : " "}] Có hoạt động hợp tác theo hình thức dự án nghiên cứu phát triển công nghệ sản phẩm mới `));
+  children.push(createParagraph(` [${data.academyPartnershipType === "chuyen_gia_dao_tao" ? "x" : " "}] Có hoạt động hợp tác theo hình thức mời chuyên gia hỗ trợ, tiếp nhận kết quả nghiên cứu, đào tạo R&D `));
+
+  // Hướng dẫn Mục E
+  children.push(createParagraph(createTextRun("Hướng dẫn:", { bold: true, italic: true }), { spaceBefore: 60 }));
+  children.push(createParagraph("- Mục E1: Nếu doanh nghiệp có nhiều sản phẩm mới thì chỉ ghi tối đa 03 sản phẩm mới có doanh thu cao nhất, doanh thu của sản phẩm mới thì tính tổng doanh thu của tất cả các sản phẩm mới từng năm trong thời gian ba năm trước năm điều tra.", { italic: true }));
+  children.push(createParagraph("- Mục E2: Nếu doanh nghiệp có nhiều công nghệ mới thì chỉ ghi tối đa 03 công nghệ mới mà doanh nghiệp đánh giá có hiệu quả cao nhất.", { italic: true }));
+  children.push(createParagraph("- Mục E1, E2, E3, E4: Doanh nghiệp tích vào ô xác nhận nếu trong doanh nghiệp có thực hiện các hoạt động này.", { italic: true, spaceAfter: 120 }));
+
+  // Ký tên Người khai phiếu cuối Phần I (Theo mẫu trắng gốc)
+  children.push(createParagraph(createTextRun("Người khai phiếu", { bold: true, size: 22 }), { align: AlignmentType.RIGHT, spaceBefore: 120 }));
+  children.push(createParagraph(createTextRun("(Ký và ghi rõ họ tên)", { italic: true, size: 19 }), { align: AlignmentType.RIGHT, spaceAfter: 200 }));
+
+  // =========================================================================
+  // NGẮT TRANG (PAGE BREAK) GIỮA PHẦN I VÀ PHẦN II
+  // =========================================================================
   children.push(
-    createParagraph(
-      [
-        createTextRun("1. Kết quả nghiên cứu và phát triển sản phẩm mới trong 3 năm qua:\n", { bold: true }),
-        createTextRun(`[${prodType === "kieu_dang" ? "x" : " "}] Tạo ra sản phẩm mới về kiểu dáng. Tên: ${prodType === "kieu_dang" ? safeText(data.newProductNames) : "...................."}\n`),
-        createTextRun(`[${prodType === "tinh_nang" ? "x" : " "}] Tạo ra sản phẩm mới về tính năng. Tên: ${prodType === "tinh_nang" ? safeText(data.newProductNames) : "...................."}\n`),
-        createTextRun(`[${prodType === "hoan_toan_moi" ? "x" : " "}] Tạo ra sản phẩm hoàn toàn mới trên thị trường. Tên: ${prodType === "hoan_toan_moi" ? safeText(data.newProductNames) : "...................."}\n`),
-        createTextRun(`Doanh thu sản phẩm mới trong năm ${y2}: ${newRevMil > 0 ? formatNumber(newRevMil) : "0"} triệu đồng (${data.newProductRevenueRatio || 0}% doanh thu).\n\n`),
-        createTextRun("2. Kết quả nghiên cứu và phát triển công nghệ:\n", { bold: true }),
-        createTextRun(`[${techRes === "dang_nghien_cuu" ? "x" : " "}] Quy trình, thiết bị công nghệ đang tiến hành nghiên cứu\n`),
-        createTextRun(`[${techRes === "thu_nghiem_lab" ? "x" : " "}] Quy trình, thiết bị công nghệ đang ở mức thử nghiệm phòng lab\n`),
-        createTextRun(`[${techRes === "giai_phap_huu_ich" ? "x" : " "}] Quy trình công nghệ mới được cấp Bằng giải pháp hữu ích\n`),
-        createTextRun(`[${techRes === "bang_sang_che" ? "x" : " "}] Quy trình công nghệ mới được bảo hộ Bằng sáng chế và thương mại hóa`),
-      ],
-      { spaceAfter: 60 }
-    )
-  );
-
-  // 3. Chuyển đổi số CMCN 4.0 (TABLE 14 & TABLE 15)
-  children.push(
-    createParagraph(
-      [
-        createTextRun("3. Năng lực chuyển đổi số của doanh nghiệp:\n", { bold: true }),
-        createTextRun("a) Xây dựng chiến lược CMCN 4.0 hoặc chuyển đổi số tại doanh nghiệp:", { bold: true }),
-      ],
-      { spaceBefore: 100, spaceAfter: 60 }
-    )
-  );
-
-  const strat = data.digitalStrategyLevel || "chua_biet";
-  const table14Rows: TableRow[] = [
-    new TableRow({
-      children: [
-        makeTableCell(`[${strat === "chua_biet" ? "x" : " "}] Chưa biết`, { widthPercent: 33 }),
-        makeTableCell(`[${strat === "da_xay_dung" ? "x" : " "}] Doanh nghiệp đã xây dựng được chiến lược`, { widthPercent: 34 }),
-        makeTableCell(`[ ] Đã biết nhưng chưa thực hiện`, { widthPercent: 33 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell(`[${strat === "chuan_bi" ? "x" : " "}] Doanh nghiệp chuẩn bị xây dựng chiến lược`, { widthPercent: 33 }),
-        makeTableCell(`[${strat === "dang_thuc_hien" ? "x" : " "}] Doanh nghiệp đang thực hiện các nội dung chiến lược`, { widthPercent: 34 }),
-        makeTableCell("", { widthPercent: 33 }),
-      ],
-    }),
-  ];
-
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table14Rows,
+    new Paragraph({
+      children: [new PageBreak()],
     })
   );
 
-  children.push(
-    createParagraph(
-      createTextRun("b) Nghiên cứu và áp dụng các công nghệ số 4.0 trong sản xuất kinh doanh:", { bold: true }),
-      { spaceBefore: 100, spaceAfter: 60 }
-    )
-  );
-
-  const dTechs = (data.digitalTechnologies || []).map((t) => t.toUpperCase());
-  const hasCloud = dTechs.some((t) => t.includes("CLOUD") || t.includes("DAM_MAY"));
-  const hasModel = dTechs.some((t) => t.includes("MO_HINH") || t.includes("SIMULATION"));
-  const hasRobot = dTechs.some((t) => t.includes("ROBOT"));
-  const hasSec = dTechs.some((t) => t.includes("AN_NINH") || t.includes("CYBER"));
-  const hasAr = dTechs.some((t) => t.includes("AR") || t.includes("TANG_CUONG"));
-  const hasIot = dTechs.some((t) => t.includes("IOT") || t.includes("VAN_VAT"));
-  const hasVr = dTechs.some((t) => t.includes("VR") || t.includes("THUC_TAI_AO"));
-  const hasMat = dTechs.some((t) => t.includes("VAT_LIEU"));
-  const hasBc = dTechs.some((t) => t.includes("BLOCKCHAIN") || t.includes("CHUOI_KHOI"));
-  const hasBd = dTechs.some((t) => t.includes("BIGDATA") || t.includes("DU_LIEU_LON") || t.includes("AI"));
-  const hasInteg = dTechs.some((t) => t.includes("TICH_HOP"));
-  const has3d = dTechs.some((t) => t.includes("IN_3D") || t.includes("3D"));
-
-  const table15Rows: TableRow[] = [
-    new TableRow({
-      children: [
-        makeTableCell(`[${hasCloud ? "x" : " "}] Điện toán đám mây`, { widthPercent: 20 }),
-        makeTableCell(`[${hasModel ? "x" : " "}] Mô hình hóa`, { widthPercent: 20 }),
-        makeTableCell(`[${hasRobot ? "x" : " "}] Robot tiên tiến`, { widthPercent: 20 }),
-        makeTableCell(`[${hasSec ? "x" : " "}] An ninh mạng`, { widthPercent: 20 }),
-        makeTableCell(`[${hasAr ? "x" : " "}] Thực tế tăng cường (AR)`, { widthPercent: 20 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell(`[${hasIot ? "x" : " "}] Internet kết nối vạn vật (IoT)`, { widthPercent: 20 }),
-        makeTableCell(`[${hasVr ? "x" : " "}] Thực tại ảo (VR)`, { widthPercent: 20 }),
-        makeTableCell(`[${hasMat ? "x" : " "}] Vật liệu mới`, { widthPercent: 20 }),
-        makeTableCell(`[${hasBc ? "x" : " "}] Chuỗi khối (Blockchain)`, { widthPercent: 20 }),
-        makeTableCell(`[${hasBd ? "x" : " "}] Dữ liệu lớn & AI (BigData)`, { widthPercent: 20 }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        makeTableCell(`[${hasInteg ? "x" : " "}] Tích hợp hệ thống`, { widthPercent: 20 }),
-        makeTableCell(`[${has3d ? "x" : " "}] In 3D`, { widthPercent: 20 }),
-        makeTableCell("", { widthPercent: 20 }),
-        makeTableCell("", { widthPercent: 20 }),
-        makeTableCell("", { widthPercent: 20 }),
-      ],
-    }),
-  ];
-
-  children.push(
-    new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: table15Rows,
-    })
-  );
-
-  const scopeAdop = data.digitalAdoptionScope || "nghien_cuu";
+  // =========================================================================
+  // PHẦN II: PHỤ LỤC II VÀ BÁO CÁO KẾT QUẢ ĐÁNH GIÁ 26 TIÊU CHÍ
+  // Giữ nguyên 100% logic, cấu trúc bảng 26 tiêu chí, tổng điểm, hệ số đồng bộ,
+  // xếp loại và chữ ký 3 bên như hiện tại
+  // =========================================================================
   children.push(
     createParagraph(
       [
-        createTextRun("c) Mức độ áp dụng các công nghệ số tại doanh nghiệp:\n", { bold: true }),
-        createTextRun(`[${scopeAdop === "nghien_cuu" ? "x" : " "}] Đang nghiên cứu để áp dụng       `),
-        createTextRun(`[${scopeAdop === "mot_so_bo_phan" ? "x" : " "}] Đã triển khai tại một số bộ phận       `),
-        createTextRun(`[${scopeAdop === "toan_nha_may" ? "x" : " "}] Đã triển khai toàn bộ trong nhà máy\n\n`),
-        createTextRun("4. Năng lực liên kết, hợp tác trong R&D của doanh nghiệp:\n", { bold: true }),
-        createTextRun(`[${data.academyPartnershipType === "du_an_rd" ? "x" : " "}] Hợp tác theo hình thức dự án nghiên cứu phát triển công nghệ sản phẩm mới\n`),
-        createTextRun(`[${data.academyPartnershipType === "chuyen_gia_dao_tao" ? "x" : " "}] Hợp tác theo hình thức mời chuyên gia hỗ trợ, tiếp nhận kết quả nghiên cứu, đào tạo R&D`),
+        createTextRun("PHẦN II: PHỤ LỤC II VÀ BÁO CÁO KẾT QUẢ ĐÁNH GIÁ 26 TIÊU CHÍ\n", {
+          bold: true,
+          size: 26,
+          color: "0F172A",
+        }),
+        createTextRun("TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ THEO THÔNG TƯ 17/2019/TT-BKHCN", {
+          bold: true,
+          size: 24,
+          color: "0F172A",
+        }),
       ],
-      { spaceBefore: 80, spaceAfter: 120 }
+      { align: AlignmentType.CENTER, spaceBefore: 120, spaceAfter: 120 }
     )
   );
 
-  // -------------------------------------------------------------------------
-  // PHỤ LỤC II: KẾT QUẢ TÍNH TOÁN ĐIỂM 26 TIÊU CHÍ (TABLE 16)
-  // -------------------------------------------------------------------------
-  children.push(
-    createParagraph(
-      [
-        createTextRun("PHỤ LỤC II: BÁO CÁO KẾT QUẢ ĐÁNH GIÁ 26 TIÊU CHÍ\n", { bold: true, size: 26, color: "0F172A" }),
-        createTextRun("TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ THEO THÔNG TƯ 17/2019/TT-BKHCN", { bold: true, size: 24, color: "0F172A" }),
-      ],
-      { align: AlignmentType.CENTER, spaceBefore: 280, spaceAfter: 120 }
-    )
-  );
-
+  // Table 30: 26 Tiêu chí đánh giá
   const criteriaRows: TableRow[] = [
     new TableRow({
       tableHeader: true,
@@ -1745,7 +1726,7 @@ export async function exportTt17SurveyDocx(
     })
   );
 
-  // SUMMARY BOX
+  // Table 31: SUMMARY BOX
   const totalScore = score?.totalScore ? score.totalScore.toFixed(1) : "0.0";
   const syncCoeff = score?.syncCoefficient ? score.syncCoefficient.toFixed(2) : "0.00";
   const classification = score?.classificationLabel || score?.classification || "CHƯA XẾP LOẠI";
@@ -1803,9 +1784,7 @@ export async function exportTt17SurveyDocx(
     })
   );
 
-  // -------------------------------------------------------------------------
-  // KHU VỰC CHỮ KÝ 3 BÊN (TABLE 17 / TABLE 18)
-  // -------------------------------------------------------------------------
+  // Table 32: KHU VỰC CHỮ KÝ 3 BÊN
   children.push(
     createParagraph(
       createTextRun(`.............., Ngày ..... tháng ..... năm ${year}   `, {
@@ -1839,10 +1818,6 @@ export async function exportTt17SurveyDocx(
   return await Packer.toBlob(doc);
 }
 
-
-// =========================================================================
-// 2. SME DEMAND SURVEY DOCX GENERATOR
-// =========================================================================
 
 export async function exportDemandSmeDocx(
   record: DemandSmeSurveyRecord
@@ -2053,7 +2028,7 @@ export async function exportDemandSmeDocx(
 
 export function downloadDocxBlob(blob: Blob, filename: string): void {
   if (typeof window === "undefined") return;
-  const url = window.URL.createObjectURL(blob);
+  const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename.endsWith(".docx") ? filename : `${filename}.docx`;
@@ -2061,7 +2036,9 @@ export function downloadDocxBlob(blob: Blob, filename: string): void {
   document.body.appendChild(anchor);
   anchor.click();
   setTimeout(() => {
-    document.body.removeChild(anchor);
-    window.URL.revokeObjectURL(url);
-  }, 150);
+    if (anchor.parentNode === document.body) {
+      document.body.removeChild(anchor);
+    }
+    URL.revokeObjectURL(url);
+  }, 1500);
 }

@@ -10,6 +10,7 @@ import {
 } from "@/services/api/assessment-tt17";
 import { Tt17SurveyDetailView } from "@/components/assessments/tt17-survey-detail-view";
 import { BlockchainZkpBadge } from "@/components/blockchain/BlockchainZkpBadge";
+import { exportTt17SurveyDocx, downloadDocxBlob } from "@/services/survey-docx-exporter";
 
 export default function AssessmentReportPage() {
   const params = useParams();
@@ -18,8 +19,26 @@ export default function AssessmentReportPage() {
 
   const [assessment, setAssessment] = useState<Tt17Assessment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isExportingWord, setIsExportingWord] = useState(false);
   const [activeTab, setActiveTab] = useState<"ALL" | "T" | "E" | "O" | "R" | "I">("ALL");
   const [viewMode, setViewMode] = useState<"ANALYTICS" | "APPENDIX_IV">("ANALYTICS");
+
+  const handleExportWord = async () => {
+    if (!assessment || isExportingWord) return;
+    try {
+      setIsExportingWord(true);
+      const blob = await exportTt17SurveyDocx(assessment);
+      const safeTax = (assessment.taxCode || assessment.surveyData?.taxCode || "DN").replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_"
+      );
+      downloadDocxBlob(blob, `phieu_thu_thap_tt17_out_${safeTax}.docx`);
+    } catch (err) {
+      console.error("Lỗi khi xuất Word TT17:", err);
+    } finally {
+      setIsExportingWord(false);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -194,6 +213,17 @@ export default function AssessmentReportPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               {viewMode === "ANALYTICS" ? "Xem Mẫu Phụ Lục IV (In)" : "Xem Phân Tích Đồ Thị"}
+            </button>
+
+            <button
+              onClick={handleExportWord}
+              disabled={isExportingWord}
+              className="flex-1 sm:flex-none px-3.5 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              {isExportingWord ? "Đang xuất..." : "Xuất Word (.docx)"}
             </button>
 
             <button

@@ -88,13 +88,13 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(screen.getByText('2. Chỉ Số Nhu Cầu Đổi Mới (TNI)')).toBeInTheDocument();
 
     // Check Stepper 4 buttons
-    expect(screen.getByText('E. Nhu Cầu & TNI')).toBeInTheDocument();
-    expect(screen.getByText('A. Doanh Nghiệp')).toBeInTheDocument();
+    expect(screen.getByText('Nhu Cầu & TNI')).toBeInTheDocument();
+    expect(screen.getByText('Doanh Nghiệp')).toBeInTheDocument();
     expect(screen.getByText('Thông Tin Bổ Sung')).toBeInTheDocument();
-    expect(screen.getByText('G. Xác Nhận')).toBeInTheDocument();
+    expect(screen.getByText('Xác Nhận')).toBeInTheDocument();
 
     // Check Progress indicator
-    expect(screen.getByText(/Bước 1\/4: E\. Nhu Cầu & Thuật Toán TNI/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 1\/4: Nhu Cầu & Thuật Toán TNI/i)).toBeInTheDocument();
     expect(screen.getByText(/25% Hoàn thành/i)).toBeInTheDocument();
 
     // Action buttons in header
@@ -157,16 +157,16 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     expect(screen.getByText(/Phân mục D \(Tùy chọn\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Phân mục F \(Tùy chọn\)/i)).toBeInTheDocument();
 
-    // Click on Tab 2 (A. Doanh Nghiệp)
-    const tab2 = screen.getByRole('button', { name: /A\. Doanh Nghiệp/i });
+    // Click on Tab 2 (Doanh Nghiệp)
+    const tab2 = screen.getByRole('button', { name: /^2\s*Doanh Nghiệp$/i });
     fireEvent.click(tab2);
-    expect(screen.getByText(/Bước 2\/4: A\. Thông Tin Doanh Nghiệp/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 2\/4: Thông Tin Doanh Nghiệp/i)).toBeInTheDocument();
     expect(screen.getByText(/50% Hoàn thành/i)).toBeInTheDocument();
 
-    // Click on Tab 4 (G. Xác Nhận)
-    const tab4 = screen.getByRole('button', { name: /G\. Xác Nhận/i });
+    // Click on Tab 4 (Xác Nhận)
+    const tab4 = screen.getByRole('button', { name: /^4\s*Xác Nhận$/i });
     fireEvent.click(tab4);
-    expect(screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 4\/4: Rà Soát & Xác Nhận PDPD/i)).toBeInTheDocument();
     expect(screen.getByText(/100% Hoàn thành/i)).toBeInTheDocument();
   });
 
@@ -298,6 +298,16 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     const consentCheckbox = screen.getByRole('checkbox');
     fireEvent.click(consentCheckbox);
 
+    // Touch Signature (BR-SIG-01)
+    fireEvent.click(screen.getByText(/Bấm vào đây để ký tay \/ Chữ ký điện tử/i));
+    const canvas = screen.getByRole('dialog').querySelector('canvas');
+    if (canvas) {
+      fireEvent.mouseDown(canvas, { clientX: 50, clientY: 50 });
+      fireEvent.mouseMove(canvas, { clientX: 100, clientY: 100 });
+      fireEvent.mouseUp(canvas);
+      fireEvent.click(screen.getByRole('button', { name: /Xác nhận & Sử dụng chữ ký/i }));
+    }
+
     // Submit
     const submitBtn = screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i });
     fireEvent.click(submitBtn);
@@ -363,6 +373,16 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     const consentCheckbox = screen.getByRole('checkbox');
     fireEvent.click(consentCheckbox);
 
+    // Touch Signature (BR-SIG-01)
+    fireEvent.click(screen.getByText(/Bấm vào đây để ký tay \/ Chữ ký điện tử/i));
+    const canvas = screen.getByRole('dialog').querySelector('canvas');
+    if (canvas) {
+      fireEvent.mouseDown(canvas, { clientX: 50, clientY: 50 });
+      fireEvent.mouseMove(canvas, { clientX: 100, clientY: 100 });
+      fireEvent.mouseUp(canvas);
+      fireEvent.click(screen.getByRole('button', { name: /Xác nhận & Sử dụng chữ ký/i }));
+    }
+
     // Submit successfully
     const submitBtn = screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i });
     fireEvent.click(submitBtn);
@@ -413,7 +433,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
 
     // Must reach Step 4 smoothly
     await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
-    expect(screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 4\/4: Rà Soát & Xác Nhận PDPD/i)).toBeInTheDocument();
 
     // Sign and consent
     fireEvent.change(screen.getByPlaceholderText(/Người ký xác nhận/i), {
@@ -424,6 +444,16 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     });
     const consentCheckbox = screen.getByRole('checkbox');
     fireEvent.click(consentCheckbox);
+
+    // Touch Signature (BR-SIG-01)
+    fireEvent.click(screen.getByText(/Bấm vào đây để ký tay \/ Chữ ký điện tử/i));
+    const canvas = screen.getByRole('dialog').querySelector('canvas');
+    if (canvas) {
+      fireEvent.mouseDown(canvas, { clientX: 50, clientY: 50 });
+      fireEvent.mouseMove(canvas, { clientX: 100, clientY: 100 });
+      fireEvent.mouseUp(canvas);
+      fireEvent.click(screen.getByRole('button', { name: /Xác nhận & Sử dụng chữ ký/i }));
+    }
 
     // Submit successfully
     fireEvent.click(screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i }));
@@ -530,8 +560,8 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     const fillSampleBtn = screen.getByRole('button', { name: /Điền dữ liệu mẫu \(Demo\)/i });
     fireEvent.click(fillSampleBtn);
 
-    // Jump to Step 7
-    fireEvent.click(screen.getByText('G. Xác Nhận'));
+    // Jump to Step 4
+    fireEvent.click(screen.getByText('Xác Nhận'));
 
     // Submit form
     await waitFor(() => screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i }));
@@ -622,8 +652,8 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     render(<DeepSurveyPage />);
 
     // 1. Direct free-click jump to Step 4 from empty state
-    fireEvent.click(screen.getByRole('button', { name: /G\. Xác Nhận/i }));
-    await waitFor(() => screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i));
+    fireEvent.click(screen.getByRole('button', { name: /^4\s*Xác Nhận$/i }));
+    await waitFor(() => screen.getByText(/Bước 4\/4: Rà Soát & Xác Nhận PDPD/i));
 
     // Fill signature & PDPD to simulate submitting on Step 4
     fireEvent.change(screen.getByPlaceholderText(/Người ký xác nhận/i), {
@@ -641,7 +671,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
 
     // Should redirect back to Step 1
     await waitFor(() => {
-      expect(screen.getByText(/Bước 1\/4: E\. Nhu Cầu & Thuật Toán TNI/i)).toBeInTheDocument();
+      expect(screen.getByText(/Bước 1\/4: Nhu Cầu & Thuật Toán TNI/i)).toBeInTheDocument();
     });
 
     // 2. Fill Step 1 demand item
@@ -653,13 +683,13 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     });
 
     // Jump back to Step 4 and attempt submit again: Tier 2 check should fail (missing enterprise info in Step 2)
-    fireEvent.click(screen.getByRole('button', { name: /G\. Xác Nhận/i }));
-    await waitFor(() => screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i));
+    fireEvent.click(screen.getByRole('button', { name: /^4\s*Xác Nhận$/i }));
+    await waitFor(() => screen.getByText(/Bước 4\/4: Rà Soát & Xác Nhận PDPD/i));
     fireEvent.click(screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i }));
 
     // Should redirect back to Step 2
     await waitFor(() => {
-      expect(screen.getByText(/Bước 2\/4: A\. Thông Tin Doanh Nghiệp/i)).toBeInTheDocument();
+      expect(screen.getByText(/Bước 2\/4: Thông Tin Doanh Nghiệp/i)).toBeInTheDocument();
     });
 
     // 3. Fill Step 2 enterprise info
@@ -680,14 +710,108 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
     });
 
     // Jump to Step 4 and submit successfully
-    fireEvent.click(screen.getByRole('button', { name: /G\. Xác Nhận/i }));
-    await waitFor(() => screen.getByText(/Bước 4\/4: G\. Rà Soát & Xác Nhận PDPD/i));
+    fireEvent.click(screen.getByRole('button', { name: /^4\s*Xác Nhận$/i }));
+    await waitFor(() => screen.getByText(/Bước 4\/4: Rà Soát & Xác Nhận PDPD/i));
+    fireEvent.change(screen.getByPlaceholderText(/Người ký xác nhận/i), {
+      target: { value: 'Trần Văn Ký' }
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Chức vụ người ký/i), {
+      target: { value: 'Giám đốc' }
+    });
+    const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
+    if (!checkbox.checked) {
+      fireEvent.click(checkbox);
+    }
+
+    // Touch Signature (BR-SIG-01)
+    fireEvent.click(screen.getByText(/Bấm vào đây để ký tay \/ Chữ ký điện tử/i));
+    const canvasFinal = screen.getByRole('dialog').querySelector('canvas');
+    if (canvasFinal) {
+      fireEvent.mouseDown(canvasFinal, { clientX: 50, clientY: 50 });
+      fireEvent.mouseMove(canvasFinal, { clientX: 100, clientY: 100 });
+      fireEvent.mouseUp(canvasFinal);
+      fireEvent.click(screen.getByRole('button', { name: /Xác nhận & Sử dụng chữ ký/i }));
+    }
+
     fireEvent.click(screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i }));
 
     // Verified: Submission succeeds
     await waitFor(() => {
       expect(screen.getByText('Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!')).toBeInTheDocument();
     });
+  });
+
+  it('enforces mandatory electronic touch signature before submission (BR-SIG-01 / REQ-SIG-01 / TEST-SIG-01)', async () => {
+    setupFetch();
+    render(<DeepSurveyPage />);
+
+    // Load sample data
+    fireEvent.click(screen.getByRole('button', { name: /Điền dữ liệu mẫu \(Demo\)/i }));
+
+    // Jump to Step 4
+    fireEvent.click(screen.getByRole('button', { name: /^4\s*Xác Nhận$/i }));
+    await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
+
+    // Clear signature if already populated
+    const clearSigBtn = screen.queryByRole('button', { name: /Xóa chữ ký/i });
+    if (clearSigBtn) {
+      fireEvent.click(clearSigBtn);
+    }
+
+    // Verify unsigned placeholder is displayed
+    expect(screen.getByText('Bấm vào đây để ký tay / Chữ ký điện tử')).toBeInTheDocument();
+
+    // Attempt to submit without signature
+    const submitBtn = screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i });
+    fireEvent.click(submitBtn);
+
+    // Verify blocked and error displayed
+    expect(screen.queryByText('Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!')).not.toBeInTheDocument();
+    expect(screen.getByText('Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!')).toBeInTheDocument();
+  });
+
+  it('preserves electronic touch signature in LocalStorage draft and restores it upon reload (TEST-SIG-05)', async () => {
+    setupFetch();
+    const sampleSignature = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+    // Mock saved draft in localStorage
+    const sampleDraft = {
+      companyName: 'Công ty Cổ phần Năng Lượng Mới',
+      province: 'Đà Nẵng',
+      contactName: 'Phạm Minh',
+      contactPhone: '0905123456',
+      contactEmail: 'minh.pm@newenergy.vn',
+      demandItems: [
+        {
+          id: 'item-1',
+          stageName: 'Truyền tải điện',
+          technicalProblem: 'Tổn hao điện năng',
+          desiredSolution: 'Biến áp siêu dẫn',
+          needConsulting: true,
+          expectedGoal: 'Giảm 2% tổn hao',
+          urgency: 4,
+          impact: 4,
+          investment: 3,
+          readiness: 3
+        }
+      ],
+      confirmName: 'Phạm Minh',
+      confirmPosition: 'Giám đốc',
+      signatureData: sampleSignature
+    };
+
+    localStorage.setItem('nacentwin_deep_survey_draft_v2', JSON.stringify(sampleDraft));
+
+    render(<DeepSurveyPage />);
+
+    // Jump to Step 4
+    fireEvent.click(screen.getByRole('button', { name: /^4\s*Xác Nhận$/i }));
+    await waitFor(() => screen.getByText(/Bản Tóm Tắt Phiếu Khảo Sát/i));
+
+    // Verify signature was restored from draft
+    expect(screen.getByText(/✓ Đã ký điện tử/i)).toBeInTheDocument();
+    const img = screen.getByRole('img', { name: /Chữ ký điện tử người đại diện/i });
+    expect(img).toHaveAttribute('src', sampleSignature);
   });
 });
 

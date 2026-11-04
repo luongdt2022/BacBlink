@@ -70,7 +70,7 @@ describe('EnterpriseSurveyPage Component (/khao-sat-doanh-nghiep)', () => {
     expect(screen.queryByText(/demo\.nacentech\.vn/i)).not.toBeInTheDocument();
 
     // Verify Step 1 TNI Engine section is present
-    expect(screen.getByText(/PHẦN E\.1 \(BƯỚC 1\) • DEMAND TICKETS & TNI ENGINE/i)).toBeInTheDocument();
+    expect(screen.getByText(/BƯỚC 1\.1 • DEMAND TICKETS & TNI ENGINE/i)).toBeInTheDocument();
   });
 
   it('allows filling real enterprise demand data and calculates TNI in real-time', () => {
@@ -143,6 +143,16 @@ describe('EnterpriseSurveyPage Component (/khao-sat-doanh-nghiep)', () => {
 
     const consentCheckbox = screen.getByRole('checkbox');
     fireEvent.click(consentCheckbox);
+
+    // Touch Signature (BR-SIG-01)
+    fireEvent.click(screen.getByText(/Bấm vào đây để ký tay \/ Chữ ký điện tử/i));
+    const canvas = screen.getByRole('dialog').querySelector('canvas');
+    if (canvas) {
+      fireEvent.mouseDown(canvas, { clientX: 50, clientY: 50 });
+      fireEvent.mouseMove(canvas, { clientX: 100, clientY: 100 });
+      fireEvent.mouseUp(canvas);
+      fireEvent.click(screen.getByRole('button', { name: /Xác nhận & Sử dụng chữ ký/i }));
+    }
 
     // Submit
     const submitBtn = screen.getByRole('button', { name: /Hoàn Tất & Nộp Khảo Sát/i });
