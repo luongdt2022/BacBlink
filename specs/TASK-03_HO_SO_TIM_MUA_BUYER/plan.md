@@ -1,9 +1,9 @@
 # Kế Hoạch Kỹ Thuật (plan.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
 **Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
-**Version**: 1.14.0  
-**Status**: Completed (Shipped Gate 5)  
-**Last Updated**: 2026-11-02  
+**Version**: 1.15.0  
+**Status**: In Progress (Gate 2 Architecture Approved - Executing Delta v15)  
+**Last Updated**: 2026-11-04  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
 
@@ -458,18 +458,18 @@ stateDiagram-v2
 
 | Tab Index (`currentStep`) | Tên Tab Stepper | Tính Chất | Phân Mục Nghiệp Vụ Chứa Đựng | Quy Tắc Validation Chuyển Bước |
 | :---: | :--- | :---: | :--- | :--- |
-| **1** | `E. Nhu Cầu & TNI` | **Bắt buộc** | Danh mục bài toán kỹ thuật (Demand Tickets) & Widget Realtime TNI Calculator ($K, L, N, O$). | Có ít nhất 1 bài toán; đã điền `stageName` và `technicalProblem`. |
-| **2** | `A. Doanh Nghiệp` | **Bắt buộc** | Thông tin định danh pháp nhân, địa chỉ nhà máy, người liên hệ, hỗ trợ Auto-Lookup MST và Smart Pre-fill 100% hồ sơ đã đăng nhập. | Bắt buộc `companyName`, `province`, `contactName`, `contactPhone`, `contactEmail`. Hỗ trợ 2 nút CTA: Tiếp tục sang Tab 3 hoặc Bỏ qua sang Tab 4. |
+| **1** | `Nhu Cầu & TNI` | **Bắt buộc** | Danh mục bài toán kỹ thuật (Demand Tickets) & Widget Realtime TNI Calculator ($K, L, N, O$). | Có ít nhất 1 bài toán; đã điền `stageName` và `technicalProblem`. |
+| **2** | `Doanh Nghiệp` | **Bắt buộc** | Thông tin định danh pháp nhân, địa chỉ nhà máy, người liên hệ, hỗ trợ Auto-Lookup MST và Smart Pre-fill 100% hồ sơ đã đăng nhập. | Bắt buộc `companyName`, `province`, `contactName`, `contactPhone`, `contactEmail`. Hỗ trợ 2 nút CTA: Tiếp tục sang Tab 3 hoặc Bỏ qua sang Tab 4. |
 | **3** | `Thông Tin Bổ Sung` | **Tùy chọn** | Hợp nhất 4 phân mục:<br>• **B**: Thiết bị & 8 tiêu chí hiện trạng<br>• **C**: Điểm nghẽn sản xuất (max 5)<br>• **D**: Năng lực tiếp nhận TAR & Nhân lực<br>• **F**: Định hướng 3 năm & Hỗ trợ | **Không chặn**: Người dùng có thể để trống toàn bộ và bấm "Tiếp tục sang Bước 4" trơn tru. |
-| **4** | `G. Xác Nhận` | **Bắt buộc** | Bảng tổng hợp tóm tắt (Review Summary), Thông tin người ký (`confirmName`, `confirmPosition`) và Checkbox PDPD Consent. | Bắt buộc `confirmName` và `pdpdConsent = true`. Kích hoạt validation 3 tầng toàn diện trước khi gọi API. |
+| **4** | `Xác Nhận` | **Bắt buộc** | Bảng tổng hợp tóm tắt (Review Summary), Thông tin người ký (`confirmName`, `confirmPosition`) và Checkbox PDPD Consent. | Bắt buộc `confirmName` và `pdpdConsent = true`. Kích hoạt validation 3 tầng toàn diện trước khi gọi API. |
 
 #### 3. Thanh Chỉ Báo Hoàn Thành (Progress Bar Indicator)
 
 - Công thức tiến độ cập nhật thành: `(currentStep / 4) * 100%`:
-  * Tab 1: **25% Hoàn thành** (`Bước 1/4: E. Nhu Cầu & Thuật Toán TNI (Bắt buộc)`)
-  * Tab 2: **50% Hoàn thành** (`Bước 2/4: A. Thông Tin Doanh Nghiệp (Bắt buộc)`)
+  * Tab 1: **25% Hoàn thành** (`Bước 1/4: Nhu Cầu & Thuật Toán TNI (Bắt buộc)`)
+  * Tab 2: **50% Hoàn thành** (`Bước 2/4: Thông Tin Doanh Nghiệp (Bắt buộc)`)
   * Tab 3: **75% Hoàn thành** (`Bước 3/4: Thông Tin Bổ Sung / Hiện Trạng & Năng Lực (Tùy chọn)`)
-  * Tab 4: **100% Hoàn thành** (`Bước 4/4: G. Rà Soát & Xác Nhận PDPD`)
+  * Tab 4: **100% Hoàn thành** (`Bước 4/4: Rà Soát & Xác Nhận PDPD`)
 
 ---
 
@@ -550,10 +550,10 @@ flowchart TD
 
 #### 1. Vitest Unit Test (`frontend/src/app/khao-sat-nhu-cau/page.test.tsx`)
 Cập nhật toàn bộ các test cases hiện tại từ mô hình 7 bước sang 4 bước:
-- **Test 1**: Render ban đầu đúng Tab 1/4 (`E. Nhu Cầu & TNI`), thanh tiến độ hiển thị đúng `Bước 1/4`, Stepper hiển thị chính xác 4 tab: `E. Nhu Cầu & TNI`, `A. Doanh Nghiệp`, `Thông Tin Bổ Sung`, `G. Xác Nhận`.
+- **Test 1**: Render ban đầu đúng Tab 1/4 (`Nhu Cầu & TNI`), thanh tiến độ hiển thị đúng `Bước 1/4`, Stepper hiển thị chính xác 4 tab: `Nhu Cầu & TNI`, `Doanh Nghiệp`, `Thông Tin Bổ Sung`, `Xác Nhận`.
 - **Test 2**: Validation Tab 1: Không cho phép chuyển bước khi chưa nhập bài toán kỹ thuật; điền đầy đủ chuyển sang Tab 2 thành công.
 - **Test 3**: Validation Tab 2: Chặn chuyển bước nếu thiếu thông tin doanh nghiệp bắt buộc.
-- **Test 4**: Fast-track Skip từ Tab 2: Sau khi Tab 2 hợp lệ, click "Bỏ qua bước tùy chọn & Đến nộp phiếu" nhảy thẳng sang Tab 4 (G. Xác Nhận).
+- **Test 4**: Fast-track Skip từ Tab 2: Sau khi Tab 2 hợp lệ, click "Bỏ qua bước tùy chọn & Đến nộp phiếu" nhảy thẳng sang Tab 4 (Xác Nhận).
 - **Test 5**: Tab 3 hợp nhất: Kiểm tra sự hiện diện của cả 4 phân mục (B, C, D, F); người dùng không nhập gì bấm "Tiếp tục sang Bước 4" thành công mà không có lỗi.
 - **Test 6**: Free-click Stepper: Click trực tiếp vào Tab 3 hoặc Tab 4 từ Stepper chuyển view tức thì.
 - **Test 7**: Submit toàn trình tại Tab 4: Yêu cầu ký tên và PDPD; submit gọi đúng `POST /api/v1/demands/surveys`, chuyển sang Success View (`SUR-XXXXX`).
@@ -1024,4 +1024,183 @@ stateDiagram-v2
    - Khi `item.status === 'PENDING'`, hiển thị Banner phía trên tiêu đề bài toán cảnh báo hồ sơ đang chờ Cán bộ Sở KH&CN thẩm định.
 3. **Tạm Khóa Form Gửi Chào Giải Pháp Khi Bài Toán `PENDING`**:
    - Nếu `item.status !== 'VERIFIED'`, ẩn hoặc vô hiệu hóa form nộp hồ sơ giải pháp kèm thông báo giải thích rõ ràng.
+
+---
+
+## 7. THIẾT KẾ KIẾN TRÚC KỸ THUẬT CR-TASK-03-DELTA-02: CHUẨN HÓA CHỮ KÝ TAY CẢM ỨNG ĐIỆN TỬ (DIGITAL SIGNATURE PAD SHARED COMPONENT)
+
+### 7.1. Kiến Trúc Frontend: Shared Component `<SignaturePadModal />` & `<SignatureBoxPreview />`
+Component được đặt tại: `src/components/ui/signature-pad-modal.tsx` (sẵn sàng xuất khẩu dùng chung cho toàn bộ dự án).
+
+#### 1. Nguyên Tắc Thiết Kế Không Phụ Thuộc Thư Viện Ngoài (Zero External Dependencies):
+- Tuyệt đối không cài đặt các package bên thứ ba (như `signature_pad`, `react-signature-canvas`) để:
+  * Tránh phình to bundle client-side JS (~30-50KB).
+  * Tránh rủi ro bảo mật supply-chain và audit CVEs.
+  * Tránh xung đột typing / hydrate tương thích với React 19 và Next.js 15 App Router.
+- Toàn bộ cơ chế vẽ được hiện thực trực tiếp bằng HTML5 Canvas 2D Rendering Context thuần.
+
+#### 2. Kỹ Thuật Chuẩn Hóa Retina High-DPI (High-Resolution Canvas):
+- Màn hình Retina (iPhone, iPad, MacBook, Android High-DPI) có tỷ lệ `window.devicePixelRatio >= 2.0`. Nếu vẽ canvas thông thường sẽ xảy ra hiện tượng mờ nhòe (blurry/pixelated).
+- Giải pháp kiến trúc:
+  ```typescript
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+  const rect = canvas.getBoundingClientRect();
+  // 1. Phóng to kích thước bộ nhớ đệm (buffer) theo DPR
+  canvas.width = rect.width * dpr;
+  canvas.height = 220 * dpr; // Chiều cao chuẩn 220px
+  // 2. Co lại kích thước hiển thị vật lý qua style CSS
+  canvas.style.width = `${rect.width}px`;
+  canvas.style.height = '220px';
+  // 3. Scale ngữ cảnh render 2D để nét vẽ tọa độ logic trùng khớp tọa độ CSS
+  ctx.scale(dpr, dpr);
+  ```
+
+#### 3. Bộ Xử Lý Đa Phương Thức Nhập Liệu Chuột & Cảm Ứng (Mouse & Touch Engine):
+- **Phản ứng Touch-Action**: Áp dụng thuộc tính CSS `touch-action: none` trực tiếp trên canvas và container, kèm lời gọi `e.preventDefault()` trong các sự kiện `onTouchStart` và `onTouchMove`. Điều này triệt tiêu hoàn toàn hành vi giật trang hoặc cuộn cuộn màn hình của trình duyệt di động khi người dùng vuốt ngón tay ký.
+- **Tính toán Tọa độ Chuẩn xác (`getCanvasPos`)**:
+  ```typescript
+  function getCanvasPos(e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>, canvas: HTMLCanvasElement) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX = 0;
+    let clientY = 0;
+    if ('touches' in e && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else if ('clientX' in e) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  }
+  ```
+- **Bộ thông số nét vẽ văn bản hành chính**:
+  * Nét mực: Xanh đen `#0F172A` (Slate-900 / Chuẩn văn bản hành chính).
+  * Độ dày nét: `lineWidth = 2.5`.
+  * Đầu nét và điểm nối bo tròn mượt mà: `lineCap = 'round'`, `lineJoin = 'round'`.
+
+#### 4. Quản Lý 5 Trạng Thái UX (State Machine):
+| Trạng Thái | Mô Tả UI / Hành Vi | Dữ Liệu Biến Thiên |
+| :--- | :--- | :--- |
+| **`STATE_1_EMPTY`** | Ô ký ban đầu: Viền nét đứt màu xanh nhạt, icon bút ký, text "Bấm vào đây để ký tay / Chữ ký điện tử". | `value = null`, `hasDrawn = false` |
+| **`STATE_2_DRAWING`**| Modal popup mở: Canvas sẵn sàng tiếp nhận nét vẽ từ chuột hoặc cảm ứng. | `isDrawing = true`, `hasDrawn = true` |
+| **`STATE_3_SIGNED`** | Hộp xem trước (Preview): Hiển thị ảnh chữ ký sắc nét, Badge `✓ Đã ký điện tử`, nút [Ký lại], nút [Xóa chữ ký]. | `value = data:image/png;base64,...` |
+| **`STATE_4_CLEARED`**| Bấm [Xóa nét / Ký lại] trong modal: Xóa trắng canvas buffer, reset cờ nét vẽ. | `hasDrawn = false` |
+| **`STATE_5_ERROR`**  | Chặn nộp phiếu: Viền đỏ cảnh báo, text thông báo lỗi, cuộn màn hình mượt đến ô ký. | `hasError = true`, báo lỗi `BR-SIG-01` |
+
+#### 5. Cơ Chế Chống Chữ Ký Trống (Anti-Blank Signature Gate):
+- Kiểm tra kết hợp 2 lớp:
+  1. **Lớp 1 (Cờ thao tác)**: Biến trạng thái `hasDrawn` chỉ bật `true` khi có ít nhất 1 chuỗi sự kiện `down -> move -> up` thành công.
+  2. **Lớp 2 (Pixel Inspection Fallback)**: Trước khi xuất hình, kiểm tra độ dài chuỗi Data URL hoặc hàm kiểm tra pixel không rỗng trên canvas. Bấm [Xác nhận] khi chưa có nét vẽ sẽ kích hoạt thông báo: *"Vui lòng ký tên vào khung trước khi bấm xác nhận!"*.
+
+#### 6. Hợp Đồng Props TypeScript Cho Shared Components:
+```typescript
+// src/components/ui/signature-pad-modal.tsx
+
+export interface SignaturePadModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (signatureDataUrl: string) => void;
+  title?: string;
+  confirmBtnText?: string;
+}
+
+export interface SignatureBoxPreviewProps {
+  value: string | null;
+  onOpenPad: () => void;
+  onClear: () => void;
+  hasError?: boolean;
+  errorMessage?: string;
+  label?: string;
+  required?: boolean;
+  disabled?: boolean;
+}
+```
+
+---
+
+### 7.2. Kiến Trúc Backend & Hợp Đồng DTO Delta
+
+#### 1. Hợp Đồng DTO `SubmitDeepSurveyRequest`
+Tại `SourceCode/backend/apps/api/V1Compat/DemandController.cs`:
+```csharp
+public sealed record SubmitDeepSurveyRequest(
+    string CompanyName,
+    string? TaxCode,
+    string ContactName,
+    string ContactPhone,
+    string ContactEmail,
+    // ... các trường hiện hữu ...
+    string? ConfirmedByName = null,
+    string? ConfirmedByTitle = null,
+    DateTimeOffset? PdpdConsentAt = null,
+    string? SurveyDetails = null,
+    // [ADD] CR-TASK-03-DELTA-02: Chữ ký điện tử người đại diện (Base64 Data URL)
+    string? SignatureDataUrl = null,
+    string? RepresentativeSignatureUrl = null // Alias tương thích ngược
+);
+```
+
+#### 2. CSDL PostgreSQL Entity Delta (`demand.demand_surveys`)
+- Bổ sung thuộc tính trong Domain Aggregate Root `DemandSurvey.cs`:
+  ```csharp
+  public string? RepresentativeSignatureUrl { get; private set; }
+  ```
+- Cập nhật hàm tạo và phương thức cập nhật chữ ký.
+- CSDL Migration Script (`THIET_KE_CSDL_DEMAND_VA_TNI.md`):
+  ```sql
+  -- Delta Migration bổ sung cột lưu trữ chữ ký số
+  ALTER TABLE demand.demand_surveys 
+  ADD COLUMN IF NOT EXISTS representative_signature_url TEXT NULL;
+
+  COMMENT ON COLUMN demand.demand_surveys.representative_signature_url 
+  IS 'Chữ ký điện tử người đại diện dạng Base64 Data URL PNG hoặc URL S3';
+  ```
+
+#### 3. Rào Chắn Kiểm Tra Tính Hợp Lệ Dữ Liệu (Payload Validation):
+- Tại Action `SubmitDeepSurvey` của `DemandController.cs`:
+  ```csharp
+  var signatureData = req.SignatureDataUrl ?? req.RepresentativeSignatureUrl;
+  if (string.IsNullOrWhiteSpace(signatureData))
+  {
+      return BadRequest(new { message = "Chữ ký điện tử người đại diện xác nhận là bắt buộc theo quy định." });
+  }
+  ```
+
+---
+
+### 7.3. Tích Hợp Frontend Form Khảo Sát (`/khao-sat-nhu-cau`)
+
+#### 1. Quản Lý Trạng Thái Trong `src/app/khao-sat-nhu-cau/page.tsx`:
+- Bổ sung state:
+  ```typescript
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string>('');
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState<boolean>(false);
+  const [signatureError, setSignatureError] = useState<string>('');
+  ```
+- Tích hợp vào Step 4 (Section Cam kết & Xác nhận):
+  * Render `<SignatureBoxPreview />` ngay phía trên hoặc cạnh thông tin người đại diện.
+  * Tích hợp vào hàm `validateStep(4)`:
+    ```typescript
+    if (!signatureDataUrl || signatureDataUrl.trim() === '') {
+      setSignatureError('Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!');
+      toast.error('Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!', 'Thiếu chữ ký');
+      const sigElem = document.getElementById('signature-trigger-container');
+      if (sigElem) sigElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+    ```
+
+#### 2. Đồng Bộ Bản Nháp Tự Động (Auto-Save LocalStorage):
+- Dữ liệu `signatureDataUrl` được gộp vào đối tượng lưu trữ `localStorage.getItem('SURVEY_DRAFT_KEY')`.
+- Khi người dùng bấm "Lưu bản nháp" hoặc kích hoạt Auto-save 30s: Chữ ký Base64 được bảo lưu.
+- Khi người dùng bấm "Tải lại bản nháp": State `signatureDataUrl` được khôi phục, ô chữ ký tự động hiển thị trạng thái `STATE_3_SIGNED` mà không bắt ký lại.
+
+#### 3. Nhúng Vào Phiếu Tiếp Nhận (Ticket Modal & In Bản Xác Nhận):
+- Trong Modal Thông Báo Nộp Thành Công (`successModal`):
+  * Bổ sung mục *"Chữ ký điện tử người đại diện"*: Render ảnh thu nhỏ từ `signatureDataUrl` kèm nhãn xanh `✓ Đã xác thực điện tử`.
+  * Hỗ trợ khi người dùng bấm "In phiếu tiếp nhận" (`window.print()`), hình ảnh chữ ký hiển thị sắc nét trong bản in khổ A4.
+
 

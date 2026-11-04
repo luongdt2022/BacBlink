@@ -436,3 +436,18 @@
 
 
 
+
+
+---
+
+## Phase 21: Delta v14 (CR-2026-025) — Bàn Quản Trị Người Dùng Toàn Hệ Thống (/admin/users)
+
+- [x] `T107` **[BE-API-Deactivate]** Bổ sung endpoint `DELETE /api/v1/admin/users/{id}` (Soft Delete / Deactivate) và kiểm tra quy tắc `BR-USER-01` (Chặn tự khóa), `BR-USER-02` (Bảo vệ root admin `admin@nacentech.gov.vn`) kèm ghi vết `AuditLog`.
+- [x] `T108` **[FE-Nav]** Cập nhật menu điều hướng Admin Sidebar tại `SourceCode/frontend/src/app/admin/layout.tsx` và `admin-nav.tsx`: Bổ sung mục "Quản lý Người Dùng Toàn Hệ Thống" (`/admin/users`).
+- [x] `T109` **[FE-UsersPage]** Xóa bỏ redirect tại `SourceCode/frontend/src/app/admin/users/page.tsx`, xây dựng toàn diện bảng dữ liệu người dùng theo wireframe SSOT: Header KPI cards, Search debounce 300ms, Filter 10 Roles & Status, Data Table phân trang server-side, 5 UX States qua `<Async>`, Zero-Mock.
+- [x] `T110` **[FE-Modals]** Xây dựng cụm Modal/Drawer thao tác:
+  - Drawer xem chi tiết hồ sơ 360° (Thông tin, Thẩm quyền, Dữ liệu liên kết).
+  - Modal chỉnh sửa thông tin người dùng (`PATCH /api/v1/admin/users/{id}`).
+  - Modal đặt lại mật khẩu (`POST /api/v1/admin/users/{id}/reset-password`).
+  - Modal Khóa/Mở khóa tài khoản 2 lớp bắt buộc nhập lý do, áp dụng `BR-USER-01` disable nút khóa trên tài khoản của chính Super Admin.
+- [x] `T111` **[QC-Test-4Layers]** Thực thi kiểm thử độc lập 4 tầng (Unit tests `BR-USER-*`, Contract test DTO, DB integration test PostgreSQL, Playwright E2E Visual QA), thu thập evidence và nghiệm thu Gate 4 & 5.

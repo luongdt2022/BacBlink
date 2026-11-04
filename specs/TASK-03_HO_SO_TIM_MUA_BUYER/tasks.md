@@ -1,9 +1,9 @@
 # Danh Sách Công Việc Kỹ Thuật (tasks.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Buyer
 
 **Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
-**Version**: 1.13.0  
-**Status**: Completed (Shipped Gate 5)  
-**Last Updated**: 2026-10-30  
+**Version**: 1.15.0  
+**Status**: In Progress (Gate 2 Architecture Approved - Executing Delta v15)  
+**Last Updated**: 2026-11-04  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
 
@@ -145,7 +145,7 @@
 
 ## Phase 14: Delta v8 (CR-2026-017 / TASK-03-CR59) — Tái Cấu Trúc Form Khảo Sát Nhu Cầu 4 Tab Tinh Gọn
 
-- [x] **T-03.58** `[FE]` `[UI/UX]` Tái cấu trúc Stepper Navigation Bar từ 7 bước xuống 4 tabs tinh gọn: Tab 1 (E. Nhu Cầu & TNI), Tab 2 (A. Doanh Nghiệp), Tab 3 (Thông Tin Bổ Sung), Tab 4 (G. Xác Nhận); cập nhật thanh tiến độ theo công thức `(currentStep / 4) * 100%`, cho phép click tự do giữa 4 tabs.
+- [x] **T-03.58** `[FE]` `[UI/UX]` Tái cấu trúc Stepper Navigation Bar từ 7 bước xuống 4 tabs tinh gọn (loại bỏ tiền tố `E.`, `A.`, `G.`): Tab 1 (Nhu Cầu & TNI), Tab 2 (Doanh Nghiệp), Tab 3 (Thông Tin Bổ Sung), Tab 4 (Xác Nhận); cập nhật thanh tiến độ theo công thức `(currentStep / 4) * 100%`, cho phép click tự do giữa 4 tabs.
 - [x] **T-03.59** `[FE]` `[COMPONENT]` Hợp nhất 4 phân mục B (Hiện trạng & 8 tiêu chí), C (Điểm nghẽn kỹ thuật), D (Năng lực TAR), F (Định hướng & Hỗ trợ) thành các khối chuyên đề rõ ràng trong Tab 3 (`currentStep === 3`), không làm đứt gãy UX và bảo toàn 100% các trường nhập liệu.
 - [x] **T-03.60** `[FE]` `[LOGIC]` Chuẩn hóa logic Navigation & Validation cho 4 bước: Validation bắt buộc tại Tab 1 (ít nhất 1 bài toán), Tab 2 (pháp nhân hợp lệ) và Tab 4 (ký tên & PDPD); Tab 3 hoàn toàn tùy chọn; bổ sung nút fast-track tại Tab 2 chuyển thẳng sang Tab 4; khi submit thất bại tự động focus/cuộn về đúng tab bị thiếu.
 - [x] **T-03.61** `[TEST]` Cập nhật bộ kiểm thử Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` sang mô hình 4 tabs: kiểm tra tiêu đề và stepper 4 bước, kiểm thử validation Tab 1 & Tab 2, kiểm thử Tab 3 tùy chọn không chặn submit, kiểm thử fast-track từ Tab 2 sang Tab 4, kiểm thử free-click stepper, kiểm thử luồng submit toàn trình.
@@ -307,4 +307,108 @@
     3. Đăng nhập tài khoản Cán bộ Sở Hà Nội (`hanoi.admin@demo.nacentech.vn`), vào `/gov/demands` bấm "Phê duyệt & Niêm yết".
     4. Quay lại trang chi tiết bài toán F5: Xác nhận Badge chuyển sang `ĐANG MỞ TÌM CUNG` màu xanh lá và mở form chào giá.
   - Tiêu chí nghiệm thu: `AC-DMD-01`, `AC-DMD-02`, `AC-DMD-03`, `AC-DMD-04`.
+
+---
+
+## 8. DANH SÁCH CÔNG VIỆC THỰC THI CR-TASK-03-DELTA-02 (PHASE DELTA V15): CHUẨN HÓA CHỮ KÝ TAY CẢM ỨNG ĐIỆN TỬ (TOUCH DIGITAL SIGNATURE PAD SHARED COMPONENT)
+
+> **Mã CR**: `CR-TASK-03-DELTA-02`  
+> **Căn cứ**: Phê duyệt Gate 1 của PO ngày 04/11/2026, Wireframe HTML `25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html`, Luật GDĐT 20/2023/QH15, PDPD NĐ 13/2023/NĐ-CP.  
+> **Phiên bản mục tiêu**: `1.15.0`  
+> **Mục tiêu**: Chuẩn hóa Shared Component Bảng ký tay cảm ứng điện tử (Touch Digital Signature Pad), tích hợp validation bắt buộc ký (`BR-SIG-01`), chống chữ ký trống (`BR-SIG-02`), lưu trữ Base64 PNG Data URL và đảm bảo tính bất biến hồ sơ sau khi nộp (`BR-SIG-03`).
+
+- [x] **T-03.71 (Task 8.1)** `[FE]` Xây Dựng Bộ Shared Component `SignaturePadModal.tsx` & `SignatureBoxPreview.tsx` (`src/components/ui/signature-pad-modal.tsx`):
+  - Hiện thực HTML5 Canvas thuần (Zero external libraries), triệt tiêu rủi ro dependency conflict và tối ưu bundle.
+  - Chuẩn hóa độ nét Retina High-DPI thông qua tỷ lệ `window.devicePixelRatio`, scale buffer canvas tương ứng kích thước CSS (220px height, 100% width, max 570px).
+  - Hỗ trợ đa phương thức nhập liệu:
+    * Chuột máy tính: `mousedown`, `mousemove`, `mouseup`, `mouseleave`.
+    * Cảm ứng (Touch): `touchstart`, `touchmove`, `touchend`, `touchcancel` kèm thuộc tính CSS `touch-action: none` và lệnh `e.preventDefault()`, không làm giật/cuộn trang màn hình điện thoại/tablet.
+  - Định dạng nét mực: màu xanh đen `#0F172A`, độ dày `lineWidth = 2.5`, bo tròn `lineCap = 'round'`, `lineJoin = 'round'`.
+  - Quản trị 5 trạng thái UX: Empty (chưa ký), Drawing (đang vẽ), Signed (xác nhận xem trước), Cleared (xóa nét), Error (lỗi chưa ký).
+  - Cơ chế Anti-Blank Signature: Cờ `hasDrawn` và kiểm tra độ dài Data URL Base64; nếu chưa vẽ nét nào mà bấm xác nhận thì chặn lại và thông báo nhắc nhở.
+  - Xuất dữ liệu ảnh: `canvas.toDataURL('image/png')` trả về Base64 Data URL.
+  - Cung cấp các nút: `[Xóa nét / Ký lại]`, `[Hủy bỏ]`, `[Xác nhận & Sử dụng chữ ký]`.
+  - Tiêu chí kiểm chứng:
+    - [x] Mở modal render canvas sắc nét, không bị nhòe pixel trên màn hình Retina (DPR 2x).
+    - [x] Thao tác vẽ mượt bằng cả chuột và cảm ứng touch, không sinh lỗi cuộn trang ngoài ý muốn.
+    - [x] Nút xóa nét làm sạch canvas và reset cờ `hasDrawn = false`.
+    - [x] Chặn bấm xác nhận khi chưa có nét vẽ và xuất Base64 PNG hợp lệ khi đã ký.
+  - Tiêu chí nghiệm thu: `REQ-SIG-01`, `BR-SIG-02`, `AC-SIG-02`, `AC-SIG-03`.
+
+- [x] **T-03.72 (Task 8.2)** `[BE]` Mở Rộng API DTO `SubmitDeepSurveyRequest` & Entity `DemandSurvey` Tiếp Nhận `signatureDataUrl` (`DemandController.cs`, `DemandSurvey.cs`):
+  - Cập nhật Record DTO `SubmitDeepSurveyRequest` tại `SourceCode/backend/apps/api/V1Compat/DemandController.cs`:
+    * Bổ sung trường: `string? SignatureDataUrl = null` và `string? RepresentativeSignatureUrl = null`.
+  - Rào chắn Validation tại Controller (`BR-SIG-01`):
+    * Kiểm tra chuỗi Data URL không rỗng và bắt đầu bằng tiền tố `data:image/png;base64,` hoặc có độ dài tối thiểu đảm bảo tính hợp lệ của ảnh.
+    * Trả về HTTP 400 Bad Request kèm message rõ ràng nếu thiếu chữ ký hợp lệ.
+  - Cập nhật Domain Aggregate Root `DemandSurvey.cs`:
+    * Thêm thuộc tính `public string? RepresentativeSignatureUrl { get; private set; }`.
+    * Cập nhật Constructor / Factory method để tiếp nhận và gán giá trị chữ ký điện tử.
+  - CSDL Migration Schema (`THIET_KE_CSDL_DEMAND_VA_TNI.md`):
+    * Bổ sung script migration EF Core: `ALTER TABLE demand.demand_surveys ADD COLUMN IF NOT EXISTS representative_signature_url TEXT NULL;`.
+  - Tiêu chí kiểm chứng:
+    - [x] Gọi API `POST /api/v1/demands/surveys` kèm `signatureDataUrl` lưu thành công vào CSDL.
+    - [x] Gọi API thiếu trường chữ ký trả về HTTP 400 và thông báo lỗi tương ứng.
+    - [x] Khả năng tương thích ngược hoàn toàn với các phiếu khảo sát cũ (nullable column).
+  - Tiêu chí nghiệm thu: `REQ-SIG-03`, `BR-SIG-01`, `BR-SIG-03`.
+
+- [x] **T-03.73 (Task 8.3)** `[FE]` Tích Hợp Ô Chữ Ký Điện Tử Vào Bước Xác Nhận Form `/khao-sat-nhu-cau`, Rào Chắn Bắt Buộc Ký (`BR-SIG-01`), LocalStorage Draft & Ticket Preview:
+  - Tích hợp component `<SignatureBoxPreview />` vào Bước cam kết & xác nhận (`src/app/khao-sat-nhu-cau/page.tsx`).
+  - Giao diện hộp hiển thị:
+    * Khi chưa ký: Khung viền nét đứt màu xanh nhạt, icon bút ký, tiêu đề *"Bấm vào đây để ký tay / Chữ ký điện tử"* và phụ đề hướng dẫn.
+    * Khi đã ký: Hiển thị hình ảnh chữ ký sắc nét trên nền sáng chống lóa, gắn kèm Badge `✓ Đã ký điện tử` màu xanh lục, nút `[Ký lại]` và `[Xóa chữ ký]`.
+  - Cơ chế chặn nộp phiếu Validation Gate (`BR-SIG-01`):
+    * Khi bấm `[Kiểm Tra & Gửi Phiếu Khảo Sát]`, nếu chưa có chữ ký: ngăn chặn gửi, tự động cuộn mượt (smooth scroll) đến ô ký, hiển thị viền đỏ và Toast cảnh báo: *"Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!"*.
+  - Tích hợp Auto-Save & Khôi phục bản nháp (LocalStorage Draft):
+    * Lưu chuỗi Base64 chữ ký vào bản nháp cùng dữ liệu form.
+    * Khi tải lại bản nháp: khôi phục nguyên vẹn trạng thái chữ ký và hiển thị Preview, không bắt người dùng vẽ lại.
+  - Nhúng vào Modal Phiếu Tiếp Nhận Thành Công (`successModal`):
+    * Hiển thị chữ ký người đại diện đã ký trong phiếu tiếp nhận và hỗ trợ in A4 sắc nét (`window.print()`).
+  - Tiêu chí kiểm chứng:
+    - [x] Bấm vào ô mở modal bảng ký, sau khi ký xong hiển thị ảnh xem trước chính xác.
+    - [x] Bấm [Xóa chữ ký] xóa sạch dữ liệu và quay về khung chờ ký ban đầu.
+    - [x] Chặn gửi thành công và cuộn đến ô ký khi để trống chữ ký.
+    - [x] Khôi phục chữ ký thành công từ LocalStorage Draft sau khi refresh trang.
+    - [x] Chữ ký xuất hiện sắc nét trong modal thành công và bản in tiếp nhận.
+  - Tiêu chí nghiệm thu: `REQ-SIG-01`, `REQ-SIG-02`, `BR-SIG-01`, `AC-SIG-01`, `AC-SIG-04`, `AC-SIG-05`.
+
+- [x] **T-03.74 (Task 8.4)** `[FE]` Chuẩn Hóa Gói Dùng Chung Cho Form ĐMST `/khao-sat-dmst` & Sẵn Sàng Tái Sử Dụng:
+  - Đóng gói wrapper `<TouchSignatureField />` gói gọn state modal, preview box, error handling thành một form-field drop-in tiện lợi:
+    * Props: `value`, `onChange`, `label`, `required`, `errorMessage`, `disabled`.
+  - Đảm bảo mã nguồn tách rời hoàn toàn khỏi logic riêng của phiếu DNNVV, sẵn sàng cắm sang:
+    * Form Khảo sát Năng lực ĐMST `/khao-sat-dmst`.
+    * Form Ký Hợp đồng Thỏa thuận Deal Room (`TASK-04`).
+  - Tiêu chí kiểm chứng:
+    - [x] Component độc lập (standalone), không hardcode bất kỳ id hoặc state cục bộ của trang `/khao-sat-nhu-cau`.
+    - [x] Sẵn sàng import và sử dụng tại các trang form khác mà không cần cấu hình lại canvas.
+  - Tiêu chí nghiệm thu: `REQ-SIG-01`, `REQ-SIG-02`.
+
+- [x] **T-03.75 (Task 8.5)** `[TEST]` Bổ Sung Vitest Unit Tests Cho Component Chữ Ký & Validation Logic (`page.test.tsx`, `signature-pad-modal.test.tsx`):
+  - Xây dựng bộ test mới `src/components/ui/signature-pad-modal.test.tsx`:
+    * Test mở/đóng modal theo props `isOpen`.
+    * Test vẽ nét qua sự kiện chuột (`mousedown`, `mousemove`, `mouseup`).
+    * Test xóa nét canvas khi bấm nút [Xóa nét / Ký lại].
+    * Test cảnh báo chống chữ ký trống (Anti-blank check) khi bấm xác nhận khi chưa vẽ.
+    * Test xuất Base64 PNG qua callback `onConfirm`.
+  - Cập nhật bộ test `src/app/khao-sat-nhu-cau/page.test.tsx`:
+    * Test validation chặn nộp phiếu khi thiếu chữ ký (`BR-SIG-01`).
+    * Test render Hộp xem trước khi có dữ liệu chữ ký.
+    * Test lưu và tải bản nháp LocalStorage bao gồm trường chữ ký.
+  - Tiêu chí kiểm chứng:
+    - [x] Thực thi `npm test` với Vitest đạt 100% PASS trên tất cả các test cases mới.
+    - [x] Không gây hồi quy (Zero regression) cho các test cases hiện hữu.
+  - Tiêu chí nghiệm thu: `TEST-SIG-01`, `TEST-SIG-02`, `TEST-SIG-04`, `TEST-SIG-05`.
+
+- [x] **T-03.76 (Task 8.6)** `[TEST/E2E]` Bổ Sung Kịch Bản Kiểm Thử Tương Tác Sống & Playwright E2E (`TEST-SIG-01` -> `TEST-SIG-05`):
+  - Xây dựng kịch bản Playwright E2E kiểm chứng toàn trình luồng ký điện tử:
+    1. Kịch bản 1 (`TEST-SIG-01`): Điền đầy đủ form đến bước xác nhận, để trống ô ký và bấm Gửi $\rightarrow$ Bị chặn, scroll đến ô chữ ký, hiển thị thông báo lỗi.
+    2. Kịch bản 2 (`TEST-SIG-02`): Mở modal bảng ký, dùng mouse drag vẽ nét chữ ký, kiểm tra nét vẽ xuất hiện, bấm Xóa nét và kiểm tra canvas được làm sạch.
+    3. Kịch bản 3 (`TEST-SIG-03`): Kích hoạt chế độ cảm ứng di động (Mobile emulation / Touch gestures), vuốt ngón tay ký $\rightarrow$ Xác nhận không bị scroll trang, nét vẽ ghi nhận tọa độ chính xác.
+    4. Kịch bản 4 (`TEST-SIG-04`): Vẽ ký và bấm "Xác nhận & Sử dụng chữ ký" $\rightarrow$ Modal đóng, hiển thị ảnh chữ ký trong preview box, Badge Đã ký điện tử xuất hiện.
+    5. Kịch bản 5 (`TEST-SIG-05`): Lưu bản nháp, reload trang, bấm Tải lại bản nháp $\rightarrow$ Phục hồi 100% ảnh chữ ký trong Preview.
+    6. Kịch bản 6: Nộp phiếu thành công $\rightarrow$ Chữ ký hiển thị trong Modal tiếp nhận và dữ liệu gửi lên API chứa trường `signatureDataUrl`.
+  - Tiêu chí kiểm chứng:
+    - [x] Bộ kiểm thử Playwright chạy tự động vượt qua 100% các assertions.
+  - Tiêu chí nghiệm thu: `TEST-SIG-01` $\rightarrow$ `TEST-SIG-05`.
+
 

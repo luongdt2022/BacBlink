@@ -215,3 +215,35 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
 | **`1.4.0`** | **2026-11-03** | [**`CR-2026-021`**](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/specs/TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-2026-021_admin_survey_records_and_doc_export.md) | `PO-DEC-20261103-01` | **Quản trị hồ sơ phiếu thu thập TT17 & nhu cầu ĐMST tại `/admin/assessments/records`, tải mẫu trắng Word A4 phục vụ thực địa và xuất file Word từng phiếu đã điền.** | **Approved** |
 
 
+
+
+---
+
+## 9. SPEC DELTA V5 (CR-2026-026): BỘ TAM HỢP PHIẾU KHẢO SÁT & ĐÁNH GIÁ DOANH NGHIỆP THỰC ĐỊA
+
+> **Mã CR**: `CR-2026-026`  
+> **Căn cứ**: Quyết định Điều hành `PO-DEC-20261104-02` (Mục 30 `Specification/BASIC_DESIGN_NACENTECH.md`) & Delta Ledger [`deltas/CR-2026-026.md`](./deltas/CR-2026-026.md).  
+> **Target Version**: `1.5.0`  
+
+### 9.1 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-09-SURVEY3-001` [Cụm 3 Nút Header Tải Template Word A4 Thực Địa]**:
+  * Nút 1: `[Tải mẫu Đánh giá TT17 (.docx)]` trỏ tới `/templates/surveys/phieu_thu_thap_tt17.docx`.
+  * Nút 2: `[Tải mẫu Khảo sát ĐMST (.docx)]` trỏ tới `/templates/surveys/phieu_khao_sat_dmst_43_cau_mau_trang.docx`.
+  * Nút 3: `[Tải mẫu Nhu cầu DNNVV (.docx)]` trỏ tới `/templates/surveys/phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx`.
+- **`REQ-09-SURVEY3-002` [Dropdown Loại Phiếu 4 Nhánh Tường Minh]**:
+  * Giá trị: `ALL` (Tất cả), `TT17` (Phiếu TT17 - 26 tiêu chí), `INNOVATION` (Phiếu ĐMST - 43 câu), `SME_DEMAND` (Phiếu Nhu cầu DNNVV & TNI).
+- **`REQ-09-SURVEY3-003` [Bộ Lọc Phân Loại Động Theo Loại Phiếu]**:
+  * Khi chọn `TT17`: Lọc theo Xếp loại TT17 (Tiên tiến, Khá, Trung bình, Lạc hậu).
+  * Khi chọn `INNOVATION`: Lọc theo Phân tầng ĐMST (Dẫn đầu, Đang phát triển, Tiềm năng, Chưa đánh giá).
+  * Khi chọn `SME_DEMAND`: Lọc theo Mức độ cấp thiết TNI (Rất cao, Cao, Trung bình, Thấp).
+
+### 9.2 Quy Tắc Nghiệp Vụ Bất Biến (Business Rules)
+- **`BR-09-SURVEY3-01` [An Toàn & Chuẩn Mực Tệp Văn Bản Hành Chính A4]**:
+  * Cả 3 file Word `.docx` tải về phải mở được trơn tru, không lỗi XML, font chữ Unicode Times New Roman chuẩn Nghị định 30/2020/NĐ-CP về công tác văn thư.
+- **`BR-09-SURVEY3-02` [Kỷ Luật Dữ Liệu Thực Tế Zero-Mock]**:
+  * Dữ liệu bản ghi khi chuyển đổi loại phiếu phải kết nối trực tiếp CSDL thật, không sử dụng mảng tĩnh trong khối catch.
+
+---
+
+### Bổ sung vào Bảng Lịch Sử Thay Đổi (Delta Tracking):
+| **`1.5.0`** | **2026-11-04** | [**`CR-2026-026`**](./deltas/CR-2026-026.md) | `PO-DEC-20261104-02` | **Chuẩn hóa Bộ Tam Hợp 3 Phiếu khảo sát thực địa (TT17, ĐMST 43 câu, Nhu cầu DNNVV) tại `/admin/assessments/records`, cụm 3 nút tải mẫu Word và bộ lọc phân loại động.** | **Approved by PO** |

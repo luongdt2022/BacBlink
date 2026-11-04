@@ -1,9 +1,9 @@
 # Đặc Tả Kỹ Thuật (Spec Kit): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
 **Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
-**Version**: 1.14.0  
-**Status**: Completed (Shipped Gate 5)  
-**Last Updated**: 2026-11-02  
+**Version**: 1.15.0  
+**Status**: In Progress (Gate 2 Architecture Approved - Executing Delta v15)  
+**Last Updated**: 2026-11-04  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
 
@@ -347,15 +347,15 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 ### 10.1 Bối Cảnh & Căn Cứ Thay Đổi
 
 - **Thực trạng**: Phiếu khảo sát sâu DNNVV (`SC-03-01`) theo thiết kế cũ trải dài trên 7 bước riêng biệt (A, E, B, C, D, F, G). Quy trình 7 bước tạo ra rào cản tâm lý lớn cho doanh nghiệp vừa và nhỏ (SMEs), làm tăng tỷ lệ bỏ cuộc giữa chừng (drop-off rate) và khiến trải nghiệm người dùng trở nên nặng nề.
-- **Giải pháp tinh gọn**: Rút gọn cấu trúc Stepper từ **7 tab xuống 4 tab**, trong đó phân định dứt khoát giữa **Phần Bắt Buộc Cốt Lõi (Mandatory Core)** và **Phần Bổ Sung Tùy Chọn (Optional Extension)**:
-  - **Tab 1 [Bắt buộc]**: `E. Nhu Cầu & Thuật Toán TNI` — Thu thập ngay bài toán kỹ thuật, mục tiêu kỳ vọng và bộ 4 tham số $K, L, N, O$ để tính điểm TNI thời gian thực.
-  - **Tab 2 [Bắt buộc]**: `A. Thông Tin Doanh Nghiệp` — Thu thập thông tin định danh pháp nhân, người liên hệ, hỗ trợ Auto-Lookup MST và Smart Pre-fill 100% hồ sơ đã đăng nhập.
+- **Giải pháp tinh gọn**: Rút gọn cấu trúc Stepper từ **7 tab xuống 4 tab**, loại bỏ các ký tự đánh mục rời rạc (`E.`, `A.`, `G.`) trên thanh Stepper để mạch đánh số 1–4 trực quan, phân định dứt khoát giữa **Phần Bắt Buộc Cốt Lõi (Mandatory Core)** và **Phần Bổ Sung Tùy Chọn (Optional Extension)**:
+  - **Tab 1 [Bắt buộc]**: `Nhu Cầu & Thuật Toán TNI` — Thu thập ngay bài toán kỹ thuật, mục tiêu kỳ vọng và bộ 4 tham số $K, L, N, O$ để tính điểm TNI thời gian thực.
+  - **Tab 2 [Bắt buộc]**: `Thông Tin Doanh Nghiệp` — Thu thập thông tin định danh pháp nhân, người liên hệ, hỗ trợ Auto-Lookup MST và Smart Pre-fill 100% hồ sơ đã đăng nhập.
   - **Tab 3 [Tùy chọn]**: `Thông Tin Bổ Sung / Hiện Trạng & Năng Lực` — Hợp nhất 4 phân mục sâu:
     1. *Phân mục B*: Hiện trạng máy móc thiết bị & Tự chấm 8 tiêu chí.
     2. *Phân mục C*: Nhận diện điểm nghẽn kỹ thuật & Công đoạn khó nhất.
     3. *Phân mục D*: Năng lực tiếp nhận công nghệ (TAR) & Đội ngũ nhân lực kỹ thuật.
     4. *Phân mục F*: Định hướng đổi mới sáng tạo 3 năm tới & Đề xuất hỗ trợ từ Nhà nước.
-  - **Tab 4 [Bắt buộc]**: `G. Rà Soát & Xác Nhận PDPD` — Bảng tổng hợp tóm tắt toàn bộ thông tin khảo sát, thông tin người ký và cam kết bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP.
+  - **Tab 4 [Bắt buộc]**: `Rà Soát & Xác Nhận PDPD` — Bảng tổng hợp tóm tắt toàn bộ thông tin khảo sát, thông tin người ký và cam kết bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP.
 
 ---
 
@@ -374,11 +374,11 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 
 - **`FR-NEW-03-01` [Tái Cấu Trúc Form Khảo Sát Nhu Cầu Thành 4 Tab Tinh Gọn]**:
   1. **Cấu Trúc Stepper 4 Bước**:
-     - Stepper hiển thị chính xác 4 tab:
-       * **Tab 1**: `E. Nhu Cầu & TNI` (Bắt buộc)
-       * **Tab 2**: `A. Doanh Nghiệp` (Bắt buộc)
+     - Stepper hiển thị chính xác 4 tab (đã loại bỏ tiền tố chữ cái `E.`, `A.`, `G.`):
+       * **Tab 1**: `Nhu Cầu & TNI` (Bắt buộc)
+       * **Tab 2**: `Doanh Nghiệp` (Bắt buộc)
        * **Tab 3**: `Thông Tin Bổ Sung` (Tùy chọn)
-       * **Tab 4**: `G. Xác Nhận` (Bắt buộc)
+       * **Tab 4**: `Xác Nhận` (Bắt buộc)
      - Thanh chỉ báo hoàn thành tính theo tỷ lệ phần trăm: `(currentStep / 4) * 100%` (25%, 50%, 75%, 100%).
   2. **Chi Tiết Nội Dung Từng Tab**:
      - **Tab 1 (`currentStep === 1`)**:
@@ -430,25 +430,25 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
   - **Given** người dùng truy cập vào trang `/khao-sat-nhu-cau`,
   - **When** trang tải hoàn tất,
   - **Then** Stepper Navigation Bar hiển thị chính xác 4 nút tab:
-    1. `E. Nhu Cầu & TNI` (Bước 1/4)
-    2. `A. Doanh Nghiệp` (Bước 2/4)
+    1. `Nhu Cầu & TNI` (Bước 1/4)
+    2. `Doanh Nghiệp` (Bước 2/4)
     3. `Thông Tin Bổ Sung` (Bước 3/4)
-    4. `G. Xác Nhận` (Bước 4/4)
-  - **And** chỉ số tiến độ hiển thị đúng `Bước 1/4: E. Nhu Cầu & Thuật Toán TNI (Bắt buộc)` kèm thanh tiến độ 25%.
+    4. `Xác Nhận` (Bước 4/4)
+  - **And** chỉ số tiến độ hiển thị đúng `Bước 1/4: Nhu Cầu & Thuật Toán TNI (Bắt buộc)` kèm thanh tiến độ 25%.
 
 - **`AC-NEW-03-02` [Validation Chuyển Bước Tại Tab 1]**:
   - **Given** người dùng đang ở Tab 1 với form bài toán để trống,
   - **When** người dùng bấm nút "Tiếp tục Bước 2",
   - **Then** hệ thống không chuyển bước, giữ nguyên tại Tab 1 và hiển thị cảnh báo yêu cầu điền đầy đủ thông tin bài toán kỹ thuật.
   - **When** người dùng điền đầy đủ Công đoạn, Mô tả vấn đề, Mục tiêu kỳ vọng và bấm lại "Tiếp tục Bước 2",
-  - **Then** hệ thống chuyển thành công sang Tab 2 (A. Doanh Nghiệp).
+  - **Then** hệ thống chuyển thành công sang Tab 2 (Doanh Nghiệp).
 
 - **`AC-NEW-03-03` [Validation Chuyển Bước & Lối Tắt Fast-Track Tại Tab 2]**:
   - **Given** người dùng đang ở Tab 2 với các trường thông tin doanh nghiệp chưa điền,
   - **When** bấm "Tiếp tục Bước 3",
   - **Then** hệ thống báo lỗi các trường bắt buộc (Tên DN, MST, Tỉnh/thành, Đại diện, SĐT, Email) và không cho chuyển bước.
   - **When** thông tin doanh nghiệp đã được nạp đầy đủ (bằng tay hoặc qua Auto-Prefill),
-  - **Then** người dùng có thể bấm "Tiếp tục Bước 3" để sang Tab 3, HOẶC bấm "Bỏ qua bước tùy chọn & Đến nộp phiếu" để nhảy thẳng sang Tab 4 (G. Xác Nhận).
+  - **Then** người dùng có thể bấm "Tiếp tục Bước 3" để sang Tab 3, HOẶC bấm "Bỏ qua bước tùy chọn & Đến nộp phiếu" để nhảy thẳng sang Tab 4 (Xác Nhận).
 
 - **`AC-NEW-03-04` [Tab 3 Hợp Nhất 4 Phân Mục Tùy Chọn & Không Bị Chặn]**:
   - **Given** người dùng chuyển vào Tab 3,
@@ -813,5 +813,152 @@ TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi
 | Mã Yêu Cầu (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Bảng CSDL Tác Động | Giao Diện Triển Khai | API Endpoint Ánh Xạ |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **REQ-BUYER-DMD-004** | `BR-DMD-STAT-01`, `BR-DMD-PRIV-01` | `AC-DMD-01`, `AC-DMD-02`, `AC-DMD-03`, `AC-DMD-04` | `demand.demand_items` | `SourceCode/frontend/src/app/nhu-cau-cong-nghe/[id]/page.tsx` | `GET /api/v1/public/demands/{id}`, `POST /api/v1/gov/demands/{id}/verify` |
+
+---
+
+## 10. DELTA V15: CR-TASK-03-DELTA-02 CHUẨN HÓA CHỮ KÝ TAY CẢM ỨNG ĐIỆN TỬ (DIGITAL SIGNATURE PAD SHARED COMPONENT)
+
+### 1. Bối cảnh & Căn cứ Quyết định
+- **Căn cứ**: 
+  - Quyết định Phê duyệt Gate 1 của Product Owner ngày 04/11/2026 đối với đề xuất thay đổi `CR-TASK-03-DELTA-02`.
+  - Luật Giao dịch điện tử số 20/2023/QH15 (Hiệu lực từ 01/07/2024), quy định về chữ ký điện tử và giá trị pháp lý của thông điệp dữ liệu.
+  - Nghị định 13/2023/NĐ-CP của Chính phủ về Bảo vệ Dữ liệu Cá nhân (PDPD).
+  - Basic Design Wireframe chuẩn hóa tại `Specification/XUAT_MAN_HINH_WEB_HTML/25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html`.
+- **Mục tiêu**: Thay thế cơ chế xác nhận văn bản thuần túy bằng Bảng Ký Điện Tử Cảm Ứng (Touch Digital Signature Pad) dùng chung, đảm bảo tính chống chối bỏ (Non-Repudiation), trải nghiệm ký mượt mà trên cả máy tính lẫn thiết bị di động/tablet, và lưu trữ dữ liệu nét vẽ an toàn dưới dạng Base64 PNG.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-SIG-01` [Bảng Ký Điện Tử Cảm Ứng (Touch Digital Signature Pad Modal)]**:
+  - Kích hoạt qua khung tương tác *"Bấm vào đây để ký tay / Chữ ký điện tử"* tại Bước 5 (Xác nhận & Cam kết PDPD) của form khảo sát trực tuyến.
+  - Hỗ trợ HTML5 Canvas thuần (Zero external libraries) với độ phân giải Retina High-DPI (`window.devicePixelRatio`).
+  - Hỗ trợ đa phương thức nhập liệu: Chuột (`mousedown`, `mousemove`, `mouseup`, `mouseleave`) và Cảm ứng (`touchstart`, `touchmove`, `touchend`, `touchcancel` kèm `touch-action: none` và `e.preventDefault()`).
+  - Thiết lập nét vẽ chuẩn văn bản: nét mực xanh đen `#0F172A`, độ dày nét `lineWidth = 2.5`, bo tròn `lineCap = 'round'`, `lineJoin = 'round'`.
+  - Hỗ trợ đầy đủ các thao tác: [Xóa nét / Ký lại], [Hủy bỏ], và [Xác nhận & Sử dụng chữ ký].
+
+- **`REQ-SIG-02` [Hiển Thị Xem Trước & Quản Lý Chữ Ký Trên Phiếu (Preview Box)]**:
+  - Sau khi xác nhận chữ ký trong Modal, giao diện Bước 5 chuyển sang Hộp xem trước chữ ký (Signature Preview Box).
+  - Hiển thị hình ảnh chữ ký sắc nét trên nền sáng chống lóa, gắn kèm Badge `✓ Đã ký điện tử` màu xanh lục (#047857 / #ECFDF5).
+  - Cung cấp 2 nút điều khiển: `[Ký lại]` (mở lại canvas để vẽ nét mới) và `[Xóa chữ ký]` (xóa dữ liệu chữ ký, quay về ô trống ban đầu và cập nhật lại thanh tiến độ).
+  - Tự động lưu chuỗi Base64 chữ ký vào Bản nháp (LocalStorage Draft) và tự động khôi phục khi tải lại bản nháp.
+
+- **`REQ-SIG-03` [Toàn Vẹn Dữ Liệu & Cam Kết Bảo Mật PDPD]**:
+  - Chữ ký điện tử được đóng gói dạng Data URL `data:image/png;base64,...`.
+  - Gắn chặt với bộ 4 yếu tố xác thực: Họ tên người đại diện (`confirm_name`), Chức vụ (`confirm_position`), Ngày xác nhận (`confirm_date`), và Cam kết PDPD (`pdpd_consent = true`).
+  - Bảo mật tuyệt đối theo Nghị định 13/2023/NĐ-CP, chỉ lưu trữ trong CSDL nội bộ và hiển thị trong bản in tiếp nhận hoặc Ticket Modal.
+
+### 3. Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+- **`BR-SIG-01` [Bắt Buộc Ký Xác Nhận Điện Tử Trước Khi Gửi Phiếu (Mandatory Validation Gate)]**:
+  - Trường Chữ ký điện tử là trường **bắt buộc 100% (Mandatory)** đối với mọi người dùng nộp phiếu khảo sát.
+  - Khi người dùng bấm `[Kiểm Tra & Gửi Phiếu Khảo Sát]`, nếu trường `signature_data` rỗng:
+    1. Chặn hành động nộp phiếu (`event.preventDefault()`).
+    2. Cuộn mượt màn hình (smooth scroll) định vị đến khung chữ ký.
+    3. Hiển thị thông báo lỗi màu đỏ tại ô chữ ký: *"⚠ Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!"*.
+    4. Kích hoạt Toast cảnh báo lỗi.
+
+- **`BR-SIG-02` [Tiêu Chuẩn Nét Ký & Chống Chữ Ký Trống (Anti-Blank Signature & High-DPI)]**:
+  - Không cho phép bấm "Xác nhận & Sử dụng chữ ký" khi cờ `hasDrawn === false` hoặc dữ liệu pixel canvas hoàn toàn trong suốt.
+  - Nếu người dùng bấm xác nhận khi chưa vẽ nét nào, hiển thị cảnh báo: *"Vui lòng ký tên vào khung trước khi bấm xác nhận!"*.
+  - Nét vẽ canvas phải được nhân hệ số tỷ lệ `window.devicePixelRatio` (1.5x - 3x) để đảm bảo không vỡ hạt khi in văn bản A4.
+
+- **`BR-SIG-03` [Tính Bất Biến & Chống Chối Bỏ Sau Khi Nộp Hồ Sơ (Immutability Post-Submission)]**:
+  - Khi hồ sơ khảo sát đã được hệ thống ghi nhận thành công và cấp mã `Ticket ID` (hoặc `Survey Code`):
+    - Dữ liệu chữ ký chuyển sang trạng thái chỉ đọc (Read-only / Immutable), không được phép chỉnh sửa.
+    - Hình ảnh chữ ký được hiển thị trong Modal tiếp nhận thành công và nhúng vào file JSON xuất dữ liệu hoặc bản in PDF tiếp nhận.
+
+### 4. Đặc Tả Giao Diện & 5 Trạng Thái UX (UI-SIG-PAD-01)
+
+```mermaid
+stateDiagram-v2
+    [*] --> STATE_1_EMPTY: Khởi tạo phiếu khảo sát
+
+    state STATE_1_EMPTY {
+        [*] --> UnsignedPlaceholder
+        UnsignedPlaceholder: - Viền nét đứt màu xanh dương nhạt
+        UnsignedPlaceholder: - Icon bút ký điện tử
+        UnsignedPlaceholder: - Text: Bấm vào đây để ký tay / Chữ ký điện tử
+        UnsignedPlaceholder: - signatureDataUrl = empty
+    }
+
+    STATE_1_EMPTY --> STATE_2_DRAWING: Bấm vào ô chữ ký
+    
+    state STATE_2_DRAWING {
+        [*] --> ModalCanvasOpen
+        ModalCanvasOpen: - Modal Backdrop làm mờ nền
+        ModalCanvasOpen: - Canvas touch-action none
+        ModalCanvasOpen: - Stroke 2.5px, màu #0F172A
+        ModalCanvasOpen: - DPR High-Resolution scaling
+        ModalCanvasOpen: - Trạng thái: Đang ký...
+    }
+
+    STATE_2_DRAWING --> STATE_4_CLEARED: Bấm [Xóa nét / Ký lại]
+    state STATE_4_CLEARED {
+        [*] --> ClearCanvas
+        ClearCanvas: - Xóa sạch buffer canvas
+        ClearCanvas: - hasDrawn = false
+        ClearCanvas: - Trạng thái: Chưa có nét ký
+    }
+    STATE_4_CLEARED --> STATE_2_DRAWING: Người dùng vẽ nét mới
+
+    STATE_2_DRAWING --> STATE_1_EMPTY: Bấm [Hủy bỏ] hoặc [X]
+    STATE_2_DRAWING --> STATE_3_SIGNED: Bấm [Xác nhận] (hasDrawn = true)
+
+    state STATE_3_SIGNED {
+        [*] --> SignaturePreview
+        SignaturePreview: - Render ảnh chữ ký từ Base64 PNG
+        SignaturePreview: - Badge: ✓ Đã ký điện tử
+        SignaturePreview: - Nút: Ký lại / Xóa chữ ký
+        SignaturePreview: - signatureDataUrl = data:image/png;base64,...
+    }
+
+    STATE_3_SIGNED --> STATE_2_DRAWING: Bấm [Ký lại]
+    STATE_3_SIGNED --> STATE_1_EMPTY: Bấm [Xóa chữ ký]
+
+    STATE_1_EMPTY --> STATE_5_ERROR: Bấm [Gửi phiếu] khi chưa ký
+    state STATE_5_ERROR {
+        [*] --> ValidationError
+        ValidationError: - Viền đỏ cảnh báo
+        ValidationError: - Text lỗi: Vui lòng ký tên xác nhận...
+        ValidationError: - Toast cảnh báo lỗi
+        ValidationError: - Smooth scroll định vị ô chữ ký
+    }
+    STATE_5_ERROR --> STATE_2_DRAWING: Bấm vào ô để ký bổ sung
+```
+
+### 5. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-SIG-01` [Chặn Nộp Phiếu Khi Chưa Ký Tên]**:
+  - **Given** người dùng điền đầy đủ các bước 1-4 nhưng chưa ký tại ô chữ ký điện tử,
+  - **When** bấm nút gửi phiếu khảo sát,
+  - **Then** hệ thống ngăn chặn submit, tự động cuộn đến khung chữ ký, hiển thị viền đỏ cảnh báo và Toast lỗi.
+
+- **`AC-SIG-02` [Vẽ Chữ Ký Chuột Mượt Mà Trên Desktop]**:
+  - **Given** người dùng mở Modal bảng ký trên máy tính để bàn/laptop,
+  - **When** nhấn giữ chuột trái và rê vẽ chữ ký,
+  - **Then** nét mực xanh đen `#0F172A` xuất hiện mượt mà, bo tròn đầu nét, không bị giật lag,
+  - **And** cờ `hasDrawn` chuyển sang `true`, nút [Xóa nét] cho phép làm sạch canvas về trạng thái ban đầu.
+
+- **`AC-SIG-03` [Vuốt Vẽ Cảm Ứng Chuẩn Xác Trên Mobile / Tablet]**:
+  - **Given** người dùng truy cập form trên smartphone hoặc máy tính bảng cảm ứng,
+  - **When** chạm ngón tay hoặc bút cảm ứng vuốt vẽ trên khung Canvas,
+  - **Then** màn hình trang web KHÔNG bị cuộn trang ngoài ý muốn (`touch-action: none`), nét ký bám sát tọa độ chạm của ngón tay.
+
+- **`AC-SIG-04` [Xác Nhận & Hiển Thị Hộp Xem Trước Preview]**:
+  - **Given** người dùng đã vẽ nét ký hợp lệ trong Modal,
+  - **When** bấm nút "Xác nhận & Sử dụng chữ ký",
+  - **Then** Modal đóng lại, ô chữ ký chuyển sang Hộp xem trước (Preview Box) với ảnh sắc nét và Badge `✓ Đã ký điện tử`,
+  - **And** thanh tiến độ phần trăm khảo sát được cập nhật tăng lên.
+
+- **`AC-SIG-05` [Lưu Trữ Bản Nháp & Phục Hồi Chữ Ký (Draft Persistence)]**:
+  - **Given** người dùng đã ký xác nhận và lưu bản nháp vào LocalStorage,
+  - **When** người dùng tải lại trang hoặc mở lại bản nháp đã lưu,
+  - **Then** dữ liệu chữ ký Base64 được phục hồi nguyên vẹn trong Hộp xem trước mà không bắt người dùng phải vẽ lại từ đầu.
+
+### 6. Ma Trận Truy Vết Kiểm Thử Nghiệm Thu (Traceability Matrix Delta v15)
+
+| Mã Yêu Cầu (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Mã Kiểm Thử (TEST) | Bảng CSDL Tác Động | Giao Diện Triển Khai | API Endpoint Ánh Xạ |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-SIG-01** | `BR-SIG-02` | `AC-SIG-02`, `AC-SIG-03` | **`TEST-SIG-02`**, **`TEST-SIG-03`** | `demand.demand_surveys` | `src/components/ui/signature-pad-modal.tsx` | N/A (Client Component) |
+| **REQ-SIG-02** | `BR-SIG-01`, `BR-SIG-02` | `AC-SIG-04`, `AC-SIG-05` | **`TEST-SIG-04`**, **`TEST-SIG-05`** | `demand.demand_surveys` | `src/app/khao-sat-nhu-cau/page.tsx` | N/A (Client State & LocalStorage) |
+| **REQ-SIG-03** | `BR-SIG-01`, `BR-SIG-03` | `AC-SIG-01` | **`TEST-SIG-01`** | `demand.demand_surveys` | `src/app/khao-sat-nhu-cau/page.tsx` | `POST /api/v1/demands/surveys` |
+
 
 

@@ -177,3 +177,67 @@ flowchart TD
     4. *Success*: Bảng bản ghi đầy đủ, phân trang 10/25/50, nút *"Xuất file Word"* (Icon `Download`) kích hoạt hàm export realtime.
     5. *Updating/Exporting*: Spinner hiển thị tại nút xuất, disable chống double-click.
 
+
+
+---
+
+### 5.4. Kiến Trúc Bộ Tam Hợp 3 Phiếu Khảo Sát & Dynamic Context Filtering (`CR-2026-026`)
+
+#### 1. Nguyên Tắc Thiết Kế Cụm 3 Nút Header
+- **Bộ 3 Nút Tải Template Mẫu Trắng A4 Hành Chính**:
+  * Nút 1: `Tải mẫu Đánh giá TT17 (.docx)` $\rightarrow$ URL: `/templates/surveys/phieu_thu_thap_tt17.docx` (Theme: Cyan-600).
+  * Nút 2: `Tải mẫu Khảo sát ĐMST (.docx)` $\rightarrow$ URL: `/templates/surveys/phieu_khao_sat_dmst_43_cau_mau_trang.docx` (Theme: Violet-600).
+  * Nút 3: `Tải mẫu Nhu cầu DNNVV (.docx)` $\rightarrow$ URL: `/templates/surveys/phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx` (Theme: Teal-600).
+- **Tính khả dụng**: Đáp ứng đầy đủ thuộc tính `download`, `rel="noopener noreferrer"`, kiểm tra HTTP status 200 tại build time.
+
+#### 2. Kiến Trúc Bộ Lọc Điều Kiện Động (Dynamic Context Filter Engine)
+- **State Management**:
+  * `surveyTypeFilter`: `'ALL' | 'TT17' | 'INNOVATION' | 'SME_DEMAND'`
+  * `classificationFilter`: Chuỗi phân loại động tương ứng theo loại phiếu.
+- **Ma trận ánh xạ Options theo ngữ cảnh**:
+  ```typescript
+  type SurveyCategory = 'ALL' | 'TT17' | 'INNOVATION' | 'SME_DEMAND';
+
+  interface FilterOption {
+    label: string;
+    value: string;
+  }
+
+  const DYNAMIC_CLASSIFICATION_MAP: Record<SurveyCategory, { label: string; options: FilterOption[] }> = {
+    ALL: {
+      label: 'Phân loại / Xếp loại',
+      options: [{ label: 'Tất cả xếp loại', value: 'ALL' }],
+    },
+    TT17: {
+      label: 'Xếp loại trình độ TT17',
+      options: [
+        { label: 'Tất cả xếp loại', value: 'ALL' },
+        { label: 'Tiên tiến (≥ 75đ & T_ĐB ≥ 0.75)', value: 'TIEN_TIEN' },
+        { label: 'Khá / TB Tiên tiến (60–74đ)', value: 'KHA' },
+        { label: 'Trung bình (50–59đ)', value: 'TRUNG_BINH' },
+        { label: 'Lạc hậu (< 50đ)', value: 'LAC_HAU' },
+      ],
+    },
+    INNOVATION: {
+      label: 'Phân tầng năng lực ĐMST',
+      options: [
+        { label: 'Tất cả phân tầng', value: 'ALL' },
+        { label: 'Dẫn đầu (Leading - ≥ 75đ)', value: 'LEADING' },
+        { label: 'Đang phát triển (Developing - 50–74đ)', value: 'DEVELOPING' },
+        { label: 'Tiềm năng (Potential - < 50đ)', value: 'POTENTIAL' },
+        { label: 'Chưa đánh giá (Unrated)', value: 'UNRATED' },
+      ],
+    },
+    SME_DEMAND: {
+      label: 'Mức độ cấp thiết TNI',
+      options: [
+        { label: 'Tất cả mức độ', value: 'ALL' },
+        { label: 'Rất cao (TNI ≥ 75)', value: 'VERY_HIGH' },
+        { label: 'Cao (TNI 60–74)', value: 'HIGH' },
+        { label: 'Trung bình (TNI 45–59)', value: 'MEDIUM' },
+        { label: 'Thấp (TNI < 45)', value: 'LOW' },
+      ],
+    },
+  };
+  ```
+- **Hành vi Reset**: Khi thay đổi `surveyTypeFilter`, hệ thống tự động reset `classificationFilter` về `'ALL'` để tránh xung đột dữ liệu giữa các thang đo.

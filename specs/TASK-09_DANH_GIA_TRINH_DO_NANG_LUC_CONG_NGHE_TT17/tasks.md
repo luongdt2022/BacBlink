@@ -74,3 +74,13 @@
 
 
 
+
+
+---
+
+### Phase 8: Chuẩn Hóa Bộ Tam Hợp Phiếu Khảo Sát & Đánh Giá Doanh Nghiệp Thực Địa [CR-2026-026]
+- [x] T-09.26 [FE] Cập nhật giao diện Header trang `/admin/assessments/records/page.tsx`: Mở rộng từ 2 nút lên cụm 3 nút tải mẫu Word (.docx) chuẩn A4 (TT17 màu Cyan, ĐMST 43Q màu Violet/Purple, Nhu cầu DNNVV màu Teal/Emerald).
+- [x] T-09.27 [FE] Cập nhật dropdown `surveyTypeFilter` 4 lựa chọn (`ALL`, `TT17`, `INNOVATION`, `SME_DEMAND`).
+- [x] T-09.28 [FE] Cài đặt logic Bộ lọc điều kiện động (Dynamic Context Filtering) cho cột 3: Hoán đổi tiêu đề và options theo ngữ cảnh (Xếp loại TT17 / Phân tầng ĐMST 8 nhóm / Cấp độ TNI).
+- [x] T-09.29 [FE] Cập nhật hàm reset filters và phân loại bản ghi để bảo toàn tương thích đa nguồn.
+- [x] T-09.30 [QC] Viết & chạy bộ kiểm thử Unit Test Vitest (`page.test.tsx`) và kịch bản Playwright E2E kiểm tra cả 3 nút tải file Word và chuyển đổi bộ lọc. (Đạt 8/8 Vitest tests pass 100%, 11/11 E2E tests pass 100%).

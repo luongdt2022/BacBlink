@@ -723,3 +723,48 @@ Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản 
 
 
 
+
+
+---
+
+## Spec Delta v14 (CR-2026-025): Bàn Quản Trị Người Dùng Toàn Hệ Thống (/admin/users) [User 360° Console]
+
+**Căn cứ thay đổi**: Quyết định PO `PO-DEC-20261104-01` (`Specification/BASIC_DESIGN_NACENTECH.md` Mục 29), Delta Ledger `deltas/CR-2026-025_super_admin_user_management.md`, và HTML Wireframe SSOT (`Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/wireframe_quan_ly_nguoi_dung_admin.html`).
+
+### 1. Bối Cảnh & Vấn Đề (Context & Problem Statement)
+1. **Xóa bỏ nợ kỹ thuật redirect**: Tuyến `/admin/users` trên Web Portal bị `redirect("/admin/roles")` tạm thời cần được thay thế hoàn toàn bằng màn hình bảng dữ liệu người dùng độc lập.
+2. **Quản trị người dùng tập trung**: Cung cấp bức tranh toàn diện về toàn bộ tài khoản người dùng của nền tảng (Doanh nghiệp, Bên Mua, Bên Bán, Chuyên gia, Viện/Trường, Cán bộ 34 tỉnh/thành).
+3. **Kỷ luật Soft-Delete**: Thực hiện vô hiệu hóa tài khoản an toàn (`isActive = false`) có bắt buộc nhập lý do và ghi log kiểm toán, không dùng hard delete.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Requirements Delta)
+
+- **`REQ-USER-01` (Data Table & Server-side Pagination & Search)**:
+  - Bảng dữ liệu người dùng kết nối trực tiếp `GET /api/v1/admin/users`:
+    * Cột: Monogram/Avatar, Họ và Tên, Email/SĐT, Tổ chức/MST, Vai trò chính, Trạng thái (Badge), Lần cuối đăng nhập/Ngày tạo, Thao tác.
+    * Thanh tìm kiếm hỗ trợ debounce 300ms (Họ tên, Email, SĐT, Tổ chức).
+    * Phân trang Server-side linh hoạt (10/20/50 bản ghi).
+- **`REQ-USER-02` (Bộ Lọc Thông Minh Đa Chiều)**:
+  - Lọc theo 10 Vai trò Scoped RBAC và lọc theo Trạng thái (Tất cả, Đang hoạt động, Đang bị khóa).
+- **`REQ-USER-03` (Drawer Xem Chi Tiết 360°)**:
+  - Mở Slide-over Drawer xem hồ sơ cá nhân, vai trò thẩm quyền, và liên kết bài toán/giải pháp công nghệ.
+- **`REQ-USER-04` (Modal Chỉnh Sửa Thông Tin)**:
+  - Cho phép sửa Họ tên, SĐT, Tổ chức qua `PATCH /api/v1/admin/users/{id}`.
+- **`REQ-USER-05` (Modal Đặt Lại Mật Khẩu)**:
+  - Gọi `POST /api/v1/admin/users/{id}/reset-password`.
+- **`REQ-USER-06` (Khóa / Vô Hiệu Hóa Tài Khoản Soft-Delete)**:
+  - Gọi `DELETE /api/v1/admin/users/{id}` (hoặc `PATCH` `isActive: false`) kèm hộp thoại xác nhận 2 lớp và bắt buộc nhập lý do khóa.
+- **`REQ-USER-07` (Modal Tạo Tài Khoản Mới)**:
+  - Gọi `POST /api/v1/admin/users`.
+
+### 3. Quy Tắc Nghiệp Vụ Bất Biến (Business Rules)
+- **`BR-USER-01` (Chống Tự Khóa - Self-Lock Prevention)**: Super Admin không thể tự khóa hoặc xóa tài khoản của chính mình.
+- **`BR-USER-02` (Bảo Vệ Tài Khoản Gốc - Root Account Protection)**: Tài khoản `admin@nacentech.gov.vn` là bất biến, không thể bị khóa.
+- **`BR-USER-03` (Chuẩn Hóa 5 UX States)**: 100% component bảng và modal tuân thủ 5 UX States qua `<Async>`.
+- **`BR-USER-04` (Kỷ Luật Zero-Mock)**: Dữ liệu tải trực tiếp từ backend API kết nối PostgreSQL thật.
+
+### 4. Tiêu Chuẩn Chấp Thuận Delta v14 (Acceptance Criteria)
+- **AC-USER-01**: Truy cập `/admin/users` tải danh sách người dùng bình thường, không bị redirect sang `/admin/roles`.
+- **AC-USER-02**: Tìm kiếm theo tên hoặc email lọc đúng bản ghi tức thời.
+- **AC-USER-03**: Thao tác Sửa thông tin và Đặt lại mật khẩu gọi đúng API backend và cập nhật UI ngay lập tức.
+- **AC-USER-04**: Thao tác Khóa tài khoản mở modal yêu cầu nhập lý do, sau khi khóa hiển thị badge đỏ "Đang bị khóa" và cập nhật `isActive = false` trong CSDL.
+- **AC-USER-05**: Khi đăng nhập với tài khoản Super Admin hiện tại, nút khóa trên dòng của chính mình bị disable và ngăn chặn thao tác.
