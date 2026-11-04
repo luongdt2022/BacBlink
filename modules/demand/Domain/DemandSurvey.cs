@@ -77,7 +77,7 @@ public sealed class DemandSurvey : AggregateRoot
     public string? EnterpriseSize { get; private set; }
     public string? EmployeeScale { get; private set; }
     public string? RevenueRange3y { get; private set; }
-    public List<string> TopBottlenecks { get; private set; } = [];
+    public List<string>? TopBottlenecks { get; private set; } = [];
     public string? Province { get; private set; }
     public string? HeadquartersAddress { get; private set; }
     public string? SurveyedFacility { get; private set; }
@@ -101,7 +101,7 @@ public sealed class DemandSurvey : AggregateRoot
     public bool? HasRdBudget { get; set; }
     public bool? IsExporting { get; set; }
     public bool? InValueChain { get; set; }
-    public List<string> SupportNeeds { get; set; } = [];
+    public List<string>? SupportNeeds { get; set; } = [];
     public string? Recommendations { get; set; }
     public decimal? TniScore { get; set; }
     public string? TniClassification { get; set; }

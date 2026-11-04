@@ -214,6 +214,178 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         return Ok(survey);
     }
 
+    [HttpGet("demands/surveys")]
+    [HttpGet("gov/demands/surveys")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetDemandSurveys(
+        [FromQuery] string? scopeId,
+        [FromQuery] string? q,
+        [FromQuery] string? status,
+        CancellationToken ct = default)
+    {
+        var query = db.Set<DemandSurvey>()
+            .AsNoTracking()
+            .Where(s => !string.IsNullOrEmpty(s.CompanyName));
+
+        if (!string.IsNullOrWhiteSpace(scopeId) && !scopeId.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            var p = scopeId.Trim();
+            var pattern = p.ToUpperInvariant() switch
+            {
+                "HN" => "Hà Nội",
+                "TG" => "Tiền Giang",
+                "NT" => "Ninh Thuận",
+                "HP" => "Hải Phòng",
+                "DN" => "Đà Nẵng",
+                "SG" or "HCM" => "Hồ Chí Minh",
+                "TN" => "Thái Nguyên",
+                _ => p
+            };
+            query = query.Where(s => s.Province != null && (s.Province.Contains(p) || s.Province.Contains(pattern)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(status) && !status.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(s => s.Status == status.Trim());
+        }
+
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var search = q.Trim().ToLower();
+            query = query.Where(s =>
+                (s.CompanyName != null && s.CompanyName.ToLower().Contains(search)) ||
+                (s.TaxCode != null && s.TaxCode.ToLower().Contains(search)) ||
+                (s.SurveyCode != null && s.SurveyCode.ToLower().Contains(search)));
+        }
+
+        var rawList = await query
+            .OrderByDescending(s => s.SubmittedAt ?? s.CreatedAt)
+            .Take(300)
+            .Select(s => new
+            {
+                id = s.Id,
+                surveyCode = s.SurveyCode,
+                companyName = s.CompanyName,
+                taxCode = s.TaxCode,
+                contactName = s.ContactName,
+                contactPhone = s.ContactPhone,
+                contactEmail = s.ContactEmail,
+                province = s.Province,
+                headquartersAddress = s.HeadquartersAddress,
+                surveyedFacility = s.SurveyedFacility,
+                contactTitle = s.ContactTitle,
+                businessType = s.BusinessType,
+                enterpriseSize = s.EnterpriseSize,
+                employeeScale = s.EmployeeScale,
+                revenueRange3y = s.RevenueRange3y,
+                topBottlenecks = s.TopBottlenecks,
+                supportNeeds = s.SupportNeeds,
+                tniScore = s.TniScore,
+                tniClassification = s.TniClassification,
+                status = s.Status,
+                surveyType = s.SurveyType,
+                submittedAt = s.SubmittedAt,
+                createdAt = s.CreatedAt,
+                surveyAnswers = s.SurveyAnswers,
+                surveyDetails = s.SurveyDetails,
+                representativeSignatureUrl = s.RepresentativeSignatureUrl,
+                hasRdUnit = s.HasRdUnit,
+                hasTechTraining = s.HasTechTraining,
+                hasMachineryUpgrade = s.HasMachineryUpgrade,
+                hasRdBudget = s.HasRdBudget,
+                isExporting = s.IsExporting,
+                inValueChain = s.InValueChain,
+                recommendations = s.Recommendations,
+                items = s.Items.Select(i => new
+                {
+                    id = i.Id,
+                    itemCode = i.ItemCode,
+                    stageName = i.StageName,
+                    technicalProblem = i.TechnicalProblem,
+                    desiredSolution = i.DesiredSolution,
+                    needConsulting = i.NeedConsulting,
+                    expectedGoal = i.ExpectedGoal,
+                    applicationScale = i.ApplicationScale,
+                    sectorCode = i.SectorCode,
+                    techGroupCode = i.TechGroupCode,
+                    demandTypeCode = i.DemandTypeCode,
+                    budgetRange = i.BudgetRange,
+                    urgencyScore = i.UrgencyScore,
+                    impactScore = i.ImpactScore,
+                    investmentCapacity = i.InvestmentCapacity,
+                    adoptionReadiness = i.AdoptionReadiness,
+                    tniScore = i.TniScore
+                }).ToList()
+            })
+            .ToListAsync(ct);
+
+        var items = rawList.Select(s =>
+        {
+            decimal? effectiveTni = s.tniScore;
+            if (!effectiveTni.HasValue && s.items != null && s.items.Count > 0)
+            {
+                var maxItemTni = s.items.Max(i => (decimal?)i.tniScore);
+                if (maxItemTni.HasValue && maxItemTni.Value > 0)
+                {
+                    effectiveTni = maxItemTni.Value;
+                }
+            }
+
+            string? effectiveClass = s.tniClassification;
+            if (string.IsNullOrWhiteSpace(effectiveClass) && effectiveTni.HasValue)
+            {
+                effectiveClass = effectiveTni.Value switch
+                {
+                    >= 75 => "VERY_HIGH",
+                    >= 50 => "HIGH",
+                    >= 25 => "MEDIUM",
+                    > 0 => "LOW",
+                    _ => null
+                };
+            }
+
+            return new
+            {
+                s.id,
+                s.surveyCode,
+                s.companyName,
+                s.taxCode,
+                s.contactName,
+                s.contactPhone,
+                s.contactEmail,
+                s.province,
+                s.headquartersAddress,
+                s.surveyedFacility,
+                s.contactTitle,
+                s.businessType,
+                s.enterpriseSize,
+                s.employeeScale,
+                s.revenueRange3y,
+                s.topBottlenecks,
+                s.supportNeeds,
+                tniScore = effectiveTni,
+                tniClassification = effectiveClass,
+                s.status,
+                s.surveyType,
+                s.submittedAt,
+                s.createdAt,
+                s.surveyAnswers,
+                s.surveyDetails,
+                s.representativeSignatureUrl,
+                s.hasRdUnit,
+                s.hasTechTraining,
+                s.hasMachineryUpgrade,
+                s.hasRdBudget,
+                s.isExporting,
+                s.inValueChain,
+                s.recommendations,
+                s.items
+            };
+        }).ToList();
+
+        return Ok(new { success = true, data = items, totalCount = items.Count });
+    }
+
     // =========================================================================
     // LUỒNG 2: TẠO NHANH BÀI TOÁN & BUYER WORKSPACE (SC-03-02, SC-03-03 / WF-02)
     // =========================================================================

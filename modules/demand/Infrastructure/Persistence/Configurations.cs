@@ -65,7 +65,7 @@ public sealed class DemandSurveyConfiguration : IEntityTypeConfiguration<DemandS
         b.Property(x => x.EnterpriseSize).HasMaxLength(50);
         b.Property(x => x.EmployeeScale).HasMaxLength(50);
         b.Property(x => x.RevenueRange3y).HasColumnName("revenue_range_3y").HasMaxLength(50);
-        b.Property(x => x.TopBottlenecks).HasColumnType("text[]");
+        b.Property(x => x.TopBottlenecks).HasColumnType("text[]").IsRequired(false);
         b.Property(x => x.Province).HasMaxLength(100);
         b.Property(x => x.HeadquartersAddress).HasMaxLength(255);
         b.Property(x => x.SurveyedFacility).HasMaxLength(255);
@@ -83,7 +83,7 @@ public sealed class DemandSurveyConfiguration : IEntityTypeConfiguration<DemandS
         b.Property(x => x.HasRdBudget);
         b.Property(x => x.IsExporting);
         b.Property(x => x.InValueChain);
-        b.Property(x => x.SupportNeeds).HasColumnType("text[]");
+        b.Property(x => x.SupportNeeds).HasColumnType("text[]").IsRequired(false);
         b.Property(x => x.Recommendations);
         b.Property(x => x.TniScore);
         b.Property(x => x.TniClassification).HasMaxLength(30);
