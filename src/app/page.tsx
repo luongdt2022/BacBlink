@@ -1024,33 +1024,30 @@ export default function HomePage() {
         {/* 6. GIA NHẬP HỆ SINH THÁI ĐMST & CTA CUỐI TRANG                             */}
         {/* ========================================================================= */}
         <section className="page-container pb-12 sm:pb-16">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-900 via-brand-700 to-indigo-900 p-8 sm:p-12 lg:p-16 text-white shadow-2xl">
-            <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl" />
-            <div aria-hidden="true" className="pointer-events-none absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
-
+          <div className="relative overflow-hidden rounded-2xl bg-brand-700 p-8 sm:p-12 text-white border border-white/10 shadow-md">
             <div className="relative z-10 mx-auto max-w-3xl text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold text-cyan-300 border border-white/20 backdrop-blur-md">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-semibold text-white/90 border border-white/20">
                 <Rocket className="size-3.5" />
                 Đồng Hành Đổi Mới Sáng Tạo
               </span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white font-sans tracking-tight mt-4">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-sans tracking-tight mt-4">
                 Gia Nhập Hệ Sinh Thái Đổi Mới Sáng Tạo &amp; Chuyển Giao Công Nghệ Quốc Gia
               </h2>
-              <p className="mt-3.5 text-sm sm:text-base leading-relaxed text-slate-200">
+              <p className="mt-3 text-sm sm:text-base leading-relaxed text-white/85 max-w-2xl mx-auto">
                 Kết nối ngay hôm nay để đưa sản phẩm nghiên cứu vào sản xuất thực tế, hoặc tìm kiếm giải pháp công nghệ nâng tầm doanh nghiệp.
               </p>
 
-              <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+              <div className="mt-7 flex flex-wrap justify-center gap-3 sm:gap-4">
                 <Link
                   href="/seller/technologies/new"
-                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm sm:text-base font-bold text-brand-900 shadow-lg hover:bg-slate-100 transition"
+                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm sm:text-base font-bold text-brand-700 shadow-md hover:bg-slate-50 transition"
                 >
                   <Rocket className="size-4 text-brand-700" />
                   <span>Đăng ký chào bán công nghệ</span>
                 </Link>
                 <Link
                   href="/nhu-cau-cong-nghe"
-                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 px-6 py-3.5 text-sm sm:text-base font-bold text-white border border-white/30 backdrop-blur-md transition"
+                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 px-5 py-3 text-sm sm:text-base font-semibold text-white border border-white/25 transition"
                 >
                   <span>Gửi bài toán nhu cầu ĐMST</span>
                   <ArrowRight className="size-4" />
