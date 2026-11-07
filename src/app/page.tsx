@@ -936,7 +936,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800">
                   <Link
                     href="/khao-sat-dmst"
                     className="btn-press flex w-full items-center justify-center gap-1.5 rounded-xl bg-teal-600 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-teal-700"
@@ -944,14 +944,6 @@ export default function HomePage() {
                     <span>Làm Khảo Sát ĐMST Ngay</span>
                     <ArrowRight className="size-3.5" />
                   </Link>
-                  <div className="text-center">
-                    <Link
-                      href="/doanh-nghiep-dmst"
-                      className="text-[11px] font-semibold text-slate-500 hover:text-teal-600 dark:text-slate-400 dark:hover:text-teal-300 transition inline-block py-0.5"
-                    >
-                      Xem bảng xếp hạng &amp; danh bạ DN &rarr;
-                    </Link>
-                  </div>
                 </div>
               </AppCard>
 
