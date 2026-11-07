@@ -8,7 +8,6 @@ import {
   ArrowRight,
   Award,
   BookOpen,
-  Bot,
   Building2,
   Calendar,
   CheckCircle2,
@@ -21,6 +20,7 @@ import {
   FileSearch,
   FileSignature,
   Flame,
+  Globe2,
   GraduationCap,
   Handshake,
   HeartHandshake,
@@ -31,14 +31,16 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  Zap,
 } from "lucide-react";
 import { useToast } from "@/components/common/toast";
-import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
 import { authClient, UserContext } from "@/lib/auth-client";
 import { portalClient, PortalOverviewStats } from "@/lib/portal-client";
 import { fetchPublicOffers } from "@/services/api/technology-offer";
 import { Async, AsyncState } from "@/components/ui/async";
 import { getTechnologyImage } from "@/lib/technology-media";
+import { AppCard } from "@/components/ui/app-card";
+import { AppBadge } from "@/components/ui/app-badge";
 
 type Listing = {
   id?: string;
@@ -63,20 +65,89 @@ const SEARCH_CATEGORIES = [
   { value: "dao-tao", label: "Đào tạo & Chuyển giao tri thức", path: "/elearning" },
 ] as const;
 
+const CONNECT_WORKFLOW_STEPS = [
+  {
+    step: "01",
+    title: "Khám Phá & Định Danh",
+    subtitle: "Tạo tài khoản SSO dùng chung cho Doanh nghiệp & Nhà khoa học",
+    description: "Khởi tạo hồ sơ ĐMST trực tuyến, định danh pháp nhân số và thiết lập quyền truy cập cổng kết nối công nghệ liên thông toàn quốc.",
+    icon: FileSearch,
+    color: "from-cyan-500 to-blue-600",
+    badge: "Bước 1",
+  },
+  {
+    step: "02",
+    title: "Thẩm Định TRL & Pháp Lý",
+    subtitle: "Kiểm duyệt TRL 1-9 & tình trạng sở hữu trí tuệ",
+    description: "Hội đồng khoa học Viện NacenTech phối hợp cùng 63 Sở KH&CN thẩm định cấp độ sẵn sàng công nghệ, rà soát quyền bằng sáng chế và giải pháp hữu ích.",
+    icon: ClipboardCheck,
+    color: "from-blue-600 to-indigo-600",
+    badge: "Bước 2",
+  },
+  {
+    step: "03",
+    title: "Khớp Nối AI & Đàm Phán",
+    subtitle: "Gợi ý thông minh & phòng đàm phán trực tuyến bảo mật",
+    description: "Thuật toán AI Matching phân tích ma trận 18 ngành TT17, tự động khớp nối bài toán của doanh nghiệp với công nghệ chào bán và mở phòng làm việc.",
+    icon: Handshake,
+    color: "from-indigo-600 to-emerald-600",
+    badge: "Bước 3",
+  },
+  {
+    step: "04",
+    title: "Ký Kết Chuyển Giao & Hậu Kiểm",
+    subtitle: "Ký MOU số hóa & đồng hành hỗ trợ kỹ thuật thực tế",
+    description: "Hai bên xác lập thỏa thuận chuyển giao công nghệ chính thức, ký số hợp đồng và được đội ngũ chuyên gia Viện bảo trợ kỹ thuật trong suốt quá trình vận hành.",
+    icon: Rocket,
+    color: "from-emerald-600 to-teal-500",
+    badge: "Bước 4",
+  },
+] as const;
+
+const PARTNER_PILLARS = [
+  {
+    category: "Viện Nghiên Cứu & Trường Đại Học",
+    description: "Nguồn cung công nghệ nguồn, sáng chế độc quyền và đội ngũ chuyên gia đầu ngành",
+    partners: [
+      "Viện Ứng dụng Công nghệ (NacenTech)",
+      "Đại học Bách Khoa Hà Nội",
+      "Đại học Quốc gia Hà Nội",
+      "Đại học Quốc gia TP.HCM",
+      "Viện Hàn lâm KH&CN Việt Nam",
+      "Trường Đại học Dược Hà Nội",
+    ],
+  },
+  {
+    category: "Mạng Lưới 63 Sở KH&CN Toàn Quốc",
+    description: "Đầu mối tiếp nhận, thẩm định và bảo trợ chuyển giao công nghệ tại từng địa phương",
+    partners: [
+      "Sở KH&CN TP. Hà Nội",
+      "Sở KH&CN TP. Hồ Chí Minh",
+      "Sở KH&CN TP. Đà Nẵng",
+      "Sở KH&CN TP. Hải Phòng",
+      "Sở KH&CN TP. Cần Thơ",
+      "Sở KH&CN Tỉnh Đắk Lắk",
+    ],
+  },
+  {
+    category: "Doanh Nghiệp ĐMST & Tập Đoàn Tiên Phong",
+    description: "Bên đặt hàng bài toán thực tế, tiếp nhận chuyển giao và ứng dụng công nghệ vào sản xuất",
+    partners: [
+      "Tập đoàn Công nghệ & Chế tạo",
+      "Doanh nghiệp KH&CN Tiêu biểu",
+      "Công ty Nông nghiệp CNC",
+      "Hiệp hội Doanh nghiệp Đổi mới sáng tạo",
+      "Nhà máy Dược phẩm Chuẩn GMP",
+      "Các Quỹ Đầu tư ĐMST Quốc gia",
+    ],
+  },
+] as const;
+
 const features = [
   [ShieldCheck, "Công nghệ được kiểm định", "Mỗi công nghệ đăng tải đều được Viện thẩm định mức độ sẵn sàng (TRL) và pháp lý sở hữu trí tuệ trước khi công bố."],
   [Handshake, "Kết nối trực tiếp, không trung gian", "Doanh nghiệp và nhà khoa học trao đổi, đàm phán chuyển giao trực tiếp trên nền tảng, tiết kiệm thời gian và chi phí."],
   [LineChart, "Dữ liệu minh bạch, cập nhật", "Theo dõi tiến độ giao dịch, lịch sử chuyển giao và đánh giá từ các bên theo thời gian thực."],
   [Clock, "Hỗ trợ 24/7 từ chuyên gia", "Đội ngũ chuyên gia của Viện đồng hành tư vấn kỹ thuật, pháp lý và tài chính cho từng giao dịch."],
-] as const;
-
-const processes = [
-  [FileSearch, "Đăng công nghệ / nhu cầu", "Chủ sở hữu công nghệ hoặc đơn vị có nhu cầu tạo hồ sơ, mô tả chi tiết trên nền tảng."],
-  [ClipboardCheck, "Thẩm định & kiểm định", "Chuyên gia của Viện đánh giá mức độ sẵn sàng công nghệ (TRL) và tính pháp lý."],
-  [Handshake, "Kết nối các bên liên quan", "Hệ thống gợi ý và kết nối bên chào bán với bên có nhu cầu phù hợp."],
-  [FileSignature, "Đàm phán & ký kết", "Hai bên trao đổi trực tiếp, soạn thảo và ký kết hợp đồng chuyển giao."],
-  [Rocket, "Triển khai chuyển giao", "Đội ngũ kỹ thuật hỗ trợ lắp đặt, chuyển giao và đào tạo vận hành công nghệ."],
-  [HeartHandshake, "Hỗ trợ hậu chuyển giao", "Theo dõi vận hành, đánh giá hiệu quả và hỗ trợ xử lý phát sinh sau chuyển giao."],
 ] as const;
 
 function ListingCard({ item }: { item: Listing }) {
@@ -89,48 +160,98 @@ function ListingCard({ item }: { item: Listing }) {
       ? `/nhu-cau-cong-nghe/${item.id}`
       : "/nhu-cau-cong-nghe";
 
+  // Phân loại TRL theo 3 dải màu chuẩn hóa BD-01:
+  // TRL 1-3: Xanh dương (info), TRL 4-6: Hổ phách (warning), TRL 7-9: Xanh lục Emerald (success)
+  const trlMatch = item.trl.match(/TRL\s*(\d+)/i);
+  const trlLevel = trlMatch ? parseInt(trlMatch[1], 10) : undefined;
+  const trlVariant: "info" | "warning" | "success" =
+    trlLevel !== undefined
+      ? trlLevel <= 3
+        ? "info"
+        : trlLevel <= 6
+        ? "warning"
+        : "success"
+      : "success";
+
   return (
-    <article className="group flex flex-col justify-between overflow-hidden rounded-xl border border-border-default bg-white transition hover:-translate-y-0.5 hover:border-brand-100 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+    <AppCard
+      elevation={1}
+      interactive
+      className="group flex flex-col justify-between overflow-hidden p-0 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+    >
       <div>
-        <Link href={detailHref} className="relative block aspect-[16/9] overflow-hidden">
+        <Link href={detailHref} className="relative block aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
           <Image
             src={item.image}
             alt={item.title}
             fill
             sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <span className="absolute left-3 top-3 sm:left-4 sm:top-4 inline-flex rounded-full bg-white/95 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[11px] sm:text-xs font-semibold text-brand-700 shadow-xs">
+          {/* Huy hiệu ngành KH&CN ở góc trên bên trái */}
+          <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-brand-700 shadow-md backdrop-blur-md dark:bg-slate-900/90 dark:text-cyan-300">
             {item.field}
           </span>
+          {/* Huy hiệu TRL ở góc trên bên phải */}
+          <div className="absolute right-3 top-3">
+            {trlLevel !== undefined ? (
+              <AppBadge variant={trlVariant} size="sm" className="font-bold shadow-md">
+                TRL {trlLevel}
+              </AppBadge>
+            ) : (
+              <AppBadge variant="neutral" size="sm" className="font-bold shadow-md">
+                {item.trl}
+              </AppBadge>
+            )}
+          </div>
         </Link>
-        <div className="p-4 sm:p-6">
+
+        <div className="p-4 sm:p-5">
+          {item.itemCode && (
+            <span className="font-mono text-[11px] font-bold text-brand-700 dark:text-cyan-400 bg-blue-50 dark:bg-blue-950/80 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900 inline-block mb-2">
+              {item.itemCode}
+            </span>
+          )}
           <Link href={detailHref}>
-            <h3 className="text-base sm:text-card-title font-bold text-text-primary hover:text-brand-700 dark:text-white dark:hover:text-cyan-400 line-clamp-2 transition">
+            <h3 className="text-base font-bold text-text-primary hover:text-brand-700 dark:text-white dark:hover:text-cyan-400 line-clamp-2 transition font-sans leading-snug">
               {item.title}
             </h3>
           </Link>
-          <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-text-secondary dark:text-slate-300 line-clamp-1">{item.owner}</p>
+          <p className="mt-2 text-xs sm:text-sm text-text-secondary dark:text-slate-300 line-clamp-1 font-sans">
+            {item.owner}
+          </p>
         </div>
       </div>
-      <div className="px-4 pb-4 sm:px-6 sm:pb-6 pt-0">
-        <div className="flex flex-wrap items-center justify-between gap-y-2 border-t border-slate-100 dark:border-slate-800 pt-3 sm:pt-4 text-xs text-text-secondary dark:text-slate-400">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <span className="inline-flex items-center gap-1">
-              <MapPin className="size-3.5" />
-              {item.location}
-            </span>
-            <span className="font-semibold text-nacen-green-700 dark:text-nacen-green-200">{item.trl}</span>
+
+      <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0">
+        <div className="flex flex-wrap items-center justify-between gap-y-2 border-t border-slate-100 dark:border-slate-800 pt-3 text-xs text-text-secondary dark:text-slate-400">
+          <span className="inline-flex items-center gap-1">
+            <MapPin className="size-3.5 text-slate-400 shrink-0" />
+            <span className="truncate max-w-[130px]">{item.location}</span>
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.location.href = detailHref;
+                }
+              }}
+              className="btn-press inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:hover:bg-brand-900 dark:text-cyan-300 font-bold text-xs transition cursor-pointer"
+            >
+              {item.type === "offers" ? "Yêu Cầu Kết Nối" : "Đề Xuất Giải Pháp"}
+            </button>
+            <Link
+              href={detailHref}
+              className="inline-flex items-center gap-0.5 font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 dark:hover:text-cyan-300"
+            >
+              <span>Chi tiết</span>
+              <ArrowRight className="size-3.5" />
+            </Link>
           </div>
-          <Link
-            href={detailHref}
-            className="inline-flex items-center gap-1 font-semibold text-brand-700 hover:text-brand-800 dark:text-cyan-400 dark:hover:text-cyan-300"
-          >
-            Chi tiết <ArrowRight className="size-3.5" />
-          </Link>
         </div>
       </div>
-    </article>
+    </AppCard>
   );
 }
 
@@ -138,7 +259,7 @@ export default function HomePage() {
   const router = useRouter();
   const toast = useToast();
 
-  // Search state
+  // Search state cho Hero banner gốc
   const [query, setQuery] = useState("");
   const [searchCategory, setSearchCategory] = useState("all");
 
@@ -146,10 +267,6 @@ export default function HomePage() {
   const [offers, setOffers] = useState<Listing[]>([]);
   const [demands, setDemands] = useState<Listing[]>([]);
   const [listingsLoading, setListingsLoading] = useState(true);
-  const [sectors, setSectors] = useState<SectorOption[]>([]);
-  const [sectorsError, setSectorsError] = useState(false);
-  const [sectorsLoading, setSectorsLoading] = useState(true);
-  const [sectorLoadVersion, setSectorLoadVersion] = useState(0);
 
   // Thống kê thời gian thực từ Portal API
   const [statsState, setStatsState] = useState<AsyncState>("loading");
@@ -165,7 +282,6 @@ export default function HomePage() {
         .then((res) => {
           if (!cancelled) {
             const rawOffers = res.data || [];
-            // Defense-in-depth: Deduplication by normalized title using Set
             const seen = new Set<string>();
             const uniqueOffers: Listing[] = [];
             for (const o of rawOffers) {
@@ -196,7 +312,6 @@ export default function HomePage() {
         .getPublicDemands({ rotate: true, limit: 6 })
         .then((list) => {
           if (!cancelled && Array.isArray(list)) {
-            // Defense-in-depth: Deduplication by normalized title using Set
             const seen = new Set<string>();
             const uniqueDemands: Listing[] = [];
             for (const d of list) {
@@ -253,25 +368,6 @@ export default function HomePage() {
     };
   }, [statsVersion]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setSectorsLoading(true);
-    setSectorsError(false);
-    getActiveSectors()
-      .then((rows) => {
-        if (!cancelled) setSectors(rows);
-      })
-      .catch(() => {
-        if (!cancelled) setSectorsError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setSectorsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [sectorLoadVersion]);
-
   const handleSearch = (event?: FormEvent<HTMLFormElement>) => {
     if (event) event.preventDefault();
     const q = query.trim();
@@ -290,6 +386,12 @@ export default function HomePage() {
     router.push(`${targetPath}${qs ? `?${qs}` : ""}`);
   };
 
+  const handleTrendingTagClick = (tag: string) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("nacen:open-ai-assistant", { detail: { prompt: tag } }));
+    }
+  };
+
   const listings = listingType === "offers" ? offers : demands;
 
   const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
@@ -297,15 +399,11 @@ export default function HomePage() {
     setCurrentUser(authClient.getUser());
   }, []);
 
-  const handleOpenAi = (promptText?: string) => {
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("nacen:open-ai-assistant", { detail: { prompt: promptText } }));
-    }
-  };
-
   return (
-    <div className="w-full bg-white dark:bg-slate-950">
-      {/* HERO BANNER SECTION */}
+    <div className="w-full bg-white dark:bg-slate-950 font-sans">
+      {/* ========================================================================= */}
+      {/* PHẦN TỪ BACKGROUND TRỞ LÊN: HERO BANNER GỐC THANH THOÁT                   */}
+      {/* ========================================================================= */}
       <section className="relative overflow-hidden bg-brand-700 px-4 py-6 text-white sm:py-12 lg:px-8 lg:py-14 [@media(min-height:850px)]:lg:py-16 [@media(max-height:780px)]:py-5 [@media(max-height:780px)]:sm:py-8">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="relative mx-auto max-w-7xl">
@@ -350,7 +448,7 @@ export default function HomePage() {
                 />
               </div>
 
-              {/* Nút Tìm kiếm (Trắng chữ xanh đồng bộ theo mẫu ảnh 2) */}
+              {/* Nút Tìm kiếm */}
               <button
                 type="submit"
                 className="focus-ring h-11 sm:h-12 rounded-xl bg-white hover:bg-white/95 px-6 sm:px-7 text-sm sm:text-base font-bold text-brand-700 transition shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2 shrink-0"
@@ -383,7 +481,7 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={() => setStatsVersion((v) => v + 1)}
-                    className="mt-2 text-xs font-bold underline hover:text-white"
+                    className="mt-2 text-xs font-bold underline hover:text-white cursor-pointer"
                   >
                     Tải lại số liệu
                   </button>
@@ -467,119 +565,244 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ========================================================================= */}
+      {/* PHẦN TỪ BACKGROUND TRẮNG TRỞ XUỐNG: GIAO DIỆN NÂNG CẤP SPRINT 3 CHUẨN      */}
+      {/* ========================================================================= */}
       <main>
-        {/* DÀNH CHO NGƯỜI DÙNG MỚI: HƯỚNG DẪN BẮT ĐẦU */}
-        <section className="bg-gradient-to-b from-brand-50/60 via-slate-50/40 to-white py-10 sm:py-16 dark:from-slate-950 dark:via-slate-900/60 dark:to-slate-950 border-b border-border-default/60 dark:border-slate-800">
+        {/* ========================================================================= */}
+        {/* 1. LƯỚI THẺ LISTING CÔNG NGHỆ & NHU CẦU NỔI BẬT (T-01.33)                */}
+        {/* ========================================================================= */}
+        <section className="bg-slate-50/60 dark:bg-slate-950/50 py-10 sm:py-16 lg:py-20 border-b border-slate-200 dark:border-slate-800">
           <div className="page-container">
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-nacen-green-50 px-3 py-1 text-xs font-bold text-nacen-green-700 border border-nacen-green-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                <BookOpen className="size-3.5" />
-                Dành Cho Người Dùng Mới
-              </span>
-              <h2 className="mt-3.5 type-section-title text-text-primary dark:text-white">
-                Khám Phá Hệ Thống Theo Vai Trò Của Bạn
-              </h2>
-              <p className="mt-2 sm:mt-3 text-sm sm:text-base text-text-secondary dark:text-slate-300">
-                Hệ sinh thái NacenTwin được thiết kế chuyên biệt cho từng tác nhân. Chọn vai trò của bạn để xem quy trình và màn hình hướng dẫn tương ứng:
-              </p>
-            </div>
-
-            <div className="mt-7 sm:mt-10 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {/* Card 1: Bên Mua */}
-              <div className="group flex flex-col justify-between rounded-xl sm:rounded-2xl border border-border-default bg-white p-4 sm:p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-                <div>
-                  <div className="flex size-10 sm:size-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-300">
-                    <Building2 className="size-5" />
-                  </div>
-                  <h3 className="mt-3.5 sm:mt-4 text-base font-bold text-text-primary dark:text-white">
-                    Bên Mua (Buyer)
-                  </h3>
-                  <p className="mt-1.5 sm:mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
-                    Doanh nghiệp khảo sát nhu cầu ĐMST 7 phần, đăng bài toán kỹ thuật, nhận gợi ý AI matching và đàm phán hợp đồng chuyển giao.
-                  </p>
-                </div>
-                <Link
-                  href="/huong-dan#role=BUYER"
-                  className="focus-ring mt-4 sm:mt-5 inline-flex items-center gap-1 text-xs font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 group-hover:translate-x-0.5 transition"
-                >
-                  <span>Xem hướng dẫn Bên Mua</span>
-                  <ArrowRight className="size-3.5" />
-                </Link>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-cyan-300 dark:border-blue-800">
+                  <Sparkles className="size-3.5 text-blue-600 dark:text-cyan-400" />
+                  Cơ Sở Dữ Liệu Quốc Gia ĐMST
+                </span>
+                <h2 className="mt-3 type-section-title text-text-primary dark:text-white">
+                  Công Nghệ &amp; Nhu Cầu Nổi Bật
+                </h2>
+                <p className="mt-2 text-sm sm:text-base text-text-secondary dark:text-slate-300">
+                  Cập nhật liên tục từ mạng lưới viện, trường, doanh nghiệp và 63 Sở KH&amp;CN trên toàn quốc.
+                </p>
               </div>
 
-              {/* Card 2: Bên Bán */}
-              <div className="group flex flex-col justify-between rounded-xl sm:rounded-2xl border border-border-default bg-white p-4 sm:p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-                <div>
-                  <div className="flex size-10 sm:size-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
-                    <Rocket className="size-5" />
-                  </div>
-                  <h3 className="mt-3.5 sm:mt-4 text-base font-bold text-text-primary dark:text-white">
-                    Bên Bán (Seller)
-                  </h3>
-                  <p className="mt-1.5 sm:mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
-                    Viện nghiên cứu, trường ĐH &amp; doanh nghiệp tạo hồ sơ chào bán công nghệ, thẩm định TRL 1-9 &amp; tình trạng sở hữu trí tuệ.
-                  </p>
-                </div>
-                <Link
-                  href="/huong-dan#role=SELLER"
-                  className="focus-ring mt-4 sm:mt-5 inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 group-hover:translate-x-0.5 transition"
+              {/* Bộ chuyển đổi Tab Cung - Cầu */}
+              <div className="flex rounded-xl bg-slate-200/80 p-1 dark:bg-slate-800 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setListingType("offers")}
+                  className={`btn-press rounded-lg px-4 py-2 text-xs sm:text-sm font-bold transition cursor-pointer ${
+                    listingType === "offers"
+                      ? "bg-white text-brand-700 shadow-sm dark:bg-brand-950 dark:text-cyan-300"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  }`}
                 >
-                  <span>Xem hướng dẫn Bên Bán</span>
-                  <ArrowRight className="size-3.5" />
-                </Link>
-              </div>
-
-              {/* Card 3: Chuyên Gia */}
-              <div className="group flex flex-col justify-between rounded-xl sm:rounded-2xl border border-border-default bg-white p-4 sm:p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-                <div>
-                  <div className="flex size-10 sm:size-11 items-center justify-center rounded-xl bg-innovation-50 text-innovation-600 dark:bg-cyan-950/70 dark:text-cyan-300">
-                    <GraduationCap className="size-5" />
-                  </div>
-                  <h3 className="mt-3.5 sm:mt-4 text-base font-bold text-text-primary dark:text-white">
-                    Chuyên Gia KH&amp;CN
-                  </h3>
-                  <p className="mt-1.5 sm:mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
-                    Nhà khoa học đăng ký nâng hạng, quét tự động CV bằng AI Parser, tham gia thẩm định năng lực TT17 và tư vấn kỹ thuật.
-                  </p>
-                </div>
-                <Link
-                  href="/huong-dan#role=EXPERT"
-                  className="focus-ring mt-4 sm:mt-5 inline-flex items-center gap-1 text-xs font-bold text-innovation-600 hover:text-innovation-700 dark:text-cyan-400 group-hover:translate-x-0.5 transition"
+                  Công nghệ chào bán ({offers.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setListingType("demands")}
+                  className={`btn-press rounded-lg px-4 py-2 text-xs sm:text-sm font-bold transition cursor-pointer ${
+                    listingType === "demands"
+                      ? "bg-white text-brand-700 shadow-sm dark:bg-brand-950 dark:text-cyan-300"
+                      : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                  }`}
                 >
-                  <span>Xem hướng dẫn Chuyên Gia</span>
-                  <ArrowRight className="size-3.5" />
-                </Link>
-              </div>
-
-              {/* Card 4: Sở KH&CN */}
-              <div className="group flex flex-col justify-between rounded-xl sm:rounded-2xl border border-border-default bg-white p-4 sm:p-5 shadow-xs transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-                <div>
-                  <div className="flex size-10 sm:size-11 items-center justify-center rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
-                    <ShieldCheck className="size-5" />
-                  </div>
-                  <h3 className="mt-3.5 sm:mt-4 text-base font-bold text-text-primary dark:text-white">
-                    Cán Bộ Sở KH&amp;CN
-                  </h3>
-                  <p className="mt-1.5 sm:mt-2 text-xs leading-relaxed text-text-secondary dark:text-slate-300">
-                    Cổng công vụ cấp tỉnh: phê duyệt công nghệ chào bán, quản lý danh bạ 304 DN ĐMST và tổ chức gian hàng Techmart.
-                  </p>
-                </div>
-                <Link
-                  href="/huong-dan#role=GOV"
-                  className="focus-ring mt-4 sm:mt-5 inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:text-amber-800 dark:text-amber-400 group-hover:translate-x-0.5 transition"
-                >
-                  <span>Xem hướng dẫn Sở KH&amp;CN</span>
-                  <ArrowRight className="size-3.5" />
-                </Link>
+                  Nhu cầu đặt hàng ({demands.length})
+                </button>
               </div>
             </div>
 
-            {/* [TASK-01-CR19] Đã gỡ bỏ Banner Cẩm Nang Hướng Dẫn Chi Tiết khỏi Trang Chủ theo yêu cầu PO */}
+            {/* Bao bọc lưới danh sách qua component <Async> */}
+            <div className="mt-8">
+              <Async
+                state={listingsLoading ? "loading" : listings.length === 0 ? "empty" : "success"}
+                loadingSkeleton={
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div key={i} className="rounded-2xl border border-slate-200 bg-white p-4 animate-pulse dark:bg-slate-900 dark:border-slate-800">
+                        <div className="aspect-[16/9] w-full bg-slate-200 dark:bg-slate-800 rounded-xl mb-4" />
+                        <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded mb-2" />
+                        <div className="h-5 w-3/4 bg-slate-200 dark:bg-slate-800 rounded mb-2" />
+                        <div className="h-4 w-1/2 bg-slate-200 dark:bg-slate-800 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                }
+                emptyContent={
+                  <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 sm:p-12 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900">
+                    <Cpu className="mx-auto h-10 w-10 text-slate-400 mb-3" />
+                    <p className="font-semibold text-base text-slate-700 dark:text-slate-200">
+                      Chưa có {listingType === "offers" ? "công nghệ chào bán" : "nhu cầu đặt hàng"} nào được công bố.
+                    </p>
+                    <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                      Dữ liệu sẽ được cập nhật ngay khi hoàn tất thẩm định bởi Hội đồng Viện.
+                    </p>
+                  </div>
+                }
+              >
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {listings.map((item, idx) => (
+                    <ListingCard key={`${item.type}-${item.id || item.itemCode || idx}-${idx}`} item={item} />
+                  ))}
+                </div>
+              </Async>
+            </div>
+
+            <div className="mt-8 sm:mt-10 flex justify-center">
+              <Link
+                href={listingType === "offers" ? "/chao-ban-cong-nghe" : "/nhu-cau-cong-nghe"}
+                className="btn-press inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-2.5 text-sm font-bold text-slate-700 transition hover:border-brand-700 hover:bg-brand-50 hover:text-brand-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              >
+                <span>Xem tất cả danh sách</span>
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* HỆ THỐNG ĐÁNH GIÁ NĂNG LỰC & KHẢO SÁT CÔNG NGHỆ QUỐC GIA (TT17, TNI, DN ĐMST, TRL) */}
-        <section className="bg-gradient-to-b from-slate-50 via-white to-slate-50 py-10 sm:py-16 lg:py-20 dark:from-slate-900/60 dark:via-slate-950 dark:to-slate-900/60 border-y border-slate-200/80 dark:border-slate-800">
+        {/* ========================================================================= */}
+        {/* 2. QUY TRÌNH KẾT NỐI 4 BƯỚC TRỰC QUAN ĐMST (T-01.34)                      */}
+        {/* ========================================================================= */}
+        <section className="bg-white py-12 sm:py-16 lg:py-20 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
+          <div className="page-container">
+            <div className="mx-auto max-w-3xl text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                <CheckCircle2 className="size-3.5 text-emerald-600" />
+                Chuẩn Hóa Quy Trình Quốc Gia
+              </span>
+              <h2 className="mt-3.5 type-section-title text-text-primary dark:text-white">
+                Quy Trình Kết Nối &amp; Chuyển Giao Công Nghệ 4 Bước
+              </h2>
+              <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-text-secondary dark:text-slate-300">
+                Minh bạch, bảo mật và được bảo trợ pháp lý bởi Viện Ứng dụng Công nghệ cùng mạng lưới 63 Sở KH&amp;CN.
+              </p>
+            </div>
+
+            <div className="mt-12 relative">
+              {/* Đường kẻ tiến trình phát sáng nối liền 4 bước trên Desktop */}
+              <div
+                aria-hidden="true"
+                className="hidden lg:block absolute top-14 left-[12%] right-[12%] h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-emerald-500 rounded-full opacity-60 z-0"
+              />
+
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
+                {CONNECT_WORKFLOW_STEPS.map((wf) => {
+                  const StepIcon = wf.icon;
+                  return (
+                    <article
+                      key={wf.step}
+                      className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-500 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                    >
+                      <div>
+                        {/* Biểu tượng và số thứ tự */}
+                        <div className="flex items-center justify-between">
+                          <div className={`flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br ${wf.color} text-white shadow-md`}>
+                            <StepIcon className="size-6 text-white" />
+                          </div>
+                          <span className="font-mono text-2xl font-black text-slate-300 dark:text-slate-700 group-hover:text-brand-500 transition">
+                            {wf.step}
+                          </span>
+                        </div>
+
+                        <span className="inline-block mt-4 text-[11px] font-bold uppercase tracking-wider text-brand-700 dark:text-cyan-400">
+                          {wf.badge}
+                        </span>
+                        <h3 className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans">
+                          {wf.title}
+                        </h3>
+                        <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400 leading-snug">
+                          {wf.subtitle}
+                        </p>
+                        <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                          {wf.description}
+                        </p>
+                      </div>
+
+                      <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <Link
+                          href="/huong-dan"
+                          className="inline-flex items-center gap-1 text-xs font-bold text-brand-700 dark:text-cyan-400 group-hover:translate-x-1 transition"
+                        >
+                          <span>Xem chi tiết bước</span>
+                          <ArrowRight className="size-3.5" />
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 3. KHỐI MẠNG LƯỚI ĐỐI TÁC & 63 SỞ KH&CN (T-01.35)                          */}
+        {/* ========================================================================= */}
+        <section className="bg-gradient-to-b from-slate-50 via-white to-slate-50 py-12 sm:py-16 lg:py-20 dark:from-slate-950 dark:via-slate-900/60 dark:to-slate-950 border-b border-slate-200 dark:border-slate-800">
+          <div className="page-container">
+            <div className="mx-auto max-w-3xl text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-800 border border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800">
+                <Globe2 className="size-3.5 text-cyan-600" />
+                Hệ Sinh Thái ĐMST Toàn Diện
+              </span>
+              <h2 className="mt-3.5 type-section-title text-text-primary dark:text-white">
+                Mạng Lưới Đổi Mới Sáng Tạo &amp; Chuyển Giao Công Nghệ Toàn Quốc
+              </h2>
+              <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-text-secondary dark:text-slate-300">
+                Hội tụ sức mạnh từ 3 trụ cột vững chắc: Nguồn cung công nghệ từ Viện/Trường, Bảo trợ cấp tỉnh từ 63 Sở KH&amp;CN, và Động lực ứng dụng từ cộng đồng Doanh nghiệp ĐMST.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {PARTNER_PILLARS.map((pillar, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="flex size-7 items-center justify-center rounded-lg bg-brand-50 text-brand-700 text-xs font-bold dark:bg-slate-800 dark:text-cyan-400">
+                        0{idx + 1}
+                      </span>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        {pillar.category}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                      {pillar.description}
+                    </p>
+                    <ul className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+                      {pillar.partners.map((p, pIdx) => (
+                        <li key={pIdx} className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+                          <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="mt-6 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <Link
+                      href={idx === 1 ? "/so-khcn" : idx === 0 ? "/experts" : "/doanh-nghiep-dmst"}
+                      className="inline-flex items-center gap-1 text-xs font-bold text-brand-700 dark:text-cyan-400 hover:underline"
+                    >
+                      <span>Khám phá danh bạ mạng lưới</span>
+                      <ArrowRight className="size-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 4. HỆ THỐNG ĐÁNH GIÁ NĂNG LỰC & KHẢO SÁT CÔNG NGHỆ QUỐC GIA (TT17, TNI)     */}
+        {/* ========================================================================= */}
+        <section className="bg-white py-10 sm:py-16 lg:py-20 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
           <div className="page-container">
             <div className="mx-auto max-w-3xl text-center">
               <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-bold text-brand-700 dark:bg-brand-950/80 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800">
@@ -748,8 +971,8 @@ export default function HomePage() {
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                      <Rocket className="size-3 text-emerald-600" />
-                      Thang Đo TRL 1–9
+                      <CheckCircle2 className="size-3 text-emerald-600" />
+                      Tiêu chuẩn TRL 1-9
                     </span>
                     <span className="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/60">04</span>
                   </div>
@@ -759,22 +982,22 @@ export default function HomePage() {
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-emerald-600 transition">
-                        Thẩm Định Thang Đo TRL
+                        Định Chuẩn TRL 1-9
                       </h3>
                       <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">Technology Readiness Level</p>
                     </div>
                   </div>
                   <p className="mt-3 text-xs sm:text-sm leading-relaxed text-text-secondary dark:text-slate-300">
-                    Chuẩn hóa 9 cấp độ hoàn thiện công nghệ từ phòng lab (TRL 1-3), thử nghiệm (TRL 4-6) đến sẵn sàng thương mại hóa (TRL 7-9).
+                    Phân loại 9 cấp độ hoàn thiện từ nghiên cứu phòng thí nghiệm đến thương mại hóa thực tế, gắn huy hiệu xác thực trên từng hồ sơ công nghệ.
                   </p>
                   <ul className="mt-3.5 sm:mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 sm:pt-4 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
-                      <span>Thẩm định độc lập bởi Hội đồng Viện</span>
+                      <span>3 giai đoạn: Lab (1-3) &bull; Pilot (4-6) &bull; Market (7-9)</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
-                      <span>Gắn nhãn TRL và bảo hộ sở hữu trí tuệ</span>
+                      <span>Hội đồng chuyên gia thẩm định và cấp chứng nhận</span>
                     </li>
                   </ul>
                 </div>
@@ -783,7 +1006,7 @@ export default function HomePage() {
                     href="/chao-ban-cong-nghe"
                     className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 shadow-xs"
                   >
-                    <span>Khám Phá Công Nghệ TRL</span>
+                    <span>Khám Phá Công Nghệ Theo TRL</span>
                     <ArrowRight className="size-4" />
                   </Link>
                 </div>
@@ -792,273 +1015,69 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* VÌ SAO CHỌN NACENTWIN */}
-        <section className="page-container py-10 sm:py-16 lg:py-20">
+        {/* ========================================================================= */}
+        {/* 5. VÌ SAO CHỌN NACENTWIN                                                  */}
+        {/* ========================================================================= */}
+        <section className="page-container py-12 sm:py-16 lg:py-20">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="type-section-title text-text-primary dark:text-white">Vì sao chọn NacenTwin</h2>
             <p className="mt-2.5 sm:mt-3 text-sm sm:text-base leading-relaxed sm:leading-7 text-text-secondary dark:text-slate-300">
               Nền tảng được xây dựng và vận hành bởi Viện Đổi Mới Sáng Tạo Quốc Gia, đảm bảo độ tin cậy cho mọi giao dịch.
             </p>
           </div>
-          <div className="mt-8 sm:mt-12 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map(([Icon, title, description]) => (
-              <article
+
+          <div className="mt-10 sm:mt-14 grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map(([Icon, title, desc]) => (
+              <div
                 key={title}
-                className="rounded-xl border border-border-default bg-white p-4 sm:p-6 transition hover:border-brand-100 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                className="group rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-500 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"
               >
-                <div className="grid size-10 sm:size-11 place-items-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-200">
-                  <Icon className="size-5" />
+                <div className="flex size-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-600 group-hover:text-white dark:bg-slate-800 dark:text-cyan-400 dark:group-hover:bg-cyan-500 dark:group-hover:text-slate-950">
+                  <Icon className="size-6" />
                 </div>
-                <h3 className="mt-4 sm:mt-5 text-base sm:text-card-title font-bold text-text-primary dark:text-white">{title}</h3>
-                <p className="mt-2 sm:mt-4 text-xs sm:text-body text-text-secondary dark:text-slate-300 leading-relaxed">{description}</p>
-              </article>
+                <h3 className="mt-4 text-base sm:text-lg font-bold text-text-primary dark:text-white font-sans">{title}</h3>
+                <p className="mt-2 text-xs sm:text-sm leading-relaxed text-text-secondary dark:text-slate-300 font-sans">{desc}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* CÔNG NGHỆ & NHU CẦU NỔI BẬT */}
-        <section className="bg-surface-subtle py-10 sm:py-16 lg:py-20 dark:bg-slate-950/50">
-          <div className="page-container">
-            <div>
-              <h2 className="type-section-title text-text-primary dark:text-white">Công nghệ &amp; nhu cầu nổi bật</h2>
-              <p className="mt-2.5 sm:mt-3 text-sm sm:text-base text-text-secondary dark:text-slate-300">
-                Cập nhật liên tục từ mạng lưới viện, trường, doanh nghiệp trên toàn quốc.
-              </p>
-            </div>
-            <div className="mt-6 sm:mt-8 flex w-full sm:w-auto sm:inline-flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-              <button
-                type="button"
-                onClick={() => setListingType("offers")}
-                className={`focus-ring flex-1 sm:flex-initial rounded-lg px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold transition text-center ${
-                  listingType === "offers"
-                    ? "bg-white text-brand-700 shadow-xs dark:bg-brand-950 dark:text-brand-200"
-                    : "text-text-secondary hover:bg-brand-50 hover:text-brand-700 dark:text-slate-300 dark:hover:bg-brand-950 dark:hover:text-brand-200"
-                }`}
-              >
-                Chào bán công nghệ
-              </button>
-              <button
-                type="button"
-                onClick={() => setListingType("demands")}
-                className={`focus-ring flex-1 sm:flex-initial rounded-lg px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold transition text-center ${
-                  listingType === "demands"
-                    ? "bg-white text-brand-700 shadow-xs dark:bg-brand-950 dark:text-brand-200"
-                    : "text-text-secondary hover:bg-brand-50 hover:text-brand-700 dark:text-slate-300 dark:hover:bg-brand-950 dark:hover:text-brand-200"
-                }`}
-              >
-                Nhu cầu đặt hàng
-              </button>
-            </div>
-            <div className="mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {listings.length === 0 ? (
-                <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-8 sm:p-12 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900">
-                  <Cpu className="mx-auto h-9 w-9 sm:h-10 sm:w-10 text-slate-400 mb-3" />
-                  <p className="font-semibold text-sm sm:text-base text-slate-700 dark:text-slate-200">
-                    Chưa có {listingType === "offers" ? "công nghệ chào bán" : "nhu cầu đặt hàng"} nào được công bố.
-                  </p>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                    Dữ liệu sẽ được cập nhật ngay khi hoàn tất thẩm định.
-                  </p>
-                </div>
-              ) : (
-                listings.map((item, idx) => (
-                  <ListingCard key={`${item.type}-${item.id || item.itemCode || idx}-${idx}`} item={item} />
-                ))
-              )}
-            </div>
-            <div className="mt-8 sm:mt-10 flex justify-center">
-              <Link
-                href={listingType === "offers" ? "/chao-ban-cong-nghe" : "/nhu-cau-cong-nghe"}
-                className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-brand-700 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-              >
-                Xem tất cả <ArrowRight className="size-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* ========================================================================= */}
+        {/* 6. GIA NHẬP HỆ SINH THÁI ĐMST & CTA CUỐI TRANG                             */}
+        {/* ========================================================================= */}
+        <section className="page-container pb-12 sm:pb-16">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-900 via-brand-700 to-indigo-900 p-8 sm:p-12 lg:p-16 text-white shadow-2xl">
+            <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-cyan-400/20 blur-3xl" />
+            <div aria-hidden="true" className="pointer-events-none absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
 
-        {/* CỤM 3 WIDGET: TRỢ LÝ AI - LĨNH VỰC - DỊCH VỤ VIỆN */}
-        <section className="page-container py-10 sm:py-16 lg:py-20">
-          <div className="grid gap-5 sm:gap-6 lg:grid-cols-12">
-            {/* Widget AI */}
-            <section className="rounded-xl sm:rounded-2xl bg-brand-700 p-4 sm:p-6 text-white lg:col-span-5">
-              <div className="flex items-center gap-3">
-                <div className="grid size-10 sm:size-11 place-items-center rounded-xl bg-white/10 text-innovation-50">
-                  <Bot className="size-5 sm:size-6" />
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold">Trợ Lý Ảo AI Nacentwin</h2>
-              </div>
-              <p className="mt-3.5 sm:mt-5 text-xs sm:text-body text-brand-100 leading-relaxed">
-                Hỏi đáp tự động về mức độ TRL 1-9, định giá tham khảo mua/bán công nghệ và gợi ý chuyên gia tư vấn phù hợp nhất.
+            <div className="relative z-10 mx-auto max-w-3xl text-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold text-cyan-300 border border-white/20 backdrop-blur-md">
+                <Rocket className="size-3.5" />
+                Đồng Hành Đổi Mới Sáng Tạo
+              </span>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white font-sans tracking-tight mt-4">
+                Gia Nhập Hệ Sinh Thái Đổi Mới Sáng Tạo &amp; Chuyển Giao Công Nghệ Quốc Gia
+              </h2>
+              <p className="mt-3.5 text-sm sm:text-base leading-relaxed text-slate-200">
+                Kết nối ngay hôm nay để đưa sản phẩm nghiên cứu vào sản xuất thực tế, hoặc tìm kiếm giải pháp công nghệ nâng tầm doanh nghiệp.
               </p>
-              <div className="mt-5 sm:mt-7 space-y-2 sm:space-y-3">
-                {[
-                  "Công nghệ của tôi đạt mức TRL nào theo TT17?",
-                  "Đề xuất định giá chuyển nhượng sáng chế Nano?",
-                  "Tìm chuyên gia AI thị giác máy tính tại Hà Nội?",
-                ].map((item) => (
-                  <button
-                    type="button"
-                    key={item}
-                    onClick={() => handleOpenAi(item)}
-                    className="focus-ring w-full rounded-xl border border-white/15 bg-white/10 px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm text-white transition hover:bg-white/20 hover:border-white/30"
-                  >
-                    💬 &ldquo;{item}&rdquo;
-                  </button>
-                ))}
-              </div>
-              <div className="mt-5 sm:mt-7 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-white/15 pt-4 sm:pt-5">
-                <span className="text-xs sm:text-sm font-bold text-innovation-50 text-center sm:text-left">Tích hợp AI-to-Text OCR</span>
-                <button
-                  type="button"
-                  onClick={() => handleOpenAi()}
-                  className="focus-ring rounded-xl bg-nacen-green-500 px-4 py-2.5 text-xs sm:text-sm font-bold text-white transition hover:bg-nacen-green-600 w-full sm:w-auto"
-                >
-                  Mở Trợ Lý AI
-                </button>
-              </div>
-            </section>
 
-            {/* Widget Lĩnh vực */}
-            <section className="surface-card p-4 sm:p-6 rounded-xl sm:rounded-2xl lg:col-span-4">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3 sm:pb-4 dark:border-slate-800">
-                <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-text-primary dark:text-white">
-                  {sectorsLoading || sectorsError ? "Lĩnh Vực Trọng Điểm" : `${sectors.length} Lĩnh Vực Trọng Điểm`}
-                </h2>
+              <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
                 <Link
-                  href="/matrix"
-                  className="text-xs font-bold text-brand-600 hover:underline dark:text-brand-200"
+                  href="/seller/technologies/new"
+                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm sm:text-base font-bold text-brand-900 shadow-lg hover:bg-slate-100 transition"
                 >
-                  Ma trận ngành &rarr;
+                  <Rocket className="size-4 text-brand-700" />
+                  <span>Đăng ký chào bán công nghệ</span>
+                </Link>
+                <Link
+                  href="/nhu-cau-cong-nghe"
+                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 px-6 py-3.5 text-sm sm:text-base font-bold text-white border border-white/30 backdrop-blur-md transition"
+                >
+                  <span>Gửi bài toán nhu cầu ĐMST</span>
+                  <ArrowRight className="size-4" />
                 </Link>
               </div>
-              <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-2 sm:gap-3">
-                {sectorsLoading ? (
-                  <p role="status" className="col-span-2 text-xs sm:text-body">
-                    Đang tải lĩnh vực...
-                  </p>
-                ) : sectorsError ? (
-                  <div className="col-span-2">
-                    <p role="alert" className="text-xs sm:text-body text-status-danger">
-                      Không tải được danh mục lĩnh vực.
-                    </p>
-                    <button
-                      className="focus-ring min-h-11 text-label text-brand-700"
-                      onClick={() => setSectorLoadVersion((value) => value + 1)}
-                    >
-                      Thử lại
-                    </button>
-                  </div>
-                ) : sectors.length === 0 ? (
-                  <p className="col-span-2 text-xs sm:text-body">Chưa có lĩnh vực đang hoạt động.</p>
-                ) : (
-                  sectors.map((sector) => (
-                    <Link
-                      href={`/experts?sector=${encodeURIComponent(sector.code)}`}
-                      key={sector.code}
-                      className="focus-ring flex items-center gap-2 rounded-xl bg-surface-page p-2 sm:p-3 text-left text-xs sm:text-sm font-medium text-slate-800 transition hover:bg-brand-50 hover:text-brand-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-brand-950 dark:hover:text-brand-200"
-                    >
-                      <Cpu className="size-3.5 sm:size-4 shrink-0 text-brand-700" />
-                      <span className="truncate">{sector.name}</span>
-                    </Link>
-                  ))
-                )}
-              </div>
-            </section>
-
-            {/* Widget Dịch Vụ Viện */}
-            <section className="surface-card p-4 sm:p-6 rounded-xl sm:rounded-2xl lg:col-span-3 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Award className="size-5 text-brand-700 dark:text-brand-200" />
-                  <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-text-primary dark:text-white">
-                    Dịch Vụ Viện NacenTech
-                  </h2>
-                </div>
-                <ul className="mt-4 sm:mt-6 space-y-2.5 sm:space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 size-3.5 sm:size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
-                    <Link href="/assessments/tt17/wizard" className="hover:text-brand-700 hover:underline">
-                      Đánh giá năng lực công nghệ theo TT17
-                    </Link>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 size-3.5 sm:size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
-                    <Link href="/chao-ban-cong-nghe" className="hover:text-brand-700 hover:underline">
-                      Chứng nhận mức độ sẵn sàng TRL 1-9
-                    </Link>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 size-3.5 sm:size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
-                    <Link href="/doanh-nghiep-dmst" className="hover:text-brand-700 hover:underline">
-                      Đánh giá &amp; xếp hạng Doanh nghiệp ĐMST
-                    </Link>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 size-3.5 sm:size-4 shrink-0 text-nacen-green-700 dark:text-nacen-green-200" />
-                    <Link href="/khao-sat-nhu-cau" className="hover:text-brand-700 hover:underline">
-                      Khảo sát &amp; tính toán chỉ số TNI nhu cầu
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/khao-sat-nhu-cau"
-                className="focus-ring mt-5 sm:mt-7 block w-full rounded-xl bg-nacen-green-500 py-2.5 sm:py-3 text-center text-xs sm:text-sm font-bold text-white transition hover:bg-nacen-green-600 shadow-xs"
-              >
-                Đăng Ký Tư Vấn Thẩm Định
-              </Link>
-            </section>
-          </div>
-        </section>
-
-        {/* QUY TRÌNH 6 BƯỚC */}
-        <section className="page-container py-10 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="type-section-title text-text-primary dark:text-white">Quy trình 6 bước</h2>
-            <p className="mt-2.5 sm:mt-3 text-sm sm:text-base text-text-secondary dark:text-slate-300">
-              Minh bạch, rõ ràng từ lúc đăng tải đến khi công nghệ được ứng dụng thực tế.
-            </p>
-          </div>
-          <ol className="mt-8 sm:mt-12 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {processes.map(([Icon, title, description], index) => (
-              <li
-                key={title}
-                className="rounded-xl border border-border-default bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-900 shadow-xs"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="grid size-9 sm:size-11 place-items-center rounded-full bg-brand-700 text-xs sm:text-sm font-bold text-white shadow-xs">
-                    {index + 1}
-                  </span>
-                  <Icon className="size-5 sm:size-6 text-nacen-green-700 dark:text-nacen-green-200" />
-                </div>
-                <h3 className="mt-4 sm:mt-5 text-base sm:text-card-title font-bold text-text-primary dark:text-white">{title}</h3>
-                <p className="mt-2 sm:mt-3 text-xs sm:text-body text-text-secondary dark:text-slate-300 leading-relaxed">{description}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {/* CTA BOTTOM BANNER */}
-        <section className="page-container pb-12 sm:pb-16">
-          <div className="relative overflow-hidden rounded-2xl sm:rounded-[28px] bg-gradient-to-br from-nacen-green-500 to-nacen-green-700 px-4 py-10 sm:px-12 sm:py-16 text-center text-white shadow-lg">
-            <h2 className="type-section-title text-xl sm:text-2xl md:text-3xl">Sẵn sàng đưa công nghệ của bạn đến gần hơn với thị trường?</h2>
-            <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-xs sm:text-base text-nacen-green-50 leading-relaxed">
-              Tham gia mạng lưới hơn 10.000 doanh nghiệp, viện nghiên cứu và nhà đầu tư trên toàn quốc ngay hôm nay.
-            </p>
-            <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row justify-center gap-2.5 sm:gap-3 w-full sm:w-auto">
-              <Link
-                href="/register"
-                className="focus-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-nacen-green-700 transition hover:bg-nacen-green-50 shadow-xs"
-              >
-                Đăng ký miễn phí <ArrowRight className="size-4" />
-              </Link>
-              <Link
-                href="/dich-vu-khac"
-                className="focus-ring inline-flex min-h-11 items-center justify-center rounded-xl border border-white/35 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
-              >
-                Liên hệ tư vấn
-              </Link>
             </div>
           </div>
         </section>
