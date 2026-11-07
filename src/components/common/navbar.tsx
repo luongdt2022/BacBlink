@@ -444,7 +444,7 @@ export function Navbar() {
     <>
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#3C5999]/95 backdrop-blur-md transition-all duration-200 shadow-md dark:border-slate-800 dark:bg-slate-950/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-[72px] items-center justify-between gap-2 xl:gap-4">
+          <div className="flex h-[72px] items-center justify-between gap-2 xl:gap-4 lg:-translate-x-8 xl:-translate-x-12">
             {/* Brand Logo with Official NacenTech Logo */}
             <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ NacenTwin">
               <img
@@ -462,8 +462,8 @@ export function Navbar() {
               </div>
             </Link>
 
-            {/* Desktop navigation (dịch nhẹ sang trái tạo cân đối thị giác với Logo) */}
-            <nav ref={desktopNavRef} className="hidden flex-1 items-center justify-center -ml-6 xl:-ml-12 gap-0.5 xl:gap-1.5 lg:flex" aria-label="Điều hướng chính">
+            {/* Desktop navigation */}
+            <nav ref={desktopNavRef} className="hidden flex-1 items-center justify-center gap-0.5 xl:gap-1.5 lg:flex" aria-label="Điều hướng chính">
               {navLinks.map((link) => {
                 const isActive = isActiveLink(link);
                 const hasChildren = Boolean(link.children && link.children.length > 0);
