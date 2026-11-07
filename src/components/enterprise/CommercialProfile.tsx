@@ -148,14 +148,14 @@ export function CommercialProfile({
       {/* ========================================================================= */}
       {/* HERO CARD: NHẬN DIỆN THƯƠNG MẠI & BẢO CHỨNG PHÁP LÝ (CHUẨN BD-04) */}
       {/* ========================================================================= */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#1E293B] text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-700/60 relative overflow-hidden">
+      <div className="bg-brand-700 text-white rounded-2xl p-6 sm:p-8 shadow-md border border-white/15 relative overflow-hidden">
         {/* Cover Banner Sector Watermark */}
         <SectorBannerBackground
           sectorCode={data.sectorCode}
           sectorName={data.mainSectorName}
           opacity={0.15}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-5">
           <div className="flex flex-wrap items-center gap-2">
@@ -286,7 +286,7 @@ export function CommercialProfile({
             <button
               type="button"
               onClick={() => onOpenRfqModal("Yêu cầu báo giá chung")}
-              className="bg-[#2D9A85] hover:bg-[#247B6A] text-white font-bold px-6 py-3 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-lg hover:shadow-emerald-900/40 active:scale-[0.98]"
+              className="bg-white hover:bg-slate-100 text-brand-700 font-bold px-6 py-3 rounded-xl text-xs sm:text-sm shadow-sm transition flex items-center gap-2 active:scale-[0.98]"
             >
               <FileText className="w-4 h-4 text-teal-200" />
               <span>Gửi Yêu Cầu Báo Giá (RFQ)</span>

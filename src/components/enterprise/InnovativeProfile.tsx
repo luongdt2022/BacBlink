@@ -57,24 +57,24 @@ export function InnovativeProfile({
       {/* ========================================================================= */}
       {/* PROFILE HERO BANNER CHUẨN BD-04 & NATIONAL INNOVATION HUB */}
       {/* ========================================================================= */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#1E293B] text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-700/60 relative overflow-hidden">
+      <div className="bg-brand-700 text-white rounded-2xl p-6 sm:p-8 shadow-md border border-white/15 relative overflow-hidden">
         {/* Sector Watermark Background Overlay */}
         <SectorBannerBackground
           sectorCode={data.sectorCode}
           sectorName={data.mainSectorName}
-          opacity={0.15}
+          opacity={0.25}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
         {/* Top Badges */}
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm">
-              <MapPin className="w-3.5 h-3.5 text-teal-300" />
+              <MapPin className="w-3.5 h-3.5 text-white/80" />
               <span>{data.provinceCity || "Toàn quốc"}</span>
             </span>
-            <span className="bg-[#2D9A85]/80 backdrop-blur-md border border-[#2D9A85] text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-teal-200" />
+            <span className="bg-white/15 backdrop-blur-md border border-white/25 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
               <span>DN Đổi Mới Sáng Tạo</span>
             </span>
           </div>
@@ -82,7 +82,7 @@ export function InnovativeProfile({
           <div className="flex items-center gap-2">
             <Link
               href="/enterprises"
-              className="text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 border border-slate-700 px-3.5 py-1.5 rounded-xl transition"
+              className="text-xs font-bold text-white/90 hover:text-white hover:bg-white/15 border border-white/20 px-3.5 py-1.5 rounded-xl transition backdrop-blur-xs"
             >
               ← Danh bạ
             </Link>
@@ -199,14 +199,14 @@ export function InnovativeProfile({
             </div>
           </div>
 
-          {/* CTA Button Emerald #2D9A85 */}
+          {/* CTA Button */}
           <div className="shrink-0 pt-2 lg:pt-0">
             <button
               type="button"
               onClick={onOpenConnectModal}
-              className="bg-[#2D9A85] hover:bg-[#247B6A] text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-emerald-900/40 transition active:scale-[0.98] flex items-center gap-2 text-sm"
+              className="bg-white hover:bg-slate-100 text-brand-700 font-bold px-6 py-3 rounded-xl shadow-sm transition active:scale-[0.98] flex items-center gap-2 text-sm"
             >
-              <Handshake className="w-4 h-4 text-teal-200" />
+              <Handshake className="w-4 h-4 text-brand-700" />
               <span>Đặt Lịch Kết Nối R&amp;D</span>
             </button>
           </div>
@@ -221,7 +221,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("overview")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "overview"
-                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
+                ? "border-brand-700 text-brand-700 font-bold bg-brand-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -232,7 +232,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("innovation")}
             className={`flex-1 min-w-[170px] py-4 text-center border-b-2 transition ${
               activeTab === "innovation"
-                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
+                ? "border-brand-700 text-brand-700 font-bold bg-brand-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -243,7 +243,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("products")}
             className={`flex-1 min-w-[180px] py-4 text-center border-b-2 transition ${
               activeTab === "products"
-                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
+                ? "border-brand-700 text-brand-700 font-bold bg-brand-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -254,7 +254,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("rd")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "rd"
-                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
+                ? "border-brand-700 text-brand-700 font-bold bg-brand-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -265,7 +265,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("ip")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "ip"
-                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
+                ? "border-brand-700 text-brand-700 font-bold bg-brand-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -276,7 +276,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("needs")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "needs"
-                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
+                ? "border-brand-700 text-brand-700 font-bold bg-brand-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >

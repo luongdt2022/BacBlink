@@ -462,8 +462,8 @@ export function Navbar() {
               </div>
             </Link>
 
-            {/* Desktop navigation */}
-            <nav ref={desktopNavRef} className="hidden flex-1 items-center justify-center gap-0.5 xl:gap-1.5 lg:flex" aria-label="Điều hướng chính">
+            {/* Desktop navigation (dịch nhẹ sang trái tạo cân đối thị giác với Logo) */}
+            <nav ref={desktopNavRef} className="hidden flex-1 items-center justify-center -ml-6 xl:-ml-12 gap-0.5 xl:gap-1.5 lg:flex" aria-label="Điều hướng chính">
               {navLinks.map((link) => {
                 const isActive = isActiveLink(link);
                 const hasChildren = Boolean(link.children && link.children.length > 0);
