@@ -426,13 +426,10 @@ export function Navbar() {
                 className="h-10 w-auto object-contain bg-white/10 rounded-lg p-1 backdrop-blur-xs"
               />
               <div className="flex flex-col text-left">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base font-extrabold tracking-tight text-white leading-none">
-                    NacenTwin
-                  </span>
-                  <span className="inline-block size-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]" />
-                </div>
-                <span className="mt-1 text-xs font-semibold leading-tight text-cyan-300">
+                <span className="text-base font-extrabold tracking-tight text-white leading-none">
+                  NacenTwin
+                </span>
+                <span className="mt-1 text-xs font-medium leading-tight text-white/80">
                   Viện Đổi Mới Sáng Tạo Quốc Gia · Bộ Khoa Học & Công Nghệ
                 </span>
               </div>
@@ -456,15 +453,9 @@ export function Navbar() {
                 className="h-10 w-auto object-contain bg-white/10 rounded-lg p-1 backdrop-blur-xs"
               />
               <div className="flex flex-col text-left">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
-                    NacenTwin
-                  </span>
-                  <span className="inline-block size-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]" />
-                  <span className="hidden xl:inline-flex rounded-full bg-cyan-500/20 px-1.5 py-0.2 text-[9px] font-bold text-cyan-300 border border-cyan-400/30">
-                    CỔNG ĐMST
-                  </span>
-                </div>
+                <span className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
+                  NacenTwin
+                </span>
                 <span className="mt-1 hidden text-[11px] font-medium leading-none text-white/80 2xl:inline">
                   Viện Đổi Mới Sáng Tạo Quốc Gia
                 </span>
@@ -484,7 +475,7 @@ export function Navbar() {
                       href={link.href}
                       className={`focus-ring relative inline-flex items-center rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition ${
                         isActive
-                          ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[3px] after:bg-cyan-400 after:rounded-full after:shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                          ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[2px] after:bg-white/40 after:rounded-full"
                           : "text-white/85 hover:text-white hover:bg-white/10"
                       }`}
                     >
@@ -507,7 +498,7 @@ export function Navbar() {
                       onClick={() => handleDropdownToggle(link.href)}
                       className={`focus-ring relative inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition cursor-pointer ${
                         isActive || isOpen
-                          ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[3px] after:bg-cyan-400 after:rounded-full after:shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                          ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[2px] after:bg-white/40 after:rounded-full"
                           : "text-white/85 hover:text-white hover:bg-white/10"
                       }`}
                       aria-haspopup="true"

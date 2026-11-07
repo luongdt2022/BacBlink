@@ -242,24 +242,25 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
   });
 
   // =========================================================================
-  // 3. KIỂM THỬ ACTIVE INDICATOR VẠCH SÁNG CYAN
+  // 3. KIỂM THỬ ACTIVE INDICATOR VẠCH GẠCH CHÂN MỜ THEO ROUTE
   // =========================================================================
-  describe("3. Kiểm thử Active Indicator vạch sáng Cyan theo Route", () => {
-    it("3.1 Hiển thị vạch sáng Cyan khi ở Trang chủ '/'", () => {
+  describe("3. Kiểm thử Active Indicator vạch gạch chân mờ theo Route", () => {
+    it("3.1 Hiển thị vạch gạch chân mờ trang nhã khi ở Trang chủ '/'", () => {
       mockPathname = "/";
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
       const homeLink = within(mainNav).getByRole("link", { name: /^Trang chủ$/i });
 
-      // Active styling assertions
+      // Active styling assertions: vạch trắng mờ tinh tế, không chói neon cyan
       expect(homeLink.className).toContain("text-white");
       expect(homeLink.className).toContain("font-bold");
-      expect(homeLink.className).toContain("after:bg-cyan-400");
+      expect(homeLink.className).toContain("after:bg-white/40");
       expect(homeLink.className).toContain("after:rounded-full");
+      expect(homeLink.className).not.toContain("after:bg-cyan-400");
     });
 
-    it("3.2 Hiển thị vạch sáng Cyan khi ở trang Chào bán công nghệ '/chao-ban-cong-nghe'", () => {
+    it("3.2 Hiển thị vạch gạch chân mờ khi ở trang Chào bán công nghệ '/chao-ban-cong-nghe'", () => {
       mockPathname = "/chao-ban-cong-nghe";
       renderWithShell(<Navbar />);
 
@@ -268,7 +269,8 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
 
       expect(offerLink.className).toContain("text-white");
       expect(offerLink.className).toContain("font-bold");
-      expect(offerLink.className).toContain("after:bg-cyan-400");
+      expect(offerLink.className).toContain("after:bg-white/40");
+      expect(offerLink.className).not.toContain("after:bg-cyan-400");
     });
 
     it("3.3 Giữ Active Indicator khi truy cập vào sub-path tương ứng", () => {
@@ -278,7 +280,8 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
       const eventLink = within(mainNav).getByRole("link", { name: /^Sự kiện Techmart/i });
 
-      expect(eventLink.className).toContain("after:bg-cyan-400");
+      expect(eventLink.className).toContain("after:bg-white/40");
+      expect(eventLink.className).not.toContain("after:bg-cyan-400");
     });
   });
 
