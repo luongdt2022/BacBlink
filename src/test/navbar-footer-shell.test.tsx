@@ -350,11 +350,11 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
   // =========================================================================
   // 5. KIỂM THỬ FOOTER 4 CỘT & ZERO BROKEN LINKS
   // =========================================================================
-  describe("5. Kiểm thử Footer 4 Cột & Zero Broken Links", () => {
-    it("5.1 Hiển thị đầy đủ thông tin chuẩn hóa của 4 cột", () => {
+  describe("5. Kiểm thử Footer Tối giản & Zero Broken Links", () => {
+    it("5.1 Hiển thị đầy đủ thông tin chuẩn hóa của Footer tối giản", () => {
       renderWithShell(<Footer />);
 
-      // Cột 1: Cơ quan chủ quản & Đơn vị vận hành
+      // Thông tin Cơ quan chủ quản & Đơn vị vận hành
       expect(screen.getByText(/Cơ quan chủ quản:/i)).toBeInTheDocument();
       expect(screen.getByText(/BỘ KHOA HỌC VÀ CÔNG NGHỆ/i)).toBeInTheDocument();
       expect(screen.getByText(/Đơn vị vận hành:/i)).toBeInTheDocument();
@@ -362,33 +362,19 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       expect(screen.getByText(/Địa chỉ: Số 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội/i)).toBeInTheDocument();
       expect(screen.getByText(/Giấy phép thiết lập Cổng TTĐT/i)).toBeInTheDocument();
 
-      // Cột 2: Bản đồ Dịch vụ ĐMST
-      expect(screen.getByText("Dịch vụ Đổi mới sáng tạo")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /Sàn Chào bán Công nghệ/i })).toHaveAttribute("href", "/chao-ban-cong-nghe");
-      expect(screen.getByRole("link", { name: /Bảng Nhu cầu Đổi mới công nghệ/i })).toHaveAttribute("href", "/nhu-cau-cong-nghe");
-      expect(screen.getByRole("link", { name: /Khảo sát Nhu cầu Công nghệ \(TNI\)/i })).toHaveAttribute("href", "/khao-sat-nhu-cau");
-      expect(screen.getByRole("link", { name: /Đánh giá Trình độ DN \(TT 17\)/i })).toHaveAttribute("href", "/dieu-tra-trinh-do-nang-luc");
-
-      // Cột 3: Hướng dẫn & Quy chuẩn
-      expect(screen.getByText("Hướng dẫn & Quy chuẩn")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /Quy chế hoạt động Sàn công nghệ/i })).toHaveAttribute("href", "/gioi-thieu");
-      expect(screen.getByRole("link", { name: /Trung tâm Hướng dẫn Toàn trình/i })).toHaveAttribute("href", "/huong-dan");
-      expect(screen.getByRole("link", { name: /Khung Pháp lý & Tiêu chuẩn TRL 1-9/i })).toHaveAttribute("href", "/matrix");
-
-      // Cột 4: Hỗ trợ, Hotline & Bộ đếm sống
-      expect(screen.getByText("Hỗ trợ & An toàn thông tin")).toBeInTheDocument();
+      // Hotline & Hỗ trợ kỹ thuật 24/7
       expect(screen.getByText("Tổng đài hỗ trợ kỹ thuật 24/7")).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "024.3933.1234" })).toHaveAttribute("href", "tel:02439331234");
-      expect(screen.getByText(/Hotline Quốc gia: 1900 6886/i)).toBeInTheDocument();
-      expect(screen.getByText(/Lượt truy cập:/i)).toBeInTheDocument();
-      expect(screen.getByText("2,689,450")).toBeInTheDocument();
+      expect(screen.getByText(/Hotline: 1900 6886/i)).toBeInTheDocument();
+      expect(screen.getByText("2.689.450")).toBeInTheDocument();
+      expect(screen.getByText(/Chứng nhận an toàn thông tin Cấp độ 3/i)).toBeInTheDocument();
     });
 
     it("5.2 Zero Broken Links: 100% liên kết trong Footer có đích đến hợp lệ và an toàn", () => {
       const { container } = renderWithShell(<Footer />);
       const allLinks = Array.from(container.querySelectorAll("a"));
 
-      expect(allLinks.length).toBeGreaterThanOrEqual(12);
+      expect(allLinks.length).toBeGreaterThanOrEqual(4);
 
       allLinks.forEach((link) => {
         const href = link.getAttribute("href");

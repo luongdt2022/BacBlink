@@ -876,7 +876,7 @@ function ChaoBanCongNgheContent() {
                       {/* Media Thumbnail Container (Chuẩn tỷ lệ 16:9 sắc nét) */}
                       <Link
                         href={`/chao-ban-cong-nghe/${offer.id}`}
-                        className="relative block aspect-[16/9] w-full overflow-hidden bg-brand-700"
+                        className="relative block aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-brand-700"
                         title={offer.title}
                       >
                         <Image
