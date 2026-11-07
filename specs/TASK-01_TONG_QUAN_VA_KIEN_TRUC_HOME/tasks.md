@@ -112,3 +112,46 @@
     - [x] Playwright E2E: Xác nhận số liệu trên Trang chủ khớp 1:1 với kết quả truy vấn SQL PostgreSQL trực tiếp.
 
 - [x] `TASK-01-CR68` **[CR]** [P1] (Người gửi: Luongdt) Thêm các dịch vụ vào Tab dịch vụ — Thêm các mục, đường dẫn về Tab Dịch Vụ [Đính kèm: ![screenshot_10h06m19_1.png](/static/uploads/TASK-01-CR68_1793502383_1_screenshot_10h06m19_1.png)]
+
+---
+
+## Giai đoạn 6: Triển khai Sprint 3 (CR-2026-UIUX-003) — Cải Tiến Trang Chủ Homepage Đẳng Cấp Quốc Gia (Sprint 3: T-01.20 -> T-01.25) [`[CR-2026-UIUX-003]`]
+
+- [x] `T-01.31` **[CR-2026-UIUX-003] [FE] (S3: T-01.20) Tái thiết kế Hero Section & Omni-Search Bar 4 Tab với nút CTA Emerald `#2D9A85`**:
+  - [x] Nền đồ họa công nghệ quang học `innovation-hero-background.png` kết hợp gradient GovTech và ánh sáng hào quang (Cyan & Blue Glow Orbs).
+  - [x] Headline truyền cảm hứng ĐMST: *"Sàn Giao Dịch & Khớp Nối Cung Cầu Công Nghệ Quốc Gia"*, khẩu hiệu chuyển giao công nghệ font `Be Vietnam Pro` sắc nét, độ tương phản $\ge 7:1$.
+  - [x] Omni-Search Bar tích hợp 4 Tab chuyên biệt (Công nghệ chào bán, Nhu cầu đặt hàng, Chuyên gia KH&CN, Doanh nghiệp ĐMST) hiển thị số lượng badge trực quan.
+  - [x] Tích hợp `AppInput` tìm kiếm từ khóa, `AppSelect` chọn 18 ngành TT17 và phân khúc TRL 1-9.
+  - [x] Nút CTA Emerald `#2D9A85` (`AppButton` biến thể `cta`) tạo điểm nhấn thị giác mạnh mẽ trên nền Hero tối, tích hợp phản hồi xúc giác `active:scale-[0.98]`.
+  - [x] Dải từ khóa xu hướng (Hot Trending Tags) hỗ trợ tra cứu nhanh 1-click.
+
+- [x] `T-01.32` **[CR-2026-UIUX-003] [FE] (S3: T-01.21) Nâng cấp Khối Thống kê Quốc gia (Live National Metrics Grid) 4 Thẻ với Icon Cyan `#06B6D4` & Animated Counter**:
+  - [x] Hiển thị 4 thẻ số liệu thời gian thực: Tổng Cung (`totalOffers`), Tổng Cầu (`totalDemands`), Kết Nối & MOU (`totalSuccessfulConnections`), Quy Mô Giao Dịch & Ngân Sách (`totalEstimatedValueMillionVnd`).
+  - [x] Mỗi thẻ trang bị biểu tượng công nghệ Cyan `#06B6D4` / Emerald / Indigo / Amber kích thước 28px.
+  - [x] Tích hợp hiệu ứng animated counter tăng số mượt mà khi người dùng cuộn tới.
+  - [x] Bao bọc trọn vẹn qua component `<Async>` bảo đảm 5 trạng thái UX (Loading Skeleton, Empty, Error Retry, Success, Partial).
+  - [x] Zero-Mock: 100% số liệu nạp động từ `portalClient.getStats()`, không hardcode.
+
+- [x] `T-01.33` **[CR-2026-UIUX-003] [FE] (S3: T-01.22) Chuẩn hóa Lưới Thẻ Listing Công Nghệ & Nhu Cầu bằng `AppCard` & `AppBadge` TRL 1-9**:
+  - [x] Áp dụng component `AppCard` tương tác, hiệu ứng elevation hover (`hover:-translate-y-1 hover:shadow-xl`).
+  - [x] Khung ảnh thumbnail tỷ lệ chuẩn 16:9 (`aspect-[16/9]`) hiển thị ảnh công nghệ đại diện hoặc fallback đa ngành `getTechnologyImage()`.
+  - [x] `AppBadge` TRL 1-9 phân chia 3 dải màu chuẩn hóa: TRL 1-3 (Xanh dương), TRL 4-6 (Hổ phách), TRL 7-9 (Xanh lục Emerald).
+  - [x] Hiển thị đầy đủ mã định danh font đơn cách (`TECH-*`, `DMD-*`), đơn vị sở hữu, địa bàn tỉnh thành, bằng độc quyền SHTT / ngân sách.
+  - [x] Nút CTA "Yêu Cầu Kết Nối" (`AppButton`) kích hoạt trực tiếp luồng kết nối cơ hội.
+
+- [x] `T-01.34` **[CR-2026-UIUX-003] [FE] (S3: T-01.23) Xây dựng Khối Quy trình Kết nối 4 Bước Trực Quan ĐMST**:
+  - [x] Mô hình hóa quy trình kết nối công nghệ thành 4 bước tinh gọn: 1. Khám phá & Định danh $\rightarrow$ 2. Thẩm định TRL & Pháp lý $\rightarrow$ 3. Khớp nối AI & Đàm phán $\rightarrow$ 4. Ký kết Chuyển giao & Hậu kiểm.
+  - [x] Thiết kế trực quan với đường kẻ tiến trình (Progress Line), số thứ tự nổi bật và biểu tượng nhận diện riêng từng bước.
+  - [x] Responsive mượt mà: dạng hàng ngang trên Desktop và dạng dọc (vertical timeline) trên Mobile.
+
+- [x] `T-01.35` **[CR-2026-UIUX-003] [FE] (S3: T-01.24) Xây dựng Khối Mạng Lưới Đối Tác & 63 Sở KH&CN Toàn Quốc**:
+  - [x] Bố cục 3 trụ cột đối tác: Viện Nghiên cứu & Trường Đại học, 63 Sở KH&CN địa phương, Doanh nghiệp ĐMST tiên phong.
+  - [x] Hiển thị lưới logo các đơn vị liên kết với hiệu ứng hover chuyển sắc độ tinh tế.
+  - [x] Tích hợp dải Global Ecosystem CTA kêu gọi tham gia hệ sinh thái ở đáy trang với 2 nút CTA đối ứng (Chào bán & Đặt hàng).
+
+- [x] `T-01.36` **[CR-2026-UIUX-003] [TEST/QC] (S3: T-01.25) Xây dựng Bộ Kiểm Thử Vitest & Playwright Visual QA Cho Trang Chủ**:
+  - [x] Viết test suite Vitest `src/test/homepage-uiux.test.tsx` (và alias `homepage-elevation.test.tsx`) kiểm chứng hiển thị Omni-Search 4 tabs, Live Metrics Grid, Listing cards, TRL badges và 4-step flow đạt 100% Pass (18/18 tests green).
+  - [x] Kiểm chứng ràng buộc `BR-UI-003`: Bảo toàn 100% logic API `fetchPublicOffers()`, `portalClient.getStats()`, `authClient` và các link điều hướng.
+  - [x] Chạy Playwright Visual QA & Vitest trên 3 viewports (Mobile 390px, Tablet 768px, Desktop 1280px) đạt điểm $\ge 8.0/10$; xác nhận tỷ lệ tương phản WCAG AA $\ge 4.5:1$ (Navy 6.82:1, Slate 14:1) và Touch Target $\ge 44 \times 44\text{px}$.
+  - [x] Đối soát bảo đảm không có mock ngầm (Zero-Mock mandate) và ký biên bản Quality Gate 4/5.
+

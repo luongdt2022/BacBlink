@@ -405,4 +405,91 @@
   - [x] Kiểm chứng Touch Target tối thiểu $\ge 44 \times 44\text{px}$ trên các nút điều khiển cỡ chữ.
   - [x] Xác nhận toàn bộ hệ thống sẵn sàng bàn giao cho Dev triển khai Đợt 2.
 
+---
+
+## Giai đoạn 23: Delta v19 (CR-2026-UIUX-001) — Nâng Cấp Hệ Thống UI/UX Common Atoms & Molecules Theo Chuẩn UI/UX Pro Max v3.0 (Sprint 1: Foundation & Common Core Components) [`[CR-2026-UIUX-001]`]
+
+- [x] `T-00.95` **[CR-2026-UIUX-001] [FE] Cập nhật và hoàn thiện bộ Design Tokens tại `src/app/globals.css`**:
+  - [x] Đồng bộ bảng màu chuẩn GovTech & KH&CN: Navy `#3C5999` (`brand-primary`, `brand-700`), Emerald `#2D9A85` (`nacen-green-500`), Cyan `#06B6D4` (`innovation-500`), Nền trang `#F8FAFC` (`surface-page`), Nền thẻ `#FFFFFF` (`surface-card`).
+  - [x] Khai báo hệ thống bóng đổ đa tầng (Elevation Shadows 0 đến 4) và hiệu ứng chuyển động vi mô (Micro-interactions, keyframe `shimmer` cho skeleton loading).
+  - [x] Cấu hình chuẩn hóa vòng sáng tiêu điểm tiếp cận (Accessible Focus Ring đôi) và hiệu ứng nhấn nút (`active:scale-[0.98]`).
+
+- [x] `T-00.96` **[CR-2026-UIUX-001] [FE] Nâng cấp toàn diện component `<Async>` tại `src/components/ui/async.tsx` chuẩn hóa 5 trạng thái UX**:
+  - [x] Trạng thái `loading`: Xây dựng Shimmer Skeleton mô phỏng hình khối nội dung thực tế thay vì spinner đơn độc, chống hiện tượng giật khung hình (CLS = 0).
+  - [x] Trạng thái `empty`: Chuẩn hóa khối rỗng trực quan gồm icon minh họa thanh lịch, tiêu đề rõ nghĩa, thông điệp hướng dẫn và nút bấm hành động (CTA) tương ứng.
+  - [x] Trạng thái `error`: Hiển thị thông điệp lỗi an toàn (không lộ stack trace) kèm icon cảnh báo và nút "Thử lại ngay" gọi callback `onRetry` phục hồi dữ liệu.
+  - [x] Trạng thái `success`: Render dữ liệu thực mượt mà kèm hiệu ứng chuyển cảnh nhẹ (`fade-in 200ms`).
+  - [x] Trạng thái `partial`: Duy trì dữ liệu hiện hành với lớp mờ 70% (`pointer-events-none`) và banner thông báo tinh tế khi dữ liệu đang được đồng bộ ở chế độ nền.
+
+- [x] `T-00.97` **[CR-2026-UIUX-001] [FE] Nâng cấp và mở rộng `AppButton`, `AppLink`, `SectionHeading` tại `src/components/ui/design-system.tsx`**:
+  - [x] Bổ sung đầy đủ 6 biến thể nút: `primary` (Navy), `cta` (Emerald), `outline`, `ghost`, `danger`, `secondary`.
+  - [x] Cấu hình 3 kích thước chuẩn: `sm` (36px), `md` (44px chuẩn touch target tối thiểu), `lg` (50px).
+  - [x] Tích hợp thuộc tính `isLoading` tự động khóa nút và hiển thị spinner nội tuyến, bảo đảm không làm biến dạng layout nút bấm.
+
+- [x] `T-00.98` **[CR-2026-UIUX-001] [FE] Xây dựng bộ Form Controls nguyên tử `AppInput` và `AppSelect` tại `src/components/ui/`**:
+  - [x] Xây dựng `AppInput` hỗ trợ nhãn nổi (floating label), icon đầu/cuối (start/end icons), nút xóa nhanh (clearable) và thông báo lỗi validation ngữ nghĩa.
+  - [x] Xây dựng `AppSelect` hỗ trợ chọn danh mục chuẩn hóa, tìm kiếm nội bộ, tương thích danh mục 18 ngành KH&CN và 63 tỉnh thành Việt Nam.
+  - [x] Bảo đảm 100% controls tuân thủ điều hướng phím (Tab, Enter, Escape) và tiêu chuẩn tiếp cận WCAG 2.1 AA.
+
+- [x] `T-00.99` **[CR-2026-UIUX-001] [FE] Xây dựng các component hiển thị thông tin phụ trợ (`AppBadge`, `AppCard`, `AppAlert`, `AppTabs`, `AppTooltip`)**:
+  - [x] Xây dựng `AppBadge` cho các nhãn trạng thái (Success, Warning, Danger, Info), TRL 1-9 và loại hình doanh nghiệp với tương phản cao.
+  - [x] Xây dựng `AppCard` chuẩn hóa Header, Body, Footer và hiệu ứng elevation hover khi người dùng rê chuột.
+  - [x] Xây dựng `AppAlert` inline hỗ trợ 4 cấp độ cảnh báo nghiệp vụ và tùy chọn đóng thông báo.
+  - [x] Xây dựng `AppTabs` hỗ trợ kiểu gạch chân (line) và kiểu viên thuốc (pill) với vi tương tác chuyển tab mượt mà.
+  - [x] Xây dựng `AppTooltip` chú giải nhanh thuật ngữ KH&CN an toàn biên màn hình.
+
+- [x] `T-00.100` **[CR-2026-UIUX-001] [FE] Chuẩn hóa hộp thoại tương tác nổi `AppModal` / `AppDialog`**:
+  - [x] Tích hợp cơ chế bẫy tiêu điểm (Focus Trap) và khóa cuộn trang (`body scroll-lock`) khi mở modal.
+  - [x] Hỗ trợ phông nền mờ (`backdrop-blur-sm`), đóng nhanh bằng phím ESC hoặc click bên ngoài (nếu cho phép).
+  - [x] Chuẩn hóa 3 kích thước modal: `sm` (xác nhận ngắn), `md` (form tiêu chuẩn), `lg` / `fullWidth` (bảng chi tiết).
+
+- [x] `T-00.101` **[CR-2026-UIUX-001] [Test] Xây dựng bộ Unit Tests Vitest bao phủ 100% Common Components và 5 trạng thái UX của `<Async>`**:
+  - [x] Viết test suite `src/test/async-component.test.tsx` kiểm chứng lần lượt 5 trạng thái: `loading`, `empty`, `error`, `success`, `partial` và sự kiện click `onRetry`.
+  - [x] Viết test suite `src/test/design-system-core.test.tsx` kiểm chứng các biến thể, kích thước, trạng thái `disabled`, `isLoading` và keyboard accessibility của các controls.
+  - [x] Chạy Vitest xác nhận 100% PASS (Green).
+
+- [x] `T-00.102` **[CR-2026-UIUX-001] [QC/Gate] Kiểm thử trực quan Visual QA bằng Playwright, kiểm tra độ tương phản A11y và nghiệm thu Gate 4/5**:
+  - [x] Dùng Playwright chụp ảnh đối soát Visual QA trên 3 viewports: Mobile (390px), Tablet (768px), Desktop (1280px).
+  - [x] Kiểm toán độ tương phản (Color Contrast $\ge 4.5:1$) và vùng bấm Touch Target $\ge 44 \times 44\text{px}$.
+  - [x] Đối soát xác nhận không có mock ngầm (Zero-Mock) và bảo đảm tính toàn vẹn Zero Logic Regression (`BR-UI-001`).
+  - [x] Ký biên bản nghiệm thu Quality Gate 5 bàn giao cho Sprint 2 (Các màn hình phân hệ chuyên sâu).
+
+---
+
+## Giai đoạn 24: Delta v20 (CR-2026-UIUX-002) — Nâng Cấp Kiến Trúc Global Shell, Thanh Điều Hướng & Footer GovTech Chuẩn Cổng ĐMST Quốc Gia (Sprint 2: Global Shell & Navigation) [`[CR-2026-UIUX-002]`]
+
+- [x] `T-00.103` **[CR-2026-UIUX-002] [FE] Nâng cấp Navbar Glassmorphism & Active Indicators tại `src/components/common/navbar.tsx`**:
+  - [x] Áp dụng nền mờ quang học `bg-[#3C5999]/95 backdrop-blur-md sticky top-0 z-50 border-b border-white/10 shadow-md dark:bg-slate-950/95 dark:border-slate-800`.
+  - [x] Thiết lập dải gạch chân phát sáng Innovation Cyan `#06B6D4` cho liên kết đang kích hoạt (`active indicator`).
+  - [x] Căn chỉnh chiều cao cố định 72px trên Desktop, chống giật khung hình (CLS = 0).
+
+- [x] `T-00.104` **[CR-2026-UIUX-002] [FE] Xây dựng Mega Dropdown phân tầng trực quan & Role Switcher Badge**:
+  - [x] Thiết kế Mega Dropdown dạng flyout panel trực quan cho Technology Offers, Demands, Experts, Services có icons, tiêu đề nổi bật, micro-copy mô tả chức năng và nhãn badge chuyên biệt (LMS, TNI, TT17).
+  - [x] Hiển thị Role Switcher Badge phản ánh 10 vai trò 3D Scoped RBAC với màu sắc ngữ nghĩa tương ứng (Public, Seller, Buyer, Enterprise, Expert, Admin).
+  - [x] Đảm bảo đầy đủ khả năng điều hướng bằng bàn phím (Tab, Enter, Escape) và tiêu chuẩn tiếp cận WCAG 2.1 AA.
+
+- [x] `T-00.105` **[CR-2026-UIUX-002] [FE] Tối ưu hóa Mobile Navigation Drawer & Cảm ứng $\ge 44 \times 44\text{px}$**:
+  - [x] Nút Hamburger kích thước tối thiểu $\ge 44 \times 44\text{px}$ kèm nhãn `aria-label` tiếp cận.
+  - [x] Drawer trượt từ cạnh phải với phông nền mờ quang học `bg-[#23365D]/98 backdrop-blur-xl border-l border-white/10`.
+  - [x] Accordion mở rộng các menu con với khoảng cách chạm cảm ứng thoải mái (`py-3 px-4`).
+  - [x] Tích hợp trọn vẹn bộ điều khiển Fontsize, bộ chuyển đổi I18n VI/EN, Dark/Light Theme và cụm Đăng nhập/Đăng xuất.
+
+- [x] `T-00.106` **[CR-2026-UIUX-002] [FE] Tái cấu trúc Footer 4 cột hiện đại chuẩn Cổng ĐMST Quốc gia tại `src/components/common/footer.tsx`**:
+  - [x] Xây dựng bố cục lưới 4 cột đáp ứng Nghị định 42/2022/NĐ-CP: Cột 1 (Cơ quan chủ quản Bộ KH&CN + Viện NACENTECH); Cột 2 (Bản đồ dịch vụ ĐMST); Cột 3 (Hướng dẫn biểu mẫu & Quy chuẩn); Cột 4 (Chứng nhận an toàn thông tin, Hotline 24/7 & Bộ đếm lượt truy cập sống).
+  - [x] Dải Sub-Footer đáy hiển thị Bản quyền © 2026 NacenTwin, Điều khoản sử dụng và Chính sách bảo mật.
+  - [x] Bảo toàn 100% các khóa dịch i18n hiện hữu (`ministry_title`, `institute_title`, `footer_address`, `footer_rights`, `footer_system_status`, ...).
+
+- [x] `T-00.107` **[CR-2026-UIUX-002] [FE] Xây dựng component điều hướng phụ trợ `AppBreadcrumb` tại `src/components/ui/app-breadcrumb.tsx`**:
+  - [x] Tự động bóc tách và phân cấp đường dẫn từ `usePathname()`.
+  - [x] Nhúng Schema.org JSON-LD `BreadcrumbList` hỗ trợ tối ưu hóa máy tìm kiếm Google (SEO).
+  - [x] Tương thích responsive di động và hỗ trợ thu gọn thông minh.
+
+- [x] `T-00.108` **[CR-2026-UIUX-002] [Test/QC] Xây dựng bộ kiểm thử Vitest & Playwright Visual QA cho Global Shell**:
+  - [x] Viết test suite `src/test/navbar-footer-shell.test.tsx` kiểm chứng Navbar Glassmorphism, Active indicator, Mega Dropdown, Mobile Drawer, Footer 4 cột và `AppBreadcrumb`.
+  - [x] Kiểm chứng các ràng buộc `BR-UI-002`: Bảo toàn 100% route links, cơ chế xác thực `authClient` và các test hiện có (`navbar.test.tsx`, `footer.test.tsx`) tiếp tục 100% PASS.
+  - [x] Chạy kiểm thử chụp ảnh Visual QA Playwright trên 3 viewports: Mobile (390px), Tablet (768px), Desktop (1280px) đạt điểm $\ge 8.0/10$.
+  - [x] Ký biên bản kiểm toán chất lượng bàn giao sẵn sàng cho các Sprint tiếp theo.
+
+
+
 

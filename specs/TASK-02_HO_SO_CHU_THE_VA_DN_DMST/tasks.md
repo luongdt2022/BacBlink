@@ -179,5 +179,66 @@
     + Viết Test trường hợp `REVOKE`: SuperAdmin thu hồi -> Tài khoản hạ cấp `PUBLIC_USER`, `Enterprise.IsVerified == false`.
   - **Tiêu chí kiểm chứng**: 100% test cases Green, bao phủ đầy đủ các tiêu chuẩn chấp thuận từ `AC-02-040` đến `AC-02-045`.
 
+---
+
+## Sprint 4: Nâng Cấp UI/UX Các Phân Hệ Nghiệp Vụ Chuyên Sâu Theo Chuẩn Quốc Gia (CR-2026-UIUX-004) [FE][TEST]
+
+- [x] **T-02.30** `[FE]` **Nâng cấp Profile Hero & Scientific Tabs Hồ sơ Doanh nghiệp & Chuyên gia**:
+  - **Mục tiêu**: Triển khai giao diện Profile chuẩn hóa tầm vóc quốc gia cho Doanh nghiệp ĐMST và Chuyên gia KH&CN theo `REQ-UI-030` và `BD-04`.
+  - **Hành động kỹ thuật**:
+    + Xây dựng Profile Hero banner nền gradient `from-slate-900 via-slate-800 to-[#1E293B]` kết hợp hoa văn vi mạch bán dẫn.
+    + Tích hợp Avatar kích thước lớn: Doanh nghiệp $112 \times 112\text{px}$ (`w-28 h-28`, bo góc rounded-2xl, viền trắng mờ, fallback Monogram) và Chuyên gia $128 \times 128\text{px}$ (`w-32 h-32`, tròn rounded-full, viền sáng Cyan).
+    + Hiển thị Mã số thuế / Mã chuyên gia định danh bằng font đơn cách `font-mono tracking-wider` kèm nút 1-chạm sao chép nhanh và tooltip.
+    + Tích hợp Huy hiệu xác thực số hóa (Digital Verification Badge) với icon `ShieldCheck` (Đã xác thực - Emerald, Chờ xử lý - Amber, Xếp hạng ĐMST - Vàng/Bạc/Đồng).
+    + Phân chia cấu trúc nội dung thành 4 Scientific Tabs độc lập: (1) Tổng quan & Radar Chart ĐMST, (2) Năng lực R&D & Phòng Lab, (3) Bằng sáng chế & Sở hữu Trí tuệ, (4) Đề tài & Dự án KH&CN trọng điểm.
+    + Bố trí nút CTA chiến lược màu xanh ngọc ĐMST `#2D9A85` (`bg-[#2D9A85] hover:bg-[#247B6A] text-white font-bold rounded-xl shadow-lg`): "Đặt Lịch Kết Nối R&D" / "Đăng Ký Tư Vấn Công Nghệ".
+  - **Tiêu chí kiểm chứng**: Màn hình `/enterprises/[taxCode]` và `/experts/[id]` render chuẩn Profile Hero, tabs chuyển đổi mượt mà `< 150ms`, tương phản đạt chuẩn WCAG AA.
+
+- [x] **T-02.31** `[FE]` **Bộ lọc Omni-Filter 18 ngành TT17 & Thang màu Quang phổ TRL 1-9**:
+  - **Mục tiêu**: Cung cấp công cụ lọc đa chiều thông minh cho Sàn Giao Dịch Công Nghệ và Nhu Cầu ĐMST theo `REQ-UI-031` và `BD-04`.
+  - **Hành động kỹ thuật**:
+    + Xây dựng Searchable Dropdown phân loại chuẩn 18 ngành công nghệ trọng điểm Thông tư 17 (Cơ khí, Tự động hóa, AI/CNTT, CNSH, Y dược, Nông nghiệp CNC, Vật liệu mới, Năng lượng tái tạo...).
+    + Triển khai bộ chọn dải TRL 1-9 theo thang màu quang phổ 3 phân đoạn: TRL 1-3 (Nghiên cứu - Xanh dương), TRL 4-6 (Thử nghiệm Pilot - Vàng Hổ phách), TRL 7-9 (Thương mại hóa - Xanh ngọc Emerald).
+    + Tích hợp bộ lọc 63 Tỉnh/Thành phố và hình thức chuyển giao (Chuyển giao trọn gói, Cấp phép bản quyền, Liên doanh).
+  - **Tiêu chí kiểm chứng**: Tìm kiếm và lọc dữ liệu công nghệ chính xác theo ngành và dải TRL, cập nhật URL search params không tải lại trang.
+
+- [x] **T-02.32** `[FE]` **Lưới Thẻ Listing `AppCard` Tỷ lệ Ảnh 16:9 & Nút Yêu Cầu Kết Nối**:
+  - **Mục tiêu**: Chuẩn hóa danh sách thẻ sản phẩm công nghệ và bài toán nhu cầu theo Design Tokens v3.0 theo `REQ-UI-031` và `BD-04`.
+  - **Hành động kỹ thuật**:
+    + Nâng cấp khung thẻ `AppCard` bo góc `rounded-xl`, hiệu ứng hover nâng nổi (`hover:-translate-y-1 hover:shadow-xl`).
+    + Đồng bộ ảnh thumbnail cố định tỷ lệ chuẩn 16:9 (`aspect-[16/9]`, `object-cover`), tích hợp Lazy Loading và fallback ảnh theo 17 ngành KH&CN.
+    + Bố trí nhãn đè góc ảnh: Huy hiệu Lĩnh vực ngành nghề góc trái, Huy hiệu TRL Badge màu phân đoạn tương ứng góc phải.
+    + Trình bày thân thẻ với mã công nghệ `font-mono`, tiêu đề 2 dòng `line-clamp-2`, thông tin đơn vị sở hữu và chứng nhận văn bằng SHTT.
+    + Tích hợp nút CTA "Yêu Cầu Kết Nối" màu GovTech hoặc Emerald mở trực tiếp modal tạo cơ hội hợp tác và gửi thông báo.
+  - **Tiêu chí kiểm chứng**: Lưới thẻ responsive từ 1 cột (Mobile) đến 3-4 cột (Desktop), không vỡ layout, click "Yêu Cầu Kết Nối" mở modal kết nối thật.
+
+- [x] **T-02.33** `[FE]` **Biểu mẫu Khảo sát TT17 225 Trường (Sticky Stepper, Accordion Cards & Auto-Save)**:
+  - **Mục tiêu**: Đơn giản hóa và tối ưu hóa trải nghiệm điền biểu mẫu đánh giá công nghệ 225 trường Thông tư 17 theo `REQ-UI-032` và `BD-04`.
+  - **Hành động kỹ thuật**:
+    + Xây dựng Sticky Stepper bar cố định đỉnh màn hình dưới Navbar (`sticky top-[72px] z-40 bg-white/95 backdrop-blur-md`) hiển thị 5 bước đánh giá TT17 và thanh đo % tiến độ hoàn thành thực tế.
+    + Nhóm 225 trường thành các Accordion Cards thông minh theo từng tiểu mục (T1..T4, E1..E3, O1..O3, R1..R3), hiển thị số câu đã điền (ví dụ: `5/8 câu`) và icon tích xanh `CheckCircle2`.
+    + Cài đặt cơ chế Auto-scroll to validation error: Khi bấm "Lưu & Tiếp tục" hoặc "Nộp hồ sơ", nếu có lỗi sẽ tự động bung Accordion và cuộn mượt tới trường lỗi đầu tiên với focus và viền đỏ cảnh báo.
+    + Cài đặt cơ chế Auto-Save Draft an toàn: Tự động lưu dữ liệu vào `localStorage` qua kỹ thuật Debounce $600\text{ms}$ sau mỗi thao tác nhập, phòng ngừa rủi ro mất kết nối.
+  - **Tiêu chí kiểm chứng**: Tỷ lệ hoàn thành form mượt mà, không lag giật; submit thiếu trường tự cuộn tới đúng ô lỗi; tải lại trang phục hồi 100% dữ liệu đã điền.
+
+- [x] **T-02.34** `[FE]` **Bảng Dữ liệu Quản trị Viền Mỏng, Phân trang Động & 3D Scoped RBAC UI**:
+  - **Mục tiêu**: Nâng cấp toàn diện giao diện Cổng Quản Trị Admin và Cổng Công Vụ Gov Portal theo `REQ-UI-033` và `BD-04`.
+  - **Hành động kỹ thuật**:
+    + Thiết kế lại bảng dữ liệu Data Tables với đường viền siêu mảnh (`border-slate-200 dark:border-slate-800`), header xám nhạt chữ in hoa cỡ nhỏ, các hàng dữ liệu hover mượt mà `hover:bg-blue-50/40`.
+    + Xây dựng bộ điều khiển phân trang động thông minh: Dải số trang (trang đầu `1`, trang cuối, cửa sổ lân cận $\pm 1$, dấu `...`), bộ chọn kích thước trang (10, 20, 50, 100) và tổng số bản ghi.
+    + Chuẩn hóa bộ 3 Badges trạng thái duyệt: ĐÃ DUYỆT (Emerald `CheckCircle2`), CHỜ XỬ LÝ (Amber `Clock`), TRẢ VỀ (Rose `AlertTriangle`).
+    + Tích hợp Scoped RBAC UI filtering: Tự động khóa cố định tỉnh phụ trách cho Cán bộ Sở KH&CN cấp Tỉnh (ngăn cách ly dữ liệu ngoài phạm vi), cho phép SuperAdmin chuyển đổi toàn quốc hoặc 63 tỉnh.
+  - **Tiêu chí kiểm chứng**: Data Tables hiển thị mật độ cao sắc nét, phân trang hoạt động chính xác, Cán bộ Sở không thể chọn hoặc xem dữ liệu tỉnh khác.
+
+- [x] **T-02.35** `[TEST]` **Bộ Kiểm thử Tự động Vitest, Interactive Form & Playwright Visual QA WCAG AA**:
+  - **Mục tiêu**: Kiểm thử toàn diện 4 phân hệ đảm bảo 100% không hồi quy theo `TEST-UI-004` và `BR-UI-004`.
+  - **Hành động kỹ thuật**:
+    + Viết bộ Unit/Component Tests Vitest cho `ProfileHero`, `ScientificTabs`, `OmniFilterBar`, `SurveyStepper`, `AccordionCard`, `AdminDataTable`.
+    + Viết test tương tác form kiểm tra hành vi auto-scroll to error và khôi phục nháp từ localStorage.
+    + Thực thi kịch bản Playwright Visual QA đối soát trên 3 viewports (Mobile 390px, Tablet 768px, Desktop 1280px) xác thực tỷ lệ tương phản $\ge 4.5:1$, touch target $\ge 44 \times 44\text{px}$, và điểm thị giác $\ge 8.0/10$.
+    + Đối soát CSDL PostgreSQL và C# Backend đảm bảo nguyên tắc Zero Logic Regression (`BR-UI-004`).
+  - **Tiêu chí kiểm chứng**: 100% test suites Green, 0 lỗi TypeScript, đạt chuẩn xuất xưởng Gate 4.
+
+
 
 
