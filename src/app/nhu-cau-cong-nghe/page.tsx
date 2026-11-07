@@ -349,16 +349,16 @@ export default function PublicDemandsPage() {
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link
                 href="/khao-sat-nhu-cau"
-                className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 backdrop-blur-sm shadow-sm"
+                className="bg-white/10 hover:bg-white/20 border border-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 backdrop-blur-sm shadow-xs"
               >
-                <ClipboardCheck className="w-4 h-4 text-teal-300" />
+                <ClipboardCheck className="w-4 h-4 text-white/80" />
                 Phiếu Khảo Sát DNNVV
               </Link>
               <button
                 onClick={handleOpenQuickDemand}
-                className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 shadow-lg shadow-emerald-950/20"
+                className="bg-white hover:bg-slate-100 active:scale-95 text-brand-700 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="w-4 h-4 text-brand-700" />
                 Đăng Nhanh Bài Toán
               </button>
             </div>

@@ -403,16 +403,16 @@ function ChaoBanCongNgheContent() {
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link
                 href="/portal/seller/technologies"
-                className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 backdrop-blur-sm shadow-sm"
+                className="bg-white/10 hover:bg-white/20 border border-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 backdrop-blur-sm shadow-xs"
               >
-                <Layers className="w-4 h-4 text-teal-300" />
+                <Layers className="w-4 h-4 text-white/80" />
                 Kho Seller Workspace
               </Link>
               <Link
                 href="/portal/seller/technologies/create"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 shadow-lg shadow-emerald-950/20"
+                className="bg-white hover:bg-slate-100 text-brand-700 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="w-4 h-4 text-brand-700" />
                 Đăng Chào Bán Mới
               </Link>
             </div>
@@ -854,7 +854,7 @@ function ChaoBanCongNgheContent() {
               </p>
               <button
                 onClick={resetAllFilters}
-                className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-700 transition shadow-sm"
+                className="bg-brand-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-brand-800 transition shadow-sm"
               >
                 Xóa tất cả bộ lọc
               </button>

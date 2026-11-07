@@ -281,7 +281,7 @@ export default function DichVuKhacPage() {
 
             <Link
               href="/chao-ban-cong-nghe"
-              className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
+              className="w-full py-2.5 px-4 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
             >
               Khám Phá Công Nghệ TRL <ArrowRight className="w-4 h-4" />
             </Link>
@@ -452,7 +452,7 @@ export default function DichVuKhacPage() {
               <button
                 type="button"
                 onClick={() => setSubmittedCode(null)}
-                className="focus-ring inline-flex items-center justify-center gap-2 mt-2 px-5 py-2.5 rounded-control bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm cursor-pointer"
+                className="focus-ring inline-flex items-center justify-center gap-2 mt-2 px-5 py-2.5 rounded-control bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold transition shadow-sm cursor-pointer"
               >
                 Gửi Yêu Cầu Khác
               </button>

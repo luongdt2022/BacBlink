@@ -79,7 +79,7 @@ const CONNECT_WORKFLOW_STEPS = [
     step: "02",
     title: "Thẩm Định TRL & Pháp Lý",
     subtitle: "Kiểm duyệt TRL 1-9 & tình trạng sở hữu trí tuệ",
-    description: "Hội đồng khoa học Viện NacenTech phối hợp cùng 63 Sở KH&CN thẩm định cấp độ sẵn sàng công nghệ, rà soát quyền bằng sáng chế và giải pháp hữu ích.",
+    description: "Hội đồng khoa học Viện NacenTech phối hợp cùng 34 Sở KH&CN thẩm định cấp độ sẵn sàng công nghệ, rà soát quyền bằng sáng chế và giải pháp hữu ích.",
     icon: ClipboardCheck,
     color: "from-blue-600 to-indigo-600",
     badge: "Bước 2",
@@ -118,7 +118,7 @@ const PARTNER_PILLARS = [
     ],
   },
   {
-    category: "Mạng Lưới 63 Sở KH&CN Toàn Quốc",
+    category: "Mạng Lưới 34 Sở KH&CN Trọng Điểm",
     description: "Đầu mối tiếp nhận, thẩm định và bảo trợ chuyển giao công nghệ tại từng địa phương",
     partners: [
       "Sở KH&CN TP. Hà Nội",
@@ -584,7 +584,7 @@ export default function HomePage() {
                   Công Nghệ &amp; Nhu Cầu Nổi Bật
                 </h2>
                 <p className="mt-2 text-sm sm:text-base text-text-secondary dark:text-slate-300">
-                  Cập nhật liên tục từ mạng lưới viện, trường, doanh nghiệp và 63 Sở KH&amp;CN trên toàn quốc.
+                  Cập nhật liên tục từ mạng lưới viện, trường, doanh nghiệp và 34 Sở KH&amp;CN trên toàn quốc.
                 </p>
               </div>
 
@@ -677,7 +677,7 @@ export default function HomePage() {
                 Quy Trình Kết Nối &amp; Chuyển Giao Công Nghệ 4 Bước
               </h2>
               <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-text-secondary dark:text-slate-300">
-                Minh bạch, bảo mật và được bảo trợ pháp lý bởi Viện Ứng dụng Công nghệ cùng mạng lưới 63 Sở KH&amp;CN.
+                Minh bạch, bảo mật và được bảo trợ pháp lý bởi Viện Ứng dụng Công nghệ cùng mạng lưới 34 Sở KH&amp;CN trọng điểm.
               </p>
             </div>
 
@@ -752,7 +752,7 @@ export default function HomePage() {
                 Mạng Lưới Đổi Mới Sáng Tạo &amp; Chuyển Giao Công Nghệ Toàn Quốc
               </h2>
               <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-text-secondary dark:text-slate-300">
-                Hội tụ sức mạnh từ 3 trụ cột vững chắc: Nguồn cung công nghệ từ Viện/Trường, Bảo trợ cấp tỉnh từ 63 Sở KH&amp;CN, và Động lực ứng dụng từ cộng đồng Doanh nghiệp ĐMST.
+                Hội tụ sức mạnh từ 3 trụ cột vững chắc: Nguồn cung công nghệ từ Viện/Trường, Bảo trợ cấp tỉnh từ 34 Sở KH&amp;CN trọng điểm, và Động lực ứng dụng từ cộng đồng Doanh nghiệp ĐMST.
               </p>
             </div>
 
