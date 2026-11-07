@@ -64,6 +64,24 @@ interface NavItem {
   children?: SubNavItem[];
 }
 
+function getRoleBadgeStyle(role?: string) {
+  switch (role?.toUpperCase()) {
+    case "SELLER":
+      return "bg-emerald-500/20 text-emerald-300 border-emerald-400/40";
+    case "BUYER":
+      return "bg-cyan-500/20 text-cyan-300 border-cyan-400/40";
+    case "INNOVATIVE_ENTERPRISE":
+      return "bg-purple-500/20 text-purple-300 border-purple-400/40";
+    case "EXPERT":
+      return "bg-amber-500/20 text-amber-300 border-amber-400/40";
+    case "ADMIN":
+    case "SUPER_ADMIN":
+      return "bg-rose-500/20 text-rose-300 border-rose-400/40";
+    default:
+      return "bg-white/10 text-white/90 border-white/20";
+  }
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -87,6 +105,7 @@ export function Navbar() {
     "/dich-vu-khac": false,
   });
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const desktopNavRef = useRef<HTMLElement>(null);
 
   const handleDropdownEnter = (href: string) => {
     if (dropdownTimeoutRef.current) {
@@ -147,20 +166,28 @@ export function Navbar() {
   }, [mobileMenuOpen]);
 
   useEffect(() => {
-    const closeAccountMenu = (event: MouseEvent) => {
-      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (accountMenuRef.current && !accountMenuRef.current.contains(target)) {
         setAccountMenuOpen(false);
       }
+      if (desktopNavRef.current && !desktopNavRef.current.contains(target)) {
+        setOpenDropdown(null);
+      }
     };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setAccountMenuOpen(false);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setAccountMenuOpen(false);
+        setOpenDropdown(null);
+        setMobileMenuOpen(false);
+      }
     };
 
-    document.addEventListener("mousedown", closeAccountMenu);
-    document.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("mousedown", handleDocumentClick);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("mousedown", closeAccountMenu);
-      document.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("mousedown", handleDocumentClick);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
@@ -174,14 +201,12 @@ export function Navbar() {
     router.push("/");
   };
 
-  // TASK-01 Basic Design: public navigation is the product's seven core modules,
-  // not internal workspaces such as Admin, Government, or Market portals.
   const navLinks: NavItem[] = [
     { href: "/", label: t("home"), icon: Home },
     {
       href: "/gioi-thieu",
       label: t("about"),
-      icon: BookOpen,
+      icon: Compass,
       children: [
         {
           href: "/gioi-thieu",
@@ -294,13 +319,13 @@ export function Navbar() {
         },
         {
           href: "/khao-sat-dmst",
-          label: "Khảo sát Năng lực ĐMST (43 tiêu chuẩn)",
+          label: "Khảo sát Năng lực ĐMST",
           description: "Chấm điểm 8 nhóm năng lực, xuất Radar Chart & cấp huy hiệu",
           icon: Sparkles,
         },
         {
           href: "/dieu-tra-trinh-do-nang-luc",
-          label: "Đánh giá Năng lực TT 17/2019",
+          label: "Đánh giá Năng lực TT 17",
           description: "Tự đánh giá 26 tiêu chí định lượng 5 nhóm THIOC theo Thông tư 17",
           icon: Award,
         },
@@ -391,27 +416,27 @@ export function Navbar() {
 
   if (isDedicatedSurvey) {
     return (
-      <header className="sticky top-0 z-40 w-full border-b border-border-default/90 bg-white/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex min-h-[64px] items-center justify-between py-2.5">
-            {/* Brand Logo only for dedicated survey */}
+      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#3C5999]/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-[72px] items-center justify-between">
             <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ NacenTwin">
               <img
                 src="/NACENTECH_Main-Logo-G.png"
                 alt="NacenTech Emblem"
-                className="h-10 w-auto object-contain"
+                className="h-10 w-auto object-contain bg-white/10 rounded-lg p-1 backdrop-blur-xs"
               />
               <div className="flex flex-col text-left">
-                <span className="text-base font-extrabold tracking-tight text-text-primary dark:text-white leading-none">
-                  NacenTwin
-                </span>
-                <span className="mt-0.5 text-xs font-semibold leading-tight text-nacen-green-700 dark:text-nacen-green-200">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base font-extrabold tracking-tight text-white leading-none">
+                    NacenTwin
+                  </span>
+                  <span className="inline-block size-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]" />
+                </div>
+                <span className="mt-1 text-xs font-semibold leading-tight text-cyan-300">
                   Viện Đổi Mới Sáng Tạo Quốc Gia · Bộ Khoa Học & Công Nghệ
                 </span>
               </div>
             </Link>
-
-            {/* Survey Header Tools */}
           </div>
         </div>
       </header>
@@ -420,28 +445,34 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border-default/90 bg-white/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95">
-        <div className="page-container">
-          <div className="flex min-h-[68px] items-center gap-2 xl:gap-3 2xl:gap-5 py-3">
+      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#3C5999]/95 backdrop-blur-md transition-all duration-200 shadow-md dark:border-slate-800 dark:bg-slate-950/95">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-[72px] items-center justify-between gap-2 xl:gap-4">
             {/* Brand Logo with Official NacenTech Logo */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ NacenTwin">
               <img
                 src="/NACENTECH_Main-Logo-G.png"
                 alt="NacenTech Emblem"
-                className="h-10 w-auto object-contain"
+                className="h-10 w-auto object-contain bg-white/10 rounded-lg p-1 backdrop-blur-xs"
               />
               <div className="flex flex-col text-left">
-                <span className="text-base font-extrabold tracking-tight text-text-primary dark:text-white leading-none">
-                  NacenTwin
-                </span>
-                <span className="mt-0.5 hidden text-xs font-semibold leading-tight text-nacen-green-700 dark:text-nacen-green-200 2xl:inline">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
+                    NacenTwin
+                  </span>
+                  <span className="inline-block size-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#06b6d4]" />
+                  <span className="hidden xl:inline-flex rounded-full bg-cyan-500/20 px-1.5 py-0.2 text-[9px] font-bold text-cyan-300 border border-cyan-400/30">
+                    CỔNG ĐMST
+                  </span>
+                </div>
+                <span className="mt-1 hidden text-[11px] font-medium leading-none text-white/80 2xl:inline">
                   Viện Đổi Mới Sáng Tạo Quốc Gia
                 </span>
               </div>
             </Link>
 
             {/* Desktop navigation */}
-            <nav className="hidden flex-1 items-center justify-center gap-0.5 2xl:gap-1 lg:flex" aria-label="Điều hướng chính">
+            <nav ref={desktopNavRef} className="hidden flex-1 items-center justify-center gap-0.5 xl:gap-1.5 lg:flex" aria-label="Điều hướng chính">
               {navLinks.map((link) => {
                 const isActive = isActiveLink(link);
                 const hasChildren = Boolean(link.children && link.children.length > 0);
@@ -451,10 +482,10 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`focus-ring rounded-control px-2 py-1.5 2xl:px-2.5 2xl:py-2 text-xs 2xl:text-sm font-semibold whitespace-nowrap transition ${
+                      className={`focus-ring relative inline-flex items-center rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition ${
                         isActive
-                          ? "bg-brand-50 text-brand-800 font-bold dark:bg-brand-950/70 dark:text-brand-200"
-                          : "text-slate-700 hover:bg-brand-50 hover:text-brand-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+                          ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[3px] after:bg-cyan-400 after:rounded-full after:shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                          : "text-white/85 hover:text-white hover:bg-white/10"
                       }`}
                     >
                       {link.label}
@@ -474,28 +505,29 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       onClick={() => handleDropdownToggle(link.href)}
-                      className={`focus-ring inline-flex items-center gap-1 rounded-control px-2 py-1.5 2xl:px-2.5 2xl:py-2 text-xs 2xl:text-sm font-semibold whitespace-nowrap transition cursor-pointer ${
+                      className={`focus-ring relative inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition cursor-pointer ${
                         isActive || isOpen
-                          ? "bg-brand-50 text-brand-800 font-bold dark:bg-brand-950/70 dark:text-brand-200"
-                          : "text-slate-700 hover:bg-brand-50 hover:text-brand-800 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+                          ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[3px] after:bg-cyan-400 after:rounded-full after:shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                          : "text-white/85 hover:text-white hover:bg-white/10"
                       }`}
                       aria-haspopup="true"
                       aria-expanded={isOpen}
                     >
                       <span>{link.label}</span>
                       <ChevronDown
-                        className={`size-3.5 opacity-60 transition-transform duration-200 ${
-                          isOpen ? "rotate-180 opacity-100" : ""
+                        className={`size-3.5 text-white/70 transition-transform duration-200 ${
+                          isOpen ? "rotate-180 text-white" : ""
                         }`}
+                        aria-hidden="true"
                       />
                     </Link>
 
-                    {/* Dropdown Menu on Hover & Click */}
+                    {/* Mega Dropdown Panel on Hover & Click */}
                     <div
-                      className={`nav-dropdown-menu absolute ${link.alignRight ? "right-0" : "left-0"} top-full pt-1.5 z-50`}
+                      className={`nav-dropdown-menu absolute ${link.alignRight ? "right-0" : "left-0"} top-full pt-2 z-50`}
                       style={isOpen ? { display: "block", visibility: "visible", opacity: 1, pointerEvents: "auto", transform: "translateY(0)" } : undefined}
                     >
-                      <div className="w-80 rounded-2xl border border-border-default bg-white p-2 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900 ring-1 ring-black/5">
+                      <div className="w-84 sm:w-88 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900 ring-1 ring-black/5">
                         <div className="space-y-1">
                           {link.children?.map((subItem) => {
                             const SubIcon = subItem.icon;
@@ -507,32 +539,34 @@ export function Navbar() {
                                 key={subItem.href}
                                 href={subItem.href}
                                 onClick={() => setOpenDropdown(null)}
-                                className={`flex items-start gap-3 rounded-xl p-2.5 transition ${
+                                className={`group flex items-start gap-3 rounded-xl p-2.5 transition ${
                                   isSubActive
-                                    ? "bg-brand-50 text-brand-900 font-bold dark:bg-brand-950/80 dark:text-brand-100"
-                                    : "text-slate-700 hover:bg-brand-50/80 hover:text-brand-800 dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:text-white"
+                                    ? "bg-blue-50 text-brand-900 font-bold dark:bg-slate-800 dark:text-cyan-300"
+                                    : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/80"
                                 }`}
                               >
                                 <div
                                   className={`grid size-9 shrink-0 place-items-center rounded-xl transition ${
                                     isSubActive
                                       ? "bg-brand-600 text-white shadow-xs"
-                                      : "bg-slate-100 text-slate-500 hover:bg-brand-100 hover:text-brand-700 dark:bg-slate-800 dark:text-slate-400"
+                                      : "bg-blue-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white dark:bg-slate-800 dark:text-cyan-400 dark:group-hover:bg-cyan-500 dark:group-hover:text-slate-950"
                                   }`}
                                 >
-                                  <SubIcon className="size-4.5" />
+                                  <SubIcon className="size-4" aria-hidden="true" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold leading-tight">{subItem.label}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-bold leading-tight group-hover:text-brand-700 dark:group-hover:text-cyan-300 transition-colors">
+                                      {subItem.label}
+                                    </span>
                                     {subItem.badge && (
-                                      <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-extrabold uppercase text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                      <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.2 text-[9px] font-extrabold uppercase text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                                         {subItem.badge}
                                       </span>
                                     )}
                                   </div>
                                   {subItem.description && (
-                                    <p className="mt-0.5 text-[11px] leading-snug font-normal text-slate-500 dark:text-slate-400 line-clamp-2">
+                                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-snug">
                                       {subItem.description}
                                     </p>
                                   )}
@@ -549,11 +583,24 @@ export function Navbar() {
             </nav>
 
             {/* Right Side Tools & User Session */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               {/* Language Switcher */}
-              <I18nToggle />
+              <div className="text-white">
+                <I18nToggle />
+              </div>
 
-              <div className="mx-1 hidden h-6 w-px bg-slate-200 dark:bg-slate-800 sm:block" />
+              {/* Theme Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="focus-ring hidden sm:inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-white/85 hover:bg-white/10 hover:text-white transition"
+                aria-label="Chuyển đổi giao diện"
+                title={theme === "light" ? "Chuyển sang Chế độ Tối" : "Chuyển sang Chế độ Sáng"}
+              >
+                {theme === "light" ? <Moon className="size-4" aria-hidden="true" /> : <Sun className="size-4 text-amber-300" aria-hidden="true" />}
+              </button>
+
+              <div className="mx-0.5 hidden h-6 w-px bg-white/20 sm:block" />
 
               {/* User Session */}
               {user ? (
@@ -562,57 +609,97 @@ export function Navbar() {
                     <button
                       type="button"
                       onClick={() => setAccountMenuOpen((open) => !open)}
-                      className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-control px-2 py-1.5 text-left transition hover:bg-brand-50 dark:hover:bg-slate-800"
+                      className="focus-ring inline-flex min-h-11 items-center gap-2 rounded-xl px-2.5 py-1 text-left transition bg-white/10 hover:bg-white/15 border border-white/10"
                       aria-label="Mở menu tài khoản"
                       aria-expanded={accountMenuOpen}
                       aria-haspopup="menu"
                     >
-                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-200">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-cyan-400 text-slate-900 font-bold shadow-xs">
                         <UserRound className="size-4" aria-hidden="true" />
                       </span>
                       <span className="hidden min-w-0 xl:block">
-                        <span className="block max-w-[90px] 2xl:max-w-[130px] truncate text-xs font-bold text-text-primary dark:text-white">{user.fullName || user.email}</span>
-                        <span className="block text-caption font-semibold text-brand-700 dark:text-brand-200">{getRoleDisplayName(user.role)}</span>
+                        <span className="block max-w-[90px] 2xl:max-w-[130px] truncate text-xs font-bold text-white">
+                          {user.fullName || user.email}
+                        </span>
+                        <span className={`inline-block mt-0.5 text-[10px] font-semibold px-1.5 py-0.2 rounded border ${getRoleBadgeStyle(user.role)}`}>
+                          {getRoleDisplayName(user.role)}
+                        </span>
                       </span>
-                      <ChevronDown className={`size-4 text-slate-500 transition-transform dark:text-slate-400 ${accountMenuOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                      <ChevronDown className={`size-3.5 text-white/70 transition-transform ${accountMenuOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                     </button>
 
                     {accountMenuOpen && (
-                      <div role="menu" aria-label="Menu tài khoản" className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-surface border border-border-default bg-white py-1 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-                        <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-                          <p className="truncate text-label font-bold text-text-primary dark:text-white">{user.fullName || user.email}</p>
-                          <p className="truncate text-caption text-text-secondary dark:text-slate-400">{getRoleDisplayName(user.role)}</p>
+                      <div
+                        role="menu"
+                        aria-label="Menu tài khoản"
+                        className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1.5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 ring-1 ring-black/5"
+                      >
+                        <div className="border-b border-slate-100 px-3.5 py-2.5 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                          <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
+                            {user.fullName || user.email}
+                          </p>
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.2 rounded border ${getRoleBadgeStyle(user.role)}`}>
+                              {getRoleDisplayName(user.role)}
+                            </span>
+                          </div>
                         </div>
-                        <Link href="/dashboard" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center gap-2 px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
-                          <LayoutDashboard className="size-4" aria-hidden="true" />
-                          Dashboard & CR
+
+                        <Link
+                          href="/dashboard"
+                          role="menuitem"
+                          onClick={() => setAccountMenuOpen(false)}
+                          className="focus-ring flex min-h-11 items-center gap-2.5 px-3.5 text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-300"
+                        >
+                          <LayoutDashboard className="size-4 text-brand-600 dark:text-cyan-400" aria-hidden="true" />
+                          <span>Dashboard & CR</span>
                         </Link>
-                        <Link href={getWorkspacePath(user.role)} role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center gap-2 px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
-                          <Briefcase className="size-4" aria-hidden="true" />
-                          Không gian làm việc
+                        <Link
+                          href={getWorkspacePath(user.role)}
+                          role="menuitem"
+                          onClick={() => setAccountMenuOpen(false)}
+                          className="focus-ring flex min-h-11 items-center gap-2.5 px-3.5 text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-300"
+                        >
+                          <Briefcase className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                          <span>Không gian làm việc</span>
                         </Link>
-                        <Link href="/settings" role="menuitem" onClick={() => setAccountMenuOpen(false)} className="focus-ring flex min-h-11 items-center gap-2 px-3 text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200">
-                          <Settings className="size-4" aria-hidden="true" />
-                          Cài đặt tài khoản
+                        <Link
+                          href="/settings"
+                          role="menuitem"
+                          onClick={() => setAccountMenuOpen(false)}
+                          className="focus-ring flex min-h-11 items-center gap-2.5 px-3.5 text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-300"
+                        >
+                          <Settings className="size-4 text-slate-500 dark:text-slate-400" aria-hidden="true" />
+                          <span>Cài đặt tài khoản</span>
                         </Link>
+
                         <button
                           type="button"
                           role="menuitem"
                           onClick={() => toggleTheme()}
-                          className="focus-ring flex min-h-11 w-full items-center justify-between px-3 text-left text-label font-semibold text-slate-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-brand-200"
+                          className="focus-ring flex min-h-11 w-full items-center justify-between px-3.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-300"
                         >
-                          <span className="flex items-center gap-2">
+                          <span className="flex items-center gap-2.5">
                             {theme === "light" ? <Moon className="size-4 text-slate-600 dark:text-slate-300" aria-hidden="true" /> : <Sun className="size-4 text-amber-400" aria-hidden="true" />}
                             <span>Giao diện: {theme === "light" ? "Sáng" : "Tối"}</span>
                           </span>
-                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                             {theme === "light" ? "Bật tối" : "Bật sáng"}
                           </span>
                         </button>
+
                         <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
-                        <button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setLogoutModalOpen(true); }} className="focus-ring flex min-h-11 w-full items-center gap-2 px-3 text-left text-label font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-300">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setAccountMenuOpen(false);
+                            setLogoutModalOpen(true);
+                          }}
+                          className="focus-ring flex min-h-11 w-full items-center gap-2.5 px-3.5 text-left text-xs font-semibold text-rose-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                        >
                           <LogOut className="size-4" aria-hidden="true" />
-                          {t("logout")}
+                          <span>{t("logout")}</span>
                         </button>
                       </div>
                     )}
@@ -622,7 +709,7 @@ export function Navbar() {
                   <button
                     type="button"
                     onClick={() => setLogoutModalOpen(true)}
-                    className="focus-ring inline-flex size-9 items-center justify-center rounded-control text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300"
+                    className="focus-ring inline-flex size-9 items-center justify-center rounded-xl text-white/80 hover:bg-rose-500/20 hover:text-rose-300 transition border border-transparent hover:border-rose-400/30"
                     title="Đăng xuất nhanh"
                     aria-label="Đăng xuất nhanh"
                   >
@@ -632,20 +719,19 @@ export function Navbar() {
                   {user.role?.toUpperCase() === "PUBLIC_USER" && (
                     <Link
                       href="/settings"
-                      className="hidden 2xl:inline-flex items-center rounded-lg bg-brand-50 px-2.5 py-1.5 text-xs font-bold text-brand-700 transition hover:bg-brand-100 dark:bg-brand-950/70 dark:text-brand-200 dark:hover:bg-brand-800"
+                      className="hidden 2xl:inline-flex items-center rounded-lg bg-cyan-500/20 px-2.5 py-1 text-xs font-bold text-cyan-300 transition hover:bg-cyan-500/30 border border-cyan-400/30"
                     >
                       {t("expert_upgrade")}
                     </Link>
                   )}
-
                 </div>
               ) : (
                 <div className="hidden items-center sm:flex">
                   <Link
                     href="/login"
-                    className="focus-ring inline-flex items-center gap-1.5 rounded-control bg-nacen-green-500 hover:bg-nacen-green-600 px-3.5 2xl:px-4 py-1.5 2xl:py-2 text-xs 2xl:text-sm font-semibold text-white shadow-xs transition whitespace-nowrap"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 px-4 py-2 text-xs xl:text-sm font-bold text-slate-950 shadow-md transition whitespace-nowrap"
                   >
-                    <LogIn className="w-3.5 h-3.5" />
+                    <LogIn className="size-4" />
                     <span>{t("login")}</span>
                   </Link>
                 </div>
@@ -655,12 +741,12 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="focus-ring min-h-11 min-w-11 inline-flex items-center justify-center rounded-control p-2 text-text-secondary hover:bg-brand-50 hover:text-brand-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white lg:hidden"
+                className="focus-ring min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl p-2 text-white hover:bg-white/10 lg:hidden"
                 aria-label="Menu"
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-navigation"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
               </button>
             </div>
           </div>
@@ -671,7 +757,7 @@ export function Navbar() {
           <>
             {/* Backdrop Overlay */}
             <div
-              className="fixed inset-0 top-[65px] sm:top-[69px] z-40 bg-slate-950/60 backdrop-blur-xs transition-opacity lg:hidden"
+              className="fixed inset-0 top-[72px] z-40 bg-slate-950/70 backdrop-blur-xs transition-opacity lg:hidden"
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
@@ -679,22 +765,22 @@ export function Navbar() {
             {/* Slide Down Sheet */}
             <div
               id="mobile-navigation"
-              className="fixed inset-x-0 top-[65px] sm:top-[69px] z-50 max-h-[calc(100dvh-65px)] sm:max-h-[calc(100dvh-69px)] overflow-y-auto border-b border-border-default bg-white/98 shadow-2xl backdrop-blur-md transition-all dark:border-slate-800 dark:bg-slate-950/98 lg:hidden"
+              className="fixed inset-x-0 top-[72px] z-50 max-h-[calc(100dvh-72px)] overflow-y-auto border-b border-white/10 bg-[#1e2f57]/98 text-white shadow-2xl backdrop-blur-xl transition-all dark:border-slate-800 dark:bg-slate-950/98 lg:hidden"
             >
               <div className="p-4 space-y-4">
                 {/* 1. User Header or Guest CTA */}
                 {user ? (
-                  <div className="rounded-2xl border border-brand-100 bg-brand-50/70 p-3.5 dark:border-brand-900/40 dark:bg-brand-950/40">
-                    <div className="flex items-center gap-3 pb-3 border-b border-brand-100/80 dark:border-brand-900/40">
-                      <div className="grid size-11 place-items-center rounded-full bg-brand-700 text-white font-bold text-base shadow-xs">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5">
+                    <div className="flex items-center gap-3 pb-3 border-b border-white/10">
+                      <div className="grid size-11 place-items-center rounded-full bg-cyan-400 text-slate-950 font-bold text-base shadow-xs">
                         {(user.fullName || user.email || "U").charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-bold text-text-primary dark:text-white">
+                        <div className="truncate text-sm font-bold text-white">
                           {user.fullName || user.email}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="inline-flex items-center rounded-md bg-white px-2 py-0.5 text-[11px] font-bold text-brand-700 shadow-xs dark:bg-slate-900 dark:text-brand-300">
+                          <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold border ${getRoleBadgeStyle(user.role)}`}>
                             {getRoleDisplayName(user.role)}
                           </span>
                         </div>
@@ -706,25 +792,25 @@ export function Navbar() {
                       <Link
                         href="/dashboard"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-xl bg-white p-2.5 font-semibold text-slate-700 transition hover:bg-brand-100 hover:text-brand-800 dark:bg-slate-900 dark:text-slate-200 shadow-xs"
+                        className="flex min-h-11 items-center gap-2 rounded-xl bg-white/10 p-2.5 font-semibold text-white transition hover:bg-white/20 shadow-xs"
                       >
-                        <LayoutDashboard className="size-4 text-brand-600 dark:text-brand-400 shrink-0" />
+                        <LayoutDashboard className="size-4 text-cyan-400 shrink-0" />
                         <span className="truncate">Dashboard & CR</span>
                       </Link>
                       <Link
                         href={getWorkspacePath(user.role)}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-xl bg-white p-2.5 font-semibold text-slate-700 transition hover:bg-brand-100 hover:text-brand-800 dark:bg-slate-900 dark:text-slate-200 shadow-xs"
+                        className="flex min-h-11 items-center gap-2 rounded-xl bg-white/10 p-2.5 font-semibold text-white transition hover:bg-white/20 shadow-xs"
                       >
-                        <Briefcase className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <Briefcase className="size-4 text-emerald-400 shrink-0" />
                         <span className="truncate">Không gian việc</span>
                       </Link>
                       <Link
                         href="/settings"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-xl bg-white p-2.5 font-semibold text-slate-700 transition hover:bg-brand-100 hover:text-brand-800 dark:bg-slate-900 dark:text-slate-200 shadow-xs"
+                        className="flex min-h-11 items-center gap-2 rounded-xl bg-white/10 p-2.5 font-semibold text-white transition hover:bg-white/20 shadow-xs"
                       >
-                        <Settings className="size-4 text-slate-600 dark:text-slate-400 shrink-0" />
+                        <Settings className="size-4 text-slate-300 shrink-0" />
                         <span className="truncate">Cài đặt tài khoản</span>
                       </Link>
                       <button
@@ -733,23 +819,23 @@ export function Navbar() {
                           setMobileMenuOpen(false);
                           setLogoutModalOpen(true);
                         }}
-                        className="flex items-center gap-2 rounded-xl bg-white p-2.5 font-semibold text-rose-600 transition hover:bg-rose-50 dark:bg-slate-900 dark:text-rose-400 shadow-xs text-left cursor-pointer"
+                        className="flex min-h-11 items-center gap-2 rounded-xl bg-rose-500/20 p-2.5 font-semibold text-rose-300 transition hover:bg-rose-500/30 shadow-xs text-left cursor-pointer border border-rose-400/30"
                       >
-                        <LogOut className="size-4 text-rose-500 shrink-0" />
+                        <LogOut className="size-4 text-rose-400 shrink-0" />
                         <span className="truncate">{t("logout")}</span>
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-2xl border border-border-default bg-slate-50/80 p-3.5 dark:border-slate-800 dark:bg-slate-900/60">
-                    <p className="text-xs font-semibold text-text-secondary dark:text-slate-400">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5">
+                    <p className="text-xs font-semibold text-white/80">
                       Chào mừng bạn đến với Cổng Quốc Gia NacenTwin
                     </p>
                     <div className="mt-2.5 flex items-center gap-2">
                       <Link
                         href="/login"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="focus-ring flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-nacen-green-500 hover:bg-nacen-green-600 py-2.5 text-xs font-bold text-white shadow-xs transition"
+                        className="focus-ring flex-1 flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 py-2.5 text-xs font-bold text-slate-950 shadow-xs transition"
                       >
                         <LogIn className="size-4" />
                         <span>{t("login")}</span>
@@ -757,7 +843,7 @@ export function Navbar() {
                       <Link
                         href="/register"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="focus-ring flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 py-2.5 text-xs font-bold text-slate-700 shadow-xs transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                        className="focus-ring flex-1 flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 py-2.5 text-xs font-bold text-white shadow-xs transition"
                       >
                         <UserPlus className="size-4" />
                         <span>{t("register")}</span>
@@ -770,27 +856,27 @@ export function Navbar() {
                 <Link
                   href="/khao-sat-dmst"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50 p-3 text-blue-900 shadow-xs transition hover:shadow-md dark:border-blue-900/50 dark:from-blue-950/70 dark:via-sky-950/50 dark:to-indigo-950/70 dark:text-blue-100"
+                  className="flex min-h-11 items-center justify-between rounded-2xl border border-cyan-400/30 bg-gradient-to-r from-blue-900/60 to-cyan-900/60 p-3 text-white shadow-xs transition hover:shadow-md"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-xl bg-blue-600 text-white shadow-xs">
+                    <div className="grid size-10 place-items-center rounded-xl bg-cyan-500 text-slate-950 shadow-xs">
                       <ClipboardCheck className="size-5" />
                     </div>
                     <div>
-                      <div className="text-xs font-extrabold">Khảo sát năng lực ĐMST</div>
-                      <div className="text-[11px] text-blue-700/80 dark:text-blue-300 font-medium">
+                      <div className="text-xs font-extrabold text-white">Khảo sát năng lực ĐMST</div>
+                      <div className="text-[11px] text-cyan-200 font-medium">
                         Đo lường 8 nhóm năng lực theo chuẩn Quốc gia
                       </div>
                     </div>
                   </div>
-                  <span className="shrink-0 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                  <span className="shrink-0 rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-bold text-slate-950">
                     43 câu
                   </span>
                 </Link>
 
                 {/* 3. Main Navigation List */}
                 <div className="space-y-1">
-                  <div className="px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <div className="px-1 text-[11px] font-bold uppercase tracking-wider text-cyan-300">
                     Danh mục hệ thống
                   </div>
                   <div className="grid grid-cols-1 gap-1">
@@ -806,18 +892,18 @@ export function Navbar() {
                             key={link.href}
                             href={link.href}
                             onClick={() => setMobileMenuOpen(false)}
-                            className={`group flex items-center justify-between rounded-xl px-3 py-2.5 transition ${
+                            className={`group flex min-h-11 items-center justify-between rounded-xl px-3 py-2.5 transition ${
                               isActive
-                                ? "bg-brand-50 text-brand-800 font-bold dark:bg-brand-950/80 dark:text-brand-200 shadow-xs"
-                                : "text-slate-700 hover:bg-slate-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-900"
+                                ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/30 shadow-xs"
+                                : "text-white/85 hover:bg-white/10 hover:text-white"
                             }`}
                           >
                             <div className="flex items-center gap-3">
                               <div
                                 className={`grid size-8 place-items-center rounded-lg transition ${
                                   isActive
-                                    ? "bg-brand-200/80 text-brand-800 dark:bg-brand-900 dark:text-brand-200"
-                                    : "bg-slate-100 text-slate-500 group-hover:bg-brand-100 group-hover:text-brand-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-slate-700"
+                                    ? "bg-cyan-400 text-slate-950"
+                                    : "bg-white/10 text-white/80 group-hover:bg-white/20 group-hover:text-white"
                                 }`}
                               >
                                 <Icon className="size-4" />
@@ -825,15 +911,15 @@ export function Navbar() {
                               <span className="text-sm">{link.label}</span>
                             </div>
                             {link.badge ? (
-                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+                              <span className="rounded-full bg-cyan-400/20 px-2 py-0.5 text-[10px] font-bold text-cyan-300 border border-cyan-400/30">
                                 {link.badge}
                               </span>
                             ) : (
                               <ChevronRight
                                 className={`size-4 transition ${
                                   isActive
-                                    ? "text-brand-600 dark:text-brand-300"
-                                    : "text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 dark:text-slate-600"
+                                    ? "text-cyan-300"
+                                    : "text-white/40 group-hover:text-white group-hover:translate-x-0.5"
                                 }`}
                               />
                             )}
@@ -844,10 +930,10 @@ export function Navbar() {
                       return (
                         <div key={link.href} className="space-y-1">
                           <div
-                            className={`group flex items-center justify-between rounded-xl px-3 py-2.5 transition ${
+                            className={`group flex min-h-11 items-center justify-between rounded-xl px-3 py-2.5 transition ${
                               isActive
-                                ? "bg-brand-50 text-brand-800 font-bold dark:bg-brand-950/80 dark:text-brand-200 shadow-xs"
-                                : "text-slate-700 hover:bg-slate-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-900"
+                                ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/30 shadow-xs"
+                                : "text-white/85 hover:bg-white/10 hover:text-white"
                             }`}
                           >
                             <Link
@@ -858,8 +944,8 @@ export function Navbar() {
                               <div
                                 className={`grid size-8 place-items-center rounded-lg transition ${
                                   isActive
-                                    ? "bg-brand-200/80 text-brand-800 dark:bg-brand-900 dark:text-brand-200"
-                                    : "bg-slate-100 text-slate-500 group-hover:bg-brand-100 group-hover:text-brand-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-slate-700"
+                                    ? "bg-cyan-400 text-slate-950"
+                                    : "bg-white/10 text-white/80 group-hover:bg-white/20 group-hover:text-white"
                                 }`}
                               >
                                 <Icon className="size-4" />
@@ -870,7 +956,7 @@ export function Navbar() {
                             <button
                               type="button"
                               onClick={() => toggleMobileSubmenu(link.href)}
-                              className="p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                              className="min-h-11 min-w-11 grid place-items-center rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition"
                               aria-label={`Mở rộng danh mục ${link.label}`}
                             >
                               <ChevronDown
@@ -883,7 +969,7 @@ export function Navbar() {
 
                           {/* Sub items collapsible */}
                           {isExpanded && (
-                            <div className="ml-6 pl-3 border-l-2 border-brand-200/70 dark:border-slate-800 space-y-1 my-1">
+                            <div className="ml-6 pl-3 border-l-2 border-cyan-400/30 space-y-1 my-1">
                               {link.children?.map((subItem) => {
                                 const SubIcon = subItem.icon;
                                 const isSubActive =
@@ -894,18 +980,18 @@ export function Navbar() {
                                     key={subItem.href}
                                     href={subItem.href}
                                     onClick={() => setMobileMenuOpen(false)}
-                                    className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition ${
+                                    className={`flex min-h-11 items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition ${
                                       isSubActive
-                                        ? "bg-brand-50 text-brand-800 font-bold dark:bg-brand-950/80 dark:text-brand-200"
-                                        : "text-slate-600 hover:bg-slate-50 hover:text-brand-700 dark:text-slate-300 dark:hover:bg-slate-900"
+                                        ? "bg-cyan-500/20 text-cyan-300 font-bold"
+                                        : "text-white/80 hover:bg-white/10 hover:text-white"
                                     }`}
                                   >
                                     <div className="flex items-center gap-2.5 min-w-0">
-                                      <SubIcon className="size-3.5 shrink-0 text-slate-400" />
+                                      <SubIcon className="size-3.5 shrink-0 text-cyan-400" />
                                       <span className="truncate">{subItem.label}</span>
                                     </div>
                                     {subItem.badge && (
-                                      <span className="rounded-full bg-emerald-100 px-1.5 py-0.2 text-[9px] font-bold uppercase text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                      <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.2 text-[9px] font-bold uppercase text-emerald-300 border border-emerald-400/30">
                                         {subItem.badge}
                                       </span>
                                     )}
@@ -921,36 +1007,36 @@ export function Navbar() {
                 </div>
 
                 {/* 4. Drawer Utilities & Footer */}
-                <div className="space-y-3 border-t border-border-default pt-3 dark:border-slate-800">
+                <div className="space-y-3 border-t border-white/10 pt-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-text-secondary dark:text-slate-400">
+                    <span className="text-xs font-semibold text-white/80">
                       Giao diện hiển thị:
                     </span>
                     <button
                       type="button"
                       onClick={() => toggleTheme()}
-                      className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                      className="focus-ring inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20"
                     >
                       {theme === "light" ? (
                         <>
-                          <Moon className="size-3.5 text-slate-600" />
+                          <Moon className="size-3.5 text-cyan-300" />
                           <span>Chế độ Tối</span>
                         </>
                       ) : (
                         <>
-                          <Sun className="size-3.5 text-amber-400" />
+                          <Sun className="size-3.5 text-amber-300" />
                           <span>Chế độ Sáng</span>
                         </>
                       )}
                     </button>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-text-secondary dark:text-slate-400">
+                    <span className="text-xs font-semibold text-white/80">
                       Cỡ chữ văn bản:
                     </span>
                     <FontsizeControl />
                   </div>
-                  <div className="pt-2 text-center text-[11px] text-slate-400 dark:text-slate-500">
+                  <div className="pt-2 text-center text-[11px] text-white/60">
                     Cổng dữ liệu số Quốc gia · NacenTech (Bộ KH&CN)
                   </div>
                 </div>

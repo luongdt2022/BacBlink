@@ -126,7 +126,7 @@ export function I18nToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={toggleLang}
-      className={`focus-ring inline-flex min-h-11 items-center gap-1.5 px-2.5 py-1.5 rounded-control text-label font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition ${className}`}
+      className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-control text-label font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition ${className}`}
       title="Chuyển đổi Ngôn ngữ (VI / EN)"
       aria-label={`Chuyển ngôn ngữ sang ${lang === "vi" ? "English" : "Tiếng Việt"}`}
       aria-pressed={lang === "en"}

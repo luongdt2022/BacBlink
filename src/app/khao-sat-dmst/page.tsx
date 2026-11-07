@@ -879,8 +879,78 @@ export default function KhaoSatDmstPage() {
   ]);
 
   // -------------------------------------------------------------------------
-  // VALIDATION & NAVIGATION
+  // VALIDATION, AUTO-SCROLL TO ERROR & NAVIGATION
   // -------------------------------------------------------------------------
+
+  const scrollToFirstError = () => {
+    setTimeout(() => {
+      const errorEl = document.querySelector<HTMLElement>('[data-invalid="true"], input:invalid, select:invalid, [aria-invalid="true"]');
+      if (errorEl) {
+        errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        errorEl.focus?.();
+        errorEl.classList.add("ring-2", "ring-rose-500", "border-rose-500");
+      }
+    }, 120);
+  };
+
+  const handleManualSaveDraft = () => {
+    const draftData = {
+      c01LegalName,
+      c02TaxCode,
+      c03Address,
+      c04Email,
+      c04Phone,
+      c04Website,
+      c05Province,
+      c06MainSector,
+      c07Ownership,
+      c08Workforce,
+      c09Revenue,
+      c10OperatingZone,
+      c11HighQualRatio,
+      c12HasRdUnit,
+      c13HasTraining,
+      c14HasMachinery,
+      c15HasRdBudget,
+      c16Platforms,
+      c17NewProducts,
+      c18ImprovedProducts,
+      c19ProcessInnovation,
+      c20OrgInnovation,
+      c21MarketingInnovation,
+      c22TechAcquisition,
+      c23ImpactOutcomes,
+      c24DigitalStrategy,
+      c25DigitalMaturity,
+      c26DigitizedActivities,
+      c27AdvancedTech,
+      c28Collaborations,
+      c29PublicSupport,
+      c30FundingAccess,
+      c31IpAssets,
+      c32InnovationResults,
+      c33NewProductRevenue,
+      c34RecordedImpacts,
+      c35IsExporting,
+      c36InValueChain,
+      c37Bottlenecks,
+      c38SupportNeeds,
+      c39InfoNeeds,
+      c40WillingInterview,
+      c41WillingUpdate,
+      c42RequestedFeatures,
+      c43Recommendations,
+      signatureData,
+    };
+    try {
+      localStorage.setItem(STORAGE_DRAFT_KEY, JSON.stringify(draftData));
+      const now = new Date().toLocaleTimeString("vi-VN");
+      setLastSavedTime(now);
+      toast.success(`Đã lưu bản nháp an toàn vào LocalStorage lúc ${now}`);
+    } catch {
+      toast.error("Không thể lưu bản nháp.");
+    }
+  };
 
   const handleNextStep = (e?: React.MouseEvent) => {
     if (e) {
@@ -891,10 +961,12 @@ export default function KhaoSatDmstPage() {
     if (currentStep === 1) {
       if (!c01LegalName.trim()) {
         toast.error("Vui lòng nhập Tên doanh nghiệp đầy đủ.");
+        scrollToFirstError();
         return;
       }
       if (!c02TaxCode.trim()) {
         toast.error("Vui lòng nhập Mã số thuế.");
+        scrollToFirstError();
         return;
       }
     }
@@ -922,12 +994,14 @@ export default function KhaoSatDmstPage() {
     if (!c01LegalName.trim()) {
       toast.error("Tên doanh nghiệp không được để trống.");
       setCurrentStep(1);
+      scrollToFirstError();
       return;
     }
 
     if (c37Bottlenecks.length === 0) {
       toast.error("Vui lòng chọn ít nhất 1 rào cản tại Câu 37.");
       setCurrentStep(5);
+      scrollToFirstError();
       return;
     }
 
@@ -1334,15 +1408,34 @@ export default function KhaoSatDmstPage() {
         </div>
       )}
 
-      {/* Progress Wizard Stepper */}
-      <div className="surface-card p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-        <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">
-          <span>Tiến trình hoàn thành: Bước {currentStep} / 5</span>
-          <span className="text-blue-600 dark:text-blue-400 font-extrabold">{currentStep * 20}%</span>
+      {/* Sticky Stepper Bar Theo Dõi Tiến Trình 5 Bước (Chuẩn BD-04) */}
+      <div className="sticky top-[72px] z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-md transition-all">
+        <div className="flex flex-wrap items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-3 gap-2">
+          <div className="flex items-center gap-2">
+            <span>Tiến trình hoàn thành: Bước {currentStep} / 5</span>
+            <span className="text-[#2D9A85] font-extrabold">{currentStep * 20}%</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {lastSavedTime && (
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium hidden md:inline">
+                Tự động lưu: {lastSavedTime}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleManualSaveDraft}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 text-xs font-semibold shadow-xs transition active:scale-95"
+              title="Lưu tạm vào LocalStorage trình duyệt"
+            >
+              <Save className="w-3.5 h-3.5 text-slate-500" />
+              <span>Lưu Bản Nháp</span>
+            </button>
+          </div>
         </div>
-        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden mb-5">
+        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden mb-4">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
+            className="bg-[#2D9A85] h-2 rounded-full transition-all duration-500 ease-out shadow-xs"
             style={{ width: `${currentStep * 20}%` }}
           />
         </div>
@@ -1364,7 +1457,7 @@ export default function KhaoSatDmstPage() {
                 onClick={() => setCurrentStep(item.step)}
                 className={`p-2 rounded-xl transition flex flex-col items-center justify-center gap-0.5 ${
                   isActive
-                    ? "bg-blue-50 dark:bg-blue-950/70 border border-blue-400 text-blue-700 dark:text-blue-300 font-bold"
+                    ? "bg-teal-50 dark:bg-teal-950/70 border border-[#2D9A85] text-[#2D9A85] dark:text-teal-300 font-bold"
                     : isCompleted
                     ? "text-emerald-600 dark:text-emerald-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-900"
                     : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900"
@@ -1373,7 +1466,7 @@ export default function KhaoSatDmstPage() {
                 <div
                   className={`size-6 rounded-full flex items-center justify-center text-[11px] font-bold ${
                     isActive
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#2D9A85] text-white"
                       : isCompleted
                       ? "bg-emerald-500 text-white"
                       : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
@@ -1489,6 +1582,7 @@ export default function KhaoSatDmstPage() {
               <input
                 type="text"
                 value={c01LegalName}
+                data-invalid={!c01LegalName.trim() ? "true" : undefined}
                 onChange={(e) => setC01LegalName(e.target.value)}
                 placeholder="Ví dụ: CÔNG TY CỔ PHẦN CÔNG NGHỆ NACENTECH"
                 className="form-control w-full text-xs font-medium uppercase"
@@ -1513,6 +1607,7 @@ export default function KhaoSatDmstPage() {
                 <input
                   type="text"
                   value={c02TaxCode}
+                  data-invalid={!c02TaxCode.trim() ? "true" : undefined}
                   onChange={(e) => setC02TaxCode(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !isTaxCodeLocked) {

@@ -635,7 +635,7 @@ export default function PublicDemandsPage() {
                 return (
                   <article
                     key={item.id}
-                    className="group surface-card overflow-hidden flex flex-col hover:border-brand-500 hover:shadow-lg transition-all duration-200"
+                    className="group surface-card rounded-2xl overflow-hidden flex flex-col hover:border-brand-500 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
                   >
                     {/* Media Banner: Khung thu hẹp gọn gàng, có logo chìm theo ngành phù hợp */}
                     <div className="relative h-24 sm:h-28 w-full overflow-hidden bg-brand-700 text-white border-b border-brand-500/40 p-3 sm:p-3.5 flex flex-col justify-between">
@@ -736,9 +736,10 @@ export default function PublicDemandsPage() {
 
                             <Link
                               href={`/nhu-cau-cong-nghe/${item.id}`}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 dark:text-cyan-400 hover:text-brand-800 group-hover:translate-x-0.5 transition px-2.5 py-1.5 rounded-lg hover:bg-brand-50 dark:hover:bg-slate-800"
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#2D9A85] hover:bg-[#247B6A] transition px-3 py-1.5 rounded-xl shadow-sm active:scale-95"
                             >
-                              Chi tiết & Chào giải pháp <ArrowRight className="w-3.5 h-3.5" />
+                              <span>Đề Xuất Giải Pháp</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
                         </div>

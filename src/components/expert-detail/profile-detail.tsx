@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppButton } from "@/components/ui/design-system";
 import Link from "next/link";
-import { AlertTriangle, Award, BadgeCheck, BriefcaseBusiness, Building2, CalendarPlus, CheckCircle2, FileText, GraduationCap, LockKeyhole, Mail, Phone, Share2 } from "lucide-react";
+import { AlertTriangle, Award, BadgeCheck, BriefcaseBusiness, Building2, CalendarPlus, Check, CheckCircle2, Copy, FileText, GraduationCap, LockKeyhole, Mail, Phone, Share2, ShieldCheck } from "lucide-react";
 import { Async } from "@/components/ui/async";
 import { Achievement, ExpertApiError, ExpertCompleteness, ExpertPrivateDetail, ExpertPublicDetail, getMyExpertCompleteness, getMyExpertDetail, getPublicExpertDetail, Timeline } from "@/lib/expert-detail";
 import { authClient } from "@/lib/auth-client";
@@ -28,46 +28,152 @@ function TimelineCard({ title, items, icon: Icon }: { title: string; items: Time
 function AchievementTabs({ detail }: { detail: ExpertPublicDetail }) {
   const [active, setActive] = useState<TabKey>("patents");
   const items = detail[active] as Achievement[];
-  return <section className="rounded-surface border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700">
-    <div className="flex overflow-x-auto border-b border-slate-200 px-3 pt-2 dark:border-slate-700">{tabs.map((tab) => <AppButton variant="ghost" key={tab.key} onClick={() => setActive(tab.key)} className={`whitespace-nowrap border-b-2 px-3 py-3 text-label font-bold ${active === tab.key ? "border-brand-700 text-brand-700 dark:text-brand-200" : "border-transparent text-slate-500 dark:text-slate-300"}`}>{tab.label}</AppButton>)}</div>
-    <div className="p-5">{items.length === 0 ? <div className="rounded-xl bg-slate-50 p-6 text-center text-label text-slate-500 dark:text-slate-300 dark:bg-slate-800">Chưa có dữ liệu công khai cho mục này.</div> : <div className="space-y-3">{items.map((item, i) => <article className="rounded-xl border border-slate-200 p-4 dark:border-slate-700" key={`${item.title}-${i}`}><p className="text-body font-bold text-slate-900 dark:text-slate-100">{item.title}</p>{item.meta && <p className="mt-1 text-body font-medium text-brand-700 dark:text-brand-200">{item.meta}</p>}{item.description && <p className="mt-1 text-body text-slate-600 dark:text-slate-300">{item.description}</p>}</article>)}</div>}</div>
+  return <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+    <div className="flex overflow-x-auto border-b border-slate-200 px-3 pt-2 dark:border-slate-800 gap-1">{tabs.map((tab) => <button key={tab.key} type="button" onClick={() => setActive(tab.key)} className={`whitespace-nowrap border-b-2 px-4 py-3 text-xs sm:text-sm font-bold transition ${active === tab.key ? "border-[#2D9A85] text-[#2D9A85] bg-teal-50/40 dark:bg-teal-950/20" : "border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"}`}>{tab.label}</button>)}</div>
+    <div className="p-5">{items.length === 0 ? <div className="rounded-xl bg-slate-50 p-6 text-center text-label text-slate-500 dark:text-slate-300 dark:bg-slate-800">Chưa có dữ liệu công khai cho mục này.</div> : <div className="space-y-3">{items.map((item, i) => <article className="rounded-xl border border-slate-200 p-4 dark:border-slate-700 hover:border-teal-500/50 transition" key={`${item.title}-${i}`}><p className="text-body font-bold text-slate-900 dark:text-slate-100">{item.title}</p>{item.meta && <p className="mt-1 text-body font-medium text-brand-700 dark:text-teal-300">{item.meta}</p>}{item.description && <p className="mt-1 text-body text-slate-600 dark:text-slate-300 leading-relaxed">{item.description}</p>}</article>)}</div>}</div>
   </section>;
 }
 
 function ConsultationCta({ expertCode }: { expertCode: string }) {
   const [open, setOpen] = useState(false); const [name, setName] = useState(""); const [message, setMessage] = useState(""); const [state, setState] = useState<"idle" | "sending" | "success" | "error">("idle");
   async function submit(e: React.FormEvent) { e.preventDefault(); setState("sending"); try { const r = await fetch(`${API_BASE}/api/v1/public/experts/${encodeURIComponent(expertCode)}/consultation-requests`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contactName: name, message }) }); if (!r.ok) throw new Error(); setState("success"); } catch { setState("error"); } }
-  return <section className="rounded-3xl workspace-banner p-6 text-white"><h2 className="font-bold text-card-title">Đặt lịch kết nối & làm việc</h2><p className="mt-1 text-body text-brand-100">Yêu cầu sẽ được chuyển tới bộ phận NacenTech tiếp nhận.</p>{!open ? <AppButton variant="cta" onClick={() => setOpen(true)} className="mt-4"><CalendarPlus className="h-4 w-4 text-brand-700 dark:text-brand-200" />Điền phiếu yêu cầu kết nối</AppButton> : <form onSubmit={submit} className="mt-4 space-y-2 rounded-surface bg-white/10 p-4"><input required value={name} onChange={e => setName(e.target.value)} placeholder="Họ tên người liên hệ" className="w-full rounded-control px-3 py-2 text-body text-slate-900 form-control dark:text-slate-100" /><textarea required value={message} onChange={e => setMessage(e.target.value)} placeholder="Nội dung cần tư vấn" className="min-h-20 w-full rounded-control px-3 py-2 text-body text-slate-900 form-control dark:text-slate-100" />{state === "success" && <p className="text-body text-emerald-200">Đã chuyển yêu cầu tới NacenTech.</p>}{state === "error" && <p className="text-body text-rose-200">Chưa gửi được yêu cầu. Vui lòng thử lại.</p>}<AppButton variant="cta" disabled={state === "sending"}>{state === "sending" ? "Đang gửi…" : "Gửi yêu cầu"}</AppButton></form>}</section>;
+  return <section id="consultation-cta" className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-[#1E293B] border border-slate-700/60 p-6 text-white shadow-xl"><h2 className="font-bold text-base sm:text-lg">Đặt Lịch Kết Nối &amp; Tư Vấn Chuyên Gia R&amp;D</h2><p className="mt-1 text-xs text-slate-300">Yêu cầu tư vấn của bạn sẽ được chuyển trực tiếp tới chuyên gia và bộ phận NacenTech tiếp nhận.</p>{!open ? <button type="button" onClick={() => setOpen(true)} className="mt-4 bg-[#2D9A85] hover:bg-[#247B6A] text-white font-bold px-6 py-3 rounded-xl shadow-lg transition active:scale-[0.98] flex items-center gap-2 text-xs sm:text-sm"><CalendarPlus className="h-4 w-4 text-teal-200" /><span>Điền phiếu yêu cầu kết nối</span></button> : <form onSubmit={submit} className="mt-4 space-y-3 rounded-xl bg-white/10 p-4 border border-white/10"><input required value={name} onChange={e => setName(e.target.value)} placeholder="Họ tên người liên hệ" className="w-full rounded-xl px-3.5 py-2.5 text-xs text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400" /><textarea required value={message} onChange={e => setMessage(e.target.value)} placeholder="Nội dung bài toán cần chuyên gia tư vấn hoặc đề xuất hợp tác R&D" className="min-h-24 w-full rounded-xl px-3.5 py-2.5 text-xs text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400" />{state === "success" && <p className="text-xs font-bold text-emerald-300 flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Đã gửi yêu cầu tư vấn thành công tới Viện NacenTech!</p>}{state === "error" && <p className="text-xs font-bold text-rose-300">Chưa gửi được yêu cầu. Vui lòng thử lại sau.</p>}<button type="submit" disabled={state === "sending"} className="bg-[#2D9A85] hover:bg-[#247B6A] text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-md disabled:opacity-50">{state === "sending" ? "Đang gửi…" : "Gửi phiếu yêu cầu tư vấn"}</button></form>}</section>;
 }
 
 function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
   const [sectorNames, setSectorNames] = useState<Record<string, string>>({});
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = () => {
+    if (typeof window !== "undefined" && detail.expertCode) {
+      navigator.clipboard.writeText(detail.expertCode);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2500);
+    }
+  };
+
   useEffect(() => { getSectorLabels().then((items) => setSectorNames(Object.fromEntries(items.map((item) => [item.code, item.name])))).catch(() => setSectorNames({})); }, []);
   const sectorLabels = detail.expertiseSectors.map((value) => sectorNames[value] ?? value);
   const share = async () => { if (navigator.share) await navigator.share({ title: detail.fullName, url: window.location.href }); else await navigator.clipboard.writeText(window.location.href); };
   return <div className="mx-auto max-w-7xl space-y-6 px-4 py-7">
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-700">
-      <div className="relative overflow-hidden flex min-h-36 items-start justify-between gap-3 bg-brand-700 p-5 text-white">
-        <SectorBannerBackground sectorCode={detail.expertiseSectors?.[0]} opacity={0.45} />
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-950/60 via-transparent to-transparent pointer-events-none" />
-        <div className="relative z-10 flex flex-wrap gap-2">
-          <span className="rounded-full bg-white/10 px-3 py-1 text-label font-bold backdrop-blur-sm">
-            <BadgeCheck className="mr-1 inline h-3.5 w-3.5 text-cyan-300" />Chuyên gia đã xác thực
+    {/* Profile Hero Banner Chuẩn BD-04 */}
+    <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#1E293B] text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-700/60 relative overflow-hidden">
+      <SectorBannerBackground sectorCode={detail.expertiseSectors?.[0]} opacity={0.2} />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+
+      {/* Top badges */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 backdrop-blur-md shadow-sm">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Chuyên Gia Đã Xác Thực (NacenTech)</span>
           </span>
           {detail.isAcceptingConsultation && (
-            <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-label font-bold text-emerald-200 backdrop-blur-sm">
-              Sẵn sàng nhận tư vấn
+            <span className="bg-teal-500/20 text-teal-300 border border-teal-500/40 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md">
+              Sẵn sàng nhận tư vấn R&amp;D
             </span>
           )}
         </div>
-        <div className="relative z-10">
-          <AppButton variant="ghost" onClick={share} className="bg-white/10 p-3 text-white hover:bg-white/20 dark:text-white dark:hover:bg-white/20" aria-label="Chia sẻ">
-            <Share2 className="h-4 w-4" />
-          </AppButton>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={share} className="text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 border border-slate-700 px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5">
+            <Share2 className="h-3.5 w-3.5" />
+            <span>Chia sẻ</span>
+          </button>
+          <Link href="/experts" className="text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 border border-slate-700 px-3.5 py-1.5 rounded-xl transition">
+            ← Danh bạ
+          </Link>
         </div>
       </div>
-      <div className="p-4 sm:p-6"><div className="flex flex-col gap-5 md:flex-row"><ExpertAvatar fullName={detail.fullName} avatarUrl={detail.avatarUrl} expertCode={detail.expertCode} size="lg" isVerified={detail.isVerified} className="border-4 border-white rounded-2xl shadow dark:border-slate-800" /><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h1 className="font-bold text-slate-950 type-page-title dark:text-slate-100">{detail.fullName}</h1><span className="rounded-full bg-brand-50 px-2 py-1 text-label font-bold text-brand-800 dark:bg-brand-950 dark:text-brand-200">{detail.expertCode}</span></div><p className="mt-2 flex items-center gap-1 text-body font-semibold text-slate-700 dark:text-slate-100"><Building2 className="h-4 w-4 text-brand-700 dark:text-brand-200" />{detail.positionTitle} · {detail.organizationName}</p><p className="mt-3 max-w-3xl text-body leading-relaxed text-slate-600 dark:text-slate-300">{detail.publicBio || "Hồ sơ chuyên môn đang được chuyên gia hoàn thiện."}</p><div className="mt-3 flex flex-wrap gap-2">{sectorLabels.map(x => <span className="rounded-control bg-brand-50 px-2.5 py-1 text-label font-semibold text-brand-800 dark:bg-brand-950 dark:text-brand-200" key={x}>{x}</span>)}{(detail.specializedKeywords ?? []).map(x => <span className="rounded-control border border-slate-200 px-2.5 py-1 text-label text-slate-700 dark:text-slate-200" key={`keyword-${x}`}>{x}</span>)}{detail.masteredTechCodes.map(x => <span className="rounded-control bg-nacen-green-50 px-2.5 py-1 text-label font-semibold text-nacen-green-700 dark:bg-slate-800 dark:text-nacen-green-200" key={x}>{x}</span>)}</div></div></div></div></section>
-    <div className="grid gap-6 lg:grid-cols-3"><aside className="space-y-6"><TimelineCard title="Quá trình đào tạo" items={detail.training} icon={GraduationCap} /><TimelineCard title="Quá trình công tác" items={detail.employment} icon={BriefcaseBusiness} /><section className="rounded-surface border border-slate-200 bg-white p-5 dark:bg-slate-900 dark:border-slate-700"><h2 className="mb-2 font-bold text-card-title">Kết nối chuyên gia</h2><p className="text-body leading-relaxed text-slate-600 dark:text-slate-300">Thông tin liên hệ cá nhân được bảo vệ theo PDPD. Hãy gửi phiếu yêu cầu để Viện NacenTech kết nối.</p></section></aside><main className="min-w-0 space-y-6 lg:col-span-2"><AchievementTabs detail={detail} /><ConsultationCta expertCode={detail.expertCode} /></main></div>
+
+      {/* Body Hero */}
+      <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          {/* Avatar chuyên gia 128x128px (w-32 h-32), rounded-full, ring-4 ring-cyan-500/30 */}
+          <div className="shrink-0 relative">
+            <ExpertAvatar
+              fullName={detail.fullName}
+              avatarUrl={detail.avatarUrl}
+              expertCode={detail.expertCode}
+              size="lg"
+              isVerified={detail.isVerified}
+              className="w-32 h-32 rounded-full ring-4 ring-cyan-500/30 shadow-2xl object-cover"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                {detail.fullName}
+              </h1>
+            </div>
+
+            {/* Monospace Code with Copy */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-300">
+              <div className="inline-flex items-center gap-1.5">
+                <span className="text-slate-400">Mã chuyên gia:</span>
+                <span className="font-mono font-semibold tracking-wider text-slate-300 bg-slate-800/80 px-2.5 py-0.5 rounded-md border border-slate-700 select-all">
+                  {detail.expertCode}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition"
+                  title={copiedCode ? "Đã sao chép mã định danh" : "Sao chép mã chuyên gia"}
+                >
+                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+                {copiedCode && <span className="text-[11px] text-emerald-400 font-semibold animate-pulse">Đã sao chép mã định danh</span>}
+              </div>
+
+              <span>•</span>
+              <span className="flex items-center gap-1 text-white font-medium">
+                <Building2 className="h-3.5 w-3.5 text-teal-300" />
+                {detail.positionTitle} · {detail.organizationName}
+              </span>
+            </div>
+
+            <p className="max-w-3xl text-xs sm:text-sm leading-relaxed text-slate-300 pt-1">
+              {detail.publicBio || "Hồ sơ chuyên môn đang được chuyên gia hoàn thiện và cập nhật trên CSDL Quốc Gia NacenTwin."}
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {sectorLabels.map(x => <span className="rounded-md bg-slate-800 text-teal-300 border border-slate-700 px-2.5 py-0.5 text-xs font-semibold" key={x}>{x}</span>)}
+              {(detail.specializedKeywords ?? []).map(x => <span className="rounded-md bg-slate-800/60 border border-slate-700 px-2 py-0.5 text-xs text-slate-300" key={`keyword-${x}`}>{x}</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Emerald */}
+        <div className="shrink-0 pt-2 lg:pt-0">
+          <a
+            href="#consultation-cta"
+            className="bg-[#2D9A85] hover:bg-[#247B6A] text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-emerald-900/40 transition active:scale-[0.98] flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap"
+          >
+            <CalendarPlus className="w-4 h-4 text-teal-200" />
+            <span>Đăng Ký Tư Vấn Công Nghệ</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div className="grid gap-6 lg:grid-cols-3">
+      <aside className="space-y-6">
+        <TimelineCard title="Quá trình đào tạo" items={detail.training} icon={GraduationCap} />
+        <TimelineCard title="Quá trình công tác" items={detail.employment} icon={BriefcaseBusiness} />
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
+          <h2 className="mb-2 font-bold text-sm text-slate-900 dark:text-white">Bảo mật liên hệ PDPD</h2>
+          <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+            Thông tin liên hệ cá nhân của chuyên gia được bảo vệ theo Nghị định 13/2023/NĐ-CP (PDPD). Hãy gửi phiếu yêu cầu để Viện NacenTech làm đầu mối kết nối làm việc.
+          </p>
+        </section>
+      </aside>
+      <main className="min-w-0 space-y-6 lg:col-span-2">
+        <AchievementTabs detail={detail} />
+        <div id="consultation-cta">
+          <ConsultationCta expertCode={detail.expertCode} />
+        </div>
+      </main>
+    </div>
   </div>;
 }
 

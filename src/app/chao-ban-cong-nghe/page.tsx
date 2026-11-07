@@ -305,11 +305,10 @@ function ChaoBanCongNgheContent() {
 
   // Helper mappings
   const getTrlBadgeColor = (level?: number | null) => {
-    if (!level) return "bg-slate-100 text-slate-700 border-slate-200";
-    if (level >= 8) return "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold";
-    if (level >= 6) return "bg-brand-100 text-brand-800 border-brand-300 font-bold";
-    if (level >= 4) return "bg-amber-100 text-amber-800 border-amber-300 font-bold";
-    return "bg-rose-100 text-rose-800 border-rose-300 font-bold";
+    if (!level) return "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300";
+    if (level >= 7) return "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-extrabold";
+    if (level >= 4) return "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-bold";
+    return "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800 font-bold";
   };
 
   const getIpStatusLabel = (status?: string | null) => {
@@ -634,23 +633,23 @@ function ChaoBanCongNgheContent() {
             </div>
           </div>
 
-          {/* Lọc Thang đo TRL (1 - 9) */}
+          {/* Lọc Thang đo TRL (1 - 9) Quang Phổ 3 Phân Đoạn Chuẩn BD-04 */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-3">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
               <Award className="w-4 h-4 text-amber-500" />
               Mức Sẵn Sàng Công Nghệ (TRL)
             </h3>
             <p className="text-caption text-slate-500 dark:text-slate-400">
-              Lọc theo độ hoàn thiện của công nghệ chuyển giao:
+              Quang phổ 3 phân đoạn mức độ sẵn sàng chuyển giao:
             </p>
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {[
-                { trl: undefined, label: "Tất cả" },
-                { trl: 7, label: "TRL 7+" },
-                { trl: 8, label: "TRL 8+" },
-                { trl: 9, label: "TRL 9" },
-                { trl: 5, label: "TRL 5+" },
-                { trl: 3, label: "TRL 3+" },
+                { trl: undefined, label: "Tất cả", color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
+                { trl: 7, label: "TRL 7-9 Thương Mại", color: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300" },
+                { trl: 8, label: "TRL 8+", color: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300" },
+                { trl: 9, label: "TRL 9 Hoàn thiện", color: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300" },
+                { trl: 4, label: "TRL 4-6 Pilot", color: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300" },
+                { trl: 1, label: "TRL 1-3 Lab", color: "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300" },
               ].map((item, idx) => (
                 <button
                   key={idx}
@@ -658,7 +657,7 @@ function ChaoBanCongNgheContent() {
                   className={`py-1.5 px-2 rounded-lg text-xs font-bold border transition text-center ${
                     selectedTrl === item.trl
                       ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100"
+                      : `${item.color} border-slate-200 dark:border-slate-700 hover:opacity-80`
                   }`}
                 >
                   {item.label}
@@ -871,13 +870,13 @@ function ChaoBanCongNgheContent() {
                 return (
                   <div
                     key={offer.id}
-                    className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between border-t-4 border-t-emerald-600"
+                    className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between border-t-4 border-t-emerald-600"
                   >
                     <div>
-                      {/* Media Thumbnail Container (Responsive Aspect Ratio) */}
+                      {/* Media Thumbnail Container (Chuẩn tỷ lệ 16:9 sắc nét) */}
                       <Link
                         href={`/chao-ban-cong-nghe/${offer.id}`}
-                        className="relative block aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-brand-700"
+                        className="relative block aspect-[16/9] w-full overflow-hidden bg-brand-700"
                         title={offer.title}
                       >
                         <Image
@@ -923,8 +922,8 @@ function ChaoBanCongNgheContent() {
 
                       {/* Card Content Body */}
                       <div className="p-3.5 sm:p-4 space-y-2.5">
-                        {/* Compact Offer Code */}
-                        <div className="text-caption font-mono text-slate-400 dark:text-slate-500 font-medium tracking-wide uppercase">
+                        {/* Compact Offer Code Monospace */}
+                        <div className="text-caption font-mono text-slate-500 dark:text-slate-400 font-semibold tracking-wide uppercase">
                           Mã: {offer.offerCode}
                         </div>
 
@@ -985,7 +984,7 @@ function ChaoBanCongNgheContent() {
                       </div>
                     </div>
 
-                    {/* Card Footer: Pricing & Action */}
+                    {/* Card Footer: Pricing & Action Emerald CTA */}
                     <div className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-caption text-slate-400 font-medium">Hình thức thương mại</p>
@@ -994,12 +993,15 @@ function ChaoBanCongNgheContent() {
                         </p>
                       </div>
 
-                      <Link
-                        href={`/chao-ban-cong-nghe/${offer.id}`}
-                        className="bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/70 dark:hover:bg-brand-900 text-brand-700 dark:text-brand-300 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0"
-                      >
-                        Chi tiết hồ sơ <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/chao-ban-cong-nghe/${offer.id}`}
+                          className="bg-[#2D9A85] hover:bg-[#247B6A] text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 shadow-sm active:scale-95"
+                        >
+                          <span>Yêu Cầu Kết Nối</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 );

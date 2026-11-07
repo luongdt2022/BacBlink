@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
+  Check,
+  Copy,
   Handshake,
   MapPin,
   ShieldCheck,
@@ -15,6 +17,10 @@ import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
 import RadarChart from "@/components/RadarChart";
 import { getTechnologyImage } from "@/lib/technology-media";
 import { SectorBannerBackground } from "./SectorBannerBackground";
+import { AppCard } from "@/components/ui/app-card";
+import { AppBadge } from "@/components/ui/app-badge";
+import { AppTabs } from "@/components/ui/app-tabs";
+import { AppButton } from "@/components/ui/design-system";
 
 interface InnovativeProfileProps {
   data: EnterprisePublicDetail;
@@ -36,145 +42,178 @@ export function InnovativeProfile({
   const [activeTab, setActiveTab] = useState<
     "overview" | "innovation" | "products" | "rd" | "ip" | "needs"
   >("overview");
+  const [copiedTaxCode, setCopiedTaxCode] = useState(false);
+
+  const handleCopyTaxCode = () => {
+    if (typeof window !== "undefined" && data.taxCode) {
+      navigator.clipboard.writeText(data.taxCode);
+      setCopiedTaxCode(true);
+      setTimeout(() => setCopiedTaxCode(false), 2500);
+    }
+  };
 
   return (
     <div className="space-y-6">
       {/* ========================================================================= */}
-      {/* HERO CARD: HỒ SƠ DOANH NGHIỆP ĐỔI MỚI SÁNG TẠO (ĐỒNG BỘ BRAND-700) */}
+      {/* PROFILE HERO BANNER CHUẨN BD-04 & NATIONAL INNOVATION HUB */}
       {/* ========================================================================= */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
-        {/* Cover Banner (Đồng bộ chuẩn Brand-700 & Sector Watermark theo Nhóm Ngành) */}
-        <div className="h-44 sm:h-52 bg-brand-700 relative overflow-hidden border-b border-brand-800">
-          <SectorBannerBackground
-            sectorCode={data.sectorCode}
-            sectorName={data.mainSectorName}
-            opacity={0.45}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-900/40 via-transparent to-transparent"></div>
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#1E293B] text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-700/60 relative overflow-hidden">
+        {/* Sector Watermark Background Overlay */}
+        <SectorBannerBackground
+          sectorCode={data.sectorCode}
+          sectorName={data.mainSectorName}
+          opacity={0.15}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
-          <div className="absolute right-4 sm:right-6 top-4 flex items-center gap-2 z-10">
-            <span className="bg-white/15 backdrop-blur-md border border-white/25 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-xs">
+        {/* Top Badges */}
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm">
               <MapPin className="w-3.5 h-3.5 text-teal-300" />
               <span>{data.provinceCity || "Toàn quốc"}</span>
             </span>
-            <span className="bg-teal-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5" />
+            <span className="bg-[#2D9A85]/80 backdrop-blur-md border border-[#2D9A85] text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 text-teal-200" />
               <span>DN Đổi Mới Sáng Tạo</span>
             </span>
           </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/enterprises"
+              className="text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 border border-slate-700 px-3.5 py-1.5 rounded-xl transition"
+            >
+              ← Danh bạ
+            </Link>
+          </div>
         </div>
 
-        {/* Profile Body */}
-        <div className="px-6 sm:px-8 pb-7 relative pt-0">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-5">
-              {/* Brand Logo Avatar (float qua đường biên banner) */}
-              <div className="-mt-14 sm:-mt-16 shrink-0 z-10">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white p-1.5 shadow-lg border-2 border-white relative group">
-                  <EnterpriseAvatar
-                    name={data.name}
-                    sectorName={data.mainSectorName}
-                    sectorCode={data.sectorCode}
-                    website={data.website}
-                    size="lg"
-                  />
-                  {data.isVerified && (
-                    <div
-                      className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-xs"
-                      title="Đã kiểm chứng (Sở KH&CN)"
+        {/* Profile Hero Body */}
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+            {/* Avatar Logo lớn: 112x112px (w-28 h-28), rounded-2xl, viền sáng */}
+            <div className="w-28 h-28 rounded-2xl bg-white p-2 shadow-2xl border-2 border-white/20 shrink-0 relative group flex items-center justify-center">
+              <EnterpriseAvatar
+                name={data.name}
+                sectorName={data.mainSectorName}
+                sectorCode={data.sectorCode}
+                website={data.website}
+                size="lg"
+              />
+              {data.isVerified && (
+                <div
+                  className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-md"
+                  title="Đã xác thực số hóa bởi Sở KH&CN / Viện NacenTech"
+                >
+                  <BadgeCheck className="w-4 h-4" />
+                </div>
+              )}
+            </div>
+
+            {/* Titles & Meta */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-slate-800 text-teal-300 border border-slate-700">
+                  {data.subjectType || "DN ĐMST"}
+                </span>
+
+                {/* Digital Verification Badge */}
+                {data.isVerified ? (
+                  <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 backdrop-blur-md">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Đã xác thực (Sở KH&amp;CN)</span>
+                  </span>
+                ) : (
+                  <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Chờ thẩm định</span>
+                  </span>
+                )}
+
+                {data.tniClassification && (
+                  <span className="bg-blue-500/20 text-blue-300 border border-blue-500/40 px-3 py-1 rounded-full text-xs font-bold">
+                    TNI: {data.tniClassification} ({data.tniScore?.toFixed(1) || "N/A"})
+                  </span>
+                )}
+              </div>
+
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                {data.name}
+              </h1>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-300">
+                {/* Monospace TaxCode with 1-click copy */}
+                <div className="inline-flex items-center gap-1.5">
+                  <span className="text-slate-400">MST:</span>
+                  <span className="font-mono font-semibold tracking-wider text-slate-300 bg-slate-800/80 px-2.5 py-0.5 rounded-md border border-slate-700 select-all">
+                    {data.taxCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyTaxCode}
+                    className="p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition"
+                    title={copiedTaxCode ? "Đã sao chép mã định danh" : "Sao chép MST"}
+                  >
+                    {copiedTaxCode ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  {copiedTaxCode && (
+                    <span className="text-[11px] text-emerald-400 font-semibold animate-pulse">
+                      Đã sao chép mã định danh
+                    </span>
+                  )}
+                </div>
+
+                <span>•</span>
+                <span>
+                  Trụ sở: <strong className="text-white">{data.provinceCity}</strong>
+                </span>
+
+                {data.addressDetail && (
+                  <>
+                    <span>•</span>
+                    <span className="max-w-md truncate" title={data.addressDetail}>
+                      {data.addressDetail}
+                    </span>
+                  </>
+                )}
+
+                {data.website && (
+                  <>
+                    <span>•</span>
+                    <a
+                      href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-teal-300 hover:underline font-medium"
                     >
-                      <BadgeCheck className="w-4 h-4" />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Titles & Badges */}
-              <div className="space-y-1.5 pt-2 sm:pt-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
-                    {data.subjectType || "DN ĐMST"}
-                  </span>
-                  {data.isVerified ? (
-                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>Đã kiểm chứng (Sở KH&CN)</span>
-                    </span>
-                  ) : (
-                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200">
-                      Chờ thẩm định
-                    </span>
-                  )}
-                  {data.tniClassification && (
-                    <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-brand-50 text-brand-700 border border-brand-200">
-                      TNI: {data.tniClassification} ({data.tniScore?.toFixed(1) || "N/A"})
-                    </span>
-                  )}
-                </div>
-
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  {data.name}
-                </h1>
-
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 pt-1">
-                  <span>
-                    Mã Số Thuế: <strong className="text-slate-900 font-mono font-bold">{data.taxCode}</strong>
-                  </span>
-                  <span>•</span>
-                  <span>
-                    Tỉnh/Thành: <strong className="text-slate-900">{data.provinceCity}</strong>
-                  </span>
-                  {data.addressDetail && (
-                    <>
-                      <span>•</span>
-                      <span>
-                        Địa chỉ: <span className="text-slate-800">{data.addressDetail}</span>
-                      </span>
-                    </>
-                  )}
-                  {data.website && (
-                    <>
-                      <span>•</span>
-                      <span>
-                        Website:{" "}
-                        <a
-                          href={data.website.startsWith("http") ? data.website : `https://${data.website}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-brand-600 hover:underline font-medium"
-                        >
-                          {data.website}
-                        </a>
-                      </span>
-                    </>
-                  )}
-                </div>
+                      {data.website}
+                    </a>
+                  </>
+                )}
               </div>
             </div>
+          </div>
 
-            {/* Actions CTA Button Group */}
-            <div className="flex items-center gap-2.5 shrink-0 pt-2 lg:pt-0">
-              <button
-                type="button"
-                onClick={onOpenConnectModal}
-                className="bg-brand-700 hover:bg-brand-800 active:scale-95 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center gap-2 shadow-sm"
-              >
-                <Handshake className="w-4 h-4 text-teal-400" />
-                <span>Đề xuất kết nối</span>
-              </button>
-
-              <Link
-                href="/enterprises"
-                className="text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-xl transition shadow-xs"
-              >
-                ← Trở về
-              </Link>
-            </div>
+          {/* CTA Button Emerald #2D9A85 */}
+          <div className="shrink-0 pt-2 lg:pt-0">
+            <button
+              type="button"
+              onClick={onOpenConnectModal}
+              className="bg-[#2D9A85] hover:bg-[#247B6A] text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:shadow-emerald-900/40 transition active:scale-[0.98] flex items-center gap-2 text-sm"
+            >
+              <Handshake className="w-4 h-4 text-teal-200" />
+              <span>Đặt Lịch Kết Nối R&amp;D</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Tabs Bar */}
+      {/* Tabs Bar Scientific Tabs */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="flex border-b border-slate-200 text-sm font-medium overflow-x-auto">
           <button
@@ -182,7 +221,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("overview")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "overview"
-                ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -193,7 +232,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("innovation")}
             className={`flex-1 min-w-[170px] py-4 text-center border-b-2 transition ${
               activeTab === "innovation"
-                ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -204,7 +243,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("products")}
             className={`flex-1 min-w-[180px] py-4 text-center border-b-2 transition ${
               activeTab === "products"
-                ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -215,7 +254,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("rd")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "rd"
-                ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -226,7 +265,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("ip")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "ip"
-                ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -237,7 +276,7 @@ export function InnovativeProfile({
             onClick={() => setActiveTab("needs")}
             className={`flex-1 min-w-[160px] py-4 text-center border-b-2 transition ${
               activeTab === "needs"
-                ? "border-brand-600 text-brand-600 font-bold bg-brand-50/40"
+                ? "border-[#2D9A85] text-[#2D9A85] font-bold bg-teal-50/40"
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >

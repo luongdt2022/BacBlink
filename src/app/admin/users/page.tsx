@@ -605,22 +605,22 @@ export default function AdminUsersPage() {
           </div>
         }
       >
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-500 font-semibold uppercase text-xs tracking-wider border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">Họ Tên & Danh Tính</th>
-                  <th className="py-3 px-4">Email & SĐT</th>
-                  <th className="py-3 px-4">Cơ Quan / Doanh Nghiệp</th>
-                  <th className="py-3 px-4">Vai Trò (Role)</th>
-                  <th className="py-3 px-4">Phạm Vi (Scope)</th>
-                  <th className="py-3 px-4 text-center">Trạng Thái</th>
-                  <th className="py-3 px-4">Ngày Tạo</th>
-                  <th className="py-3 px-4 text-right">Thao Tác</th>
+                  <th className="py-3.5 px-4">Họ Tên & Danh Tính</th>
+                  <th className="py-3.5 px-4">Email & SĐT</th>
+                  <th className="py-3.5 px-4">Cơ Quan / Doanh Nghiệp</th>
+                  <th className="py-3.5 px-4">Vai Trò (Role)</th>
+                  <th className="py-3.5 px-4">Phạm Vi (Scope)</th>
+                  <th className="py-3.5 px-4 text-center">Trạng Thái</th>
+                  <th className="py-3.5 px-4">Ngày Tạo</th>
+                  <th className="py-3.5 px-4 text-right">Thao Tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-700 dark:text-slate-300">
                 {filteredUsers.map((u) => {
                   const fullName = [u.lastName, u.firstName].filter(Boolean).join(" ") || u.email;
                   const initials = fullName
@@ -633,15 +633,15 @@ export default function AdminUsersPage() {
                   const isRootAdmin = u.email.toLowerCase() === "admin@nacentech.gov.vn";
 
                   return (
-                    <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={u.id} className="hover:bg-blue-50/40 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/60 last:border-0">
                       {/* Name & Avatar */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                             {initials}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                            <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
                               <span>{fullName}</span>
                               {isCurrent && (
                                 <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-700">
@@ -660,20 +660,20 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Email & Phone */}
-                      <td className="py-3 px-4">
-                        <div className="font-mono text-slate-800">{u.email}</div>
+                      <td className="py-3.5 px-4">
+                        <div className="font-mono text-slate-800 dark:text-slate-200">{u.email}</div>
                         <div className="text-[11px] text-slate-400">{u.phone || "—"}</div>
                       </td>
 
                       {/* Organization */}
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-slate-800 line-clamp-1">
+                      <td className="py-3.5 px-4">
+                        <div className="font-medium text-slate-800 dark:text-slate-200 line-clamp-1">
                           {u.organization || "—"}
                         </div>
                       </td>
 
                       {/* Role */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <div>{getRoleBadge(u.platformRole || u.role)}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">
                           {resolveRoleName(u.platformRole || u.role)}
@@ -681,8 +681,8 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* Scope */}
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600">
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300">
                           {u.scopeType === "GLOBAL" && <Building className="w-3 h-3 text-red-500" />}
                           {u.scopeType === "PROVINCE" && <MapPin className="w-3 h-3 text-cyan-600" />}
                           {u.scopeType === "SECTOR" && <Tag className="w-3 h-3 text-amber-500" />}
@@ -697,31 +697,31 @@ export default function AdminUsersPage() {
                         )}
                       </td>
 
-                      {/* Status */}
-                      <td className="py-3 px-4 text-center">
+                      {/* Status Badges Chuẩn Hóa 3 Màu (Emerald, Amber, Rose) */}
+                      <td className="py-3.5 px-4 text-center">
                         {u.isActive ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3" /> Hoạt động
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Hoạt động
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200">
-                            <XCircle className="w-3 h-3" /> Đã khóa
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
+                            <XCircle className="w-3.5 h-3.5" /> Đã khóa
                           </span>
                         )}
                       </td>
 
                       {/* Created Date */}
-                      <td className="py-3 px-4 text-slate-500 text-[11px]">
+                      <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 text-[11px]">
                         {u.createdAt ? new Date(u.createdAt).toLocaleDateString("vi-VN") : "—"}
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* View Detail */}
                           <button
                             onClick={() => void handleOpenDrawer(u)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition"
+                            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition"
                             title="Xem chi tiết 360°"
                           >
                             <Eye className="w-4 h-4" />
@@ -730,7 +730,7 @@ export default function AdminUsersPage() {
                           {/* Edit Profile */}
                           <button
                             onClick={() => handleOpenEdit(u)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition"
+                            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-800 transition"
                             title="Chỉnh sửa thông tin"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -739,7 +739,7 @@ export default function AdminUsersPage() {
                           {/* Reset Password */}
                           <button
                             onClick={() => handleOpenResetPassword(u)}
-                            className="p-1.5 rounded-lg text-slate-600 hover:text-amber-600 hover:bg-amber-50 transition"
+                            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-slate-800 transition"
                             title="Đặt lại mật khẩu"
                           >
                             <KeyRound className="w-4 h-4" />
@@ -777,28 +777,76 @@ export default function AdminUsersPage() {
             </table>
           </div>
 
-          {/* PAGINATION BAR */}
-          <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="text-xs text-slate-500">
-              Hiển thị <span className="font-bold text-slate-800">{filteredUsers.length}</span> trên tổng số{" "}
-              <span className="font-bold text-slate-800">{total}</span> tài khoản
+          {/* DYNAMIC SMART PAGINATION BAR (CHUẨN BD-04) */}
+          <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
+              <span>
+                Hiển thị <span className="font-bold text-slate-800 dark:text-white">{filteredUsers.length > 0 ? (page - 1) * limit + 1 : 0}</span> –{" "}
+                <span className="font-bold text-slate-800 dark:text-white">{Math.min(page * limit, total)}</span> trên tổng số{" "}
+                <span className="font-bold text-slate-800 dark:text-white">{total}</span> tài khoản
+              </span>
+
+              {/* Page size selector */}
+              <div className="flex items-center gap-1.5 ml-2">
+                <span>Số dòng:</span>
+                <select
+                  value={limit}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Smart pagination numbered buttons */}
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shadow-xs"
               >
                 <ChevronLeft className="w-3.5 h-3.5" /> Trước
               </button>
-              <span className="text-xs font-bold text-slate-700 px-2">
-                Trang {page} / {totalPages}
-              </span>
+
+              {/* Numbered page items */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce((acc: (number | string)[], p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) {
+                    acc.push("...");
+                  }
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  typeof p === "string" ? (
+                    <span key={`dots-${idx}`} className="px-1 text-slate-400 text-xs">...</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`w-8 h-8 rounded-lg text-xs font-bold transition flex items-center justify-center ${
+                        page === p
+                          ? "bg-brand-700 text-white shadow-xs"
+                          : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shadow-xs"
               >
                 Sau <ChevronRight className="w-3.5 h-3.5" />
               </button>
