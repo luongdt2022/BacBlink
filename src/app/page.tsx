@@ -802,48 +802,55 @@ export default function HomePage() {
         {/* ========================================================================= */}
         {/* 4. HỆ THỐNG ĐÁNH GIÁ NĂNG LỰC & KHẢO SÁT CÔNG NGHỆ QUỐC GIA (TT17, TNI)     */}
         {/* ========================================================================= */}
-        <section className="bg-white py-10 sm:py-16 lg:py-20 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
+        <section className="bg-gradient-to-b from-white via-slate-50/50 to-white py-12 sm:py-16 lg:py-20 dark:from-slate-950 dark:via-slate-900/60 dark:to-slate-950 border-b border-slate-200 dark:border-slate-800">
           <div className="page-container">
             <div className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-bold text-brand-700 dark:bg-brand-950/80 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1.5 text-xs font-bold text-brand-700 dark:bg-blue-950/80 dark:text-cyan-300 border border-blue-200/80 dark:border-blue-800 shadow-xs">
                 <Sparkles className="size-3.5 text-amber-500" />
                 <span>CÔNG CỤ ĐO LƯỜNG &amp; THẨM ĐỊNH QUỐC GIA</span>
               </div>
-              <h2 className="mt-3.5 sm:mt-4 type-section-title text-text-primary dark:text-white">
+              <h2 className="mt-4 type-section-title text-text-primary dark:text-white">
                 Khảo Sát Nhu Cầu &amp; Đánh Giá Năng Lực Công Nghệ
               </h2>
-              <p className="mt-2.5 sm:mt-3 text-sm sm:text-base leading-relaxed sm:leading-7 text-text-secondary dark:text-slate-300">
+              <p className="mt-3 text-sm sm:text-base leading-relaxed text-text-secondary dark:text-slate-300">
                 Hệ thống công cụ đo lường và định vị chuẩn hóa theo quy chuẩn Bộ Khoa học &amp; Công nghệ, giúp doanh nghiệp, viện nghiên cứu và nhà khoa học đánh giá trình độ công nghệ, bắt mạch nhu cầu và kết nối chuyển giao trực tiếp.
               </p>
             </div>
 
-            <div className="mt-8 sm:mt-12 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 sm:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {/* Card 1: Khảo sát Nhu cầu Công nghệ & Chỉ số TNI */}
-              <article className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-amber-200/80 bg-white p-4 sm:p-6 shadow-xs transition hover:-translate-y-1 hover:border-amber-400 hover:shadow-xl dark:border-amber-900/40 dark:bg-slate-900">
-                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-amber-500/10 blur-xl transition group-hover:bg-amber-500/20" />
+              <AppCard
+                elevation={1}
+                interactive
+                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-amber-200/90 bg-gradient-to-b from-amber-50/40 via-white to-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-400 hover:shadow-xl dark:border-amber-900/50 dark:from-amber-950/20 dark:via-slate-900 dark:to-slate-900"
+              >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full bg-amber-500/10 blur-xl transition group-hover:bg-amber-500/20" />
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    <AppBadge variant="warning" size="sm" className="font-bold flex items-center gap-1 shadow-xs">
                       <Flame className="size-3 text-amber-600" />
-                      Chỉ số TNI
-                    </span>
-                    <span className="text-xs font-bold text-amber-600/70 dark:text-amber-400/60">01</span>
+                      <span>Chỉ số TNI</span>
+                    </AppBadge>
+                    <span className="font-mono text-2xl font-black text-amber-300/80 dark:text-amber-500/40 group-hover:text-amber-500 transition">01</span>
                   </div>
-                  <div className="mt-4 sm:mt-5 flex items-center gap-3">
-                    <div className="grid size-11 sm:size-12 place-items-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300">
-                      <Target className="size-5 sm:size-6" />
+
+                  <div className="mt-5 flex items-center gap-3.5">
+                    <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-md shadow-amber-500/25 shrink-0">
+                      <Target className="size-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-amber-600 transition">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans group-hover:text-amber-600 transition leading-snug">
                         Khảo Sát Nhu Cầu (TNI)
                       </h3>
-                      <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Technology Needs Index</p>
+                      <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Technology Needs Index</p>
                     </div>
                   </div>
-                  <p className="mt-3 text-xs sm:text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+
+                  <p className="mt-3.5 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-sans">
                     Bắt mạch nhu cầu doanh nghiệp, tự động tính toán chỉ số nhu cầu công nghệ (TNI) và kết nối nguồn cung chuyển giao phù hợp.
                   </p>
-                  <ul className="mt-3.5 sm:mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 sm:pt-4 text-xs text-slate-600 dark:text-slate-400">
+
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-amber-600 shrink-0" />
                       <span>Form 4 bước tinh gọn &amp; Auto-lookup MST</span>
@@ -854,90 +861,106 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <div className="mt-5 sm:mt-6 pt-3.5 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
+
+                <div className="mt-6 pt-3.5 border-t border-slate-100 dark:border-slate-800">
                   <Link
                     href="/khao-sat-nhu-cau"
-                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-sm font-bold text-white transition hover:bg-amber-600 shadow-xs"
+                    className="btn-press flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-amber-500/25 transition hover:from-amber-600 hover:to-amber-700 hover:shadow-lg"
                   >
                     <span>Làm Khảo Sát TNI Ngay</span>
-                    <ArrowRight className="size-4" />
+                    <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
-              </article>
+              </AppCard>
 
               {/* Card 2: Đánh giá Năng lực Doanh nghiệp theo TT17 */}
-              <article className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-brand-200/80 bg-white p-4 sm:p-6 shadow-xs transition hover:-translate-y-1 hover:border-brand-400 hover:shadow-xl dark:border-brand-900/40 dark:bg-slate-900">
-                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-brand-500/10 blur-xl transition group-hover:bg-brand-500/20" />
+              <AppCard
+                elevation={1}
+                interactive
+                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-blue-200/90 bg-gradient-to-b from-blue-50/40 via-white to-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-500 hover:shadow-xl dark:border-blue-900/50 dark:from-blue-950/20 dark:via-slate-900 dark:to-slate-900"
+              >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full bg-blue-500/10 blur-xl transition group-hover:bg-blue-500/20" />
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-                      <FileCheck2 className="size-3 text-brand-700" />
-                      Thông tư 17/2019
-                    </span>
-                    <span className="text-xs font-bold text-brand-600/70 dark:text-brand-400/60">02</span>
+                    <AppBadge variant="info" size="sm" className="font-bold flex items-center gap-1 shadow-xs">
+                      <FileCheck2 className="size-3 text-blue-600" />
+                      <span>Thông tư 17/2019</span>
+                    </AppBadge>
+                    <span className="font-mono text-2xl font-black text-blue-300/80 dark:text-blue-500/40 group-hover:text-blue-600 transition">02</span>
                   </div>
-                  <div className="mt-4 sm:mt-5 flex items-center gap-3">
-                    <div className="grid size-11 sm:size-12 place-items-center rounded-xl bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:text-brand-300">
-                      <Award className="size-5 sm:size-6" />
+
+                  <div className="mt-5 flex items-center gap-3.5">
+                    <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-md shadow-blue-600/25 shrink-0">
+                      <Award className="size-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-brand-700 transition">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans group-hover:text-blue-700 transition leading-snug">
                         Đánh Giá Năng Lực TT17
                       </h3>
-                      <p className="text-xs text-brand-700 dark:text-brand-300 font-medium">26 Tiêu Chí • 5 Nhóm THIOC</p>
+                      <p className="text-xs font-semibold text-blue-700 dark:text-cyan-400">26 Tiêu Chí • 5 Nhóm THIOC</p>
                     </div>
                   </div>
-                  <p className="mt-3 text-xs sm:text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+
+                  <p className="mt-3.5 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-sans">
                     Đánh giá trình độ và năng lực công nghệ doanh nghiệp theo Thông tư 17/2019/TT-BKHCN, xếp hạng Tiên tiến, Trung bình hoặc Lạc hậu.
                   </p>
-                  <ul className="mt-3.5 sm:mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 sm:pt-4 text-xs text-slate-600 dark:text-slate-400">
+
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-brand-600 shrink-0" />
+                      <CheckCircle2 className="size-3.5 text-blue-600 shrink-0" />
                       <span>Tính điểm tự động 26 chỉ tiêu định lượng</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-brand-600 shrink-0" />
+                      <CheckCircle2 className="size-3.5 text-blue-600 shrink-0" />
                       <span>Cấp báo cáo thẩm định hồ sơ chính thức</span>
                     </li>
                   </ul>
                 </div>
-                <div className="mt-5 sm:mt-6 pt-3.5 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
+
+                <div className="mt-6 pt-3.5 border-t border-slate-100 dark:border-slate-800">
                   <Link
                     href="/assessments/tt17/wizard"
-                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 py-2.5 text-sm font-bold text-white transition hover:bg-brand-800 shadow-xs"
+                    className="btn-press flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-blue-600/25 transition hover:from-blue-700 hover:to-indigo-800 hover:shadow-lg"
                   >
                     <span>Tự Đánh Giá TT17 Ngay</span>
-                    <ArrowRight className="size-4" />
+                    <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
-              </article>
+              </AppCard>
 
               {/* Card 3: Khảo sát Đổi mới sáng tạo 43 câu (CR-020) */}
-              <article className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-teal-200/80 bg-white p-4 sm:p-6 shadow-xs transition hover:-translate-y-1 hover:border-teal-400 hover:shadow-xl dark:border-teal-900/40 dark:bg-slate-900">
-                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-teal-500/10 blur-xl transition group-hover:bg-teal-500/20" />
+              <AppCard
+                elevation={1}
+                interactive
+                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-teal-200/90 bg-gradient-to-b from-teal-50/40 via-white to-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-500 hover:shadow-xl dark:border-teal-900/50 dark:from-teal-950/20 dark:via-slate-900 dark:to-slate-900"
+              >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full bg-teal-500/10 blur-xl transition group-hover:bg-teal-500/20" />
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                    <AppBadge variant="success" size="sm" className="font-bold flex items-center gap-1 shadow-xs">
                       <Sparkles className="size-3 text-teal-600" />
-                      43 Tiêu Chuẩn ĐMST
-                    </span>
-                    <span className="text-xs font-bold text-teal-600/70 dark:text-teal-400/60">03</span>
+                      <span>43 Tiêu Chuẩn ĐMST</span>
+                    </AppBadge>
+                    <span className="font-mono text-2xl font-black text-teal-300/80 dark:text-teal-500/40 group-hover:text-teal-600 transition">03</span>
                   </div>
-                  <div className="mt-4 sm:mt-5 flex items-center gap-3">
-                    <div className="grid size-11 sm:size-12 place-items-center rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-950/80 dark:text-teal-300">
-                      <ClipboardCheck className="size-5 sm:size-6" />
+
+                  <div className="mt-5 flex items-center gap-3.5">
+                    <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-md shadow-teal-500/25 shrink-0">
+                      <ClipboardCheck className="size-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-teal-600 transition">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans group-hover:text-teal-600 transition leading-snug">
                         Khảo Sát ĐMST (43 Câu)
                       </h3>
-                      <p className="text-xs text-teal-700 dark:text-teal-300 font-medium">8 Nhóm Năng Lực • Chỉ Số TNI</p>
+                      <p className="text-xs font-semibold text-teal-700 dark:text-teal-300">8 Nhóm Năng Lực • Chỉ Số TNI</p>
                     </div>
                   </div>
-                  <p className="mt-3 text-xs sm:text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+
+                  <p className="mt-3.5 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-sans">
                     Tự động chấm điểm 8 nhóm năng lực, tính toán chỉ số TNI tức thời và xuất hồ sơ Radar Chart trong 1-click.
                   </p>
-                  <ul className="mt-3.5 sm:mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 sm:pt-4 text-xs text-slate-600 dark:text-slate-400">
+
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-teal-600 shrink-0" />
                       <span>Autofill hồ sơ pháp nhân SSOT &amp; Khóa MST an toàn</span>
@@ -948,49 +971,57 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <div className="mt-5 sm:mt-6 pt-3.5 sm:pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+
+                <div className="mt-6 pt-3.5 border-t border-slate-100 dark:border-slate-800 space-y-2">
                   <Link
                     href="/khao-sat-dmst"
-                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 py-2.5 text-sm font-bold text-white transition hover:bg-teal-700 shadow-xs"
+                    className="btn-press flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-teal-600/25 transition hover:from-teal-700 hover:to-emerald-700 hover:shadow-lg"
                   >
                     <span>Làm Khảo Sát ĐMST Ngay</span>
-                    <ArrowRight className="size-4" />
+                    <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                   <Link
                     href="/doanh-nghiep-dmst"
-                    className="flex w-full items-center justify-center gap-1 text-xs font-semibold text-slate-500 hover:text-teal-600 py-1"
+                    className="flex w-full items-center justify-center gap-1 text-xs font-semibold text-teal-700 hover:text-teal-800 dark:text-teal-300 py-1 transition"
                   >
                     <span>Xem bảng xếp hạng &amp; danh bạ DN &rarr;</span>
                   </Link>
                 </div>
-              </article>
+              </AppCard>
 
               {/* Card 4: Thang đo Mức độ Sẵn sàng Công nghệ TRL 1-9 */}
-              <article className="group relative flex flex-col justify-between overflow-hidden rounded-xl sm:rounded-2xl border border-emerald-200/80 bg-white p-4 sm:p-6 shadow-xs transition hover:-translate-y-1 hover:border-emerald-400 hover:shadow-xl dark:border-emerald-900/40 dark:bg-slate-900">
-                <div className="absolute -right-6 -top-6 size-28 rounded-full bg-emerald-500/10 blur-xl transition group-hover:bg-emerald-500/20" />
+              <AppCard
+                elevation={1}
+                interactive
+                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/40 via-white to-white p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500 hover:shadow-xl dark:border-emerald-900/50 dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900"
+              >
+                <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full bg-emerald-500/10 blur-xl transition group-hover:bg-emerald-500/20" />
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    <AppBadge variant="success" size="sm" className="font-bold flex items-center gap-1 shadow-xs">
                       <CheckCircle2 className="size-3 text-emerald-600" />
-                      Tiêu chuẩn TRL 1-9
-                    </span>
-                    <span className="text-xs font-bold text-emerald-600/70 dark:text-emerald-400/60">04</span>
+                      <span>Tiêu chuẩn TRL 1-9</span>
+                    </AppBadge>
+                    <span className="font-mono text-2xl font-black text-emerald-300/80 dark:text-emerald-500/40 group-hover:text-emerald-600 transition">04</span>
                   </div>
-                  <div className="mt-4 sm:mt-5 flex items-center gap-3">
-                    <div className="grid size-11 sm:size-12 place-items-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
-                      <Cpu className="size-5 sm:size-6" />
+
+                  <div className="mt-5 flex items-center gap-3.5">
+                    <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-600/25 shrink-0">
+                      <Cpu className="size-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-text-primary dark:text-white group-hover:text-emerald-600 transition">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white font-sans group-hover:text-emerald-600 transition leading-snug">
                         Định Chuẩn TRL 1-9
                       </h3>
-                      <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">Technology Readiness Level</p>
+                      <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Technology Readiness Level</p>
                     </div>
                   </div>
-                  <p className="mt-3 text-xs sm:text-sm leading-relaxed text-text-secondary dark:text-slate-300">
+
+                  <p className="mt-3.5 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-sans">
                     Phân loại 9 cấp độ hoàn thiện từ nghiên cứu phòng thí nghiệm đến thương mại hóa thực tế, gắn huy hiệu xác thực trên từng hồ sơ công nghệ.
                   </p>
-                  <ul className="mt-3.5 sm:mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 sm:pt-4 text-xs text-slate-600 dark:text-slate-400">
+
+                  <ul className="mt-4 space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3.5 text-xs text-slate-600 dark:text-slate-400">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
                       <span>3 giai đoạn: Lab (1-3) &bull; Pilot (4-6) &bull; Market (7-9)</span>
@@ -1001,16 +1032,17 @@ export default function HomePage() {
                     </li>
                   </ul>
                 </div>
-                <div className="mt-5 sm:mt-6 pt-3.5 sm:pt-4 border-t border-slate-100 dark:border-slate-800">
+
+                <div className="mt-6 pt-3.5 border-t border-slate-100 dark:border-slate-800">
                   <Link
                     href="/chao-ban-cong-nghe"
-                    className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 shadow-xs"
+                    className="btn-press flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 py-3 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition hover:from-emerald-700 hover:to-teal-800 hover:shadow-lg"
                   >
                     <span>Khám Phá Công Nghệ Theo TRL</span>
-                    <ArrowRight className="size-4" />
+                    <ArrowRight className="size-4 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
-              </article>
+              </AppCard>
             </div>
           </div>
         </section>
