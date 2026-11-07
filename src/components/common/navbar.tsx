@@ -518,8 +518,8 @@ export function Navbar() {
                       className={`nav-dropdown-menu absolute ${link.alignRight ? "right-0" : "left-0"} top-full pt-2 z-50`}
                       style={isOpen ? { display: "block", visibility: "visible", opacity: 1, pointerEvents: "auto", transform: "translateY(0)" } : undefined}
                     >
-                      <div className="w-84 sm:w-88 rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900 ring-1 ring-black/5">
-                        <div className="space-y-1">
+                      <div className="w-72 sm:w-80 rounded-2xl border border-slate-200/90 bg-white p-1.5 shadow-xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900 ring-1 ring-black/5">
+                        <div className="space-y-0.5">
                           {link.children?.map((subItem) => {
                             const SubIcon = subItem.icon;
                             const isSubActive =
@@ -530,38 +530,31 @@ export function Navbar() {
                                 key={subItem.href}
                                 href={subItem.href}
                                 onClick={() => setOpenDropdown(null)}
-                                className={`group flex items-start gap-3 rounded-xl p-2.5 transition ${
+                                className={`group flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition ${
                                   isSubActive
                                     ? "bg-blue-50 text-brand-900 font-bold dark:bg-slate-800 dark:text-cyan-300"
                                     : "text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/80"
                                 }`}
                               >
-                                <div
-                                  className={`grid size-9 shrink-0 place-items-center rounded-xl transition ${
-                                    isSubActive
-                                      ? "bg-brand-600 text-white shadow-xs"
-                                      : "bg-blue-50 text-brand-700 group-hover:bg-brand-600 group-hover:text-white dark:bg-slate-800 dark:text-cyan-400 dark:group-hover:bg-cyan-500 dark:group-hover:text-slate-950"
-                                  }`}
-                                >
-                                  <SubIcon className="size-4" aria-hidden="true" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-bold leading-tight group-hover:text-brand-700 dark:group-hover:text-cyan-300 transition-colors">
-                                      {subItem.label}
-                                    </span>
-                                    {subItem.badge && (
-                                      <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.2 text-[9px] font-extrabold uppercase text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                                        {subItem.badge}
-                                      </span>
-                                    )}
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div
+                                    className={`grid size-8 shrink-0 place-items-center rounded-lg transition ${
+                                      isSubActive
+                                        ? "bg-brand-600 text-white shadow-xs"
+                                        : "bg-slate-100 text-slate-600 group-hover:bg-brand-600 group-hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-cyan-500 dark:group-hover:text-slate-950"
+                                    }`}
+                                  >
+                                    <SubIcon className="size-4" aria-hidden="true" />
                                   </div>
-                                  {subItem.description && (
-                                    <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-snug">
-                                      {subItem.description}
-                                    </p>
-                                  )}
+                                  <span className="text-xs sm:text-[13px] font-semibold leading-normal group-hover:text-brand-700 dark:group-hover:text-cyan-300 transition-colors">
+                                    {subItem.label}
+                                  </span>
                                 </div>
+                                {subItem.badge && (
+                                  <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-extrabold uppercase text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                    {subItem.badge}
+                                  </span>
+                                )}
                               </Link>
                             );
                           })}
