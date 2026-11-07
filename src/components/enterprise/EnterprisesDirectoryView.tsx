@@ -26,6 +26,7 @@ import {
   Zap,
   Globe,
   ArrowUpDown,
+  ArrowRight,
   Copy,
   Check
 } from "lucide-react";
@@ -889,14 +890,9 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                     </div>
 
                     {/* TẦNG 5: Action Controls */}
-                    <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <Link
-                        href={`/enterprises/${ent.taxCode}`}
-                        className="flex-1 py-2 px-3 text-center rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition"
-                      >
-                        Hồ Sơ Chi Tiết
-                      </Link>
+                    <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                       <button
+                        type="button"
                         onClick={() => {
                           setConnectModalEnt(ent);
                           setConnectResult(null);
@@ -904,10 +900,17 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                           setConnectContact("");
                           setConnectNote("");
                         }}
-                        className="py-2 px-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-sm"
+                        className="btn-press inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:hover:bg-brand-900 dark:text-cyan-300 font-bold text-xs transition cursor-pointer"
                       >
-                        <Send className="w-3 h-3" /> Kết Nối
+                        Kết Nối
                       </button>
+                      <Link
+                        href={`/enterprises/${ent.taxCode}`}
+                        className="inline-flex items-center gap-0.5 font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 dark:hover:text-cyan-300 text-xs transition"
+                      >
+                        <span>Hồ Sơ Chi Tiết</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
                     </div>
                   </div>
                 ))}
