@@ -996,10 +996,9 @@ function ChaoBanCongNgheContent() {
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/chao-ban-cong-nghe/${offer.id}`}
-                          className="bg-[#2D9A85] hover:bg-[#247B6A] text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0 shadow-sm active:scale-95"
+                          className="btn-press inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:hover:bg-brand-900 dark:text-cyan-300 font-bold text-xs transition shrink-0"
                         >
                           <span>Yêu Cầu Kết Nối</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                       </div>
                     </div>

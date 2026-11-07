@@ -736,10 +736,9 @@ export default function PublicDemandsPage() {
 
                             <Link
                               href={`/nhu-cau-cong-nghe/${item.id}`}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#2D9A85] hover:bg-[#247B6A] transition px-3 py-1.5 rounded-xl shadow-sm active:scale-95"
+                              className="btn-press inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:hover:bg-brand-900 dark:text-cyan-300 font-bold text-xs transition shrink-0"
                             >
                               <span>Đề Xuất Giải Pháp</span>
-                              <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>
                         </div>
