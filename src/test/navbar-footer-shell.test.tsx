@@ -361,7 +361,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       expect(screen.getByText(/Cơ quan chủ quản:/i)).toBeInTheDocument();
       expect(screen.getByText(/BỘ KHOA HỌC VÀ CÔNG NGHỆ/i)).toBeInTheDocument();
       expect(screen.getByText(/Đơn vị vận hành:/i)).toBeInTheDocument();
-      expect(screen.getByText(/VIỆN ĐỔI MỚI SÁNG TẠO QUỐC GIA \(NACENTECH\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/VIỆN ĐỔI MỚI SÁNG TẠO QUỐC GIA/i)).toBeInTheDocument();
       expect(screen.getByText(/Địa chỉ: Số 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội/i)).toBeInTheDocument();
       expect(screen.getByText(/Giấy phép thiết lập Cổng TTĐT/i)).toBeInTheDocument();
 

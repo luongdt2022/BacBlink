@@ -46,16 +46,16 @@ export default function GioiThieuPage() {
           <div className="pt-2 flex flex-wrap gap-3">
             <Link
               href="/chao-ban-cong-nghe"
-              className="px-5 py-2.5 rounded-control bg-nacen-green-500 hover:bg-nacen-green-600 text-white text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
+              className="px-5 py-2.5 rounded-control bg-white hover:bg-slate-100 text-brand-700 text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer"
             >
-              <Layers className="w-4 h-4" />
+              <Layers className="w-4 h-4 text-brand-700" />
               <span>Khám Phá Sàn Công Nghệ</span>
             </Link>
             <Link
               href="/experts"
-              className="px-5 py-2.5 rounded-control bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition flex items-center gap-2 backdrop-blur-sm cursor-pointer"
+              className="px-5 py-2.5 rounded-control bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/25 transition flex items-center gap-2 backdrop-blur-sm cursor-pointer"
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-4 h-4 text-white/80" />
               <span>Mạng Lưới Chuyên Gia</span>
             </Link>
           </div>

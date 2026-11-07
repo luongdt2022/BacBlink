@@ -404,16 +404,16 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
           </form>
           {/* Quick CTA Khảo Sát ĐMST (Tối ưu không gian: 1 câu chú thích ngắn gọn + 1 button) */}
           <div className="mt-5 flex flex-wrap items-center gap-3 text-xs">
-            <span className="flex items-center gap-1.5 text-teal-200 font-medium">
-              <Sparkles className="w-4 h-4 text-teal-300 shrink-0" />
+            <span className="flex items-center gap-1.5 text-white/85 font-medium">
+              <Sparkles className="w-4 h-4 text-white/80 shrink-0" />
               Doanh nghiệp của bạn chưa có Điểm ĐMST? Làm bài khảo sát 43 câu để hiển thị trên CSDL Quốc gia và kết nối công nghệ.
             </span>
             <Link
               href="/khao-sat-dmst"
-              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold text-xs transition shadow-md shadow-teal-500/20 whitespace-nowrap"
+              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-brand-700 font-bold text-xs transition shadow-xs whitespace-nowrap"
             >
               <span>Làm khảo sát ngay (15 phút)</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3.5 h-3.5 text-brand-700" />
             </Link>
           </div>
         </div>

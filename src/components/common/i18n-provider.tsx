@@ -29,7 +29,7 @@ const dictionary: Record<Language, Record<string, string>> = {
     role: "Vai trò",
     search_placeholder: "Tìm kiếm công nghệ, bằng sáng chế, chuyên gia...",
     ministry_title: "BỘ KHOA HỌC VÀ CÔNG NGHỆ",
-    institute_title: "VIỆN ĐỔI MỚI SÁNG TẠO QUỐC GIA (NACENTECH)",
+    institute_title: "VIỆN ĐỔI MỚI SÁNG TẠO QUỐC GIA",
     footer_address: "Địa chỉ: Số 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội",
     footer_contact: "Email: contact@nacentech.gov.vn | Hotline: 024.3933.1234",
     footer_rights: "© 2026 NacenTwin - Mạng lưới Đổi mới sáng tạo & Chuyển giao Công nghệ Quốc gia.",
