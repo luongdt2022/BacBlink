@@ -119,20 +119,31 @@ export function useI18n() {
   return context;
 }
 
-export function I18nToggle({ className = "" }: { className?: string }) {
+export function I18nToggle({
+  className = "",
+  variant = "default",
+}: {
+  className?: string;
+  variant?: "default" | "navbar";
+}) {
   const { lang, toggleLang } = useI18n();
+  const isNavbar = variant === "navbar";
 
   return (
     <button
       type="button"
       onClick={toggleLang}
-      className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-control text-label font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition ${className}`}
+      className={`focus-ring inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-control text-label font-semibold transition ${
+        isNavbar
+          ? "text-white bg-white/10 hover:bg-white/20 border border-white/25 rounded-xl font-bold shadow-2xs"
+          : "text-slate-700 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700"
+      } ${className}`}
       title="Chuyển đổi Ngôn ngữ (VI / EN)"
       aria-label={`Chuyển ngôn ngữ sang ${lang === "vi" ? "English" : "Tiếng Việt"}`}
       aria-pressed={lang === "en"}
     >
-      <Globe className="w-3.5 h-3.5 text-brand-700 dark:text-brand-200" />
-      <span>{lang.toUpperCase()}</span>
+      <Globe className={`w-3.5 h-3.5 ${isNavbar ? "text-white/85" : "text-brand-700 dark:text-brand-200"}`} />
+      <span className={isNavbar ? "text-white font-bold" : ""}>{lang.toUpperCase()}</span>
     </button>
   );
 }

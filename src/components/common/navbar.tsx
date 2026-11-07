@@ -586,21 +586,8 @@ export function Navbar() {
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               {/* Language Switcher */}
               <div className="text-white">
-                <I18nToggle />
+                <I18nToggle variant="navbar" />
               </div>
-
-              {/* Theme Toggle Button */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="focus-ring hidden sm:inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-white/85 hover:bg-white/10 hover:text-white transition"
-                aria-label="Chuyển đổi giao diện"
-                title={theme === "light" ? "Chuyển sang Chế độ Tối" : "Chuyển sang Chế độ Sáng"}
-              >
-                {theme === "light" ? <Moon className="size-4" aria-hidden="true" /> : <Sun className="size-4 text-amber-300" aria-hidden="true" />}
-              </button>
-
-              <div className="mx-0.5 hidden h-6 w-px bg-white/20 sm:block" />
 
               {/* User Session */}
               {user ? (
@@ -729,9 +716,9 @@ export function Navbar() {
                 <div className="hidden items-center sm:flex">
                   <Link
                     href="/login"
-                    className="focus-ring inline-flex items-center gap-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 px-4 py-2 text-xs xl:text-sm font-bold text-slate-950 shadow-md transition whitespace-nowrap"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-xl bg-white hover:bg-white/95 px-4 py-2 text-xs xl:text-sm font-bold text-brand-700 shadow-md hover:shadow-lg transition whitespace-nowrap cursor-pointer"
                   >
-                    <LogIn className="size-4" />
+                    <LogIn className="size-4 text-brand-700" />
                     <span>{t("login")}</span>
                   </Link>
                 </div>
@@ -835,9 +822,9 @@ export function Navbar() {
                       <Link
                         href="/login"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="focus-ring flex-1 flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 py-2.5 text-xs font-bold text-slate-950 shadow-xs transition"
+                        className="focus-ring flex-1 flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-white hover:bg-white/95 py-2.5 text-xs font-bold text-brand-700 shadow-xs transition"
                       >
-                        <LogIn className="size-4" />
+                        <LogIn className="size-4 text-brand-700" />
                         <span>{t("login")}</span>
                       </Link>
                       <Link
