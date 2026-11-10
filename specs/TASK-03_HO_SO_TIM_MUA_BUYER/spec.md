@@ -962,3 +962,38 @@ stateDiagram-v2
 
 
 
+
+---
+
+## 11. DELTA V16: CR-2026-TRL-TNI-VERIFY MINH BẠCH PHƯƠNG PHÁP LUẬN CHỈ SỐ TNI (MÔ HÌNH K-L-N-O 304 DN), TÁCH BẠCH XÁC THỰC TNI & CẤM FALLBACK ĐIỂM GIẢ
+
+> **Căn cứ pháp lý & Quyết định PO**: Quyết định `PO-DEC-20261109-01` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 31; Hồ sơ [`CR-2026-TRL-TNI-VERIFY`](../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/deltas/CR-2026-TRL-TNI-VERIFY.md).
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-METH-02`)
+- **`REQ-METH-02` [Minh Bạch Mô Hình Định Lượng 4 Chiều K-L-N-O & Màn Hình Giải Thích Cách Tính TNI]**:
+  1. Tại mọi vị trí nhập liệu khảo sát và xem điểm TNI (`TniRealtimeCalculator.tsx`, `/khao-sat-nhu-cau`, `QuickDemandModal.tsx`, `/nhu-cau-cong-nghe`, `/nhu-cau-cong-nghe/[id]`), hệ thống MUST hiển thị dẫn chứng phương pháp luận: **Mô hình định lượng Năng lực hấp thụ & Cấp thiết công nghệ 4 chiều (K-L-N-O) của NacenTech, được kiểm định thực nghiệm trên bộ dữ liệu 304 Doanh nghiệp Việt Nam và đồng bộ khung Thông tư 17/2019/TT-BKHCN**.
+  2. Tích hợp nút mở `<TniMethodologyModal />` giải thích tường minh:
+     - Công thức toán học: $\text{TNI} = \text{ROUND}\left(\frac{35 \times K + 30 \times L + 20 \times N + 15 \times O}{5}, 0\right)$ (thang điểm 20–100).
+     - Ý nghĩa và thang đo Likert 1–5 của 4 biến số: **K** (Knowledge & Aspiration - 35%), **L** (Learning & Absorption Capacity - 30%), **N** (Need Urgency - 20%), **O** (Openness to Collaboration - 15%).
+     - Bảng 4 phân hạng sẵn sàng chuyển giao (`LOW` < 40, `MEDIUM` 40–59, `HIGH` 60–79, `VERY_HIGH` $\ge 80$) đối chiếu với phân phối thực nghiệm 304 DN và ví dụ tính toán cụ thể.
+
+### 2. Quy Tắc Nghiệp Vụ (`BR-TNI-VERIFY-01`)
+- **`BR-TNI-VERIFY-01` [Quy Tắc Xác Thực Chỉ Số TNI Tách Bạch & Cấm Tuyệt Đối Fallback Điểm Giả]**:
+  1. Khi Buyer tạo nhu cầu công nghệ qua `QuickDemandModal` hoặc `/khao-sat-nhu-cau`, bản ghi `demand_items` được khởi tạo với `tni_verification_status = 'SELF_DECLARED'` (hoặc `'PENDING_VERIFICATION'` nếu đính kèm phiếu khảo sát 5 bước đã ký số).
+  2. Khi Cán bộ Sở KH&CN duyệt nhu cầu tại `/gov/demands` hoặc `gov-approval-queue.tsx`:
+     - Cán bộ có thể phê duyệt cho nhu cầu niêm yết công khai lên sàn (`status = 'VERIFIED'`, `is_public_listed = true`) trong khi giữ `tni_verification_status = 'SELF_DECLARED'`.
+     - Khi Cán bộ đã kiểm tra chi tiết 4 trụ cột K-L-N-O và phiếu khảo sát liên kết (`survey_id`), Cán bộ có thể tích chọn xác thực chỉ số TNI để nâng lên `tni_verification_status = 'VERIFIED_BY_GOV'`, lưu `verified_authority_name` (VD: `"Sở KH&CN TP. Hà Nội"`) và `tni_review_note`.
+  3. **Cấm tuyệt đối Fallback điểm giả (`Zero-Mock TNI`)**: Giao diện danh sách và chi tiết nhu cầu TUYỆT ĐỐI KHÔNG ĐƯỢC dùng biểu thức `item.tniScore || 75`. Nếu `tniScore == null`, hiển thị nhãn `"Chưa đánh giá TNI"`.
+
+### 3. Đặc Tả CSDL (`DB-DEMAND-02`) & Hợp Đồng API (`API-DEMAND-VERIFY-02`)
+- **`DB-DEMAND-02`**: Mở rộng bảng `demand.demand_items` với các cột:
+  - `tni_verification_status VARCHAR(30) NOT NULL DEFAULT 'SELF_DECLARED'` (`SELF_DECLARED` | `PENDING_VERIFICATION` | `VERIFIED_BY_GOV`)
+  - `verified_authority_name VARCHAR(255) NULL`
+  - `tni_review_note TEXT NULL`
+- **`API-DEMAND-VERIFY-02`**:
+  - Các endpoint `GET /api/v1/demands`, `GET /api/v1/public/demands`, `GET /api/v1/demands/{id}` trả về thêm `tniVerificationStatus`, `verifiedAuthorityName`, `tniReviewNote`, và 4 điểm thành phần `scoreK`, `scoreL`, `scoreN`, `scoreO` (JOIN từ `demand.demand_surveys` qua `survey_id`).
+  - Endpoint `POST /api/v1/demands/{id}/verify` (và `/api/v1/gov/demands/{id}/verify`) nhận thêm `tniVerificationDecision` (`"VERIFY_BY_GOV"` | `"KEEP_SELF_DECLARED"`), `verifiedAuthorityName`, `tniReviewNote`.
+
+### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **`AC-TNI-VERIFY-01`**: Tại `/khao-sat-nhu-cau`, `QuickDemandModal` và `/nhu-cau-cong-nghe/[id]`, bấm vào nút `"Phương pháp tính chỉ số TNI"` mở ra Modal hiển thị đầy đủ công thức 4 chiều K-L-N-O, dẫn chứng 304 DN và ví dụ minh họa.
+- **`AC-TNI-VERIFY-02`**: Thẻ nhu cầu trên `/nhu-cau-cong-nghe` và trang chi tiết phân biệt rõ `TNI 82/100 (Tự đánh giá - Chưa kiểm định)` với `✓ TNI 82/100 - Đã thẩm định bởi Sở KH&CN`, hoàn toàn không còn fallback `75`.

@@ -1324,3 +1324,54 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 - **`AC-04-054`**: Hồ sơ vừa được phê duyệt lập tức hiển thị trên Sàn Chào Bán (`/san-pham` và `/chao-ban-cong-nghe`) với trạng thái niêm yết công khai.
 
 
+
+---
+
+## Spec Delta v14: Chuẩn Hóa Dẫn Chứng Phương Pháp Luận TRL, Duyệt Tách Bạch Sản Phẩm vs. Chỉ Số & Nhãn Bảo Chứng (CR-2026-TRL-TNI-VERIFY)
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261109-01` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 31; Sổ cái thay đổi [`CR-2026-TRL-TNI-VERIFY`](./deltas/CR-2026-TRL-TNI-VERIFY.md).  
+> **Phiên bản áp dụng**: v1.12.0  
+> **Trạng thái**: APPLIED  
+
+### 1. Yêu Cầu Chức Năng & Quy Tắc Nghiệp Vụ Bổ Sung
+
+- **`REQ-METH-01` (Minh Bạch Phương Pháp Luận & Hồ Sơ Minh Chứng TRL 1–9)**:
+  - Tại khung khai báo TRL (`ReactiveYellowTrlPanel.tsx` ở Bước 1 & `IpQuadDigitizationCard.tsx` ở Bước 4) và trên trang chi tiết chào bán (`/chao-ban-cong-nghe/[id]`), hệ thống bắt buộc hiển thị dẫn chứng phương pháp luận: **Thang đo NASA TRL 1–9 / Tiêu chuẩn Quốc tế ISO 16290:2013 / Khung thương mại hóa ITRI (Đài Loan) / Thông tư 17/2019/TT-BKHCN**.
+  - Cung cấp nút bấm mở `<TrlMethodologyModal />` trình bày chi tiết định nghĩa 9 mức TRL chia theo 3 giai đoạn (TRL 1–3: Nghiên cứu Lab; TRL 4–6: Thử nghiệm Prototype/Pilot; TRL 7–9: Hoàn thiện & Thương mại hóa) kèm danh mục giấy tờ minh chứng bắt buộc tương ứng từng giai đoạn.
+
+- **`BR-TRL-VERIFY-01` (Khởi Tạo Trạng Thái Xác Thực Chỉ Số TRL & SHTT)**:
+  - Khi Seller gửi duyệt hồ sơ (`SUBMIT_FOR_REVIEW`):
+    * Nếu có đính kèm tài liệu `document_type = 'TRL_EVIDENCE'`, khởi tạo `trl_verification_status = 'PENDING_VERIFICATION'`; nếu chưa có file minh chứng (đối với TRL 1–6), khởi tạo `trl_verification_status = 'SELF_DECLARED'`. (Với TRL $\ge 7$, giữ nguyên `BR-SELLER-02` bắt buộc đính kèm `TRL_EVIDENCE`).
+    * Nếu có khai báo văn bằng SHTT và đính kèm `PATENT_CERT`, khởi tạo `ip_verification_status = 'PENDING_VERIFICATION'`; nếu chưa đính kèm văn bằng thì đặt `'SELF_DECLARED'` (hoặc `'NOT_APPLICABLE'` khi `ip_status = 'NONE'`).
+
+- **`BR-TRL-VERIFY-02` (Quy Tắc Duyệt Tách Bạch Sản Phẩm Lên Sàn vs. Xác Thực Chỉ Số TRL/SHTT)**:
+  - Cán bộ thẩm định (`PROVINCIAL_ADMIN`, `CLUSTER_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`) có quyền phê duyệt cho phép sản phẩm hiển thị công khai lên sàn trước (`Status = 'APPROVED'`, `PublishedAt = UtcNow`) trong khi giữ `TrlVerificationStatus = 'SELF_DECLARED'` hoặc `'PENDING_VERIFICATION'`.
+  - Khi Cán bộ đối chiếu đầy đủ tài liệu `TRL_EVIDENCE` / `PATENT_CERT` và xác nhận đạt chuẩn, hệ thống cập nhật `TrlVerificationStatus = 'VERIFIED_BY_GOV'` (và/hoặc `IpVerificationStatus = 'VERIFIED_BY_GOV'`), lưu tên cơ quan bảo chứng vào `VerifiedAuthorityName` (ví dụ: `"Sở KH&CN TP. Hà Nội"`), `TrlVerifiedBy = UserId`, `TrlVerifiedAt = UtcNow`.
+  - Nếu hồ sơ minh chứng TRL không hợp lệ hoặc khai khống cấp độ nhưng sản phẩm vẫn đủ điều kiện trưng bày thương mại, Cán bộ có thể chọn `TrlVerificationStatus = 'REJECTED_TRL'` kèm `TrlReviewNote` để yêu cầu Seller bổ sung/điều chỉnh mà không bắt buộc gỡ toàn bộ sản phẩm.
+
+- **`BR-TRL-VERIFY-03` (Cập Nhật `BR-SELLER-07` — Sửa Chỉ Số TRL/SHTT Không Làm Rớt Sàn Sản Phẩm Đã Duyệt)**:
+  - Khi hồ sơ đang ở trạng thái `Status = 'APPROVED'` mà Seller cập nhật `trl_level`, `ip_status` hoặc thay thế tài liệu `TRL_EVIDENCE` / `PATENT_CERT`, hệ thống **giữ nguyên** `Status = 'APPROVED'` và `PublishedAt` để không làm gián đoạn giao dịch trên sàn; đồng thời tự động chuyển `trl_verification_status` / `ip_verification_status` về `'PENDING_VERIFICATION'` (nếu có file minh chứng) hoặc `'SELF_DECLARED'` để chờ Cán bộ hậu kiểm lại chỉ số.
+
+### 2. Đặc Tả Dữ Liệu (`DB-TECH-OFFER-02`) & Hợp Đồng API (`API-SELLER-OFFER-04`)
+
+- **`DB-TECH-OFFER-02`**: Mở rộng bảng `technology.seller_technology_offers` với các cột:
+  - `trl_verification_status VARCHAR(30) NOT NULL DEFAULT 'SELF_DECLARED'` (`SELF_DECLARED` | `PENDING_VERIFICATION` | `VERIFIED_BY_GOV` | `REJECTED_TRL`)
+  - `ip_verification_status VARCHAR(30) NOT NULL DEFAULT 'SELF_DECLARED'` (`NOT_APPLICABLE` | `SELF_DECLARED` | `PENDING_VERIFICATION` | `VERIFIED_BY_GOV` | `REJECTED_IP`)
+  - `verified_authority_name VARCHAR(255) NULL`
+  - `trl_verified_by UUID NULL`
+  - `trl_verified_at TIMESTAMPTZ NULL`
+  - `trl_review_note TEXT NULL`
+- **`API-SELLER-OFFER-04`**:
+  - Các API `GET /api/v1/technology-offers`, `GET /api/v1/technology-offers/{id}`, `GET /api/v1/portal/seller/technologies` trả về đầy đủ `trlVerificationStatus`, `ipVerificationStatus`, `verifiedAuthorityName`, `trlVerifiedAt`, `trlReviewNote`.
+  - Endpoint `POST /api/v1/portal/seller/technologies/{id}/review` mở rộng payload nhận:
+    * `action` / `listingDecision`: `"APPROVE"` | `"REJECT"` | `"REQUEST_CHANGES"` | `"REVOKE"`
+    * `trlVerificationDecision`: `"VERIFY_BY_GOV"` | `"KEEP_SELF_DECLARED"` | `"PENDING_VERIFICATION"` | `"REJECT_TRL"` (optional)
+    * `ipVerificationDecision`: `"VERIFY_BY_GOV"` | `"KEEP_SELF_DECLARED"` | `"REJECT_IP"` (optional)
+    * `verifiedAuthorityName`: Chuỗi tên cơ quan thẩm định (mặc định suy luận từ Scope của Cán bộ nếu không truyền)
+    * `trlReviewNote`: Ghi chú thẩm định chỉ số TRL/SHTT.
+
+### 3. Tiêu Chí Chấp Nhận Nghiệm Thu (Acceptance Criteria)
+- **`AC-04-055`**: Tại Bước 1 (`ReactiveYellowTrlPanel`) và trang chi tiết công nghệ (`/chao-ban-cong-nghe/[id]`), người dùng bấm nút `"Phương pháp luận & Hồ sơ minh chứng TRL"` mở ra Modal hiển thị đầy đủ chuẩn NASA/ISO 16290/ITRI/TT17 và bảng 9 mức TRL kèm yêu cầu minh chứng.
+- **`AC-04-056`**: Cán bộ Sở có thể duyệt niêm yết sản phẩm (`Status = 'APPROVED'`) nhưng giữ `TrlVerificationStatus = 'SELF_DECLARED'`; sản phẩm hiển thị trên sàn với nhãn `TRL X/9 (Tự kê khai - Chưa kiểm định)`.
+- **`AC-04-057`**: Khi Cán bộ chọn xác thực TRL (`VERIFY_BY_GOV`), sản phẩm hiển thị nhãn bảo chứng màu xanh ngọc `✓ TRL X/9 - Đã thẩm định bởi [Tên Sở KH&CN]`.
+- **`AC-04-058`**: Khi Seller chỉnh sửa mức TRL của sản phẩm đã `APPROVED`, sản phẩm vẫn tiếp tục hiển thị trên sàn (`Status = 'APPROVED'`), còn nhãn TRL chuyển về trạng thái chờ kiểm định lại (`PENDING_VERIFICATION`).

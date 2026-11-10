@@ -2,7 +2,7 @@
 ## PHÂN HỆ: HỌC LIỆU SỐ & ĐÀO TẠO E-LEARNING (TASK-10)
 
 > **Mã Epic**: `TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING`  
-> **Tổng số tasks**: 23 tasks chia 4 Phases tuần tự (Thi công từng đợt để chống tràn ngữ cảnh).  
+> **Tổng số tasks**: 30 tasks chia 5 Phases tuần tự (27/30 tasks hoàn tất [x] - 90%, 3 tasks Frontend & E2E đang triển khai [ ]).  
 > **Căn cứ kế hoạch**: [`spec.md`](spec.md), [`plan.md`](plan.md).  
 
 ---
@@ -144,3 +144,71 @@
 - [x] `T10-23` `[Test]`: Kiểm Toán Toàn Diện Chốt Chặn (`guard-rails.sh`, `clean-arch-guard`, `traceability-auditor`).
   - Chạy toàn bộ các công cụ kiểm toán tĩnh và ma trận truy vết khép kín `REQ-* ↔ BR-* ↔ DB-* ↔ API-* ↔ UI-* ↔ Test`.
   - *Kiểm chứng*: 0 vi phạm kiến trúc, 0 lỗi biên dịch, TypeScript `tsc --noEmit` 0 lỗi, Spec Linter PASS 100%, sẵn sàng ký duyệt Gate 4 & Gate 5.
+
+---
+
+### PHASE 5: DELTA V1.1 — NÂNG CẤP KHÔNG GIAN HỌC TẬP TƯƠNG TÁC 8 THÀNH PHẦN & PIPELINE ETL 50 BÀI HỌC (CR-2026-028 & PO-DEC-20261110-02) (7 TASKS)
+
+- [x] `T-10.24` `[PERSISTENCE]`: Fact-Sheet & Non-Destructive EF Core Migration Mở Rộng Schema `lms.*`.
+  - Nộp Fact-Sheet Tier-1 tại `.nacen/facts/FACT-CR-2026-028-LMS-INTERACTIVE-DELTA.md` và `.facts/` theo chuẩn `fact-forcing-guard`.
+  - Cấu hình Fluent API trong `LmsEntityConfiguration.cs`: 11 cột mới cho `lms.learning_materials` (tất cả Nullable hoặc có DEFAULT VALUE: `cluster_code`, `cluster_name`, `step_number`, `target_audience`, `preparation_notes`, `expected_outcome`, `pass_score_percent DEFAULT 80`, `learning_objectives_json`, `learning_roadmap_json`, `knowledge_summary_json`, `practice_workbook_json`).
+  - Định nghĩa Fluent API cho 5 bảng con mới: `lms.learning_micro_videos`, `lms.learning_in_video_quizzes`, `lms.learning_practice_rubrics`, `lms.learning_faqs`, `lms.learner_practice_evaluations`.
+  - Đăng ký các `DbSet<...>` vào `NacenTechDbContext.cs`.
+  - Sinh migration `AddLmsInteractiveWorkbookAnd30CoursesDelta` và cập nhật CSDL PostgreSQL 16 thật.
+  - *Kiểm chứng*: Kết nối PostgreSQL 16 (port 55440) kiểm tra đủ 13 bảng schema `lms.*` và 11 cột mới, 18 indexes hoạt động bình thường, không làm gián đoạn bảng hiện hữu.
+
+- [x] `T-10.25` `[BE]`: Cập Nhật Domain Entity `LearningMaterial` & Khởi Tạo 5 Thực Thể Con Mới (`REQ-EL-009..011`, `BR-EL-07..09`).
+  - Mở rộng Aggregate `LearningMaterial.cs` với 11 trường dữ liệu mới và các phương thức cập nhật nội dung tương tác.
+  - Tạo mới 5 Domain Entities tại `SourceCode/backend/modules/lms/Domain/`: `LearningMicroVideo.cs`, `LearningInVideoQuiz.cs`, `LearningPracticeRubric.cs`, `LearningFaq.cs`, `LearnerPracticeEvaluation.cs`.
+  - Cài đặt và cưỡng chế các Domain Invariants: Validate Cụm (`CLUSTER_A`..`CLUSTER_F`), Bước lộ trình ($1..7$), PassScorePercent ($50..100$, mặc định 80/60), Rubric điểm ($0, 1, 2$), giới hạn tối đa 3 micro-videos, 6 in-video quizzes, 7 rubrics, 8 FAQs cho mỗi bài học.
+  - *Kiểm chứng*: `dotnet build SourceCode/backend/NacenTech.sln` thành công 0 lỗi; xUnit test Domain Invariants pass 100% (278/278 tests GREEN).
+
+- [x] `T-10.26` `[BE]`: Mở Rộng DTOs, Application Services & REST APIs Phục Vụ 8 Thành Phần Tương Tác (`REQ-EL-009..011`, `BR-EL-07..09`, `PO-DEC-20261110-02`).
+  - Mở rộng `LmsDtos.cs`: Bổ sung `MicroVideoDto`, `InVideoQuizDto`, `PracticeRubricDto`, `FaqDto`, `PracticeEvaluationResultDto`, `SubmitPracticeEvaluationRequest`; mở rộng `LmsMaterialFilterRequest` (`ClusterCode`, `StepNumber`) và `LearningMaterialDetailDto`.
+  - Nâng cấp `LmsCatalogService.cs`:
+    * Hỗ trợ lọc đồng thời theo `clusterCode` và `stepNumber` tại `GetCatalogAsync`.
+    * Trả về đầy đủ dữ liệu 8 thành phần tại `GetCatalogDetailAsync` (ẩn đáp án đúng in-video quiz với người học chưa trả lời).
+    * Phương thức `SubmitPracticeEvaluationAsync` theo `BR-EL-08`: Tính điểm 7 tiêu chí thang 0–1–2 ($S = \sum p_i$, $0 \le S \le 14$). Khi $S \ge 11 \rightarrow$ mở khóa 2 nút CTA phản biện Chuyên gia (`R50`) và tạo hồ sơ nhu cầu (`TASK-03`); lưu bản ghi vào `lms.learner_practice_evaluations`.
+    * Cập nhật `SubmitQuizAttemptAsync` theo `BR-EL-09` & `Draft 1.docx`: Đạt tỷ lệ $\ge 60\%$ (hoặc `pass_score_percent` của bài) ghi nhận `is_completed = true` và tăng `completion_count`.
+  - Cập nhật `LmsController.cs`: Khai báo endpoint `POST /api/v1/lms/catalog/{id}/practice-evaluations` có kiểm tra Scoped RBAC `LmsSubmitPractice`.
+  - *Kiểm chứng*: Swagger UI hiển thị endpoint mới; LMS Integration Test kiểm chứng đúng logic ngưỡng 11/14 điểm và ghi nhận hoàn thành trên PostgreSQL container thật.
+
+- [x] `T-10.27` `[ETL]`: Xây Dựng Pipeline ETL Nạp 50 Khóa Học Học Thuật & 100 Tài Liệu Đính Kèm Chuẩn BA (`REQ-EL-012`, `BR-EL-09`, `PO-DEC-20261110-02`).
+  - Tuân thủ chỉ đạo PO: KHÔNG tự render/tạo video .mp4 bằng script (video bài giảng thực tế do Chuyên gia trực tiếp upload qua Bàn làm việc quản trị `/portal/expert/elearning` & `/admin/elearning`).
+  - Tạo kịch bản `scripts/etl_lms_30_courses.py` (và `scripts/import_elearning_courses.py`):
+    * Bóc tách toàn diện 30 file Excel trong `Specification/01_DATA_RAW/New temp/*.xlsx` đủ 8 sheets (Tổng quan, Call sheet 3 micro-videos, Câu hỏi tương tác Q1-Q6, Tóm tắt kiến thức, Bài tập tự luyện 10 trắc nghiệm + 3 tự luận, Phiếu thực hành 3 phần A-B-C, Bảng tự chấm 7 tiêu chí, Hỏi đáp 8 FAQs).
+    * Bóc tách 20 bài học Đồ họa (`ĐH`) từ `Draft 1.docx` (Bảng 4.4 và Phụ lục 1 với đầy đủ đề cương 5 ý chính, chuẩn hóa metadata Cụm A–F, Mô-đun M1–M8, Lộ trình LT1–LT5, Biểu mẫu BM01–BM13, Công cụ TĐG01–TĐG05, 4 vai trò chuyên gia).
+    * Xuất bản 100 tệp tài liệu thực tế (.pdf Tóm tắt & .docx Phiếu thực hành) vào `SourceCode/backend/storage/lms/docs/` có mã băm SHA-256.
+    * Nạp PostgreSQL thật và đồng bộ 50 vector search chunks 1024d vào `matching.search_chunks`.
+  - *Kiểm chứng*: Chạy script ETL nạp thành công 50/50 bài học (`EL-001` -> `EL-050`); kiểm tra CSDL có 50 bài học, 150 micro-videos, 226 in-video quizzes, 500 câu trắc nghiệm, 350 rubrics, 400 FAQs, 100 tài liệu đính kèm, 50 vector chunks.
+
+- [x] `T-10.28` `[FE]`: Nâng Cấp Cổng Học Liệu Số Công Khai (`/elearning`) Bộ Lọc Đa Chiều 6 Cụm, 8 Mô-Đun & 5 Lộ Trình (`REQ-EL-009`, `PO-DEC-20261110-02`).
+  - Cập nhật `src/lib/api/lms.ts`: Bổ sung các trường DTOs mới và filter params `clusterCode` (`A`..`F`), `moduleCode` (`M1`..`M8`), `roadmapCode` (`LT1`..`LT5`), `deliveryFormat` (`CG`/`ĐH`), `functionGroup` (`ORIENTATION`/`SPOTLIGHT`/`SKILLS`), `levelCode` (`CB`/`TC`/`NC`).
+  - Cải tạo trang `src/app/elearning/page.tsx`:
+    * Thêm thanh Tab Bar lọc theo 5 Lộ trình học (`LT1`: Nền tảng, `LT2`: Doanh nghiệp bên cầu, `LT3`: Cán bộ hỗ trợ/Sở KH&CN, `LT4`: Viện/Trường bên cung, `LT5`: Chuyên đề tự chọn).
+    * Thêm bộ lọc Dropdown theo 8 Mô-đun năng lực (`M1`–`M8`), 6 Cụm chuyên đề (`A`–`F`), Hình thức (`Chuyên gia CG` vs `Đồ họa ĐH`) và 3 Nhóm chức năng video (`Định hướng công nghệ`, `Technology Spotlight`, `Kỹ năng nghiệp vụ`).
+    * Hiển thị danh mục 50 bài học thực chiến (`EL-001`..`EL-050`) với thẻ Card chuẩn hóa hiển thị nhãn Cụm, Mô-đun, Hình thức, Cấp độ, Chuyên gia phụ trách, Huy hiệu **"✨ Đã nạp tri thức AI"** và thời lượng.
+    * Bọc qua component `<Async>` đảm bảo đủ 5 UX states (Loading skeleton, Empty state có nút xóa bộ lọc, Error retry, Success, Updating).
+  - *Kiểm chứng*: Thao tác lọc đa chiều tức thời trên UI, responsive mượt mà trên 3 viewports.
+
+- [x] `T-10.29` `[FE]`: Xây Dựng Không Gian Học Tập Tương Tác 8 Thành Phần, Thực Hành 13 Biểu Mẫu, Tự Đánh Giá & Chứng Nhận Số (`/elearning/[id]` — `REQ-EL-010`, `REQ-EL-011`, `BR-EL-07`, `BR-EL-08`, `BR-EL-09`).
+  - Tái cấu trúc trang `/elearning/[id]/page.tsx` thành Không Gian Học Tập Tương Tác:
+    * Component `MicroVideoPlaylistPlayer`: Phát Playlist 3 Micro-Videos HTTP 206 kèm CALL SHEET phân cảnh (cho bài CG) hoặc trình phát video chuyên đề (cho bài ĐH).
+    * Component `InVideoQuizModal`: Tự động dừng video khi chạm mốc `triggerSeconds` (`BR-EL-07`), khóa tua; trả lời sai hiện giải thích và chọn lại, trả lời đúng mới mở khóa phát tiếp.
+    * Component `InteractivePracticeWorkbook`: Form thực hành trực tuyến hỗ trợ 13 Biểu mẫu (`BM01`–`BM13`) và 3 câu tự luận tình huống kèm nút xem "Gợi ý đối chiếu của Chuyên gia".
+    * Component `SelfAssessmentRadar`: Tích hợp 5 Công cụ Tự đánh giá (`TĐG01`–`TĐG05`) với Radar Chart 5 trục SVG canvas thuần gợi ý lộ trình học phù hợp.
+    * Component `PracticeRubricSelfScoring`: Bảng tự chấm điểm 7 tiêu chí định lượng (thang 0–1–2). Khi tổng điểm $S \ge 11/14$, tự động mở khóa 2 nút CTA: *"Gửi Chuyên gia phản biện"* (`R50` sang `TASK-05`) và *"Tạo Hồ sơ Nhu cầu Công nghệ"* (pre-fill sang `TASK-03`).
+    * Component `CertificateClaimModal`: Modal nhận Chứng nhận hoàn thành số NACENTECH khi hoàn thành 100% bài học của lộ trình `LT1`..`LT5` (`LmsReceiveCertificate`), có mã định danh duy nhất và QR xác thực trực tuyến.
+    * Component `KnowledgeSummaryTab`: Bảng tóm tắt kiến thức cốt lõi (Core Takeaways).
+    * Component `FaqAccordionTab`: Khung 8 câu hỏi đáp thực tế có tìm kiếm nhanh.
+    * Tab `Trắc nghiệm cuối bài`: Chế độ làm bài trắc nghiệm kèm thông báo đạt chuẩn khi $\ge 60\%$ theo `BR-EL-09` mới (tối thiểu 6/10 câu đúng, tối đa 3 lần làm lại).
+  - *Kiểm chứng*: Kiểm thử tương tác sống trên trình duyệt: video dừng đúng mốc giây, pop-up quiz khóa đúng chuẩn, tự chấm điểm $\ge 11$ mở khóa CTA, nộp quiz $\ge 60\%$ ghi nhận hoàn thành, modal cấp Chứng nhận số hoạt động chính xác. Đạt Ruthless Visual QA $\ge 8.5/10$.
+
+- [ ] `T-10.30` `[TEST]`: Bộ Kiểm Thử 4 Tầng Toàn Diện & Kiểm Toán Zero-Mock Đạt Chuẩn Gate 4 & 5 (`REQ-EL-009..012`, `BR-EL-07..09`).
+  - **Tầng 1 (Unit Invariants Test - xUnit/Vitest)**: Kiểm thử 100% quy tắc nghiệp vụ `BR-EL-07` (khóa video và pop-up quiz), `BR-EL-08` (ngưỡng 11/14 điểm mở khóa CTA kép), `BR-EL-09` (ngưỡng 60% hoàn thành trắc nghiệm cuối bài, tối đa 3 lần làm lại), cấp Chứng nhận số NACENTECH theo Lộ trình `LT1`..`LT5` (`LmsReceiveCertificate`).
+  - **Tầng 2 (Contract & Schema Test)**: Kiểm tra tương thích DTOs giữa Backend .NET API và TypeScript Client, đối soát JSON schema cho 50 bài học, 8 Mô-đun, 5 Lộ trình, 13 Biểu mẫu và 5 Công cụ Tự đánh giá.
+  - **Tầng 3 (DB Integration Test)**: Kiểm tra toàn vẹn dữ liệu 50 bài học (`EL-001`..`EL-050`) nạp vào PostgreSQL 16 thật, 100 tệp tài liệu trong `storage/lms/docs/` và 50 vector search chunks trong `matching.search_chunks`.
+  - **Tầng 4 (Playwright E2E Visual QA Test)**: Chạy kịch bản E2E toàn trình trên Chromium sống: Lọc bài học theo Lộ trình `LT2` / Mô-đun `M1` $\rightarrow$ Mở bài $\rightarrow$ Xem video và giải câu hỏi Pop-up Quiz tại `triggerSeconds` $\rightarrow$ Làm bài thực hành BM / Tự đánh giá Radar $\rightarrow$ Tự chấm rubric $\ge 11/14$ điểm mở khóa CTA $\rightarrow$ Làm trắc nghiệm cuối bài đạt $\ge 60\%$ $\rightarrow$ Nhận Chứng nhận số NACENTECH $\rightarrow$ Đối soát CSDL thật ghi nhận `is_completed = true`.
+  - Chạy các công cụ kiểm toán tĩnh: `guard-rails.sh`, `clean-arch-guard`, `spec-linter.py`, `traceability-auditor`.
+  - *Kiểm chứng*: 100% Tests Green (0 failure), không mock ngầm, sẵn sàng ký duyệt Gate 4 & Gate 5.
+

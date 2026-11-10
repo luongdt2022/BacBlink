@@ -284,3 +284,33 @@
 | **`AC-01-005`** | Sector Chips Taxonomy | Dữ liệu Master Data trả về danh mục lĩnh vực | Tải thanh Hero Search trang chủ | Hiển thị các chip lĩnh vực động nạp từ API Master Data, click chip tự động filter kết quả tìm kiếm tương ứng. |
 
 
+
+---
+
+## Spec Delta v4: Hệ Thống Nhãn Bảo Chứng Chỉ Số TRL & TNI Đồng Nhất Toàn Sàn (CR-2026-TRL-TNI-VERIFY)
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261109-01` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 31; Hồ sơ [`CR-2026-TRL-TNI-VERIFY`](../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/deltas/CR-2026-TRL-TNI-VERIFY.md).
+
+### 1. Yêu Cầu Chức Năng & Quy Tắc Nghiệp Vụ (`REQ-BADGE-UNIFIED-01`, `BR-BADGE-DISPLAY-01`)
+
+- **`REQ-BADGE-UNIFIED-01` [Chuẩn Hóa Component `<IndexVerificationBadge />` Trên Trang Chủ & Các Trang Danh Mục/Chi Tiết]**:
+  - Toàn bộ các vị trí hiển thị chỉ số TRL, SHTT và TNI trên Trang chủ (`/`), Danh sách Chào bán (`/chao-ban-cong-nghe`), Chi tiết Chào bán (`/chao-ban-cong-nghe/[id]`), Danh sách Nhu cầu (`/nhu-cau-cong-nghe`) và Chi tiết Nhu cầu (`/nhu-cau-cong-nghe/[id]`) MUST sử dụng quy chuẩn hiển thị đồng nhất qua `<IndexVerificationBadge />`.
+  - Trên Trang chủ (`src/app/page.tsx`):
+    * Thẻ Chào bán công nghệ (`offers`) hiển thị mức TRL kèm trạng thái xác thực (`trlVerificationStatus`, `verifiedAuthorityName`).
+    * Thẻ Nhu cầu đặt hàng (`demands`) hiển thị điểm TNI (nếu có `tniScore`) kèm trạng thái xác thực (`tniVerificationStatus`, `verifiedAuthorityName`) thay vì ghi đè bằng chuỗi ngân sách.
+
+- **`BR-BADGE-DISPLAY-01` [Quy Tắc Phân Biệt Thị Giác Rõ Ràng Giữa "Tự Kê Khai" và "Đã Thẩm Định Bởi Cơ Quan Nhà Nước"]**:
+  1. **Khi chỉ số ĐÃ ĐƯỢC THẨM ĐỊNH (`VERIFIED_BY_GOV`)**:
+     - Màu sắc & Biểu tượng: Tone xanh ngọc bảo chứng (`bg-emerald-50 text-emerald-800 border-emerald-300`), icon `ShieldCheck` / dấu tích `✓`.
+     - Nhãn rút gọn (Compact trên Thẻ Card Trang chủ / Danh sách): `✓ TRL {X}/9 · Đã thẩm định` hoặc `✓ TNI {Score}/100 · Đã thẩm định` (hover hiển thị tooltip đầy đủ tên cơ quan duyệt `VerifiedAuthorityName`).
+     - Nhãn đầy đủ (Full trên Trang chi tiết): `✓ TRL {X}/9 — Đã thẩm định bởi {VerifiedAuthorityName || 'Sở KH&CN'}` hoặc `✓ TNI {Score}/100 — Đã xác thực bởi {VerifiedAuthorityName || 'Sở KH&CN'}`.
+  2. **Khi chỉ số CHƯA ĐƯỢC THẨM ĐỊNH (`SELF_DECLARED` hoặc `PENDING_VERIFICATION`)**:
+     - Màu sắc & Biểu tượng: Tone trung tính/cảnh báo nhẹ (`bg-amber-50/90 text-amber-800 border-amber-300 border-dashed` hoặc `bg-slate-100 text-slate-700 border-slate-300`), icon `Clock` / `Info`.
+     - Nhãn rút gọn (Compact trên Thẻ Card Trang chủ / Danh sách): `TRL {X}/9 · Tự kê khai` hoặc `TNI {Score}/100 · Tự đánh giá`.
+     - Nhãn đầy đủ (Full trên Trang chi tiết): `TRL {X}/9 (Tự kê khai - Chưa kiểm định)` hoặc `TNI {Score}/100 (Tự đánh giá - Chưa kiểm định)`.
+  3. **Khi chỉ số BỊ BÁC BỎ (`REJECTED_TRL`)**:
+     - Không hiển thị huy hiệu TRL tự khai trên thẻ công khai; chỉ hiển thị cảnh báo nội bộ trong Workspace của Seller để yêu cầu cập nhật lại minh chứng.
+
+### 2. Tiêu Chí Chấp Nhận Nghiệm Thu (Acceptance Criteria)
+- **`AC-01-006`**: Trên Trang chủ (`/`), thẻ công nghệ có `trlVerificationStatus = 'SELF_DECLARED'` hiển thị rõ `TRL X/9 · Tự kê khai`; thẻ có `trlVerificationStatus = 'VERIFIED_BY_GOV'` hiển thị `✓ TRL X/9 · Đã thẩm định` kèm tooltip tên Sở KH&CN.
+- **`AC-01-007`**: Bấm vào biểu tượng thông tin `(?)` cạnh nhãn TRL hoặc TNI trên trang chi tiết sẽ mở ngay `<TrlMethodologyModal />` hoặc `<TniMethodologyModal />` giải thích cách tính và cơ sở pháp lý.

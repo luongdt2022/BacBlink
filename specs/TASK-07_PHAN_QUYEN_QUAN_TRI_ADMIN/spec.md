@@ -768,3 +768,35 @@ Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản 
 - **AC-USER-03**: Thao tác Sửa thông tin và Đặt lại mật khẩu gọi đúng API backend và cập nhật UI ngay lập tức.
 - **AC-USER-04**: Thao tác Khóa tài khoản mở modal yêu cầu nhập lý do, sau khi khóa hiển thị badge đỏ "Đang bị khóa" và cập nhật `isActive = false` trong CSDL.
 - **AC-USER-05**: Khi đăng nhập với tài khoản Super Admin hiện tại, nút khóa trên dòng của chính mình bị disable và ngăn chặn thao tác.
+
+---
+
+## Spec Delta v15 (CR-2026-TRL-TNI-VERIFY): Hiển Thị Trực Tiếp Giấy Tờ Minh Chứng & Cơ Chế Duyệt Tách Bạch 2 Tầng (Sản Phẩm vs. Chỉ Số TRL/SHTT/TNI)
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261109-01` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 31; Hồ sơ [`CR-2026-TRL-TNI-VERIFY`](../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/deltas/CR-2026-TRL-TNI-VERIFY.md).
+
+### 1. Yêu Cầu Chức Năng Cổng Công Vụ & Quản Trị (`REQ-GOV-DECOUPLED-01`, `REQ-GOV-DECOUPLED-02`)
+
+- **`REQ-GOV-DECOUPLED-01` [Kiểm Tra Trực Tiếp Hồ Sơ Minh Chứng & Duyệt Tách Bạch Chào Bán Công Nghệ]**:
+  1. Tại Modal thẩm định hồ sơ chào bán (`TECHNOLOGY_OFFER`) trong `gov-approval-queue.tsx` (dùng tại `/gov`, `/gov/approvals`, `/admin/approvals`):
+     - Hệ thống MUST hiển thị danh sách đầy đủ tất cả các tài liệu minh chứng do Seller đính kèm (`documents` gồm `TRL_EVIDENCE` - Minh chứng TRL, `PATENT_CERT` - Văn bằng SHTT, `CATALOGUE` - Tài liệu kỹ thuật), kèm phân loại, dung lượng và nút **`[Xem trực tiếp / Tải tài liệu]`** (`fileUrl`).
+     - Tích hợp nút mở nhanh `<TrlMethodologyModal />` để Cán bộ đối chiếu tiêu chuẩn minh chứng của cấp TRL mà Seller đang kê khai.
+  2. Tách khu vực ra quyết định của Cán bộ thành **2 tầng độc lập**:
+     - **Tầng 1 — Quyết định Niêm yết Sản phẩm/Công nghệ lên Sàn (`ListingDecision`)**:
+       * `APPROVE`: Cho phép hiển thị sản phẩm công khai lên Sàn ngay lập tức.
+       * `REQUEST_CHANGES`: Yêu cầu chỉnh sửa nội dung hồ sơ ($\ge 10$ ký tự).
+       * `REJECT`: Từ chối niêm yết ($\ge 10$ ký tự).
+     - **Tầng 2 — Quyết định Thẩm định & Bảo chứng Chỉ số TRL / SHTT (`TrlVerificationDecision` & `IpVerificationDecision`)** (hiển thị khi chọn `APPROVE` niêm yết):
+       * `VERIFY_BY_GOV`: Xác nhận hồ sơ minh chứng hợp lệ, cấp nhãn bảo chứng `✓ Đã thẩm định bởi [Tên Sở KH&CN / Cơ quan]`.
+       * `KEEP_SELF_DECLARED`: Cho phép sản phẩm lên sàn trước nhưng giữ nhãn chỉ số ở trạng thái `Tự kê khai - Chưa kiểm định` (khi chưa đủ căn cứ hội đồng hoặc cần hậu kiểm sau).
+       * `REJECT_TRL`: Bác bỏ mức TRL tự khai khống, yêu cầu Seller bổ sung bằng chứng thử nghiệm.
+
+- **`REQ-GOV-DECOUPLED-02` [Kiểm Tra Chi Tiết Khảo Sát K-L-N-O & Duyệt Tách Bạch Chỉ Số TNI Cho Nhu Cầu]**:
+  1. Tại màn hình quản lý nhu cầu địa bàn (`/gov/demands/page.tsx`) và Modal duyệt `DEMAND` trong `gov-approval-queue.tsx`:
+     - Hiển thị bảng phân rã 4 điểm trụ cột **K (35%) - L (30%) - N (20%) - O (15%)**, mức độ sẵn sàng và liên kết tới phiếu khảo sát gốc (`surveyId`).
+     - Cho phép Cán bộ chọn: (A) **Duyệt niêm yết nhu cầu lên sàn (`Status = 'VERIFIED'`)** kèm giữ nguyên `TniVerificationStatus = 'SELF_DECLARED'`, hoặc (B) **Duyệt niêm yết & Xác thực luôn chỉ số TNI (`TniVerificationStatus = 'VERIFIED_BY_GOV'`)** kèm tên Sở KH&CN thẩm định.
+
+### 2. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **`AC-GOV-DEC-01`**: Mở Modal thẩm định một hồ sơ công nghệ trong `/gov/approvals`, Cán bộ nhìn thấy danh sách toàn bộ file `TRL_EVIDENCE` và `PATENT_CERT` kèm nút bấm mở xem/tải file thật.
+- **`AC-GOV-DEC-02`**: Cán bộ chọn `"Duyệt niêm yết lên sàn"` + `"Giữ TRL ở trạng thái Tự kê khai (Chưa kiểm định)"` và bấm Xác nhận $\rightarrow$ Sản phẩm xuất hiện trên `/chao-ban-cong-nghe` với nhãn `TRL X/9 · Tự kê khai`.
+- **`AC-GOV-DEC-03`**: Cán bộ chọn `"Duyệt niêm yết lên sàn"` + `"Xác thực chỉ số TRL & SHTT đạt chuẩn"` $\rightarrow$ Sản phẩm xuất hiện trên sàn với nhãn `✓ TRL X/9 · Đã thẩm định bởi Sở KH&CN...`.
