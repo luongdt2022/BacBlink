@@ -425,10 +425,15 @@ public sealed class LmsManagementService(
     private async Task<LearningMaterial?> LoadMaterialWithAllRelationsAsync(Guid id, CancellationToken ct)
     {
         return await db.Set<LearningMaterial>()
+            .AsSplitQuery()
             .Include(x => x.Instructors.OrderBy(i => i.DisplayOrder))
             .Include(x => x.QuizQuestions.OrderBy(q => q.DisplayOrder))
             .Include(x => x.Attachments.OrderBy(a => a.DisplayOrder))
             .Include(x => x.DbLinks.OrderBy(l => l.DisplayOrder))
+            .Include(x => x.MicroVideos.OrderBy(v => v.VideoOrder))
+            .Include(x => x.InVideoQuizzes.OrderBy(q => q.DisplayOrder))
+            .Include(x => x.PracticeRubrics.OrderBy(r => r.CriterionNumber))
+            .Include(x => x.Faqs.OrderBy(f => f.QuestionNumber))
             .Include(x => x.ModerationLogs.OrderByDescending(m => m.OccurredAt))
             .FirstOrDefaultAsync(x => x.Id == id, ct);
     }

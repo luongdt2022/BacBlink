@@ -250,4 +250,199 @@ public sealed class LmsBackendIntegrationTests(PostgresFixture fixture)
             final.DeletedAt.ShouldNotBeNull();
         }
     }
+
+    [Fact]
+    public async Task Lms_InteractiveWorkbook_RubricEvaluation_And_Quiz80Percent_IntegrationTest()
+    {
+        var expertProfileId = Guid.CreateVersion7();
+
+        await using var expertProvider = CreateProvider(fixture, new TestActor
+        {
+            PersonId = _expertA,
+            Email = "expert.a@nacentech.vn",
+            PlatformRole = PlatformRoles.VerifiedExpert,
+            ScopeType = ScopeTypes.Sector,
+            ScopeId = "CN_THONG_TIN"
+        });
+
+        Guid materialId;
+
+        // 1. Tạo và công khai bài học có đầy đủ 8 thành phần tương tác
+        using (var scope = expertProvider.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
+            var materialCode = $"MAT-CR028-{Guid.NewGuid():N}"[..25];
+            var material = new LearningMaterial(
+                materialCode,
+                "Khóa học Thực chiến ĐMST Cụm A Bước 2",
+                LmsLessonTypes.TypeA,
+                45,
+                "<p>Mô tả chi tiết bài học tương tác</p>",
+                _expertA,
+                "TS. Nguyễn Văn Chuyên Gia",
+                videoStorageKey: "videos/interactive.mp4",
+                videoFileName: "interactive.mp4",
+                videoFileSize: 200_000_000);
+
+            material.AddInstructor(new LearningMaterialInstructor(
+                material.Id, expertProfileId, "TS. Nguyễn Văn Chuyên Gia", "Tiến sĩ", "Viện NacenTech", isLead: true));
+
+            material.SetClusterAndStep(LmsClusters.ClusterA, "Cụm A: Năng lượng Xanh", 2);
+            material.SetExtendedContent(
+                "Doanh nghiệp công nghệ", "Đã học bài 01", "Nắm vững quy trình đánh giá", 80,
+                "[{\"code\":\"M1\",\"text\":\"Mục tiêu 1\"}]",
+                "[{\"step\":1,\"title\":\"Lộ trình bước 1\"}]",
+                "{\"summary\":\"Tóm tắt kiến thức cốt lõi\"}",
+                "{\"workbook\":\"Đề bài thực hành 3 phần A, B, C\"}");
+
+            // 3 micro-videos
+            for (int i = 1; i <= 3; i++)
+            {
+                material.AddMicroVideo(new LearningMicroVideo(
+                    material.Id, i, $"02.{i}", $"Video {i}: Phần chuyên đề {i}", 300,
+                    videoStorageKey: $"videos/02_{i}.mp4", videoFileName: $"02_{i}.mp4"));
+            }
+
+            // 6 in-video quizzes
+            for (int i = 1; i <= 6; i++)
+            {
+                material.AddInVideoQuiz(new LearningInVideoQuiz(
+                    material.Id, $"Q{i}", i * 50, $"Câu hỏi tương tác {i}?",
+                    "A", "B", "C", "D", 'A', $"Giải thích {i}"));
+            }
+
+            // 7 rubrics
+            for (int i = 1; i <= 7; i++)
+            {
+                material.AddPracticeRubric(new LearningPracticeRubric(
+                    material.Id, i, $"Tiêu chí {i}", "0: Chưa đạt", "1: Đạt một phần", "2: Đạt rõ ràng"));
+            }
+
+            // 8 FAQs
+            for (int i = 1; i <= 8; i++)
+            {
+                material.AddFaq(new LearningFaq(material.Id, i, $"FAQ {i}?", $"Trả lời FAQ {i}."));
+            }
+
+            // 10 câu trắc nghiệm cuối bài
+            for (int i = 1; i <= 10; i++)
+            {
+                material.AddQuizQuestion(new LearningQuizQuestion(
+                    material.Id, i, $"Câu hỏi trắc nghiệm {i}?", "A", "B", "C", "D", 'A', $"Giải thích {i}"));
+            }
+
+            material.Publish(_expertA, "TS. Nguyễn Văn Chuyên Gia");
+
+            db.LearningMaterials.Add(material);
+            await db.SaveChangesAsync();
+            materialId = material.Id;
+        }
+
+        // 2. Người học truy vấn Catalog với bộ lọc Cụm A và Bước 2
+        await using var learnerProvider = CreateProvider(fixture, new TestActor
+        {
+            PersonId = _learner,
+            Email = "hocvien.cr028@nacentech.vn",
+            PlatformRole = PlatformRoles.User
+        });
+
+        using (var scope = learnerProvider.CreateScope())
+        {
+            var catalog = scope.ServiceProvider.GetRequiredService<ILmsCatalogService>();
+
+            // Lọc đúng Cụm A và Bước 2
+            var filterResult = await catalog.GetCatalogAsync(new LmsMaterialFilterRequest
+            {
+                ClusterCode = LmsClusters.ClusterA,
+                StepNumber = 2
+            });
+            filterResult.Materials.Items.Any(m => m.Id == materialId).ShouldBeTrue();
+
+            // Lọc sai Cụm B -> không thấy bài học này
+            var emptyResult = await catalog.GetCatalogAsync(new LmsMaterialFilterRequest
+            {
+                ClusterCode = LmsClusters.ClusterB,
+                StepNumber = 2
+            });
+            emptyResult.Materials.Items.Any(m => m.Id == materialId).ShouldBeFalse();
+
+            // Xem chi tiết bài học: Kiểm tra đủ 8 cấu phần và in-video quiz có đáp án để kiểm tra tức thì (BR-EL-07)
+            var detail = await catalog.GetCatalogDetailAsync(materialId, _learner, false);
+            detail.MicroVideos.ShouldNotBeNull();
+            detail.MicroVideos.Count.ShouldBe(3);
+            detail.InVideoQuizzes.ShouldNotBeNull();
+            detail.InVideoQuizzes.Count.ShouldBe(6);
+            detail.InVideoQuizzes[0].CorrectOption.ShouldBe('A'); // Formative checkpoint có đáp án kiểm tra tức thì
+            detail.QuizQuestions[0].CorrectOption.ShouldBe(' '); // Summative quiz cuối bài ẩn đáp án đúng!
+            detail.PracticeRubrics.ShouldNotBeNull();
+            detail.PracticeRubrics.Count.ShouldBe(7);
+            detail.Faqs.ShouldNotBeNull();
+            detail.Faqs.Count.ShouldBe(8);
+            detail.QuizQuestions.Count.ShouldBe(10);
+
+            // 3. Tự chấm điểm thực hành BR-EL-08
+            // Lần 1: Điểm 10/14 (< 11) -> Chưa mở khóa CTA
+            var evalResultFail = await catalog.SubmitPracticeEvaluationAsync(materialId, _learner, new SubmitPracticeEvaluationRequest
+            {
+                RubricScores = new Dictionary<int, int>
+                {
+                    [1] = 2, [2] = 2, [3] = 2, [4] = 2, [5] = 1, [6] = 1, [7] = 0 // Tổng 10đ
+                },
+                RequestExpertConsultation = true
+            });
+            evalResultFail.TotalScore.ShouldBe(10);
+            evalResultFail.IsUnlockedCta.ShouldBeFalse();
+            evalResultFail.UnlockedExpertReviewCta.ShouldBeFalse();
+            evalResultFail.UnlockedDemandCreateCta.ShouldBeFalse();
+
+            // Lần 2: Điểm 12/14 (>= 11) -> Mở khóa CTA kép thành công!
+            var evalResultPass = await catalog.SubmitPracticeEvaluationAsync(materialId, _learner, new SubmitPracticeEvaluationRequest
+            {
+                RubricScores = new Dictionary<int, int>
+                {
+                    [1] = 2, [2] = 2, [3] = 2, [4] = 2, [5] = 2, [6] = 2, [7] = 0 // Tổng 12đ
+                },
+                RequestExpertConsultation = true,
+                CreateDemandProfile = true
+            });
+            evalResultPass.TotalScore.ShouldBe(12);
+            evalResultPass.IsUnlockedCta.ShouldBeTrue();
+            evalResultPass.UnlockedExpertReviewCta.ShouldBeTrue();
+            evalResultPass.UnlockedDemandCreateCta.ShouldBeTrue();
+
+            // 4. Làm bài trắc nghiệm cuối bài BR-EL-09:
+            // Đúng 7/10 câu (70% < 80%) -> Passed = false, chưa hoàn thành
+            var quizIds = detail.QuizQuestions.Select(q => q.Id!.Value).ToList();
+            var answersFail = new Dictionary<Guid, char>();
+            for (int i = 0; i < 7; i++) answersFail[quizIds[i]] = 'A'; // 7 câu đúng
+            for (int i = 7; i < 10; i++) answersFail[quizIds[i]] = 'B'; // 3 câu sai
+
+            var quizResultFail = await catalog.SubmitQuizAttemptAsync(materialId, _learner, new SubmitQuizAttemptRequest
+            {
+                Answers = answersFail
+            });
+            quizResultFail.ScorePercent.ShouldBe(70);
+            quizResultFail.Passed.ShouldBeFalse();
+
+            var progressBefore = await catalog.GetLearnerProgressAsync(materialId, _learner);
+            progressBefore.ShouldNotBeNull();
+            progressBefore.IsCompleted.ShouldBeFalse();
+
+            // Đúng 8/10 câu (80% >= 80%) -> Passed = true, ghi nhận is_completed = true!
+            var answersPass = new Dictionary<Guid, char>();
+            for (int i = 0; i < 8; i++) answersPass[quizIds[i]] = 'A'; // 8 câu đúng
+            for (int i = 8; i < 10; i++) answersPass[quizIds[i]] = 'B'; // 2 câu sai
+
+            var quizResultPass = await catalog.SubmitQuizAttemptAsync(materialId, _learner, new SubmitQuizAttemptRequest
+            {
+                Answers = answersPass
+            });
+            quizResultPass.ScorePercent.ShouldBe(80);
+            quizResultPass.Passed.ShouldBeTrue();
+
+            var progressAfter = await catalog.GetLearnerProgressAsync(materialId, _learner);
+            progressAfter.ShouldNotBeNull();
+            progressAfter.IsCompleted.ShouldBeTrue();
+        }
+    }
 }

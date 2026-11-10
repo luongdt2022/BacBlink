@@ -115,6 +115,29 @@ public sealed class FileContentController(IDataRoomService dataRoom, IObjectStor
 
         // Fallback trực tiếp tới IObjectStorage cho học liệu LMS và các file lưu trữ tĩnh
         var directStream = await storage.OpenReadAsync(key, ct);
+        if (directStream is null && !key.StartsWith("lms/", StringComparison.OrdinalIgnoreCase))
+        {
+            directStream = await storage.OpenReadAsync($"lms/{key}", ct);
+        }
+        if (directStream is null)
+        {
+            // Kiểm tra thư mục storage tại cấp SourceCode/backend/storage/
+            var normalizedKey = key.Replace('/', Path.DirectorySeparatorChar);
+            var candidatePaths = new[]
+            {
+                Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "storage", normalizedKey)),
+                Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "storage", "lms", normalizedKey)),
+                Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "storage", "lms", normalizedKey))
+            };
+            foreach (var cp in candidatePaths)
+            {
+                if (System.IO.File.Exists(cp))
+                {
+                    directStream = System.IO.File.OpenRead(cp);
+                    break;
+                }
+            }
+        }
         if (directStream is null) return NotFound();
 
         var fileName = Path.GetFileName(key);

@@ -243,7 +243,7 @@ public class SellerOfferRulesValidatorTests
     }
 
     [Fact]
-    public void BR_SELLER_07_WhenCoreIpOrTrlChanges_EntityShouldResetToPending()
+    public void BR_SELLER_07_WhenCoreIpOrTrlChanges_EntityShouldKeepApprovedStatus_AndResetVerificationToPending()
     {
         var offer = new SellerTechnologyOffer(
             id: Guid.NewGuid(),
@@ -277,8 +277,13 @@ public class SellerOfferRulesValidatorTests
             publishedAt: DateTimeOffset.UtcNow
         );
 
+        // Ban đầu đã được Sở xác thực
+        var verifiedBy = Guid.NewGuid();
+        offer.VerifyTrlAndIp("VERIFIED_BY_GOV", "Sở KH&CN Hà Nội", verifiedBy, "Đạt chuẩn TRL 7");
         Assert.Equal("APPROVED", offer.Status);
         Assert.NotNull(offer.PublishedAt);
+        Assert.Equal("VERIFIED_BY_GOV", offer.TrlVerificationStatus);
+        Assert.Equal("VERIFIED_BY_GOV", offer.IpVerificationStatus);
 
         // Update with changed TRL from 7 to 8
         offer.Update(
@@ -308,9 +313,140 @@ public class SellerOfferRulesValidatorTests
             scopeId: "VN-HN"
         );
 
-        // BR-SELLER-07 asserts status must be PENDING and PublishedAt null
-        Assert.Equal("PENDING", offer.Status);
-        Assert.Null(offer.PublishedAt);
+        // BR-SELLER-07 mới: KHÔNG gỡ khỏi sàn, Status giữ nguyên APPROVED, chỉ hạ cấp verification về PENDING_VERIFICATION
+        Assert.Equal("APPROVED", offer.Status);
+        Assert.NotNull(offer.PublishedAt);
+        Assert.Equal("PENDING_VERIFICATION", offer.TrlVerificationStatus);
+        Assert.Equal("PENDING_VERIFICATION", offer.IpVerificationStatus);
+    }
+
+    [Fact]
+    public void BR_SELLER_07_TwoTierVerification_VerifyTrlAndIp_ShouldUpdateVerificationMetadata()
+    {
+        var offer = new SellerTechnologyOffer(
+            id: Guid.NewGuid(),
+            offerCode: "OFF-20261011-00002",
+            offerType: "SOLUTION",
+            hasTechTransfer: true,
+            title: "Giải pháp công nghệ",
+            summary: "Tóm tắt",
+            problemSolved: "Bài toán",
+            sectorCode: "IT",
+            sectorName: "CNTT",
+            pricingType: "CONTACT",
+            priceAmount: null,
+            priceMin: null,
+            priceMax: null,
+            currency: "VND",
+            unit: "gói",
+            developerOrigin: "Đại học Bách Khoa",
+            trlLevel: 6,
+            ipStatus: "PATENT_PENDING",
+            ipRegistrationNumber: null,
+            transferMethod: "EXCLUSIVE_LICENSE",
+            commercialStatus: "COMMERCIALLY_READY",
+            contactPointRole: "Ban Giám Đốc",
+            status: "APPROVED",
+            managingAuthorityId: "VN-HN",
+            managingAuthorityName: "Sở KH&CN Hà Nội",
+            scopeType: "PROVINCE",
+            scopeId: "VN-HN",
+            legalConsent: true
+        );
+
+        Assert.Equal("SELF_DECLARED", offer.TrlVerificationStatus);
+        Assert.Equal("SELF_DECLARED", offer.IpVerificationStatus);
+
+        var officerId = Guid.NewGuid();
+        offer.VerifyTrl("VERIFIED_BY_GOV", "Sở Khoa học và Công nghệ TP. Hà Nội", officerId, "Xác minh TRL 6 đạt yêu cầu");
+        offer.VerifyIp("VERIFIED_BY_GOV", "Sở Khoa học và Công nghệ TP. Hà Nội", officerId, "Xác minh đơn Patent Pending hợp lệ");
+
+        Assert.Equal("VERIFIED_BY_GOV", offer.TrlVerificationStatus);
+        Assert.Equal("VERIFIED_BY_GOV", offer.IpVerificationStatus);
+        Assert.Equal("Sở Khoa học và Công nghệ TP. Hà Nội", offer.VerifiedAuthorityName);
+        Assert.Equal(officerId, offer.TrlVerifiedBy);
+        Assert.NotNull(offer.TrlVerifiedAt);
+        Assert.Equal("Xác minh đơn Patent Pending hợp lệ", offer.TrlReviewNote);
+    }
+
+    [Fact]
+    public void BR_SELLER_07_Whitelist_And_IndividualDecision_Check()
+    {
+        var offer = new SellerTechnologyOffer(
+            id: Guid.NewGuid(),
+            offerCode: "OFF-20261011-00003",
+            offerType: "PRODUCT",
+            hasTechTransfer: true,
+            title: "Sản phẩm công nghệ",
+            summary: "Tóm tắt",
+            problemSolved: "Bài toán",
+            sectorCode: "IT",
+            sectorName: "CNTT",
+            pricingType: "CONTACT",
+            priceAmount: null,
+            priceMin: null,
+            priceMax: null,
+            currency: "VND",
+            unit: "cái",
+            developerOrigin: "Viện Hàn Lâm",
+            trlLevel: 5,
+            ipStatus: "NONE",
+            ipRegistrationNumber: null,
+            transferMethod: "NON_EXCLUSIVE_LICENSE",
+            commercialStatus: "PILOT_TESTING",
+            contactPointRole: "Ban KH",
+            status: "APPROVED",
+            managingAuthorityId: "VN-HN",
+            managingAuthorityName: "Sở KH&CN Hà Nội",
+            scopeType: "PROVINCE",
+            scopeId: "VN-HN",
+            legalConsent: true
+        );
+
+        var officerId = Guid.NewGuid();
+
+        // Whitelist check: Không chấp nhận chuỗi lạ hoặc chuỗi > 30 ký tự
+        Assert.Throws<ArgumentException>(() => offer.VerifyTrl("INVALID_STATUS_CODE", "Sở KH&CN", officerId));
+        Assert.Throws<ArgumentException>(() => offer.VerifyTrl(new string('A', 35), "Sở KH&CN", officerId));
+        Assert.Throws<ArgumentException>(() => offer.VerifyIp("INVALID_IP_STATUS", "Sở KH&CN", officerId));
+
+        // Tách bạch: Duyệt TRL thành công nhưng từ chối SHTT
+        offer.VerifyTrl("VERIFIED_BY_GOV", "Sở KH&CN Hà Nội", officerId, "TRL đạt");
+        offer.VerifyIp("REJECTED_IP", "Sở KH&CN Hà Nội", officerId, "SHTT thiếu chứng cứ");
+
+        Assert.Equal("VERIFIED_BY_GOV", offer.TrlVerificationStatus);
+        Assert.Equal("REJECTED_IP", offer.IpVerificationStatus);
+    }
+
+    [Fact]
+    public void BR_SELLER_TRL_Boundary_And_Evidence_Check()
+    {
+        // 1. TrlLevel ngoài khoảng 1-9 dù HasTechTransfer = false phải báo lỗi
+        var dtoOutOfBound = CreateValidBaseDto() with { HasTechTransfer = false, TrlLevel = 10 };
+        var resultOutOfBound = SellerOfferRulesValidator.Validate(dtoOutOfBound);
+        Assert.False(resultOutOfBound.IsValid);
+        Assert.True(resultOutOfBound.Errors.ContainsKey(nameof(dtoOutOfBound.TrlLevel)));
+
+        var dtoZero = CreateValidBaseDto() with { HasTechTransfer = false, TrlLevel = 0 };
+        var resultZero = SellerOfferRulesValidator.Validate(dtoZero);
+        Assert.False(resultZero.IsValid);
+        Assert.True(resultZero.Errors.ContainsKey(nameof(dtoZero.TrlLevel)));
+
+        // 2. TrlLevel >= 7 khi nộp Full mà không có tài liệu TRL_EVIDENCE hay PatentCert/Số văn bằng phải báo lỗi
+        var dtoTrl7NoEvidence = CreateValidBaseDto() with
+        {
+            HasTechTransfer = true,
+            DeveloperOrigin = "Viện Hàn Lâm",
+            TrlLevel = 7,
+            IpStatus = "TRADE_SECRET",
+            IpRegistrationNumber = null,
+            TransferMethod = "EXCLUSIVE_LICENSE",
+            CommercialStatus = "PILOT_TESTING",
+            Documents = new List<OfferDocumentDto>() // Rỗng
+        };
+        var resultTrl7 = SellerOfferRulesValidator.ValidateFull4Steps(dtoTrl7NoEvidence);
+        Assert.False(resultTrl7.IsValid);
+        Assert.True(resultTrl7.Errors.ContainsKey("TrlEvidence") || resultTrl7.Errors.ContainsKey(nameof(dtoTrl7NoEvidence.IpRegistrationNumber)));
     }
 
     // --- DELTA V5 UNIT TESTS (BR-SELLER-08 to BR-SELLER-11) ---

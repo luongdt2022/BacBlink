@@ -85,6 +85,14 @@ public sealed class SellerTechnologyOfferConfiguration : IEntityTypeConfiguratio
         b.Property(x => x.IpIssueDate);
         b.Property(x => x.LegalCommitmentConfirmed).HasDefaultValue(false);
 
+        // Verification fields (Two-tier review)
+        b.Property(x => x.TrlVerificationStatus).HasMaxLength(30).HasDefaultValue("SELF_DECLARED");
+        b.Property(x => x.IpVerificationStatus).HasMaxLength(30).HasDefaultValue("SELF_DECLARED");
+        b.Property(x => x.VerifiedAuthorityName).HasMaxLength(255);
+        b.Property(x => x.TrlVerifiedBy);
+        b.Property(x => x.TrlVerifiedAt);
+        b.Property(x => x.TrlReviewNote);
+
         // DEFECT-09: Soft Delete mapping and global query filter
         b.Property(x => x.IsDeleted).HasDefaultValue(false);
         b.Property(x => x.DeletedAt);
@@ -101,6 +109,8 @@ public sealed class SellerTechnologyOfferConfiguration : IEntityTypeConfiguratio
         b.HasIndex(x => x.Status);
         b.HasIndex(x => x.ManagingAuthorityId);
         b.HasIndex(x => x.EnterpriseTaxCode);
+        b.HasIndex(x => x.TrlVerificationStatus);
+        b.HasIndex(x => x.IpVerificationStatus);
         b.HasIndex(x => x.IsDeleted);
     }
 }

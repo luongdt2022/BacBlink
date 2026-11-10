@@ -104,6 +104,26 @@ public sealed class LmsController(
         return Ok(new { success = true, data = result });
     }
 
+    [HttpPost("api/v1/lms/catalog/{id:guid}/practice-evaluations")]
+    [Authorize]
+    public async Task<IActionResult> SubmitPracticeEvaluation(
+        Guid id,
+        [FromBody] SubmitPracticeEvaluationRequest request,
+        CancellationToken ct)
+    {
+        var personId = actor.RequirePersonId();
+
+        // Kiểm tra quyền submit bài thực hành
+        authGate.Require(new AuthorizationRequest(
+            Action: Actions.LmsSubmitQuiz,
+            PlatformRole: actor.PlatformRole),
+            objectKind: LearningMaterial.SubjectKind,
+            objectId: id);
+
+        var result = await catalogService.SubmitPracticeEvaluationAsync(id, personId, request, ct);
+        return Ok(new { success = true, data = result });
+    }
+
     // ─── BÀN LÀM VIỆC QUẢN TRỊ (MANAGEMENT WORKSPACE) ──────────────────────────
 
     [HttpGet("api/v1/lms/materials")]

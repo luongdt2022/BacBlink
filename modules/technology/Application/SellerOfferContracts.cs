@@ -283,12 +283,24 @@ public sealed record SellerOfferDto(
     string? TaxAndExtraCosts = null,
     string? TechnicalSupportMethod = null,
     DateOnly? IpIssueDate = null,
-    bool LegalCommitmentConfirmed = false
+    bool LegalCommitmentConfirmed = false,
+    // Two-tier Verification (CR-2026-TRL-TNI-VERIFY)
+    string TrlVerificationStatus = "SELF_DECLARED",
+    string IpVerificationStatus = "SELF_DECLARED",
+    string? VerifiedAuthorityName = null,
+    Guid? TrlVerifiedBy = null,
+    DateTimeOffset? TrlVerifiedAt = null,
+    string? TrlReviewNote = null
 );
 
 public sealed record ReviewOfferDto(
-    string Action,
-    string? ReviewNote = null
+    string? Action = null,
+    string? ReviewNote = null,
+    string? VerificationDecision = null,
+    string? VerifiedAuthorityName = null,
+    string? TrlVerificationDecision = null,
+    string? IpVerificationDecision = null,
+    string? TrlReviewNote = null
 );
 
 // AI Extractor DTOs (DD-02-ai-extractor-contracts.md)
@@ -422,17 +434,16 @@ public static class SellerOfferRulesValidator
             }
         }
 
-        // 7. Reactive TRL: nếu HasTechTransfer = true thì bắt buộc TRL 1-9
-        if (dto.HasTechTransfer)
+        // 7. Kiểm tra biên TRL: Dù HasTechTransfer true hay false, nếu có nhập TrlLevel thì bắt buộc phải từ 1 đến 9
+        if (dto.TrlLevel.HasValue && (dto.TrlLevel.Value < 1 || dto.TrlLevel.Value > 9))
         {
-            if (!dto.TrlLevel.HasValue)
-            {
-                result.AddError(nameof(dto.TrlLevel), "Khi có chuyển giao công nghệ, bắt buộc chọn mức TRL (1 - 9).");
-            }
-            else if (dto.TrlLevel.Value < 1 || dto.TrlLevel.Value > 9)
-            {
-                result.AddError(nameof(dto.TrlLevel), "Mức TRL phải nằm trong khoảng từ 1 đến 9.");
-            }
+            result.AddError(nameof(dto.TrlLevel), "Mức TRL phải nằm trong khoảng từ 1 đến 9.");
+        }
+
+        // Nếu có chuyển giao công nghệ thì bắt buộc chọn mức TRL (1 - 9)
+        if (dto.HasTechTransfer && !dto.TrlLevel.HasValue)
+        {
+            result.AddError(nameof(dto.TrlLevel), "Khi có chuyển giao công nghệ, bắt buộc chọn mức TRL (1 - 9).");
         }
 
         return result;
@@ -488,6 +499,19 @@ public static class SellerOfferRulesValidator
 
             if (string.IsNullOrWhiteSpace(dto.CommercialStatus) || !CommercializationStatuses.All.Contains(dto.CommercialStatus.ToUpperInvariant()))
                 result.AddError(nameof(dto.CommercialStatus), "Khi có chuyển giao công nghệ, bắt buộc chọn Trạng thái thương mại hóa hợp lệ.");
+        }
+
+        // Kiểm tra mức TRL >= 7: Bắt buộc có minh chứng kiểm định TRL_EVIDENCE hoặc số văn bằng SHTT
+        if (dto.TrlLevel.HasValue && dto.TrlLevel.Value >= 7 && dto.TrlLevel.Value <= 9)
+        {
+            bool hasIpReg = !string.IsNullOrWhiteSpace(dto.IpRegistrationNumber);
+            bool hasTrlDoc = dto.Documents != null && dto.Documents.Any(d =>
+                string.Equals(d.DocumentType, DocumentTypes.TrlEvidence, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(d.DocumentType, DocumentTypes.PatentCert, StringComparison.OrdinalIgnoreCase));
+            if (!hasIpReg && !hasTrlDoc)
+            {
+                result.AddError("TrlEvidence", "Với mức TRL 7-9 (Vận hành & Thương mại), bắt buộc khai báo Số văn bằng SHTT hoặc đính kèm tài liệu minh chứng kiểm định (TRL_EVIDENCE / Bằng sáng chế).");
+            }
         }
 
         // 3. BR-SELLER-05: Cam kết pháp lý & Cơ quan quản lý

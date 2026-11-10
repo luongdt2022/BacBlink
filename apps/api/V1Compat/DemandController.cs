@@ -149,6 +149,22 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         var itemsToProcess = req.DemandItems ?? req.Demands;
         if (itemsToProcess != null && itemsToProcess.Count > 0)
         {
+            // Kiểm tra biên K, L, N, O (1-5), không âm thầm clamp
+            foreach (var itemReq in itemsToProcess)
+            {
+                if (itemReq.UrgencyScore < 1 || itemReq.UrgencyScore > 5 ||
+                    itemReq.ImpactScore < 1 || itemReq.ImpactScore > 5 ||
+                    itemReq.InvestmentCapacity < 1 || itemReq.InvestmentCapacity > 5 ||
+                    itemReq.AdoptionReadiness < 1 || itemReq.AdoptionReadiness > 5)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Các chỉ số định lượng K, L, N, O (Urgency, Impact, InvestmentCapacity, AdoptionReadiness) phải nằm trong khoảng từ 1 đến 5."
+                    });
+                }
+            }
+
             int index = 1;
             foreach (var itemReq in itemsToProcess)
             {
@@ -166,10 +182,10 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
                     itemReq.TechGroupCode ?? "CN01",
                     itemReq.DemandTypeCode ?? "NC01",
                     itemReq.BudgetRange ?? "Chưa xác định",
-                    Math.Clamp(itemReq.UrgencyScore <= 0 ? 3 : itemReq.UrgencyScore, 1, 5),
-                    Math.Clamp(itemReq.ImpactScore <= 0 ? 3 : itemReq.ImpactScore, 1, 5),
-                    Math.Clamp(itemReq.InvestmentCapacity <= 0 ? 3 : itemReq.InvestmentCapacity, 1, 5),
-                    Math.Clamp(itemReq.AdoptionReadiness <= 0 ? 3 : itemReq.AdoptionReadiness, 1, 5),
+                    itemReq.UrgencyScore,
+                    itemReq.ImpactScore,
+                    itemReq.InvestmentCapacity,
+                    itemReq.AdoptionReadiness,
                     submitterPersonId
                 );
 
@@ -570,8 +586,14 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
                 success = true,
                 itemId = demandItem.Id,
                 itemCode = demandItem.ItemCode,
+                urgencyScore = demandItem.UrgencyScore,
+                impactScore = demandItem.ImpactScore,
+                investmentCapacity = demandItem.InvestmentCapacity,
+                adoptionReadiness = demandItem.AdoptionReadiness,
                 tniScore = demandItem.TniScore,
                 tniClassification = demandItem.TniClassification,
+                tniVerificationStatus = demandItem.TniVerificationStatus,
+                verifiedAuthorityName = demandItem.VerifiedAuthorityName,
                 connectionRequestId = connReqId,
                 requestCode = requestCode,
                 message = "Đặt mua sản phẩm công nghệ thương mại và tạo yêu cầu kết nối thành công."
@@ -586,8 +608,14 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             success = true,
             itemId = demandItem.Id,
             itemCode = demandItem.ItemCode,
+            urgencyScore = demandItem.UrgencyScore,
+            impactScore = demandItem.ImpactScore,
+            investmentCapacity = demandItem.InvestmentCapacity,
+            adoptionReadiness = demandItem.AdoptionReadiness,
             tniScore = demandItem.TniScore,
             tniClassification = demandItem.TniClassification,
+            tniVerificationStatus = demandItem.TniVerificationStatus,
+            verifiedAuthorityName = demandItem.VerifiedAuthorityName,
             message = "Đăng bài toán nhu cầu công nghệ thành công."
         });
     }
@@ -693,6 +721,8 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             adoptionReadiness = item.AdoptionReadiness,
             tniScore = item.TniScore,
             tniClassification = item.TniClassification,
+            tniVerificationStatus = item.TniVerificationStatus,
+            verifiedAuthorityName = item.VerifiedAuthorityName,
             status = item.Status,
             message = "Cập nhật bài toán nhu cầu công nghệ thành công."
         });
@@ -799,8 +829,14 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             expectedGoal = i.ExpectedGoal,
             sectorCode = i.SectorCode,
             budgetRange = i.BudgetRange,
+            urgencyScore = i.UrgencyScore,
+            impactScore = i.ImpactScore,
+            investmentCapacity = i.InvestmentCapacity,
+            adoptionReadiness = i.AdoptionReadiness,
             tniScore = i.TniScore,
             tniClassification = i.TniClassification,
+            tniVerificationStatus = i.TniVerificationStatus,
+            verifiedAuthorityName = i.VerifiedAuthorityName,
             status = i.Status,
             createdAt = i.CreatedAt
         });
@@ -833,8 +869,15 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             techGroupCode = item.TechGroupCode,
             demandTypeCode = item.DemandTypeCode,
             budgetRange = item.BudgetRange,
+            urgencyScore = item.UrgencyScore,
+            impactScore = item.ImpactScore,
+            investmentCapacity = item.InvestmentCapacity,
+            adoptionReadiness = item.AdoptionReadiness,
             tniScore = item.TniScore,
             tniClassification = item.TniClassification,
+            tniVerificationStatus = item.TniVerificationStatus,
+            verifiedAuthorityName = item.VerifiedAuthorityName,
+            tniReviewNote = item.TniReviewNote,
             status = item.Status,
             createdAt = item.CreatedAt,
             isOwner = isOwner,
@@ -1027,7 +1070,7 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
     }
 
     [HttpPost("gov/demands/{id}/verify")]
-    public async Task<IActionResult> VerifyDemand(Guid id, CancellationToken ct)
+    public async Task<IActionResult> VerifyDemand(Guid id, [FromBody] VerifyDemandRequest? req = null, CancellationToken ct = default)
     {
         if (!Actor.IsAuthenticated || Actor.PersonId == null)
         {
@@ -1047,10 +1090,22 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán." });
 
-        item.VerifyAndPublish();
+        var authority = !string.IsNullOrWhiteSpace(req?.AuthorityName) ? req.AuthorityName : "Sở Khoa học và Công nghệ TP. Hà Nội";
+        item.VerifyAndPublish(authority);
+        if (!string.IsNullOrWhiteSpace(req?.Decision) || !string.IsNullOrWhiteSpace(req?.Note))
+        {
+            item.VerifyTni(req?.Decision ?? "VERIFIED", authority, req?.Note);
+        }
+
         await uow.CommitAsync(ct);
 
-        return Ok(new { success = true, message = "Phê duyệt bài toán niêm yết lên sàn thành công." });
+        return Ok(new 
+        { 
+            success = true, 
+            message = "Phê duyệt bài toán niêm yết lên sàn thành công.",
+            tniVerificationStatus = item.TniVerificationStatus,
+            verifiedAuthorityName = item.VerifiedAuthorityName
+        });
     }
 
     [HttpPost("gov/demands/{id}/assign-expert")]
@@ -1313,5 +1368,11 @@ public sealed record UpdateDemandItemRequest(
     int ImpactScore,
     int InvestmentCapacity,
     int AdoptionReadiness
+);
+
+public sealed record VerifyDemandRequest(
+    string? Decision = "VERIFIED",
+    string? AuthorityName = null,
+    string? Note = null
 );
 

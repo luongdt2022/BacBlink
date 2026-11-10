@@ -1,5 +1,20 @@
 namespace NacenTech.Modules.Lms.Domain;
 
+public static class LmsClusters
+{
+    public const string ClusterA = "CLUSTER_A";
+    public const string ClusterB = "CLUSTER_B";
+    public const string ClusterC = "CLUSTER_C";
+    public const string ClusterD = "CLUSTER_D";
+    public const string ClusterE = "CLUSTER_E";
+    public const string ClusterF = "CLUSTER_F";
+
+    public static readonly string[] All = [ClusterA, ClusterB, ClusterC, ClusterD, ClusterE, ClusterF];
+
+    public static bool IsValid(string? cluster) =>
+        cluster is null || All.Contains(cluster.Trim().ToUpperInvariant());
+}
+
 public static class LmsStatuses
 {
     public const string Draft = "DRAFT";

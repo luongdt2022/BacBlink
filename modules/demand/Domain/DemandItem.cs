@@ -50,6 +50,7 @@ public sealed class DemandItem : Entity
 
         Status = DemandItemStatuses.Pending;
         IsPublicListed = false;
+        TniVerificationStatus = "SELF_DECLARED";
         CreatedBy = createdBy;
         CreatedAt = DateTimeOffset.UtcNow;
         UpdatedAt = DateTimeOffset.UtcNow;
@@ -77,15 +78,47 @@ public sealed class DemandItem : Entity
 
     public string Status { get; private set; } = DemandItemStatuses.Pending;
     public bool IsPublicListed { get; private set; }
+    // TniVerificationStatus: SELF_DECLARED, PENDING_VERIFICATION, VERIFIED_BY_GOV
+    public string TniVerificationStatus { get; private set; } = "SELF_DECLARED";
+    public string? VerifiedAuthorityName { get; private set; }
+    public string? TniReviewNote { get; private set; }
     public Guid? AssignedExpertId { get; private set; }
     public Guid? CreatedBy { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; private set; } = DateTimeOffset.UtcNow;
 
-    public void VerifyAndPublish()
+    public void VerifyAndPublish(string? authorityName = null)
     {
         Status = DemandItemStatuses.Verified;
         IsPublicListed = true;
+        TniVerificationStatus = "VERIFIED_BY_GOV";
+        if (!string.IsNullOrWhiteSpace(authorityName))
+        {
+            VerifiedAuthorityName = authorityName;
+        }
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void VerifyTni(string decision, string? authorityName, string? note = null)
+    {
+        if (string.IsNullOrWhiteSpace(decision))
+            throw new ArgumentException("Quyết định kiểm định TNI không được để trống.", nameof(decision));
+
+        var norm = decision.Trim().ToUpperInvariant();
+        string mappedStatus = norm switch
+        {
+            "VERIFIED_BY_GOV" or "VERIFIED" or "APPROVE" or "APPROVED" => "VERIFIED_BY_GOV",
+            "PENDING_VERIFICATION" => "PENDING_VERIFICATION",
+            "SELF_DECLARED" => "SELF_DECLARED",
+            _ => throw new ArgumentException($"Quyết định kiểm định TNI không hợp lệ: '{decision}'. Chỉ chấp nhận: VERIFIED_BY_GOV, PENDING_VERIFICATION, SELF_DECLARED.", nameof(decision))
+        };
+
+        if (mappedStatus.Length > 30)
+            throw new ArgumentException("Mã trạng thái TNI vượt quá độ dài tối đa 30 ký tự.", nameof(decision));
+
+        TniVerificationStatus = mappedStatus;
+        if (!string.IsNullOrWhiteSpace(authorityName)) VerifiedAuthorityName = authorityName;
+        if (note != null) TniReviewNote = note;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 

@@ -240,6 +240,144 @@ public sealed class LmsDomainInvariantsTests
         material.DeletedAt.ShouldNotBeNull();
     }
 
+    [Fact]
+    public void BrEl07_MicroVideosAndInVideoQuizzes_EnforceLimitsAndValidation()
+    {
+        var material = new LearningMaterial(
+            "MAT-DELTA-01", "Kiểm thử MicroVideos & InVideoQuizzes", LmsLessonTypes.TypeA, 45,
+            "<p>Mô tả chi tiết</p>", _creatorId, _creatorName);
+
+        // 1. Thêm 3 micro-videos hợp lệ
+        for (int i = 1; i <= 3; i++)
+        {
+            material.AddMicroVideo(new LearningMicroVideo(
+                material.Id, i, $"02.{i}", $"Phần {i}: Giới thiệu chuyên sâu", 300));
+        }
+        material.MicroVideos.Count.ShouldBe(3);
+
+        // Thêm micro-video thứ 4 -> ném lỗi
+        Should.Throw<ValidationException>(() => material.AddMicroVideo(
+            new LearningMicroVideo(material.Id, 1, "02.4", "Phần 4 dư thừa")));
+
+        // Micro-video order không hợp lệ (0 hoặc 4) -> ném lỗi
+        Should.Throw<ValidationException>(() => new LearningMicroVideo(
+            material.Id, 4, "02.4", "Thứ tự không hợp lệ"));
+
+        // 2. Thêm 6 in-video quizzes hợp lệ
+        for (int i = 1; i <= 6; i++)
+        {
+            material.AddInVideoQuiz(new LearningInVideoQuiz(
+                material.Id, $"Q{i}", i * 60, $"Câu hỏi tương tác số {i}?",
+                "Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D", 'A', "Giải thích"));
+        }
+        material.InVideoQuizzes.Count.ShouldBe(6);
+
+        // Thêm câu hỏi thứ 7 -> ném lỗi
+        Should.Throw<ValidationException>(() => material.AddInVideoQuiz(
+            new LearningInVideoQuiz(material.Id, "Q7", 500, "Câu hỏi 7", "A", "B", "C", "D", 'A', "Giải thích")));
+
+        // Quiz với đáp án không hợp lệ ('E') -> ném lỗi
+        Should.Throw<ValidationException>(() => new LearningInVideoQuiz(
+            material.Id, "Q8", 100, "Câu hỏi sai đáp án", "A", "B", "C", "D", 'E', "Giải thích"));
+
+        // Quiz với triggerSeconds âm -> ném lỗi
+        Should.Throw<ValidationException>(() => new LearningInVideoQuiz(
+            material.Id, "Q9", -10, "Trigger âm", "A", "B", "C", "D", 'A', "Giải thích"));
+    }
+
+    [Fact]
+    public void BrEl08_PracticeRubricsAndEvaluation_Threshold11Of14UnlocksCta()
+    {
+        var material = new LearningMaterial(
+            "MAT-DELTA-02", "Kiểm thử Rubric & Tự chấm", LmsLessonTypes.TypeA, 45,
+            "<p>Mô tả chi tiết</p>", _creatorId, _creatorName);
+
+        // 1. Thêm 7 tiêu chí rubric
+        for (int i = 1; i <= 7; i++)
+        {
+            material.AddPracticeRubric(new LearningPracticeRubric(
+                material.Id, i, $"Tiêu chí {i}", "0: Chưa đạt", "1: Đạt một phần", "2: Đạt hoàn toàn"));
+        }
+        material.PracticeRubrics.Count.ShouldBe(7);
+
+        // Thêm tiêu chí thứ 8 -> ném lỗi
+        Should.Throw<ValidationException>(() => material.AddPracticeRubric(
+            new LearningPracticeRubric(material.Id, 1, "Tiêu chí 8", "0", "1", "2")));
+
+        // CriterionNumber ngoài khoảng 1..7 -> ném lỗi
+        Should.Throw<ValidationException>(() => new LearningPracticeRubric(
+            material.Id, 8, "Tiêu chí 8", "0", "1", "2"));
+
+        // 2. Tự chấm điểm với tổng điểm 10/14 (< 11) -> IsUnlockedCta = false
+        var personId = Guid.NewGuid();
+        var evalFail = new LearnerPracticeEvaluation(
+            material.Id, personId, "{\"1\":2,\"2\":2,\"3\":2,\"4\":2,\"5\":1,\"6\":1,\"7\":0}", 10);
+
+        evalFail.IsUnlockedCta.ShouldBeFalse();
+        evalFail.TotalScore.ShouldBe(10);
+        evalFail.PassThreshold.ShouldBe(11);
+
+        // Khi chưa đạt ngưỡng, gọi hành động mở khóa CTA -> ném lỗi
+        Should.Throw<ValidationException>(() => evalFail.MarkExpertConsultationRequested());
+        Should.Throw<ValidationException>(() => evalFail.MarkDemandProfileCreated());
+
+        // 3. Tự chấm điểm với tổng điểm 11/14 (>= 11) -> IsUnlockedCta = true
+        var evalPass = new LearnerPracticeEvaluation(
+            material.Id, personId, "{\"1\":2,\"2\":2,\"3\":2,\"4\":2,\"5\":2,\"6\":1,\"7\":0}", 11);
+
+        evalPass.IsUnlockedCta.ShouldBeTrue();
+        evalPass.TotalScore.ShouldBe(11);
+
+        // Khi đạt ngưỡng -> Mở khóa và đánh dấu thành công
+        evalPass.MarkExpertConsultationRequested();
+        evalPass.ExpertConsultationRequested.ShouldBeTrue();
+
+        evalPass.MarkDemandProfileCreated();
+        evalPass.DemandProfileCreated.ShouldBeTrue();
+
+        // Điểm vượt quá 14 -> ném lỗi
+        Should.Throw<ValidationException>(() => new LearnerPracticeEvaluation(
+            material.Id, personId, "{}", 15));
+    }
+
+    [Fact]
+    public void BrEl09_ClusterStepAndPassScorePercent_Invariants()
+    {
+        var material = new LearningMaterial(
+            "MAT-DELTA-03", "Kiểm thử Cụm, Bước và Điểm đạt", LmsLessonTypes.TypeA, 45,
+            "<p>Mô tả chi tiết</p>", _creatorId, _creatorName);
+
+        // Mặc định PassScorePercent = 80
+        material.PassScorePercent.ShouldBe(80);
+
+        // Cập nhật Cụm và Bước hợp lệ
+        material.SetClusterAndStep(LmsClusters.ClusterA, "Cụm Năng lượng Xanh", 2);
+        material.ClusterCode.ShouldBe(LmsClusters.ClusterA);
+        material.ClusterName.ShouldBe("Cụm Năng lượng Xanh");
+        material.StepNumber.ShouldBe(2);
+
+        // Bước ngoài khoảng 1..7 -> ném lỗi
+        Should.Throw<ValidationException>(() => material.SetClusterAndStep(LmsClusters.ClusterA, "Cụm A", 0));
+        Should.Throw<ValidationException>(() => material.SetClusterAndStep(LmsClusters.ClusterA, "Cụm A", 8));
+
+        // Điểm chuẩn đạt ngoài khoảng 50..100 -> ném lỗi
+        Should.Throw<ValidationException>(() => material.SetExtendedContent(
+            null, null, null, passScorePercent: 40, null, null, null, null));
+        Should.Throw<ValidationException>(() => material.SetExtendedContent(
+            null, null, null, passScorePercent: 101, null, null, null, null));
+
+        // FAQs: tối đa 8 câu
+        for (int i = 1; i <= 8; i++)
+        {
+            material.AddFaq(new LearningFaq(material.Id, i, $"Câu hỏi FAQ {i}?", $"Câu trả lời {i}."));
+        }
+        material.Faqs.Count.ShouldBe(8);
+
+        // FAQ thứ 9 -> ném lỗi
+        Should.Throw<ValidationException>(() => material.AddFaq(
+            new LearningFaq(material.Id, 1, "FAQ 9?", "Trả lời 9")));
+    }
+
     private LearningMaterial CreatePublishedMaterial(string code)
     {
         var material = new LearningMaterial(

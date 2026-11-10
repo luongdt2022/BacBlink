@@ -113,11 +113,15 @@ public sealed class DemandItemConfiguration : IEntityTypeConfiguration<DemandIte
         b.Property(x => x.BudgetRange).HasMaxLength(50).IsRequired();
         b.Property(x => x.TniClassification).HasMaxLength(30).IsRequired();
         b.Property(x => x.Status).HasMaxLength(30).IsRequired();
+        b.Property(x => x.TniVerificationStatus).HasMaxLength(30).HasDefaultValue("SELF_DECLARED");
+        b.Property(x => x.VerifiedAuthorityName).HasMaxLength(255);
+        b.Property(x => x.TniReviewNote);
 
         b.HasIndex(x => x.ItemCode).IsUnique();
         b.HasIndex(x => x.SurveyId);
         b.HasIndex(x => x.SectorCode);
         b.HasIndex(x => x.Status);
+        b.HasIndex(x => x.TniVerificationStatus);
         b.HasIndex(x => x.IsPublicListed);
     }
 }

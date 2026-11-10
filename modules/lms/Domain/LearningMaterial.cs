@@ -12,6 +12,10 @@ public sealed class LearningMaterial : AggregateRoot
     private readonly List<LearningAttachment> _attachments = [];
     private readonly List<LearningDbLink> _dbLinks = [];
     private readonly List<LearningModerationLog> _moderationLogs = [];
+    private readonly List<LearningMicroVideo> _microVideos = [];
+    private readonly List<LearningInVideoQuiz> _inVideoQuizzes = [];
+    private readonly List<LearningPracticeRubric> _practiceRubrics = [];
+    private readonly List<LearningFaq> _faqs = [];
 
     private LearningMaterial() { }
 
@@ -105,6 +109,18 @@ public sealed class LearningMaterial : AggregateRoot
     public int RatingCount { get; private set; }
     public string? Slug { get; private set; }
 
+    public string? ClusterCode { get; private set; }
+    public string? ClusterName { get; private set; }
+    public int? StepNumber { get; private set; }
+    public string? TargetAudience { get; private set; }
+    public string? PreparationNotes { get; private set; }
+    public string? ExpectedOutcome { get; private set; }
+    public int PassScorePercent { get; private set; } = 80;
+    public string? LearningObjectivesJson { get; private set; }
+    public string? LearningRoadmapJson { get; private set; }
+    public string? KnowledgeSummaryJson { get; private set; }
+    public string? PracticeWorkbookJson { get; private set; }
+
     // Aliases
     public string Code => MaterialCode;
     public Guid CreatedByPersonId => CreatedBy;
@@ -120,6 +136,10 @@ public sealed class LearningMaterial : AggregateRoot
     public IReadOnlyCollection<LearningAttachment> Attachments => _attachments.AsReadOnly();
     public IReadOnlyCollection<LearningDbLink> DbLinks => _dbLinks.AsReadOnly();
     public IReadOnlyCollection<LearningModerationLog> ModerationLogs => _moderationLogs.AsReadOnly();
+    public IReadOnlyCollection<LearningMicroVideo> MicroVideos => _microVideos.AsReadOnly();
+    public IReadOnlyCollection<LearningInVideoQuiz> InVideoQuizzes => _inVideoQuizzes.AsReadOnly();
+    public IReadOnlyCollection<LearningPracticeRubric> PracticeRubrics => _practiceRubrics.AsReadOnly();
+    public IReadOnlyCollection<LearningFaq> Faqs => _faqs.AsReadOnly();
 
     public SubjectRef AsSubjectRef() => SubjectRef.LearningMaterial(Id);
 
@@ -352,6 +372,148 @@ public sealed class LearningMaterial : AggregateRoot
             throw new ValidationException("Một học liệu tối đa có 5 liên kết cơ sở dữ liệu");
 
         _dbLinks.Add(link);
+        Touch();
+    }
+
+    public void SetClusterAndStep(string? clusterCode, string? clusterName, int? stepNumber)
+    {
+        if (!string.IsNullOrWhiteSpace(clusterCode) && !LmsClusters.IsValid(clusterCode))
+            throw new ValidationException($"Mã cụm năng lực không hợp lệ: {clusterCode}");
+
+        if (stepNumber.HasValue && stepNumber is < 1 or > 7)
+            throw new ValidationException("Bước lộ trình phải từ 1 đến 7");
+
+        ClusterCode = clusterCode?.Trim();
+        ClusterName = clusterName?.Trim();
+        StepNumber = stepNumber;
+        Touch();
+    }
+
+    public void SetExtendedContent(
+        string? targetAudience,
+        string? preparationNotes,
+        string? expectedOutcome,
+        int? passScorePercent,
+        string? learningObjectivesJson,
+        string? learningRoadmapJson,
+        string? knowledgeSummaryJson,
+        string? practiceWorkbookJson)
+    {
+        if (passScorePercent.HasValue && passScorePercent is < 50 or > 100)
+            throw new ValidationException("Điểm chuẩn đạt bài học phải từ 50% đến 100%");
+
+        TargetAudience = targetAudience?.Trim();
+        PreparationNotes = preparationNotes?.Trim();
+        ExpectedOutcome = expectedOutcome?.Trim();
+        PassScorePercent = passScorePercent ?? 80;
+        LearningObjectivesJson = learningObjectivesJson;
+        LearningRoadmapJson = learningRoadmapJson;
+        KnowledgeSummaryJson = knowledgeSummaryJson;
+        PracticeWorkbookJson = practiceWorkbookJson;
+        Touch();
+    }
+
+    public void SetMicroVideos(IEnumerable<LearningMicroVideo> microVideos)
+    {
+        var list = microVideos.ToList();
+        if (list.Count > 3)
+            throw new ValidationException("Một học liệu tối đa có 3 micro-videos");
+
+        if (list.Select(v => v.VideoOrder).Distinct().Count() != list.Count)
+            throw new ValidationException("Thứ tự video_order của micro-videos không được trùng lặp");
+
+        _microVideos.Clear();
+        _microVideos.AddRange(list);
+        Touch();
+    }
+
+    public void AddMicroVideo(LearningMicroVideo video)
+    {
+        if (_microVideos.Count >= 3)
+            throw new ValidationException("Một học liệu tối đa có 3 micro-videos");
+
+        if (_microVideos.Any(v => v.VideoOrder == video.VideoOrder))
+            throw new ValidationException($"Đã tồn tại micro-video với videoOrder={video.VideoOrder}");
+
+        _microVideos.Add(video);
+        Touch();
+    }
+
+    public void SetInVideoQuizzes(IEnumerable<LearningInVideoQuiz> quizzes)
+    {
+        var list = quizzes.ToList();
+        if (list.Count > 6)
+            throw new ValidationException("Một học liệu tối đa có 6 câu hỏi tương tác trong video");
+
+        if (list.Select(q => q.QuizCode).Distinct().Count() != list.Count)
+            throw new ValidationException("Mã quiz_code câu hỏi tương tác không được trùng lặp");
+
+        _inVideoQuizzes.Clear();
+        _inVideoQuizzes.AddRange(list);
+        Touch();
+    }
+
+    public void AddInVideoQuiz(LearningInVideoQuiz quiz)
+    {
+        if (_inVideoQuizzes.Count >= 6)
+            throw new ValidationException("Một học liệu tối đa có 6 câu hỏi tương tác trong video");
+
+        if (_inVideoQuizzes.Any(q => q.QuizCode.Equals(quiz.QuizCode, StringComparison.OrdinalIgnoreCase)))
+            throw new ValidationException($"Đã tồn tại câu hỏi tương tác với quizCode={quiz.QuizCode}");
+
+        _inVideoQuizzes.Add(quiz);
+        Touch();
+    }
+
+    public void SetPracticeRubrics(IEnumerable<LearningPracticeRubric> rubrics)
+    {
+        var list = rubrics.ToList();
+        if (list.Count > 7)
+            throw new ValidationException("Một học liệu tối đa có 7 tiêu chí rubric tự chấm");
+
+        if (list.Select(r => r.CriterionNumber).Distinct().Count() != list.Count)
+            throw new ValidationException("Số thứ tự criterion_number của rubric không được trùng lặp");
+
+        _practiceRubrics.Clear();
+        _practiceRubrics.AddRange(list);
+        Touch();
+    }
+
+    public void AddPracticeRubric(LearningPracticeRubric rubric)
+    {
+        if (_practiceRubrics.Count >= 7)
+            throw new ValidationException("Một học liệu tối đa có 7 tiêu chí rubric tự chấm");
+
+        if (_practiceRubrics.Any(r => r.CriterionNumber == rubric.CriterionNumber))
+            throw new ValidationException($"Đã tồn tại rubric với criterionNumber={rubric.CriterionNumber}");
+
+        _practiceRubrics.Add(rubric);
+        Touch();
+    }
+
+    public void SetFaqs(IEnumerable<LearningFaq> faqs)
+    {
+        var list = faqs.ToList();
+        if (list.Count > 8)
+            throw new ValidationException("Một học liệu tối đa có 8 câu hỏi đáp thường gặp (FAQ)");
+
+        if (list.Select(f => f.QuestionNumber).Distinct().Count() != list.Count)
+            throw new ValidationException("Số thứ tự question_number của FAQ không được trùng lặp");
+
+        _faqs.Clear();
+        _faqs.AddRange(list);
+        Touch();
+    }
+
+    public void AddFaq(LearningFaq faq)
+    {
+        if (_faqs.Count >= 8)
+            throw new ValidationException("Một học liệu tối đa có 8 câu hỏi đáp thường gặp (FAQ)");
+
+        if (_faqs.Any(f => f.QuestionNumber == faq.QuestionNumber))
+            throw new ValidationException($"Đã tồn tại FAQ với questionNumber={faq.QuestionNumber}");
+
+        _faqs.Add(faq);
         Touch();
     }
 

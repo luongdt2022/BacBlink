@@ -123,6 +123,8 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         TechnicalSupportMethod = technicalSupportMethod;
         IpIssueDate = ipIssueDate;
         LegalCommitmentConfirmed = legalCommitmentConfirmed;
+        TrlVerificationStatus = hasTechTransfer ? "SELF_DECLARED" : "NOT_APPLICABLE";
+        IpVerificationStatus = hasTechTransfer ? (string.IsNullOrWhiteSpace(ipStatus) || ipStatus == "NONE" ? "NOT_APPLICABLE" : "SELF_DECLARED") : "NOT_APPLICABLE";
         SuccessfulConnections = 0;
         RatingScore = 5.0m;
         ReviewCount = 0;
@@ -195,6 +197,16 @@ public sealed class SellerTechnologyOffer : AggregateRoot
     // Delta v6 Extensions: Pháp lý & SHTT
     public DateOnly? IpIssueDate { get; private set; }
     public bool LegalCommitmentConfirmed { get; private set; } = false;
+
+    // Two-tier Verification (CR-2026-TRL-TNI-VERIFY)
+    // TrlVerificationStatus: SELF_DECLARED, PENDING_VERIFICATION, VERIFIED_BY_GOV, REJECTED_TRL
+    public string TrlVerificationStatus { get; private set; } = "SELF_DECLARED";
+    // IpVerificationStatus: NOT_APPLICABLE, SELF_DECLARED, PENDING_VERIFICATION, VERIFIED_BY_GOV, REJECTED_IP
+    public string IpVerificationStatus { get; private set; } = "SELF_DECLARED";
+    public string? VerifiedAuthorityName { get; private set; }
+    public Guid? TrlVerifiedBy { get; private set; }
+    public DateTimeOffset? TrlVerifiedAt { get; private set; }
+    public string? TrlReviewNote { get; private set; }
 
     // DEFECT-09: Soft Delete to preserve audit & deal room relations
     public bool IsDeleted { get; private set; } = false;
@@ -345,6 +357,70 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         Touch();
     }
 
+    public void VerifyTrl(string trlDecision, string? authorityName, Guid verifiedBy, string? note = null)
+    {
+        if (string.IsNullOrWhiteSpace(trlDecision))
+            throw new ArgumentException("Quyết định kiểm định TRL không được để trống.", nameof(trlDecision));
+
+        var norm = trlDecision.Trim().ToUpperInvariant();
+        string mappedStatus = norm switch
+        {
+            "VERIFIED_BY_GOV" or "VERIFIED" or "APPROVE" or "APPROVED" => "VERIFIED_BY_GOV",
+            "REJECTED_TRL" or "REJECT" or "REJECTED" => "REJECTED_TRL",
+            "PENDING_VERIFICATION" => "PENDING_VERIFICATION",
+            "SELF_DECLARED" => "SELF_DECLARED",
+            _ => throw new ArgumentException($"Quyết định kiểm định TRL không hợp lệ: '{trlDecision}'. Chỉ chấp nhận: VERIFIED_BY_GOV, REJECTED_TRL, PENDING_VERIFICATION, SELF_DECLARED.", nameof(trlDecision))
+        };
+
+        if (mappedStatus.Length > 30)
+            throw new ArgumentException("Mã trạng thái TRL vượt quá độ dài tối đa 30 ký tự.", nameof(trlDecision));
+
+        TrlVerificationStatus = mappedStatus;
+        if (!string.IsNullOrWhiteSpace(authorityName)) VerifiedAuthorityName = authorityName;
+        TrlVerifiedBy = verifiedBy;
+        TrlVerifiedAt = DateTimeOffset.UtcNow;
+        if (note != null) TrlReviewNote = note;
+        Touch();
+    }
+
+    public void VerifyIp(string ipDecision, string? authorityName, Guid verifiedBy, string? note = null)
+    {
+        if (string.IsNullOrWhiteSpace(ipDecision))
+            throw new ArgumentException("Quyết định kiểm định SHTT không được để trống.", nameof(ipDecision));
+
+        var norm = ipDecision.Trim().ToUpperInvariant();
+        string mappedStatus = norm switch
+        {
+            "VERIFIED_BY_GOV" or "VERIFIED" or "APPROVE" or "APPROVED" => "VERIFIED_BY_GOV",
+            "REJECTED_IP" or "REJECT" or "REJECTED" => "REJECTED_IP",
+            "PENDING_VERIFICATION" => "PENDING_VERIFICATION",
+            "SELF_DECLARED" => "SELF_DECLARED",
+            "NOT_APPLICABLE" => "NOT_APPLICABLE",
+            _ => throw new ArgumentException($"Quyết định kiểm định SHTT không hợp lệ: '{ipDecision}'. Chỉ chấp nhận: VERIFIED_BY_GOV, REJECTED_IP, PENDING_VERIFICATION, SELF_DECLARED, NOT_APPLICABLE.", nameof(ipDecision))
+        };
+
+        if (mappedStatus.Length > 30)
+            throw new ArgumentException("Mã trạng thái SHTT vượt quá độ dài tối đa 30 ký tự.", nameof(ipDecision));
+
+        IpVerificationStatus = mappedStatus;
+        if (!string.IsNullOrWhiteSpace(authorityName)) VerifiedAuthorityName = authorityName;
+        TrlVerifiedBy = verifiedBy;
+        TrlVerifiedAt = DateTimeOffset.UtcNow;
+        if (note != null) TrlReviewNote = note;
+        Touch();
+    }
+
+    public void VerifyTrlAndIp(string trlDecision, string? authorityName, Guid verifiedBy, string? note = null)
+    {
+        VerifyTrl(trlDecision, authorityName, verifiedBy, note);
+        var ipDecision = trlDecision.Trim().ToUpperInvariant() switch
+        {
+            "REJECTED_TRL" or "REJECT" or "REJECTED" => "REJECTED_IP",
+            _ => trlDecision
+        };
+        VerifyIp(ipDecision, authorityName, verifiedBy, note);
+    }
+
     public void Update(
         string offerType,
         bool hasTechTransfer,
@@ -397,7 +473,8 @@ public sealed class SellerTechnologyOffer : AggregateRoot
         bool? legalCommitmentConfirmed = null)
     {
         // BR-SELLER-07: Nếu hasTechTransfer và có sự thay đổi các trường cốt lõi (TRL, IP, TransferMethod)
-        // Hệ thống tự động chuyển về PENDING để Sở KH&CN thẩm định lại trước khi tái xuất bản
+        // Hệ thống KHÔNG gỡ sản phẩm khỏi sàn (Status = APPROVED giữ nguyên) mà chỉ hạ cấp xác thực TRL & SHTT
+        // về PENDING_VERIFICATION để Sở KH&CN hậu kiểm/tái thẩm định.
         bool coreIpChanged = HasTechTransfer && hasTechTransfer && (
             TrlLevel != trlLevel ||
             !string.Equals(IpStatus, ipStatus, StringComparison.OrdinalIgnoreCase) ||
@@ -460,8 +537,8 @@ public sealed class SellerTechnologyOffer : AggregateRoot
 
         if (coreIpChanged && Status == "APPROVED")
         {
-            Status = "PENDING";
-            PublishedAt = null;
+            TrlVerificationStatus = "PENDING_VERIFICATION";
+            IpVerificationStatus = "PENDING_VERIFICATION";
         }
 
         Touch();

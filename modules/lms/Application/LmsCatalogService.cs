@@ -34,6 +34,12 @@ public interface ILmsCatalogService
         Guid personId,
         SubmitQuizAttemptRequest request,
         CancellationToken ct = default);
+
+    Task<PracticeEvaluationResultDto> SubmitPracticeEvaluationAsync(
+        Guid materialId,
+        Guid personId,
+        SubmitPracticeEvaluationRequest request,
+        CancellationToken ct = default);
 }
 
 public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = null) : ILmsCatalogService
@@ -83,6 +89,16 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
             query = query.Where(x => x.LessonType == filter.LessonType);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.ClusterCode))
+        {
+            query = query.Where(x => x.ClusterCode == filter.ClusterCode);
+        }
+
+        if (filter.StepNumber.HasValue)
+        {
+            query = query.Where(x => x.StepNumber == filter.StepNumber.Value);
+        }
+
         var total = await query.CountAsync(ct);
 
         var items = await query
@@ -110,7 +126,16 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
                 x.QuizQuestions.Count,
                 x.Attachments.Count,
                 x.DbLinks.Count,
-                null))
+                null,
+                x.ClusterCode,
+                x.ClusterName,
+                x.StepNumber,
+                x.MicroVideos.Count,
+                x.InVideoQuizzes.Count,
+                x.PracticeRubrics.Count,
+                x.Faqs.Count,
+                x.LearningRoadmapJson,
+                x.Instructors.OrderBy(i => i.DisplayOrder).Select(i => i.FullName).FirstOrDefault()))
             .ToListAsync(ct);
 
         return new LmsCatalogResponse(new PagedResult<LmsMaterialListItemDto>(items, total, page, pageSize), kpis);
@@ -123,10 +148,15 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
         CancellationToken ct = default)
     {
         var material = await db.Set<LearningMaterial>()
+            .AsSplitQuery()
             .Include(x => x.Instructors.OrderBy(i => i.DisplayOrder))
             .Include(x => x.QuizQuestions.OrderBy(q => q.DisplayOrder))
             .Include(x => x.Attachments.OrderBy(a => a.DisplayOrder))
             .Include(x => x.DbLinks.OrderBy(l => l.DisplayOrder))
+            .Include(x => x.MicroVideos.OrderBy(v => v.VideoOrder))
+            .Include(x => x.InVideoQuizzes.OrderBy(q => q.DisplayOrder))
+            .Include(x => x.PracticeRubrics.OrderBy(r => r.CriterionNumber))
+            .Include(x => x.Faqs.OrderBy(f => f.QuestionNumber))
             .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted && x.Status == LmsStatuses.Published, ct);
 
         if (material is null)
@@ -153,6 +183,52 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
                 explanation,
                 isStaffOrAuthor && q.HasLengthWarning);
         }).ToList();
+
+        var microVideos = material.MicroVideos.Select(v => new MicroVideoDto(
+            v.Id,
+            v.VideoOrder,
+            v.VideoCode,
+            v.Title,
+            v.DurationSeconds,
+            v.VideoStorageKey,
+            v.VideoFileName,
+            v.ThumbnailUrl,
+            v.CallSheetJson,
+            !string.IsNullOrWhiteSpace(v.VideoStorageKey)
+                ? (storage != null ? storage.PublicUrl(v.VideoStorageKey) : $"/files/{v.VideoStorageKey}")
+                : null)).ToList();
+
+        // BR-EL-07: In-video quiz là câu hỏi tương tác tự học (formative checkpoint), trả về đáp án & giải thích để UI kiểm tra tức thì
+        var inVideoQuizzes = material.InVideoQuizzes.Select(q => new InVideoQuizDto(
+            q.Id,
+            q.MicroVideoId,
+            q.QuizCode,
+            q.TriggerSeconds,
+            q.AfterScene,
+            q.QuestionText,
+            q.OptionA,
+            q.OptionB,
+            q.OptionC,
+            q.OptionD,
+            q.CorrectOption,
+            q.Explanation,
+            q.DisplayOrder)).ToList();
+
+        var practiceRubrics = material.PracticeRubrics.Select(r => new PracticeRubricDto(
+            r.Id,
+            r.CriterionNumber,
+            r.CriterionName,
+            r.DescriptionScore0,
+            r.DescriptionScore1,
+            r.DescriptionScore2,
+            r.WeightMultiplier)).ToList();
+
+        var faqs = material.Faqs.Select(f => new FaqDto(
+            f.Id,
+            f.QuestionNumber,
+            f.QuestionText,
+            f.AnswerText,
+            f.DisplayOrder)).ToList();
 
         var videoDownloadUrl = !string.IsNullOrWhiteSpace(material.VideoStorageKey)
             ? (storage != null ? storage.PublicUrl(material.VideoStorageKey) : $"/files/{material.VideoStorageKey}")
@@ -200,7 +276,22 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
             material.DbLinks.Select(l => new DbLinkDto(
                 l.Id, l.TargetUrl, l.DisplayLabel, l.Description, l.TargetEntityType, l.TargetId, l.TargetCode, l.DisplayOrder)).ToList(),
             [],
-            videoDownloadUrl);
+            videoDownloadUrl,
+            material.ClusterCode,
+            material.ClusterName,
+            material.StepNumber,
+            material.TargetAudience,
+            material.PreparationNotes,
+            material.ExpectedOutcome,
+            material.PassScorePercent,
+            material.LearningObjectivesJson,
+            material.LearningRoadmapJson,
+            material.KnowledgeSummaryJson,
+            material.PracticeWorkbookJson,
+            microVideos,
+            inVideoQuizzes,
+            practiceRubrics,
+            faqs);
     }
 
     public async Task<LearnerProgress?> GetLearnerProgressAsync(
@@ -283,7 +374,8 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
         }
 
         var scorePercent = (int)Math.Round((double)correctAnswers / totalQuestions * 100);
-        var passed = scorePercent >= 60; // Chuẩn 60% đạt
+        var passThreshold = material.PassScorePercent > 0 ? material.PassScorePercent : 80;
+        var passed = scorePercent >= passThreshold; // BR-EL-09: Tỷ lệ >= 80% đạt chuẩn hoàn thành
 
         // Lưu bản ghi Attempt
         var attemptCount = await db.Set<LearnerQuizAttempt>()
@@ -309,13 +401,17 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
         if (progress is null)
         {
             progress = new LearnerProgress(materialId, personId);
-            progress.RecordQuizAttempt(scorePercent);
+            progress.RecordQuizAttempt(scorePercent, passThreshold);
             db.Set<LearnerProgress>().Add(progress);
+            if (progress.IsCompleted)
+            {
+                material.IncrementCompletionCount();
+            }
         }
         else
         {
             var wasCompleted = progress.IsCompleted;
-            progress.RecordQuizAttempt(scorePercent);
+            progress.RecordQuizAttempt(scorePercent, passThreshold);
             if (!wasCompleted && progress.IsCompleted)
             {
                 material.IncrementCompletionCount();
@@ -330,5 +426,83 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
             totalQuestions,
             passed,
             resultList);
+    }
+
+    public async Task<PracticeEvaluationResultDto> SubmitPracticeEvaluationAsync(
+        Guid materialId,
+        Guid personId,
+        SubmitPracticeEvaluationRequest request,
+        CancellationToken ct = default)
+    {
+        var material = await db.Set<LearningMaterial>()
+            .Include(x => x.PracticeRubrics)
+            .FirstOrDefaultAsync(x => x.Id == materialId && !x.IsDeleted && x.Status == LmsStatuses.Published, ct);
+
+        if (material is null)
+            throw new NotFoundException("Học liệu không tồn tại hoặc chưa công khai");
+
+        var rubrics = material.PracticeRubrics.OrderBy(r => r.CriterionNumber).ToList();
+        if (rubrics.Count == 0)
+            throw new ValidationException("Học liệu này chưa thiết lập bảng rubric tự chấm");
+
+        // Validate RubricScores: kiểm tra mọi điểm gửi lên không được nằm ngoài {0, 1, 2}
+        foreach (var kvp in request.RubricScores)
+        {
+            if (kvp.Key is < 1 or > 7)
+                throw new ValidationException($"Mã tiêu chí {kvp.Key} không hợp lệ (chỉ chấp nhận 1..7)");
+            if (kvp.Value is < 0 or > 2)
+                throw new ValidationException($"Điểm tiêu chí {kvp.Key} phải là 0, 1 hoặc 2");
+        }
+
+        var totalScore = 0;
+        foreach (var rubric in rubrics)
+        {
+            if (!request.RubricScores.TryGetValue(rubric.CriterionNumber, out var score))
+            {
+                score = 0; // Mặc định 0 nếu học viên chưa chấm
+            }
+
+            if (score is < 0 or > 2)
+                throw new ValidationException($"Điểm tiêu chí {rubric.CriterionNumber} phải là 0, 1 hoặc 2");
+
+            totalScore += score * rubric.WeightMultiplier;
+        }
+
+        const int maxScore = 14;
+        const int passThreshold = 11;
+        var isUnlockedCta = totalScore >= passThreshold;
+
+        var rubricScoresJson = JsonSerializer.Serialize(request.RubricScores);
+        var essayAnswersJson = request.EssayAnswers != null && request.EssayAnswers.Count > 0
+            ? JsonSerializer.Serialize(request.EssayAnswers)
+            : null;
+
+        var evaluation = new LearnerPracticeEvaluation(
+            materialId,
+            personId,
+            rubricScoresJson,
+            totalScore,
+            essayAnswersJson,
+            request.RequestExpertConsultation && isUnlockedCta,
+            request.CreateDemandProfile && isUnlockedCta,
+            maxScore,
+            passThreshold);
+
+        db.Set<LearnerPracticeEvaluation>().Add(evaluation);
+        await db.SaveChangesAsync(ct);
+
+        var feedbackMessage = isUnlockedCta
+            ? "Chúc mừng bạn đã hoàn thành bài tập thực hành xuất sắc! Hai nút CTA phản biện Chuyên gia và Tạo hồ sơ nhu cầu công nghệ đã được mở khóa."
+            : $"Bạn đạt {totalScore}/{maxScore} điểm (chưa đạt ngưỡng {passThreshold}/{maxScore}). Hãy rà soát lại các tiêu chí và hoàn thiện trước khi gửi phản biện.";
+
+        return new PracticeEvaluationResultDto(
+            totalScore,
+            maxScore,
+            passThreshold,
+            isUnlockedCta,
+            isUnlockedCta,
+            isUnlockedCta,
+            feedbackMessage,
+            evaluation.SubmittedAt);
     }
 }

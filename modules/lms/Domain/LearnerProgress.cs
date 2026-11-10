@@ -51,12 +51,22 @@ public sealed class LearnerProgress : Entity
         CheckCompletion();
     }
 
-    public void RecordQuizAttempt(int scorePercent)
+    public void RecordQuizAttempt(int scorePercent, int passScorePercent = 80)
     {
         QuizAttemptsCount++;
         BestQuizScore = Math.Max(BestQuizScore, scorePercent);
         LastAccessedAt = DateTimeOffset.UtcNow;
-        CheckCompletion();
+
+        // BR-EL-09: Khi đạt tỷ lệ >= passScorePercent (mặc định 80%) ghi nhận hoàn thành
+        if (!IsCompleted && scorePercent >= passScorePercent)
+        {
+            IsCompleted = true;
+            CompletedAt = DateTimeOffset.UtcNow;
+        }
+        else
+        {
+            CheckCompletion();
+        }
     }
 
     private void CheckCompletion()

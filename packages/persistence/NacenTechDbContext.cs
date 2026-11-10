@@ -29,6 +29,11 @@ public sealed partial class NacenTechDbContext(DbContextOptions<NacenTechDbConte
     public DbSet<LearningModerationLog> LearningModerationLogs => Set<LearningModerationLog>();
     public DbSet<LearnerProgress> LearnerProgresses => Set<LearnerProgress>();
     public DbSet<LearnerQuizAttempt> LearnerQuizAttempts => Set<LearnerQuizAttempt>();
+    public DbSet<LearningMicroVideo> LearningMicroVideos => Set<LearningMicroVideo>();
+    public DbSet<LearningInVideoQuiz> LearningInVideoQuizzes => Set<LearningInVideoQuiz>();
+    public DbSet<LearningPracticeRubric> LearningPracticeRubrics => Set<LearningPracticeRubric>();
+    public DbSet<LearningFaq> LearningFaqs => Set<LearningFaq>();
+    public DbSet<LearnerPracticeEvaluation> LearnerPracticeEvaluations => Set<LearnerPracticeEvaluation>();
 
     // Blockchain & ZKProof Module (TASK-11)
     public DbSet<Modules.Blockchain.Domain.Entities.AnchorPolicy> AnchorPolicies => Set<Modules.Blockchain.Domain.Entities.AnchorPolicy>();

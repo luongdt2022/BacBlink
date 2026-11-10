@@ -305,7 +305,13 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         TaxAndExtraCosts: x.TaxAndExtraCosts,
         TechnicalSupportMethod: x.TechnicalSupportMethod,
         IpIssueDate: x.IpIssueDate,
-        LegalCommitmentConfirmed: x.LegalCommitmentConfirmed
+        LegalCommitmentConfirmed: x.LegalCommitmentConfirmed,
+        TrlVerificationStatus: x.TrlVerificationStatus,
+        IpVerificationStatus: x.IpVerificationStatus,
+        VerifiedAuthorityName: x.VerifiedAuthorityName,
+        TrlVerifiedBy: x.TrlVerifiedBy,
+        TrlVerifiedAt: x.TrlVerifiedAt,
+        TrlReviewNote: x.TrlReviewNote
     );
 
     [HttpGet]
@@ -944,41 +950,88 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             }
         }
 
-        var action = dto.Action.ToUpperInvariant();
-        string newStatus;
+        var action = dto.Action?.Trim().ToUpperInvariant();
+        var trlDecision = (dto.TrlVerificationDecision ?? dto.VerificationDecision)?.Trim().ToUpperInvariant();
+        var ipDecision = (dto.IpVerificationDecision ?? dto.VerificationDecision)?.Trim().ToUpperInvariant();
+        var trlNote = dto.TrlReviewNote ?? dto.ReviewNote;
+
+        string newStatus = entity?.Status ?? existing?.Status ?? "PENDING";
         DateTimeOffset? publishedAt = entity?.PublishedAt ?? existing?.PublishedAt;
 
-        switch (action)
+        if (!string.IsNullOrWhiteSpace(action) && action != "NONE" && action != "VERIFY_ONLY")
         {
-            case "APPROVE":
-                newStatus = "APPROVED";
-                publishedAt = DateTimeOffset.UtcNow;
-                break;
-            case "REJECT":
-                newStatus = "REJECTED";
-                publishedAt = null;
-                break;
-            case "REQUEST_CHANGES":
-                newStatus = "CHANGES_REQUESTED";
-                publishedAt = null;
-                break;
-            case "REVOKE":
-                newStatus = "REJECTED";
-                publishedAt = null;
-                break;
-            default:
-                return BadRequest(new { success = false, message = $"Hành động thẩm định không hợp lệ: {action}. Hỗ trợ: APPROVE, REJECT, REQUEST_CHANGES, REVOKE." });
+            switch (action)
+            {
+                case "APPROVE":
+                    newStatus = "APPROVED";
+                    publishedAt = DateTimeOffset.UtcNow;
+                    break;
+                case "REJECT":
+                    newStatus = "REJECTED";
+                    publishedAt = null;
+                    break;
+                case "REQUEST_CHANGES":
+                    newStatus = "CHANGES_REQUESTED";
+                    publishedAt = null;
+                    break;
+                case "REVOKE":
+                    newStatus = "REJECTED";
+                    publishedAt = null;
+                    break;
+                default:
+                    return BadRequest(new { success = false, message = $"Hành động thẩm định không hợp lệ: {action}. Hỗ trợ: APPROVE, REJECT, REQUEST_CHANGES, REVOKE." });
+            }
         }
+
+        // Whitelist validation cho quyết định kiểm định TRL & SHTT
+        if (!string.IsNullOrWhiteSpace(trlDecision))
+        {
+            if (trlDecision.Length > 30 || (trlDecision != "VERIFIED_BY_GOV" && trlDecision != "VERIFIED" && trlDecision != "APPROVE" && trlDecision != "APPROVED"
+                && trlDecision != "REJECTED_TRL" && trlDecision != "REJECT" && trlDecision != "REJECTED"
+                && trlDecision != "PENDING_VERIFICATION" && trlDecision != "SELF_DECLARED"))
+            {
+                return BadRequest(new { success = false, message = $"Quyết định kiểm định TRL không hợp lệ: '{trlDecision}'. Chỉ chấp nhận: VERIFIED_BY_GOV, REJECTED_TRL, PENDING_VERIFICATION, SELF_DECLARED." });
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(ipDecision))
+        {
+            if (ipDecision.Length > 30 || (ipDecision != "VERIFIED_BY_GOV" && ipDecision != "VERIFIED" && ipDecision != "APPROVE" && ipDecision != "APPROVED"
+                && ipDecision != "REJECTED_IP" && ipDecision != "REJECT" && ipDecision != "REJECTED"
+                && ipDecision != "PENDING_VERIFICATION" && ipDecision != "SELF_DECLARED" && ipDecision != "NOT_APPLICABLE"))
+            {
+                return BadRequest(new { success = false, message = $"Quyết định kiểm định SHTT không hợp lệ: '{ipDecision}'. Chỉ chấp nhận: VERIFIED_BY_GOV, REJECTED_IP, PENDING_VERIFICATION, SELF_DECLARED, NOT_APPLICABLE." });
+            }
+        }
+
+        string authorityName = dto.VerifiedAuthorityName 
+            ?? entity?.ManagingAuthorityName 
+            ?? existing?.ManagingAuthorityName 
+            ?? "Sở Khoa học và Công nghệ TP. Hà Nội";
+        Guid verifiedBy = Actor.PersonId ?? Guid.Empty;
 
         if (entity != null)
         {
-            if (action == "REVOKE")
+            if (!string.IsNullOrWhiteSpace(action) && action != "NONE" && action != "VERIFY_ONLY")
             {
-                entity.Review("REJECT", dto.ReviewNote ?? "Hậu kiểm: Thu hồi hồ sơ đã duyệt.");
+                if (action == "REVOKE")
+                {
+                    entity.Review("REJECT", dto.ReviewNote ?? "Hậu kiểm: Thu hồi hồ sơ đã duyệt.");
+                }
+                else
+                {
+                    entity.Review(action, dto.ReviewNote);
+                }
             }
-            else
+
+            if (!string.IsNullOrWhiteSpace(trlDecision))
             {
-                entity.Review(action, dto.ReviewNote);
+                entity.VerifyTrl(trlDecision, authorityName, verifiedBy, trlNote);
+            }
+
+            if (!string.IsNullOrWhiteSpace(ipDecision))
+            {
+                entity.VerifyIp(ipDecision, authorityName, verifiedBy, trlNote);
             }
 
             // DEFECT-10: Bắt DbUpdateConcurrencyException khi cập nhật đồng thời
@@ -997,17 +1050,44 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
             var updatedFromDb = ToDto(entity);
             OffersStore[id] = updatedFromDb;
-            return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updatedFromDb });
+            return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công.", data = updatedFromDb });
+        }
+
+        string newTrlStatus = existing?.TrlVerificationStatus ?? "SELF_DECLARED";
+        string newIpStatus = existing?.IpVerificationStatus ?? "SELF_DECLARED";
+        if (!string.IsNullOrWhiteSpace(trlDecision))
+        {
+            newTrlStatus = trlDecision switch
+            {
+                "VERIFIED_BY_GOV" or "VERIFIED" or "APPROVE" or "APPROVED" => "VERIFIED_BY_GOV",
+                "REJECTED_TRL" or "REJECT" or "REJECTED" => "REJECTED_TRL",
+                _ => trlDecision
+            };
+        }
+        if (!string.IsNullOrWhiteSpace(ipDecision))
+        {
+            newIpStatus = ipDecision switch
+            {
+                "VERIFIED_BY_GOV" or "VERIFIED" or "APPROVE" or "APPROVED" => "VERIFIED_BY_GOV",
+                "REJECTED_IP" or "REJECT" or "REJECTED" => "REJECTED_IP",
+                _ => ipDecision
+            };
         }
 
         var updated = existing! with
         {
             Status = newStatus,
-            PublishedAt = publishedAt
+            PublishedAt = publishedAt,
+            TrlVerificationStatus = newTrlStatus,
+            IpVerificationStatus = newIpStatus,
+            VerifiedAuthorityName = authorityName,
+            TrlVerifiedBy = verifiedBy,
+            TrlVerifiedAt = (!string.IsNullOrWhiteSpace(trlDecision) || !string.IsNullOrWhiteSpace(ipDecision)) ? DateTimeOffset.UtcNow : existing?.TrlVerifiedAt,
+            TrlReviewNote = trlNote ?? existing?.TrlReviewNote
         };
 
         OffersStore[id] = updated;
-        return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công: {action}", data = updated });
+        return Ok(new { success = true, message = $"Thẩm định hồ sơ thành công.", data = updated });
     }
 
     // DEFECT-06: Endpoint cập nhật hồ sơ yêu cầu xác thực JWT của doanh nghiệp
@@ -1058,6 +1138,8 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
         string newStatus;
         DateTimeOffset? newPublishedAt = entity?.PublishedAt ?? existing?.PublishedAt;
+        string newTrlStatus = entity?.TrlVerificationStatus ?? existing?.TrlVerificationStatus ?? "SELF_DECLARED";
+        string newIpStatus = entity?.IpVerificationStatus ?? existing?.IpVerificationStatus ?? "SELF_DECLARED";
 
         if (isDraft)
         {
@@ -1072,8 +1154,10 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         }
         else if (coreIpChanged && currentStatus == "APPROVED")
         {
-            newStatus = "PENDING";
-            newPublishedAt = null;
+            // BR-SELLER-07 mới: KHÔNG gỡ khỏi sàn (Status = APPROVED giữ nguyên), chỉ đổi trạng thái xác thực chuyên sâu
+            newStatus = "APPROVED";
+            newTrlStatus = "PENDING_VERIFICATION";
+            newIpStatus = "PENDING_VERIFICATION";
         }
         else
         {
@@ -1142,7 +1226,13 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             TaxAndExtraCosts: dto.TaxAndExtraCosts ?? entity?.TaxAndExtraCosts,
             TechnicalSupportMethod: dto.TechnicalSupportMethod ?? entity?.TechnicalSupportMethod,
             IpIssueDate: dto.IpIssueDate ?? entity?.IpIssueDate,
-            LegalCommitmentConfirmed: dto.LegalCommitmentConfirmed
+            LegalCommitmentConfirmed: dto.LegalCommitmentConfirmed,
+            TrlVerificationStatus: newTrlStatus,
+            IpVerificationStatus: newIpStatus,
+            VerifiedAuthorityName: entity?.VerifiedAuthorityName ?? existing?.VerifiedAuthorityName,
+            TrlVerifiedBy: entity?.TrlVerifiedBy ?? existing?.TrlVerifiedBy,
+            TrlVerifiedAt: entity?.TrlVerifiedAt ?? existing?.TrlVerifiedAt,
+            TrlReviewNote: entity?.TrlReviewNote ?? existing?.TrlReviewNote
         );
 
         if (entity != null)
@@ -1236,14 +1326,19 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                     message = "Hồ sơ công nghệ đã được thay đổi bởi một phiên làm việc khác. Vui lòng tải lại và thử lại."
                 });
             }
+            var updatedFromDb = ToDto(entity);
+            OffersStore[id] = updatedFromDb;
+            updated = updatedFromDb;
         }
-
-        OffersStore[id] = updated;
+        else
+        {
+            OffersStore[id] = updated;
+        }
 
         var message = isDraft
             ? "Đã lưu nháp hồ sơ thành công."
             : coreIpChanged && currentStatus == "APPROVED"
-                ? "Cập nhật hồ sơ thành công! Lưu ý: Do bạn đã thay đổi Cấp độ TRL / Tình trạng SHTT / Phương thức chuyển giao, hồ sơ tự động chuyển về trạng thái CHỜ THẨM ĐỊNH (PENDING) bởi Sở KH&CN theo quy tắc BR-SELLER-07."
+                ? "Cập nhật hồ sơ thành công! Sản phẩm tiếp tục được niêm yết trên sàn, trạng thái xác thực TRL & SHTT được chuyển về CHỜ XÁC THỰC (PENDING_VERIFICATION) để Sở KH&CN hậu kiểm theo quy tắc BR-SELLER-07."
                 : "Cập nhật thông tin công nghệ chào bán thành công.";
 
         return Ok(new
