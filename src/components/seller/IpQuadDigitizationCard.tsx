@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Award, FileCheck2, Upload, Calendar, ShieldCheck } from "lucide-react";
+import { Award, FileCheck2, Upload, Calendar, ShieldCheck, BookOpen } from "lucide-react";
+import TrlMethodologyModal from "@/components/common/TrlMethodologyModal";
 import { IntellectualPropertyStatus, PROVINCIAL_AUTHORITIES_CATALOG } from "@/services/api/technology-offer";
 
 interface IpQuadDigitizationCardProps {
@@ -38,6 +39,7 @@ export function IpQuadDigitizationCard({
   patentFileName,
 }: IpQuadDigitizationCardProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isMethodologyOpen, setIsMethodologyOpen] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0] && onUploadPatentScan) {
@@ -57,6 +59,7 @@ export function IpQuadDigitizationCard({
   };
 
   return (
+    <>
     <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-6">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div className="flex items-center gap-2.5">
@@ -72,9 +75,19 @@ export function IpQuadDigitizationCard({
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-bold text-amber-800">
-          Bước 4 / Pháp Lý
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsMethodologyOpen(true)}
+            className="inline-flex items-center gap-1 text-xs text-amber-800 hover:text-amber-950 font-bold bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-full transition"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-amber-700" />
+            Minh chứng TRL 7-9 & SHTT
+          </button>
+          <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+            Bước 4 / Pháp Lý
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -176,5 +189,12 @@ export function IpQuadDigitizationCard({
         </label>
       </div>
     </div>
+
+    <TrlMethodologyModal
+      isOpen={isMethodologyOpen}
+      onClose={() => setIsMethodologyOpen(false)}
+      initialLevel={7}
+    />
+    </>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Flame, Sparkles, TrendingUp, ShieldAlert, Cpu } from 'lucide-react';
+import React, { useState } from 'react';
+import { Flame, Sparkles, TrendingUp, ShieldAlert, Cpu, BookOpen, BarChart2 } from 'lucide-react';
+import TniMethodologyModal from '@/components/common/TniMethodologyModal';
 
 export interface TniValues {
   urgency: number;   // K: 1-5 (35%)
@@ -86,6 +87,7 @@ const DIMENSION_DESCRIPTIONS = {
 };
 
 export default function TniRealtimeCalculator({ values, onChange, compact = false }: TniRealtimeCalculatorProps) {
+  const [isMethodologyOpen, setIsMethodologyOpen] = useState(false);
   const score = calculateTni(values.urgency, values.impact, values.investment, values.readiness);
   const classification = getTniClassification(score);
 
@@ -198,20 +200,51 @@ export default function TniRealtimeCalculator({ values, onChange, compact = fals
           </div>
         </div>
 
-        {/* Formula */}
-        <p className="text-xs text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/80 font-mono">
-          Công thức: <code className="text-brand-700 dark:text-cyan-400 font-bold">TNI = ROUND((35%K + 30%L + 20%N + 15%O)/5)</code>
-        </p>
+        {/* Formula & Modal Trigger */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+            Công thức: <code className="text-brand-700 dark:text-cyan-400 font-bold">TNI = ROUND((35K + 30L + 20N + 15O)/5)</code>
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsMethodologyOpen(true)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 underline"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            Giải thích công thức TNI & cơ sở khoa học (304 DN)
+          </button>
+        </div>
       </div>
 
-      {/* Matching Policy Box */}
-      <div className="text-xs bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/70 dark:border-brand-900 text-brand-900 dark:text-brand-200 p-3.5 rounded-xl flex items-start gap-2.5">
-        <TrendingUp className="w-4 h-4 text-brand-700 dark:text-cyan-400 shrink-0 mt-0.5" />
-        <div className="space-y-0.5">
-          <span className="font-bold block">Chính sách xử lý tự động:</span>
-          <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-            {classification.policy}
-          </p>
+      {/* Matching Policy Box & 304 DN Evidence */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="text-xs bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/70 dark:border-brand-900 text-brand-900 dark:text-brand-200 p-3 rounded-xl flex items-start gap-2.5">
+          <TrendingUp className="w-4 h-4 text-brand-700 dark:text-cyan-400 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <span className="font-bold block">Chính sách xử lý tự động:</span>
+            <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+              {classification.policy}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-xs bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200 p-3 rounded-xl flex items-start gap-2.5">
+          <BarChart2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <div className="flex items-center justify-between">
+              <span className="font-bold block">Thực nghiệm 304 Doanh nghiệp:</span>
+              <button
+                type="button"
+                onClick={() => setIsMethodologyOpen(true)}
+                className="text-[11px] text-emerald-800 dark:text-emerald-300 underline font-bold"
+              >
+                Xem báo cáo
+              </button>
+            </div>
+            <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+              Mean 68.94 · Median 66.5. Đã đối soát trên 304 DNNVV theo quyết định PO-DEC-20261008-03.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -276,6 +309,11 @@ export default function TniRealtimeCalculator({ values, onChange, compact = fals
           );
         })}
       </div>
+
+      <TniMethodologyModal
+        isOpen={isMethodologyOpen}
+        onClose={() => setIsMethodologyOpen(false)}
+      />
     </div>
   );
 }

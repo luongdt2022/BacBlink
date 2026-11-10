@@ -40,11 +40,13 @@ import {
   Mail,
   Phone,
   Briefcase,
+  Download,
 } from "lucide-react";
 
 import { reviewOffer } from "@/services/api/technology-offer";
 import { TechnologyOffer } from "@/types/technology-offer";
 import { GovPageHeader } from "@/components/gov/gov-page-header";
+import TrlMethodologyModal from "@/components/common/TrlMethodologyModal";
 import {
   resolveSectorName,
   resolveProvinceName,
@@ -392,6 +394,11 @@ function GovDashboardContent() {
   const [reviewAction, setReviewAction] = useState<"APPROVE" | "REJECT" | "REQUEST_CHANGES" | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [reviewError, setReviewError] = useState("");
+  const [trlDecision, setTrlDecision] = useState<"VERIFY_BY_GOV" | "KEEP_SELF_DECLARED" | "REJECT_TRL">("VERIFY_BY_GOV");
+  const [ipDecision, setIpDecision] = useState<"VERIFY_BY_GOV" | "KEEP_SELF_DECLARED" | "REJECT_IP">("VERIFY_BY_GOV");
+  const [verifiedAuthorityName, setVerifiedAuthorityName] = useState("");
+  const [trlReviewNote, setTrlReviewNote] = useState("");
+  const [isTrlMethodologyOpen, setIsTrlMethodologyOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
   const reviewNoteRef = useRef<HTMLTextAreaElement>(null);
@@ -714,10 +721,23 @@ function GovDashboardContent() {
 
     try {
       if (selectedItem.type === "TECHNOLOGY_OFFER") {
+        const authorityToUse =
+          verifiedAuthorityName.trim() ||
+          user?.organizationName ||
+          (currentProvinceName.startsWith("Sở") ? currentProvinceName : `Sở KH&CN ${currentProvinceName}`);
+
         await reviewOffer(
           selectedItem.id,
           reviewAction,
-          reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ công nghệ hợp lệ, Sở KH&CN phê duyệt cấp cơ sở." : "Cần bổ sung hồ sơ.")
+          reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ công nghệ hợp lệ, Sở KH&CN phê duyệt cấp cơ sở." : "Cần bổ sung hồ sơ."),
+          reviewAction === "APPROVE"
+            ? {
+                trlVerificationDecision: trlDecision,
+                ipVerificationDecision: ipDecision,
+                verifiedAuthorityName: authorityToUse,
+                trlReviewNote: trlReviewNote.trim() || undefined,
+              }
+            : undefined
         );
       } else {
         const res = await fetch(`/api/v1/governance/approvals/${selectedItem.id}/review`, {
@@ -1768,18 +1788,126 @@ function GovDashboardContent() {
                       )}
                     </div>
 
-                    {/* DataRoom & Tài Liệu Pháp Lý SHTT */}
-                    {selectedItem.cvOrDocName && (
-                      <div className="p-3.5 rounded-control bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-900/50 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-brand-700 dark:text-brand-300 font-medium">
-                          <FileText className="w-4 h-4" />
-                          <span>Hồ sơ minh chứng / DataRoom: {selectedItem.cvOrDocName}</span>
+                    {/* UI-GOV-EVIDENCE-INSPECTOR: Khối Kiểm Tra Giấy Tờ Minh Chứng Trực Tiếp */}
+                    <div className="p-4 rounded-surface bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-700/80 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <FileCheck2 className="w-4 h-4 text-brand-600" />
+                          <h4 className="font-bold text-slate-900 dark:text-white text-caption uppercase tracking-wider">
+                            Hồ Sơ Minh Chứng Kỹ Thuật &amp; Văn Bằng SHTT (DataRoom)
+                          </h4>
                         </div>
-                        <span className="text-caption text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-950 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                          Đã xác thực chữ ký số
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsTrlMethodologyOpen(true)}
+                          className="inline-flex items-center gap-1.5 text-xs text-amber-800 hover:text-amber-950 dark:text-amber-300 font-bold bg-amber-100/80 dark:bg-amber-950/60 hover:bg-amber-200 border border-amber-300 dark:border-amber-800 px-3 py-1 rounded-full transition self-start"
+                        >
+                          <BookOpen className="w-3.5 h-3.5 text-amber-700" />
+                          Đối chiếu Tiêu chuẩn Minh chứng TRL (1–9)
+                        </button>
                       </div>
-                    )}
+
+                      {(() => {
+                        const docs = selectedItem.rawOffer?.documents || [];
+                        if (docs.length === 0 && !selectedItem.cvOrDocName) {
+                          return (
+                            <p className="text-xs text-slate-400 italic py-2">
+                              Sản phẩm chưa đính kèm tệp minh chứng kỹ thuật hoặc văn bằng SHTT số hóa.
+                            </p>
+                          );
+                        }
+
+                        // Danh sách tài liệu chuẩn hóa
+                        const documentList = docs.length > 0 ? docs : [
+                          {
+                            id: "doc-legacy-1",
+                            documentType: "TRL_EVIDENCE" as const,
+                            fileName: selectedItem.cvOrDocName || "Tai_Lieu_Minh_Chung.pdf",
+                            fileUrl: `/api/v1/portal/seller/technologies/${selectedItem.id}/documents/download`,
+                            fileSizeBytes: 2048576,
+                            accessScope: "PUBLIC" as const,
+                          }
+                        ];
+
+                        return (
+                          <div className="space-y-2">
+                            {documentList.map((doc, idx) => {
+                              const isTrl = doc.documentType === "TRL_EVIDENCE";
+                              const isPatent = doc.documentType === "PATENT_CERT";
+                              const isCat = doc.documentType === "CATALOGUE";
+
+                              const badgeColor = isTrl
+                                ? "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950 dark:text-amber-300"
+                                : isPatent
+                                ? "bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950 dark:text-purple-300"
+                                : isCat
+                                ? "bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-300"
+                                : "bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-300";
+
+                              const docLabel = isTrl
+                                ? "Hồ Sơ Minh Chứng TRL"
+                                : isPatent
+                                ? "Văn Bằng SHTT"
+                                : isCat
+                                ? "Catalogue Kỹ Thuật"
+                                : "Tài Liệu Đính Kèm";
+
+                              const sizeText = doc.fileSizeBytes
+                                ? `${(doc.fileSizeBytes / 1024 / 1024).toFixed(1)} MB`
+                                : "Tài liệu";
+
+                              return (
+                                <div
+                                  key={doc.id || idx}
+                                  className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs hover:border-slate-300 dark:hover:border-slate-700 transition"
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-3">
+                                    <div className="w-7 h-7 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                                      <FileText className="w-4 h-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2 truncate">
+                                        <span className="font-bold text-slate-900 dark:text-white truncate">
+                                          {doc.fileName}
+                                        </span>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${badgeColor}`}>
+                                          {docLabel}
+                                        </span>
+                                      </div>
+                                      <span className="text-[11px] text-slate-400 font-mono">
+                                        Dung lượng: {sizeText} &bull; Mã: {doc.id || `DOC-${idx + 1}`}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <a
+                                      href={doc.fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/70 text-brand-700 dark:text-brand-300 font-bold transition border border-brand-200 dark:border-brand-900"
+                                      title="Xem trực tiếp tài liệu trong tab mới"
+                                    >
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                      <span>Xem</span>
+                                    </a>
+                                    <a
+                                      href={doc.fileUrl}
+                                      download={doc.fileName}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold transition"
+                                      title="Tải về máy tính"
+                                    >
+                                      <Download className="w-3.5 h-3.5" />
+                                      <span className="hidden sm:inline">Tải về</span>
+                                    </a>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 ) : isInstitution ? (
                   /* Layout Thẩm Định Hồ Sơ Doanh Nghiệp ĐMST */
@@ -1946,63 +2074,272 @@ function GovDashboardContent() {
                   </div>
                 )}
 
-                {/* Review Actions Form */}
-                <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-3">
-                  <h4 className="font-bold text-slate-900 dark:text-white">
-                    Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN
-                  </h4>
+                {/* Review Actions Form: Bảng Điều Khiển Duyệt Tách Bạch 2 Tầng */}
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-4 space-y-4">
+                  {/* Khối A: Quyết định Niêm yết Lên Sàn */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs flex items-center justify-center font-bold">
+                          A
+                        </span>
+                        <span>{isOffer ? "Quyết Định Niêm Yết Lên Sàn Giao Dịch" : "Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN"}</span>
+                      </h4>
+                      <span className="text-xs text-slate-400">
+                        (Thẩm quyền Lãnh đạo Sở KH&CN)
+                      </span>
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReviewAction("APPROVE");
-                        setReviewError("");
-                      }}
-                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                        reviewAction === "APPROVE"
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 ring-2 ring-emerald-500"
-                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>{isOffer ? "Phê Duyệt Niêm Yết Sàn" : "Phê Duyệt Cấp Tỉnh"}</span>
-                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReviewAction("APPROVE");
+                          setReviewError("");
+                        }}
+                        className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
+                          reviewAction === "APPROVE"
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 ring-2 ring-emerald-500 shadow-xs"
+                            : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>{isOffer ? "Phê Duyệt Niêm Yết Sàn" : "Phê Duyệt Cấp Tỉnh"}</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReviewAction("REQUEST_CHANGES");
-                        setReviewError("");
-                        focusAndScrollToReviewNote();
-                      }}
-                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                        reviewAction === "REQUEST_CHANGES"
-                          ? "border-cyan-500 bg-cyan-50 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 ring-2 ring-cyan-500"
-                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <AlertCircle className="w-4 h-4 text-cyan-600 shrink-0" />
-                      <span>Yêu Cầu Bổ Sung</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReviewAction("REQUEST_CHANGES");
+                          setReviewError("");
+                          focusAndScrollToReviewNote();
+                        }}
+                        className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
+                          reviewAction === "REQUEST_CHANGES"
+                            ? "border-cyan-500 bg-cyan-50 text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-300 ring-2 ring-cyan-500 shadow-xs"
+                            : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <AlertCircle className="w-4 h-4 text-cyan-600 shrink-0" />
+                        <span>Yêu Cầu Bổ Sung</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReviewAction("REJECT");
-                        setReviewError("");
-                        focusAndScrollToReviewNote();
-                      }}
-                      className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
-                        reviewAction === "REJECT"
-                          ? "border-rose-500 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 ring-2 ring-rose-500"
-                          : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      <X className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span>{isOffer ? "Từ Chối Niêm Yết" : "Từ Chối Hồ Sơ"}</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReviewAction("REJECT");
+                          setReviewError("");
+                          focusAndScrollToReviewNote();
+                        }}
+                        className={`p-3 rounded-control border text-left font-bold transition flex items-center gap-2 cursor-pointer ${
+                          reviewAction === "REJECT"
+                            ? "border-rose-500 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 ring-2 ring-rose-500 shadow-xs"
+                            : "border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <X className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>{isOffer ? "Từ Chối Niêm Yết" : "Từ Chối Hồ Sơ"}</span>
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Khối B: Thẩm Định Chỉ Số Chuyên Môn TRL & SHTT (Chỉ xuất hiện khi Khối A chọn APPROVE cho TECHNOLOGY_OFFER) */}
+                  {isOffer && reviewAction === "APPROVE" && (
+                    <div className="rounded-xl border-2 border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20 p-4 space-y-4 animate-in fade-in">
+                      <div className="flex items-center justify-between border-b border-emerald-200 dark:border-emerald-800/80 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold">
+                            B
+                          </span>
+                          <h5 className="font-extrabold text-emerald-950 dark:text-emerald-200 text-sm flex items-center gap-1.5">
+                            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                            <span>Thẩm Định Chỉ Số Chuyên Môn TRL &amp; SHTT (Two-Tier Verification)</span>
+                          </h5>
+                        </div>
+                        <span className="text-[11px] bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2.5 py-0.5 rounded-full font-bold border border-emerald-300 dark:border-emerald-700">
+                          Thẩm định cấp 2
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Thẩm định TRL */}
+                        <div className="p-3.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                              <Award className="w-4 h-4 text-amber-500" />
+                              1. Mức độ sẵn sàng TRL: TRL {selectedItem.rawOffer?.trlLevel || 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setIsTrlMethodologyOpen(true)}
+                              className="text-[11px] text-brand-600 dark:text-cyan-400 hover:underline font-bold"
+                            >
+                              Tiêu chuẩn minh chứng (?)
+                            </button>
+                          </div>
+
+                          <div className="space-y-1.5 text-xs">
+                            <label className="flex items-start gap-2 p-2 rounded border cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800">
+                              <input
+                                type="radio"
+                                name="trlDecision"
+                                value="VERIFY_BY_GOV"
+                                checked={trlDecision === "VERIFY_BY_GOV"}
+                                onChange={() => setTrlDecision("VERIFY_BY_GOV")}
+                                className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                              />
+                              <div>
+                                <span className="font-bold text-emerald-700 dark:text-emerald-400 block">
+                                  ✓ Xác thực TRL Nhà nước (VERIFIED_BY_GOV)
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Đã kiểm tra đủ hồ sơ minh chứng / Test report theo quy chuẩn.
+                                </span>
+                              </div>
+                            </label>
+
+                            <label className="flex items-start gap-2 p-2 rounded border cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800">
+                              <input
+                                type="radio"
+                                name="trlDecision"
+                                value="KEEP_SELF_DECLARED"
+                                checked={trlDecision === "KEEP_SELF_DECLARED"}
+                                onChange={() => setTrlDecision("KEEP_SELF_DECLARED")}
+                                className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                              />
+                              <div>
+                                <span className="font-bold text-amber-700 dark:text-amber-400 block">
+                                  Giữ TRL Tự kê khai (SELF_DECLARED)
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Đủ điều kiện niêm yết bán, nhưng chưa thẩm định chuyên sâu.
+                                </span>
+                              </div>
+                            </label>
+
+                            <label className="flex items-start gap-2 p-2 rounded border cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800">
+                              <input
+                                type="radio"
+                                name="trlDecision"
+                                value="REJECT_TRL"
+                                checked={trlDecision === "REJECT_TRL"}
+                                onChange={() => setTrlDecision("REJECT_TRL")}
+                                className="mt-0.5 text-rose-600 focus:ring-rose-500"
+                              />
+                              <div>
+                                <span className="font-bold text-rose-700 dark:text-rose-400 block">
+                                  Không công nhận mức TRL này (REJECTED_TRL)
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Mức TRL tự khai không phù hợp với tài liệu cung cấp.
+                                </span>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Thẩm định SHTT */}
+                        <div className="p-3.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                              <ShieldCheck className="w-4 h-4 text-brand-600" />
+                              2. Quyền Sở Hữu Trí Tuệ (SHTT)
+                            </span>
+                            <span className="text-[11px] text-slate-500 font-mono">
+                              {selectedItem.rawOffer?.ipRegistrationNumber || "Không có số văn bằng"}
+                            </span>
+                          </div>
+
+                          <div className="space-y-1.5 text-xs">
+                            <label className="flex items-start gap-2 p-2 rounded border cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800">
+                              <input
+                                type="radio"
+                                name="ipDecision"
+                                value="VERIFY_BY_GOV"
+                                checked={ipDecision === "VERIFY_BY_GOV"}
+                                onChange={() => setIpDecision("VERIFY_BY_GOV")}
+                                className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
+                              />
+                              <div>
+                                <span className="font-bold text-emerald-700 dark:text-emerald-400 block">
+                                  ✓ Xác thực SHTT Nhà nước (VERIFIED_BY_GOV)
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Đã đối soát văn bằng hợp lệ trên cơ sở dữ liệu WIPO / Cục SHTT.
+                                </span>
+                              </div>
+                            </label>
+
+                            <label className="flex items-start gap-2 p-2 rounded border cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800">
+                              <input
+                                type="radio"
+                                name="ipDecision"
+                                value="KEEP_SELF_DECLARED"
+                                checked={ipDecision === "KEEP_SELF_DECLARED"}
+                                onChange={() => setIpDecision("KEEP_SELF_DECLARED")}
+                                className="mt-0.5 text-amber-600 focus:ring-amber-500"
+                              />
+                              <div>
+                                <span className="font-bold text-amber-700 dark:text-amber-400 block">
+                                  Giữ SHTT Tự kê khai (SELF_DECLARED)
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Đơn vị tự cam kết, đang trong quá trình nộp đơn hoặc bí quyết.
+                                </span>
+                              </div>
+                            </label>
+
+                            <label className="flex items-start gap-2 p-2 rounded border cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800">
+                              <input
+                                type="radio"
+                                name="ipDecision"
+                                value="REJECT_IP"
+                                checked={ipDecision === "REJECT_IP"}
+                                onChange={() => setIpDecision("REJECT_IP")}
+                                className="mt-0.5 text-rose-600 focus:ring-rose-500"
+                              />
+                              <div>
+                                <span className="font-bold text-rose-700 dark:text-rose-400 block">
+                                  Từ chối quyền SHTT tự khai (REJECTED_IP)
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Số đơn hoặc văn bằng không hợp lệ.
+                                </span>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cơ quan thẩm định & Ghi chú thẩm định chuyên sâu */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Cơ quan / Đơn vị thực hiện thẩm định
+                          </label>
+                          <input
+                            type="text"
+                            value={verifiedAuthorityName}
+                            onChange={(e) => setVerifiedAuthorityName(e.target.value)}
+                            placeholder="VD: Sở Khoa học và Công nghệ TP. Hà Nội"
+                            className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Ghi chú kết quả thẩm định TRL &amp; SHTT
+                          </label>
+                          <input
+                            type="text"
+                            value={trlReviewNote}
+                            onChange={(e) => setTrlReviewNote(e.target.value)}
+                            placeholder="VD: Đã thẩm tra Bằng sáng chế số 12345/SHTT, chấp thuận TRL 7..."
+                            className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {reviewAction && (
                     <div className="space-y-2 pt-2">
@@ -2629,6 +2966,12 @@ function GovDashboardContent() {
           </div>
         );
       })()}
+
+      <TrlMethodologyModal
+        isOpen={isTrlMethodologyOpen}
+        onClose={() => setIsTrlMethodologyOpen(false)}
+        initialLevel={selectedItem?.rawOffer?.trlLevel || detailItem?.rawOffer?.trlLevel || 7}
+      />
     </div>
   );
 }

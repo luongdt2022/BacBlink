@@ -28,10 +28,12 @@ import {
   Loader2,
   KeyRound,
   LogIn,
-  FileText
+  FileText,
+  BookOpen
 } from 'lucide-react';
 import { useToast } from '@/components/common/toast';
 import TniRealtimeCalculator, { TniValues } from '@/components/demand/TniRealtimeCalculator';
+import TniMethodologyModal from '@/components/common/TniMethodologyModal';
 import SearchableCombobox from '@/components/ui/searchable-combobox';
 import { TouchSignatureField } from '@/components/ui/signature-pad-modal';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
@@ -70,6 +72,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLookingUpTax, setIsLookingUpTax] = useState<boolean>(false);
+  const [isTniModalOpen, setIsTniModalOpen] = useState<boolean>(false);
   const [isPrefilledFromSession, setIsPrefilledFromSession] = useState<boolean>(false);
   const [initialProfile, setInitialProfile] = useState<any>(null);
   const [showSyncModal, setShowSyncModal] = useState<boolean>(false);
@@ -1215,13 +1218,22 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                       Khảo sát điểm nghẽn sản xuất, tính toán chỉ số cấp thiết TNI và tự động ghép nối với bên chào bán công nghệ.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleAddDemandItem}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 self-start shadow-sm"
-                  >
-                    <Plus className="w-4 h-4" /> Thêm bài toán kỹ thuật
-                  </button>
+                  <div className="flex items-center gap-2 self-start">
+                    <button
+                      type="button"
+                      onClick={() => setIsTniModalOpen(true)}
+                      className="bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-900 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <BookOpen className="w-4 h-4" /> Phương pháp luận TNI (K-L-N-O)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddDemandItem}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm"
+                    >
+                      <Plus className="w-4 h-4" /> Thêm bài toán kỹ thuật
+                    </button>
+                  </div>
                 </div>
 
                 {isPrefilledFromSession && (
@@ -1457,13 +1469,23 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
 
                         {/* Cột phải: 2. Chỉ Số Nhu Cầu Đổi Mới (TNI) */}
                         <div className="lg:col-span-6 space-y-4">
-                          <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80 dark:border-slate-800">
-                            <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs">
-                              <Wrench className="w-4 h-4" />
+                          <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-slate-800">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs">
+                                <Wrench className="w-4 h-4" />
+                              </div>
+                              <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                2. Chỉ Số Nhu Cầu Đổi Mới (TNI)
+                              </h4>
                             </div>
-                            <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                              2. Chỉ Số Nhu Cầu Đổi Mới (TNI)
-                            </h4>
+                            <button
+                              type="button"
+                              onClick={() => setIsTniModalOpen(true)}
+                              className="inline-flex items-center gap-1 text-xs text-rose-700 dark:text-rose-400 hover:text-rose-800 font-bold bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 px-2.5 py-1 rounded-full transition"
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              Cơ sở khoa học (304 DN)
+                            </button>
                           </div>
 
                           <TniRealtimeCalculator
@@ -2774,6 +2796,11 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
             </div>
           </div>
         )}
+
+        <TniMethodologyModal
+          isOpen={isTniModalOpen}
+          onClose={() => setIsTniModalOpen(false)}
+        />
       </main>
     </div>
   );

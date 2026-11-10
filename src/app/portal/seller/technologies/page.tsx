@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { fetchSellerWorkspace } from "@/services/api/technology-offer";
 import { TechnologyOffer, SellerKpi } from "@/types/technology-offer";
+import { IndexVerificationBadge } from "@/components/common/IndexVerificationBadge";
 
 export default function SellerTechnologiesPage() {
   const [offers, setOffers] = useState<TechnologyOffer[]>([]);
@@ -254,11 +255,15 @@ export default function SellerTechnologiesPage() {
                     </td>
 
                     <td className="py-3.5 px-3">
-                      {item.hasTechTransfer ? (
+                      {item.trlLevel ? (
                         <div className="space-y-1">
-                          <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                            <Award className="w-3 h-3" /> TRL {item.trlLevel}/9
-                          </span>
+                          <IndexVerificationBadge
+                            type="TRL"
+                            value={item.trlLevel}
+                            status={item.trlVerificationStatus}
+                            authorityName={item.verifiedAuthorityName}
+                            variant="compact"
+                          />
                           <span className="text-xs text-slate-500 block truncate max-w-xs">
                             {item.ipRegistrationNumber || "Bằng sáng chế"}
                           </span>

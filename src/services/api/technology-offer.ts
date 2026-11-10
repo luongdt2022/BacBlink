@@ -389,10 +389,18 @@ export function resolveDefaultAuthority(
   return fallbackResult;
 }
 
+export interface ReviewOfferOptions {
+  trlVerificationDecision?: "VERIFIED_BY_GOV" | "SELF_DECLARED" | "REJECTED_TRL" | string;
+  ipVerificationDecision?: "VERIFIED_BY_GOV" | "SELF_DECLARED" | "REJECTED_IP" | string;
+  verifiedAuthorityName?: string;
+  trlReviewNote?: string;
+}
+
 export async function reviewOffer(
   id: string,
   action: "APPROVE" | "REJECT" | "REQUEST_CHANGES",
-  reviewNote?: string
+  reviewNote?: string,
+  options?: ReviewOfferOptions
 ): Promise<{ success: boolean; message?: string; data?: TechnologyOffer }> {
   try {
     const token = authClient.getToken() || getStoredSession()?.accessToken;
@@ -403,10 +411,24 @@ export async function reviewOffer(
       headers["Authorization"] = `Bearer ${token}`;
     }
 
+    const payload: Record<string, any> = { action, reviewNote };
+    if (options?.trlVerificationDecision) {
+      payload.trlVerificationDecision = options.trlVerificationDecision;
+    }
+    if (options?.ipVerificationDecision) {
+      payload.ipVerificationDecision = options.ipVerificationDecision;
+    }
+    if (options?.verifiedAuthorityName) {
+      payload.verifiedAuthorityName = options.verifiedAuthorityName;
+    }
+    if (options?.trlReviewNote) {
+      payload.trlReviewNote = options.trlReviewNote;
+    }
+
     const res = await fetch(`${API_BASE}/api/v1/portal/seller/technologies/${id}/review`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ action, reviewNote }),
+      body: JSON.stringify(payload),
     });
     if (res.ok) {
       const json = await res.json();

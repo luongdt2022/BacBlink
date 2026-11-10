@@ -118,6 +118,13 @@ export interface TechnologyOffer {
   energyConsumption?: string | null;
   automationLevel?: string | null;
   operatingPrinciple?: string | null;
+  // Two-Tier Verification extensions (CR-2026-TRL-TNI-VERIFY)
+  trlVerificationStatus?: string | null;
+  ipVerificationStatus?: string | null;
+  verifiedAuthorityName?: string | null;
+  trlVerifiedBy?: string | null;
+  trlVerifiedAt?: string | null;
+  trlReviewNote?: string | null;
   deploymentConditions?: string | null;
   transferPriorityMethod?: string | null;
   priceIncludes?: string | null;

@@ -10,9 +10,11 @@ import {
   ShieldCheck,
   CheckCircle2,
   Wrench,
-  HelpCircle
+  HelpCircle,
+  BookOpen
 } from 'lucide-react';
 import TniRealtimeCalculator, { TniValues } from '@/components/demand/TniRealtimeCalculator';
+import TniMethodologyModal from '@/components/common/TniMethodologyModal';
 import SearchableCombobox from '@/components/ui/searchable-combobox';
 import { useToast } from '@/components/common/toast';
 import { authClient } from '@/lib/auth-client';
@@ -35,6 +37,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
   const toast = useToast();
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMethodologyOpen, setIsMethodologyOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -499,13 +502,23 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
 
               {/* Right Column: TNI Realtime Calculator (6 cols) */}
               <div className="lg:col-span-6 space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs">
-                    <Wrench className="w-4 h-4" />
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs">
+                      <Wrench className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      2. Chỉ Số Nhu Cầu Đổi Mới (TNI)
+                    </h4>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    2. Chỉ Số Nhu Cầu Đổi Mới (TNI)
-                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setIsMethodologyOpen(true)}
+                    className="inline-flex items-center gap-1 text-xs text-rose-700 dark:text-rose-400 hover:text-rose-800 font-bold bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 px-2.5 py-1 rounded-full transition"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Phương pháp luận K-L-N-O
+                  </button>
                 </div>
 
                 {/* TNI Realtime Calculator */}
@@ -555,6 +568,11 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
           </div>
         </form>
       </div>
+
+      <TniMethodologyModal
+        isOpen={isMethodologyOpen}
+        onClose={() => setIsMethodologyOpen(false)}
+      />
     </div>,
     document.body
   );

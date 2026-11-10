@@ -55,7 +55,7 @@ export interface LmsMaterialCardDto {
   materialCode: string;
   title: string;
   lessonType: LmsLessonType;
-  sectorCode: string;
+  sectorCode?: string | null;
   durationMinutes: number;
   thumbnailUrl?: string | null;
   status: LmsStatus;
@@ -63,10 +63,135 @@ export interface LmsMaterialCardDto {
   leadInstructorName?: string | null;
   leadInstructorAvatar?: string | null;
   leadInstructorOrg?: string | null;
-  hasAiKnowledge: boolean;
-  totalViews: number;
-  totalCompletions: number;
-  averageRating: number;
+  hasAiKnowledge?: boolean;
+  totalViews?: number;
+  totalCompletions?: number;
+  averageRating?: number;
+  videoStorageKey?: string | null;
+  clusterCode?: string | null;
+  clusterName?: string | null;
+  stepNumber?: number | null;
+  microVideosCount?: number;
+  inVideoQuizzesCount?: number;
+  practiceRubricsCount?: number;
+  faqsCount?: number;
+  learningRoadmapJson?: string | null;
+}
+
+export interface MicroVideoScene {
+  sceneCode: string;
+  layout: string;
+  sceneName: string;
+  slideContent: string;
+  handwriting?: string;
+  lectureScript: string;
+  popupQuiz?: string;
+}
+
+export interface MicroVideoDto {
+  id?: string | null;
+  videoOrder: number;
+  videoCode: string;
+  title: string;
+  durationSeconds: number;
+  videoStorageKey?: string | null;
+  videoFileName?: string | null;
+  thumbnailUrl?: string | null;
+  callSheetJson?: string | null;
+  scenes?: MicroVideoScene[];
+}
+
+export interface InVideoQuizDto {
+  id?: string | null;
+  microVideoId?: string | null;
+  quizCode: string;
+  triggerSeconds: number;
+  afterScene?: string | null;
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
+  correctOption?: string | null;
+  explanation?: string | null;
+  displayOrder: number;
+}
+
+export interface PracticeRubricDto {
+  id?: string | null;
+  criterionNumber: number;
+  criterionName: string;
+  descriptionScore0: string;
+  descriptionScore1: string;
+  descriptionScore2: string;
+  weightMultiplier: number;
+}
+
+export interface FaqDto {
+  id?: string | null;
+  questionNumber: number;
+  questionText: string;
+  answerText: string;
+  displayOrder: number;
+}
+
+export interface SubmitPracticeEvaluationRequest {
+  scores: Record<number, number>; // criterionNumber (1..7) -> 0 | 1 | 2
+  notes?: string;
+}
+
+export interface PracticeEvaluationResultDto {
+  evaluationId: string;
+  totalScore: number;
+  maxScore: number;
+  isPassed: boolean;
+  unlockedExpertReviewCta: boolean;
+  unlockedDemandCreateCta: boolean;
+  evaluatedAt: string;
+}
+
+export interface LearningRoadmapMetadata {
+  moduleCode?: string;
+  moduleName?: string;
+  pathways?: string[];
+  videoFormat?: "CG" | "ĐH" | string;
+  videoFunction?: string;
+  templateCodes?: string[];
+  expertRoles?: string[];
+  level?: "CB" | "TC" | "NC" | string;
+  durationText?: string;
+}
+
+export interface KnowledgeSummaryItem {
+  topic: string;
+  content: string;
+  example?: string;
+}
+
+export interface PracticeWorkbookPartAItem {
+  item: string;
+  desc?: string;
+  example?: string;
+}
+
+export interface PracticeWorkbookPartBSolution {
+  solution: string;
+  issue?: string;
+  impact?: string;
+  feasibility?: string;
+  evidence?: string;
+}
+
+export interface PracticeWorkbookPartCStep {
+  step: number | string;
+  question: string;
+  example?: string;
+}
+
+export interface PracticeWorkbookData {
+  partA?: PracticeWorkbookPartAItem[];
+  partB?: PracticeWorkbookPartBSolution[];
+  partC?: PracticeWorkbookPartCStep[];
 }
 
 export interface LmsCatalogKpisDto {
@@ -94,7 +219,7 @@ export interface LmsMaterialDetailDto {
   materialCode: string;
   title: string;
   lessonType: LmsLessonType;
-  sectorCode: string;
+  sectorCode?: string | null;
   durationMinutes: number;
   descriptionHtml?: string | null;
   videoStorageKey?: string | null;
@@ -114,6 +239,21 @@ export interface LmsMaterialDetailDto {
   quizQuestions: QuizQuestionDto[];
   attachments: AttachmentDto[];
   dbLinks: DbLinkDto[];
+  clusterCode?: string | null;
+  clusterName?: string | null;
+  stepNumber?: number | null;
+  targetAudience?: string | null;
+  preparationNotes?: string | null;
+  expectedOutcome?: string | null;
+  passScorePercent?: number;
+  learningObjectivesJson?: string | null;
+  learningRoadmapJson?: string | null;
+  knowledgeSummaryJson?: string | null;
+  practiceWorkbookJson?: string | null;
+  microVideos?: MicroVideoDto[];
+  inVideoQuizzes?: InVideoQuizDto[];
+  practiceRubrics?: PracticeRubricDto[];
+  faqs?: FaqDto[];
 }
 
 export interface LmsMaterialManagementDto {
@@ -202,6 +342,8 @@ export async function fetchLmsCatalog(params?: {
   keyword?: string;
   lessonType?: string;
   sectorCode?: string;
+  clusterCode?: string;
+  stepNumber?: number;
   page?: number;
   pageSize?: number;
 }): Promise<LmsCatalogResponse> {
@@ -209,6 +351,8 @@ export async function fetchLmsCatalog(params?: {
   if (params?.keyword) query.set("keyword", params.keyword);
   if (params?.lessonType) query.set("lessonType", params.lessonType);
   if (params?.sectorCode) query.set("sectorCode", params.sectorCode);
+  if (params?.clusterCode) query.set("clusterCode", params.clusterCode);
+  if (params?.stepNumber !== undefined && params?.stepNumber !== null) query.set("stepNumber", params.stepNumber.toString());
   if (params?.page) query.set("page", params.page.toString());
   if (params?.pageSize) query.set("pageSize", params.pageSize.toString());
 
@@ -249,26 +393,82 @@ export async function fetchLmsCatalog(params?: {
   };
 }
 
+function normalizeStorageUrl(url: string | null | undefined, storageKey: string | null | undefined): string | null {
+  if (url) {
+    return url.replace(/^https?:\/\/(localhost|127\.0\.0\.1):(5000|5080)/i, API_BASE);
+  }
+  return storageKey ? `${API_BASE}/files/${storageKey}` : null;
+}
+
 function normalizeMaterialDetail(raw: any): LmsMaterialDetailDto {
   if (!raw) return raw;
   const data = raw.data ?? raw;
-  const videoDownloadUrl =
-    data.videoDownloadUrl ||
-    (data.videoStorageKey ? `${API_BASE}/files/${data.videoStorageKey}` : null);
+  const videoDownloadUrl = normalizeStorageUrl(data.videoDownloadUrl, data.videoStorageKey);
 
   const attachments = Array.isArray(data.attachments)
     ? data.attachments.map((att: any) => ({
         ...att,
-        downloadUrl:
-          att.downloadUrl ||
-          (att.storageKey ? `${API_BASE}/files/${att.storageKey}` : null),
+        fileSize: typeof att.fileSize === "number" ? att.fileSize : (att.fileSizeBytes ?? 0),
+        sortOrder: typeof att.sortOrder === "number" ? att.sortOrder : (att.displayOrder ?? 1),
+        downloadUrl: normalizeStorageUrl(att.downloadUrl, att.storageKey),
       }))
+    : [];
+
+  const quizQuestions = Array.isArray(data.quizQuestions)
+    ? data.quizQuestions.map((q: any) => ({
+        ...q,
+        question: q.question || q.questionText || "",
+        sortOrder: typeof q.sortOrder === "number" ? q.sortOrder : (q.displayOrder ?? 1),
+      }))
+    : [];
+
+  const instructors = Array.isArray(data.instructors)
+    ? data.instructors.map((inst: any) => ({
+        ...inst,
+        degree: inst.degree || inst.titleDegree || null,
+        organization: inst.organization || inst.orgName || null,
+        sortOrder: typeof inst.sortOrder === "number" ? inst.sortOrder : (inst.displayOrder ?? 1),
+      }))
+    : [];
+
+  const microVideos = Array.isArray(data.microVideos)
+    ? data.microVideos.map((mv: any) => {
+        let scenes: MicroVideoScene[] = [];
+        if (mv.callSheetJson) {
+          try {
+            const parsed = typeof mv.callSheetJson === "string" ? JSON.parse(mv.callSheetJson) : mv.callSheetJson;
+            scenes = Array.isArray(parsed)
+              ? parsed.map((sc: any) => ({
+                  sceneCode: sc.sceneCode || sc.scene || "",
+                  layout: sc.layout || "SPLIT",
+                  sceneName: sc.sceneName || sc.title || "",
+                  slideContent: sc.slideContent || sc.slide || "",
+                  handwriting: sc.handwriting || "",
+                  lectureScript: sc.lectureScript || sc.script || "",
+                  popupQuiz: sc.popupQuiz || sc.quiz || "",
+                }))
+              : [];
+          } catch {
+            scenes = [];
+          }
+        }
+        return {
+          ...mv,
+          scenes,
+        };
+      })
     : [];
 
   return {
     ...data,
     videoDownloadUrl,
+    instructors,
+    quizQuestions,
     attachments,
+    microVideos,
+    inVideoQuizzes: Array.isArray(data.inVideoQuizzes) ? data.inVideoQuizzes : [],
+    practiceRubrics: Array.isArray(data.practiceRubrics) ? data.practiceRubrics : [],
+    faqs: Array.isArray(data.faqs) ? data.faqs : [],
   };
 }
 
@@ -307,7 +507,8 @@ export async function getLearnerProgress(id: string): Promise<LearnerProgressDto
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể tải tiến độ học tập."));
   }
-  return res.json();
+  const raw = await res.json();
+  return raw?.data ?? raw;
 }
 
 export async function submitQuizAttempt(
@@ -325,7 +526,75 @@ export async function submitQuizAttempt(
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể nộp bài kiểm tra."));
   }
-  return res.json();
+  const raw = await res.json();
+  return raw?.data ?? raw;
+}
+
+export async function submitPracticeEvaluation(
+  materialId: string,
+  payload: SubmitPracticeEvaluationRequest
+): Promise<PracticeEvaluationResultDto> {
+  const res = await fetch(`${API_BASE}/api/v1/lms/catalog/${materialId}/practice-evaluations`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({
+      rubricScores: payload.scores,
+      scores: payload.scores,
+      notes: payload.notes,
+      requestExpertConsultation: true,
+      createDemandProfile: true,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res, "Không thể lưu kết quả tự chấm điểm thực hành."));
+  }
+  const raw = await res.json();
+  const data = raw?.data ?? raw;
+  return {
+    ...data,
+    isPassed: typeof data.isPassed === "boolean" ? data.isPassed : Boolean(data.isUnlockedCta),
+  };
+}
+
+export function parseLearningRoadmap(jsonStr?: string | null): LearningRoadmapMetadata | null {
+  if (!jsonStr) return null;
+  try {
+    return typeof jsonStr === "string" ? JSON.parse(jsonStr) : jsonStr;
+  } catch {
+    return null;
+  }
+}
+
+export function parseKnowledgeSummary(jsonStr?: string | null): KnowledgeSummaryItem[] {
+  if (!jsonStr) return [];
+  try {
+    const parsed = typeof jsonStr === "string" ? JSON.parse(jsonStr) : jsonStr;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function parsePracticeWorkbook(jsonStr?: string | null): PracticeWorkbookData | null {
+  if (!jsonStr) return null;
+  try {
+    return typeof jsonStr === "string" ? JSON.parse(jsonStr) : jsonStr;
+  } catch {
+    return null;
+  }
+}
+
+export function parseLearningObjectives(jsonStr?: string | null): string[] {
+  if (!jsonStr) return [];
+  try {
+    const parsed = typeof jsonStr === "string" ? JSON.parse(jsonStr) : jsonStr;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
 // 2. BÀN LÀM VIỆC QUẢN TRỊ HỌC LIỆU

@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
-import { Award, Info } from "lucide-react";
+import React, { useState } from "react";
+import { Award, Info, HelpCircle, BookOpen } from "lucide-react";
+import TrlMethodologyModal from "@/components/common/TrlMethodologyModal";
 import {
   IntellectualPropertyStatus,
   TransferMethod,
@@ -26,15 +27,15 @@ interface ReactiveYellowTrlPanelProps {
 }
 
 export const TRL_DESCRIPTIONS: Record<number, string> = {
-  1: "TRL 1: Nguyên lý cơ bản được quan sát và báo cáo (Nghiên cứu cơ bản)",
-  2: "TRL 2: Khái niệm công nghệ hoặc ứng dụng được hình thành",
-  3: "TRL 3: Bằng chứng thực nghiệm về khái niệm (Proof of Concept)",
-  4: "TRL 4: Công nghệ được kiểm chứng trong phòng thí nghiệm",
-  5: "TRL 5: Công nghệ được kiểm chứng trong môi trường mô phỏng",
-  6: "TRL 6: Mô hình thử nghiệm hoàn chỉnh trong môi trường mô phỏng",
-  7: "TRL 7: Nguyên mẫu trình diễn trong môi trường vận hành thực tế",
-  8: "TRL 8: Hệ thống công nghệ hoàn chỉnh và đạt tiêu chuẩn chất lượng",
-  9: "TRL 9: Công nghệ đã được chứng minh trong môi trường sản xuất thực tế",
+  1: "TRL 1: Quan sát và báo cáo nguyên lý cơ bản (Nghiên cứu cơ bản)",
+  2: "TRL 2: Hình thành khái niệm công nghệ hoặc ứng dụng",
+  3: "TRL 3: Chứng minh khái niệm bằng phân tích và thực nghiệm (PoC)",
+  4: "TRL 4: Xác nhận trong phòng thí nghiệm (Mô hình breadboard)",
+  5: "TRL 5: Xác nhận trong môi trường phù hợp (Mô hình brassboard)",
+  6: "TRL 6: Trình diễn mô hình/nguyên mẫu trong môi trường vận hành/phù hợp",
+  7: "TRL 7: Trình diễn nguyên mẫu trong môi trường vận hành thực tế",
+  8: "TRL 8: Hệ thống hoàn thiện và xác nhận đủ điều kiện vận hành",
+  9: "TRL 9: Chứng minh qua vận hành thực tế trong nhiệm vụ",
 };
 
 export function ReactiveYellowTrlPanel({
@@ -53,9 +54,12 @@ export function ReactiveYellowTrlPanel({
   setCommercialStatus,
   errors,
 }: ReactiveYellowTrlPanelProps) {
+  const [isMethodologyOpen, setIsMethodologyOpen] = useState(false);
+
   if (!hasTechTransfer) return null;
 
   return (
+    <>
     <div
       id="trl-panel"
       className="rounded-2xl border-2 border-amber-300 bg-amber-50/70 p-5 shadow-sm space-y-4 animate-in fade-in duration-200"
@@ -74,9 +78,29 @@ export function ReactiveYellowTrlPanel({
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-amber-200/80 px-2.5 py-0.5 text-xs font-extrabold text-amber-900">
-          4 Thuộc Tính Bắt Buộc
+        <button
+          type="button"
+          onClick={() => setIsMethodologyOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-full bg-amber-200/90 hover:bg-amber-300 text-amber-950 px-3 py-1 text-xs font-bold transition shadow-xs"
+        >
+          <BookOpen className="w-3.5 h-3.5 text-amber-700" />
+          Xem phương pháp luận & hồ sơ minh chứng TRL (1-9)
+        </button>
+      </div>
+
+      {/* Dẫn chứng quy chuẩn NASA / TT17 */}
+      <div className="flex items-center justify-between rounded-xl bg-amber-100/60 border border-amber-200/80 px-3 py-2 text-xs text-amber-900">
+        <span className="flex items-center gap-1.5 font-medium">
+          <Info className="w-4 h-4 text-amber-700 shrink-0" />
+          Căn cứ NASA TRL (1989), ISO 16290:2013 và Thông tư 17/2019/TT-BKHCN. TRL ≥ 7 bắt buộc nộp Bằng SHTT hoặc Báo cáo thử nghiệm thực tế.
         </span>
+        <button
+          type="button"
+          onClick={() => setIsMethodologyOpen(true)}
+          className="text-amber-800 hover:text-amber-950 font-bold underline shrink-0 ml-2"
+        >
+          Chi tiết
+        </button>
       </div>
 
       {/* Thuộc tính 1: TRL 1-9 */}
@@ -207,5 +231,12 @@ export function ReactiveYellowTrlPanel({
         </div>
       </div>
     </div>
+
+    <TrlMethodologyModal
+      isOpen={isMethodologyOpen}
+      onClose={() => setIsMethodologyOpen(false)}
+      initialLevel={trlLevel}
+    />
+    </>
   );
 }

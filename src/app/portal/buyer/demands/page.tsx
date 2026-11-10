@@ -35,6 +35,7 @@ import { useToast } from '@/components/common/toast';
 import { authClient } from '@/lib/auth-client';
 import { getTniClassification } from '@/components/demand/TniRealtimeCalculator';
 import { brokerageApi } from '@/services/api/brokerage';
+import { IndexVerificationBadge } from '@/components/common/IndexVerificationBadge';
 
 interface DemandItem {
   id?: string;
@@ -55,6 +56,8 @@ interface DemandItem {
   adoptionReadiness?: number;
   tniScore: number;
   tniClassification: string;
+  tniVerificationStatus?: string;
+  verifiedAuthorityName?: string;
   matchingCount?: number;
   status: string;
   isCommercialOrder?: boolean;
@@ -935,7 +938,6 @@ export default function BuyerDemandsPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {paginatedRdList.map((item) => {
-                        const tniMeta = getTniClassification(item.tniScore || 70);
                         const rdProdInfo = resolveProductInfo(item);
                         const demandDetailUrl = item.id ? `/nhu-cau-cong-nghe/${item.id}` : '/nhu-cau-cong-nghe';
 
@@ -975,11 +977,13 @@ export default function BuyerDemandsPage() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-center">
-                              <span
-                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-extrabold text-xs border ${tniMeta.badgeClass}`}
-                              >
-                                <Flame className="w-3 h-3" /> {item.tniScore || 75}
-                              </span>
+                              <IndexVerificationBadge
+                                type="TNI"
+                                value={item.tniScore}
+                                status={item.tniVerificationStatus || (item.status === 'VERIFIED' ? 'VERIFIED_BY_GOV' : 'SELF_DECLARED')}
+                                authorityName={item.verifiedAuthorityName}
+                                variant="compact"
+                              />
                             </td>
                             <td className="px-6 py-4 font-semibold text-text-primary dark:text-slate-300">
                               {item.budgetRange}

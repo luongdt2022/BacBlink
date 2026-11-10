@@ -334,4 +334,79 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
       );
     });
   });
+
+  it("UI-GOV-EVIDENCE-INSPECTOR renders full documents list and allows opening TRL methodology modal", async () => {
+    render(<GovApprovalQueue />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Hệ thống AI IoT Giám sát Chất lượng Nước nuôi Tôm")).toBeInTheDocument();
+    });
+
+    // Mở modal thẩm định chào bán
+    const offerItem = screen.getByText("Hệ thống AI IoT Giám sát Chất lượng Nước nuôi Tôm");
+    fireEvent.click(offerItem);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Thẩm Định Sản Phẩm Chào Bán/i)).toBeInTheDocument();
+      expect(screen.getByText(/Hồ Sơ Minh Chứng Kỹ Thuật & Văn Bằng SHTT/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Đối chiếu Tiêu chuẩn Minh chứng TRL/i })).toBeInTheDocument();
+    });
+
+    // Bấm mở modal phương pháp luận TRL
+    const openTrlModalBtn = screen.getByRole("button", { name: /Đối chiếu Tiêu chuẩn Minh chứng TRL/i });
+    fireEvent.click(openTrlModalBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Phương Pháp Luận Cấp Độ Sẵn Sàng Công Nghệ/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/NASA TRL/i).length).toBeGreaterThan(0);
+      expect(screen.getByText(/Căn cứ Pháp lý & Khung Tiêu Chuẩn Quốc Tế/i)).toBeInTheDocument();
+    });
+  });
+
+  it("Decoupled Two-Tier review displays Block B when approving Offer and calls reviewOffer with verified authority & decisions", async () => {
+    const fetchMock = global.fetch as unknown as ReturnType<typeof vi.fn>;
+    render(<GovApprovalQueue />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Hệ thống AI IoT Giám sát Chất lượng Nước nuôi Tôm")).toBeInTheDocument();
+    });
+
+    const offerItem = screen.getByText("Hệ thống AI IoT Giám sát Chất lượng Nước nuôi Tôm");
+    fireEvent.click(offerItem);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Quyết Định Niêm Yết Lên Sàn Giao Dịch/i)).toBeInTheDocument();
+    });
+
+    // Trước khi chọn APPROVE, Khối B chưa hiển thị
+    expect(screen.queryByText(/Thẩm Định Chỉ Số Chuyên Môn TRL & SHTT/i)).not.toBeInTheDocument();
+
+    // Chọn Khối A: Phê Duyệt Niêm Yết Sàn
+    const approveBtn = screen.getByRole("button", { name: /Phê Duyệt Niêm Yết Sàn/i });
+    fireEvent.click(approveBtn);
+
+    // Khối B xuất hiện
+    await waitFor(() => {
+      expect(screen.getByText(/Thẩm Định Chỉ Số Chuyên Môn TRL & SHTT/i)).toBeInTheDocument();
+      expect(screen.getByText(/Xác thực TRL Nhà nước/i)).toBeInTheDocument();
+      expect(screen.getByText(/Xác thực SHTT Nhà nước/i)).toBeInTheDocument();
+    });
+
+    // Bấm Xác Nhận Quyết Định
+    const confirmBtn = screen.getByRole("button", { name: /Xác Nhận Quyết Định/i });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/portal/seller/technologies/c25347fc-tech-offer-001/review"),
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            "Content-Type": "application/json",
+          }),
+          body: expect.stringContaining('"action":"APPROVE"'),
+        })
+      );
+    });
+  });
 });

@@ -32,6 +32,7 @@ import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
 import { portalClient, PortalOverviewStats } from "@/lib/portal-client";
 import { SECTORS_18_CATALOG } from "@/services/api/technology-offer";
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
+import { IndexVerificationBadge } from "@/components/common/IndexVerificationBadge";
 
 interface PublicDemandItem {
   id: string;
@@ -41,8 +42,10 @@ interface PublicDemandItem {
   sectorCode: string;
   techGroupCode: string;
   budgetRange: string;
-  tniScore: number;
-  tniClassification: string;
+  tniScore?: number;
+  tniClassification?: string;
+  tniVerificationStatus?: string;
+  verifiedAuthorityName?: string;
   expectedGoal: string;
   desiredSolution: string;
   province?: string;
@@ -627,7 +630,6 @@ export default function PublicDemandsPage() {
             {/* Grid bài toán nhu cầu */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedDemands.map((item) => {
-                const tniMeta = getTniClassification(item.tniScore || 70);
                 const sectorName = getSectorName(item.sectorCode);
                 const sectorShortName = getSectorShortName(item.sectorCode);
                 const isBookmarked = !!bookmarkedIds[item.id];
@@ -647,15 +649,16 @@ export default function PublicDemandsPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-transparent pointer-events-none" />
                       {/* Floating Badges Header: Tên Lĩnh Vực & TNI Score */}
                       <div className="relative z-10 flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center text-xs font-bold text-brand-900 bg-white/95 backdrop-blur-md px-2.5 py-0.5 rounded-full shadow-sm">
+                        <span className="inline-flex items-center text-xs font-semibold text-white/95 bg-white/15 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20 shadow-xs">
                           {sectorName}
                         </span>
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold border backdrop-blur-md shadow-sm ${tniMeta.badgeClass}`}
-                          title={tniMeta.label}
-                        >
-                          <Flame className="w-3 h-3" /> TNI: {item.tniScore || 75}
-                        </span>
+                        <IndexVerificationBadge
+                          type="TNI"
+                          value={item.tniScore}
+                          status={item.tniVerificationStatus}
+                          authorityName={item.verifiedAuthorityName}
+                          variant="compact"
+                        />
                       </div>
 
                       {/* Tiêu đề chữ lớn trên banner như mẫu tham khảo */}

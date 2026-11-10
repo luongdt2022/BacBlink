@@ -41,6 +41,7 @@ import { Async, AsyncState } from "@/components/ui/async";
 import { getTechnologyImage } from "@/lib/technology-media";
 import { AppCard } from "@/components/ui/app-card";
 import { AppBadge } from "@/components/ui/app-badge";
+import { IndexVerificationBadge } from "@/components/common/IndexVerificationBadge";
 
 type Listing = {
   id?: string;
@@ -49,7 +50,12 @@ type Listing = {
   field: string;
   owner: string;
   location: string;
-  trl: string;
+  trlLevel?: number;
+  trlVerificationStatus?: string;
+  tniScore?: number;
+  tniVerificationStatus?: string;
+  verifiedAuthorityName?: string;
+  budgetRange?: string;
   image: string;
   type: "offers" | "demands";
 };
@@ -160,19 +166,6 @@ function ListingCard({ item }: { item: Listing }) {
       ? `/nhu-cau-cong-nghe/${item.id}`
       : "/nhu-cau-cong-nghe";
 
-  // Phân loại TRL theo 3 dải màu chuẩn hóa BD-01:
-  // TRL 1-3: Xanh dương (info), TRL 4-6: Hổ phách (warning), TRL 7-9: Xanh lục Emerald (success)
-  const trlMatch = item.trl.match(/TRL\s*(\d+)/i);
-  const trlLevel = trlMatch ? parseInt(trlMatch[1], 10) : undefined;
-  const trlVariant: "info" | "warning" | "success" =
-    trlLevel !== undefined
-      ? trlLevel <= 3
-        ? "info"
-        : trlLevel <= 6
-        ? "warning"
-        : "success"
-      : "success";
-
   return (
     <AppCard
       elevation={1}
@@ -192,16 +185,24 @@ function ListingCard({ item }: { item: Listing }) {
           <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-brand-700 shadow-md backdrop-blur-md dark:bg-slate-900/90 dark:text-cyan-300">
             {item.field}
           </span>
-          {/* Huy hiệu TRL ở góc trên bên phải */}
+          {/* Huy hiệu Xác thực TRL / TNI ở góc trên bên phải */}
           <div className="absolute right-3 top-3">
-            {trlLevel !== undefined ? (
-              <AppBadge variant={trlVariant} size="sm" className="font-bold shadow-md">
-                TRL {trlLevel}
-              </AppBadge>
+            {item.type === "offers" ? (
+              <IndexVerificationBadge
+                type="TRL"
+                value={item.trlLevel}
+                status={item.trlVerificationStatus}
+                authorityName={item.verifiedAuthorityName}
+                variant="compact"
+              />
             ) : (
-              <AppBadge variant="neutral" size="sm" className="font-bold shadow-md">
-                {item.trl}
-              </AppBadge>
+              <IndexVerificationBadge
+                type="TNI"
+                value={item.tniScore}
+                status={item.tniVerificationStatus}
+                authorityName={item.verifiedAuthorityName}
+                variant="compact"
+              />
             )}
           </div>
         </Link>
@@ -220,6 +221,11 @@ function ListingCard({ item }: { item: Listing }) {
           <p className="mt-2 text-xs sm:text-sm text-text-secondary dark:text-slate-300 line-clamp-1 font-sans">
             {item.owner}
           </p>
+          {item.budgetRange && (
+            <p className="mt-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+              Ngân sách dự kiến: {item.budgetRange}
+            </p>
+          )}
         </div>
       </div>
 
@@ -295,7 +301,9 @@ export default function HomePage() {
                   field: o.sectorName || o.sectorCode || "Khoa học & Công nghệ",
                   owner: o.enterpriseName || o.developerOrigin || "Chủ sở hữu công nghệ",
                   location: o.managingAuthorityName || "Toàn quốc",
-                  trl: o.trlLevel ? `TRL ${o.trlLevel}` : "Đang hoàn thiện",
+                  trlLevel: o.trlLevel || undefined,
+                  trlVerificationStatus: o.trlVerificationStatus || undefined,
+                  verifiedAuthorityName: o.verifiedAuthorityName || undefined,
                   image: getTechnologyImage(o.sectorCode, o.title, o.mainImageUrl),
                   type: "offers",
                 });
@@ -325,7 +333,10 @@ export default function HomePage() {
                   field: d.sectorCode || "Nhu cầu ĐMST",
                   owner: d.province || "Doanh nghiệp",
                   location: d.province || "Toàn quốc",
-                  trl: d.budgetRange ? `Ngân sách: ${d.budgetRange}` : "Thương lượng",
+                  tniScore: d.tniScore,
+                  tniVerificationStatus: d.tniVerificationStatus,
+                  verifiedAuthorityName: d.verifiedAuthorityName,
+                  budgetRange: d.budgetRange,
                   image: getTechnologyImage(d.sectorCode, d.technicalProblem || d.stageName),
                   type: "demands",
                 });

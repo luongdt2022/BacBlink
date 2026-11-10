@@ -32,6 +32,7 @@ import { getActiveSectors, SectorOption } from "@/lib/master-data-client";
 import { portalClient, PortalOverviewStats } from "@/lib/portal-client";
 import { getTechnologyImage } from "@/lib/technology-media";
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
+import { IndexVerificationBadge } from "@/components/common/IndexVerificationBadge";
 
 function ChaoBanCongNgheContent() {
   const router = useRouter();
@@ -907,16 +908,15 @@ function ChaoBanCongNgheContent() {
                           <span className="text-caption font-bold text-white bg-black/50 backdrop-blur-md px-2 py-0.5 rounded border border-white/20 line-clamp-1 max-w-[60%]">
                             {offer.sectorName}
                           </span>
-                          {offer.hasTechTransfer && offer.trlLevel && (
-                            <span
-                              className={`text-caption px-2 py-0.5 rounded border shadow-sm flex items-center gap-1 ${getTrlBadgeColor(
-                                offer.trlLevel
-                              )}`}
-                            >
-                              <Award className="w-3 h-3" />
-                              TRL {offer.trlLevel}/9
-                            </span>
-                          )}
+                          {offer.trlLevel ? (
+                            <IndexVerificationBadge
+                              type="TRL"
+                              value={offer.trlLevel}
+                              status={offer.trlVerificationStatus}
+                              authorityName={offer.verifiedAuthorityName}
+                              variant="compact"
+                            />
+                          ) : null}
                         </div>
                       </Link>
 

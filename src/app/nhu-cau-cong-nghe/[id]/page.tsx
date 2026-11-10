@@ -26,6 +26,7 @@ import { useToast } from "@/components/common/toast";
 import { authClient, UserContext } from "@/lib/auth-client";
 import { SECTORS_18_CATALOG } from "@/services/api/technology-offer";
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
+import { IndexVerificationBadge } from "@/components/common/IndexVerificationBadge";
 
 export default function PublicDemandDetailPage() {
   const params = useParams();
@@ -280,20 +281,17 @@ export default function PublicDemandDetailPage() {
                   <div className="p-6 sm:p-8 space-y-6">
                   {/* Meta badges */}
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1 rounded-lg">
                         {item.itemCode}
                       </span>
-                      {(() => {
-                        const meta = getTniClassification(item.tniScore || 75);
-                        return (
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${meta.badgeClass}`}
-                          >
-                            <Flame className="w-3.5 h-3.5" /> TNI: {item.tniScore} — {meta.label}
-                          </span>
-                        );
-                      })()}
+                      <IndexVerificationBadge
+                        type="TNI"
+                        value={item.tniScore}
+                        status={item.tniVerificationStatus}
+                        authorityName={item.verifiedAuthorityName}
+                        variant="full"
+                      />
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${statusDisplay.pillClass}`}
                       >

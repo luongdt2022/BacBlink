@@ -34,6 +34,7 @@ import { TechnologyOffer } from "@/types/technology-offer";
 import { getTechnologyGallery } from "@/lib/technology-media";
 import { authClient, UserContext } from "@/lib/auth-client";
 import { BlockchainZkpBadge } from "@/components/blockchain/BlockchainZkpBadge";
+import { IndexVerificationBadge } from "@/components/common/IndexVerificationBadge";
 
 function formatDocSize(bytes?: number): string {
   if (!bytes || bytes <= 0) return "1.2 MB";
@@ -389,11 +390,16 @@ export default function ChiTietChaoBanPage() {
                           <span>Đã xác minh cơ bản</span>
                         </div>
 
-                        {/* TRL Watermark Pill */}
-                        {offer.hasTechTransfer && offer.trlLevel && offer.trlLevel > 0 && (
-                          <div className="absolute bottom-3 right-3 rounded-lg bg-black/75 backdrop-blur-md px-2.5 py-1 text-xs font-bold text-white shadow-sm flex items-center gap-1 border border-white/20">
-                            <Award className="w-3.5 h-3.5 text-amber-400" />
-                            <span>TRL {offer.trlLevel}/9</span>
+                        {/* TRL Verification Badge Pill */}
+                        {offer.trlLevel && offer.trlLevel > 0 && (
+                          <div className="absolute bottom-3 right-3 shadow-md">
+                            <IndexVerificationBadge
+                              type="TRL"
+                              value={offer.trlLevel}
+                              status={offer.trlVerificationStatus}
+                              authorityName={offer.verifiedAuthorityName}
+                              variant="compact"
+                            />
                           </div>
                         )}
                       </div>
@@ -463,11 +469,14 @@ export default function ChiTietChaoBanPage() {
                         <span className="rounded-full bg-cyan-50 border border-cyan-200/80 px-2.5 py-1 text-xs font-bold text-cyan-800">
                           {offer.sectorName}
                         </span>
-                        {offer.hasTechTransfer && offer.trlLevel && offer.trlLevel > 0 && (
-                          <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-xs font-extrabold text-amber-900 flex items-center gap-1">
-                            <Award className="w-3 h-3 text-amber-600" />
-                            TRL {offer.trlLevel} · Có chuyển giao
-                          </span>
+                        {offer.trlLevel && offer.trlLevel > 0 && (
+                          <IndexVerificationBadge
+                            type="TRL"
+                            value={offer.trlLevel}
+                            status={offer.trlVerificationStatus}
+                            authorityName={offer.verifiedAuthorityName}
+                            variant="full"
+                          />
                         )}
                         <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-bold text-emerald-700 flex items-center gap-1">
                           <ShieldCheck className="w-3 h-3 text-emerald-600" />
@@ -670,25 +679,28 @@ export default function ChiTietChaoBanPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 1. Thang TRL */}
-                <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm space-y-1.5">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <div className="bg-white rounded-xl p-4 border border-emerald-100 shadow-sm space-y-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                     1. Mức Độ Sẵn Sàng (TRL)
                   </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-emerald-700">
-                      {offer.trlLevel && offer.trlLevel > 0 ? `TRL ${offer.trlLevel}/9` : "Không áp dụng TRL"}
-                    </span>
-                    {offer.trlLevel && offer.trlLevel > 0 && (
-                      <span className="text-xs bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded-full">
-                        {offer.trlLevel >= 7 ? "Bán công nghiệp & Đạt chuẩn" : "Đang hoàn thiện R&D"}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-600 leading-snug">
-                    {offer.trlLevel && offer.trlLevel > 0
-                      ? getTrlDescription(offer.trlLevel)
-                      : "Hồ sơ thương phẩm hoặc chưa công bố thang đo mức độ hoàn thiện công nghệ."}
-                  </p>
+                  {offer.trlLevel && offer.trlLevel > 0 ? (
+                    <div className="space-y-1.5">
+                      <IndexVerificationBadge
+                        type="TRL"
+                        value={offer.trlLevel}
+                        status={offer.trlVerificationStatus}
+                        authorityName={offer.verifiedAuthorityName}
+                        variant="full"
+                      />
+                      <p className="text-xs text-slate-600 leading-snug pt-1">
+                        {getTrlDescription(offer.trlLevel)}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      Hồ sơ thương phẩm hoặc chưa công bố thang đo mức độ hoàn thiện công nghệ.
+                    </p>
+                  )}
                 </div>
 
                 {/* 2. Tình trạng SHTT */}
@@ -884,9 +896,22 @@ export default function ChiTietChaoBanPage() {
                         <tr>
                           <td className="py-2.5 font-bold text-slate-600">Mức độ sẵn sàng công nghệ:</td>
                           <td className="py-2.5 text-slate-900 font-medium">
-                            {offer.hasTechTransfer && offer.trlLevel && offer.trlLevel > 0
-                              ? `TRL ${offer.trlLevel}/9 — ${getTrlDescription(offer.trlLevel)}`
-                              : "Hàng hóa thương mại / Không áp dụng TRL"}
+                            {offer.trlLevel && offer.trlLevel > 0 ? (
+                              <div className="space-y-1.5">
+                                <IndexVerificationBadge
+                                  type="TRL"
+                                  value={offer.trlLevel}
+                                  status={offer.trlVerificationStatus}
+                                  authorityName={offer.verifiedAuthorityName}
+                                  variant="full"
+                                />
+                                <p className="text-xs text-slate-500 pt-0.5">
+                                  {getTrlDescription(offer.trlLevel)}
+                                </p>
+                              </div>
+                            ) : (
+                              "Hàng hóa thương mại / Không áp dụng TRL"
+                            )}
                           </td>
                         </tr>
                         <tr>
