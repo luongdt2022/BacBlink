@@ -79,6 +79,7 @@ public sealed class LmsCatalogService(DbContext db, IObjectStorage? storage = nu
         {
             var kw = filter.Keyword.Trim().ToLower();
             query = query.Where(x =>
+                x.MaterialCode.ToLower().Contains(kw) ||
                 x.Title.ToLower().Contains(kw) ||
                 x.DescriptionHtml.ToLower().Contains(kw) ||
                 x.Instructors.Any(i => i.FullName.ToLower().Contains(kw)));
