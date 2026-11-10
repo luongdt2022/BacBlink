@@ -647,9 +647,10 @@ export default function PublicDemandsPage() {
                         opacity={0.5}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-transparent pointer-events-none" />
-                      {/* Floating Badges Header: Tên Lĩnh Vực & TNI Score */}
+                      {/* Floating Badges Header: Tên Lĩnh Vực & TNI Score (Minimal Text-Only) */}
                       <div className="relative z-10 flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center text-xs font-semibold text-white/95 bg-white/15 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20 shadow-xs">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase text-teal-200 drop-shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 shadow-xs" />
                           {sectorName}
                         </span>
                         <IndexVerificationBadge
@@ -657,7 +658,7 @@ export default function PublicDemandsPage() {
                           value={item.tniScore}
                           status={item.tniVerificationStatus}
                           authorityName={item.verifiedAuthorityName}
-                          variant="compact"
+                          variant="text"
                         />
                       </div>
 

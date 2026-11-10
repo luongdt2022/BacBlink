@@ -85,6 +85,22 @@ describe('IndexVerificationBadge Component', () => {
     expect(screen.getByText(/TNI 87\/100 · Rất cấp thiết/i)).toBeInTheDocument();
   });
 
+  it('renders text-only variant without pill border or background', () => {
+    const { container } = render(
+      <IndexVerificationBadge
+        type="TNI"
+        status="SELF_DECLARED"
+        value={95}
+        variant="text"
+      />
+    );
+
+    expect(screen.getByText(/TNI 95\/100 · Rất cấp thiết/i)).toBeInTheDocument();
+    const badgeSpan = container.querySelector('span');
+    expect(badgeSpan?.className).toContain('text-rose-300');
+    expect(badgeSpan?.className).not.toContain('rounded-full border');
+  });
+
   it('renders IP verification badge for IP type', () => {
     render(
       <IndexVerificationBadge
