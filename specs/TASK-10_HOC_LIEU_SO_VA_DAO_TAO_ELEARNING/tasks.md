@@ -2,7 +2,7 @@
 ## PHÂN HỆ: HỌC LIỆU SỐ & ĐÀO TẠO E-LEARNING (TASK-10)
 
 > **Mã Epic**: `TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING`  
-> **Tổng số tasks**: 30 tasks chia 5 Phases tuần tự (27/30 tasks hoàn tất [x] - 90%, 3 tasks Frontend & E2E đang triển khai [ ]).  
+> **Tổng số tasks**: 30 tasks chia 5 Phases tuần tự (30/30 tasks hoàn tất [x] - 100%).  
 > **Căn cứ kế hoạch**: [`spec.md`](spec.md), [`plan.md`](plan.md).  
 
 ---
@@ -204,7 +204,7 @@
     * Tab `Trắc nghiệm cuối bài`: Chế độ làm bài trắc nghiệm kèm thông báo đạt chuẩn khi $\ge 60\%$ theo `BR-EL-09` mới (tối thiểu 6/10 câu đúng, tối đa 3 lần làm lại).
   - *Kiểm chứng*: Kiểm thử tương tác sống trên trình duyệt: video dừng đúng mốc giây, pop-up quiz khóa đúng chuẩn, tự chấm điểm $\ge 11$ mở khóa CTA, nộp quiz $\ge 60\%$ ghi nhận hoàn thành, modal cấp Chứng nhận số hoạt động chính xác. Đạt Ruthless Visual QA $\ge 8.5/10$.
 
-- [ ] `T-10.30` `[TEST]`: Bộ Kiểm Thử 4 Tầng Toàn Diện & Kiểm Toán Zero-Mock Đạt Chuẩn Gate 4 & 5 (`REQ-EL-009..012`, `BR-EL-07..09`).
+- [x] `T-10.30` `[TEST]`: Bộ Kiểm Thử 4 Tầng Toàn Diện & Kiểm Toán Zero-Mock Đạt Chuẩn Gate 4 & 5 (`REQ-EL-009..012`, `BR-EL-07..09`).
   - **Tầng 1 (Unit Invariants Test - xUnit/Vitest)**: Kiểm thử 100% quy tắc nghiệp vụ `BR-EL-07` (khóa video và pop-up quiz), `BR-EL-08` (ngưỡng 11/14 điểm mở khóa CTA kép), `BR-EL-09` (ngưỡng 60% hoàn thành trắc nghiệm cuối bài, tối đa 3 lần làm lại), cấp Chứng nhận số NACENTECH theo Lộ trình `LT1`..`LT5` (`LmsReceiveCertificate`).
   - **Tầng 2 (Contract & Schema Test)**: Kiểm tra tương thích DTOs giữa Backend .NET API và TypeScript Client, đối soát JSON schema cho 50 bài học, 8 Mô-đun, 5 Lộ trình, 13 Biểu mẫu và 5 Công cụ Tự đánh giá.
   - **Tầng 3 (DB Integration Test)**: Kiểm tra toàn vẹn dữ liệu 50 bài học (`EL-001`..`EL-050`) nạp vào PostgreSQL 16 thật, 100 tệp tài liệu trong `storage/lms/docs/` và 50 vector search chunks trong `matching.search_chunks`.

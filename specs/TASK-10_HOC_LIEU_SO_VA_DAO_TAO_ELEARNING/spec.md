@@ -2,8 +2,8 @@
 ## PHÂN HỆ: HỌC LIỆU SỐ & ĐÀO TẠO E-LEARNING (TASK-10)
 
 > **Mã Epic**: `TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING`  
-> **Phiên bản**: v1.1 (Living Spec)  
-> **Trạng thái**: In Implementation (Nâng cấp Delta CR-2026-028)  
+> **Phiên bản**: v1.1 (Completed — Gate 4 & Gate 5 Verified)  
+> **Trạng thái**: Shipped 2026-11-10 (Completed — Gate 4 & Gate 5 Verified · CR-2026-028 Merged)  
 > **Cập nhật lần cuối**: 2026-11-10  
 > **Ánh xạ Basic Design**: `Specification/02_BASIC_DESIGN/TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING/README.md` & `Specification/BASIC_DESIGN_NACENTECH.md` Mục 32  
 > **Nguồn căn cứ**:  

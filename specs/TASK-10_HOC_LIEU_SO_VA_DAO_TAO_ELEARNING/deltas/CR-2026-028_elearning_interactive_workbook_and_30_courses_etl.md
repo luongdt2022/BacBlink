@@ -2,7 +2,7 @@
 
 **CR-ID**: CR-2026-028  
 **Epic**: TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING  
-**Status**: APPROVED  
+**Status**: MERGED / COMPLETED (Gate 4 & Gate 5 Verified — 2026-11-10)  
 **Target Version**: 1.1.0  
 **Author**: PO kiêm Senior BA (`nacen-po-pm` & `nacen-ba`)  
 **Date**: 2026-11-10  
@@ -139,12 +139,12 @@
 | :--- | :--- | :--- | :---: |
 | **Basic Design (`Specification`)** | LMS 5 thành phần đơn giản | Mục 32 & README.md TASK-10: 50 bài (30 CG + 20 ĐH), 6 Cụm, 8 Mô-đun (M1-M8), 5 Lộ trình (LT1-LT5), 13 Biểu mẫu (BM01-BM13), 5 TĐG, 4 vai trò chuyên gia, Chứng nhận NACENTECH | ✅ Đã đồng bộ |
 | **Wireframe HTML (`Specification`)** | `09_elearning_dao_tao.html` chỉ có placeholder sơ khai | Viết lại hoàn chỉnh wireframe tương tác: Bộ lọc Lộ trình LT1-LT5, Mô-đun M1-M8, Chức năng video (Định hướng/Spotlight/Kỹ năng), Hình thức CG/ĐH, Chips 6 Cụm, Grid bài học, Player 3 micro-videos, Pop-up In-video quiz, Tab Thực hành BM01-BM13 & Tự chấm 7 tiêu chí, Tab TĐG01-TĐG05, Chứng nhận số | ✅ Đã đồng bộ |
-| **Living Spec (`spec.md`)** | Version 1.0 (REQ-EL-001..008, BR-EL-01..06) | Bump Version 1.1: Bổ sung REQ-EL-009..012, BR-EL-07..09 (tích hợp đầy đủ M1-M8, LT1-LT5, BM01-BM13, TĐG01-TĐG05, 4 vai trò chuyên gia, Quiz 60% & Chứng nhận số), cập nhật Ma trận Truy vết Mục 7 | 🔄 Cần Delta (Gate 1) |
-| **CSDL PostgreSQL (`lms.*`)** | 8 bảng schema đơn | Bổ sung migration: cột `cluster_code`, `step_number`, `module_code` (M1-M8), `delivery_format` (CG/DH), `function_group`, `level_code` (CB/TC/NC), bảng `learning_micro_videos`, `learning_in_video_quizzes`, `learning_practice_rubrics`, `learning_faqs`, `learning_practice_forms`, `learning_self_assessments`, `learning_certificates` | 🔄 Cần Delta (Gate 2) |
-| **Backend API (.NET Core 10)** | DTOs & Services video đơn lẻ | Mở rộng DTOs, Controllers và tạo ETL Service `Lms30CoursesEtl` nạp 30 bài học thực tế, hỗ trợ lọc M1-M8, LT1-LT5, micro-videos, in-video quiz, nộp bài thực hành BM/TĐG & cấp chứng nhận | 🔄 Cần Delta (Gate 2) |
-| **Frontend Public (`/elearning`)** | Chỉ lọc 3 loại bài A/B/B+ | Nâng cấp bộ lọc đa chiều: 5 Lộ trình LT1-LT5, 8 Mô-đun M1-M8, 6 Cụm A-F, Hình thức CG/ĐH, hiển thị 50 bài học với huy hiệu chuẩn hóa | 🔄 Cần Delta (Gate 3) |
-| **Frontend Classroom (`/elearning/[id]`)** | 1 video đơn, thiếu thực hành & tự chấm | Playlist 3 micro-videos có Call Sheet, Player tạm dừng bật In-video Quiz, Tab Thực hành BM01-BM13, Tab Tự đánh giá TĐG01-TĐG05, Bảng tự chấm 7 tiêu chí mở CTA kép, Tab Tóm tắt, Tab FAQ, 4 vai trò chuyên gia | 🔄 Cần Delta (Gate 3) |
-| **Kiểm Thử 4 Tầng** | Test suites video đơn và quiz 10 câu | Thêm test case cho In-video quiz lock, Rubric 7 tiêu chí ngưỡng 11/14, Quiz 60%, ETL 30 bài, Chứng nhận số và E2E Playwright | 🔄 Cần Delta (Gate 4) |
+| **Living Spec (`spec.md`)** | Version 1.0 (REQ-EL-001..008, BR-EL-01..06) | Bump Version 1.1: Bổ sung REQ-EL-009..012, BR-EL-07..09 (tích hợp đầy đủ M1-M8, LT1-LT5, BM01-BM13, TĐG01-TĐG05, 4 vai trò chuyên gia, Quiz 60% & Chứng nhận số), cập nhật Ma trận Truy vết Mục 7 | ✅ Đã hoàn tất (Gate 1 Pass) |
+| **CSDL PostgreSQL (`lms.*`)** | 8 bảng schema đơn | Bổ sung migration: cột `cluster_code`, `step_number`, `module_code` (M1-M8), `delivery_format` (CG/DH), `function_group`, `level_code` (CB/TC/NC), bảng `learning_micro_videos`, `learning_in_video_quizzes`, `learning_practice_rubrics`, `lms.learning_faqs`, `lms.learner_practice_evaluations` | ✅ Đã hoàn tất (Gate 2/3 Pass) |
+| **Backend API (.NET Core 10)** | DTOs & Services video đơn lẻ | Mở rộng DTOs, Controllers và tạo ETL Service nạp 50 bài học thực tế (`EL-001`..`EL-050`), hỗ trợ lọc M1-M8, LT1-LT5, micro-videos, in-video quiz, nộp bài thực hành BM/TĐG & cấp chứng nhận | ✅ Đã hoàn tất (Gate 2/3 Pass) |
+| **Frontend Public (`/elearning`)** | Chỉ lọc 3 loại bài A/B/B+ | Nâng cấp bộ lọc đa chiều: 5 Lộ trình LT1-LT5, 8 Mô-đun M1-M8, 6 Cụm A-F, Hình thức CG/ĐH, hiển thị 50 bài học với huy hiệu chuẩn hóa | ✅ Đã hoàn tất (Gate 3/4 Pass) |
+| **Frontend Classroom (`/elearning/[id]`)** | 1 video đơn, thiếu thực hành & tự chấm | Playlist 3 micro-videos có Call Sheet, Player tạm dừng bật In-video Quiz, Tab Thực hành BM01-BM13, Tab Tự đánh giá TĐG01-TĐG05, Bảng tự chấm 7 tiêu chí mở CTA kép, Tab Tóm tắt, Tab FAQ, 4 vai trò chuyên gia | ✅ Đã hoàn tất (Gate 3/4 Pass) |
+| **Kiểm Thử 4 Tầng** | Test suites video đơn và quiz 10 câu | Thêm test case cho In-video quiz lock, Rubric 7 tiêu chí ngưỡng 11/14, Quiz 60%, ETL 50 bài, Chứng nhận số và E2E Playwright (379/379 checks PASS 100%, phát hiện & sửa triệt để 9 bugs) | ✅ Đã hoàn tất (Gate 4/5 Pass) |
 
 ---
 

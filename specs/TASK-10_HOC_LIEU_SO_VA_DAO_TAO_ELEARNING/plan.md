@@ -2,7 +2,8 @@
 ## PHÂN HỆ: HỌC LIỆU SỐ & ĐÀO TẠO E-LEARNING (TASK-10)
 
 > **Mã Epic**: `TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING`  
-> **Phiên bản**: v1.1 (Delta CR-2026-028 In Implementation)  
+> **Phiên bản**: v1.1 (Completed — Gate 4 & Gate 5 Verified)  
+> **Trạng thái**: Shipped 2026-11-10 (CR-2026-028 Completed)  
 > **Kiến trúc áp dụng**: Clean Architecture .NET 10 LTS Modular Monolith + Next.js 15 App Router + PostgreSQL 16 + pgvector RAG  
 > **Tài liệu đặc tả**: [`spec.md`](spec.md)  
 
