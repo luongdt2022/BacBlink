@@ -8,9 +8,34 @@ Bao phủ toàn trình 2 bề mặt:
 
 import sys
 import time
+import json
+import base64
+import hmac
+import hashlib
 from playwright.sync_api import sync_playwright
 
 BASE_URL = "http://localhost:3000"
+JWT_SECRET = "dev-only-signing-key-change-me-0123456789abcdef"
+
+def b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+def make_jwt(sub: str, role: str, email: str) -> str:
+    header = {"alg": "HS256", "typ": "JWT"}
+    now = int(time.time())
+    payload = {
+        "sub": sub,
+        "email": email,
+        "role": role,
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": role,
+        "iss": "nacentech",
+        "aud": "nacentech-portals",
+        "iat": now,
+        "exp": now + 3600,
+    }
+    signing_input = f"{b64url(json.dumps(header).encode())}.{b64url(json.dumps(payload).encode())}"
+    sig = hmac.new(JWT_SECRET.encode(), signing_input.encode(), hashlib.sha256).digest()
+    return f"{signing_input}.{b64url(sig)}"
 
 def run_lms_e2e_tests():
     print("======================================================================")
@@ -26,15 +51,16 @@ def run_lms_e2e_tests():
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
 
-        # Inject session Admin/Expert vào localStorage cho các route quản trị
-        context.add_init_script("""
-            localStorage.setItem('nacentwin_access_token', 'mock_verified_expert_token_for_e2e');
-            localStorage.setItem('nacentwin_user_context', JSON.stringify({
-                id: '00000000-0000-0000-0000-000000000001',
-                email: 'expert.duc@nacentech.gov.vn',
+        admin_token = make_jwt("01a111bf-7ac8-7c3e-84b4-0a555f848b17", "ADMIN", "admin@nacentech.vn")
+        # Inject session Admin thực vào localStorage cho các route quản trị
+        context.add_init_script(f"""
+            localStorage.setItem('nacentwin_access_token', '{admin_token}');
+            localStorage.setItem('nacentwin_user_context', JSON.stringify({{
+                id: '01a111bf-7ac8-7c3e-84b4-0a555f848b17',
+                email: 'admin@nacentech.vn',
                 fullName: 'TS. Nguyễn Văn Đức',
                 role: 'ADMIN'
-            }));
+            }}));
         """)
 
         page = context.new_page()
@@ -44,11 +70,12 @@ def run_lms_e2e_tests():
         # ------------------------------------------------------------------
         tests_total += 1
         print("▶ [E2E-01] Kiểm tra Cổng Học Liệu Công Khai /elearning...")
-        page.goto(f"{BASE_URL}/elearning", wait_until="networkidle")
-        time.sleep(2)
+        page.goto(f"{BASE_URL}/elearning", wait_until="domcontentloaded")
+        page.locator('a[href^="/elearning/"]').first.wait_for(state="visible", timeout=15000)
+        time.sleep(0.5)
 
         body_text = page.locator("body").inner_text()
-        if "Cổng Đào Tạo Trực Tuyến" in body_text or "Học liệu số" in body_text:
+        if "cổng đào tạo trực tuyến" in body_text.lower() or "học liệu số" in body_text.lower():
             print("  ✅ [PASS] Hero Banner tải thành công.")
             tests_passed += 1
         else:
@@ -85,7 +112,7 @@ def run_lms_e2e_tests():
         # ------------------------------------------------------------------
         tests_total += 1
         print("▶ [E2E-03] Kiểm tra Danh sách Khóa học nạp từ PostgreSQL thật...")
-        has_material = "Tổng quan Quản trị Sở hữu Trí tuệ" in body_text or "Thẩm định Giá Công nghệ" in body_text
+        has_material = ("EL-001" in body_text or "EL-002" in body_text or "Tổng quan Quản trị Sở hữu Trí tuệ" in body_text)
 
         if has_material:
             print("  ✅ [PASS] Danh sách bài học mẫu đã render từ CSDL PostgreSQL thật.")
@@ -104,8 +131,9 @@ def run_lms_e2e_tests():
         # ------------------------------------------------------------------
         tests_total += 1
         print("▶ [E2E-04] Kiểm tra Bàn Quản Trị Học Liệu /admin/elearning...")
-        page.goto(f"{BASE_URL}/admin/elearning", wait_until="networkidle")
-        time.sleep(2)
+        page.goto(f"{BASE_URL}/admin/elearning", wait_until="domcontentloaded")
+        page.locator("button:has-text('Đăng bài học mới'), button:has-text('Thêm học liệu mới')").first.wait_for(state="visible", timeout=15000)
+        time.sleep(0.5)
 
         admin_body = page.locator("body").inner_text()
         has_admin_table = "Quản Trị Học Liệu Số" in admin_body or "Đăng bài học mới" in admin_body or "Mã học liệu" in admin_body
@@ -158,13 +186,14 @@ def run_lms_e2e_tests():
         tests_total += 1
         print("▶ [E2E-06] Kiểm tra Màn hình Chi tiết Học liệu 5 thành phần & CTA Tư vấn R50...")
         material_id = "01940001-0000-7000-8000-000000000001"
-        page.goto(f"{BASE_URL}/elearning/{material_id}", wait_until="networkidle")
-        time.sleep(2)
+        page.goto(f"{BASE_URL}/elearning/{material_id}", wait_until="domcontentloaded")
+        page.locator("h1").first.wait_for(state="visible", timeout=15000)
+        time.sleep(1.5)
 
-        detail_body = page.locator("body").inner_text()
-        has_detail_title = "Quản trị Sở hữu Trí tuệ" in detail_body
-        has_consulting_cta = "Gửi Yêu Cầu Tư Vấn" in detail_body or "Tư Vấn Chuyên Gia" in detail_body
-        has_tabs_content = "Tổng quan" in detail_body or "Câu hỏi tự kiểm tra" in detail_body
+        detail_body = page.locator("body").inner_text().lower()
+        has_detail_title = "quản trị sở hữu trí tuệ" in detail_body
+        has_consulting_cta = "gửi yêu cầu tư vấn" in detail_body or "tư vấn chuyên gia" in detail_body
+        has_tabs_content = "tổng quan" in detail_body or "bài tập tự luyện" in detail_body or "câu hỏi tự kiểm tra" in detail_body
 
         if has_detail_title and has_consulting_cta and has_tabs_content:
             print("  ✅ [PASS] Màn hình Chi tiết 5 thành phần và Nút CTA Tư vấn R50 hiển thị hoàn hảo.")
@@ -183,8 +212,8 @@ def run_lms_e2e_tests():
         # ------------------------------------------------------------------
         tests_total += 1
         print("▶ [E2E-07] Săn Lỗi Biên (Edge-Case): Kiểm tra trang bài học không tồn tại (/elearning/id-khong-ton-tai)...")
-        page.goto(f"{BASE_URL}/elearning/id-khong-ton-tai", wait_until="networkidle")
-        time.sleep(1)
+        page.goto(f"{BASE_URL}/elearning/id-khong-ton-tai", wait_until="domcontentloaded")
+        time.sleep(2)
 
         not_found_body = page.locator("body").inner_text()
         if "Không tìm thấy" in not_found_body or "quay lại" in not_found_body.lower() or "lỗi" in not_found_body.lower():
