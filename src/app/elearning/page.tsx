@@ -97,12 +97,10 @@ export default function ElearningCatalogPage() {
     setAsyncState("loading");
     setErrorMessage("");
     try {
-      // Tải đủ danh mục 50 bài học
+      // Tải đủ danh mục 50+ bài học một lần để lọc đa chiều tức thời (Zero-Flicker)
       const res = await fetchLmsCatalog({
-        keyword: keyword.trim() || undefined,
-        clusterCode: selectedCluster || undefined,
         page: 1,
-        pageSize: 60,
+        pageSize: 100,
       });
       setData(res);
       if (res.materials.items.length === 0) {
@@ -114,7 +112,7 @@ export default function ElearningCatalogPage() {
       setErrorMessage(err instanceof Error ? err.message : "Không thể tải danh mục học liệu số.");
       setAsyncState("error");
     }
-  }, [keyword, selectedCluster]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -204,20 +202,20 @@ export default function ElearningCatalogPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* 1. HERO BANNER CHUẨN QĐ 1993/QĐ-BKHCN */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-slate-900 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-700/50">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
+      <section className="relative overflow-hidden bg-brand-700 text-white py-10 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-600/40">
+        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-3 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 border border-brand-400/30 text-brand-200 text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-semibold tracking-wide">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                Khung Đào Tạo Số Quốc Gia Theo Quyết Định 1993/QĐ-BKHCN (PO-DEC-20261110-02)
+                Khung Đào Tạo Số Quốc Gia Theo Quyết Định 1993/QĐ-BKHCN
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
                 Cổng Học Liệu Số & Không Gian Đào Tạo Nguồn Cung Công Nghệ
               </h1>
-              <p className="text-sm sm:text-base text-slate-200 leading-relaxed">
-                Trang bị năng lực chẩn đoán nhu cầu, tìm kiếm nguồn cung, đánh giá TRL, đàm phán chuyển giao công nghệ và xây dựng lộ trình đổi mới cho Doanh nghiệp, Viện trường và Cán bộ Sở KH&CN. Khung chuẩn <strong>50 bài giảng số hóa</strong> (30 Chuyên gia `CG` + 20 Đồ họa `ĐH`), <strong>8 Mô-đun năng lực</strong>, <strong>5 Lộ trình học</strong>, <strong>13 Biểu mẫu thực hành (BM01–BM13)</strong> và <strong>5 Công cụ Tự đánh giá (TĐG01–TĐG05)</strong>.
+              <p className="text-sm sm:text-base text-white/85 leading-relaxed">
+                Trang bị năng lực chẩn đoán nhu cầu, tìm kiếm nguồn cung, đánh giá TRL, đàm phán chuyển giao công nghệ và xây dựng lộ trình đổi mới cho Doanh nghiệp, Viện trường và Cán bộ Sở KH&CN.
               </p>
             </div>
 

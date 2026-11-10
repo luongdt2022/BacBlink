@@ -649,8 +649,7 @@ export default function PublicDemandsPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-brand-900/60 via-transparent to-transparent pointer-events-none" />
                       {/* Floating Badges Header: Tên Lĩnh Vực & TNI Score (Minimal Text-Only) */}
                       <div className="relative z-10 flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase text-teal-200 drop-shadow-sm">
-                          <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0 shadow-xs" />
+                        <span className="text-xs font-bold tracking-wide uppercase text-white drop-shadow-sm">
                           {sectorName}
                         </span>
                         <IndexVerificationBadge

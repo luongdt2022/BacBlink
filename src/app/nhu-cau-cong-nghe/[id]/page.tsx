@@ -269,7 +269,7 @@ export default function PublicDemandDetailPage() {
                     <SectorBannerBackground sectorCode={item.sectorCode} opacity={0.45} />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-950/70 via-transparent to-transparent pointer-events-none" />
                     <div className="relative z-10 flex items-center justify-between">
-                      <span className="text-xs font-bold px-3 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-teal-200">
+                      <span className="text-xs font-bold px-3 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-white">
                         {getSectorName(item.sectorCode)}
                       </span>
                       <span className="text-xs text-white/80 font-medium">
