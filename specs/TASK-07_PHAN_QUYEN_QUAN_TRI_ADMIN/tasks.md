@@ -451,3 +451,54 @@
   - Modal đặt lại mật khẩu (`POST /api/v1/admin/users/{id}/reset-password`).
   - Modal Khóa/Mở khóa tài khoản 2 lớp bắt buộc nhập lý do, áp dụng `BR-USER-01` disable nút khóa trên tài khoản của chính Super Admin.
 - [x] `T111` **[QC-Test-4Layers]** Thực thi kiểm thử độc lập 4 tầng (Unit tests `BR-USER-*`, Contract test DTO, DB integration test PostgreSQL, Playwright E2E Visual QA), thu thập evidence và nghiệm thu Gate 4 & 5.
+
+---
+
+## Phase 22: Spec Delta v16 (`CR-2026-029`) — Phản Hồi Chuyển Route Quản Trị, Đồng Bộ Sidebar SearchParams & Chuẩn Hóa KPI Skeleton (`/admin/*`) [PO-DEC-20261111-01]
+
+### Đợt 2: Admin Route Loading Boundary & Đồng Bộ Sidebar `useSearchParams()`
+- [x] `T112` **[CR-2026-029] [Đợt 2] [FE] Xây dựng Shared Admin Skeletons & App Router `admin/loading.tsx` (`REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-03`)**:
+  - Tạo `SourceCode/frontend/src/components/admin/admin-workspace-skeleton.tsx` gồm `AdminWorkspaceSkeleton` (`data-testid="admin-route-skeleton"`, `aria-busy="true"`, `animate-shimmer`, `CLS = 0`) và `AdminKpiCardSkeleton` dùng chung.
+  - Tạo `SourceCode/frontend/src/app/admin/loading.tsx` render `<AdminWorkspaceSkeleton />` làm Next.js Suspense loading boundary cho phân hệ `/admin/*`.
+- [x] `T113` **[CR-2026-029] [Đợt 2] [FE] Cập nhật `AdminLayout` & `AdminSidebarNav` dùng `useSearchParams()` và Pending Route Skeleton (`REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-02`, `BR-ADM-LOAD-02`)**:
+  - Cập nhật `SourceCode/frontend/src/app/admin/layout.tsx`: thay `window.location.search` bằng `useSearchParams()` bọc trong `<React.Suspense>` đồng bộ active state cho `/admin/approvals`, `?tab=sla`, `?tab=override`.
+  - Bổ sung state `pendingHref`: khi click link sang route/tab khác (không có modifier key) thì highlight ngay mục đích và hiển thị `<AdminWorkspaceSkeleton />` ở vùng Main Workspace; không bật nếu click lại chính route/tab hiện tại; tự tắt khi `pathname`/`searchParams` thay đổi kèm fail-safe timeout (`12000ms`).
+  - Bảo toàn tuyệt đối `RoleGuard` (`SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`) bao bên ngoài toàn bộ shell và pending workspace.
+- [x] `T114` **[CR-2026-029] [Đợt 2] [Test] Cập nhật & chạy Unit Test `AdminLayout` (`TEST-ADM-LOAD-01`, `REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-02`, `BR-ADM-LOAD-02`)**:
+  - Cập nhật `SourceCode/frontend/src/app/admin/layout.test.tsx` kiểm chứng: active sync `/admin/approvals`, `?tab=sla`, `?tab=override` qua `useSearchParams()`; click link khác bật `admin-route-skeleton` và tự ẩn khi route/query đổi; click lại cùng route hoặc giữ `ctrlKey` không bật skeleton; fail-safe timeout tự tắt; `RoleGuard` hoạt động nguyên vẹn.
+  - Chạy `npx vitest run src/app/admin/layout.test.tsx` đạt 100% PASS.
+
+### Đợt 4: Chuẩn Hóa Admin KPI Shimmer Skeleton (Zero Fake Zeroes) & Playwright E2E
+- [x] `T115` **[CR-2026-029] [Đợt 4] [FE] Chuẩn hóa KPI Loading Skeleton tại `/admin/users` (`REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02`)**:
+  - Cập nhật `SourceCode/frontend/src/app/admin/users/page.tsx`: khi `loading === true`, 4 KPI Cards (`Tổng Người Dùng`, `Đang Hoạt Động`, `Đang Bị Khóa`, `Cán Bộ Quản Trị`) hiển thị `AdminKpiCardSkeleton` (`animate-shimmer`, `aria-busy="true"`, `CLS = 0`), tuyệt đối không hiển thị số `0` giả lúc đang tải.
+  - Bảo toàn `<Async>` 5 UX States của bảng dữ liệu, bộ lọc và các Modal/Drawer CRUD.
+- [x] `T116` **[CR-2026-029] [Đợt 4] [FE] Chuẩn hóa KPI & Hàng Đợi Loading Skeleton tại `/admin` (`REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02`)**:
+  - Cập nhật `SourceCode/frontend/src/app/admin/page.tsx`: khi `loading === true`, 4 thẻ `systemMetrics` và badge/mô tả Quick Action Card hàng đợi phê duyệt hiển thị Shimmer Skeleton (`animate-shimmer`, `aria-busy="true"`), loại bỏ chuỗi `"Đang tải..."` / `"Chưa có dữ liệu"` / `"Không có hồ sơ chờ"` giả trước khi API phản hồi.
+- [x] `T117` **[CR-2026-029] [Đợt 4] [FE] Chuẩn hóa KPI Loading Skeleton tại `/admin/assessments/tt17` (`REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02`)**:
+  - Cập nhật `SourceCode/frontend/src/app/admin/assessments/tt17/page.tsx`: khi `loading === true`, 4 KPI Cards hiển thị Shimmer Skeleton (`animate-shimmer`, `aria-busy="true"`) thay cho `?? 0` và `"0.0%"` giả; hiển thị skeleton cho vùng bảng tỉnh / 5 nhóm thành phần khi `loading && !dashboard` và dòng skeleton bảng DN khi đang tải.
+- [x] `T118` **[CR-2026-029] [Đợt 4] [Test] Unit Tests Zero Fake Zeroes cho `/admin/users`, `/admin`, `/admin/assessments/tt17` (`TEST-ADM-LOAD-01`, `BR-ADM-LOAD-01`)**:
+  - Cập nhật `SourceCode/frontend/src/app/admin/users/page.test.tsx`, tạo `SourceCode/frontend/src/app/admin/page.test.tsx` và `SourceCode/frontend/src/app/admin/assessments/tt17/page.test.tsx`.
+  - Kiểm chứng khi API chưa resolve (`loading === true`): render Shimmer Skeleton (`aria-busy="true"`), **không** render `"0"`, `"0 / 34"`, `"0.0%"`, `"Không có hồ sơ chờ"`; sau khi API resolve mới render số liệu thật (kể cả khi dữ liệu thật từ API bằng `0`).
+- [x] `T119` **[CR-2026-029] [Đợt 4] [QC/E2E] Playwright E2E Thật, Visual QA & Build Gate (`TEST-ADM-LOAD-01`, `BR-ADM-LOAD-02`)**:
+  - Tạo và chạy `SourceCode/frontend/e2e/admin-cr2026-029-loading-kpi.spec.ts` đối đầu trực tiếp `localhost:3000` + `localhost:5080` + PostgreSQL thật (Zero-Mock): xác nhận phản hồi skeleton chuyển route trên `AdminSidebarNav`, đồng bộ tab `/admin/approvals` / `?tab=sla` / `?tab=override`, không nháy số `0` giả trên KPI, Visual QA Desktop (1280px) & Mobile (390px) đạt $\ge 8.0/10$.
+  - Chạy `npx tsc --noEmit`, `npx vitest run`, `npm run build` (`next build`) đạt 100% PASS.
+
+---
+
+## Phase 23: Spec Delta v17 (`CR-2026-030`) — Đồng Bộ "Thẩm Định DN ĐMST" & "Hội Đồng Chấm Điểm TT17" Về Chung Nhóm 1 Và Thu Gọn Sidebar `/gov` Thành 3 Nhóm [PO-DEC-20261111-02]
+
+- [x] `T120` **[CR-2026-030] [FE-Nav] Thu gọn `GOV_MENU_GROUPS` tại `SourceCode/frontend/src/app/gov/layout.tsx` thành 3 nhóm (`REQ-GOV-NAV-01`, `BR-GOV-NAV-01`)**:
+  - Đưa `Hội đồng Chấm điểm TT17` (`/gov/assessments/tt17`) lên chung `group1` (`1. Tổng Quan & Phê Duyệt`) cùng `Thẩm định DN ĐMST` (`/gov/approvals/enterprises`).
+  - Đánh số lại `group2` (`2. Giám Sát Cung–Cầu & Địa Bàn`) và `group3` (`3. Quản Trị Công Vụ & Nhân Sự`), cập nhật state `openGroups` còn 3 khóa.
+- [x] `T121` **[CR-2026-030] [FE-Breadcrumbs] Đồng bộ Breadcrumbs Nhóm 1 (`REQ-GOV-NAV-02`)**:
+  - Cập nhật `GovPageHeader` breadcrumbs cấp 2 tại `src/app/gov/assessments/tt17/page.tsx`, `src/app/gov/approvals/enterprises/page.tsx`, và `src/components/gov/gov-approval-queue.tsx` về `{ label: "Tổng Quan & Phê Duyệt", href: "/gov" }`.
+- [x] `T122` **[CR-2026-030] [Test] Cập nhật & chạy kiểm thử `src/app/gov/layout.test.tsx`, `tests/e2e/test_task07_delta_v8_gov_sidebar_e2e.py`, và `tsc --noEmit`**:
+  - Kiểm chứng 3 nhóm Accordion, `Thẩm định DN ĐMST` và `Hội đồng Chấm điểm TT17` nằm chung trong `1. Tổng Quan & Phê Duyệt`. (Vitest 5 files / 24 tests PASS, `tsc --noEmit` exit code 0).
+
+---
+
+## Phase 24: Delta Mở Rộng (`CR-2026-031`) — Pending Route Skeleton Cho Cổng Công Vụ (`/gov/*`) [PO-DEC-20261111-03]
+
+- [x] `T123` **[CR-2026-031] [FE-GovLoading] Tạo `src/app/gov/loading.tsx` và tích hợp `pendingHref` + `<WorkspaceRouteSkeleton testId="gov-route-skeleton" />` + `<React.Suspense>` vào `src/app/gov/layout.tsx` (`REQ-UI-043`)**.
+- [x] `T124` **[CR-2026-031] [Test] Bổ sung test pending route skeleton trong `src/app/gov/layout.test.tsx` và chạy Vitest PASS**.
+

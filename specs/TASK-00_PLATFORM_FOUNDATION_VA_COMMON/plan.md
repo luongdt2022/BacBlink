@@ -898,4 +898,110 @@ Cập nhật `src/test/qc-gate4-typography.test.ts`:
 - Kiểm tra `globals.css` định nghĩa `--font-sans` và `--font-heading` ánh xạ tới `--font-be-vietnam-pro`, `--font-mono` ánh xạ tới `--font-jetbrains-mono`.
 - Chạy Vitest test suite xác nhận 100% Green.
 
+---
+
+## Plan Delta v19 (CR-2026-UIUX-005): Tối Ưu Tốc Độ Chuyển Route Toàn Trang, Đóng Gói Next.js & Client Cache Danh Mục [PO-DEC-20261111-01]
+
+> **Căn cứ thiết kế:** Quyết định điều hành `PO-DEC-20261111-01` (11/11/2026), Delta Ledger [`CR-2026-UIUX-005`](./deltas/CR-2026-UIUX-005_route_transition_and_client_perf.md), `Spec Delta v19` trong [`spec.md`](./spec.md) và ADR `0017`.  
+> **Kiểm soát Gate:** Gate 2 (Architecture Approved) — Không thay đổi Backend `.NET` hay Schema PostgreSQL.
+
+### 1. Tổng Quan Kiến Trúc & Phân Bổ Tầng (`REQ-UI-040`..`042`, `BR-UI-030`)
+
+| Tầng / Lớp | Phạm Vi Tác Động | Trách Nhiệm Kỹ Thuật | Điểm Neo |
+| :--- | :--- | :--- | :--- |
+| **WebApp / Global Shell** | `src/components/common/navigation-progress.tsx` | Kích hoạt thanh tiến trình chuyển route tức thì tại sự kiện click (`<50ms`), loại bỏ `startTransition`, nâng độ rõ nét hiển thị (`CLS = 0`), bảo toàn a11y và cleanup timer an toàn. | `REQ-UI-040`, `BR-UI-030` |
+| **WebApp / Build & Dev Toolchain** | `next.config.ts`, `package.json` | Bật `experimental.optimizePackageImports: ["lucide-react"]` và chuyển dev server sang `next dev --turbopack -p 3000` để tăng tốc biên dịch on-demand trên CloudStorage. | `REQ-UI-041` |
+| **WebApp / Client Data SDK** | `src/lib/master-data-client.ts` | Triển khai In-memory TTL cache (`60_000ms`) + In-flight Promise deduplication cho `getActiveSectors(options?)`, bổ sung `invalidateSectorsCache()`, bảo toàn API contract & reject lỗi không fallback. | `REQ-UI-042`, `BR-UI-030` |
+| **WebApp / Admin Mutation Consumer** | `src/app/admin/sectors/page.tsx` | Kích hoạt `invalidateSectorsCache()` ngay sau khi Tạo mới (`POST`), Cập nhật (`PATCH`), Vô hiệu hóa (`DELETE`) lĩnh vực hoặc bấm Tải lại danh mục. | `REQ-UI-042`, `BR-UI-030` |
+| **Backend / Database** | `SourceCode/backend/` | **Ngoài phạm vi** (API `/api/v1/sectors` và `ApiEnvelope<MasterDataOption[]>` giữ nguyên 100%). | `BR-UI-030` |
+
+### 2. Danh Mục Tệp Tin Dự Kiến Chỉnh Sửa (File Manifest)
+
+- `[MODIFY] SourceCode/frontend/src/components/common/navigation-progress.tsx` *(Đợt 2)*
+- `[MODIFY] SourceCode/frontend/src/components/common/navigation-progress.test.tsx` *(Đợt 2)*
+- `[MODIFY] SourceCode/frontend/next.config.ts` *(Đợt 3)*
+- `[MODIFY] SourceCode/frontend/package.json` *(Đợt 3)*
+- `[MODIFY] SourceCode/frontend/src/lib/master-data-client.ts` *(Đợt 3)*
+- `[MODIFY] SourceCode/frontend/src/app/admin/sectors/page.tsx` *(Đợt 3)*
+- `[MODIFY] SourceCode/frontend/src/lib/master-data-client.test.ts` *(Đợt 3)*
+- `[MODIFY] SourceCode/frontend/src/test/setup.ts` *(Đợt 3 — reset `invalidateSectorsCache()` toàn cục giữa các test)*
+
+### 3. Thiết Kế Kỹ Thuật Chi Tiết
+
+#### 3.1. `NavigationProgress` Immediate State (`src/components/common/navigation-progress.tsx`)
+1. **Loại bỏ trì hoãn transition**: Gỡ bỏ `useTransition` (`startTransition`) khỏi `NavigationProgressInner`. Trong `handleAnchorClick` (capture phase `document.addEventListener("click", handleAnchorClick, true)`), gọi đồng bộ `setVisible(true)` và `setProgress(25)` ngay trong frame click (`<50ms`).
+2. **Bảo toàn lọc liên kết (`BR-UI-030`)**:
+   - Bỏ qua nếu `e.defaultPrevented`, `!href`, `href.startsWith("#")`, `href.startsWith("mailto:")`, `href.startsWith("tel:")`, `targetAttr === "_blank"`, hoặc có modifier key (`e.ctrlKey || e.metaKey || e.shiftKey || e.altKey`).
+   - Bọc `new URL(href, window.location.href)` trong `try/catch` để an toàn với `href` bất thường; chỉ kích hoạt khi `targetUrl.origin === currentUrl.origin` và `(targetUrl.pathname !== currentUrl.pathname || targetUrl.search !== currentUrl.search)`.
+3. **Độ rõ nét hiển thị, `CLS = 0` & A11y**:
+   - Giữ container `fixed top-0 left-0 right-0 z-[9999] pointer-events-none overflow-hidden bg-transparent` (không chiếm dòng layout $\Rightarrow$ `CLS = 0`).
+   - Nâng chiều cao từ `h-[2px]` lên `h-[3px]` với dải màu tương phản cao (`bg-gradient-to-r from-cyan-400 via-teal-400 to-brand-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]`) để dễ nhận diện trên cả nền Header `#3C5999` lẫn nền sáng `#F8FAFC`.
+   - Giữ đầy đủ thuộc tính tiếp cận: `role="progressbar"`, `aria-valuemin={0}`, `aria-valuemax={100}`, `aria-valuenow={progress}`, `aria-label="Đang tải trang"`.
+4. **Timer & Fail-safe Cleanup**:
+   - Khi `pathname` hoặc `searchParams` thay đổi (route mới đã mount), đẩy `setProgress(100)` và sau `250ms` reset `setVisible(false); setProgress(0);` (luôn `clearTimeout` trong cleanup `useEffect`).
+   - Bổ sung fail-safe timeout (`15000ms`) khi `visible === true` để tự đóng thanh tiến trình nếu điều hướng bị hủy/lỗi mạng không làm đổi `pathname`/`searchParams`, tránh treo UI.
+
+#### 3.2. Tối Ưu Đóng Gói & Dev Server (`next.config.ts`, `package.json`)
+1. **`SourceCode/frontend/next.config.ts`**:
+   - Bổ sung vào `config: NextConfig`:
+     ```ts
+     experimental: {
+       optimizePackageImports: ["lucide-react"],
+     },
+     ```
+   - Giữ nguyên cấu hình `distDir: ".next"`, `images.remotePatterns` và toàn bộ bảng `rewrites()`.
+2. **`SourceCode/frontend/package.json`**:
+   - Cập nhật script `"dev": "next dev --turbopack -p 3000"`.
+3. **Kiểm chứng tương thích (`Next.js 15.2.1` + `React 19.0.0` + `Tailwind CSS v4`)**:
+   - Đã đối chiếu `SourceCode/frontend/package.json` (`next: 15.2.1`, `@tailwindcss/postcss: ^4.0.0`, `tailwindcss: ^4.0.0`, `lucide-react: ^0.475.0`) và `postcss.config.mjs` (`"@tailwindcss/postcss": {}`).
+   - Next.js 15.2.1 hỗ trợ `next dev --turbopack` cùng `@tailwindcss/postcss` v4 và `experimental.optimizePackageImports: ["lucide-react"]`. Tại Đợt 3 bắt buộc chạy kiểm chứng `npm run build` (`next build`) sạch 0 lỗi và smoke test `npm run dev` để xác nhận không phát sinh lỗi biên dịch CSS `@theme` trong `globals.css` hay `rewrites()`.
+
+#### 3.3. Client In-Memory TTL Cache & Deduplication (`src/lib/master-data-client.ts` + `src/app/admin/sectors/page.tsx`)
+1. **Hằng số & Trạng thái Cache (Browser-only, SSR-safe)**:
+   ```ts
+   const SECTORS_CACHE_TTL_MS = 60_000;
+
+   export interface GetActiveSectorsOptions {
+     forceRefresh?: boolean;
+   }
+
+   let sectorsCache: { data: SectorOption[]; expiresAt: number } | null = null;
+   let sectorsInFlight: Promise<SectorOption[]> | null = null;
+   ```
+   - Chỉ lưu `sectorsCache` và dùng `sectorsInFlight` khi `typeof window !== "undefined"` (tránh rò rỉ/dùng chung cache giữa các request khác nhau trên Node SSR; môi trường Vitest `jsdom` có `window` nên vẫn test đầy đủ).
+2. **Hành vi `getActiveSectors(options?: GetActiveSectorsOptions)` & `invalidateSectorsCache()`**:
+   - `invalidateSectorsCache()`: Đặt `sectorsCache = null` và `sectorsInFlight = null`.
+   - Nếu `options?.forceRefresh === true`: xóa `sectorsCache = null` và `sectorsInFlight = null` trước khi gọi mạng để bảo đảm luôn lấy dữ liệu tươi mới nhất từ API (`BR-UI-030`).
+   - Nếu `!options?.forceRefresh` và `sectorsCache !== null` và `Date.now() < sectorsCache.expiresAt`: trả về `[...sectorsCache.data]` ngay lập tức (0 HTTP call).
+   - Nếu `sectorsInFlight !== null`: trả về chính `sectorsInFlight` (gộp các cuộc gọi đồng thời từ nhiều component/trang thành 1 HTTP `GET /api/v1/sectors`).
+   - Khi khởi tạo request mới qua `getOptions("/api/v1/sectors")` (giữ nguyên `fetch(\`\${API_BASE}/api/v1/sectors\`, { cache: "no-store" })`):
+     - Nếu thành công: lưu `sectorsCache = { data: rows, expiresAt: Date.now() + SECTORS_CACHE_TTL_MS }` (khi ở browser) và trả về `[...rows]`.
+     - Nếu thất bại (HTTP error hoặc invalid `ApiEnvelope`): **không** lưu cache, giữ nguyên hành vi `throw Error` (`rejects.toThrow()`), tuyệt đối không trả về stale cache hoặc dữ liệu giả (`BR-UI-030`).
+     - Trong `.finally()`: chỉ xóa `sectorsInFlight = null` nếu `sectorsInFlight === currentPromise` (tránh race condition khi `invalidateSectorsCache()` hoặc `forceRefresh` vừa khởi tạo request mới hơn).
+   - `getPublicExpertFilterOptions()`: Gọi `Promise.all([getActiveSectors(), getOptions("/api/v1/governance/org-units/public-provinces")])` để tái sử dụng cache/dedup mà vẫn bảo toàn 100% output `{ sectors, provinces }`.
+3. **Điểm kích hoạt Invalidation tại `SourceCode/frontend/src/app/admin/sectors/page.tsx`**:
+   - Import `invalidateSectorsCache` từ `@/lib/master-data-client`.
+   - Gọi `invalidateSectorsCache()` ngay sau khi:
+     1. `handleAddSectorSubmit` (dòng ~181) lưu thành công cả nhánh Tạo mới (`POST /api/v1/master-data/sectors`) và Cập nhật (`PATCH /api/v1/admin/sectors/${editingSector.id}`).
+     2. `deactivateSector` (dòng ~256) vô hiệu hóa thành công (`DELETE /api/v1/admin/sectors/${sector.id}`).
+     3. Nút `"Tải lại"` (dòng ~289) được bấm để làm mới danh mục đồng bộ với cache client.
+
+### 4. Chiến Lược Kiểm Thử & Benchmark (`TEST-UI-030`)
+
+1. **Đợt 2 (`navigation-progress.test.tsx`)**:
+   - Click link nội bộ bật `role="progressbar"` và `aria-valuenow > 0` ngay lập tức (không qua transition delay).
+   - Bỏ qua `#hash`, `mailto:`, `tel:`, `target="_blank"`, modifier keys (`ctrlKey`/`metaKey`/`shiftKey`/`altKey`), và link trùng URL hiện tại.
+   - Đổi `pathname` / `searchParams` hoàn tất `100%` và ẩn sau `250ms`; fail-safe timeout tự ẩn nếu route không đổi; `clearTimeout` sạch sẽ khi unmount.
+2. **Đợt 3 (`master-data-client.test.ts` + Build/Benchmark)**:
+   - Gọi `invalidateSectorsCache()` trong `beforeEach` và `afterEach` để bảo đảm cô lập state giữa các test case.
+   - Kiểm chứng: (a) Cache hit trong TTL 60s chỉ gọi `fetch` 1 lần; (b) Hết hạn TTL sau 60s (`vi.advanceTimersByTime(60_001)`) gọi `fetch` lại; (c) In-flight deduplication (`Promise.all([getActiveSectors(), getActiveSectors()])`) chỉ gọi `fetch` 1 lần; (d) `getActiveSectors({ forceRefresh: true })` bỏ qua cache và fetch lại; (e) `invalidateSectorsCache()` xóa sạch cache; (f) Lỗi mạng/envelope không hợp lệ vẫn reject và không làm ô nhiễm cache.
+   - Kiểm chứng `npx tsc --noEmit`, `npx vitest run`, `npm run build` (`next build`) sạch `0` lỗi, kèm đo benchmark thời gian compile/chuyển route trước và sau tối ưu.
+
+### 5. Rủi Ro Kỹ Thuật & Biện Pháp Phòng Ngừa
+
+- **Rủi ro 1 — Stale cache danh mục sau CRUD ở tab/cửa sổ khác**: Giới hạn TTL ngắn (`60s`), kèm `invalidateSectorsCache()` ngay tại mọi thao tác CRUD của Admin ở `/admin/sectors` và tùy chọn `{ forceRefresh: true }` cho luồng cần dữ liệu thời gian thực tuyệt đối.
+- **Rủi ro 2 — Turbopack / CloudStorage file-watching bất ổn**: Nếu `next dev --turbopack -p 3000` phát sinh lỗi không tương thích plugin hoặc watcher trên Google Drive mount, kiểm chứng ngay ở Đợt 3 bằng `next build` và smoke test điều hướng thực tế trên `localhost:3000` trước khi bàn giao Gate 3.
+- **Rủi ro 3 — Test pollution từ module-level cache**: Bắt buộc reset bằng `invalidateSectorsCache()` trong `beforeEach`/`afterEach` của `master-data-client.test.ts` để không làm gãy bất kỳ test unit nào.
+
+
 

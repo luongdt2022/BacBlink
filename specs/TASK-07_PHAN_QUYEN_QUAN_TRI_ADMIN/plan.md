@@ -804,6 +804,98 @@ export interface GovPageHeaderProps {
 - **Wave 2**: Tái cấu trúc component `approvals/page.tsx` (Unified Toolbar, Full-width Grid, Capsule Badge, Enterprise Slide-over Drawer).
 - **Wave 3**: Cập nhật bộ unit test `approvals/page.test.tsx` và `qc-edge-cases.test.tsx`, chạy toàn bộ test suite đạt 100% Green.
 
+---
+
+## 12. Plan Delta v16 (CR-2026-029): Phản Hồi Chuyển Route Quản Trị, Đồng Bộ Sidebar SearchParams & Chuẩn Hóa KPI Skeleton (/admin/*) [PO-DEC-20261111-01]
+
+> **Căn cứ thiết kế:** Quyết định điều hành `PO-DEC-20261111-01` (11/11/2026), Delta Ledger [`CR-2026-029`](./deltas/CR-2026-029_admin_route_loading_and_kpi_skeleton.md), `Spec Delta v16` trong [`spec.md`](./spec.md) và ADR `0017`.  
+> **Kiểm soát Gate:** Gate 2 (Architecture Approved) — Không thay đổi Backend `.NET` hay Schema PostgreSQL.
+
+### 12.1. Tổng Quan Kiến Trúc & Phân Bổ Thành Phần (`REQ-ADM-LOAD-01`..`03`, `BR-ADM-LOAD-01`..`02`)
+
+| Thành Phần | Tệp Mã Nguồn | Trách Nhiệm Kỹ Thuật | Điểm Neo |
+| :--- | :--- | :--- | :--- |
+| **Shared Admin Skeletons** | `src/components/admin/admin-workspace-skeleton.tsx` | Cung cấp `AdminWorkspaceSkeleton` (Header + 4 KPI Skeleton Cards + Content Table Skeleton) và `AdminKpiCardSkeleton` dùng chung (`animate-shimmer`, `aria-busy="true"`, `CLS = 0`), tránh trùng lặp JSX. | `REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-03` |
+| **Admin Route Loading Boundary** | `src/app/admin/loading.tsx` | Next.js App Router Suspense loading boundary cho toàn phân hệ `/admin/*`, render `AdminWorkspaceSkeleton`. | `REQ-ADM-LOAD-01`, `BR-ADM-LOAD-02` |
+| **Admin Layout & Sidebar Sync** | `src/app/admin/layout.tsx` | Chuyển `AdminSidebarNav` sang `useSearchParams()` bọc `<React.Suspense>`; bổ sung trạng thái pending route transition skeleton trong vùng workspace chính khi click mục khác trên sidebar, nằm hoàn toàn bên trong `RoleGuard`. | `REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-02`, `BR-ADM-LOAD-02` |
+| **Users Console KPI Skeleton** | `src/app/admin/users/page.tsx` | Thay thế `{total}`, `{activeCount}`, `{lockedCount}`, `{officersCount}` (`0` giả) bằng Shimmer Skeleton khi `loading === true`; bảo toàn `<Async>` 5 UX States cho bảng dữ liệu. | `REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02` |
+| **Admin Dashboard KPI Skeleton** | `src/app/admin/page.tsx` | Thay thế `"Đang tải..."` / `"Chưa có dữ liệu"` / `"Không có hồ sơ chờ"` lúc `loading === true` trên 4 thẻ `systemMetrics` và Quick Action Banner hàng đợi bằng Shimmer Skeleton. | `REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02` |
+| **TT17 Dashboard KPI Skeleton** | `src/app/admin/assessments/tt17/page.tsx` | Thay thế `?? 0` / `"0.0%"` trên 4 KPI Cards (và trạng thái chờ bảng tỉnh/5 nhóm khi `!dashboard`) khi `loading === true` bằng Shimmer Skeleton. | `REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02` |
+
+### 12.2. Danh Mục Tệp Tin Dự Kiến Tạo Mới / Chỉnh Sửa (File Manifest)
+
+- `[CREATE] SourceCode/frontend/src/components/admin/admin-workspace-skeleton.tsx` *(Đợt 2)*
+- `[CREATE] SourceCode/frontend/src/app/admin/loading.tsx` *(Đợt 2)*
+- `[MODIFY] SourceCode/frontend/src/app/admin/layout.tsx` *(Đợt 2)*
+- `[MODIFY] SourceCode/frontend/src/app/admin/layout.test.tsx` *(Đợt 2)*
+- `[MODIFY] SourceCode/frontend/src/app/admin/users/page.tsx` *(Đợt 4)*
+- `[MODIFY] SourceCode/frontend/src/app/admin/page.tsx` *(Đợt 4)*
+- `[MODIFY] SourceCode/frontend/src/app/admin/assessments/tt17/page.tsx` *(Đợt 4)*
+- `[MODIFY] SourceCode/frontend/src/app/admin/users/page.test.tsx` *(Đợt 4)*
+- `[CREATE] SourceCode/frontend/src/app/admin/page.test.tsx` *(Đợt 4)*
+- `[CREATE] SourceCode/frontend/src/app/admin/assessments/tt17/page.test.tsx` *(Đợt 4)*
+- `[CREATE] SourceCode/frontend/e2e/admin-cr2026-029-loading-kpi.spec.ts` *(Đợt 4)*
+
+### 12.3. Thiết Kế Kỹ Thuật Chi Tiết
+
+#### A. Shared Skeletons & `src/app/admin/loading.tsx` (`REQ-ADM-LOAD-01`)
+1. `AdminWorkspaceSkeleton` (`data-testid="admin-route-skeleton"`, `aria-busy="true"`, `aria-live="polite"`):
+   - Khối Header giả lập tiêu đề trang + cụm nút hành động (`animate-shimmer`).
+   - Hàng 4 KPI Skeleton Cards (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4`), sử dụng chiều cao khung cố định tương đương KPI thật để `CLS = 0`.
+   - Khối Filter Bar + Table/Panel Skeleton 5 dòng dùng class `.animate-shimmer` từ `src/app/globals.css`.
+2. `AdminKpiCardSkeleton`: Hiển thị thanh `animate-shimmer` cho vùng giá trị (`h-8 w-20 rounded-md mt-2`) và dòng phụ (`h-3.5 w-32 rounded mt-1.5`) bên trong khung thẻ KPI chuẩn (giữ nguyên tiêu đề + icon của từng thẻ để giữ ổn định chiều cao `CLS = 0` và ngữ cảnh cho người dùng).
+3. `src/app/admin/loading.tsx`: Export default component trả về `<AdminWorkspaceSkeleton />`.
+
+#### B. `AdminLayout` & `AdminSidebarNav` (`src/app/admin/layout.tsx` — `REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-02`, `BR-ADM-LOAD-02`)
+1. **Đồng bộ `useSearchParams()` trong `<React.Suspense>`**:
+   - Gỡ bỏ `window.location.search` tại dòng 158; sử dụng `const searchParams = useSearchParams();` và `const currentTab = searchParams.get("tab") || "all";`.
+   - Bọc phần điều hướng/layout inner dùng `useSearchParams()` bên trong `<React.Suspense fallback={<AdminShellSuspenseFallback />}>` (fallback giữ đúng chiều rộng sidebar `lg:w-72` + `AdminWorkspaceSkeleton` để tránh lỗi Next.js build CSR bailout và giữ `CLS = 0`).
+   - Toàn bộ cấu trúc `<Suspense>` vẫn nằm **bên trong** `<RoleGuard allowedRoles={["SUPER_ADMIN", "OPERATOR_ADMIN", "ADMIN"]}>` (`BR-ADM-LOAD-02`) — tuyệt đối không render khung Admin hay skeleton workspace nếu user chưa qua `RoleGuard`.
+2. **Cơ chế Pending Route Transition Feedback tại Workspace**:
+   - Helper chuẩn hóa target key:
+     - `normalizeAdminTarget(pathname, tab)`: với `/admin/approvals` và `tab === "sla"` hoặc `tab === "override"`, target là `/admin/approvals?tab=${tab}`; ngược lại là `pathname`.
+   - State `const [pendingHref, setPendingHref] = useState<string | null>(null);` tại `AdminLayoutInner`:
+     - Khi người dùng click một `<Link>` trong `AdminSidebarNav`:
+       - Bỏ qua nếu có modifier keys (`e.ctrlKey || e.metaKey || e.shiftKey || e.altKey`) vì mở tab mới.
+       - Tính `linkHref = item.tabValue ? \`\${item.href}?tab=\${item.tabValue}\` : item.href`.
+       - So sánh `linkHref` với `currentTargetHref`: nếu **trùng** route/tab hiện tại $\rightarrow$ **không** bật `pendingHref` (ngăn kẹt skeleton vì `pathname`/`searchParams` không đổi).
+       - Nếu **khác** route/tab hiện tại $\rightarrow$ gọi `setPendingHref(linkHref)` ngay lập tức.
+     - **Optimistic Active Sidebar State**: Khi `pendingHref !== null`, `isLinkActive` ưu tiên highlight mục khớp `pendingHref` để phản hồi trực quan ngay lập tức tại Sidebar.
+     - **Workspace Pending Rendering**: Trong vùng `<div className="min-w-0 flex-1 p-4 sm:p-8 overflow-y-auto">`, khi `pendingHref !== null` thì render `<AdminWorkspaceSkeleton />`, ngược lại render `{children}`.
+     - **Auto-clear & Fail-safe Timeout**:
+       - `useEffect` lắng nghe `[pathname, searchParamsKey]` (`const searchParamsKey = searchParams.toString()`): ngay khi route/query mới cập nhật, gọi `setPendingHref(null)`.
+       - Khi `pendingHref !== null`, thiết lập fail-safe `setTimeout(() => setPendingHref(null), 12000)` (luôn `clearTimeout` trong cleanup) để tự phục hồi nếu điều hướng bị hủy/lỗi mạng hoặc redirect về đúng URL cũ.
+
+#### C. Chuẩn Hóa KPI Loading Skeleton & Zero Fake Zeroes (`REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02`)
+1. **`SourceCode/frontend/src/app/admin/users/page.tsx` (dòng 487–532)**:
+   - Khi `loading === true`: 4 thẻ KPI (`Tổng Người Dùng`, `Đang Hoạt Động`, `Đang Bị Khóa`, `Cán Bộ Quản Trị`) giữ nguyên khung thẻ, tiêu đề, icon và hiển thị Shimmer Skeleton (`aria-busy="true"`, `data-testid="users-kpi-skeleton"`) cho vùng giá trị số (`h-8 w-16 rounded-md animate-shimmer mt-2`) và dòng mô tả phụ nếu cần; **tuyệt đối không** render `{total}`, `{activeCount}`, `{lockedCount}`, `{officersCount}` (`0` khởi tạo) trong lúc `loading === true`.
+   - Khi `loading === false`: hiển thị số liệu thật từ API (kể cả khi giá trị thật bằng `0`).
+   - Giữ nguyên `<Async state={loading ? "loading" : error ? "error" : filteredUsers.length === 0 ? "empty" : "success"} ...>` cho bảng người dùng và toàn bộ Modal/Drawer CRUD (`BR-ADM-LOAD-02`).
+2. **`SourceCode/frontend/src/app/admin/page.tsx` (dòng 59–88, 109–165)**:
+   - Khi `loading === true`:
+     - Trên 4 thẻ `systemMetrics` (`Tổng Doanh Nghiệp & Chuyên Gia`, `Sở KH&CN Kết Nối`, `Danh Mục Lĩnh Vực TT17`, `Hàng Đợi Thẩm Định`): render thanh Shimmer Skeleton (`aria-busy="true"`, `data-testid="admin-kpi-skeleton"`) cho cả `value` và `sub`. Loại bỏ hoàn toàn chữ `"Đang tải..."` đi kèm `"Chưa có dữ liệu"`, `"Chưa kết nối"`, `"Chưa có danh mục"`, `"Không có hồ sơ chờ"` lúc đang fetch.
+     - Trên Quick Action Card hàng đợi phê duyệt (dòng 120–132): khi `loading === true`, thay thế badge `"Không có hồ sơ chờ"` và câu kết luận giả `"Tất cả hồ sơ đăng ký và chào bán công nghệ đã được xử lý xong."` bằng Shimmer Skeleton (`animate-shimmer h-5 w-36 rounded-full` và `animate-shimmer h-4 w-72 rounded`).
+   - Khi `loading === false`: mới đánh giá `pendingApprovalsCount`, `totalUsersCount`, `provincesCount`, `sectorCount` để hiển thị số liệu thật hoặc thông báo rỗng thật.
+3. **`SourceCode/frontend/src/app/admin/assessments/tt17/page.tsx` (dòng 275–340, 380–480, 629)**:
+   - Khi `loading === true`:
+     - Trên 4 KPI Cards (`Tổng DN Đã Đánh Giá`, `Điểm Tổng Bình Quân (τ)`, `Hệ Số Đồng Bộ TB (T_ĐB)`, `Tỷ Lệ Đạt Trung Bình Trở Lên`): render Shimmer Skeleton (`aria-busy="true"`, `data-testid="tt17-kpi-skeleton"`) cho phần giá trị chính (`h-9 w-24 rounded-md animate-shimmer mt-2`) và dòng phụ (`h-4 w-44 rounded animate-shimmer mt-1.5`), **tuyệt đối không** render `?? 0` hay `"0.0%"` giả.
+     - Ở bảng theo tỉnh (`byProvince`) và biểu đồ 5 nhóm (`groupBars`): khi `loading === true && !dashboard`, hiển thị Shimmer Skeleton rows/bars thay vì mảng rỗng gây nhảy layout; bảng chi tiết DN (dòng 629) dùng skeleton rows khi `loading === true`.
+
+### 12.4. Chiến Lược Kiểm Thử (`TEST-ADM-LOAD-01`)
+
+1. **Đợt 2 — Vitest (`src/app/admin/layout.test.tsx`)**:
+   - Bảo toàn 100% test cũ của `AdminLayout`.
+   - Bổ sung test:
+     - Active tab sync qua `useSearchParams()` cho `/admin/approvals`, `/admin/approvals?tab=sla`, `/admin/approvals?tab=override`.
+     - Click sang route/tab khác hiển thị `admin-route-skeleton` ngay lập tức và tự ẩn khi `pathname`/`searchParams` thay đổi.
+     - Click lại chính route hiện tại (hoặc click với `ctrlKey`) KHÔNG bật skeleton.
+     - Fail-safe timeout (`vi.useFakeTimers()`) tự tắt pending skeleton sau 12s nếu điều hướng không hoàn tất.
+     - `RoleGuard` vẫn chặn render layout & skeleton khi chưa có quyền.
+2. **Đợt 4 — Vitest KPI & Playwright E2E (`localhost:3000` + `localhost:5080` + PostgreSQL thật)**:
+   - Vitest: `src/app/admin/users/page.test.tsx`, `src/app/admin/page.test.tsx`, `src/app/admin/assessments/tt17/page.test.tsx` dùng pending Promise để bắt trạng thái `loading === true`, assert tồn tại `animate-shimmer` + `aria-busy="true"` và **không** render `"0"`, `"0 / 34"`, `"0.0%"`, `"Không có hồ sơ chờ"`; sau đó resolve API thật (kể cả kịch bản API trả về `0` thật) để assert hiển thị đúng dữ liệu.
+   - Playwright E2E (`SourceCode/frontend/e2e/admin-cr2026-029-loading-kpi.spec.ts`): Zero-Mock (không `page.route()` giả lập API), đăng nhập Admin thật, kiểm chứng điều hướng `AdminSidebarNav`, active tab `/admin/approvals?tab=sla` & `?tab=override`, kiểm chứng KPI skeleton và Visual QA trên Desktop (1280px) & Mobile (390px) đạt $\ge 8.0/10$, `next build` sạch `0` lỗi.
+
+
 
 
 

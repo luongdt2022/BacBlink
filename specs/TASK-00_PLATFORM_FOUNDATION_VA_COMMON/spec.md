@@ -3,9 +3,9 @@
 **Feature Branch**: `foundation-platform-common`  
 **Feature Directory**: `specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Created**: 25/09/2026  
-**Version**: 1.17.0 (Delta v17 - CR-2026-021 Seller Legal Entity Onboarding)  
-**Status**: Completed (Shipped Gate 5 - CR-2026-021)  
-**Last Updated**: 03/11/2026  
+**Version**: 1.22.0 (Delta v20 - CR-2026-031 Portal & Gov Route Loading Skeleton + Enterprise Profile Cache)  
+**Status**: Completed (Shipped Gate 5 - CR-2026-031)  
+**Last Updated**: 11/11/2026  
 **Ánh Xạ Kỹ Thuật**: Nền tảng hạ tầng, Modular Monolith Clean Architecture, Shared Kernel & Docker Compose  
 **Phạm Vi**: Backend .NET Core (`backend/`), Frontend Next.js (`frontend/`), JWT Auth Session, Role Gateway Routing  
 
@@ -937,3 +937,72 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 | **TEST-FONT-01** | `BR-UI-01`, `BR-UI-02` | `AC-CR-022.4`, `AC-CR-022.5`, `AC-CR-022.6` | `src/test/qc-gate4-typography.test.ts` | Vitest Test Suite |
 
 
+
+---
+
+## Spec Delta v19 (CR-2026-UIUX-005): Tối Ưu Tốc Độ Chuyển Route Toàn Trang, Đóng Gói Next.js & Client Cache Danh Mục [PO-DEC-20261111-01]
+
+> **Căn cứ phê duyệt:** Quyết định điều hành `PO-DEC-20261111-01` (11/11/2026) tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 33 và `Specification/02_BASIC_DESIGN/TASK-00_PLATFORM_FOUNDATION_VA_COMMON/BD-02-global-shell-navigation.md` Mục 7; Hồ sơ Delta Ledger [`CR-2026-UIUX-005`](./deltas/CR-2026-UIUX-005_route_transition_and_client_perf.md) (Target Version: `1.21.0`, Status: `APPROVED`).
+
+### 1. Bối Cảnh & Lý Do Thay Đổi (Background & Problem Statement)
+
+1. **Đo đạc thực tế trên môi trường vận hành**: Backend `.NET` (`localhost:5080`) phản hồi nhanh (`0.011s – 0.294s`), không phải điểm nghẽn chính. Điểm nghẽn nằm ở Frontend `next dev -p 3000` chạy Webpack on-demand compile trên Google Drive CloudStorage, thiếu `optimizePackageImports: ["lucide-react"]`, khiến lần truy cập đầu (cold) các trang quản trị mất `3.00s – 7.38s`.
+2. **Độ trễ phản hồi `NavigationProgress`**: `src/components/common/navigation-progress.tsx` đang bọc `setVisible(true)` trong `startTransition`, làm thanh tiến trình bị trì hoãn hiển thị khi chuyển route chậm.
+3. **Nạp lặp danh mục tĩnh**: `src/lib/master-data-client.ts` gọi `getActiveSectors()` với `{ cache: "no-store" }` ở mỗi lần mount trang mà chưa có TTL cache và deduplication.
+
+### 2. Yêu Cầu Kỹ Thuật & Điểm Neo Bất Biến (Immutable Requirements & Rules)
+
+- **`REQ-UI-040` (Global Route Transition Progress Phản Hồi Tức Thì)**:
+  - `NavigationProgress` (`src/components/common/navigation-progress.tsx`) MUST kích hoạt `visible = true` và `progress > 0` ngay tại thời điểm click liên kết nội bộ (`<50ms`), **tuyệt đối không** trì hoãn qua `startTransition`.
+  - Hiển thị thanh tiến trình rõ ràng trên đỉnh viewport (`fixed top-0 left-0 right-0 z-[9999]`), không gây dịch chuyển bố cục (`CLS = 0`), và tự hoàn tất lên `100%` rồi ẩn khi `pathname`/`searchParams` cập nhật.
+
+- **`REQ-UI-041` (Next.js Dev/Build Optimization)**:
+  - `SourceCode/frontend/next.config.ts`: Bổ sung `experimental: { optimizePackageImports: ["lucide-react"] }`.
+  - `SourceCode/frontend/package.json`: Cập nhật dev script sử dụng Turbopack (`next dev --turbopack -p 3000`).
+
+- **`REQ-UI-042` (Client In-Memory Master-Data Cache & Deduplication)**:
+  - `SourceCode/frontend/src/lib/master-data-client.ts`: Triển khai in-memory TTL cache + in-flight request deduplication cho `getActiveSectors(options?: { forceRefresh?: boolean })`, kèm hàm `invalidateSectorsCache()`.
+  - Gọi `invalidateSectorsCache()` ngay khi Admin thực hiện các thao tác CRUD danh mục lĩnh vực tại `SourceCode/frontend/src/app/admin/sectors/page.tsx`.
+
+- **`BR-UI-030` (Zero Logic Regression & Freshness Guarantee)**:
+  - Bảo toàn 100% route links (`href`), logic bỏ qua external/hash/`_blank`, API contract `/api/v1/sectors` và chuẩn xử lý lỗi không mock fallback của `master-data-client.ts`.
+  - Đảm bảo tính tươi mới dữ liệu (`Freshness Guarantee`): Dữ liệu danh mục luôn được làm mới ngay sau khi Admin CRUD tại `/admin/sectors` (qua `invalidateSectorsCache()`) hoặc khi truyền `forceRefresh: true`.
+
+- **`TEST-UI-030` (Vitest + Benchmark Kiểm Chứng)**:
+  - `src/components/common/navigation-progress.test.tsx`: Kiểm chứng kích hoạt thanh progress tức thì khi click link nội bộ (không bị hoãn bởi transition), bỏ qua link ngoại tuyến/hash/`_blank`, và ẩn sau khi route đổi.
+  - `src/lib/master-data-client.test.ts`: Kiểm chứng cache hit trong TTL, in-flight deduplication, `forceRefresh`, `invalidateSectorsCache()`, và reject lỗi API không fallback.
+  - Benchmark & Build Gate: Đo đạc thời gian phản hồi trước/sau và xác nhận `next build` sạch 100% (`0` lỗi).
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-CR-UIUX-005.1`**: Click liên kết nội bộ kích hoạt `NavigationProgress` (`role="progressbar"`) ngay tức thì (`<50ms`), hiển thị rõ ràng và `CLS = 0`.
+- **`AC-CR-UIUX-005.2`**: `next.config.ts` cấu hình `optimizePackageImports: ["lucide-react"]`; `package.json` bật Turbopack cho `dev`; `next build` thành công 100%.
+- **`AC-CR-UIUX-005.3`**: Nhiều lời gọi `getActiveSectors()` đồng thời hoặc trong thời hạn TTL chỉ phát sinh 1 HTTP request `/api/v1/sectors`.
+- **`AC-CR-UIUX-005.4`**: Thao tác CRUD tại `/admin/sectors` kích hoạt `invalidateSectorsCache()` (hoặc gọi `forceRefresh: true`), đảm bảo lần đọc kế tiếp nhận dữ liệu mới nhất từ PostgreSQL qua API.
+- **`AC-CR-UIUX-005.5`**: 100% Vitest suites (`navigation-progress.test.tsx`, `master-data-client.test.ts` và regression suite) đạt PASS, không suy giảm chức năng cũ.
+
+### 4. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-UI-040** | `BR-UI-030` | `AC-CR-UIUX-005.1`, `AC-CR-UIUX-005.5` | `src/components/common/navigation-progress.tsx` | `src/components/common/navigation-progress.test.tsx` |
+| **REQ-UI-041** | `BR-UI-030` | `AC-CR-UIUX-005.2` | `next.config.ts`, `package.json` | `next build` + Benchmark đo compile/route |
+| **REQ-UI-042** | `BR-UI-030` | `AC-CR-UIUX-005.3`, `AC-CR-UIUX-005.4`, `AC-CR-UIUX-005.5` | `src/lib/master-data-client.ts`, `src/app/admin/sectors/page.tsx` | `src/lib/master-data-client.test.ts` |
+| **TEST-UI-030** | `BR-UI-030` | `AC-CR-UIUX-005.1`..`AC-CR-UIUX-005.5` | `navigation-progress.test.tsx`, `master-data-client.test.ts` | Vitest + `next build` + Benchmark |
+
+---
+
+## Spec Delta v20 (CR-2026-031): Phản Hồi Chuyển Route Tức Thì Cho `/portal/*`, `(portal)` & `/gov/*` Và Cache Hồ Sơ Doanh Nghiệp [PO-DEC-20261111-03]
+
+> **Căn cứ phê duyệt:** Quyết định điều hành `PO-DEC-20261111-03` (11/11/2026) tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 35; Hồ sơ Delta Ledger [`CR-2026-031`](./deltas/CR-2026-031_portal_gov_route_loading_and_profile_cache.md).
+
+### 1. Yêu Cầu Kỹ Thuật & Điểm Neo Bất Biến
+- **`REQ-UI-043`**: Trích xuất `WorkspaceRouteSkeleton` dùng chung (`src/components/common/workspace-route-skeleton.tsx`); thêm `src/app/portal/loading.tsx`, `src/app/(portal)/loading.tsx`, `src/app/gov/loading.tsx`; tích hợp `pendingHref` skeleton tức thì `<50ms` + `<React.Suspense>` vào `PortalLayout` và `GovLayout`.
+- **`REQ-UI-044`**: Triển khai in-memory TTL cache (`30s` theo `accessToken`) và in-flight deduplication cho `fetchMyEnterpriseProfile()`, tự động invalidate khi cập nhật hồ sơ hoặc chuyển Dual Mode, và bỏ re-fetch thừa theo `[pathname]` trong `PortalLayout`.
+- **`BR-UI-031`**: Bảo toàn tuyệt đối `RoleGuard`, `RoleSwitcher` và cô lập cache theo token phiên đăng nhập.
+- **`TEST-UI-031`**: Unit tests kiểm chứng pending skeleton trên `PortalLayout`, `GovLayout` và cache/dedup/token-isolation/invalidation tại `src/lib/enterprise-client.test.ts`.
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận | Tệp Nguồn Triển Khai | Kiểm Thử Kiểm Chứng |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-UI-043** | `BR-UI-031` | `WorkspaceRouteSkeleton`, `loading.tsx`, `pendingHref` tại Portal & Gov | `workspace-route-skeleton.tsx`, `portal/loading.tsx`, `(portal)/loading.tsx`, `gov/loading.tsx`, `portal/layout.tsx`, `gov/layout.tsx` | `portal/layout.test.tsx`, `gov/layout.test.tsx` |
+| **REQ-UI-044** | `BR-UI-031` | Cache 30s, dedup, token isolation, invalidate on write | `src/lib/enterprise-client.ts`, `src/app/portal/layout.tsx` | `src/lib/enterprise-client.test.ts`, `portal/layout.test.tsx` |

@@ -112,6 +112,7 @@
     - [x] Playwright E2E: Xác nhận số liệu trên Trang chủ khớp 1:1 với kết quả truy vấn SQL PostgreSQL trực tiếp.
 
 - [x] `TASK-01-CR68` **[CR]** [P1] (Người gửi: Luongdt) Thêm các dịch vụ vào Tab dịch vụ — Thêm các mục, đường dẫn về Tab Dịch Vụ [Đính kèm: ![screenshot_10h06m19_1.png](/static/uploads/TASK-01-CR68_1793502383_1_screenshot_10h06m19_1.png)]
+- [x] `TASK-01-CR69` **[CR]** [P1] (Người gửi: Luongdt / PO-DEC-20261111-01) Màn Dịch vụ (`/dich-vu-khac`): Bỏ dòng liên kết phụ *"Xem bảng xếp hạng & danh bạ DN"* dưới nút CTA trên Card 03 (`Khảo Sát ĐMST (43 Câu)`) và cập nhật test `src/app/dich-vu-khac/page.test.tsx`.
 
 ---
 

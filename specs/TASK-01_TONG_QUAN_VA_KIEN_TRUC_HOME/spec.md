@@ -314,3 +314,12 @@
 ### 2. Tiêu Chí Chấp Nhận Nghiệm Thu (Acceptance Criteria)
 - **`AC-01-006`**: Trên Trang chủ (`/`), thẻ công nghệ có `trlVerificationStatus = 'SELF_DECLARED'` hiển thị rõ `TRL X/9 · Tự kê khai`; thẻ có `trlVerificationStatus = 'VERIFIED_BY_GOV'` hiển thị `✓ TRL X/9 · Đã thẩm định` kèm tooltip tên Sở KH&CN.
 - **`AC-01-007`**: Bấm vào biểu tượng thông tin `(?)` cạnh nhãn TRL hoặc TNI trên trang chi tiết sẽ mở ngay `<TrlMethodologyModal />` hoặc `<TniMethodologyModal />` giải thích cách tính và cơ sở pháp lý.
+
+---
+
+## Spec Delta v5: Tinh Gọn Thẻ Khảo Sát ĐMST (43 Câu) Trên Màn Dịch Vụ (`/dich-vu-khac`)
+
+> **Căn cứ thay đổi**: Quyết định PO ngày `2026-11-11` (`PO-DEC-20261111-01`) — Bỏ liên kết phụ *"Xem bảng xếp hạng & danh bạ DN"* dưới nút CTA trên Card 03 tại màn hình Dịch vụ (`/dich-vu-khac`).
+
+- **`REQ-01-SRV-01`**: Tại lưới 4 thẻ công cụ đo lường & đánh giá năng lực trên `/dich-vu-khac`, Card 03 (**Khảo Sát ĐMST (43 Câu)**) chỉ giữ duy nhất nút CTA chính `Làm Khảo Sát ĐMST Ngay` (`/khao-sat-dmst`), loại bỏ hoàn toàn dòng liên kết phụ *"Xem bảng xếp hạng & danh bạ DN"* (`/doanh-nghiep-dmst`) để đồng bộ bố cục chân thẻ với 3 thẻ còn lại (TNI, TT17, TRL 1–9).
+- **`AC-01-008`**: Trên `/dich-vu-khac`, Card 03 hiển thị nút `Làm Khảo Sát ĐMST Ngay` trỏ `/khao-sat-dmst` và không còn hiển thị liên kết *"Xem bảng xếp hạng & danh bạ DN"*.

@@ -490,6 +490,47 @@
   - [x] Chạy kiểm thử chụp ảnh Visual QA Playwright trên 3 viewports: Mobile (390px), Tablet (768px), Desktop (1280px) đạt điểm $\ge 8.0/10$.
   - [x] Ký biên bản kiểm toán chất lượng bàn giao sẵn sàng cho các Sprint tiếp theo.
 
+---
+
+## Giai đoạn 25: Spec Delta v19 (`CR-2026-UIUX-005`) — Tối Ưu Tốc Độ Chuyển Route Toàn Trang, Đóng Gói Next.js & Client Cache Danh Mục [PO-DEC-20261111-01]
+
+### Đợt 2: Phản Hồi Chuyển Route Tức Thì Toàn Trang (`NavigationProgress`)
+- [x] `T-00.109` **[CR-2026-UIUX-005] [Đợt 2] [FE] Nâng cấp `NavigationProgress` kích hoạt tức thì không qua `startTransition` (`REQ-UI-040`, `BR-UI-030`)**:
+  - Cập nhật `SourceCode/frontend/src/components/common/navigation-progress.tsx`: gỡ bỏ `useTransition` (`startTransition`) quanh `setVisible(true)` và `setProgress(25)` để thanh tiến trình bật đồng bộ ngay trong frame click (`<50ms`).
+  - Nâng độ rõ nét hiển thị (`h-[3px]`, gradient tương phản cao) trên `fixed top-0 left-0 right-0 z-[9999] pointer-events-none` bảo đảm `CLS = 0` và giữ đầy đủ `role="progressbar"` / `aria-*`.
+  - Bảo toàn logic bỏ qua `#hash`, `mailto:`, `tel:`, `_blank`, modifier keys (`ctrl/meta/shift/alt`), URL ngoại origin, URL trùng hiện tại; bọc `new URL(...)` an toàn; bổ sung fail-safe timeout (`15000ms`) và cleanup timer triệt để.
+- [x] `T-00.110` **[CR-2026-UIUX-005] [Đợt 2] [Test] Cập nhật & kiểm chứng Unit Test `NavigationProgress` (`TEST-UI-030`, `REQ-UI-040`, `BR-UI-030`)**:
+  - Cập nhật `SourceCode/frontend/src/components/common/navigation-progress.test.tsx` kiểm chứng: kích hoạt `role="progressbar"` tức thì ngay khi click link nội bộ, bỏ qua link `#hash`/`mailto:`/`_blank`/modifier/cùng route, hoàn tất `100%` và ẩn khi `pathname`/`searchParams` đổi, và fail-safe timeout tự đóng khi route không đổi.
+  - Chạy `npx vitest run src/components/common/navigation-progress.test.tsx` đạt 100% PASS.
+
+### Đợt 3: Tối Ưu Đóng Gói Next.js & Client In-Memory Cache Danh Mục
+- [x] `T-00.111` **[CR-2026-UIUX-005] [Đợt 3] [FE/Infra] Cấu hình `optimizePackageImports` và bật Turbopack dev server (`REQ-UI-041`)**:
+  - Cập nhật `SourceCode/frontend/next.config.ts`: bổ sung `experimental: { optimizePackageImports: ["lucide-react"] }`, giữ nguyên `distDir`, `images`, `rewrites()`.
+  - Cập nhật `SourceCode/frontend/package.json`: đổi script `"dev"` thành `"next dev --turbopack -p 3000"`.
+  - Kiểm chứng tương thích với Next.js `15.2.1`, React `19`, Tailwind CSS v4 (`@tailwindcss/postcss`).
+- [x] `T-00.112` **[CR-2026-UIUX-005] [Đợt 3] [FE] Triển khai Client In-Memory TTL Cache & In-flight Deduplication cho `getActiveSectors()` (`REQ-UI-042`, `BR-UI-030`)**:
+  - Cập nhật `SourceCode/frontend/src/lib/master-data-client.ts`: thêm TTL cache `60_000ms` (chỉ cache ở browser `typeof window !== "undefined"`), in-flight Promise deduplication, tham số tương thích ngược `options?: { forceRefresh?: boolean }` và hàm `invalidateSectorsCache()`.
+  - Tái sử dụng `getActiveSectors()` trong `getPublicExpertFilterOptions()`.
+  - Bảo đảm khi API HTTP lỗi hoặc `ApiEnvelope` không hợp lệ thì không lưu cache và reject lỗi nguyên vẹn (`BR-UI-030`, Zero-Mock).
+- [x] `T-00.113` **[CR-2026-UIUX-005] [Đợt 3] [FE] Gọi `invalidateSectorsCache()` tại các thao tác CRUD danh mục lĩnh vực (`REQ-UI-042`, `BR-UI-030`)**:
+  - Cập nhật `SourceCode/frontend/src/app/admin/sectors/page.tsx`: import và gọi `invalidateSectorsCache()` ngay sau khi Tạo mới (`POST /api/v1/master-data/sectors`), Cập nhật (`PATCH /api/v1/admin/sectors/${id}`), Vô hiệu hóa (`DELETE /api/v1/admin/sectors/${id}`) thành công và khi bấm nút `"Tải lại"`.
+- [x] `T-00.114` **[CR-2026-UIUX-005] [Đợt 3] [Test/QC] Kiểm thử Unit Cache/Deduplication, Build Gate & Benchmark thực tế (`TEST-UI-030`)**:
+  - Cập nhật `SourceCode/frontend/src/lib/master-data-client.test.ts` và `SourceCode/frontend/src/test/setup.ts` (reset `invalidateSectorsCache()` ở `beforeEach`/`afterEach` toàn cục) + cleanup timer toast khi unmount tại `src/app/admin/sectors/page.tsx`, kiểm chứng: TTL cache hit, TTL expiry sau 60s, in-flight deduplication (`Promise.all` chỉ 1 `fetch`), `forceRefresh: true`, `invalidateSectorsCache()`, và error rejection không cache lỗi.
+  - Chạy `npx tsc --noEmit`, `npx vitest run src/app/admin/ src/lib/master-data-client.test.ts src/components/common/navigation-progress.test.tsx` (100% PASS; ghi nhận các test drift cũ trên repo trước Wave 3 như `src/test/cross-surface-sectors.test.tsx` tách riêng ngoài phạm vi `CR-2026-UIUX-005`), và `npm run build` (`next build`) đạt `0` lỗi; đo benchmark đối chiếu thời gian compile/chuyển route trước và sau tối ưu trên `next dev --turbopack -p 3000`.
+
+---
+
+## Phase 22: Spec Delta v20 (`CR-2026-031`) — Pending Route Skeleton Cho `/portal/*`, `(portal)`, `/gov/*` & Cache `fetchMyEnterpriseProfile()` [PO-DEC-20261111-03]
+
+- [x] `T-00.115` **[CR-2026-031] [FE-Shared] Tạo `WorkspaceRouteSkeleton` dùng chung & tái sử dụng tại `AdminWorkspaceSkeleton` (`REQ-UI-043`)**:
+  - Tạo `SourceCode/frontend/src/components/common/workspace-route-skeleton.tsx`, cập nhật `src/components/admin/admin-workspace-skeleton.tsx` tái sử dụng giữ nguyên `data-testid="admin-route-skeleton"`.
+- [x] `T-00.116` **[CR-2026-031] [FE-Loading] Tạo `src/app/portal/loading.tsx`, `src/app/(portal)/loading.tsx`, `src/app/gov/loading.tsx` (`REQ-UI-043`)**.
+- [x] `T-00.117` **[CR-2026-031] [FE-Cache] Bổ sung TTL cache (30s theo token), in-flight deduplication và invalidation cho `fetchMyEnterpriseProfile()` (`REQ-UI-044`, `BR-UI-031`)**:
+  - Cập nhật `SourceCode/frontend/src/lib/enterprise-client.ts` và bỏ gọi lặp `[pathname]` trong `PortalLayout`.
+- [x] `T-00.118` **[CR-2026-031] [FE-Layouts] Nâng cấp `PortalLayout` & `GovLayout` với `pendingHref` skeleton tức thì + `<React.Suspense>` (`REQ-UI-043`, `BR-UI-031`)**.
+- [x] `T-00.119` **[CR-2026-031] [Test] Bổ sung & chạy unit tests `enterprise-client.test.ts`, `portal/layout.test.tsx`, `gov/layout.test.tsx`, `tsc --noEmit` (`TEST-UI-031`)**.
+
+
 
 
 

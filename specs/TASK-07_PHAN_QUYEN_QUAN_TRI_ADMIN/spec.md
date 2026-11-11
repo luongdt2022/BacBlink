@@ -1,9 +1,9 @@
 # Feature Specification: TASK-07 Phân Quyền & Năng Lực Quản Trị Admin
 
 **Epic**: TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN  
-**Version**: 1.12.0  
-**Status**: Completed (Shipped Gate 5)  
-**Last Updated**: 2026-10-30  
+**Version**: 1.16.0 (Delta v17 - CR-2026-030 Đồng bộ Sidebar /gov 3 nhóm & gom ĐMST + TT17)  
+**Status**: Completed (Shipped Gate 5 - CR-2026-030)  
+**Last Updated**: 2026-11-11  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: 3D Scoped RBAC, 7 Screens Gov Portal, 10 Roles Governance  
 **Feature Branch**: `admin-governance-rbac`  
@@ -800,3 +800,87 @@ Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản 
 - **`AC-GOV-DEC-01`**: Mở Modal thẩm định một hồ sơ công nghệ trong `/gov/approvals`, Cán bộ nhìn thấy danh sách toàn bộ file `TRL_EVIDENCE` và `PATENT_CERT` kèm nút bấm mở xem/tải file thật.
 - **`AC-GOV-DEC-02`**: Cán bộ chọn `"Duyệt niêm yết lên sàn"` + `"Giữ TRL ở trạng thái Tự kê khai (Chưa kiểm định)"` và bấm Xác nhận $\rightarrow$ Sản phẩm xuất hiện trên `/chao-ban-cong-nghe` với nhãn `TRL X/9 · Tự kê khai`.
 - **`AC-GOV-DEC-03`**: Cán bộ chọn `"Duyệt niêm yết lên sàn"` + `"Xác thực chỉ số TRL & SHTT đạt chuẩn"` $\rightarrow$ Sản phẩm xuất hiện trên sàn với nhãn `✓ TRL X/9 · Đã thẩm định bởi Sở KH&CN...`.
+
+
+---
+
+## Spec Delta v16 (CR-2026-029): Phản Hồi Chuyển Route Quản Trị, Đồng Bộ Sidebar SearchParams & Chuẩn Hóa KPI Skeleton (/admin/*) [PO-DEC-20261111-01]
+
+> **Căn cứ phê duyệt:** Quyết định điều hành `PO-DEC-20261111-01` (11/11/2026) tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 33 và `Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/README.md` Mục 8.3; Hồ sơ Delta Ledger [`CR-2026-029`](./deltas/CR-2026-029_admin_route_loading_and_kpi_skeleton.md) (Target Version: `1.15.0`, Status: `APPROVED`).
+
+### 1. Bối Cảnh & Lý Do Thay Đổi (Background & Problem Statement)
+
+1. **Độ trễ chuyển chức năng tại Admin Workspace**: `SourceCode/frontend/src/app/admin/` chưa có `loading.tsx` và `AdminLayout` (`src/app/admin/layout.tsx`) chưa có trạng thái pending route transition skeleton, khiến khi click chuyển mục trên `AdminSidebarNav` màn hình cũ bị đứng im trong lúc route mới đang tải/compile (`3.00s – 7.38s` lần đầu).
+2. **Đọc query tab thủ công**: `AdminSidebarNav` đang đọc `window.location.search` thay vì `useSearchParams()`, có thể lệch active state giữa `/admin/approvals`, `?tab=sla` và `?tab=override`.
+3. **KPI Cards hiển thị số `0` giả lúc đang tải**: Tại `/admin/users` (`total`, `activeCount`, `lockedCount`, `officersCount`), `/admin` (`"Đang tải..."` / `"Không có hồ sơ chờ"`), và `/admin/assessments/tt17` (`?? 0` / `"0.0%"`), khi `loading === true` các thẻ KPI chưa dùng Shimmer Skeleton chuẩn `<Async>`.
+
+### 2. Yêu Cầu Kỹ Thuật & Điểm Neo Bất Biến (Immutable Requirements & Rules)
+
+- **`REQ-ADM-LOAD-01` (Admin Route Transition Loading)**:
+  - Tạo mới `SourceCode/frontend/src/app/admin/loading.tsx` hiển thị Shimmer Skeleton chuẩn Design System (`animate-shimmer`) cho phân hệ `/admin/*`.
+  - Cập nhật `AdminLayout` (`SourceCode/frontend/src/app/admin/layout.tsx`) hiển thị pending route transition skeleton ngay tại vùng workspace chính khi người dùng click điều hướng tới một route/tab khác trên `AdminSidebarNav`, và tự xóa pending state khi điều hướng hoàn tất.
+
+- **`REQ-ADM-LOAD-02` (Sidebar Active Tab Synchronization)**:
+  - Cập nhật `AdminSidebarNav` trong `SourceCode/frontend/src/app/admin/layout.tsx` sử dụng `useSearchParams()` (bọc trong `<React.Suspense>`) thay cho `window.location.search`, đồng bộ chính xác tức thì trạng thái active giữa `/admin/approvals`, `/admin/approvals?tab=sla`, và `/admin/approvals?tab=override`.
+
+- **`REQ-ADM-LOAD-03` (Admin KPI Loading Skeleton)**:
+  - Trên các màn hình `SourceCode/frontend/src/app/admin/users/page.tsx`, `SourceCode/frontend/src/app/admin/page.tsx`, và `SourceCode/frontend/src/app/admin/assessments/tt17/page.tsx`, khi `loading === true`, toàn bộ các thẻ KPI (và badge hàng đợi trên `/admin`) MUST hiển thị Shimmer Skeleton (`animate-shimmer`, `aria-busy="true"`) đồng bộ chuẩn `<Async>`, bảo toàn kích thước thẻ để `CLS = 0`.
+
+- **`BR-ADM-LOAD-01` (Zero Fake Zeroes)**:
+  - Tuyệt đối nghiêm cấm hiển thị số `0`, `"0.0%"`, `"0 / 34"` hoặc thông điệp `"Không có hồ sơ chờ"` giả trên các thẻ KPI trong trạng thái `loading === true` lần đầu trước khi nhận được phản hồi từ API. Số `0` chỉ hợp lệ sau khi API trả về dữ liệu thực bằng `0` (`loading === false`).
+
+- **`BR-ADM-LOAD-02` (Zero Regression trên `RoleGuard` & 5 UX States `<Async>`)**:
+  - Bảo toàn tuyệt đối lớp bảo vệ `RoleGuard` (`allowedRoles={["SUPER_ADMIN", "OPERATOR_ADMIN", "ADMIN"]}`) tại `AdminLayout`, không rò rỉ dữ liệu khi chưa xác thực quyền.
+  - Bảo toàn trọn vẹn 5 UX States qua `<Async>`, phân trang, bộ lọc và hành động nghiệp vụ hiện có trên các trang `/admin/*`.
+
+- **`TEST-ADM-LOAD-01` (Vitest + Playwright E2E Thật)**:
+  - Vitest: Kiểm chứng pending route transition skeleton & `useSearchParams()` tab sync tại `src/app/admin/layout.test.tsx`; kiểm chứng Shimmer Skeleton & Zero Fake Zeroes trên `/admin/users`, `/admin`, `/admin/assessments/tt17`.
+  - Playwright E2E (server sống `localhost:3000` + `5080` + PostgreSQL thật): Kiểm chứng điều hướng `AdminSidebarNav`, active state `/admin/approvals` / `?tab=sla` / `?tab=override`, và KPI skeleton không nháy số `0` giả.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-CR-029.1`**: `src/app/admin/loading.tsx` tồn tại và render Shimmer Skeleton; `AdminLayout` hiển thị ngay pending route skeleton trong workspace khi click chuyển mục trên `AdminSidebarNav`.
+- **`AC-CR-029.2`**: `AdminSidebarNav` dùng `useSearchParams()` bọc `Suspense`; click giữa `/admin/approvals`, `?tab=sla`, `?tab=override` cập nhật active item chính xác tức thì.
+- **`AC-CR-029.3`**: Khi `loading === true`, các thẻ KPI trên `/admin/users`, `/admin`, `/admin/assessments/tt17` hiển thị Shimmer Skeleton ổn định chiều cao (`CLS = 0`).
+- **`AC-CR-029.4`**: Trong trạng thái `loading === true` lần đầu, tuyệt đối không xuất hiện số `0` giả trên KPI Cards; sau khi API trả về mới render số liệu thật từ PostgreSQL.
+- **`AC-CR-029.5`**: `RoleGuard` (`SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`) và 5 UX States `<Async>` bảo toàn 100%, không gây hồi quy test cũ.
+- **`AC-CR-029.6`**: Bộ test Vitest và Playwright E2E thật pass 100%, `next build` sạch `0` lỗi.
+
+### 4. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-ADM-LOAD-01** | `BR-ADM-LOAD-02` | `AC-CR-029.1`, `AC-CR-029.5` | `src/app/admin/loading.tsx`, `src/app/admin/layout.tsx` | `src/app/admin/layout.test.tsx`, Playwright E2E |
+| **REQ-ADM-LOAD-02** | `BR-ADM-LOAD-02` | `AC-CR-029.2`, `AC-CR-029.5` | `src/app/admin/layout.tsx` (`AdminSidebarNav`) | `src/app/admin/layout.test.tsx`, Playwright E2E |
+| **REQ-ADM-LOAD-03** | `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02` | `AC-CR-029.3`, `AC-CR-029.4` | `src/app/admin/users/page.tsx`, `src/app/admin/page.tsx`, `src/app/admin/assessments/tt17/page.tsx` | `src/app/admin/users/page.test.tsx`, Admin KPI tests |
+| **TEST-ADM-LOAD-01** | `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02` | `AC-CR-029.1`..`AC-CR-029.6` | Admin Vitest suites & Playwright E2E spec | Vitest + Playwright E2E (`localhost:3000` + `5080`) |
+
+---
+
+## Spec Delta v17 (CR-2026-030): Đồng Bộ "Thẩm Định DN ĐMST" & "Hội Đồng Chấm Điểm TT17" Về Chung Nhóm 1 Và Thu Gọn Sidebar `/gov` Thành 3 Nhóm [PO-DEC-20261111-02]
+
+> **Căn cứ phê duyệt:** Quyết định điều hành `PO-DEC-20261111-02` (11/11/2026) tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 34 và `Specification/02_BASIC_DESIGN/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/README.md` Mục 8.4; Hồ sơ Delta Ledger [`CR-2026-030`](./deltas/CR-2026-030_gov_sidebar_3_groups_sync_tt17_dmst.md) (Target Version: `1.16.0`, Status: `APPROVED`).
+
+### 1. Yêu Cầu Kỹ Thuật & Điểm Neo Bất Biến
+- **`REQ-GOV-NAV-01` (Sidebar `/gov` 3 Nhóm Accordion)**:
+  - `GOV_MENU_GROUPS` trong `SourceCode/frontend/src/app/gov/layout.tsx` MUST gồm đúng **3 nhóm**:
+    1. `1. Tổng Quan & Phê Duyệt`: `Tổng quan địa bàn` (`/gov`), `Hàng đợi kiểm duyệt` (`/gov/approvals`), `Thẩm định DN ĐMST` (`/gov/approvals/enterprises`), `Hội đồng Chấm điểm TT17` (`/gov/assessments/tt17`).
+    2. `2. Giám Sát Cung–Cầu & Địa Bàn`: `Tiến trình Đàm phán & SLA` (`/gov/opportunities`), `Bài toán Nhu cầu DNNVV` (`/gov/demands`).
+    3. `3. Quản Trị Công Vụ & Nhân Sự`: `Phân công Cán bộ & Chuyên viên` (`/gov/settings/staff`).
+- **`REQ-GOV-NAV-02` (Đồng Bộ Breadcrumbs Nhóm 1)**:
+  - Các màn hình thuộc Nhóm 1 (`/gov/approvals`, `/gov/approvals/enterprises`, `/gov/assessments/tt17`) dùng thống nhất breadcrumb cấp 2 `{ label: "Tổng Quan & Phê Duyệt", href: "/gov" }`.
+- **`BR-GOV-NAV-01` (Bảo Toàn Tuyến URL, 3D Scoped RBAC & Accordion)**:
+  - Giữ nguyên toàn bộ 7 routes `/gov/*`, mặc định mở cả 3 nhóm (`group1: true, group2: true, group3: true`), bảo toàn tìm kiếm nhanh, toggle all và `RoleGuard`.
+
+### 2. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+- **`AC-CR-030.1`**: Sidebar `/gov` hiển thị đúng 3 nhóm Accordion; không còn nhóm `2. Thẩm Định Công Nghệ TT17`.
+- **`AC-CR-030.2`**: `Thẩm định DN ĐMST` và `Hội đồng Chấm điểm TT17` nằm chung trong `1. Tổng Quan & Phê Duyệt`.
+- **`AC-CR-030.3`**: Breadcrumbs cấp 2 trên `/gov/approvals`, `/gov/approvals/enterprises` và `/gov/assessments/tt17` đồng nhất là `Tổng Quan & Phê Duyệt`.
+- **`AC-CR-030.4`**: Unit test `src/app/gov/layout.test.tsx` pass 100%, `npx tsc --noEmit` sạch 0 lỗi.
+
+### 3. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-GOV-NAV-01** | `BR-GOV-NAV-01` | `AC-CR-030.1`, `AC-CR-030.2` | `SourceCode/frontend/src/app/gov/layout.tsx` | `src/app/gov/layout.test.tsx`, `test_task07_delta_v8_gov_sidebar_e2e.py` |
+| **REQ-GOV-NAV-02** | `BR-GOV-NAV-01` | `AC-CR-030.3`, `AC-CR-030.4` | `src/app/gov/assessments/tt17/page.tsx`, `src/app/gov/approvals/enterprises/page.tsx`, `src/components/gov/gov-approval-queue.tsx` | `npx tsc --noEmit`, Vitest |

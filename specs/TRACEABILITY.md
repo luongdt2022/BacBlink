@@ -10,14 +10,14 @@
 
 | Mã Task BD | Tên Phân Hệ | Tài Liệu Nguồn Gốc (Excel / Basic Design) | Thư Mục Detail Design (Spec Kit) | Phạm Vi Mã Định Danh | Trạng Thái Kỹ Thuật |
 | :---: | :--- | :--- | :--- | :--- | :---: |
-| **`TASK-00`** | Platform Foundation & Common | Hiến pháp kỹ thuật, Clean Architecture | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | `ARCH-*`, `DB-INIT-*`, `API-BASE-*`, `FR-COMM-*`, `FR-RBAC-*` | ✅ Hoàn thành Delta v15 (Gate 4/5 Pass, 84/84 Tasks) |
+| **`TASK-00`** | Platform Foundation & Common | Hiến pháp kỹ thuật, Clean Architecture | [`specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`](./TASK-00_PLATFORM_FOUNDATION_VA_COMMON/) | `ARCH-*`, `DB-INIT-*`, `API-BASE-*`, `FR-COMM-*`, `FR-RBAC-*`, `REQ-UI-*` | ✅ Hoàn thành Delta v19 (`CR-2026-UIUX-005`, Gate 4/5 Pass, 119/119 Tasks) |
 | **`TASK-01`** | Tổng quan & Kiến trúc Home | Sheet `HOME1` + `Giới thiệu` (60 dòng) | [`specs/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/) | `REQ-HOME-*`, `BR-HOME-*`, `API-PORTAL-*`, `UI-LANDING-*`, `UI-TECHMART-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-02`** | Hồ sơ Doanh nghiệp ĐMST & 304 DN Thật | Sheet `DN ĐMST` (225 dòng dữ liệu) + 304 DN thật | [`specs/TASK-02_HO_SO_CHU_THE_VA_DN_DMST`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) | `REQ-02-*`, `BR-02-*`, `DB-ENT-*`, `API-ENT-*`, `UI-ENT-*` | ✅ Hoàn tất (Gate 4/5 Shipped) |
 | **`TASK-03`** | Hồ sơ Tìm Mua (Buyer) | Sheet `T.mua SP` (356 dòng dữ liệu) | [`specs/TASK-03_HO_SO_TIM_MUA_BUYER`](./TASK-03_HO_SO_TIM_MUA_BUYER/) | `REQ-BUY-*`, `BR-SURVEY-*`, `DB-DEMAND-*` | ✅ Hoàn thành (Delta v8 Shipped) |
 | **`TASK-04`** | Hồ sơ Chào Bán & Bộ Lọc | Sheet `C.bán SP` + `Bo_loc_Cban` (1,568 dòng) | [`specs/TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`](./TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/) | `REQ-04-*`, `BR-SELLER-*`, `API-04-*`, `UI-04-*` | ✅ Hoàn tất (Gate 4 Pass) |
 | **`TASK-05`** | Hồ sơ Chuyên gia KH&CN & AI Scan LLKH | Sheet `C.gia` (94 dòng dữ liệu) | [`specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`](./TASK-05_HO_SO_CHUYEN_GIA_KHCN/) | `REQ-EXP-*`, `BR-EXP-*`, `API-EXP-*`, `UI-EXP-*` | ✅ Delta v12 Hoàn tất (Gate 4/5 Pass) |
 | **`TASK-06`** | Danh Mục Ngành & Ma Trận | Sheet `Ngành` + `Ma trận LV-CN` (161 dòng) | [`specs/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN`](./TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/) | `REQ-SEC-*`, `BR-SEC-*`, `API-MASTER-*`, `UI-MASTER-*` | 🟡 Đã đặc tả (Ready) |
-| **`TASK-07`** | Phân Quyền & Quản Trị Admin | Sheet `Admin` (6 dòng quyền hạt nhân) | [`specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`](./TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/) | `REQ-ADM-*`, `BR-ADM-*`, `API-GOV-*`, `UI-ADMIN-*`, `UI-ORG-*` | ✅ Delta v4 Hoàn tất |
+| **`TASK-07`** | Phân Quyền & Quản Trị Admin | Sheet `Admin` (6 dòng quyền hạt nhân) | [`specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`](./TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/) | `REQ-ADM-*`, `BR-ADM-*`, `API-GOV-*`, `UI-ADMIN-*`, `UI-ORG-*`, `REQ-ADM-LOAD-*` | ✅ Hoàn thành Delta v16 (`CR-2026-029`, Gate 4/5 Pass, 120/120 Tasks) |
 
 ---
 
@@ -398,6 +398,25 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **NdaChain Bridge Sync Background Worker** | `REQ-BC-09` | `T-11.10` | `NdaChainBridgeSyncWorker.cs`, `BridgeSyncLog.cs` | 1/1 Unit test xUnit quét khối nội bộ, đồng bộ bù lên NDAChain và ghi log CSDL; PASS |
 | **Thuật Toán Kiểm Chứng 4 Bước Tamper-Evidence** | `REQ-BC-10`, `ADR-0017` | `T-11.11` | `BlockchainVerificationService.cs` | 2/2 Unit tests xUnit: dữ liệu toàn vẹn $\rightarrow$ `VERIFIED`, sửa 1 ký tự payload $\rightarrow$ phát hiện `TAMPERED`; PASS |
 | **REST API Controllers & 3D Scoped RBAC** | `REQ-BC-11..12` | `T-11.12` | `BlockchainAdminController.cs`, `BlockchainPublicController.cs` | 3/3 Unit tests xUnit: Admin 200 OK, Unauthorized 403 Forbid, Public verify live 200 OK; PASS |
+
+---
+
+## 31. TASK-00 Delta v19 (CR-2026-UIUX-005): Tối Ưu Tốc Độ Chuyển Route Toàn Trang, Đóng Gói Next.js & Client Cache Danh Mục (Gate 4/5 Shipped)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Global Route Transition Progress Phản Hồi Tức Thì (`<50ms`, bỏ `startTransition`, `CLS = 0`)** | `REQ-UI-040`, `BR-UI-030`, `AC-CR-UIUX-005.1`, `AC-CR-UIUX-005.5` | `T-00.109`, `T-00.110` | `src/components/common/navigation-progress.tsx` | `src/components/common/navigation-progress.test.tsx` (`TEST-UI-030`) — Gate 3 SA, Gate 4 QC Live E2E + Slow 3G + Visual QA $\ge 8.4/10$, Gate 5 QA/PO PASS |
+| **Tối Ưu Đóng Gói Next.js (`optimizePackageImports: ["lucide-react"]`) & Bật Turbopack Dev Server** | `REQ-UI-041`, `BR-UI-030`, `AC-CR-UIUX-005.2` | `T-00.111`, `T-00.114` | `next.config.ts`, `package.json` | `TEST-UI-030` (`next build` + Benchmark dev/route compile) — Gate 3/4/5 PASS |
+| **Client In-Memory TTL Cache (60s), In-Flight Deduplication & Freshness Invalidation (`BR-UI-030`)** | `REQ-UI-042`, `BR-UI-030`, `AC-CR-UIUX-005.3`, `AC-CR-UIUX-005.4`, `AC-CR-UIUX-005.5` | `T-00.112`, `T-00.113`, `T-00.114` | `src/lib/master-data-client.ts`, `src/app/admin/sectors/page.tsx`, `src/test/setup.ts` | `src/lib/master-data-client.test.ts` (`TEST-UI-030`) — Gate 3 SA, Gate 4 QC Live E2E + Slow 3G + Visual QA $\ge 8.4/10$, Gate 5 QA/PO PASS |
+
+---
+
+## 32. TASK-07 Delta v16 (CR-2026-029): Phản Hồi Chuyển Route Quản Trị, Đồng Bộ Sidebar SearchParams & Chuẩn Hóa KPI Skeleton (Gate 4/5 Shipped)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `plan.md`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Admin Route Transition Loading Boundary & Pending Workspace Skeleton + Đồng Bộ Sidebar `useSearchParams()` bọc `Suspense`** | `REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-02`, `BR-ADM-LOAD-02`, `AC-CR-029.1`, `AC-CR-029.2`, `AC-CR-029.5` | `T112`, `T113`, `T114` | `src/components/admin/admin-workspace-skeleton.tsx`, `src/app/admin/loading.tsx`, `src/app/admin/layout.tsx` | `src/app/admin/layout.test.tsx`, `e2e/admin-cr2026-029-loading-kpi.spec.ts` (`TEST-ADM-LOAD-01`) — Gate 3 SA, Gate 4 QC Live E2E + Slow 3G + Visual QA $\ge 8.4/10$, Gate 5 QA/PO PASS |
+| **Chuẩn Hóa KPI Shimmer Skeleton & Chống Hiển Thị Số `0` Giả (Zero Fake Zeroes) trên `/admin/users`, `/admin`, `/admin/assessments/tt17`** | `REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02`, `AC-CR-029.3`, `AC-CR-029.4`, `AC-CR-029.6` | `T115`, `T116`, `T117`, `T118`, `T119` | `src/app/admin/users/page.tsx`, `src/app/admin/page.tsx`, `src/app/admin/assessments/tt17/page.tsx` | `src/app/admin/users/page.test.tsx`, `src/app/admin/page.test.tsx`, `src/app/admin/assessments/tt17/page.test.tsx`, `e2e/admin-cr2026-029-loading-kpi.spec.ts` (`TEST-ADM-LOAD-01`) — Gate 3 SA, Gate 4 QC Live E2E + Slow 3G + Visual QA $\ge 8.4/10$, Gate 5 QA/PO PASS |
 
 
 
