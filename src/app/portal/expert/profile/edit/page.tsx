@@ -54,6 +54,7 @@ export default function ExpertProfileEditPage() {
   const [fullName, setFullName] = useState("");
   const [isPendingReview, setIsPendingReview] = useState(false);
   const [completeness, setCompleteness] = useState<ExpertCompleteness | null>(null);
+  const [reloadSeq, setReloadSeq] = useState(0);
 
   // Form fields
   const [academicRank, setAcademicRank] = useState("NONE");
@@ -157,7 +158,7 @@ export default function ExpertProfileEditPage() {
     };
 
     void loadData();
-  }, []);
+  }, [reloadSeq]);
 
   const handleAddPublication = () => {
     if (!newPubTitle.trim() || !newPubJournal.trim()) return;
@@ -291,7 +292,7 @@ export default function ExpertProfileEditPage() {
 
       {/* MAIN EDITING BODY */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
-        <Async state={uxState} errorMessage={errorMessage} onRetry={() => window.location.reload()}>
+        <Async state={uxState} errorMessage={errorMessage} onRetry={() => setReloadSeq((c) => c + 1)}>
           {/* PENDING REVIEW LOCK BANNER */}
           {isPendingReview && (
             <div className="rounded-surface border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-900">

@@ -108,10 +108,10 @@ describe("Wave 1 QC Test Suite: Seller Dashboard & Zero Gov Leakage", () => {
     expect(screen.getByText(/Thương Vụ Đang Đàm Phán/i)).toBeInTheDocument();
 
     // 3. Quick Actions
-    expect(screen.getByRole("link", { name: /Đăng Giải Pháp Mới/i })).toHaveAttribute(
-      "href",
-      "/portal/seller/technologies/create"
-    );
+    const createLink = screen.getByRole("link", { name: /Đăng Giải Pháp Mới/i });
+    expect(createLink).toHaveAttribute("href", "/portal/seller/technologies/create");
+    expect(createLink.className).toContain("bg-white");
+    expect(createLink.className).toContain("text-brand-700");
 
     // 4. Inbound Leads and Top Tech lists
     expect(screen.getByText("Công ty Mua Sắm B2B")).toBeInTheDocument();

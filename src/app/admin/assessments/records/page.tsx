@@ -24,15 +24,11 @@ import {
 } from "lucide-react";
 import {
   Tt17Assessment,
+  getAssessmentById,
   getGovAssessmentQueue,
   DemandSurveyItem,
   getGovDemandSurveys,
 } from "@/services/api/assessment-tt17";
-import {
-  exportTt17SurveyDocx,
-  exportDemandSmeDocx,
-  downloadDocxBlob,
-} from "@/services/survey-docx-exporter";
 import { PROVINCES_34 } from "@/lib/constants/provinces";
 import {
   resolveProvinceName,
@@ -323,6 +319,18 @@ export default function AdminAssessmentRecordsPage() {
   const [inspectingDemandItem, setInspectingDemandItem] = useState<DemandSurveyItem | null>(null);
   const [modalTab, setModalTab] = useState<"FORM" | "SCORES">("FORM");
 
+  const openInspectTt17 = (item: Tt17Assessment) => {
+    setInspectingItem(item);
+    setModalTab("FORM");
+    getAssessmentById(item.id)
+      .then((full) => {
+        if (full) {
+          setInspectingItem((prev) => (prev?.id === item.id ? full : prev));
+        }
+      })
+      .catch(() => {});
+  };
+
   const inspectingDemandDetails = useMemo(() => {
     if (!inspectingDemandItem?.surveyDetails) return null;
     if (typeof inspectingDemandItem.surveyDetails === "object") return inspectingDemandItem.surveyDetails;
@@ -504,6 +512,7 @@ export default function AdminAssessmentRecordsPage() {
       }
 
       if (isDemand && demandItem) {
+        const { exportDemandSmeDocx, downloadDocxBlob } = await import("@/services/survey-docx-exporter");
         const blob = await exportDemandSmeDocx(demandItem);
         const safeTax = (demandItem.taxCode || "MST").replace(/[^a-zA-Z0-9_-]/g, "_");
         const safeName = (demandItem.companyName || "DN")
@@ -517,6 +526,11 @@ export default function AdminAssessmentRecordsPage() {
           .substring(0, 30);
         downloadDocxBlob(blob, `Phieu_Nhu_Cau_DN_${safeTax}_${safeName || "DN"}.docx`);
       } else if (tt17Item) {
+        if (!tt17Item.scoreResult?.criteria?.length) {
+          const full = await getAssessmentById(tt17Item.id);
+          if (full) tt17Item = full;
+        }
+        const { exportTt17SurveyDocx, downloadDocxBlob } = await import("@/services/survey-docx-exporter");
         const blob = await exportTt17SurveyDocx(tt17Item);
         const safeTax = (tt17Item.taxCode || tt17Item.surveyData?.taxCode || "MST").replace(/[^a-zA-Z0-9_-]/g, "_");
         const safeName = (tt17Item.enterpriseName || tt17Item.surveyData?.companyName || "DN")
@@ -652,7 +666,7 @@ export default function AdminAssessmentRecordsPage() {
                 setClassificationFilter("ALL");
                 setCurrentPage(1);
               }}
-              className="h-10 w-full text-xs font-semibold px-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none cursor-pointer"
+              className="form-control-sm w-full font-semibold rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none"
             >
               <option value="ALL">Tất cả loại phiếu (3 loại)</option>
               <option value="TT17">Phiếu TT17 (Công nghệ sản xuất)</option>
@@ -682,7 +696,7 @@ export default function AdminAssessmentRecordsPage() {
                 setClassificationFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="h-10 w-full text-xs font-semibold px-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none cursor-pointer"
+              className="form-control-sm w-full font-semibold rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none"
             >
               {surveyTypeFilter === "INNOVATION" ? (
                 <>
@@ -913,8 +927,7 @@ export default function AdminAssessmentRecordsPage() {
                             type="button"
                             onClick={() => {
                               if (item.surveyType === "TT17" && item.originalTt17) {
-                                setInspectingItem(item.originalTt17);
-                                setModalTab("FORM");
+                                openInspectTt17(item.originalTt17);
                               } else if (item.originalDemand) {
                                 setInspectingDemandItem(item.originalDemand);
                               }

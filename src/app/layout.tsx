@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React from "react";
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -48,9 +48,7 @@ export default function RootLayout({
         <ThemeProvider>
           <I18nProvider>
             <ToastProvider>
-              <Suspense fallback={null}>
-                <NavigationProgress />
-              </Suspense>
+              <NavigationProgress />
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />

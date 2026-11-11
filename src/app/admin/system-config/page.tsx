@@ -206,7 +206,7 @@ export default function AdminSystemConfigPage() {
               <select
                 value={config.slaBaseHours}
                 onChange={(e) => setConfig({ ...config, slaBaseHours: Number(e.target.value) })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
+                className="form-control-sm w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
               >
                 <option value={48}>48 giờ làm việc (2 ngày hành chính - Khẩn cấp)</option>
                 <option value={72}>72 giờ làm việc (3 ngày hành chính - Tiêu chuẩn NĐ 85)</option>
@@ -228,7 +228,7 @@ export default function AdminSystemConfigPage() {
                   value={config.officeHoursStart}
                   onChange={(e) => setConfig({ ...config, officeHoursStart: e.target.value })}
                   placeholder="08:00"
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="form-control-sm w-full rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
               <div>
@@ -240,7 +240,7 @@ export default function AdminSystemConfigPage() {
                   value={config.officeHoursEnd}
                   onChange={(e) => setConfig({ ...config, officeHoursEnd: e.target.value })}
                   placeholder="17:00"
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="form-control-sm w-full rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
@@ -253,7 +253,7 @@ export default function AdminSystemConfigPage() {
               <select
                 value={config.slaMonitorScanMinutes}
                 onChange={(e) => setConfig({ ...config, slaMonitorScanMinutes: Number(e.target.value) })}
-                className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="form-control-sm w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value={15}>15 phút / lần (Khuyến nghị vận hành)</option>
                 <option value={30}>30 phút / lần</option>
@@ -333,7 +333,7 @@ export default function AdminSystemConfigPage() {
                   max={100}
                   value={config.overrideMinReasonChars}
                   onChange={(e) => setConfig({ ...config, overrideMinReasonChars: Number(e.target.value) })}
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="form-control-sm w-full rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
                 <p className="text-xs text-slate-500 mt-1">
                   Quy định tối thiểu 20 ký tự theo tiêu chuẩn thanh tra Nghị định 85/2016.

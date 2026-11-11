@@ -2,7 +2,9 @@ import React from "react";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import PortalLayout from "./layout";
+import PortalLoading from "./loading";
 import { authClient } from "@/lib/auth-client";
+import * as enterpriseClient from "@/lib/enterprise-client";
 
 let mockPathname = "/portal";
 let mockSearchParams = new URLSearchParams();
@@ -68,13 +70,11 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
 
     // 3. Section 1 Items
     expect(screen.getByText("Tổng quan Mua sắm")).toBeInTheDocument();
-    expect(screen.getByText("Bài toán Đổi mới Công nghệ")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Bài toán Đổi mới Công nghệ/i })).toHaveAttribute("href", "/portal/buyer/demands");
-    expect(screen.getByText("3")).toBeInTheDocument(); // Badge count
+    expect(screen.getByText("Nhu cầu & Đơn mua")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Nhu cầu & Đơn mua/i })).toHaveAttribute("href", "/portal/buyer/demands");
 
-    expect(screen.getByText("Tiến trình Hợp tác & MOU")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Tiến trình Hợp tác & MOU/i })).toHaveAttribute("href", "/portal/opportunities/pipeline");
-    expect(screen.getByText("1")).toBeInTheDocument(); // Badge count
+    expect(screen.getByText("Giao dịch & MOU")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Giao dịch & MOU/i })).toHaveAttribute("href", "/portal/opportunities/pipeline");
 
     // 4. Section 2 Item
     expect(screen.getByText("Radar Ghép Nối AI")).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
 
     // Negative assertions
-    expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sản phẩm & Công nghệ")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
     expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
   });
@@ -108,15 +108,19 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
 
     expect(screen.getByText("Nhà Cung Ứng Công Nghệ")).toBeInTheDocument();
     expect(screen.getByText("Workspace Nhà Cung Ứng")).toBeInTheDocument();
-    expect(screen.getByText("Kho Công nghệ (TRL)")).toBeInTheDocument();
-    expect(screen.getByText("Yêu cầu Kết nối Nhận được")).toBeInTheDocument();
-    expect(screen.getByText("Tiến trình Chuyển giao & MOU")).toBeInTheDocument();
+    expect(screen.getByText("Tác nghiệp Bán hàng")).toBeInTheDocument();
+    expect(screen.getByText("Khám phá & Ghép nối")).toBeInTheDocument();
+    expect(screen.getByText("Chẩn đoán & Hồ sơ")).toBeInTheDocument();
+    expect(screen.getByText("Sản phẩm & Công nghệ")).toBeInTheDocument();
+    expect(screen.getByText("Khách hàng liên hệ")).toBeInTheDocument();
+    expect(screen.getByText("Tìm nhu cầu mua (AI)")).toBeInTheDocument();
+    expect(screen.getByText("Giao dịch & MOU")).toBeInTheDocument();
     expect(screen.getByText("Đánh giá Năng lực TT17")).toBeInTheDocument();
     expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ Đơn vị / Viện Trường")).not.toBeInTheDocument();
     expect(screen.queryByText("Niêm yết Công nghệ mới")).not.toBeInTheDocument();
     expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
-    expect(screen.queryByText("Bài toán Đổi mới Công nghệ")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nhu cầu & Đơn mua")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
   });
 
@@ -186,7 +190,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(document.querySelector('a[href*="/portal/opportunities/pipeline"]')).toBeNull();
     expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
     expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
-    expect(screen.queryByText("Bài toán Đổi mới Công nghệ")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nhu cầu & Đơn mua")).not.toBeInTheDocument();
     expect(screen.queryByText("Sắp có")).not.toBeInTheDocument();
   });
 
@@ -312,10 +316,10 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByRole("link", { name: /Cài đặt Tài khoản/i })).toHaveAttribute("href", "/settings");
 
     // 3. Zero legal entity modules
-    expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sản phẩm & Công nghệ")).not.toBeInTheDocument();
     expect(screen.queryByText("Đánh giá Năng lực TT17")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ Doanh nghiệp")).not.toBeInTheDocument();
-    expect(screen.queryByText("Tiến trình Chuyển giao & MOU")).not.toBeInTheDocument();
+    expect(screen.queryByText("Giao dịch & MOU")).not.toBeInTheDocument();
     expect(screen.queryByText("Pipeline Cơ Hội (Kanban)")).not.toBeInTheDocument();
   });
 
@@ -340,7 +344,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByText("Bài toán Nhu cầu Toàn sàn")).toBeInTheDocument();
   });
 
-  it("activates only 'Tiến trình Chuyển giao & MOU' when on /portal/opportunities/pipeline without query", () => {
+  it("activates only 'Giao dịch & MOU' when on /portal/opportunities/pipeline without query", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u2",
       email: "seller@example.com",
@@ -356,8 +360,8 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
       </PortalLayout>
     );
 
-    const pipelineLink = screen.getByRole("link", { name: /Tiến trình Chuyển giao & MOU/i });
-    const inboundLink = screen.getByRole("link", { name: /Yêu cầu Kết nối Nhận được/i });
+    const pipelineLink = screen.getByRole("link", { name: /Giao dịch & MOU/i });
+    const inboundLink = screen.getByRole("link", { name: /Khách hàng liên hệ/i });
 
     expect(pipelineLink).toHaveAttribute("href", "/portal/opportunities/pipeline");
     expect(inboundLink).toHaveAttribute("href", "/portal/seller/connection-requests");
@@ -366,7 +370,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(inboundLink.className).not.toContain("bg-brand-700");
   });
 
-  it("activates only 'Yêu cầu Kết nối Nhận được' when on dedicated route /portal/seller/connection-requests", () => {
+  it("activates only 'Khách hàng liên hệ' when on dedicated route /portal/seller/connection-requests", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u2",
       email: "seller@example.com",
@@ -382,13 +386,103 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
       </PortalLayout>
     );
 
-    const pipelineLink = screen.getByRole("link", { name: /Tiến trình Chuyển giao & MOU/i });
-    const inboundLink = screen.getByRole("link", { name: /Yêu cầu Kết nối Nhận được/i });
+    const pipelineLink = screen.getByRole("link", { name: /Giao dịch & MOU/i });
+    const inboundLink = screen.getByRole("link", { name: /Khách hàng liên hệ/i });
 
     expect(inboundLink).toHaveAttribute("href", "/portal/seller/connection-requests");
     expect(pipelineLink).toHaveAttribute("href", "/portal/opportunities/pipeline");
     expect(inboundLink.className).toContain("bg-brand-700");
     expect(inboundLink.className).toContain("text-white");
     expect(pipelineLink.className).not.toContain("bg-brand-700");
+  });
+
+  it("shows portal-route-skeleton immediately when clicking another sidebar item and clears when route settles", () => {
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u2",
+      email: "seller@example.com",
+      fullName: "Trần Văn Seller",
+      role: "SELLER",
+    });
+    mockPathname = "/portal";
+    mockSearchParams = new URLSearchParams("");
+
+    const { rerender } = render(
+      <PortalLayout>
+        <div data-testid="portal-child-content">Portal Real Content</div>
+      </PortalLayout>
+    );
+
+    expect(screen.getByTestId("portal-child-content")).toBeInTheDocument();
+    expect(screen.queryByTestId("portal-route-skeleton")).not.toBeInTheDocument();
+
+    // Clicking same route does not trigger skeleton
+    fireEvent.click(screen.getByRole("link", { name: /Tổng quan Gian hàng/i }));
+    expect(screen.queryByTestId("portal-route-skeleton")).not.toBeInTheDocument();
+
+    // Ctrl+click (new tab) does not replace current workspace with skeleton
+    const tt17Link = screen.getByRole("link", { name: /Đánh giá Năng lực TT17/i });
+    fireEvent.click(tt17Link, { ctrlKey: true });
+    expect(screen.queryByTestId("portal-route-skeleton")).not.toBeInTheDocument();
+
+    // Normal click on another item (e.g. /assessments/tt17) immediately shows skeleton & highlights target
+    fireEvent.click(tt17Link);
+    expect(screen.getByTestId("portal-route-skeleton")).toBeInTheDocument();
+    expect(screen.queryByTestId("portal-child-content")).not.toBeInTheDocument();
+    expect(tt17Link.className).toContain("bg-brand-700");
+
+    // When pathname updates, pending skeleton clears
+    mockPathname = "/assessments/tt17";
+    rerender(
+      <PortalLayout>
+        <div data-testid="portal-child-content">TT17 Loaded</div>
+      </PortalLayout>
+    );
+    expect(screen.queryByTestId("portal-route-skeleton")).not.toBeInTheDocument();
+    expect(screen.getByText("TT17 Loaded")).toBeInTheDocument();
+  });
+
+  it("does not re-fetch fetchMyEnterpriseProfile redundantly on pathname changes", () => {
+    const profileSpy = vi
+      .spyOn(enterpriseClient, "fetchMyEnterpriseProfile")
+      .mockResolvedValue({ id: "ent-1", activeRole: "SELLER" });
+
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u2",
+      email: "seller@example.com",
+      fullName: "Trần Văn Seller",
+      role: "SELLER",
+    });
+    mockPathname = "/portal";
+
+    const { rerender } = render(
+      <PortalLayout>
+        <div>Content 1</div>
+      </PortalLayout>
+    );
+
+    const initialCalls = profileSpy.mock.calls.length;
+    expect(initialCalls).toBeGreaterThanOrEqual(1);
+
+    mockPathname = "/portal/seller/technologies";
+    rerender(
+      <PortalLayout>
+        <div>Content 2</div>
+      </PortalLayout>
+    );
+
+    mockPathname = "/portal/seller/connection-requests";
+    rerender(
+      <PortalLayout>
+        <div>Content 3</div>
+      </PortalLayout>
+    );
+
+    expect(profileSpy.mock.calls.length).toBe(initialCalls);
+    profileSpy.mockRestore();
+  });
+
+  it("renders PortalLoading route boundary with portal-route-skeleton", () => {
+    render(<PortalLoading />);
+    expect(screen.getByTestId("portal-route-skeleton")).toHaveAttribute("aria-busy", "true");
   });
 });

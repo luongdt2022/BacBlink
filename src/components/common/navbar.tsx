@@ -101,7 +101,7 @@ export function Navbar() {
     "/chao-ban-cong-nghe": false,
     "/nhu-cau-cong-nghe": true,
     "/doanh-nghiep-dmst": false,
-    "/chuyen-gia": true,
+    "/experts": true,
     "/dich-vu-khac": false,
   });
   const accountMenuRef = useRef<HTMLDivElement>(null);
@@ -332,12 +332,12 @@ export function Navbar() {
       ],
     },
     {
-      href: "/chuyen-gia",
+      href: "/experts",
       label: t("experts"),
       icon: GraduationCap,
       children: [
         {
-          href: "/chuyen-gia",
+          href: "/experts",
           label: "Mạng lưới Chuyên gia",
           description: "Tra cứu danh bạ nhà khoa học, chuyên gia & cố vấn ĐMST",
           icon: Users,
@@ -529,6 +529,7 @@ export function Navbar() {
                               <Link
                                 key={subItem.href}
                                 href={subItem.href}
+                                prefetch={false}
                                 onClick={() => setOpenDropdown(null)}
                                 className={`group flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition ${
                                   isSubActive
@@ -618,6 +619,7 @@ export function Navbar() {
 
                         <Link
                           href="/dashboard"
+                          prefetch={false}
                           role="menuitem"
                           onClick={() => setAccountMenuOpen(false)}
                           className="focus-ring flex min-h-11 items-center gap-2.5 px-3.5 text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-300"
@@ -627,6 +629,7 @@ export function Navbar() {
                         </Link>
                         <Link
                           href={getWorkspacePath(user.role)}
+                          prefetch={false}
                           role="menuitem"
                           onClick={() => setAccountMenuOpen(false)}
                           className="focus-ring flex min-h-11 items-center gap-2.5 px-3.5 text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-300"
@@ -636,6 +639,7 @@ export function Navbar() {
                         </Link>
                         <Link
                           href="/settings"
+                          prefetch={false}
                           role="menuitem"
                           onClick={() => setAccountMenuOpen(false)}
                           className="focus-ring flex min-h-11 items-center gap-2.5 px-3.5 text-xs font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-brand-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-cyan-300"
@@ -950,6 +954,7 @@ export function Navbar() {
                                   <Link
                                     key={subItem.href}
                                     href={subItem.href}
+                                    prefetch={false}
                                     onClick={() => setMobileMenuOpen(false)}
                                     className={`flex min-h-11 items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition ${
                                       isSubActive

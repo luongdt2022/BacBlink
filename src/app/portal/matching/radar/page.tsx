@@ -33,7 +33,12 @@ import { authClient } from '@/lib/auth-client';
 export default function MatchingRadarPage() {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<'RADAR' | 'REQUESTS'>('RADAR');
+  const [requestStatusFilter, setRequestStatusFilter] = useState<'ALL' | 'PENDING' | 'ACCEPTED' | 'REJECTED'>('ALL');
   const [candidates, setCandidates] = useState<MatchCandidate[]>([]);
+  const [radarPage, setRadarPage] = useState(1);
+  const [radarTotal, setRadarTotal] = useState(0);
+  const [radarTotalPages, setRadarTotalPages] = useState(1);
+  const RADAR_PAGE_SIZE = 24;
   const [requests, setRequests] = useState<ConnectionRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -140,17 +145,27 @@ export default function MatchingRadarPage() {
     }
   }, [isBuyer, userDemands, selectedDemandCode]);
 
-  const fetchRadarData = async () => {
+  const fetchRadarData = async (pageOverride?: number) => {
+    const targetPage = pageOverride ?? radarPage;
     setIsLoading(true);
     setError(null);
     try {
       if (activeTab === 'RADAR') {
-        const data = await brokerageApi.getRadarCandidates({
-          sector: sector !== 'ALL' ? sector : undefined,
-          minScore: minScore > 0 ? minScore : undefined,
-          search: search.trim() || undefined,
-        });
-        setCandidates(data);
+        const [data, reqs] = await Promise.all([
+          brokerageApi.getRadarCandidates({
+            sector: sector !== 'ALL' ? sector : undefined,
+            minScore: minScore > 0 ? minScore : undefined,
+            search: search.trim() || undefined,
+            page: targetPage,
+            pageSize: RADAR_PAGE_SIZE,
+          }),
+          brokerageApi.getConnectionRequests().catch(() => []),
+        ]);
+        const safeItems = Array.isArray(data) ? data : [];
+        setCandidates(safeItems);
+        setRadarTotal(safeItems.length);
+        setRadarTotalPages(Math.max(1, Math.ceil(safeItems.length / RADAR_PAGE_SIZE)));
+        setRequests(Array.isArray(reqs) ? reqs : []);
       } else {
         const data = await brokerageApi.getConnectionRequests();
         setRequests(data);
@@ -167,17 +182,23 @@ export default function MatchingRadarPage() {
 
     if (activeTab === 'RADAR' && isRadarInactive) {
       setCandidates([]);
+      setRadarTotal(0);
+      setRadarTotalPages(1);
       setIsLoading(false);
       return;
     }
 
     fetchRadarData();
-  }, [activeTab, sector, minScore, isCheckingDemands, isRadarInactive]);
+  }, [activeTab, sector, minScore, radarPage, isCheckingDemands, isRadarInactive]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (activeTab === 'RADAR' && isRadarInactive) return;
-    fetchRadarData();
+    if (radarPage !== 1) {
+      setRadarPage(1);
+    } else {
+      fetchRadarData(1);
+    }
   };
 
   const handleRecompute = async () => {
@@ -216,6 +237,29 @@ export default function MatchingRadarPage() {
       toast.error(err.message || "Lỗi khi phản hồi yêu cầu kết nối.", "Thao Tác Thất Bại");
     }
   };
+
+  const isPendingConnectionRequest = (status?: string | null) => {
+    const normalized = (status || '').toUpperCase();
+    return normalized !== 'ACCEPTED' && normalized !== 'REJECTED';
+  };
+
+  const pendingRequestsCount = requests.filter((r) => isPendingConnectionRequest(r.status)).length;
+  const acceptedRequestsCount = requests.filter((r) => (r.status || '').toUpperCase() === 'ACCEPTED').length;
+  const rejectedRequestsCount = requests.filter((r) => (r.status || '').toUpperCase() === 'REJECTED').length;
+
+  const sortedRequests = [...requests].sort((a, b) => {
+    const aPending = isPendingConnectionRequest(a.status) ? 0 : 1;
+    const bPending = isPendingConnectionRequest(b.status) ? 0 : 1;
+    if (aPending !== bPending) return aPending - bPending;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const filteredSortedRequests = sortedRequests.filter((r) => {
+    if (requestStatusFilter === 'PENDING') return isPendingConnectionRequest(r.status);
+    if (requestStatusFilter === 'ACCEPTED') return (r.status || '').toUpperCase() === 'ACCEPTED';
+    if (requestStatusFilter === 'REJECTED') return (r.status || '').toUpperCase() === 'REJECTED';
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-surface-subtle p-4 sm:p-6 lg:p-8 space-y-6">
@@ -260,7 +304,7 @@ export default function MatchingRadarPage() {
             }`}
           >
             <Sparkles className="w-4 h-4 text-brand-700 dark:text-brand-400" />
-            <span>Ứng Viên Ghép Đôi AI</span>
+            <span>{effectiveRole === 'SELLER' ? 'Nhu Cầu AI Gợi Ý' : 'Giải Pháp AI Gợi Ý'}</span>
             <span
               className={`px-2 py-0.5 rounded-full text-xs font-black ${
                 activeTab === 'RADAR'
@@ -289,7 +333,7 @@ export default function MatchingRadarPage() {
                   : 'bg-slate-300/70 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
               }`}
             >
-              {requests.length}
+              {pendingRequestsCount}
             </span>
           </button>
         </div>
@@ -400,7 +444,7 @@ export default function MatchingRadarPage() {
                     </>
                   ) : (
                     <>
-                      <option value="ALL">Tất cả bài toán ({candidates.length})</option>
+                      <option value="ALL">Tất cả bài toán ({radarTotal || candidates.length})</option>
                       {Array.from(
                         new Map(
                           candidates
@@ -421,7 +465,10 @@ export default function MatchingRadarPage() {
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Ngành TT17:</span>
                 <select
                   value={sector}
-                  onChange={(e) => setSector(e.target.value)}
+                  onChange={(e) => {
+                    setSector(e.target.value);
+                    setRadarPage(1);
+                  }}
                   className="h-11 px-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
                 >
                   <option value="ALL">Tất cả ngành</option>
@@ -436,7 +483,10 @@ export default function MatchingRadarPage() {
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Điểm khớp:</span>
                 <select
                   value={minScore}
-                  onChange={(e) => setMinScore(Number(e.target.value))}
+                  onChange={(e) => {
+                    setMinScore(Number(e.target.value));
+                    setRadarPage(1);
+                  }}
                   className="h-11 px-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
                 >
                   <option value={0}>Tất cả điểm</option>
@@ -459,7 +509,7 @@ export default function MatchingRadarPage() {
 
               <button
                 type="button"
-                onClick={fetchRadarData}
+                onClick={() => fetchRadarData()}
                 className="h-11 w-11 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white hover:bg-brand-50 dark:hover:bg-brand-950 transition-all shrink-0"
                 title="Làm mới dữ liệu"
               >
@@ -486,7 +536,7 @@ export default function MatchingRadarPage() {
             <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-rose-200 dark:border-rose-900/50 shadow-sm space-y-3">
               <p className="text-xs font-bold text-rose-600 dark:text-rose-400">{error}</p>
               <button
-                onClick={fetchRadarData}
+                onClick={() => fetchRadarData()}
                 className="px-5 py-2.5 rounded-xl bg-brand-700 text-white text-xs font-bold hover:bg-brand-800 shadow-sm transition"
               >
                 Thử lại
@@ -497,7 +547,7 @@ export default function MatchingRadarPage() {
               <div className="w-14 h-14 mx-auto rounded-2xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center text-brand-700 dark:text-brand-300">
                 <Sparkles className="w-7 h-7" />
               </div>
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Không tìm thấy ứng viên ghép đôi phù hợp</h3>
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Không tìm thấy giải pháp ghép nối phù hợp</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
                 Hãy thử giảm tiêu chí lọc điểm khớp hoặc mở rộng ngành kỹ thuật để phát hiện thêm các cơ hội chuyển giao công nghệ mới.
               </p>
@@ -522,10 +572,14 @@ export default function MatchingRadarPage() {
                   return selectedDemandCode === 'ALL' || c.demandCode === selectedDemandCode || c.demandId === selectedDemandCode;
                 })
                 .map((c) => {
-                const isHighMatch = c.matchScore >= 90;
-                const isMediumMatch = c.matchScore >= 80;
+                  const resolvedScore = c.matchScore ?? c.overallMatchScore ?? 0;
+                  const resolvedTrl = c.trlLevel ?? c.xaiBreakdown?.trlLevel ?? 0;
+                  const resolvedTni = c.tniScore ?? c.xaiBreakdown?.tniScore ?? 0;
+                  const resolvedIp = c.ipStatus ?? c.xaiBreakdown?.ipStatus;
+                  const isHighMatch = resolvedScore >= 90;
+                  const isMediumMatch = resolvedScore >= 80;
 
-                return (
+                  return (
                   <div
                     key={c.id}
                     className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 shadow-sm hover:shadow-xl hover:border-brand-500/60 dark:hover:border-brand-500/60 transition-all duration-300 flex flex-col justify-between relative group"
@@ -546,12 +600,12 @@ export default function MatchingRadarPage() {
                             {c.sectorCode}
                           </span>
                           <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-black flex items-center gap-1">
-                            <Cpu className="w-3.5 h-3.5 text-emerald-600" /> TRL {c.trlLevel}
+                            <Cpu className="w-3.5 h-3.5 text-emerald-600" /> TRL {resolvedTrl}
                           </span>
                           <span className="px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-950/60 text-brand-800 dark:text-brand-300 border border-brand-200 dark:border-brand-800 text-xs font-black flex items-center gap-1">
-                            <Zap className="w-3.5 h-3.5 text-brand-600" /> TNI {c.tniScore}/100
+                            <Zap className="w-3.5 h-3.5 text-brand-600" /> TNI {resolvedTni}/100
                           </span>
-                          {(c.ipStatus === 'PATENT_GRANTED' || c.ipStatus === 'Đã cấp bằng sáng chế') && (
+                          {(resolvedIp === 'PATENT_GRANTED' || resolvedIp === 'Đã cấp bằng sáng chế') && (
                             <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-black flex items-center gap-1">
                               <ShieldCheck className="w-3.5 h-3.5 text-amber-600" /> Có bằng SHTT
                             </span>
@@ -578,7 +632,7 @@ export default function MatchingRadarPage() {
                               : 'bg-gradient-to-br from-amber-500 to-amber-700 shadow-amber-500/25'
                           }`}
                         >
-                          <span className="text-xl font-black leading-none">{c.matchScore}%</span>
+                          <span className="text-xl font-black leading-none">{resolvedScore}%</span>
                           <span className="text-xs uppercase font-extrabold tracking-tight mt-1 opacity-90">
                             {isHighMatch ? 'Rất Cao' : isMediumMatch ? 'Khớp Cao' : 'Khá'}
                           </span>
@@ -635,7 +689,7 @@ export default function MatchingRadarPage() {
                             <Sparkles className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400" />
                             <span>Giải trình độ tương thích AI (XAI 4 trục):</span>
                           </span>
-                          <span className="text-brand-700 dark:text-cyan-400 font-black">{c.matchScore}% Tổng Hợp</span>
+                          <span className="text-brand-700 dark:text-cyan-400 font-black">{resolvedScore}% Tổng Hợp</span>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 font-semibold text-slate-600 dark:text-slate-300">
                           {/* Trục 1: Ngữ nghĩa AI (40%) */}
@@ -662,17 +716,17 @@ export default function MatchingRadarPage() {
                             <div className="flex items-center justify-between">
                               <span className="block text-[11px] text-slate-400 font-medium">Mức TRL:</span>
                               <span className="text-brand-700 dark:text-cyan-400 font-extrabold">
-                                {c.xaiBreakdown ? `TRL ${c.xaiBreakdown.trlLevel}` : `TRL ${c.trlLevel}`}
+                                {c.xaiBreakdown ? `TRL ${c.xaiBreakdown.trlLevel}` : `TRL ${resolvedTrl}`}
                               </span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                               <div
                                 className="bg-brand-500 h-full rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.trlScore ?? ((c.trlLevel / 9) * 100)))}%` }}
+                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.trlScore ?? ((resolvedTrl / 9) * 100)))}%` }}
                               />
                             </div>
                             <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                              {c.xaiBreakdown?.trlStage ?? (c.trlLevel >= 7 ? 'Thương mại hóa' : 'Thử nghiệm')}
+                              {c.xaiBreakdown?.trlStage ?? (resolvedTrl >= 7 ? 'Thương mại hóa' : 'Thử nghiệm')}
                             </span>
                           </div>
 
@@ -681,17 +735,17 @@ export default function MatchingRadarPage() {
                             <div className="flex items-center justify-between">
                               <span className="block text-[11px] text-slate-400 font-medium">Cấp thiết TNI:</span>
                               <span className="text-rose-600 dark:text-rose-400 font-extrabold">
-                                {c.xaiBreakdown ? `${c.xaiBreakdown.tniScore}/100` : `${c.tniScore}/100`}
+                                {c.xaiBreakdown ? `${c.xaiBreakdown.tniScore}/100` : `${resolvedTni}/100`}
                               </span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                               <div
                                 className="bg-rose-500 h-full rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.tniScore ?? c.tniScore))}%` }}
+                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.tniScore ?? resolvedTni))}%` }}
                               />
                             </div>
                             <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                              {c.xaiBreakdown?.tniBand ?? (c.tniScore >= 80 ? 'Cấp thiết rất cao' : 'Cấp thiết cao')}
+                              {c.xaiBreakdown?.tniBand ?? (resolvedTni >= 80 ? 'Cấp thiết rất cao' : 'Cấp thiết cao')}
                             </span>
                           </div>
 
@@ -702,17 +756,17 @@ export default function MatchingRadarPage() {
                               <span className="text-amber-700 dark:text-amber-400 font-extrabold">
                                 {c.xaiBreakdown
                                   ? `${c.xaiBreakdown.ipScore}%`
-                                  : (c.ipStatus === 'PATENT_GRANTED' || c.ipStatus === 'Đã cấp bằng sáng chế' ? 'Đã cấp bằng' : 'Đang xét')}
+                                  : (resolvedIp === 'PATENT_GRANTED' || resolvedIp === 'Đã cấp bằng sáng chế' ? 'Đã cấp bằng' : 'Đang xét')}
                               </span>
                             </div>
                             <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                               <div
                                 className="bg-amber-500 h-full rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.ipScore ?? (c.ipStatus === 'PATENT_GRANTED' ? 100 : 60)))}%` }}
+                                style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.ipScore ?? (resolvedIp === 'PATENT_GRANTED' ? 100 : 60)))}%` }}
                               />
                             </div>
                             <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                              {c.xaiBreakdown?.ipDescription ?? (c.ipStatus === 'PATENT_GRANTED' || c.ipStatus === 'Đã cấp bằng sáng chế' ? 'Đã cấp bằng' : 'Đang xét')}
+                              {c.xaiBreakdown?.ipDescription ?? (resolvedIp === 'PATENT_GRANTED' || resolvedIp === 'Đã cấp bằng sáng chế' ? 'Đã cấp bằng' : 'Đang xét')}
                             </span>
                           </div>
                         </div>
@@ -741,48 +795,216 @@ export default function MatchingRadarPage() {
               })}
             </div>
           )}
+          {!isLoading && !error && radarTotalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 px-1">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Hiển thị trang {radarPage} / {radarTotalPages} (tổng {radarTotal} cặp ghép nối)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={radarPage <= 1}
+                  onClick={() => setRadarPage((p) => Math.max(1, p - 1))}
+                  className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 disabled:opacity-40 cursor-pointer"
+                >
+                  Trang trước
+                </button>
+                <button
+                  type="button"
+                  disabled={radarPage >= radarTotalPages}
+                  onClick={() => setRadarPage((p) => Math.min(radarTotalPages, p + 1))}
+                  className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 disabled:opacity-40 cursor-pointer"
+                >
+                  Trang sau
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         )
       )}
 
       {/* TAB 2: CONNECTION REQUESTS */}
       {activeTab === 'REQUESTS' && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-7 shadow-sm space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-            <div>
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                Danh sách Yêu Cầu Kết Nối Hai Chiều
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Theo dõi tiến trình đàm phán bước đầu trước khi kích hoạt Deal Room bảo mật.
-              </p>
-            </div>
+        <div className="space-y-5">
+          {/* 3 Thẻ Tóm Tắt Trạng Thái: Cần xử lý / Đã chấp thuận / Đã từ chối */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
-              onClick={fetchRadarData}
-              className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950 transition"
-              title="Làm mới danh sách"
+              type="button"
+              onClick={() => setRequestStatusFilter('PENDING')}
+              className={`text-left bg-gradient-to-br from-amber-50 to-orange-50/70 dark:from-slate-900 dark:to-amber-950/40 border rounded-2xl p-5 shadow-sm flex items-center gap-4 transition hover:shadow-md cursor-pointer ${
+                requestStatusFilter === 'PENDING'
+                  ? 'border-amber-500 ring-2 ring-amber-400/30'
+                  : 'border-amber-200/80 dark:border-amber-900/60'
+              }`}
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-brand-600' : ''}`} />
+              <div className="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-600/30">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                  Cần Xử Lý (Chờ Phản Hồi)
+                </span>
+                <div className="text-2xl font-black text-amber-800 dark:text-amber-300 mt-0.5">
+                  {pendingRequestsCount} <span className="text-sm font-semibold text-amber-600">Yêu cầu</span>
+                </div>
+                <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                  Chưa chấp thuận hay từ chối
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRequestStatusFilter('ACCEPTED')}
+              className={`text-left bg-gradient-to-br from-emerald-50 to-teal-50/70 dark:from-slate-900 dark:to-emerald-950/40 border rounded-2xl p-5 shadow-sm flex items-center gap-4 transition hover:shadow-md cursor-pointer ${
+                requestStatusFilter === 'ACCEPTED'
+                  ? 'border-emerald-500 ring-2 ring-emerald-400/30'
+                  : 'border-emerald-200/80 dark:border-emerald-900/60'
+              }`}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                  Đã Chấp Thuận
+                </span>
+                <div className="text-2xl font-black text-emerald-800 dark:text-emerald-300 mt-0.5">
+                  {acceptedRequestsCount} <span className="text-sm font-semibold text-emerald-600">Thương vụ</span>
+                </div>
+                <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                  Đã kích hoạt sang Pipeline Deal
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRequestStatusFilter('REJECTED')}
+              className={`text-left bg-gradient-to-br from-rose-50 to-slate-50 dark:from-slate-900 dark:to-rose-950/30 border rounded-2xl p-5 shadow-sm flex items-center gap-4 transition hover:shadow-md cursor-pointer ${
+                requestStatusFilter === 'REJECTED'
+                  ? 'border-rose-500 ring-2 ring-rose-400/30'
+                  : 'border-rose-200/80 dark:border-rose-900/50'
+              }`}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-600/25">
+                <XCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                  Đã Từ Chối
+                </span>
+                <div className="text-2xl font-black text-rose-800 dark:text-rose-300 mt-0.5">
+                  {rejectedRequestsCount} <span className="text-sm font-semibold text-rose-600">Yêu cầu</span>
+                </div>
+                <span className="text-xs text-rose-700 dark:text-rose-400 font-medium">
+                  Đã đóng hoặc không phù hợp
+                </span>
+              </div>
             </button>
           </div>
 
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-28 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse" />
-              ))}
-            </div>
-          ) : requests.length === 0 ? (
-            <div className="p-16 text-center space-y-3">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-                <Clock className="w-7 h-7" />
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-7 shadow-sm space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+                  Danh sách Yêu Cầu Kết Nối Hai Chiều
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Theo dõi tiến trình đàm phán bước đầu trước khi kích hoạt Deal Room bảo mật.
+                </p>
               </div>
-              <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Chưa có yêu cầu kết nối nào</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Các yêu cầu do bạn gửi đi hoặc đối tác mời sẽ hiển thị tại đây.</p>
+              <div className="flex flex-wrap items-center gap-3">
+                {/* 4 Tabs Bộ Lọc Trạng Thái đồng bộ màn Khách hàng liên hệ */}
+                <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl">
+                  {[
+                    { key: 'ALL', label: 'Tất cả', count: requests.length },
+                    {
+                      key: 'PENDING',
+                      label: 'Cần xử lý',
+                      count: pendingRequestsCount,
+                      badgeColor: 'bg-amber-500 text-white',
+                    },
+                    {
+                      key: 'ACCEPTED',
+                      label: 'Đã chấp thuận',
+                      count: acceptedRequestsCount,
+                      badgeColor: 'bg-emerald-600 text-white',
+                    },
+                    {
+                      key: 'REJECTED',
+                      label: 'Đã từ chối',
+                      count: rejectedRequestsCount,
+                      badgeColor: 'bg-slate-400 text-white',
+                    },
+                  ].map((subTab) => (
+                    <button
+                      key={subTab.key}
+                      type="button"
+                      onClick={() => setRequestStatusFilter(subTab.key as any)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                        requestStatusFilter === subTab.key
+                          ? 'bg-white dark:bg-slate-900 text-brand-700 dark:text-cyan-400 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <span>{subTab.label}</span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[11px] font-black leading-none ${
+                          subTab.badgeColor || 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                        }`}
+                      >
+                        {subTab.count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => fetchRadarData()}
+                  className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-brand-700 hover:bg-brand-50 dark:hover:bg-brand-950 transition cursor-pointer"
+                  title="Làm mới danh sách"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-brand-600' : ''}`} />
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {requests.map((r) => (
+
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-28 rounded-2xl bg-slate-100 dark:bg-slate-800/50 animate-pulse" />
+                ))}
+              </div>
+            ) : requests.length === 0 ? (
+              <div className="p-16 text-center space-y-3">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                  <Clock className="w-7 h-7" />
+                </div>
+                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Chưa có yêu cầu kết nối nào</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Các yêu cầu do bạn gửi đi hoặc đối tác mời sẽ hiển thị tại đây.</p>
+              </div>
+            ) : filteredSortedRequests.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <div className="w-12 h-12 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
+                  Không có yêu cầu nào ở trạng thái đã chọn
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setRequestStatusFilter('ALL')}
+                  className="px-4 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold transition cursor-pointer"
+                >
+                  Xem tất cả ({requests.length})
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredSortedRequests.map((r) => (
                 <div
                   key={r.id}
                   className="py-5 first:pt-0 last:pb-0 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
@@ -842,9 +1064,10 @@ export default function MatchingRadarPage() {
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

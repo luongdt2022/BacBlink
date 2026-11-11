@@ -34,6 +34,7 @@ import { API_BASE } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
 import { Async } from "@/components/ui/async";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
+import { AdminKpiCardSkeleton } from "@/components/admin/admin-workspace-skeleton";
 import { AppButton } from "@/components/ui/design-system";
 import { resolveProvinceName, resolveRoleName, resolveSectorName } from "@/lib/label-resolver";
 
@@ -485,62 +486,117 @@ export default function AdminUsersPage() {
       </div>
 
       {/* 4 KPI METRIC CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Tổng Người Dùng</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Users className="w-4 h-4" />
+      <div
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        data-testid={loading ? "users-kpi-skeleton" : "users-kpi-grid"}
+        aria-busy={loading ? "true" : undefined}
+      >
+        {loading ? (
+          <>
+            <AdminKpiCardSkeleton
+              className="p-4 sm:p-4 dark:bg-white dark:border-slate-200"
+              title={<span className="text-xs font-semibold text-slate-500">Tổng Người Dùng</span>}
+              icon={
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Users className="w-4 h-4" />
+                </div>
+              }
+              valueClassName="h-8 w-16 rounded-md animate-shimmer mt-2"
+              subClassName="h-3.5 w-36 rounded animate-shimmer mt-1.5"
+            />
+            <AdminKpiCardSkeleton
+              className="p-4 sm:p-4 dark:bg-white dark:border-slate-200"
+              title={<span className="text-xs font-semibold text-slate-500">Đang Hoạt Động</span>}
+              icon={
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+              }
+              valueClassName="h-8 w-16 rounded-md animate-shimmer mt-2"
+              subClassName="h-3.5 w-32 rounded animate-shimmer mt-1.5"
+            />
+            <AdminKpiCardSkeleton
+              className="p-4 sm:p-4 dark:bg-white dark:border-slate-200"
+              title={<span className="text-xs font-semibold text-slate-500">Đang Bị Khóa</span>}
+              icon={
+                <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                  <UserX className="w-4 h-4" />
+                </div>
+              }
+              valueClassName="h-8 w-16 rounded-md animate-shimmer mt-2"
+              subClassName="h-3.5 w-32 rounded animate-shimmer mt-1.5"
+            />
+            <AdminKpiCardSkeleton
+              className="p-4 sm:p-4 dark:bg-white dark:border-slate-200"
+              title={<span className="text-xs font-semibold text-slate-500">Cán Bộ Quản Trị</span>}
+              icon={
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+              }
+              valueClassName="h-8 w-16 rounded-md animate-shimmer mt-2"
+              subClassName="h-3.5 w-32 rounded animate-shimmer mt-1.5"
+            />
+          </>
+        ) : (
+          <>
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-500">Tổng Người Dùng</span>
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Users className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-black text-slate-900">{total}</div>
+              <p className="text-[11px] text-slate-400 mt-1">Dữ liệu kết nối trực tiếp PostgreSQL</p>
             </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-slate-900">{total}</div>
-          <p className="text-[11px] text-slate-400 mt-1">Dữ liệu kết nối trực tiếp PostgreSQL</p>
-        </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Đang Hoạt Động</span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <UserCheck className="w-4 h-4" />
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-500">Đang Hoạt Động</span>
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-black text-emerald-600">{activeCount}</div>
+              <p className="text-[11px] text-slate-400 mt-1">Trạng thái ACTIVE hợp lệ</p>
             </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-emerald-600">{activeCount}</div>
-          <p className="text-[11px] text-slate-400 mt-1">Trạng thái ACTIVE hợp lệ</p>
-        </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Đang Bị Khóa</span>
-            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
-              <UserX className="w-4 h-4" />
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-500">Đang Bị Khóa</span>
+                <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+                  <UserX className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-black text-red-600">{lockedCount}</div>
+              <p className="text-[11px] text-slate-400 mt-1">Soft-delete an toàn cấp 3</p>
             </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-red-600">{lockedCount}</div>
-          <p className="text-[11px] text-slate-400 mt-1">Soft-delete an toàn cấp 3</p>
-        </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500">Cán Bộ Quản Trị</span>
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-500">Cán Bộ Quản Trị</span>
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-black text-amber-700">{officersCount}</div>
+              <p className="text-[11px] text-slate-400 mt-1">Tầng 0 & Tầng 1 Sở Tỉnh</p>
             </div>
-          </div>
-          <div className="mt-2 text-2xl font-black text-amber-700">{officersCount}</div>
-          <p className="text-[11px] text-slate-400 mt-1">Tầng 0 & Tầng 1 Sở Tỉnh</p>
-        </div>
+          </>
+        )}
       </div>
 
       {/* FILTER & SEARCH BAR */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Tìm theo Tên, Email, SĐT, Tổ chức..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3.5 py-2 rounded-lg border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"
+            className="form-control-sm w-full pl-9 pr-3.5 rounded-lg bg-white font-medium focus:ring-2 focus:ring-blue-600 focus:outline-none"
           />
         </div>
 
@@ -549,7 +605,7 @@ export default function AdminUsersPage() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white"
+            className="form-control-sm rounded-lg font-semibold text-slate-700 bg-white w-full sm:w-auto"
           >
             <option value="all">Tất cả 10 Vai Trò</option>
             <option value="SUPER_ADMIN">SUPER_ADMIN (Quản trị tối cao)</option>
@@ -570,7 +626,7 @@ export default function AdminUsersPage() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white"
+            className="form-control-sm rounded-lg font-semibold text-slate-700 bg-white w-full sm:w-auto"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Đang hoạt động (ACTIVE)</option>
@@ -584,7 +640,7 @@ export default function AdminUsersPage() {
               setLimit(Number(e.target.value));
               setPage(1);
             }}
-            className="px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white"
+            className="form-control-sm rounded-lg font-semibold text-slate-700 bg-white w-full sm:w-auto"
           >
             <option value={10}>10 dòng/trang</option>
             <option value={20}>20 dòng/trang</option>
@@ -795,7 +851,7 @@ export default function AdminUsersPage() {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200"
+                  className="appearance-none h-8 pl-2.5 pr-6 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20fill=%27none%27%20viewBox=%270%200%2020%2020%27%3e%3cpath%20stroke=%27%2364748b%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%271.5%27%20d=%27M6%208l4%204%204-4%27/%3e%3c/svg%3e')] bg-no-repeat bg-[right_0.35rem_center] bg-[length:1rem_1rem]"
                 >
                   <option value={10}>10</option>
                   <option value={20}>20</option>

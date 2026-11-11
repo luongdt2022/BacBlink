@@ -1,4 +1,5 @@
-import { authClient } from "@/lib/auth-client";
+import { authClient, getStoredSession } from "@/lib/auth-client";
+import { getCachedOrFetch, invalidateCachePrefix } from "@/lib/client-cache";
 import {
   MatchCandidate,
   RecomputeRadarResult,
@@ -15,27 +16,121 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   (typeof window !== "undefined" ? "" : "http://localhost:5080");
 
+function getAuthScopeKey(): string {
+  const s = getStoredSession();
+  return `${s?.user?.id ?? "anon"}:${s?.user?.role ?? "anon"}`;
+}
+
+function normalizeRadarCandidate(item: any): MatchCandidate {
+  const xai = item.xaiBreakdown;
+  return {
+    ...item,
+    matchScore: item.matchScore ?? item.overallMatchScore ?? 0,
+    trlLevel: item.trlLevel ?? xai?.trlLevel ?? 0,
+    tniScore: item.tniScore ?? xai?.tniScore ?? 0,
+    ipStatus: item.ipStatus ?? xai?.ipStatus ?? "NONE",
+    createdAt: item.createdAt ?? item.computedAt ?? new Date().toISOString(),
+  };
+}
+
+export interface PagedRadarResult {
+  items: MatchCandidate[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface RadarSummary {
+  totalCount: number;
+}
+
 export const brokerageApi = {
-  async getRadarCandidates(params?: {
+  async getRadarSummary(params?: {
     sector?: string;
     minScore?: number;
     search?: string;
-  }): Promise<MatchCandidate[]> {
+  }): Promise<RadarSummary> {
     const q = new URLSearchParams();
     if (params?.sector && params.sector !== "ALL") q.append("sector", params.sector);
     if (params?.minScore) q.append("minScore", params.minScore.toString());
     if (params?.search) q.append("search", params.search);
+    const qs = q.toString();
 
-    const res = await fetch(`${API_BASE}/api/v1/brokerage/radar?${q.toString()}`, {
-      headers: {
-        ...authClient.getAuthHeaders(),
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
+    return getCachedOrFetch(
+      `brokerage:radar-summary:${getAuthScopeKey()}:${qs}`,
+      20_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/brokerage/radar/summary${qs ? `?${qs}` : ""}`, {
+          headers: {
+            ...authClient.getAuthHeaders(),
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Không thể tải thống kê Radar ghép nối.");
+        const body = await res.json();
+        return { totalCount: body.data?.totalCount ?? 0 };
+      }
+    );
+  },
+
+  async getRadarCandidatesPaged(params?: {
+    sector?: string;
+    minScore?: number;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PagedRadarResult> {
+    const q = new URLSearchParams();
+    if (params?.sector && params.sector !== "ALL") q.append("sector", params.sector);
+    if (params?.minScore) q.append("minScore", params.minScore.toString());
+    if (params?.search) q.append("search", params.search);
+    const page = params?.page ?? 1;
+    const pageSize = params?.pageSize ?? 24;
+    q.append("page", String(page));
+    q.append("pageSize", String(pageSize));
+    const qs = q.toString();
+
+    return getCachedOrFetch(
+      `brokerage:radar-paged:${getAuthScopeKey()}:${qs}`,
+      20_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/brokerage/radar?${qs}`, {
+          headers: {
+            ...authClient.getAuthHeaders(),
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Không thể tải danh sách gợi ý ghép nối.");
+        const body = await res.json();
+        const rawList: any[] = Array.isArray(body.data) ? body.data : [];
+        const total = typeof body.total === "number" ? body.total : rawList.length;
+        return {
+          items: rawList.map(normalizeRadarCandidate),
+          total,
+          page: body.page ?? page,
+          pageSize: body.pageSize ?? pageSize,
+          totalPages: body.totalPages ?? (Math.ceil(total / pageSize) || 1),
+        };
+      }
+    );
+  },
+
+  async getRadarCandidates(params?: {
+    sector?: string;
+    minScore?: number;
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<MatchCandidate[]> {
+    const paged = await this.getRadarCandidatesPaged({
+      ...params,
+      page: params?.page ?? 1,
+      pageSize: params?.pageSize ?? 50,
     });
-    if (!res.ok) throw new Error("Không thể tải danh sách gợi ý ghép nối.");
-    const body = await res.json();
-    return body.data || [];
+    return paged.items;
   },
 
   async recomputeRadar(demandCode?: string): Promise<RecomputeRadarResult> {
@@ -49,6 +144,7 @@ export const brokerageApi = {
     });
     if (!res.ok) throw new Error("Không thể kích hoạt tính toán đối soát AI.");
     const body = await res.json();
+    invalidateCachePrefix("brokerage:");
     return body.data;
   },
 
@@ -65,13 +161,19 @@ export const brokerageApi = {
     if (params?.organizationName) q.append("organizationName", params.organizationName);
 
     const queryStr = q.toString() ? `?${q.toString()}` : "";
-    const res = await fetch(`${API_BASE}/api/v1/brokerage/requests${queryStr}`, {
-      headers: authClient.getAuthHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Không thể tải danh sách yêu cầu kết nối.");
-    const body = await res.json();
-    return body.data || [];
+    return getCachedOrFetch(
+      `brokerage:requests:${getAuthScopeKey()}:${queryStr}`,
+      15_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/brokerage/requests${queryStr}`, {
+          headers: authClient.getAuthHeaders(),
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Không thể tải danh sách yêu cầu kết nối.");
+        const body = await res.json();
+        return body.data || [];
+      }
+    );
   },
 
   async getConnectionRequestDetail(id: string): Promise<ConnectionRequestDetail> {
@@ -106,6 +208,7 @@ export const brokerageApi = {
       throw new Error(err.message || "Không thể gửi yêu cầu kết nối.");
     }
     const body = await res.json();
+    invalidateCachePrefix("brokerage:");
     return body.data;
   },
 
@@ -128,6 +231,7 @@ export const brokerageApi = {
       throw new Error(err.message || "Không thể phản hồi yêu cầu kết nối.");
     }
     const body = await res.json();
+    invalidateCachePrefix("brokerage:");
     return body.data;
   },
 
@@ -144,13 +248,19 @@ export const brokerageApi = {
     if (organizationName) q.append("organizationName", organizationName);
 
     const queryStr = q.toString() ? `?${q.toString()}` : "";
-    const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities${queryStr}`, {
-      headers: authClient.getAuthHeaders(),
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Không thể tải danh sách cơ hội hợp tác.");
-    const body = await res.json();
-    return body.data || [];
+    return getCachedOrFetch(
+      `brokerage:opps:${getAuthScopeKey()}:${queryStr}`,
+      15_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities${queryStr}`, {
+          headers: authClient.getAuthHeaders(),
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Không thể tải danh sách cơ hội hợp tác.");
+        const body = await res.json();
+        return body.data || [];
+      }
+    );
   },
 
   async updateOpportunityStage(id: string, newStage: string): Promise<Opportunity> {
@@ -164,6 +274,7 @@ export const brokerageApi = {
       throw new Error(err.message || "Không thể chuyển giai đoạn cơ hội.");
     }
     const body = await res.json();
+    invalidateCachePrefix("brokerage:");
     return body.data;
   },
 
@@ -210,6 +321,7 @@ export const brokerageApi = {
       throw new Error(err.message || "Không thể gửi ý kiến trao đổi.");
     }
     const body = await res.json();
+    invalidateCachePrefix("brokerage:");
     return body.data;
   },
 
@@ -233,16 +345,24 @@ export const brokerageApi = {
       throw new Error(err.message || "Không thể lưu văn bản ghi nhớ MOU.");
     }
     const body = await res.json();
+    invalidateCachePrefix("brokerage:");
     return body.data;
   },
 
   async getGovOpportunities(authorityId?: string): Promise<GovOpportunitiesOverview> {
     const q = authorityId ? `?authorityId=${encodeURIComponent(authorityId)}` : "";
-    const res = await fetch(`${API_BASE}/api/v1/gov/opportunities${q}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error("Không thể tải dữ liệu giám sát cơ hội.");
-    const body = await res.json();
-    return body.data;
+    return getCachedOrFetch(
+      `brokerage:gov-opps:${getAuthScopeKey()}:${q}`,
+      15_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/gov/opportunities${q}`, {
+          headers: authClient.getAuthHeaders(),
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Không thể tải dữ liệu giám sát cơ hội.");
+        const body = await res.json();
+        return body.data;
+      }
+    );
   },
 };

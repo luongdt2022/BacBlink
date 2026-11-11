@@ -1,5 +1,6 @@
 import { API_BASE, readApiError, userFacingRequestError } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
+import { getCachedOrFetch, invalidateCachePrefix } from "@/lib/client-cache";
 
 export type LmsLessonType = "TYPE_A" | "TYPE_B" | "TYPE_B_PLUS";
 export type LmsStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED";
@@ -356,41 +357,45 @@ export async function fetchLmsCatalog(params?: {
   if (params?.page) query.set("page", params.page.toString());
   if (params?.pageSize) query.set("pageSize", params.pageSize.toString());
 
-  const res = await fetch(`${API_BASE}/api/v1/lms/catalog?${query.toString()}`, {
-    headers: getAuthHeaders(),
-    cache: "no-store",
+  const qs = query.toString();
+  const authTag = authClient.getToken() ? "auth" : "anon";
+  return getCachedOrFetch(`lms:catalog:${authTag}:${qs}`, 30_000, async () => {
+    const res = await fetch(`${API_BASE}/api/v1/lms/catalog?${qs}`, {
+      headers: getAuthHeaders(),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      throw new Error(await readApiError(res, "Không thể tải danh mục học liệu số."));
+    }
+    const raw = await res.json();
+
+    // Normalize Backend Envelope response { success: true, data: [...], kpis: {...}, total, page, pageSize, totalPages }
+    const items = Array.isArray(raw.data) ? raw.data : Array.isArray(raw.materials?.items) ? raw.materials.items : [];
+    const totalCount = typeof raw.total === "number" ? raw.total : raw.materials?.totalCount ?? items.length;
+    const pageNum = typeof raw.page === "number" ? raw.page : raw.materials?.page ?? 1;
+    const pageSizeNum = typeof raw.pageSize === "number" ? raw.pageSize : raw.materials?.pageSize ?? 10;
+    const totalPagesNum = typeof raw.totalPages === "number" ? raw.totalPages : Math.ceil(totalCount / pageSizeNum) || 1;
+
+    // Calculate cumulative duration hours if not provided
+    const totalMinutes = items.reduce((acc: number, item: { durationMinutes?: number }) => acc + (item.durationMinutes || 0), 0);
+    const totalHours = raw.kpis?.totalDurationHours ?? Math.round(totalMinutes / 60);
+
+    return {
+      materials: {
+        items,
+        totalCount,
+        page: pageNum,
+        pageSize: pageSizeNum,
+        totalPages: totalPagesNum,
+      },
+      kpis: {
+        totalCourses: raw.kpis?.totalCourses ?? totalCount,
+        totalDurationHours: totalHours > 0 ? totalHours : Math.max(1, Math.round(totalMinutes / 60)),
+        totalInstructors: raw.kpis?.totalInstructors ?? 4,
+        averageRating: raw.kpis?.averageRating ?? 4.9,
+      },
+    };
   });
-  if (!res.ok) {
-    throw new Error(await readApiError(res, "Không thể tải danh mục học liệu số."));
-  }
-  const raw = await res.json();
-
-  // Normalize Backend Envelope response { success: true, data: [...], kpis: {...}, total, page, pageSize, totalPages }
-  const items = Array.isArray(raw.data) ? raw.data : Array.isArray(raw.materials?.items) ? raw.materials.items : [];
-  const totalCount = typeof raw.total === "number" ? raw.total : raw.materials?.totalCount ?? items.length;
-  const pageNum = typeof raw.page === "number" ? raw.page : raw.materials?.page ?? 1;
-  const pageSizeNum = typeof raw.pageSize === "number" ? raw.pageSize : raw.materials?.pageSize ?? 10;
-  const totalPagesNum = typeof raw.totalPages === "number" ? raw.totalPages : Math.ceil(totalCount / pageSizeNum) || 1;
-
-  // Calculate cumulative duration hours if not provided
-  const totalMinutes = items.reduce((acc: number, item: { durationMinutes?: number }) => acc + (item.durationMinutes || 0), 0);
-  const totalHours = raw.kpis?.totalDurationHours ?? Math.round(totalMinutes / 60);
-
-  return {
-    materials: {
-      items,
-      totalCount,
-      page: pageNum,
-      pageSize: pageSizeNum,
-      totalPages: totalPagesNum,
-    },
-    kpis: {
-      totalCourses: raw.kpis?.totalCourses ?? totalCount,
-      totalDurationHours: totalHours > 0 ? totalHours : Math.max(1, Math.round(totalMinutes / 60)),
-      totalInstructors: raw.kpis?.totalInstructors ?? 4,
-      averageRating: raw.kpis?.averageRating ?? 4.9,
-    },
-  };
 }
 
 function normalizeStorageUrl(url: string | null | undefined, storageKey: string | null | undefined): string | null {
@@ -659,6 +664,7 @@ export async function createLmsMaterial(payload: CreateLearningMaterialRequest):
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể tạo mới học liệu số."));
   }
+  invalidateCachePrefix("lms:");
   return normalizeMaterialDetail(await res.json());
 }
 
@@ -680,6 +686,7 @@ export async function updateLmsMaterial(
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể cập nhật học liệu số."));
   }
+  invalidateCachePrefix("lms:");
   return normalizeMaterialDetail(await res.json());
 }
 
@@ -695,6 +702,7 @@ export async function unpublishLmsMaterial(id: string, reason: string): Promise<
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể gỡ xuất bản học liệu."));
   }
+  invalidateCachePrefix("lms:");
 }
 
 export async function deleteLmsMaterial(id: string): Promise<void> {
@@ -705,6 +713,7 @@ export async function deleteLmsMaterial(id: string): Promise<void> {
   if (!res.ok) {
     throw new Error(await readApiError(res, "Không thể xóa học liệu số."));
   }
+  invalidateCachePrefix("lms:");
 }
 
 // 3. TRA CỨU CHUYÊN GIA

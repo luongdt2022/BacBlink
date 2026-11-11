@@ -88,7 +88,7 @@ export default function SellerTechnologiesPage() {
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
             <Link href="/portal" className="hover:text-brand-700">Workspace</Link>
             <span>/</span>
-            <span className="text-slate-800 dark:text-slate-200 font-bold">Kho Công nghệ (TRL)</span>
+            <span className="text-slate-800 dark:text-slate-200 font-bold">Sản phẩm &amp; Công nghệ</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Quản Lý Kho Giải Pháp & Công Nghệ Chào Bán

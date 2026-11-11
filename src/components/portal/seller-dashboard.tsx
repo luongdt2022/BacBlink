@@ -97,9 +97,9 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <Link
               href="/portal/seller/technologies/create"
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-extrabold flex items-center gap-2 transition shadow-lg shadow-emerald-950/20"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 active:scale-95 text-brand-700 text-xs font-bold flex items-center gap-2 transition shadow-xs"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 text-brand-700" />
               Đăng Giải Pháp Mới
             </Link>
             <Link

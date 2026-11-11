@@ -279,4 +279,71 @@ describe("AdminUsersPage — Super Admin User Management Center (CR-2026-025)", 
       });
     });
   });
+
+  it("CR-2026-029 (BR-ADM-LOAD-01): shows shimmer skeleton with aria-busy and zero fake zeroes while loading, then renders real KPI counts", async () => {
+    let resolveFetch!: (value: unknown) => void;
+    const pendingPromise = new Promise((resolve) => {
+      resolveFetch = resolve;
+    });
+    fetchMock.mockImplementationOnce(() => pendingPromise as Promise<Response>);
+
+    render(<AdminUsersPage />);
+
+    const kpiSkeleton = screen.getByTestId("users-kpi-skeleton");
+    expect(kpiSkeleton).toHaveAttribute("aria-busy", "true");
+    const cards = kpiSkeleton.querySelectorAll('[aria-busy="true"]');
+    expect(cards).toHaveLength(4);
+    cards.forEach((card) => {
+      expect(card.querySelectorAll(".animate-shimmer").length).toBeGreaterThanOrEqual(2);
+      expect(card.textContent).not.toContain("0");
+    });
+    expect(kpiSkeleton.textContent).not.toContain("0");
+    expect(kpiSkeleton).toHaveTextContent("Tổng Người Dùng");
+    expect(kpiSkeleton).toHaveTextContent("Đang Hoạt Động");
+    expect(kpiSkeleton).toHaveTextContent("Đang Bị Khóa");
+    expect(kpiSkeleton).toHaveTextContent("Cán Bộ Quản Trị");
+
+    resolveFetch({
+      ok: true,
+      json: async () => ({
+        data: mockUsers,
+        meta: { total: mockUsers.length, page: 1, limit: 10, totalPages: 1 },
+      }),
+    });
+
+    const kpiGrid = await screen.findByTestId("users-kpi-grid");
+    expect(kpiGrid).not.toHaveAttribute("aria-busy");
+    expect(screen.queryByTestId("users-kpi-skeleton")).not.toBeInTheDocument();
+    expect(kpiGrid).toHaveTextContent("4");
+    expect(kpiGrid).toHaveTextContent("3");
+    expect(kpiGrid).toHaveTextContent("1");
+  });
+
+  it("CR-2026-029 (BR-ADM-LOAD-01): renders real zero KPI values only after API resolves with empty dataset", async () => {
+    let resolveFetch!: (value: unknown) => void;
+    const pendingPromise = new Promise((resolve) => {
+      resolveFetch = resolve;
+    });
+    fetchMock.mockImplementationOnce(() => pendingPromise as Promise<Response>);
+
+    render(<AdminUsersPage />);
+
+    const kpiSkeleton = screen.getByTestId("users-kpi-skeleton");
+    expect(kpiSkeleton.textContent).not.toContain("0");
+
+    resolveFetch({
+      ok: true,
+      json: async () => ({
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, totalPages: 1 },
+      }),
+    });
+
+    const kpiGrid = await screen.findByTestId("users-kpi-grid");
+    const zeroNodes = kpiGrid.querySelectorAll(".text-2xl");
+    expect(zeroNodes).toHaveLength(4);
+    zeroNodes.forEach((node) => {
+      expect(node.textContent).toBe("0");
+    });
+  });
 });

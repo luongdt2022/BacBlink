@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { RoleGuard } from "@/components/auth/role-guard";
+import { WorkspaceRouteSkeleton } from "@/components/common/workspace-route-skeleton";
 import { authClient, UserContext } from "@/lib/auth-client";
 import { PROVINCES_34 } from "@/lib/constants/provinces";
 import {
@@ -71,12 +72,6 @@ const GOV_MENU_GROUPS: GovMenuGroup[] = [
         icon: BadgeCheck,
         keywords: "tham dinh doanh nghiep doi moi sang tao dmst cap huy hieu badge",
       },
-    ],
-  },
-  {
-    key: "group2",
-    title: "2. Thẩm Định Công Nghệ TT17",
-    items: [
       {
         href: "/gov/assessments/tt17",
         label: "Hội đồng Chấm điểm TT17",
@@ -86,8 +81,8 @@ const GOV_MENU_GROUPS: GovMenuGroup[] = [
     ],
   },
   {
-    key: "group3",
-    title: "3. Giám Sát Cung–Cầu & Địa Bàn",
+    key: "group2",
+    title: "2. Giám Sát Cung–Cầu & Địa Bàn",
     items: [
       {
         href: "/gov/opportunities",
@@ -104,8 +99,8 @@ const GOV_MENU_GROUPS: GovMenuGroup[] = [
     ],
   },
   {
-    key: "group4",
-    title: "4. Quản Trị Công Vụ & Nhân Sự",
+    key: "group3",
+    title: "3. Quản Trị Công Vụ & Nhân Sự",
     items: [
       {
         href: "/gov/settings/staff",
@@ -117,24 +112,29 @@ const GOV_MENU_GROUPS: GovMenuGroup[] = [
   },
 ];
 
+const PENDING_ROUTE_FAILSAFE_MS = 12000;
+
 function GovSidebarNav({
   user,
   onCloseMobile,
+  pendingHref,
+  onNavigateStart,
 }: {
   user: UserContext | null;
   onCloseMobile?: () => void;
+  pendingHref: string | null;
+  onNavigateStart: (targetHref: string | null) => void;
 }) {
   const pathname = usePathname();
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 4 nhóm Accordion: mở mặc định
+  // 3 nhóm Accordion: mở mặc định
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     group1: true,
     group2: true,
     group3: true,
-    group4: true,
   });
 
   const toggleGroup = (key: string) => {
@@ -151,6 +151,9 @@ function GovSidebarNav({
   };
 
   const isLinkActive = (href: string) => {
+    if (pendingHref !== null) {
+      return href === pendingHref;
+    }
     if (href === "/gov") {
       return pathname === "/gov";
     }
@@ -252,7 +255,7 @@ function GovSidebarNav({
           </div>
         </div>
 
-        {/* 4 NHÓM ACCORDION MENU (SCROLLABLE NỘI BỘ) */}
+        {/* 3 NHÓM ACCORDION MENU (SCROLLABLE NỘI BỘ) */}
         <nav className="p-2.5 space-y-3 overflow-y-auto flex-1 scrollbar-thin">
           {filteredGroups.length === 0 ? (
             <div className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">
@@ -298,8 +301,23 @@ function GovSidebarNav({
                             key={`${item.href}_${item.label}`}
                             href={item.href}
                             title={item.label}
-                            onClick={() => {
+                            onClick={(e) => {
                               if (onCloseMobile) onCloseMobile();
+                              if (
+                                e.defaultPrevented ||
+                                e.button !== 0 ||
+                                e.ctrlKey ||
+                                e.metaKey ||
+                                e.shiftKey ||
+                                e.altKey
+                              ) {
+                                return;
+                              }
+                              if (item.href !== pathname) {
+                                onNavigateStart(item.href);
+                              } else {
+                                onNavigateStart(null);
+                              }
                             }}
                             className={`focus-ring flex min-h-9 items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
                               active
@@ -386,27 +404,58 @@ function GovSidebarNav({
   );
 }
 
-export default function GovLayout({ children }: { children: React.ReactNode }) {
+function GovShellSuspenseFallback() {
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
+      <aside className="hidden lg:block w-72 shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-4 space-y-4">
+        <div className="h-6 w-44 rounded animate-shimmer" />
+        <div className="h-9 w-full rounded-lg animate-shimmer" />
+        <div className="space-y-2 pt-2">
+          {[0, 1, 2, 3, 4, 5].map((idx) => (
+            <div key={idx} className="h-8 w-full rounded-lg animate-shimmer" />
+          ))}
+        </div>
+      </aside>
+      <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+        <WorkspaceRouteSkeleton
+          testId="gov-route-skeleton"
+          srText="Đang tải cổng quản trị nhà nước..."
+        />
+      </div>
+    </div>
+  );
+}
+
+function GovLayoutInner({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString() ?? "";
+
   const [user, setUser] = useState<UserContext | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  const handleNavigateStart = useCallback((targetHref: string | null) => {
+    setPendingHref((prev) => (prev === targetHref ? prev : targetHref));
+  }, []);
 
   useEffect(() => {
     setUser(authClient.getUser());
   }, []);
 
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname, searchParamsKey]);
+
+  useEffect(() => {
+    if (!pendingHref) return;
+    const timer = setTimeout(() => {
+      setPendingHref(null);
+    }, PENDING_ROUTE_FAILSAFE_MS);
+    return () => clearTimeout(timer);
+  }, [pendingHref]);
+
   return (
-    <RoleGuard
-      allowedRoles={[
-        "PROVINCIAL_ADMIN",
-        "SECTOR_ADMIN",
-        "CLUSTER_ADMIN",
-        "PROVINCE_OFFICER",
-        "PROVINCE_LEADER",
-        "SUPER_ADMIN",
-        "ADMIN",
-      ]}
-      portalName="Cổng Thẩm Định & Quản Trị Nhà Nước (Sở Tỉnh & Ban Ngành)"
-    >
       <div className="min-h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950">
         {/* Mobile Header Bar (Screen < lg) */}
         <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 shadow-2xs">
@@ -433,7 +482,11 @@ export default function GovLayout({ children }: { children: React.ReactNode }) {
 
         {/* Desktop Sidebar (Sticky cố định khi cuộn trang nội dung dài) */}
         <div className="hidden lg:block shrink-0 lg:sticky lg:top-[68px] lg:self-start lg:h-[calc(100vh-68px)] z-30">
-          <GovSidebarNav user={user} />
+          <GovSidebarNav
+            user={user}
+            pendingHref={pendingHref}
+            onNavigateStart={handleNavigateStart}
+          />
         </div>
 
         {/* Mobile Drawer Overlay */}
@@ -447,16 +500,52 @@ export default function GovLayout({ children }: { children: React.ReactNode }) {
               <GovSidebarNav
                 user={user}
                 onCloseMobile={() => setMobileMenuOpen(false)}
+                pendingHref={pendingHref}
+                onNavigateStart={handleNavigateStart}
               />
             </div>
           </div>
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex-1 p-4 sm:p-6 lg:p-8">{children}</div>
+        <div
+          data-testid="gov-main-workspace"
+          className="flex-1 min-w-0 flex flex-col"
+        >
+          <div className="flex-1 p-4 sm:p-6 lg:p-8">
+            {pendingHref !== null ? (
+              <WorkspaceRouteSkeleton
+                testId="gov-route-skeleton"
+                srText="Đang tải cổng quản trị nhà nước..."
+              />
+            ) : (
+              children
+            )}
+          </div>
         </div>
       </div>
+  );
+}
+
+const GOV_ALLOWED_ROLES = [
+  "PROVINCIAL_ADMIN",
+  "SECTOR_ADMIN",
+  "CLUSTER_ADMIN",
+  "PROVINCE_OFFICER",
+  "PROVINCE_LEADER",
+  "SUPER_ADMIN",
+  "ADMIN",
+];
+
+export default function GovLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <RoleGuard
+      allowedRoles={GOV_ALLOWED_ROLES}
+      portalName="Cổng Thẩm Định & Quản Trị Nhà Nước (Sở Tỉnh & Ban Ngành)"
+    >
+      <React.Suspense fallback={<GovShellSuspenseFallback />}>
+        <GovLayoutInner>{children}</GovLayoutInner>
+      </React.Suspense>
     </RoleGuard>
   );
 }

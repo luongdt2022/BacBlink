@@ -1,4 +1,5 @@
 import { API_BASE, readApiError } from "./api-client";
+import { getCachedOrFetch } from "./client-cache";
 
 export interface PortalOverviewStats {
   totalOffers: number;
@@ -56,14 +57,16 @@ export interface AiQuickAssistResponse {
 
 export const portalClient = {
   async getStats(): Promise<PortalOverviewStats> {
-    const res = await fetch(`${API_BASE}/api/v1/portal/stats`, {
-      headers: { Accept: "application/json" },
+    return getCachedOrFetch("portal:stats", 30_000, async () => {
+      const res = await fetch(`${API_BASE}/api/v1/portal/stats`, {
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) {
+        throw new Error(await readApiError(res, "Không thể tải thống kê cổng thông tin."));
+      }
+      const json = await res.json();
+      return json.data;
     });
-    if (!res.ok) {
-      throw new Error(await readApiError(res, "Không thể tải thống kê cổng thông tin."));
-    }
-    const json = await res.json();
-    return json.data;
   },
 
   async getPublicDemands(params?: {
@@ -84,12 +87,16 @@ export const portalClient = {
       const queryStr = searchParams.toString();
       const url = queryStr ? `${API_BASE}/api/v1/public/demands?${queryStr}` : `${API_BASE}/api/v1/public/demands`;
 
-      const res = await fetch(url, {
-        headers: { Accept: "application/json" },
+      return await getCachedOrFetch(`portal:demands:${queryStr}`, 20_000, async () => {
+        const res = await fetch(url, {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        return Array.isArray(json) ? json : (json.data ?? []);
       });
-      if (!res.ok) return [];
-      const json = await res.json();
-      return Array.isArray(json) ? json : (json.data ?? []);
     } catch {
       return [];
     }
@@ -100,18 +107,21 @@ export const portalClient = {
     if (status) params.set("status", status);
     params.set("page", String(page));
     params.set("pageSize", String(pageSize));
+    const qs = params.toString();
 
-    const res = await fetch(`${API_BASE}/api/v1/events/techmart?${params}`, {
-      headers: { Accept: "application/json" },
+    return getCachedOrFetch(`portal:events:${qs}`, 30_000, async () => {
+      const res = await fetch(`${API_BASE}/api/v1/events/techmart?${qs}`, {
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) {
+        throw new Error(await readApiError(res, "Không thể tải danh sách sự kiện Techmart."));
+      }
+      const json = await res.json();
+      return {
+        data: json.data?.data ?? json.data?.items ?? [],
+        total: json.data?.total ?? 0,
+      };
     });
-    if (!res.ok) {
-      throw new Error(await readApiError(res, "Không thể tải danh sách sự kiện Techmart."));
-    }
-    const json = await res.json();
-    return {
-      data: json.data?.data ?? json.data?.items ?? [],
-      total: json.data?.total ?? 0,
-    };
   },
 
   async registerEvent(request: EventRegistrationRequest): Promise<EventRegistrationResponse> {

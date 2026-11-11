@@ -758,7 +758,7 @@ function TabLedger() {
                 <select
                   value={verifyEntityType}
                   onChange={(e) => setVerifyEntityType(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  className="form-control-sm w-full rounded-lg bg-white dark:bg-slate-800"
                 >
                   <option value="SELLER_OFFER">SELLER_OFFER (Chào bán công nghệ)</option>
                   <option value="DEAL_ROOM_MOU">DEAL_ROOM_MOU (Biên bản thỏa thuận)</option>
@@ -775,7 +775,7 @@ function TabLedger() {
                   placeholder="Nhập GUID thực thể, ví dụ: a1b2c3d4-..."
                   value={verifyEntityId}
                   onChange={(e) => setVerifyEntityId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-hidden"
+                  className="form-control-sm w-full rounded-lg font-mono bg-white dark:bg-slate-800 outline-hidden"
                   required
                 />
               </div>

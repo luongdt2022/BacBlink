@@ -633,7 +633,7 @@ export function LmsMaterialFormModal({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
                     Cấp độ / Loại bài <span className="text-rose-500">*</span>
@@ -641,7 +641,7 @@ export function LmsMaterialFormModal({
                   <select
                     value={lessonType}
                     onChange={(e) => setLessonType(e.target.value as LmsLessonType)}
-                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white"
+                    className="form-control-sm w-full text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
                   >
                     <option value="TYPE_A">Loại A - Cơ sở (Đại chúng)</option>
                     <option value="TYPE_B">Loại B - Chuyên sâu (Doanh nghiệp)</option>
@@ -656,7 +656,7 @@ export function LmsMaterialFormModal({
                   <select
                     value={sectorCode}
                     onChange={(e) => setSectorCode(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white"
+                    className="form-control-sm w-full text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
                   >
                     <option value="CN_THONG_TIN">Công nghệ thông tin & AI</option>
                     <option value="SINH_HOC">Công nghệ Sinh học & Y dược</option>
@@ -676,7 +676,7 @@ export function LmsMaterialFormModal({
                     max={300}
                     value={durationMinutes}
                     onChange={(e) => setDurationMinutes(parseInt(e.target.value) || 0)}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white"
+                    className="form-control-sm w-full px-3.5 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>
@@ -1244,25 +1244,25 @@ export function LmsMaterialFormModal({
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
                         <input
                           type="text"
                           placeholder="Tiêu đề hiển thị..."
                           value={link.title}
                           onChange={(e) => handleUpdateDbLink(idx, { title: e.target.value })}
-                          className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-white"
+                          className="form-control-sm w-full bg-white dark:bg-slate-900 rounded-xl focus:outline-none"
                         />
                         <input
                           type="text"
                           placeholder="Đường dẫn URL (https://...)..."
                           value={link.url}
                           onChange={(e) => handleUpdateDbLink(idx, { url: e.target.value })}
-                          className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-white"
+                          className="form-control-sm w-full bg-white dark:bg-slate-900 rounded-xl focus:outline-none"
                         />
                         <select
                           value={link.targetType || "TECHNOLOGY_ASSET"}
                           onChange={(e) => handleUpdateDbLink(idx, { targetType: e.target.value })}
-                          className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none dark:text-white"
+                          className="form-control-sm w-full bg-white dark:bg-slate-900 rounded-xl focus:outline-none"
                         >
                           <option value="TECHNOLOGY_ASSET">Cung công nghệ (TRL)</option>
                           <option value="INNOVATION_DEMAND">Nhu cầu công nghệ</option>

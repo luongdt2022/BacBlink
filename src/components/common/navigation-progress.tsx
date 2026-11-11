@@ -1,44 +1,69 @@
 "use client";
 
-import React, { useEffect, useState, useTransition } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+
+const FAIL_SAFE_TIMEOUT_MS = 15000;
+const COMPLETE_HIDE_DELAY_MS = 250;
 
 /**
  * Top Navigation Progress Bar cho toàn bộ dự án NacenTwin.
- * Kích hoạt tức thì khi người dùng click vào các liên kết nội bộ,
- * tạo cảm giác phản hồi nhanh <100ms chuẩn phong cách SaaS hiện đại.
+ * Kích hoạt đồng bộ tức thì (<50ms) khi người dùng click liên kết nội bộ.
  */
 function NavigationProgressInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString() ?? "";
+  const currentRouteKey = `${pathname}?${searchParamsKey}`;
+
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
-  const [, startTransition] = useTransition();
 
-  // Khi pathname hoặc searchParams thay đổi (trang đã tải xong), hoàn thành thanh tiến trình
+  const visibleRef = useRef(false);
+  const prevRouteKeyRef = useRef(currentRouteKey);
+  const completionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    if (visible) {
-      setProgress(100);
-      const timer = setTimeout(() => {
-        setVisible(false);
-        setProgress(0);
-      }, 250);
-      return () => clearTimeout(timer);
-    }
-  }, [pathname, searchParams]);
+    return () => {
+      if (completionTimerRef.current) {
+        clearTimeout(completionTimerRef.current);
+        completionTimerRef.current = null;
+      }
+    };
+  }, []);
 
-  // Bắt sự kiện click link nội bộ để kích hoạt loader ngay tức thì
+  // Khi pathname hoặc searchParams thay đổi (route mới đã mount), hoàn tất và ẩn thanh tiến trình
+  useEffect(() => {
+    if (prevRouteKeyRef.current === currentRouteKey) return;
+    prevRouteKeyRef.current = currentRouteKey;
+
+    if (!visibleRef.current) return;
+
+    if (completionTimerRef.current) {
+      clearTimeout(completionTimerRef.current);
+    }
+
+    setProgress(100);
+    completionTimerRef.current = setTimeout(() => {
+      visibleRef.current = false;
+      setVisible(false);
+      setProgress(0);
+      completionTimerRef.current = null;
+    }, COMPLETE_HIDE_DELAY_MS);
+  }, [currentRouteKey]);
+
+  // Bắt sự kiện click link nội bộ (capture phase) để kích hoạt đồng bộ tức thì
   useEffect(() => {
     const handleAnchorClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest("a");
+      if (e.defaultPrevented || e.button !== 0) return;
 
-      if (!anchor) return;
+      const target = e.target as HTMLElement | null;
+      const anchor = target?.closest("a");
+      if (!anchor || anchor.hasAttribute("download")) return;
 
       const href = anchor.getAttribute("href");
       const targetAttr = anchor.getAttribute("target");
 
-      // Bỏ qua các link ngoại tuyến, mở tab mới, anchor hash hoặc file download
       if (
         !href ||
         href.startsWith("#") ||
@@ -53,18 +78,33 @@ function NavigationProgressInner() {
         return;
       }
 
-      // Kiểm tra xem có phải link nội bộ và khác URL hiện tại không
-      const currentUrl = new URL(window.location.href);
-      const targetUrl = new URL(href, window.location.href);
+      let currentUrl: URL;
+      let targetUrl: URL;
+      try {
+        currentUrl = new URL(window.location.href);
+        targetUrl = new URL(href, window.location.href);
+      } catch {
+        return;
+      }
 
-      if (
-        targetUrl.origin === currentUrl.origin &&
-        (targetUrl.pathname !== currentUrl.pathname || targetUrl.search !== currentUrl.search)
-      ) {
-        startTransition(() => {
-          setVisible(true);
-          setProgress(25);
-        });
+      if (targetUrl.origin !== currentUrl.origin) return;
+
+      if (targetUrl.pathname !== currentUrl.pathname || targetUrl.search !== currentUrl.search) {
+        if (completionTimerRef.current) {
+          clearTimeout(completionTimerRef.current);
+          completionTimerRef.current = null;
+        }
+        visibleRef.current = true;
+        setVisible(true);
+        setProgress(25);
+      } else if (visibleRef.current) {
+        if (completionTimerRef.current) {
+          clearTimeout(completionTimerRef.current);
+          completionTimerRef.current = null;
+        }
+        visibleRef.current = false;
+        setVisible(false);
+        setProgress(0);
       }
     };
 
@@ -78,7 +118,7 @@ function NavigationProgressInner() {
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 85) return prev;
+        if (!visibleRef.current || prev === 0 || prev >= 85) return prev;
         if (prev < 50) return prev + 15;
         return prev + 5;
       });
@@ -86,6 +126,19 @@ function NavigationProgressInner() {
 
     return () => clearInterval(interval);
   }, [visible, progress]);
+
+  // Fail-safe timeout tự đóng nếu điều hướng bị hủy hoặc quá hạn
+  useEffect(() => {
+    if (!visible) return;
+
+    const failSafeTimer = setTimeout(() => {
+      visibleRef.current = false;
+      setVisible(false);
+      setProgress(0);
+    }, FAIL_SAFE_TIMEOUT_MS);
+
+    return () => clearTimeout(failSafeTimer);
+  }, [visible]);
 
   if (!visible && progress === 0) return null;
 
@@ -96,13 +149,13 @@ function NavigationProgressInner() {
       aria-valuemax={100}
       aria-valuenow={progress}
       aria-label="Đang tải trang"
-      className="fixed top-0 left-0 right-0 z-[9999] h-[2px] pointer-events-none overflow-hidden bg-transparent"
+      className="fixed top-0 left-0 right-0 z-[9999] h-[3px] pointer-events-none overflow-hidden bg-transparent"
     >
       <div
-        className="h-full bg-gradient-to-r from-teal-400/80 via-emerald-400/70 to-brand-500/70 transition-all duration-200 ease-out shadow-[0_0_4px_rgba(45,154,133,0.3)]"
+        className="h-full bg-gradient-to-r from-cyan-400 via-teal-400 to-brand-500 transition-all duration-200 ease-out shadow-[0_0_8px_rgba(6,182,212,0.5)]"
         style={{
           width: `${progress}%`,
-          opacity: visible ? 0.9 : 0,
+          opacity: visible ? 1 : 0,
           transitionProperty: "width, opacity",
         }}
       />

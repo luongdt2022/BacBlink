@@ -21,6 +21,7 @@ import {
 import {
   Tt17Assessment,
   Tt17DashboardData,
+  getAssessmentById,
   getGovAssessmentQueue,
   getTt17Dashboard,
 } from "@/services/api/assessment-tt17";
@@ -50,6 +51,20 @@ export default function SuperAdminTt17DashboardPage() {
   // Modal xem nhanh chi tiết Form đã submit & 26 tiêu chí của DN
   const [inspectingItem, setInspectingItem] = useState<Tt17Assessment | null>(null);
   const [modalTab, setModalTab] = useState<"FORM" | "SCORES">("FORM");
+
+  const openInspectModal = (item: Tt17Assessment) => {
+    setInspectingItem(item);
+    setModalTab("FORM");
+    if (typeof window !== "undefined" && !process.env.VITEST && (!item.scoreResult?.criteria || item.scoreResult.criteria.length === 0)) {
+      getAssessmentById(item.id)
+        .then((full) => {
+          if (full) {
+            setInspectingItem((prev) => (prev?.id === item.id ? full : prev));
+          }
+        })
+        .catch(() => {});
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -190,7 +205,14 @@ export default function SuperAdminTt17DashboardPage() {
               Dashboard Đánh Giá Trình Độ & Năng Lực Công Nghệ Doanh Nghiệp (TT17)
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Tổng hợp dữ liệu thực tế từ cơ sở dữ liệu quốc gia (166 DN Tỉnh Tiền Giang, 8 DN Tỉnh Ninh Thuận và các địa phương trên toàn quốc).
+              {dashboard ? (
+                <>
+                  Tổng hợp dữ liệu thực tế từ cơ sở dữ liệu quốc gia ({dashboard.totalAssessments} DN trên toàn quốc
+                  {dashboard.byProvince?.length ? ` · ${dashboard.byProvince.length} Tỉnh/Thành có dữ liệu` : ""}).
+                </>
+              ) : (
+                "Tổng hợp dữ liệu thực tế từ cơ sở dữ liệu quốc gia theo Thông tư 17/2019/TT-BKHCN."
+              )}
             </p>
           </div>
 
@@ -214,7 +236,7 @@ export default function SuperAdminTt17DashboardPage() {
         </div>
 
         {/* Bộ lọc toàn cục */}
-        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div>
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
               Địa bàn Tỉnh / Thành phố (Sở KH&CN):
@@ -224,14 +246,37 @@ export default function SuperAdminTt17DashboardPage() {
               onChange={(e) => setSelectedScope(e.target.value)}
               className="form-control w-full text-xs font-semibold"
             >
-              <option value="ALL">Toàn quốc — Tất cả Tỉnh/Thành ({dashboard?.byProvince?.reduce((s, p) => s + p.count, 0) || 186} DN)</option>
-              <option value="TG">Tỉnh Tiền Giang (TG) — 166 DN</option>
-              <option value="NT">Tỉnh Ninh Thuận (NT) — 8 DN</option>
-              {PROVINCES_34.filter((p) => p.code !== "ALL" && p.code !== "TG" && p.code !== "NT").map((prov) => (
-                <option key={prov.code} value={prov.code}>
-                  {prov.name} ({prov.code})
-                </option>
-              ))}
+              {(() => {
+                const countByScope = new Map(dashboard?.byProvince?.map((p) => [p.scopeId, p.count]) ?? []);
+                const totalAll = dashboard
+                  ? dashboard.byProvince?.reduce((s, p) => s + p.count, 0) || dashboard.totalAssessments
+                  : null;
+                const tgCount = countByScope.get("TG");
+                const ntCount = countByScope.get("NT");
+                return (
+                  <>
+                    <option value="ALL">
+                      {totalAll !== null
+                        ? `Toàn quốc — Tất cả Tỉnh/Thành (${totalAll} DN)`
+                        : "Toàn quốc — Tất cả Tỉnh/Thành"}
+                    </option>
+                    <option value="TG">
+                      {tgCount !== undefined ? `Tỉnh Tiền Giang (TG) — ${tgCount} DN` : "Tỉnh Tiền Giang (TG)"}
+                    </option>
+                    <option value="NT">
+                      {ntCount !== undefined ? `Tỉnh Ninh Thuận (NT) — ${ntCount} DN` : "Tỉnh Ninh Thuận (NT)"}
+                    </option>
+                    {PROVINCES_34.filter((p) => p.code !== "ALL" && p.code !== "TG" && p.code !== "NT").map((prov) => {
+                      const pCount = countByScope.get(prov.code);
+                      return (
+                        <option key={prov.code} value={prov.code}>
+                          {pCount !== undefined ? `${prov.name} (${prov.code}) — ${pCount} DN` : `${prov.name} (${prov.code})`}
+                        </option>
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </select>
           </div>
 
@@ -273,68 +318,118 @@ export default function SuperAdminTt17DashboardPage() {
       </div>
 
       {/* 4 KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        data-testid={loading ? "tt17-kpi-skeleton" : "tt17-kpi-grid"}
+        aria-busy={loading ? "true" : undefined}
+      >
+        <div
+          aria-busy={loading ? "true" : undefined}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase text-slate-500">Tổng DN Đã Đánh Giá</span>
             <Building2 className="w-5 h-5 text-brand-600" />
           </div>
-          <div className="text-3xl font-black text-slate-900 dark:text-white mt-2">
-            {dashboard?.totalAssessments ?? 0}
-          </div>
-          <div className="text-xs text-emerald-600 font-semibold mt-1">
-            {dashboard?.approvedCount ?? 0} DN đã duyệt Phụ lục IV · {dashboard?.submittedCount ?? 0} chờ duyệt
-          </div>
+          {loading ? (
+            <>
+              <div className="h-9 w-24 rounded-md animate-shimmer mt-2" />
+              <div className="h-4 w-44 rounded animate-shimmer mt-1.5" />
+            </>
+          ) : (
+            <>
+              <div className="text-3xl font-black text-slate-900 dark:text-white mt-2">
+                {dashboard?.totalAssessments ?? 0}
+              </div>
+              <div className="text-xs text-emerald-600 font-semibold mt-1">
+                {dashboard?.approvedCount ?? 0} DN đã duyệt Phụ lục IV · {dashboard?.submittedCount ?? 0} chờ duyệt
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs">
+        <div
+          aria-busy={loading ? "true" : undefined}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase text-indigo-600">Điểm Tổng Bình Quân (τ)</span>
             <TrendingUp className="w-5 h-5 text-indigo-600" />
           </div>
-          <div className="text-3xl font-black text-indigo-700 dark:text-indigo-400 mt-2">
-            {dashboard?.avgTotalScore ?? 0}
-            <span className="text-sm font-normal text-slate-400 ml-1">/ 100</span>
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
-            Thấp nhất: <strong>{dashboard?.minTotalScore ?? 0}đ</strong> · Cao nhất: <strong>{dashboard?.maxTotalScore ?? 0}đ</strong>
-          </div>
+          {loading ? (
+            <>
+              <div className="h-9 w-24 rounded-md animate-shimmer mt-2" />
+              <div className="h-4 w-44 rounded animate-shimmer mt-1.5" />
+            </>
+          ) : (
+            <>
+              <div className="text-3xl font-black text-indigo-700 dark:text-indigo-400 mt-2">
+                {dashboard?.avgTotalScore ?? 0}
+                <span className="text-sm font-normal text-slate-400 ml-1">/ 100</span>
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                Thấp nhất: <strong>{dashboard?.minTotalScore ?? 0}đ</strong> · Cao nhất: <strong>{dashboard?.maxTotalScore ?? 0}đ</strong>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs">
+        <div
+          aria-busy={loading ? "true" : undefined}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase text-emerald-700">Hệ Số Đồng Bộ TB (T_ĐB)</span>
             <Layers className="w-5 h-5 text-emerald-600" />
           </div>
-          <div className="text-3xl font-black text-emerald-700 dark:text-emerald-400 mt-2">
-            {dashboard?.avgSyncCoefficient ?? 0}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">
-            Đo lường độ cân bằng 5 nhóm T-E-O-R-I
-          </div>
+          {loading ? (
+            <>
+              <div className="h-9 w-24 rounded-md animate-shimmer mt-2" />
+              <div className="h-4 w-44 rounded animate-shimmer mt-1.5" />
+            </>
+          ) : (
+            <>
+              <div className="text-3xl font-black text-emerald-700 dark:text-emerald-400 mt-2">
+                {dashboard?.avgSyncCoefficient ?? 0}
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                Đo lường độ cân bằng 5 nhóm T-E-O-R-I
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs">
+        <div
+          aria-busy={loading ? "true" : undefined}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-5 shadow-xs"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase text-amber-700">Tỷ Lệ Đạt Trung Bình Trở Lên</span>
             <CheckCircle2 className="w-5 h-5 text-amber-600" />
           </div>
-          {(() => {
-            const total = dashboard?.totalAssessments || 0;
-            const lacHau = dashboard?.byClassification?.find((c) => c.classification === "LAC_HAU")?.count || 0;
-            const passCount = Math.max(0, total - lacHau);
-            const pct = total > 0 ? ((passCount * 100) / total).toFixed(1) : "0.0";
-            return (
-              <>
-                <div className="text-3xl font-black text-slate-900 dark:text-white mt-2">
-                  {pct}%
-                </div>
-                <div className="text-xs text-slate-500 mt-1">
-                  <strong>{passCount}</strong> / {total} DN đạt ≥ 35 điểm (Còn {lacHau} DN Lạc hậu)
-                </div>
-              </>
-            );
-          })()}
+          {loading ? (
+            <>
+              <div className="h-9 w-24 rounded-md animate-shimmer mt-2" />
+              <div className="h-4 w-44 rounded animate-shimmer mt-1.5" />
+            </>
+          ) : (
+            (() => {
+              const total = dashboard?.totalAssessments || 0;
+              const lacHau = dashboard?.byClassification?.find((c) => c.classification === "LAC_HAU")?.count || 0;
+              const passCount = Math.max(0, total - lacHau);
+              const pct = total > 0 ? ((passCount * 100) / total).toFixed(1) : "0.0";
+              return (
+                <>
+                  <div className="text-3xl font-black text-slate-900 dark:text-white mt-2">
+                    {pct}%
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    <strong>{passCount}</strong> / {total} DN đạt ≥ 35 điểm (Còn {lacHau} DN Lạc hậu)
+                  </div>
+                </>
+              );
+            })()
+          )}
         </div>
       </div>
 
@@ -378,7 +473,22 @@ export default function SuperAdminTt17DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {dashboard?.byProvince?.map((p) => {
+              {loading && !dashboard ? (
+                [0, 1, 2].map((rowIdx) => (
+                  <tr key={rowIdx} aria-busy="true">
+                    <td className="py-3 px-4"><div className="h-5 w-36 rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-14 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-14 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-16 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-28 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-12 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-10 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-10 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-3"><div className="h-5 w-10 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-4"><div className="h-6 w-20 ml-auto rounded animate-shimmer" /></td>
+                  </tr>
+                ))
+              ) : dashboard?.byProvince?.map((p) => {
                 const isSelected = selectedScope === p.scopeId;
                 return (
                   <tr
@@ -460,7 +570,17 @@ export default function SuperAdminTt17DashboardPage() {
             <span>Điểm Bình Quân 5 Nhóm Thành Phần Công Nghệ (TT17)</span>
           </h3>
           <div className="space-y-4">
-            {groupBars.map((bar) => (
+            {loading && !dashboard
+              ? [0, 1, 2, 3, 4].map((idx) => (
+                  <div key={idx} className="space-y-1.5" aria-busy="true">
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 w-56 rounded animate-shimmer" />
+                      <div className="h-4 w-24 rounded animate-shimmer" />
+                    </div>
+                    <div className="w-full h-2.5 rounded-full animate-shimmer" />
+                  </div>
+                ))
+              : groupBars.map((bar) => (
               <div key={bar.code} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-slate-700 dark:text-slate-200">{bar.name}</span>
@@ -486,7 +606,24 @@ export default function SuperAdminTt17DashboardPage() {
             <span>Cơ Cấu Phân Loại Trình Độ Công Nghệ Doanh Nghiệp</span>
           </h3>
           <div className="space-y-3">
-            {dashboard?.byClassification?.map((c) => {
+            {loading && !dashboard
+              ? [0, 1, 2, 3].map((idx) => (
+                  <div
+                    key={idx}
+                    aria-busy="true"
+                    className="p-3.5 rounded-control border border-slate-200 dark:border-slate-800 flex items-center justify-between"
+                  >
+                    <div className="space-y-2">
+                      <div className="h-5 w-36 rounded animate-shimmer" />
+                      <div className="h-3.5 w-44 rounded animate-shimmer" />
+                    </div>
+                    <div className="space-y-1.5 text-right">
+                      <div className="h-6 w-14 ml-auto rounded animate-shimmer" />
+                      <div className="h-3.5 w-10 ml-auto rounded animate-shimmer" />
+                    </div>
+                  </div>
+                ))
+              : dashboard?.byClassification?.map((c) => {
               const info = resolveTt17Classification(c.classification);
               const isSelected = selectedClassification === c.classification;
               return (
@@ -539,7 +676,25 @@ export default function SuperAdminTt17DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto scrollbar-thin pr-1">
-          {dashboard?.criteriaStats?.map((crit) => {
+          {loading && !dashboard
+            ? [0, 1, 2, 3, 4, 5].map((idx) => (
+                <div
+                  key={idx}
+                  aria-busy="true"
+                  className="p-3 rounded-control border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="h-4 w-44 rounded animate-shimmer" />
+                    <div className="h-5 w-14 rounded animate-shimmer shrink-0" />
+                  </div>
+                  <div className="h-1.5 w-full rounded-full animate-shimmer" />
+                  <div className="flex items-center justify-between">
+                    <div className="h-3 w-20 rounded animate-shimmer" />
+                    <div className="h-3 w-24 rounded animate-shimmer" />
+                  </div>
+                </div>
+              ))
+            : dashboard?.criteriaStats?.map((crit) => {
             const isLow = crit.achievementRate < 40;
             return (
               <div
@@ -587,8 +742,16 @@ export default function SuperAdminTt17DashboardPage() {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface shadow-xs overflow-hidden">
         <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-              Danh Sách Chi Tiết Hồ Sơ Đánh Giá Doanh Nghiệp ({filteredAssessments.length} DN)
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>Danh Sách Chi Tiết Hồ Sơ Đánh Giá Doanh Nghiệp</span>
+              {loading && assessments.length === 0 ? (
+                <span
+                  aria-busy="true"
+                  className="inline-block h-5 w-16 rounded animate-shimmer"
+                />
+              ) : (
+                <span>({filteredAssessments.length} DN)</span>
+              )}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Tra cứu điểm 5 nhóm (T/E/O/R/I), ma trận 26 tiêu chí và phiếu kết quả Phụ lục IV của từng doanh nghiệp.
@@ -613,25 +776,36 @@ export default function SuperAdminTt17DashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase font-bold">
-                <th className="py-3 px-4">STT</th>
-                <th className="py-3 px-4">Doanh nghiệp / Mã số thuế</th>
-                <th className="py-3 px-3">Tỉnh / Thành</th>
-                <th className="py-3 px-3">Ngành VSIC</th>
-                <th className="py-3 px-3 text-center">Nhóm T / E / O / R / I</th>
-                <th className="py-3 px-3 text-center">Tổng điểm (τ)</th>
-                <th className="py-3 px-3 text-center">Hệ số T_ĐB</th>
-                <th className="py-3 px-3 text-center">Xếp loại TT17</th>
-                <th className="py-3 px-4 text-right">Thao tác</th>
+              <tr className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase font-bold text-[11px]">
+                <th className="py-2.5 pl-4 pr-2">STT</th>
+                <th className="py-2.5 px-2.5">Doanh nghiệp / MST</th>
+                <th className="py-2.5 px-2">Tỉnh / Thành</th>
+                <th className="py-2.5 px-2">Ngành VSIC</th>
+                <th className="py-2.5 px-2 text-center whitespace-nowrap">T / E / O / R / I</th>
+                <th className="py-2.5 px-2 text-center whitespace-nowrap">Điểm (τ)</th>
+                <th className="py-2.5 px-2 text-center whitespace-nowrap">T_ĐB</th>
+                <th className="py-2.5 px-2 text-center whitespace-nowrap">Xếp loại</th>
+                <th className="py-2.5 pl-2 pr-4 text-right whitespace-nowrap">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {loading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-slate-500">
-                    Đang tải dữ liệu đánh giá doanh nghiệp...
-                  </td>
-                </tr>
+                [0, 1, 2, 3, 4].map((rowIdx) => (
+                  <tr key={rowIdx} aria-busy="true" data-testid="tt17-table-skeleton-row">
+                    <td className="py-3 pl-4 pr-2"><div className="h-4 w-6 rounded animate-shimmer" /></td>
+                    <td className="py-3 px-2.5 space-y-1.5">
+                      <div className="h-4 w-40 rounded animate-shimmer" />
+                      <div className="h-3 w-28 rounded animate-shimmer" />
+                    </td>
+                    <td className="py-3 px-2"><div className="h-5 w-20 rounded animate-shimmer" /></td>
+                    <td className="py-3 px-2"><div className="h-4 w-28 rounded animate-shimmer" /></td>
+                    <td className="py-3 px-2"><div className="h-4 w-24 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-2"><div className="h-5 w-12 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-2"><div className="h-4 w-10 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 px-2"><div className="h-5 w-20 mx-auto rounded animate-shimmer" /></td>
+                    <td className="py-3 pl-2 pr-4"><div className="h-6 w-24 ml-auto rounded animate-shimmer" /></td>
+                  </tr>
+                ))
               ) : paginatedAssessments.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="py-12 text-center text-slate-500">
@@ -641,23 +815,20 @@ export default function SuperAdminTt17DashboardPage() {
               ) : (
                 paginatedAssessments.map((item, idx) => {
                   const stt = (currentPage - 1) * pageSize + idx + 1;
-                  const hasRaw = hasRawSurveyForm(item.surveyData);
+                  const hasRaw = hasRawSurveyForm(item.surveyData, item.hasRawSurvey);
                   return (
                     <tr
                       key={item.id}
-                      onClick={() => {
-                        setInspectingItem(item);
-                        setModalTab("FORM");
-                      }}
+                      onClick={() => openInspectModal(item)}
                       className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition cursor-pointer group"
                     >
-                      <td className="py-3 px-4 font-mono text-slate-500">{stt}</td>
-                      <td className="py-3 px-4">
-                        <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-700 transition">
+                      <td className="py-2.5 pl-4 pr-2 font-mono text-slate-500">{stt}</td>
+                      <td className="py-2.5 px-2.5 min-w-[180px] max-w-[230px]">
+                        <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-700 transition leading-snug">
                           {item.enterpriseName}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-slate-500">MST: {item.taxCode}</span>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                          <span className="text-[11px] text-slate-500">MST: {item.taxCode}</span>
                           {hasRaw ? (
                             <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                               Có dữ liệu Form
@@ -669,54 +840,51 @@ export default function SuperAdminTt17DashboardPage() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
-                        <span className="px-2.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold whitespace-nowrap inline-block">
+                      <td className="py-2.5 px-2 whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-[11px] whitespace-nowrap inline-block">
                           {resolveProvinceName(item.scopeId)} ({item.scopeId})
                         </span>
                       </td>
-                      <td className="py-3 px-3">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                      <td className="py-2.5 px-2 max-w-[165px]">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 line-clamp-2 leading-snug">
                           {item.industryCode}: {resolveSectorName(item.industryCode)}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {item.scoreResult?.scoreT ?? 0} / {item.scoreResult?.scoreE ?? 0} /{" "}
-                        {item.scoreResult?.scoreO ?? 0} / {item.scoreResult?.scoreR ?? 0} /{" "}
-                        {item.scoreResult?.scoreI ?? 0}
+                      <td className="py-2.5 px-2 text-center font-mono text-[11px] text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        {item.scoreResult?.scoreT ?? 0}/{item.scoreResult?.scoreE ?? 0}/{item.scoreResult?.scoreO ?? 0}/{item.scoreResult?.scoreR ?? 0}/{item.scoreResult?.scoreI ?? 0}
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <td className="py-2.5 px-2 text-center whitespace-nowrap">
                         <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-sm">
                           {item.scoreResult?.totalScore ?? 0}
                         </span>
-                        <span className="text-slate-400">/100</span>
+                        <span className="text-slate-400 text-[11px]">/100</span>
                       </td>
-                      <td className="py-3 px-3 text-center font-mono font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {item.scoreResult?.syncCoefficient ?? 0}
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <td className="py-2.5 px-2 text-center whitespace-nowrap">
                         {getClassificationBadge(item.scoreResult?.classification)}
                       </td>
                       <td
-                        className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap"
+                        className="py-2.5 pl-2 pr-4 text-right whitespace-nowrap"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setInspectingItem(item);
-                            setModalTab("FORM");
-                          }}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-900 text-white rounded text-xs font-semibold transition cursor-pointer inline-flex items-center gap-1"
-                        >
-                          <Eye className="w-3 h-3" />
-                          <span>Xem Form & 26 TC</span>
-                        </button>
-                        <Link
-                          href={`/assessments/tt17/${item.id}/report`}
-                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold transition inline-block"
-                        >
-                          Báo cáo
-                        </Link>
+                        <div className="inline-flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => openInspectModal(item)}
+                            className="px-2 py-1 bg-slate-800 hover:bg-slate-900 text-white rounded text-[11px] font-semibold transition cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>Xem Form & 26 TC</span>
+                          </button>
+                          <Link
+                            href={`/assessments/tt17/${item.id}/report`}
+                            className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-semibold transition inline-block"
+                          >
+                            Báo cáo
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );

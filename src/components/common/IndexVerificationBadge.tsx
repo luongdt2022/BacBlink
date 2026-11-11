@@ -24,6 +24,8 @@ export interface IndexVerificationBadgeProps {
   value?: number | string | null;
   authorityName?: string | null;
   variant?: BadgeVariant;
+  concise?: boolean;
+  translucent?: boolean;
   showMethodologyTrigger?: boolean;
   onOpenMethodology?: () => void;
   className?: string;
@@ -35,6 +37,8 @@ export function IndexVerificationBadge({
   value,
   authorityName,
   variant = "compact",
+  concise = false,
+  translucent = false,
   showMethodologyTrigger = true,
   onOpenMethodology,
   className = ""
@@ -57,10 +61,19 @@ export function IndexVerificationBadge({
     }
   };
 
+  const isTextOnly = variant === "text";
+  const useConciseTrl = isTextOnly || concise;
+
   // Xác định text hiển thị chính
   const getBadgeText = () => {
     if (type === "TRL") {
       const levelText = value ? `TRL ${value}/9` : "TRL";
+      if (useConciseTrl) {
+        if (isVerified) return levelText;
+        if (isRejected) return `${levelText} (Không đạt)`;
+        if (isNotApplicable) return levelText;
+        return `${levelText} (Chưa kiểm định)`;
+      }
       if (isVerified) return `✓ ${levelText} · Đã thẩm định`;
       if (isRejected) return `${levelText} · Không đạt kiểm định`;
       if (isNotApplicable) return `${levelText} · Không áp dụng`;
@@ -91,52 +104,69 @@ export function IndexVerificationBadge({
     return `${type}: ${status}`;
   };
 
-  const isTextOnly = variant === "text";
+  const useDarkGlass = translucent;
+  const useLightText = isTextOnly || useDarkGlass;
 
   // Màu sắc theo chuẩn PO & Design System
-  let colorClasses = "bg-amber-50/90 text-amber-800 border-amber-300 border-dashed dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-700";
+  let colorClasses = useDarkGlass
+    ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+    : "bg-amber-50/90 text-amber-800 border-amber-300 border-dashed dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-700";
   let textColors = "text-amber-300 dark:text-amber-300";
 
   if (type === "TNI") {
     // Với TNI, điểm số thể hiện mức độ cấp thiết thực tế của DN: viền liền thanh lịch, không đứt nét
     const numVal = typeof value === "number" ? value : (value !== undefined && value !== null && !isNaN(Number(value)) ? Number(value) : undefined);
     if (isVerified) {
-      colorClasses = "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 shadow-2xs";
+      colorClasses = useDarkGlass
+        ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+        : "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 shadow-2xs";
       textColors = "text-emerald-300 dark:text-emerald-400";
     } else if (numVal !== undefined && numVal >= 80) {
-      colorClasses = "bg-rose-50/95 text-rose-800 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800 shadow-2xs";
+      colorClasses = useDarkGlass
+        ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+        : "bg-rose-50/95 text-rose-800 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800 shadow-2xs";
       textColors = "text-rose-300 dark:text-rose-300";
     } else if (numVal !== undefined && numVal >= 60) {
-      colorClasses = "bg-amber-50/95 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800 shadow-2xs";
+      colorClasses = useDarkGlass
+        ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+        : "bg-amber-50/95 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800 shadow-2xs";
       textColors = "text-amber-300 dark:text-amber-300";
     } else {
-      colorClasses = "bg-sky-50/95 text-sky-800 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800 shadow-2xs";
+      colorClasses = useDarkGlass
+        ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+        : "bg-sky-50/95 text-sky-800 border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800 shadow-2xs";
       textColors = "text-sky-300 dark:text-sky-300";
     }
   } else if (isVerified) {
-    colorClasses = "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 shadow-xs";
+    colorClasses = useDarkGlass
+      ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+      : "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 shadow-xs";
     textColors = "text-emerald-300 dark:text-emerald-400";
   } else if (isRejected) {
-    colorClasses = "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900";
+    colorClasses = useDarkGlass
+      ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+      : "bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900";
     textColors = "text-rose-400 dark:text-rose-400";
   } else if (isNotApplicable) {
-    colorClasses = "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
+    colorClasses = useDarkGlass
+      ? "bg-slate-900/75 backdrop-blur-md text-white border-white/20 shadow-sm"
+      : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700";
     textColors = "text-slate-400 dark:text-slate-400";
   }
 
   const renderIcon = () => {
     if (type === "TNI") {
-      if (isVerified) return <ShieldCheck className={`w-3.5 h-3.5 ${isTextOnly ? "text-emerald-400" : "text-emerald-600 dark:text-emerald-400"} shrink-0`} />;
+      if (isVerified) return <ShieldCheck className={`w-3.5 h-3.5 ${useLightText ? "text-emerald-400" : "text-emerald-600 dark:text-emerald-400"} shrink-0`} />;
       const numVal = typeof value === "number" ? value : (value !== undefined && value !== null && !isNaN(Number(value)) ? Number(value) : undefined);
       if (numVal !== undefined && numVal >= 80) {
-        return <Zap className={`w-3.5 h-3.5 ${isTextOnly ? "text-rose-400" : "text-rose-600 dark:text-rose-400"} shrink-0`} />;
+        return <Zap className={`w-3.5 h-3.5 ${useLightText ? "text-rose-400" : "text-rose-600 dark:text-rose-400"} shrink-0`} />;
       }
-      return <Zap className={`w-3.5 h-3.5 ${isTextOnly ? "text-amber-400" : "text-amber-600 dark:text-amber-400"} shrink-0`} />;
+      return <Zap className={`w-3.5 h-3.5 ${useLightText ? "text-amber-300" : "text-amber-600 dark:text-amber-400"} shrink-0`} />;
     }
-    if (isVerified) return <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />;
-    if (isRejected) return <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />;
-    if (isNotApplicable) return <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />;
-    return <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />;
+    if (isVerified) return <ShieldCheck className={`w-3.5 h-3.5 ${useLightText ? "text-emerald-400" : "text-emerald-600 dark:text-emerald-400"} shrink-0`} />;
+    if (isRejected) return <AlertCircle className={`w-3.5 h-3.5 ${useLightText ? "text-rose-400" : "text-rose-600 dark:text-rose-400"} shrink-0`} />;
+    if (isNotApplicable) return <Info className={`w-3.5 h-3.5 ${useLightText ? "text-slate-300" : "text-slate-400"} shrink-0`} />;
+    return <Clock className={`w-3.5 h-3.5 ${useLightText ? "text-amber-300" : "text-amber-600 dark:text-amber-400"} shrink-0`} />;
   };
 
   return (
@@ -144,8 +174,8 @@ export function IndexVerificationBadge({
       <span
         className={
           isTextOnly
-            ? `inline-flex items-center gap-1.5 text-xs font-bold drop-shadow-sm ${textColors} ${className}`
-            : `inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-semibold ${colorClasses} ${className}`
+            ? `inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-bold drop-shadow-sm ${textColors} ${className}`
+            : `inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-bold ${useConciseTrl ? "whitespace-nowrap" : ""} ${colorClasses} ${className}`
         }
         title={
           type === "TNI"
@@ -174,8 +204,8 @@ export function IndexVerificationBadge({
             onClick={handleOpenModal}
             aria-label={`Xem phương pháp luận ${type}`}
             className={
-              isTextOnly
-                ? "ml-0.5 p-0.5 rounded-full hover:bg-white/20 text-white/70 hover:text-white transition focus:outline-hidden"
+              useLightText
+                ? "ml-0.5 p-0.5 rounded-full hover:bg-white/20 text-white/75 hover:text-white transition focus:outline-hidden"
                 : "ml-0.5 p-0.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white transition focus:outline-hidden"
             }
           >

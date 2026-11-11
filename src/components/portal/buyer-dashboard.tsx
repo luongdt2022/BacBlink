@@ -21,8 +21,8 @@ import {
   Handshake,
 } from "lucide-react";
 import { brokerageApi } from "@/services/api/brokerage";
-import { ConnectionRequest, Opportunity, MatchCandidate } from "@/types/brokerage";
-import { UserContext } from "@/lib/auth-client";
+import { ConnectionRequest, Opportunity } from "@/types/brokerage";
+import { authClient, UserContext } from "@/lib/auth-client";
 import QuickDemandModal from "@/components/demand/QuickDemandModal";
 
 interface DemandItem {
@@ -44,18 +44,23 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
   const [isLoading, setIsLoading] = useState(true);
   const [demands, setDemands] = useState<DemandItem[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [radarCandidates, setRadarCandidates] = useState<MatchCandidate[]>([]);
+  const [radarMatchCount, setRadarMatchCount] = useState<number>(0);
   const [isQuickDemandOpen, setIsQuickDemandOpen] = useState(false);
 
   const loadBuyerData = async () => {
     setIsLoading(true);
     try {
-      const [demandsRes, opps, radar] = await Promise.all([
-        fetch("/api/v1/buyer/demands")
+      const token = authClient.getToken();
+      const demandFetchInit: RequestInit | undefined = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : undefined;
+
+      const [demandsRes, opps, radarSummary] = await Promise.all([
+        fetch("/api/v1/buyer/demands", demandFetchInit)
           .then((r) => (r.ok ? r.json() : []))
           .catch(() => []),
         brokerageApi.getOpportunities().catch(() => []),
-        brokerageApi.getRadarCandidates().catch(() => []),
+        brokerageApi.getRadarSummary().catch(() => ({ totalCount: 0 })),
       ]);
 
       const safeDemands = Array.isArray(demandsRes)
@@ -68,15 +73,10 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
         : Array.isArray((opps as any)?.data)
         ? (opps as any).data
         : [];
-      const safeRadar = Array.isArray(radar)
-        ? radar
-        : Array.isArray((radar as any)?.data)
-        ? (radar as any).data
-        : [];
 
       setDemands(safeDemands);
       setOpportunities(safeOpps);
-      setRadarCandidates(safeRadar);
+      setRadarMatchCount(radarSummary?.totalCount ?? 0);
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +89,10 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
   const safeDemandsList = Array.isArray(demands) ? demands : [];
   const safeOppsList = Array.isArray(opportunities) ? opportunities : [];
 
-  const openDemands = safeDemandsList.filter((d) => d.status === "OPEN" || !d.status);
+  const closedDemandStatuses = new Set(["CLOSED", "COMPLETED", "REJECTED", "CANCELLED"]);
+  const openDemands = safeDemandsList.filter(
+    (d) => !d.status || !closedDemandStatuses.has(d.status.toUpperCase())
+  );
   const activeOpportunities = safeOppsList.filter((o) =>
     ["INITIATED", "NEGOTIATING", "MOU_SIGNED"].includes(o.stage)
   );
@@ -121,9 +124,9 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setIsQuickDemandOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-extrabold flex items-center gap-2 transition shadow-lg shadow-emerald-950/20 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 active:scale-95 text-brand-700 text-xs font-bold flex items-center gap-2 transition shadow-xs cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 text-brand-700" />
               <span>+ Khai Báo Bài Toán Nhanh</span>
             </button>
 
@@ -161,18 +164,18 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
           </div>
           <div className="mt-4">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              Bài Toán Đổi Mới Đang Mở
+              Nhu Cầu Đang Tìm Cung
             </span>
             <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">
               {isLoading ? "..." : openDemands.length}
             </div>
             <span className="text-xs text-brand-600 dark:text-cyan-400 font-semibold mt-1 block">
-              Xem chi tiết bàn làm việc &rarr;
+              Quản lý nhu cầu &amp; đơn hàng &rarr;
             </span>
           </div>
         </Link>
 
-        {/* KPI 2: Ứng viên ghép đôi AI */}
+        {/* KPI 2: Giải pháp AI gợi ý */}
         <Link
           href="/portal/matching/radar"
           className="group bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-teal-500/60 dark:hover:border-teal-500/60 transition-all flex flex-col justify-between"
@@ -185,10 +188,10 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
           </div>
           <div className="mt-4">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              Ứng Viên Ghép Đôi AI
+              Giải Pháp AI Gợi Ý
             </span>
             <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              {isLoading ? "..." : radarCandidates.length}
+              {isLoading ? "..." : radarMatchCount}
             </div>
             <span className="text-xs text-teal-600 dark:text-teal-400 font-semibold mt-1 block">
               Khám phá giải pháp tương thích &rarr;
@@ -196,7 +199,7 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
           </div>
         </Link>
 
-        {/* KPI 3: Cơ hội đang đàm phán */}
+        {/* KPI 3: Giao dịch đang đàm phán */}
         <Link
           href="/portal/opportunities/pipeline"
           className="group bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-amber-500/60 dark:hover:border-amber-500/60 transition-all flex flex-col justify-between"
@@ -209,7 +212,7 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
           </div>
           <div className="mt-4">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-              Deals Đang Trao Đổi
+              Giao Dịch Đang Đàm Phán
             </span>
             <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">
               {isLoading ? "..." : activeOpportunities.length}
@@ -338,7 +341,7 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
               </div>
               <div>
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-                  Bài Toán Đổi Mới Công Nghệ
+                  Nhu Cầu Đang Tìm Cung
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Nhu cầu đổi mới đã công khai và số lượng giải pháp AI tìm thấy

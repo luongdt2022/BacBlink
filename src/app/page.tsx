@@ -170,7 +170,7 @@ function ListingCard({ item }: { item: Listing }) {
     <AppCard
       elevation={1}
       interactive
-      className="group flex flex-col justify-between overflow-hidden p-0 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="group flex flex-col justify-between overflow-hidden p-0 md:p-0 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
       <div>
         <Link href={detailHref} className="relative block aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
@@ -181,29 +181,36 @@ function ListingCard({ item }: { item: Listing }) {
             sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Huy hiệu ngành KH&CN ở góc trên bên trái */}
-          <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-brand-700 shadow-md backdrop-blur-md dark:bg-slate-900/90 dark:text-cyan-300">
-            {item.field}
-          </span>
-          {/* Huy hiệu Xác thực TRL / TNI ở góc trên bên phải */}
-          <div className="absolute right-3 top-3">
-            {item.type === "offers" ? (
-              <IndexVerificationBadge
-                type="TRL"
-                value={item.trlLevel}
-                status={item.trlVerificationStatus}
-                authorityName={item.verifiedAuthorityName}
-                variant="compact"
-              />
-            ) : (
-              <IndexVerificationBadge
-                type="TNI"
-                value={item.tniScore}
-                status={item.tniVerificationStatus}
-                authorityName={item.verifiedAuthorityName}
-                variant="compact"
-              />
-            )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+          {/* Hàng huy hiệu đáy ảnh: đồng bộ phong cách & căn đều 2 bên như trang Công nghệ */}
+          <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10 flex items-center justify-between gap-2">
+            {/* Huy hiệu ngành KH&CN bên trái */}
+            <span className="min-w-0 truncate rounded-full border border-white/20 bg-slate-900/75 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm backdrop-blur-md">
+              {item.field}
+            </span>
+            {/* Huy hiệu Xác thực TRL / TNI bên phải */}
+            <div className="shrink-0 flex items-center">
+              {item.type === "offers" ? (
+                <IndexVerificationBadge
+                  type="TRL"
+                  value={item.trlLevel}
+                  status={item.trlVerificationStatus}
+                  authorityName={item.verifiedAuthorityName}
+                  variant="compact"
+                  concise
+                  translucent
+                />
+              ) : (
+                <IndexVerificationBadge
+                  type="TNI"
+                  value={item.tniScore}
+                  status={item.tniVerificationStatus}
+                  authorityName={item.verifiedAuthorityName}
+                  variant="compact"
+                  translucent
+                />
+              )}
+            </div>
           </div>
         </Link>
 
@@ -236,17 +243,12 @@ function ListingCard({ item }: { item: Listing }) {
             <span className="truncate max-w-[130px]">{item.location}</span>
           </span>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  window.location.href = detailHref;
-                }
-              }}
+            <Link
+              href={detailHref}
               className="btn-press inline-flex items-center min-h-[44px] px-3 py-2 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:hover:bg-brand-900 dark:text-cyan-300 font-bold text-xs transition cursor-pointer"
             >
               {item.type === "offers" ? "Yêu Cầu Kết Nối" : "Đề Xuất Giải Pháp"}
-            </button>
+            </Link>
             <Link
               href={detailHref}
               className="inline-flex items-center gap-0.5 font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 dark:hover:text-cyan-300"

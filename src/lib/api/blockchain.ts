@@ -1,5 +1,11 @@
 import { API_BASE, readApiError, userFacingRequestError } from "@/lib/api-client";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getStoredSession } from "@/lib/auth-client";
+import { getCachedOrFetch, invalidateCachePrefix } from "@/lib/client-cache";
+
+function getBlockchainAuthScope(): string {
+  const s = getStoredSession();
+  return `${s?.user?.id ?? "anon"}:${s?.user?.role ?? "anon"}`;
+}
 
 // ==========================================
 // 1. DTOs & TypeScript Interfaces
@@ -135,17 +141,23 @@ function getAuthHeaders(): HeadersInit {
 /** Lấy danh sách ma trận chính sách neo dữ liệu */
 export async function fetchAnchorPolicies(): Promise<AnchorPolicyDto[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/admin/blockchain/policies`, {
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    });
+    return await getCachedOrFetch<AnchorPolicyDto[]>(
+      `blockchain:policies:${getBlockchainAuthScope()}`,
+      20_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/admin/blockchain/policies`, {
+          headers: getAuthHeaders(),
+          cache: "no-store",
+        });
 
-    if (!res.ok) {
-      throw new Error(await readApiError(res, "Không thể tải danh sách chính sách neo."));
-    }
+        if (!res.ok) {
+          throw new Error(await readApiError(res, "Không thể tải danh sách chính sách neo."));
+        }
 
-    const payload = await res.json();
-    return Array.isArray(payload.data) ? payload.data : [];
+        const payload = await res.json();
+        return Array.isArray(payload.data) ? payload.data : [];
+      }
+    );
   } catch (err) {
     throw new Error(userFacingRequestError(err, "Không thể kết nối máy chủ để lấy chính sách neo."));
   }
@@ -168,6 +180,7 @@ export async function updateAnchorPolicy(
     }
 
     const payload = await res.json();
+    invalidateCachePrefix("blockchain:");
     return payload.data;
   } catch (err) {
     throw new Error(userFacingRequestError(err, "Không thể cập nhật chính sách neo."));
@@ -184,24 +197,31 @@ export async function fetchLedgerBlocks(
       page: page.toString(),
       pageSize: pageSize.toString(),
     });
+    const qs = query.toString();
 
-    const res = await fetch(`${API_BASE}/api/v1/admin/blockchain/blocks?${query.toString()}`, {
-      headers: getAuthHeaders(),
-      cache: "no-store",
-    });
+    return await getCachedOrFetch<PagedResult<LedgerBlockSummaryDto>>(
+      `blockchain:blocks:${getBlockchainAuthScope()}:${qs}`,
+      20_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/admin/blockchain/blocks?${qs}`, {
+          headers: getAuthHeaders(),
+          cache: "no-store",
+        });
 
-    if (!res.ok) {
-      throw new Error(await readApiError(res, "Không thể tải danh sách sổ cái khối."));
-    }
+        if (!res.ok) {
+          throw new Error(await readApiError(res, "Không thể tải danh sách sổ cái khối."));
+        }
 
-    const payload = await res.json();
-    return {
-      items: Array.isArray(payload.data) ? payload.data : [],
-      total: payload.total ?? 0,
-      page: payload.page ?? page,
-      pageSize: payload.pageSize ?? pageSize,
-      totalPages: payload.totalPages ?? 1,
-    };
+        const payload = await res.json();
+        return {
+          items: Array.isArray(payload.data) ? payload.data : [],
+          total: payload.total ?? 0,
+          page: payload.page ?? page,
+          pageSize: payload.pageSize ?? pageSize,
+          totalPages: payload.totalPages ?? 1,
+        };
+      }
+    );
   } catch (err) {
     throw new Error(userFacingRequestError(err, "Không thể kết nối máy chủ để lấy danh sách khối."));
   }
@@ -241,6 +261,7 @@ export async function flushPendingBlock(): Promise<LedgerBlockSummaryDto | null>
     }
 
     const payload = await res.json();
+    invalidateCachePrefix("blockchain:");
     return payload.data ?? null;
   } catch (err) {
     throw new Error(userFacingRequestError(err, "Không thể kích hoạt đóng khối."));
@@ -317,6 +338,7 @@ export async function triggerBridgeSync(): Promise<BridgeSyncResultDto> {
     }
 
     const payload = await res.json();
+    invalidateCachePrefix("blockchain:");
     return payload.data;
   } catch (err) {
     throw new Error(userFacingRequestError(err, "Kích hoạt đồng bộ bù NDAChain thất bại."));

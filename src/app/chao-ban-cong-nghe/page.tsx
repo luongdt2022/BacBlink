@@ -23,7 +23,9 @@ import {
   Lightbulb,
 } from "lucide-react";
 import {
+  fetchPublicOfferFacets,
   fetchPublicOffers,
+  PublicOfferFacets,
   SECTORS_18_CATALOG,
 } from "@/services/api/technology-offer";
 import { TechnologyOffer, SectorItem } from "@/types/technology-offer";
@@ -56,8 +58,14 @@ function ChaoBanCongNgheContent() {
   const [hasError, setHasError] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // Baseline platform data for dynamic counting & metrics
-  const [baselineOffers, setBaselineOffers] = useState<TechnologyOffer[]>([]);
+  // Baseline platform facets for dynamic counting & metrics (< 1 KB payload)
+  const [facets, setFacets] = useState<PublicOfferFacets>({
+    total: 0,
+    transferCount: 0,
+    commercialCount: 0,
+    patentCount: 0,
+    bySector: {},
+  });
   const [globalTotal, setGlobalTotal] = useState(0);
   const [activeSectors, setActiveSectors] = useState<SectorOption[]>(
     SECTORS_18_CATALOG.filter((s) => s.code !== "ALL")
@@ -151,44 +159,24 @@ function ChaoBanCongNgheContent() {
     };
   }, [heroStatsVersion]);
 
-  // Load baseline offers once to calculate dynamic counts
+  // Load compact facets once to calculate dynamic counts
   useEffect(() => {
-    const loadBaseline = async () => {
+    const loadFacets = async () => {
       try {
-        const res = await fetchPublicOffers({ limit: 100 });
-        setBaselineOffers(res.data);
+        const res = await fetchPublicOfferFacets();
+        setFacets(res);
         setGlobalTotal(res.total);
       } catch (e) {
         console.error("Lỗi khi tải dữ liệu tổng thể:", e);
       }
     };
-    loadBaseline();
+    loadFacets();
   }, []);
 
-  // Compute dynamic sector counts from baseline offers
-  const sectorCounts = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const item of baselineOffers) {
-      if (item.sectorCode) {
-        map[item.sectorCode] = (map[item.sectorCode] || 0) + 1;
-      }
-    }
-    return map;
-  }, [baselineOffers]);
-
-  // Tab counts based on baseline offers
-  const transferCount = useMemo(
-    () => baselineOffers.filter((x) => x.hasTechTransfer).length,
-    [baselineOffers]
-  );
-  const commercialCount = useMemo(
-    () => baselineOffers.filter((x) => !x.hasTechTransfer).length,
-    [baselineOffers]
-  );
-  const patentCount = useMemo(
-    () => baselineOffers.filter((x) => x.ipStatus === "PATENT_GRANTED").length,
-    [baselineOffers]
-  );
+  const sectorCounts = facets.bySector;
+  const transferCount = facets.transferCount;
+  const commercialCount = facets.commercialCount;
+  const patentCount = facets.patentCount;
 
   // Main data loader based on active filters
   const loadData = async (page = currentPage) => {
@@ -905,17 +893,21 @@ function ChaoBanCongNgheContent() {
 
                         {/* Bottom Overlay Badges */}
                         <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
-                          <span className="text-caption font-bold text-white bg-black/50 backdrop-blur-md px-2 py-0.5 rounded border border-white/20 line-clamp-1 max-w-[60%]">
+                          <span className="min-w-0 truncate text-caption font-bold text-white bg-slate-900/75 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20 shadow-sm">
                             {offer.sectorName}
                           </span>
                           {offer.trlLevel ? (
-                            <IndexVerificationBadge
-                              type="TRL"
-                              value={offer.trlLevel}
-                              status={offer.trlVerificationStatus}
-                              authorityName={offer.verifiedAuthorityName}
-                              variant="compact"
-                            />
+                            <div className="shrink-0 flex items-center">
+                              <IndexVerificationBadge
+                                type="TRL"
+                                value={offer.trlLevel}
+                                status={offer.trlVerificationStatus}
+                                authorityName={offer.verifiedAuthorityName}
+                                variant="compact"
+                                concise
+                                translucent
+                              />
+                            </div>
                           ) : null}
                         </div>
                       </Link>

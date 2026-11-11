@@ -10,7 +10,6 @@ import {
 } from "@/services/api/assessment-tt17";
 import { Tt17SurveyDetailView } from "@/components/assessments/tt17-survey-detail-view";
 import { BlockchainZkpBadge } from "@/components/blockchain/BlockchainZkpBadge";
-import { exportTt17SurveyDocx, downloadDocxBlob } from "@/services/survey-docx-exporter";
 
 export default function AssessmentReportPage() {
   const params = useParams();
@@ -27,6 +26,7 @@ export default function AssessmentReportPage() {
     if (!assessment || isExportingWord) return;
     try {
       setIsExportingWord(true);
+      const { exportTt17SurveyDocx, downloadDocxBlob } = await import("@/services/survey-docx-exporter");
       const blob = await exportTt17SurveyDocx(assessment);
       const safeTax = (assessment.taxCode || assessment.surveyData?.taxCode || "DN").replace(
         /[^a-zA-Z0-9_-]/g,

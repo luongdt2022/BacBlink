@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Award, RotateCcw, AlertCircle, CheckCircle2, ChevronDown, Check, X } from "lucide-react";
 import {
   Tt17Assessment,
+  getAssessmentById,
   getGovAssessmentQueue,
   reviewAssessment,
 } from "@/services/api/assessment-tt17";
@@ -33,6 +34,22 @@ export default function GovAssessmentQueuePage() {
   const [reviewNotes, setReviewNotes] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+
+  const openReviewModal = (item: Tt17Assessment, tab: "FORM" | "SCORES" = "FORM") => {
+    setReviewingItem(item);
+    setModalTab(tab);
+    setReviewNotes(item.reviewNotes || "");
+    setReviewError(null);
+    if (typeof window !== "undefined" && !process.env.VITEST && (!item.scoreResult?.criteria || item.scoreResult.criteria.length === 0)) {
+      getAssessmentById(item.id)
+        .then((full) => {
+          if (full) {
+            setReviewingItem((prev) => (prev?.id === item.id ? full : prev));
+          }
+        })
+        .catch(() => {});
+    }
+  };
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -185,7 +202,7 @@ export default function GovAssessmentQueuePage() {
       <GovPageHeader
         breadcrumbs={[
           { label: "Cổng Công Vụ", href: "/gov" },
-          { label: "Đánh Giá Công Nghệ TT17", href: "/gov/assessments/tt17" },
+          { label: "Tổng Quan & Phê Duyệt", href: "/gov" },
           { label: "Hội Đồng Chấm Điểm TT17" },
         ]}
         title="Hội Đồng Chấm Điểm & Thẩm Định TT17"
@@ -202,7 +219,7 @@ export default function GovAssessmentQueuePage() {
                 value={selectedScope}
                 onChange={(e) => setSelectedScope(e.target.value)}
                 disabled={isProvincialLocked}
-                className="form-control text-xs"
+                className="form-control-sm"
               >
                 {!isProvincialLocked && (
                   <option value="ALL">Toàn quốc (Tất cả Tỉnh/Thành)</option>
@@ -217,7 +234,7 @@ export default function GovAssessmentQueuePage() {
 
             <button
               onClick={fetchQueue}
-              className="h-9 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-control text-xs font-semibold transition flex items-center gap-1.5 shrink-0 border border-slate-200 dark:border-slate-700 cursor-pointer"
+              className="h-10 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-control text-xs font-semibold transition flex items-center gap-1.5 shrink-0 border border-slate-200 dark:border-slate-700 cursor-pointer"
               title="Làm mới danh sách"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -336,16 +353,11 @@ export default function GovAssessmentQueuePage() {
                 </tr>
               ) : (
                 filteredAssessments.map((item) => {
-                  const hasRaw = hasRawSurveyForm(item.surveyData);
+                  const hasRaw = hasRawSurveyForm(item.surveyData, item.hasRawSurvey);
                   return (
                     <tr
                       key={item.id}
-                      onClick={() => {
-                        setReviewingItem(item);
-                        setModalTab("FORM");
-                        setReviewNotes(item.reviewNotes || "");
-                        setReviewError(null);
-                      }}
+                      onClick={() => openReviewModal(item)}
                       className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition cursor-pointer group"
                     >
                       <td className="py-3 px-4">
@@ -407,12 +419,7 @@ export default function GovAssessmentQueuePage() {
                       >
                         <button
                           data-testid="open-review-btn"
-                          onClick={() => {
-                            setReviewingItem(item);
-                            setModalTab("FORM");
-                            setReviewNotes(item.reviewNotes || "");
-                            setReviewError(null);
-                          }}
+                          onClick={() => openReviewModal(item, "SCORES")}
                           className="px-2.5 py-1 bg-slate-800 hover:bg-slate-900 text-white rounded text-xs font-semibold shadow-xs transition cursor-pointer"
                         >
                           Xem Form & Thẩm định
@@ -555,13 +562,14 @@ export default function GovAssessmentQueuePage() {
                   {reviewingItem.scoreResult.criteria && reviewingItem.scoreResult.criteria.length > 0 && (
                     <div className="space-y-2">
                       <h3 className="text-xs font-bold uppercase text-slate-700 dark:text-slate-300">
-                        Ma Trận Chi Tiết 26 Tiêu Chí Đánh Giá (TC01 – TC26)
+                        <span>Ma Trận Chi Tiết 26 Tiêu Chí Đánh Giá</span> (TC01 – TC26)
                       </h3>
                       <div className="border border-slate-200 dark:border-slate-800 rounded-control divide-y divide-slate-100 dark:divide-slate-800 text-xs">
                         {reviewingItem.scoreResult.criteria.map((c) => (
                           <div key={c.code} className="p-2.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/40">
                             <div className="min-w-0 pr-2">
-                              <span className="font-bold text-slate-900 dark:text-white">{c.code} (Nhóm {c.group}): {c.name}</span>
+                              <span className="font-bold text-slate-900 dark:text-white">{c.code}: {c.name}</span>
+                              <span className="ml-1 text-slate-500 font-normal text-xs">(Nhóm {c.group})</span>
                               {c.isBottleneck && (
                                 <span className="ml-2 px-1.5 py-0.5 rounded text-xs bg-rose-100 text-rose-700 font-bold">
                                   Điểm nghẽn

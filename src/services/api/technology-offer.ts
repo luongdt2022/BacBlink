@@ -8,6 +8,7 @@ import {
   IntellectualPropertyStatus,
 } from "@/types/technology-offer";
 import { authClient, getStoredSession } from "@/lib/auth-client";
+import { getCachedOrFetch, invalidateCachePrefix } from "@/lib/client-cache";
 
 export type { IntellectualPropertyStatus };
 
@@ -24,6 +25,46 @@ export const SECTORS_18_CATALOG: SectorItem[] = [
     count: 0,
   })),
 ];
+
+export interface PublicOfferFacets {
+  total: number;
+  transferCount: number;
+  commercialCount: number;
+  patentCount: number;
+  bySector: Record<string, number>;
+}
+
+export async function fetchPublicOfferFacets(): Promise<PublicOfferFacets> {
+  try {
+    return await getCachedOrFetch<PublicOfferFacets>(
+      "offers:facets",
+      30_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/technologies/facets`);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        return {
+          total: json.total ?? 0,
+          transferCount: json.transferCount ?? 0,
+          commercialCount: json.commercialCount ?? 0,
+          patentCount: json.patentCount ?? 0,
+          bySector: json.bySector ?? {},
+        };
+      }
+    );
+  } catch (err) {
+    console.error("Lỗi khi tải thống kê danh mục công nghệ:", err);
+    return {
+      total: 0,
+      transferCount: 0,
+      commercialCount: 0,
+      patentCount: 0,
+      bySector: {},
+    };
+  }
+}
 
 export async function fetchPublicOffers(params?: {
   search?: string;
@@ -56,23 +97,32 @@ export async function fetchPublicOffers(params?: {
       query.set("rotate", String(params.rotate));
     if (params?.page) query.set("page", String(params.page));
     if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.sortBy) query.set("sortBy", params.sortBy);
 
-    const res = await fetch(`${API_BASE}/api/v1/technologies?${query.toString()}`, {
-      cache: "no-store",
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const items: TechnologyOffer[] = Array.isArray(json.data)
-        ? json.data
-        : Array.isArray(json.data?.items)
-        ? json.data.items
-        : [];
-      const total = json.total ?? json.data?.total ?? items.length;
-      const page = json.page ?? params?.page ?? 1;
-      const limit = json.limit ?? params?.limit ?? 12;
-      const totalPages = json.totalPages ?? (Math.ceil(total / limit) || 1);
-      return { total, data: items, page, limit, totalPages };
-    }
+    const qs = query.toString();
+    return await getCachedOrFetch(
+      `offers:public:${qs}`,
+      20_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/technologies?${qs}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        const items: TechnologyOffer[] = Array.isArray(json.data)
+          ? json.data
+          : Array.isArray(json.data?.items)
+          ? json.data.items
+          : [];
+        const total = json.total ?? json.data?.total ?? items.length;
+        const page = json.page ?? params?.page ?? 1;
+        const limit = json.limit ?? params?.limit ?? 12;
+        const totalPages = json.totalPages ?? (Math.ceil(total / limit) || 1);
+        return { total, data: items, page, limit, totalPages };
+      }
+    );
   } catch (err) {
     console.error("Lỗi khi tải danh sách công nghệ:", err);
   }
@@ -82,13 +132,20 @@ export async function fetchPublicOffers(params?: {
 
 export async function fetchOfferById(id: string): Promise<TechnologyOffer | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/technologies/${id}`, {
-      cache: "no-store",
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.data) return json.data;
-    }
+    return await getCachedOrFetch<TechnologyOffer | null>(
+      `offers:detail:${id}`,
+      30_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/technologies/${id}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        return json.data ?? null;
+      }
+    );
   } catch (err) {
     console.error("Lỗi khi tải chi tiết công nghệ:", err);
   }
@@ -122,14 +179,24 @@ export async function fetchSellerWorkspace(params?: {
 
     const queryString = query.toString();
     const url = `${API_BASE}/api/v1/portal/seller/technologies${queryString ? `?${queryString}` : ""}`;
+    const session = getStoredSession();
+    const scopeKey = `${session?.user?.id ?? "anon"}:${session?.user?.role ?? "anon"}`;
 
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: authClient.getAuthHeaders(),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.data) {
+    return await getCachedOrFetch(
+      `offers:seller:${scopeKey}:${queryString}`,
+      15_000,
+      async () => {
+        const res = await fetch(url, {
+          cache: "no-store",
+          headers: authClient.getAuthHeaders(),
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        if (!json.data) {
+          throw new Error("Missing data");
+        }
         const items: TechnologyOffer[] = Array.isArray(json.data)
           ? json.data
           : json.data.items || [];
@@ -152,7 +219,7 @@ export async function fetchSellerWorkspace(params?: {
           totalPages: json.totalPages ?? 1,
         };
       }
-    }
+    );
   } catch (err) {
     console.error("Lỗi khi tải không gian nhà cung ứng:", err);
   }
@@ -184,6 +251,7 @@ export async function createSellerOffer(
     });
     if (res.ok) {
       const json = await res.json();
+      invalidateCachePrefix("offers:");
       return { success: true, data: json.data, message: json.message };
     }
     const errJson = await res.json().catch(() => null);
@@ -432,6 +500,7 @@ export async function reviewOffer(
     });
     if (res.ok) {
       const json = await res.json();
+      invalidateCachePrefix("offers:");
       return { success: true, data: json.data };
     }
     const errJson = await res.json().catch(() => null);
@@ -453,6 +522,7 @@ export async function updateSellerOffer(
     });
     if (res.ok) {
       const json = await res.json();
+      invalidateCachePrefix("offers:");
       return { success: true, data: json.data, message: json.message, needsReaudit: json.needsReaudit };
     }
     const errJson = await res.json().catch(() => null);
@@ -474,6 +544,7 @@ export async function deleteSellerOffer(
     });
     if (res.ok) {
       const json = await res.json();
+      invalidateCachePrefix("offers:");
       return { success: true, message: json.message };
     }
     const errJson = await res.json().catch(() => null);
@@ -494,6 +565,7 @@ export async function togglePublishOffer(
     });
     if (res.ok) {
       const json = await res.json();
+      invalidateCachePrefix("offers:");
       return { success: true, message: json.message, data: json.data };
     }
     const errJson = await res.json().catch(() => null);
@@ -565,6 +637,9 @@ export async function submitQuickDemand(payload: CreateQuickDemandPayload): Prom
     });
     if (res.ok) {
       const json = await res.json();
+      invalidateCachePrefix("offers:");
+      invalidateCachePrefix("portal:");
+      invalidateCachePrefix("brokerage:");
       return {
         success: true,
         itemId: json.itemId,

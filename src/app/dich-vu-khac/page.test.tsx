@@ -63,8 +63,9 @@ describe("DichVuKhacPage (Dịch Vụ Khác)", () => {
     const trlLink = screen.getByRole("link", { name: /Khám Phá Công Nghệ TRL/i });
     expect(trlLink).toHaveAttribute("href", "/chao-ban-cong-nghe");
 
-    const danhBaLink = screen.getByRole("link", { name: /Xem bảng xếp hạng & danh bạ DN/i });
-    expect(danhBaLink).toHaveAttribute("href", "/doanh-nghiep-dmst");
+    expect(
+      screen.queryByRole("link", { name: /Xem bảng xếp hạng & danh bạ DN/i })
+    ).not.toBeInTheDocument();
   });
 
   it("validates mandatory fields on consultation form submit", () => {

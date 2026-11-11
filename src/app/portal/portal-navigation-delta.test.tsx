@@ -69,12 +69,15 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(screen.getByText("Nhà Cung Ứng Công Nghệ")).toBeInTheDocument();
     expect(screen.getByText("Workspace Nhà Cung Ứng")).toBeInTheDocument();
 
-    // 2. 7 Menu items verification
+    // 2. 7 Menu items in 3 sections verification
+    expect(screen.getByText("Tác nghiệp Bán hàng")).toBeInTheDocument();
+    expect(screen.getByText("Khám phá & Ghép nối")).toBeInTheDocument();
+    expect(screen.getByText("Chẩn đoán & Hồ sơ")).toBeInTheDocument();
     expect(screen.getByText("Tổng quan Gian hàng")).toBeInTheDocument();
-    expect(screen.getByText("Kho Công nghệ (TRL)")).toBeInTheDocument();
-    expect(screen.getByText("Yêu cầu Kết nối Nhận được")).toBeInTheDocument();
-    expect(screen.getByText("Radar Tìm Kiếm Nhu Cầu (AI)")).toBeInTheDocument();
-    expect(screen.getByText("Tiến trình Chuyển giao & MOU")).toBeInTheDocument();
+    expect(screen.getByText("Sản phẩm & Công nghệ")).toBeInTheDocument();
+    expect(screen.getByText("Khách hàng liên hệ")).toBeInTheDocument();
+    expect(screen.getByText("Tìm nhu cầu mua (AI)")).toBeInTheDocument();
+    expect(screen.getByText("Giao dịch & MOU")).toBeInTheDocument();
     
     // AC-DELTA-18: TT17 presence
     const tt17Link = screen.getByRole("link", { name: /Đánh giá Năng lực TT17/i });
@@ -263,15 +266,13 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(overviewLink).toBeInTheDocument();
     expect(overviewLink).toHaveAttribute("href", "/portal");
 
-    const demandLink = screen.getByRole("link", { name: /Bài toán Đổi mới Công nghệ/i });
+    const demandLink = screen.getByRole("link", { name: /Nhu cầu & Đơn mua/i });
     expect(demandLink).toBeInTheDocument();
     expect(demandLink).toHaveAttribute("href", "/portal/buyer/demands");
-    expect(screen.getByText("3")).toBeInTheDocument(); // Badge count
 
-    const pipelineLink = screen.getByRole("link", { name: /Tiến trình Hợp tác & MOU/i });
+    const pipelineLink = screen.getByRole("link", { name: /Giao dịch & MOU/i });
     expect(pipelineLink).toBeInTheDocument();
     expect(pipelineLink).toHaveAttribute("href", "/portal/opportunities/pipeline");
-    expect(screen.getByText("1")).toBeInTheDocument(); // Badge count
 
     // 4. Section 2 Item
     const radarLink = screen.getByRole("link", { name: /Radar Ghép Nối AI/i });
@@ -294,7 +295,7 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
 
     // 6. Negative verification: Legacy and foreign labels must NOT exist
     expect(screen.queryByText("Bài toán Tìm mua")).not.toBeInTheDocument();
-    expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sản phẩm & Công nghệ")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
   });
 
@@ -339,11 +340,11 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(settingsLink).toHaveAttribute("href", "/settings");
 
     // 3. Negative checks: Zero legal entity modules
-    expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sản phẩm & Công nghệ")).not.toBeInTheDocument();
     expect(screen.queryByText("Đánh giá Năng lực TT17")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ Doanh nghiệp")).not.toBeInTheDocument();
-    expect(screen.queryByText("Yêu cầu Kết nối Nhận được")).not.toBeInTheDocument();
-    expect(screen.queryByText("Tiến trình Chuyển giao & MOU")).not.toBeInTheDocument();
+    expect(screen.queryByText("Khách hàng liên hệ")).not.toBeInTheDocument();
+    expect(screen.queryByText("Giao dịch & MOU")).not.toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ LLKH của tôi")).not.toBeInTheDocument();
   });
 
@@ -378,7 +379,7 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     await waitFor(() => {
       expect(screen.getByText("Workspace Nhà Cung Ứng")).toBeInTheDocument();
       expect(screen.getByText("Nhà Cung Ứng Công Nghệ")).toBeInTheDocument();
-      expect(screen.getByText("Kho Công nghệ (TRL)")).toBeInTheDocument();
+      expect(screen.getByText("Sản phẩm & Công nghệ")).toBeInTheDocument();
     });
 
     // Simulate role switch event to BUYER
@@ -390,7 +391,7 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     await waitFor(() => {
       expect(screen.getByText("Workspace Bên Mua")).toBeInTheDocument();
       expect(screen.getByText("Bên Mua Công Nghệ")).toBeInTheDocument();
-      expect(screen.getByText("Bài toán Đổi mới Công nghệ")).toBeInTheDocument();
+      expect(screen.getByText("Nhu cầu & Đơn mua")).toBeInTheDocument();
     });
   });
 });

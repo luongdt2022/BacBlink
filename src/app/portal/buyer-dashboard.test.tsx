@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { BuyerDashboard } from '@/components/portal/buyer-dashboard';
 import { brokerageApi } from '@/services/api/brokerage';
+import { authClient } from '@/lib/auth-client';
 
 vi.mock('@/components/demand/QuickDemandModal', () => ({
   default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
@@ -87,7 +88,10 @@ describe('BuyerDashboard Component (/portal for BUYER role)', () => {
     expect(screen.getByText(/Xin chào, Doanh Nghiệp An Phát!/i)).toBeInTheDocument();
 
     // 3 Quick Action buttons
-    expect(screen.getByRole('button', { name: /\+ Khai Báo Bài Toán Nhanh/i })).toBeInTheDocument();
+    const quickBtn = screen.getByRole('button', { name: /\+ Khai Báo Bài Toán Nhanh/i });
+    expect(quickBtn).toBeInTheDocument();
+    expect(quickBtn.className).toContain('bg-white');
+    expect(quickBtn.className).toContain('text-brand-700');
     expect(screen.getByRole('link', { name: /Khảo Sát Nhu Cầu \(TNI 4 Bước\)/i })).toHaveAttribute('href', '/khao-sat-nhu-cau');
     expect(screen.getByRole('link', { name: /Radar Ghép Nối AI/i })).toHaveAttribute('href', '/portal/matching/radar');
   });
@@ -99,17 +103,41 @@ describe('BuyerDashboard Component (/portal for BUYER role)', () => {
     expect(await screen.findByText('DEAL-2026-001')).toBeInTheDocument();
 
     // 4 KPI Cards
-    const demandCard = screen.getByRole('link', { name: /Bài Toán Đổi Mới Đang Mở/i });
+    const demandCard = screen.getByRole('link', { name: /Nhu Cầu Đang Tìm Cung/i });
     expect(demandCard).toHaveAttribute('href', '/portal/buyer/demands');
 
-    const radarCard = screen.getByRole('link', { name: /Ứng Viên Ghép Đôi AI/i });
+    const radarCard = screen.getByRole('link', { name: /Giải Pháp AI Gợi Ý/i });
     expect(radarCard).toHaveAttribute('href', '/portal/matching/radar');
 
-    const dealsCard = screen.getByRole('link', { name: /Deals Đang Trao Đổi/i });
+    const dealsCard = screen.getByRole('link', { name: /Giao Dịch Đang Đàm Phán/i });
     expect(dealsCard).toHaveAttribute('href', '/portal/opportunities/pipeline');
 
     const mouCard = screen.getByRole('link', { name: /Thỏa Thuận Đã Ký MOU/i });
     expect(mouCard).toHaveAttribute('href', '/portal/opportunities/pipeline');
+  });
+
+  it('counts active DB demand statuses (PENDING, VERIFIED) with Bearer token and excludes CLOSED demands', async () => {
+    vi.spyOn(authClient, 'getToken').mockReturnValue('jwt-buyer-token');
+    global.fetch = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (url.includes('/api/v1/buyer/demands')) {
+        expect((init?.headers as Record<string, string>)?.Authorization).toBe('Bearer jwt-buyer-token');
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve([
+              { id: 'd1', itemCode: 'DMD-1', stageName: 'S1', technicalProblem: 'P1', sectorCode: 'LV01', budgetRange: '100M', tniScore: 80, tniClassification: 'HIGH', status: 'VERIFIED' },
+              { id: 'd2', itemCode: 'DMD-2', stageName: 'S2', technicalProblem: 'P2', sectorCode: 'LV01', budgetRange: '200M', tniScore: 70, tniClassification: 'HIGH', status: 'PENDING' },
+              { id: 'd3', itemCode: 'DMD-3', stageName: 'S3', technicalProblem: 'P3', sectorCode: 'LV01', budgetRange: '300M', tniScore: 60, tniClassification: 'MED', status: 'CLOSED' },
+            ]),
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+    });
+
+    render(<BuyerDashboard user={{ id: 'u1', fullName: 'Demo Buyer', role: 'BUYER', email: 'buyer@corp.vn' }} />);
+
+    const demandCard = await screen.findByRole('link', { name: /Nhu Cầu Đang Tìm Cung/i });
+    expect(demandCard).toHaveTextContent('2');
   });
 
   it('renders active deals list and newest demand items with TNI score', async () => {

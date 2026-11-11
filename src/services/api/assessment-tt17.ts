@@ -1,4 +1,14 @@
-import { authClient } from "@/lib/auth-client";
+import { authClient, getStoredSession } from "@/lib/auth-client";
+import { getCachedOrFetch, invalidateCachePrefix } from "@/lib/client-cache";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" ? "" : "http://localhost:5080");
+
+function getAssessmentAuthScope(): string {
+  const s = getStoredSession();
+  return `${s?.user?.id ?? "anon"}:${s?.user?.role ?? "anon"}`;
+}
 
 export interface IndustryBenchmark {
   industryCode: string;
@@ -210,6 +220,7 @@ export interface Tt17Assessment {
   scopeId: string;
   industryCode: string;
   surveyData: Tt17SurveyData;
+  hasRawSurvey?: boolean;
   scoreResult: Tt17ScoreResult;
   reviewNotes?: string;
   createdAt: string;
@@ -414,13 +425,21 @@ export async function getAssessmentHistory(): Promise<Tt17Assessment[]> {
 }
 
 export async function getAssessmentById(id: string): Promise<Tt17Assessment | null> {
-  const url = id === "current" ? "/api/v1/assessments/tt17/current" : `/api/v1/assessments/tt17/${id}`;
+  const url = id === "current" ? `${API_BASE}/api/v1/assessments/tt17/current` : `${API_BASE}/api/v1/assessments/tt17/${id}`;
+  const ttl = id === "current" ? 10_000 : 30_000;
   try {
-    const res = await fetch(url, { headers: authClient.getAuthHeaders() });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data || null;
-    }
+    return await getCachedOrFetch<Tt17Assessment | null>(
+      `tt17:detail:${getAssessmentAuthScope()}:${id}`,
+      ttl,
+      async () => {
+        const res = await fetch(url, { headers: authClient.getAuthHeaders() });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        return json.data || null;
+      }
+    );
   } catch (err) {
     console.error("Lỗi khi tải báo cáo đánh giá:", err);
   }
@@ -471,6 +490,7 @@ export async function saveAssessmentDraft(
     throw new Error(err.message || "Không thể lưu nháp hồ sơ đánh giá.");
   }
   const json = await res.json();
+  invalidateCachePrefix("tt17:");
   return json.data;
 }
 
@@ -534,6 +554,7 @@ export async function submitAssessment(payload: SubmitAssessmentPayload): Promis
     throw new Error(err.message || "Không thể nộp hồ sơ đánh giá.");
   }
   const json = await res.json();
+  invalidateCachePrefix("tt17:");
   const creds = json.credentials || (json.account ? {
     email: json.account.email,
     temporaryPassword: json.account.temporaryPassword || "NacenTech@2026",
@@ -549,16 +570,32 @@ export async function submitAssessment(payload: SubmitAssessmentPayload): Promis
   };
 }
 
-export async function getGovAssessmentQueue(scopeId?: string, status?: string): Promise<Tt17Assessment[]> {
+export async function getGovAssessmentQueue(
+  scopeId?: string,
+  status?: string,
+  options?: { summary?: boolean }
+): Promise<Tt17Assessment[]> {
   try {
     const p = new URLSearchParams();
     if (scopeId) p.set("scopeId", scopeId);
     if (status) p.set("status", status);
-    const res = await fetch(`/api/v1/gov/assessments/tt17?${p.toString()}`, { headers: authClient.getAuthHeaders() });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data || [];
-    }
+    if (options?.summary !== false) p.set("summary", "true");
+    const qs = p.toString();
+
+    return await getCachedOrFetch<Tt17Assessment[]>(
+      `tt17:queue:${getAssessmentAuthScope()}:${qs}`,
+      20_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/gov/assessments/tt17?${qs}`, {
+          headers: authClient.getAuthHeaders(),
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        return json.data || [];
+      }
+    );
   } catch (err) {
     console.error("Lỗi khi tải hàng đợi đánh giá:", err);
   }
@@ -650,6 +687,7 @@ export async function reviewAssessment(id: string, action: "APPROVE" | "REJECT" 
     throw new Error(err.message || "Không thể xử lý phê duyệt hồ sơ.");
   }
   const json = await res.json();
+  invalidateCachePrefix("tt17:");
   return json.data;
 }
 
@@ -762,13 +800,22 @@ export async function getTt17Dashboard(params?: {
     if (params?.scopeId) p.set("scopeId", params.scopeId);
     if (params?.industryCode) p.set("industryCode", params.industryCode);
     if (params?.classification) p.set("classification", params.classification);
-    const res = await fetch(`/api/v1/admin/assessments/tt17/dashboard?${p.toString()}`, {
-      headers: authClient.getAuthHeaders(),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data || null;
-    }
+    const qs = p.toString();
+
+    return await getCachedOrFetch<Tt17DashboardData | null>(
+      `tt17:dashboard:${getAssessmentAuthScope()}:${qs}`,
+      20_000,
+      async () => {
+        const res = await fetch(`${API_BASE}/api/v1/admin/assessments/tt17/dashboard?${qs}`, {
+          headers: authClient.getAuthHeaders(),
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        return json.data || null;
+      }
+    );
   } catch (err) {
     console.error("Lỗi khi tải dữ liệu Dashboard TT17:", err);
   }

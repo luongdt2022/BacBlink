@@ -222,18 +222,88 @@ export async function fetchDashboardStats(): Promise<EnterpriseDashboardStats> {
   return body.data || body;
 }
 
-export async function fetchMyEnterpriseProfile(): Promise<any> {
+const MY_PROFILE_CACHE_TTL_MS = 30_000;
+
+export interface FetchMyEnterpriseProfileOptions {
+  forceRefresh?: boolean;
+}
+
+let myProfileCache: {
+  token: string;
+  data: any;
+  expiresAt: number;
+} | null = null;
+let myProfileInFlight: {
+  token: string;
+  promise: Promise<any>;
+} | null = null;
+let myProfileCacheGeneration = 0;
+
+/** Clears the cached enterprise profile so the next read fetches fresh state. */
+export function invalidateMyEnterpriseProfileCache(): void {
+  myProfileCacheGeneration += 1;
+  myProfileCache = null;
+  myProfileInFlight = null;
+}
+
+export async function fetchMyEnterpriseProfile(
+  options?: FetchMyEnterpriseProfileOptions
+): Promise<any> {
   const session = getStoredSession();
   if (!session?.accessToken) throw new Error("Chưa đăng nhập.");
 
-  const res = await fetch(`${API_BASE}/api/v1/portal/enterprise/profile`, {
-    headers: { Authorization: `Bearer ${session.accessToken}` }
-  });
-  if (!res.ok) {
-    throw new Error(await readApiError(res, "Không thể tải hồ sơ doanh nghiệp."));
+  const token = session.accessToken;
+  const fetchDirect = async () => {
+    const res = await fetch(`${API_BASE}/api/v1/portal/enterprise/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      throw new Error(await readApiError(res, "Không thể tải hồ sơ doanh nghiệp."));
+    }
+    const body = await res.json();
+    return body.data || body;
+  };
+
+  if (typeof window === "undefined") {
+    return fetchDirect();
   }
-  const body = await res.json();
-  return body.data || body;
+
+  if (options?.forceRefresh === true) {
+    invalidateMyEnterpriseProfileCache();
+  }
+
+  if (
+    myProfileCache !== null &&
+    myProfileCache.token === token &&
+    Date.now() < myProfileCache.expiresAt
+  ) {
+    return myProfileCache.data;
+  }
+
+  if (myProfileInFlight !== null && myProfileInFlight.token === token) {
+    return myProfileInFlight.promise;
+  }
+
+  const requestGeneration = myProfileCacheGeneration;
+  const currentPromise = fetchDirect()
+    .then((data) => {
+      if (requestGeneration === myProfileCacheGeneration) {
+        myProfileCache = {
+          token,
+          data,
+          expiresAt: Date.now() + MY_PROFILE_CACHE_TTL_MS,
+        };
+      }
+      return data;
+    })
+    .finally(() => {
+      if (myProfileInFlight?.promise === currentPromise) {
+        myProfileInFlight = null;
+      }
+    });
+
+  myProfileInFlight = { token, promise: currentPromise };
+  return currentPromise;
 }
 
 export async function updateMyEnterpriseProfile(payload: UpsertEnterpriseRequest): Promise<any> {
@@ -252,6 +322,10 @@ export async function updateMyEnterpriseProfile(payload: UpsertEnterpriseRequest
     throw new Error(await readApiError(res, "Không thể cập nhật hồ sơ doanh nghiệp."));
   }
   const body = await res.json();
+  invalidateMyEnterpriseProfileCache();
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("nacentwin_enterprise_profile_updated"));
+  }
   return body.data || body;
 }
 
@@ -267,6 +341,7 @@ export async function submitEnterpriseVerification(): Promise<any> {
     throw new Error(await readApiError(res, "Không thể gửi thẩm định hồ sơ."));
   }
   const body = await res.json();
+  invalidateMyEnterpriseProfileCache();
   return body.data || body;
 }
 
@@ -361,6 +436,7 @@ export async function activateEnterpriseCapability(capability: string): Promise<
     throw new Error(await readApiError(res, "Kích hoạt năng lực thất bại."));
   }
   const body = await res.json();
+  invalidateMyEnterpriseProfileCache();
   return body.data || body;
 }
 
@@ -380,5 +456,6 @@ export async function switchEnterpriseActiveRole(targetRole: string): Promise<an
     throw new Error(await readApiError(res, "Chuyển vai trò thất bại."));
   }
   const body = await res.json();
+  invalidateMyEnterpriseProfileCache();
   return body.data || body;
 }

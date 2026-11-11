@@ -230,10 +230,11 @@ export default function TaoHoSoChaoBanPage() {
     };
   }, []);
 
-  // Tự động lưu nháp 30s
+  // Tự động lưu nháp 30s (loại bỏ Base64 nặng để tránh lag serialization UI)
   useEffect(() => {
     const timer = setInterval(() => {
       if (title.trim()) {
+        const sanitizeUrl = (u?: string | null) => (u && u.startsWith("data:") ? undefined : (u || undefined));
         const draftObj = {
           title,
           summary,
@@ -247,8 +248,8 @@ export default function TaoHoSoChaoBanPage() {
           priceMax,
           unit,
           trlLevel,
-          mainImageUrl,
-          galleryImageUrls,
+          mainImageUrl: sanitizeUrl(mainImageUrl),
+          galleryImageUrls: galleryImageUrls.filter((u) => !u.startsWith("data:")),
           videoDemoUrl,
           savedAt: new Date().toLocaleTimeString("vi-VN"),
         };
@@ -261,7 +262,7 @@ export default function TaoHoSoChaoBanPage() {
       }
     }, 30000);
     return () => clearInterval(timer);
-  }, [title, summary, problemSolved, offerType, sectorCode, hasTechTransfer, pricingType, priceAmount, priceMin, priceMax, unit, trlLevel, mainImageUrl, galleryImageUrls, videoDemoUrl]);
+  }, [title, summary, problemSolved, offerType, sectorCode, hasTechTransfer, pricingType, priceAmount, priceMin, priceMax, unit, trlLevel, videoDemoUrl]);
 
   // Kiểm tra tính hợp lệ Bước 1
   const validateStep1 = () => {

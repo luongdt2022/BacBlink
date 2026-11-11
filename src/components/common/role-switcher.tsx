@@ -98,7 +98,17 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
       );
 
       // Trigger navigation / reload portal state
-      router.refresh();
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname;
+        if (targetRole === 'SELLER' && currentPath.startsWith('/portal/buyer')) {
+          router.push('/portal');
+          return;
+        }
+        if (targetRole === 'BUYER' && currentPath.startsWith('/portal/seller')) {
+          router.push('/portal');
+          return;
+        }
+      }
     } catch (err: any) {
       toast.error(err.message || 'Không thể chuyển đổi vai trò. Vui lòng thử lại.', 'Lỗi');
       // Revert optimistic update

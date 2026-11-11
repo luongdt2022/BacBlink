@@ -22,6 +22,8 @@ export function RoleGuard({
   const [checking, setChecking] = useState(true);
   const [authorized, setAuthorized] = useState(false);
 
+  const allowedRolesKey = allowedRoles?.map((r) => r.toUpperCase()).join(",") ?? "";
+
   useEffect(() => {
     const currentUser = authClient.getUser();
     setUser(currentUser);
@@ -32,18 +34,18 @@ export function RoleGuard({
       return;
     }
 
-    if (!allowedRoles || allowedRoles.length === 0) {
+    if (!allowedRolesKey) {
       setAuthorized(true);
       setChecking(false);
       return;
     }
 
-    const currentRole = currentUser.role?.toUpperCase();
-    const hasRole = allowedRoles.map((r) => r.toUpperCase()).includes(currentRole);
+    const currentRole = currentUser.role?.toUpperCase() ?? "";
+    const hasRole = allowedRolesKey.split(",").includes(currentRole);
 
     setAuthorized(hasRole);
     setChecking(false);
-  }, [allowedRoles]);
+  }, [allowedRolesKey]);
 
   if (checking) {
     return (

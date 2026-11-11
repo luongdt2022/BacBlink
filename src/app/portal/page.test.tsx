@@ -72,6 +72,28 @@ describe('PortalDashboard Component (Role-based Routing)', () => {
     expect(screen.getByText(/Seller Dashboard Mock: Nhà Cung Ứng Demo/i)).toBeInTheDocument();
   });
 
+  it('switches immediately from BuyerDashboard to SellerDashboard on nacentwin_role_switched event', async () => {
+    localStorage.setItem('nacentwin_active_role', 'BUYER');
+    vi.spyOn(authClient, 'getUser').mockReturnValue({
+      id: 'u-dual',
+      fullName: 'Demo Buyer',
+      role: 'BUYER',
+      email: 'buyer@corp.vn',
+    });
+
+    render(<PortalDashboard />);
+    expect(await screen.findByTestId('buyer-dashboard-mock')).toBeInTheDocument();
+
+    const { act } = await import('@testing-library/react');
+    act(() => {
+      localStorage.setItem('nacentwin_active_role', 'SELLER');
+      window.dispatchEvent(new CustomEvent('nacentwin_role_switched', { detail: { role: 'SELLER' } }));
+    });
+
+    expect(await screen.findByTestId('seller-dashboard-mock')).toBeInTheDocument();
+    expect(screen.queryByTestId('buyer-dashboard-mock')).not.toBeInTheDocument();
+  });
+
   it('renders GeneralPortalDashboard with 3 blocks for PUBLIC_USER role (Delta v10 CR-2026-006)', async () => {
     vi.spyOn(authClient, 'getUser').mockReturnValue({
       id: 'u-public',

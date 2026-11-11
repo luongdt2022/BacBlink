@@ -196,11 +196,11 @@ describe("CR-2026-006 / Delta v10: Comprehensive Gate 4 Verification Suite", () 
       expect(item5).toHaveAttribute("href", "/settings");
 
       // Verify no other nav links
-      expect(screen.queryByText("Kho Công nghệ (TRL)")).not.toBeInTheDocument();
+      expect(screen.queryByText("Sản phẩm & Công nghệ")).not.toBeInTheDocument();
       expect(screen.queryByText("Đánh giá Năng lực TT17")).not.toBeInTheDocument();
       expect(screen.queryByText("Hồ sơ Doanh nghiệp")).not.toBeInTheDocument();
-      expect(screen.queryByText("Yêu cầu Kết nối Nhận được")).not.toBeInTheDocument();
-      expect(screen.queryByText("Tiến trình Chuyển giao & MOU")).not.toBeInTheDocument();
+      expect(screen.queryByText("Khách hàng liên hệ")).not.toBeInTheDocument();
+      expect(screen.queryByText("Giao dịch & MOU")).not.toBeInTheDocument();
     });
   });
 

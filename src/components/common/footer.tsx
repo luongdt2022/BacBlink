@@ -115,15 +115,15 @@ export function Footer() {
         <div className="mt-3.5 pt-2.5 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] sm:text-xs text-white/75">
           <div>{t("footer_rights")}</div>
           <div className="flex items-center gap-x-3 text-white/85">
-            <Link href="/dieu-khoan" className="hover:text-white transition-colors">
+            <Link href="/dieu-khoan" prefetch={false} className="hover:text-white transition-colors">
               Điều khoản sử dụng
             </Link>
             <span className="text-white/30">•</span>
-            <Link href="/bao-mat" className="hover:text-white transition-colors">
+            <Link href="/bao-mat" prefetch={false} className="hover:text-white transition-colors">
               Chính sách bảo mật
             </Link>
             <span className="text-white/30">•</span>
-            <Link href="/wireframes" className="hover:text-white transition-colors">
+            <Link href="/wireframes" prefetch={false} className="hover:text-white transition-colors">
               Sơ đồ cổng (Sitemap)
             </Link>
           </div>

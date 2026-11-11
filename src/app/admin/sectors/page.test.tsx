@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AdminSectorsPage from "./page";
 
 vi.mock("@/components/admin/admin-nav", () => ({
@@ -10,6 +10,7 @@ const rows = [{ code: "LV91", name: "Ngành runtime A", isActive: true }, { code
 vi.mock("@/lib/auth-client", () => ({ authClient: { getAuthHeaders: () => ({}) } }));
 describe("Admin runtime sectors - mocked component regression", () => {
  beforeEach(() => { cleanup(); vi.restoreAllMocks(); vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => ({ success: true, data: url.includes("sectors") ? rows : [] }) }))); });
+ afterEach(() => { cleanup(); });
  it("renders runtime names and active count instead of fixed ten", async () => { render(<AdminSectorsPage />); expect(await screen.findByText("Ngành runtime A")).toBeInTheDocument(); expect(screen.getByText("Ngành runtime B")).toBeInTheDocument(); expect(screen.getByRole("button", { name: /1 Lĩnh Vực hoạt động/ })).toBeInTheDocument(); });
  it("filters runtime names", async () => { render(<AdminSectorsPage />); await screen.findByText("Ngành runtime A"); fireEvent.change(screen.getByPlaceholderText(/Tìm theo tên lĩnh vực/), { target: { value: "runtime B" } }); expect(screen.getByText("Ngành runtime B")).toBeInTheDocument(); expect(screen.queryByText("Ngành runtime A")).not.toBeInTheDocument(); });
  it("empty response does not manufacture seed data", async () => { vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true, data: [] }) })); render(<AdminSectorsPage />); expect(await screen.findByText("Không có lĩnh vực phù hợp.")).toBeInTheDocument(); expect(screen.queryByText("LV01")).not.toBeInTheDocument(); });

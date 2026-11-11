@@ -839,7 +839,7 @@ function GovDashboardContent() {
       <GovPageHeader
         breadcrumbs={[
           { label: "Cổng Công Vụ", href: "/gov" },
-          { label: "Quản Lý Thẩm Định", href: "/gov" },
+          { label: "Tổng Quan & Phê Duyệt", href: "/gov" },
           { label: "Hàng Đợi Kiểm Duyệt Địa Bàn" },
         ]}
         title="Hàng Đợi Kiểm Duyệt Địa Bàn"

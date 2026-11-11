@@ -34,7 +34,8 @@ function formatMillionVnd(val?: number | null): string {
 /**
  * Kiểm tra xem hồ sơ DN có dữ liệu raw từ form khảo sát (Phụ lục I) hay chỉ có điểm tổng hợp
  */
-export function hasRawSurveyForm(survey?: Tt17SurveyData | null): boolean {
+export function hasRawSurveyForm(survey?: Tt17SurveyData | null, hasRawSurveyHint?: boolean): boolean {
+  if (typeof hasRawSurveyHint === "boolean") return hasRawSurveyHint;
   if (!survey) return false;
   const hasEquip =
     (survey.originalCostEquipment || 0) > 0 ||

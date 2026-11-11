@@ -700,7 +700,7 @@ function AdminApprovalsContent() {
 
       {/* BỘ LỌC ĐA CHIỀU (Tìm Kiếm Đa Năng & 34 Tỉnh/Thành ĐMST - T095) */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
           <div className="md:col-span-2">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
               Tìm Kiếm Đa Năng
@@ -711,9 +711,9 @@ function AdminApprovalsContent() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm kiếm nhanh theo Tên chuyên gia, Đơn vị viện trường, Email, Mã hồ sơ..."
-                className="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+                className="form-control-sm w-full pl-8 pr-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
@@ -724,7 +724,7 @@ function AdminApprovalsContent() {
             <select
               value={provinceFilter}
               onChange={(e) => handleProvinceChange(e.target.value)}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+              className="form-control-sm w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
             >
               {PROVINCES_34.map((prov) => (
                 <option key={prov.code} value={prov.code}>

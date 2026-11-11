@@ -33,6 +33,7 @@ export interface MatchCandidate {
   sellerOrganizationName: string;
   sectorCode: string;
   matchScore: number;
+  overallMatchScore?: number;
   tniScore: number;
   trlLevel: number;
   ipStatus: string;

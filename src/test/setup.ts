@@ -1,5 +1,14 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
+import { invalidateSectorsCache } from "@/lib/master-data-client";
+
+beforeEach(() => {
+  invalidateSectorsCache();
+});
+
+afterEach(() => {
+  invalidateSectorsCache();
+});
 
 // Mock HTMLCanvasElement 2D context for JSDOM
 if (typeof HTMLCanvasElement !== "undefined") {

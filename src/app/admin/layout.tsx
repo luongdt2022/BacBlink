@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { RoleGuard } from "@/components/auth/role-guard";
+import { AdminWorkspaceSkeleton } from "@/components/admin/admin-workspace-skeleton";
 import {
   LayoutDashboard,
   Award,
@@ -153,10 +154,30 @@ const MENU_GROUPS: MenuGroup[] = [
   },
 ];
 
-function AdminSidebarNav() {
-  const pathname = usePathname();
-  const currentTab = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") || "all" : "all";
+const PENDING_ROUTE_FAILSAFE_MS = 12000;
 
+function normalizeAdminTarget(pathname: string, tab: string | null): string {
+  if (pathname === "/admin/approvals" && (tab === "sla" || tab === "override")) {
+    return `/admin/approvals?tab=${tab}`;
+  }
+  return pathname;
+}
+
+interface AdminSidebarNavProps {
+  pathname: string;
+  currentTab: string;
+  currentTargetHref: string;
+  pendingHref: string | null;
+  onNavigateStart: (targetHref: string | null) => void;
+}
+
+function AdminSidebarNav({
+  pathname,
+  currentTab,
+  currentTargetHref,
+  pendingHref,
+  onNavigateStart,
+}: AdminSidebarNavProps) {
   // 4 nhóm Accordion: mở mặc định
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     group1: true,
@@ -181,6 +202,11 @@ function AdminSidebarNav() {
   };
 
   const isLinkActive = (href: string, tabValue?: string) => {
+    const linkHref = tabValue ? `${href}?tab=${tabValue}` : href;
+    if (pendingHref !== null) {
+      return linkHref === pendingHref;
+    }
+
     if (tabValue) {
       return pathname === "/admin/approvals" && currentTab === tabValue;
     }
@@ -317,6 +343,23 @@ function AdminSidebarNav() {
                             key={linkHref}
                             href={linkHref}
                             title={item.label}
+                            onClick={(e) => {
+                              if (
+                                e.defaultPrevented ||
+                                e.button !== 0 ||
+                                e.ctrlKey ||
+                                e.metaKey ||
+                                e.shiftKey ||
+                                e.altKey
+                              ) {
+                                return;
+                              }
+                              if (linkHref !== currentTargetHref) {
+                                onNavigateStart(linkHref);
+                              } else {
+                                onNavigateStart(null);
+                              }
+                            }}
                             className={`focus-ring flex min-h-9 items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition ${
                               active
                                 ? "bg-brand-700 text-white shadow-xs font-semibold"
@@ -364,18 +407,89 @@ function AdminSidebarNav() {
   );
 }
 
+function AdminShellSuspenseFallback() {
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-slate-50 dark:bg-slate-950 lg:flex-row">
+      <aside className="w-full shrink-0 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:w-72 p-4 space-y-4">
+        <div className="h-6 w-48 rounded animate-shimmer" />
+        <div className="h-9 w-full rounded-lg animate-shimmer" />
+        <div className="space-y-2 pt-2">
+          {[0, 1, 2, 3, 4, 5].map((idx) => (
+            <div key={idx} className="h-8 w-full rounded-lg animate-shimmer" />
+          ))}
+        </div>
+      </aside>
+      <div className="min-w-0 flex-1 p-4 sm:p-8 overflow-y-auto">
+        <AdminWorkspaceSkeleton />
+      </div>
+    </div>
+  );
+}
+
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString() ?? "";
+  const rawTab = searchParams?.get("tab") ?? null;
+  const currentTab = rawTab || "all";
+  const currentTargetHref = normalizeAdminTarget(pathname, rawTab);
+
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const pendingHrefRef = useRef<string | null>(null);
+
+  const handleNavigateStart = useCallback((targetHref: string | null) => {
+    pendingHrefRef.current = targetHref;
+    setPendingHref((prev) => (prev === targetHref ? prev : targetHref));
+  }, []);
+
+  useEffect(() => {
+    pendingHrefRef.current = null;
+    setPendingHref(null);
+  }, [pathname, searchParamsKey]);
+
+  useEffect(() => {
+    if (!pendingHref) return;
+
+    const timer = setTimeout(() => {
+      pendingHrefRef.current = null;
+      setPendingHref(null);
+    }, PENDING_ROUTE_FAILSAFE_MS);
+
+    return () => clearTimeout(timer);
+  }, [pendingHref]);
+
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-slate-50 dark:bg-slate-950 lg:flex-row">
+      <AdminSidebarNav
+        pathname={pathname}
+        currentTab={currentTab}
+        currentTargetHref={currentTargetHref}
+        pendingHref={pendingHref}
+        onNavigateStart={handleNavigateStart}
+      />
+
+      {/* Admin Main Workspace */}
+      <div
+        data-testid="admin-main-workspace"
+        className="min-w-0 flex-1 p-4 sm:p-8 overflow-y-auto"
+      >
+        {pendingHref !== null ? <AdminWorkspaceSkeleton /> : children}
+      </div>
+    </div>
+  );
+}
+
+const ADMIN_ALLOWED_ROLES = ["SUPER_ADMIN", "OPERATOR_ADMIN", "ADMIN"];
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <RoleGuard
-      allowedRoles={["SUPER_ADMIN", "OPERATOR_ADMIN", "ADMIN"]}
+      allowedRoles={ADMIN_ALLOWED_ROLES}
       portalName="Cổng Quản Trị Hệ Thống Tối Cao (Bộ KH&CN / NacenTech)"
     >
-      <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-slate-50 dark:bg-slate-950 lg:flex-row">
-        <AdminSidebarNav />
-
-        {/* Admin Main Workspace */}
-        <div className="min-w-0 flex-1 p-4 sm:p-8 overflow-y-auto">{children}</div>
-      </div>
+      <React.Suspense fallback={<AdminShellSuspenseFallback />}>
+        <AdminLayoutInner>{children}</AdminLayoutInner>
+      </React.Suspense>
     </RoleGuard>
   );
 }

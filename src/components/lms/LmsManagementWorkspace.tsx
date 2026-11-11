@@ -151,15 +151,15 @@ export function LmsManagementWorkspace({ portalRole }: LmsManagementWorkspacePro
 
       {/* FILTER CONTROLS */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
           <div className="sm:col-span-2 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Tìm theo tiêu đề, giảng viên..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white"
+              className="form-control-sm w-full pl-9 pr-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
@@ -170,7 +170,7 @@ export function LmsManagementWorkspace({ portalRole }: LmsManagementWorkspacePro
                 setLessonType(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white"
+              className="form-control-sm w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="">Tất cả loại bài</option>
               <option value="TYPE_A">Loại A - Cơ sở</option>
@@ -186,7 +186,7 @@ export function LmsManagementWorkspace({ portalRole }: LmsManagementWorkspacePro
                 setStatus(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 dark:text-white"
+              className="form-control-sm w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="">Tất cả trạng thái</option>
               <option value="DRAFT">Bản nháp</option>

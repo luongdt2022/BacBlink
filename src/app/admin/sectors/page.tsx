@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Layers,
   Plus,
@@ -19,6 +19,7 @@ import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
+import { invalidateSectorsCache } from "@/lib/master-data-client";
 import { portalClient, TechmartEvent } from "@/lib/portal-client";
 
 interface SectorItem {
@@ -76,6 +77,18 @@ export default function AdminSectorsPage() {
   const [formTt17, setFormTt17] = useState("");
   const [formDesc, setFormDesc] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = (message: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastMessage(message);
+    toastTimerRef.current = setTimeout(() => {
+      setToastMessage(null);
+      toastTimerRef.current = null;
+    }, 4000);
+  };
+  useEffect(() => () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  }, []);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [editingSector, setEditingSector] = useState<SectorItem | null>(null);
@@ -179,9 +192,9 @@ export default function AdminSectorsPage() {
         throw new Error("Máy chủ chưa xác nhận lưu lĩnh vực. Vui lòng tải lại danh mục trước khi thử lại.");
       }
       setSectors((current) => [{ id: created.id, code: created.code, name: created.name, tt17Code: created.tt17Code ?? "", description: created.description ?? "", filterRuleCount: created.filterRuleCount ?? 0, isActive: created.isActive !== false }, ...current.filter((sector) => sector.code !== created.code)]);
+      invalidateSectorsCache();
       setIsModalOpen(false);
-      setToastMessage(`Đã lưu lĩnh vực [${created.code}] ${created.name}`);
-      setTimeout(() => setToastMessage(null), 4000);
+      showToast(`Đã lưu lĩnh vực [${created.code}] ${created.name}`);
       setFormCode("");
       setFormName("");
       setFormDesc("");
@@ -237,8 +250,7 @@ export default function AdminSectorsPage() {
           return [...current, { ...editingPair, ratingStars: pairRatingStars, weight: pairWeight }];
         }
       });
-      setToastMessage(`Đã cập nhật trọng số [${editingPair.fieldCode} - ${editingPair.techCode}] thành ${pairRatingStars} sao (${pairWeight.toFixed(1)})`);
-      setTimeout(() => setToastMessage(null), 4000);
+      showToast(`Đã cập nhật trọng số [${editingPair.fieldCode} - ${editingPair.techCode}] thành ${pairRatingStars} sao (${pairWeight.toFixed(1)})`);
       setEditingPair(null);
     } catch (err: any) {
       setPairSaveError(err instanceof Error ? err.message : "Không kết nối được máy chủ.");
@@ -254,8 +266,8 @@ export default function AdminSectorsPage() {
       const response = await fetch(`${API_BASE}/api/v1/admin/sectors/${sector.id}`, { method: "DELETE", headers: authClient.getAuthHeaders() });
       const payload = await response.json();
       if (!response.ok || payload.success !== true) throw new Error("Không ngừng hoạt động được lĩnh vực.");
-      setToastMessage(`Đã ngừng hoạt động lĩnh vực [${sector.code}] ${sector.name}`);
-      setTimeout(() => setToastMessage(null), 4000);
+      invalidateSectorsCache();
+      showToast(`Đã ngừng hoạt động lĩnh vực [${sector.code}] ${sector.name}`);
       setLoadVersion((value) => value + 1);
     } catch {
       setSectorsError("Không ngừng hoạt động được lĩnh vực. Vui lòng thử lại.");
@@ -286,7 +298,7 @@ export default function AdminSectorsPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <AppButton variant="outline" onClick={() => setLoadVersion((value) => value + 1)}>Tải lại</AppButton>
+            <AppButton variant="outline" onClick={() => { invalidateSectorsCache(); setLoadVersion((value) => value + 1); }}>Tải lại</AppButton>
             <AppButton
               variant="primary"
               onClick={() => { setEditingSector(null); setFormCode(""); setFormName(""); setFormTt17(""); setFormDesc(""); setSaveError(""); setIsModalOpen(true); }}
@@ -521,11 +533,11 @@ export default function AdminSectorsPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200 text-xs">
+                <div className="flex items-center h-10 bg-gray-100 p-1 rounded-lg border border-gray-200 text-xs">
                   <button
                     type="button"
                     onClick={() => setMatrixView("table")}
-                    className={`px-3 py-1.5 rounded-md font-semibold transition ${
+                    className={`h-8 px-3 rounded-md font-semibold transition flex items-center ${
                       matrixView === "table" ? "bg-white text-emerald-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
@@ -534,7 +546,7 @@ export default function AdminSectorsPage() {
                   <button
                     type="button"
                     onClick={() => setMatrixView("grid")}
-                    className={`px-3 py-1.5 rounded-md font-semibold transition ${
+                    className={`h-8 px-3 rounded-md font-semibold transition flex items-center ${
                       matrixView === "grid" ? "bg-white text-emerald-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
@@ -546,7 +558,7 @@ export default function AdminSectorsPage() {
                   <select
                     value={selectedField}
                     onChange={(e) => setSelectedField(e.target.value)}
-                    className="form-control text-sm font-medium"
+                    className="form-control-sm text-sm font-medium bg-white rounded-lg"
                   >
                     <option value="">Tất cả Lĩnh Vực</option>
                     {sectors.filter((sector) => sector.isActive).map((sector) => (
@@ -854,7 +866,7 @@ export default function AdminSectorsPage() {
                     disabled={!!editingSector}
                     value={formCode}
                     onChange={(e) => setFormCode(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="form-control w-full text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -868,7 +880,7 @@ export default function AdminSectorsPage() {
                     placeholder="VD: Năng Lượng Tái Tạo & Pin Lưu Trữ"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="form-control w-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -976,7 +988,7 @@ export default function AdminSectorsPage() {
                     max="1.0"
                     value={pairWeight}
                     onChange={(e) => setPairWeight(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="form-control w-full text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 

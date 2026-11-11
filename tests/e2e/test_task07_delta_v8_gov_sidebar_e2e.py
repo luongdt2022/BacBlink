@@ -72,12 +72,11 @@ def run_gov_sidebar_e2e():
         assert "SLA" in sidebar_text, "Thiếu cam kết SLA"
         log_step("Header Sidebar định danh Tầng 1 & Địa bàn HN chuẩn xác", "OK")
 
-        # Kiểm chứng 4 nhóm Accordion
-        assert "1. KIỂM DUYỆT HỒ SƠ ĐỊA BÀN" in sidebar_text.upper(), "Thiếu Nhóm 1"
-        assert "2. THẨM ĐỊNH CÔNG NGHỆ TT17" in sidebar_text.upper(), "Thiếu Nhóm 2"
-        assert "3. GIÁM SÁT CUNG–CẦU & ĐỊA BÀN" in sidebar_text.upper(), "Thiếu Nhóm 3"
-        assert "4. QUẢN TRỊ CÔNG VỤ & NHÂN SỰ" in sidebar_text.upper(), "Thiếu Nhóm 4"
-        log_step("Đầy đủ 4 Nhóm Accordion trên Sidebar", "OK")
+        # Kiểm chứng 3 nhóm Accordion (đã đồng bộ CR-2026-030)
+        assert "1. TỔNG QUAN & PHÊ DUYỆT" in sidebar_text.upper(), "Thiếu Nhóm 1"
+        assert "2. GIÁM SÁT CUNG–CẦU & ĐỊA BÀN" in sidebar_text.upper(), "Thiếu Nhóm 2"
+        assert "3. QUẢN TRỊ CÔNG VỤ & NHÂN SỰ" in sidebar_text.upper(), "Thiếu Nhóm 3"
+        log_step("Đầy đủ 3 Nhóm Accordion đồng bộ trên Sidebar", "OK")
 
         # Kiểm chứng Menu items
         assert "Tất cả hồ sơ chờ duyệt" in sidebar_text, "Thiếu link Tất cả"

@@ -235,10 +235,10 @@ export default function AdminAuditLogsPage() {
 
       {/* Controls & Filter Bar */}
       <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-center">
           {/* Keyword Search */}
           <div className="relative lg:col-span-2">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
@@ -247,7 +247,7 @@ export default function AdminAuditLogsPage() {
                 setPage(1);
               }}
               placeholder="Tìm theo tên cán bộ, hồ sơ, lý do giải trình, IP..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="form-control-sm w-full pl-9 pr-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
 
@@ -259,7 +259,7 @@ export default function AdminAuditLogsPage() {
                 setActionFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="form-control-sm w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="ALL">Tất cả hành vi</option>
               <option value="APPROVED">Phê Duyệt</option>
@@ -278,7 +278,7 @@ export default function AdminAuditLogsPage() {
                 setDateFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="form-control-sm w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="ALL">Toàn bộ thời gian</option>
               <option value="TODAY">Hôm nay</option>

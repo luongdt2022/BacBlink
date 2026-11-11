@@ -652,7 +652,7 @@ export default function AdminRolesPage() {
                       setOfficersPageSize(Number(e.target.value));
                       setOfficersPage(1);
                     }}
-                    className="border border-gray-300 rounded px-2 py-1 text-xs bg-white"
+                    className="appearance-none h-7 pl-2.5 pr-6 border border-gray-300 rounded text-xs bg-white cursor-pointer bg-[url('data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20fill=%27none%27%20viewBox=%270%200%2020%2020%27%3e%3cpath%20stroke=%27%2364748b%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27%20stroke-width=%271.5%27%20d=%27M6%208l4%204%204-4%27/%3e%3c/svg%3e')] bg-no-repeat bg-[right_0.35rem_center] bg-[length:0.95rem_0.95rem]"
                     aria-label="Số cán bộ trên trang"
                   >
                     <option value={5}>5 cán bộ / trang</option>

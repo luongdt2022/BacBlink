@@ -399,6 +399,8 @@ export default function ChiTietChaoBanPage() {
                               status={offer.trlVerificationStatus}
                               authorityName={offer.verifiedAuthorityName}
                               variant="compact"
+                              concise
+                              translucent
                             />
                           </div>
                         )}

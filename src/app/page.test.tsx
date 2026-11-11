@@ -97,4 +97,52 @@ describe("HomePage Component (TASK-01 Home Architecture & 4 Realtime Metrics)", 
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Tải lại số liệu/i })).toBeInTheDocument();
   });
+
+  it("renders ListingCard sector name and TRL badge as translucent frosted pills in a non-overlapping flex row", async () => {
+    vi.spyOn(portalClient, "getStats").mockResolvedValue({
+      totalOffers: 10,
+      totalDemands: 5,
+      totalEnterprises: 20,
+      totalExperts: 8,
+      totalProvinces: 12,
+      totalSuccessfulConnections: 3,
+      totalEstimatedValueMillionVnd: 1200,
+      updatedAt: new Date().toISOString(),
+    });
+    vi.mocked(fetchPublicOffers).mockResolvedValueOnce({
+      total: 1,
+      data: [
+        {
+          id: "off-trl-1",
+          offerCode: "TECH-009",
+          title: "Hệ thống gia công chính xác CNC",
+          sectorCode: "LV07",
+          sectorName: "Cơ khí – chế tạo – công nghiệp hỗ trợ",
+          trlLevel: 8,
+          trlVerificationStatus: "SELF_DECLARED",
+        } as any,
+      ],
+    });
+
+    render(<HomePage />);
+
+    const sectorPill = await screen.findByText("Cơ khí – chế tạo – công nghiệp hỗ trợ");
+    expect(sectorPill.className).toContain("rounded-full");
+    expect(sectorPill.className).toContain("bg-slate-900/75");
+    expect(sectorPill.className).toContain("text-white");
+    expect(sectorPill.className).toContain("backdrop-blur-md");
+
+    const trlText = screen.getByText("TRL 8/9 (Chưa kiểm định)");
+    const trlBadge = trlText.parentElement;
+    expect(trlBadge?.className).toContain("rounded-full border");
+    expect(trlBadge?.className).toContain("bg-slate-900/75");
+    expect(trlBadge?.className).toContain("text-white");
+    expect(trlBadge?.className).toContain("backdrop-blur-md");
+
+    const headerOverlay = sectorPill.parentElement;
+    expect(headerOverlay?.className).toContain("flex");
+    expect(headerOverlay?.className).toContain("justify-between");
+    expect(headerOverlay?.className).toContain("left-2.5");
+    expect(headerOverlay?.className).toContain("right-2.5");
+  });
 });

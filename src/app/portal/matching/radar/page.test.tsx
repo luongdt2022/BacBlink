@@ -577,4 +577,150 @@ describe("MatchingRadarPage - AI Matching, Demands Guard & Toast Integration", (
       );
     });
   });
+
+  it("displays only pending count in tab badge and sorts unapproved requests to the top", async () => {
+    vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([]);
+    vi.spyOn(brokerageApi, "getConnectionRequests").mockResolvedValue([
+      {
+        id: "req-accepted",
+        requestCode: "REQ-ACC-01",
+        senderUserId: "u1",
+        demandId: "d1",
+        offerId: "o1",
+        senderOrgName: "DN A",
+        senderRole: "BUYER",
+        receiverUserId: "u2",
+        receiverOrgName: "Viện B",
+        proposedBudgetRange: null,
+        status: "ACCEPTED",
+        responseNote: null,
+        respondedAt: null,
+        message: "Đã chấp thuận mới nhất",
+        createdAt: "2026-11-10T10:00:00Z",
+      },
+      {
+        id: "req-rejected",
+        requestCode: "REQ-REJ-02",
+        senderUserId: "u1",
+        demandId: "d1",
+        offerId: "o2",
+        senderOrgName: "DN C",
+        senderRole: "BUYER",
+        receiverUserId: "u3",
+        receiverOrgName: "Viện D",
+        proposedBudgetRange: null,
+        status: "REJECTED",
+        responseNote: null,
+        respondedAt: null,
+        message: "Đã từ chối",
+        createdAt: "2026-11-09T10:00:00Z",
+      },
+      {
+        id: "req-pending",
+        requestCode: "REQ-PEN-03",
+        senderUserId: "u1",
+        demandId: "d1",
+        offerId: "o3",
+        senderOrgName: "DN E",
+        senderRole: "BUYER",
+        receiverUserId: "u4",
+        receiverOrgName: "Viện F",
+        proposedBudgetRange: null,
+        status: "PENDING",
+        responseNote: null,
+        respondedAt: null,
+        message: "Chưa phê duyệt",
+        createdAt: "2026-11-01T10:00:00Z",
+      },
+    ]);
+
+    render(<MatchingRadarPage />);
+
+    const requestsTabBtn = await screen.findByRole("button", { name: /Yêu Cầu Kết Nối Đã Gửi \/ Nhận/i });
+    await waitFor(() => {
+      expect(requestsTabBtn).toHaveTextContent("1");
+      expect(requestsTabBtn).not.toHaveTextContent("3");
+    });
+
+    fireEvent.click(requestsTabBtn);
+
+    const codeBadges = await screen.findAllByText(/^REQ-(ACC|REJ|PEN)-/);
+    expect(codeBadges.map((el) => el.textContent)).toEqual([
+      "REQ-PEN-03",
+      "REQ-ACC-01",
+      "REQ-REJ-02",
+    ]);
+
+    // Kiểm tra 3 thẻ tóm tắt trạng thái
+    expect(screen.getByText(/Cần Xử Lý \(Chờ Phản Hồi\)/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Cần xử lý\s*1$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Đã chấp thuận\s*1$/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Đã từ chối\s*1$/i })).toBeInTheDocument();
+
+    // Lọc chỉ còn "Cần xử lý"
+    fireEvent.click(screen.getByRole("button", { name: /^Cần xử lý\s*1$/i }));
+    expect(screen.getByText("REQ-PEN-03")).toBeInTheDocument();
+    expect(screen.queryByText("REQ-ACC-01")).not.toBeInTheDocument();
+    expect(screen.queryByText("REQ-REJ-02")).not.toBeInTheDocument();
+
+    // Lọc sang "Đã chấp thuận"
+    fireEvent.click(screen.getByRole("button", { name: /^Đã chấp thuận\s*1$/i }));
+    expect(screen.getByText("REQ-ACC-01")).toBeInTheDocument();
+    expect(screen.queryByText("REQ-PEN-03")).not.toBeInTheDocument();
+
+    // Lọc sang "Đã từ chối"
+    fireEvent.click(screen.getByRole("button", { name: /^Đã từ chối\s*1$/i }));
+    expect(screen.getByText("REQ-REJ-02")).toBeInTheDocument();
+    expect(screen.queryByText("REQ-ACC-01")).not.toBeInTheDocument();
+
+    // Quay lại "Tất cả"
+    fireEvent.click(screen.getByRole("button", { name: /^Tất cả\s*3$/i }));
+    expect(screen.getAllByText(/^REQ-(ACC|REJ|PEN)-/).length).toBe(3);
+  });
+
+  it("maps overallMatchScore and xaiBreakdown fields from backend DTO and uses clear tab wording", async () => {
+    vi.spyOn(brokerageApi, "getConnectionRequests").mockResolvedValue([]);
+    vi.spyOn(brokerageApi, "getRadarCandidates").mockResolvedValue([
+      {
+        id: "cand-backend-dto",
+        demandId: "dem-1",
+        demandCode: "DMD-DEMO-NC-02",
+        demandTitle: "Sản xuất & Đúc phôi hợp kim",
+        buyerOrganizationId: "org-b",
+        buyerOrganizationName: "Doanh Nghiệp Tìm Kiếm Công Nghệ",
+        offerId: "off-1",
+        offerCode: "OFF-202610-LV05-06",
+        offerTitle: "Dây chuyền chiết xuất hoạt chất sinh học CO2",
+        sellerOrganizationId: "org-s",
+        sellerOrganizationName: "Sở KH&CN Hà Nội",
+        sectorCode: "LV05",
+        overallMatchScore: 87,
+        isActive: true,
+        isDegraded: true,
+        xaiBreakdown: {
+          semanticScore: 79.4,
+          semanticEngine: "POSTGRES_FTS_FALLBACK",
+          trlScore: 100,
+          trlLevel: 8,
+          trlStage: "Thương mại hóa (TRL 7-9)",
+          tniScore: 95,
+          tniBand: "Cấp thiết rất cao",
+          ipScore: 100,
+          ipStatus: "PATENT_GRANTED",
+          ipDescription: "Đã cấp bằng sáng chế",
+        },
+      } as any,
+    ]);
+
+    render(<MatchingRadarPage />);
+
+    expect(screen.getByRole("button", { name: /Giải Pháp AI Gợi Ý/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Ứng Viên Ghép Đôi AI/i)).not.toBeInTheDocument();
+
+    expect(await screen.findByText("87%")).toBeInTheDocument();
+    expect(screen.getByText("87% Tổng Hợp")).toBeInTheDocument();
+    expect(screen.getAllByText("TRL 8").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("TNI 95/100")).toBeInTheDocument();
+    expect(screen.getByText("Có bằng SHTT")).toBeInTheDocument();
+  });
 });

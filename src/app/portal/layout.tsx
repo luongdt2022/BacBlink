@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { RoleGuard } from "@/components/auth/role-guard";
+import { WorkspaceRouteSkeleton } from "@/components/common/workspace-route-skeleton";
 import {
   LayoutDashboard,
   Cpu,
@@ -84,17 +85,13 @@ const buyerNavItems: NavItem[] = [
   },
   {
     href: "/portal/buyer/demands",
-    label: "Bài toán Đổi mới Công nghệ",
+    label: "Nhu cầu & Đơn mua",
     icon: ShoppingBag,
-    badge: 3,
-    badgeType: "count",
   },
   {
     href: "/portal/opportunities/pipeline",
-    label: "Tiến trình Hợp tác & MOU",
+    label: "Giao dịch & MOU",
     icon: Kanban,
-    badge: 1,
-    badgeType: "count",
   },
 
   // Khối 2: Khám phá & Ghép nối AI
@@ -126,14 +123,26 @@ const buyerNavItems: NavItem[] = [
   },
 ];
 
-// 2. Nhà Cung Ứng Công Nghệ (SELLER) - Quản lý tài sản TRL, đón nhận leads & chuyển giao
+// 2. Nhà Cung Ứng Công Nghệ (SELLER) - Quản lý sản phẩm/công nghệ, đón nhận liên hệ & giao dịch (3 nhóm đồng bộ với Bên Mua)
 const sellerNavItems: NavItem[] = [
-  { href: "/portal", label: "Tổng quan Gian hàng", icon: LayoutDashboard },
-  { href: "/portal/seller/technologies", label: "Kho Công nghệ (TRL)", icon: Cpu },
-  { href: "/portal/matching/radar", label: "Radar Tìm Kiếm Nhu Cầu (AI)", icon: Sparkles },
-  { href: "/portal/seller/connection-requests", label: "Yêu cầu Kết nối Nhận được", icon: Inbox },
-  { href: "/portal/opportunities/pipeline", label: "Tiến trình Chuyển giao & MOU", icon: Kanban },
-  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck },
+  // Khối 1: Tác nghiệp Bán hàng & Giao dịch
+  { href: "/portal", label: "Tổng quan Gian hàng", icon: LayoutDashboard, section: "Tác nghiệp Bán hàng" },
+  { href: "/portal/seller/technologies", label: "Sản phẩm & Công nghệ", icon: Cpu },
+  { href: "/portal/seller/connection-requests", label: "Khách hàng liên hệ", icon: Inbox },
+  { href: "/portal/opportunities/pipeline", label: "Giao dịch & MOU", icon: Kanban },
+
+  // Khối 2: Khám phá & Ghép nối AI
+  {
+    href: "/portal/matching/radar",
+    label: "Tìm nhu cầu mua (AI)",
+    icon: Sparkles,
+    section: "Khám phá & Ghép nối",
+    badge: "Mới",
+    badgeType: "new",
+  },
+
+  // Khối 3: Chẩn đoán & Hồ sơ
+  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck, section: "Chẩn đoán & Hồ sơ" },
   { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2 },
 ];
 
@@ -212,36 +221,79 @@ const PORTAL_ALLOWED_ROLES = [
   "PUBLIC_USER",
 ];
 
-export default function PortalLayout({ children }: { children: React.ReactNode }) {
+const PENDING_ROUTE_FAILSAFE_MS = 12000;
+
+function PortalShellSuspenseFallback() {
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-surface-page dark:bg-slate-950 lg:flex-row">
+      <aside className="w-full shrink-0 border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 lg:w-72 space-y-4">
+        <div className="h-6 w-40 rounded animate-shimmer" />
+        <div className="h-10 w-full rounded-lg animate-shimmer" />
+        <div className="space-y-2 pt-2">
+          {[0, 1, 2, 3, 4, 5].map((idx) => (
+            <div key={idx} className="h-9 w-full rounded-lg animate-shimmer" />
+          ))}
+        </div>
+      </aside>
+      <div className="min-w-0 flex-1 p-4 sm:p-8">
+        <WorkspaceRouteSkeleton
+          testId="portal-route-skeleton"
+          srText="Đang tải không gian làm việc..."
+        />
+      </div>
+    </div>
+  );
+}
+
+function PortalLayoutInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchParamsKey = searchParams?.toString() ?? "";
   const currentTab = searchParams?.get("tab") || "";
+  const currentTargetHref = searchParamsKey ? `${pathname}?${searchParamsKey}` : pathname;
   const toast = useToast();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activeRole, setActiveRole] = useState<string | null>(null);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
+  const handleNavigateStart = useCallback((targetHref: string | null) => {
+    setPendingHref((prev) => (prev === targetHref ? prev : targetHref));
+  }, []);
+
+  // Đồng bộ role & activeRole từ local session khi chuyển route mà không gọi lại API profile
   useEffect(() => {
     const user = authClient.getUser();
     setUserRole(user?.role ?? null);
 
-    // Nạp vai trò đang kích hoạt từ localStorage cho chế độ kép
     const savedActiveRole = typeof window !== "undefined" ? localStorage.getItem("nacentwin_active_role") : null;
     if (savedActiveRole) {
       setActiveRole(savedActiveRole);
     }
+  }, [pathname]);
 
-    fetchMyEnterpriseProfile()
-      .then((p) => {
-        if (p) {
+  // Nạp hồ sơ doanh nghiệp 1 lần (chỉ cho nhóm vai trò doanh nghiệp) và khi profile/role thay đổi
+  useEffect(() => {
+    let cancelled = false;
+    const initialUser = authClient.getUser();
+    const initialRole = (initialUser?.role ?? "").toUpperCase();
+    const isEnterpriseUser = ["BUYER", "SELLER", "INNOVATION_ENTITY"].includes(initialRole);
+
+    const loadProfile = () => {
+      if (!isEnterpriseUser) return;
+      fetchMyEnterpriseProfile()
+        .then((p) => {
+          if (cancelled || !p) return;
           setUserProfile(p);
           if (p.activeRole) {
             setActiveRole(p.activeRole);
             localStorage.setItem("nacentwin_active_role", p.activeRole);
           }
-        }
-      })
-      .catch(() => {});
+        })
+        .catch(() => {});
+    };
+
+    loadProfile();
 
     // Lắng nghe sự kiện chuyển đổi vai trò tức thì từ RoleSwitcher
     const handleRoleSwitched = (e: Event) => {
@@ -251,7 +303,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       }
     };
 
+    const handleProfileUpdated = () => {
+      loadProfile();
+    };
+
     window.addEventListener("nacentwin_role_switched", handleRoleSwitched);
+    window.addEventListener("nacentwin_enterprise_profile_updated", handleProfileUpdated);
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "nacentwin_active_role" && e.newValue) {
         setActiveRole(e.newValue);
@@ -260,10 +317,24 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     window.addEventListener("storage", handleStorage);
 
     return () => {
+      cancelled = true;
       window.removeEventListener("nacentwin_role_switched", handleRoleSwitched);
+      window.removeEventListener("nacentwin_enterprise_profile_updated", handleProfileUpdated);
       window.removeEventListener("storage", handleStorage);
     };
-  }, [pathname]);
+  }, []);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname, searchParamsKey]);
+
+  useEffect(() => {
+    if (!pendingHref) return;
+    const timer = setTimeout(() => {
+      setPendingHref(null);
+    }, PENDING_ROUTE_FAILSAFE_MS);
+    return () => clearTimeout(timer);
+  }, [pendingHref]);
 
   const upperRole = (userRole ?? "").toUpperCase();
   const isExpert = upperRole === "VERIFIED_EXPERT" || upperRole === "EXPERT";
@@ -278,7 +349,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   // Nhóm doanh nghiệp (BUYER, SELLER, INNOVATION_ENTITY) có thể chuyển đổi linh hoạt qua RoleSwitcher
   const isEnterpriseRole = ["BUYER", "SELLER", "INNOVATION_ENTITY"].includes(upperRole);
   const effectiveRole = isEnterpriseRole
-    ? (activeRole?.toUpperCase() || (upperRole === "SELLER" ? "SELLER" : "BUYER"))
+    ? (activeRole?.toUpperCase() || upperRole)
     : upperRole;
 
   const isBuyer = effectiveRole === "BUYER";
@@ -329,10 +400,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   });
 
   return (
-    <RoleGuard
-      allowedRoles={PORTAL_ALLOWED_ROLES}
-      portalName="Cổng Không Gian Thị Trường & Đổi Mới Sáng Tạo"
-    >
       <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-surface-page dark:bg-slate-950 lg:flex-row">
         {/* Workspace Sidebar */}
         <aside className="w-full shrink-0 border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 lg:w-72">
@@ -389,6 +456,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               let isActive = false;
               if (item.disabled) {
                 isActive = false;
+              } else if (pendingHref !== null) {
+                isActive = item.href === pendingHref;
               } else if (isExpert && item.key) {
                 isActive = item.key === activeExpertKey;
               } else if (basePath === "/portal") {
@@ -459,6 +528,22 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                   ) : (
                     <Link
                       href={item.href}
+                      onClick={(e) => {
+                        if (
+                          e.defaultPrevented ||
+                          e.button !== 0 ||
+                          e.ctrlKey ||
+                          e.metaKey ||
+                          e.shiftKey ||
+                          e.altKey
+                        ) {
+                          return;
+                        }
+                        const isSameTarget = item.href.includes("?")
+                          ? item.href === currentTargetHref
+                          : item.href === pathname;
+                        handleNavigateStart(isSameTarget ? null : item.href);
+                      }}
                       className={`focus-ring flex min-h-11 items-center gap-2.5 px-3 py-2 rounded-control text-label font-semibold transition ${
                         isActive
                           ? "bg-brand-700 text-white shadow-sm shadow-brand-700/20"
@@ -477,8 +562,32 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </aside>
 
         {/* Workspace Content */}
-        <div className="min-w-0 flex-1 p-4 sm:p-8">{children}</div>
+        <div
+          data-testid="portal-main-workspace"
+          className="min-w-0 flex-1 p-4 sm:p-8"
+        >
+          {pendingHref !== null ? (
+            <WorkspaceRouteSkeleton
+              testId="portal-route-skeleton"
+              srText="Đang tải không gian làm việc..."
+            />
+          ) : (
+            children
+          )}
+        </div>
       </div>
+  );
+}
+
+export default function PortalLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <RoleGuard
+      allowedRoles={PORTAL_ALLOWED_ROLES}
+      portalName="Cổng Không Gian Thị Trường & Đổi Mới Sáng Tạo"
+    >
+      <React.Suspense fallback={<PortalShellSuspenseFallback />}>
+        <PortalLayoutInner>{children}</PortalLayoutInner>
+      </React.Suspense>
     </RoleGuard>
   );
 }

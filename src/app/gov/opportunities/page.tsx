@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
   ShieldCheck,
   Building2,
@@ -405,18 +406,13 @@ export default function GovOpportunitiesPage() {
                   )}
 
                   {(selectedDeal.stage === 'NEGOTIATING' || selectedDeal.stage === 'MOU_SIGNED') && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (typeof window !== 'undefined') {
-                          window.location.href = `/portal/opportunities/${selectedDeal.id}/deal-room`;
-                        }
-                      }}
+                    <Link
+                      href={`/portal/opportunities/${selectedDeal.id}/deal-room`}
                       className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <FileSignature className="w-3.5 h-3.5" />
                       <span>Vào Phòng Đàm Phán & Xem Thảo Luận (Deal Room)</span>
-                    </button>
+                    </Link>
                   )}
 
                   {selectedDeal.stage !== 'CLOSED_LOST' && selectedDeal.stage !== 'COMPLETED' && (

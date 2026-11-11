@@ -101,6 +101,65 @@ describe('IndexVerificationBadge Component', () => {
     expect(badgeSpan?.className).not.toContain('rounded-full border');
   });
 
+  it('renders TRL text-only variant concisely without pill border for verified and unverified states', () => {
+    const { container, rerender } = render(
+      <IndexVerificationBadge
+        type="TRL"
+        status="SELF_DECLARED"
+        value={8}
+        variant="text"
+      />
+    );
+
+    expect(screen.getByText('TRL 8/9 (Chưa kiểm định)')).toBeInTheDocument();
+    expect(screen.queryByText(/Tự kê khai/i)).not.toBeInTheDocument();
+    const unverifiedSpan = container.querySelector('span');
+    expect(unverifiedSpan?.className).not.toContain('rounded-full border');
+
+    rerender(
+      <IndexVerificationBadge
+        type="TRL"
+        status="VERIFIED_BY_GOV"
+        value={8}
+        variant="text"
+      />
+    );
+
+    expect(screen.getByText('TRL 8/9')).toBeInTheDocument();
+    expect(screen.queryByText(/Đã thẩm định/i)).not.toBeInTheDocument();
+
+    rerender(
+      <IndexVerificationBadge
+        type="TRL"
+        status="SELF_DECLARED"
+        variant="text"
+      />
+    );
+
+    expect(screen.getByText('TRL (Chưa kiểm định)')).toBeInTheDocument();
+  });
+
+  it('renders concise translucent pill badge with frosted background when concise and translucent are set', () => {
+    const { container } = render(
+      <IndexVerificationBadge
+        type="TRL"
+        status="SELF_DECLARED"
+        value={8}
+        variant="compact"
+        concise
+        translucent
+      />
+    );
+
+    expect(screen.getByText('TRL 8/9 (Chưa kiểm định)')).toBeInTheDocument();
+    expect(screen.queryByText(/Tự kê khai/i)).not.toBeInTheDocument();
+    const badgeSpan = container.querySelector('span');
+    expect(badgeSpan?.className).toContain('rounded-full border');
+    expect(badgeSpan?.className).toContain('bg-slate-900/75');
+    expect(badgeSpan?.className).toContain('text-white');
+    expect(badgeSpan?.className).toContain('backdrop-blur-md');
+  });
+
   it('renders IP verification badge for IP type', () => {
     render(
       <IndexVerificationBadge

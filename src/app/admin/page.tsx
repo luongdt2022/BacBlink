@@ -59,31 +59,31 @@ export default function AdminDashboard() {
   const systemMetrics = [
     {
       title: "Tổng Doanh Nghiệp & Chuyên Gia",
-      value: loading ? "Đang tải..." : totalUsersCount > 0 ? totalUsersCount.toLocaleString("vi-VN") : "0",
+      value: totalUsersCount > 0 ? totalUsersCount.toLocaleString("vi-VN") : "0",
       sub: totalUsersCount > 0 ? "Đã đăng ký tài khoản" : "Chưa có dữ liệu",
       icon: Users,
-      color: "text-brand-700 dark:text-brand-200"
+      color: "text-brand-700 dark:text-brand-200",
     },
     {
       title: "Sở KH&CN Kết Nối",
-      value: loading ? "Đang tải..." : provincesCount > 0 ? `${provincesCount} / 34` : "0 / 34",
+      value: provincesCount > 0 ? `${provincesCount} / 34` : "0 / 34",
       sub: provincesCount > 0 ? `${Math.round((provincesCount / 34) * 100)}% Tỉnh/Thành Trọng Điểm` : "Chưa kết nối",
       icon: Network,
-      color: "text-nacen-green-700 dark:text-nacen-green-200"
+      color: "text-nacen-green-700 dark:text-nacen-green-200",
     },
     {
       title: "Danh Mục Lĩnh Vực TT17",
-      value: sectorCount === null ? (loading ? "Đang tải..." : "0") : String(sectorCount),
+      value: String(sectorCount ?? 0),
       sub: sectorCount && sectorCount > 0 ? "Mã chuyên môn đang kích hoạt" : "Chưa có danh mục",
       icon: Database,
-      color: "text-brand-700 dark:text-brand-200"
+      color: "text-brand-700 dark:text-brand-200",
     },
     {
       title: "Hàng Đợi Thẩm Định",
-      value: loading ? "Đang tải..." : String(pendingApprovalsCount),
+      value: String(pendingApprovalsCount),
       sub: pendingApprovalsCount > 0 ? "Hồ sơ cần xử lý" : "Không có hồ sơ chờ",
       icon: History,
-      color: "text-brand-700 dark:text-brand-200"
+      color: "text-brand-700 dark:text-brand-200",
     },
   ];
 
@@ -107,29 +107,48 @@ export default function AdminDashboard() {
       </div>
 
       {/* Approval Queue Quick Action Card */}
-      <div className="p-5 rounded-surface bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div
+        className="p-5 rounded-surface bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        aria-busy={loading ? "true" : undefined}
+      >
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-control bg-brand-700 text-white flex items-center justify-center shrink-0 shadow-xs">
             <ClipboardCheck className="w-6 h-6 text-teal-300" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className="font-bold text-slate-900 dark:text-white text-card-title">
                 Hàng Đợi Phê Duyệt & Thẩm Định Hồ Sơ
               </h3>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                pendingApprovalsCount > 0
-                  ? "bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200"
-                  : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-              }`}>
-                {pendingApprovalsCount > 0 ? `${pendingApprovalsCount} hồ sơ chờ xét duyệt` : "Không có hồ sơ chờ"}
-              </span>
+              {loading ? (
+                <span
+                  data-testid="admin-queue-badge-skeleton"
+                  aria-busy="true"
+                  className="inline-block h-5 w-36 rounded-full animate-shimmer"
+                />
+              ) : (
+                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                  pendingApprovalsCount > 0
+                    ? "bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200"
+                    : "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                }`}>
+                  {pendingApprovalsCount > 0 ? `${pendingApprovalsCount} hồ sơ chờ xét duyệt` : "Không có hồ sơ chờ"}
+                </span>
+              )}
             </div>
-            <p className="text-body text-slate-600 dark:text-slate-300 mt-0.5">
-              {pendingApprovalsCount > 0
-                ? "Bao gồm các hồ sơ nâng hạng Chuyên gia KH&CN và Gian hàng công nghệ mới gửi cần xét duyệt."
-                : "Tất cả hồ sơ đăng ký và chào bán công nghệ đã được xử lý xong."}
-            </p>
+            {loading ? (
+              <div
+                data-testid="admin-queue-desc-skeleton"
+                aria-busy="true"
+                className="h-4 w-72 max-w-full rounded animate-shimmer mt-1.5"
+              />
+            ) : (
+              <p className="text-body text-slate-600 dark:text-slate-300 mt-0.5">
+                {pendingApprovalsCount > 0
+                  ? "Bao gồm các hồ sơ nâng hạng Chuyên gia KH&CN và Gian hàng công nghệ mới gửi cần xét duyệt."
+                  : "Tất cả hồ sơ đăng ký và chào bán công nghệ đã được xử lý xong."}
+              </p>
+            )}
           </div>
         </div>
 
@@ -143,22 +162,36 @@ export default function AdminDashboard() {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        data-testid={loading ? "admin-kpi-skeleton" : "admin-kpi-grid"}
+        aria-busy={loading ? "true" : undefined}
+      >
         {systemMetrics.map((metric, i) => {
           const Icon = metric.icon;
           return (
             <div
               key={i}
+              aria-busy={loading ? "true" : undefined}
               className="p-5 rounded-surface bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-2"
             >
               <div className="flex items-center justify-between text-slate-500 dark:text-slate-300">
                 <span className="text-label font-bold">{metric.title}</span>
                 <Icon className={`w-4 h-4 ${metric.color}`} />
               </div>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                {metric.value}
-              </div>
-              <div className="text-caption text-slate-400 dark:text-slate-300">{metric.sub}</div>
+              {loading ? (
+                <>
+                  <div className="h-8 w-24 rounded-md animate-shimmer" />
+                  <div className="h-4 w-36 rounded animate-shimmer" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {metric.value}
+                  </div>
+                  <div className="text-caption text-slate-400 dark:text-slate-300">{metric.sub}</div>
+                </>
+              )}
             </div>
           );
         })}

@@ -224,22 +224,12 @@ export default function DichVuKhacPage() {
               </div>
             </div>
 
-            <div>
-              <Link
-                href="/khao-sat-dmst"
-                className="w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
-              >
-                Làm Khảo Sát ĐMST Ngay <ArrowRight className="w-4 h-4" />
-              </Link>
-              <div className="mt-2 text-center">
-                <Link
-                  href="/doanh-nghiep-dmst"
-                  className="text-[11px] text-teal-700 hover:text-teal-800 dark:text-teal-400 font-medium inline-flex items-center gap-1"
-                >
-                  Xem bảng xếp hạng & danh bạ DN <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </div>
+            <Link
+              href="/khao-sat-dmst"
+              className="w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm transition"
+            >
+              Làm Khảo Sát ĐMST Ngay <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
           {/* CARD 4: THANG ĐO TRL 1-9 */}

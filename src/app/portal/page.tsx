@@ -214,11 +214,23 @@ export default function PortalDashboard() {
 
     const handleStorageChange = () => {
       const updated = localStorage.getItem("nacentwin_active_role");
+      setUser(authClient.getUser());
       if (updated) setActiveRole(updated);
     };
 
+    const handleRoleSwitched = (e: Event) => {
+      const customEvent = e as CustomEvent<{ role?: string }>;
+      const nextRole = customEvent.detail?.role || localStorage.getItem("nacentwin_active_role");
+      setUser(authClient.getUser());
+      if (nextRole) setActiveRole(nextRole);
+    };
+
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener("nacentwin_role_switched", handleRoleSwitched);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("nacentwin_role_switched", handleRoleSwitched);
+    };
   }, []);
 
   const currentRole = (activeRole || user?.role || "").toUpperCase();

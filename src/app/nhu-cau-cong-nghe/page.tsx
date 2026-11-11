@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Flame,
@@ -52,6 +53,7 @@ interface PublicDemandItem {
 }
 
 export default function PublicDemandsPage() {
+  const router = useRouter();
   const toast = useToast();
   const [filterSector, setFilterSector] = useState("");
   const [filterTni, setFilterTni] = useState("");
@@ -814,7 +816,7 @@ export default function PublicDemandsPage() {
         variant="info"
         onConfirm={() => {
           setShowAuthModal(false);
-          window.location.href = "/login";
+          router.push("/login");
         }}
         onClose={() => setShowAuthModal(false)}
       />

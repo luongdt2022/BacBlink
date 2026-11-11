@@ -1,17 +1,21 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import GovLayout from "./layout";
+import GovLoading from "./loading";
 import { authClient } from "@/lib/auth-client";
+
+let mockGovPathname = "/gov";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/gov",
+  usePathname: () => mockGovPathname,
   useSearchParams: () => new URLSearchParams(),
 }));
 
 describe("GovLayout & GovSidebarNav Minimalist UI/UX", () => {
   beforeEach(() => {
     cleanup();
+    mockGovPathname = "/gov";
     localStorage.clear();
     vi.restoreAllMocks();
     authClient.setSession("test-token", {
@@ -43,18 +47,19 @@ describe("GovLayout & GovSidebarNav Minimalist UI/UX", () => {
     expect(screen.queryByText("Maker-Checker 2 Cấp")).not.toBeInTheDocument();
   });
 
-  it("renders all 4 menu groups and minimalist 7 items without right-side badges", () => {
+  it("renders synced 3 menu groups with DMST and TT17 together under Group 1 without right-side badges", () => {
     render(
       <GovLayout>
         <div>Content</div>
       </GovLayout>
     );
 
-    // Group titles
+    // 3 synced group titles
     expect(screen.getByText("1. Tổng Quan & Phê Duyệt")).toBeInTheDocument();
-    expect(screen.getByText("2. Thẩm Định Công Nghệ TT17")).toBeInTheDocument();
-    expect(screen.getByText("3. Giám Sát Cung–Cầu & Địa Bàn")).toBeInTheDocument();
-    expect(screen.getByText("4. Quản Trị Công Vụ & Nhân Sự")).toBeInTheDocument();
+    expect(screen.getByText("2. Giám Sát Cung–Cầu & Địa Bàn")).toBeInTheDocument();
+    expect(screen.getByText("3. Quản Trị Công Vụ & Nhân Sự")).toBeInTheDocument();
+    expect(screen.queryByText("2. Thẩm Định Công Nghệ TT17")).not.toBeInTheDocument();
+    expect(screen.queryByText("4. Quản Trị Công Vụ & Nhân Sự")).not.toBeInTheDocument();
 
     // 7 menu items
     expect(screen.getByText("Tổng quan địa bàn")).toBeInTheDocument();
@@ -99,16 +104,20 @@ describe("GovLayout & GovSidebarNav Minimalist UI/UX", () => {
       </GovLayout>
     );
 
-    // Collapse group 1
+    // Collapse group 1: both DMST and TT17 are inside Group 1 so both collapse together
     const group1Btn = screen.getByText("1. Tổng Quan & Phê Duyệt");
     fireEvent.click(group1Btn);
 
     // Group 1 items should be hidden
     expect(screen.queryByText("Tổng quan địa bàn")).not.toBeInTheDocument();
+    expect(screen.queryByText("Thẩm định DN ĐMST")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hội đồng Chấm điểm TT17")).not.toBeInTheDocument();
 
     // Re-open
     fireEvent.click(group1Btn);
     expect(screen.getByText("Tổng quan địa bàn")).toBeInTheDocument();
+    expect(screen.getByText("Thẩm định DN ĐMST")).toBeInTheDocument();
+    expect(screen.getByText("Hội đồng Chấm điểm TT17")).toBeInTheDocument();
 
     // Toggle all
     const toggleAllBtn = screen.getByTitle("Thu gọn / Mở rộng tất cả");
@@ -145,5 +154,46 @@ describe("GovLayout & GovSidebarNav Minimalist UI/UX", () => {
     const aside = desktopWrapper?.querySelector("aside");
     expect(aside).toBeInTheDocument();
     expect(aside).toHaveClass("h-full");
+  });
+
+  it("shows gov-route-skeleton immediately on sidebar click and clears when pathname changes", () => {
+    const { rerender } = render(
+      <GovLayout>
+        <div data-testid="gov-real-content">Gov Content</div>
+      </GovLayout>
+    );
+
+    expect(screen.getByTestId("gov-real-content")).toBeInTheDocument();
+    expect(screen.queryByTestId("gov-route-skeleton")).not.toBeInTheDocument();
+
+    // Same route click does not trigger skeleton
+    fireEvent.click(screen.getByRole("link", { name: /Tổng quan địa bàn/i }));
+    expect(screen.queryByTestId("gov-route-skeleton")).not.toBeInTheDocument();
+
+    // Ctrl+click ignores pending skeleton
+    const tt17Link = screen.getByRole("link", { name: /Hội đồng Chấm điểm TT17/i });
+    fireEvent.click(tt17Link, { ctrlKey: true });
+    expect(screen.queryByTestId("gov-route-skeleton")).not.toBeInTheDocument();
+
+    // Normal click shows skeleton and highlights TT17 link
+    fireEvent.click(tt17Link);
+    expect(screen.getByTestId("gov-route-skeleton")).toBeInTheDocument();
+    expect(screen.queryByTestId("gov-real-content")).not.toBeInTheDocument();
+    expect(tt17Link.className).toContain("bg-brand-700");
+
+    // Pathname settles -> skeleton clears
+    mockGovPathname = "/gov/assessments/tt17";
+    rerender(
+      <GovLayout>
+        <div data-testid="gov-real-content">TT17 Loaded</div>
+      </GovLayout>
+    );
+    expect(screen.queryByTestId("gov-route-skeleton")).not.toBeInTheDocument();
+    expect(screen.getByText("TT17 Loaded")).toBeInTheDocument();
+  });
+
+  it("renders GovLoading route boundary with gov-route-skeleton", () => {
+    render(<GovLoading />);
+    expect(screen.getByTestId("gov-route-skeleton")).toHaveAttribute("aria-busy", "true");
   });
 });

@@ -103,7 +103,7 @@ export default function GovEnterpriseApprovalPage() {
       <GovPageHeader
         breadcrumbs={[
           { label: "Cổng Công Vụ", href: "/gov" },
-          { label: "Quản Lý Thẩm Định", href: "/gov" },
+          { label: "Tổng Quan & Phê Duyệt", href: "/gov" },
           { label: "Thẩm Định Doanh Nghiệp ĐMST" },
         ]}
         title="Thẩm Định & Xác Nhận Doanh Nghiệp ĐMST"
