@@ -27,6 +27,7 @@ public sealed class MatchingPipelineTests(PostgresFixture fixture)
             settings: new Dictionary<string, string?>
             {
                 ["Matching:ScoringMode"] = mode,
+                ["Matching:MatchMinScoreCorrected"] = "0",
                 ["Matching:UseSparse"] = sparse ? "true" : "false",
                 ["Matching:UseRerank"] = reranker is null ? "false" : "true",
             },

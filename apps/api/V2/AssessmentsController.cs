@@ -368,10 +368,73 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     }
 
 
+    private static bool ComputeHasRawSurvey(Tt17SurveyDataDto? s)
+    {
+        if (s is null) return false;
+        return s.OriginalCostEquipment > 0
+            || s.CurrentBookValueEquipment > 0
+            || (s.Machineries is not null && s.Machineries.Count > 0)
+            || s.DepreciationCoefficient > 0
+            || s.ModernEquipmentRatio > 0
+            || s.AutomationRatio > 0
+            || s.TotalWorkforce > 0
+            || s.DirectWorkers > 0
+            || s.TrainedWorkers > 0
+            || s.EnergyCostYear > 0
+            || s.MaterialCostYear > 0
+            || s.TrainingCost3Years > 0
+            || s.ItExpenses3Years > 0
+            || s.RdExpenses3Years > 0;
+    }
+
+    private static Tt17AssessmentDto ToSummaryDto(Tt17AssessmentDto x) => new()
+    {
+        Id = x.Id,
+        EnterpriseId = x.EnterpriseId,
+        EnterpriseName = x.EnterpriseName,
+        TaxCode = x.TaxCode,
+        AssessmentYear = x.AssessmentYear,
+        Status = x.Status,
+        ScopeType = x.ScopeType,
+        ScopeId = x.ScopeId,
+        IndustryCode = x.IndustryCode,
+        HasRawSurvey = ComputeHasRawSurvey(x.SurveyData),
+        SurveyData = new Tt17SurveyDataDto
+        {
+            CompanyName = x.SurveyData?.CompanyName ?? x.EnterpriseName,
+            TaxCode = x.SurveyData?.TaxCode ?? x.TaxCode,
+        },
+        ScoreResult = x.ScoreResult is null
+            ? new Tt17ScoreResultDto()
+            : new Tt17ScoreResultDto
+            {
+                ScoreT = x.ScoreResult.ScoreT,
+                ScoreE = x.ScoreResult.ScoreE,
+                ScoreO = x.ScoreResult.ScoreO,
+                ScoreR = x.ScoreResult.ScoreR,
+                ScoreI = x.ScoreResult.ScoreI,
+                TotalScore = x.ScoreResult.TotalScore,
+                SyncCoefficient = x.ScoreResult.SyncCoefficient,
+                Classification = x.ScoreResult.Classification,
+                ClassificationLabel = x.ScoreResult.ClassificationLabel,
+                Criteria = new List<CriterionScoreDto>(),
+                Bottlenecks = x.ScoreResult.Bottlenecks ?? new List<string>()
+            },
+        ReviewNotes = x.ReviewNotes,
+        CreatedAt = x.CreatedAt,
+        UpdatedAt = x.UpdatedAt,
+        SubmittedAt = x.SubmittedAt,
+        ApprovedAt = x.ApprovedAt
+    };
+
     [AllowAnonymous]
     [HttpGet("api/v1/gov/assessments/tt17")]
     [HttpGet("api/v2/gov/assessments/tt17")]
-    public async Task<IActionResult> GetGovAssessmentQueue([FromQuery] string? scopeId, [FromQuery] string? status, CancellationToken ct = default)
+    public async Task<IActionResult> GetGovAssessmentQueue(
+        [FromQuery] string? scopeId,
+        [FromQuery] string? status,
+        [FromQuery] bool summary = false,
+        CancellationToken ct = default)
     {
         var all = await LoadAllAssessmentsAsync(ct);
         var query = all.AsEnumerable();
@@ -390,6 +453,7 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         var list = query
             .OrderByDescending(x => x.ScoreResult?.TotalScore ?? 0)
             .ThenBy(x => x.TaxCode)
+            .Select(x => summary ? ToSummaryDto(x) : x)
             .ToList();
 
         return Ok(new { success = true, data = list, totalCount = list.Count });

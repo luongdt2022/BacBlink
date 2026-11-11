@@ -218,6 +218,76 @@ public sealed class ApprovalService(
             x.CreatedAtUtc)).ToList();
     }
 
+    public async Task<IReadOnlyList<GlobalAuditLogItemDto>> GetGlobalAuditLogsAsync(int limit, CancellationToken ct)
+    {
+        var safeLimit = Math.Clamp(limit, 1, 500);
+        var logs = await db.Set<ApprovalAuditLog>().AsNoTracking()
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .Take(safeLimit)
+            .ToListAsync(ct);
+
+        if (logs.Count == 0)
+        {
+            return Array.Empty<GlobalAuditLogItemDto>();
+        }
+
+        var actorIds = logs.Select(x => x.ActorId).Distinct().ToArray();
+        var actors = await db.Set<Person>().AsNoTracking()
+            .Where(p => actorIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.FirstName, p.LastName, p.Email, p.ScopeId })
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        return logs.Select(x =>
+        {
+            actors.TryGetValue(x.ActorId, out var actor);
+            var fullName = actor is null
+                ? "Hệ thống"
+                : string.Join(" ", new[] { actor.FirstName, actor.LastName }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                fullName = actor?.Email ?? "Quản trị viên";
+            }
+
+            var reason = string.Empty;
+            var targetTitle = $"{x.TargetEntity} ({x.TargetId})";
+            if (!string.IsNullOrWhiteSpace(x.DetailsJson))
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(x.DetailsJson);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("overrideReason", out var r1) && r1.ValueKind == System.Text.Json.JsonValueKind.String)
+                        reason = r1.GetString() ?? "";
+                    else if (root.TryGetProperty("reviewNote", out var r2) && r2.ValueKind == System.Text.Json.JsonValueKind.String)
+                        reason = r2.GetString() ?? "";
+                    else if (root.TryGetProperty("note", out var r3) && r3.ValueKind == System.Text.Json.JsonValueKind.String)
+                        reason = r3.GetString() ?? "";
+
+                    if (root.TryGetProperty("title", out var t1) && t1.ValueKind == System.Text.Json.JsonValueKind.String)
+                        targetTitle = t1.GetString() ?? targetTitle;
+                    else if (root.TryGetProperty("email", out var t2) && t2.ValueKind == System.Text.Json.JsonValueKind.String)
+                        targetTitle = t2.GetString() ?? targetTitle;
+                }
+                catch
+                {
+                    // Ignore non-JSON details
+                }
+            }
+
+            return new GlobalAuditLogItemDto(
+                x.Id,
+                x.CreatedAtUtc,
+                fullName,
+                x.ActorRole,
+                actor?.ScopeId ?? "GLOBAL",
+                x.Action,
+                targetTitle,
+                x.TargetEntity,
+                string.IsNullOrWhiteSpace(reason) ? "Thao tác quản trị hệ thống" : reason,
+                x.IpAddress);
+        }).ToList();
+    }
+
     public async Task<PagedResult<CentralApprovalItemDto>> GetCentralApprovalQueueAsync(ApprovalQueueQueryFilter filter, ICurrentActor actor, CancellationToken ct)
     {
         if (actor.PersonId is null || actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin))

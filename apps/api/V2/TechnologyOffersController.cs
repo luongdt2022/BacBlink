@@ -314,6 +314,233 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         TrlReviewNote: x.TrlReviewNote
     );
 
+    private static string? RewriteListImageUrl(Guid id, string? url, int? galleryIndex = null)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return url;
+        if (url.TrimStart().StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return galleryIndex.HasValue
+                ? $"/api/v1/technologies/{id}/gallery/{galleryIndex.Value}"
+                : $"/api/v1/technologies/{id}/main-image";
+        }
+        return url;
+    }
+
+    private static SellerOfferDto ToListSummaryDto(SellerTechnologyOffer x, bool includeDocsAndGalleryUrls = false)
+    {
+        var mainUrl = RewriteListImageUrl(x.Id, x.MainImageUrl);
+        IReadOnlyList<string> galleryUrls = includeDocsAndGalleryUrls && x.GalleryImageUrls is not null
+            ? x.GalleryImageUrls
+                .Select((u, idx) => RewriteListImageUrl(x.Id, u, idx) ?? string.Empty)
+                .Where(u => !string.IsNullOrEmpty(u))
+                .ToList()
+            : Array.Empty<string>();
+
+        return new SellerOfferDto(
+            Id: x.Id,
+            OfferCode: x.OfferCode,
+            OfferType: x.OfferType,
+            HasTechTransfer: x.HasTechTransfer,
+            Title: x.Title,
+            Summary: x.Summary,
+            ProblemSolved: x.ProblemSolved,
+            SectorCode: x.SectorCode,
+            SectorName: x.SectorName,
+            PricingType: x.PricingType,
+            PriceAmount: x.PriceAmount,
+            PriceMin: x.PriceMin,
+            PriceMax: x.PriceMax,
+            Currency: x.Currency,
+            Unit: x.Unit,
+            DeveloperOrigin: x.DeveloperOrigin,
+            TrlLevel: x.TrlLevel,
+            IpStatus: x.IpStatus,
+            IpRegistrationNumber: x.IpRegistrationNumber,
+            TransferMethod: x.TransferMethod,
+            CommercialStatus: x.CommercialStatus,
+            ContactPointRole: x.ContactPointRole,
+            Status: x.Status,
+            SuccessfulConnections: x.SuccessfulConnections,
+            RatingScore: x.RatingScore,
+            ReviewCount: x.ReviewCount,
+            CreatedAt: x.CreatedAt,
+            PublishedAt: x.PublishedAt,
+            ManagingAuthorityId: x.ManagingAuthorityId,
+            ManagingAuthorityName: x.ManagingAuthorityName,
+            ScopeType: x.ScopeType,
+            ScopeId: x.ScopeId,
+            EnterpriseTaxCode: x.EnterpriseTaxCode,
+            EnterpriseName: x.EnterpriseName,
+            MainImageUrl: mainUrl,
+            GalleryImageUrls: galleryUrls,
+            DeliveryTimeline: x.DeliveryTimeline,
+            WarrantyTerms: x.WarrantyTerms,
+            SupplyScope: x.SupplyScope,
+            PaymentTerms: x.PaymentTerms,
+            SpecValues: includeDocsAndGalleryUrls
+                ? x.SpecValues?.Select(s => new OfferSpecValueDto(s.Id, s.SpecCode, s.SpecName, s.SpecValue, s.Unit, s.SpecCategory)).ToList()
+                : Array.Empty<OfferSpecValueDto>(),
+            Documents: includeDocsAndGalleryUrls
+                ? x.Documents?.Select(d => new OfferDocumentDto(d.Id, d.DocumentType, d.FileName, d.FileUrl, d.FileSizeBytes, d.AccessScope)).ToList()
+                : Array.Empty<OfferDocumentDto>(),
+            ModelCode: x.ModelCode,
+            Manufacturer: x.Manufacturer,
+            OriginCountry: x.OriginCountry,
+            EquipmentStatus: x.EquipmentStatus,
+            ManufacturingYear: x.ManufacturingYear,
+            CapacityScale: x.CapacityScale,
+            EnergyConsumption: x.EnergyConsumption,
+            AutomationLevel: x.AutomationLevel,
+            OperatingPrinciple: x.OperatingPrinciple,
+            DeploymentConditions: x.DeploymentConditions,
+            TransferPriorityMethod: x.TransferPriorityMethod,
+            PriceIncludes: x.PriceIncludes,
+            TaxAndExtraCosts: x.TaxAndExtraCosts,
+            TechnicalSupportMethod: x.TechnicalSupportMethod,
+            IpIssueDate: x.IpIssueDate,
+            LegalCommitmentConfirmed: x.LegalCommitmentConfirmed,
+            TrlVerificationStatus: x.TrlVerificationStatus,
+            IpVerificationStatus: x.IpVerificationStatus,
+            VerifiedAuthorityName: x.VerifiedAuthorityName,
+            TrlVerifiedBy: x.TrlVerifiedBy,
+            TrlVerifiedAt: x.TrlVerifiedAt,
+            TrlReviewNote: x.TrlReviewNote
+        );
+    }
+
+    private IActionResult ServeImageValue(string? rawUrl)
+    {
+        if (string.IsNullOrWhiteSpace(rawUrl))
+        {
+            return NotFound();
+        }
+
+        var trimmed = rawUrl.Trim();
+        if (trimmed.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+        {
+            var commaIdx = trimmed.IndexOf(',');
+            if (commaIdx <= 0) return NotFound();
+
+            var header = trimmed.Substring(5, commaIdx - 5); // e.g. image/png;base64
+            var semiIdx = header.IndexOf(';');
+            var contentType = semiIdx > 0 ? header.Substring(0, semiIdx) : header;
+            var base64Data = trimmed.Substring(commaIdx + 1);
+            try
+            {
+                var bytes = Convert.FromBase64String(base64Data);
+                Response.Headers.CacheControl = "public, max-age=86400";
+                return File(bytes, contentType);
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
+        return Redirect(trimmed);
+    }
+
+    [HttpGet("facets")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPublicFacets(CancellationToken ct = default)
+    {
+        var dbRows = await db.Set<SellerTechnologyOffer>()
+            .AsNoTracking()
+            .Where(x => x.Status == "APPROVED")
+            .Select(x => new { x.Title, x.SectorCode, x.HasTechTransfer, x.IpStatus })
+            .ToListAsync(ct);
+
+        if (dbRows.Count > 0)
+        {
+            var distinct = dbRows
+                .DistinctBy(x => x.Title.Trim().ToLowerInvariant())
+                .ToList();
+
+            var bySector = distinct
+                .Where(x => !string.IsNullOrWhiteSpace(x.SectorCode))
+                .GroupBy(x => x.SectorCode!)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            return Ok(new
+            {
+                success = true,
+                total = distinct.Count,
+                transferCount = distinct.Count(x => x.HasTechTransfer),
+                commercialCount = distinct.Count(x => !x.HasTechTransfer),
+                patentCount = distinct.Count(x => string.Equals(x.IpStatus, "PATENT_GRANTED", StringComparison.OrdinalIgnoreCase)),
+                bySector
+            });
+        }
+
+        var fallback = OffersStore.Values
+            .Where(x => x.Status == "APPROVED")
+            .DistinctBy(x => x.Title.Trim().ToLowerInvariant())
+            .ToList();
+
+        return Ok(new
+        {
+            success = true,
+            total = fallback.Count,
+            transferCount = fallback.Count(x => x.HasTechTransfer),
+            commercialCount = fallback.Count(x => !x.HasTechTransfer),
+            patentCount = fallback.Count(x => string.Equals(x.IpStatus, "PATENT_GRANTED", StringComparison.OrdinalIgnoreCase)),
+            bySector = fallback
+                .Where(x => !string.IsNullOrWhiteSpace(x.SectorCode))
+                .GroupBy(x => x.SectorCode!)
+                .ToDictionary(g => g.Key, g => g.Count())
+        });
+    }
+
+    [HttpGet("{id}/main-image")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetMainImage(string id, CancellationToken ct = default)
+    {
+        var isGuid = Guid.TryParse(id, out var guid);
+        var img = await db.Set<SellerTechnologyOffer>()
+            .AsNoTracking()
+            .Where(x => (isGuid && x.Id == guid) || x.OfferCode == id)
+            .Select(x => x.MainImageUrl)
+            .FirstOrDefaultAsync(ct);
+
+        if (!string.IsNullOrWhiteSpace(img))
+        {
+            return ServeImageValue(img);
+        }
+
+        var storeOffer = isGuid && OffersStore.TryGetValue(guid, out var byId)
+            ? byId
+            : OffersStore.Values.FirstOrDefault(x => string.Equals(x.OfferCode, id, StringComparison.OrdinalIgnoreCase));
+        return ServeImageValue(storeOffer?.MainImageUrl);
+    }
+
+    [HttpGet("{id}/gallery/{index:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetGalleryImage(string id, int index, CancellationToken ct = default)
+    {
+        if (index < 0) return NotFound();
+        var isGuid = Guid.TryParse(id, out var guid);
+        var gallery = await db.Set<SellerTechnologyOffer>()
+            .AsNoTracking()
+            .Where(x => (isGuid && x.Id == guid) || x.OfferCode == id)
+            .Select(x => x.GalleryImageUrls)
+            .FirstOrDefaultAsync(ct);
+
+        if (gallery != null && index < gallery.Count)
+        {
+            return ServeImageValue(gallery[index]);
+        }
+
+        var storeOffer = isGuid && OffersStore.TryGetValue(guid, out var byId)
+            ? byId
+            : OffersStore.Values.FirstOrDefault(x => string.Equals(x.OfferCode, id, StringComparison.OrdinalIgnoreCase));
+        if (storeOffer?.GalleryImageUrls != null && index < storeOffer.GalleryImageUrls.Count)
+        {
+            return ServeImageValue(storeOffer.GalleryImageUrls[index]);
+        }
+
+        return NotFound();
+    }
+
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetOffers(
@@ -333,8 +560,6 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         var effectiveLimit = isRotate && limit == 12 ? 6 : limit;
 
         var dbQuery = db.Set<SellerTechnologyOffer>()
-            .Include(x => x.SpecValues)
-            .Include(x => x.Documents)
             .AsNoTracking()
             .Where(x => x.Status == "APPROVED");
 
@@ -405,7 +630,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                     page = 1,
                     limit = effectiveLimit,
                     totalPages = 1,
-                    data = rotatedEntities.Select(ToDto).ToList()
+                    data = rotatedEntities.Select(x => ToListSummaryDto(x, includeDocsAndGalleryUrls: false)).ToList()
                 });
             }
 
@@ -431,7 +656,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 page,
                 limit,
                 totalPages = (int)Math.Ceiling(total / (double)limit),
-                data = entities.Select(ToDto).ToList()
+                data = entities.Select(x => ToListSummaryDto(x, includeDocsAndGalleryUrls: false)).ToList()
             });
         }
 
@@ -661,7 +886,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 page,
                 limit = pageSize,
                 totalPages,
-                data = entities.Select(ToDto).ToList()
+                data = entities.Select(x => ToListSummaryDto(x, includeDocsAndGalleryUrls: true)).ToList()
             });
         }
 

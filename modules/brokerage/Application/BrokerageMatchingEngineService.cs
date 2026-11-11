@@ -79,19 +79,15 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
         };
     }
 
-    public async Task<IReadOnlyList<BrokerageRadarCandidateDto>> GetRadarCandidatesAsync(
-        string? sector, int? minScore, string? search, RadarUserContext? userContext, CancellationToken ct)
+    private static bool TryBuildRadarWhereClause(
+        System.Data.Common.DbCommand cmd,
+        string? sector,
+        int? minScore,
+        string? search,
+        RadarUserContext? userContext,
+        out string whereSql)
     {
-        var conn = _db.Database.GetDbConnection();
-        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
-
-        using var cmd = conn.CreateCommand();
-        var sql = @"
-            SELECT id, demand_id, demand_code, demand_title, buyer_organization_id, buyer_organization_name,
-                   offer_id, offer_code, offer_title, seller_organization_id, seller_organization_name,
-                   sector_code, match_score, tni_score, trl_level, ip_status, is_active, created_at
-            FROM brokerage.match_candidates
-            WHERE is_active = true";
+        var sql = " WHERE is_active = true";
 
         // Scoped RBAC Security Isolation (T059)
         if (userContext is not null)
@@ -99,7 +95,6 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
             var role = userContext.PlatformRole?.ToUpperInvariant();
             if (role == PlatformRoles.Buyer)
             {
-                // Buyer: Chỉ xem các match candidates gắn với bài toán của chính Buyer
                 if (userContext.PersonId.HasValue || userContext.OrganizationId.HasValue)
                 {
                     sql += @" AND (
@@ -124,13 +119,12 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                 }
                 else
                 {
-                    // Buyer không có danh tính hợp lệ -> Trả về rỗng chống IDOR
-                    return Array.Empty<BrokerageRadarCandidateDto>();
+                    whereSql = string.Empty;
+                    return false;
                 }
             }
             else if (role == PlatformRoles.Seller)
             {
-                // Seller: Chỉ xem các match candidates gắn với chào bán của chính Seller
                 if (userContext.PersonId.HasValue || userContext.OrganizationId.HasValue)
                 {
                     sql += @" AND (
@@ -161,12 +155,12 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                 }
                 else
                 {
-                    return Array.Empty<BrokerageRadarCandidateDto>();
+                    whereSql = string.Empty;
+                    return false;
                 }
             }
             else if (role == PlatformRoles.ProvincialAdmin && !string.IsNullOrWhiteSpace(userContext.ProvinceCode))
             {
-                // Cán bộ Sở KH&CN tỉnh: Giới hạn theo địa bàn hành chính ProvinceCode
                 sql += @" AND demand_id IN (
                     SELECT d.id FROM demand.demand_items d
                     JOIN demand.demand_surveys s ON s.id = d.survey_id
@@ -178,7 +172,6 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                 pProv.Value = $"%{userContext.ProvinceCode.Trim()}%";
                 cmd.Parameters.Add(pProv);
             }
-            // SUPER_ADMIN, OPERATOR_ADMIN, ADMIN: Xem toàn cảnh toàn quốc
         }
 
         if (!string.IsNullOrWhiteSpace(sector) && !string.Equals(sector, "ALL", StringComparison.OrdinalIgnoreCase))
@@ -211,104 +204,199 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
             cmd.Parameters.Add(p);
         }
 
-        sql += " ORDER BY match_score DESC, created_at DESC";
-        cmd.CommandText = sql;
+        whereSql = sql;
+        return true;
+    }
+
+    private BrokerageRadarCandidateDto ReadRadarCandidate(System.Data.Common.DbDataReader reader)
+    {
+        var id = reader.GetGuid(0);
+        var demandId = reader.IsDBNull(1) ? Guid.Empty : reader.GetGuid(1);
+        var demandCode = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+        var demandTitle = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
+        var buyerOrgId = reader.IsDBNull(4) ? (Guid?)null : reader.GetGuid(4);
+        var buyerOrgName = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
+        var offerId = reader.IsDBNull(6) ? Guid.Empty : reader.GetGuid(6);
+        var offerCode = reader.IsDBNull(7) ? string.Empty : reader.GetString(7);
+        var offerTitle = reader.IsDBNull(8) ? string.Empty : reader.GetString(8);
+        var sellerOrgId = reader.IsDBNull(9) ? (Guid?)null : reader.GetGuid(9);
+        var sellerOrgName = reader.IsDBNull(10) ? string.Empty : reader.GetString(10);
+        var sectorCode = reader.IsDBNull(11) ? string.Empty : reader.GetString(11);
+        var matchScore = reader.IsDBNull(12) ? 0 : Convert.ToInt32(reader.GetDecimal(12));
+        var tniScore = reader.IsDBNull(13) ? 0.0 : Convert.ToDouble(reader.GetDecimal(13));
+        var trlLevel = reader.IsDBNull(14) ? 7 : reader.GetInt32(14);
+        var ipStatus = reader.IsDBNull(15) ? "NONE" : reader.GetString(15);
+        var createdAt = reader.IsDBNull(17) ? DateTime.UtcNow : reader.GetDateTime(17);
+
+        var trlScore = CalculateTrlScore(trlLevel, 7);
+        var ipScore = CalculateIpScore(ipStatus);
+
+        var rawSemantic = (matchScore - (0.30 * trlScore) - (0.15 * tniScore) - (0.15 * ipScore)) / 0.40;
+        var semanticScore = Math.Round(Math.Clamp(rawSemantic, 0.0, 100.0), 1);
+
+        var trlStage = trlLevel switch
+        {
+            <= 3 => "Thử nghiệm Lab (TRL 1-3)",
+            <= 6 => "Thử nghiệm Pilot (TRL 4-6)",
+            _    => "Thương mại hóa (TRL 7-9)"
+        };
+
+        var tniBand = tniScore switch
+        {
+            >= 80 => "Cấp thiết rất cao (TNI >= 80)",
+            >= 60 => "Cấp thiết cao (TNI 60-79)",
+            _     => "Cấp thiết trung bình"
+        };
+
+        var ipDesc = (ipStatus?.ToUpperInvariant()) switch
+        {
+            "PATENT_GRANTED" or "PATENTED" or "ĐÃ CẤP BẰNG SÁNG CHẾ" or "SÁNG CHẾ"
+                => "Đã được cấp bằng độc quyền sáng chế",
+            "UTILITY_MODEL" or "GIAI_PHAP_HUU_ICH" or "GIẢI PHÁP HỮU ÍCH" or "BẰNG ĐỘC QUYỀN GIẢI PHÁP HỮU ÍCH"
+                => "Đã được cấp bằng độc quyền Giải pháp hữu ích",
+            "SOFTWARE_COPYRIGHT" or "TAC_QUYEN_PHAN_MEM" or "BẢN QUYỀN PHẦN MỀM" or "BẢN QUYỀN TÁC GIẢ" or "COPYRIGHT"
+                => "Đã đăng ký quyền tác giả / Bản quyền phần mềm",
+            "PATENT_PENDING" or "PENDING" or "ĐANG THẨM ĐỊNH" or "ĐANG XÉT"
+                => "Đang thẩm định hồ sơ đăng ký bảo hộ",
+            "TRADE_SECRET" or "BÍ MẬT KINH DOANH" or "KNOW_HOW"
+                => "Bảo hộ dưới dạng bí mật kinh doanh / Know-how",
+            _ => "Chưa đăng ký bảo hộ sở hữu trí tuệ"
+        };
+
+        const bool isDegraded = true;
+        const string semanticEngine = "POSTGRES_FTS_FALLBACK";
+
+        var xai = new RadarXaiBreakdownDto(
+            semanticScore,
+            semanticEngine,
+            trlScore,
+            trlLevel,
+            trlStage,
+            tniScore,
+            tniBand,
+            ipScore,
+            ipStatus ?? "NONE",
+            ipDesc
+        );
+
+        return new BrokerageRadarCandidateDto(
+            id,
+            demandId,
+            demandCode,
+            demandTitle,
+            buyerOrgId,
+            buyerOrgName,
+            offerId,
+            offerCode,
+            offerTitle,
+            sellerOrgId,
+            sellerOrgName,
+            sectorCode,
+            matchScore,
+            xai,
+            isDegraded,
+            createdAt
+        );
+    }
+
+    public async Task<int> GetRadarSummaryAsync(RadarUserContext? userContext, CancellationToken ct)
+    {
+        var conn = _db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        using var cmd = conn.CreateCommand();
+        if (!TryBuildRadarWhereClause(cmd, null, null, null, userContext, out var whereSql))
+        {
+            return 0;
+        }
+
+        cmd.CommandText = "SELECT COUNT(*) FROM brokerage.match_candidates" + whereSql;
+        var scalar = await cmd.ExecuteScalarAsync(ct);
+        return scalar is null or DBNull ? 0 : Convert.ToInt32(scalar);
+    }
+
+    public async Task<(IReadOnlyList<BrokerageRadarCandidateDto> Items, int TotalCount)> GetRadarCandidatesPagedAsync(
+        string? sector, int? minScore, string? search, RadarUserContext? userContext, int page, int pageSize, CancellationToken ct)
+    {
+        var safePage = page < 1 ? 1 : page;
+        var safeSize = Math.Clamp(pageSize, 1, 200);
+        var offset = (safePage - 1) * safeSize;
+
+        var conn = _db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        int totalCount;
+        using (var countCmd = conn.CreateCommand())
+        {
+            if (!TryBuildRadarWhereClause(countCmd, sector, minScore, search, userContext, out var countWhereSql))
+            {
+                return (Array.Empty<BrokerageRadarCandidateDto>(), 0);
+            }
+            countCmd.CommandText = "SELECT COUNT(*) FROM brokerage.match_candidates" + countWhereSql;
+            var scalar = await countCmd.ExecuteScalarAsync(ct);
+            totalCount = scalar is null or DBNull ? 0 : Convert.ToInt32(scalar);
+        }
+
+        if (totalCount == 0)
+        {
+            return (Array.Empty<BrokerageRadarCandidateDto>(), 0);
+        }
+
+        using var cmd = conn.CreateCommand();
+        TryBuildRadarWhereClause(cmd, sector, minScore, search, userContext, out var whereSql);
+        cmd.CommandText = @"
+            SELECT id, demand_id, demand_code, demand_title, buyer_organization_id, buyer_organization_name,
+                   offer_id, offer_code, offer_title, seller_organization_id, seller_organization_name,
+                   sector_code, match_score, tni_score, trl_level, ip_status, is_active, created_at
+            FROM brokerage.match_candidates" + whereSql + @"
+            ORDER BY match_score DESC, created_at DESC
+            LIMIT @limit OFFSET @offset";
+
+        var pLimit = cmd.CreateParameter();
+        pLimit.ParameterName = "@limit";
+        pLimit.DbType = DbType.Int32;
+        pLimit.Value = safeSize;
+        cmd.Parameters.Add(pLimit);
+
+        var pOffset = cmd.CreateParameter();
+        pOffset.ParameterName = "@offset";
+        pOffset.DbType = DbType.Int32;
+        pOffset.Value = offset;
+        cmd.Parameters.Add(pOffset);
+
+        var results = new List<BrokerageRadarCandidateDto>(safeSize);
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            results.Add(ReadRadarCandidate(reader));
+        }
+
+        return (results, totalCount);
+    }
+
+    public async Task<IReadOnlyList<BrokerageRadarCandidateDto>> GetRadarCandidatesAsync(
+        string? sector, int? minScore, string? search, RadarUserContext? userContext, CancellationToken ct)
+    {
+        var conn = _db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        using var cmd = conn.CreateCommand();
+        if (!TryBuildRadarWhereClause(cmd, sector, minScore, search, userContext, out var whereSql))
+        {
+            return Array.Empty<BrokerageRadarCandidateDto>();
+        }
+
+        cmd.CommandText = @"
+            SELECT id, demand_id, demand_code, demand_title, buyer_organization_id, buyer_organization_name,
+                   offer_id, offer_code, offer_title, seller_organization_id, seller_organization_name,
+                   sector_code, match_score, tni_score, trl_level, ip_status, is_active, created_at
+            FROM brokerage.match_candidates" + whereSql + " ORDER BY match_score DESC, created_at DESC";
 
         var results = new List<BrokerageRadarCandidateDto>();
-        using (var reader = await cmd.ExecuteReaderAsync(ct))
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
         {
-            while (await reader.ReadAsync(ct))
-            {
-                var id = reader.GetGuid(0);
-                var demandId = reader.IsDBNull(1) ? Guid.Empty : reader.GetGuid(1);
-                var demandCode = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
-                var demandTitle = reader.IsDBNull(3) ? string.Empty : reader.GetString(3);
-                var buyerOrgId = reader.IsDBNull(4) ? (Guid?)null : reader.GetGuid(4);
-                var buyerOrgName = reader.IsDBNull(5) ? string.Empty : reader.GetString(5);
-                var offerId = reader.IsDBNull(6) ? Guid.Empty : reader.GetGuid(6);
-                var offerCode = reader.IsDBNull(7) ? string.Empty : reader.GetString(7);
-                var offerTitle = reader.IsDBNull(8) ? string.Empty : reader.GetString(8);
-                var sellerOrgId = reader.IsDBNull(9) ? (Guid?)null : reader.GetGuid(9);
-                var sellerOrgName = reader.IsDBNull(10) ? string.Empty : reader.GetString(10);
-                var sectorCode = reader.IsDBNull(11) ? string.Empty : reader.GetString(11);
-                var matchScore = reader.IsDBNull(12) ? 0 : Convert.ToInt32(reader.GetDecimal(12));
-                var tniScore = reader.IsDBNull(13) ? 0.0 : Convert.ToDouble(reader.GetDecimal(13));
-                var trlLevel = reader.IsDBNull(14) ? 7 : reader.GetInt32(14);
-                var ipStatus = reader.IsDBNull(15) ? "NONE" : reader.GetString(15);
-                var createdAt = reader.IsDBNull(17) ? DateTime.UtcNow : reader.GetDateTime(17);
-
-                var trlScore = CalculateTrlScore(trlLevel, 7);
-                var ipScore = CalculateIpScore(ipStatus);
-
-                // Suy diễn điểm Semantic từ tổng: Overall = 0.4*Semantic + 0.3*Trl + 0.15*Tni + 0.15*Ip
-                var rawSemantic = (matchScore - (0.30 * trlScore) - (0.15 * tniScore) - (0.15 * ipScore)) / 0.40;
-                var semanticScore = Math.Round(Math.Clamp(rawSemantic, 0.0, 100.0), 1);
-
-                var trlStage = trlLevel switch
-                {
-                    <= 3 => "Thử nghiệm Lab (TRL 1-3)",
-                    <= 6 => "Thử nghiệm Pilot (TRL 4-6)",
-                    _    => "Thương mại hóa (TRL 7-9)"
-                };
-
-                var tniBand = tniScore switch
-                {
-                    >= 80 => "Cấp thiết rất cao (TNI >= 80)",
-                    >= 60 => "Cấp thiết cao (TNI 60-79)",
-                    _     => "Cấp thiết trung bình"
-                };
-
-                var ipDesc = (ipStatus?.ToUpperInvariant()) switch
-                {
-                    "PATENT_GRANTED" or "PATENTED" or "ĐÃ CẤP BẰNG SÁNG CHẾ" or "SÁNG CHẾ"
-                        => "Đã được cấp bằng độc quyền sáng chế",
-                    "UTILITY_MODEL" or "GIAI_PHAP_HUU_ICH" or "GIẢI PHÁP HỮU ÍCH" or "BẰNG ĐỘC QUYỀN GIẢI PHÁP HỮU ÍCH"
-                        => "Đã được cấp bằng độc quyền Giải pháp hữu ích",
-                    "SOFTWARE_COPYRIGHT" or "TAC_QUYEN_PHAN_MEM" or "BẢN QUYỀN PHẦN MỀM" or "BẢN QUYỀN TÁC GIẢ" or "COPYRIGHT"
-                        => "Đã đăng ký quyền tác giả / Bản quyền phần mềm",
-                    "PATENT_PENDING" or "PENDING" or "ĐANG THẨM ĐỊNH" or "ĐANG XÉT"
-                        => "Đang thẩm định hồ sơ đăng ký bảo hộ",
-                    "TRADE_SECRET" or "BÍ MẬT KINH DOANH" or "KNOW_HOW"
-                        => "Bảo hộ dưới dạng bí mật kinh doanh / Know-how",
-                    _ => "Chưa đăng ký bảo hộ sở hữu trí tuệ"
-                };
-
-                // Nếu điểm semantic dựa trên FTS fallback (mặc định gắn FTS nếu không có kết nối AI sidecar)
-                var isDegraded = true; // Sẽ được cập nhật chính xác từ engine
-                var semanticEngine = "POSTGRES_FTS_FALLBACK";
-
-                var xai = new RadarXaiBreakdownDto(
-                    semanticScore,
-                    semanticEngine,
-                    trlScore,
-                    trlLevel,
-                    trlStage,
-                    tniScore,
-                    tniBand,
-                    ipScore,
-                    ipStatus ?? "NONE",
-                    ipDesc
-                );
-
-                results.Add(new BrokerageRadarCandidateDto(
-                    id,
-                    demandId,
-                    demandCode,
-                    demandTitle,
-                    buyerOrgId,
-                    buyerOrgName,
-                    offerId,
-                    offerCode,
-                    offerTitle,
-                    sellerOrgId,
-                    sellerOrgName,
-                    sectorCode,
-                    matchScore,
-                    xai,
-                    isDegraded,
-                    createdAt
-                ));
-            }
+            results.Add(ReadRadarCandidate(reader));
         }
 
         return results;

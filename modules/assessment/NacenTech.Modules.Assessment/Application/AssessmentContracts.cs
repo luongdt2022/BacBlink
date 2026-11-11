@@ -17,6 +17,7 @@ public sealed class Tt17AssessmentDto
     public Tt17SurveyDataDto SurveyData { get; set; } = new();
     public Tt17ScoreResultDto ScoreResult { get; set; } = new();
     public string? ReviewNotes { get; set; }
+    public bool? HasRawSurvey { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public DateTimeOffset? SubmittedAt { get; set; }

@@ -235,12 +235,55 @@ public sealed class BrokerageControllers(
         [FromQuery] string? sector,
         [FromQuery] int? minScore,
         [FromQuery] string? search,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        [FromQuery] int? limit,
         CancellationToken ct)
     {
         var userContext = ResolveRadarUserContext();
         var engine = ResolveMatchingEngine();
-        var candidates = await engine.GetRadarCandidatesAsync(sector, minScore, search, userContext, ct);
-        return Ok(Ok200(candidates));
+
+        var effectiveSize = pageSize ?? limit;
+        if (page.HasValue || effectiveSize.HasValue)
+        {
+            var safePage = Math.Max(1, page ?? 1);
+            var safeSize = Math.Clamp(effectiveSize ?? 24, 1, 200);
+            var (items, total) = await engine.GetRadarCandidatesPagedAsync(
+                sector, minScore, search, userContext, safePage, safeSize, ct);
+            var totalPages = (int)Math.Ceiling(total / (double)safeSize);
+            return Ok(new
+            {
+                success = true,
+                data = items,
+                total,
+                page = safePage,
+                pageSize = safeSize,
+                totalPages = totalPages == 0 ? 1 : totalPages,
+            });
+        }
+
+        // Default safety cap for unpaginated callers (prevents 6.3MB JSON dumps)
+        var (defaultItems, defaultTotal) = await engine.GetRadarCandidatesPagedAsync(
+            sector, minScore, search, userContext, 1, 100, ct);
+        return Ok(new
+        {
+            success = true,
+            data = defaultItems,
+            total = defaultTotal,
+            page = 1,
+            pageSize = 100,
+            totalPages = Math.Max(1, (int)Math.Ceiling(defaultTotal / 100.0)),
+        });
+    }
+
+    [HttpGet("brokerage/radar/summary")]
+    [Authorize]
+    public async Task<IActionResult> GetRadarSummary(CancellationToken ct)
+    {
+        var userContext = ResolveRadarUserContext();
+        var engine = ResolveMatchingEngine();
+        var totalCount = await engine.GetRadarSummaryAsync(userContext, ct);
+        return Ok(Ok200(new { totalCount }));
     }
 
     [HttpPost("brokerage/radar/recompute")]

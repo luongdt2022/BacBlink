@@ -322,6 +322,9 @@ public interface IBrokerageMatchingEngineService
     double CalculateIpScore(string? ipStatus);
     Task<IReadOnlyList<BrokerageRadarCandidateDto>> GetRadarCandidatesAsync(
         string? sector, int? minScore, string? search, RadarUserContext? userContext, CancellationToken ct);
+    Task<(IReadOnlyList<BrokerageRadarCandidateDto> Items, int TotalCount)> GetRadarCandidatesPagedAsync(
+        string? sector, int? minScore, string? search, RadarUserContext? userContext, int page, int pageSize, CancellationToken ct);
+    Task<int> GetRadarSummaryAsync(RadarUserContext? userContext, CancellationToken ct);
     Task<RecomputeRadarResultDto> RecomputeRadarForDemandAsync(
         string? demandCode, RadarUserContext? userContext, CancellationToken ct);
 }

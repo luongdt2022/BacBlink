@@ -241,6 +241,18 @@ public sealed record ApprovalAuditLogDto(
     string? DetailsJson,
     DateTimeOffset CreatedAtUtc);
 
+public sealed record GlobalAuditLogItemDto(
+    Guid Id,
+    DateTimeOffset CreatedAt,
+    string ActorName,
+    string ActorRole,
+    string ProvinceCode,
+    string Action,
+    string TargetTitle,
+    string TargetType,
+    string Reason,
+    string IpAddress);
+
 public interface IApprovalService
 {
     Task<PagedResult<ApprovalRequestDto>> GetApprovalsAsync(ApprovalListFilter filter, ICurrentActor actor, CancellationToken ct);
@@ -248,6 +260,7 @@ public interface IApprovalService
     Task<ApprovalRequestDto> SubmitRequestAsync(SubmitApprovalRequestCommand cmd, CancellationToken ct);
     Task<ApprovalRequestDto> ReviewRequestAsync(Guid id, ReviewApprovalRequestCommand cmd, ICurrentActor actor, string ipAddress, CancellationToken ct);
     Task<IReadOnlyList<ApprovalAuditLogDto>> GetAuditLogsAsync(string targetEntity, string targetId, CancellationToken ct);
+    Task<IReadOnlyList<GlobalAuditLogItemDto>> GetGlobalAuditLogsAsync(int limit, CancellationToken ct);
 
     // TASK-07 DELTA V4 (CR-2026-020): Central Queue & Admin Override
     Task<PagedResult<CentralApprovalItemDto>> GetCentralApprovalQueueAsync(ApprovalQueueQueryFilter filter, ICurrentActor actor, CancellationToken ct);

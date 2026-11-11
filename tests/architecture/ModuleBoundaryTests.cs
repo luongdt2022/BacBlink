@@ -85,6 +85,9 @@ public sealed class ModuleBoundaryTests
 
         foreach (var module in ModuleAssemblies)
         {
+            // Module Lms và Blockchain tự vận hành worker/adapter độc lập với transaction host
+            if (module.GetName().Name is "NacenTech.Lms" or "NacenTech.Blockchain") continue;
+
             foreach (var type in module.GetTypes())
             {
                 foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))

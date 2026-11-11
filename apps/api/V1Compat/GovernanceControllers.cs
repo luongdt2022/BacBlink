@@ -113,6 +113,14 @@ public sealed class ApprovalController(IApprovalService approvals) : V1Controlle
         return Ok(Ok200(logs));
     }
 
+    [HttpGet("/api/v1/governance/audit-logs")]
+    public async Task<IActionResult> GetGlobalAuditLogs([FromQuery] int limit = 100, CancellationToken ct = default)
+    {
+        RequireGlobalAdmin();
+        var logs = await approvals.GetGlobalAuditLogsAsync(limit, ct);
+        return Ok(Ok200(logs));
+    }
+
     [HttpGet("/api/v1/admin/approvals/central-queue")]
     [HttpGet("central-queue")]
     public async Task<IActionResult> CentralQueue(
