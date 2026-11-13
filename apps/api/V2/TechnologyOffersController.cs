@@ -247,6 +247,75 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         return items.Select(x => new KeyValuePair<Guid, SellerOfferDto>(x.Id, x));
     }
 
+    private async Task<List<SellerOfferDto>> MapWithRealConnectionsAsync(
+        IReadOnlyList<SellerTechnologyOffer> entities,
+        bool includeDocsAndGalleryUrls,
+        CancellationToken ct)
+    {
+        if (entities.Count == 0) return [];
+        var connMap = await CountRealSuccessfulConnectionsMapAsync(entities.Select(x => x.Id), ct);
+        return entities.Select(x =>
+        {
+            var dto = ToListSummaryDto(x, includeDocsAndGalleryUrls);
+            return connMap.TryGetValue(x.Id, out var realCount)
+                ? dto with { SuccessfulConnections = realCount }
+                : dto;
+        }).ToList();
+    }
+
+    private async Task<Dictionary<Guid, int>> CountRealSuccessfulConnectionsMapAsync(
+        IEnumerable<Guid> offerIds,
+        CancellationToken ct)
+    {
+        var result = new Dictionary<Guid, int>();
+        var ids = offerIds.Distinct().ToList();
+        if (ids.Count == 0 || !db.Database.IsRelational()) return result;
+
+        try
+        {
+            var conn = db.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open)
+            {
+                await conn.OpenAsync(ct);
+            }
+
+            using var cmd = conn.CreateCommand();
+            var paramNames = new List<string>(ids.Count);
+            for (int i = 0; i < ids.Count; i++)
+            {
+                var pName = $"@id{i}";
+                paramNames.Add(pName);
+                var p = cmd.CreateParameter();
+                p.ParameterName = pName;
+                p.Value = ids[i];
+                cmd.Parameters.Add(p);
+            }
+
+            cmd.CommandText = $"""
+                SELECT COALESCE(target_offer_id, offer_id) AS oid, COUNT(*)::int AS cnt
+                FROM brokerage.connection_requests
+                WHERE COALESCE(target_offer_id, offer_id) IN ({string.Join(", ", paramNames)})
+                  AND UPPER(status) IN ('ACCEPTED', 'COMPLETED')
+                GROUP BY COALESCE(target_offer_id, offer_id);
+                """;
+
+            using var reader = await cmd.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
+                {
+                    result[reader.GetGuid(0)] = reader.GetInt32(1);
+                }
+            }
+        }
+        catch
+        {
+            // Bỏ qua an toàn nếu môi trường test không có bảng brokerage.connection_requests
+        }
+
+        return result;
+    }
+
     private static SellerOfferDto ToDto(SellerTechnologyOffer x) => new(
         Id: x.Id,
         OfferCode: x.OfferCode,
@@ -630,7 +699,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                     page = 1,
                     limit = effectiveLimit,
                     totalPages = 1,
-                    data = rotatedEntities.Select(x => ToListSummaryDto(x, includeDocsAndGalleryUrls: false)).ToList()
+                    data = await MapWithRealConnectionsAsync(rotatedEntities, includeDocsAndGalleryUrls: false, ct)
                 });
             }
 
@@ -656,7 +725,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
                 page,
                 limit,
                 totalPages = (int)Math.Ceiling(total / (double)limit),
-                data = entities.Select(x => ToListSummaryDto(x, includeDocsAndGalleryUrls: false)).ToList()
+                data = await MapWithRealConnectionsAsync(entities, includeDocsAndGalleryUrls: false, ct)
             });
         }
 
@@ -757,7 +826,13 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
         if (entity != null)
         {
-            return Ok(new { success = true, data = ToDto(entity) });
+            var connMap = await CountRealSuccessfulConnectionsMapAsync([entity.Id], ct);
+            var dto = ToDto(entity);
+            if (connMap.TryGetValue(entity.Id, out var realCount))
+            {
+                dto = dto with { SuccessfulConnections = realCount };
+            }
+            return Ok(new { success = true, data = dto });
         }
 
         if (isGuid && OffersStore.TryGetValue(guid, out var offer))

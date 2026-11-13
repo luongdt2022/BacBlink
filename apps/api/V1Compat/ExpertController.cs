@@ -46,8 +46,11 @@ public sealed class ConsultationTicketDto
 {
     public string Id { get; set; } = string.Empty;
     public string TicketCode { get; set; } = string.Empty;
-    public string Source { get; set; } = "DEPT_ASSIGNED";
+    public string Source { get; set; } = "DIRECT_B2B";
     public string? AssignedByDepartment { get; set; }
+    public Guid? RequesterPersonId { get; set; }
+    public string? ExpertCode { get; set; }
+    public string? ExpertName { get; set; }
     public string EnterpriseName { get; set; } = string.Empty;
     public string DemandTitle { get; set; } = string.Empty;
     public string? Title { get; set; }
@@ -66,9 +69,11 @@ public sealed class ConsultationTicketDto
     public int SlaDeadlineHours { get; set; }
     public int RemainingHours { get; set; }
     public string Status { get; set; } = "PENDING";
+    public DateTimeOffset? ScheduledAt { get; set; }
     public string? MeetingDate { get; set; }
     public string? MeetingTime { get; set; }
     public string? MeetingType { get; set; }
+    public string? MeetingLink { get; set; }
     public string? MeetingUrl { get; set; }
     public bool CanJoinMeeting { get; set; }
     public string? MeetingCountdownText { get; set; }
@@ -76,6 +81,12 @@ public sealed class ConsultationTicketDto
     public DateTimeOffset? CompletedAt { get; set; }
     public string? MoaDocumentUrl { get; set; }
     public string? MoaDocumentName { get; set; }
+    public string? ExpertNote { get; set; }
+    public string? RejectionReason { get; set; }
+    public string? RejectionNote { get; set; }
+    public int? Rating { get; set; }
+    public string? ReviewComment { get; set; }
+    public DateTimeOffset? ReviewedAt { get; set; }
     public int? EnterpriseRating { get; set; }
     public string? EnterpriseReview { get; set; }
     public string? ExpertEvaluation { get; set; }
@@ -88,13 +99,47 @@ public sealed class ConsultationTicketDto
 public sealed class RespondConsultationRequestDto
 {
     public string Action { get; set; } = "ACCEPT";
+    public DateTimeOffset? ScheduledAt { get; set; }
     public string? MeetingDate { get; set; }
     public string? MeetingTime { get; set; }
     public string? MeetingType { get; set; }
+    public string? MeetingLink { get; set; }
     public string? MeetingUrl { get; set; }
     public string? ExpertNote { get; set; }
     public string? RejectionReasonCategory { get; set; }
+    public string? RejectionReason { get; set; }
     public string? RejectionNote { get; set; }
+}
+
+public sealed class BuyerConsultationTicketDto
+{
+    public string Id { get; set; } = string.Empty;
+    public string TicketCode { get; set; } = string.Empty;
+    public string? ExpertCode { get; set; }
+    public string? ExpertName { get; set; }
+    public string DemandTitle { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Status { get; set; } = "PENDING";
+    public DateTimeOffset? ScheduledAt { get; set; }
+    public string? MeetingDate { get; set; }
+    public string? MeetingTime { get; set; }
+    public string? MeetingType { get; set; }
+    public string? MeetingLink { get; set; }
+    public string? MeetingUrl { get; set; }
+    public string? ExpertNote { get; set; }
+    public string? RejectionReason { get; set; }
+    public int? Rating { get; set; }
+    public string? ReviewComment { get; set; }
+    public DateTimeOffset? ReviewedAt { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
+    public DateTimeOffset RequestedAt { get; set; }
+}
+
+public sealed class ReviewConsultationRequestDto
+{
+    public int Rating { get; set; }
+    public string? Comment { get; set; }
+    public string? ReviewComment { get; set; }
 }
 
 public sealed class ExpertProjectDto
@@ -117,7 +162,13 @@ public sealed class ExpertProjectDto
 }
 
 [Route("api/v1/experts")]
-public sealed class ExpertController(IExpertService experts, IApprovalService approvals, IAuditWriter audit, ITaxonomyService taxonomy, DbContext db) : V1ControllerBase
+public sealed class ExpertController(
+    IExpertService experts,
+    IApprovalService approvals,
+    IAuditWriter audit,
+    ITaxonomyService taxonomy,
+    DbContext db,
+    INotificationService? notifications = null) : V1ControllerBase
 {
     [HttpPost("upgrade-request")]
     [Authorize]
@@ -227,8 +278,9 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
     }
 
     [HttpGet("me/consultations")]
+    [HttpGet("/api/v1/portal/expert/consultations")]
     [Authorize]
-    public async Task<IActionResult> GetMyConsultations(CancellationToken ct)
+    public async Task<IActionResult> GetMyConsultations([FromQuery] string? status = null, CancellationToken ct = default)
     {
         if (Actor.PlatformRole != PlatformRoles.VerifiedExpert && !string.Equals(Actor.PlatformRole, "EXPERT", StringComparison.OrdinalIgnoreCase))
             throw new ForbiddenException("Verified expert or expert access required");
@@ -236,10 +288,10 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
 
-        await EnsureConsultationsTableAndSeedAsync(conn, PersonId, ct);
+        await ConsultationRules.EnsureConsultationsSchemaAsync(conn, ct);
 
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
+        var sql = @"
             SELECT id, ticket_code, source, assigned_by_department, enterprise_name,
                    demand_title, contact_person, contact_phone, contact_email,
                    enterprise_tni_score, description, location, duration,
@@ -248,15 +300,28 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
                    can_join_meeting, meeting_countdown_text, pre_read_materials,
                    completed_at, moa_document_url, moa_document_name,
                    enterprise_rating, enterprise_review, expert_evaluation,
-                   advisory_fee_vnd, fee_payer, disbursement_status, disbursement_amount_vnd
+                   advisory_fee_vnd, fee_payer, disbursement_status, disbursement_amount_vnd,
+                   requester_person_id, expert_code, expert_name, scheduled_at, meeting_link,
+                   rejection_reason, rejection_note, expert_note, rating, review_comment, reviewed_at
             FROM brokerage.expert_consultations
-            WHERE person_id = @personId
-            ORDER BY requested_at DESC;";
+            WHERE person_id = @personId";
 
         var p = cmd.CreateParameter();
         p.ParameterName = "@personId";
         p.Value = PersonId;
         cmd.Parameters.Add(p);
+
+        if (!string.IsNullOrWhiteSpace(status) && !status.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        {
+            sql += " AND UPPER(status) = @statusFilter";
+            var pStatusFilter = cmd.CreateParameter();
+            pStatusFilter.ParameterName = "@statusFilter";
+            pStatusFilter.Value = status.Trim().ToUpperInvariant();
+            cmd.Parameters.Add(pStatusFilter);
+        }
+
+        sql += " ORDER BY requested_at DESC;";
+        cmd.CommandText = sql;
 
         var list = new List<ConsultationTicketDto>();
         using var reader = await cmd.ExecuteReaderAsync(ct);
@@ -272,11 +337,26 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
             var ticketCode = reader.GetString(1);
             var demandTitle = reader.GetString(5);
             var contactPerson = reader.IsDBNull(6) ? null : reader.GetString(6);
-            var contactPhone = reader.IsDBNull(7) ? null : reader.GetString(7);
+            var rawPhone = reader.IsDBNull(7) ? null : reader.GetString(7);
+            var rawEmail = reader.IsDBNull(8) ? null : reader.GetString(8);
+            var currentStatus = reader.GetString(17);
+
+            // BR-CON-005: Ngưỡng mở khóa PII theo PDPD (mask khi PENDING/REJECTED, mở khóa khi SCHEDULED/COMPLETED)
+            var maskedOrFullPhone = ConsultationRules.MaskPhone(rawPhone, currentStatus);
+            var maskedOrFullEmail = ConsultationRules.MaskEmail(rawEmail, currentStatus);
+
+            var legacyMeetingUrl = reader.IsDBNull(21) ? null : reader.GetString(21);
+            var meetingLink = reader.IsDBNull(39) ? legacyMeetingUrl : reader.GetString(39);
+            var rejectionNote = reader.IsDBNull(41) ? null : reader.GetString(41);
+            var rejectionReason = reader.IsDBNull(40) ? rejectionNote : reader.GetString(40);
+            var legacyRating = reader.IsDBNull(28) ? (int?)null : reader.GetInt32(28);
+            var rating = reader.IsDBNull(43) ? legacyRating : reader.GetInt16(43);
+            var legacyReview = reader.IsDBNull(29) ? null : reader.GetString(29);
+            var reviewComment = reader.IsDBNull(44) ? legacyReview : reader.GetString(44);
 
             list.Add(new ConsultationTicketDto
             {
-                Id = ticketCode, // Map directly to ticket code so frontend identifies REQ-CON-XXXX
+                Id = ticketCode,
                 TicketCode = ticketCode,
                 Source = reader.GetString(2),
                 AssignedByDepartment = reader.IsDBNull(3) ? null : reader.GetString(3),
@@ -284,10 +364,10 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
                 DemandTitle = demandTitle,
                 Title = demandTitle,
                 ContactPerson = contactPerson,
-                ContactPhone = contactPhone,
-                ContactEmail = reader.IsDBNull(8) ? null : reader.GetString(8),
+                ContactPhone = maskedOrFullPhone,
+                ContactEmail = maskedOrFullEmail,
                 EnterpriseContactName = contactPerson,
-                EnterpriseContactPhoneMasked = contactPhone,
+                EnterpriseContactPhoneMasked = maskedOrFullPhone,
                 EnterpriseTniScore = reader.IsDBNull(9) ? 80m : reader.GetDecimal(9),
                 Description = reader.IsDBNull(10) ? null : reader.GetString(10),
                 Location = reader.IsDBNull(11) ? null : reader.GetString(11),
@@ -297,24 +377,35 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
                 ExpiresAt = reader.IsDBNull(14) ? null : new DateTimeOffset(reader.GetDateTime(14)),
                 SlaDeadlineHours = reader.IsDBNull(15) ? 48 : reader.GetInt32(15),
                 RemainingHours = reader.IsDBNull(16) ? 48 : reader.GetInt32(16),
-                Status = reader.GetString(17),
+                Status = currentStatus,
+                ScheduledAt = reader.IsDBNull(38) ? null : new DateTimeOffset(reader.GetDateTime(38)),
                 MeetingDate = reader.IsDBNull(18) ? null : reader.GetString(18),
                 MeetingTime = reader.IsDBNull(19) ? null : reader.GetString(19),
                 MeetingType = reader.IsDBNull(20) ? null : reader.GetString(20),
-                MeetingUrl = reader.IsDBNull(21) ? null : reader.GetString(21),
+                MeetingLink = meetingLink,
+                MeetingUrl = meetingLink,
                 CanJoinMeeting = !reader.IsDBNull(22) && reader.GetBoolean(22),
                 MeetingCountdownText = reader.IsDBNull(23) ? null : reader.GetString(23),
                 PreReadMaterials = materials,
                 CompletedAt = reader.IsDBNull(25) ? null : new DateTimeOffset(reader.GetDateTime(25)),
                 MoaDocumentUrl = reader.IsDBNull(26) ? null : reader.GetString(26),
                 MoaDocumentName = reader.IsDBNull(27) ? null : reader.GetString(27),
-                EnterpriseRating = reader.IsDBNull(28) ? null : reader.GetInt32(28),
-                EnterpriseReview = reader.IsDBNull(29) ? null : reader.GetString(29),
+                ExpertNote = reader.IsDBNull(42) ? null : reader.GetString(42),
+                RejectionReason = rejectionReason,
+                RejectionNote = rejectionReason,
+                Rating = rating,
+                ReviewComment = reviewComment,
+                ReviewedAt = reader.IsDBNull(45) ? null : new DateTimeOffset(reader.GetDateTime(45)),
+                EnterpriseRating = rating,
+                EnterpriseReview = reviewComment,
                 ExpertEvaluation = reader.IsDBNull(30) ? null : reader.GetString(30),
                 AdvisoryFeeVnd = reader.IsDBNull(31) ? 0m : reader.GetDecimal(31),
                 FeePayer = reader.IsDBNull(32) ? null : reader.GetString(32),
                 DisbursementStatus = reader.IsDBNull(33) ? "NONE" : reader.GetString(33),
                 DisbursementAmountVnd = reader.IsDBNull(34) ? 0m : reader.GetDecimal(34),
+                RequesterPersonId = reader.IsDBNull(35) ? null : reader.GetGuid(35),
+                ExpertCode = reader.IsDBNull(36) ? null : reader.GetString(36),
+                ExpertName = reader.IsDBNull(37) ? null : reader.GetString(37),
             });
         }
 
@@ -323,6 +414,7 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
     }
 
     [HttpPost("me/consultations/{id}/respond")]
+    [HttpPatch("/api/v1/portal/expert/consultations/{id}")]
     [Authorize]
     public async Task<IActionResult> RespondConsultation(string id, [FromBody] RespondConsultationRequestDto req, CancellationToken ct)
     {
@@ -332,92 +424,161 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
 
-        await EnsureConsultationsTableAndSeedAsync(conn, PersonId, ct);
+        await ConsultationRules.EnsureConsultationsSchemaAsync(conn, ct);
 
-        var isAccept = req.Action.Equals("ACCEPT", StringComparison.OrdinalIgnoreCase);
-        var targetStatus = isAccept ? "SCHEDULED" : "REJECTED";
+        Guid dbId;
+        Guid ownerPersonId;
+        Guid? requesterPersonId;
+        string foundTicketCode;
+        string currentStatus;
+        string? expertCode;
+        string? expertName;
+        string demandTitle;
 
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"
-            UPDATE brokerage.expert_consultations
-            SET status = @status,
-                meeting_date = COALESCE(@meetingDate, meeting_date),
-                meeting_time = COALESCE(@meetingTime, meeting_time),
-                meeting_type = COALESCE(@meetingType, meeting_type),
-                meeting_url = COALESCE(@meetingUrl, meeting_url),
-                expert_note = COALESCE(@expertNote, expert_note),
-                rejection_reason_category = COALESCE(@rejCategory, rejection_reason_category),
-                rejection_note = COALESCE(@rejNote, rejection_note),
-                updated_at = now()
-            WHERE (id::text = @id OR ticket_code = @id) AND person_id = @personId
-            RETURNING id, ticket_code, status;";
-
-        var pStatus = cmd.CreateParameter();
-        pStatus.ParameterName = "@status";
-        pStatus.Value = targetStatus;
-        cmd.Parameters.Add(pStatus);
-
-        var pDate = cmd.CreateParameter();
-        pDate.ParameterName = "@meetingDate";
-        pDate.Value = (object?)req.MeetingDate ?? DBNull.Value;
-        cmd.Parameters.Add(pDate);
-
-        var pTime = cmd.CreateParameter();
-        pTime.ParameterName = "@meetingTime";
-        pTime.Value = (object?)req.MeetingTime ?? DBNull.Value;
-        cmd.Parameters.Add(pTime);
-
-        var pType = cmd.CreateParameter();
-        pType.ParameterName = "@meetingType";
-        pType.Value = (object?)req.MeetingType ?? DBNull.Value;
-        cmd.Parameters.Add(pType);
-
-        var pUrl = cmd.CreateParameter();
-        pUrl.ParameterName = "@meetingUrl";
-        pUrl.Value = (object?)req.MeetingUrl ?? DBNull.Value;
-        cmd.Parameters.Add(pUrl);
-
-        var pNote = cmd.CreateParameter();
-        pNote.ParameterName = "@expertNote";
-        pNote.Value = (object?)req.ExpertNote ?? DBNull.Value;
-        cmd.Parameters.Add(pNote);
-
-        var pRejCat = cmd.CreateParameter();
-        pRejCat.ParameterName = "@rejCategory";
-        pRejCat.Value = (object?)req.RejectionReasonCategory ?? DBNull.Value;
-        cmd.Parameters.Add(pRejCat);
-
-        var pRejNote = cmd.CreateParameter();
-        pRejNote.ParameterName = "@rejNote";
-        pRejNote.Value = (object?)req.RejectionNote ?? DBNull.Value;
-        cmd.Parameters.Add(pRejNote);
-
-        var pId = cmd.CreateParameter();
-        pId.ParameterName = "@id";
-        pId.Value = id;
-        cmd.Parameters.Add(pId);
-
-        var pPerson = cmd.CreateParameter();
-        pPerson.ParameterName = "@personId";
-        pPerson.Value = PersonId;
-        cmd.Parameters.Add(pPerson);
-
-        string? foundTicketCode = null;
-        using (var reader = await cmd.ExecuteReaderAsync(ct))
+        using (var cmdFind = conn.CreateCommand())
         {
-            if (await reader.ReadAsync(ct))
+            cmdFind.CommandText = @"
+                SELECT id, person_id, requester_person_id, ticket_code, status, expert_code, expert_name, demand_title
+                FROM brokerage.expert_consultations
+                WHERE id::text = @id OR ticket_code = @id
+                LIMIT 1;";
+            var pFindId = cmdFind.CreateParameter();
+            pFindId.ParameterName = "@id";
+            pFindId.Value = id;
+            cmdFind.Parameters.Add(pFindId);
+
+            using var reader = await cmdFind.ExecuteReaderAsync(ct);
+            if (!await reader.ReadAsync(ct))
+                throw new NotFoundException("Không tìm thấy phiếu yêu cầu tư vấn.", "CONSULTATION_NOT_FOUND");
+
+            dbId = reader.GetGuid(0);
+            ownerPersonId = reader.GetGuid(1);
+            requesterPersonId = reader.IsDBNull(2) ? null : reader.GetGuid(2);
+            foundTicketCode = reader.GetString(3);
+            currentStatus = reader.GetString(4);
+            expertCode = reader.IsDBNull(5) ? null : reader.GetString(5);
+            expertName = reader.IsDBNull(6) ? null : reader.GetString(6);
+            demandTitle = reader.GetString(7);
+        }
+
+        // BR-CON-004: Kiểm tra ownership chuyên gia
+        ConsultationRules.EnsureExpertOwnership(ownerPersonId, PersonId);
+
+        var rejectionReason = !string.IsNullOrWhiteSpace(req.RejectionReason)
+            ? req.RejectionReason.Trim()
+            : req.RejectionNote?.Trim();
+        var meetingLink = !string.IsNullOrWhiteSpace(req.MeetingLink)
+            ? req.MeetingLink.Trim()
+            : req.MeetingUrl?.Trim();
+        var scheduledAt = req.ScheduledAt;
+        if (scheduledAt is null && !string.IsNullOrWhiteSpace(req.MeetingDate) && DateTimeOffset.TryParse(req.MeetingDate, out var parsedDate))
+        {
+            scheduledAt = parsedDate;
+        }
+
+        // State Machine + BR-CON-002 (REJECT >= 10 ký tự)
+        var targetStatus = ConsultationRules.ResolveTransition(currentStatus, req.Action, rejectionReason);
+
+        using (var cmdUpdate = conn.CreateCommand())
+        {
+            cmdUpdate.CommandText = @"
+                UPDATE brokerage.expert_consultations
+                SET status = @status,
+                    scheduled_at = COALESCE(@scheduledAt, scheduled_at),
+                    meeting_date = COALESCE(@meetingDate, meeting_date),
+                    meeting_time = COALESCE(@meetingTime, meeting_time),
+                    meeting_type = COALESCE(@meetingType, meeting_type),
+                    meeting_link = COALESCE(@meetingLink, meeting_link),
+                    meeting_url = COALESCE(@meetingLink, meeting_url),
+                    expert_note = COALESCE(@expertNote, expert_note),
+                    rejection_reason_category = COALESCE(@rejCategory, rejection_reason_category),
+                    rejection_reason = COALESCE(@rejReason, rejection_reason),
+                    rejection_note = COALESCE(@rejReason, rejection_note),
+                    completed_at = CASE WHEN @status = 'COMPLETED' THEN COALESCE(completed_at, now()) ELSE completed_at END,
+                    updated_at = now()
+                WHERE id = @dbId AND person_id = @personId;";
+
+            void AddParam(string name, object? val)
             {
-                foundTicketCode = reader.GetString(1);
+                var prm = cmdUpdate.CreateParameter();
+                prm.ParameterName = name;
+                prm.Value = val ?? DBNull.Value;
+                cmdUpdate.Parameters.Add(prm);
+            }
+
+            AddParam("@status", targetStatus);
+            AddParam("@scheduledAt", scheduledAt?.UtcDateTime);
+            AddParam("@meetingDate", req.MeetingDate?.Trim());
+            AddParam("@meetingTime", req.MeetingTime?.Trim());
+            AddParam("@meetingType", req.MeetingType?.Trim());
+            AddParam("@meetingLink", meetingLink);
+            AddParam("@expertNote", req.ExpertNote?.Trim());
+            AddParam("@rejCategory", req.RejectionReasonCategory?.Trim());
+            AddParam("@rejReason", rejectionReason);
+            AddParam("@dbId", dbId);
+            AddParam("@personId", PersonId);
+
+            await cmdUpdate.ExecuteNonQueryAsync(ct);
+        }
+
+        var notifSvc = notifications ?? HttpContext?.RequestServices.GetService<INotificationService>();
+        if (notifSvc is not null)
+        {
+            var notifType = targetStatus == ConsultationRules.Statuses.Completed
+                ? NotificationTypes.ExpertConsultationCompleted
+                : NotificationTypes.ExpertConsultationResponded;
+
+            var payload = new
+            {
+                ConsultationId = dbId,
+                TicketCode = foundTicketCode,
+                Status = targetStatus,
+                ExpertCode = expertCode,
+                ExpertName = expertName,
+                DemandTitle = demandTitle,
+                ScheduledAt = scheduledAt,
+                MeetingLink = meetingLink,
+                RejectionReason = rejectionReason,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            };
+
+            if (requesterPersonId is { } buyerPid && buyerPid != PersonId)
+            {
+                await notifSvc.CreateAsync(buyerPid, notifType, payload, ct);
+            }
+
+            var adminIds = await db.Set<Person>().AsNoTracking()
+                .Where(x => x.IsActive && (x.PlatformRole == PlatformRoles.Admin || x.PlatformRole == PlatformRoles.OperatorAdmin || x.PlatformRole == PlatformRoles.SuperAdmin))
+                .Select(x => x.Id)
+                .ToListAsync(ct);
+
+            foreach (var adminId in adminIds.Distinct().Where(aid => aid != PersonId && aid != requesterPersonId))
+            {
+                await notifSvc.CreateAsync(adminId, notifType, payload, ct);
             }
         }
 
-        Audit("EXPERT_CONSULTATION_RESPOND", id, isAccept ? "ACCEPT" : "REJECT");
+        var normalizedAction = req.Action.Trim().ToUpperInvariant();
+        Audit("EXPERT_CONSULTATION_RESPOND", foundTicketCode, normalizedAction);
+
+        var responseMessage = targetStatus switch
+        {
+            ConsultationRules.Statuses.Scheduled => "Đã đồng ý tiếp nhận tư vấn và thiết lập lịch hẹn thành công.",
+            ConsultationRules.Statuses.Rejected => "Đã từ chối yêu cầu tư vấn.",
+            ConsultationRules.Statuses.Completed => "Đã đánh dấu hoàn thành buổi tư vấn.",
+            _ => "Đã cập nhật trạng thái tư vấn."
+        };
 
         return Ok(Ok200(new
         {
-            id,
+            id = foundTicketCode,
+            consultationId = dbId.ToString(),
+            ticketCode = foundTicketCode,
             status = targetStatus,
-            message = isAccept ? "Đã đồng ý tiếp nhận tư vấn và thiết lập lịch hẹn thành công." : "Đã từ chối lời mời tư vấn."
+            scheduledAt,
+            meetingLink,
+            rejectionReason,
+            message = responseMessage
         }));
     }
 
@@ -493,136 +654,6 @@ public sealed class ExpertController(IExpertService experts, IApprovalService ap
 
         Audit("EXPERT_PROJECTS_READ", PersonId.ToString("N"), "OWNER");
         return Ok(Ok200(list));
-    }
-
-    private static async Task EnsureConsultationsTableAndSeedAsync(DbConnection conn, Guid personId, CancellationToken ct)
-    {
-        using var cmdCreate = conn.CreateCommand();
-        cmdCreate.CommandText = @"
-            CREATE SCHEMA IF NOT EXISTS brokerage;
-            CREATE TABLE IF NOT EXISTS brokerage.expert_consultations (
-                id UUID PRIMARY KEY,
-                person_id UUID NOT NULL,
-                ticket_code VARCHAR(100) NOT NULL,
-                source VARCHAR(50) NOT NULL,
-                assigned_by_department VARCHAR(255),
-                enterprise_name VARCHAR(255) NOT NULL,
-                demand_title VARCHAR(500) NOT NULL,
-                contact_person VARCHAR(255),
-                contact_phone VARCHAR(50),
-                contact_email VARCHAR(255),
-                requested_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-                sla_deadline_hours INT NOT NULL DEFAULT 48,
-                status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
-                meeting_date VARCHAR(50),
-                meeting_time VARCHAR(100),
-                meeting_type VARCHAR(100),
-                meeting_url VARCHAR(500),
-                advisory_fee_vnd NUMERIC(18, 2) DEFAULT 0,
-                fee_payer VARCHAR(255),
-                disbursement_status VARCHAR(50) DEFAULT 'NONE',
-                disbursement_amount_vnd NUMERIC(18, 2) DEFAULT 0,
-                enterprise_tni_score NUMERIC(5, 2) DEFAULT 80,
-                description TEXT,
-                location VARCHAR(255),
-                duration VARCHAR(100),
-                expires_at TIMESTAMPTZ,
-                remaining_hours INT DEFAULT 48,
-                can_join_meeting BOOLEAN DEFAULT false,
-                meeting_countdown_text VARCHAR(255),
-                pre_read_materials TEXT,
-                completed_at TIMESTAMPTZ,
-                moa_document_url VARCHAR(500),
-                moa_document_name VARCHAR(255),
-                enterprise_rating INT,
-                enterprise_review TEXT,
-                expert_evaluation TEXT,
-                expert_note TEXT,
-                rejection_reason_category VARCHAR(255),
-                rejection_note TEXT,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-                updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-            );";
-        await cmdCreate.ExecuteNonQueryAsync(ct);
-
-        using var cmdCount = conn.CreateCommand();
-        cmdCount.CommandText = "SELECT COUNT(*) FROM brokerage.expert_consultations WHERE person_id = @personId;";
-        var p = cmdCount.CreateParameter();
-        p.ParameterName = "@personId";
-        p.Value = personId;
-        cmdCount.Parameters.Add(p);
-        var count = Convert.ToInt64(await cmdCount.ExecuteScalarAsync(ct));
-
-        if (count == 0)
-        {
-            using var cmdSeed = conn.CreateCommand();
-            cmdSeed.CommandText = @"
-                INSERT INTO brokerage.expert_consultations (
-                    id, person_id, ticket_code, source, assigned_by_department, enterprise_name,
-                    demand_title, contact_person, contact_phone, contact_email, requested_at,
-                    sla_deadline_hours, status, meeting_date, meeting_time, meeting_type, meeting_url,
-                    advisory_fee_vnd, fee_payer, disbursement_status, disbursement_amount_vnd,
-                    enterprise_tni_score, description, location, duration, expires_at, remaining_hours,
-                    can_join_meeting, meeting_countdown_text, pre_read_materials, completed_at,
-                    moa_document_url, moa_document_name, enterprise_rating, enterprise_review,
-                    expert_evaluation, created_at, updated_at
-                ) VALUES 
-                (
-                    'b0000000-0000-0000-0000-000000000081', @personId, 'REQ-CON-2026-081', 'DEPT_ASSIGNED', 'Sở KH&CN Hà Nội', 'Công ty CP Dược Phẩm Trung Ương MediTech',
-                    'Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP', 'Trần Anh Tuấn (GĐ Kỹ thuật)', '0912****89 (Đã bảo vệ PDPD)', 'tuan.ta@meditech.vn', now() - interval '30 hours',
-                    18, 'PENDING', NULL, NULL, NULL, NULL,
-                    15000000, 'Quỹ ĐMST Hà Nội chi trả', 'NONE', 0,
-                    86.4, 'Doanh nghiệp đang chuẩn bị đấu thầu gói mua sắm dây chuyền chiết rót 4.000 chai/h, cần chuyên gia tư vấn độc lập đánh giá thông số kỹ thuật của 03 nhà thầu, kiểm tra sự tương thích với hệ thống bồn chứa hiện hữu và lập báo cáo thẩm định kỹ thuật.', 'Khảo sát tại Nhà máy Hòa Lạc, Hà Nội', '02 buổi làm việc', now() + interval '18 hours', 18,
-                    false, NULL, NULL, NULL,
-                    NULL, NULL, NULL, NULL,
-                    NULL, now() - interval '30 hours', now() - interval '30 hours'
-                ),
-                (
-                    'b0000000-0000-0000-0000-000000000079', @personId, 'REQ-CON-2026-079', 'DIRECT_B2B', NULL, 'HTX Nông Nghiệp Công Nghệ Cao An Phú (Lâm Đồng)',
-                    'Tư Vấn Thiết Kế Hệ Thống Cánh Tay Robot Phân Loại Nông Sản Cho HTX Nông Nghiệp', 'Lê Văn Hùng (Chủ tịch HTX)', '0983****12 (Đã bảo vệ PDPD)', 'hung.lv@anphu.vn', now() - interval '12 hours',
-                    36, 'PENDING', NULL, NULL, NULL, NULL,
-                    5000000, 'Doanh nghiệp tự chi trả', 'NONE', 0,
-                    72.8, 'HTX cần chuyên gia xem xét bản vẽ mặt bằng nhà xưởng sơ bộ và tư vấn có nên đầu tư robot Delta phân loại nấm hay dùng băng chuyền cơ học thông thường.', 'Trực tuyến qua Zoom', '01 buổi làm việc (2 giờ)', now() + interval '36 hours', 36,
-                    false, NULL, NULL, NULL,
-                    NULL, NULL, NULL, NULL,
-                    NULL, now() - interval '12 hours', now() - interval '12 hours'
-                ),
-                (
-                    'b0000000-0000-0000-0000-000000000075', @personId, 'REQ-CON-2026-075', 'DEPT_ASSIGNED', 'Sở KH&CN TP. Hồ Chí Minh', 'Công ty TNHH Nhựa Sinh Học GreenPack',
-                    'Tư Vấn Kiểm Nghiệm Độ Phân Hủy Sinh Học Bao Bì Nông Nghiệp TRL 5', 'Nguyễn Thị Mai (TP R&D)', '0903****65 (Đã bảo vệ PDPD)', 'mai.nt@greenpack.vn', now() - interval '4 hours',
-                    44, 'PENDING', NULL, NULL, NULL, NULL,
-                    12000000, 'Quỹ ĐMST TP.HCM chi trả', 'NONE', 0,
-                    81.2, 'Tư vấn giải pháp thử nghiệm gia tốc môi trường đất cho màng phủ sinh học sản xuất từ tinh bột sắn biến tính.', 'Trực tiếp tại Lab', '01 ngày làm việc', now() + interval '44 hours', 44,
-                    false, NULL, NULL, NULL,
-                    NULL, NULL, NULL, NULL,
-                    NULL, now() - interval '4 hours', now() - interval '4 hours'
-                ),
-                (
-                    'b0000000-0000-0000-0000-000000000068', @personId, 'REQ-CON-2026-068', 'DEPT_ASSIGNED', 'Sở KH&CN Hải Phòng', 'Công ty CP Robot Rạng Đông',
-                    'Họp Thẩm Định Sơ Bộ Với Công Ty CP Robot Rạng Đông', 'Phạm Văn Đông', '0977****33', 'dong.pv@rangdong.vn', now() - interval '3 days',
-                    0, 'SCHEDULED', '2026-10-18', '09:00 - 11:30', 'Trực tuyến qua Zoom', 'https://zoom.us/j/883492019',
-                    20000000, 'Quỹ ĐMST Hải Phòng chi trả', 'AUDITING', 0,
-                    88.0, 'Đánh giá tính khả thi ứng dụng thị giác máy tính vào dây chuyền đóng gói linh kiện điện tử.', 'Trực tuyến qua Zoom', '2.5 giờ', now() + interval '2 days', 0,
-                    false, 'Sẽ mở trước giờ họp 15 phút', '[{""name"":""Ban_ve_mat_bang_nha_xuong_kho_van.pdf"",""size"":""4.2 MB"",""url"":""#""}]', NULL,
-                    NULL, NULL, NULL, NULL,
-                    NULL, now() - interval '3 days', now() - interval '1 day'
-                ),
-                (
-                    'b0000000-0000-0000-0000-000000000051', @personId, 'REQ-CON-2026-051', 'DEPT_ASSIGNED', 'Sở KH&CN Hà Nội', 'Công ty CP Công Nghệ Sinh Học BioTech HN',
-                    'Tư Vấn Thẩm Định Dây Chuyền Lên Men Vi Sinh TRL 7', 'Hoàng Văn Nam', '0911****88', 'nam.hv@biotech.vn', now() - interval '10 days',
-                    0, 'COMPLETED', '2026-10-10', '14:00 - 16:30', 'Trực tiếp tại Nhà máy', NULL,
-                    18000000, 'Quỹ ĐMST Hà Nội chi trả', 'DISBURSED', 18000000,
-                    90.5, 'Tư vấn tối ưu hóa điều kiện lên men và kiểm soát nồng độ oxy hòa tan cho hệ thống bioreactor 500L.', 'Nhà máy BioTech HN', '01 buổi làm việc', now() - interval '5 days', 0,
-                    false, NULL, NULL, now() - interval '5 days',
-                    '/documents/moa-2026-051.pdf', 'Bien_ban_nghiem_thu_tu_van_MoA_BioTech.pdf', 5, 'Chuyên gia tư vấn rất sâu sắc, giải quyết triệt để vấn đề nhiễm khuẩn chéo.',
-                    'Doanh nghiệp có cơ sở vật chất tốt, đội ngũ kỹ sư tiếp thu nhanh.', now() - interval '10 days', now() - interval '5 days'
-                );";
-            var pSeed = cmdSeed.CreateParameter();
-            pSeed.ParameterName = "@personId";
-            pSeed.Value = personId;
-            cmdSeed.Parameters.Add(pSeed);
-            await cmdSeed.ExecuteNonQueryAsync(ct);
-        }
     }
 
     private static async Task EnsureProjectsTableAndSeedAsync(DbConnection conn, Guid personId, CancellationToken ct)
@@ -919,30 +950,301 @@ public sealed class PublicExpertController(IExpertService experts, DbContext db,
         if (string.IsNullOrWhiteSpace(request.ContactName) || string.IsNullOrWhiteSpace(request.Message))
             return BadRequest(new { success = false, message = "Họ tên liên hệ và nội dung yêu cầu là bắt buộc." });
 
-        var profile = await experts.GetPublicDetailAsync(expertCode, ct);
-        if (profile is null) return NotFound();
+        var expertRow = await db.Set<ExpertProfile>().AsNoTracking()
+            .Where(x => x.ExpertCode == expertCode)
+            .Select(x => new { x.PersonId, x.ExpertCode, x.FullName })
+            .FirstOrDefaultAsync(ct);
 
-        var recipients = await db.Set<Person>().AsNoTracking()
-            .Where(x => x.IsActive && (x.PlatformRole == PlatformRoles.Admin || x.PlatformRole == PlatformRoles.OperatorAdmin || x.PlatformRole == PlatformRoles.SuperAdmin))
-            .Select(x => x.Id).ToListAsync(ct);
-        if (recipients.Count == 0)
-            return StatusCode(503, new { success = false, message = "Chưa cấu hình người nhận thông báo NacenTech." });
+        if (expertRow is null || expertRow.PersonId is null)
+            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ chuyên gia hoặc chuyên gia chưa liên kết tài khoản." });
 
-        foreach (var recipient in recipients)
+        var expertPersonId = expertRow.PersonId.Value;
+        var actor = HttpContext?.RequestServices.GetService<ICurrentActor>();
+        Guid? requesterPersonId = actor is { IsAuthenticated: true, PersonId: { } pid } ? pid : null;
+
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        await ConsultationRules.EnsureConsultationsSchemaAsync(conn, ct);
+
+        var trimmedMessage = request.Message.Trim();
+        var demandTitle = trimmedMessage.Length > 480 ? $"{trimmedMessage[..477]}..." : trimmedMessage;
+        var enterpriseName = string.IsNullOrWhiteSpace(request.OrganizationName)
+            ? request.ContactName.Trim()
+            : request.OrganizationName.Trim();
+
+        var consultationId = Guid.NewGuid();
+        var ticketCode = string.Empty;
+        var inserted = false;
+
+        for (var attempt = 0; attempt < 5 && !inserted; attempt++)
         {
-            await notifications.CreateAsync(recipient, NotificationTypes.ExpertConsultationRequestReceived, new
+            ticketCode = ConsultationRules.GenerateTicketCode();
+            try
             {
-                profile.ExpertCode,
-                ExpertName = profile.FullName,
-                request.ContactName,
-                request.OrganizationName,
-                request.Email,
-                request.Phone,
-                request.Message,
-                RequestedAtUtc = DateTimeOffset.UtcNow
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = @"
+                    INSERT INTO brokerage.expert_consultations (
+                        id, person_id, requester_person_id, expert_code, expert_name,
+                        ticket_code, source, enterprise_name, demand_title, description,
+                        contact_person, contact_phone, contact_email,
+                        requested_at, sla_deadline_hours, expires_at, remaining_hours,
+                        status, created_at, updated_at
+                    ) VALUES (
+                        @id, @personId, @requesterPersonId, @expertCode, @expertName,
+                        @ticketCode, 'DIRECT_B2B', @enterpriseName, @demandTitle, @description,
+                        @contactPerson, @contactPhone, @contactEmail,
+                        now(), 48, now() + interval '48 hours', 48,
+                        'PENDING', now(), now()
+                    );";
+
+                void AddParam(string name, object? val)
+                {
+                    var prm = cmd.CreateParameter();
+                    prm.ParameterName = name;
+                    prm.Value = val ?? DBNull.Value;
+                    cmd.Parameters.Add(prm);
+                }
+
+                AddParam("@id", consultationId);
+                AddParam("@personId", expertPersonId);
+                AddParam("@requesterPersonId", requesterPersonId);
+                AddParam("@expertCode", expertRow.ExpertCode);
+                AddParam("@expertName", expertRow.FullName);
+                AddParam("@ticketCode", ticketCode);
+                AddParam("@enterpriseName", enterpriseName);
+                AddParam("@demandTitle", demandTitle);
+                AddParam("@description", trimmedMessage);
+                AddParam("@contactPerson", request.ContactName.Trim());
+                AddParam("@contactPhone", request.Phone?.Trim());
+                AddParam("@contactEmail", request.Email?.Trim());
+
+                await cmd.ExecuteNonQueryAsync(ct);
+                inserted = true;
+            }
+            catch (DbException ex) when (ex.SqlState == "23505" && attempt < 4)
+            {
+                // Retry with a newly generated ticket_code if unique index uq_expert_consultations_ticket_code collides
+                consultationId = Guid.NewGuid();
+            }
+        }
+
+        var notifPayload = new
+        {
+            ConsultationId = consultationId,
+            TicketCode = ticketCode,
+            Status = ConsultationRules.Statuses.Pending,
+            expertRow.ExpertCode,
+            ExpertName = expertRow.FullName,
+            ContactName = request.ContactName.Trim(),
+            request.OrganizationName,
+            request.Email,
+            request.Phone,
+            Message = trimmedMessage,
+            RequesterPersonId = requesterPersonId,
+            RequestedAtUtc = DateTimeOffset.UtcNow
+        };
+
+        await notifications.CreateAsync(expertPersonId, NotificationTypes.ExpertConsultationRequestReceived, notifPayload, ct);
+
+        var adminRecipients = await db.Set<Person>().AsNoTracking()
+            .Where(x => x.IsActive && (x.PlatformRole == PlatformRoles.Admin || x.PlatformRole == PlatformRoles.OperatorAdmin || x.PlatformRole == PlatformRoles.SuperAdmin))
+            .Select(x => x.Id)
+            .ToListAsync(ct);
+
+        foreach (var recipient in adminRecipients.Distinct().Where(id => id != expertPersonId))
+        {
+            await notifications.CreateAsync(recipient, NotificationTypes.ExpertConsultationRequestReceived, notifPayload, ct);
+        }
+
+        return StatusCode(201, new
+        {
+            success = true,
+            ticketCode,
+            status = ConsultationRules.Statuses.Pending,
+            message = $"Yêu cầu tư vấn đã được ghi nhận với mã phiếu {ticketCode}.",
+            data = new
+            {
+                id = consultationId.ToString(),
+                ticketCode,
+                status = ConsultationRules.Statuses.Pending,
+                expertCode = expertRow.ExpertCode,
+                expertName = expertRow.FullName
+            }
+        });
+    }
+}
+
+[ApiController]
+[Route("api/v1/portal/buyer/consultations")]
+[Authorize]
+public sealed class PortalBuyerConsultationController(DbContext db, INotificationService? notifications = null) : V1ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> ListMyRequests(CancellationToken ct)
+    {
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        await ConsultationRules.EnsureConsultationsSchemaAsync(conn, ct);
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT id, ticket_code, expert_code, expert_name, demand_title, description,
+                   status, scheduled_at, meeting_date, meeting_time, meeting_type,
+                   COALESCE(meeting_link, meeting_url) AS meeting_link,
+                   expert_note, COALESCE(rejection_reason, rejection_note) AS rejection_reason,
+                   COALESCE(rating, enterprise_rating) AS rating,
+                   COALESCE(review_comment, enterprise_review) AS review_comment,
+                   reviewed_at, completed_at, requested_at
+            FROM brokerage.expert_consultations
+            WHERE requester_person_id = @personId
+            ORDER BY requested_at DESC;";
+
+        var p = cmd.CreateParameter();
+        p.ParameterName = "@personId";
+        p.Value = PersonId;
+        cmd.Parameters.Add(p);
+
+        var list = new List<BuyerConsultationTicketDto>();
+        using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            var meetingLink = reader.IsDBNull(11) ? null : reader.GetString(11);
+            list.Add(new BuyerConsultationTicketDto
+            {
+                Id = reader.GetGuid(0).ToString(),
+                TicketCode = reader.GetString(1),
+                ExpertCode = reader.IsDBNull(2) ? null : reader.GetString(2),
+                ExpertName = reader.IsDBNull(3) ? null : reader.GetString(3),
+                DemandTitle = reader.GetString(4),
+                Description = reader.IsDBNull(5) ? null : reader.GetString(5),
+                Status = reader.GetString(6),
+                ScheduledAt = reader.IsDBNull(7) ? null : new DateTimeOffset(reader.GetDateTime(7)),
+                MeetingDate = reader.IsDBNull(8) ? null : reader.GetString(8),
+                MeetingTime = reader.IsDBNull(9) ? null : reader.GetString(9),
+                MeetingType = reader.IsDBNull(10) ? null : reader.GetString(10),
+                MeetingLink = meetingLink,
+                MeetingUrl = meetingLink,
+                ExpertNote = reader.IsDBNull(12) ? null : reader.GetString(12),
+                RejectionReason = reader.IsDBNull(13) ? null : reader.GetString(13),
+                Rating = reader.IsDBNull(14) ? null : Convert.ToInt32(reader.GetValue(14)),
+                ReviewComment = reader.IsDBNull(15) ? null : reader.GetString(15),
+                ReviewedAt = reader.IsDBNull(16) ? null : new DateTimeOffset(reader.GetDateTime(16)),
+                CompletedAt = reader.IsDBNull(17) ? null : new DateTimeOffset(reader.GetDateTime(17)),
+                RequestedAt = reader.IsDBNull(18) ? DateTimeOffset.UtcNow : new DateTimeOffset(reader.GetDateTime(18))
+            });
+        }
+
+        return Ok(Ok200(list));
+    }
+
+    [HttpPost("{id}/review")]
+    public async Task<IActionResult> ReviewConsultation(string id, [FromBody] ReviewConsultationRequestDto req, CancellationToken ct)
+    {
+        ConsultationRules.ValidateReviewInput(req.Rating);
+        var comment = !string.IsNullOrWhiteSpace(req.Comment) ? req.Comment.Trim() : req.ReviewComment?.Trim();
+
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
+
+        await ConsultationRules.EnsureConsultationsSchemaAsync(conn, ct);
+
+        Guid? updatedId = null;
+        string? ticketCode = null;
+        Guid? expertPersonId = null;
+        string? expertCode = null;
+        string? expertName = null;
+        DateTimeOffset? reviewedAt = null;
+
+        using (var cmdUpdate = conn.CreateCommand())
+        {
+            cmdUpdate.CommandText = @"
+                UPDATE brokerage.expert_consultations
+                SET rating = @rating,
+                    enterprise_rating = @rating,
+                    review_comment = @comment,
+                    enterprise_review = @comment,
+                    reviewed_at = now(),
+                    updated_at = now()
+                WHERE (id::text = @id OR ticket_code = @id)
+                  AND requester_person_id = @personId
+                  AND status = 'COMPLETED'
+                  AND reviewed_at IS NULL
+                RETURNING id, ticket_code, person_id, expert_code, expert_name, reviewed_at;";
+
+            void AddParam(string name, object? val)
+            {
+                var prm = cmdUpdate.CreateParameter();
+                prm.ParameterName = name;
+                prm.Value = val ?? DBNull.Value;
+                cmdUpdate.Parameters.Add(prm);
+            }
+
+            AddParam("@rating", (short)req.Rating);
+            AddParam("@comment", comment);
+            AddParam("@id", id);
+            AddParam("@personId", PersonId);
+
+            using var reader = await cmdUpdate.ExecuteReaderAsync(ct);
+            if (await reader.ReadAsync(ct))
+            {
+                updatedId = reader.GetGuid(0);
+                ticketCode = reader.GetString(1);
+                expertPersonId = reader.GetGuid(2);
+                expertCode = reader.IsDBNull(3) ? null : reader.GetString(3);
+                expertName = reader.IsDBNull(4) ? null : reader.GetString(4);
+                reviewedAt = reader.IsDBNull(5) ? DateTimeOffset.UtcNow : new DateTimeOffset(reader.GetDateTime(5));
+            }
+        }
+
+        if (updatedId is null)
+        {
+            using var cmdCheck = conn.CreateCommand();
+            cmdCheck.CommandText = @"
+                SELECT requester_person_id, status, reviewed_at
+                FROM brokerage.expert_consultations
+                WHERE id::text = @id OR ticket_code = @id
+                LIMIT 1;";
+            var pId = cmdCheck.CreateParameter();
+            pId.ParameterName = "@id";
+            pId.Value = id;
+            cmdCheck.Parameters.Add(pId);
+
+            using var reader = await cmdCheck.ExecuteReaderAsync(ct);
+            if (!await reader.ReadAsync(ct))
+                throw ConsultationRules.ResolveReviewZeroRowsError(false, null, PersonId, null, null);
+
+            var existingRequester = reader.IsDBNull(0) ? (Guid?)null : reader.GetGuid(0);
+            var existingStatus = reader.GetString(1);
+            var existingReviewedAt = reader.IsDBNull(2) ? (DateTimeOffset?)null : new DateTimeOffset(reader.GetDateTime(2));
+            throw ConsultationRules.ResolveReviewZeroRowsError(true, existingRequester, PersonId, existingStatus, existingReviewedAt);
+        }
+
+        var notifSvc = notifications ?? HttpContext?.RequestServices.GetService<INotificationService>();
+        if (notifSvc is not null && expertPersonId is { } expPid && expPid != PersonId)
+        {
+            await notifSvc.CreateAsync(expPid, NotificationTypes.ExpertConsultationReviewed, new
+            {
+                ConsultationId = updatedId.Value,
+                TicketCode = ticketCode,
+                ExpertCode = expertCode,
+                ExpertName = expertName,
+                Rating = req.Rating,
+                ReviewComment = comment,
+                ReviewedAtUtc = reviewedAt
             }, ct);
         }
-        return Accepted(new { success = true, message = "Yêu cầu đã được chuyển tới NacenTech." });
+
+        return Ok(Ok200(new
+        {
+            id = updatedId.Value.ToString(),
+            ticketCode,
+            rating = req.Rating,
+            reviewComment = comment,
+            reviewedAt,
+            message = "Cảm ơn bạn đã gửi đánh giá buổi tư vấn."
+        }));
     }
 }
 

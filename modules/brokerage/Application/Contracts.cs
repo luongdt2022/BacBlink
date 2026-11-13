@@ -174,6 +174,15 @@ public sealed record QuickExpertIntakeResponse(
 
 public sealed record ExpertTimelineDto(string Title, string? Subtitle, string? Period);
 public sealed record ExpertAchievementDto(string Type, string Title, string? Meta, string? Description);
+public sealed record ExpertLmsCourseDto(
+    Guid Id,
+    string MaterialCode,
+    string Title,
+    string LessonType,
+    int DurationMinutes,
+    string? ClusterName = null,
+    string? SectorCode = null);
+
 public sealed record ExpertPublicDetailDto(
     string ExpertCode,
     string FullName,
@@ -195,7 +204,10 @@ public sealed record ExpertPublicDetailDto(
     IReadOnlyList<ExpertAchievementDto> Publications,
     IReadOnlyList<ExpertAchievementDto> PracticalProjects,
     IReadOnlyList<ExpertAchievementDto> Awards,
-    IReadOnlyList<string>? SpecializedKeywords = null);
+    IReadOnlyList<string>? SpecializedKeywords = null,
+    string? ConsultingSummary = null,
+    string? OrganizationAddress = null,
+    IReadOnlyList<ExpertLmsCourseDto>? Courses = null);
 
 public sealed record ExpertPrivateDetailDto(
     ExpertPublicDetailDto PublicProfile,
@@ -236,7 +248,10 @@ public sealed record ExpertPublicCardDto(
     bool IsVerified,
     bool IsAcceptingConsultation,
     IReadOnlyList<string>? SpecializedKeywords = null,
-    int ConnectionCount = 0);
+    int ConnectionCount = 0,
+    string? ConsultingSummary = null,
+    string? OrganizationAddress = null,
+    int CourseCount = 0);
 
 public sealed record ExpertPublicDirectoryDto(
     IReadOnlyList<ExpertPublicCardDto> Items,

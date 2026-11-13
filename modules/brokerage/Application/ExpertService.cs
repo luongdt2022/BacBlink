@@ -7,7 +7,7 @@ using NacenTech.Modules.Brokerage.Domain;
 
 namespace NacenTech.Modules.Brokerage.Application;
 
-public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, IObjectStorage storage, IExpertProvinceScopeLookup provinceScopes, IOptions<ExpertDraftOptions> draftOptions) : IExpertService
+public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, IObjectStorage storage, IExpertProvinceScopeLookup provinceScopes, IOptions<ExpertDraftOptions> draftOptions, IExpertLmsCourseLookup? lmsCourseLookup = null) : IExpertService
 {
     public async Task<ExpertProfileDto> SubmitUpgradeAsync(Guid personId, SubmitExpertUpgradeRequest request, CancellationToken ct)
     {
@@ -276,6 +276,9 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
 
         var personIds = profiles.Where(p => p.PersonId != null).Select(p => p.PersonId!.Value).Distinct().ToList();
         var provinceByPerson = await provinceScopes.GetProvinceScopesAsync(personIds, ct);
+        var courseCounts = lmsCourseLookup is null
+            ? new Dictionary<Guid, int>()
+            : await lmsCourseLookup.GetPublishedCourseCountsAsync(profileIds, ct);
 
         var items = profiles.Select(p => new ExpertPublicCardDto(
             ExpertCode: p.ExpertCode,
@@ -296,7 +299,10 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
             IsVerified: p.Status == ExpertStatuses.Approved,
             IsAcceptingConsultation: p.IsAcceptingConsultation,
             SpecializedKeywords: p.SpecializedKeywords,
-            ConnectionCount: p.ConnectionCount
+            ConnectionCount: p.ConnectionCount,
+            ConsultingSummary: p.ConsultingSummary,
+            OrganizationAddress: p.OrganizationAddress,
+            CourseCount: courseCounts.GetValueOrDefault(p.Id, 0)
         )).ToList();
 
         return new ExpertPublicDirectoryDto(items, totalCount, page, pageSize, totalPages);
@@ -438,9 +444,23 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         if (publications.Count == 0 && !string.IsNullOrWhiteSpace(p.PublicationsJson))
             publications = ParsePublicationsJson(p.PublicationsJson);
 
+        IReadOnlyList<ExpertLmsCourseDto> courses = lmsCourseLookup is null
+            ? []
+            : (await lmsCourseLookup.GetPublishedCoursesByExpertAsync(p.Id, ct))
+                .Select(c => new ExpertLmsCourseDto(
+                    c.Id,
+                    c.MaterialCode,
+                    c.Title,
+                    c.LessonType,
+                    c.DurationMinutes,
+                    c.ClusterName,
+                    c.SectorCode))
+                .ToList();
+
         return new ExpertPublicDetailDto(p.ExpertCode, p.FullName, p.AcademicRank, p.Degree, p.BirthYear, p.Gender,
             p.OrganizationName, p.PositionTitle, p.PublicBio, p.ExpertiseSectors, p.MasteredTechCodes,
-            p.Status == ExpertStatuses.Approved, p.IsAcceptingConsultation, training, employment, patents, projects, publications, practical, awards, p.SpecializedKeywords);
+            p.Status == ExpertStatuses.Approved, p.IsAcceptingConsultation, training, employment, patents, projects, publications, practical, awards, p.SpecializedKeywords,
+            p.ConsultingSummary, p.OrganizationAddress, courses);
     }
 
     private async Task<ExpertPrivateDetailDto> ToPrivateDetailAsync(ExpertProfile p, CancellationToken ct)
