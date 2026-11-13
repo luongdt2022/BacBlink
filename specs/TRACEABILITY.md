@@ -418,6 +418,17 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **Admin Route Transition Loading Boundary & Pending Workspace Skeleton + Đồng Bộ Sidebar `useSearchParams()` bọc `Suspense`** | `REQ-ADM-LOAD-01`, `REQ-ADM-LOAD-02`, `BR-ADM-LOAD-02`, `AC-CR-029.1`, `AC-CR-029.2`, `AC-CR-029.5` | `T112`, `T113`, `T114` | `src/components/admin/admin-workspace-skeleton.tsx`, `src/app/admin/loading.tsx`, `src/app/admin/layout.tsx` | `src/app/admin/layout.test.tsx`, `e2e/admin-cr2026-029-loading-kpi.spec.ts` (`TEST-ADM-LOAD-01`) — Gate 3 SA, Gate 4 QC Live E2E + Slow 3G + Visual QA $\ge 8.4/10$, Gate 5 QA/PO PASS |
 | **Chuẩn Hóa KPI Shimmer Skeleton & Chống Hiển Thị Số `0` Giả (Zero Fake Zeroes) trên `/admin/users`, `/admin`, `/admin/assessments/tt17`** | `REQ-ADM-LOAD-03`, `BR-ADM-LOAD-01`, `BR-ADM-LOAD-02`, `AC-CR-029.3`, `AC-CR-029.4`, `AC-CR-029.6` | `T115`, `T116`, `T117`, `T118`, `T119` | `src/app/admin/users/page.tsx`, `src/app/admin/page.tsx`, `src/app/admin/assessments/tt17/page.tsx` | `src/app/admin/users/page.test.tsx`, `src/app/admin/page.test.tsx`, `src/app/admin/assessments/tt17/page.test.tsx`, `e2e/admin-cr2026-029-loading-kpi.spec.ts` (`TEST-ADM-LOAD-01`) — Gate 3 SA, Gate 4 QC Live E2E + Slow 3G + Visual QA $\ge 8.4/10$, Gate 5 QA/PO PASS |
 
+---
+
+## 33. TASK-05 Delta v1.6 (CR-2026-032): Tinh Gọn Danh Bạ Chuyên Gia (`/experts`), Empty State Hồ Sơ Khảo Sát & Liên Kết LMS (Gate 5 Sign-off)
+
+| Yêu Cầu Nghiệp Vụ / Rule | Detail Design (`spec.md` / `deltas/`) | Task Triển Khai | Mã Nguồn / Bề Mặt Tác Động | Kiểm Chứng & Verification |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tinh gọn Hero Banner (bỏ breadcrumb), Fallback 3 tầng cho 1.051 hồ sơ khảo sát, tinh gọn Card & Địa bàn / Badge LMS** | `REQ-EXP-DIR-007`, `REQ-EXP-DIR-008`, `BR-EXP-DIR-044`, `UI-EXP-DIR-003`, `API-EXP-DIR-006`, `AC-CR-032.1..032.3` | `T-05.CR032.01`, `T-05.CR032.02`, `T-05.CR032.03`, `T-05.CR032.05`, `T-05.CR032.09` | `IExpertLmsCourseLookup.cs`, `ExpertLmsCourseLookup.cs`, `LmsModule.cs`, `Contracts.cs`, `ExpertService.cs`, `src/app/experts/page.tsx` | `ExpertPublicLmsIntegrationTests.cs`, `src/app/experts/page.test.tsx` (19 tests), Playwright Live `TC-01..TC-05` — Gate 3 SA PASS, Gate 4 QC Live PASS |
+| **Tái cấu trúc Khối "Chuyên gia tiêu biểu & nổi bật" (không trùng top 3, ưu tiên thực chất, ẩn khi lọc/search/trang 2)** | `REQ-EXP-DIR-009`, `BR-EXP-DIR-045`, `UI-EXP-DIR-003`, `AC-CR-032.4` | `T-05.CR032.06`, `T-05.CR032.09` | `src/app/experts/page.tsx` | `src/app/experts/page.test.tsx`, Playwright Live `TC-06..TC-09b` — Gate 3 SA PASS, Gate 4 QC Live PASS |
+| **Liên kết 2 chiều Chuyên gia ↔ Khóa học LMS (`PUBLISHED`) & Tối ưu Empty State `/experts/[expertCode]`** | `REQ-EXP-LMS-001`, `REQ-EXP-DETAIL-007`, `BR-EXP-LMS-001`, `BR-EXP-DETAIL-001`, `API-EXP-DIR-006`, `UI-EXP-DETAIL-002`, `AC-CR-032.5..032.6` | `T-05.CR032.01`, `T-05.CR032.02`, `T-05.CR032.03`, `T-05.CR032.04`, `T-05.CR032.07`, `T-05.CR032.08`, `T-05.CR032.09` | `IExpertLmsCourseLookup.cs`, `ExpertLmsCourseLookup.cs`, `Contracts.cs`, `ExpertService.cs`, `src/lib/expert-detail.ts`, `src/components/expert-detail/profile-detail.tsx` | `ExpertPublicLmsIntegrationTests.cs`, `src/components/expert-detail/profile-detail.test.tsx` (6 tests), Playwright Live `TC-10..TC-13` — Gate 3 SA PASS, Gate 4 QC Live PASS |
+
+
 
 
 

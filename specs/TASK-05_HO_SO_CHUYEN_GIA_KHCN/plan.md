@@ -1932,6 +1932,203 @@ Trong `SourceCode/frontend/src/app/profile/upgrade/expert/page.tsx`:
 3. **Blackbox Playwright E2E**:
    - Tạo bộ test E2E `test_smart_ai_cv_b1_4_precision_e2e.py` chạy trực tiếp với dữ liệu tệp B1-4 thật.
 
+---
+
+## 23. KIẾN TRÚC KỸ THUẬT DELTA V1.6 (CR-2026-032): TINH GỌN DANH BẠ CHUYÊN GIA (`/experts`), EMPTY STATE 1.051 HỒ SƠ KHẢO SÁT & LIÊN KẾT 2 CHIỀU LMS
+
+**Căn cứ đặc tả**: `spec.md` Mục 26 & [`deltas/CR-2026-032_expert_directory_ui_and_lms_courses.md`](./deltas/CR-2026-032_expert_directory_ui_and_lms_courses.md) (`Target Version: 1.20.0`).
+
+### 23.1. Kiến Trúc Giao Tiếp Xuyên Module Clean Architecture (`brokerage` ↔ `lms`)
+
+Tuân thủ quy tắc **Modular Monolith & Clean Architecture (MOD-02, §9.1)** tương tự `IExpertProvinceScopeLookup` (`brokerage` ↔ `identity`), module `NacenTech.Modules.Brokerage` **tuyệt đối không** tham chiếu assembly `NacenTech.Modules.Lms` và **không** truy vấn trực tiếp `LearningMaterial` / `LearningMaterialInstructor`:
+
+1. **Kernel Abstraction (`SourceCode/backend/packages/kernel/Application/IExpertLmsCourseLookup.cs`)**:
+   - Định nghĩa `ExpertLmsCourseBrief(Guid Id, string MaterialCode, string Title, string LessonType, int DurationMinutes, string? ClusterName, string? SectorCode)`.
+   - Định nghĩa interface `IExpertLmsCourseLookup`:
+     - `Task<IReadOnlyDictionary<Guid, int>> GetPublishedCourseCountsAsync(IReadOnlyCollection<Guid> expertProfileIds, CancellationToken ct);` — Truy vấn batch phục vụ `/experts` (tránh N+1 query).
+     - `Task<IReadOnlyList<ExpertLmsCourseBrief>> GetPublishedCoursesByExpertAsync(Guid expertProfileId, CancellationToken ct);` — Truy vấn chi tiết khóa học phục vụ `/experts/[expertCode]`.
+2. **LMS Infrastructure Adapter (`SourceCode/backend/modules/lms/Infrastructure/ExpertLmsCourseLookup.cs`)**:
+   - Implement `IExpertLmsCourseLookup(DbContext db)` với `.AsNoTracking()` trên `LearningMaterialInstructor` join `LearningMaterial`.
+   - Áp dụng bộ lọc bảo mật bắt buộc **`BR-EXP-LMS-001`**: `m.Status == LmsStatuses.Published && !m.IsDeleted`. Tuyệt đối không lộ học liệu `DRAFT`, `UNPUBLISHED` hoặc đã xóa mềm.
+   - `GetPublishedCourseCountsAsync`: Nếu `expertProfileIds.Count == 0` trả về `Dictionary` rỗng; ngược lại join + filter `expertProfileIds.Contains(i.ExpertProfileId)` + `GroupBy(i => i.ExpertProfileId)` + `ToDictionaryAsync(g => g.Key, g => g.Count(), ct)`.
+   - `GetPublishedCoursesByExpertAsync`: Filter `i.ExpertProfileId == expertProfileId`, sắp xếp theo `m.PublishedAt ?? m.CreatedAt` giảm dần, project trực tiếp sang `ExpertLmsCourseBrief` (không load full entity graph).
+   - Đăng ký DI trong `SourceCode/backend/modules/lms/LmsModule.cs`: `services.AddScoped<IExpertLmsCourseLookup, ExpertLmsCourseLookup>();`.
+
+### 23.2. Thiết Kế Mở Rộng DTO & Query Projection (`API-EXP-DIR-006`)
+
+Trong `SourceCode/backend/modules/brokerage/Application/Contracts.cs`:
+- **`ExpertPublicCardDto`** (thêm tham số tùy chọn ở cuối để tương thích ngược):
+  - `string? ConsultingSummary = null`
+  - `string? OrganizationAddress = null`
+  - `int CourseCount = 0`
+- **Thêm record `ExpertLmsCourseDto`**:
+  - `ExpertLmsCourseDto(Guid Id, string MaterialCode, string Title, string LessonType, int DurationMinutes, string? ClusterName = null, string? SectorCode = null)`
+- **`ExpertPublicDetailDto`** (thêm tham số tùy chọn ở cuối để tương thích ngược):
+  - `string? ConsultingSummary = null`
+  - `string? OrganizationAddress = null`
+  - `IReadOnlyList<ExpertLmsCourseDto>? Courses = null`
+
+Trong `SourceCode/backend/modules/brokerage/Application/ExpertService.cs`:
+- Tiêm `IExpertLmsCourseLookup? lmsCourseLookup = null` vào primary constructor của `ExpertService` (null-safe để không phá vỡ các test khởi tạo cục bộ không đăng ký `LmsModule`).
+- **`GetPublicDirectoryAsync`** (`REQ-EXP-DIR-007`, `REQ-EXP-DIR-008`, `API-EXP-DIR-006`):
+  - Giữ `.AsNoTracking()` trên toàn bộ query `ExpertProfile`.
+  - Gọi batch `var courseCounts = lmsCourseLookup is null ? new Dictionary<Guid, int>() : await lmsCourseLookup.GetPublishedCourseCountsAsync(profileIds, ct);` (1 round-trip duy nhất cho cả trang, zero N+1).
+  - Map vào `ExpertPublicCardDto`: `ConsultingSummary: p.ConsultingSummary`, `OrganizationAddress: p.OrganizationAddress`, `CourseCount: courseCounts.GetValueOrDefault(p.Id, 0)`.
+- **`ToPublicDetailAsync`** (`REQ-EXP-LMS-001`, `BR-EXP-LMS-001`, `API-EXP-DIR-006`):
+  - Gọi `lmsCourseLookup.GetPublishedCoursesByExpertAsync(p.Id, ct)` (hoặc mảng rỗng nếu `lmsCourseLookup` null), map sang `IReadOnlyList<ExpertLmsCourseDto>`.
+  - Map `ConsultingSummary: p.ConsultingSummary`, `OrganizationAddress: p.OrganizationAddress`, `Courses: courses` vào `ExpertPublicDetailDto`.
+
+### 23.3. Thiết Kế Frontend `/experts` (`UI-EXP-DIR-003`)
+
+Trong `SourceCode/frontend/src/app/experts/page.tsx`:
+1. **Type `ExpertCardItem`**: Bổ sung `specializedKeywords?: string[] | null`, `consultingSummary?: string | null`, `organizationAddress?: string | null`, `courseCount?: number`.
+2. **Hero Banner (`REQ-EXP-DIR-007`)**: Gỡ bỏ khối `<nav>` breadcrumb `"Trang chủ > Danh bạ Chuyên gia KH&CN"` ở đầu hero banner.
+3. **Fallback Năng Lực Card 3 Tầng (`REQ-EXP-DIR-007`, `BR-EXP-DIR-044`)**:
+   - Tầng 1: Nếu `expert.masteredTechCodes?.length > 0` → render tối đa 2 chip + badge `+{N} công nghệ`.
+   - Tầng 2: Nếu `masteredTechCodes` rỗng và `expert.specializedKeywords?.length > 0` → render tối đa 3 chip từ khóa chuyên môn (và badge `+{N}` nếu `> 3`).
+   - Tầng 3: Nếu cả hai đều rỗng → render 1 dòng tóm tắt `expert.consultingSummary` (`line-clamp-1`) hoặc text ngắn gọn `"Hồ sơ chuyên môn đang cập nhật"`; loại bỏ hoàn toàn chuỗi `"Đang cập nhật công nghệ"` lặp hàng loạt.
+4. **Tinh Gọn Card & Bổ Sung Địa Bàn / Badge LMS (`REQ-EXP-DIR-008`)**:
+   - Bỏ badge pill `"Đã xác thực"` trên 100% card (giữ icon tick xanh xác thực trên `ExpertAvatar` hoặc cạnh tên).
+   - Bỏ lặp tiền tố học hàm/học vị (`GS.`, `PGS.`, `TS.`, `ThS.`, `KS.`) ở `fullName` khi badge học vị đã hiển thị phía trên.
+   - Hiển thị Địa bàn công tác (`expert.organizationAddress || expert.provinceName`) nếu có dữ liệu.
+   - Hiển thị badge `"Giảng viên LMS ({expert.courseCount} khóa học)"` khi `(expert.courseCount ?? 0) > 0`.
+5. **Tái Cấu Trúc Khối "Chuyên gia Tiêu biểu & Nổi bật" (`REQ-EXP-DIR-009`, `BR-EXP-DIR-045`)**:
+   - Xác định `hasActiveFilter = Boolean(searchTerm.trim() || selectedDegrees.length > 0 || selectedSectors.length > 0 || selectedProvinces.length > 0 || acceptingConsultation)`.
+   - Khi `hasActiveFilter === true` hoặc `currentPage > 1` → **ẩn hoàn toàn** `featured-experts-rail`.
+   - Khi `hasActiveFilter === false && currentPage === 1`: loại bỏ 3 chuyên gia đầu tiên của danh sách chính (`top3Codes = new Set(directoryData.items.slice(0, 3).map(x => x.expertCode))`), chấm điểm nổi bật thực chất trên phần còn lại (`(courseCount > 0 ? 100 : 0) + courseCount * 10 + publicationCount * 3 + patentCount * 3 + connectionCount * 2`), lấy tối đa 3 chuyên gia. Nếu pool còn lại rỗng → ẩn rail để không bao giờ trùng top 3.
+
+### 23.4. Thiết Kế Frontend `/experts/[expertCode]` (`UI-EXP-DETAIL-002`)
+
+Trong `SourceCode/frontend/src/lib/expert-detail.ts` & `SourceCode/frontend/src/components/expert-detail/profile-detail.tsx`:
+1. **Mở rộng Types (`expert-detail.ts`)**:
+   - Thêm `ExpertLmsCourse = { id: string; materialCode: string; title: string; lessonType: string; durationMinutes: number; clusterName?: string | null; sectorCode?: string | null }`.
+   - Bổ sung `consultingSummary?: string | null`, `organizationAddress?: string | null`, `courses?: ExpertLmsCourse[]` vào `ExpertPublicDetail`.
+2. **Nổi Bật Khối "Tóm tắt năng lực & Từ khóa chuyên môn" (`REQ-EXP-DETAIL-007`)**:
+   - Hiển thị rõ ràng `consultingSummary` / `publicBio`, `organizationAddress` (nếu có) và danh sách `specializedKeywords` trên `PublicBody`.
+3. **Section "Khóa học & Tài liệu giảng dạy (LMS)" (`REQ-EXP-LMS-001`, `BR-EXP-LMS-001`)**:
+   - Chỉ render khi `(detail.courses?.length ?? 0) > 0`.
+   - Mỗi item hiển thị `title`, `lessonType`, `durationMinutes` (`{durationMinutes} phút`), `clusterName`/`sectorCode` (nếu có) và `<Link href={\`/lms/${course.id}\`}>`.
+4. **Thu Gọn Empty State Thông Minh (`REQ-EXP-DETAIL-007`, `BR-EXP-DETAIL-001`)**:
+   - `AchievementTabs`: Luôn hiển thị bộ đếm `({count})` trên mỗi tab trong 5 tab. Nếu tổng thành tựu across 5 tab `=== 0`, thu gọn thành 1 compact empty notice thay vì render khung tab trống lớn.
+   - `TimelineCard`: Nếu `detail.training.length === 0 && detail.employment.length === 0`, thu gọn thành 1 compact notice chung trong sidebar thay vì 2 card trống lớn.
 
 
 
+
+
+
+
+---
+
+## 24. PLAN DELTA V1.7 (CR-2026-033): QUẢN LÝ 2 CHIỀU YÊU CẦU KẾT NỐI & TƯ VẤN CHUYÊN GIA R&D
+
+**Căn cứ đặc tả**: [`deltas/CR-2026-033_two_way_expert_consultation.md`](./deltas/CR-2026-033_two_way_expert_consultation.md) & `spec.md` Mục 27 (`Status: APPROVED_FOR_PLAN`, Target Version `1.21.0`).  
+**Ràng buộc Gate 1 QA Audit (Bắt buộc)**: Thống nhất Dual-Route & Dual-DTO (`API-CON-002/003`), Ngưỡng mở khóa PII theo PDPD (`BR-CON-005`), State Machine & Atomic SQL Concurrency (`REQ-CON-002`, `BR-CON-006`), Gỡ bỏ hoàn toàn auto-seed 6 bản ghi mẫu (`REQ-CON-004`).
+
+### 24.1. Kiến Trúc Database & Migration Phi Phá Hủy (`DB-CON-001`, `REQ-CON-004`)
+
+- **Phạm vi**: Bảng `brokerage.expert_consultations` trong `SourceCode/backend/apps/api/V1Compat/ExpertController.cs` (và migration/schema initializer dùng chung).
+- **Tách hàm khởi tạo schema (`EnsureConsultationsSchemaAsync`)**:
+  - Đổi tên/tách riêng `EnsureConsultationsTableAndSeedAsync` $\rightarrow$ `EnsureConsultationsSchemaAsync(DbConnection conn, CancellationToken ct)`.
+  - **Gỡ bỏ hoàn toàn** khối `if (count == 0) { INSERT INTO brokerage.expert_consultations ... }` (6 bản ghi mẫu `b0000000-...0081..0086`) khỏi luồng runtime (`REQ-CON-004`, Zero-Mock).
+  - Bổ sung non-destructive `ALTER TABLE brokerage.expert_consultations ADD COLUMN IF NOT EXISTS ...`:
+    ```sql
+    ALTER TABLE brokerage.expert_consultations
+      ADD COLUMN IF NOT EXISTS requester_person_id UUID NULL,
+      ADD COLUMN IF NOT EXISTS expert_code VARCHAR(64) NULL,
+      ADD COLUMN IF NOT EXISTS expert_name VARCHAR(255) NULL,
+      ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ NULL,
+      ADD COLUMN IF NOT EXISTS meeting_link VARCHAR(500) NULL,
+      ADD COLUMN IF NOT EXISTS rejection_reason TEXT NULL,
+      ADD COLUMN IF NOT EXISTS rating SMALLINT NULL,
+      ADD COLUMN IF NOT EXISTS review_comment TEXT NULL,
+      ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ NULL;
+
+    CREATE INDEX IF NOT EXISTS idx_expert_consultations_requester
+      ON brokerage.expert_consultations (requester_person_id);
+    CREATE INDEX IF NOT EXISTS idx_expert_consultations_person_status
+      ON brokerage.expert_consultations (person_id, status);
+    CREATE UNIQUE INDEX IF NOT EXISTS uq_expert_consultations_ticket_code
+      ON brokerage.expert_consultations (ticket_code);
+    ```
+  - Lưu ý đồng bộ cột tương thích ngược: khi ghi `scheduled_at`, `meeting_link`, `rejection_reason`, `rating`, `review_comment` đồng thời cập nhật các cột legacy tương ứng (`meeting_date`/`meeting_time`, `meeting_url`, `rejection_note`, `enterprise_rating`, `enterprise_review`) để không phá vỡ query hoặc báo cáo cũ.
+
+### 24.2. State Machine, PDPD Masking & Concurrency (`REQ-CON-002`, `BR-CON-001`..`006`)
+
+1. **State Machine chuẩn hóa (`brokerage.expert_consultations.status`)**:
+   - Khởi tạo khi submit (`API-CON-001`): `PENDING`.
+   - `PENDING` $\xrightarrow{\text{action: ACCEPT}}$ `SCHEDULED` (lưu `scheduled_at` / `meeting_date` / `meeting_time`, `meeting_link` / `meeting_url`, `expert_note`).
+   - `PENDING` $\xrightarrow{\text{action: REJECT}}$ `REJECTED` (bắt buộc `rejectionReason.Trim().Length >= 10` theo `BR-CON-002`; vi phạm trả `400 Bad Request`).
+   - `SCHEDULED` $\xrightarrow{\text{action: COMPLETE}}$ `COMPLETED` (lưu `completed_at = now()`).
+   - Chuyển sai trạng thái (ví dụ `REJECTED -> SCHEDULED`, `COMPLETED -> REJECTED`, `PENDING -> COMPLETE`): trả về HTTP `409 Conflict` kèm mã lỗi nghiệp vụ rõ ràng (hoặc `400 Bad Request` nếu `action` không hợp lệ).
+2. **Ngưỡng mở khóa PII theo PDPD (`BR-CON-005`)**:
+   - Khi `status` là `PENDING` hoặc `REJECTED`: **mask** SĐT và Email người gửi trên projection của Expert (`contactPhone` $\rightarrow$ `0912****89`, `contactEmail` $\rightarrow$ `a***@domain.com`).
+   - Khi `status` là `SCHEDULED` (đã `ACCEPT`) hoặc `COMPLETED`: **hiển thị đầy đủ** `contactPhone` và `contactEmail` phục vụ buổi họp tư vấn (trả `null` nếu khách không cung cấp).
+3. **Atomic Concurrency cho Đánh giá (`API-CON-005`, `BR-CON-003`, `BR-CON-006`)**:
+   - Thực thi atomic SQL:
+     ```sql
+     UPDATE brokerage.expert_consultations
+     SET rating = @rating,
+         enterprise_rating = @rating,
+         review_comment = @comment,
+         enterprise_review = @comment,
+         reviewed_at = now(),
+         updated_at = now()
+     WHERE id = @id
+       AND requester_person_id = @personId
+       AND status = 'COMPLETED'
+       AND reviewed_at IS NULL;
+     ```
+   - Nếu `rowsAffected == 0`: truy vấn kiểm tra bản ghi để trả đúng `404 Not Found` (không tồn tại), `403 Forbidden` (`requester_person_id != @personId` — IDOR `BR-CON-003`), hoặc `409 Conflict` (chưa `COMPLETED` hoặc đã đánh giá).
+
+### 24.3. Hợp Đồng API & Notification 2 Chiều (`API-CON-001`..`005`)
+
+- **Dual-Route & Dual-DTO Compatibility (`API-CON-002`, `API-CON-003`)**:
+  - Hỗ trợ **cả route chuẩn mới lẫn route hiện hữu** trỏ vào cùng handler/service trong `ExpertController` / `Brokerage`:
+    - `API-CON-002`: `GET /api/v1/portal/expert/consultations` **và** `GET /api/v1/experts/me/consultations` (query optional `?status=PENDING|SCHEDULED|REJECTED|COMPLETED`).
+    - `API-CON-003`: `PATCH /api/v1/portal/expert/consultations/{id}` **và** `POST /api/v1/experts/me/consultations/{id}/respond`.
+  - **DTO tương thích 2 chiều**:
+    - Request: chấp nhận `action` (`ACCEPT | REJECT | COMPLETE`), `scheduledAt` hoặc `meetingDate`+`meetingTime`, `meetingLink` hoặc `meetingUrl`, `expertNote`, `rejectionReason` hoặc `rejectionNote`.
+    - Response: trả về cả cặp trường chuẩn mới và legacy (`scheduledAt` & `meetingDate`, `meetingLink` & `meetingUrl`, `rejectionReason` & `rejectionNote`, `rating` & `enterpriseRating`) để giữ 100% tương thích với `consultations.test.tsx` hiện hữu.
+- **Chi tiết 5 API Endpoints**:
+  1. `API-CON-001` (`POST /api/v1/public/experts/{expertCode}/consultation-requests`, `[AllowAnonymous]`):
+     - Trích xuất `Actor.PersonId` từ JWT claims nếu đã đăng nhập (`NULL` nếu khách vãng lai).
+     - Sinh `ticketCode` duy nhất định dạng `REQ-CON-{YYYY}-{6 ký tự/số}` (`BR-CON-001`, retry nếu đụng unique constraint).
+     - Insert bản ghi thật `status = 'PENDING'` vào `brokerage.expert_consultations` với `person_id = expertProfile.PersonId`.
+     - Bắn notification `ExpertConsultationRequestReceived` tới Expert (`expertProfile.PersonId`) và các Admin đang active.
+     - Trả về `201 Created` / `202 Accepted` với `{ success: true, data: { id, ticketCode, status: "PENDING", expertCode, expertName } }`.
+  2. `API-CON-002` (`GET /api/v1/portal/expert/consultations` & `GET /api/v1/experts/me/consultations`, `[Authorize]`):
+     - Lọc `WHERE person_id = @actorPersonId` (`BR-CON-004`), áp dụng PDPD masking (`BR-CON-005`).
+  3. `API-CON-003` (`PATCH /api/v1/portal/expert/consultations/{id}` & `POST /api/v1/experts/me/consultations/{id}/respond`, `[Authorize]`):
+     - Kiểm tra `person_id == Actor.PersonId` (`BR-CON-004`, sai trả `403`), kiểm tra State Machine & `rejectionReason.Trim().Length >= 10` (`BR-CON-002`).
+     - Cập nhật DB và bắn notification phản hồi 2 chiều (`ExpertConsultationResponded` / `ExpertConsultationCompleted`) tới `requester_person_id` (nếu không null) + Admin (`BR-CON-006`).
+  4. `API-CON-004` (`GET /api/v1/portal/buyer/consultations`, `[Authorize]`):
+     - Lọc `WHERE requester_person_id = @actorPersonId` (`BR-CON-003`), trả về `id`, `ticketCode`, `expertCode`, `expertName`, `demandTitle`, `status`, `scheduledAt`, `meetingLink`, `expertNote`, `rejectionReason`, `rating`, `reviewComment`, `reviewedAt`, `requestedAt`.
+  5. `API-CON-005` (`POST /api/v1/portal/buyer/consultations/{id}/review`, `[Authorize]`):
+     - Validate `rating` in `1..5`, thực thi atomic SQL update, bắn notification `ExpertConsultationReviewed` tới Expert (`person_id`).
+- **Notification Types (`SourceCode/backend/modules/communication/Application/Contracts.cs`)**:
+  - Giữ `ExpertConsultationRequestReceived = "expert_consultation_request_received"`.
+  - Bổ sung `ExpertConsultationResponded = "expert_consultation_responded"`, `ExpertConsultationCompleted = "expert_consultation_completed"`, `ExpertConsultationReviewed = "expert_consultation_reviewed"`.
+
+### 24.4. Thiết Kế UI/UX & Điều Hướng (`UI-CON-001`..`003`)
+
+1. **`UI-CON-001` — Form Public Gửi Yêu Cầu Tư Vấn (`/experts/[expertCode]` & Modal `/experts`)**:
+   - File: `SourceCode/frontend/src/components/expert-detail/profile-detail.tsx`, `SourceCode/frontend/src/app/experts/page.tsx`.
+   - Gửi kèm `authClient.getAuthHeaders()` nếu người dùng đang đăng nhập để BE gắn `requester_person_id`.
+   - Sau khi submit thành công, hiển thị rõ mã phiếu `ticketCode` (`REQ-CON-YYYY-XXXXXX`) ngay trên banner/modal thành công, kèm hướng dẫn theo dõi tại `/portal/buyer/consultations` (nếu đã đăng nhập) hoặc qua email (nếu khách vãng lai có cung cấp email).
+2. **`UI-CON-002` — Hộp Thư Tư Vấn Chuyên Gia (`/portal/expert/consultations`)**:
+   - File: `SourceCode/frontend/src/services/api/expert-consultations.ts`, `SourceCode/frontend/src/app/portal/expert/consultations/page.tsx`.
+   - Sử dụng `<Async>` chuẩn 5 UX States (Loading, Error + Retry, Empty State khi chưa có phiếu thật — tuyệt đối không fallback mock, Partial/Success).
+   - Bổ sung nút & flow `COMPLETE` ("Hoàn thành tư vấn") cho phiếu đang ở trạng thái `SCHEDULED`.
+   - Hiển thị thông báo/badge PDPD khi SĐT/Email đang bị che ở trạng thái `PENDING`/`REJECTED` và tự động mở khóa khi chuyển `SCHEDULED`/`COMPLETED`.
+3. **`UI-CON-003` — Màn Hình Theo Dõi Phiếu Tư Vấn Buyer (`/portal/buyer/consultations`) & Sidebar**:
+   - Tạo mới `SourceCode/frontend/src/services/api/buyer-consultations.ts` và `SourceCode/frontend/src/app/portal/buyer/consultations/page.tsx`.
+   - Bọc `<Async>` chuẩn 5 UX States; hiển thị `ticketCode`, tên chuyên gia (link `/experts/[expertCode]`), trạng thái (`PENDING`, `SCHEDULED`, `REJECTED`, `COMPLETED`), lịch hẹn & `meetingLink` (khi `SCHEDULED`/`COMPLETED`), `rejectionReason` (khi `REJECTED`), và form/modal đánh giá sao `1..5` + nhận xét (khi `COMPLETED` và chưa đánh giá).
+   - Cập nhật `SourceCode/frontend/src/app/portal/layout.tsx`: thêm mục menu `{ href: "/portal/buyer/consultations", label: "Tư Vấn Chuyên Gia", icon: MessageSquare }` vào `buyerNavItems`, `innovationEntityNavItems` và `publicNavItems`.
+
+### 24.5. Chiến Lược Kiểm Thử 4 Tầng (`TEST-CON-001`..`004`)
+
+- **`TEST-CON-001` (Unit Tests BE & FE)**: Kiểm chứng `BR-CON-001` (sinh `ticket_code` `REQ-CON-YYYY-XXXXXX`), `BR-CON-002` (`REJECT >= 10` ký tự), `BR-CON-003` / `BR-CON-004` (IDOR Buyer/Expert), `BR-CON-005` (PDPD masking theo `PENDING`/`REJECTED` vs `SCHEDULED`/`COMPLETED`), `BR-CON-006` (State Machine & đánh giá `COMPLETED`), cùng Vitest cho `UI-CON-001..003` (`REQ-CON-001`, `REQ-CON-003`).
+- **`TEST-CON-002` (API Contract Tests)**: Đối soát hợp đồng DTO 2 chiều cho `API-CON-001`..`005` và dual-route compatibility (`/api/v1/portal/expert/consultations` $\leftrightarrow$ `/api/v1/experts/me/consultations`).
+- **`TEST-CON-003` (DB Integration Tests)**: Kiểm thử trên PostgreSQL thật (`brokerage.expert_consultations`), xác minh zero auto-seed (`REQ-CON-004`) và atomic SQL review (`API-CON-005`).
+- **`TEST-CON-004` (Playwright E2E & Scoped RBAC/IDOR Fuzzing)**: Kiểm thử toàn trình 2 chiều (`REQ-CON-001` $\rightarrow$ `REQ-CON-002` $\rightarrow$ `REQ-CON-003`) trên trình duyệt thật và fuzzing IDOR chéo Buyer/Expert.

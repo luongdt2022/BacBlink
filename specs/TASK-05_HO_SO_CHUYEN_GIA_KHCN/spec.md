@@ -2,11 +2,11 @@
 
 **Feature Branch**: `expert-profile-llkh-upgrade`  
 **Feature Directory**: `specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
-**Version**: 1.19.0  
+**Version**: 1.21.0  
 **Created**: 25/09/2026  
-**Last Updated**: 02/11/2026 (CR-2026-021: AI CV Scan Precision & Context Enrichment)  
-**Status**: Shipped (Gate 5 Approved - Delta v1.5 Implemented)  
-**Ánh Xạ Basic Design**: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 10 & Mục 20)  
+**Last Updated**: 13/11/2026 (CR-2026-033: Quản lý 2 chiều yêu cầu kết nối & tư vấn chuyên gia R&D)  
+**Status**: In Progress (Delta v1.7 CR-2026-033 - APPROVED_FOR_PLAN)  
+**Ánh Xạ Basic Design**: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 10, Mục 20, Mục 36 & Mục 37)  
 **Bản Dựng Wireframe Tương Tác**: [`wireframe_expert_upgrade.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_upgrade.html)  
 **Nguồn Dữ Liệu Gốc**: Sheet `C.gia` (94 dòng dữ liệu, 6 cột) trong Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`  
 **Phân Hệ Quản Trị Liên Thông**: [`specs/TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`](../TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN/) (Kiểm duyệt hồ sơ)  
@@ -1770,6 +1770,123 @@ Hệ thống nâng cấp toàn diện pipeline trích xuất AI CV Scan tại B�
 | **`AC-EXP-CV-04`** | Acceptance Criteria | Kiểm Thử Đối Soát Ngành | Kiểm chứng ngành được map hoặc gợi ý dạng badge | `[APPLIED]` |
 | **`AC-EXP-CV-05`** | Acceptance Criteria | Kiểm Thử Zero-Lock Fallback | Kiểm chứng form nhập tay mở 100% khi lỗi AI | `[APPLIED]` |
 
+---
+
+## 26. PHỤ LỤC DELTA V1.6 (CR-2026-032): TINH GỌN DANH BẠ CHUYÊN GIA (`/experts`), EMPTY STATE 1.051 HỒ SƠ KHẢO SÁT & LIÊN KẾT 2 CHIỀU KHÓA HỌC LMS
+
+**Căn cứ Change Request**: [`deltas/CR-2026-032_expert_directory_ui_and_lms_courses.md`](./deltas/CR-2026-032_expert_directory_ui_and_lms_courses.md) (`Status: APPROVED`, `PO-DEC-20261113-01` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 36).
+
+### 26.1. Yêu Cầu Chức Năng Mới & Sửa Đổi (`REQ-*`, `API-*`, `UI-*`)
+
+- **`REQ-EXP-DIR-007` — Tinh Gọn Hero Banner & Fallback Hiển Thị Năng Lực Cho Hồ Sơ Khảo Sát (`/experts`)**:
+  - Bỏ dòng breadcrumb `"Trang chủ > Danh bạ Chuyên gia KH&CN"` ở đầu hero banner của `/experts` để mở rộng không gian hiển thị.
+  - Trên card chuyên gia: nếu `masteredTechCodes` rỗng, fallback sang hiển thị tối đa 3 chip từ `specializedKeywords` (đã có ở 1.045/1.051 chuyên gia khảo sát `GOOGLE_FORM_SURVEY`). Chỉ hiển thị 1 dòng tóm tắt `consultingSummary` (hoặc dòng fallback ngắn) nếu cả `masteredTechCodes` và `specializedKeywords` đều rỗng; loại bỏ tình trạng lặp chữ `"Đang cập nhật công nghệ"` hàng loạt.
+- **`REQ-EXP-DIR-008` — Tinh Gọn Card Chuyên Gia (`/experts`) & Bổ Sung Địa Bàn / Badge LMS**:
+  - Bỏ lặp badge `"Đã xác thực"` dạng pill trên 100% card (vì directory chỉ hiển thị hồ sơ `APPROVED`); giữ icon tick xanh xác thực trên avatar hoặc cạnh tên chuyên gia.
+  - Bỏ lặp học hàm/học vị ở tiêu đề tên nếu đã hiển thị ở badge phía trên (hiển thị nhất quán, không lặp).
+  - Hiển thị thêm Địa bàn công tác (`organizationAddress` / `provinceName`) nếu có, và badge `"Giảng viên LMS (N khóa học)"` khi `courseCount > 0`.
+- **`REQ-EXP-DIR-009` — Tái Cấu Trúc Khối "Chuyên Gia Tiêu Biểu & Nổi Bật" (`/experts`)**:
+  - Không lấy trùng 3 card đầu tiên của danh sách bên dưới; ưu tiên chuyên gia có hồ sơ nổi bật thực chất (`courseCount > 0`, công trình công bố/sáng chế, hoặc `connectionCount > 0`).
+  - Tự động ẩn khối này khi người dùng đang áp dụng từ khóa tìm kiếm hoặc bất kỳ bộ lọc nào.
+- **`REQ-EXP-LMS-001` — Liên Kết 2 Chiều Chuyên Gia ↔ Khóa Học LMS (`/experts/[expertCode]`)**:
+  - Backend query các tài liệu/khóa học LMS trạng thái `PUBLISHED` (`!IsDeleted`) có `expert_profile_id == profile.Id` (`lms.learning_material_instructors` join `lms.learning_materials`).
+  - Frontend hiển thị section `"Khóa học & Tài liệu giảng dạy (LMS)"` (chỉ render khi `courses.length > 0`), mỗi item có tiêu đề, loại/thời lượng/cấp độ (nếu có) và link chuyển sang `/lms/[id]`.
+- **`REQ-EXP-DETAIL-007` — Tối Ưu Empty State Cho 1.051 Hồ Sơ Khảo Sát (`/experts/[expertCode]`)**:
+  - Hiển thị nổi bật khối `"Tóm tắt năng lực & Từ khóa chuyên môn"` (`publicBio` / `consultingSummary` + `specializedKeywords`).
+  - Trên `AchievementTabs`: hiển thị bộ đếm `(N)` trên từng tab; nếu tất cả 5 tab đều có `0` mục thì thu gọn thành 1 thông báo ngắn gọn thay vì render khung tab trống lớn.
+  - Trên `TimelineCard` (Đào tạo / Công tác): nếu cả hai đều rỗng thì thu gọn hợp lý.
+- **`API-EXP-DIR-006` — Mở Rộng Public DTO Cho Directory & Detail**:
+  - `ExpertPublicCardDto` (`Contracts.cs`): bổ sung `ConsultingSummary`, `OrganizationAddress`, `CourseCount`.
+  - `ExpertPublicDetailDto` (`Contracts.cs`): bổ sung `ConsultingSummary`, `OrganizationAddress`, `Courses` (`IReadOnlyList<ExpertLmsCourseDto>`).
+- **`UI-EXP-DIR-003` & `UI-EXP-DETAIL-002`**: Quy chuẩn UI tinh gọn danh bạ `/experts` và chi tiết `/experts/[expertCode]` theo `CR-2026-032`.
+
+### 26.2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-*`)
+
+| Mã Quy Tắc | Tên Quy Tắc | Chi Tiết Ràng Buộc |
+| :--- | :--- | :--- |
+| **`BR-EXP-DIR-044`** | Fallback Năng Lực Card 3 Tầng | `masteredTechCodes` (nếu có) → tối đa 3 chip `specializedKeywords` → 1 dòng `consultingSummary`/fallback ngắn; cấm lặp `"Đang cập nhật công nghệ"`. |
+| **`BR-EXP-DIR-045`** | Chống Trùng & Ẩn Khối Tiêu Biểu | Khối nổi bật không trùng 3 card đầu danh sách chính, ưu tiên hồ sơ nổi bật thực chất và ẩn hoàn toàn khi search/filter active. |
+| **`BR-EXP-LMS-001`** | Bảo Mật Query LMS Công Khai | Chỉ trả học liệu LMS có `Status = 'PUBLISHED'` và `IsDeleted = false` cho `expert_profile_id = profile.Id`. |
+| **`BR-EXP-DETAIL-001`** | Thu Gọn Empty State Thông Minh | `AchievementTabs` luôn gắn `(N)`; khi tổng 5 tab = `0` thì thu gọn thành 1 thông báo ngắn; `TimelineCard` thu gọn khi cả Đào tạo và Công tác rỗng. |
+
+### 26.3. Ma Trận Truy Vết Delta v1.6 (`CR-2026-032`)
+
+| Mã Định Danh | Loại | Mô Tả Tóm Tắt | Trạng Thái |
+| :--- | :--- | :--- | :---: |
+| `REQ-EXP-DIR-007` | Functional Req | Bỏ breadcrumb hero `/experts` & fallback 3 tầng cho 1.051 hồ sơ khảo sát | `[APPROVED]` |
+| `REQ-EXP-DIR-008` | Functional Req | Bỏ pill `"Đã xác thực"` lặp, bỏ lặp học vị, thêm Địa bàn & badge LMS | `[APPROVED]` |
+| `REQ-EXP-DIR-009` | Functional Req | Tái cấu trúc khối `"Chuyên gia tiêu biểu & nổi bật"` không trùng top 3 & ẩn khi lọc | `[APPROVED]` |
+| `REQ-EXP-LMS-001` | Functional Req | Query LMS `PUBLISHED` & hiển thị section `"Khóa học & Tài liệu giảng dạy (LMS)"` (`/lms/[id]`) | `[APPROVED]` |
+| `REQ-EXP-DETAIL-007` | Functional Req | Nổi bật Tóm tắt năng lực & thu gọn Empty State `AchievementTabs`/`TimelineCard` | `[APPROVED]` |
+| `BR-EXP-DIR-044` | Business Rule | Quy tắc fallback `masteredTechCodes` → `specializedKeywords` (max 3) → `consultingSummary` | `[APPROVED]` |
+| `BR-EXP-DIR-045` | Business Rule | Quy tắc chống trùng top 3 & ẩn khối nổi bật khi search/filter | `[APPROVED]` |
+| `BR-EXP-LMS-001` | Business Rule | Chỉ trả học liệu LMS `PUBLISHED` & `!IsDeleted` | `[APPROVED]` |
+| `BR-EXP-DETAIL-001` | Business Rule | Bộ đếm `(N)` trên 5 tab & thu gọn Empty State khi rỗng | `[APPROVED]` |
+| `API-EXP-DIR-006` | API/DTO Contract | Mở rộng `ExpertPublicCardDto` & `ExpertPublicDetailDto` (`ConsultingSummary`, `OrganizationAddress`, `CourseCount`, `Courses`) | `[APPROVED]` |
+| `UI-EXP-DIR-003` | UI/UX Spec | Giao diện Danh bạ & Card Chuyên gia tinh gọn (`/experts`) | `[APPROVED]` |
+| `UI-EXP-DETAIL-002` | UI/UX Spec | Giao diện Chi tiết Chuyên gia — LMS & Empty State thu gọn (`/experts/[expertCode]`) | `[APPROVED]` |
 
 
 
+
+
+
+
+---
+
+## 27. PHỤ LỤC DELTA V1.7 (CR-2026-033): QUẢN LÝ 2 CHIỀU YÊU CẦU KẾT NỐI & TƯ VẤN CHUYÊN GIA R&D
+
+**Căn cứ Change Request**: [`deltas/CR-2026-033_two_way_expert_consultation.md`](./deltas/CR-2026-033_two_way_expert_consultation.md) (`Status: APPROVED_FOR_PLAN`, `PO-DEC-20261113-02` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 37).
+
+### 27.1. Yêu Cầu Chức Năng Mới & Sửa Đổi (`REQ-CON-*`, `DB-CON-*`, `API-CON-*`, `UI-CON-*`)
+
+- **`REQ-CON-001` — Gửi Phiếu Tư Vấn Lưu DB Thật, Sinh `ticket_code` & Định Tuyến Thẳng Expert + Notify Admin**:
+  - Ghi bản ghi thật vào `brokerage.expert_consultations` với trạng thái khởi tạo `PENDING`, sinh `ticket_code` định dạng `REQ-CON-YYYY-XXXXXX`, lưu `requester_person_id = Actor.PersonId` (nếu đã đăng nhập), định tuyến thẳng vào `/portal/expert/consultations` và bắn thông báo cho cả Expert lẫn Admin.
+- **`REQ-CON-002` — Chuyên Gia Tiếp Nhận & Xử Lý Phiếu Tại `/portal/expert/consultations`**:
+  - Chuyên gia thực hiện `ACCEPT` (đặt lịch `scheduledAt`, link họp `meetingLink`, ghi chú `expertNote`), `REJECT` (bắt buộc lý do `>= 10` ký tự), hoặc `COMPLETE` (từ `ACCEPTED` $\rightarrow$ `COMPLETED`) và bắn notification phản hồi ngược về `requester_person_id` (nếu có) và Admin.
+- **`REQ-CON-003` — Theo Dõi Phiếu Tư Vấn & Đánh Giá Tại `/portal/buyer/consultations` + Khách Vãng Lai**:
+  - Người dùng đã đăng nhập (`PUBLIC_USER`, `BUYER`, `ENTERPRISE`, v.v.) theo dõi danh sách phiếu đã gửi, trạng thái, lịch hẹn, link họp, lý do từ chối và gửi đánh giá sau hoàn thành (`COMPLETED`) tại `/portal/buyer/consultations`.
+  - Khách vãng lai (`AllowAnonymous`) nhận `ticket_code` ngay trên UI sau khi gửi thành công (và qua email nếu có cung cấp).
+- **`REQ-CON-004` — Gỡ Bỏ Cơ Chế Auto-Seed 6 Bản Ghi Mẫu Giả (Zero-Mock)**:
+  - Loại bỏ hoàn toàn auto-seed 6 bản ghi mẫu giả vào hộp thư thật `/portal/expert/consultations` trên luồng vận hành thực tế; hiển thị Empty State chuẩn `<Async>` khi chưa có phiếu thật.
+- **`DB-CON-001`**: Mở rộng `brokerage.expert_consultations` (`ticket_code`, `requester_person_id`, `scheduled_at`, `meeting_link`, `expert_note`, `rejection_reason`, `rating`, `review_comment`, `reviewed_at`).
+- **`API-CON-001`..`API-CON-005`**:
+  - `API-CON-001`: `POST /api/v1/public/experts/{expertCode}/consultation-requests`
+  - `API-CON-002`: `GET /api/v1/portal/expert/consultations`
+  - `API-CON-003`: `PATCH /api/v1/portal/expert/consultations/{id}`
+  - `API-CON-004`: `GET /api/v1/portal/buyer/consultations`
+  - `API-CON-005`: `POST /api/v1/portal/buyer/consultations/{id}/review`
+- **`UI-CON-001`..`UI-CON-003`**:
+  - `UI-CON-001`: Form Public gửi yêu cầu tư vấn trên `/experts/[expertCode]` hiển thị `ticket_code` ngay sau khi gửi thành công.
+  - `UI-CON-002`: Hộp thư Chuyên gia `/portal/expert/consultations` (Zero-Mock, `<Async>` 5 UX States, `ACCEPT`/`REJECT`/`COMPLETE`).
+  - `UI-CON-003`: Màn hình theo dõi phiếu tư vấn Buyer `/portal/buyer/consultations` (`<Async>` 5 UX States, theo dõi & đánh giá sau `COMPLETED`).
+
+### 27.2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-CON-*`)
+
+| Mã Quy Tắc | Tên Quy Tắc | Chi Tiết Ràng Buộc |
+| :--- | :--- | :--- |
+| **`BR-CON-001`** | Quy Tắc Sinh `ticket_code` | Định dạng bắt buộc `REQ-CON-YYYY-XXXXXX`, duy nhất (`UNIQUE`) trong `brokerage.expert_consultations`. |
+| **`BR-CON-002`** | Validation Lý Do `REJECT` | `rejectionReason.Trim().Length >= 10` khi Chuyên gia từ chối (`REJECT`); vi phạm trả về `400 Bad Request`. |
+| **`BR-CON-003`** | Chống IDOR Phía Buyer | Buyer chỉ được xem và đánh giá phiếu thỏa mãn `requester_person_id == Actor.PersonId`. |
+| **`BR-CON-004`** | Chống IDOR Phía Expert | Expert chỉ được xem và xử lý phiếu thỏa mãn `expertProfile.person_id == Actor.PersonId`. |
+| **`BR-CON-005`** | Tuân Thủ PDPD Che Chắn PII | Bảo vệ thông tin liên hệ cá nhân (SĐT/Email) theo Nghị định 13/2023/NĐ-CP; ẩn danh/che chắn PII phù hợp ngữ cảnh. |
+| **`BR-CON-006`** | Thông Báo 2 Chiều & Đánh Giá `COMPLETED` | Notify 2 chiều khi tạo phiếu & khi Expert xử lý; chỉ cho phép Buyer gửi đánh giá 1 lần khi trạng thái là `COMPLETED`. |
+
+### 27.3. Ma Trận Truy Vết Delta v1.7 (`CR-2026-033`)
+
+| Mã Định Danh | Loại | Mô Tả Tóm Tắt | Trạng Thái |
+| :--- | :--- | :--- | :---: |
+| `REQ-CON-001` | Functional Req | Gửi phiếu tư vấn lưu DB thật + sinh `ticket_code` + định tuyến thẳng Expert + notify Admin | `[APPROVED_FOR_PLAN]` |
+| `REQ-CON-002` | Functional Req | Expert tiếp nhận/xử lý (`ACCEPT`/`REJECT >= 10`/`COMPLETE`) + notify phản hồi ngược | `[APPROVED_FOR_PLAN]` |
+| `REQ-CON-003` | Functional Req | Buyer theo dõi & đánh giá tại `/portal/buyer/consultations`; khách vãng lai nhận `ticket_code` | `[APPROVED_FOR_PLAN]` |
+| `REQ-CON-004` | Functional Req | Gỡ bỏ auto-seed 6 bản ghi mẫu giả vào hộp thư thật (Zero-Mock) | `[APPROVED_FOR_PLAN]` |
+| `BR-CON-001` | Business Rule | Quy tắc sinh `ticket_code` `REQ-CON-YYYY-XXXXXX` | `[APPROVED_FOR_PLAN]` |
+| `BR-CON-002` | Business Rule | Validation lý do `REJECT >= 10` ký tự | `[APPROVED_FOR_PLAN]` |
+| `BR-CON-003` | Business Rule | Chống IDOR Buyer (`requester_person_id == Actor.PersonId`) | `[APPROVED_FOR_PLAN]` |
+| `BR-CON-004` | Business Rule | Chống IDOR Expert (`person_id == Actor.PersonId`) | `[APPROVED_FOR_PLAN]` |
+| `BR-CON-005` | Business Rule | Tuân thủ PDPD che chắn PII (NĐ 13/2023/NĐ-CP) | `[APPROVED_FOR_PLAN]` |
+| `BR-CON-006` | Business Rule | Thông báo 2 chiều & quy tắc đánh giá khi `COMPLETED` | `[APPROVED_FOR_PLAN]` |
+| `DB-CON-001` | DB Schema | Mở rộng bảng `brokerage.expert_consultations` | `[APPROVED_FOR_PLAN]` |
+| `API-CON-001`..`API-CON-005` | API Contract | Bộ 5 API cho Public submit, Expert inbox/process, Buyer tracking/review | `[APPROVED_FOR_PLAN]` |
+| `UI-CON-001`..`UI-CON-003` | UI/UX Spec | Form Public `ticket_code`, Hộp thư Expert Zero-Mock, Màn hình Buyer tracking | `[APPROVED_FOR_PLAN]` |
+| `TEST-CON-001`..`TEST-CON-004` | Verification | Kiểm thử 4 tầng: Unit (`BR-CON-*`), API Contract, DB Integration, Playwright E2E & IDOR | `[APPROVED_FOR_PLAN]` |

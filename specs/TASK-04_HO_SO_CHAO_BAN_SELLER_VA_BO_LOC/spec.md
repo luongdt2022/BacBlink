@@ -1136,7 +1136,7 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 | STT | Tên Control / Thành Phần Giao Diện | Luồng Sản Phẩm Thương Mại (`hasTechTransfer === false` \|\| `offerType === 'PRODUCT'`) | Luồng Công Nghệ Chuyển Giao (`hasTechTransfer === true` && `offerType !== 'PRODUCT'`) | Vị Trí File & Dòng Code Mã Nguồn |
 | :---: | :--- | :--- | :--- | :--- |
 | **1** | **Badge Loại hình (Header Overlay)** | `Sản phẩm thương mại` (hoặc `Máy móc / Thiết bị` nếu `DEVICE`) | `Giải pháp công nghệ tích hợp` / `Quy trình công nghệ` / `Phần mềm số hóa` | `[id]/page.tsx`, Header Badges (dòng 390–395) |
-| **2** | **Nút CTA Hero Đầu Trang** | `Đặt mua sản phẩm / Kết nối thương mại` (Icon `ShoppingBag` hoặc `Send`) | `Đăng ký nhận chuyển giao công nghệ ngay` (Icon `Sparkles`) | `[id]/page.tsx`, Hero Action Bar (dòng 510–525) |
+| **2** | **Thanh Tác Vụ Hero Đầu Trang** | Chỉ giữ nút tiện ích `Lưu quan tâm` & `Chia sẻ` (đã hợp nhất CTA chính sang Sticky Sidebar theo CR-2026-026) | Chỉ giữ nút tiện ích `Lưu quan tâm` & `Chia sẻ` (đã hợp nhất CTA chính sang Sticky Sidebar theo CR-2026-026) | `[id]/page.tsx`, Hero Action Bar |
 | **3** | **Cam kết bảo mật Hero** | `Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất` | `Bảo mật theo cam kết NDA & Chuyển giao có hợp đồng li-xăng` | `[id]/page.tsx`, Hero Security Note (dòng 530–545) |
 | **4** | **Tiêu đề Card Giá Sidebar** | `GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI` | `MỨC GIÁ ĐỀ XUẤT CHUYỂN GIAO` | `[id]/page.tsx`, Sidebar Price Card (dòng 950–960) |
 | **5** | **Ghi chú thành phần giá** | `Đơn giá tiêu chuẩn theo quy cách sản phẩm / Số lượng đặt hàng` | `Bao gồm quyền sở hữu, tài liệu kỹ thuật & hỗ trợ chuyển giao` | `[id]/page.tsx`, Sidebar Pricing Note (dòng 975–990) |
@@ -1156,7 +1156,7 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 
 | Mã Yêu Cầu | Tên Yêu Cầu Chức Năng | Phân Tầng Dữ Liệu & Mô Tả Chi Tiết Kỹ Thuật | Thành Phần Giao Diện / Code Target |
 | :--- | :--- | :--- | :--- |
-| **`REQ-DELTA-11`** | **Chuẩn Hóa Phân Nhánh Ngữ Nghĩa & CTA Hero / Sidebar Theo Bản Chất Hồ Sơ** | 1. Xây dựng logic phân định biến cờ boolean `isCommercialProduct = !offer.hasTechTransfer \|\| offer.offerType === 'PRODUCT'`.<br>2. Áp dụng phân nhánh ngữ nghĩa cho toàn bộ khu vực Hero và Sidebar:<br>   - Badge loại hình: Nếu là sản phẩm hiển thị *"Sản phẩm thương mại"*, không dùng nhãn chung chung gây hiểu nhầm.<br>   - Nút CTA Hero: Chuyển đổi thành `"Đặt mua sản phẩm / Kết nối thương mại"` khi `isCommercialProduct = true`.<br>   - Cam kết bảo mật Hero: Chuyển thành `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"`.<br>   - Sidebar Thẻ Giá: Tiêu đề `"GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI"`, nút CTA `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`, nút phụ DataRoom `"Xem Hồ Sơ Chất Lượng & ATTP"`.<br>   - Khối Đầu mối liên hệ: Đổi tiêu đề `"Đầu Mối Kinh Doanh & Phân Phối"`, vai trò liên hệ mặc định `"Bộ phận Kinh doanh / Bán hàng"`. | `[id]/page.tsx`, Hero Section, Sidebar Action Cards |
+| **`REQ-DELTA-11`** | **Chuẩn Hóa Phân Nhánh Ngữ Nghĩa & CTA Sidebar Duy Nhất Theo Bản Chất Hồ Sơ** | 1. Xây dựng logic phân định biến cờ boolean `isCommercialProduct = !offer.hasTechTransfer \|\| offer.offerType === 'PRODUCT'`.<br>2. Áp dụng phân nhánh ngữ nghĩa cho toàn bộ khu vực Hero và Sticky Sidebar (CR-2026-026):<br>   - Badge loại hình: Nếu là sản phẩm hiển thị *"Sản phẩm thương mại"*, không dùng nhãn chung chung gây hiểu nhầm.<br>   - Hero Action Bar: Chỉ giữ nút tiện ích (`Lưu quan tâm`, `Chia sẻ`), không lặp lại nút CTA chính.<br>   - Cam kết bảo mật Hero: Chuyển thành `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"`.<br>   - Sidebar Thẻ Giá (Sticky): Tiêu đề `"GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI"`, nút CTA chính duy nhất `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`, nút phụ DataRoom `"Xem Hồ Sơ Chất Lượng & ATTP"`.<br>   - Khối Đầu mối liên hệ: Đổi tiêu đề `"Đầu Mối Kinh Doanh & Phân Phối"`, vai trò liên hệ mặc định `"Bộ phận Kinh doanh / Bán hàng"`. | `[id]/page.tsx`, Hero Section, Sticky Sidebar Action Cards |
 | **`REQ-DELTA-12`** | **Chuẩn Hóa Bảng Thông Số Kỹ Thuật & Tab Tổng Quan Động Theo Bản Chất Hàng Hóa** | 1. Tại Tab 1 (Tổng quan): Tiêu đề khối mô tả nội dung đổi thành `"Công Dụng & Giá Trị Mang Lại Cho Khách Hàng"` đối với sản phẩm thương mại (thay vì *"Bài toán kỹ thuật giải quyết"*).<br>2. Tại Tab 2 (Thông số kỹ thuật):<br>   - Hàng "Loại hình": Hiển thị `"Sản phẩm thương mại hoàn chỉnh"`.<br>   - Hàng "Hình thức giao dịch": Thay vì hiển thị các thuật ngữ li-xăng / chuyển nhượng sáng chế, hiển thị rõ `"Bán hàng thương phẩm / Hợp đồng cung ứng đại lý"`.<br>   - Hàng "Quy cách & Đơn vị": Giữ nguyên giá trị `offer.unit` do Seller nhập, kèm fallback chuẩn hóa `"Đang cập nhật quy cách"`. | `[id]/page.tsx`, Tab 1 & Tab 2 (dòng 670–815) |
 | **`REQ-DELTA-13`** | **Tái Cấu Trúc Modal Kết Nối Giao Dịch & Danh Mục Hình Thức Hợp Tác Phân Nhánh** | 1. Khi người dùng click nút CTA tại bất kỳ vị trí nào (Hero, Sidebar, DataRoom): Modal `ConnectOfferModal` tự động nhận diện `isCommercialProduct` để render tiêu đề và nội dung phù hợp:<br>   - Tiêu đề modal: `"Gửi Đề Xuất Mua Hàng & Kết Nối Cung Ứng (Commercial Order & Supply Request)"`.<br>   - Nhãn trường bài toán: Đổi từ *"Tiêu đề bài toán / Yêu cầu công nghệ"* thành *"Mục đích đặt hàng / Nhu cầu thu mua thương mại"*, placeholder: *"VD: Đặt mua 500 hộp làm quà tặng doanh nghiệp hoặc đại lý tiêu thụ định kỳ"*. Khởi tạo mặc định: `Nhu cầu đặt mua / kết nối thương phẩm: ${offer.title}`.<br>2. Phân nhánh danh mục Dropdown "Hình thức hợp tác mong muốn" (`demandMethod`):<br>   - Đối với sản phẩm thương mại, cung cấp 4 lựa chọn giao thương:<br>     * `PURCHASE_COMMERCIAL`: Đặt mua thương mại / Đơn hàng số lượng lớn.<br>     * `SUPPLY_CONTRACT`: Ký hợp đồng cung ứng định kỳ dài hạn.<br>     * `DISTRIBUTION_AGENT`: Đăng ký làm đại lý / Nhà phân phối độc quyền theo khu vực.<br>     * `SAMPLE_ORDER`: Đặt mua mẫu thử nghiệm & Thẩm định chất lượng trước khi nhập sỉ.<br>   - Đối với công nghệ chuyển giao, giữ nguyên 4 lựa chọn R&D: `TRANSFER`, `LICENSE`, `DEVICE`, `JOINT_RD`. | `[id]/page.tsx`, Connect Modal (dòng 1130–1360) |
 | **`REQ-DELTA-14`** | **Bổ Sung Các Bậc Ngân Sách Thương Mại & Phù Hợp Doanh Nghiệp Vừa / Nhỏ / Hộ Kinh Doanh** | 1. Mở rộng danh mục trường "Ngân sách dự kiến" (`demandBudget`) trong Modal kết nối, hỗ trợ các quy mô giao dịch linh hoạt từ nhỏ đến lớn:<br>   - `UNDER_20M`: Dưới 20 triệu VNĐ (Đơn hàng thử nghiệm / Đặt mua lẻ).<br>   - `20M_100M`: 20 triệu - 100 triệu VNĐ (Đơn hàng sỉ đại lý / Hộ kinh doanh).<br>   - `100M_500M`: 100 triệu - 500 triệu VNĐ (Hợp đồng cung ứng vừa).<br>   - `500M_1B`: 500 triệu - 1 tỷ VNĐ.<br>   - `1B_3B`: 1 tỷ - 3 tỷ VNĐ.<br>   - `OVER_3B`: Trên 3 tỷ VNĐ.<br>   - `CONTACT`: Thỏa thuận trực tiếp theo báo giá.<br>2. Giá trị ngân sách mặc định khi mở modal sản phẩm thương phẩm: Tự động chọn `UNDER_20M` hoặc `20M_100M` thay vì áp đặt mức lớn `UNDER_500M`. | `[id]/page.tsx`, Modal Budget Select (dòng 1310–1320) |
@@ -1184,14 +1184,12 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 
 ### 16.5. Đặc Tả Giao Diện Chi Tiết (UI/UX Specification)
 
-- **`UI-DELTA-04-05`**: **Bố Cục Hero Bar & Sidebar Dành Cho Sản Phẩm Thương Mại**:
-  - Hero CTA Button: `bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold px-6 py-3.5 rounded-xl text-xs shadow-lg flex items-center gap-2`.
-    * Icon: `ShoppingBag` (hoặc `Send`).
-    * Label: `"Đặt Mua Sản Phẩm / Kết Nối Thương Mại"`.
+- **`UI-DELTA-04-05`**: **Bố Cục Hero Bar & Sticky Sidebar Dành Cho Sản Phẩm Thương Mại (Cập nhật CR-2026-026)**:
+  - Hero Action Bar: Chỉ giữ nút `Lưu quan tâm` và `Chia sẻ hồ sơ` (loại bỏ nút CTA trùng lặp ở Hero).
   - Hero Security Badge: Nền trong suốt hoặc viền xám nhẹ, icon `ShieldCheck` màu xanh ngọc, dòng chữ: `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"`.
-  - Sidebar Card:
+  - Sticky Sidebar Card (`bg-brand-700` cho CTA chính duy nhất):
     * Thẻ giá: Nhãn trên `"GIÁ BÁN NIÊM YẾT / THƯƠNG MẠI"`, font chữ `text-[10px] font-mono tracking-wider text-slate-400 font-extrabold uppercase`.
-    * Nút chính: `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`.
+    * Nút CTA chính duy nhất: `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`.
     * Nút phụ: Icon `FileCheck`, nhãn `"Xem Hồ Sơ Chất Lượng & ATTP"`.
     * Thẻ đầu mối: Tiêu đề `"Đầu Mối Kinh Doanh & Phân Phối"`, icon `Building2`, nhãn vai trò `"Phụ trách kinh doanh / Đại lý"`.
 
@@ -1210,7 +1208,8 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
   - Truy cập chi tiết hồ sơ nông sản / thương mại (ví dụ: `Chè Thịnh AN` - `OFF-20261022-00025-365E`).
   - **Kết quả mong đợi**:
     * Badge loại hình trên Header hiển thị `"Sản phẩm thương mại"`.
-    * Nút CTA Hero hiển thị đúng văn bản: `"Đặt mua sản phẩm / Kết nối thương mại"`.
+    * Hero Action Bar không hiển thị nút CTA trùng lặp (chỉ giữ `Lưu quan tâm` & `Chia sẻ`).
+    * Nút CTA chính duy nhất tại Sticky Sidebar hiển thị: `"Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"`.
     * Dòng cam kết bảo mật Hero hiển thị: `"Mở báo giá sỉ, mẫu thử & hợp đồng thương mại trực tiếp từ nhà sản xuất"`.
     * Tuyệt đối không xuất hiện các chuỗi chữ *"Đăng ký nhận chuyển giao công nghệ"* hoặc *"Bảo mật theo cam kết NDA & Chuyển giao"*.
 
