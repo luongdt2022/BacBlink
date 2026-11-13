@@ -310,7 +310,7 @@ export default function UserGuidePage() {
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-heading font-serif text-xl sm:text-2xl font-bold text-text-primary dark:text-white tracking-tight">
+                <h1 className="type-page-title text-text-primary dark:text-white">
                   Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin
                 </h1>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
@@ -674,7 +674,7 @@ export default function UserGuidePage() {
                 <Search className="size-6" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-heading font-serif text-base font-bold text-text-primary dark:text-white">
+                <h3 className="type-card-title text-text-primary dark:text-white">
                   Không tìm thấy màn hình phù hợp
                 </h3>
                 <p className="text-xs text-text-secondary dark:text-slate-400 max-w-md">
@@ -706,7 +706,7 @@ export default function UserGuidePage() {
                     <span className="flex size-7 items-center justify-center rounded-lg bg-brand-700 text-white text-xs font-black">
                       {group.moduleNumber}
                     </span>
-                    <h2 className="font-heading font-serif text-lg font-bold text-text-primary dark:text-white">
+                    <h2 className="type-section-title text-text-primary dark:text-white">
                       PHÂN HỆ {group.moduleNumber}: {group.moduleName.toUpperCase()}
                     </h2>
                   </div>
@@ -762,7 +762,7 @@ export default function UserGuidePage() {
 
                         {/* Tiêu đề màn hình */}
                         <div>
-                          <h3 className="font-heading font-serif text-base font-bold text-text-primary dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 transition">
+                          <h3 className="type-card-title text-text-primary dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 transition">
                             {screen.title}
                           </h3>
                           <p className="mt-1 text-xs text-text-secondary dark:text-slate-400 leading-relaxed">

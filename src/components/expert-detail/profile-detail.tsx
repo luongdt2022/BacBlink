@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AppButton } from "@/components/ui/design-system";
 import Link from "next/link";
-import { AlertTriangle, Award, BadgeCheck, BriefcaseBusiness, Building2, CalendarPlus, Check, CheckCircle2, Copy, FileText, GraduationCap, LockKeyhole, Mail, Phone, Share2, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Award, BadgeCheck, BookOpen, BriefcaseBusiness, Building2, CalendarPlus, Check, CheckCircle2, Clock, Copy, FileText, GraduationCap, LockKeyhole, Mail, MapPin, Phone, Share2, ShieldCheck, Sparkles } from "lucide-react";
 import { Async } from "@/components/ui/async";
 import { Achievement, ExpertApiError, ExpertCompleteness, ExpertPrivateDetail, ExpertPublicDetail, getMyExpertCompleteness, getMyExpertDetail, getPublicExpertDetail, Timeline } from "@/lib/expert-detail";
 import { authClient } from "@/lib/auth-client";
@@ -27,17 +27,135 @@ function TimelineCard({ title, items, icon: Icon }: { title: string; items: Time
 
 function AchievementTabs({ detail }: { detail: ExpertPublicDetail }) {
   const [active, setActive] = useState<TabKey>("patents");
+  const totalAchievements = tabs.reduce(
+    (sum, tab) => sum + ((detail[tab.key] as Achievement[] | undefined)?.length ?? 0),
+    0
+  );
+
+  if (totalAchievements === 0) {
+    return (
+      <section
+        data-testid="achievements-compact-empty"
+        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800"
+      >
+        <div className="flex items-center gap-2 font-bold text-slate-900 text-sm dark:text-slate-100">
+          <Award className="h-4 w-4 text-brand-700 dark:text-teal-300" />
+          <span>Thành tựu KH&amp;CN &amp; Công trình nghiên cứu</span>
+        </div>
+        <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+          Chuyên gia chưa cập nhật dữ liệu bằng sáng chế, đề tài, công trình công bố hoặc giải thưởng trên hệ thống.
+        </p>
+      </section>
+    );
+  }
+
   const items = detail[active] as Achievement[];
   return <section className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
-    <div className="flex overflow-x-auto border-b border-slate-200 px-3 pt-2 dark:border-slate-800 gap-1">{tabs.map((tab) => <button key={tab.key} type="button" onClick={() => setActive(tab.key)} className={`whitespace-nowrap border-b-2 px-4 py-3 text-xs sm:text-sm font-bold transition ${active === tab.key ? "border-[#2D9A85] text-[#2D9A85] bg-teal-50/40 dark:bg-teal-950/20" : "border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"}`}>{tab.label}</button>)}</div>
+    <div className="flex flex-wrap border-b border-slate-200 px-3 pt-2 dark:border-slate-800 gap-1">{tabs.map((tab) => {
+      const count = (detail[tab.key] as Achievement[] | undefined)?.length ?? 0;
+      return (
+        <button key={tab.key} type="button" onClick={() => setActive(tab.key)} className={`whitespace-nowrap border-b-2 px-3 py-2.5 text-xs font-bold transition ${active === tab.key ? "border-[#2D9A85] text-[#2D9A85] bg-teal-50/40 dark:bg-teal-950/20" : "border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"}`}>
+          {tab.label} ({count})
+        </button>
+      );
+    })}</div>
     <div className="p-5">{items.length === 0 ? <div className="rounded-xl bg-slate-50 p-6 text-center text-label text-slate-500 dark:text-slate-300 dark:bg-slate-800">Chưa có dữ liệu công khai cho mục này.</div> : <div className="space-y-3">{items.map((item, i) => <article className="rounded-xl border border-slate-200 p-4 dark:border-slate-700 hover:border-teal-500/50 transition" key={`${item.title}-${i}`}><p className="text-body font-bold text-slate-900 dark:text-slate-100">{item.title}</p>{item.meta && <p className="mt-1 text-body font-medium text-brand-700 dark:text-teal-300">{item.meta}</p>}{item.description && <p className="mt-1 text-body text-slate-600 dark:text-slate-300 leading-relaxed">{item.description}</p>}</article>)}</div>}</div>
   </section>;
 }
 
 function ConsultationCta({ expertCode }: { expertCode: string }) {
-  const [open, setOpen] = useState(false); const [name, setName] = useState(""); const [message, setMessage] = useState(""); const [state, setState] = useState<"idle" | "sending" | "success" | "error">("idle");
-  async function submit(e: React.FormEvent) { e.preventDefault(); setState("sending"); try { const r = await fetch(`${API_BASE}/api/v1/public/experts/${encodeURIComponent(expertCode)}/consultation-requests`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contactName: name, message }) }); if (!r.ok) throw new Error(); setState("success"); } catch { setState("error"); } }
-  return <section id="consultation-cta" className="rounded-2xl bg-brand-700 border border-white/15 p-6 text-white shadow-md"><h2 className="font-bold text-base sm:text-lg">Đặt Lịch Kết Nối &amp; Tư Vấn Chuyên Gia R&amp;D</h2><p className="mt-1 text-xs text-slate-300">Yêu cầu tư vấn của bạn sẽ được chuyển trực tiếp tới chuyên gia và bộ phận NacenTech tiếp nhận.</p>{!open ? <button type="button" onClick={() => setOpen(true)} className="mt-4 bg-white hover:bg-slate-100 text-brand-700 font-bold px-6 py-3 rounded-xl shadow-sm transition active:scale-[0.98] flex items-center gap-2 text-xs sm:text-sm"><CalendarPlus className="h-4 w-4 text-teal-200" /><span>Điền phiếu yêu cầu kết nối</span></button> : <form onSubmit={submit} className="mt-4 space-y-3 rounded-xl bg-white/10 p-4 border border-white/10"><input required value={name} onChange={e => setName(e.target.value)} placeholder="Họ tên người liên hệ" className="w-full rounded-xl px-3.5 py-2.5 text-xs text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400" /><textarea required value={message} onChange={e => setMessage(e.target.value)} placeholder="Nội dung bài toán cần chuyên gia tư vấn hoặc đề xuất hợp tác R&D" className="min-h-24 w-full rounded-xl px-3.5 py-2.5 text-xs text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400" />{state === "success" && <p className="text-xs font-bold text-emerald-300 flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Đã gửi yêu cầu tư vấn thành công tới Viện NacenTech!</p>}{state === "error" && <p className="text-xs font-bold text-rose-300">Chưa gửi được yêu cầu. Vui lòng thử lại sau.</p>}<button type="submit" disabled={state === "sending"} className="bg-white hover:bg-slate-100 text-brand-700 font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-sm disabled:opacity-50">{state === "sending" ? "Đang gửi…" : "Gửi phiếu yêu cầu tư vấn"}</button></form>}</section>;
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [ticketCode, setTicketCode] = useState<string | null>(null);
+  const [copiedTicket, setCopiedTicket] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const isLoggedIn = typeof window !== "undefined" && Boolean(authClient.getToken());
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setState("sending");
+    setErrorMsg(null);
+    try {
+      const r = await fetch(`${API_BASE}/api/v1/public/experts/${encodeURIComponent(expertCode)}/consultation-requests`, {
+        method: "POST",
+        headers: authClient.getAuthHeaders(),
+        body: JSON.stringify({ contactName: name, message }),
+      });
+      const result = await r.json().catch(() => null);
+      if (!r.ok || result?.success === false) {
+        throw new Error(result?.message || "Chưa gửi được yêu cầu. Vui lòng thử lại sau.");
+      }
+      const code = result?.data?.ticketCode ?? result?.ticketCode ?? null;
+      setTicketCode(code);
+      setState("success");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Chưa gửi được yêu cầu. Vui lòng thử lại sau.");
+      setState("error");
+    }
+  }
+
+  const handleCopyTicket = () => {
+    if (ticketCode && typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(ticketCode);
+      setCopiedTicket(true);
+      setTimeout(() => setCopiedTicket(false), 2000);
+    }
+  };
+
+  return (
+    <section id="consultation-cta" className="rounded-2xl bg-brand-700 border border-white/15 p-6 text-white shadow-md">
+      <h2 className="font-bold text-base sm:text-lg">Đặt Lịch Kết Nối &amp; Tư Vấn Chuyên Gia R&amp;D</h2>
+      <p className="mt-1 text-xs text-slate-300">Yêu cầu tư vấn của bạn sẽ được chuyển trực tiếp tới chuyên gia và bộ phận NacenTech tiếp nhận.</p>
+      {!open ? (
+        <button type="button" onClick={() => setOpen(true)} className="mt-4 bg-white hover:bg-slate-100 text-brand-700 font-bold px-6 py-3 rounded-xl shadow-sm transition active:scale-[0.98] flex items-center gap-2 text-xs sm:text-sm">
+          <CalendarPlus className="h-4 w-4 text-teal-200" />
+          <span>Điền phiếu yêu cầu kết nối</span>
+        </button>
+      ) : (
+        <form onSubmit={submit} className="mt-4 space-y-3 rounded-xl bg-white/10 p-4 border border-white/10">
+          <input required value={name} onChange={e => setName(e.target.value)} placeholder="Họ tên người liên hệ" className="w-full rounded-xl px-3.5 py-2.5 text-xs text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400" />
+          <textarea required value={message} onChange={e => setMessage(e.target.value)} placeholder="Nội dung bài toán cần chuyên gia tư vấn hoặc đề xuất hợp tác R&D" className="min-h-24 w-full rounded-xl px-3.5 py-2.5 text-xs text-slate-900 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400" />
+          {state === "success" && (
+            <div className="rounded-xl bg-emerald-950/60 border border-emerald-400/40 p-3 space-y-2">
+              <p className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 shrink-0" /> Đã gửi yêu cầu tư vấn thành công tới Viện NacenTech!
+              </p>
+              {ticketCode && (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2">
+                  <div className="text-xs">
+                    <span className="text-slate-200">Mã phiếu theo dõi: </span>
+                    <strong className="font-mono text-white tracking-wide" data-testid="consultation-ticket-code">{ticketCode}</strong>
+                  </div>
+                  <button type="button" onClick={handleCopyTicket} className="inline-flex items-center gap-1 rounded-md bg-white/15 hover:bg-white/25 px-2 py-1 text-[11px] font-semibold text-white transition">
+                    {copiedTicket ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedTicket ? "Đã chép" : "Sao chép"}</span>
+                  </button>
+                </div>
+              )}
+              <p className="text-[11px] text-slate-200">
+                {isLoggedIn ? (
+                  <>
+                    Theo dõi tiến độ phản hồi &amp; lịch hẹn tại{" "}
+                    <Link href="/portal/buyer/consultations" className="underline font-bold text-teal-200 hover:text-white">
+                      Tư Vấn Chuyên Gia
+                    </Link>.
+                  </>
+                ) : (
+                  "Vui lòng lưu lại mã phiếu và kiểm tra email để nhận thông báo phản hồi từ chuyên gia."
+                )}
+              </p>
+            </div>
+          )}
+          {state === "error" && <p className="text-xs font-bold text-rose-300">{errorMsg || "Chưa gửi được yêu cầu. Vui lòng thử lại sau."}</p>}
+          <button type="submit" disabled={state === "sending"} className="bg-white hover:bg-slate-100 text-brand-700 font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-sm disabled:opacity-50">
+            {state === "sending" ? "Đang gửi…" : "Gửi phiếu yêu cầu tư vấn"}
+          </button>
+        </form>
+      )}
+    </section>
+  );
 }
 
 function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
@@ -54,6 +172,10 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
 
   useEffect(() => { getSectorLabels().then((items) => setSectorNames(Object.fromEntries(items.map((item) => [item.code, item.name])))).catch(() => setSectorNames({})); }, []);
   const sectorLabels = detail.expertiseSectors.map((value) => sectorNames[value] ?? value);
+  const orgLine = [detail.positionTitle, detail.organizationName]
+    .map((v) => v?.trim())
+    .filter(Boolean)
+    .join(" · ");
   const share = async () => { if (navigator.share) await navigator.share({ title: detail.fullName, url: window.location.href }); else await navigator.clipboard.writeText(window.location.href); };
   return <div className="mx-auto max-w-7xl space-y-6 px-4 py-7">
     {/* Profile Hero Banner Chuẩn BD-04 */}
@@ -125,11 +247,15 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
                 {copiedCode && <span className="text-[11px] text-emerald-400 font-semibold animate-pulse">Đã sao chép mã định danh</span>}
               </div>
 
-              <span>•</span>
-              <span className="flex items-center gap-1 text-white font-medium">
-                <Building2 className="h-3.5 w-3.5 text-teal-300" />
-                {detail.positionTitle} · {detail.organizationName}
-              </span>
+              {orgLine && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 text-white font-medium">
+                    <Building2 className="h-3.5 w-3.5 text-teal-300" />
+                    {orgLine}
+                  </span>
+                </>
+              )}
             </div>
 
             <p className="max-w-3xl text-xs sm:text-sm leading-relaxed text-slate-300 pt-1">
@@ -158,8 +284,25 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
 
     <div className="grid gap-6 lg:grid-cols-3">
       <aside className="space-y-6">
-        <TimelineCard title="Quá trình đào tạo" items={detail.training} icon={GraduationCap} />
-        <TimelineCard title="Quá trình công tác" items={detail.employment} icon={BriefcaseBusiness} />
+        {detail.training.length === 0 && detail.employment.length === 0 ? (
+          <section
+            data-testid="timeline-compact-empty"
+            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:bg-slate-900 dark:border-slate-800"
+          >
+            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm dark:text-slate-100">
+              <GraduationCap className="h-4 w-4 text-brand-700 dark:text-brand-200" />
+              <span>Quá trình đào tạo &amp; Công tác</span>
+            </div>
+            <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              Chuyên gia chưa bổ sung chi tiết quá trình đào tạo và công tác.
+            </p>
+          </section>
+        ) : (
+          <>
+            <TimelineCard title="Quá trình đào tạo" items={detail.training} icon={GraduationCap} />
+            <TimelineCard title="Quá trình công tác" items={detail.employment} icon={BriefcaseBusiness} />
+          </>
+        )}
         <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
           <h2 className="mb-2 font-bold text-sm text-slate-900 dark:text-white">Bảo mật liên hệ PDPD</h2>
           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
@@ -168,6 +311,90 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
         </section>
       </aside>
       <main className="min-w-0 space-y-6 lg:col-span-2">
+        <section
+          data-testid="expert-capability-summary"
+          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-3"
+        >
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <h2 className="flex items-center gap-2 font-bold text-slate-900 text-card-title dark:text-slate-100">
+              <Sparkles className="h-4 w-4 text-brand-700 dark:text-teal-300" />
+              <span>Tóm tắt năng lực &amp; Từ khóa chuyên môn</span>
+            </h2>
+            {detail.organizationAddress && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
+                <MapPin className="h-3.5 w-3.5 text-brand-700 dark:text-teal-300 shrink-0" />
+                <span>{detail.organizationAddress}</span>
+              </span>
+            )}
+          </div>
+          <p className="text-body leading-relaxed text-slate-700 dark:text-slate-300">
+            {detail.consultingSummary || detail.publicBio || "Hồ sơ chuyên môn đang được chuyên gia hoàn thiện và cập nhật trên CSDL Quốc Gia NacenTwin."}
+          </p>
+          {((sectorLabels.length > 0) || (detail.specializedKeywords && detail.specializedKeywords.length > 0)) && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {sectorLabels.map((x) => (
+                <span className="rounded-md bg-brand-50 text-brand-800 border border-brand-200 px-2.5 py-1 text-xs font-semibold dark:bg-brand-950/70 dark:text-brand-200 dark:border-brand-800" key={`cap-sec-${x}`}>
+                  {x}
+                </span>
+              ))}
+              {(detail.specializedKeywords ?? []).map((kw) => (
+                <span className="rounded-md bg-slate-100 border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300" key={`cap-kw-${kw}`}>
+                  {kw}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {detail.courses && detail.courses.length > 0 && (
+          <section
+            data-testid="expert-lms-courses-section"
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800 space-y-4"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 font-bold text-slate-900 text-card-title dark:text-slate-100">
+                <BookOpen className="h-4 w-4 text-brand-700 dark:text-teal-300" />
+                <span>Khóa học &amp; Tài liệu giảng dạy (LMS)</span>
+              </h2>
+              <span className="rounded-full bg-brand-50 text-brand-700 border border-brand-200 px-2.5 py-0.5 text-xs font-bold dark:bg-brand-950/60 dark:text-brand-200 dark:border-brand-800">
+                {detail.courses.length} khóa học
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {detail.courses.map((course) => (
+                <Link
+                  key={course.id}
+                  href={`/elearning/${course.id}`}
+                  className="group rounded-xl border border-slate-200 p-4 hover:border-brand-400 hover:shadow-sm transition flex flex-col justify-between gap-2 dark:border-slate-700 dark:hover:border-teal-500/60"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <span className="font-mono font-semibold text-brand-700 dark:text-teal-300">{course.materialCode}</span>
+                      <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-medium text-slate-700 dark:text-slate-300">
+                        {course.lessonType}
+                      </span>
+                    </div>
+                    <h3 className="mt-1.5 font-bold text-sm text-slate-900 group-hover:text-brand-700 line-clamp-2 dark:text-slate-100 dark:group-hover:text-teal-300">
+                      {course.title}
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      {course.durationMinutes} phút
+                    </span>
+                    {(course.clusterName || course.sectorCode) && (
+                      <span className="truncate max-w-[160px]">
+                        {course.clusterName || sectorNames[course.sectorCode ?? ""] || course.sectorCode}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         <AchievementTabs detail={detail} />
         <div id="consultation-cta">
           <ConsultationCta expertCode={detail.expertCode} />

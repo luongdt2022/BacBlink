@@ -344,7 +344,7 @@ function ProfileUpgradeHubContent() {
 
   return (
     <div className="w-full space-y-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full max-w-[1440px] mx-auto space-y-5">
         
         {/* BREADCRUMB */}
         <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -358,11 +358,11 @@ function ProfileUpgradeHubContent() {
         {/* HERO BANNER */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-700 via-brand-800 to-slate-900 p-8 sm:p-10 text-white shadow-xl shadow-brand-900/10">
           <div className="relative z-10 space-y-3 max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-brand-500/20 px-3.5 py-1 text-xs font-bold text-brand-200 border border-brand-400/30 backdrop-blur-sm">
-              <Sparkles className="w-4 h-4 text-amber-300" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-semibold text-brand-100 border border-white/20 backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-brand-200" />
               Hệ Thống Phân Cấp & Thẩm Quyền 3D Scoped RBAC
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            <h1 className="type-page-title">
               Lựa Chọn Lộ Trình Nâng Hạng Tài Khoản
             </h1>
             <p className="text-sm leading-relaxed text-brand-100">
@@ -410,7 +410,7 @@ function ProfileUpgradeHubContent() {
                       {expertApp.expertCode || expertApp.id ? `MÃ: ${expertApp.expertCode || String(expertApp.id).slice(0, 8)}` : "HỒ SƠ KH&CN"}
                     </span>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-0.5">
+                  <h3 className="type-card-title text-slate-900 dark:text-white mt-0.5">
                     Hồ Sơ Nâng Hạng Chuyên Gia KH&CN
                   </h3>
                 </div>
@@ -526,7 +526,7 @@ function ProfileUpgradeHubContent() {
                 <div className="inline-block px-2.5 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900/60 text-brand-800 dark:text-brand-200 text-xs font-extrabold uppercase tracking-wide">
                   Học Hàm / Học Vị
                 </div>
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mt-1">Chuyên Gia KH&CN</h3>
+                <h3 className="type-card-title text-slate-900 dark:text-white mt-1">Chuyên Gia KH&CN</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                   Dành cho các Nhà khoa học, Giảng viên, Nghiên cứu viên, Nhà sáng chế có công trình công bố hoặc bằng SHTT.
                 </p>
@@ -552,7 +552,7 @@ function ProfileUpgradeHubContent() {
             <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
               {expertApp ? (
                 <div className="space-y-2">
-                  <div className={`p-2 rounded-lg border text-[11px] flex items-center gap-1.5 font-medium ${
+                  <div className={`p-2 rounded-lg border text-xs flex items-center gap-1.5 font-medium ${
                     expertApp.status === "REJECTED"
                       ? "bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200"
                       : "bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200"
@@ -597,7 +597,7 @@ function ProfileUpgradeHubContent() {
                 <div className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs font-extrabold uppercase tracking-wide">
                   Pháp Nhân ĐMST
                 </div>
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mt-1">Doanh Nghiệp ĐMST</h3>
+                <h3 className="type-card-title text-slate-900 dark:text-white mt-1">Doanh Nghiệp ĐMST</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                   Dành cho Doanh nghiệp KH&CN, Start-up sáng tạo, Tổ chức có hoạt động R&D đổi mới quy trình/sản phẩm.
                 </p>
@@ -643,7 +643,7 @@ function ProfileUpgradeHubContent() {
                 <div className="inline-block px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 text-xs font-extrabold uppercase tracking-wide">
                   Bên Mua Công Nghệ
                 </div>
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mt-1">Bên Mua (Buyer)</h3>
+                <h3 className="type-card-title text-slate-900 dark:text-white mt-1">Bên Mua (Buyer)</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                   Dành cho Doanh nghiệp, Tổ chức có bài toán công nghệ, điểm nghẽn kỹ thuật cần tìm nguồn cung giải quyết.
                 </p>
@@ -688,7 +688,7 @@ function ProfileUpgradeHubContent() {
                 <div className="inline-block px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 text-xs font-extrabold uppercase tracking-wide">
                   Nhà Cung Ứng
                 </div>
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white mt-1">Bên Bán (Seller)</h3>
+                <h3 className="type-card-title text-slate-900 dark:text-white mt-1">Bên Bán (Seller)</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                   Dành cho Viện nghiên cứu, Trường Đại học, Doanh nghiệp công nghệ sở hữu sáng chế/giải pháp R&D (TRL 1-9).
                 </p>
@@ -730,7 +730,7 @@ function ProfileUpgradeHubContent() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Bảng So Sánh Quyền Hạn & Điều Kiện 4 Lộ Trình</h3>
+              <h3 className="type-card-title text-slate-900 dark:text-white">Bảng So Sánh Quyền Hạn & Điều Kiện 4 Lộ Trình</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">Đối soát ma trận phân cấp và tiêu chuẩn hồ sơ theo quy chuẩn dự án NacenTech</p>
             </div>
             <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs">Standardized Matrix</span>
@@ -801,7 +801,7 @@ function ProfileUpgradeHubContent() {
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Nâng Cấp Hồ Sơ — Doanh Nghiệp ĐMST</h3>
+                  <h3 className="type-card-title text-slate-900 dark:text-white">Nâng Cấp Hồ Sơ — Doanh Nghiệp ĐMST</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Quy chuẩn thẩm định pháp nhân theo UI-PROFILE-UPGRADE-001</p>
                 </div>
               </div>
@@ -946,7 +946,7 @@ function ProfileUpgradeHubContent() {
                   <Cpu className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Đăng Ký Mở Gian Hàng — Bên Bán (Seller)</h3>
+                  <h3 className="type-card-title text-slate-900 dark:text-white">Đăng Ký Mở Gian Hàng — Bên Bán (Seller)</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Khởi tạo gian hàng công nghệ và tiếp nhận quyền SELLER (SLA 24h)</p>
                 </div>
               </div>

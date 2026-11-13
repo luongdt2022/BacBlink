@@ -430,7 +430,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-16">
       {/* Top Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-4 px-3 sm:px-5">
           <div className="flex items-center gap-3">
             <Link
               href="/portal/seller/technologies"
@@ -483,7 +483,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-6">
+      <main className="mx-auto max-w-[1440px] px-3 py-4 sm:px-5 space-y-4">
         {/* Title & Description */}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -564,9 +564,9 @@ export default function ChinhSuaHoSoChaoBanPage() {
         </div>
 
         {/* Main Grid: Sidebar vs Content */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-4 lg:gap-5 lg:grid-cols-[296px_minmax(0,1fr)]">
           {/* Left Column */}
-          <aside className="space-y-4">
+          <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             <FormStepper
               currentStep={currentStep}
               onStepSelect={(step) => {
@@ -581,7 +581,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
           {/* Right Column */}
           <section className="min-w-0 space-y-6">
             {currentStep === 1 && (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-5 sm:p-7 space-y-7">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-5 space-y-5">
                 {/* Doanh nghiệp liên kết (TASK-02) & Chọn Sở KH&CN tiếp nhận (Delta v9) */}
                 <SellerIdentityCard
                   enterpriseName={enterpriseName}

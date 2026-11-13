@@ -181,6 +181,32 @@ function ExpertConsultationsContent() {
     }
   };
 
+  const [completingId, setCompletingId] = useState<string | null>(null);
+
+  const handleCompleteConsultation = async (ticketId: string) => {
+    try {
+      setCompletingId(ticketId);
+      await expertConsultationsApi.respondConsultation(ticketId, {
+        action: "COMPLETE",
+      });
+      const found = scheduledList.find((t) => t.id === ticketId);
+      if (found) {
+        const completedTicket: ConsultationTicket = {
+          ...found,
+          status: "COMPLETED",
+          completedAt: new Date().toLocaleDateString("vi-VN"),
+        };
+        setCompletedList((prev) => [completedTicket, ...prev]);
+        setScheduledList((prev) => prev.filter((t) => t.id !== ticketId));
+        toast.success("Đã ghi nhận hoàn thành phiên tư vấn!", "Thành Công");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Lỗi khi hoàn thành phiên tư vấn.");
+    } finally {
+      setCompletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Banner cảnh báo màu hổ phách nếu tài khoản EXPERT đang chờ duyệt */}
@@ -511,8 +537,8 @@ function ExpertConsultationsContent() {
                         </p>
                       </div>
 
-                      {/* Join meeting button with 15-minute countdown condition */}
-                      <div className="text-right shrink-0">
+                      {/* Join meeting button with 15-minute countdown condition & Complete action */}
+                      <div className="text-right shrink-0 flex flex-col items-end gap-2">
                         {ticket.canJoinMeeting ? (
                           <a
                             href={ticket.meetingUrl || "#"}
@@ -536,6 +562,16 @@ function ExpertConsultationsContent() {
                             </span>
                           </div>
                         )}
+                        <button
+                          type="button"
+                          disabled={completingId === ticket.id}
+                          onClick={() => handleCompleteConsultation(ticket.id)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold rounded-xl shadow-xs transition min-h-10 disabled:opacity-50"
+                          data-testid={`btn-complete-consultation-${ticket.id}`}
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                          <span>{completingId === ticket.id ? "Đang ghi nhận..." : "Hoàn Thành Tư Vấn"}</span>
+                        </button>
                       </div>
                     </div>
 
@@ -643,23 +679,28 @@ function ExpertConsultationsContent() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-1 text-amber-500 font-bold">
                           <div className="flex">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-3.5 h-3.5 ${
-                                  i < (ticket.enterpriseRating || 5)
-                                    ? "fill-amber-400 text-amber-400"
-                                    : "text-slate-300"
-                                }`}
-                              />
-                            ))}
+                            {Array.from({ length: 5 }).map((_, i) => {
+                              const rVal = ticket.rating || ticket.enterpriseRating || 0;
+                              return (
+                                <Star
+                                  key={i}
+                                  className={`w-3.5 h-3.5 ${
+                                    i < rVal
+                                      ? "fill-amber-400 text-amber-400"
+                                      : "text-slate-300 dark:text-slate-600"
+                                  }`}
+                                />
+                              );
+                            })}
                           </div>
                           <span className="text-slate-700 dark:text-slate-300 ml-1">
                             Đánh giá từ Doanh nghiệp:
                           </span>
                         </div>
                         <p className="text-slate-600 dark:text-slate-300 italic">
-                          "{ticket.enterpriseReview}"
+                          {ticket.reviewComment || ticket.enterpriseReview
+                            ? `"${ticket.reviewComment || ticket.enterpriseReview}"`
+                            : "Doanh nghiệp chưa gửi nhận xét đánh giá."}
                         </p>
                       </div>
 

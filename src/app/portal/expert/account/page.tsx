@@ -272,7 +272,7 @@ function ExpertAccountContent() {
   const score = completeness?.score ?? 85;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="w-full space-y-5 pb-6">
       <Async
         state={uxState}
         loadingText="Đang tải thông tin tài khoản Chuyên gia KH&CN..."

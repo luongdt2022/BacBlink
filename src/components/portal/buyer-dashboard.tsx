@@ -99,7 +99,7 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
   const signedMous = safeOppsList.filter((o) => o.stage === "MOU_SIGNED" || o.stage === "COMPLETED");
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="w-full space-y-5">
       {/* 1. EXECUTIVE WORKSPACE BANNER */}
       <section className="relative overflow-hidden rounded-3xl bg-brand-700 text-white p-6 sm:p-8 shadow-xl shadow-brand-950/15 border border-brand-800/40">
         <div
@@ -108,8 +108,8 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
         />
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-bold text-teal-200">
-              <ShoppingBag className="w-3.5 h-3.5 text-teal-300" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-bold text-brand-100">
+              <ShoppingBag className="w-3.5 h-3.5 text-brand-200" />
               <span>Trung Tâm Điều Hành Mua Sắm & Đổi Mới Công Nghệ</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">

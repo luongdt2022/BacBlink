@@ -27,19 +27,19 @@ export default function GioiThieuPage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
       {/* HERO BANNER SECTION (CHUẨN DESIGN SYSTEM NACENTWIN) */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
-        <div className="max-w-5xl mx-auto space-y-6 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-teal-300 border border-white/20 text-xs font-semibold backdrop-blur-sm">
-            <Landmark className="w-4 h-4 text-teal-300" />
-            <span>Bộ Khoa học và Công nghệ • Viện Ứng Dụng Công Nghệ</span>
+        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-brand-100 border border-white/20 text-xs font-semibold backdrop-blur-sm">
+            <Landmark className="w-4 h-4 text-brand-200" />
+            <span>Bộ Khoa học và Công nghệ • Viện Đổi Mới Sáng Tạo Quốc Gia</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
+          <h1 className="type-page-title text-white">
             NacenTwin — Cầu Nối Số Hóa Hệ Sinh Thái Đổi Mới Sáng Tạo Quốc Gia
           </h1>
 
-          <p className="text-white/85 text-sm sm:text-base leading-relaxed max-w-3xl">
+          <p className="text-white/85 type-body max-w-3xl">
             Nền tảng "Bản sao số" (Digital Twin) kết nối cung - cầu công nghệ, chuẩn hóa định giá và đánh giá năng lực công nghệ doanh nghiệp theo Thông tư 17/2019/TT-BKHCN, quy tụ hơn 300+ doanh nghiệp KH&CN và 500+ chuyên gia đầu ngành.
           </p>
 
@@ -63,12 +63,12 @@ export default function GioiThieuPage() {
       </section>
 
       {/* 4 TRỤ CỘT CHIẾN LƯỢC */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-teal-400">
             Kiến Trúc Nền Tảng
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+          <h2 className="type-section-title text-slate-900 dark:text-white">
             4 Trụ Cột Vận Hành Cốt Lõi
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -120,17 +120,17 @@ export default function GioiThieuPage() {
       </section>
 
       {/* SỨ MỆNH & CHỨC NĂNG CỦA VIỆN */}
-      <section className="bg-slate-100 py-16 px-4 sm:px-6 lg:px-8 dark:bg-slate-900/50">
-        <div className="max-w-5xl mx-auto space-y-10">
+      <section className="bg-slate-100 py-10 sm:py-12 px-4 sm:px-6 lg:px-8 dark:bg-slate-900/50">
+        <div className="max-w-7xl mx-auto space-y-10">
           <div className="max-w-2xl space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-teal-400">
               Thể Chế & Tổ Chức
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-              Viện Ứng Dụng Công Nghệ (NacenTech)
+            <h2 className="type-section-title text-slate-900 dark:text-white">
+              Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Viện Ứng dụng Công nghệ là tổ chức khoa học và công nghệ công lập trực thuộc Bộ Khoa học và Công nghệ, có chức năng nghiên cứu ứng dụng, làm chủ và phát triển công nghệ cao, công nghệ mới phục vụ phát triển kinh tế - xã hội.
+              Viện Đổi Mới Sáng Tạo Quốc Gia là tổ chức khoa học và công nghệ công lập trực thuộc Bộ Khoa học và Công nghệ, giữ vai trò đầu mối nghiên cứu, ươm tạo, chuyển giao công nghệ và thúc đẩy hệ sinh thái đổi mới sáng tạo quốc gia.
             </p>
           </div>
 
@@ -163,8 +163,8 @@ export default function GioiThieuPage() {
       </section>
 
       {/* FOOTER CTA */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 text-center space-y-6">
+        <h2 className="type-section-title text-slate-900 dark:text-white">
           Sẵn Sàng Gia Nhập Hệ Sinh Thái NacenTwin?
         </h2>
         <p className="text-xs text-slate-500 max-w-xl mx-auto">

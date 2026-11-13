@@ -18,7 +18,7 @@ export function WorkspaceRouteSkeleton({
       data-testid={testId}
       aria-busy="true"
       aria-live="polite"
-      className={cn("max-w-6xl mx-auto space-y-6", className)}
+      className={cn("w-full space-y-5", className)}
     >
       <span className="sr-only">{srText}</span>
 

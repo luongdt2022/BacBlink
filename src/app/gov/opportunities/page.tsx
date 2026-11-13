@@ -236,14 +236,14 @@ export default function GovOpportunitiesPage() {
             <table className="w-full text-caption text-left">
               <thead className="bg-surface-subtle border-y border-border text-text-muted font-medium">
                 <tr>
-                  <th className="py-3 px-4">Mã Deal</th>
-                  <th className="py-3 px-4">Tiêu Đề & Cặp Đối Tác</th>
-                  <th className="py-3 px-4">Địa Bàn Quản Lý</th>
-                  <th className="py-3 px-4">Chuyên Gia Giám Sát</th>
-                  <th className="py-3 px-4">Giai Đoạn</th>
-                  <th className="py-3 px-4">Giá Trị Dự Kiến</th>
-                  <th className="py-3 px-4">Cảnh Báo SLA</th>
-                  <th className="py-3 px-4 text-right">Tác Nghiệp Sở</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Mã Deal</th>
+                  <th className="py-3 px-3">Tiêu Đề & Cặp Đối Tác</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Địa Bàn Quản Lý</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Chuyên Gia Giám Sát</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Giai Đoạn</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Giá Trị Dự Kiến</th>
+                  <th className="py-3 px-3 whitespace-nowrap">Cảnh Báo SLA</th>
+                  <th className="py-3 px-3 text-right whitespace-nowrap">Tác Nghiệp Sở</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -251,55 +251,58 @@ export default function GovOpportunitiesPage() {
                   const provinceDisplay = resolveProvinceName(opp.managingAuthorityId || userScopeId);
                   return (
                     <tr key={opp.id} className="hover:bg-surface-subtle/50 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-brand-primary">
+                      <td className="py-3 px-3 font-mono text-xs font-bold text-brand-primary whitespace-nowrap">
                         {opp.opportunityCode}
                       </td>
-                      <td className="py-3.5 px-4 max-w-xs">
+                      <td className="py-3 px-3 max-w-[260px]">
                         <p className="font-semibold text-text-primary truncate">{opp.title}</p>
                         <p className="text-caption text-text-muted truncate">
                           {opp.buyerOrgName} &harr; {opp.sellerOrgName}
                         </p>
                       </td>
-                      <td className="py-3.5 px-4 font-medium text-text-secondary">
+                      <td className="py-3 px-3 font-medium text-text-secondary">
                         <span className="font-semibold">{provinceDisplay}</span>
                         {opp.managingAuthorityId && (
                           <span className="text-xs text-text-muted ml-1">({opp.managingAuthorityId})</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-text-secondary">
+                      <td className="py-3 px-3 text-text-secondary">
                         {opp.assignedExpertName ? (
                           <span className="flex items-center gap-1 text-brand-primary">
-                            <UserCheck className="w-3.5 h-3.5" /> {opp.assignedExpertName}
+                            <UserCheck className="w-3.5 h-3.5 shrink-0" /> {opp.assignedExpertName}
                           </span>
                         ) : (
                           <span className="text-text-muted italic">Chưa chỉ định</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-caption font-bold bg-surface-subtle border border-border text-text-secondary">
+                      <td className="py-3 px-3 whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded-full text-caption font-bold bg-surface-subtle border border-border text-text-secondary whitespace-nowrap">
                           {opp.stage}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-text-primary">
+                      <td className="py-3 px-3 font-semibold text-text-primary whitespace-nowrap">
                         {formatCurrencyMillionVnd(opp.estimatedValueMillionVnd, { emptyLabel: '---' })}
                       </td>
-                      <td className="py-3.5 px-4">
+                      <td className="py-3 px-3 whitespace-nowrap">
                         {opp.isSlaWarning ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-caption font-bold bg-rose-500/10 text-rose-700 border border-rose-500/20">
-                            <AlertTriangle className="w-3.5 h-3.5" /> Quá hạn 48h
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 border border-rose-500/20 whitespace-nowrap">
+                            <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                            <span>Quá hạn 48h</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-caption font-medium bg-emerald-500/10 text-emerald-700">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Đúng hạn
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 whitespace-nowrap">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            <span>Đúng hạn</span>
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-3 px-3 text-right whitespace-nowrap">
                         <button
                           onClick={() => setSelectedDeal(opp)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-brand-primary hover:bg-surface-elevated font-medium transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-200 bg-white text-brand-700 hover:bg-brand-50 dark:bg-slate-800 dark:border-slate-700 dark:text-brand-300 dark:hover:bg-slate-700 font-semibold text-xs transition-colors shadow-xs whitespace-nowrap"
                         >
-                          <Eye className="w-3.5 h-3.5" /> Giám sát Deal
+                          <Eye className="w-3.5 h-3.5 shrink-0" />
+                          <span>Giám sát Deal</span>
                         </button>
                       </td>
                     </tr>

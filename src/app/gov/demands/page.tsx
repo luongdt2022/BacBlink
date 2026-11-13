@@ -585,25 +585,28 @@ export default function GovDemandsPage() {
                             />
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                          <button
-                            data-testid={`btn-review-demand-${item.id}`}
-                            disabled={isProcessing}
-                            onClick={() => openVerifyModal(item)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl font-bold text-xs transition shadow-sm disabled:opacity-50 inline-flex items-center gap-1"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>{item.status === 'PENDING' ? 'Thẩm Định & Duyệt' : 'Xem Chi Tiết'}</span>
-                          </button>
+                        <td className="px-4 py-3.5 text-right">
+                          <div className="ml-auto flex w-[156px] flex-col gap-1.5">
+                            <button
+                              data-testid={`btn-review-demand-${item.id}`}
+                              disabled={isProcessing}
+                              onClick={() => openVerifyModal(item)}
+                              className="w-full bg-brand-700 hover:bg-brand-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs transition shadow-sm disabled:opacity-50 inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            >
+                              <Eye className="w-3.5 h-3.5 shrink-0" />
+                              <span>{item.status === 'PENDING' ? 'Thẩm Định & Duyệt' : 'Xem Chi Tiết'}</span>
+                            </button>
 
-                          <button
-                            data-testid={`btn-assign-expert-${item.id}`}
-                            disabled={isProcessing}
-                            onClick={() => openAssignModal(item)}
-                            className="bg-brand-700 hover:bg-brand-800 text-white px-3 py-1.5 rounded-xl font-bold text-xs transition shadow-sm disabled:opacity-50"
-                          >
-                            Gán Chuyên Gia
-                          </button>
+                            <button
+                              data-testid={`btn-assign-expert-${item.id}`}
+                              disabled={isProcessing}
+                              onClick={() => openAssignModal(item)}
+                              className="w-full bg-white hover:bg-brand-50 text-brand-700 border border-brand-200 dark:bg-slate-800 dark:border-slate-700 dark:text-brand-300 dark:hover:bg-slate-700 px-3 py-1.5 rounded-xl font-bold text-xs transition shadow-xs disabled:opacity-50 inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+                            >
+                              <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                              <span>Gán Chuyên Gia</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

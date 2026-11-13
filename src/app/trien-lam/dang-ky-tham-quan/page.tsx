@@ -89,7 +89,7 @@ export default function ExpoRegistrationPage() {
             <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-3 py-1 rounded-full">
               VÉ ĐIỆN TỬ CHÍNH THỨC
             </span>
-            <h2 className="text-2xl font-extrabold text-text-primary dark:text-white mt-2">
+            <h2 className="type-section-title text-text-primary dark:text-white mt-2">
               Đăng Ký Tham Quan Triển Lãm Thành Công!
             </h2>
             <p className="text-text-secondary dark:text-slate-300 text-xs sm:text-sm mt-1 max-w-md mx-auto">
@@ -139,11 +139,11 @@ export default function ExpoRegistrationPage() {
       <section className="relative overflow-hidden bg-brand-700 text-white py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="relative max-w-3xl mx-auto space-y-2 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-cyan-300 text-xs font-semibold backdrop-blur-sm border border-white/20">
-            <Ticket className="w-3.5 h-3.5 text-cyan-300" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
+            <Ticket className="w-3.5 h-3.5 text-brand-200" />
             CỔNG ĐĂNG KÝ VÉ THAM QUAN KẾT NỐI CUNG CẦU
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+          <h1 className="type-page-title text-white">
             Triển Lãm Quốc Tế VIMEXPO & VIETNAM AUTOEXPO 2026
           </h1>
           <p className="text-white/80 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
@@ -151,9 +151,9 @@ export default function ExpoRegistrationPage() {
             Đăng ký vé điện tử miễn phí trước ngày 10/06/2026 để nhận mã QR Check-in nhanh tại quầy VIP.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 pt-2 text-xs text-slate-300">
-            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-cyan-300" /> Ngày 11-13/06/2026</span>
-            <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-cyan-300" /> Cung VHLĐ Hữu Nghị Việt Xô (I.C.E Hà Nội)</span>
+          <div className="flex flex-wrap justify-center gap-4 pt-2 text-xs text-brand-100">
+            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-brand-200" /> Ngày 11-13/06/2026</span>
+            <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-brand-200" /> Cung VHLĐ Hữu Nghị Việt Xô (I.C.E Hà Nội)</span>
           </div>
         </div>
       </section>
@@ -166,7 +166,7 @@ export default function ExpoRegistrationPage() {
               <span className="text-xs font-extrabold uppercase tracking-widest text-brand-700 dark:text-cyan-400">
                 THÔNG TIN ĐẠI DIỆN
               </span>
-              <h3 className="text-lg font-extrabold text-text-primary dark:text-white">
+              <h3 className="type-card-title text-text-primary dark:text-white">
                 Đăng Ký Nhận Vé Điện Tử
               </h3>
             </div>

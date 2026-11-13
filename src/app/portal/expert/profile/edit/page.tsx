@@ -236,7 +236,7 @@ export default function ExpertProfileEditPage() {
     <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col">
       {/* TOP HEADER */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs dark:bg-slate-900 dark:border-slate-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link
               href="/portal"
@@ -291,7 +291,7 @@ export default function ExpertProfileEditPage() {
       </header>
 
       {/* MAIN EDITING BODY */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+      <main className="max-w-[1440px] mx-auto px-3 sm:px-5 py-4 flex-1 w-full space-y-5">
         <Async state={uxState} errorMessage={errorMessage} onRetry={() => setReloadSeq((c) => c + 1)}>
           {/* PENDING REVIEW LOCK BANNER */}
           {isPendingReview && (

@@ -314,7 +314,7 @@ export default function PublicDemandDetailPage() {
                           <span className="font-extrabold text-sm sm:text-base">
                             Hồ Sơ Nhu Cầu Đang Chờ Thẩm Định
                           </span>
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-200">
+                          <span className="text-xs uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900/80 text-amber-800 dark:text-amber-200">
                             Chờ thẩm định
                           </span>
                         </div>
@@ -327,7 +327,7 @@ export default function PublicDemandDetailPage() {
 
                   {/* Title & Stage */}
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary dark:text-white leading-tight">
+                    <h1 className="type-page-title text-text-primary dark:text-white">
                       {item.technicalProblem}
                     </h1>
                     <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-text-secondary dark:text-slate-400">
@@ -412,7 +412,7 @@ export default function PublicDemandDetailPage() {
                       <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
                         ĐƠN HÀNG THƯƠNG MẠI
                       </span>
-                      <h3 className="text-lg font-extrabold text-text-primary dark:text-white mt-2">
+                      <h3 className="type-card-title text-text-primary dark:text-white mt-2">
                         Đơn Đặt Mua Trực Tiếp
                       </h3>
                       <p className="text-xs text-text-secondary dark:text-slate-400 mt-1 leading-relaxed">
@@ -444,7 +444,7 @@ export default function PublicDemandDetailPage() {
                       <span className="text-xs font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full">
                         TẠM KHÓA TIẾP NHẬN
                       </span>
-                      <h3 className="text-lg font-extrabold text-text-primary dark:text-white mt-2">
+                      <h3 className="type-card-title text-text-primary dark:text-white mt-2">
                         Chào Bán Giải Pháp
                       </h3>
                       <p className="text-xs text-text-secondary dark:text-slate-400 mt-1 leading-relaxed">
@@ -477,7 +477,7 @@ export default function PublicDemandDetailPage() {
                     <span className="text-xs font-extrabold uppercase tracking-widest text-nacen-green-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
                       DÀNH CHO BÊN CHÀO BÁN
                     </span>
-                    <h3 className="text-lg font-extrabold text-text-primary dark:text-white mt-1">
+                    <h3 className="type-card-title text-text-primary dark:text-white mt-1">
                       Nộp Đề Xuất Giải Pháp
                     </h3>
                     <p className="text-xs text-text-secondary dark:text-slate-400 mt-0.5">

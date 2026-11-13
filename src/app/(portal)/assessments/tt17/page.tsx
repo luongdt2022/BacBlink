@@ -50,7 +50,7 @@ export default function AssessmentDashboardPage() {
   const latest = displayLatest;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="mx-auto px-3 sm:px-5 py-5 max-w-[1440px]">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div>

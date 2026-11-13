@@ -112,4 +112,47 @@ describe("EnterprisesDirectoryView (T-02.77 - CR-2026-011)", () => {
       expect(screen.getByText("Lỗi tải lĩnh vực (chọn tất cả)")).toBeInTheDocument();
     });
   });
+
+  it("renders unified ĐMST badge without duplication and switches between 2-col Grid and Ranking Table view", async () => {
+    vi.spyOn(enterpriseClient, "fetchEnterprises").mockResolvedValue({
+      ...mockDirectoryResponse,
+      items: [
+        {
+          ...mockDirectoryResponse.items[0],
+          innovationTier: "LEADING",
+          innovationScore: 84.5,
+          tt17Score: 76.2,
+          tt17Classification: "TIEN_TIEN",
+          hasRdUnit: true,
+          inValueChain: true,
+        },
+      ],
+    });
+
+    render(<EnterprisesDirectoryView />);
+
+    // Verify card renders enterprise name, single unified ĐMST badge, and CTA link
+    expect(await screen.findByText("CÔNG TY CP CƠ ĐIỆN TÂN TIẾN")).toBeInTheDocument();
+    const dmstBadges = screen.getAllByText(/Vàng ĐMST · 84\.5đ/);
+    expect(dmstBadges).toHaveLength(1);
+    expect(screen.getByRole("link", { name: /Xem Hồ Sơ Năng Lực/i })).toHaveAttribute(
+      "href",
+      "/enterprises/0102030405"
+    );
+
+    // Switch to Ranking Table view ("Bảng")
+    const listBtn = screen.getByRole("button", { name: /Hiển thị dạng bảng xếp hạng/i });
+    fireEvent.click(listBtn);
+    expect(listBtn).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByText("76.2")).toBeInTheDocument();
+    expect(screen.getByText("82.0")).toBeInTheDocument();
+
+    // Switch back to Grid view ("Lưới") and test Connect modal interaction
+    const gridBtn = screen.getByRole("button", { name: /Hiển thị dạng lưới 2 cột/i });
+    fireEvent.click(gridBtn);
+    expect(gridBtn).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "Kết Nối" }));
+    expect(screen.getByText(/Đề Xuất Kết Nối/i)).toBeInTheDocument();
+  });
 });

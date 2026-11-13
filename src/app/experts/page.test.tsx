@@ -67,8 +67,31 @@ const mockExpertsData = {
         isVerified: true,
         isAcceptingConsultation: true,
       },
+      {
+        expertCode: "CG-NACEN-LMS04",
+        fullName: "PGS.TS. Trần Minh Khoa",
+        academicRank: "PGS",
+        degree: "DOCTOR",
+        organizationName: "Đại học Bách Khoa Hà Nội",
+        organizationAddress: "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
+        positionTitle: "Giảng viên cao cấp",
+        primarySectorCode: "03",
+        primarySectorName: "03. Điện tử & CNTT",
+        expertiseSectors: ["03"],
+        masteredTechCodes: ["TECH-AI-VISION", "TECH-SUPERCRITICAL-CO2"],
+        specializedKeywords: ["Học sâu", "Thị giác máy", "Nhúng", "FPGA"],
+        provinceCode: "HN",
+        provinceName: "Hà Nội",
+        courseCount: 2,
+        publicationCount: 0,
+        patentCount: 0,
+        projectCount: 0,
+        isVerified: true,
+        isAcceptingConsultation: true,
+        connectionCount: 0,
+      },
     ],
-    totalCount: 3,
+    totalCount: 4,
     page: 1,
     pageSize: 9,
     totalPages: 1,
@@ -82,7 +105,7 @@ const mockProvincesData = [
   { code: "SG", name: "Sở KH&CN TP. Hồ Chí Minh", region: "SOUTH" },
 ];
 
-const setupFetch = (directory = mockExpertsData) => {
+const setupFetch = (directory: unknown = mockExpertsData) => {
   const fetchSpy = vi.spyOn(global, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
     const url = String(input);
     if (url.includes("/api/v1/sectors")) {
@@ -119,12 +142,13 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     expect(screen.getByPlaceholderText(/Tìm theo họ tên chuyên gia/i)).toBeDefined();
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     expect(screen.getByText("Viện Ứng Dụng Công Nghệ")).toBeDefined();
     expect(screen.getAllByText("Giáo sư (GS)").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("Đã xác thực").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText("Đã xác thực")).toBeNull();
+    expect(screen.queryByText("Danh bạ Chuyên gia KH&CN")).toBeNull();
   });
 
   it("resolves technology codes to friendly Vietnamese labels without raw TECH- codes or font-mono (T137)", async () => {
@@ -133,7 +157,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     // Thẻ chuyên gia 1 có TECH-AI-VISION và TECH-SUPERCRITICAL-CO2 (xuất hiện ở Spotlight Rail và Thẻ kết quả)
@@ -162,7 +186,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     // Chuyên gia 1 có publicationCount: 45, patentCount: 3, projectCount: 12
@@ -185,7 +209,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     // Ban đầu chưa có số lượng chọn
@@ -273,7 +297,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     // Tích chọn GS
@@ -315,7 +339,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     const connectBtns = screen.getAllByTitle("Gửi yêu cầu kết nối");
@@ -353,7 +377,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     const connectBtns = screen.getAllByTitle("Gửi yêu cầu kết nối");
@@ -381,7 +405,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     expect(screen.getByTestId("featured-experts-rail")).toBeDefined();
@@ -395,7 +419,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     const avatarContainers = screen.getAllByTestId("expert-avatar-container");
@@ -428,7 +452,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     // Chuyên gia 1 có 3 công nghệ -> hiển thị Pill Badge "+1 công nghệ"
@@ -449,7 +473,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     // Chuyên gia 1 có connectionCount = 12 -> hiển thị Social Proof Badge
@@ -478,7 +502,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     render(<ExpertsDirectoryPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("GS.TS. Nguyễn Văn An")).toBeDefined();
+      expect(screen.getByText("Nguyễn Văn An")).toBeDefined();
     });
 
     // 1. Kiểm tra summary bên trái: hiển thị gọn gàng, không bị ép chữ dọc
@@ -511,6 +535,181 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     // 5. Kiểm tra form quick jump
     const jumpInput = screen.getByLabelText("Nhập số trang cần đến");
     expect(jumpInput).toBeDefined();
+  });
+
+  it("renders 3-tier capability fallback (specializedKeywords max 3, consultingSummary), LMS badge, and no 'Đang cập nhật công nghệ' (CR-2026-032)", async () => {
+    const fallbackData = {
+      success: true,
+      data: {
+        items: [
+          {
+            expertCode: "CG-KW-ONLY",
+            fullName: "TS. Vũ Minh Đức",
+            academicRank: "NONE",
+            degree: "DOCTOR",
+            organizationName: "Viện Công nghệ Sinh học",
+            organizationAddress: "18 Hoàng Quốc Việt, Hà Nội",
+            expertiseSectors: ["02"],
+            masteredTechCodes: [],
+            specializedKeywords: ["Genetics", "CRISPR", "Bioinformatics", "Proteomics"],
+            courseCount: 3,
+            publicationCount: 0,
+            patentCount: 0,
+            projectCount: 0,
+            isVerified: true,
+            isAcceptingConsultation: true,
+          },
+          {
+            expertCode: "CG-SUMMARY-ONLY",
+            fullName: "ThS. Hoàng Thị Lan",
+            academicRank: "NONE",
+            degree: "MASTER",
+            organizationName: "Trung tâm Khảo nghiệm",
+            expertiseSectors: ["01"],
+            masteredTechCodes: [],
+            specializedKeywords: [],
+            consultingSummary: "Tư vấn quy trình canh tác hữu cơ bền vững.",
+            courseCount: 0,
+            publicationCount: 0,
+            patentCount: 0,
+            projectCount: 0,
+            isVerified: true,
+            isAcceptingConsultation: false,
+          },
+        ],
+        totalCount: 2,
+        page: 1,
+        pageSize: 9,
+        totalPages: 1,
+      },
+    };
+    setupFetch(fallbackData);
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Vũ Minh Đức")).toBeDefined();
+    });
+
+    // Tier 2: specializedKeywords max 3 + "+1"
+    expect(screen.getByText("Genetics")).toBeDefined();
+    expect(screen.getByText("CRISPR")).toBeDefined();
+    expect(screen.getByText("Bioinformatics")).toBeDefined();
+    expect(screen.queryByText("Proteomics")).toBeNull();
+    expect(screen.getByText("+1")).toBeDefined();
+
+    // Tier 3: consultingSummary & NO "Đang cập nhật công nghệ"
+    expect(screen.getByText("Tư vấn quy trình canh tác hữu cơ bền vững.")).toBeDefined();
+    expect(screen.queryByText("Đang cập nhật công nghệ")).toBeNull();
+
+    // LMS badge & organizationAddress
+    expect(screen.getByText("Giảng viên LMS (3 khóa học)")).toBeDefined();
+    expect(screen.getByText("18 Hoàng Quốc Việt, Hà Nội")).toBeDefined();
+  });
+
+  it("excludes top 3 grid experts from featured rail and hides rail when searching (CR-2026-032)", async () => {
+    setupFetch();
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("featured-experts-rail")).toBeDefined();
+    });
+
+    const rail = screen.getByTestId("featured-experts-rail");
+    // Featured rail must only contain CG-NACEN-LMS04 (index 3), NOT top 3 (Nguyễn Văn An, Phạm Văn Thực Chiến, Lê Hoàng Long)
+    expect(rail.textContent).toContain("Trần Minh Khoa");
+    expect(rail.textContent).not.toContain("Nguyễn Văn An");
+    expect(rail.textContent).not.toContain("Phạm Văn Thực Chiến");
+    expect(rail.textContent).not.toContain("Lê Hoàng Long");
+
+    // Searching hides the featured rail
+    const searchInput = screen.getByPlaceholderText(/Tìm theo họ tên chuyên gia/i);
+    fireEvent.change(searchInput, { target: { value: "Khoa" } });
+    expect(screen.queryByTestId("featured-experts-rail")).toBeNull();
+  });
+
+  it("strips multi-part academic prefixes with spaces such as 'PGS. TS. Nguyễn Văn A' cleanly without leaving 'TS.'", async () => {
+    const prefixTestData = {
+      success: true,
+      data: {
+        items: [
+          {
+            expertCode: "CG-PREFIX-01",
+            fullName: "PGS. TS. Nguyễn Văn A",
+            academicRank: "PGS",
+            degree: "DOCTOR",
+            organizationName: "Viện Công Nghệ",
+            expertiseSectors: ["03"],
+            masteredTechCodes: ["TECH-AI-VISION"],
+            publicationCount: 10,
+            patentCount: 1,
+            projectCount: 2,
+            isVerified: true,
+            isAcceptingConsultation: true,
+          },
+          {
+            expertCode: "CG-PREFIX-02",
+            fullName: "GS. TSKH. Lê Văn B",
+            academicRank: "GS",
+            degree: "DOCTOR",
+            organizationName: "Đại học Quốc Gia",
+            expertiseSectors: ["03"],
+            masteredTechCodes: [],
+            publicationCount: 5,
+            patentCount: 0,
+            projectCount: 1,
+            isVerified: true,
+            isAcceptingConsultation: true,
+          },
+          {
+            expertCode: "CG-PREFIX-03",
+            fullName: "ThS. KS. Phạm Văn C",
+            academicRank: "NONE",
+            degree: "MASTER",
+            organizationName: "Trung tâm ĐMST",
+            expertiseSectors: ["03"],
+            masteredTechCodes: [],
+            publicationCount: 1,
+            patentCount: 0,
+            projectCount: 0,
+            isVerified: true,
+            isAcceptingConsultation: true,
+          },
+          {
+            expertCode: "CG-PREFIX-04",
+            fullName: "PGS. TS. Nguyễn Văn A",
+            academicRank: "PGS",
+            degree: "DOCTOR",
+            organizationName: "Viện Nghiên Cứu",
+            expertiseSectors: ["03"],
+            masteredTechCodes: [],
+            publicationCount: 8,
+            patentCount: 0,
+            projectCount: 3,
+            isVerified: true,
+            isAcceptingConsultation: true,
+          },
+        ],
+        totalCount: 4,
+        page: 1,
+        pageSize: 9,
+        totalPages: 1,
+      },
+    };
+    setupFetch(prefixTestData);
+
+    render(<ExpertsDirectoryPage />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Nguyễn Văn A").length).toBeGreaterThanOrEqual(2);
+    });
+
+    expect(screen.getByText("Lê Văn B")).toBeDefined();
+    expect(screen.getByText("Phạm Văn C")).toBeDefined();
+    expect(screen.queryByText(/TS\. Nguyễn Văn A/)).toBeNull();
+    expect(screen.queryByText(/TSKH\. Lê Văn B/)).toBeNull();
+    expect(screen.queryByText(/KS\. Phạm Văn C/)).toBeNull();
   });
 });
 

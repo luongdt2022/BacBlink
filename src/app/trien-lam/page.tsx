@@ -146,84 +146,38 @@ export default function TechmartEventsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col">
-      {/* HEADER SECTION */}
-      <div className="bg-white border-b border-slate-200 dark:bg-slate-900 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-gradient-to-tr from-brand-700 to-brand-900 flex items-center justify-center text-white font-extrabold text-xl shadow">
-              T
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-slate-900 dark:text-white text-base">
-                  NACENTWIN
-                </span>
-                <span className="rounded-full bg-brand-100 text-brand-800 text-xs font-bold px-2 py-0.5 border border-brand-200 dark:bg-brand-950 dark:text-brand-300 dark:border-brand-900">
-                  TASK-01 BASIC DESIGN
-                </span>
-                <span className="rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-900">
-                  SHOWCASE LISTING
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
-                Lịch Sự Kiện &amp; Phiên Chào Giá Công Nghệ Techmart Quốc Gia
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setActiveTab("upcoming")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === "upcoming"
-                  ? "bg-brand-700 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-              }`}
-            >
-              <Calendar className="size-4" />
-              <span>1. Phiên Chào Giá Đang/Sắp Mở</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("past")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === "past"
-                  ? "bg-brand-700 text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-              }`}
-            >
-              <Archive className="size-4" />
-              <span>2. Sự Kiện Đã Khép Lại</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleOpenRegister()}
-              className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-brand-600 text-white hover:bg-brand-700 transition flex items-center gap-1.5 shadow-sm"
-            >
-              <PlusCircle className="size-4" />
-              <span>Đăng Ký Tham Gia</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* HERO BANNER */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-8 px-4 sm:px-6 border-b border-brand-800 shadow-md">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
-        <div className="relative max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-200 text-xs font-bold mb-3 border border-brand-400/30">
-              <Sparkles className="size-3.5" />
-              <span>Quyết Định PO: PO-DEC-20261008-06 (MVP1 Showcase Listing)</span>
+        <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="max-w-2xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
+              <Sparkles className="size-3.5 text-brand-200" />
+              <span>Lịch Sự Kiện &amp; Phiên Chào Giá Công Nghệ Techmart Quốc Gia</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+            <h1 className="type-page-title text-white">
               Sàn Trưng Bày &amp; Các Phiên Chào Giá Công Nghệ Trực Tuyến
             </h1>
-            <p className="text-slate-300 text-sm mt-2 leading-relaxed">
+            <p className="text-white/85 type-body">
               Nơi hội tụ các sự kiện Techmart, Techfest, Diễn đàn chuyển giao công nghệ và các phiên kết nối 1-1 giữa Viện, Trường, Doanh nghiệp ĐMST với cộng đồng người mua.
             </p>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => handleOpenRegister()}
+                className="bg-white/15 hover:bg-white/25 border border-white/25 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 backdrop-blur-sm shadow-xs"
+              >
+                <PlusCircle className="size-4" />
+                <span>Đăng Ký Tham Gia Sự Kiện</span>
+              </button>
+              <Link
+                href="/trien-lam/dang-ky-tham-quan"
+                className="bg-white text-brand-800 hover:bg-slate-100 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs"
+              >
+                <Ticket className="size-4" />
+                <span>Đăng Ký Vé Tham Quan</span>
+              </Link>
+            </div>
           </div>
 
           {/* Quick Metrics */}
@@ -245,7 +199,7 @@ export default function TechmartEventsPage() {
       </section>
 
       {/* SEARCH & FILTER BAR */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-5 z-20 w-full">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-5 z-20 w-full">
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="relative">
             <Search className="size-4 absolute left-3.5 top-3.5 text-slate-400" />
@@ -273,7 +227,7 @@ export default function TechmartEventsPage() {
           <div className="flex items-center justify-end">
             <Link
               href="/trien-lam/dang-ky-tham-quan"
-              className="w-full h-11 px-4 bg-nacen-green-600 hover:bg-nacen-green-700 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-center"
+              className="w-full h-11 px-4 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-center"
             >
               <Ticket className="size-4" />
               <span>Đăng Ký Vé Tham Quan Trực Tiếp</span>
@@ -283,11 +237,11 @@ export default function TechmartEventsPage() {
       </section>
 
       {/* MAIN CONTENT AREA */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
-        <div className="flex items-center justify-between mb-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <span
-              className={`size-2.5 rounded-full ${
+              className={`size-2.5 rounded-full shrink-0 ${
                 activeTab === "upcoming" ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
               }`}
             />
@@ -297,9 +251,34 @@ export default function TechmartEventsPage() {
                 : `Các Sự Kiện Techmart Đã Khép Lại (${filteredEvents.length} Sự Kiện)`}
             </span>
           </h2>
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            Chuẩn hóa 5 UX States Zero-Mock
-          </span>
+
+          {/* Navigation Tabs */}
+          <div className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab("upcoming")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                activeTab === "upcoming"
+                  ? "bg-brand-700 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              }`}
+            >
+              <Calendar className="size-3.5" />
+              <span>Phiên Đang/Sắp Mở</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("past")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                activeTab === "past"
+                  ? "bg-brand-700 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+              }`}
+            >
+              <Archive className="size-3.5" />
+              <span>Sự Kiện Đã Khép Lại</span>
+            </button>
+          </div>
         </div>
 
         <Async
@@ -321,7 +300,7 @@ export default function TechmartEventsPage() {
           emptyContent={
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800">
               <Archive className="size-12 text-slate-400 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+              <h3 className="type-card-title text-slate-800 dark:text-slate-200">
                 Không tìm thấy sự kiện phù hợp
               </h3>
               <p className="text-xs text-slate-500 mt-1">
@@ -364,7 +343,7 @@ export default function TechmartEventsPage() {
                         </span>
                       </div>
 
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white hover:text-brand-600 cursor-pointer">
+                      <h3 className="type-card-title text-slate-900 dark:text-white hover:text-brand-600 cursor-pointer">
                         {ev.title}
                       </h3>
 
@@ -497,7 +476,7 @@ export default function TechmartEventsPage() {
               <div className="size-8 rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 flex items-center justify-center font-bold">
                 <FileSignature className="size-4" />
               </div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+              <h3 className="type-card-title text-slate-900 dark:text-white">
                 Đăng Ký Tham Gia Phiên Chào Giá Techmart
               </h3>
             </div>

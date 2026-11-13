@@ -162,7 +162,7 @@ export function InnovativeProfile({
                     )}
                   </button>
                   {copiedTaxCode && (
-                    <span className="text-[11px] text-emerald-400 font-semibold animate-pulse">
+                    <span className="text-xs text-emerald-400 font-semibold animate-pulse">
                       Đã sao chép mã định danh
                     </span>
                   )}
@@ -298,7 +298,7 @@ export function InnovativeProfile({
 
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-xs font-semibold text-teal-300 border border-white/20">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-xs font-semibold text-brand-100 border border-white/20">
                       <span>Bộ Tiêu Chí ĐMST Quốc Gia v1.0</span>
                       <span>•</span>
                       <span>Kỳ 2024</span>

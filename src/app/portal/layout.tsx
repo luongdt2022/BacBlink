@@ -89,6 +89,11 @@ const buyerNavItems: NavItem[] = [
     icon: ShoppingBag,
   },
   {
+    href: "/portal/buyer/consultations",
+    label: "Tư Vấn Chuyên Gia",
+    icon: Inbox,
+  },
+  {
     href: "/portal/opportunities/pipeline",
     label: "Giao dịch & MOU",
     icon: Kanban,
@@ -178,6 +183,7 @@ const expertNavItems: NavItem[] = [
 const innovationEntityNavItems: NavItem[] = [
   { href: "/portal", label: "Tổng quan Hoạt động ĐMST", icon: LayoutDashboard, section: "Hoạt động Cung – Cầu" },
   { href: "/portal/buyer/demands", label: "Bài toán Cần Mua", icon: ShoppingBag },
+  { href: "/portal/buyer/consultations", label: "Tư Vấn Chuyên Gia", icon: Inbox },
   { href: "/portal/seller/technologies", label: "Công nghệ Chào Bán", icon: Cpu },
   { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
   { href: "/portal/opportunities/pipeline", label: "Tiến trình Hợp tác", icon: Kanban },
@@ -189,6 +195,7 @@ const innovationEntityNavItems: NavItem[] = [
 const publicNavItems: NavItem[] = [
   { href: "/portal", label: "Trang tổng quan", icon: LayoutDashboard },
   { href: "/portal/buyer/demands", label: "Nhu cầu công nghệ", icon: ShoppingBag },
+  { href: "/portal/buyer/consultations", label: "Tư Vấn Chuyên Gia", icon: Inbox },
   { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles, badge: "Mới", badgeType: "new" },
   { href: "/profile/upgrade", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
   { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
@@ -235,7 +242,7 @@ function PortalShellSuspenseFallback() {
           ))}
         </div>
       </aside>
-      <div className="min-w-0 flex-1 p-4 sm:p-8">
+      <div className="min-w-0 flex-1 p-3 sm:p-4">
         <WorkspaceRouteSkeleton
           testId="portal-route-skeleton"
           srText="Đang tải không gian làm việc..."
@@ -564,7 +571,7 @@ function PortalLayoutInner({ children }: { children: React.ReactNode }) {
         {/* Workspace Content */}
         <div
           data-testid="portal-main-workspace"
-          className="min-w-0 flex-1 p-4 sm:p-8"
+          className="min-w-0 flex-1 p-3 sm:p-4"
         >
           {pendingHref !== null ? (
             <WorkspaceRouteSkeleton

@@ -177,9 +177,9 @@ export default function OpportunitiesPipelinePage() {
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
-            <div className="flex items-center gap-2 text-xs font-semibold text-teal-300">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-                <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-brand-100">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-brand-100">
+                <Sparkles className="w-3.5 h-3.5 text-brand-200" />
                 Sàn Giao Dịch & Môi Giới Công Nghệ NacenTwin
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-white/50" />
@@ -187,7 +187,7 @@ export default function OpportunitiesPipelinePage() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-              <Kanban className="w-7 h-7 text-teal-300" />
+              <Kanban className="w-7 h-7 text-brand-200" />
               Tiến Trình Chuyển Giao & Ký Kết MOU
             </h1>
 
@@ -201,7 +201,7 @@ export default function OpportunitiesPipelinePage() {
               href="/portal/seller/connection-requests"
               className="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-bold flex items-center gap-2 backdrop-blur-sm transition-all shadow-sm hover:scale-[1.02]"
             >
-              <Inbox className="w-4 h-4 text-teal-300" />
+              <Inbox className="w-4 h-4 text-brand-200" />
               <span>Hộp Thư Yêu Cầu Kết Nối</span>
             </Link>
 

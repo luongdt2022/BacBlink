@@ -296,7 +296,7 @@ export default function AssessmentWizardPage() {
             <span className="text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-3.5 py-1.5 rounded-full border border-emerald-400/30">
               HỒ SƠ ĐÁNH GIÁ TRÌNH ĐỘ CÔNG NGHỆ ĐÃ TIẾP NHẬN (TT 17/2019/TT-BKHCN)
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-3">
+            <h2 className="type-section-title text-slate-900 dark:text-white mt-3">
               Nộp Phiếu Đánh Giá Công Nghệ Thành Công!
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-2 max-w-lg mx-auto leading-relaxed">
@@ -396,7 +396,7 @@ export default function AssessmentWizardPage() {
         className="pointer-events-none fixed inset-0 bg-[radial-gradient(#3c5999_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-[0.04]"
       />
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+      <div className="relative z-10 mx-auto px-3 sm:px-5 py-5 max-w-[1440px]">
         {/* Toast */}
         {toastMsg && (
           <div
@@ -521,7 +521,7 @@ export default function AssessmentWizardPage() {
           {/* Bottom Title & Action Section: Button cùng hàng dịch sang bên phải ngoài cùng */}
           <div className="pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="max-w-3xl">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+              <h1 className="type-page-title text-slate-900 dark:text-white">
                 PHIẾU ĐIỀU TRA TRÌNH ĐỘ VÀ NĂNG LỰC CÔNG NGHỆ SẢN XUẤT
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium italic mt-1">
@@ -805,7 +805,7 @@ export default function AssessmentWizardPage() {
                             className="w-full h-[40px] px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                           />
                         </div>
-                        <p className="text-[11px] text-slate-500 md:col-span-2">
+                        <p className="text-xs text-slate-500 md:col-span-2">
                           * Kê khai các nhà xưởng, cơ sở sản xuất trực tiếp phục vụ công tác thẩm định thực địa của Hội đồng chuyên gia theo Mục A.10 Phụ lục I TT17.
                         </p>
                       </div>
@@ -899,7 +899,7 @@ export default function AssessmentWizardPage() {
                           ))}
                         </select>
                       </div>
-                      <p className="text-[11px] text-slate-500 md:col-span-2">
+                      <p className="text-xs text-slate-500 md:col-span-2">
                         * Theo Mục A.9 Phụ lục I TT17: Liệt kê tối đa 03 ngành chế biến chế tạo theo thứ tự giảm dần. Hệ thống chỉ sử dụng <strong>Ngành 1</strong> để đối soát 4 hệ số chuẩn ngành (K_chuẩn 1..4); Ngành 2 &amp; 3 phục vụ thống kê và xuất hồ sơ in nộp Sở KH&CN.
                       </p>
                     </div>
@@ -1125,7 +1125,7 @@ export default function AssessmentWizardPage() {
                         <h3 className="text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
                           Mục B.I · Dây Chuyền Thiết Bị, Máy Móc, Công Nghệ Sản Xuất Chính
                         </h3>
-                        <span className="whitespace-nowrap text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-950/60 dark:text-cyan-300 dark:border-brand-800">
+                        <span className="whitespace-nowrap text-xs font-semibold px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-950/60 dark:text-cyan-300 dark:border-brand-800">
                           Mục B.I Phụ Lục I TT17
                         </span>
                       </div>
@@ -1152,27 +1152,27 @@ export default function AssessmentWizardPage() {
                           <th className="p-2.5 w-10 text-center">STT</th>
                           <th className="p-2.5 min-w-[220px]">
                             <div>Tên Thiết Bị, Máy Móc, Công Nghệ <span className="text-rose-500">*</span></div>
-                            <span className="text-[11px] font-normal text-slate-500 block">Ví dụ: Dây chuyền dập liên hoàn, Máy tiện CNC...</span>
+                            <span className="text-xs font-normal text-slate-500 block">Ví dụ: Dây chuyền dập liên hoàn, Máy tiện CNC...</span>
                           </th>
                           <th className="p-2.5 w-20 text-center">
                             <div>Số Lượng</div>
-                            <span className="text-[11px] font-normal text-slate-500 block">Bộ / Cái</span>
+                            <span className="text-xs font-normal text-slate-500 block">Bộ / Cái</span>
                           </th>
                           <th className="p-2.5 w-24 text-center">
                             <div>Năm SX</div>
-                            <span className="text-[11px] font-normal text-slate-500 block">Chế tạo</span>
+                            <span className="text-xs font-normal text-slate-500 block">Chế tạo</span>
                           </th>
                           <th className="p-2.5 w-24 text-center">
                             <div>Năm Sử Dụng</div>
-                            <span className="text-[11px] font-normal text-slate-500 block">Đưa vào xưởng</span>
+                            <span className="text-xs font-normal text-slate-500 block">Đưa vào xưởng</span>
                           </th>
                           <th className="p-2.5 min-w-[180px]">
                             <div>Tên Sản Phẩm / Bán SP</div>
-                            <span className="text-[11px] font-normal text-slate-500 block">Sản phẩm do máy tạo ra</span>
+                            <span className="text-xs font-normal text-slate-500 block">Sản phẩm do máy tạo ra</span>
                           </th>
                           <th className="p-2.5 min-w-[160px]">
                             <div>Sản Lượng Thiết Kế (P)</div>
-                            <span className="text-[11px] font-normal text-slate-500 block">Tối đa/năm (sp, tấn...)</span>
+                            <span className="text-xs font-normal text-slate-500 block">Tối đa/năm (sp, tấn...)</span>
                           </th>
                           <th className="p-2.5 w-12 text-center">Xóa</th>
                         </tr>
@@ -1265,7 +1265,7 @@ export default function AssessmentWizardPage() {
                         <h3 className="text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
                           Mục B.7 · Công Nghệ Được Chuyển Giao &amp; Giá Trị Hợp Đồng (Trong 3 Năm Gần Nhất)
                         </h3>
-                        <span className="text-[11px] font-semibold text-brand-700 dark:text-cyan-400 bg-brand-50 dark:bg-brand-950/80 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
+                        <span className="text-xs font-semibold text-brand-700 dark:text-cyan-400 bg-brand-50 dark:bg-brand-950/80 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
                           Phụ Lục I TT17 (Trang 24) · Tiêu Chí TC11 (Tối đa 4.0đ)
                         </span>
                       </div>
@@ -1525,7 +1525,7 @@ export default function AssessmentWizardPage() {
                         Theo quy định Mục C.2 Phụ lục I TT 17/2019/TT-BKHCN: Doanh nghiệp kê khai tối đa 03 sản phẩm chủ lực tạo doanh thu cao nhất và tiêu chuẩn chất lượng đáp ứng.
                       </p>
                     </div>
-                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-200 self-start sm:self-auto">
+                    <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-200 self-start sm:self-auto">
                       Phụ Lục I TT17 (Trang 24–25)
                     </span>
                   </div>
@@ -1537,7 +1537,7 @@ export default function AssessmentWizardPage() {
                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                           1. Sản phẩm chủ lực 1 (Cao nhất)
                         </span>
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                           Bắt buộc
                         </span>
                       </div>
@@ -1549,7 +1549,7 @@ export default function AssessmentWizardPage() {
                         className="w-full h-[38px] px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500"
                       />
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
+                        <span className="text-xs text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
                         <div className="relative flex-1">
                           <input
                             type="number"
@@ -1560,7 +1560,7 @@ export default function AssessmentWizardPage() {
                             placeholder="60"
                             className="w-full h-[32px] px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-right pr-6"
                           />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 pointer-events-none">%</span>
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">%</span>
                         </div>
                       </div>
                     </div>
@@ -1571,7 +1571,7 @@ export default function AssessmentWizardPage() {
                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                           2. Sản phẩm chủ lực 2
                         </span>
-                        <span className="text-[10px] text-slate-400">Tùy chọn</span>
+                        <span className="text-xs text-slate-400">Tùy chọn</span>
                       </div>
                       <input
                         type="text"
@@ -1581,7 +1581,7 @@ export default function AssessmentWizardPage() {
                         className="w-full h-[38px] px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500"
                       />
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
+                        <span className="text-xs text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
                         <div className="relative flex-1">
                           <input
                             type="number"
@@ -1592,7 +1592,7 @@ export default function AssessmentWizardPage() {
                             placeholder="25"
                             className="w-full h-[32px] px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-right pr-6"
                           />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 pointer-events-none">%</span>
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">%</span>
                         </div>
                       </div>
                     </div>
@@ -1603,7 +1603,7 @@ export default function AssessmentWizardPage() {
                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                           3. Sản phẩm chủ lực 3
                         </span>
-                        <span className="text-[10px] text-slate-400">Tùy chọn</span>
+                        <span className="text-xs text-slate-400">Tùy chọn</span>
                       </div>
                       <input
                         type="text"
@@ -1613,7 +1613,7 @@ export default function AssessmentWizardPage() {
                         className="w-full h-[38px] px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500"
                       />
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
+                        <span className="text-xs text-slate-500 whitespace-nowrap">Tỷ trọng DT:</span>
                         <div className="relative flex-1">
                           <input
                             type="number"
@@ -1624,7 +1624,7 @@ export default function AssessmentWizardPage() {
                             placeholder="15"
                             className="w-full h-[32px] px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-right pr-6"
                           />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-slate-400 pointer-events-none">%</span>
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">%</span>
                         </div>
                       </div>
                     </div>
@@ -1680,7 +1680,7 @@ export default function AssessmentWizardPage() {
                         <label className="block text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
                           Mục C.4 · Nguyên Vật Liệu Đầu Vào (G_nvl - TC06)
                         </label>
-                        <span className="text-[10px] font-semibold text-slate-500">TK 621 BCTC</span>
+                        <span className="text-xs font-semibold text-slate-500">TK 621 BCTC</span>
                       </div>
                       <FormattedMoneyInput
                         value={survey.materialCostYear}
@@ -1695,7 +1695,7 @@ export default function AssessmentWizardPage() {
                       <button
                         type="button"
                         onClick={() => updateSurvey({ materialCostYear: Math.round(latestGdt * currentBenchmark.kChuan3) })}
-                        className="px-2 py-0.5 rounded bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-cyan-300 font-semibold text-[11px] border border-brand-200 dark:border-brand-800 shrink-0 transition"
+                        className="px-2 py-0.5 rounded bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-cyan-300 font-semibold text-xs border border-brand-200 dark:border-brand-800 shrink-0 transition"
                         title="Tự động tính theo định mức % doanh thu của nhóm ngành"
                       >
                         ⚡ Nạp chuẩn ({(currentBenchmark.kChuan3 * 100).toFixed(0)}% DT)
@@ -1710,7 +1710,7 @@ export default function AssessmentWizardPage() {
                         <label className="block text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
                           Mục C.5 · Tiêu Thụ Điện &amp; Nhiên Liệu (G_nl - TC05)
                         </label>
-                        <span className="text-[10px] font-semibold text-slate-500">Điện, than, dầu, khí</span>
+                        <span className="text-xs font-semibold text-slate-500">Điện, than, dầu, khí</span>
                       </div>
                       <FormattedMoneyInput
                         value={survey.energyCostYear}
@@ -1725,7 +1725,7 @@ export default function AssessmentWizardPage() {
                       <button
                         type="button"
                         onClick={() => updateSurvey({ energyCostYear: Math.round(latestGdt * currentBenchmark.kChuan2) })}
-                        className="px-2 py-0.5 rounded bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-cyan-300 font-semibold text-[11px] border border-brand-200 dark:border-brand-800 shrink-0 transition"
+                        className="px-2 py-0.5 rounded bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/60 dark:text-cyan-300 font-semibold text-xs border border-brand-200 dark:border-brand-800 shrink-0 transition"
                         title="Tự động tính theo định mức % doanh thu của nhóm ngành"
                       >
                         ⚡ Nạp chuẩn ({(currentBenchmark.kChuan2 * 100).toFixed(0)}% DT)
@@ -1768,7 +1768,7 @@ export default function AssessmentWizardPage() {
                       <span>Có sáng kiến đem lại giá trị làm lợi kinh tế lớn (+1.0đ)</span>
                     </label>
                     <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                         Kể tên 1–3 sáng kiến cải tiến tiêu biểu (tùy chọn - Mục C.6 Phụ lục I TT17):
                       </label>
                       <input
@@ -1838,7 +1838,7 @@ export default function AssessmentWizardPage() {
                           <button
                             type="button"
                             onClick={() => updateSurvey({ directWorkers: latestDirectWorkers })}
-                            className="text-[11px] font-bold text-brand-700 hover:underline dark:text-cyan-400"
+                            className="text-xs font-bold text-brand-700 hover:underline dark:text-cyan-400"
                             title="Đồng bộ số lượng công nhân từ Bảng 3 năm"
                           >
                             Đồng bộ ({latestDirectWorkers})
@@ -1851,7 +1851,7 @@ export default function AssessmentWizardPage() {
                           onChange={(e) => updateSurvey({ directWorkers: parseInt(e.target.value) || 0 })}
                           className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
                         />
-                        <span className="text-[11px] text-slate-500 mt-1 block">
+                        <span className="text-xs text-slate-500 mt-1 block">
                           LĐ gián tiếp (M_gt = M - M_tt): <strong>{Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 0)}</strong> người.
                         </span>
                       </div>
@@ -1867,7 +1867,7 @@ export default function AssessmentWizardPage() {
                           onChange={(e) => updateSurvey({ trainedWorkers: parseInt(e.target.value) || 0 })}
                           className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
                         />
-                        <span className="text-[11px] text-slate-500 mt-1 block">
+                        <span className="text-xs text-slate-500 mt-1 block">
                           Tỷ lệ M_cn/M_tt: <strong>{survey.directWorkers > 0 ? ((survey.trainedWorkers / survey.directWorkers) * 100).toFixed(1) : "0.0"}%</strong> (&ge; 80% đạt +1.0đ).
                         </span>
                       </div>
@@ -1883,7 +1883,7 @@ export default function AssessmentWizardPage() {
                           onChange={(e) => updateSurvey({ highSkilledWorkers: parseInt(e.target.value) || 0 })}
                           className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
                         />
-                        <span className="text-[11px] text-slate-500 mt-1 block">
+                        <span className="text-xs text-slate-500 mt-1 block">
                           Tỷ lệ M_bc/M_tt: <strong>{survey.directWorkers > 0 ? ((survey.highSkilledWorkers / survey.directWorkers) * 100).toFixed(1) : "0.0"}%</strong> (&ge; 20% đạt +1.0đ).
                         </span>
                       </div>
@@ -1899,7 +1899,7 @@ export default function AssessmentWizardPage() {
                           onChange={(e) => updateSurvey({ qualifiedManagers: parseInt(e.target.value) || 0 })}
                           className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
                         />
-                        <span className="text-[11px] text-slate-500 mt-1 block">
+                        <span className="text-xs text-slate-500 mt-1 block">
                           Trình độ ĐH & &ge;3 năm KN: <strong>{Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1) > 0 ? (((survey.qualifiedManagers || 0) / Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1)) * 100).toFixed(1) : "0.0"}%</strong> M_gt (&ge; 50% đạt +1.0đ).
                         </span>
                       </div>
@@ -1916,7 +1916,7 @@ export default function AssessmentWizardPage() {
                           onChange={(e) => updateSurvey({ qualifiedProfessionals: parseInt(e.target.value) || 0 })}
                           className="w-full h-[42px] px-3.5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-brand-500"
                         />
-                        <span className="text-[11px] text-slate-500 mt-1 block">
+                        <span className="text-xs text-slate-500 mt-1 block">
                           Kỹ sư / Chuyên viên CĐ-ĐH+: <strong>{Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1) > 0 ? (((survey.qualifiedProfessionals || 0) / Math.max((survey.totalWorkforce || 0) - (survey.directWorkers || 0), 1)) * 100).toFixed(1) : "0.0"}%</strong> M_gt (&ge; 60% đạt +1.0đ).
                         </span>
                       </div>
@@ -1982,7 +1982,7 @@ export default function AssessmentWizardPage() {
                             />
                             <div>
                               <span className="font-bold text-slate-800 dark:text-slate-200">Hệ thống {sw.code}</span>
-                              <span className="block text-[11px] text-slate-500">{sw.desc}</span>
+                              <span className="block text-xs text-slate-500">{sw.desc}</span>
                             </div>
                           </label>
                         );
@@ -2044,7 +2044,7 @@ export default function AssessmentWizardPage() {
                             />
                             <div>
                               <span className="font-bold block">{sys.title}</span>
-                              <span className="text-slate-500 dark:text-slate-400 text-[11px] leading-snug block mt-0.5">
+                              <span className="text-slate-500 dark:text-slate-400 text-xs leading-snug block mt-0.5">
                                 {sys.desc}
                               </span>
                             </div>
@@ -2358,7 +2358,7 @@ export default function AssessmentWizardPage() {
                         <label className="block text-xs font-bold uppercase text-slate-800 dark:text-slate-200">
                           Mục E.1 · Tên 1–3 Sản Phẩm Mới Tiêu Biểu Tạo Ra Trong 03 Năm Qua (Phụ Lục I TT17)
                         </label>
-                        <span className="text-[11px] font-semibold text-teal-700 dark:text-teal-400 bg-teal-100 dark:bg-teal-950/80 px-2 py-0.5 rounded border border-teal-200 self-start sm:self-auto">
+                        <span className="text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-100 dark:bg-teal-950/80 px-2 py-0.5 rounded border border-teal-200 self-start sm:self-auto">
                           Trang 29–30 Phụ Lục I TT17
                         </span>
                       </div>

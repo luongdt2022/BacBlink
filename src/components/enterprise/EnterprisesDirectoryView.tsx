@@ -28,7 +28,9 @@ import {
   ArrowUpDown,
   ArrowRight,
   Copy,
-  Check
+  Check,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import {
   fetchEnterprises,
@@ -103,6 +105,57 @@ function getPaginationItems(current: number, total: number): (number | string)[]
   return pages;
 }
 
+/**
+ * Chuẩn hóa nhãn hiển thị ĐMST, TT17 và TNI dùng chung cho cả Lưới 2 cột và Bảng xếp hạng.
+ */
+function getEnterpriseDisplayMeta(ent: EnterpriseDirectoryItem) {
+  const score = ent.innovationScore ?? 0;
+  let innovationBadge: { label: string; className: string } | null = null;
+
+  if (ent.innovationTier === "LEADING" || score >= 75) {
+    innovationBadge = {
+      label: score > 0 ? `⭐ Vàng ĐMST · ${score.toFixed(1)}đ` : "⭐ Vàng ĐMST",
+      className:
+        "bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800",
+    };
+  } else if (ent.innovationTier === "DEVELOPING" || (score >= 50 && score < 75)) {
+    innovationBadge = {
+      label: score > 0 ? `🥈 Bạc ĐMST · ${score.toFixed(1)}đ` : "🥈 Bạc ĐMST",
+      className:
+        "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700",
+    };
+  } else if (ent.innovationTier === "POTENTIAL" || (score > 0 && score < 50)) {
+    innovationBadge = {
+      label: score > 0 ? `🥉 Đồng ĐMST · ${score.toFixed(1)}đ` : "🥉 Đồng ĐMST",
+      className:
+        "bg-orange-50 dark:bg-orange-950/50 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-800",
+    };
+  }
+
+  const syncSuffix = ent.tt17SyncCoefficient ? ` (T_ĐB: ${ent.tt17SyncCoefficient.toFixed(2)})` : "";
+  const tt17Label =
+    ent.tt17Classification === "TIEN_TIEN"
+      ? `Tiên tiến${syncSuffix}`
+      : ent.tt17Classification === "TRUNG_BINH_TIEN_TIEN"
+      ? `TB Tiên tiến${syncSuffix}`
+      : ent.tt17Classification === "TRUNG_BINH"
+      ? `Trung bình${syncSuffix}`
+      : ent.tt17Classification === "LAC_HAU"
+      ? "Lạc hậu"
+      : null;
+
+  const tniLabel =
+    ent.tniClassification === "VERY_HIGH"
+      ? "Cấp thiết (≥85)"
+      : ent.tniClassification === "HIGH"
+      ? "Nhu cầu cao (75-84)"
+      : ent.tniClassification === "MEDIUM"
+      ? "Trung bình (50-74)"
+      : "Cơ bản";
+
+  return { innovationBadge, tt17Label, tniLabel };
+}
+
 export interface EnterprisesDirectoryProps {
   initialSortBy?: string;
   initialInnovationTier?: string;
@@ -162,6 +215,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
   const [tt17Classification, setTt17Classification] = useState(initialTt17Classification);
   const [sortBy, setSortBy] = useState(initialSortBy);
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Modal đề xuất kết nối
   const [connectModalEnt, setConnectModalEnt] = useState<EnterpriseDirectoryItem | null>(null);
@@ -361,59 +415,65 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 pb-20">
       {/* Hero Header */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
-        <div className="relative max-w-7xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-200 border border-brand-400/30 text-xs font-semibold uppercase tracking-wider mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-brand-300" />
-            {badgeLabel || "CSDL Quốc Gia Doanh Nghiệp ĐMST & Đổi Mới Công Nghệ"}
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            {pageTitle || "Danh Bạ Doanh Nghiệp & Chủ Thể Đổi Mới Sáng Tạo"}
-          </h1>
-          <p className="mt-3 text-base sm:text-lg text-slate-300 max-w-3xl leading-relaxed">
-            {pageSubtitle || "Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của các doanh nghiệp trên 34 tỉnh/thành trọng điểm ĐMST toàn quốc."}
-          </p>
-
-          {/* Search Box */}
-          <form onSubmit={handleSearchSubmit} className="mt-8 flex flex-col sm:flex-row gap-3 max-w-3xl">
-            <div className="relative flex-1">
-              <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Tìm theo tên doanh nghiệp, mã số thuế (MST), tỉnh thành, ngành nghề..."
-                className="w-full h-11 pl-11 pr-4 rounded-control bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm"
-              />
+        <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex-1 min-w-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 border border-white/20 text-xs font-semibold uppercase tracking-wider mb-2.5">
+              <Sparkles className="w-3.5 h-3.5 text-brand-200" />
+              {badgeLabel || "CSDL Quốc Gia Doanh Nghiệp ĐMST & Đổi Mới Công Nghệ"}
             </div>
-            <button
-              type="submit"
-              className="h-11 px-6 bg-brand-800 hover:bg-brand-900 text-white rounded-control font-bold flex items-center justify-center gap-2 transition shadow-md text-sm shrink-0 border border-brand-600/40"
-            >
-              <Search className="w-4 h-4" /> Tra Cứu
-            </button>
-            {hasActiveFilters && (
+            <h1 className="type-page-title text-white">
+              {pageTitle || "Danh Bạ Doanh Nghiệp & Chủ Thể Đổi Mới Sáng Tạo"}
+            </h1>
+            <p className="mt-2 type-body text-white/85 max-w-2xl">
+              {pageSubtitle || "Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của các doanh nghiệp trên 34 tỉnh/thành trọng điểm ĐMST toàn quốc."}
+            </p>
+
+            {/* Search Box */}
+            <form onSubmit={handleSearchSubmit} className="mt-5 flex flex-col sm:flex-row gap-2.5 max-w-2xl">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Tìm theo tên doanh nghiệp, mã số thuế (MST), tỉnh thành, ngành nghề..."
+                  className="w-full h-10 pl-10 pr-4 rounded-control bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm"
+                />
+              </div>
               <button
-                type="button"
-                onClick={handleResetFilters}
-                className="h-11 px-4 bg-white/10 hover:bg-white/20 text-white rounded-control font-medium flex items-center justify-center gap-1.5 transition text-xs shrink-0 border border-white/20"
+                type="submit"
+                className="h-10 px-5 bg-brand-800 hover:bg-brand-900 text-white rounded-control font-bold flex items-center justify-center gap-2 transition shadow-md text-sm shrink-0 border border-brand-600/40"
               >
-                <X className="w-3.5 h-3.5" /> Xóa bộ lọc
+                <Search className="w-4 h-4" /> Tra Cứu
               </button>
-            )}
-          </form>
-          {/* Quick CTA Khảo Sát ĐMST (Tối ưu không gian: 1 câu chú thích ngắn gọn + 1 button) */}
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-xs">
-            <span className="flex items-center gap-1.5 text-white/85 font-medium">
-              <Sparkles className="w-4 h-4 text-white/80 shrink-0" />
-              Doanh nghiệp của bạn chưa có Điểm ĐMST? Làm bài khảo sát 43 câu để hiển thị trên CSDL Quốc gia và kết nối công nghệ.
-            </span>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="h-10 px-3.5 bg-white/10 hover:bg-white/20 text-white rounded-control font-medium flex items-center justify-center gap-1.5 transition text-xs shrink-0 border border-white/20"
+                >
+                  <X className="w-3.5 h-3.5" /> Xóa bộ lọc
+                </button>
+              )}
+            </form>
+          </div>
+
+          {/* Right Callout: Khảo Sát ĐMST */}
+          <div className="lg:w-72 xl:w-80 shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-100 uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 shrink-0 text-brand-200" />
+              <span>Chưa có Điểm ĐMST?</span>
+            </div>
+            <p className="text-xs text-white/85 leading-relaxed">
+              Hoàn thành khảo sát 43 câu (15 phút) để xếp hạng năng lực và hiển thị trên CSDL Quốc gia.
+            </p>
             <Link
               href="/khao-sat-dmst"
-              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-brand-700 font-bold text-xs transition shadow-xs whitespace-nowrap"
+              className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-brand-700 font-bold text-xs transition shadow-sm"
             >
-              <span>Làm khảo sát ngay (15 phút)</span>
+              <span>Làm Khảo Sát Ngay (15 phút)</span>
               <ChevronRight className="w-3.5 h-3.5 text-brand-700" />
             </Link>
           </div>
@@ -421,14 +481,14 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Bộ Lọc */}
-          <aside className="lg:col-span-1 space-y-6">
-            <div className="surface-card p-5 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-border-default dark:border-slate-800">
-                <span className="font-bold text-text-primary dark:text-white text-sm flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-brand-700" /> Bộ Lọc Đa Chiều
+          <aside className="lg:col-span-1 space-y-5">
+            <div className="surface-card p-4 space-y-3.5">
+              <div className="flex items-center justify-between pb-2.5 border-b border-border-default dark:border-slate-800">
+                <span className="font-bold text-text-primary dark:text-white text-xs flex items-center gap-1.5 uppercase tracking-wide">
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-brand-700" /> Bộ Lọc Đa Chiều
                 </span>
                 {hasActiveFilters && (
                   <button
@@ -442,26 +502,27 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
 
               {/* Lọc Tỉnh Thành */}
               <div>
-                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Địa Bàn Hoạt Động (Tỉnh/Thành)
                 </label>
                 <SearchableProvinceCombobox
                   value={province}
                   onChange={(val) => setProvince(val)}
                   placeholder="Tất cả Tỉnh / Thành phố"
+                  className="[&_button]:py-2 [&_button]:px-3 [&_button]:text-xs"
                 />
               </div>
 
               {/* Lọc Lĩnh Vực TT17 */}
               <div>
-                <label htmlFor="filter-sector" className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label htmlFor="filter-sector" className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Lĩnh Vực Công Nghệ TT17
                 </label>
                 <select
                   id="filter-sector"
                   value={sectorCode}
                   onChange={(e) => setSectorCode(e.target.value)}
-                  className="form-control w-full"
+                  className="form-control w-full text-xs h-9 py-1.5"
                   disabled={sectorsLoading}
                 >
                   <option value="">
@@ -479,13 +540,13 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
 
               {/* Lọc Loại Hình Chủ Thể */}
               <div>
-                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Loại Hình Chủ Thể
                 </label>
                 <select
                   value={subjectType}
                   onChange={(e) => setSubjectType(e.target.value)}
-                  className="form-control w-full"
+                  className="form-control w-full text-xs h-9 py-1.5"
                 >
                   {SUBJECT_TYPES.map((t) => (
                     <option key={t.code} value={t.code}>{t.label}</option>
@@ -495,13 +556,13 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
 
               {/* Lọc Phân Tầng TNI */}
               <div>
-                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Chỉ Số Nhu Cầu ĐMST (TNI)
                 </label>
                 <select
                   value={tniClassification}
                   onChange={(e) => setTniClassification(e.target.value)}
-                  className="form-control w-full"
+                  className="form-control w-full text-xs h-9 py-1.5"
                 >
                   {TNI_LEVELS.map((l) => (
                     <option key={l.code} value={l.code}>{l.label}</option>
@@ -511,13 +572,13 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
 
               {/* Lọc Trình Độ Công Nghệ TT17 */}
               <div>
-                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Trình Độ Công Nghệ (TT17)
                 </label>
                 <select
                   value={tt17Classification}
                   onChange={(e) => setTt17Classification(e.target.value)}
-                  className="form-control w-full"
+                  className="form-control w-full text-xs h-9 py-1.5"
                 >
                   {TT17_LEVELS.map((lvl) => (
                     <option key={lvl.code} value={lvl.code}>{lvl.label}</option>
@@ -527,13 +588,13 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
 
               {/* Lọc Mức Độ ĐMST 8 Nhóm */}
               <div>
-                <label className="block text-label font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Mức Độ ĐMST (Thang 100đ)
                 </label>
                 <select
                   value={innovationTier}
                   onChange={(e) => setInnovationTier(e.target.value)}
-                  className="form-control w-full"
+                  className="form-control w-full text-xs h-9 py-1.5"
                 >
                   {INNOVATION_TIERS.map((tier) => (
                     <option key={tier.code} value={tier.code}>{tier.label}</option>
@@ -569,7 +630,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                 <span className="text-brand-700 dark:text-brand-400 font-extrabold">{data?.totalCount ?? 0}</span> doanh nghiệp
               </span>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-2 text-xs">
                   <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
                   <span className="text-slate-500 font-semibold hidden sm:inline">Sắp xếp:</span>
@@ -591,6 +652,43 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                     <option value="recent">Mới cập nhật</option>
                   </select>
                 </div>
+
+                {/* View Mode Switcher */}
+                <div
+                  role="group"
+                  aria-label="Chế độ hiển thị"
+                  className="inline-flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("grid")}
+                    aria-label="Hiển thị dạng lưới 2 cột"
+                    aria-pressed={viewMode === "grid"}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition ${
+                      viewMode === "grid"
+                        ? "bg-white dark:bg-slate-900 text-brand-700 dark:text-brand-400 shadow-xs"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Lưới</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("list")}
+                    aria-label="Hiển thị dạng bảng xếp hạng"
+                    aria-pressed={viewMode === "list"}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition ${
+                      viewMode === "list"
+                        ? "bg-white dark:bg-slate-900 text-brand-700 dark:text-brand-400 shadow-xs"
+                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Bảng</span>
+                  </button>
+                </div>
+
                 <div className="text-xs text-slate-400 hidden md:block">
                   Trang {data?.page ?? 1} / {data?.totalPages ?? 1}
                 </div>
@@ -599,7 +697,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
 
             {/* UX STATE: LOADING */}
             {loading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-4 animate-pulse">
                     <div className="flex items-center gap-3">
@@ -623,7 +721,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
             {!loading && error && (
               <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-2xl p-8 text-center space-y-3">
                 <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-                <h3 className="font-bold text-red-900 dark:text-red-200 text-base">Đã xảy ra lỗi khi tải dữ liệu</h3>
+                <h3 className="type-card-title text-red-900 dark:text-red-200">Đã xảy ra lỗi khi tải dữ liệu</h3>
                 <p className="text-xs text-red-600 dark:text-red-400 max-w-md mx-auto">{error}</p>
                 <button
                   onClick={() => loadData(page)}
@@ -638,7 +736,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
             {!loading && !error && data && data.items.length === 0 && (
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center space-y-4">
                 <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
-                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-base">Không tìm thấy doanh nghiệp phù hợp</h3>
+                <h3 className="type-card-title text-slate-800 dark:text-slate-200">Không tìm thấy doanh nghiệp phù hợp</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                   Hãy thử điều chỉnh bộ lọc địa bàn, ngành nghề hoặc xóa từ khóa tìm kiếm để khám phá thêm doanh nghiệp khác.
                 </p>
@@ -661,221 +759,186 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
               </div>
             )}
 
-            {/* UX STATE: SUCCESS (Cards Grid - 5 Tầng Thông Tin Cốt Lõi) */}
-            {!loading && !error && data && data.items.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {data.items.map((ent) => (
-                  <div
-                    key={ent.id}
-                    className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-lg transition flex flex-col justify-between p-5 relative group"
-                  >
-                    <div>
-                      {/* TẦNG 1: Avatar Nhận Diện & Định Danh */}
-                      <div className="flex items-start gap-3 mb-3">
-                        <EnterpriseAvatar
-                          name={ent.name}
-                          sectorName={ent.mainSectorName}
-                          sectorCode={ent.sectorCode}
-                          website={ent.website}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                              MST: {ent.taxCode}
-                            </span>
-                            {ent.isVerified && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                                <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                                Đã xác thực
-                              </span>
-                            )}
-                            {ent.tt17Classification === "TIEN_TIEN" && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
-                                🚀 Tiên tiến (TT17)
-                              </span>
-                            )}
-                            {ent.tt17Classification === "TRUNG_BINH_TIEN_TIEN" && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                                ⚡ TB Tiên tiến (TT17)
-                              </span>
-                            )}
-                            {ent.tt17Classification === "TRUNG_BINH" && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
-                                ⚙️ Trung bình (TT17)
-                              </span>
-                            )}
-                            {ent.tt17Classification === "LAC_HAU" && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-                                ⚠️ Lạc hậu (TT17)
-                              </span>
-                            )}
-                            {(ent.innovationTier === "LEADING" || (ent.innovationScore && ent.innovationScore >= 75)) && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                                ⭐️ Vàng ĐMST
-                              </span>
-                            )}
-                            {(ent.innovationTier === "DEVELOPING" || (ent.innovationScore && ent.innovationScore >= 50 && ent.innovationScore < 75)) && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
-                                🥈 Bạc ĐMST
-                              </span>
-                            )}
-                            {(ent.innovationTier === "POTENTIAL" || (ent.innovationScore && ent.innovationScore < 50 && ent.innovationScore > 0)) && (
-                              <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-800">
-                                🥉 Đồng ĐMST
-                              </span>
-                            )}
-                            {ent.ownershipType && (
-                              <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-                                {ent.ownershipType}
-                              </span>
-                            )}
-                          </div>
-                          <Link
-                            href={`/enterprises/${ent.taxCode}`}
-                            className="font-bold text-slate-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 line-clamp-2 text-sm leading-snug transition"
-                            title={ent.name}
-                          >
-                            {ent.name}
-                          </Link>
-                        </div>
-                      </div>
+            {/* UX STATE: SUCCESS (2-Column Wide Grid or Ranking Table) */}
+            {!loading && !error && data && data.items.length > 0 && viewMode === "grid" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {data.items.map((ent) => {
+                  const { innovationBadge, tt17Label, tniLabel } = getEnterpriseDisplayMeta(ent);
+                  const openConnect = () => {
+                    setConnectModalEnt(ent);
+                    setConnectResult(null);
+                    setConnectOrgName("");
+                    setConnectContact("");
+                    setConnectNote("");
+                  };
 
-                      {/* TẦNG 2: Vị Thế Địa Bàn & Ngành Nghề */}
-                      <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 mb-3 bg-slate-50/70 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate font-medium">{ent.provinceCity || "Toàn quốc"}</span>
-                          {ent.operatingZone && ent.operatingZone !== "Ngoài các khu trên" && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-medium truncate max-w-[130px]" title={ent.operatingZone}>
-                              {ent.operatingZone}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                          <span className="line-clamp-1 font-medium">{ent.mainSectorName || "Chưa phân ngành"}</span>
-                        </div>
-                        {ent.workforceScale && (
-                          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                            <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                            <span>Quy mô: {ent.workforceScale}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* TẦNG 3: Năng Lực R&D, Chuỗi Giá Trị & Xuất Khẩu (Chỉ hiển thị khi có dữ liệu) */}
-                      {(ent.hasRdUnit || ent.inValueChain || ent.isExporting) && (
-                        <div className="flex items-center gap-1.5 flex-wrap text-xs mb-3">
-                          {ent.hasRdUnit && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-medium">
-                              <FlaskConical className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Có phòng R&D
-                            </span>
-                          )}
-                          {ent.inValueChain && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-medium">
-                              <Globe className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Chuỗi giá trị
-                            </span>
-                          )}
-                          {ent.isExporting && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-medium">
-                              <TrendingUp className="w-3 h-3 text-teal-600 dark:text-teal-400" /> Xuất khẩu
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* TẦNG 4: Hộp Chỉ Số 2 Trục Đối Quát (Trình Độ TT17 & Nhu Cầu TNI) & SHTT */}
-                      <div className={`p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 mb-3 grid gap-2 ${
-                        (ent.ipCount && ent.ipCount > 0) ? "grid-cols-3" : "grid-cols-2"
-                      }`}>
-                        {/* Cột 1: Trình Độ Công Nghệ TT17 (Trục Cung / Năng lực) */}
-                        <div>
-                          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Trình độ TT17</div>
-                          <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="text-sm font-extrabold text-sky-700 dark:text-sky-400">
-                              {ent.tt17Score !== undefined && ent.tt17Score !== null ? ent.tt17Score.toFixed(1) : "--"}
-                            </span>
-                            <span className="text-xs text-slate-400">/100</span>
-                          </div>
-                          <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mt-0.5 truncate" title={
-                            ent.tt17Classification === "TIEN_TIEN" ? "Tiên tiến" :
-                            ent.tt17Classification === "TRUNG_BINH_TIEN_TIEN" ? "TB Tiên tiến" :
-                            ent.tt17Classification === "TRUNG_BINH" ? "Trung bình" :
-                            ent.tt17Classification === "LAC_HAU" ? "Lạc hậu" : "Chưa đánh giá"
-                          }>
-                            {ent.tt17Classification === "TIEN_TIEN" ? `Tiên tiến${ent.tt17SyncCoefficient ? ` (T_ĐB: ${ent.tt17SyncCoefficient.toFixed(2)})` : ""}` :
-                             ent.tt17Classification === "TRUNG_BINH_TIEN_TIEN" ? `TB Tiên tiến${ent.tt17SyncCoefficient ? ` (T_ĐB: ${ent.tt17SyncCoefficient.toFixed(2)})` : ""}` :
-                             ent.tt17Classification === "TRUNG_BINH" ? `Trung bình${ent.tt17SyncCoefficient ? ` (T_ĐB: ${ent.tt17SyncCoefficient.toFixed(2)})` : ""}` :
-                             ent.tt17Classification === "LAC_HAU" ? "Lạc hậu" :
-                             <span className="text-slate-400 dark:text-slate-500 font-normal">Chưa đánh giá TT17</span>}
-                          </div>
-                        </div>
-
-                        {/* Cột 2: Chỉ Số Nhu Cầu TNI (Trục Cầu / Cấp thiết) */}
-                        <div className="border-l border-slate-200 dark:border-slate-700 pl-2">
-                          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Chỉ số TNI</div>
-                          <div className="flex items-baseline gap-1 mt-0.5">
-                            <span className="text-sm font-extrabold text-brand-700 dark:text-brand-400">
-                              {ent.tniScore !== undefined && ent.tniScore !== null ? ent.tniScore.toFixed(1) : "--"}
-                            </span>
-                            <span className="text-xs text-slate-400">/100</span>
-                          </div>
-                          <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-0.5 truncate">
-                            {ent.tniClassification === "VERY_HIGH" ? "Cấp thiết (≥85)" :
-                             ent.tniClassification === "HIGH" ? "Nhu cầu cao (75-84)" :
-                             ent.tniClassification === "MEDIUM" ? "Trung bình (50-74)" : "Cơ bản"}
-                          </div>
-                        </div>
-
-                        {/* Cột 3: Bằng SHTT (Tôn vinh dữ liệu mạnh) */}
-                        {ent.ipCount !== undefined && ent.ipCount > 0 && (
-                          <div className="border-l border-slate-200 dark:border-slate-700 pl-2">
-                            <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Bằng SHTT</div>
-                            <div className="flex items-baseline gap-1 mt-0.5">
-                              <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">
-                                {ent.ipCount}
-                              </span>
-                              <span className="text-xs text-slate-400">sáng chế</span>
-                            </div>
-                            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 truncate">
-                              Đã công bố Cục SHTT
+                  return (
+                    <article
+                      key={ent.id}
+                      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-lg transition flex flex-col justify-between p-5 relative group"
+                    >
+                      <div className="space-y-3.5">
+                        {/* TẦNG 1: Định danh & 1 Huy hiệu ĐMST nổi bật */}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <EnterpriseAvatar
+                              name={ent.name}
+                              sectorName={ent.mainSectorName}
+                              sectorCode={ent.sectorCode}
+                              website={ent.website}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <Link
+                                href={`/enterprises/${ent.taxCode}`}
+                                className="font-bold text-slate-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-brand-400 line-clamp-2 text-base leading-snug transition block"
+                                title={ent.name}
+                              >
+                                {ent.name}
+                              </Link>
+                              <div className="flex items-center gap-2 flex-wrap mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                <span className="font-mono font-semibold text-slate-600 dark:text-slate-300">
+                                  MST: {ent.taxCode}
+                                </span>
+                                {ent.isVerified && (
+                                  <span className="inline-flex items-center gap-0.5 font-semibold text-emerald-700 dark:text-emerald-400">
+                                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                    Đã xác thực
+                                  </span>
+                                )}
+                                {ent.ownershipType && (
+                                  <span className="text-slate-500 dark:text-slate-400">
+                                    · {ent.ownershipType}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </div>
 
-                      {/* Huy Hiệu & Điểm Năng Lực ĐMST (8 Nhóm Tiêu Chí) */}
-                      {ent.innovationScore !== undefined && ent.innovationScore !== null && ent.innovationScore > 0 && (
-                        <div className="mb-3 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-50/80 via-orange-50/50 to-amber-50/80 dark:from-slate-800/80 dark:to-slate-800/80 border border-amber-200/80 dark:border-slate-700 flex items-center justify-between">
+                          {innovationBadge && (
+                            <span
+                              className={`shrink-0 inline-flex items-center gap-1 text-xs font-extrabold px-2.5 py-1 rounded-lg border ${innovationBadge.className}`}
+                            >
+                              {innovationBadge.label}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* TẦNG 2: Địa bàn, Ngành nghề, Quy mô & Năng lực (tinh gọn) */}
+                        <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50/70 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <span className="font-medium truncate">{ent.provinceCity || "Toàn quốc"}</span>
+                              {ent.operatingZone && ent.operatingZone !== "Ngoài các khu trên" && (
+                                <span
+                                  className="text-xs px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium truncate max-w-[150px]"
+                                  title={ent.operatingZone}
+                                >
+                                  {ent.operatingZone}
+                                </span>
+                              )}
+                            </div>
+                            {ent.workforceScale && (
+                              <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 shrink-0">
+                                <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                                <span>{ent.workforceScale}</span>
+                              </div>
+                            )}
+                          </div>
+
                           <div className="flex items-center gap-1.5">
-                            {ent.innovationTier === "LEADING" || ent.innovationScore >= 75 ? (
-                              <span className="text-xs font-extrabold text-amber-800 dark:text-amber-300 flex items-center gap-1">
-                                ⭐️ ĐMST Dẫn Đầu
-                              </span>
-                            ) : ent.innovationTier === "DEVELOPING" || ent.innovationScore >= 50 ? (
-                              <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                                🥈 ĐMST Đang Phát Triển
-                              </span>
-                            ) : (
-                              <span className="text-xs font-extrabold text-orange-700 dark:text-orange-300 flex items-center gap-1">
-                                🥉 ĐMST Tiềm Năng
-                              </span>
-                            )}
+                            <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="truncate font-medium">{ent.mainSectorName || "Chưa phân ngành"}</span>
                           </div>
-                          <div className="flex items-baseline gap-0.5 font-black text-slate-900 dark:text-white text-xs">
-                            <span className="text-sm font-black text-brand-700 dark:text-brand-400">{ent.innovationScore.toFixed(1)}</span>
-                            <span className="text-xs text-slate-400 font-semibold">/100đ</span>
-                          </div>
-                        </div>
-                      )}
 
-                      {/* Top Nhu Cầu Hỗ Trợ Nổi Bật Tag Pills */}
-                      {ent.supportNeeds && ent.supportNeeds.length > 0 && (
-                        <div className="mb-4">
-                          <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                            Nhu cầu hỗ trợ nổi bật:
+                          {(ent.hasRdUnit || ent.inValueChain || ent.isExporting) && (
+                            <div className="flex items-center gap-2 flex-wrap pt-1 text-xs text-slate-600 dark:text-slate-300">
+                              {ent.hasRdUnit && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-medium">
+                                  <FlaskConical className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Phòng R&amp;D
+                                </span>
+                              )}
+                              {ent.inValueChain && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-medium">
+                                  <Globe className="w-3 h-3 text-sky-600 dark:text-sky-400" /> Chuỗi giá trị
+                                </span>
+                              )}
+                              {ent.isExporting && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-medium">
+                                  <TrendingUp className="w-3 h-3 text-teal-600 dark:text-teal-400" /> Xuất khẩu
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* TẦNG 3: Hộp Chỉ Số Năng Lực (rộng rãi, không cắt chữ) */}
+                        <div
+                          className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 grid gap-3 ${
+                            ent.ipCount && ent.ipCount > 0 ? "grid-cols-3" : "grid-cols-2"
+                          }`}
+                        >
+                          <div>
+                            <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                              Trình độ TT17
+                            </div>
+                            <div className="flex items-baseline gap-1 mt-0.5">
+                              <span className="text-base font-extrabold text-sky-700 dark:text-sky-400">
+                                {ent.tt17Score !== undefined && ent.tt17Score !== null
+                                  ? ent.tt17Score.toFixed(1)
+                                  : "--"}
+                              </span>
+                              <span className="text-xs text-slate-400">/100</span>
+                            </div>
+                            <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
+                              {tt17Label ?? (
+                                <span className="text-slate-400 dark:text-slate-500 font-normal">
+                                  Chưa đánh giá TT17
+                                </span>
+                              )}
+                            </div>
                           </div>
+
+                          <div className="border-l border-slate-200 dark:border-slate-700 pl-3">
+                            <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                              Chỉ số TNI
+                            </div>
+                            <div className="flex items-baseline gap-1 mt-0.5">
+                              <span className="text-base font-extrabold text-brand-700 dark:text-brand-400">
+                                {ent.tniScore !== undefined && ent.tniScore !== null
+                                  ? ent.tniScore.toFixed(1)
+                                  : "--"}
+                              </span>
+                              <span className="text-xs text-slate-400">/100</span>
+                            </div>
+                            <div className="text-xs font-semibold text-amber-700 dark:text-amber-400 mt-0.5">
+                              {tniLabel}
+                            </div>
+                          </div>
+
+                          {ent.ipCount !== undefined && ent.ipCount > 0 && (
+                            <div className="border-l border-slate-200 dark:border-slate-700 pl-3">
+                              <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                                Bằng SHTT
+                              </div>
+                              <div className="flex items-baseline gap-1 mt-0.5">
+                                <span className="text-base font-extrabold text-slate-800 dark:text-slate-200">
+                                  {ent.ipCount}
+                                </span>
+                                <span className="text-xs text-slate-400">sáng chế</span>
+                              </div>
+                              <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium mt-0.5">
+                                Cục SHTT công bố
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {ent.supportNeeds && ent.supportNeeds.length > 0 && (
                           <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                              Nhu cầu:
+                            </span>
                             {ent.supportNeeds.slice(0, 3).map((need, i) => (
                               <span
                                 key={i}
@@ -885,35 +948,120 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                               </span>
                             ))}
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
 
-                    {/* TẦNG 5: Action Controls */}
-                    <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setConnectModalEnt(ent);
-                          setConnectResult(null);
-                          setConnectOrgName("");
-                          setConnectContact("");
-                          setConnectNote("");
-                        }}
-                        className="btn-press inline-flex items-center px-3 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:hover:bg-brand-900 dark:text-cyan-300 font-bold text-xs transition cursor-pointer"
-                      >
-                        Kết Nối
-                      </button>
-                      <Link
-                        href={`/enterprises/${ent.taxCode}`}
-                        className="inline-flex items-center gap-0.5 font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 dark:hover:text-cyan-300 text-xs transition"
-                      >
-                        <span>Hồ Sơ Chi Tiết</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                      {/* Footer Actions */}
+                      <div className="flex items-center justify-between gap-2 pt-3.5 mt-4 border-t border-slate-100 dark:border-slate-800">
+                        <button
+                          type="button"
+                          onClick={openConnect}
+                          className="btn-press inline-flex items-center px-3.5 py-1.5 rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950/80 dark:hover:bg-brand-900 dark:text-cyan-300 font-bold text-xs transition cursor-pointer"
+                        >
+                          Kết Nối
+                        </button>
+                        <Link
+                          href={`/enterprises/${ent.taxCode}`}
+                          className="inline-flex items-center gap-1 font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 dark:hover:text-cyan-300 text-xs transition"
+                        >
+                          <span>Xem Hồ Sơ Năng Lực</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* UX STATE: SUCCESS (Ranking Table View) */}
+            {!loading && !error && data && data.items.length > 0 && viewMode === "list" && (
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <th className="px-4 py-3">Doanh Nghiệp &amp; Định Danh</th>
+                        <th className="px-4 py-3">Địa Bàn &amp; Ngành</th>
+                        <th className="px-4 py-3">Xếp Hạng ĐMST</th>
+                        <th className="px-4 py-3 text-right">TT17</th>
+                        <th className="px-4 py-3 text-right">TNI</th>
+                        <th className="px-4 py-3 text-right">Thao Tác</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {data.items.map((ent) => {
+                        const { innovationBadge } = getEnterpriseDisplayMeta(ent);
+                        return (
+                          <tr key={ent.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
+                            <td className="px-4 py-3.5">
+                              <Link
+                                href={`/enterprises/${ent.taxCode}`}
+                                className="font-bold text-slate-900 dark:text-white hover:text-brand-700 dark:hover:text-brand-400 text-sm block"
+                              >
+                                {ent.name}
+                              </Link>
+                              <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                                <span className="font-mono">MST: {ent.taxCode}</span>
+                                {ent.isVerified && (
+                                  <span className="inline-flex items-center gap-0.5 text-emerald-700 dark:text-emerald-400 font-semibold">
+                                    <ShieldCheck className="w-3 h-3" /> Đã xác thực
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
+                              <div className="font-medium">{ent.provinceCity || "Toàn quốc"}</div>
+                              <div className="text-slate-500 truncate max-w-[200px]">
+                                {ent.mainSectorName || "Chưa phân ngành"}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5">
+                              {innovationBadge ? (
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border font-bold ${innovationBadge.className}`}
+                                >
+                                  {innovationBadge.label}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">Chưa đánh giá</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3.5 text-right font-extrabold text-sky-700 dark:text-sky-400">
+                              {ent.tt17Score !== undefined && ent.tt17Score !== null ? ent.tt17Score.toFixed(1) : "--"}
+                            </td>
+                            <td className="px-4 py-3.5 text-right font-extrabold text-brand-700 dark:text-brand-400">
+                              {ent.tniScore !== undefined && ent.tniScore !== null ? ent.tniScore.toFixed(1) : "--"}
+                            </td>
+                            <td className="px-4 py-3.5 text-right">
+                              <div className="inline-flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setConnectModalEnt(ent);
+                                    setConnectResult(null);
+                                    setConnectOrgName("");
+                                    setConnectContact("");
+                                    setConnectNote("");
+                                  }}
+                                  className="px-2.5 py-1 rounded-md bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-cyan-300 font-bold"
+                                >
+                                  Kết Nối
+                                </button>
+                                <Link
+                                  href={`/enterprises/${ent.taxCode}`}
+                                  className="font-bold text-brand-700 hover:underline dark:text-cyan-400"
+                                >
+                                  Hồ Sơ
+                                </Link>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -983,7 +1131,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 px-2.5 py-0.5 rounded-full mb-2">
                 <Send className="w-3.5 h-3.5" /> Gửi Đề Xuất Kết Nối Công Nghệ
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
+              <h3 className="type-card-title text-slate-900 dark:text-white line-clamp-1">
                 {connectModalEnt.name}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">

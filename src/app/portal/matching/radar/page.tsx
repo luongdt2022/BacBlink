@@ -273,7 +273,7 @@ export default function MatchingRadarPage() {
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
               <span>AI MATCHING ENGINE 4.0 · TT 17/2019/TT-BKHCN</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <h1 className="type-page-title text-white flex items-center gap-3">
               Radar Ghép Nối Cung–Cầu & Điểm Tương Thích
             </h1>
             <p className="text-xs sm:text-sm text-brand-100 leading-relaxed max-w-2xl">
@@ -381,7 +381,7 @@ export default function MatchingRadarPage() {
             </div>
 
             <div className="space-y-3 max-w-xl mx-auto">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <h2 className="type-section-title text-slate-900 dark:text-white">
                 Radar Ghép Nối AI Chưa Kích Hoạt
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -547,7 +547,7 @@ export default function MatchingRadarPage() {
               <div className="w-14 h-14 mx-auto rounded-2xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center text-brand-700 dark:text-brand-300">
                 <Sparkles className="w-7 h-7" />
               </div>
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Không tìm thấy giải pháp ghép nối phù hợp</h3>
+              <h3 className="type-card-title text-slate-900 dark:text-white">Không tìm thấy giải pháp ghép nối phù hợp</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
                 Hãy thử giảm tiêu chí lọc điểm khớp hoặc mở rộng ngành kỹ thuật để phát hiện thêm các cơ hội chuyển giao công nghệ mới.
               </p>
@@ -695,7 +695,7 @@ export default function MatchingRadarPage() {
                           {/* Trục 1: Ngữ nghĩa AI (40%) */}
                           <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
                             <div className="flex items-center justify-between">
-                              <span className="block text-[11px] text-slate-400 font-medium">Ngữ nghĩa AI:</span>
+                              <span className="block text-xs text-slate-400 font-medium">Ngữ nghĩa AI:</span>
                               <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
                                 {c.xaiBreakdown ? `${c.xaiBreakdown.semanticScore}%` : '100% Khớp'}
                               </span>
@@ -706,7 +706,7 @@ export default function MatchingRadarPage() {
                                 style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.semanticScore ?? 100))}%` }}
                               />
                             </div>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
                               {c.xaiBreakdown?.semanticEngine === 'POSTGRES_FTS_FALLBACK' ? 'FTS Lexical' : 'AI BGE-M3'}
                             </span>
                           </div>
@@ -714,7 +714,7 @@ export default function MatchingRadarPage() {
                           {/* Trục 2: Mức TRL (30%) */}
                           <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
                             <div className="flex items-center justify-between">
-                              <span className="block text-[11px] text-slate-400 font-medium">Mức TRL:</span>
+                              <span className="block text-xs text-slate-400 font-medium">Mức TRL:</span>
                               <span className="text-brand-700 dark:text-cyan-400 font-extrabold">
                                 {c.xaiBreakdown ? `TRL ${c.xaiBreakdown.trlLevel}` : `TRL ${resolvedTrl}`}
                               </span>
@@ -725,7 +725,7 @@ export default function MatchingRadarPage() {
                                 style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.trlScore ?? ((resolvedTrl / 9) * 100)))}%` }}
                               />
                             </div>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
                               {c.xaiBreakdown?.trlStage ?? (resolvedTrl >= 7 ? 'Thương mại hóa' : 'Thử nghiệm')}
                             </span>
                           </div>
@@ -733,7 +733,7 @@ export default function MatchingRadarPage() {
                           {/* Trục 3: Cấp thiết TNI (15%) */}
                           <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
                             <div className="flex items-center justify-between">
-                              <span className="block text-[11px] text-slate-400 font-medium">Cấp thiết TNI:</span>
+                              <span className="block text-xs text-slate-400 font-medium">Cấp thiết TNI:</span>
                               <span className="text-rose-600 dark:text-rose-400 font-extrabold">
                                 {c.xaiBreakdown ? `${c.xaiBreakdown.tniScore}/100` : `${resolvedTni}/100`}
                               </span>
@@ -744,7 +744,7 @@ export default function MatchingRadarPage() {
                                 style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.tniScore ?? resolvedTni))}%` }}
                               />
                             </div>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
                               {c.xaiBreakdown?.tniBand ?? (resolvedTni >= 80 ? 'Cấp thiết rất cao' : 'Cấp thiết cao')}
                             </span>
                           </div>
@@ -752,7 +752,7 @@ export default function MatchingRadarPage() {
                           {/* Trục 4: Bảo hộ SHTT (15%) */}
                           <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-700 space-y-1">
                             <div className="flex items-center justify-between">
-                              <span className="block text-[11px] text-slate-400 font-medium">Bảo hộ SHTT:</span>
+                              <span className="block text-xs text-slate-400 font-medium">Bảo hộ SHTT:</span>
                               <span className="text-amber-700 dark:text-amber-400 font-extrabold">
                                 {c.xaiBreakdown
                                   ? `${c.xaiBreakdown.ipScore}%`
@@ -765,7 +765,7 @@ export default function MatchingRadarPage() {
                                 style={{ width: `${Math.min(100, Math.max(0, c.xaiBreakdown?.ipScore ?? (resolvedIp === 'PATENT_GRANTED' ? 100 : 60)))}%` }}
                               />
                             </div>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                            <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
                               {c.xaiBreakdown?.ipDescription ?? (resolvedIp === 'PATENT_GRANTED' || resolvedIp === 'Đã cấp bằng sáng chế' ? 'Đã cấp bằng' : 'Đang xét')}
                             </span>
                           </div>
@@ -908,7 +908,7 @@ export default function MatchingRadarPage() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-7 shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+                <h3 className="type-card-title text-slate-900 dark:text-white">
                   Danh sách Yêu Cầu Kết Nối Hai Chiều
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -951,7 +951,7 @@ export default function MatchingRadarPage() {
                     >
                       <span>{subTab.label}</span>
                       <span
-                        className={`px-1.5 py-0.5 rounded-full text-[11px] font-black leading-none ${
+                        className={`px-1.5 py-0.5 rounded-full text-xs font-black leading-none ${
                           subTab.badgeColor || 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
                         }`}
                       >

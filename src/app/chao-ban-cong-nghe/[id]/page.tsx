@@ -282,7 +282,7 @@ export default function ChiTietChaoBanPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center space-y-4 max-w-md">
           <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
-          <h2 className="text-lg font-bold text-slate-900">Không tìm thấy hồ sơ công nghệ</h2>
+          <h2 className="type-section-title text-slate-900">Không tìm thấy hồ sơ công nghệ</h2>
           <p className="text-xs text-slate-500">Hồ sơ này không tồn tại hoặc đã được chuyển vào kho lưu trữ.</p>
           <Link
             href="/chao-ban-cong-nghe"
@@ -506,7 +506,7 @@ export default function ChiTietChaoBanPage() {
                       </div>
 
                       {/* Main Title */}
-                      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                      <h1 className="type-page-title text-slate-900">
                         {offer.title}
                       </h1>
 
@@ -595,36 +595,25 @@ export default function ChiTietChaoBanPage() {
                         <div>
                           <div className="text-xs font-bold uppercase text-slate-400">Đánh giá sàn</div>
                           <div className="mt-1 text-sm font-extrabold text-slate-900">
-                            {offer.ratingScore ? offer.ratingScore.toFixed(1) : "5.0"}/5 · {offer.reviewCount || 0} review
+                            {offer.reviewCount && offer.reviewCount > 0 ? (
+                              <>
+                                {(offer.ratingScore ?? 5).toFixed(1)}/5 · {offer.reviewCount} review
+                              </>
+                            ) : (
+                              <span className="text-slate-500 font-semibold">Chưa có đánh giá</span>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* CTAs matching Wireframe */}
+                    {/* Utility Actions (Primary CTA unified into Sticky Sidebar - CR-2026-026) */}
                     <div className="space-y-3 pt-2">
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenConnectModal(isCommercialProduct ? "PURCHASE_COMMERCIAL" : "TRANSFER")}
-                          className="flex-1 rounded-xl bg-brand-700 hover:bg-brand-800 text-white px-5 py-3 text-sm font-bold shadow-md shadow-brand-900/15 transition flex items-center justify-center gap-2"
-                        >
-                          {isCommercialProduct ? (
-                            <>
-                              <ShoppingBag className="w-4 h-4" />
-                              Đặt mua sản phẩm / Kết nối thương mại
-                            </>
-                          ) : (
-                            <>
-                              <Mail className="w-4 h-4" />
-                              Đăng ký nhận chuyển giao công nghệ
-                            </>
-                          )}
-                        </button>
+                      <div className="flex flex-wrap items-center gap-3">
                         <button
                           type="button"
                           onClick={handleToggleBookmark}
-                          className={`rounded-xl border px-4 py-3 text-sm font-bold transition flex items-center justify-center gap-2 ${
+                          className={`rounded-xl border px-4 py-2.5 text-sm font-bold transition flex items-center justify-center gap-2 ${
                             isBookmarked
                               ? "bg-amber-50 border-amber-300 text-amber-800 shadow-sm"
                               : "border-slate-300 hover:bg-slate-50 text-slate-700"
@@ -1122,8 +1111,8 @@ export default function ChiTietChaoBanPage() {
           </div>
         </div>
 
-        {/* CỘT SIDEBAR HÀNH ĐỘNG (1 CỘT) */}
-        <div className="space-y-6">
+        {/* CỘT SIDEBAR HÀNH ĐỘNG (1 CỘT - STICKY) */}
+        <div className="space-y-6 lg:sticky lg:top-24 lg:self-start">
           {/* Card Giá & Kết nối */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
             <div>
@@ -1155,7 +1144,7 @@ export default function ChiTietChaoBanPage() {
               <button
                 type="button"
                 onClick={() => handleOpenConnectModal(isCommercialProduct ? "PURCHASE_COMMERCIAL" : "TRANSFER")}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-xs font-extrabold transition shadow-md shadow-emerald-950/20 flex items-center justify-center gap-2"
+                className="w-full bg-brand-700 hover:bg-brand-800 text-white py-3 rounded-xl text-xs font-extrabold transition shadow-md shadow-brand-900/15 flex items-center justify-center gap-2"
               >
                 {isCommercialProduct ? (
                   <>

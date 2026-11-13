@@ -51,11 +51,11 @@ const publicExplorerCards: PublicExplorerCard[] = [
 
 function GeneralPortalDashboard({ user }: { user: UserContext | null }) {
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="w-full space-y-5">
       {/* Khối 1: Quick Action Hero Banner */}
-      <section className="relative overflow-hidden rounded-surface workspace-banner p-6 text-white shadow-xl shadow-brand-950/10 sm:p-8">
+      <section className="relative overflow-hidden rounded-surface workspace-banner p-5 text-white shadow-xl shadow-brand-950/10 sm:p-6">
         <div className="relative z-10 space-y-4">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-label font-semibold text-brand-200">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-label font-semibold text-brand-100 border border-white/20">
             <Sparkles className="h-3.5 w-3.5 text-brand-200" />
             <span>Thành viên Khám phá / Bên Mua tiềm năng</span>
           </div>
@@ -92,7 +92,7 @@ function GeneralPortalDashboard({ user }: { user: UserContext | null }) {
           <Link
             key={title}
             href={href}
-            className="group flex flex-col justify-between rounded-surface border border-slate-200 bg-white p-6 shadow-xs transition hover:border-brand-700 hover:shadow-md focus-ring min-h-11 dark:border-slate-800 dark:bg-slate-900"
+            className="group flex flex-col justify-between rounded-surface border border-slate-200 bg-white p-5 shadow-xs transition hover:border-brand-700 hover:shadow-md focus-ring min-h-11 dark:border-slate-800 dark:bg-slate-900"
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ function GeneralPortalDashboard({ user }: { user: UserContext | null }) {
       </div>
 
       {/* Khối 3: Banner Chuyển Đổi Nâng Hạng CTA */}
-      <section className="relative overflow-hidden rounded-surface border border-brand-200 bg-gradient-to-r from-teal-50/80 via-white to-brand-50/60 p-6 shadow-sm sm:p-8 dark:border-brand-900/60 dark:from-slate-900 dark:via-slate-900/80 dark:to-brand-950/40">
+      <section className="relative overflow-hidden rounded-surface border border-brand-200 bg-gradient-to-r from-teal-50/80 via-white to-brand-50/60 p-5 shadow-sm sm:p-6 dark:border-brand-900/60 dark:from-slate-900 dark:via-slate-900/80 dark:to-brand-950/40">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-800 dark:bg-brand-900/60 dark:text-brand-200">

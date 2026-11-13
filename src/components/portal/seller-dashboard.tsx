@@ -73,7 +73,7 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
   ).length;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="w-full space-y-5">
       {/* 1. EXECUTIVE WORKSPACE BANNER */}
       <section className="relative overflow-hidden rounded-3xl bg-brand-700 text-white p-6 sm:p-8 shadow-xl shadow-brand-950/15 border border-brand-800/40">
         <div
@@ -82,8 +82,8 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
         />
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-bold text-teal-200">
-              <Store className="w-3.5 h-3.5 text-teal-300" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-bold text-brand-100">
+              <Store className="w-3.5 h-3.5 text-brand-200" />
               <span>Trung Tâm Quản Trị Gian Hàng Công Nghệ B2B</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
@@ -106,7 +106,7 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
               href="/portal/matching/radar"
               className="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/25 text-white text-xs font-bold flex items-center gap-2 backdrop-blur-sm transition"
             >
-              <Sparkles className="w-4 h-4 text-teal-300" />
+              <Sparkles className="w-4 h-4 text-brand-200" />
               Săn Nhu Cầu Bằng AI
             </Link>
           </div>

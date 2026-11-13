@@ -166,8 +166,8 @@ export default function EnterpriseOwnerProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 py-10 px-4">
-        <div className="max-w-5xl mx-auto animate-pulse space-y-6">
+      <main className="w-full">
+        <div className="w-full animate-pulse space-y-5">
           <div className="h-8 w-48 bg-slate-200 rounded"></div>
           <div className="h-28 bg-white rounded-2xl border border-slate-200 p-6"></div>
           <div className="h-96 bg-white rounded-2xl border border-slate-200"></div>
@@ -177,8 +177,8 @@ export default function EnterpriseOwnerProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 md:px-8">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <main className="w-full">
+      <div className="w-full space-y-5">
         {/* Header Title */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>

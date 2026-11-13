@@ -445,7 +445,7 @@ export default function BuyerDemandsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
       {/* WORKSPACE SUB-HEADER */}
       <section className="bg-white dark:bg-slate-900 border-b border-border-default dark:border-slate-800 py-6 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-600 flex items-center justify-center text-white font-extrabold text-2xl shadow-md">
               {isExpert ? "E" : "B"}
@@ -487,7 +487,7 @@ export default function BuyerDemandsPage() {
 
       {/* 2 TABS CẤP CAO (High-Level Tabs) */}
       <section className="bg-white dark:bg-slate-900 border-b border-border-default dark:border-slate-800 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex items-center gap-6">
+        <div className="max-w-[1440px] mx-auto flex items-center gap-6">
           <button
             type="button"
             onClick={() => handleTabChange('commercial')}
@@ -523,7 +523,7 @@ export default function BuyerDemandsPage() {
       </section>
 
       {/* MAIN CONTAINER */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+      <main className="max-w-[1440px] mx-auto px-3 sm:px-5 py-4 flex-1 w-full space-y-5">
         {/* ========================================================================= */}
         {/* TAB 1: ĐƠN MUA SẢN PHẨM THƯƠNG MẠI                                        */}
         {/* ========================================================================= */}

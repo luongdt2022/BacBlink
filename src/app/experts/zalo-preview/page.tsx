@@ -138,8 +138,8 @@ export default function ZaloPreviewPage() {
 
               {/* BANNER */}
               <div className="bg-gradient-to-r from-brand-900 to-brand-900 text-white p-4 space-y-1">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-white/10 text-cyan-300">
-                  <Sparkles className="w-3 h-3" /> Thu thập Sổ tay Chuyên gia
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 border border-white/20 text-brand-100">
+                  <Sparkles className="w-3 h-3 text-brand-200" /> Thu thập Sổ tay Chuyên gia
                 </div>
                 <h3 className="text-xs font-bold leading-snug">
                   Đăng Ký & Số Hóa Lý Lịch Khoa Học

@@ -188,7 +188,7 @@ export default function AdminAuditLogsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full space-y-5">
       {/* WAI-ARIA Standard Breadcrumbs */}
       <AdminBreadcrumbs
         items={[

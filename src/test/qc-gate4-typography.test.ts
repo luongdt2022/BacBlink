@@ -90,9 +90,10 @@ describe("QC Gate 4 Typography Verification (Be Vietnam Pro + JetBrains Mono Sta
       expect(globalsContent).toContain("padding-inline: 2rem;");
     });
 
-    it("applies adaptive density for compact HD laptop viewports (1366x768 / 1280x800)", () => {
-      expect(globalsContent).toContain("@media (min-width: 1024px) and (max-width: 1440px) and (max-height: 850px)");
-      expect(globalsContent).toContain("font-size: 14.75px;");
+    it("does not shrink typography by viewport height (single scale source: data-text-scale, PO decision 2026-11-13)", () => {
+      expect(globalsContent).not.toContain("max-height: 850px");
+      expect(globalsContent).not.toContain("font-size: 14.75px;");
+      expect(globalsContent).not.toContain("max-height: 820px");
     });
   });
 });

@@ -475,7 +475,7 @@ export default function TaoHoSoChaoBanPage() {
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-16">
       {/* Top Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-4 px-3 sm:px-5">
           <div className="flex items-center gap-3">
             <Link
               href="/portal/seller/technologies"
@@ -518,7 +518,7 @@ export default function TaoHoSoChaoBanPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-6">
+      <main className="mx-auto max-w-[1440px] px-3 py-4 sm:px-5 space-y-4">
         {/* Title & Description */}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -526,7 +526,7 @@ export default function TaoHoSoChaoBanPage() {
               Trang chủ / Hồ sơ của tôi /{" "}
               <span className="font-semibold text-slate-700">Tạo hồ sơ chào bán</span>
             </nav>
-            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="type-page-title text-slate-900">
               Tạo hồ sơ chào bán
             </h1>
             <p className="mt-0.5 text-xs text-slate-600">
@@ -559,9 +559,9 @@ export default function TaoHoSoChaoBanPage() {
         )}
 
         {/* Main Grid: Sidebar vs Content */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-4 lg:gap-5 lg:grid-cols-[296px_minmax(0,1fr)]">
           {/* Left Column: Side Nav & AI Assistant */}
-          <aside className="space-y-4">
+          <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             <FormStepper
               currentStep={currentStep}
               onStepSelect={(step) => {
@@ -573,11 +573,13 @@ export default function TaoHoSoChaoBanPage() {
             />
 
             {/* Card Trợ Lý AI Nhập Liệu (PO-DEC-07) */}
-            <div className="rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-brand-50 p-4 shadow-sm">
-              <div className="flex items-center gap-2 text-sm font-extrabold text-cyan-950">
-                <Sparkles className="h-4 w-4 text-cyan-600" />
-                <span>Trợ Lý AI Nhập Liệu</span>
-                <span className="rounded bg-cyan-200/80 text-cyan-900 text-xs px-1.5 py-0.5 font-bold">
+            <div className="rounded-2xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-brand-50 p-3.5 shadow-sm">
+              <div className="flex items-center justify-between gap-2 text-sm font-extrabold text-cyan-950">
+                <span className="flex items-center gap-1.5 truncate">
+                  <Sparkles className="h-4 w-4 shrink-0 text-cyan-600" />
+                  <span className="truncate">Trợ Lý AI Nhập Liệu</span>
+                </span>
+                <span className="shrink-0 whitespace-nowrap rounded bg-cyan-200/80 text-cyan-900 text-xs px-1.5 py-0.5 font-bold">
                   PO-DEC-07
                 </span>
               </div>
@@ -598,7 +600,7 @@ export default function TaoHoSoChaoBanPage() {
           {/* Right Column: Active Form Step */}
           <section className="min-w-0 space-y-6">
             {currentStep === 1 && (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-5 sm:p-7 space-y-7">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-5 space-y-5">
                 {/* Doanh nghiệp liên kết (TASK-02) & Chọn Sở KH&CN tiếp nhận (Delta v9) */}
                 <SellerIdentityCard
                   enterpriseName={enterpriseName}
@@ -995,7 +997,7 @@ export default function TaoHoSoChaoBanPage() {
                   <Wand2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base text-white">Trợ Lý AI Nhập Liệu & Bóc Tách Công Nghệ</h3>
+                  <h3 className="type-card-title text-white">Trợ Lý AI Nhập Liệu & Bóc Tách Công Nghệ</h3>
                   <p className="text-xs text-brand-200">Chuẩn hóa theo Quyết định PO-DEC-20261008-07 · Human-in-the-Loop</p>
                 </div>
               </div>

@@ -18,12 +18,15 @@ vi.mock("@/components/auth/role-guard", () => ({
 }));
 
 const mockToastWarning = vi.fn();
+const mockToastSuccess = vi.fn();
+const mockToastError = vi.fn();
+const mockToastInfo = vi.fn();
 vi.mock("@/components/common/toast", () => ({
   useToast: () => ({
     warning: mockToastWarning,
-    error: vi.fn(),
-    success: vi.fn(),
-    info: vi.fn(),
+    error: mockToastError,
+    success: mockToastSuccess,
+    info: mockToastInfo,
   }),
 }));
 
@@ -43,7 +46,10 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
       const url = String(input);
       const method = init?.method?.toUpperCase() || "GET";
 
-      if (url.includes("/api/v1/experts/me/consultations") && method === "POST") {
+      if (
+        (url.includes("/api/v1/experts/me/consultations") || url.includes("/api/v1/portal/expert/consultations")) &&
+        (method === "POST" || method === "PATCH")
+      ) {
         return {
           ok: true,
           json: async () => ({
@@ -53,7 +59,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
         } as Response;
       }
 
-      if (url.includes("/api/v1/experts/me/consultations")) {
+      if (url.includes("/api/v1/experts/me/consultations") || url.includes("/api/v1/portal/expert/consultations")) {
         return {
           ok: true,
           json: async () => ({
@@ -273,5 +279,51 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
 
     // Verify modal was NOT opened
     expect(screen.queryByRole("heading", { name: "Đồng Ý Tư Vấn & Chọn Lịch Hẹn" })).not.toBeInTheDocument();
+  });
+
+  it("allows expert to complete consultation on scheduled tab", async () => {
+    authClient.setSession("token-verified", {
+      id: "u-exp-1",
+      email: "tuan.nv@nacentech.vn",
+      fullName: "GS.TS. Nguyễn Văn Tuấn",
+      role: "VERIFIED_EXPERT",
+    });
+
+    render(<ExpertConsultationsPage />);
+    await screen.findByText("Tư Vấn Thẩm Định Công Nghệ Nâng Cấp Dây Chuyền Chiết Rót Tự Động Hóa Chuẩn GMP");
+
+    const scheduledTab = screen.getByTestId("tab-btn-scheduled");
+    fireEvent.click(scheduledTab);
+
+    const completeBtn = await screen.findByTestId("btn-complete-consultation-REQ-CON-2026-068");
+    fireEvent.click(completeBtn);
+
+    await waitFor(() => {
+      expect(mockToastSuccess).toHaveBeenCalledWith(
+        "Đã ghi nhận hoàn thành phiên tư vấn!",
+        "Thành Công"
+      );
+    });
+  });
+
+  it("displays clean empty state with zero mock when API returns empty list (UI-CON-002)", async () => {
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      return {
+        ok: true,
+        json: async () => ({ success: true, data: [] }),
+      } as Response;
+    });
+
+    render(<ExpertConsultationsPage />);
+
+    expect(await screen.findByText("Hộp thư chờ xử lý hiện đang trống")).toBeInTheDocument();
+
+    // Check Tab 2 empty state
+    fireEvent.click(screen.getByTestId("tab-btn-scheduled"));
+    expect(screen.getByText("Chưa có lịch hẹn tư vấn nào sắp tới")).toBeInTheDocument();
+
+    // Check Tab 3 empty state
+    fireEvent.click(screen.getByTestId("tab-btn-completed"));
+    expect(screen.getByText("Chưa có phiên tư vấn nào hoàn thành")).toBeInTheDocument();
   });
 });

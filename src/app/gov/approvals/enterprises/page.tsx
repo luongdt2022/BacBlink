@@ -152,14 +152,14 @@ export default function GovEnterpriseApprovalPage() {
       )}
 
       {/* Filter Bar */}
-      <div className="surface-card p-4 flex flex-col md:flex-row items-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface">
-        <form onSubmit={handleSearchSubmit} className="flex-1 w-full flex items-center gap-2">
+      <div className="surface-card p-3.5 flex flex-col lg:flex-row items-stretch lg:items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface">
+        <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-2 min-w-0">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm theo Tên DN hoặc Mã số thuế..."
-            className="form-control flex-1 text-sm"
+            className="form-control flex-1 min-w-0 text-sm"
           />
           <button
             type="submit"
@@ -169,11 +169,11 @@ export default function GovEnterpriseApprovalPage() {
           </button>
         </form>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="form-control text-sm"
+            className="form-control sm:w-52 text-sm"
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="pending">Chờ thẩm định / Chưa duyệt</option>
@@ -185,7 +185,7 @@ export default function GovEnterpriseApprovalPage() {
             value={filterProvince}
             onChange={(e) => setFilterProvince(e.target.value)}
             placeholder="Lọc theo Tỉnh/TP..."
-            className="form-control w-44 text-sm"
+            className="form-control sm:w-48 text-sm"
           />
         </div>
       </div>
@@ -203,37 +203,50 @@ export default function GovEnterpriseApprovalPage() {
             <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
               <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase font-semibold">
                 <tr>
-                  <th className="p-4">Doanh nghiệp / MST</th>
-                  <th className="p-4">Địa bàn & Ngành</th>
-                  <th className="p-4">Tiêu Chí Xác Thực ĐMST</th>
-                  <th className="p-4">Chỉ số TNI</th>
-                  <th className="p-4">Trạng thái</th>
-                  <th className="p-4 text-right">Thao tác thẩm định</th>
+                  <th className="px-3.5 py-3 whitespace-nowrap">Doanh nghiệp / MST</th>
+                  <th className="px-3.5 py-3 whitespace-nowrap">Địa bàn & Ngành</th>
+                  <th className="px-3.5 py-3 whitespace-nowrap">Tiêu Chí Xác Thực ĐMST</th>
+                  <th className="px-3.5 py-3 whitespace-nowrap">Chỉ số TNI</th>
+                  <th className="px-3.5 py-3 whitespace-nowrap">Trạng thái</th>
+                  <th className="px-3.5 py-3 text-right whitespace-nowrap">Thao tác thẩm định</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredItems.map((item) => (
+                {filteredItems.map((item) => {
+                  const tniLabelMap: Record<string, string> = {
+                    CAP_THIET: "Cấp thiết",
+                    VERY_HIGH: "Rất cao",
+                    HIGH: "Cao",
+                    MEDIUM: "Trung bình",
+                    LOW: "Thấp",
+                  };
+                  const tniLabel =
+                    (item.tniClassification && tniLabelMap[item.tniClassification.toUpperCase()]) ||
+                    item.tniClassification ||
+                    "Đang tính";
+
+                  return (
                   <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition">
-                    <td className="p-4">
+                    <td className="px-3.5 py-3.5 max-w-[240px]">
                       <Link
                         href={`/enterprises/${item.taxCode}`}
-                        className="font-bold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 block"
+                        className="font-bold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 block leading-snug"
                       >
                         {item.name}
                       </Link>
-                      <span className="font-mono text-slate-400 text-xs block mt-0.5">
-                        Mã số thuế: <strong>{item.taxCode}</strong>
+                      <span className="font-mono text-slate-400 text-xs block mt-0.5 whitespace-nowrap">
+                        MST: <strong>{item.taxCode}</strong>
                       </span>
                     </td>
-                    <td className="p-4">
-                      <div className="font-medium text-slate-800 dark:text-slate-200">
+                    <td className="px-3.5 py-3.5 min-w-[140px] max-w-[190px]">
+                      <div className="font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
                         {resolveProvinceName(item.provinceCity)}
                       </div>
-                      <div className="text-slate-400 text-xs truncate max-w-xs mt-0.5">
+                      <div className="text-slate-400 text-xs truncate mt-0.5">
                         {resolveSectorName(item.sectorCode || item.mainSectorName)}
                       </div>
                     </td>
-                    <td className="p-4 space-y-1">
+                    <td className="px-3.5 py-3.5 space-y-1 min-w-[260px]">
                       <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                         <FileText className="w-3.5 h-3.5 text-brand-600 shrink-0" />
                         <span>Vốn điều lệ / Quy mô: <strong>{item.workforceScale || item.ownershipType || "Doanh nghiệp KH&CN"}</strong></span>
@@ -247,26 +260,26 @@ export default function GovEnterpriseApprovalPage() {
                         <span>Giấy chứng nhận DN KH&CN: <strong>{item.hasRdUnit ? "Đạt chuẩn (Có đơn vị R&D)" : "Đang thẩm tra"}</strong></span>
                       </div>
                     </td>
-                    <td className="p-4">
-                      <span className="px-2 py-0.5 rounded bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 font-semibold text-xs inline-block">
-                        {item.tniClassification || "Đang tính"} {item.tniScore ? `(${item.tniScore.toFixed(1)})` : ""}
+                    <td className="px-3.5 py-3.5 whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800 font-semibold text-xs inline-flex items-center gap-1 whitespace-nowrap">
+                        {item.tniScore ? `${item.tniScore.toFixed(1)} · ` : ""}{tniLabel}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="px-3.5 py-3.5 whitespace-nowrap">
                       {item.isVerified ? (
-                        <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs inline-block">
+                        <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold text-xs inline-flex items-center gap-1 whitespace-nowrap">
                           ✓ Đã phê duyệt
                         </span>
                       ) : (
-                        <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold text-xs inline-block">
+                        <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-semibold text-xs inline-flex items-center gap-1 whitespace-nowrap">
                           ⏳ Chờ thẩm định
                         </span>
                       )}
                     </td>
-                    <td className="p-4 text-right space-x-2 whitespace-nowrap">
+                    <td className="px-3.5 py-3.5 text-right space-x-2 whitespace-nowrap">
                       <Link
                         href={`/enterprises/${item.taxCode}`}
-                        className="px-2.5 py-1 rounded-control bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium inline-block"
+                        className="px-3 py-1.5 rounded-lg border border-brand-200 bg-white dark:bg-slate-800 dark:border-slate-700 hover:bg-brand-50 dark:hover:bg-slate-700 text-brand-700 dark:text-brand-300 font-semibold text-xs inline-block shadow-xs whitespace-nowrap transition"
                       >
                         Xem hồ sơ
                       </Link>
@@ -298,7 +311,8 @@ export default function GovEnterpriseApprovalPage() {
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

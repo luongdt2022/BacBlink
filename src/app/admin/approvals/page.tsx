@@ -574,7 +574,7 @@ function AdminApprovalsContent() {
   const overrideCount = approvals.filter((a) => a.isOverride).length;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full space-y-5">
       {/* Breadcrumbs */}
       <AdminBreadcrumbs
         items={[
@@ -1408,7 +1408,7 @@ function AdminApprovalsContent() {
 
 function AdminApprovalsSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto space-y-6 animate-pulse">
+    <div className="w-full space-y-5 animate-pulse">
       <div className="h-6 w-72 bg-slate-200 dark:bg-slate-800 rounded-lg" />
       <div className="h-16 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
       <div className="h-64 bg-slate-100 dark:bg-slate-800/60 rounded-2xl" />

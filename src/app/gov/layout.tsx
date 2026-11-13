@@ -150,15 +150,16 @@ function GovSidebarNav({
     setOpenGroups(nextState);
   };
 
-  const isLinkActive = (href: string) => {
-    if (pendingHref !== null) {
-      return href === pendingHref;
-    }
-    if (href === "/gov") {
-      return pathname === "/gov";
-    }
-    return pathname === href || pathname.startsWith(href + "/");
-  };
+  const activeMenuHref = useMemo(() => {
+    if (pendingHref !== null) return pendingHref;
+    const allHrefs = GOV_MENU_GROUPS.flatMap((g) => g.items.map((i) => i.href));
+    const matches = allHrefs.filter((h) =>
+      h === "/gov" ? pathname === "/gov" : pathname === h || pathname.startsWith(h + "/")
+    );
+    return matches.sort((a, b) => b.length - a.length)[0] ?? null;
+  }, [pathname, pendingHref]);
+
+  const isLinkActive = (href: string) => href === activeMenuHref;
 
   const scopeCode = (user?.scopeId || "HN").toUpperCase();
   const provinceObj = PROVINCES_34.find((p) => p.code === scopeCode);
@@ -416,7 +417,7 @@ function GovShellSuspenseFallback() {
           ))}
         </div>
       </aside>
-      <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 min-w-0 p-3 sm:p-4">
         <WorkspaceRouteSkeleton
           testId="gov-route-skeleton"
           srText="Đang tải cổng quản trị nhà nước..."
@@ -512,7 +513,7 @@ function GovLayoutInner({ children }: { children: React.ReactNode }) {
           data-testid="gov-main-workspace"
           className="flex-1 min-w-0 flex flex-col"
         >
-          <div className="flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="flex-1 p-3 sm:p-4">
             {pendingHref !== null ? (
               <WorkspaceRouteSkeleton
                 testId="gov-route-skeleton"

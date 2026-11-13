@@ -927,7 +927,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
             <span className="text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/80 px-3.5 py-1.5 rounded-full border border-emerald-400/30">
               HỒ SƠ KHẢO SÁT CHUYÊN SÂU ĐÃ TIẾP NHẬN
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-3">
+            <h2 className="type-section-title text-slate-900 dark:text-white mt-3">
               Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-2 max-w-lg mx-auto leading-relaxed">
@@ -1071,11 +1071,11 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
         <div className="relative z-10 max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="space-y-2.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-xs font-semibold backdrop-blur-sm border border-white/20">
-              <ClipboardCheck className="w-3.5 h-3.5 text-teal-300" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
+              <ClipboardCheck className="w-3.5 h-3.5 text-brand-200" />
               Mẫu KS-DNNVV-2026 • Bộ Khoa Học & Công Nghệ (Hồ Sơ Sâu 4 Bước)
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
+            <h1 className="type-page-title text-white">
               Khảo Sát Nhu Cầu Đổi Mới Công Nghệ & Điểm Nghẽn Kỹ Thuật
             </h1>
             <p className="text-white/80 text-xs sm:text-sm max-w-2xl leading-relaxed">
@@ -1122,7 +1122,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
       <div className="bg-blue-50 dark:bg-blue-950/60 border-b border-blue-200 dark:border-blue-800 px-4 py-2.5">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-blue-900 dark:text-blue-200">
           <div className="flex items-center gap-2">
-            <span className="bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full text-[10px]">Chuẩn mới 2026</span>
+            <span className="bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full text-xs">Chuẩn mới 2026</span>
             <span>Bạn muốn làm <strong>Phiếu khảo sát năng lực ĐMST 43 câu</strong> có tính điểm 8 nhóm và xuất biểu đồ Radar Chart tức thời?</span>
           </div>
           <Link
@@ -1211,7 +1211,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                     <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
                       BƯỚC 1.1 • DEMAND TICKETS & TNI ENGINE
                     </span>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    <h2 className="type-section-title text-slate-900 dark:text-white mt-0.5">
                       Danh Mục Bài Toán Kỹ Thuật Cần Giải Quyết ({demandItems.length} Bài toán)
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -1511,7 +1511,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
                     BƯỚC 1.2 • NGUỒN VỐN & HÌNH THỨC (TÙY CHỌN)
                   </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                  <h2 className="type-section-title text-slate-900 dark:text-white mt-0.5">
                     Phương Thức Tiếp Nhận & Cơ Cấu Vốn Dự Kiến
                   </h2>
                 </div>
@@ -1583,7 +1583,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
                     BƯỚC 2 • THÔNG TIN CHUNG
                   </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                  <h2 className="type-section-title text-slate-900 dark:text-white mt-0.5">
                     Thông Tin Doanh Nghiệp & Quy Mô Sản Xuất
                   </h2>
                 </div>
@@ -1862,7 +1862,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                   <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
                     PHẦN BỔ SUNG (BƯỚC 3/4) • TÙY CHỌN MỞ RỘNG
                   </span>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                  <h2 className="type-section-title text-slate-900 dark:text-white mt-0.5">
                     Thông Tin Bổ Sung: Hiện Trạng Dây Chuyền, Điểm Nghẽn &amp; Năng Lực TAR
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
@@ -1888,7 +1888,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                     <span className="text-xs font-black uppercase tracking-widest text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-3 py-1 rounded-full border border-sky-400/30">
                       Phân mục B (Tùy chọn)
                     </span>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white mt-2">
+                    <h3 className="type-card-title text-slate-900 dark:text-white mt-2">
                       Hiện trạng dây chuyền, máy móc thiết bị chủ lực &amp; Tự đánh giá 8 tiêu chí
                     </h3>
                   </div>
@@ -2066,7 +2066,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                     <span className="text-xs font-black uppercase tracking-widest text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-3 py-1 rounded-full border border-amber-400/30">
                       Phân mục C (Tùy chọn)
                     </span>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white mt-2">
+                    <h3 className="type-card-title text-slate-900 dark:text-white mt-2">
                       Điểm nghẽn công nghệ &amp; Khâu sản xuất nan giải nhất
                     </h3>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mt-1">
@@ -2169,7 +2169,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                   <span className="text-xs font-black uppercase tracking-widest text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/60 px-3 py-1 rounded-full border border-teal-400/30">
                     Phân mục D (Tùy chọn)
                   </span>
-                  <h3 className="text-lg font-black text-slate-900 dark:text-white mt-2">
+                  <h3 className="type-card-title text-slate-900 dark:text-white mt-2">
                     Năng lực hấp thụ công nghệ &amp; Thống kê nhân lực kỹ thuật
                   </h3>
                 </div>
@@ -2397,7 +2397,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                   <span className="text-xs font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-400/30">
                     Phân mục F (Tùy chọn)
                   </span>
-                  <h3 className="text-lg font-black text-slate-900 dark:text-white mt-2">
+                  <h3 className="type-card-title text-slate-900 dark:text-white mt-2">
                     Định hướng công nghệ giai đoạn 2026–2028 &amp; Đề xuất hỗ trợ từ Nhà nước
                   </h3>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mt-1">
@@ -2553,7 +2553,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                     <span className="text-xs font-black uppercase tracking-widest text-brand-700 dark:text-cyan-400">
                       BƯỚC 4 • RÀ SOÁT TỔNG THỂ
                     </span>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    <h2 className="type-section-title text-slate-900 dark:text-white mt-0.5">
                       Bản Tóm Tắt Phiếu Khảo Sát Nhu Cầu DNNVV
                     </h2>
                   </div>
@@ -2764,7 +2764,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
             <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
               <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
                 <Sparkles className="w-6 h-6 shrink-0" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                <h3 className="type-card-title text-slate-900 dark:text-white">
                   Xác Nhận Đồng Bộ Ngược Hồ Sơ (BR-03-006)
                 </h3>
               </div>

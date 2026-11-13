@@ -67,31 +67,31 @@ export default function DichVuKhacPage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
       {/* HERO BANNER SECTION (ĐỒNG BỘ CHUẨN DESIGN SYSTEM NACENTWIN) */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-10 sm:py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
-        <div className="relative z-10 max-w-5xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-xs font-semibold backdrop-blur-sm border border-white/20">
-            <Scale className="w-3.5 h-3.5 text-teal-300" />
+        <div className="relative z-10 max-w-7xl mx-auto space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
+            <Scale className="w-3.5 h-3.5 text-brand-200" />
             <span>Hỗ Trợ Pháp Lý & Sở Hữu Trí Tuệ (NacenTwin)</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight">
+          <h1 className="type-page-title text-white">
             Dịch Vụ Tư Vấn SHTT & Định Giá Công Nghệ Chuyên Nghiệp
           </h1>
 
-          <p className="text-white/80 text-xs sm:text-sm max-w-2xl leading-relaxed">
+          <p className="text-white/85 type-body max-w-2xl">
             Đồng hành cùng các nhà khoa học, trường viện và doanh nghiệp bảo vệ tài sản trí tuệ, định giá thương mại hóa công nghệ và hoàn thiện thủ tục chứng nhận Doanh nghiệp KH&CN trực thuộc Viện NacenTech.
           </p>
         </div>
       </section>
 
       {/* KHẢO SÁT NHU CẦU & ĐÁNH GIÁ NĂNG LỰC CÔNG NGHỆ (TASK-01-CR68) */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6 space-y-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-6 space-y-8">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+          <h2 className="type-section-title text-slate-900 dark:text-white">
             Khảo Sát Nhu Cầu & Đánh Giá Năng Lực Công Nghệ
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="type-body text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
             Hệ thống công cụ đo lường và định vị chuẩn hóa theo quy chuẩn Bộ Khoa học & Công nghệ, giúp doanh nghiệp, viện nghiên cứu và nhà khoa học đánh giá trình độ công nghệ, bắt mạch nhu cầu và kết nối chuyển giao trực tiếp.
           </p>
         </div>
@@ -112,7 +112,7 @@ export default function DichVuKhacPage() {
                 <Target className="w-6 h-6" />
               </div>
 
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="type-card-title text-slate-900 dark:text-white">
                 Khảo Sát Nhu Cầu (TNI)
               </h3>
               <p className="text-xs text-amber-700 dark:text-amber-400 font-medium mb-3">
@@ -157,7 +157,7 @@ export default function DichVuKhacPage() {
                 <Award className="w-6 h-6" />
               </div>
 
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="type-card-title text-slate-900 dark:text-white">
                 Đánh Giá Năng Lực TT17
               </h3>
               <p className="text-xs text-indigo-700 dark:text-indigo-400 font-medium mb-3">
@@ -202,7 +202,7 @@ export default function DichVuKhacPage() {
                 <ClipboardCheck className="w-6 h-6" />
               </div>
 
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="type-card-title text-slate-900 dark:text-white">
                 Khảo Sát ĐMST (43 Câu)
               </h3>
               <p className="text-xs text-teal-700 dark:text-teal-400 font-medium mb-3">
@@ -247,7 +247,7 @@ export default function DichVuKhacPage() {
                 <Cpu className="w-6 h-6" />
               </div>
 
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="type-card-title text-slate-900 dark:text-white">
                 Thẩm Định Thang Đo TRL
               </h3>
               <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium mb-3">
@@ -280,14 +280,14 @@ export default function DichVuKhacPage() {
       </section>
 
       {/* 4 GÓI DỊCH VỤ CỐT LÕI */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 space-y-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* DỊCH VỤ 1 */}
           <div id="bao-ho-shtt" className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-brand-300 hover:shadow-md transition dark:border-slate-800 dark:bg-slate-900 scroll-mt-24">
             <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center dark:bg-brand-950 dark:text-cyan-300">
               <ShieldCheck className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h3 className="type-card-title text-slate-900 dark:text-white">
               1. Đăng Ký Bảo Hộ SHTT & Sáng Chế
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -311,7 +311,7 @@ export default function DichVuKhacPage() {
             <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center dark:bg-cyan-950 dark:text-cyan-300">
               <Calculator className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h3 className="type-card-title text-slate-900 dark:text-white">
               2. Thẩm Định & Định Giá Công Nghệ
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -335,7 +335,7 @@ export default function DichVuKhacPage() {
             <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center dark:bg-emerald-950 dark:text-emerald-300">
               <Building2 className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h3 className="type-card-title text-slate-900 dark:text-white">
               3. Hồ Sơ Doanh Nghiệp KH&CN
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -359,7 +359,7 @@ export default function DichVuKhacPage() {
             <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center dark:bg-amber-950 dark:text-amber-300">
               <Briefcase className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h3 className="type-card-title text-slate-900 dark:text-white">
               4. Môi Giới & Hợp Đồng Chuyển Giao
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -382,7 +382,7 @@ export default function DichVuKhacPage() {
         {/* QUY TRÌNH 5 BƯỚC */}
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
           <div className="text-center space-y-1">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Quy Trình Tiếp Nhận & Triển Khai 5 Bước</h3>
+            <h3 className="type-section-title text-slate-900 dark:text-white">Quy Trình Tiếp Nhận & Triển Khai 5 Bước</h3>
             <p className="text-xs text-slate-500">Minh bạch, bảo mật và được giám sát bởi Hội đồng chuyên gia Viện NacenTech.</p>
           </div>
 
@@ -418,7 +418,7 @@ export default function DichVuKhacPage() {
         {/* FORM TIẾP NHẬN YÊU CẦU TRỰC TUYẾN */}
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="type-card-title text-slate-900 dark:text-white flex items-center gap-2">
               <Send className="w-5 h-5 text-brand-700 dark:text-cyan-400" />
               Đăng Ký Tiếp Nhận Yêu Cầu Tư Vấn Trực Tuyến
             </h3>

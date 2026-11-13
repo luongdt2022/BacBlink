@@ -329,7 +329,7 @@ export default function PublicDemandsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
       {/* HERO BANNER SECTION (ĐỒNG BỘ NACENTWIN VÀ BASIC DESIGN WIREFRAME) */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         {/* Lớp nghệ thuật vi mạch vi tính nền mờ nhẹ */}
         <div
           aria-hidden="true"
@@ -339,14 +339,14 @@ export default function PublicDemandsPage() {
         <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Cột trái: Tiêu đề & Giới thiệu sắc nét */}
           <div className="space-y-3 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-xs font-semibold backdrop-blur-sm border border-white/20">
-              <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
+              <Sparkles className="w-3.5 h-3.5 text-brand-200" />
               Sàn Giao Dịch Bài Toán & Nhu Cầu Đổi Mới Công Nghệ (NacenTwin)
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="type-page-title text-white">
               Nhu Cầu Đổi Mới Công Nghệ Từ Doanh Nghiệp
             </h1>
-            <p className="text-white/80 text-xs sm:text-sm leading-relaxed max-w-xl">
+            <p className="text-white/85 type-body max-w-xl">
               Các bài toán kỹ thuật thực tế từ các DNNVV đã được chuẩn hóa chỉ số cấp thiết TNI (Technology Need Index).
               Hỗ trợ kết nối nhà khoa học, viện trường và doanh nghiệp công nghệ giải quyết điểm nghẽn sản xuất.
             </p>
@@ -440,7 +440,7 @@ export default function PublicDemandsPage() {
 
       {/* SEARCH & FILTERS BAR (ĐẦY ĐỦ 10 LĨNH VỰC TT17 & KHOẢNG NGÂN SÁCH) */}
       <div className="bg-white dark:bg-slate-900 border-b border-border-default dark:border-slate-800 sticky top-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
           <div className="flex-1 flex flex-wrap items-center gap-2.5">
             {/* Search Input */}
             <div className="relative flex-1 min-w-[200px]">
@@ -551,7 +551,7 @@ export default function PublicDemandsPage() {
       </div>
 
       {/* MAIN CONTAINER WITH 5 UX STATES */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full flex-1">
         <Async
           state={asyncState}
           onRetry={loadDemands}
@@ -582,7 +582,7 @@ export default function PublicDemandsPage() {
               <div className="w-16 h-16 bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 rounded-2xl flex items-center justify-center mx-auto">
                 <FileQuestion className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-extrabold text-text-primary dark:text-white">
+              <h3 className="type-card-title text-text-primary dark:text-white">
                 Không tìm thấy bài toán nhu cầu phù hợp
               </h3>
               <p className="text-xs text-text-secondary dark:text-slate-400">

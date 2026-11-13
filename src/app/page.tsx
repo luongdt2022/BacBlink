@@ -115,7 +115,7 @@ const PARTNER_PILLARS = [
     category: "Viện Nghiên Cứu & Trường Đại Học",
     description: "Nguồn cung công nghệ nguồn, sáng chế độc quyền và đội ngũ chuyên gia đầu ngành",
     partners: [
-      "Viện Ứng dụng Công nghệ (NacenTech)",
+      "Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)",
       "Đại học Bách Khoa Hà Nội",
       "Đại học Quốc gia Hà Nội",
       "Đại học Quốc gia TP.HCM",
@@ -421,7 +421,7 @@ export default function HomePage() {
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="relative mx-auto max-w-7xl">
           <div className="mx-auto max-w-4xl text-center">
-            <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-white">
+            <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-brand-100">
               Sàn giao dịch công nghệ Quốc gia
             </span>
             <h1 className="mt-3.5 sm:mt-5 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold font-sans uppercase tracking-normal sm:tracking-wide leading-snug sm:leading-tight text-white">
@@ -690,7 +690,7 @@ export default function HomePage() {
                 Quy Trình Kết Nối &amp; Chuyển Giao Công Nghệ 4 Bước
               </h2>
               <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-text-secondary dark:text-slate-300">
-                Minh bạch, bảo mật và được bảo trợ pháp lý bởi Viện Ứng dụng Công nghệ cùng mạng lưới 34 Sở KH&amp;CN trọng điểm.
+                Minh bạch, bảo mật và được bảo trợ pháp lý bởi Viện Đổi Mới Sáng Tạo Quốc Gia cùng mạng lưới 34 Sở KH&amp;CN trọng điểm.
               </p>
             </div>
 

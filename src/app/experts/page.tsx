@@ -25,6 +25,8 @@ import {
   BookOpen,
   ChevronDown,
   Users,
+  MapPin,
+  Copy,
 } from "lucide-react";
 import { AppLink, AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
@@ -47,6 +49,10 @@ interface ExpertCardItem {
   masteredTechCodes: string[];
   provinceCode?: string | null;
   provinceName?: string | null;
+  specializedKeywords?: string[] | null;
+  consultingSummary?: string | null;
+  organizationAddress?: string | null;
+  courseCount?: number;
   publicationCount: number;
   patentCount: number;
   projectCount: number;
@@ -70,6 +76,9 @@ const DEGREE_OPTIONS = [
   { value: "DOCTOR", label: "Tiến sĩ (TS / TSKH)" },
   { value: "MASTER", label: "Thạc sĩ / Kỹ sư chính" },
 ];
+
+const stripAcademicPrefix = (fullName: string) =>
+  fullName.replace(/^(?:(?:GS|PGS|TSKH|TS|ThS|KS|CN)\.\s*)+/i, "").trim() || fullName;
 
 function getPaginationRange(currentPage: number, totalPages: number, siblingCount = 1): (number | "...")[] {
   const totalPageNumbers = siblingCount * 2 + 5;
@@ -144,6 +153,8 @@ export default function ExpertsDirectoryPage() {
   const [modalProblemSummary, setModalProblemSummary] = useState("");
   const [modalMode, setModalMode] = useState("ONLINE");
   const [modalSubmitted, setModalSubmitted] = useState(false);
+  const [modalTicketCode, setModalTicketCode] = useState<string | null>(null);
+  const [modalCopiedTicket, setModalCopiedTicket] = useState(false);
   const [modalSending, setModalSending] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserContext | null>(null);
@@ -379,6 +390,8 @@ export default function ExpertsDirectoryPage() {
     setModalProblemSummary("");
     setModalMode("ONLINE");
     setModalSubmitted(false);
+    setModalTicketCode(null);
+    setModalCopiedTicket(false);
     setModalError(null);
 
     if (user) {
@@ -420,7 +433,7 @@ export default function ExpertsDirectoryPage() {
     try {
       const response = await fetch(`${API_BASE}/api/v1/public/experts/${encodeURIComponent(modalTargetExpert.expertCode)}/consultation-requests`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authClient.getAuthHeaders(),
         body: JSON.stringify({
           contactName: modalContactName,
           organizationName: modalCompanyName,
@@ -431,6 +444,7 @@ export default function ExpertsDirectoryPage() {
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || "Chưa gửi được yêu cầu. Vui lòng thử lại.");
+      setModalTicketCode(result?.data?.ticketCode ?? result?.ticketCode ?? null);
       setModalSubmitted(true);
     } catch (err) {
       setModalError(err instanceof Error ? err.message : "Chưa gửi được yêu cầu. Vui lòng thử lại.");
@@ -452,17 +466,47 @@ export default function ExpertsDirectoryPage() {
     return name.slice(0, 2).toUpperCase();
   };
 
+  const hasActiveFilter = Boolean(
+    searchTerm.trim() ||
+      selectedDegrees.length > 0 ||
+      selectedSectors.length > 0 ||
+      selectedProvinces.length > 0 ||
+      acceptingConsultation
+  );
+
+  const featuredExperts = useMemo(() => {
+    if (hasActiveFilter || currentPage > 1 || directoryData.items.length === 0) return [];
+    const top3Codes = new Set(directoryData.items.slice(0, 3).map((x) => x.expertCode));
+    return directoryData.items
+      .filter(
+        (x) =>
+          !top3Codes.has(x.expertCode) &&
+          ((x.courseCount ?? 0) > 0 ||
+            x.publicationCount > 0 ||
+            x.patentCount > 0 ||
+            (x.connectionCount ?? 0) > 0)
+      )
+      .sort((a, b) => {
+        const scoreA =
+          ((a.courseCount ?? 0) > 0 ? 100 + (a.courseCount ?? 0) * 10 : 0) +
+          a.publicationCount * 3 +
+          a.patentCount * 3 +
+          (a.connectionCount ?? 0) * 2;
+        const scoreB =
+          ((b.courseCount ?? 0) > 0 ? 100 + (b.courseCount ?? 0) * 10 : 0) +
+          b.publicationCount * 3 +
+          b.patentCount * 3 +
+          (b.connectionCount ?? 0) * 2;
+        return scoreB - scoreA;
+      })
+      .slice(0, 3);
+  }, [hasActiveFilter, currentPage, directoryData.items]);
+
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 flex flex-col">
       {/* 1. COMPACT HERO SEARCH BANNER */}
-      <section className="workspace-banner text-white py-4 sm:py-5 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section className="workspace-banner text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">
-          <nav className="flex items-center gap-2 text-caption text-brand-100 mb-2.5 font-medium">
-            <Link href="/" className="hover:text-white">Trang chủ</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-brand-200" />
-            <span className="text-white font-semibold">Danh bạ Chuyên gia KH&CN</span>
-          </nav>
-
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-brand-100 text-caption font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
@@ -470,10 +514,10 @@ export default function ExpertsDirectoryPage() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h1 className="font-extrabold tracking-tight text-white leading-tight type-page-title">
+                <h1 className="type-page-title text-white">
                   Tìm chuyên gia KH&CN
                 </h1>
-                <p className="mt-1 text-caption sm:text-body text-brand-100 leading-relaxed max-w-2xl">
+                <p className="mt-1 type-body text-white/85 max-w-2xl">
                   Tra cứu năng lực, lĩnh vực và địa bàn thẩm định.
                 </p>
               </div>
@@ -485,8 +529,8 @@ export default function ExpertsDirectoryPage() {
               </Link>
             </div>
 
-            {/* Compact Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="mt-3 bg-white dark:bg-slate-900 p-1.5 rounded-xl shadow-md flex flex-col sm:flex-row gap-1.5 max-w-3xl border border-slate-200 dark:border-slate-800">
+            {/* Compact Search Bar (đồng bộ chiều cao h-10 với DN ĐMST) */}
+            <form onSubmit={handleSearchSubmit} className="mt-4 flex flex-col sm:flex-row gap-2.5 max-w-2xl">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -494,12 +538,12 @@ export default function ExpertsDirectoryPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Tìm theo họ tên chuyên gia, đơn vị công tác, từ khóa nghiên cứu..."
-                  className="w-full h-11 pl-10 pr-3 text-sm text-slate-800 dark:text-white placeholder-slate-400 bg-transparent rounded-lg focus:outline-none font-medium"
+                  className="w-full h-10 pl-10 pr-4 rounded-control bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm"
                 />
               </div>
               <button
                 type="submit"
-                className="h-11 px-5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition shrink-0"
+                className="h-10 px-5 bg-brand-800 hover:bg-brand-900 text-white rounded-control font-bold flex items-center justify-center gap-2 transition shadow-md text-sm shrink-0 border border-brand-600/40"
               >
                 <Search className="w-4 h-4" />
                 Tìm kiếm
@@ -530,7 +574,7 @@ export default function ExpertsDirectoryPage() {
       </section>
 
       {/* 1.5 SPOTLIGHT: CHUYÊN GIA TIÊU BIỂU / NỔI BẬT */}
-      {directoryData.items.length > 0 && (
+      {featuredExperts.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-1 w-full" data-testid="featured-experts-rail">
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
@@ -544,7 +588,7 @@ export default function ExpertsDirectoryPage() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {directoryData.items.slice(0, 3).map((feat) => {
+            {featuredExperts.map((feat) => {
               const featBadge = getRankBadge(feat.academicRank, feat.degree);
               const sectorName =
                 sectorOptions.find((s) => s.code === feat.primarySectorCode)?.name ||
@@ -560,22 +604,17 @@ export default function ExpertsDirectoryPage() {
                     avatarUrl={feat.avatarUrl}
                     expertCode={feat.expertCode}
                     size="sm"
-                    isVerified={false}
+                    isVerified={feat.isVerified}
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`px-1.5 py-0.2 rounded text-xs font-bold border ${featBadge.cls}`}>
                         {featBadge.label}
                       </span>
-                      {feat.isVerified && (
-                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-0.5 dark:text-emerald-400">
-                          <Check className="w-2.5 h-2.5 stroke-[3]" /> Xác thực
-                        </span>
-                      )}
                     </div>
                     <h3 className="text-caption font-bold text-slate-900 truncate mt-0.5 dark:text-white">
                       <Link href={`/experts/${feat.expertCode}`} className="hover:text-brand-700 dark:hover:text-brand-300">
-                        {feat.fullName.replace(/^(GS\.|PGS\.|TS\.|ThS\.|KS\.)+\s*/gi, "").trim() || feat.fullName}
+                        {stripAcademicPrefix(feat.fullName)}
                       </Link>
                     </h3>
                     <p className="text-xs text-slate-500 truncate dark:text-slate-400" title={feat.organizationName}>
@@ -618,7 +657,7 @@ export default function ExpertsDirectoryPage() {
       )}
 
       {/* 2. MAIN LAYOUT (SIDEBAR FILTER + CARDS GRID) */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full flex-1">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full flex-1">
         <button type="button" onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)} aria-expanded={mobileFiltersOpen} className="lg:hidden mb-3 px-3 py-2 rounded-lg border border-slate-200 bg-white text-caption font-semibold text-slate-700">
           {mobileFiltersOpen ? "Đóng bộ lọc" : "Bộ lọc & tiêu chí"}
         </button>
@@ -1212,9 +1251,15 @@ export default function ExpertsDirectoryPage() {
                               <span className={`px-2 py-0.5 rounded text-caption font-bold border ${badge.cls}`}>
                                 {badge.label}
                               </span>
-                              <span className="px-2 py-0.5 rounded text-caption font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-                                <ShieldCheck className="w-3 h-3" /> Đã xác thực
-                              </span>
+                              {Boolean(expert.courseCount && expert.courseCount > 0) && (
+                                <span
+                                  data-testid="expert-lms-badge"
+                                  className="px-2 py-0.5 rounded text-caption font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 flex items-center gap-1 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800"
+                                >
+                                  <BookOpen className="w-3 h-3" />
+                                  <span>Giảng viên LMS ({expert.courseCount} khóa học)</span>
+                                </span>
+                              )}
                               {Boolean(expert.connectionCount && expert.connectionCount > 0) && (
                                 <span
                                   data-testid="expert-connection-badge"
@@ -1226,11 +1271,23 @@ export default function ExpertsDirectoryPage() {
                               )}
                             </div>
                             <h3 className="text-body font-extrabold text-slate-900 mt-1 line-clamp-2 min-h-[44px] flex items-center group-hover:text-brand-700 transition break-words dark:text-white dark:group-hover:text-brand-200">
-                              <Link href={`/experts/${expert.expertCode}`}>{expert.fullName}</Link>
+                              <Link href={`/experts/${expert.expertCode}`}>
+                                {stripAcademicPrefix(expert.fullName)}
+                              </Link>
                             </h3>
                             <p className="text-caption text-slate-500 truncate min-h-[20px] mt-0.5 dark:text-slate-400" title={expert.organizationName}>
                               {expert.organizationName}
                             </p>
+                            {(expert.organizationAddress || expert.provinceName) && (
+                              <p
+                                data-testid="expert-location-text"
+                                className="text-xs text-slate-500 truncate flex items-center gap-1 mt-0.5 dark:text-slate-400"
+                                title={expert.organizationAddress || expert.provinceName || ""}
+                              >
+                                <MapPin className="w-3 h-3 shrink-0 text-slate-400" />
+                                <span className="truncate">{expert.organizationAddress || expert.provinceName}</span>
+                              </p>
+                            )}
                           </div>
                         </div>
 
@@ -1268,8 +1325,27 @@ export default function ExpertsDirectoryPage() {
                                   </span>
                                 )}
                               </>
+                            ) : expert.specializedKeywords && expert.specializedKeywords.length > 0 ? (
+                              <>
+                                {expert.specializedKeywords.slice(0, 3).map((kw) => (
+                                  <span
+                                    key={kw}
+                                    className="px-2 py-0.5 rounded text-caption font-sans bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[160px] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                                    title={kw}
+                                  >
+                                    {kw}
+                                  </span>
+                                ))}
+                                {expert.specializedKeywords.length > 3 && (
+                                  <span className="bg-slate-100 text-slate-600 border border-slate-200 text-xs px-2 py-0.5 rounded-full font-medium dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+                                    +{expert.specializedKeywords.length - 3}
+                                  </span>
+                                )}
+                              </>
                             ) : (
-                              <span className="text-caption text-slate-400 italic font-sans">Đang cập nhật công nghệ</span>
+                              <span className="text-caption text-slate-500 line-clamp-1 font-sans dark:text-slate-400">
+                                {expert.consultingSummary || "Hồ sơ chuyên gia KH&CN"}
+                              </span>
                             )}
                           </div>
                         </div>
@@ -1514,13 +1590,42 @@ export default function ExpertsDirectoryPage() {
             </div>
 
             {modalSubmitted ? (
-              <div className="p-6 text-center space-y-2 bg-emerald-50 rounded-2xl border border-emerald-200 dark:bg-emerald-950/60 dark:border-emerald-800">
+              <div className="p-6 text-center space-y-3 bg-emerald-50 rounded-2xl border border-emerald-200 dark:bg-emerald-950/60 dark:border-emerald-800">
                 <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto dark:bg-emerald-900 dark:text-emerald-200">
                   <Check className="w-5 h-5" />
                 </div>
                 <div className="text-body font-bold text-emerald-900 dark:text-emerald-200">Đã tiếp nhận yêu cầu</div>
+                {modalTicketCode && (
+                  <div className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-700 px-3.5 py-2 shadow-sm">
+                    <span className="text-caption text-slate-500 dark:text-slate-400">Mã phiếu:</span>
+                    <strong className="font-mono text-body text-emerald-800 dark:text-emerald-300" data-testid="modal-consultation-ticket-code">{modalTicketCode}</strong>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof navigator !== "undefined" && navigator.clipboard) {
+                          navigator.clipboard.writeText(modalTicketCode);
+                          setModalCopiedTicket(true);
+                          setTimeout(() => setModalCopiedTicket(false), 2000);
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900 dark:hover:bg-emerald-800 px-2 py-1 text-xs font-semibold text-emerald-800 dark:text-emerald-200 transition"
+                    >
+                      {modalCopiedTicket ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{modalCopiedTicket ? "Đã chép" : "Sao chép"}</span>
+                    </button>
+                  </div>
+                )}
                 <p className="text-caption text-emerald-700 dark:text-emerald-300">
-                  Yêu cầu đã được chuyển tới đội ngũ NacenTech để điều phối kết nối với chuyên gia.
+                  {currentUser ? (
+                    <>
+                      Yêu cầu đã được chuyển tới chuyên gia. Theo dõi tiến độ tại{" "}
+                      <Link href="/portal/buyer/consultations" className="font-bold underline">
+                        Tư Vấn Chuyên Gia
+                      </Link>.
+                    </>
+                  ) : (
+                    "Yêu cầu đã được chuyển tới chuyên gia. Vui lòng lưu lại mã phiếu và kiểm tra email để nhận phản hồi."
+                  )}
                 </p>
               </div>
             ) : (

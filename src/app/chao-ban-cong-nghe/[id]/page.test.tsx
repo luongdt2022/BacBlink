@@ -184,9 +184,9 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
       expect(screen.getByText("OFF-202610-LV16-08")).toBeInTheDocument();
     });
 
-    // Mở Modal
+    // Mở Modal từ nút CTA chính duy nhất tại Sidebar
     const openModalBtn = screen.getByRole("button", {
-      name: /Đăng ký nhận chuyển giao công nghệ/i,
+      name: /Gửi Yêu Cầu Chuyển Giao Công Nghệ/i,
     });
     fireEvent.click(openModalBtn);
 
@@ -322,9 +322,9 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
       expect(screen.getByText("OFF-202610-LV16-08")).toBeInTheDocument();
     });
 
-    // Mở Modal
+    // Mở Modal từ nút CTA chính duy nhất tại Sidebar
     const openModalBtn = screen.getByRole("button", {
-      name: /Đăng ký nhận chuyển giao công nghệ/i,
+      name: /Gửi Yêu Cầu Chuyển Giao Công Nghệ/i,
     });
     fireEvent.click(openModalBtn);
 
@@ -524,12 +524,11 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
     // 1. Badge loại hình: "Sản phẩm thương mại"
     expect(screen.getByText("Sản phẩm thương mại")).toBeInTheDocument();
 
-    // 2. Hero CTA: "Đặt mua sản phẩm / Kết nối thương mại"
-    const heroBtn = screen.getByRole("button", { name: /Đặt mua sản phẩm \/ Kết nối thương mại/i });
-    expect(heroBtn).toBeInTheDocument();
+    // 2. Hero không lặp CTA chính; chỉ có duy nhất 1 CTA chính tại Sidebar
+    expect(screen.queryByRole("button", { name: /Đặt mua sản phẩm \/ Kết nối thương mại/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /Đăng ký nhận chuyển giao công nghệ/i })).toBeNull();
 
-    // 3. Sidebar CTA: "Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"
+    // 3. Sidebar CTA duy nhất: "Đặt Mua Hàng / Yêu Cầu Báo Giá Sỉ"
     const sidebarBtn = screen.getByRole("button", { name: /Đặt Mua Hàng \/ Yêu Cầu Báo Giá Sỉ/i });
     expect(sidebarBtn).toBeInTheDocument();
 
@@ -587,8 +586,8 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
       expect(screen.getByText("OFF-20261022-00025-365E")).toBeInTheDocument();
     });
 
-    // Mở modal kết nối
-    const openModalBtn = screen.getByRole("button", { name: /Đặt mua sản phẩm \/ Kết nối thương mại/i });
+    // Mở modal kết nối từ CTA duy nhất tại Sidebar
+    const openModalBtn = screen.getByRole("button", { name: /Đặt Mua Hàng \/ Yêu Cầu Báo Giá Sỉ/i });
     fireEvent.click(openModalBtn);
 
     // Tiêu đề Modal là "Gửi Yêu Cầu Đặt Mua / Kết Nối Thương Mại"
@@ -663,10 +662,10 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
       expect(screen.getByText("OFF-202610-LV16-08")).toBeInTheDocument();
     });
 
-    // 1. Hero CTA vẫn là "Đăng ký nhận chuyển giao công nghệ"
-    expect(screen.getByRole("button", { name: /Đăng ký nhận chuyển giao công nghệ/i })).toBeInTheDocument();
+    // 1. Hero không lặp lại CTA "Đăng ký nhận chuyển giao công nghệ" (CR-2026-026)
+    expect(screen.queryByRole("button", { name: /Đăng ký nhận chuyển giao công nghệ/i })).toBeNull();
 
-    // 2. Sidebar hiển thị Mức giá đề xuất chuyển giao & TTO
+    // 2. Sidebar hiển thị Mức giá đề xuất chuyển giao, CTA duy nhất & TTO
     expect(screen.getByText("MỨC GIÁ ĐỀ XUẤT CHUYỂN GIAO")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Gửi Yêu Cầu Chuyển Giao Công Nghệ/i })).toBeInTheDocument();
     expect(screen.getByText("Đầu Mối TTO Chuyển Giao")).toBeInTheDocument();
@@ -676,12 +675,29 @@ describe("ChiTietChaoBanPage (/chao-ban-cong-nghe/[id])", () => {
     // 3. Khối IP Quad hiển thị khi có hasTechTransfer = true
     expect(screen.getByText(/Bộ Tứ Sở Hữu Trí Tuệ & Mức Độ Sẵn Sàng Công Nghệ \(IP Quad\)/i)).toBeInTheDocument();
 
-    // 4. Mở modal kiểm tra các hình thức chuyển giao R&D
-    const openBtn = screen.getByRole("button", { name: /Đăng ký nhận chuyển giao công nghệ/i });
+    // 4. Mở modal từ CTA duy nhất kiểm tra các hình thức chuyển giao R&D
+    const openBtn = screen.getByRole("button", { name: /Gửi Yêu Cầu Chuyển Giao Công Nghệ/i });
     fireEvent.click(openBtn);
 
     expect(screen.getByText(/Tạo Nhanh Nhu Cầu & Kết Nối Chuyển Giao \(Quick Demand\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Chuyển giao trọn gói \(Mua đứt quyền sở hữu công nghệ\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Thuê \/ Mua bản quyền khai thác có thời hạn \(Licensing\)/i)).toBeInTheDocument();
+  });
+
+  it("Hiển thị 'Chưa có đánh giá' khi reviewCount = 0 thay vì mặc định ảo 5.0/5", async () => {
+    const noReviewOffer: TechnologyOffer = {
+      ...mockOffer,
+      reviewCount: 0,
+      ratingScore: 5.0,
+    };
+    (fetchOfferById as any).mockResolvedValueOnce(noReviewOffer);
+
+    render(<ChiTietChaoBanPage />);
+    await waitFor(() => {
+      expect(screen.getByText("OFF-202610-LV16-08")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Chưa có đánh giá")).toBeInTheDocument();
+    expect(screen.queryByText(/5\.0\/5 · 0 review/i)).toBeNull();
   });
 });

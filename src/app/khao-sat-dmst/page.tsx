@@ -386,14 +386,14 @@ function RadarChartSVG({ radarData }: RadarChartProps) {
               y={outer.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="text-[10px] font-bold fill-slate-700 dark:fill-slate-300 select-none"
+              className="text-xs font-bold fill-slate-700 dark:fill-slate-300 select-none"
             >
               {axis.label} ({pct}%)
             </text>
           );
         })}
       </svg>
-      <div className="mt-3 flex items-center gap-4 text-[11px] text-slate-500">
+      <div className="mt-3 flex items-center gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-blue-600 inline-block" />
           Hồ sơ doanh nghiệp thực tế
@@ -1162,7 +1162,7 @@ export default function KhaoSatDmstPage() {
                 <CheckCircle2 className="size-4 text-emerald-400" />
                 ĐÃ HOÀN THÀNH &amp; CHẤM ĐIỂM TỨC THỜI THEO CHUẨN BỘ KH&amp;CN
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+              <h1 className="type-page-title">
                 Kết Quả Đánh Giá Năng Lực Đổi Mới Sáng Tạo &amp; Chỉ Số TNI
               </h1>
               <p className="text-sm text-slate-300 max-w-2xl">
@@ -1239,7 +1239,7 @@ export default function KhaoSatDmstPage() {
                 </span>
               </div>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
+            <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
               <div>Cấp thiết (K - 35%): <strong className="text-slate-900 dark:text-white font-bold">{tni.urgencyK ?? 4}/5</strong></div>
               <div>Tác động (L - 30%): <strong className="text-slate-900 dark:text-white font-bold">{tni.impactL ?? 4}/5</strong></div>
               <div>Đầu tư (N - 20%): <strong className="text-slate-900 dark:text-white font-bold">{tni.capacityN ?? 3}/5</strong></div>
@@ -1283,7 +1283,7 @@ export default function KhaoSatDmstPage() {
         {/* Radar Chart & Breakdown Table */}
         <div className="surface-card p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="type-section-title text-slate-900 dark:text-white flex items-center gap-2">
               <Layers className="size-5 text-blue-600" />
               Phân Tích 8 Nhóm Trụ Cột Năng Lực ĐMST (Radar Chart)
             </h2>
@@ -1322,7 +1322,7 @@ export default function KhaoSatDmstPage() {
                       <div className="font-extrabold text-blue-700 dark:text-blue-400">
                         {g.score} / {g.maxScore}đ
                       </div>
-                      <div className="text-[10px] text-slate-500 font-semibold">{pct}%</div>
+                      <div className="text-xs text-slate-500 font-semibold">{pct}%</div>
                     </div>
                   </div>
                 );
@@ -1367,12 +1367,12 @@ export default function KhaoSatDmstPage() {
             BỘ 43 TIÊU CHUẨN ĐỔI MỚI SÁNG TẠO &amp; NHU CẦU CÔNG NGHỆ (TNI)
           </div>
           {lastSavedTime && (
-            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200/60">
+            <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200/60">
               <CheckCircle2 className="size-3" /> Đã tự động lưu nháp lúc {lastSavedTime}
             </div>
           )}
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+        <h1 className="type-page-title text-slate-900 dark:text-white">
           Phiếu Khảo Sát Năng Lực Đổi Mới Sáng Tạo Doanh Nghiệp
         </h1>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
@@ -1418,7 +1418,7 @@ export default function KhaoSatDmstPage() {
 
           <div className="flex items-center gap-2">
             {lastSavedTime && (
-              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium hidden md:inline">
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium hidden md:inline">
                 Tự động lưu: {lastSavedTime}
               </span>
             )}
@@ -1440,7 +1440,7 @@ export default function KhaoSatDmstPage() {
           />
         </div>
 
-        <div className="grid grid-cols-5 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs">
+        <div className="grid grid-cols-5 gap-1 sm:gap-2 text-center text-xs sm:text-xs">
           {[
             { step: 1, label: "Định danh Pháp nhân", range: "C01 - C11" },
             { step: 2, label: "Quản trị & Nguồn lực", range: "C12 - C16" },
@@ -1464,7 +1464,7 @@ export default function KhaoSatDmstPage() {
                 }`}
               >
                 <div
-                  className={`size-6 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                  className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${
                     isActive
                       ? "bg-[#2D9A85] text-white"
                       : isCompleted
@@ -1475,7 +1475,7 @@ export default function KhaoSatDmstPage() {
                   {isCompleted ? "✓" : item.step}
                 </div>
                 <span className="hidden sm:inline font-semibold leading-tight line-clamp-1">{item.label}</span>
-                <span className="text-[9px] text-slate-400">{item.range}</span>
+                <span className="text-xs text-slate-400">{item.range}</span>
               </button>
             );
           })}
@@ -1490,7 +1490,7 @@ export default function KhaoSatDmstPage() {
         {currentStep === 1 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="type-section-title text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="size-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-black">
                   1
                 </span>
@@ -1523,7 +1523,7 @@ export default function KhaoSatDmstPage() {
                       {isPrefilledFromSession
                         ? "Tự động đồng bộ hồ sơ Doanh nghiệp đã đăng ký"
                         : "Gợi ý: Phát hiện tài khoản Doanh nghiệp đã đăng nhập"}
-                      <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
                         {isPrefilledFromSession ? "✓ Đã đồng bộ" : "Đã đăng nhập"}
                       </span>
                     </h4>
@@ -1597,7 +1597,7 @@ export default function KhaoSatDmstPage() {
                   02. Mã số thuế (MST) <span className="text-rose-500">*</span>
                 </label>
                 {isTaxCodeLocked && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold border border-emerald-300 dark:border-emerald-700">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-bold border border-emerald-300 dark:border-emerald-700">
                     <ShieldCheck className="size-3.5 text-emerald-600" />
                     ✓ Đã xác thực từ Hồ sơ Pháp nhân SSOT
                   </span>
@@ -1641,7 +1641,7 @@ export default function KhaoSatDmstPage() {
                   </button>
                 )}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 {isTaxCodeLocked
                   ? "Trường MST được khóa bảo vệ toàn vẹn dữ liệu do tài khoản đã xác thực quyền sở hữu pháp nhân."
                   : "Nhập MST và bấm Tra cứu để tự động nạp Tên DN, Tỉnh thành và Địa chỉ."}
@@ -1893,7 +1893,7 @@ export default function KhaoSatDmstPage() {
         {currentStep === 2 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="type-section-title text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="size-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-black">
                   2
                 </span>
@@ -2055,7 +2055,7 @@ export default function KhaoSatDmstPage() {
         {currentStep === 3 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="type-section-title text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="size-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-black">
                   3
                 </span>
@@ -2344,7 +2344,7 @@ export default function KhaoSatDmstPage() {
         {currentStep === 4 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="type-section-title text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="size-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-black">
                   4
                 </span>
@@ -2478,7 +2478,7 @@ export default function KhaoSatDmstPage() {
                 <label className="block text-xs font-extrabold text-blue-950 dark:text-blue-200">
                   31. Các loại tài sản trí tuệ (SHTT) doanh nghiệp hiện đang nắm giữ (Tác động IP1 5đ &amp; IP2 3đ):
                 </label>
-                <span className="text-[10px] bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full">
                   Tiêu chí điểm cao
                 </span>
               </div>
@@ -2635,7 +2635,7 @@ export default function KhaoSatDmstPage() {
         {currentStep === 5 && (
           <div className="space-y-6 animate-fadeIn">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="type-section-title text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="size-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-black">
                   5
                 </span>
@@ -2652,7 +2652,7 @@ export default function KhaoSatDmstPage() {
                 <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
                   37. Khó khăn, rào cản lớn nhất của doanh nghiệp trong hoạt động ĐMST (Chọn tối đa 3):
                 </label>
-                <span className="text-[11px] font-bold text-blue-600">
+                <span className="text-xs font-bold text-blue-600">
                   Đã chọn {c37Bottlenecks.length} / 3 mục
                 </span>
               </div>
@@ -2711,7 +2711,7 @@ export default function KhaoSatDmstPage() {
                 <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
                   39. Đánh giá mức độ cần thiết của 8 loại thông tin công nghệ đối với doanh nghiệp (Thang 1 - 5 sao):
                 </label>
-                <span className="text-[11px] text-slate-500">1 sao: Rất ít cần • 5 sao: Rất cấp thiết</span>
+                <span className="text-xs text-slate-500">1 sao: Rất ít cần • 5 sao: Rất cấp thiết</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 {INFO_NEEDS_ITEMS.map((item) => {
@@ -2845,7 +2845,7 @@ export default function KhaoSatDmstPage() {
                 placeholder="Nhập kiến nghị cụ thể về chính sách hỗ trợ tài chính, thủ tục thử nghiệm công nghệ sandbox, kết nối cung cầu..."
                 className="form-control w-full text-xs p-3"
               />
-              <div className="text-right text-[11px] text-slate-400 mt-1">
+              <div className="text-right text-xs text-slate-400 mt-1">
                 {c43Recommendations.length} / 1000 ký tự
               </div>
             </div>

@@ -3,13 +3,23 @@ import { API_BASE } from "@/lib/api-client";
 
 export type Timeline = { title: string; subtitle?: string | null; period?: string | null };
 export type Achievement = { type: string; title: string; meta?: string | null; description?: string | null };
+export type ExpertLmsCourse = {
+  id: string;
+  materialCode: string;
+  title: string;
+  lessonType: string;
+  durationMinutes: number;
+  clusterName?: string | null;
+  sectorCode?: string | null;
+};
 
 export type ExpertPublicDetail = {
   expertCode: string; fullName: string; academicRank: string; degree: string; birthYear: number; gender: string;
-  organizationName: string; positionTitle?: string | null; publicBio?: string | null; avatarUrl?: string | null;
+  organizationName: string; organizationAddress?: string | null; positionTitle?: string | null; publicBio?: string | null; consultingSummary?: string | null; avatarUrl?: string | null;
   expertiseSectors: string[]; specializedKeywords?: string[]; masteredTechCodes: string[]; isVerified: boolean; isAcceptingConsultation: boolean;
   training: Timeline[]; employment: Timeline[]; patents: Achievement[]; researchProjects: Achievement[];
   publications: Achievement[]; practicalProjects: Achievement[]; awards: Achievement[];
+  courses?: ExpertLmsCourse[];
 };
 
 export type ExpertPrivateDetail = {

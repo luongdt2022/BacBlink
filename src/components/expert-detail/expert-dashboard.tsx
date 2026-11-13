@@ -29,7 +29,7 @@ function DashboardContent({ detail }: { detail: ExpertPrivateDetail }) {
   const profile = detail.publicProfile;
   return <div className="mx-auto max-w-6xl space-y-6">
     <section className="overflow-hidden rounded-3xl workspace-banner p-6 text-white shadow-xl shadow-brand-950/10 sm:p-8">
-      <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-label font-semibold text-brand-100"><GraduationCap className="h-3.5 w-3.5" />Dashboard chuyên gia</div>
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-label font-semibold text-brand-100 border border-white/20"><GraduationCap className="h-3.5 w-3.5 text-brand-200" />Dashboard chuyên gia</div>
       <h1 className="mt-3 font-bold type-page-title">Xin chào, {profile.fullName}!</h1>
       <p className="mt-2 max-w-2xl text-body leading-relaxed text-brand-100">Theo dõi tình trạng hồ sơ, việc cần làm và thông báo thẩm định tại một nơi.</p>
     </section>

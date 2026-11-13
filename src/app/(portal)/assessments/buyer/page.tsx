@@ -17,7 +17,7 @@ export default function BuyerWizardPage() {
       <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center">
         <ShoppingBag className="w-6 h-6" />
       </div>
-      <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+      <h1 className="type-page-title text-slate-900 dark:text-white">
         Đang chuyển hướng đến Phiếu Khảo Sát Nhu Cầu & Chỉ Số Cấp Thiết TNI...
       </h1>
       <p className="text-sm text-slate-500 max-w-md">

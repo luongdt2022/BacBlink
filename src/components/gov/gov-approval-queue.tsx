@@ -818,7 +818,7 @@ function GovDashboardContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Toast Notification */}
       {toastMsg && (
         <div
@@ -851,47 +851,43 @@ function GovDashboardContent() {
         actions={
           <AppButton
             variant="outline"
+            size="sm"
             onClick={() => loadApprovals()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-control text-label font-semibold text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5" />
             <span>Làm mới danh sách</span>
           </AppButton>
         }
       />
 
-      {/* Scope Info Card Banner */}
-      <div className="bg-gradient-to-r from-brand-500/10 via-brand-50 to-white dark:from-brand-950/40 dark:via-slate-900 dark:to-slate-900 border border-brand-200 dark:border-brand-900/60 rounded-surface p-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-brand-700 text-white flex items-center justify-center font-bold">
-            <MapPin className="w-5 h-5" />
+      {/* Scope Info Compact Bar */}
+      <div className="bg-gradient-to-r from-brand-500/10 via-brand-50 to-white dark:from-brand-950/40 dark:via-slate-900 dark:to-slate-900 border border-brand-200 dark:border-brand-900/60 rounded-surface px-3.5 py-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-brand-700 text-white flex items-center justify-center shrink-0">
+            <MapPin className="w-3.5 h-3.5" />
           </div>
-          <div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-card-title">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-600 dark:text-slate-400">
+            <span className="font-bold text-slate-900 dark:text-white">
               Cán bộ phụ trách: {user?.fullName || "Lãnh đạo Sở KH&CN"}
-            </h4>
-            <p className="text-caption text-slate-600 dark:text-slate-400">
-              Quyền hạn: <strong>{user?.role || "PROVINCIAL_ADMIN"}</strong> &bull; Phạm vi kiểm duyệt:{" "}
-              <strong>Sở KH&CN {currentProvinceName}</strong> &bull; Hậu kiểm: NacenTech Trung Ương.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 text-label font-semibold">
-          <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
-            <Clock className="w-4 h-4" />
-            <span>SLA Cam Kết: &le; 48 Giờ</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-brand-700 dark:text-brand-300">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Maker-Checker 2 Cấp</span>
+            </span>
+            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span>
+              Quyền hạn: <strong>{user?.role || "PROVINCIAL_ADMIN"}</strong>
+            </span>
+            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span>
+              Phạm vi: <strong>Sở KH&CN {currentProvinceName}</strong>
+            </span>
+            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span>Hậu kiểm: NacenTech Trung Ương</span>
           </div>
         </div>
       </div>
 
       {/* 6 Tabs Navigation with Badges */}
-      <div role="tablist" aria-label="Bộ lọc hồ sơ kiểm duyệt" className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex flex-wrap gap-2">
+      <div role="tablist" aria-label="Bộ lọc hồ sơ kiểm duyệt" className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex flex-wrap gap-1">
           {[
             { id: "EXPERT", label: "Chuyên Gia KH&CN", count: stats.expert, icon: GraduationCap },
             { id: "INSTITUTION", label: "Doanh Nghiệp ĐMST", count: stats.institution, icon: Building },
@@ -909,16 +905,16 @@ function GovDashboardContent() {
                 aria-selected={isActive}
                 type="button"
                 onClick={() => handleTabChange(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 font-bold text-label transition cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2.5 py-2 border-b-2 font-bold text-xs transition cursor-pointer whitespace-nowrap ${
                   isActive
                     ? "border-brand-700 text-brand-700 dark:border-brand-400 dark:text-brand-400"
                     : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 hover:border-slate-300"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5 shrink-0" />
                 <span>{tab.label}</span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-caption font-bold ${
+                  className={`px-1.5 py-0 rounded-full text-[11px] font-bold ${
                     isActive
                       ? "bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300"
                       : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
@@ -932,14 +928,14 @@ function GovDashboardContent() {
         </div>
 
         {/* Search Input */}
-        <div className="relative min-w-[18rem] pb-2 sm:pb-0">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="relative w-full xl:w-64 pb-1.5 xl:pb-0">
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm theo tên chuyên gia, đơn vị, mã..."
-            className="form-control w-full pl-9 pr-3 text-sm"
+            className="form-control w-full h-8 pl-8 pr-2.5 text-xs"
           />
         </div>
       </div>
@@ -1056,11 +1052,11 @@ function GovDashboardContent() {
       >
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[58rem] text-left text-label">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 uppercase tracking-wider font-semibold dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 text-[11px] uppercase tracking-wider font-semibold dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     {/* CỘT 1: MÃ HỒ SƠ */}
-                    <th className="py-3 px-4">
+                    <th className="py-2.5 px-2 w-px whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleSort("id")}
@@ -1081,7 +1077,7 @@ function GovDashboardContent() {
                     </th>
 
                     {/* CỘT 2: ĐƠN VỊ / CHỦ THỂ */}
-                    <th className="py-3 px-4">
+                    <th className="py-2.5 px-2 whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleSort("submitter")}
@@ -1110,7 +1106,7 @@ function GovDashboardContent() {
                     </th>
 
                     {/* CỘT 3: TÊN SẢN PHẨM / CÔNG NGHỆ */}
-                    <th className="py-3 px-4">
+                    <th className="py-2.5 px-2 whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleSort("title")}
@@ -1139,8 +1135,8 @@ function GovDashboardContent() {
                     </th>
 
                     {/* CỘT 4: LĨNH VỰC CÔNG NGHỆ (KÈM BỘ LỌC DROPDOWN) */}
-                    <th className="py-3 px-4 relative">
-                      <div className="flex items-center justify-between gap-1">
+                    <th className="py-2.5 px-2 relative whitespace-nowrap">
+                      <div className="flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => handleSort("sector")}
@@ -1231,7 +1227,7 @@ function GovDashboardContent() {
                     </th>
 
                     {/* CỘT 5: NGÀY NỘP */}
-                    <th className="py-3 px-4">
+                    <th className="py-2.5 px-2 w-px whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleSort("date")}
@@ -1252,8 +1248,8 @@ function GovDashboardContent() {
                     </th>
 
                     {/* CỘT 6: TRẠNG THÁI (KÈM BỘ LỌC DROPDOWN) */}
-                    <th className="py-3 px-4 relative">
-                      <div className="flex items-center justify-between gap-1">
+                    <th className="py-2.5 px-2 w-px relative whitespace-nowrap">
+                      <div className="flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => handleSort("status")}
@@ -1335,7 +1331,7 @@ function GovDashboardContent() {
                     </th>
 
                     {/* CỘT 7: THAO TÁC */}
-                    <th className="py-3 px-4 text-right">Thao Tác</th>
+                    <th className="py-2.5 px-2 w-px text-right whitespace-nowrap">Thao Tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1349,10 +1345,10 @@ function GovDashboardContent() {
                         className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition"
                       >
                         {/* Cột 1: Mã hồ sơ chuẩn hóa */}
-                        <td className="py-3.5 px-4 font-mono font-bold text-brand-700 dark:text-brand-300">
-                          <div className="flex items-center gap-1.5">
+                        <td className="py-2.5 px-2 font-mono font-bold text-brand-700 dark:text-brand-300 whitespace-nowrap">
+                          <div className="flex items-center gap-1">
                             <span
-                              className="px-2 py-0.5 rounded-md bg-brand-50 text-brand-800 dark:bg-brand-950/70 dark:text-brand-200 border border-brand-200 dark:border-brand-800 text-caption font-bold tracking-wide"
+                              className="px-1.5 py-0.5 rounded-md bg-brand-50 text-brand-800 dark:bg-brand-950/70 dark:text-brand-200 border border-brand-200 dark:border-brand-800 text-[11px] font-bold tracking-wide whitespace-nowrap"
                               title={`Mã định danh công vụ: ${codeInfo.code} (UUID: ${item.id})`}
                             >
                               {codeInfo.code}
@@ -1360,7 +1356,7 @@ function GovDashboardContent() {
                             <button
                               type="button"
                               onClick={() => handleCopyCode(codeInfo.code, item.id)}
-                              className="p-1 rounded text-slate-400 hover:text-brand-700 dark:hover:text-brand-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                              className="p-1 rounded text-slate-400 hover:text-brand-700 dark:hover:text-brand-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0"
                               title={`Sao chép mã hồ sơ ${codeInfo.code}`}
                             >
                               {copiedId === item.id ? (
@@ -1372,7 +1368,7 @@ function GovDashboardContent() {
                           </div>
                           {activeTab === "ALL" && (
                             <span
-                              className={`inline-block text-xs font-bold px-1.5 py-0.5 rounded mt-1 border ${
+                              className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded mt-1 border whitespace-nowrap ${
                                 resolveGovRequestType(item.type).badgeClass
                               }`}
                             >
@@ -1382,13 +1378,27 @@ function GovDashboardContent() {
                         </td>
 
                         {/* Cột 2: Đơn vị chào bán / Sở hữu */}
-                        <td className="py-3.5 px-4">
-                          <div className="font-bold text-slate-900 dark:text-white">
+                        <td className="py-2.5 px-2 min-w-[150px] max-w-[260px]">
+                          <div
+                            className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug"
+                            title={
+                              item.type === "INSTITUTION"
+                                ? (item.institutionPayload?.companyName || item.submitterName)
+                                : item.submitterName
+                            }
+                          >
                             {item.type === "INSTITUTION"
                               ? (item.institutionPayload?.companyName || item.submitterName)
                               : item.submitterName}
                           </div>
-                          <div className="text-xs text-slate-400">
+                          <div
+                            className="text-[11px] text-slate-400 truncate mt-0.5"
+                            title={
+                              item.type === "INSTITUTION" && item.institutionPayload?.taxCode
+                                ? `MST: ${item.institutionPayload.taxCode}`
+                                : item.submitterEmail
+                            }
+                          >
                             {item.type === "INSTITUTION" && item.institutionPayload?.taxCode
                               ? `MST: ${item.institutionPayload.taxCode}`
                               : item.submitterEmail}
@@ -1396,25 +1406,33 @@ function GovDashboardContent() {
                         </td>
 
                         {/* Cột 3: Tên sản phẩm / công nghệ (Clickable để xem chi tiết đầy đủ) */}
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2">
+                        <td className="py-2.5 px-2 min-w-[180px] max-w-[300px]">
+                          <div className="flex items-center gap-1.5">
                             <button
                               type="button"
-                              onClick={() => setSelectedItem(item)}
-                              className="text-left font-bold text-slate-900 dark:text-white hover:text-brand-700 dark:hover:text-brand-300 hover:underline transition leading-snug cursor-pointer group"
-                              title="Click để xem chi tiết đầy đủ hồ sơ trước khi ký duyệt"
+                              onClick={() =>
+                                item.status === "PENDING_APPROVAL"
+                                  ? setSelectedItem(item)
+                                  : setDetailItem(item)
+                              }
+                              className="text-left font-bold text-slate-900 dark:text-white hover:text-brand-700 dark:hover:text-brand-300 hover:underline transition leading-snug cursor-pointer group min-w-0"
+                              title={
+                                item.status === "PENDING_APPROVAL"
+                                  ? "Click để xem chi tiết đầy đủ hồ sơ trước khi ký duyệt"
+                                  : "Click để xem thông tin hồ sơ (chỉ đọc)"
+                              }
                             >
-                              <span>
+                              <span className="line-clamp-2">
                                 {item.type === "INSTITUTION"
                                   ? (item.institutionPayload?.taxCode ? `MST: ${item.institutionPayload.taxCode}` : item.titleOrOrg)
                                   : item.titleOrOrg}
                               </span>
                               {item.type === "INSTITUTION" && item.provinceName && (
-                                <span className="block text-xs font-normal text-slate-500 dark:text-slate-400 mt-0.5">
+                                <span className="block text-[11px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                                   Địa bàn: {item.provinceName}
                                 </span>
                               )}
-                              <Eye className="w-3.5 h-3.5 inline-block ml-1 opacity-0 group-hover:opacity-100 text-brand-600 transition-opacity" />
+                              <Eye className="w-3 h-3 inline-block ml-1 opacity-0 group-hover:opacity-100 text-brand-600 transition-opacity" />
                             </button>
                             {isOffer && (
                               <a
@@ -1432,8 +1450,15 @@ function GovDashboardContent() {
                         </td>
 
                         {/* Cột 4: Lĩnh vực công nghệ */}
-                        <td className="py-3.5 px-4">
-                          <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-caption font-semibold">
+                        <td className="py-2.5 px-2">
+                          <span
+                            className="inline-block max-w-[190px] truncate px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold align-middle"
+                            title={
+                              item.type === "INSTITUTION"
+                                ? item.provinceName || "Toàn quốc"
+                                : resolveSectorName(item.sector, sectorNames)
+                            }
+                          >
                             {item.type === "INSTITUTION"
                               ? (item.provinceName || "Toàn quốc")
                               : resolveSectorName(item.sector, sectorNames)}
@@ -1441,62 +1466,78 @@ function GovDashboardContent() {
                         </td>
 
                         {/* Cột 5: Ngày nộp */}
-                        <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">
+                        <td className="py-2.5 px-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
                           {item.submittedAt}
                         </td>
 
                         {/* Cột 6: Trạng thái */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-2.5 px-2 whitespace-nowrap">
                           {item.status === "PENDING_APPROVAL" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-caption font-bold dark:bg-amber-950/60 dark:text-amber-300">
-                              <Clock className="w-3 h-3" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold whitespace-nowrap dark:bg-amber-950/60 dark:text-amber-300">
+                              <Clock className="w-3 h-3 shrink-0" />
                               <span>Chờ Lãnh Đạo Duyệt</span>
                             </span>
                           )}
                           {item.status === "APPROVED" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-caption font-bold dark:bg-emerald-950/60 dark:text-emerald-300">
-                              <CheckCircle2 className="w-3 h-3" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold whitespace-nowrap dark:bg-emerald-950/60 dark:text-emerald-300">
+                              <CheckCircle2 className="w-3 h-3 shrink-0" />
                               <span>Đã Duyệt (Cấp Tỉnh)</span>
                             </span>
                           )}
                           {item.status === "REJECTED" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-caption font-bold dark:bg-rose-950/60 dark:text-rose-300">
-                              <XCircle className="w-3 h-3" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold whitespace-nowrap dark:bg-rose-950/60 dark:text-rose-300">
+                              <XCircle className="w-3 h-3 shrink-0" />
                               <span>Đã Từ Chối</span>
                             </span>
                           )}
                           {item.status === "CHANGES_REQUESTED" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-caption font-bold dark:bg-cyan-950/60 dark:text-cyan-300">
-                              <AlertCircle className="w-3 h-3" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-[11px] font-bold whitespace-nowrap dark:bg-cyan-950/60 dark:text-cyan-300">
+                              <AlertCircle className="w-3 h-3 shrink-0" />
                               <span>Yêu Cầu Bổ Sung</span>
                             </span>
                           )}
                         </td>
 
                         {/* Cột 7: Thao tác Thẩm Định */}
-                        <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="py-2.5 px-2 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
                             <AppButton
                               variant="outline"
+                              size="sm"
                               onClick={() => setDetailItem(item)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-control font-semibold text-caption whitespace-nowrap text-slate-700 hover:text-slate-900 border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                              title="Xem toàn bộ hồ sơ chi tiết"
+                              className="inline-flex items-center justify-center p-1.5 rounded-control text-slate-700 hover:text-slate-900 border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                              aria-label="Xem Chi Tiết"
+                              title="Xem Chi Tiết"
                               data-testid={`btn-detail-${item.id}`}
                             >
                               <Eye className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                              <span>Xem Chi Tiết</span>
                             </AppButton>
 
-                            <AppButton
-                              variant="primary"
-                              onClick={() => setSelectedItem(item)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control font-semibold text-caption whitespace-nowrap"
-                              title="Thẩm định và ban hành quyết định phê duyệt"
-                              data-testid={`btn-review-${item.id}`}
-                            >
-                              <ShieldCheck className="w-3.5 h-3.5" />
-                              <span>Thẩm Định</span>
-                            </AppButton>
+                            {item.status === "PENDING_APPROVAL" ? (
+                              <AppButton
+                                variant="primary"
+                                size="sm"
+                                onClick={() => setSelectedItem(item)}
+                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-control font-semibold text-[11px] whitespace-nowrap"
+                                title="Thẩm định và ban hành quyết định phê duyệt"
+                                data-testid={`btn-review-${item.id}`}
+                              >
+                                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                                <span>Thẩm Định</span>
+                              </AppButton>
+                            ) : (
+                              <AppButton
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedItem(item)}
+                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-control font-semibold text-[11px] whitespace-nowrap bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200/70 hover:text-slate-900 dark:bg-slate-800/70 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-800"
+                                title="Mở lại bảng thẩm định để điều chỉnh hoặc hậu kiểm hồ sơ"
+                                data-testid={`btn-review-${item.id}`}
+                              >
+                                <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-slate-400" />
+                                <span>Thẩm Định</span>
+                              </AppButton>
+                            )}
                           </div>
                         </td>
                       </tr>

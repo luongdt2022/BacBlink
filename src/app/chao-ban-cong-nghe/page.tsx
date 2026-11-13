@@ -374,18 +374,18 @@ function ChaoBanCongNgheContent() {
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 flex flex-col">
       {/* HERO BANNER SECTION (WITH BASIC DESIGN WIREFRAME QUICK METRICS) */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
         <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-teal-300 text-xs font-semibold backdrop-blur-sm border border-white/20">
-              <Sparkles className="w-3.5 h-3.5 text-teal-300" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
+              <Sparkles className="w-3.5 h-3.5 text-brand-200" />
               Sàn Giao Dịch Chào Bán Công Nghệ, Thiết Bị & Sáng Chế (NacenTwin)
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="type-page-title text-white">
               Thị Trường Công Nghệ & Sáng Chế Thương Mại Hóa
             </h1>
-            <p className="text-white/80 text-xs sm:text-sm leading-relaxed max-w-xl">
+            <p className="text-white/85 type-body max-w-xl">
               Sàn niêm yết các giải pháp kỹ thuật, sáng chế và thiết bị thương mại đã được thẩm định
               pháp lý từ các Viện nghiên cứu, Trường đại học và Doanh nghiệp ĐMST trên toàn quốc.
             </p>
@@ -480,7 +480,7 @@ function ChaoBanCongNgheContent() {
 
       {/* FILTER TABS & SEARCH BAR (STICKY NAV) */}
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col md:flex-row items-center justify-between gap-3">
           {/* TABS (WITH SEMANTIC GLOBAL COUNTS) */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full md:w-auto overflow-x-auto">
             <button
@@ -549,7 +549,7 @@ function ChaoBanCongNgheContent() {
       </div>
 
       {/* MAIN CONTENT BODY */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
         {/* SIDEBAR BỘ LỌC ĐA TẦNG 10 LĨNH VỰC CHUẨN CSDL */}
         <aside className="lg:col-span-1 space-y-5">
           {/* Lọc 10 Lĩnh vực TT17 */}
@@ -835,7 +835,7 @@ function ChaoBanCongNgheContent() {
               <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-400">
                 <Search className="w-8 h-8" />
               </div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+              <h3 className="type-card-title text-slate-900 dark:text-white">
                 Không tìm thấy hồ sơ công nghệ phù hợp
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">

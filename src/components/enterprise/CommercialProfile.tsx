@@ -194,7 +194,7 @@ export function CommercialProfile({
             <div className="w-28 h-28 rounded-2xl bg-white p-2 shadow-2xl border-2 border-white/20 shrink-0 relative group flex items-center justify-center">
               <div className="w-full h-full rounded-xl bg-gradient-to-br from-brand-700 via-slate-800 to-brand-900 text-white flex flex-col items-center justify-center font-extrabold shadow-inner">
                 <span className="text-3xl font-black">{initials}</span>
-                <span className="text-[10px] tracking-widest text-teal-300 uppercase font-semibold mt-0.5">
+                <span className="text-xs tracking-widest text-teal-300 uppercase font-semibold mt-0.5">
                   COMMERCIAL
                 </span>
               </div>
@@ -221,7 +221,7 @@ export function CommercialProfile({
                   <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 backdrop-blur-md">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                     <span>MST Đã Xác Thực</span>
-                    <span className="text-[11px] text-emerald-300 font-normal hidden sm:inline">(Sở KH&amp;CN)</span>
+                    <span className="text-xs text-emerald-300 font-normal hidden sm:inline">(Sở KH&amp;CN)</span>
                   </span>
                 ) : (
                   <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5">
@@ -259,7 +259,7 @@ export function CommercialProfile({
                     )}
                   </button>
                   {copiedTaxCode && (
-                    <span className="text-[11px] text-emerald-400 font-semibold animate-pulse">
+                    <span className="text-xs text-emerald-400 font-semibold animate-pulse">
                       Đã sao chép mã định danh
                     </span>
                   )}

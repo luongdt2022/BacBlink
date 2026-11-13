@@ -419,7 +419,7 @@ function AdminShellSuspenseFallback() {
           ))}
         </div>
       </aside>
-      <div className="min-w-0 flex-1 p-4 sm:p-8 overflow-y-auto">
+      <div className="min-w-0 flex-1 p-3 sm:p-4 overflow-y-auto">
         <AdminWorkspaceSkeleton />
       </div>
     </div>
@@ -471,7 +471,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       {/* Admin Main Workspace */}
       <div
         data-testid="admin-main-workspace"
-        className="min-w-0 flex-1 p-4 sm:p-8 overflow-y-auto"
+        className="min-w-0 flex-1 p-3 sm:p-4 overflow-y-auto"
       >
         {pendingHref !== null ? <AdminWorkspaceSkeleton /> : children}
       </div>

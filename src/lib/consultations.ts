@@ -19,6 +19,7 @@ export interface ConsultationTicket {
   enterpriseTniScore: number;
   title: string;
   description: string;
+  ticketCode?: string;
   advisoryFeeVnd?: number;
   feePayer?: string;
   location: string;
@@ -32,15 +33,21 @@ export interface ConsultationTicket {
   meetingTime?: string;
   meetingType?: string;
   meetingUrl?: string;
+  meetingLink?: string;
   canJoinMeeting?: boolean;
   meetingCountdownText?: string;
   preReadMaterials?: PreReadMaterial[];
+  expertNote?: string;
+  rejectionReason?: string;
   // Tab 3 fields
   completedAt?: string;
   moaDocumentUrl?: string;
   moaDocumentName?: string;
   enterpriseRating?: number;
   enterpriseReview?: string;
+  rating?: number;
+  reviewComment?: string;
+  reviewedAt?: string;
   expertEvaluation?: string;
   disbursementStatus?: "DISBURSED" | "AUDITING" | "NONE";
   disbursementAmountVnd?: number;
