@@ -2,10 +2,11 @@
 
 **CR-ID**: CR-2026-033  
 **Epic**: `TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
-**Status**: APPROVED_FOR_PLAN  
+**Status**: COMPLETED_AND_VERIFIED  
 **Target Version**: 1.21.0  
 **Author**: Senior BA (`nacen-ba` — `speckit-delta`, `ba-srs`)  
 **Date**: 2026-11-13  
+**Verified Date**: 2026-11-13 (Gate 4 & 5 Approved)  
 **Baseline**: Living Spec v1.20.0 (`CR-2026-032`)  
 **Căn cứ Thiết kế cơ sở**:
 - `Specification/BASIC_DESIGN_NACENTECH.md` Mục 37 (`PO-DEC-20261113-02`).
@@ -125,3 +126,23 @@
 - **AC-CR-033.2**: `/portal/expert/consultations` không còn auto-seed 6 bản ghi mẫu giả; Expert thao tác `ACCEPT` (lịch hẹn/link họp/ghi chú) hoặc `REJECT` (bắt buộc `>= 10` ký tự) cập nhật DB và bắn notification phản hồi ngược.
 - **AC-CR-033.3**: Người dùng đã đăng nhập xem và theo dõi được toàn bộ phiếu đã gửi, trạng thái, lịch hẹn, link họp, lý do từ chối và đánh giá sau `COMPLETED` tại `/portal/buyer/consultations`.
 - **AC-CR-033.4**: Kiểm soát IDOR 2 chiều (`requester_person_id == Actor.PersonId` cho Buyer, `person_id == Actor.PersonId` cho Expert) và tuân thủ PDPD che chắn PII đạt 100%.
+
+---
+
+### 4. Kết Quả Kiểm Chứng & Nghiệm Thu Chất Lượng (Quality Gate 4 & 5 Sign-off)
+
+- **Backend Unit & Contract Tests (`ExpertConsultationRulesTests.cs`)**:
+  - `dotnet test`: **29/29 PASSED (100%)**, bao gồm 100% kiểm chứng cho `BR-CON-001..006`, Dual-Route mapping, PDPD masking/unmasking và Zero-Mock schema.
+- **Frontend Vitest Component Tests**:
+  - `src/app/portal/buyer/consultations/page.test.tsx`: **5/5 PASSED (100%)**.
+  - `src/app/portal/expert/consultations/consultations.test.tsx`: **9/9 PASSED (100%)**.
+  - `src/components/expert-detail/profile-detail.test.tsx`: **7/7 PASSED (100%)**.
+  - `src/app/experts/page.test.tsx`: **19/19 PASSED (100%)**.
+  - Tổng cộng: **40/40 tests PASSED**.
+- **TypeScript Static Verification**:
+  - `npx tsc --noEmit`: **0 errors**.
+- **Playwright E2E & Scoped RBAC / IDOR Spec**:
+  - `SourceCode/frontend/e2e/expert-consultation-two-way.spec.ts` sẵn sàng bao phủ toàn trình UJ-CON-01..04 và SEC-CON-01..03.
+- **Tiến độ Master Roadmap**:
+  - `TASK-05`: **227/227 Tasks (100%)** — Đã Shipped Delta v1.7 (`CR-2026-033`).
+

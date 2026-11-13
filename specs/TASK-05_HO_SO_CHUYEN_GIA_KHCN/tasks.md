@@ -1030,19 +1030,19 @@
 
 ### [Đợt 5 - QC 4 Tầng]
 
-- [ ] `T-05.CR033.10` **[QC][CONTRACT] Kiểm Định Hợp Đồng API `API-CON-001`..`005` & Dual-Route Compatibility (`TEST-CON-002`)**
+- [x] `T-05.CR033.10` **[QC][CONTRACT] Kiểm Định Hợp Đồng API `API-CON-001`..`005` & Dual-Route Compatibility (`TEST-CON-002`)**
   - **Mục tiêu**: Xác minh 100% request/response DTO khớp giữa BE .NET và FE Next.js trên cả route mới và route tương thích ngược.
   - **Hành động kỹ thuật**:
     + Đối soát schema DTO của `API-CON-001`..`005` (bao gồm `ticketCode`, `scheduledAt`/`meetingDate`, `meetingLink`/`meetingUrl`, `rejectionReason`/`rejectionNote`, `rating`, `reviewedAt`).
   - **Tiêu chí kiểm chứng**: 0 lệch DTO, 0 breaking change.
 
-- [ ] `T-05.CR033.11` **[QC][DB] Kiểm Thử DB Integration Trên PostgreSQL Thật & Zero Auto-Seed (`TEST-CON-003`)**
+- [x] `T-05.CR033.11` **[QC][DB] Kiểm Thử DB Integration Trên PostgreSQL Thật & Zero Auto-Seed (`TEST-CON-003`)**
   - **Mục tiêu**: Chứng minh persistence 2 chiều trên PostgreSQL thật, không tồn tại dữ liệu giả auto-seed.
   - **Hành động kỹ thuật**:
     + Chạy integration test tạo phiếu public $\rightarrow$ xác minh row thật trong `brokerage.expert_consultations` $\rightarrow$ Expert `ACCEPT`/`REJECT`/`COMPLETE` $\rightarrow$ Buyer đánh giá atomic SQL; kiểm tra Expert mới có 0 bản ghi mẫu giả.
   - **Tiêu chí kiểm chứng**: 100% assertions DB PostgreSQL pass.
 
-- [ ] `T-05.CR033.12` **[QC][E2E] Playwright E2E Toàn Trình 2 Chiều & Scoped RBAC / IDOR Fuzzing (`TEST-CON-004`)**
+- [x] `T-05.CR033.12` **[QC][E2E] Playwright E2E Toàn Trình 2 Chiều & Scoped RBAC / IDOR Fuzzing (`TEST-CON-004`)**
   - **Mục tiêu**: Kiểm chứng luồng người dùng đầu cuối trên trình duyệt thật và chống leo thang đặc quyền/IDOR 2 chiều.
   - **Hành động kỹ thuật**:
     + Kịch bản E2E: Buyer gửi phiếu trên `/experts/[expertCode]` nhận `ticketCode` $\rightarrow$ Expert mở `/portal/expert/consultations` thấy phiếu thật (PII masked khi `PENDING`), `ACCEPT` kèm lịch hẹn & link họp (PII unmasked khi `SCHEDULED`) $\rightarrow$ Buyer mở `/portal/buyer/consultations` thấy `SCHEDULED` + lịch hẹn + link họp $\rightarrow$ Expert `COMPLETE` $\rightarrow$ Buyer gửi đánh giá 5 sao.
