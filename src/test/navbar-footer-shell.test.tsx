@@ -190,7 +190,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const offerTrigger = within(mainNav).getByRole("link", { name: /^Cung ứng Công nghiệp$/i });
+      const offerTrigger = within(mainNav).getByRole("link", { name: /^Cung ứng$/i });
 
       expect(offerTrigger).toHaveAttribute("aria-expanded", "false");
 
@@ -210,7 +210,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const expertTrigger = within(mainNav).getByRole("link", { name: /^Ban Cố vấn Kỹ thuật$/i });
+      const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
 
       expect(expertTrigger).toHaveAttribute("aria-expanded", "false");
 
@@ -227,7 +227,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const expertTrigger = within(mainNav).getByRole("link", { name: /^Ban Cố vấn Kỹ thuật$/i });
+      const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
 
       fireEvent.click(expertTrigger);
       expect(expertTrigger).toHaveAttribute("aria-expanded", "true");
@@ -264,7 +264,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const offerLink = within(mainNav).getByRole("link", { name: /^Cung ứng Công nghiệp$/i });
+      const offerLink = within(mainNav).getByRole("link", { name: /^Cung ứng$/i });
 
       expect(offerLink.className).toContain("text-white");
       expect(offerLink.className).toContain("font-bold");
@@ -277,7 +277,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const eventLink = within(mainNav).getByRole("link", { name: /^Sự kiện Techmart/i });
+      const eventLink = within(mainNav).getByRole("link", { name: /^Sự kiện$/i });
 
       expect(eventLink.className).toContain("after:bg-white/40");
       expect(eventLink.className).not.toContain("after:bg-cyan-400");

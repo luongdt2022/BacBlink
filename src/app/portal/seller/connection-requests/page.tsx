@@ -119,13 +119,11 @@ export default function SellerConnectionRequestsPage() {
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-8 -bottom-10 w-80 h-80 opacity-15 select-none"
+          className="pointer-events-none absolute -right-8 -bottom-10 w-80 h-80 opacity-10 select-none flex items-center justify-center"
         >
-          <img
-            src="/NACENTECH_Main-Logo-G.png"
-            alt=""
-            className="w-full h-full object-contain brightness-0 invert"
-          />
+          <div className="w-64 h-64 rounded-full border-4 border-white/20 flex items-center justify-center font-black text-8xl text-white">
+            B
+          </div>
         </div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">

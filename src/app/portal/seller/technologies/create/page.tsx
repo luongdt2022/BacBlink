@@ -486,7 +486,7 @@ export default function TaoHoSoChaoBanPage() {
             </Link>
             <div>
               <div className="font-extrabold tracking-tight text-slate-900 text-sm">
-                NACENTWIN · CỔNG ĐỔI MỚI SÁNG TẠO QUỐC GIA
+                BACLINK · CỔNG KẾT NỐI CHUỖI CUNG ỨNG BẮC NINH
               </div>
               <div className="text-xs font-bold tracking-wider text-slate-500 uppercase">
                 Phân Hệ Seller Hồ Sơ Chào Bán · TASK-04 Delta v6

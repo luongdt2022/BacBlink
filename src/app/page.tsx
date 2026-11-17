@@ -415,19 +415,39 @@ export default function HomePage() {
   return (
     <div className="w-full bg-white dark:bg-slate-950 font-sans">
       {/* ========================================================================= */}
-      {/* PHẦN TỪ BACKGROUND TRỞ LÊN: HERO BANNER GỐC THANH THOÁT                   */}
+      {/* PHẦN TỪ BACKGROUND TRỞ LÊN: HERO BANNER BACLINK CHUẨN MÀU SẮC & KHẨU HIỆU */}
       {/* ========================================================================= */}
-      <section className="relative overflow-hidden bg-brand-700 px-4 py-6 text-white sm:py-12 lg:px-8 lg:py-14 [@media(min-height:850px)]:lg:py-16 [@media(max-height:780px)]:py-5 [@media(max-height:780px)]:sm:py-8">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#031e3d] via-[#053567] to-[#0a488f] px-4 py-8 text-white sm:py-14 lg:px-8 lg:py-16">
+        <div aria-hidden="true" className="baclink-hero-art pointer-events-none absolute inset-0" />
         <div className="relative mx-auto max-w-7xl">
           <div className="mx-auto max-w-4xl text-center">
-            <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-brand-100">
-              Cổng Kết Nối Chuỗi Cung Ứng Công Nghiệp Bắc Ninh
-            </span>
-            <h1 className="mt-3.5 sm:mt-5 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold font-sans uppercase tracking-normal sm:tracking-wide leading-snug sm:leading-tight text-white">
+            {/* Official BACLINK Slogan Pill */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-1.5 text-xs sm:text-sm font-bold text-amber-300 shadow-sm backdrop-blur-md">
+              <span className="text-amber-400">★</span>
+              <span>VÌ NHAU MÀ LỚN • VÌ TỈNH MÀ BỀN • VÌ NƯỚC MÀ LÊN</span>
+              <span className="text-amber-400">★</span>
+            </div>
+
+            <h1 className="mt-4 sm:mt-5 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold font-sans uppercase tracking-normal sm:tracking-wide leading-snug sm:leading-tight text-white">
+              <span className="block text-amber-300/90 text-xs sm:text-sm font-bold tracking-widest uppercase mb-1">
+                HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH (BACLINK)
+              </span>
               <span className="block">KẾT NỐI CHUỖI CUNG ỨNG,</span>
-              <span className="block mt-1.5 sm:mt-2">NÂNG TẦM CÔNG NGHIỆP BẮC NINH</span>
+              <span className="block mt-1 sm:mt-1.5">NÂNG TẦM CÔNG NGHIỆP BẮC NINH</span>
             </h1>
+
+            {/* 3 Value Pillars from Official BACLINK */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-white/90">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/15">
+                <span className="text-amber-400 text-xs">●</span> Điểm đến FDI số 1 Việt Nam
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/15">
+                <span className="text-emerald-400 text-xs">●</span> Mạng lưới Công Nghiệp Xanh tiên phong
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/15">
+                <span className="text-cyan-300 text-xs">●</span> Tinh Hoa Kinh Bắc tử tế &amp; nhân văn
+              </span>
+            </div>
 
             <form
               className="mx-auto mt-7 sm:mt-9 lg:mt-10 flex w-full max-w-3xl lg:max-w-4xl flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 p-2 sm:p-2.5 shadow-2xl transition"
@@ -591,13 +611,13 @@ export default function HomePage() {
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-cyan-300 dark:border-blue-800">
                   <Sparkles className="size-3.5 text-blue-600 dark:text-cyan-400" />
-                  Cơ Sở Dữ Liệu Quốc Gia ĐMST
+                  Mạng Lưới Chuỗi Cung Ứng BACLINK
                 </span>
                 <h2 className="mt-3 type-section-title text-text-primary dark:text-white">
                   Công Nghệ &amp; Nhu Cầu Nổi Bật
                 </h2>
                 <p className="mt-2 text-sm sm:text-base text-text-secondary dark:text-slate-300">
-                  Cập nhật liên tục từ mạng lưới viện, trường, doanh nghiệp và 34 Sở KH&amp;CN trên toàn quốc.
+                  Cập nhật liên tục từ các doanh nghiệp hội viên, nhà máy và khu công nghiệp tỉnh Bắc Ninh.
                 </p>
               </div>
 
@@ -684,13 +704,13 @@ export default function HomePage() {
             <div className="mx-auto max-w-3xl text-center">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
                 <CheckCircle2 className="size-3.5 text-emerald-600" />
-                Chuẩn Hóa Quy Trình Quốc Gia
+                Chuẩn Hóa Chuỗi Cung Ứng BACLINK
               </span>
               <h2 className="mt-3.5 type-section-title text-text-primary dark:text-white">
-                Quy Trình Kết Nối &amp; Chuyển Giao Công Nghệ 4 Bước
+                Quy Trình Kết Nối Cung Ứng &amp; Chuyển Giao Công Nghệ 4 Bước
               </h2>
               <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-text-secondary dark:text-slate-300">
-                Minh bạch, bảo mật và được bảo trợ pháp lý bởi Viện Đổi Mới Sáng Tạo Quốc Gia cùng mạng lưới 34 Sở KH&amp;CN trọng điểm.
+                Minh bạch, bảo mật và được bảo trợ bởi Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh theo QĐ số 1652/QĐ-UBND.
               </p>
             </div>
 
@@ -1007,13 +1027,13 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================================= */}
-        {/* 5. VÌ SAO CHỌN NACENTWIN                                                  */}
+        {/* 5. VÌ SAO CHỌN BACLINK                                                    */}
         {/* ========================================================================= */}
         <section className="page-container py-12 sm:py-16 lg:py-20">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="type-section-title text-text-primary dark:text-white">Vì sao chọn NacenTwin</h2>
+            <h2 className="type-section-title text-text-primary dark:text-white">Vì sao chọn BACLINK</h2>
             <p className="mt-2.5 sm:mt-3 text-sm sm:text-base leading-relaxed sm:leading-7 text-text-secondary dark:text-slate-300">
-              Nền tảng được xây dựng và vận hành bởi Viện Đổi Mới Sáng Tạo Quốc Gia, đảm bảo độ tin cậy cho mọi giao dịch.
+              Cổng thông tin &amp; kết nối chuỗi cung ứng được thành lập và bảo trợ bởi Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh theo QĐ số 1652/QĐ-UBND của UBND tỉnh Bắc Ninh, bảo chứng tin cậy cho mọi kết nối cung ứng FDI và công nghiệp phụ trợ.
             </p>
           </div>
 
@@ -1034,35 +1054,35 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================================= */}
-        {/* 6. GIA NHẬP HỆ SINH THÁI ĐMST & CTA CUỐI TRANG                             */}
+        {/* 6. GIA NHẬP HỆ SINH THÁI BACLINK & CTA CUỐI TRANG                         */}
         {/* ========================================================================= */}
         <section className="page-container pb-12 sm:pb-16">
-          <div className="relative overflow-hidden rounded-2xl bg-brand-700 p-8 sm:p-12 text-white border border-white/10 shadow-md">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#081026] via-[#0D1938] to-[#162D66] p-8 sm:p-12 text-white border border-cyan-500/20 shadow-xl">
             <div className="relative z-10 mx-auto max-w-3xl text-center">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-semibold text-white/90 border border-white/20">
                 <Rocket className="size-3.5" />
-                Đồng Hành Đổi Mới Sáng Tạo
+                Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white font-sans tracking-tight mt-4">
-                Gia Nhập Hệ Sinh Thái Đổi Mới Sáng Tạo &amp; Chuyển Giao Công Nghệ Quốc Gia
+                Gia Nhập Mạng Lưới Chuỗi Cung Ứng &amp; Sản Xuất Công Nghiệp BACLINK
               </h2>
               <p className="mt-3 text-sm sm:text-base leading-relaxed text-white/85 max-w-2xl mx-auto">
-                Kết nối ngay hôm nay để đưa sản phẩm nghiên cứu vào sản xuất thực tế, hoặc tìm kiếm giải pháp công nghệ nâng tầm doanh nghiệp.
+                Kết nối trực tiếp với các tập đoàn FDI hàng đầu (Samsung, Foxconn, Amkor...), tham gia chuỗi cung ứng toàn cầu và nâng tầm năng lực nhà máy Bắc Ninh.
               </p>
 
               <div className="mt-7 flex flex-wrap justify-center gap-3 sm:gap-4">
                 <Link
                   href="/seller/technologies/new"
-                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm sm:text-base font-bold text-brand-700 shadow-md hover:bg-slate-50 transition"
+                  className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-sm sm:text-base font-bold text-white shadow-md hover:opacity-95 transition"
                 >
-                  <Rocket className="size-4 text-brand-700" />
-                  <span>Đăng ký chào bán công nghệ</span>
+                  <Rocket className="size-4 text-white" />
+                  <span>Đăng ký chào bán sản phẩm / công nghệ</span>
                 </Link>
                 <Link
                   href="/nhu-cau-cong-nghe"
                   className="btn-press inline-flex items-center justify-center gap-2 rounded-xl bg-white/15 hover:bg-white/25 px-5 py-3 text-sm sm:text-base font-semibold text-white border border-white/25 transition"
                 >
-                  <span>Gửi bài toán nhu cầu ĐMST</span>
+                  <span>Gửi nhu cầu tìm nhà cung ứng</span>
                   <ArrowRight className="size-4" />
                 </Link>
               </div>

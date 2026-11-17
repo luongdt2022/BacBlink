@@ -454,7 +454,7 @@ export default function ConnectionRequestDetailModal({
         {/* Modal Footer */}
         <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex items-center justify-between">
           <span className="text-caption text-slate-400">
-            NacenTwin Sàn Giao Dịch & Môi Giới Công Nghệ
+            BACLINK Sàn Kết Nối Cung Ứng &amp; Chuyển Giao Công Nghệ
           </span>
           <button
             onClick={onClose}

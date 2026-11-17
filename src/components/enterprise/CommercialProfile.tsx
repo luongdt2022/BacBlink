@@ -882,7 +882,7 @@ export function CommercialProfile({
               <span>Bảo Vệ Dữ Liệu Cá Nhân (NĐ 13/2023)</span>
             </div>
             <p className="text-slate-600 text-xs leading-relaxed">
-              Số điện thoại di động cá nhân và email riêng của đại diện pháp luật được bảo mật. Mọi giao dịch kết nối cung cầu, yêu cầu báo giá và chào hàng được kiểm soát an toàn qua kênh trung gian đối soát của sàn <strong>NacenTwin</strong>.
+              Số điện thoại di động cá nhân và email riêng của đại diện pháp luật được bảo mật. Mọi giao dịch kết nối cung cầu, yêu cầu báo giá và chào hàng được kiểm soát an toàn qua kênh trung gian đối soát của sàn <strong>BACLINK</strong>.
             </p>
             <div className="pt-1">
               <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 bg-white/80 px-2.5 py-0.5 rounded-md border border-emerald-300">

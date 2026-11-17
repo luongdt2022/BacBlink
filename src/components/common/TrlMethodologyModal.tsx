@@ -296,7 +296,7 @@ export function TrlMethodologyModal({
               </span>
             </div>
             <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-              Theo quy chuẩn kiến trúc sàn NacenTech (<code>BrokerageMatchingEngineService</code>), điểm sẵn sàng công nghệ <span className="font-mono font-bold">S_trl</span> của mỗi hồ sơ chào bán được xác định dựa trên tiêu chuẩn NASA:
+              Theo quy chuẩn kiến trúc sàn BACLINK (<code>BrokerageMatchingEngineService</code>), điểm sẵn sàng công nghệ <span className="font-mono font-bold">S_trl</span> của mỗi hồ sơ chào bán được xác định dựa trên tiêu chuẩn NASA:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-indigo-100 dark:border-indigo-900">
@@ -550,7 +550,7 @@ export function TrlMethodologyModal({
         {/* Footer */}
         <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
           <div className="text-xs text-slate-500">
-            NacenTech · Bản dịch chuẩn NASA TRL 1–9 · Nền tảng Đổi mới Sáng tạo & Chuyển giao Công nghệ Quốc gia
+            BACLINK · Bản dịch chuẩn NASA TRL 1–9 · Nền tảng Chuỗi Cung Ứng & Đổi Mới Sáng Tạo Bắc Ninh
           </div>
           <button
             type="button"

@@ -535,7 +535,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
           <div className="shrink-0 px-6 py-4 sm:px-8 bg-slate-50/90 dark:bg-slate-900/90 border-t border-slate-200/80 dark:border-slate-800 backdrop-blur-xs flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Dữ liệu được bảo mật & kiểm soát theo cơ chế phân quyền sàn NacenTwin.</span>
+              <span>Dữ liệu được bảo mật & kiểm soát theo cơ chế phân quyền sàn BACLINK.</span>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">

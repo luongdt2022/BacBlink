@@ -718,7 +718,7 @@ function ExpertConsultationsContent() {
                     {/* MoA document download */}
                     <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800">
                       <span className="text-xs text-slate-500">
-                        Biên bản tư vấn kỹ thuật (MoA) có chữ ký số 2 chiều đã lưu trữ trên kho NacenTwin.
+                        Biên bản tư vấn kỹ thuật (MoA) có chữ ký số 2 chiều đã lưu trữ trên kho dữ liệu BACLINK.
                       </span>
                       <a
                         href={ticket.moaDocumentUrl || "#"}

@@ -137,7 +137,7 @@ describe("KhaoSatDmstPage (CR-2026-020 43 Questions Wizard)", () => {
     });
 
     // Form mở ra để trắng sạch
-    const companyInput = screen.getByPlaceholderText(/Ví dụ: CÔNG TY CỔ PHẦN CÔNG NGHỆ NACENTECH/i);
+    const companyInput = screen.getByPlaceholderText(/Ví dụ: CÔNG TY TNHH CÔNG NGHỆ CHÍNH XÁC BẮC NINH/i);
     expect((companyInput as HTMLInputElement).value).toBe("");
 
     // Hiển thị gợi ý tài khoản Doanh nghiệp đã đăng nhập

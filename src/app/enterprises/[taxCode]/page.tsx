@@ -538,7 +538,7 @@ export default function EnterpriseDetailPage() {
             <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-base">Liên Hệ Giao Thương Trực Tiếp</h3>
-                <p className="text-xs text-slate-300 mt-0.5">Kênh trung gian an toàn NacenTwin</p>
+                <p className="text-xs text-slate-300 mt-0.5">Kênh trung gian an toàn BACLINK</p>
               </div>
               <button
                 type="button"

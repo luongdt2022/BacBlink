@@ -48,7 +48,7 @@ export default function SettingsPage() {
   return (
     <main className="w-full">
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-700 dark:text-teal-300">Tài khoản NacenTech</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-700 dark:text-teal-300">Tài khoản Hội viên BACLINK</p>
         <h1 className="mt-2 type-page-title text-slate-950 dark:text-white">Cài đặt tài khoản</h1>
         <p className="mt-2 text-body text-slate-600 dark:text-slate-300">Xem thông tin tài khoản, vai trò và phạm vi hoạt động hiện tại.</p>
 
@@ -58,7 +58,7 @@ export default function SettingsPage() {
               <UserRound className="h-6 w-6" />
             </div>
             <div className="min-w-0">
-              <h2 className="truncate text-card-title font-bold text-slate-950 dark:text-white">{user.fullName || "Thành viên NacenTech"}</h2>
+              <h2 className="truncate text-card-title font-bold text-slate-950 dark:text-white">{user.fullName || "Hội viên BACLINK"}</h2>
               <p className="mt-0.5 truncate text-body text-slate-600 dark:text-slate-300">{user.email}</p>
             </div>
           </div>

@@ -9,16 +9,18 @@
   --font-serif: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-be-vietnam-pro: var(--font-sans);
-  --color-brand-50: #f0f3f9;
-  --color-brand-100: #e0e6f2;
-  --color-brand-200: #c1cee5;
-  --color-brand-500: #6680b3;
-  --color-brand-600: #4d6aa4;
-  /* PO reference swatch: Display P3 screenshot converted to sRGB. */
-  --color-brand-700: #3c5999;
-  --color-brand-800: #30477a;
-  --color-brand-900: #23365d;
-  --color-brand-950: #172554;
+  --color-brand-50: #f0f5fa;
+  --color-brand-100: #dce7f5;
+  --color-brand-200: #b9d0ec;
+  --color-brand-500: #2b6cb0;
+  --color-brand-600: #1e5399;
+  /* BACLINK Official Palette: Deep Kinh Bắc Royal Blue (#053567) & Heritage Gold (#be9c56) */
+  --color-brand-700: #053567;
+  --color-brand-800: #042952;
+  --color-brand-900: #031e3d;
+  --color-brand-950: #021226;
+  --color-brand-primary: #053567;
+  --color-brand-gold: #be9c56;
   --color-innovation-50: #ecfeff;
   --color-innovation-500: #06b6d4;
   --color-innovation-600: #0891b2;
@@ -196,8 +198,8 @@
   .dark .form-control::placeholder { color: #94a3b8; }
   .workspace-banner {
     background-color: var(--color-brand-700);
-    background-image: linear-gradient(90deg, var(--color-brand-700) 25%, transparent), url('/innovation-hero-background.png');
-    background-position: center, right bottom;
+    background-image: linear-gradient(90deg, #053567 35%, rgba(5, 53, 103, 0.85)), url('/baclink-official-banner.jpg');
+    background-position: center, right center;
     background-size: cover;
   }
   .type-hero {
@@ -251,20 +253,24 @@
     .type-section-title { font-size: 1.375rem; line-height: 1.35; }
   }
 
-  .innovation-hero-art {
-    background-image: url('/innovation-hero-background.png');
-    background-position: center bottom;
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-    opacity: 0.85;
-    mask-image: linear-gradient(to bottom, transparent, black 10%);
+  .innovation-hero-art,
+  .baclink-hero-art {
+    background-image:
+      radial-gradient(circle at 85% 20%, rgba(190, 156, 86, 0.25) 0%, transparent 40%),
+      radial-gradient(circle at 15% 30%, rgba(5, 53, 103, 0.50) 0%, transparent 55%),
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+    background-position: center center;
+    opacity: 0.95;
+    mask-image: radial-gradient(ellipse 95% 85% at 50% 50%, black 65%, transparent 100%);
   }
 
   @media (max-width: 639px) {
-    .innovation-hero-art {
-      background-size: cover;
-      background-position: center bottom;
-      opacity: 0.35;
+    .innovation-hero-art,
+    .baclink-hero-art {
+      background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      opacity: 0.85;
     }
   }
 

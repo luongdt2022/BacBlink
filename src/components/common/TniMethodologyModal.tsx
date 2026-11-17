@@ -441,7 +441,7 @@ export function TniMethodologyModal({ isOpen, onClose }: TniMethodologyModalProp
         {/* Footer */}
         <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 flex items-center justify-between">
           <div className="text-xs text-slate-500">
-            Cơ sở dữ liệu khảo sát 304 DN ĐMST Việt Nam · Cổng ĐMST Quốc Gia NacenTech
+            Cơ sở dữ liệu khảo sát 304 DN ĐMST Việt Nam · Cổng Chuỗi Cung Ứng BACLINK
           </div>
           <button
             type="button"

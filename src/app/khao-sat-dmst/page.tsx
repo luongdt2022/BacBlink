@@ -543,7 +543,7 @@ export default function KhaoSatDmstPage() {
     }
   };
 
-  // Tra cứu mã số thuế tự động (Hybrid Lookup: CSDL Quốc Gia / VietQR / NacenTwin)
+  // Tra cứu mã số thuế tự động (Hybrid Lookup: CSDL Quốc Gia / VietQR / BACLINK)
   const handleLookupTaxCode = async () => {
     const rawTax = c02TaxCode.trim();
     if (!rawTax) {
@@ -574,7 +574,7 @@ export default function KhaoSatDmstPage() {
           );
           if (matchedSector) setC06MainSector(matchedSector);
         }
-        const sourceName = res.source === "INTERNAL" ? "CSDL Doanh nghiệp NacenTwin" : "Cổng Thông tin VietQR";
+        const sourceName = res.source === "INTERNAL" ? "CSDL Doanh nghiệp BACLINK" : "Cổng Thông tin VietQR";
         toast.success(
           `Đã tìm thấy thông tin: ${res.name} (Nguồn: ${sourceName}). Đã tự động điền vào phiếu.`
         );
@@ -1376,7 +1376,7 @@ export default function KhaoSatDmstPage() {
           Phiếu Khảo Sát Năng Lực Đổi Mới Sáng Tạo Doanh Nghiệp
         </h1>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
-          Công cụ chuẩn hóa quốc gia giúp đo lường trình độ ĐMST (37 tiêu chí, 8 nhóm năng lực), tính toán chỉ số nhu cầu công nghệ (TNI) và cấp chứng nhận định vị trên CSDL Quốc Gia NacenTwin.
+          Công cụ chuẩn hóa quốc gia giúp đo lường trình độ ĐMST (37 tiêu chí, 8 nhóm năng lực), tính toán chỉ số nhu cầu công nghệ (TNI) và cấp chứng nhận định vị trên CSDL Doanh nghiệp BACLINK.
         </p>
       </div>
 
@@ -1584,7 +1584,7 @@ export default function KhaoSatDmstPage() {
                 value={c01LegalName}
                 data-invalid={!c01LegalName.trim() ? "true" : undefined}
                 onChange={(e) => setC01LegalName(e.target.value)}
-                placeholder="Ví dụ: CÔNG TY CỔ PHẦN CÔNG NGHỆ NACENTECH"
+                placeholder="Ví dụ: CÔNG TY TNHH CÔNG NGHỆ CHÍNH XÁC BẮC NINH"
                 className="form-control w-full text-xs font-medium uppercase"
                 required
               />
@@ -2779,7 +2779,7 @@ export default function KhaoSatDmstPage() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-2">
-                  41. Sẵn sàng cập nhật định kỳ hồ sơ trên sàn NacenTwin?
+                  41. Sẵn sàng cập nhật định kỳ hồ sơ trên sàn BACLINK?
                 </label>
                 <div className="space-y-1.5 text-xs">
                   {WILLING_UPDATE_OPTIONS.map((opt) => (
@@ -2808,7 +2808,7 @@ export default function KhaoSatDmstPage() {
             {/* C42: Tính năng mong muốn trên Nền tảng */}
             <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
               <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-                42. Những tính năng, tiện ích doanh nghiệp mong muốn nhất trên Nền tảng NacenTwin:
+                42. Những tính năng, tiện ích doanh nghiệp mong muốn nhất trên Nền tảng BACLINK:
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {REQUESTED_FEATURES_OPTIONS.map((item) => (

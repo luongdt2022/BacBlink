@@ -327,7 +327,7 @@ export default function ExpertProfileEditPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-extrabold text-slate-900 dark:text-white">{fullName}</h2>
                   <span className="px-2 py-0.5 rounded bg-brand-50 text-brand-800 text-caption font-bold border border-brand-200 dark:bg-brand-950 dark:text-brand-300 dark:border-brand-800">
-                    {organizationName || "Viện NacenTech"}
+                    {organizationName || "Hiệp hội BACLINK"}
                   </span>
                 </div>
                 <p className="text-caption text-slate-500 mt-0.5 dark:text-slate-400">

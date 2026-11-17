@@ -73,43 +73,39 @@ export default function LoginPage() {
         {/* Mobile Header (Hidden on Desktop) */}
         <div className="mb-7 text-center lg:hidden">
           <div className="mb-3 flex justify-center">
-            <img
-              src="/NACENTECH_Main-Logo-G.png"
-              alt="NacenTech Logo"
-              className="h-11 w-auto object-contain"
-            />
+            <div className="size-12 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white font-black text-2xl flex items-center justify-center shadow-lg border border-cyan-400/30">
+              B
+            </div>
           </div>
-          <h1 className="type-section-title text-slate-900 dark:text-white">Đăng nhập NacenTwin</h1>
+          <h1 className="type-section-title text-slate-900 dark:text-white">Đăng nhập BACLINK</h1>
           <p className="mx-auto mt-2 max-w-xl text-body text-slate-600 dark:text-slate-400">
-            Cổng kết nối cung – cầu công nghệ, thúc đẩy đổi mới sáng tạo
+            Cổng Kết Nối Chuỗi Cung Ứng &amp; Sản Xuất Công Nghiệp Tỉnh Bắc Ninh
           </p>
         </div>
 
         {/* Split-Screen Main Container */}
         <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)] lg:grid lg:grid-cols-[0.82fr_1.18fr] dark:border-slate-800 dark:bg-slate-900">
           {/* Left Hero Banner */}
-          <aside className="relative hidden overflow-hidden bg-brand-800 px-10 py-12 text-white lg:flex lg:flex-col justify-between">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(45,212,191,0.32),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.12),transparent_42%)]" />
+          <aside className="relative hidden overflow-hidden bg-gradient-to-br from-[#081026] via-[#0D1938] to-[#162D66] px-10 py-12 text-white lg:flex lg:flex-col justify-between">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(6,182,212,0.32),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.18),transparent_42%)]" />
             <div className="relative">
-              <img
-                src="/NACENTECH_Main-Logo-G.png"
-                alt="NacenTech Logo"
-                className="h-12 w-auto object-contain brightness-0 invert"
-              />
-              <p className="mt-14 text-sm font-semibold uppercase tracking-[0.16em] text-teal-100">NacenTech Network</p>
-              <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight">Một tài khoản, kết nối cả hệ sinh thái.</h1>
+              <div className="size-14 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white font-black text-3xl flex items-center justify-center shadow-lg border border-cyan-400/30">
+                B
+              </div>
+              <p className="mt-14 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">BACLINK Industrial Network</p>
+              <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight">Một tài khoản, kết nối cả chuỗi cung ứng Bắc Ninh.</h1>
               <p className="mt-5 max-w-sm text-lg leading-8 text-slate-100">
-                Truy cập không gian tác nghiệp thị trường công nghệ, hồ sơ chuyên gia KH&CN và phân hệ quản lý số.
+                Truy cập không gian tác nghiệp hội viên, kết nối FDI Samsung/Foxconn và cố vấn kỹ thuật chuyên sâu.
               </p>
             </div>
-            <div className="relative mt-auto space-y-4 pt-12 text-sm leading-6 text-teal-50">
+            <div className="relative mt-auto space-y-4 pt-12 text-sm leading-6 text-cyan-50">
               {[
                 "Xác thực an toàn, bảo mật và minh bạch.",
-                "Bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP.",
-                "Liên thông mạng lưới Sở KH&CN và các lĩnh vực công nghệ trọng điểm.",
+                "Bảo vệ dữ liệu doanh nghiệp và giải pháp công nghệ.",
+                "Liên thông mạng lưới 10+ khu công nghiệp trọng điểm Bắc Ninh.",
               ].map((item) => (
                 <div className="flex items-start gap-3" key={item}>
-                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal-200" />
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -119,7 +115,7 @@ export default function LoginPage() {
           {/* Right Action Section */}
           <section className="px-5 py-7 sm:px-8 sm:py-9 lg:px-12 lg:py-11 flex flex-col justify-center">
             <header className="mb-7">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-700 dark:text-teal-300">Tài khoản NacenTech</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-cyan-600 dark:text-cyan-400">Tài khoản Hội viên BACLINK</p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Đăng nhập tài khoản</h2>
               <p className="mt-2 max-w-2xl text-body text-slate-600 dark:text-slate-400">Điền thông tin đăng nhập để truy cập vào hệ thống.</p>
             </header>

@@ -16,19 +16,26 @@ export function Footer() {
   const { t } = useI18n();
 
   return (
-    <footer className="w-full bg-[#3C5999] text-white border-t border-white/10 transition-colors dark:bg-slate-950 dark:border-slate-800">
+    <footer className="w-full bg-[#042142] text-white border-t border-amber-400/20 transition-colors dark:bg-slate-950 dark:border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
         {/* Bố cục 2 cột tối giản, siêu gọn & thanh thoát */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6 items-center">
           {/* CỘT TRÁI: Nhận diện Cổng & Cơ quan chủ quản (7 cột) */}
           <div className="md:col-span-7 space-y-2">
             <div className="flex items-center gap-2.5">
-              <div className="size-9 rounded-lg bg-white/20 text-white font-black text-lg flex items-center justify-center shadow-inner border border-white/30 shrink-0">
-                B
+              <div className="size-10 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-md shrink-0 overflow-hidden">
+                <img
+                  src="/baclink-logo-256.png"
+                  alt="BACLINK Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
               <div>
-                <span className="text-base font-extrabold tracking-tight text-white block leading-none">
+                <span className="text-base font-extrabold tracking-tight text-white block leading-none flex items-center gap-1.5">
                   BACLINK
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 tracking-wider">
+                    TINH HOA KINH BẮC
+                  </span>
                 </span>
                 <span className="text-[11px] font-medium text-white/80 block mt-0.5">
                   Cổng Thông Tin &amp; Kết Nối Chuỗi Cung Ứng Công Nghiệp Bắc Ninh
@@ -38,10 +45,10 @@ export function Footer() {
 
             <div className="space-y-1 text-xs text-white/90 leading-normal">
               <p className="font-medium text-white/90">
-                Cơ quan thành lập: <span className="font-bold text-white">{t("ministry_title")}</span>
+                Cơ quan thành lập: <span className="font-bold text-white">UBND TỈNH BẮC NINH</span>
                 <span className="mx-2 text-white/30 hidden sm:inline">•</span>
                 <span className="block sm:inline mt-0.5 sm:mt-0">
-                  Đơn vị vận hành: <span className="font-bold text-white">{t("institute_title")}</span>
+                  Đơn vị vận hành: <span className="font-bold text-amber-300">HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH (BACLINK)</span>
                 </span>
               </p>
               <div className="flex items-center gap-1.5 text-white/80">

@@ -13,11 +13,9 @@ export default function GlobalLoading() {
         {/* Vòng quay nhẹ nhàng phong cách radar */}
         <div className="absolute w-20 h-20 rounded-full border-2 border-brand-200 dark:border-slate-800 border-t-nacen-green-500 animate-spin" />
         <div className="w-14 h-14 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md flex items-center justify-center p-2.5">
-          <img
-            src="/NACENTECH_Main-Logo-G.png"
-            alt="NacenTech Loading"
-            className="w-full h-full object-contain animate-pulse"
-          />
+          <div className="size-9 rounded-lg bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white font-black text-lg flex items-center justify-center shadow-inner">
+            B
+          </div>
         </div>
       </div>
 
@@ -27,7 +25,7 @@ export default function GlobalLoading() {
           Đang nạp dữ liệu...
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Hệ thống đang kết nối dữ liệu số NacenTwin. Vui lòng chờ trong giây lát.
+          Hệ thống đang kết nối dữ liệu chuỗi cung ứng BACLINK. Vui lòng chờ trong giây lát.
         </p>
       </div>
 

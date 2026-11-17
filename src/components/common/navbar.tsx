@@ -236,7 +236,7 @@ export function Navbar() {
     },
     {
       href: "/trien-lam",
-      label: "Sự kiện Techmart",
+      label: t("events") || "Sự kiện",
       icon: Sparkles,
       badge: "Mới",
       children: [
@@ -416,12 +416,16 @@ export function Navbar() {
 
   if (isDedicatedSurvey) {
     return (
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#3C5999]/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95 shadow-md">
+      <header className="sticky top-0 z-50 w-full border-b border-amber-400/20 bg-[#053567]/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-[72px] items-center justify-between">
             <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ BACLINK">
-              <div className="size-10 rounded-lg bg-white/20 text-white font-black text-xl flex items-center justify-center shadow-inner border border-white/30 shrink-0">
-                B
+              <div className="size-11 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-md shrink-0 overflow-hidden">
+                <img
+                  src="/baclink-logo-256.png"
+                  alt="BACLINK Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-base font-extrabold tracking-tight text-white leading-none">
@@ -440,17 +444,24 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#3C5999]/95 backdrop-blur-md transition-all duration-200 shadow-md dark:border-slate-800 dark:bg-slate-950/95">
+      <header className="sticky top-0 z-50 w-full border-b border-amber-400/20 bg-[#053567]/95 backdrop-blur-md transition-all duration-200 shadow-xl dark:border-slate-800 dark:bg-slate-950/95">
         <div className="max-w-full 2xl:max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex h-[72px] items-center justify-between gap-1 xl:gap-3">
             {/* Brand Logo BACLINK */}
             <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ BACLINK">
-              <div className="size-10 rounded-lg bg-white/20 text-white font-black text-xl flex items-center justify-center shadow-inner border border-white/30 shrink-0">
-                B
+              <div className="size-11 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-md shrink-0 overflow-hidden">
+                <img
+                  src="/baclink-logo-256.png"
+                  alt="BACLINK Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
+                <span className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none flex items-center gap-1.5">
                   BACLINK
+                  <span className="hidden sm:inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 tracking-wider">
+                    KINH BẮC
+                  </span>
                 </span>
                 <span className="mt-1 hidden text-[11px] font-medium leading-none text-white/80 2xl:inline">
                   Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
@@ -469,7 +480,7 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`focus-ring relative inline-flex items-center rounded-lg px-1.5 py-1.5 text-xs xl:px-2 xl:text-xs 2xl:px-2.5 2xl:text-sm font-semibold whitespace-nowrap transition ${
+                      className={`focus-ring relative inline-flex items-center rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition ${
                         isActive
                           ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[2px] after:bg-white/40 after:rounded-full"
                           : "text-white/85 hover:text-white hover:bg-white/10"
@@ -492,7 +503,7 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       onClick={() => handleDropdownToggle(link.href)}
-                      className={`focus-ring relative inline-flex items-center gap-1 rounded-lg px-1.5 py-1.5 text-xs xl:px-2 xl:text-xs 2xl:px-2.5 2xl:text-sm font-semibold whitespace-nowrap transition cursor-pointer ${
+                      className={`focus-ring relative inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition cursor-pointer ${
                         isActive || isOpen
                           ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[2px] after:bg-white/40 after:rounded-full"
                           : "text-white/85 hover:text-white hover:bg-white/10"
