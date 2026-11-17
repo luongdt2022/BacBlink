@@ -496,3 +496,21 @@
 
 
 
+
+
+---
+
+## Phase 11: BACLINK Refactor Delta (CR-BACLINK-005)
+
+- [x] `T-08.BL.01` **[BE]** Refactor `BrokerageMatchingEngineService` & `BrokerageControllers`: gỡ phân nhánh SQL isolation cứng theo `PlatformRoles.Buyer` / `PlatformRoles.Seller` / `PlatformRoles.ProvincialAdmin`; chuyển lọc theo ngữ cảnh `mode` (`BUYER` | `SELLER`) + sở hữu `Actor.OrganizationId`/`Actor.PersonId` cho tài khoản `ENTERPRISE` Dual-Mode và `ADMIN` xem toàn sàn; khóa `/api/v1/gov/opportunities` khỏi `[AllowAnonymous]` trả `401/403/410` (`BR-08-BL-01`):
+  - Tệp: `SourceCode/backend/modules/brokerage/Application/BrokerageMatchingEngineService.cs`, `SourceCode/backend/apps/api/V1Compat/BrokerageControllers.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~BrokerageHybridMatchingEngineInvariantsTests|BrokerageConnectionRequestInvariantsTests"`.
+- [x] `T-08.BL.02` **[BE]** Bổ sung trọng số tương thích **8 ngành `IND_*` & Địa bàn/KCN Bắc Ninh** trong `BrokerageMatchingEngineService` (cộng điểm chuẩn hóa kẹp biên `[0, 100]`, trả về lý do giải trình XAI thật; bảo toàn PostgreSQL FTS Graceful Degradation) (`REQ-08-BL-01`, `BR-08-BL-02`):
+  - Tệp: `SourceCode/backend/modules/brokerage/Application/BrokerageMatchingEngineService.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~BrokerageHybridMatchingEngineInvariantsTests"`.
+- [x] `T-08.BL.03` **[FE]** Cập nhật Radar AI (`/portal/matching/radar`), Inbound Requests (`/portal/seller/connection-requests`), Pipeline (`/portal/opportunities/pipeline`) và Deal Room MOU (`/portal/opportunities/[id]/deal-room`) vận hành xuyên suốt theo `activeRole` (`BUYER` | `SELLER`) trên `RoleSwitcher` (giữ `user.role = 'ENTERPRISE'`), đồng bộ filter `IND_*` & KCN Bắc Ninh, giữ nguyên PDPD masking, mời Cố vấn Hiệp hội & `<BlockchainZkpBadge />` (`REQ-08-BL-01`, `REQ-08-BL-02`):
+  - Tệp: `SourceCode/frontend/src/app/portal/matching/radar/page.tsx`, `SourceCode/frontend/src/app/portal/seller/connection-requests/page.tsx`, `SourceCode/frontend/src/app/portal/opportunities/pipeline/page.tsx`, `SourceCode/frontend/src/app/portal/opportunities/[id]/deal-room/page.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/portal/matching/radar/page.test.tsx src/app/portal/seller/connection-requests/page.test.tsx src/app/portal/opportunities/pipeline/page.test.tsx src/app/portal/opportunities/[id]/deal-room/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-08.BL.04` **[TEST]** Cập nhật & bổ sung kiểm thử xUnit + Vitest xác thực: `ENTERPRISE` Dual-Mode xem đủ 2 chiều Mua/Bán theo `activeRole`, trọng số `IND_*` & KCN Bắc Ninh trong biên `[0, 100]`, khóa `/api/v1/gov/opportunities` (401/403/410), PDPD masking & `<BlockchainZkpBadge />` trong Deal Room MOU (`AC-08-BL-01`..`AC-08-BL-03`):
+  - Tệp: `SourceCode/backend/tests/invariants/BrokerageHybridMatchingEngineInvariantsTests.cs`, `SourceCode/backend/tests/invariants/BrokerageConnectionRequestInvariantsTests.cs`, `SourceCode/backend/tests/integration/CommercialOrderDemandBridgeTests.cs`, `SourceCode/frontend/src/app/portal/matching/radar/page.test.tsx`, `SourceCode/frontend/src/app/portal/opportunities/pipeline/page.test.tsx`, `SourceCode/frontend/src/app/portal/opportunities/[id]/deal-room/page.test.tsx`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~BrokerageHybridMatchingEngineInvariantsTests|BrokerageConnectionRequestInvariantsTests|CommercialOrderDemandBridgeTests"` và `cd SourceCode/frontend && npx vitest run src/app/portal/matching/radar/page.test.tsx src/app/portal/seller/connection-requests/page.test.tsx src/app/portal/opportunities/pipeline/page.test.tsx src/app/portal/opportunities/[id]/deal-room/page.test.tsx && npx tsc --noEmit`.

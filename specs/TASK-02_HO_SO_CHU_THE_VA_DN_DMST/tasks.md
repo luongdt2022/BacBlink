@@ -242,3 +242,21 @@
 
 
 
+
+
+---
+
+## Phase 12: BACLINK Refactor Delta (CR-BACLINK-005)
+
+- [x] `T-02.BL.01` **[DB]** Tạo script SQL seed idempotent `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (`BEGIN; ... COMMIT;`, `ON CONFLICT DO UPDATE/NOTHING`, đảm bảo 100% toàn vẹn FK PostgreSQL) nạp: 5 tài khoản 3 cấp (`@baclink.org.vn`), 10 DN Hội viên Bắc Ninh (Hanel PT, INTECH Group, Viqualita + 7 DN mẫu đa KCN có nhãn `[Dữ liệu demo mẫu]`), 10 sản phẩm/năng lực (`technology.seller_technology_offers`), 8 nhu cầu đặt hàng (`demand.demand_surveys` + `demand.demand_items`), 3 sự kiện (`content.techmart_events`), 6 khóa học (`lms.learning_materials`) và 5 cố vấn kỹ thuật (`brokerage.expert_profiles`) (`REQ-02-BL-02`, `BR-02-BL-01`):
+  - Tệp: `SourceCode/backend/scripts/seed_baclink_demo_data.sql`.
+  - Kiểm chứng: Chạy `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f SourceCode/backend/scripts/seed_baclink_demo_data.sql` 2 lần liên tiếp (idempotent) và đối soát `SELECT COUNT(*)` khớp 5/10/10/8/3/6/5 bản ghi.
+- [x] `T-02.BL.02` **[BE]** Cập nhật `EnterpriseController`, `EnterpriseService` và `ApprovalService`: khóa `/api/v1/gov/enterprises/*`, gỡ `MatchProvinceScope` / `ScopeTypes.Province`, hỗ trợ filter `sectorCode` (`IND_*`), `locationCode`/Địa bàn Bắc Ninh, `industrialZone` (KCN), `certificate`; khi `ADMIN` duyệt đơn nâng cấp Hội viên tại `/admin/approvals`, gán `PlatformRole = "ENTERPRISE"`, `ScopeType = "GLOBAL"`, `ScopeId = null` và bật `CapabilityTier = "DUAL"` (`IsBuyer = true`, `IsSeller = true`) (`BR-02-BL-02`):
+  - Tệp: `SourceCode/backend/apps/api/V1Compat/EnterpriseController.cs`, `SourceCode/backend/modules/enterprise/NacenTech.Modules.Enterprise/Application/EnterpriseService.cs`, `SourceCode/backend/modules/enterprise/NacenTech.Modules.Enterprise/Application/EnterpriseApprovalSynchronizer.cs`, `SourceCode/backend/modules/identity/Application/ApprovalService.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/NacenTech.Modules.Enterprise.Tests/NacenTech.Modules.Enterprise.Tests/NacenTech.Modules.Enterprise.Tests.csproj` và `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~EnterpriseCapabilityInvariantsTests"`.
+- [x] `T-02.BL.03` **[FE]** Chuyển đổi Danh bạ & Hồ sơ DN (`/doanh-nghiep-dmst`, `/enterprises`, `/enterprises/[taxCode]`, `EnterprisesDirectoryView.tsx`) sang Danh bạ Hội viên BACLINK: lọc theo 8+1 Địa bàn Bắc Ninh, KCN Bắc Ninh, 8 ngành `IND_*` (từ `master-data-client.ts`) và chứng chỉ (`ISO 9001`, `IATF 16949`, `ESD`, `Lean/5S`, `ESG`), bọc `<Async>` 5 UX States, cấm 100% mảng dữ liệu giả trong `catch` (`REQ-02-BL-01`, `BR-02-BL-01`):
+  - Tệp: `SourceCode/frontend/src/components/enterprise/EnterprisesDirectoryView.tsx`, `SourceCode/frontend/src/app/doanh-nghiep-dmst/page.tsx`, `SourceCode/frontend/src/app/enterprises/page.tsx`, `SourceCode/frontend/src/app/enterprises/[taxCode]/page.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/components/enterprise/EnterprisesDirectoryView.test.tsx src/app/enterprises/[taxCode]/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-02.BL.04` **[TEST]** Cập nhật & bổ sung kiểm thử xUnit + Vitest kiểm chứng: seed SQL idempotency & đếm dữ liệu thật, duyệt 1 cấp nâng `ENTERPRISE` + `DUAL`, khóa `/api/v1/gov/enterprises/*`, bộ lọc KCN/`IND_*`/chứng chỉ và Zero-Mock trên Danh bạ (`AC-02-046`..`AC-02-048`):
+  - Tệp: `SourceCode/backend/tests/NacenTech.Modules.Enterprise.Tests/NacenTech.Modules.Enterprise.Tests/EnterpriseTests.cs`, `SourceCode/backend/tests/invariants/EnterpriseCapabilityInvariantsTests.cs`, `SourceCode/frontend/src/components/enterprise/EnterprisesDirectoryView.test.tsx`, `SourceCode/frontend/src/app/enterprises/[taxCode]/page.test.tsx`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~EnterpriseTests|EnterpriseCapabilityInvariantsTests"` và `cd SourceCode/frontend && npx vitest run src/components/enterprise/EnterprisesDirectoryView.test.tsx src/app/enterprises/[taxCode]/page.test.tsx && npx tsc --noEmit`.

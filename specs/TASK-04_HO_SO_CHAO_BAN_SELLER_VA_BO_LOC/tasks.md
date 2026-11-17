@@ -367,10 +367,28 @@
   - Tiêu chí kiểm chứng:
     - [x] Mọi cuộc gọi `reviewOffer` từ client đều đính kèm Bearer token hợp lệ.
     - [x] Cổng công vụ `/gov/approvals` phê duyệt thành công không phát sinh lỗi 401 hay 403.
-- [ ] **T-04.120** `[FE/E2E]` Đồng bộ hiển thị tức thời trên Sàn Chào Bán (`/san-pham`, `/chao-ban-cong-nghe`):
+- [x] **T-04.120** `[FE/E2E]` Đồng bộ hiển thị tức thời trên Sàn Chào Bán (`/san-pham`, `/chao-ban-cong-nghe`):
   - Đảm bảo hồ sơ sau khi được `PROVINCIAL_ADMIN` duyệt xuất hiện ngay lập tức trên sàn giao dịch công khai.
-- [ ] **T-04.121** `[TEST]` Bổ sung kịch bản kiểm thử Scoped RBAC và Bearer Token cho `ReviewOffer`:
+- [x] **T-04.121** `[TEST]` Bổ sung kịch bản kiểm thử Scoped RBAC và Bearer Token cho `ReviewOffer`:
   - Unit/Integration tests kiểm tra `PROVINCIAL_ADMIN` phê duyệt thành công (HTTP 200).
   - Kiểm tra 401 Unauthorized khi thiếu header `Authorization`.
   - Kiểm tra 403 Forbidden khi vai trò không phải Admin/Cán bộ Sở (ví dụ `SELLER`, `BUYER`).
 
+
+
+---
+
+## Phase 16: BACLINK Refactor Delta (CR-BACLINK-005)
+
+- [x] `T-04.BL.01` **[BE]** Refactor `TechnologyOffersController`, `SellerOfferContracts` và `TechnologyService`: gỡ bắt buộc `ManagingAuthorityId` 34 Sở KH&CN và bỏ kiểm tra `Actor.ScopeId` theo tỉnh; thu gọn quyền duyệt niêm yết 1 cấp về `[Authorize(Roles = "ADMIN")]` (Hiệp hội BACLINK); cho phép mọi `ENTERPRISE` đăng bán & quản lý sản phẩm/năng lực của đơn vị mình kèm IDOR isolation theo `OrganizationId`/`OwnerPersonId` (`BR-04-BL-01`, `BR-04-BL-02`):
+  - [x] Tệp: `SourceCode/backend/apps/api/V2/TechnologyOffersController.cs`, `SourceCode/backend/modules/technology/Application/SellerOfferContracts.cs`, `SourceCode/backend/modules/technology/Application/TechnologyService.cs`.
+  - [x] Kiểm chứng: `dotnet test SourceCode/backend/tests/NacenTech.Modules.Technology.Tests/NacenTech.Modules.Technology.Tests.csproj` và `dotnet test SourceCode/backend/tests/integration/NacenTech.Tests.Integration.csproj --filter "FullyQualifiedName~ShopAndDemandRoleMutationTests"`.
+- [x] `T-04.BL.02` **[FE]** Chuyển đổi Sàn Sản Phẩm & Năng Lực Sản Xuất công khai (`/chao-ban-cong-nghe`, `/chao-ban-cong-nghe/[id]`) sang ngữ cảnh công nghiệp Bắc Ninh (CNC, điện tử, nhựa kỹ thuật, tự động hóa, Smart Factory): bộ lọc 8 ngành `IND_*`, Địa bàn/KCN Bắc Ninh, TRL 1–9 & chứng chỉ (`ISO 9001`, `IATF 16949`, `ESG`), nhãn bảo chứng mặc định `Hiệp hội BACLINK` trên `<IndexVerificationBadge />`, Zero-Mock `<Async>` (`REQ-04-BL-01`, `BR-04-BL-01`):
+  - [x] Tệp: `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`, `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx`, `SourceCode/frontend/src/components/common/IndexVerificationBadge.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/chao-ban-cong-nghe/page.test.tsx src/app/chao-ban-cong-nghe/[id]/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-04.BL.03` **[FE]** Cập nhật Workspace Seller (`/portal/seller/technologies/page.tsx`, `create/page.tsx`): gỡ trường bắt buộc chọn Sở KH&CN quản lý (`ManagingAuthorityId`), dùng danh mục `IND_*` & Địa bàn/KCN Bắc Ninh, vận hành thông suốt dưới `user.role = 'ENTERPRISE'` khi `activeRole = 'SELLER'` (`REQ-04-BL-02`, `BR-04-BL-01`, `BR-04-BL-02`):
+  - [x] Tệp: `SourceCode/frontend/src/app/portal/seller/technologies/page.tsx`, `SourceCode/frontend/src/app/portal/seller/technologies/create/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/portal/seller/technologies/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-04.BL.04` **[TEST]** Cập nhật & bổ sung kiểm thử xUnit + Vitest xác thực: bỏ `ManagingAuthorityId` 34 Sở, `ADMIN` duyệt 1 cấp, `ENTERPRISE` Dual-Mode (`activeRole = SELLER`) đăng/sửa sản phẩm thành công & IDOR cross-org bị chặn 403, bộ lọc `IND_*`/KCN/chứng chỉ (`AC-04-059`..`AC-04-061`):
+  - [x] Tệp: `SourceCode/backend/tests/NacenTech.Modules.Technology.Tests/SellerOfferRulesValidatorTests.cs`, `SourceCode/backend/tests/integration/ShopAndDemandRoleMutationTests.cs`, `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.test.tsx`, `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.test.tsx`, `SourceCode/frontend/src/app/portal/seller/technologies/page.test.tsx`.
+  - [x] Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~SellerOfferRulesValidatorTests|ShopAndDemandRoleMutationTests"` và `cd SourceCode/frontend && npx vitest run src/app/chao-ban-cong-nghe/page.test.tsx src/app/chao-ban-cong-nghe/[id]/page.test.tsx src/app/portal/seller/technologies/page.test.tsx && npx tsc --noEmit`.

@@ -1,9 +1,9 @@
 # Feature Specification: TASK-07 Phân Quyền & Năng Lực Quản Trị Admin
 
 **Epic**: TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN  
-**Version**: 1.16.0 (Delta v17 - CR-2026-030 Đồng bộ Sidebar /gov 3 nhóm & gom ĐMST + TT17)  
-**Status**: Completed (Shipped Gate 5 - CR-2026-030)  
-**Last Updated**: 2026-11-11  
+**Version**: 1.17.0 (Delta v18 - CR-BACLINK-002 Tinh Gọn Admin 1 Cấp BACLINK, Gỡ /gov/* & /admin/org-tree, Khóa Endpoint Legacy)  
+**Status**: In Implementation  
+**Last Updated**: 2026-11-17  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: 3D Scoped RBAC, 7 Screens Gov Portal, 10 Roles Governance  
 **Feature Branch**: `admin-governance-rbac`  
@@ -884,3 +884,45 @@ Qua thẩm định toàn diện 7 màn hình chức năng thuộc Cổng Quản 
 | :--- | :--- | :--- | :--- | :--- |
 | **REQ-GOV-NAV-01** | `BR-GOV-NAV-01` | `AC-CR-030.1`, `AC-CR-030.2` | `SourceCode/frontend/src/app/gov/layout.tsx` | `src/app/gov/layout.test.tsx`, `test_task07_delta_v8_gov_sidebar_e2e.py` |
 | **REQ-GOV-NAV-02** | `BR-GOV-NAV-01` | `AC-CR-030.3`, `AC-CR-030.4` | `src/app/gov/assessments/tt17/page.tsx`, `src/app/gov/approvals/enterprises/page.tsx`, `src/components/gov/gov-approval-queue.tsx` | `npx tsc --noEmit`, Vitest |
+
+
+---
+
+## Spec Delta v18 (CR-BACLINK-002): Tinh Gọn Admin 1 Cấp BACLINK, Gỡ `/gov/*` & `/admin/org-tree`, Khóa Endpoint Legacy [PO-DEC-BACLINK-02]
+
+> **Căn cứ phê duyệt:** `Specification/BASIC_DESIGN_BACLINK.md` (Mục 1.3, 6, 9.2: `PO-DEC-BACLINK-02`), `ADR-0018` (Mục 2.1, 2.2, 2.4); Hồ sơ Delta Ledger [`CR-BACLINK-002`](./deltas/CR-BACLINK-002_admin_1tier_remove_gov.md) (`Status: APPROVED`).
+
+### 1. Yêu Cầu Kỹ Thuật & Điểm Neo Bất Biến (Immutable Requirements & Rules)
+
+- **`REQ-BACLINK-ADM-001` (Phê Duyệt Tập Trung 1 Cấp Bởi `ADMIN` BACLINK)**:
+  - Loại bỏ cơ chế duyệt 2 cấp Sở KH&CN – Trung ương và kiểm tra `MatchProvinceScope` theo `Actor.ScopeId` tại `ApprovalService.cs`, `EnterpriseService.cs`, `TechnologyOffersController.cs`, `DemandController.cs`.
+  - `ADMIN` Hiệp hội BACLINK phê duyệt trực tiếp 1 bước cho hồ sơ Đăng ký Hội viên, Sản phẩm/Năng lực, Nhu cầu đặt hàng, Cố vấn kỹ thuật và Đánh giá Năng lực Nhà máy tại `/admin/approvals`.
+- **`REQ-BACLINK-ADM-002` (Gỡ Bỏ `/gov/*`, `/admin/org-tree` & Tinh Gọn `/admin/roles` 3 Cấp)**:
+  - Gỡ bỏ hoàn toàn các liên kết tới `/gov/*` và `/admin/org-tree` khỏi `AdminLayout` (`src/app/admin/layout.tsx`), `AdminNav` (`src/components/admin/admin-nav.tsx`), `quick-portal-switcher.tsx`, và xóa bỏ luồng thẩm định 2 cấp Sở KH&CN (`src/components/gov/*`).
+  - Truy cập trực tiếp URL `/gov/*` hoặc `/admin/org-tree` MUST chuyển hướng an toàn về Workspace hợp lệ (`/admin`, `/portal`, hoặc `/`) hoặc hiển thị thông báo ngừng phục vụ (`410 Gone`), tuyệt đối không render dữ liệu nội bộ.
+  - Tinh gọn `/admin/roles` (`src/app/admin/roles/page.tsx`) còn ma trận phân quyền **3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`)**; bỏ tab `Cảnh báo SLA 34 Sở` và `Phê duyệt vượt cấp 2 tầng`.
+- **`REQ-BACLINK-ADM-003` (Khóa Toàn Bộ Endpoint `/api/v*/gov/*` Từng Mở `[AllowAnonymous]`)**:
+  - Gỡ `[AllowAnonymous]` khỏi tất cả endpoint `/api/v1|v2/gov/*` tại `DemandController.cs`, `BrokerageControllers.cs`, `AssessmentsController.cs`, và `GovernanceControllers.cs` (sau khi đã tách API địa bàn công khai sang `/api/v1/master-data/locations` theo `CR-BACLINK-003`).
+  - Các route `/api/v*/gov/*` trả về `410 Gone` hoặc yêu cầu xác thực `[Authorize(Roles = "ADMIN")]`, không còn trả dữ liệu công khai cho request ẩn danh hoặc `PUBLIC_USER` / `ENTERPRISE`.
+- **`BR-BACLINK-ADM-001` (Đồng Nhất `RequireGlobalAdmin` Với Role `ADMIN`)**:
+  - `RequireGlobalAdmin` và policy `ADMIN_MANAGE` ở Backend MUST chấp nhận `PlatformRoles.Admin` (`"ADMIN"`), đồng thời hỗ trợ alias chuyển tiếp `SUPER_ADMIN` / `OPERATOR_ADMIN` đã được `NormalizeTier`.
+- **`BR-BACLINK-ADM-002` (Bảo Toàn Audit Log & Optimistic Locking)**:
+  - Duyệt 1 cấp của `ADMIN` MUST ghi nhận `AuditLog` bất biến và kiểm tra `RowVersion` / trạng thái hợp lệ để chống duyệt đè.
+- **`TEST-BACLINK-002` (Security Fuzzing & Admin UI Verification)**:
+  - Kiểm chứng toàn bộ route `/api/v*/gov/*` chặn ẩn danh & sai role (`401`/`403`/`410`); kiểm chứng `/admin` không còn link `/admin/org-tree` hay `/gov/*`, `/admin/roles` hiển thị 3 cấp, và truy cập `/gov` hoặc `/admin/org-tree` điều hướng an toàn.
+
+### 2. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+
+- **`AC-CR-BACLINK-002.1`**: Request ẩn danh hoặc mang JWT `PUBLIC_USER` / `ENTERPRISE` gọi `/api/v1|v2/gov/*` đều nhận `401`, `403`, hoặc `410` (không trả `200 OK`).
+- **`AC-CR-BACLINK-002.2`**: `ADMIN` phê duyệt hồ sơ Hội viên tại `/admin/approvals` thành công trong 1 bước mà không vướng `MatchProvinceScope` hay duyệt vượt cấp.
+- **`AC-CR-BACLINK-002.3`**: `AdminLayout`, `AdminNav`, `quick-portal-switcher.tsx` không còn liên kết `/admin/org-tree` hay `/gov/*`, không còn nhãn `34 Tỉnh/Thành`, `SLA 34 Sở`, `Vượt cấp tầng 0`.
+- **`AC-CR-BACLINK-002.4`**: `/admin/roles` hiển thị ma trận 3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`).
+- **`AC-CR-BACLINK-002.5`**: Truy cập `/gov` hoặc `/admin/org-tree` không lộ dữ liệu và điều hướng an toàn; bộ test RBAC/Admin đạt PASS 100%.
+
+### 3. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-BACLINK-ADM-001** | `BR-BACLINK-ADM-001`, `BR-BACLINK-ADM-002` | `AC-CR-BACLINK-002.2` | `ApprovalService.cs`, `EnterpriseService.cs`, `TechnologyOffersController.cs`, `GovernanceControllers.cs` | `dotnet test` (Approval & RBAC suites) |
+| **REQ-BACLINK-ADM-002** | `BR-BACLINK-ADM-001` | `AC-CR-BACLINK-002.3`, `AC-CR-BACLINK-002.4`, `AC-CR-BACLINK-002.5` | `src/app/admin/layout.tsx`, `admin-nav.tsx`, `admin/roles/page.tsx`, `app/gov/**`, `app/admin/org-tree/**`, `quick-portal-switcher.tsx` | `admin/layout.test.tsx`, `admin/roles/page.test.tsx`, Playwright E2E |
+| **REQ-BACLINK-ADM-003** | `BR-BACLINK-ADM-001` | `AC-CR-BACLINK-002.1` | `DemandController.cs`, `BrokerageControllers.cs`, `AssessmentsController.cs`, `GovernanceControllers.cs` | `rbac-permission-fuzzer` / API integration tests |

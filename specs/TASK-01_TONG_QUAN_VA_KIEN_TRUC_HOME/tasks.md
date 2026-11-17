@@ -156,3 +156,27 @@
   - [x] Chạy Playwright Visual QA & Vitest trên 3 viewports (Mobile 390px, Tablet 768px, Desktop 1280px) đạt điểm $\ge 8.0/10$; xác nhận tỷ lệ tương phản WCAG AA $\ge 4.5:1$ (Navy 6.82:1, Slate 14:1) và Touch Target $\ge 44 \times 44\text{px}$.
   - [x] Đối soát bảo đảm không có mock ngầm (Zero-Mock mandate) và ký biên bản Quality Gate 4/5.
 
+
+
+---
+
+## Phase 7: BACLINK Refactor Delta (CR-BACLINK-004)
+
+- [x] `T-01.BL.01` **[BE]** Đồng bộ `PortalOverviewService`, `PortalControllers`, `TechmartEventService` và `AiAssistantService` sang ngữ cảnh BACLINK (4 KPI thật từ PostgreSQL, đọc 3 sự kiện giao thương BACLINK từ `content.techmart_events`, system prompt trợ lý AI theo 8 ngành `IND_*` & KCN Bắc Ninh, không còn dẫn chiếu `NacenTech`/`NacenTwin`/`Bộ KH&CN`) (`REQ-01-BL-01`, `REQ-01-BL-03`, `BR-01-BL-01`):
+  - [x] Tệp: `SourceCode/backend/apps/api/V1Compat/PortalOverviewService.cs`, `SourceCode/backend/apps/api/V1Compat/PortalControllers.cs`, `SourceCode/backend/modules/content/Application/TechmartEventService.cs`, `SourceCode/backend/modules/content/Application/AiAssistantService.cs`.
+  - [x] Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~PortalHomeInvariantsTests"`.
+- [x] `T-01.BL.02` **[FE]** Chuyển đổi Trang Chủ `/` sang nhận diện BACLINK (hero *"Kết Nối Chuỗi Cung Ứng & Nâng Tầm Công Nghiệp Bắc Ninh"*, 4 KPI động từ `GET /api/v1/portal/stats` qua `<Async>` 5 UX States, quy trình 4 bước BACLINK, khối KCN trọng điểm Bắc Ninh & Hội viên tiêu biểu, 8 chips `IND_*` nạp động từ `TASK-06`) (`REQ-01-BL-01`, `BR-01-BL-01`):
+  - [x] Tệp: `SourceCode/frontend/src/app/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/page.test.tsx`.
+- [x] `T-01.BL.03` **[FE]** Cập nhật Trang Giới Thiệu `/gioi-thieu` (QĐ 1652/QĐ-UBND ngày 16/06/2025, Số 7 Lý Thái Tổ, TP. Bắc Ninh, Đại hội I 2025–2028, BCH 28 thành viên, phương châm & Điều lệ) và Trang Ma Trận `/matrix` (8 ngành `IND_*` × Địa bàn/KCN Bắc Ninh) (`REQ-01-BL-02`, `BR-01-BL-01`):
+  - [x] Tệp: `SourceCode/frontend/src/app/gioi-thieu/page.tsx`, `SourceCode/frontend/src/app/matrix/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/gioi-thieu/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-01.BL.04` **[FE]** Chuyển đổi Trang Sự Kiện `/trien-lam` & `/trien-lam/dang-ky-tham-quan` sang Xúc tiến Giao thương FDI–Nội địa BACLINK, đọc 3 sự kiện thật từ PostgreSQL qua `<Async>` và giữ luồng đăng ký B2B (`REQ-01-BL-03`, `BR-01-BL-01`):
+  - [x] Tệp: `SourceCode/frontend/src/app/trien-lam/page.tsx`, `SourceCode/frontend/src/app/trien-lam/dang-ky-tham-quan/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx tsc --noEmit`.
+- [x] `T-01.BL.05` **[FE]** Cập nhật Dịch Vụ Hỗ Trợ Hội Viên `/dich-vu-khac` (giữ tinh gọn Card 03 `REQ-01-SRV-01`), tái cấu trúc Hướng Dẫn `/huong-dan` & `guide-data.ts` theo đúng 3 cấp (`ADMIN`, `ENTERPRISE` Dual-Mode, `PUBLIC_USER`, xóa 100% `/gov/*` & 34 Sở KH&CN), và cập nhật nhãn bảo chứng mặc định `'Hiệp hội BACLINK'` trên `<IndexVerificationBadge />` (`REQ-01-BL-04`, `BR-01-BL-01`, `BR-01-BL-02`):
+  - [x] Tệp: `SourceCode/frontend/src/app/dich-vu-khac/page.tsx`, `SourceCode/frontend/src/app/huong-dan/page.tsx`, `SourceCode/frontend/src/app/huong-dan/guide-data.ts`, `SourceCode/frontend/src/components/common/IndexVerificationBadge.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/dich-vu-khac/page.test.tsx src/app/huong-dan/page.test.tsx src/components/common/IndexVerificationBadge.test.tsx`.
+- [x] `T-01.BL.06` **[TEST]** Bổ sung & cập nhật Unit/Component tests cho Trang chủ, Giới thiệu QĐ 1652, Ma trận `IND_*`, Sự kiện PostgreSQL seed, Dịch vụ, Hướng dẫn 3 cấp và kiểm tra Zero Brand Leakage (`AC-01-009`..`AC-01-012`, `BR-01-BL-01`, `BR-01-BL-02`):
+  - Tệp: `SourceCode/frontend/src/app/page.test.tsx`, `SourceCode/frontend/src/app/gioi-thieu/page.test.tsx`, `SourceCode/frontend/src/app/matrix/page.test.tsx`, `SourceCode/frontend/src/app/trien-lam/page.test.tsx`, `SourceCode/frontend/src/app/huong-dan/page.test.tsx`, `SourceCode/frontend/src/components/common/IndexVerificationBadge.test.tsx`, `SourceCode/backend/tests/invariants/PortalHomeInvariantsTests.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~PortalHomeInvariantsTests"` và `cd SourceCode/frontend && npx vitest run src/app/page.test.tsx src/app/gioi-thieu/page.test.tsx src/app/matrix/page.test.tsx src/app/trien-lam/page.test.tsx src/app/dich-vu-khac/page.test.tsx src/app/huong-dan/page.test.tsx src/components/common/IndexVerificationBadge.test.tsx && npx tsc --noEmit`.

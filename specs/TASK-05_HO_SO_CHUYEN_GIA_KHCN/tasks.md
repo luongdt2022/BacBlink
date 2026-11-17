@@ -2,8 +2,8 @@
 
 **Feature**: `TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
 **Spec Reference**: [`spec.md`](./spec.md) | **Plan Reference**: [`plan.md`](./plan.md)  
-**Version**: 1.19.0  
-**Status**: Delta v1.5 (CR-2026-021) đã hoàn thiện Kế hoạch Kỹ thuật Plan Delta (Gate 2 Ready)  
+**Version**: 1.22.0  
+**Status**: In Implementation (CR-BACLINK-006)  
 
 ---
 
@@ -1048,3 +1048,32 @@
     + Kịch bản E2E: Buyer gửi phiếu trên `/experts/[expertCode]` nhận `ticketCode` $\rightarrow$ Expert mở `/portal/expert/consultations` thấy phiếu thật (PII masked khi `PENDING`), `ACCEPT` kèm lịch hẹn & link họp (PII unmasked khi `SCHEDULED`) $\rightarrow$ Buyer mở `/portal/buyer/consultations` thấy `SCHEDULED` + lịch hẹn + link họp $\rightarrow$ Expert `COMPLETE` $\rightarrow$ Buyer gửi đánh giá 5 sao.
     + Kịch bản IDOR/RBAC Fuzzing: Buyer B không xem/đánh giá được phiếu của Buyer A (`403`/`404`); Expert B không xem/xử lý được phiếu của Expert A (`403`); đánh giá lặp trả `409`.
   - **Tiêu chí kiểm chứng**: Playwright E2E & IDOR fuzzing pass 100%, Ruthless Visual QA $\ge 8.0/10$.
+
+---
+
+## Phase 32: BACLINK Refactor Delta (CR-BACLINK-006)
+
+- [x] `T-05.BL.01` `[DB]` Bổ sung dữ liệu mẫu 5 hồ sơ Ban Cố vấn Kỹ thuật công nghiệp (`Status = 'APPROVED'`, `VisibilityStatus = 'PUBLIC'`, `person_id` gắn tài khoản `PUBLIC_USER`/`ENTERPRISE` với `scope_type = 'GLOBAL'`) vào `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (`REQ-05-BL-02`).
+  - *Kiểm chứng*: Chạy `psql` thực thi idempotent 2 lần liên tiếp vào PostgreSQL thật có đủ 5 bản ghi trong `brokerage.expert_profiles`, 0 lỗi trùng khóa.
+
+- [x] `T-05.BL.02` `[BE]` Cập nhật `SourceCode/backend/apps/api/V1Compat/ExpertController.cs` và `SourceCode/backend/modules/identity/Application/ApprovalService.cs` thực thi cơ chế Q1 (`BR-05-BL-01`, `REQ-05-BL-02`, `BR-05-BL-02`):
+  - Thay thế toàn bộ kiểm tra cứng `VerifiedExpert` / `"EXPERT"` tại `ExpertController.cs` (dòng 228, 243, 254, 285, 421, 589) bằng `EnsureApprovedExpertOrAdminAsync(ct)` (cho phép `ADMIN` hoặc `ExpertProfile.Status == APPROVED` theo `Actor.PersonId`).
+  - Loại bỏ `ProvincialAdmin` & `ScopeTypes.Province` tại `ExpertController.cs` (dòng 185, 757) và ngừng ghi đè `PlatformRoles.VerifiedExpert` tại `ApprovalService.cs` (dòng 521), giữ RBAC 3 cấp & `ScopeTypes.Global`.
+  - Bảo toàn chống IDOR (`requester_person_id` / `person_id`) và che chắn PII theo NĐ 13/2023 (`BR-05-BL-02`).
+  - *Kiểm chứng*: `dotnet build SourceCode/backend/NacenTech.slnx` 0 lỗi; `dotnet test` pass các test `ExpertAuthenticationOwnershipTests`, `ExpertApprovalAndSectorPersistenceTests`.
+
+- [x] `T-05.BL.03` `[BE]` Cập nhật bộ lọc danh bạ công khai trong `SourceCode/backend/modules/brokerage/Application/ExpertService.cs` hỗ trợ lọc theo 8 mã ngành `IND_*` và địa bàn/KCN Bắc Ninh (`REQ-05-BL-01`).
+  - *Kiểm chứng*: `dotnet test SourceCode/backend/tests/integration/ExpertPublicDirectoryMultiFilterTests.cs` pass 100%.
+
+- [x] `T-05.BL.04` `[FE]` Tái định vị giao diện danh bạ & hồ sơ đăng ký sang **Ban Cố vấn Kỹ thuật Hiệp hội BACLINK** tại `SourceCode/frontend/src/app/experts/page.tsx`, `SourceCode/frontend/src/app/experts/[expertCode]/page.tsx`, `SourceCode/frontend/src/app/profile/upgrade/expert/page.tsx` (`REQ-05-BL-01`, `AC-05-BL-01`).
+  - Đổi bộ lọc 18 ngành TT17 & 34 tỉnh sang 8 ngành `IND_*` & Địa bàn/KCN Bắc Ninh nạp từ Master Data API (Zero-Mock, `<Async>` 5 UX States).
+  - *Kiểm chứng*: `npx tsc --noEmit` 0 lỗi; đối soát không còn nhãn "Sở KH&CN" / "34 tỉnh" trên `/experts*`.
+
+- [x] `T-05.BL.05` `[FE]` Cập nhật cơ chế guard workspace cố vấn tại `SourceCode/frontend/src/lib/auth-client.ts`, `SourceCode/frontend/src/components/auth/role-guard.tsx` và các trang `SourceCode/frontend/src/app/portal/expert/{profile,profile/edit,consultations,projects,account}/page.tsx` (`BR-05-BL-01`, `AC-05-BL-02`).
+  - Cho phép `ADMIN` hoặc tài khoản `PUBLIC_USER`/`ENTERPRISE` có `ExpertProfile (Status = APPROVED)` truy cập `/portal/expert/*`; xóa banner cảnh báo `"Chờ phê duyệt cấp Sở (EXPERT)"`.
+  - *Kiểm chứng*: `npx tsc --noEmit` 0 lỗi; `npx vitest run src/app/portal/expert/` pass 100%.
+
+- [x] `T-05.BL.06` `[TEST]` Cập nhật & chạy kiểm thử 4 tầng cho `TASK-05` (`AC-05-BL-01`..`AC-05-BL-03`):
+  - Unit/Integration test xUnit chứng minh user `PUBLIC_USER`/`ENTERPRISE` có `ExpertProfile = APPROVED` truy cập được `/api/v1/portal/expert/*` (200 OK), user chưa duyệt nhận `403`, IDOR chéo expert/buyer bị chặn `403`, không tồn tại role thứ 4 trong JWT.
+  - Vitest (`experts/page.test.tsx`, `portal/expert/**/*.test.tsx`) & Playwright E2E lọc danh bạ Bắc Ninh + workspace cố vấn.
+  - *Kiểm chứng*: `dotnet test` & `npx vitest run` & Playwright E2E pass 100%, Zero-Mock.

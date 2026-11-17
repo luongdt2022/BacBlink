@@ -1,9 +1,9 @@
 # Kế Hoạch Kỹ Thuật (plan.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
 **Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
-**Version**: 1.15.0  
-**Status**: In Progress (Gate 2 Architecture Approved - Executing Delta v15)  
-**Last Updated**: 2026-11-04  
+**Version**: 1.16.0  
+**Status**: In Implementation  
+**Last Updated**: 2026-11-17  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
 
@@ -1204,3 +1204,34 @@ public sealed record SubmitDeepSurveyRequest(
   * Hỗ trợ khi người dùng bấm "In phiếu tiếp nhận" (`window.print()`), hình ảnh chữ ký hiển thị sắc nét trong bản in khổ A4.
 
 
+
+
+---
+
+## 8. KẾ HOẠCH KIẾN TRÚC DELTA BACLINK (`CR-BACLINK-005` · Version 1.16.0)
+
+> **Căn cứ**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md) (Mục 2.2), [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).
+
+### 8.1. Backend `demand` & `DemandController` (`BR-03-BL-01`, `BR-03-BL-02`)
+1. **Khóa Endpoint `/gov/demands*` & Phê duyệt 1 cấp (`SourceCode/backend/apps/api/V1Compat/DemandController.cs`)**:
+   - Gỡ `[AllowAnonymous]` khỏi các action `gov/demands`, `gov/demands/surveys` và xóa logic kiểm tra `PROVINCIAL_ADMIN` / `ScopeTypes.Province`. Trả `401/403/410` trên route `/api/v1/gov/demands*`.
+   - Chuẩn hóa luồng kiểm duyệt nhu cầu tập trung 1 cấp bởi `ADMIN` BACLINK tại `/api/v1/admin/demands/{id}/verify` (`[Authorize(Roles = "ADMIN")]`).
+2. **Tách Bạch `user.role = 'ENTERPRISE'` và `activeRole = 'BUYER'` (`DemandController.cs`, `DemandService.cs`)**:
+   - Cho phép mọi tài khoản `ENTERPRISE` (và `PUBLIC_USER` khi mở luồng đặt hàng/khảo sát hợp lệ) tạo/sửa/đóng bài toán nhu cầu của chính mình/tổ chức mình (`CreatedBy == Actor.PersonId` hoặc `OrganizationId == Actor.OrganizationId`), không từ chối vì thiếu role `BUYER` riêng lẻ trong JWT.
+   - Bảo toàn 100% quy tắc chống giả mạo điểm (`BR-TNI-VERIFY-01`: cấm fallback `tniScore || 75`) và IDOR isolation giữa các tổ chức.
+
+### 8.2. Frontend Bảng Nhu Cầu Tìm Nhà Cung Ứng & Đặt Hàng Gia Công (`REQ-03-BL-01`, `REQ-03-BL-02`)
+- **Các tệp mục tiêu**:
+  * `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.tsx`
+  * `SourceCode/frontend/src/app/nhu-cau-cong-nghe/[id]/page.tsx`
+  * `SourceCode/frontend/src/app/khao-sat-nhu-cau/page.tsx`
+  * `SourceCode/frontend/src/app/khao-sat-doanh-nghiep/page.tsx`
+  * `SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`
+- **Thiết kế kỹ thuật**:
+  * Tái định vị nhãn & copywriting sang **Bảng Nhu cầu Mua, Đặt hàng Gia công & Tìm nhà cung ứng công nghiệp Bắc Ninh**; nhãn cơ quan bảo chứng mặc định hiển thị `Hiệp hội BACLINK` (`BR-03-BL-01`).
+  * Thay bộ lọc 18 ngành `LV*` & 34 tỉnh bằng bộ lọc động **8 ngành `IND_*`** & **Địa bàn/KCN Bắc Ninh** từ `master-data-client.ts` (`TASK-06`).
+  * Workspace `/portal/buyer/demands`: giữ `RoleGuard` theo `ENTERPRISE` (không kiểm tra `user.role === 'BUYER'`), đọc `activeRole = 'BUYER'` từ `RoleSwitcher` để mở `QuickDemandModal` & `EditDemandModal`, bọc toàn bộ truy vấn qua `<Async>` 5 UX States (Zero-Mock).
+
+### 8.3. Chiến Lược Kiểm Thử (`AC-03-BL-01` .. `AC-03-BL-03`)
+- **Backend**: `dotnet test` trên `DemandApprovalLifecycleAndPrivacyTests.cs`, `DemandItemLifecycleTests.cs`, `ShopAndDemandRoleMutationTests.cs` (kiểm tra `/gov/demands*` trả 401/403/410, `ADMIN` duyệt 1 cấp, `ENTERPRISE` Dual-Mode CRUD nhu cầu thành công, IDOR cross-org bị chặn 403).
+- **Frontend**: `vitest` cho `nhu-cau-cong-nghe/page.test.tsx`, `nhu-cau-cong-nghe/[id]/page.test.tsx`, `portal/buyer/demands/page.test.tsx`, `khao-sat-nhu-cau/page.test.tsx` + `npx tsc --noEmit`.

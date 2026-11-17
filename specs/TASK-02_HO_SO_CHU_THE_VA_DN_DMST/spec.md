@@ -1,9 +1,9 @@
 # Đặc Tả Yêu Cầu Kỹ Thuật (spec.md) — TASK-02: Hồ Sơ Chủ Thể & 304 Doanh Nghiệp ĐMST
 
-**Epic**: TASK-02 Hồ Sơ Chủ Thể & 304 Doanh Nghiệp ĐMST  
-**Version**: 1.12.0  
-**Status**: In Implementation (CR-2026-024-PART2 Approved)  
-**Last Updated**: 2026-11-03  
+**Epic**: TASK-02 Hồ Sơ Chủ Thể & Doanh Nghiệp Hội Viên BACLINK  
+**Version**: 1.13.0  
+**Status**: In Implementation (CR-BACLINK-005 Approved)  
+**Last Updated**: 2026-11-17  
 > **Ánh xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/02_BASIC_DESIGN/TASK-02_HO_SO_CHU_THE_VA_DN_DMST/) & `Specification/BASIC_DESIGN_NACENTECH.md` Mục 27  
 > **Căn cứ pháp lý & Dữ liệu gốc (SSOT)**: 
 > 1. Sheet `DN ĐMST` (225 dòng dữ liệu, 10 nhóm trường) trong `Nacentwin_20260924_bo_loc_da_sua.xlsx`.
@@ -621,6 +621,37 @@ Danh sách nạp động từ CSDL PostgreSQL (`policy.taxonomy_terms` với `ki
 | **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-043` (ScopeId String Handler) |
 | **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-044` (Truy cập Portal Enterprise) |
 | **`REQ-02-011`** | `BR-02-007` | `API-02-008` | `TEST-02-009` | `AC-02-045` (Kiểm toán Audit Log) |
+
+---
+
+## Spec Delta v6 (CR-BACLINK-005): Danh Bạ Doanh Nghiệp Hội Viên Bắc Ninh, Dual-Mode `ENTERPRISE` & SQL Seed Demo Zero-Mock
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-005`](./deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 1, 3, 6, 9.2); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).  
+> **Phiên bản áp dụng**: `1.13.0`  
+> **Trạng thái**: `APPROVED` (In Implementation)
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-02-BL-01`, `REQ-02-BL-02`)
+
+- **`REQ-02-BL-01` [Danh Bạ DN Hội Viên BACLINK Lọc Theo KCN, Địa Bàn & 8 Ngành `IND_*`]**:
+  - Các màn hình `/doanh-nghiep-dmst`, `/enterprises`, `/enterprises/[taxCode]` và `EnterprisesDirectoryView.tsx` chuyển đổi sang **Danh bạ Doanh nghiệp Hội viên Hiệp hội BACLINK**, hỗ trợ lọc theo 8 địa bàn Bắc Ninh + `NGOAI_TINH`, danh mục **KCN trọng điểm Bắc Ninh** (Yên Phong I/II, Quế Võ I/II/III, VSIP Bắc Ninh, Tiên Sơn, Đại Đồng – Hoàn Sơn, Hanaka, Thuận Thành, Gia Bình), **8 ngành công nghiệp `IND_*`** và chứng chỉ nhà máy (`ISO 9001`, `IATF 16949`, `ISO 14001`, `ESD`, `Lean/5S`, `ESG`).
+- **`REQ-02-BL-02` [Script SQL Seed Demo BACLINK Idempotent (`seed_baclink_demo_data.sql`)]**:
+  - Xây dựng script `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (`ON CONFLICT DO NOTHING / DO UPDATE`) nạp trực tiếp vào PostgreSQL thật:
+    * **5 tài khoản 3 cấp** (`admin@baclink.org.vn`, `member.hanelpt@baclink.org.vn`, `member.intech@baclink.org.vn`, `member.viqualita@baclink.org.vn`, `guest@baclink.org.vn`).
+    * **10 DN Hội viên Bắc Ninh**: 3 DN thực tế tiêu biểu (**Hanel PT**, **INTECH Group**, **Viqualita**) + 7 DN mẫu minh họa đa KCN *(Cơ khí Chính xác Kinh Bắc, Nhựa Kỹ thuật Yên Phong, Tự động hóa & Robot VSIP, Bao bì Công nghiệp Quế Võ, Giải pháp Nhà máy Thông minh Từ Sơn, Logistics Công nghiệp Bắc Ninh, Vật liệu Xanh Tiên Sơn)* gắn nhãn rõ dữ liệu demo mẫu.
+    * Đầy đủ dữ liệu liên kết: 10 sản phẩm/năng lực, 8 nhu cầu đặt hàng, 3 sự kiện BACLINK, 6 khóa học LMS, 5 cố vấn kỹ thuật.
+
+### 2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-02-BL-01`, `BR-02-BL-02`)
+
+- **`BR-02-BL-01` [Zero-Mock Tuyệt Đối Trên Danh Bạ & Hồ Sơ Doanh Nghiệp]**:
+  - Cấm tuyệt đối mảng dữ liệu giả trong khối `catch` hoặc fallback tĩnh tại Frontend (`EnterprisesDirectoryView.tsx`, `/enterprises/[taxCode]`). Mọi truy vấn hiển thị qua `<Async>` đủ 5 UX States.
+- **`BR-02-BL-02` [Phê Duyệt Hội Viên 1 Cấp Bởi `ADMIN` & Cấp Quyền `DUAL` (`ADR-0018` Mục 2.3)]**:
+  - `ApprovalService` và `EnterpriseService` bãi bỏ `MatchProvinceScope` / `ScopeTypes.Province` / `/api/v1/gov/enterprises/*`. Khi `ADMIN` phê duyệt đơn nâng cấp Hội viên tại `/admin/approvals`, tài khoản nhận `PlatformRole = "ENTERPRISE"`, `ScopeType = "GLOBAL"`, `ScopeId = null` và thực thể `Enterprise` tự động kích hoạt `CapabilityTier = "DUAL"` (`IsBuyer = true`, `IsSeller = true`).
+
+### 3. Tiêu Chuẩn Chấp Thuận (`AC-02-046` .. `AC-02-048`)
+
+- **`AC-02-046`**: Thực thi `seed_baclink_demo_data.sql` trên PostgreSQL ghi nhận đủ 10 DN Hội viên Bắc Ninh (gồm Hanel PT, INTECH Group, Viqualita) và 5 tài khoản 3 cấp; chạy lại lần 2 không gây lỗi trùng lặp (idempotent).
+- **`AC-02-047`**: Tại `/enterprises` và `/doanh-nghiep-dmst`, người dùng lọc được DN theo KCN Bắc Ninh và 8 ngành `IND_*`; khi API trả lỗi 500, UI hiển thị Error State của `<Async>` và 0 bản ghi giả.
+- **`AC-02-048`**: Khi `ADMIN` phê duyệt hồ sơ đăng ký Hội viên mới, tài khoản `PUBLIC_USER` nâng lên `ENTERPRISE` với `CapabilityTier = "DUAL"` và `activeRole` chuyển đổi được cả Bên Mua lẫn Bên Bán mà không đổi `user.role`.
 
 
 

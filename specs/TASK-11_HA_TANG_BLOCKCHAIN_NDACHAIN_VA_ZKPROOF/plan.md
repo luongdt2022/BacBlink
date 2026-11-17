@@ -2,7 +2,9 @@
 ## PHÂN HỆ: HẠ TẦNG LIÊN THÔNG NDACHAIN (BỘ CÔNG AN) & BẢO CHỨNG MẬT MÃ ZKPROOF (TASK-11)
 
 > **Mã Epic**: `TASK-11_HA_TANG_BLOCKCHAIN_NDACHAIN_VA_ZKPROOF`  
-> **Kiến trúc áp dụng**: Clean Architecture .NET 10 LTS Modular Monolith + Hexagonal Ports & Adapters + Next.js 15 App Router + PostgreSQL 16 Cryptographic Ledger  
+> **Version**: 1.1.0  
+> **Status**: In Implementation (CR-BACLINK-006)  
+> **Kiến trúc áp dụng**: Clean Architecture .NET 10 LTS Modular Monolith + Hexagonal Ports & Adapters + Next.js 15 App Router + PostgreSQL 16 Cryptographic Ledger (`ADR-0018`)  
 > **Tài liệu quyết định kiến trúc**: [`ADR-0017: Entity-Agnostic Blockchain & ZKP Anchoring Engine`](../../backend/docs/decisions/ADR-0017-ENTITY-AGNOSTIC-BLOCKCHAIN-AND-ZKP-ANCHORING-ENGINE.md)  
 > **Căn cứ nghiệp vụ**: [`Specification/BASIC_DESIGN_NACENTECH.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/BASIC_DESIGN_NACENTECH.md) Mục 24 (Quyết định `PO-DEC-20261102-06`) & Walking Skeleton WS-06  
 
@@ -349,3 +351,29 @@ Xây dựng giao diện chuẩn 3 Tabs, bọc trong component `<Async>` chuẩn 
 3. **Cơ Chế Bất Biến & Chống Sửa Đổi Khối (Block Immutability Guard)**:
    - CSDL PostgreSQL được cấu hình Trigger hoặc Rule chặn lệnh `UPDATE` và `DELETE` trên bảng `blockchain.ledger_blocks`.
    - Khối đã sinh là vĩnh viễn không thể thay đổi, đảm bảo tính chất Append-Only của công nghệ sổ cái phân tán.
+
+---
+
+### 7. PLAN DELTA V1.1.0 (CR-BACLINK-006): TÁI ĐỊNH VỊ CHỨNG THỰC SỐ & MOU BACLINK TRUST/ZKP
+
+> **Change Request**: `CR-BACLINK-006` | **Quyết định**: `ADR-0018`, `PO-DEC-BACLINK-04`  
+> **Coverage**: `REQ-11-BL-01`, `BR-11-BL-01`, `AC-11-BL-01`..`AC-11-BL-03`
+
+#### 7.1. Bảo Toàn 100% Core Schema & Lõi Mật Mã RFC 8785 (`BR-11-BL-01`)
+
+- **Bất biến không thay đổi**:
+  - Giữ nguyên 100% schema `blockchain.*` (`anchor_policies`, `anchor_records`, `ledger_blocks`, `zk_proof_vault`, `bridge_sync_logs`), khóa đồng thời `version`, trigger bất biến `ledger_blocks`.
+  - Giữ nguyên 100% lõi toán học mật mã: `CanonicalJsonSerializer` (RFC 8785 JCS), SHA-256, ZKP Commitment + Salt 256-bit AES-256-GCM, Merkle Tree nhị phân, ECDSA P-256 validator signature, Outbox Pattern ($\le 15\text{ms}$), NDAChain Gateway (`did:nda`), `BlockchainBusinessRules.cs` (`BR-BC-01`..`08`) và tuân thủ PDPD NĐ 13/2023/NĐ-CP (`NFR-BC-003`).
+- **Backend RBAC & Node Metadata (`SourceCode/backend/modules/blockchain/Api/BlockchainAdminController.cs`)**:
+  - Chuẩn hóa `IsAuthorizedAdmin` tương thích `PlatformRoles.NormalizeTier(actor.PlatformRole) == PlatformRoles.Admin` (đồng thời giữ alias `SuperAdmin`/`OperatorAdmin` trong giai đoạn chuyển tiếp `ADR-0018`).
+  - Mọi metadata node xác thực trả về sử dụng định danh **BACLINK Trust Node — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh**.
+
+#### 7.2. Tái Định Vị Giao Diện Chứng Thực BACLINK Trust/ZKP & 4 Thực Thể Cốt Lõi (`REQ-11-BL-01`, `BR-11-BL-01`)
+
+- **Bề mặt quản trị (`SourceCode/frontend/src/app/admin/blockchain/page.tsx`)**:
+  - Cập nhật tiêu đề, mô tả và nhãn Node tại dòng 579 (`Sổ cái nội bộ NacenTech`) sang **BACLINK Trust/ZKP — Chứng thực Hồ sơ Năng lực & MOU số** và **BACLINK Trust Node — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh** (xóa bỏ chuỗi `NacenTech Node` / `Sở KH&CN`).
+  - Hiển thị đầy đủ bộ 4 thực thể neo BACLINK: Sản phẩm & Năng lực (`TASK-04` / `SELLER_OFFER`), Thỏa thuận MOU Deal Room (`TASK-08` / `DEAL_ROOM_MOU`), Báo cáo Đánh giá Năng lực Nhà máy (`TASK-09` / `TT17_ASSESSMENT`), Hồ sơ DN Hội viên (`TASK-02` / `ENTERPRISE_PROFILE`).
+- **Component & Trang kiểm chứng công khai (`SourceCode/frontend/src/components/blockchain/BlockchainZkpBadge.tsx` & PDF/Verify Modal)**:
+  - Cập nhật `<BlockchainZkpBadge />` và modal kiểm chứng toán học (`/api/v1/public/blockchain/verify/*`) hiển thị **BACLINK Trust/ZKP** và đơn vị bảo chứng **BACLINK Trust Node — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh**, giữ nguyên 4 bước xác thực live (`VERIFIED` / `TAMPERED` / `NOT_ANCHORED`).
+- **Database Seed (`SourceCode/backend/scripts/seed_baclink_demo_data.sql`)**:
+  - Bảo đảm `blockchain.anchor_policies` kích hoạt cho 4 thực thể BACLINK và liên kết bản ghi kiểm chứng mẫu hợp lệ trên PostgreSQL thật (Zero-Mock).

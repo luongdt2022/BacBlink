@@ -1,9 +1,9 @@
 # Đặc Tả Kỹ Thuật (Spec Kit): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
 
 **Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
-**Version**: 1.15.0  
-**Status**: In Progress (Gate 2 Architecture Approved - Executing Delta v15)  
-**Last Updated**: 2026-11-04  
+**Version**: 1.16.0  
+**Status**: In Implementation (CR-BACLINK-005 Approved)  
+**Last Updated**: 2026-11-17  
 **Baseline Hash**: `a1b2c3d`  
 **Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
 
@@ -997,3 +997,32 @@ stateDiagram-v2
 ### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
 - **`AC-TNI-VERIFY-01`**: Tại `/khao-sat-nhu-cau`, `QuickDemandModal` và `/nhu-cau-cong-nghe/[id]`, bấm vào nút `"Phương pháp tính chỉ số TNI"` mở ra Modal hiển thị đầy đủ công thức 4 chiều K-L-N-O, dẫn chứng 304 DN và ví dụ minh họa.
 - **`AC-TNI-VERIFY-02`**: Thẻ nhu cầu trên `/nhu-cau-cong-nghe` và trang chi tiết phân biệt rõ `TNI 82/100 (Tự đánh giá - Chưa kiểm định)` với `✓ TNI 82/100 - Đã thẩm định bởi Sở KH&CN`, hoàn toàn không còn fallback `75`.
+
+---
+
+## Spec Delta v17 (CR-BACLINK-005): Bảng Nhu Cầu Tìm Nhà Cung Ứng & Đặt Hàng Gia Công Công Nghiệp Bắc Ninh
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 1, 3, 6, 9.2); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).  
+> **Phiên bản áp dụng**: `1.16.0`  
+> **Trạng thái**: `APPROVED` (In Implementation)
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-03-BL-01`, `REQ-03-BL-02`)
+
+- **`REQ-03-BL-01` [Bảng Nhu Cầu Tìm Nhà Cung Ứng & Đặt Hàng Gia Công Bắc Ninh]**:
+  - Sàn công khai `/nhu-cau-cong-nghe`, `/nhu-cau-cong-nghe/[id]`, `/khao-sat-nhu-cau`, `/khao-sat-doanh-nghiep` tái định vị thuật ngữ sang **Bảng Nhu Cầu Mua, Đặt Hàng Gia Công & Tìm Nhà Cung Ứng Công Nghiệp Bắc Ninh** (linh kiện, vật tư, gia công phụ trợ, cải tiến dây chuyền/MES từ DN FDI & đầu chuỗi).
+  - Bộ lọc đa tầng cập nhật sang **8 ngành công nghiệp `IND_*`** và **Địa bàn/KCN Bắc Ninh** (thay 18 ngành TT17 `LV*` và 34 tỉnh), hiển thị 8 nhu cầu seed thật qua `<Async>` Zero-Mock.
+- **`REQ-03-BL-02` [CRUD Nhu Cầu Cho Tài Khoản `ENTERPRISE` Dual-Mode (`activeRole = 'BUYER'`)]**:
+  - Tại `/portal/buyer/demands`, `QuickDemandModal` và `EditDemandModal`, tài khoản có `user.role = 'ENTERPRISE'` khi bật `RoleSwitcher` sang `activeRole = 'BUYER'` thực hiện tạo, sửa, đóng bài toán nhu cầu mà không cần tách role `BUYER`.
+
+### 2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-03-BL-01`, `BR-03-BL-02`)
+
+- **`BR-03-BL-01` [Duyệt Nhu Cầu 1 Cấp Bởi `ADMIN` & Khóa `/gov/demands` Anonymous]**:
+  - Khóa toàn bộ endpoint `/api/v1/gov/demands*` đang mở `[AllowAnonymous]` (trả `401/403/410`), thay luồng thẩm định `PROVINCIAL_ADMIN` bằng phê duyệt tập trung 1 cấp của `ADMIN` BACLINK. Giữ nguyên quy tắc cấm fallback `tniScore || 75` (`BR-TNI-VERIFY-01`) và đổi nhãn cơ quan bảo chứng mặc định sang `Hiệp hội BACLINK`.
+- **`BR-03-BL-02` [Tách Bạch `user.role = 'ENTERPRISE'` và `activeRole = 'BUYER'` (`ADR-0018` Mục 2.3)]**:
+  - `DemandController` và `DemandService` cho phép mọi `ENTERPRISE` tạo và quản lý nhu cầu gắn với `CreatedBy == Actor.PersonId` hoặc `OrganizationId == Actor.OrganizationId`, tuyệt đối không chặn vì thiếu role `BUYER` riêng lẻ.
+
+### 3. Tiêu Chuẩn Chấp Thuận (`AC-03-BL-01` .. `AC-03-BL-03`)
+
+- **`AC-03-BL-01`**: Trên `/nhu-cau-cong-nghe`, danh sách hiển thị các nhu cầu đặt hàng công nghiệp từ PostgreSQL (`seed_baclink_demo_data.sql`) và lọc được theo `IND_*` + KCN Bắc Ninh, không có fallback số giả.
+- **`AC-03-BL-02`**: Tài khoản `ENTERPRISE` (`member.hanelpt@baclink.org.vn`) chuyển `RoleSwitcher` sang Bên Mua (`activeRole = 'BUYER'`), giữ nguyên `user.role = 'ENTERPRISE'` và tạo mới nhu cầu thành công (`200/201`).
+- **`AC-03-BL-03`**: Gọi `GET /api/v1/gov/demands` hoặc `GET /api/v1/gov/demands/surveys` không có token hoặc với role `ENTERPRISE`/`PUBLIC_USER` bị từ chối (`401/403/410`), không còn rò rỉ dữ liệu anonymous.

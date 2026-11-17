@@ -2,9 +2,9 @@
 ## PHÂN HỆ: HỌC LIỆU SỐ & ĐÀO TẠO E-LEARNING (TASK-10)
 
 > **Mã Epic**: `TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING`  
-> **Phiên bản**: v1.1 (Completed — Gate 4 & Gate 5 Verified)  
-> **Trạng thái**: Shipped 2026-11-10 (Completed — Gate 4 & Gate 5 Verified · CR-2026-028 Merged)  
-> **Cập nhật lần cuối**: 2026-11-10  
+> **Phiên bản**: v1.2 (Bumped from v1.1 via CR-BACLINK-006)  
+> **Trạng thái**: In Implementation (CR-BACLINK-006 Approved)  
+> **Cập nhật lần cuối**: 2026-11-17  
 > **Ánh xạ Basic Design**: `Specification/02_BASIC_DESIGN/TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING/README.md` & `Specification/BASIC_DESIGN_NACENTECH.md` Mục 32  
 > **Nguồn căn cứ**:  
 > - Báo cáo chuyên đề: `Specification/01_DATA_RAW/Bao cao chuyen de Khung chuong trinh dao tao so NV nguon cung cong nghe_Draft 1.docx` (Theo Quyết định số 1993/QĐ-BKHCN ngày 01/8/2025 của Bộ trưởng Bộ Khoa học và Công nghệ).  
@@ -151,3 +151,30 @@
 - **Bổ sung Yêu cầu chức năng**: `REQ-EL-009`, `REQ-EL-010`, `REQ-EL-011`, `REQ-EL-012`.
 - **Bổ sung Quy tắc nghiệp vụ**: `BR-EL-07`, `BR-EL-08`, `BR-EL-09`.
 - **Kế hoạch kiểm chứng**: Bổ sung bộ kiểm thử 4 tầng (Unit test BR-EL-07/08/09, Contract test DTOs mới, DB Integration test nạp 30 bài, Playwright E2E Visual QA tương tác Pop-up quiz, Bảng tự chấm điểm và Modal Chứng nhận số NACENTECH).
+
+
+---
+
+### MỤC 9: SPEC DELTA V1.2 — TÁI ĐỊNH VỊ CỔNG ĐÀO TẠO HỘI VIÊN BACLINK (LEAN/5S, ISO/IATF, MES, ESG) (CR-BACLINK-006)
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-006`](../TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) (`Status: APPROVED`); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 4.1, 6, 9.1, 9.2 — `PO-DEC-BACLINK-04`, `PO-DEC-BACLINK-05`); [`open-questions.md`](../../docs/open-questions.md) (**Q1**).  
+> **Phiên bản áp dụng**: `v1.2`  
+> **Trạng thái**: `In Implementation (CR-BACLINK-006 Approved)`
+
+#### 9.1. Yêu Cầu Chức Năng Bổ Sung (`REQ-10-BL-01`, `REQ-10-BL-02`)
+- **`REQ-10-BL-01` [Cổng Đào Tạo Hội Viên BACLINK & Chuyên Đề Công Nghiệp]**:
+  - Các route `/elearning`, `/elearning/[id]`, `/portal/expert/elearning`, `/admin/elearning` tái định vị sang **Đào tạo Hội viên BACLINK (LMS)** tập trung 4 nhóm chuyên đề công nghiệp: **Lean Manufacturing & 5S**, **ISO 9001 & IATF 16949**, **Hệ thống quản trị sản xuất MES/ERP**, **Chuyển đổi xanh & ESG**.
+  - Nạp 6 khóa học mẫu công nghiệp BACLINK vào PostgreSQL thật qua `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (Zero-Mock), bảo toàn 8 thành phần học tập tương tác, streaming HTTP 206, In-Video Quiz và AI RAG indexing.
+- **`REQ-10-BL-02` [Chứng Nhận Số Trực Tuyến Hiệp Hội BACLINK]**:
+  - Cập nhật đơn vị cấp Chứng nhận số trực tuyến hoàn thành lộ trình từ `NACENTECH` sang **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)**; thay copy `QĐ 1993/QĐ-BKHCN` trên UI đại chúng bằng khung đào tạo Hội viên BACLINK.
+
+#### 9.2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-10-BL-01`, `BR-10-BL-02`)
+- **`BR-10-BL-01` [Phân Quyền Giảng Viên LMS Không Tạo Role Thứ 4 (Q1)]**:
+  - Đồng bộ với `CR-BACLINK-001` và Q1: quyền tạo/sửa/gỡ học liệu trên `/portal/expert/elearning` và `LmsController.cs` cấp cho `ADMIN` hoặc tài khoản `PUBLIC_USER`/`ENTERPRISE` có `ExpertProfile (Status = APPROVED)` và là chủ sở hữu (`created_by == Actor.PersonId`), không dùng role JWT `VERIFIED_EXPERT` tách rời.
+- **`BR-10-BL-02` [Zero-Mock Danh Mục Khóa Học & Giảng Viên]**:
+  - Toàn bộ khóa học và liên kết giảng viên trên `/elearning` đọc trực tiếp từ PostgreSQL thật (`lms.*`, `brokerage.expert_profiles`) bọc qua `<Async>` đủ 5 UX States.
+
+#### 9.3. Tiêu Chuẩn Chấp Thuận (`AC-10-BL-01` .. `AC-10-BL-03`)
+- **`AC-10-BL-01`**: Truy cập `/elearning` hiển thị các khóa học công nghiệp BACLINK (Lean/5S, ISO/IATF, MES, ESG) nạp từ PostgreSQL (`seed_baclink_demo_data.sql`), lọc và xem chi tiết `/elearning/[id]` mượt mà đủ 5 UX States.
+- **`AC-10-BL-02`**: Chứng nhận số khi hoàn thành lộ trình hiển thị pháp nhân **Hiệp hội BACLINK**, không còn chuỗi `NacenTech` / `Bộ KH&CN`.
+- **`AC-10-BL-03`**: Cố vấn có `ExpertProfile (Status = APPROVED)` dưới role `PUBLIC_USER`/`ENTERPRISE` quản lý được học liệu của mình tại `/portal/expert/elearning`; bộ test `lms-components.test.tsx`, `lms-elearning-detail.test.tsx` đạt PASS 100%.

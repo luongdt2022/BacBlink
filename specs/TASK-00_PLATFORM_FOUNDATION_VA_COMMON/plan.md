@@ -2,7 +2,8 @@
 
 **Feature**: `TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Spec Reference**: [`spec.md`](./spec.md)  
-**Status**: Completed (Shipped Gate 5)  
+**Version**: 1.23.0 (Delta v21 - CR-BACLINK-001)  
+**Status**: In Implementation  
 
 ---
 
@@ -1002,6 +1003,55 @@ Cập nhật `src/test/qc-gate4-typography.test.ts`:
 - **Rủi ro 1 — Stale cache danh mục sau CRUD ở tab/cửa sổ khác**: Giới hạn TTL ngắn (`60s`), kèm `invalidateSectorsCache()` ngay tại mọi thao tác CRUD của Admin ở `/admin/sectors` và tùy chọn `{ forceRefresh: true }` cho luồng cần dữ liệu thời gian thực tuyệt đối.
 - **Rủi ro 2 — Turbopack / CloudStorage file-watching bất ổn**: Nếu `next dev --turbopack -p 3000` phát sinh lỗi không tương thích plugin hoặc watcher trên Google Drive mount, kiểm chứng ngay ở Đợt 3 bằng `next build` và smoke test điều hướng thực tế trên `localhost:3000` trước khi bàn giao Gate 3.
 - **Rủi ro 3 — Test pollution từ module-level cache**: Bắt buộc reset bằng `invalidateSectorsCache()` trong `beforeEach`/`afterEach` của `master-data-client.test.ts` để không làm gãy bất kỳ test unit nào.
+
+---
+
+## Delta v21 (`CR-BACLINK-001`): Chuẩn Hóa RBAC 3 Cấp, Dual-Mode `RoleSwitcher`, Thương Hiệu BACLINK & Upgrade Hub 1 Bước
+
+*Căn cứ: [`CR-BACLINK-001`](./deltas/CR-BACLINK-001_3tier_rbac_and_branding.md), [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md), [`open-questions.md`](../../docs/open-questions.md) (Q1).*
+
+### 1. Kiến Trúc Clean Architecture & Kernel / Policy / Identity / Enterprise (Backend)
+1. **Kernel & RBAC 3 Cấp (`SourceCode/backend/packages/kernel/Application/ICurrentActor.cs`)**:
+   - Chuẩn hóa 3 cấp `PlatformRoles` chính thức (`REQ-BACLINK-RBAC-001`): `Admin` (`"ADMIN"`), `Enterprise` (`"ENTERPRISE"`), `PublicUser` (`"PUBLIC_USER"`), giữ nguyên `Anonymous` và `System`.
+   - Đánh dấu `[Obsolete]` các hằng số legacy (`SuperAdmin`, `OperatorAdmin`, `ProvincialAdmin`, `SectorAdmin`, `ClusterAdmin`, `Seller`, `Buyer`, `InnovationEntity`, `VerifiedExpert`, `User`) để không gãy compile trong giai đoạn chuyển tiếp.
+   - Bổ sung `PlatformRoles.NormalizeTier(string? role)` ánh xạ an toàn:
+     - `ADMIN | SUPER_ADMIN | OPERATOR_ADMIN` $\rightarrow$ `ADMIN`
+     - `ENTERPRISE | SELLER | BUYER | INNOVATION_ENTITY | VERIFIED_EXPERT` $\rightarrow$ `ENTERPRISE`
+     - `PUBLIC_USER | USER | PROVINCIAL_ADMIN | SECTOR_ADMIN | CLUSTER_ADMIN | ...` $\rightarrow$ `PUBLIC_USER`
+   - Cập nhật `ScopeTypes.IsValidForRole(role, scopeType, scopeId)` thống nhất cho phép `ScopeTypes.Global` (`scopeId == null`) với cả 3 vai trò chuẩn (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`).
+2. **Policy Rules (`SourceCode/backend/config/policies/authorization-rules.v1.json`)**:
+   - Bổ sung `ADMIN` và `ENTERPRISE` vào tất cả rule tương ứng (`ADMIN_MANAGE`, `LMS_ADMIN_MANAGE`, các rule thị trường cung-cầu, đánh giá, chuyên gia); giữ alias legacy trong giai đoạn chuyển tiếp.
+3. **Identity & Authentication (`SourceCode/backend/modules/identity/Application/AuthenticationService.cs`, `apps/api/V1Compat/AuthController.cs`)**:
+   - Chuẩn hóa `PlatformRole` trả về qua `PlatformRoles.NormalizeTier` với `ScopeType = ScopeTypes.Global`, `ScopeId = null`.
+   - Không tạo role JWT thứ 4 cho Ban Cố vấn Kỹ thuật (`BR-BACLINK-RBAC-001`, Q1): tài khoản cố vấn sử dụng `PUBLIC_USER` hoặc `ENTERPRISE`, quyền truy cập không gian cố vấn kiểm tra theo hồ sơ `ExpertProfile (Status = APPROVED)`.
+4. **Duyệt Hội Viên 1 Bước & Gỡ `MatchProvinceScope` (`SourceCode/backend/modules/enterprise/NacenTech.Modules.Enterprise/Application/EnterpriseService.cs`, `modules/identity/Application/ApprovalService.cs`)**:
+   - Gỡ bỏ kiểm tra `MatchProvinceScope` theo `Actor.ScopeId` (tại `EnterpriseService.cs` dòng 412, 433 và `ApplyScopeFilter`/`ValidateActorScopeAccess` tại `ApprovalService.cs`).
+   - Khi `ADMIN` phê duyệt hồ sơ Doanh nghiệp Hội viên (`ApproveEnterpriseAsync` / `ApplyApprovalSideEffectsAsync`), cấp thẳng `PlatformRole = "ENTERPRISE"` (`ScopeType = "GLOBAL"`) và `CapabilityTier = "DUAL"` (`IsBuyer = true`, `IsSeller = true`).
+   - Giữ nguyên toàn bộ kiểm tra sở hữu `PersonId` / `OrganizationId` (`BR-BACLINK-RBAC-002` — IDOR isolation 100% giữa các `ENTERPRISE`).
+
+### 2. Non-Destructive PostgreSQL Migration & Seeding Mapping
+- Tạo migration SQL idempotent `SourceCode/backend/infra/migrations/20261117_baclink_3tier_rbac_normalization.sql`:
+  - Chuẩn hóa `identity.persons.platform_role` về `ADMIN`, `ENTERPRISE`, `PUBLIC_USER` và `scope_type = 'GLOBAL'`, `scope_id = NULL` (không `DROP` cột/bảng; giữ cột `platform_role` `VARCHAR(50)`).
+  - Cập nhật `enterprise.enterprises` cho hội viên đã duyệt: `capability_tier = 'DUAL'`, `is_buyer = true`, `is_seller = true`.
+- Đồng bộ với `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (nạp 5 tài khoản 3 cấp chuẩn, Zero-Mock).
+
+### 3. Kiến Trúc Frontend — Auth, Dual-Mode `RoleSwitcher`, Branding BACLINK & Upgrade Hub 1 Bước
+1. **Auth Client & RoleGuard (`SourceCode/frontend/src/lib/auth-client.ts`, `src/components/auth/role-guard.tsx`)**:
+   - Chuẩn hóa `ROLES` về 3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`), bổ sung `normalizePlatformRole(role)` ánh xạ token/session cũ.
+   - Cập nhật `getRedirectPathByRole` & `getWorkspacePath`: `ADMIN` $\rightarrow$ `/admin`, `ENTERPRISE` $\rightarrow$ `/portal`, `PUBLIC_USER`/khách $\rightarrow$ `/`; loại bỏ nhánh điều hướng sang `/gov`.
+   - `RoleGuard` sử dụng `normalizePlatformRole` khi đối chiếu `allowedRoles`.
+2. **Sửa Lỗi `RoleSwitcher` (`SourceCode/frontend/src/components/common/role-switcher.tsx`)**:
+   - Xóa bỏ đoạn ghi đè `user.role = targetRole` tại dòng 86 (`REQ-BACLINK-RBAC-002`).
+   - Giữ nguyên `user.role = "ENTERPRISE"` trong `localStorage` và `UserContext`; chỉ cập nhật `activeRole` (`nacentwin_active_role` + gọi `switchEnterpriseActiveRole(targetRole)`) và phát event `nacentwin_role_switched`.
+3. **Thương Hiệu, Navbar 7 Menu, Footer & i18n BACLINK (`src/components/common/navbar.tsx`, `footer.tsx`, `i18n-provider.tsx`, `src/app/layout.tsx`)**:
+   - Chuyển 100% hiển thị (VI/EN) sang **BACLINK — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh** (QĐ 1652/QĐ-UBND, Số 7 đường Lý Thái Tổ, P. Suối Hoa, TP. Bắc Ninh), cấu trúc 7 menu công nghiệp Bắc Ninh (`REQ-BACLINK-NAV-001`), triệt tiêu 100% chuỗi `NacenTech`, `NacenTwin`, `Bộ KH&CN`, `34 Sở KH&CN` (`BR-BACLINK-BRAND-001`).
+4. **Upgrade Hub 1 Bước (`SourceCode/frontend/src/app/profile/upgrade/page.tsx`)**:
+   - Gộp 4 lộ trình cũ thành 1 luồng cốt lõi **Đăng ký Doanh nghiệp Hội viên BACLINK** gửi thẳng hàng đợi duyệt 1 cấp của `ADMIN`, chọn Địa bàn/KCN Bắc Ninh thay vì Sở KH&CN; giữ đầu vào phụ trợ đăng ký hồ sơ Ban Cố vấn (không tạo role JWT thứ 4) (`REQ-BACLINK-UPG-001`).
+
+### 4. Chiến Lược Kiểm Thử (`TEST-BACLINK-001`)
+- **Backend (`dotnet test`)**: `tests/authorization/ScopedMultiTierRbacTests.cs`, `tests/integration/IdentityRoleLifecycleTests.cs`, `tests/invariants/EnterpriseCapabilityInvariantsTests.cs` kiểm chứng `NormalizeTier`, `ScopeTypes.Global`, duyệt 1 cấp `ENTERPRISE + DUAL`, và IDOR isolation.
+- **Frontend (`vitest` & `tsc`)**: `src/lib/auth-client.test.ts`, `src/components/common/role-switcher.test.tsx` (assert `authClient.getUser().role === 'ENTERPRISE'` sau khi switch `BUYER` $\leftrightarrow$ `SELLER`), `navbar.test.tsx`, `footer.test.tsx`, `src/app/profile/upgrade/page.test.tsx`.
+
 
 
 

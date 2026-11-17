@@ -1,8 +1,8 @@
 # Implementation Plan: TASK-08 Kết Nối Cung–Cầu & Quản Lý Cơ Hội Hợp Tác
 
 **Feature Directory**: `specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI`  
-**Version**: 1.14.0  
-**Status**: Delta CR-TASK-08-DELTA-02 In Planning (Gate 2 Ready)  
+**Version**: 1.16.0  
+**Status**: In Implementation  
 
 ---
 
@@ -771,3 +771,37 @@ CREATE INDEX IF NOT EXISTS idx_conn_requests_sla
 
 
 
+
+
+---
+
+## 8. KẾ HOẠCH KIẾN TRÚC DELTA BACLINK (`CR-BACLINK-005` · Version 1.16.0)
+
+> **Căn cứ**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md) (Mục 2.4), [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).
+
+### 8.1. Backend `brokerage` — Gỡ Phân Nhánh Role Cứng `BUYER`/`SELLER` & Trọng Số KCN Bắc Ninh (`BR-08-BL-01`, `BR-08-BL-02`)
+1. **Refactor Isolation Dual-Mode (`SourceCode/backend/modules/brokerage/Application/BrokerageMatchingEngineService.cs`, `BrokerageControllers.cs`)**:
+   - **Gỡ phân nhánh SQL isolation cứng theo `PlatformRoles.Buyer` vs `PlatformRoles.Seller` vs `PlatformRoles.ProvincialAdmin`**:
+     * Khi `Actor` mang role `ENTERPRISE` (hoặc token legacy đã normalize về `ENTERPRISE`), chuyển điều kiện lọc theo **chế độ ngữ cảnh `mode` (`BUYER` | `SELLER`)** kết hợp ownership:
+       - Chiều cầu (`mode=buyer`): lọc theo `DemandItems` thuộc `Actor.PersonId` / `Actor.OrganizationId`.
+       - Chiều cung (`mode=seller`): lọc theo `TechnologyOffers` thuộc `Actor.OrganizationId` / `Actor.PersonId`.
+     * `ADMIN`: được phép xem toàn sàn phục vụ điều phối & mời Cố vấn Kỹ thuật Hiệp hội.
+   - **Khóa Endpoint `/api/v1/gov/opportunities`**: Gỡ `[AllowAnonymous]` tại `BrokerageControllers.cs`; trả `401/403/410` (hoặc yêu cầu `[Authorize(Roles = "ADMIN")]` trên `/api/v1/admin/opportunities`).
+2. **Trọng Số Ngành `IND_*` & KCN Bắc Ninh Trong Radar (`BR-08-BL-02`)**:
+   - Trong `BrokerageMatchingEngineService.cs`: khi đối sánh cặp Cung–Cầu có cùng mã ngành `IND_*` hoặc cùng địa bàn/KCN Bắc Ninh (`operating_zone` / `province_city`), áp dụng cộng điểm tương thích chuẩn hóa (kẹp biên `[0, 100]`) và trả về lý do giải trình XAI thật (`semanticEngine`, 4 trục điểm + lý do địa bàn/ngành Bắc Ninh). Giữ nguyên Graceful Degradation PostgreSQL FTS khi AI sidecar gián đoạn.
+
+### 8.2. Frontend Radar AI, Pipeline & Deal Room MOU Dual-Mode (`REQ-08-BL-01`, `REQ-08-BL-02`)
+- **Các tệp mục tiêu**:
+  * `SourceCode/frontend/src/app/portal/matching/radar/page.tsx`
+  * `SourceCode/frontend/src/app/portal/opportunities/pipeline/page.tsx`
+  * `SourceCode/frontend/src/app/portal/opportunities/[id]/deal-room/page.tsx`
+  * `SourceCode/frontend/src/app/portal/seller/connection-requests/page.tsx`
+- **Thiết kế kỹ thuật**:
+  * Bổ sung/đồng bộ bộ lọc **8 ngành `IND_*`** & **Địa bàn/KCN Bắc Ninh** trên `/portal/matching/radar`.
+  * Đọc chế độ làm việc từ `activeRole` (`BUYER` | `SELLER`) của `RoleSwitcher` (giữ nguyên `user.role = 'ENTERPRISE'`), truyền tham số `mode` / `activeRole` sang API Radar & Pipeline để 1 DN Hội viên chuyển đổi tức thì giữa góc nhìn Bên Mua và Bên Bán không cần đăng nhập lại.
+  * Deal Room MOU: giữ nguyên cơ chế PDPD masking (chỉ Unmask SĐT/Email khi 2 bên chấp thuận kết nối), hỗ trợ mời Cố vấn Kỹ thuật Hiệp hội (`ADMIN` điều phối) và gắn `<BlockchainZkpBadge />` khi ký MOU.
+  * Bọc `<Async>` đủ 5 UX States, triệt tiêu 100% text/số mock.
+
+### 8.3. Chiến Lược Kiểm Thử (`AC-08-BL-01` .. `AC-08-BL-03`)
+- **Backend**: `dotnet test` trên `BrokerageHybridMatchingEngineInvariantsTests.cs`, `BrokerageConnectionRequestInvariantsTests.cs`, `CommercialOrderDemandBridgeTests.cs` (kiểm chứng `ENTERPRISE` Dual-Mode xem được cả 2 chiều theo `mode`, cộng điểm `IND_*` & KCN trong biên `[0, 100]`, khóa `/api/v1/gov/opportunities` trả 401/403/410).
+- **Frontend**: `vitest` cho `portal/matching/radar/page.test.tsx`, `portal/opportunities/pipeline/page.test.tsx`, `portal/opportunities/[id]/deal-room/page.test.tsx`, `portal/seller/connection-requests/page.test.tsx` + `npx tsc --noEmit`.

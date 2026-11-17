@@ -2,9 +2,10 @@
 
 **Feature Branch**: `master-data-sectors-tt17`  
 **Feature Directory**: `specs/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN`  
-**Version**: 1.12.0  
+**Version**: 1.13.0 (Delta v2 - CR-BACLINK-003 Chuyển Đổi 8 Ngành Công Nghiệp BACLINK & Địa Bàn/KCN Bắc Ninh)  
 **Created**: 02/10/2026  
-**Status**: Completed (Shipped Gate 5)  
+**Last Updated**: 17/11/2026  
+**Status**: In Implementation  
 **Ánh Xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/README.md)  
 **Wireframe Tham Chiếu**: [`Specification/02_BASIC_DESIGN/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_quan_tri_danh_muc_nganh.html`](../../Specification/02_BASIC_DESIGN/TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN/wireframe_quan_tri_danh_muc_nganh.html)  
 **Nguồn Dữ Liệu Gốc**: Sheet `Ngành` (29 dòng) và `Ma trận Lĩnh vực-Công nghệ` (132 dòng) trong `Nacentwin_20260924_bo_loc_da_sua.xlsx`
@@ -92,3 +93,46 @@ Phân hệ quản trị Dữ liệu danh mục nền tảng (Master / Reference 
 - **`AC-SEC-010`**: API `GET /api/v1/master-data/sectors?activeOnly=true` trả về đúng 10 bản ghi Lĩnh vực active chuẩn TT17, đầy đủ trường `code`, `name`, `tt17Code`, `filterRuleCount`, `isActive`.
 - **`AC-SEC-011`**: Toàn bộ codebase frontend không còn bất kỳ file nào khai báo mảng ngành hardcoded; 100% sử dụng client service nạp từ API.
 
+
+
+---
+
+## Spec Delta v2 (CR-BACLINK-003): Chuyển Đổi Sang 8 Ngành Công Nghiệp BACLINK (`IND_*`), Địa Bàn & KCN Bắc Ninh Và Tách Endpoint Locations [PO-DEC-BACLINK-01]
+
+> **Căn cứ phê duyệt:** `Specification/BASIC_DESIGN_BACLINK.md` (Mục 1.3, 4.1, 6, 9.2: `PO-DEC-BACLINK-01`), `ADR-0018` (Mục 2.4, 2.5), `SourceCode/docs/open-questions.md` (Q2); Hồ sơ Delta Ledger [`CR-BACLINK-003`](./deltas/CR-BACLINK-003_baclink_sectors_and_kcn.md) (`Status: APPROVED`).
+
+### 1. Yêu Cầu Kỹ Thuật & Điểm Neo Bất Biến (Immutable Requirements & Rules)
+
+- **`REQ-BACLINK-TAX-001` (Deactivate `LV*` & Mở 8 Ngành Công Nghiệp BACLINK `IND_*`)**:
+  - Deactivate phi phá hủy các mã ngành cũ trong `policy.taxonomy_terms`: `UPDATE policy.taxonomy_terms SET is_active = false WHERE kind = 'SECTOR' AND code LIKE 'LV%'`.
+  - Kích hoạt 8 ngành công nghiệp chuẩn BACLINK: `IND_ELEC` (Điện tử, Bán dẫn & Thiết bị điện), `IND_MECH` (Cơ khí chính xác, Khuôn mẫu & Chế tạo máy), `IND_AUTO` (Tự động hóa, Robot & Smart Factory), `IND_PLAS` (Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp), `IND_MAT` (Vật liệu mới & Công nghiệp hỗ trợ), `IND_IT` (CNTT, Phần mềm công nghiệp & MES/ERP), `IND_GREEN` (Công nghiệp xanh, Năng lượng sạch & ESG), `IND_LOG` (Logistics công nghiệp, Kho vận & Chuỗi cung ứng).
+  - `MasterDataControllers.cs` (`POST /api/v1/master-data/sectors` và `POST /api/v1/master-data/matrix`) MUST bỏ ràng buộc cứng `!normalizedCode.StartsWith("LV")` và chấp nhận mã ngành chuẩn `IND_*`.
+- **`REQ-BACLINK-TAX-002` (Thay `PROVINCES_34` Bằng Địa Bàn & KCN Bắc Ninh)**:
+  - Thay thế danh mục `PROVINCES_34` (`SourceCode/frontend/src/lib/constants/provinces.ts`) bằng **8 Địa bàn Bắc Ninh + 1 nhóm đối tác ngoài tỉnh** (`TP_BN`, `TU_SON`, `QUE_VO`, `THUAN_THANH`, `YEN_PHONG`, `TIEN_DU`, `GIA_BINH`, `LUONG_TAI`, `NGOAI_TINH`) và danh mục **KCN trọng điểm Bắc Ninh** (Yên Phong I, Yên Phong II-C, Quế Võ I, Quế Võ II, Quế Võ III, VSIP Bắc Ninh, Tiên Sơn, Đại Đồng - Hoàn Sơn, Hanaka, Thuận Thành I/II/III, Gia Bình).
+- **`REQ-BACLINK-TAX-003` (Tách Public Locations Endpoint Khỏi `GovernanceControllers`)**:
+  - Bổ sung endpoint công khai chuẩn `GET /api/v1/master-data/locations` trên `MasterDataControllers.cs` (trả Địa bàn & KCN Bắc Ninh, hỗ trợ lọc `type=AREA|KCN`).
+  - Cập nhật `SourceCode/frontend/src/lib/master-data-client.ts` gọi `/api/v1/master-data/locations` (kèm in-memory TTL cache + deduplication) thay cho `/api/v1/governance/org-units/public-provinces`.
+- **`BR-BACLINK-TAX-001` (Bảo Toàn Lịch Sử `LV*` Không Xóa Cứng)**:
+  - Cấm `DELETE` các bản ghi `LV*` trong `policy.taxonomy_terms`; giữ `is_active = false` để `ITaxonomyNameResolver` giải mã an toàn dữ liệu lịch sử khi truy vấn `activeOnly = false`.
+- **`BR-BACLINK-TAX-002` (Zero-Static-Array Fallback Trên UI)**:
+  - UI lấy danh mục ngành và địa bàn/KCN từ runtime API (`/api/v1/sectors`, `/api/v1/master-data/locations`), tuyệt đối không fallback sang mảng tĩnh trong `catch` block; không còn dữ liệu 34 tỉnh / `Sở KH&CN`.
+- **`BR-BACLINK-TAX-003` (Ánh Xạ Trọng Số Đánh Giá Năng Lực Từ 8 Ngành `IND_*`)**:
+  - `Tt17ScoringEngine` (`TASK-09`) MUST cung cấp bảng ánh xạ mặc định từ 8 mã ngành `IND_ELEC`..`IND_LOG` sang bộ trọng số công nghiệp tương ứng (fallback bộ trọng số cân bằng chuẩn BACLINK) để tính điểm tự động không lỗi (`open-questions.md` Q2).
+- **`TEST-BACLINK-003` (Kiểm Chứng `IND_*`, Locations Bắc Ninh & Cache)**:
+  - Kiểm thử API khẳng định `GET /api/v1/sectors?activeOnly=true` trả đúng 8 mã `IND_*`, `POST /api/v1/master-data/sectors` chấp nhận `IND_*`, `GET /api/v1/master-data/locations` trả Địa bàn & KCN Bắc Ninh; Vitest kiểm chứng `master-data-client.ts` và `provinces.ts`.
+
+### 2. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+
+- **`AC-CR-BACLINK-003.1`**: `GET /api/v1/sectors?activeOnly=true` trả về đúng 8 ngành `IND_ELEC`..`IND_LOG` (`isActive = true`); các mã `LV*` vẫn lưu với `is_active = false`.
+- **`AC-CR-BACLINK-003.2`**: `POST /api/v1/master-data/sectors` và `POST /api/v1/master-data/matrix` chấp nhận mã `IND_*` với quyền `ADMIN`.
+- **`AC-CR-BACLINK-003.3`**: `GET /api/v1/master-data/locations` trả `200 OK` gồm 8+1 Địa bàn và các KCN Bắc Ninh; `master-data-client.ts` không còn gọi `/api/v1/governance/org-units/public-provinces`.
+- **`AC-CR-BACLINK-003.4`**: Frontend không còn hiển thị `PROVINCES_34` / `Sở KH&CN` trên bộ lọc và combobox địa bàn.
+- **`AC-CR-BACLINK-003.5`**: `Tt17ScoringEngine` tính điểm thành công 100% cho hồ sơ gắn bất kỳ mã ngành `IND_ELEC`..`IND_LOG`.
+
+### 3. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-BACLINK-TAX-001** | `BR-BACLINK-TAX-001`, `BR-BACLINK-TAX-003` | `AC-CR-BACLINK-003.1`, `AC-CR-BACLINK-003.2`, `AC-CR-BACLINK-003.5` | `MasterDataControllers.cs`, `policy.taxonomy_terms`, `seed_baclink_demo_data.sql`, `Tt17ScoringEngine` | `dotnet test` (MasterData & Assessment suites) |
+| **REQ-BACLINK-TAX-002** | `BR-BACLINK-TAX-002` | `AC-CR-BACLINK-003.4` | `src/lib/constants/provinces.ts`, `searchable-province-combobox.tsx`, `admin/sectors/page.tsx` | `provinces.test.ts`, `searchable-province-combobox.test.tsx` |
+| **REQ-BACLINK-TAX-003** | `BR-BACLINK-TAX-002` | `AC-CR-BACLINK-003.3` | `MasterDataControllers.cs`, `GovernanceControllers.cs`, `src/lib/master-data-client.ts` | `src/lib/master-data-client.test.ts`, `dotnet test` |

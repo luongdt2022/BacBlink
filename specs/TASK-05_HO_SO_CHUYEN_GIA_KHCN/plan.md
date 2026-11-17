@@ -2,8 +2,8 @@
 
 **Feature**: `TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
 **Spec Reference**: [`spec.md`](./spec.md)  
-**Version**: 1.19.0  
-**Status**: Implemented (Gate 5 Ready - 100% Shipped)  
+**Version**: 1.22.0  
+**Status**: In Implementation (CR-BACLINK-006)  
 **Basic Design Mapping**: [`Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/README.md)  
 **Architecture Report Reference**: [`Reports/Bao_cao_giai_phap_cong_nghe_va_nen_tang_NacenTech.md`](../../Reports/Bao_cao_giai_phap_cong_nghe_va_nen_tang_NacenTech.md) (Mục 2.2 Module Brokerage & Identity)  
 
@@ -2132,3 +2132,53 @@ Trong `SourceCode/frontend/src/lib/expert-detail.ts` & `SourceCode/frontend/src/
 - **`TEST-CON-002` (API Contract Tests)**: Đối soát hợp đồng DTO 2 chiều cho `API-CON-001`..`005` và dual-route compatibility (`/api/v1/portal/expert/consultations` $\leftrightarrow$ `/api/v1/experts/me/consultations`).
 - **`TEST-CON-003` (DB Integration Tests)**: Kiểm thử trên PostgreSQL thật (`brokerage.expert_consultations`), xác minh zero auto-seed (`REQ-CON-004`) và atomic SQL review (`API-CON-005`).
 - **`TEST-CON-004` (Playwright E2E & Scoped RBAC/IDOR Fuzzing)**: Kiểm thử toàn trình 2 chiều (`REQ-CON-001` $\rightarrow$ `REQ-CON-002` $\rightarrow$ `REQ-CON-003`) trên trình duyệt thật và fuzzing IDOR chéo Buyer/Expert.
+
+---
+
+## 25. PLAN DELTA V1.22.0 (CR-BACLINK-006): TÁI ĐỊNH VỊ BAN CỐ VẤN KỸ THUẬT BACLINK & RBAC 3 CẤP (Q1)
+
+> **Change Request**: `CR-BACLINK-006` | **Quyết định**: `ADR-0018`, `open-questions.md` (**Q1**), `PO-DEC-BACLINK-04`  
+> **Coverage**: `REQ-05-BL-01`, `REQ-05-BL-02`, `BR-05-BL-01`, `BR-05-BL-02`, `AC-05-BL-01`..`AC-05-BL-03`
+
+### 25.1. Cơ Chế RBAC 3 Cấp Không Tạo Role Thứ 4 (`BR-05-BL-01`, Q1)
+
+- **Nguyên tắc bất biến (Q1)**: Giữ nghiêm ngặt 3 cấp trong JWT/Identity (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`). Tuyệt đối **KHÔNG** tạo role thứ 4 (`EXPERT` / `VERIFIED_EXPERT`) trong `PlatformRoles` mới hoặc phát hành JWT claim `role = "VERIFIED_EXPERT"`.
+- **Cơ chế phân quyền `ExpertProfile (Status = APPROVED)` hoặc `ADMIN`**:
+  1. **Tại `SourceCode/backend/modules/identity/Application/ApprovalService.cs` (`ApplyApprovalSideEffectsAsync`)**:
+     - Khi `ADMIN` phê duyệt yêu cầu nâng cấp cố vấn (`EXPERT`), **không** gọi `person.AssignRoleAndScope(PlatformRoles.VerifiedExpert, ScopeTypes.Province, ...)`. Giữ nguyên `person.PlatformRole` hiện có (`PUBLIC_USER` hoặc `ENTERPRISE`) với `ScopeTypes.Global` (`scope_id = null`), chỉ kích hoạt `IExpertApprovalSynchronizer.ApplyAsync` cập nhật `brokerage.expert_profiles.status = 'APPROVED'`.
+  2. **Tại `SourceCode/backend/apps/api/V1Compat/ExpertController.cs`**:
+     - Bổ sung helper bất đồng bộ `EnsureApprovedExpertOrAdminAsync(CancellationToken ct)`:
+       ```csharp
+       private async Task EnsureApprovedExpertOrAdminAsync(CancellationToken ct)
+       {
+           var normalizedTier = PlatformRoles.NormalizeTier(Actor.PlatformRole);
+           if (normalizedTier == PlatformRoles.Admin) return;
+
+           var hasApprovedProfile = await db.Set<ExpertProfile>()
+               .AsNoTracking()
+               .AnyAsync(p => p.PersonId == PersonId && p.Status == ExpertStatuses.Approved, ct);
+
+           if (!hasApprovedProfile)
+               throw new ForbiddenException("Yêu cầu tài khoản ADMIN hoặc hồ sơ Ban Cố vấn Kỹ thuật đã được phê duyệt (APPROVED).");
+       }
+       ```
+     - Thay thế toàn bộ các nhánh kiểm tra cứng `Actor.PlatformRole != PlatformRoles.VerifiedExpert` / `"EXPERT"` tại `UpdateMyProfile`, `GetMyCompleteness`, `GetMyDetail`, `GetMyConsultations`, `RespondConsultation`, `GetMyProjects` (dòng 228, 243, 254, 285, 421, 589) bằng `await EnsureApprovedExpertOrAdminAsync(ct)`.
+  3. **Thẩm định 1 cấp bởi `ADMIN` (`REQ-05-BL-02`)**:
+     - Trong `ExpertController.cs` (`EnsureCanAccessExpertAsync` dòng 757 & `SubmitUpgrade` dòng 185): loại bỏ hoàn toàn luồng `ProvincialAdmin` và `ScopeTypes.Province`; chuẩn hóa mặc định `ScopeTypes.Global` (`scope_id = null`), chỉ `ADMIN` tại `/admin/approvals` thực hiện phê duyệt/từ chối/thu hồi tập trung 1 cấp qua `ExpertApprovalSynchronizer.cs`.
+  4. **Bảo vệ PII & Chống IDOR 2 chiều (`BR-05-BL-02`)**:
+     - Giữ nguyên lọc `person_id == Actor.PersonId` (Expert) và `requester_person_id == Actor.PersonId` (Buyer/Enterprise) cùng cơ chế che chắn PII theo NĐ 13/2023/NĐ-CP.
+
+### 25.2. Danh Bạ Bắc Ninh, 8 Ngành `IND_*` & Zero-Mock Seed (`REQ-05-BL-01`, `REQ-05-BL-02`)
+
+- **Backend (`ExpertService.cs` & `ExpertController.cs`)**:
+  - Hỗ trợ bộ lọc danh bạ công khai theo 8 mã ngành công nghiệp `IND_*` (`IND_ELEC`..`IND_LOG`) và địa bàn/KCN Bắc Ninh (lọc theo thuộc tính hồ sơ, không phụ thuộc `Actor.ScopeId`).
+- **Database Seed (`SourceCode/backend/scripts/seed_baclink_demo_data.sql`)**:
+  - Nạp idempotent (`ON CONFLICT DO NOTHING / DO UPDATE`) **5 hồ sơ Cố vấn Kỹ thuật công nghiệp mẫu** (`Status = 'APPROVED'`, `VisibilityStatus = 'PUBLIC'`) gắn với tài khoản `PUBLIC_USER`/`ENTERPRISE` (`scope_type = 'GLOBAL'`, `scope_id = NULL`) vào bảng `brokerage.expert_profiles`.
+
+### 25.3. Frontend Rebrand & RoleGuard Không Role Thứ 4 (`REQ-05-BL-01`, `BR-05-BL-01`)
+
+- **Cập nhật `RoleGuard` & Auth Context (`src/lib/auth-client.ts`, `src/components/auth/role-guard.tsx`, `src/app/portal/expert/**`)**:
+  - Tài khoản cố vấn giữ `user.role` là `"PUBLIC_USER"` hoặc `"ENTERPRISE"`. Các route `/portal/expert/*` (`profile`, `profile/edit`, `consultations`, `projects`, `account`, `elearning`) kiểm tra quyền bằng `ADMIN` hoặc trạng thái hồ sơ từ `GET /api/v1/experts/my-profile` (`status === "APPROVED"`), loại bỏ banner/cảnh báo `"Cấp Sở (EXPERT)"` và ràng buộc cứng `VERIFIED_EXPERT` trong `RoleGuard`.
+- **Tái định vị UI & Bộ lọc (`/experts`, `/experts/[expertCode]`, `/profile/upgrade/expert`)**:
+  - Đổi toàn bộ nhãn sang **Ban Cố vấn Kỹ thuật Hiệp hội BACLINK** (chuyên gia sản xuất, tự động hóa, Lean/5S, ISO/IATF 16949, ESG).
+  - Thay bộ lọc 18 ngành TT17 & 34 tỉnh tại `/experts` bằng **8 ngành `IND_*`** và **Địa bàn / KCN Bắc Ninh** nạp từ Master Data API (Zero-Mock, `<Async>` đủ 5 UX States).

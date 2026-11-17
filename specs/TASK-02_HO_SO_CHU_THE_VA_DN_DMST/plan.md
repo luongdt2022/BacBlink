@@ -1,9 +1,11 @@
-# Kế Hoạch Kỹ Thuật (plan.md) — TASK-02: Hồ Sơ Chủ Thể & 304 Doanh Nghiệp ĐMST
+# Kế Hoạch Kỹ Thuật (plan.md) — TASK-02: Hồ Sơ Chủ Thể & Danh Bạ Doanh Nghiệp Hội Viên BACLINK
 
 > **Mã phân hệ**: `TASK-02`  
+> **Version**: 1.13.0  
+> **Status**: In Implementation  
 > **Kiến trúc**: Clean Architecture, Modular Monolith .NET Core 8/10, Next.js 15 Tailwind CSS  
 > **CSDL**: PostgreSQL 16+ (Schemas `enterprise` & `demand`)  
-> **Tài liệu đặc tả**: [`spec.md`](spec.md)  
+> **Tài liệu đặc tả**: [`spec.md`](spec.md) | [`CR-BACLINK-005`](deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md)  
 > **Bộ kiểm thử**: xUnit Invariants, PostgreSQL Integration, Vitest, Playwright E2E
 
 ---
@@ -776,3 +778,64 @@ Script `seed_identity_demo_accounts.sql` đảm bảo 100% tính sẵn sàng cho
 
 
 
+
+
+---
+
+## 8. KẾ HOẠCH KIẾN TRÚC DELTA BACLINK (`CR-BACLINK-005` · Version 1.13.0)
+
+> **Căn cứ**: [`CR-BACLINK-005`](deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md) (Mục 2.1), [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).
+
+### 8.1. Backend `enterprise` & `identity` — Duyệt Hội Viên 1 Cấp & Gỡ `MatchProvinceScope` (`BR-02-BL-02`)
+1. **Controller & Service (`EnterpriseController.cs`, `EnterpriseService.cs`, `ApprovalService.cs`)**:
+   - Khóa/vô hiệu hóa hoàn toàn các endpoint `/api/v1/gov/enterprises/*` trong `EnterpriseController.cs` (không mở `[AllowAnonymous]`, trả `410 Gone` hoặc chuyển về `/api/v1/admin/enterprises/*` với `[Authorize(Roles = "ADMIN")]`).
+   - Gỡ bỏ `MatchProvinceScope` theo `Actor.ScopeId` trong `EnterpriseService.cs` (`ApproveEnterpriseAsync`, `RejectEnterpriseAsync`) và `ApplyScopeFilter` / `ValidateActorScopeAccess` trong `ApprovalService.cs`.
+   - Khi `ADMIN` duyệt đơn nâng cấp Hội viên (`POST /api/v1/admin/approvals/{id}/approve` tại `/admin/approvals`), `ApprovalService` + `EnterpriseApprovalSynchronizer` gán `PlatformRole = "ENTERPRISE"`, `ScopeType = "GLOBAL"`, `ScopeId = null`, đồng thời kích hoạt `CapabilityTier = "DUAL"`, `IsBuyer = true`, `IsSeller = true`, `IsVerified = true`, `VerificationStatus = "VERIFIED"` cho bản ghi `enterprise.enterprises` liên kết.
+   - Bổ sung/chuẩn hóa filter danh bạ `GET /api/v1/enterprises`: hỗ trợ tham số `sectorCode` (`IND_*`), `province` / `locationCode` (8 địa bàn Bắc Ninh + `NGOAI_TINH`), `industrialZone` (`operating_zone` — KCN Bắc Ninh), `certificate` (`ISO 9001`, `IATF 16949`, `ISO 14001`, `ESD`, `Lean/5S`, `ESG`).
+
+### 8.2. Frontend Danh Bạ & Hồ Sơ DN Hội Viên BACLINK (`REQ-02-BL-01`, `BR-02-BL-01`)
+- **Các tệp mục tiêu**:
+  * `SourceCode/frontend/src/components/enterprise/EnterprisesDirectoryView.tsx`
+  * `SourceCode/frontend/src/app/doanh-nghiep-dmst/page.tsx`
+  * `SourceCode/frontend/src/app/enterprises/page.tsx`
+  * `SourceCode/frontend/src/app/enterprises/[taxCode]/page.tsx`
+- **Thiết kế kỹ thuật**:
+  * Đổi tiêu đề & ngữ cảnh sang **Danh bạ Doanh nghiệp Hội viên Hiệp hội BACLINK**.
+  * Thay bộ lọc 34 tỉnh (`PROVINCES_34`) và 18 ngành TT17 (`LV*`) bằng bộ lọc động từ `master-data-client.ts` (`TASK-06`): 8 Địa bàn Bắc Ninh + `NGOAI_TINH`, danh mục **KCN Bắc Ninh** (Yên Phong I/II, Quế Võ I/II/III, VSIP Bắc Ninh, Tiên Sơn, Đại Đồng – Hoàn Sơn, Hanaka, Thuận Thành, Gia Bình), **8 ngành `IND_*`** và nhóm chứng chỉ nhà máy (`ISO 9001`, `IATF 16949`, `ESD`, `Lean/5S`, `ESG`).
+  * **Zero-Mock (`BR-02-BL-01`)**: Xóa toàn bộ static fallback arrays hoặc dữ liệu giả trong khối `catch`; bọc danh sách và chi tiết DN bằng `<Async>` đủ 5 UX States (Loading skeleton, Error + Retry, Empty state, Success, Updating).
+
+### 8.3. Thiết Kế Chi Tiết Script SQL Seed Demo BACLINK (`SourceCode/backend/scripts/seed_baclink_demo_data.sql` — `REQ-02-BL-02`)
+1. **Nguyên tắc thiết kế Idempotent, Zero-Mock & Toàn Vẹn Khóa Ngoại PostgreSQL**:
+   - Bọc toàn bộ trong giao dịch `BEGIN; ... COMMIT;` sử dụng UUID cố định xác định (deterministic UUIDs) và `ON CONFLICT (...) DO UPDATE / DO NOTHING` để chạy lại nhiều lần không lỗi trùng khóa, không phá vỡ dữ liệu sản xuất hiện hữu.
+   - Tuân thủ chính xác tên bảng, tên cột `snake_case` và khóa ngoại trong PostgreSQL thực tế:
+   - **Tầng 1 — 5 Tài khoản 3 cấp (`identity.persons`)**:
+     * Cột: `(id, email, password_hash, password_hash_algorithm, first_name, last_name, organization_name, platform_role, scope_type, scope_id, is_active, matching_auto, preferences_updated_at, version, created_at, updated_at)`.
+     * Password hash Bcrypt chuẩn (`Password@123`, `$2a$12$...`) + `ON CONFLICT (email) DO UPDATE SET platform_role = EXCLUDED.platform_role, scope_type = 'GLOBAL', scope_id = NULL, is_active = true`.
+     * 5 tài khoản:
+       1. `admin@baclink.org.vn` $\rightarrow$ `ADMIN`, `GLOBAL`, `NULL`
+       2. `member.hanelpt@baclink.org.vn` $\rightarrow$ `ENTERPRISE`, `GLOBAL`, `NULL`
+       3. `member.intech@baclink.org.vn` $\rightarrow$ `ENTERPRISE`, `GLOBAL`, `NULL`
+       4. `member.viqualita@baclink.org.vn` $\rightarrow$ `ENTERPRISE`, `GLOBAL`, `NULL`
+       5. `guest@baclink.org.vn` $\rightarrow$ `PUBLIC_USER`, `GLOBAL`, `NULL`
+   - **Tầng 2 — 10 Doanh nghiệp Hội viên Bắc Ninh (`enterprise.enterprises`)**:
+     * Toàn bộ đặt `subject_type = 'ENTERPRISE'`, `is_verified = true`, `verification_status = 'VERIFIED'`, `status = 'ACTIVE'`, `capability_tier = 'DUAL'`, `is_buyer = true`, `is_seller = true`, `active_role = 'BUYER'`, `sector_code` thuộc 8 mã `IND_*`, `province_city` thuộc 8 địa bàn Bắc Ninh, `operating_zone` thuộc KCN Bắc Ninh, chứng chỉ lưu trong `profile_details_json` (JSONB `certificates`: `["ISO 9001", "IATF 16949", ...]`).
+     * 3 DN thực tế tiêu biểu liên kết `owner_person_id` với 3 tài khoản `ENTERPRISE`: **Hanel PT** (`member.hanelpt@baclink.org.vn`, KCN Tiên Sơn, `IND_ELEC`), **INTECH Group** (`member.intech@baclink.org.vn`, KCN VSIP Bắc Ninh, `IND_AUTO`), **Viqualita** (`member.viqualita@baclink.org.vn`, KCN Yên Phong, `IND_MECH`).
+     * 7 DN mẫu minh họa đa KCN *(Cơ khí Chính xác Kinh Bắc, Nhựa Kỹ thuật Yên Phong, Tự động hóa & Robot VSIP, Bao bì Công nghiệp Quế Võ, Giải pháp Nhà máy Thông minh Từ Sơn, Logistics Công nghiệp Bắc Ninh, Vật liệu Xanh Tiên Sơn)* gắn nhãn rõ `[Dữ liệu demo mẫu]` trong `description` và `profile_details_json.isSample = true`.
+     * `ON CONFLICT (id) DO UPDATE` + dọn chỉ theo danh sách `tax_code` / `id` demo BACLINK trước khi insert bảng con (`enterprise_intellectual_properties`).
+   - **Tầng 3 — 10 Sản phẩm & Năng lực Sản xuất (`technology.seller_technology_offers` + `technology.offer_spec_values`)**:
+     * Gắn `created_by` tới `identity.persons(id)` của DN Hội viên sở hữu, `enterprise_tax_code` & `enterprise_name` khớp 1:1 với 10 DN BACLINK, `sector_code` thuộc `IND_*`, `status = 'APPROVED'`, `managing_authority_name = 'Hiệp hội BACLINK'` (không dùng 34 Sở KH&CN).
+     * Bảng con `technology.offer_spec_values` tham chiếu FK `offer_id` $\rightarrow$ `technology.seller_technology_offers(id)`.
+   - **Tầng 4 — 8 Nhu cầu Đặt hàng / Tìm Nhà cung ứng (`demand.demand_surveys` $\rightarrow$ `demand.demand_items`)**:
+     * Insert `demand.demand_surveys` trước với FK `enterprise_id` $\rightarrow$ `enterprise.enterprises(id)` và `created_by` $\rightarrow$ `identity.persons(id)`.
+     * Insert 8 `demand.demand_items` với FK `survey_id` $\rightarrow$ `demand.demand_surveys(id)`, `sector_code` thuộc `IND_*`, `status = 'VERIFIED'`, `is_public_listed = true`, đầy đủ cột `NOT NULL` (`technical_problem`, `desired_solution`, `urgency_score`, `impact_score`, ...).
+   - **Tầng 5 — 3 Sự kiện BACLINK (`content.techmart_events`)**:
+     * *Diễn đàn Quản trị bền vững*, *Ngày hội Kết nối Chuỗi cung ứng FDI–Nội địa Bắc Ninh 2026*, *Hội thảo Chuyển đổi xanh & ESG* (`status = 'UPCOMING'` / `'ACTIVE'`, `location` tại TP. Bắc Ninh / KCN VSIP).
+   - **Tầng 6 — 6 Khóa học LMS (`lms.learning_materials`)**:
+     * Chuyên đề Lean/5S, ISO 9001 & IATF 16949, MES/ERP Nhà máy Thông minh, ESG & Kiểm kê khí nhà kính, Tự động hóa dây chuyền SMT, Quản trị chuỗi cung ứng FDI; `created_by` trỏ tới `admin@baclink.org.vn`, `status = 'PUBLISHED'`, `duration_minutes` trong `[1..300]`.
+   - **Tầng 7 — 5 Cố vấn Kỹ thuật (`brokerage.expert_profiles`)**:
+     * Chuyên môn hóa từ động hóa, khuôn mẫu CNC, quản trị chất lượng IATF, chuyển đổi số MES, năng lượng xanh ESG; `expertise_sectors` dùng mảng `IND_*`, `status = 'APPROVED'`, `visibility_status = 'PUBLIC'`, `is_accepting_consultation = true`.
+
+### 8.4. Chiến Lược Kiểm Thử (`AC-02-046` .. `AC-02-048`)
+- Kiểm chứng chạy script `psql -f SourceCode/backend/scripts/seed_baclink_demo_data.sql` 2 lần liên tiếp (Idempotency) thành công 0 lỗi FK và `SELECT COUNT(*)` khớp đúng 5 accounts, 10 DN, 10 offers, 8 demands, 3 events, 6 LMS, 5 experts.
+- `dotnet test`: `EnterpriseTests.cs`, `EnterpriseCapabilityInvariantsTests.cs` (duyệt 1 cấp cấp `ENTERPRISE` + `DUAL`, bỏ `MatchProvinceScope`).
+- `vitest`: `EnterprisesDirectoryView.test.tsx`, `enterprises/[taxCode]/page.test.tsx` (filter `IND_*`/KCN/chứng chỉ, Zero-Mock `<Async>`).

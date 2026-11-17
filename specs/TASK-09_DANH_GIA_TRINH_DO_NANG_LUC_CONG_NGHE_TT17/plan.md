@@ -2,8 +2,9 @@
 # TASK-09: ĐÁNH GIÁ TRÌNH ĐỘ & NĂNG LỰC CÔNG NGHỆ SẢN XUẤT (TT17)
 
 > **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
-> **Kiến trúc áp dụng**: Clean Architecture .NET 10 + Next.js 15 App Router + Hybrid JSONB (`ADR-0013`)  
-> **Trạng thái**: Đã phê duyệt kỹ thuật
+> **Version**: 1.7.0  
+> **Kiến trúc áp dụng**: Clean Architecture .NET 10 + Next.js 15 App Router + Hybrid JSONB (`ADR-0013`, `ADR-0018`)  
+> **Status**: In Implementation (CR-BACLINK-006)  
 
 ---
 
@@ -320,4 +321,47 @@ flowchart TD
   - Sinh toàn bộ 7 phần chuẩn mực A4 theo OpenXML.
   - Sử dụng `safeText`, `createAdministrativeHeader`, `createParagraph`, `makeTableCell`.
   - Nhúng ảnh chữ ký điện tử nếu có URL hợp lệ.
+
+---
+
+## 10. PLAN DELTA V1.7.0 (CR-BACLINK-006): ĐÁNH GIÁ NĂNG LỰC NHÀ MÁY & CĐS BACLINK, MAPPING 8 NGÀNH `IND_*` (Q2)
+
+> **Change Request**: `CR-BACLINK-006` | **Quyết định**: `ADR-0018`, `open-questions.md` (**Q2**), `PO-DEC-BACLINK-04`  
+> **Coverage**: `REQ-09-BL-01`, `REQ-09-BL-02`, `BR-09-BL-01`, `BR-09-BL-02`, `AC-09-BL-01`..`AC-09-BL-03`
+
+### 10.1. Bảng Ánh Xạ Trọng Số Từ 8 Mã `IND_*` Trong `Tt17ScoringEngine.cs` (`BR-09-BL-01`, Q2)
+
+- **Nguyên tắc bảo toàn (Q2)**: Giữ nguyên hoàn toàn công thức tính 26 tiêu chí T-E-O-R-I, hệ số đồng bộ $T_{ĐB}$, `Benchmarks` (`C.10`–`C.32`) và Yearly Snapshot trong `SourceCode/backend/modules/assessment/NacenTech.Modules.Assessment/Application/Tt17ScoringEngine.cs`.
+- **Cơ chế ánh xạ 8 mã ngành BACLINK (`IND_*`) & Fallback chuẩn BACLINK**:
+  - Bổ sung `BaclinkIndustryBenchmarks` và hàm `ResolveBenchmark(string? industryCode)` trong `Tt17ScoringEngine.cs`:
+    - Nếu `industryCode` khớp trực tiếp key trong `Benchmarks` (`C.10`–`C.32`) $\rightarrow$ dùng trực tiếp để bảo toàn tương thích ngược.
+    - Nếu `industryCode` thuộc 8 mã `IND_*` của BACLINK $\rightarrow$ ánh xạ sang bộ trọng số công nghiệp tương ứng:
+
+| Mã Ngành BACLINK | Tên Ngành Công Nghiệp BACLINK | Mã Ánh Xạ (`Tt17ScoringEngine`) | Nhóm Tham Chiếu (`KChuan1..4`) |
+| :--- | :--- | :---: | :--- |
+| `IND_ELEC` | Điện tử, Bán dẫn & Thiết bị điện | `C.26` | Sản phẩm điện tử, máy vi tính & quang học |
+| `IND_MECH` | Cơ khí chính xác, Khuôn mẫu & Chế tạo máy | `C.25` | Sản xuất sản phẩm từ kim loại đúc sẵn |
+| `IND_AUTO` | Tự động hóa, Robot & Smart Factory | `C.28` | Sản xuất máy móc, thiết bị chuyên dụng |
+| `IND_PLAS` | Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp | `C.22` | Sản xuất sản phẩm từ cao su và plastic |
+| `IND_MAT` | Vật liệu mới & Công nghiệp hỗ trợ | `C.24` | Sản xuất kim loại & vật liệu nền |
+| `IND_IT` | CNTT, Phần mềm công nghiệp & MES/ERP | `C.26` | Công nghệ cao & thiết bị điện tử/điều khiển |
+| `IND_GREEN` | Công nghiệp xanh, Năng lượng sạch & ESG | `C.32` | Công nghiệp chế biến, chế tạo khác |
+| `IND_LOG` | Logistics công nghiệp, Kho vận & Chuỗi cung ứng | `C.29` | Sản xuất phương tiện & hạ tầng vận tải |
+| *(Fallback)* | Mã ngoài bảng / trống / chưa xác định | `BACLINK_DEFAULT` | `KChuan1=250, KChuan2=0.07, KChuan3=0.55, KChuan4=150` |
+
+### 10.2. Khóa `[AllowAnonymous]` Trên `/gov/assessments/tt17*` & Duyệt 1 Cấp `ADMIN` (`BR-09-BL-02`)
+
+- **Tại `SourceCode/backend/apps/api/V2/AssessmentsController.cs`**:
+  - **Khóa endpoint `/gov/*`**: Gỡ `[AllowAnonymous]` khỏi `GetGovAssessmentQueue` (`GET /api/v1|v2/gov/assessments/tt17`, dòng 430) và `GetTt17Dashboard` (`GET /api/v1|v2/gov/assessments/tt17/dashboard`, dòng 462). Bắt buộc `[Authorize(Roles = "ADMIN")]` hoặc trả `410 Gone` cho các route `/gov/assessments/tt17*`; tách riêng route quản trị `/api/v1|v2/admin/assessments/tt17/dashboard` có `[Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]` (theo chuẩn hóa `PlatformRoles.NormalizeTier`).
+  - **Chuẩn hóa `NormalizeScopeId` & `IndustryCode` mặc định**: Trong `AssessmentsController.cs` (dòng 29, 91, 159, 244, 323, 562), bỏ mặc định `"HN"` và `"C.10"` $\rightarrow$ mặc định `ScopeId = "GLOBAL"` (hoặc mã địa bàn/KCN Bắc Ninh hợp lệ) và `IndustryCode = "IND_ELEC"` / `"BACLINK_DEFAULT"`.
+  - **Quy trình nghiệm thu 1 cấp**: `ReviewAssessment` chỉ yêu cầu `ADMIN` Hiệp hội BACLINK (bỏ thẩm định cấp Sở KH&CN).
+
+### 10.3. Cập Nhật Template Xuất Word `.docx` & Giao Diện BACLINK (`REQ-09-BL-01`, `REQ-09-BL-02`)
+
+- **DOCX Exporters (`SourceCode/frontend/src/services/survey-docx-exporter.ts`, `SourceCode/frontend/src/services/tt17-docx-template-filler.ts`)**:
+  - Cập nhật `createAdministrativeHeader`, tiêu đề, cơ quan chủ quản, chân trang (từ `BỘ KHOA HỌC VÀ CÔNG NGHỆ` / `Sở KH&CN` / `NacenTech` tại `survey-docx-exporter.ts:198` và `tt17-docx-template-filler.ts:912`) sang **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)**, bảo đảm chuẩn A4 OpenXML Unicode, kích thước $\ge 15\text{ KB}$, không corrupt XML.
+  - Cập nhật 2 mẫu trắng thực địa tại `SourceCode/frontend/public/templates/surveys/` (khi tải từ `/admin/assessments/records`).
+- **Frontend UI & Local Scoring (`SourceCode/frontend/src/services/api/assessment-tt17.ts`, `src/app/(portal)/assessments/tt17/**`, `src/app/admin/assessments/tt17/page.tsx`, `src/app/admin/assessments/records/page.tsx`)**:
+  - Đồng bộ bảng ánh xạ 8 mã `IND_*` + fallback BACLINK vào `calculateLocalScore` trong `assessment-tt17.ts`.
+  - Tái định vị toàn bộ UI sang **Đánh giá Năng lực Nhà máy & Chuyển đổi số BACLINK**, thay bộ lọc 34 tỉnh tại `/admin/assessments/records` bằng địa bàn/KCN Bắc Ninh.
 

@@ -2,9 +2,9 @@
 
 **Feature Branch**: `brokerage-matching-dealroom`  
 **Feature Directory**: `specs/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI`  
-**Version**: 1.15.0  
+**Version**: 1.16.0  
 **Created**: 11/10/2026  
-**Status**: In Progress (Gate 1 - DoR Approved for CR-TASK-08-DELTA-03)  
+**Status**: In Implementation (CR-BACLINK-005 Approved)  
 **Ánh Xạ Basic Design**: 
 - Master Basic Design: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 5.4 Phân hệ 08 & Mục 17 PO-DEC-20261030-05)
 - Phân hệ Basic Design: [`Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md`](../../Specification/02_BASIC_DESIGN/TASK-08_KET_NOI_CUNG_CAU_VA_QUAN_LY_CO_HOI/README.md)  
@@ -492,6 +492,38 @@ Phân hệ tuân thủ nghiêm ngặt chuẩn hiển thị 5 UX States qua compo
 | **`REQ-BRK-D3-01`** | **`BR-BRK-D3-01`** | Điểm 4 trục tính đúng trọng số; tự động fallback PostgreSQL FTS khi sidecar lỗi | N/A (Backend Core Engine) | `BrokerageMatchingEngineService` | `TEST-BRK-D3-01`, `TEST-BRK-D3-04` (`HybridMatchingEngineTests.cs`, `GracefulDegradationTests.cs`) |
 | **`REQ-BRK-D3-02`** | **`BR-BRK-D3-01`** | Radar hiển thị 4 điểm số thật; 0% mock text; nút Re-match hoạt động mượt mà | `SourceCode/frontend/.../matching/radar/page.tsx` | `API-BRK-D3-01` (`GET /api/v1/brokerage/radar`, `POST /radar/recompute`) | `TEST-BRK-D3-02` (`radar/page.test.tsx`) |
 | **`REQ-BRK-D3-03`** | `BR-08.12` | Buyer chỉ thấy demand của mình; Seller chỉ thấy offer của mình | `SourceCode/frontend/.../matching/radar/page.tsx` | `GET /api/v1/brokerage/radar` (Scoped RBAC) | `ScopedRadarRbacTests.cs` |
+
+---
+
+## Spec Delta v4 (CR-BACLINK-005): Deal Room MOU & Radar AI Theo Ngành `IND_*` & KCN Bắc Ninh (Không Phân Tách `BUYER`/`SELLER` Role)
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 1, 3, 6, 9.2); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).  
+> **Phiên bản áp dụng**: `1.16.0`  
+> **Trạng thái**: `APPROVED` (In Implementation)
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-08-BL-01`, `REQ-08-BL-02`)
+
+- **`REQ-08-BL-01` [Radar AI Ghép Nối FDI–Nội Địa Theo Ngành `IND_*` & KCN Bắc Ninh]**:
+  - Màn hình `/portal/matching/radar` và `BrokerageMatchingEngineService` lọc và tính điểm ghép nối Cung–Cầu theo **8 ngành công nghiệp `IND_*`** và **Địa bàn/KCN Bắc Ninh** (Yên Phong, Quế Võ, VSIP, Tiên Sơn, Đại Đồng – Hoàn Sơn...), duy trì cơ chế Hybrid 4 trục XAI + PostgreSQL FTS Graceful Degradation và 0% text mock.
+- **`REQ-08-BL-02` [Deal Room MOU & Pipeline Cho `ENTERPRISE` Dual-Mode Không Phân Tách `BUYER`/`SELLER` Role]**:
+  - Các màn hình `/portal/matching/radar`, `/portal/seller/connection-requests`, `/portal/opportunities/pipeline`, `/portal/opportunities/[id]/deal-room` vận hành thống nhất cho tài khoản `user.role = 'ENTERPRISE'` thông qua `activeRole` (`BUYER` | `SELLER`) trên `RoleSwitcher` (không đổi `user.role`, không yêu cầu đăng nhập lại).
+  - Deal Room hỗ trợ đàm phán 1-1, mời Cố vấn Kỹ thuật Hiệp hội (`ADMIN` điều phối), bảo toàn PDPD masking (chỉ Unmask liên hệ khi 2 bên đồng thuận) và gắn `<BlockchainZkpBadge />` khi ký MOU.
+
+### 2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-08-BL-01`, `BR-08-BL-02`)
+
+- **`BR-08-BL-01` [Bãi Bỏ Phân Nhánh Role `BUYER`/`SELLER` Cứng Trong `BrokerageMatchingEngineService` (`ADR-0018` Mục 2.3)]**:
+  - `BrokerageMatchingEngineService` và `BrokerageControllers` không phân nhánh isolation theo `PlatformRoles.Buyer` vs `PlatformRoles.Seller` hoặc `PlatformRoles.ProvincialAdmin`:
+    * Khi `ENTERPRISE` thao tác ở chiều Bên Mua (`activeRole = 'BUYER'` / `mode = 'buyer'`): truy vấn theo `DemandItems` thuộc `Actor.PersonId` / `Actor.OrganizationId`.
+    * Khi `ENTERPRISE` thao tác ở chiều Bên Bán (`activeRole = 'SELLER'` / `mode = 'seller'`): truy vấn theo `TechnologyOffers` thuộc `Actor.OrganizationId` / `Actor.PersonId`.
+    * Giữ nguyên 100% IDOR isolation (không truy cập được Deal Room / Request của DN thứ 3); `ADMIN` xem toàn sàn; khóa `/api/v1/gov/opportunities` khỏi `[AllowAnonymous]` (`401/403/410`).
+- **`BR-08-BL-02` [Tương Thích Ngành `IND_*` & KCN Bắc Ninh Trong Radar AI]**:
+  - Khi ghép nối cặp Cung–Cầu có cùng mã ngành `IND_*` và/hoặc cùng KCN/địa bàn Bắc Ninh, engine phản ánh điểm tương thích ngành/địa bàn trong `xaiBreakdown` (giữ biên `[0, 100]`) mà không dùng dữ liệu giả.
+
+### 3. Tiêu Chuẩn Chấp Thuận (`AC-08-BL-01` .. `AC-08-BL-03`)
+
+- **`AC-08-BL-01`**: Một tài khoản `ENTERPRISE` (`member.hanelpt@baclink.org.vn`) chuyển đổi `RoleSwitcher` giữa Bên Mua và Bên Bán trên `/portal/matching/radar` và `/portal/opportunities/pipeline` xem được đúng cơ hội ở cả 2 chiều mà `user.role` vẫn giữ nguyên `'ENTERPRISE'`.
+- **`AC-08-BL-02`**: Hai doanh nghiệp `ENTERPRISE` mở Deal Room 1-1 (`/portal/opportunities/[id]/deal-room`) trao đổi và ký kết MOU thành công, lưu bản ghi thật vào PostgreSQL; thông tin liên hệ cá nhân được ẩn với bên ngoài và `ENTERPRISE` thứ 3 bị chặn `403 Forbidden`.
+- **`AC-08-BL-03`**: Gọi `GET /api/v1/gov/opportunities` không có token bị từ chối (`401/403/410`), không còn lỗ hổng `[AllowAnonymous]`.
 
 
 

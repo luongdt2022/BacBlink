@@ -3,7 +3,8 @@
 **Feature**: `TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Spec Reference**: [`spec.md`](./spec.md)  
 **Plan Reference**: [`plan.md`](./plan.md)  
-**Status**: Completed (Shipped Gate 5)  
+**Version**: 1.23.0 (Delta v21 - CR-BACLINK-001)  
+**Status**: In Implementation  
 
 ---
 
@@ -520,7 +521,7 @@
 
 ---
 
-## Phase 22: Spec Delta v20 (`CR-2026-031`) — Pending Route Skeleton Cho `/portal/*`, `(portal)`, `/gov/*` & Cache `fetchMyEnterpriseProfile()` [PO-DEC-20261111-03]
+## Phase 26: Spec Delta v20 (`CR-2026-031`) — Pending Route Skeleton Cho `/portal/*`, `(portal)`, `/gov/*` & Cache `fetchMyEnterpriseProfile()` [PO-DEC-20261111-03]
 
 - [x] `T-00.115` **[CR-2026-031] [FE-Shared] Tạo `WorkspaceRouteSkeleton` dùng chung & tái sử dụng tại `AdminWorkspaceSkeleton` (`REQ-UI-043`)**:
   - Tạo `SourceCode/frontend/src/components/common/workspace-route-skeleton.tsx`, cập nhật `src/components/admin/admin-workspace-skeleton.tsx` tái sử dụng giữ nguyên `data-testid="admin-route-skeleton"`.
@@ -529,6 +530,40 @@
   - Cập nhật `SourceCode/frontend/src/lib/enterprise-client.ts` và bỏ gọi lặp `[pathname]` trong `PortalLayout`.
 - [x] `T-00.118` **[CR-2026-031] [FE-Layouts] Nâng cấp `PortalLayout` & `GovLayout` với `pendingHref` skeleton tức thì + `<React.Suspense>` (`REQ-UI-043`, `BR-UI-031`)**.
 - [x] `T-00.119` **[CR-2026-031] [Test] Bổ sung & chạy unit tests `enterprise-client.test.ts`, `portal/layout.test.tsx`, `gov/layout.test.tsx`, `tsc --noEmit` (`TEST-UI-031`)**.
+
+---
+
+## Phase 27: BACLINK Refactor Delta (CR-BACLINK-001) — RBAC 3 Cấp, Dual-Mode RoleSwitcher, Thương Hiệu & Upgrade Hub BACLINK
+
+- [x] `T-00.BL.01` **[BE]** Chuẩn hóa `PlatformRoles` 3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`), `NormalizeTier()`, `ScopeTypes.IsValidForRole` (mặc định `ScopeTypes.Global`, đánh dấu `[Obsolete]` role cũ, không tạo role thứ 4 cho Ban Cố vấn) (`REQ-BACLINK-RBAC-001`, `BR-BACLINK-RBAC-001`):
+  - Tệp: `SourceCode/backend/packages/kernel/Application/ICurrentActor.cs`, `SourceCode/backend/config/policies/authorization-rules.v1.json`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/authorization/NacenTech.Tests.Authorization.csproj`.
+- [x] `T-00.BL.02` **[BE]** Chuẩn hóa `AuthenticationService` & `AuthController` trả về role chuẩn qua `NormalizeTier` + `scopeType = "GLOBAL"` (`REQ-BACLINK-RBAC-001`, `BR-BACLINK-RBAC-001`):
+  - Tệp: `SourceCode/backend/modules/identity/Application/AuthenticationService.cs`, `SourceCode/backend/apps/api/V1Compat/AuthController.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/integration/NacenTech.Tests.Integration.csproj --filter "FullyQualifiedName~IdentityRoleLifecycleTests"`.
+- [x] `T-00.BL.03` **[BE]** Gỡ `MatchProvinceScope` theo `Actor.ScopeId` tại `EnterpriseService` & `ApprovalService`; khi `ADMIN` duyệt 1 cấp tự động cấp `ENTERPRISE` + `CapabilityTier = "DUAL"` (`IsBuyer = true`, `IsSeller = true`), giữ nguyên IDOR isolation (`REQ-BACLINK-RBAC-001`, `REQ-BACLINK-UPG-001`, `BR-BACLINK-RBAC-002`):
+  - Tệp: `SourceCode/backend/modules/enterprise/NacenTech.Modules.Enterprise/Application/EnterpriseService.cs`, `SourceCode/backend/modules/identity/Application/ApprovalService.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~EnterpriseCapabilityInvariantsTests"`.
+- [x] `T-00.BL.04` **[DB]** Tạo migration SQL phi phá hủy chuẩn hóa `identity.persons.platform_role` về 3 cấp (`scope_type = 'GLOBAL'`, `scope_id = NULL`) và cấp `DUAL` capability cho `enterprise.enterprises` hội viên đã duyệt (`REQ-BACLINK-RBAC-001`):
+  - Tệp: `SourceCode/backend/infra/migrations/20261117_baclink_3tier_rbac_normalization.sql`.
+  - Kiểm chứng: Áp dụng idempotent lên PostgreSQL local (`psql -f ...`) và kiểm tra `SELECT DISTINCT platform_role, scope_type FROM identity.persons;`.
+- [x] `T-00.BL.05` **[FE]** Chuẩn hóa `ROLES` 3 cấp, `normalizePlatformRole()`, `getRedirectPathByRole` / `getWorkspacePath` (bỏ nhánh `/gov`) và `RoleGuard` (`REQ-BACLINK-RBAC-001`):
+  - Tệp: `SourceCode/frontend/src/lib/auth-client.ts`, `SourceCode/frontend/src/components/auth/role-guard.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/lib/auth-client.test.ts && npx tsc --noEmit`.
+- [x] `T-00.BL.06` **[FE]** Sửa lỗi `RoleSwitcher` tách bạch `user.role` (`"ENTERPRISE"`) và `activeRole` (`"BUYER" | "SELLER"`), bỏ dòng `user.role = targetRole` (`REQ-BACLINK-RBAC-002`):
+  - Tệp: `SourceCode/frontend/src/components/common/role-switcher.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/components/common/role-switcher.test.tsx`.
+- [x] `T-00.BL.07` **[FE]** Chuyển đổi toàn diện `Navbar` (7 menu công nghiệp Bắc Ninh), `Footer` (QĐ 1652/QĐ-UBND, Số 7 Lý Thái Tổ, TP. Bắc Ninh), `i18n-provider` (VI/EN) và metadata `layout.tsx` sang thương hiệu BACLINK, loại bỏ 100% chữ `NacenTech`/`NacenTwin`/`Bộ KH&CN` (`REQ-BACLINK-NAV-001`, `BR-BACLINK-BRAND-001`):
+  - Tệp: `SourceCode/frontend/src/components/common/navbar.tsx`, `SourceCode/frontend/src/components/common/footer.tsx`, `SourceCode/frontend/src/components/common/i18n-provider.tsx`, `SourceCode/frontend/src/app/layout.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/components/common/navbar.test.tsx src/components/common/footer.test.tsx`.
+- [x] `T-00.BL.08` **[FE]** Tinh gọn Upgrade Hub `/profile/upgrade` thành 1 luồng **Đăng ký Doanh nghiệp Hội viên BACLINK** gửi `ADMIN` duyệt 1 cấp, chọn Địa bàn/KCN Bắc Ninh thay vì Sở KH&CN (`REQ-BACLINK-UPG-001`, `BR-BACLINK-RBAC-001`):
+  - Tệp: `SourceCode/frontend/src/app/profile/upgrade/page.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/profile/upgrade/page.test.tsx`.
+- [x] `T-00.BL.09` **[TEST]** Bổ sung & cập nhật bộ test Backend + Frontend phủ 100% `CR-BACLINK-001` (`NormalizeTier`, `ScopeTypes.Global`, `RoleSwitcher` không ghi đè `user.role`, `Navbar`/`Footer` BACLINK, Upgrade Hub 1 bước, IDOR isolation `ENTERPRISE`) (`TEST-BACLINK-001`, `BR-BACLINK-RBAC-002`):
+  - Tệp: `SourceCode/backend/tests/authorization/ScopedMultiTierRbacTests.cs`, `SourceCode/frontend/src/components/common/role-switcher.test.tsx`, `SourceCode/frontend/src/app/profile/upgrade/page.test.tsx`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~ScopedMultiTierRbacTests|IdentityRoleLifecycleTests|EnterpriseCapabilityInvariantsTests"` và `cd SourceCode/frontend && npx vitest run src/components/common/role-switcher.test.tsx src/components/common/navbar.test.tsx src/components/common/footer.test.tsx src/app/profile/upgrade/page.test.tsx && npx tsc --noEmit`.
+  - Ghi chú Gate 3 Phase 1 (2026-11-17): Backend (`ScopedMultiTierRbacTests` + `IdentityRoleLifecycleTests` + `EnterpriseCapabilityInvariantsTests`) và Frontend Phase 1 (`auth-client.test.ts` 34/34, `role-switcher.test.tsx` 3/3, `profile/upgrade/page.test.tsx` 3/3, `tsc --noEmit`) PASS 100%; riêng `navbar.test.tsx` (1 fail) & `footer.test.tsx` (2 fail) đối soát lại ở `P3-B1` sau khi triển khai `T-00.BL.07`.
+
 
 
 

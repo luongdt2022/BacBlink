@@ -3,9 +3,9 @@
 
 > **Mã Epic**: `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`  
 > **Căn cứ**: Quyết định PO `PO-DEC-20261008-01` & `PO-DEC-20261008-04`, Basic Design `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/README.md`  
-> **Version**: 1.11.0  
-> **Status**: In Review / Delta Applied (CR-2026-024)  
-> **Trạng thái**: 🟡 **In Review / Delta Applied (2026-11-03)** — CR-2026-024 Seller Approval & Publishing Fix  
+> **Version**: 1.12.0  
+> **Status**: In Implementation (CR-BACLINK-005 Approved)  
+> **Trạng thái**: 🟡 **In Implementation (2026-11-17)** — CR-BACLINK-005 Sàn Sản Phẩm & Năng Lực Sản Xuất BACLINK  
 > **Độ ưu tiên**: P1 (Core Business Capability - Trọng tâm Sàn Giao Dịch Công Nghệ)
 
 ---
@@ -1374,3 +1374,32 @@ Tuân thủ nguyên tắc Lan truyền quyết định bắt buộc (Decision Pr
 - **`AC-04-056`**: Cán bộ Sở có thể duyệt niêm yết sản phẩm (`Status = 'APPROVED'`) nhưng giữ `TrlVerificationStatus = 'SELF_DECLARED'`; sản phẩm hiển thị trên sàn với nhãn `TRL X/9 (Tự kê khai - Chưa kiểm định)`.
 - **`AC-04-057`**: Khi Cán bộ chọn xác thực TRL (`VERIFY_BY_GOV`), sản phẩm hiển thị nhãn bảo chứng màu xanh ngọc `✓ TRL X/9 - Đã thẩm định bởi [Tên Sở KH&CN]`.
 - **`AC-04-058`**: Khi Seller chỉnh sửa mức TRL của sản phẩm đã `APPROVED`, sản phẩm vẫn tiếp tục hiển thị trên sàn (`Status = 'APPROVED'`), còn nhãn TRL chuyển về trạng thái chờ kiểm định lại (`PENDING_VERIFICATION`).
+
+---
+
+## Spec Delta v15 (CR-BACLINK-005): Sàn Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp BACLINK Bắc Ninh
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 1, 3, 6, 9.2); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).  
+> **Phiên bản áp dụng**: `1.12.0`  
+> **Trạng thái**: `APPROVED` (In Implementation)
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-04-BL-01`, `REQ-04-BL-02`)
+
+- **`REQ-04-BL-01` [Sàn Sản Phẩm & Năng Lực Sản Xuất / Gia Công BACLINK]**:
+  - Sàn công khai `/chao-ban-cong-nghe` và `/chao-ban-cong-nghe/[id]` chuyển đổi thuật ngữ sang **Sàn Sản Phẩm & Năng Lực Sản Xuất** (linh kiện điện tử, cơ khí chính xác CNC/khuôn mẫu, nhựa kỹ thuật, tự động hóa, Smart Factory, thiết bị phòng sạch).
+  - Bộ lọc đa tầng chuyển sang **8 ngành công nghiệp `IND_*`**, **Địa bàn/KCN Bắc Ninh**, mức TRL 1–9 / Năng lực sẵn sàng và chứng chỉ nhà máy (`ISO 9001`, `IATF 16949`, `ESG`); hiển thị 10 sản phẩm/năng lực seed thật qua `<Async>` Zero-Mock.
+- **`REQ-04-BL-02` [Quản Lý Sản Phẩm & Năng Lực Dưới Role `ENTERPRISE` Dual-Mode (`activeRole = 'SELLER'`)]**:
+  - Tại `/portal/seller/technologies/*`, tài khoản `ENTERPRISE` khi bật `RoleSwitcher` sang `activeRole = 'SELLER'` giữ nguyên `user.role = 'ENTERPRISE'` và thực hiện tạo, sửa, gửi duyệt, ẩn/hiện sản phẩm/năng lực của đơn vị mình.
+
+### 2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-04-BL-01`, `BR-04-BL-02`)
+
+- **`BR-04-BL-01` [Bỏ Ràng Buộc `ManagingAuthorityId` 34 Sở & Duyệt 1 Cấp Bởi `ADMIN`]**:
+  - `TechnologyOffersController` và `SellerOfferContracts` bỏ yêu cầu bắt buộc `ManagingAuthorityId` là Sở KH&CN và bỏ kiểm tra `Actor.ScopeId` theo tỉnh; thẩm định niêm yết & xác thực chỉ số thực hiện 1 cấp bởi `ADMIN` BACLINK. Nhãn `<IndexVerificationBadge />` hiển thị cơ quan bảo chứng mặc định `Hiệp hội BACLINK`.
+- **`BR-04-BL-02` [Không Tách Role `SELLER` Khỏi `ENTERPRISE` (`ADR-0018` Mục 2.3)]**:
+  - Mọi `ENTERPRISE` được phép đăng và quản lý sản phẩm/năng lực thuộc `OrganizationId` / `OwnerPersonId` của chính đơn vị mình mà không cần role `SELLER` riêng lẻ; giữ nguyên kiểm soát chống IDOR giữa các `ENTERPRISE`.
+
+### 3. Tiêu Chuẩn Chấp Thuận (`AC-04-059` .. `AC-04-061`)
+
+- **`AC-04-059`**: Trên `/chao-ban-cong-nghe`, danh sách sản phẩm/năng lực hiển thị từ PostgreSQL (`seed_baclink_demo_data.sql`) và lọc được theo 8 ngành `IND_*` + KCN Bắc Ninh, không có fallback mock.
+- **`AC-04-060`**: Tài khoản `ENTERPRISE` bật `RoleSwitcher` sang Bên Bán (`activeRole = 'SELLER'`) tạo mới sản phẩm/năng lực không cần chọn Sở KH&CN chủ quản; `ADMIN` duyệt 1 cấp thành công (`200 OK`) và sản phẩm hiển thị ngay trên sàn công khai.
+- **`AC-04-061`**: `ENTERPRISE` A gọi `PUT /api/v1/portal/seller/technologies/{id}` lên sản phẩm thuộc `ENTERPRISE` B bị chặn `403 Forbidden`.

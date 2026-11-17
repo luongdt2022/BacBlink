@@ -3,9 +3,9 @@
 **Feature Branch**: `foundation-platform-common`  
 **Feature Directory**: `specs/TASK-00_PLATFORM_FOUNDATION_VA_COMMON`  
 **Created**: 25/09/2026  
-**Version**: 1.22.0 (Delta v20 - CR-2026-031 Portal & Gov Route Loading Skeleton + Enterprise Profile Cache)  
-**Status**: Completed (Shipped Gate 5 - CR-2026-031)  
-**Last Updated**: 11/11/2026  
+**Version**: 1.23.0 (Delta v21 - CR-BACLINK-001 RBAC 3 Cấp, RoleSwitcher Dual-Mode, Branding & Upgrade Hub BACLINK)  
+**Status**: In Implementation  
+**Last Updated**: 17/11/2026  
 **Ánh Xạ Kỹ Thuật**: Nền tảng hạ tầng, Modular Monolith Clean Architecture, Shared Kernel & Docker Compose  
 **Phạm Vi**: Backend .NET Core (`backend/`), Frontend Next.js (`frontend/`), JWT Auth Session, Role Gateway Routing  
 
@@ -1006,3 +1006,47 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 | :--- | :--- | :--- | :--- | :--- |
 | **REQ-UI-043** | `BR-UI-031` | `WorkspaceRouteSkeleton`, `loading.tsx`, `pendingHref` tại Portal & Gov | `workspace-route-skeleton.tsx`, `portal/loading.tsx`, `(portal)/loading.tsx`, `gov/loading.tsx`, `portal/layout.tsx`, `gov/layout.tsx` | `portal/layout.test.tsx`, `gov/layout.test.tsx` |
 | **REQ-UI-044** | `BR-UI-031` | Cache 30s, dedup, token isolation, invalidate on write | `src/lib/enterprise-client.ts`, `src/app/portal/layout.tsx` | `src/lib/enterprise-client.test.ts`, `portal/layout.test.tsx` |
+
+
+---
+
+## Spec Delta v21 (CR-BACLINK-001): Chuẩn Hóa RBAC 3 Cấp, `RoleSwitcher` Dual-Mode, Thương Hiệu BACLINK & Upgrade Hub 1 Bước [PO-DEC-BACLINK-01/02/03]
+
+> **Căn cứ phê duyệt:** `Specification/BASIC_DESIGN_BACLINK.md` (Mục 1, 2, 9.2: `PO-DEC-BACLINK-01`, `PO-DEC-BACLINK-02`, `PO-DEC-BACLINK-03`), `ADR-0018`, `SourceCode/docs/open-questions.md` (Q1); Hồ sơ Delta Ledger [`CR-BACLINK-001`](./deltas/CR-BACLINK-001_3tier_rbac_and_branding.md) (`Status: APPROVED`).
+
+### 1. Yêu Cầu Kỹ Thuật & Điểm Neo Bất Biến (Immutable Requirements & Rules)
+
+- **`REQ-BACLINK-RBAC-001` (RBAC 3 Cấp & `ScopeTypes.Global`)**:
+  - Chuẩn hóa hệ thống định danh về đúng 3 vai trò cốt lõi: `ADMIN` (Ban Quản trị Hiệp hội BACLINK), `ENTERPRISE` (Doanh nghiệp Hội viên Dual-Mode `BUYER` + `SELLER`), `PUBLIC_USER` (Khách / Đối tác đã đăng nhập).
+  - Toàn bộ tài khoản ở cả 3 cấp sử dụng `ScopeType = ScopeTypes.Global` và `ScopeId = null`. Bổ sung hàm `PlatformRoles.NormalizeTier(role)` ở Backend và helper tương ứng trong `auth-client.ts` (giữ alias legacy `[Obsolete]` để không làm gãy JWT đang còn hạn); bỏ điều hướng `/gov` khỏi `getRedirectPathByRole` & `getWorkspacePath`.
+- **`REQ-BACLINK-RBAC-002` (Giữ Nguyên `user.role` Trên `RoleSwitcher`)**:
+  - `RoleSwitcher` (`SourceCode/frontend/src/components/common/role-switcher.tsx`) khi chuyển đổi chế độ Bên Mua (`BUYER`) ↔ Bên Bán (`SELLER`) **tuyệt đối không** ghi đè `user.role` trong `localStorage` / `UserContext`. `user.role` giữ nguyên `"ENTERPRISE"`; trạng thái chế độ làm việc lưu tại `activeRole` (`nacentwin_active_role` + `EnterpriseProfile.ActiveRole`).
+- **`REQ-BACLINK-NAV-001` (Navbar 7 Menu, Footer & i18n BACLINK)**:
+  - Cập nhật `navbar.tsx`, `footer.tsx`, `i18n-provider.tsx` (VI/EN) và metadata sang nhận diện **BACLINK — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh** (QĐ 1652/QĐ-UBND, Số 7 đường Lý Thái Tổ, P. Suối Hoa, TP. Bắc Ninh), cấu trúc 7 menu công nghiệp Bắc Ninh.
+- **`REQ-BACLINK-UPG-001` (Upgrade Hub 1 Bước Gia Nhập Hội Viên BACLINK)**:
+  - `SourceCode/frontend/src/app/profile/upgrade/page.tsx` rút gọn thành 1 luồng **Đăng ký Doanh nghiệp Hội viên BACLINK** (gửi thẳng hàng đợi duyệt 1 cấp của `ADMIN`, chọn Địa bàn/KCN Bắc Ninh, bỏ chọn Sở KH&CN 34 tỉnh). Sau khi `ADMIN` duyệt, DN tự động nhận `ENTERPRISE` + `CapabilityTier = "DUAL"` (`IsBuyer = true`, `IsSeller = true`).
+- **`BR-BACLINK-RBAC-001` (Không Tạo Role JWT Thứ 4 Cho Ban Cố Vấn)**:
+  - Cố vấn kỹ thuật dùng tài khoản `PUBLIC_USER` hoặc `ENTERPRISE` gắn bản ghi `ExpertProfile (Status = APPROVED)`; không thêm role mới vào `PlatformRoles` hay JWT claim (`open-questions.md` Q1).
+- **`BR-BACLINK-RBAC-002` (Bảo Toàn IDOR Isolation Giữa Các `ENTERPRISE`)**:
+  - Tài khoản `ENTERPRISE` thao tác được cả Bên Mua và Bên Bán trên tài nguyên thuộc `PersonId` / `OrganizationId` của mình; mọi hành vi truy cập/sửa tài nguyên của `ENTERPRISE` khác bị chặn với `403 Forbidden`.
+- **`BR-BACLINK-BRAND-001` (Zero Brand Leakage)**:
+  - Không còn chuỗi nhận diện `NacenTech`, `NacenTwin`, `Bộ KH&CN`, `34 Sở KH&CN` trên `Navbar`, `Footer`, `i18n` và metadata HTML.
+- **`TEST-BACLINK-001` (Unit & Integration Tests RBAC 3 Cấp, RoleSwitcher & Branding)**:
+  - Kiểm chứng `PlatformRoles.NormalizeTier`, `ScopeTypes.IsValidForRole`, `RoleSwitcher` không ghi đè `user.role`, `Navbar`/`Footer` BACLINK, và luồng `/profile/upgrade` 1 bước.
+
+### 2. Tiêu Chuẩn Chấp Thuận (Acceptance Criteria)
+
+- **`AC-CR-BACLINK-001.1`**: Đăng nhập `ADMIN`, `ENTERPRISE`, `PUBLIC_USER` trả về `scopeType = "GLOBAL"` và điều hướng về `/admin`, `/portal`, `/` (không điều hướng `/gov`).
+- **`AC-CR-BACLINK-001.2`**: Chuyển `BUYER` ↔ `SELLER` trên `RoleSwitcher` cập nhật `activeRole` và Portal sidebar, đồng thời `authClient.getUser().role` vẫn giữ nguyên `"ENTERPRISE"`.
+- **`AC-CR-BACLINK-001.3`**: `Navbar`, `Footer`, `i18n-provider.tsx` hiển thị nhận diện BACLINK (VI/EN), 0 chuỗi thương hiệu `NacenTech` / `NacenTwin` / `Bộ KH&CN`.
+- **`AC-CR-BACLINK-001.4`**: `PUBLIC_USER` gửi đơn tại `/profile/upgrade` không cần chọn Sở KH&CN; khi `ADMIN` duyệt, tài khoản đạt `ENTERPRISE` + `DUAL` (`BUYER` + `SELLER`).
+- **`AC-CR-BACLINK-001.5`**: Token cũ (`SUPER_ADMIN`, `OPERATOR_ADMIN`) normalize an toàn sang `ADMIN`; `dotnet test` và `vitest` PASS 100%.
+
+### 3. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-BACLINK-RBAC-001** | `BR-BACLINK-RBAC-001`, `BR-BACLINK-RBAC-002` | `AC-CR-BACLINK-001.1`, `AC-CR-BACLINK-001.5` | `ICurrentActor.cs`, `authorization-rules.v1.json`, `EnterpriseService.cs`, `src/lib/auth-client.ts` | `dotnet test`, `auth-client.test.ts` |
+| **REQ-BACLINK-RBAC-002** | `BR-BACLINK-RBAC-002` | `AC-CR-BACLINK-001.2` | `src/components/common/role-switcher.tsx`, `src/app/portal/layout.tsx` | `src/components/common/role-switcher.test.tsx` |
+| **REQ-BACLINK-NAV-001** | `BR-BACLINK-BRAND-001` | `AC-CR-BACLINK-001.3` | `src/components/common/navbar.tsx`, `footer.tsx`, `i18n-provider.tsx` | `navbar.test.tsx`, `footer.test.tsx` |
+| **REQ-BACLINK-UPG-001** | `BR-BACLINK-RBAC-001`, `BR-BACLINK-RBAC-002` | `AC-CR-BACLINK-001.4` | `src/app/profile/upgrade/page.tsx`, `ApprovalService.cs` | `src/app/profile/upgrade/page.test.tsx`, `dotnet test` |

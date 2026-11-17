@@ -1,8 +1,10 @@
 # Đặc Tả Yêu Cầu Kỹ Thuật (spec.md) — TASK-01: Tổng Quan Hệ Thống, Cổng Điều Hướng Home & Sự Kiện Techmart
 
 > **Mã phân hệ**: `TASK-01`  
-> **Trạng thái**: `🟢 Completed (Shipped Gate 5)`  
-> **Version**: `1.3.0`  
+> **Status**: In Implementation  
+> **Trạng thái**: `🟡 In Implementation (CR-BACLINK-004 Approved)`  
+> **Version**: `1.4.0`  
+> **Last Updated**: `2026-11-17`  
 > **Ánh xạ Basic Design**: [`Specification/02_BASIC_DESIGN/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/`](../../../Specification/02_BASIC_DESIGN/TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/)  
 > **Tài liệu nguồn gốc (SSOT)**: 
 > 1. Sheet `HOME1` & `Giới thiệu` (60 dòng dữ liệu gốc) trong `Nacentwin_20260924_bo_loc_da_sua.xlsx`.
@@ -323,3 +325,39 @@
 
 - **`REQ-01-SRV-01`**: Tại lưới 4 thẻ công cụ đo lường & đánh giá năng lực trên `/dich-vu-khac`, Card 03 (**Khảo Sát ĐMST (43 Câu)**) chỉ giữ duy nhất nút CTA chính `Làm Khảo Sát ĐMST Ngay` (`/khao-sat-dmst`), loại bỏ hoàn toàn dòng liên kết phụ *"Xem bảng xếp hạng & danh bạ DN"* (`/doanh-nghiep-dmst`) để đồng bộ bố cục chân thẻ với 3 thẻ còn lại (TNI, TT17, TRL 1–9).
 - **`AC-01-008`**: Trên `/dich-vu-khac`, Card 03 hiển thị nút `Làm Khảo Sát ĐMST Ngay` trỏ `/khao-sat-dmst` và không còn hiển thị liên kết *"Xem bảng xếp hạng & danh bạ DN"*.
+
+---
+
+## Spec Delta v6: Chuyển Đổi Nội Dung Cổng Công Khai BACLINK — Trang Chủ, Giới Thiệu QĐ 1652, Sự Kiện Giao Thương, Dịch Vụ & Hướng Dẫn 3 Cấp (CR-BACLINK-004)
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-004`](./deltas/CR-BACLINK-004_home_about_events_services_content.md); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 1, 3, 6, 9.2); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).  
+> **Phiên bản áp dụng**: `1.4.0`  
+> **Trạng thái**: `APPROVED` (In Implementation)
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-01-BL-01` .. `REQ-01-BL-04`)
+
+- **`REQ-01-BL-01` [Trang Chủ BACLINK Zero-Mock & 8 Chip Ngành `IND_*`]**:
+  - Trang chủ (`/`) hiển thị Hero *"Kết Nối Chuỗi Cung Ứng & Nâng Tầm Công Nghiệp Bắc Ninh"*, quy trình 4 bước (Đăng ký Hội viên $\rightarrow$ Chuẩn hóa Hồ sơ & Năng lực $\rightarrow$ Ghép nối AI Nội địa–FDI $\rightarrow$ Ký kết MOU & Chứng thực số), khối KCN Bắc Ninh (Yên Phong I/II, Quế Võ I/II/III, VSIP Bắc Ninh, Tiên Sơn, Đại Đồng – Hoàn Sơn, Hanaka, Thuận Thành, Gia Bình) & Hội viên tiêu biểu.
+  - 4 thẻ KPI nạp động từ `GET /api/v1/portal/stats` qua `<Async>` đủ 5 UX States (Doanh nghiệp Hội viên BACLINK, Sản phẩm & Năng lực sản xuất, Nhu cầu tìm nhà cung ứng, Giao dịch & MOU thành công), 0% fallback số giả; 8 sector chips nạp động theo danh mục `IND_*`.
+- **`REQ-01-BL-02` [Trang Giới Thiệu Pháp Nhân QĐ 1652 & Ma Trận Ngành/KCN]**:
+  - `/gioi-thieu` trình bày pháp nhân Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (QĐ 1652/QĐ-UBND ngày 16/06/2025, trụ sở Số 7 Lý Thái Tổ, P. Suối Hoa, TP. Bắc Ninh, Đại hội I 2025–2028, BCH 28 thành viên, phương châm *"Liên kết - Hợp tác - Đổi mới - Hội nhập"*, thương hiệu *"Công nghiệp xanh - Tử tế - Bắc Ninh"*), Điều lệ & Quyền lợi Hội viên.
+  - `/matrix` hiển thị Ma trận **8 Ngành công nghiệp `IND_*` × Địa bàn/KCN Bắc Ninh** thay cho ma trận TT17 cũ.
+- **`REQ-01-BL-03` [Sự Kiện Xúc Tiến Giao Thương FDI–Nội Địa Bắc Ninh]**:
+  - `/trien-lam` và `/trien-lam/dang-ky-tham-quan` chuyển thành **Sự kiện Xúc tiến Giao thương & Hội chợ Công nghiệp BACLINK**, nạp dữ liệu thật từ PostgreSQL (`seed_baclink_demo_data.sql` với 3 sự kiện BACLINK) và giữ luồng đăng ký tham quan/gian hàng B2B qua API thật.
+- **`REQ-01-BL-04` [Dịch Vụ Hỗ Trợ Hội Viên & Hướng Dẫn Thao Tác 3 Cấp]**:
+  - `/dich-vu-khac` tái định vị sang **Dịch vụ Hỗ trợ Hội viên BACLINK** (Kết nối FDI, Chuẩn hóa ISO/IATF/Lean/ESG, Radar AI, Đánh giá Năng lực Nhà máy & CĐS), bảo toàn bố cục tinh gọn Card 03 (`REQ-01-SRV-01`).
+  - `/huong-dan` (`guide-data.ts`) cấu trúc lại hướng dẫn theo đúng **3 cấp** (`ADMIN`, `ENTERPRISE` Dual-Mode, `PUBLIC_USER`), gỡ bỏ hoàn toàn hướng dẫn `/gov/*`, 10 roles và 34 Sở KH&CN.
+
+### 2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-01-BL-01`, `BR-01-BL-02`)
+
+- **`BR-01-BL-01` [Zero Brand Leakage & Zero-Mock Trên Cổng Công Khai]**:
+  - Nghiêm cấm hiển thị chuỗi `NacenTech`, `NacenTwin`, `Bộ KH&CN`, `34 Sở KH&CN`, `34 tỉnh` trên các route thuộc `TASK-01`. Toàn bộ KPI và sự kiện đọc từ PostgreSQL thật; lỗi API phải hiển thị Error State qua `<Async>`.
+- **`BR-01-BL-02` [Quy Chuẩn Nhãn Bảo Chứng Công Khai BACLINK]**:
+  - Cập nhật nhãn mặc định của `BR-BADGE-DISPLAY-01` trên giao diện công khai từ `'Sở KH&CN'` sang `'Hiệp hội BACLINK'` (`✓ TRL {X}/9 · Đã chứng thực` / `✓ Đã chứng thực bởi Hiệp hội BACLINK`), vẫn tôn trọng `VerifiedAuthorityName` nếu bản ghi DB có tên cụ thể.
+
+### 3. Tiêu Chuẩn Chấp Thuận (`AC-01-009` .. `AC-01-012`)
+
+- **`AC-01-009`**: Truy cập `/`, 4 KPI hiển thị số đếm thật từ `GET /api/v1/portal/stats` qua `<Async>`, 8 chip ngành hiển thị mã/tên `IND_*`, không xuất hiện chuỗi `NacenTech`/`NacenTwin`/`34 tỉnh`.
+- **`AC-01-010`**: Truy cập `/gioi-thieu` và `/matrix`, hiển thị đầy đủ QĐ 1652/QĐ-UBND, trụ sở TP. Bắc Ninh, BCH 28 thành viên và Ma trận 8 ngành `IND_*` × KCN Bắc Ninh.
+- **`AC-01-011`**: Truy cập `/trien-lam`, hiển thị 3 sự kiện xúc tiến giao thương BACLINK từ PostgreSQL (`seed_baclink_demo_data.sql`) và gửi form đăng ký tham quan thành công (`200/201`).
+- **`AC-01-012`**: Truy cập `/dich-vu-khac` và `/huong-dan`, chỉ hiển thị hướng dẫn 3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`) và không còn bất kỳ liên kết hoặc hướng dẫn nào trỏ tới `/gov/*`.

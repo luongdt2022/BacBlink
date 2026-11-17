@@ -2,7 +2,8 @@
 
 **Feature**: `TASK-06_HE_THONG_DANH_MUC_NGANH_MA_TRAN`  
 **Spec Reference**: [`spec.md`](./spec.md) | **Plan Reference**: [`plan.md`](./plan.md)  
-**Status**: Converged & Verified (100%)  
+**Version**: 1.13.0 (Delta v4 - CR-BACLINK-003)  
+**Status**: In Implementation  
 
 ---
 
@@ -69,3 +70,33 @@
   - Tiêu chí kiểm chứng:
     - [x] Invariant test xác nhận đúng 10 mã `LV` chuẩn.
     - [x] 100% test suites pass.
+
+---
+
+## Phase 6: BACLINK Refactor Delta (CR-BACLINK-003) — 8 Ngành BACLINK (`IND_*`), Địa Bàn/KCN Bắc Ninh & Tách Endpoint Locations
+
+- [x] `T-06.BL.01` **[DB]** Tạo migration SQL phi phá hủy deactivate `LV*` (`UPDATE policy.taxonomy_terms SET is_active = false WHERE kind = 'SECTOR' AND code LIKE 'LV%'`, tuyệt đối không `DELETE`) và upsert 8 ngành BACLINK (`IND_ELEC`..`IND_LOG`) + 8+1 Địa bàn & KCN trọng điểm Bắc Ninh (`kind = 'LOCATION'`) (`REQ-BACLINK-TAX-001`, `REQ-BACLINK-TAX-002`, `BR-BACLINK-TAX-001`):
+  - Tệp: `SourceCode/backend/infra/migrations/20261117_baclink_taxonomy_sectors_locations.sql`.
+  - Kiểm chứng: Áp dụng lên PostgreSQL local và xác nhận `SELECT code, is_active FROM policy.taxonomy_terms WHERE kind IN ('SECTOR', 'LOCATION');`.
+- [x] `T-06.BL.02` **[BE]** Bổ sung `TaxonomyKinds.Location = "LOCATION"` trong `Contracts.cs` & `TaxonomyService.cs` và xóa `FallbackSectors` static mock trong `TaxonomyControllers.cs` (`REQ-BACLINK-TAX-003`, `BR-BACLINK-TAX-002`):
+  - Tệp: `SourceCode/backend/modules/policy/Application/Contracts.cs`, `SourceCode/backend/modules/policy/Application/TaxonomyService.cs`, `SourceCode/backend/apps/api/V1Compat/TaxonomyControllers.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/integration/NacenTech.Tests.Integration.csproj --filter "FullyQualifiedName~MasterDataSectorIntegrationTests"`.
+- [x] `T-06.BL.03` **[BE]** Mở validation `IND_*` (`^IND_[A-Z0-9_]+$`) tại `CreateSector` & `UpdateMatrixPair` (`POST/PUT matrix`), cập nhật ma trận cho 8 ngành `IND_*`, và bổ sung endpoint công khai `[AllowAnonymous] GET /api/v1/master-data/locations` (`?type=AREA|KCN`) tại `MasterDataControllers.cs` (`REQ-BACLINK-TAX-001`, `REQ-BACLINK-TAX-003`):
+  - Tệp: `SourceCode/backend/apps/api/V1Compat/MasterDataControllers.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~SectorMasterDataInvariantsTests"`.
+- [x] `T-06.BL.04` **[BE]** Bổ sung bảng ánh xạ trọng số Đánh giá Năng lực từ 8 ngành `IND_ELEC`..`IND_LOG` trong `Tt17ScoringEngine.cs` & `AssessmentsController.cs` (fallback bộ trọng số cân bằng chuẩn BACLINK) (`BR-BACLINK-TAX-003`):
+  - Tệp: `SourceCode/backend/modules/assessment/NacenTech.Modules.Assessment/Application/Tt17ScoringEngine.cs`, `SourceCode/backend/apps/api/V2/AssessmentsController.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/NacenTech.Modules.Assessment.Tests/NacenTech.Modules.Assessment.Tests.csproj`.
+- [x] `T-06.BL.05` **[FE]** Cập nhật `master-data-client.ts` gọi `/api/v1/master-data/locations` thay cho `/api/v1/governance/org-units/public-provinces`, thêm `getBacNinhLocations()` với TTL cache + dedup và reject lỗi (Zero-Static-Array Fallback) (`REQ-BACLINK-TAX-003`, `BR-BACLINK-TAX-002`):
+  - Tệp: `SourceCode/frontend/src/lib/master-data-client.ts`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/lib/master-data-client.test.ts`.
+- [x] `T-06.BL.06` **[FE]** Thay `PROVINCES_34` (`34 Tỉnh / Sở KH&CN`) bằng danh mục 8+1 Địa bàn & KCN trọng điểm Bắc Ninh trong `provinces.ts` và `searchable-province-combobox.tsx` (`REQ-BACLINK-TAX-002`, `BR-BACLINK-TAX-002`):
+  - Tệp: `SourceCode/frontend/src/lib/constants/provinces.ts`, `SourceCode/frontend/src/components/common/searchable-province-combobox.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx tsc --noEmit`.
+- [x] `T-06.BL.07` **[FE]** Cập nhật `/admin/sectors` và `/matrix` sang 8 ngành công nghiệp BACLINK (`IND_*`), validation `^IND_[A-Z0-9_]+$`, hiển thị Địa bàn/KCN Bắc Ninh và `invalidateSectorsCache()` sau CRUD (`REQ-BACLINK-TAX-001`, `REQ-BACLINK-TAX-002`):
+  - Tệp: `SourceCode/frontend/src/app/admin/sectors/page.tsx`, `SourceCode/frontend/src/app/matrix/page.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/admin/sectors/page.test.tsx`.
+- [x] `T-06.BL.08` **[TEST]** Cập nhật & chạy Invariant/Integration/Vitest tests kiểm chứng 8 ngành `IND_*`, `LV*` bị deactivate phi phá hủy (`is_active = false`), `GET /api/v1/master-data/locations`, `Tt17ScoringEngine` 8 ngành `IND_*`, và `master-data-client.test.ts` (`TEST-BACLINK-003`):
+  - Tệp: `SourceCode/backend/tests/invariants/SectorMasterDataInvariantsTests.cs`, `SourceCode/backend/tests/invariants/MasterDataAndRolesInvariantsTests.cs`, `SourceCode/backend/tests/integration/MasterDataSectorIntegrationTests.cs`, `SourceCode/backend/tests/NacenTech.Modules.Assessment.Tests/Tt17ScoringEngineTests.cs`, `SourceCode/frontend/src/lib/master-data-client.test.ts`, `SourceCode/frontend/src/app/admin/sectors/page.test.tsx`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~SectorMasterDataInvariantsTests|MasterDataAndRolesInvariantsTests|MasterDataSectorIntegrationTests|Tt17ScoringEngineTests"` và `cd SourceCode/frontend && npx vitest run src/lib/master-data-client.test.ts src/app/admin/sectors/page.test.tsx && npx tsc --noEmit`.
+

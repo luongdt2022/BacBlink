@@ -2,7 +2,8 @@
 # TASK-09: ĐÁNH GIÁ TRÌNH ĐỘ & NĂNG LỰC CÔNG NGHỆ SẢN XUẤT (TT17)
 
 > **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
-> **Trạng thái**: 🟢 Đã hoàn thành 100% (Shipped & Verified) — Đạt chuẩn Quality Gate 4 & 5
+> **Version**: 1.7.0  
+> **Trạng thái**: 🟡 In Implementation (CR-BACLINK-006)  
 
 ---
 
@@ -97,4 +98,28 @@
 - [x] T-09.36 [FE] Cập nhật `survey-docx-exporter.ts`: Triển khai generator `exportDemandSmeDocx` nạp 100% dữ liệu thực tế từ `DemandSurveyItem` xuất file Word A4 chuẩn OpenXML.
 - [x] T-09.37 [QC] Viết kịch bản kiểm thử Vitest & Playwright E2E: Verify API trả về `items`, verify modal 7 phần hiển thị dữ liệu, click xuất Word và giải nén kiểm tra nội dung file XML trong file DOCX. Đã hoàn thành 100% Pass: Vitest 11/11 tests pass, Playwright E2E 12/12 tests pass.
 - [x] T-09.38 [QA/PO] Shadow Audit Zero-Mock, nghiệm thu evidence và ký Quality Gate 5 đóng CR-2026-027. Đã đối soát CSDL PostgreSQL thật, API live, xuất XML DOCX thật và biên bản nghiệm thu.
+
+---
+
+## Phase 9: BACLINK Refactor Delta (CR-BACLINK-006)
+
+- [x] `T-09.BL.01` `[BE]` Bổ sung bảng ánh xạ trọng số 8 mã ngành `IND_*` (`IND_ELEC`..`IND_LOG`) + fallback cân bằng chuẩn BACLINK (`KChuan1=250, KChuan2=0.07, KChuan3=0.55, KChuan4=150`) trong `SourceCode/backend/modules/assessment/NacenTech.Modules.Assessment/Application/Tt17ScoringEngine.cs` (`BR-09-BL-01`, Q2).
+  - *Kiểm chứng*: `dotnet build SourceCode/backend/NacenTech.slnx` 0 lỗi; xUnit test tính điểm cho đủ 8 mã `IND_*` và mã lạ fallback trả kết quả hợp lệ không exception.
+
+- [x] `T-09.BL.02` `[BE]` Khóa `[AllowAnonymous]` trên `/api/v1|v2/gov/assessments/tt17` và `/gov/assessments/tt17/dashboard` trong `SourceCode/backend/apps/api/V2/AssessmentsController.cs` (dòng 430, 462), chuyển về `[Authorize]` cho `ADMIN` hoặc `410 Gone`; bỏ mặc định `"HN"` tại `NormalizeScopeId` (dòng 29) và `"C.10"` mặc định (`BR-09-BL-02`).
+  - *Kiểm chứng*: Unauthenticated request tới `/api/v1/gov/assessments/tt17` trả `401/403/410`; `ADMIN` truy cập `/api/v1/admin/assessments/tt17/dashboard` trả `200 OK`.
+
+- [x] `T-09.BL.03` `[DB]` Kiểm tra & đồng bộ dữ liệu mẫu/bản ghi đánh giá BACLINK trên PostgreSQL thật (`assessment.tt17_assessments` với `industry_code` `IND_*` và `scope_id = 'GLOBAL'` / Bắc Ninh) trong `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (`REQ-09-BL-01`).
+  - *Kiểm chứng*: Chạy `psql` xác minh bản ghi thật dùng `IND_*` đọc/tính điểm qua API thật không lỗi, cột `industry_code` chứa vừa mã `IND_GREEN` (9 ký tự).
+
+- [x] `T-09.BL.04` `[FE]` Cập nhật `SourceCode/frontend/src/services/survey-docx-exporter.ts` (dòng 198+), `SourceCode/frontend/src/services/tt17-docx-template-filler.ts` (dòng 912+) và 2 template mẫu tại `SourceCode/frontend/public/templates/surveys/` sang thương hiệu **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)** (`REQ-09-BL-02`, `AC-09-BL-02`).
+  - *Kiểm chứng*: Xuất file `.docx` thật $\ge 15\text{ KB}$, giải nén `word/document.xml` kiểm tra chứa "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh" / "BACLINK" và không còn "BỘ KHOA HỌC VÀ CÔNG NGHỆ" / "Sở KH&CN".
+
+- [x] `T-09.BL.05` `[FE]` Cập nhật `SourceCode/frontend/src/services/api/assessment-tt17.ts` (đồng bộ mapping 8 ngành `IND_*` + fallback trong `calculateLocalScore`) và tái định vị giao diện tại `SourceCode/frontend/src/app/(portal)/assessments/tt17/{page.tsx,wizard/page.tsx,[id]/report/page.tsx}`, `SourceCode/frontend/src/app/admin/assessments/{tt17/page.tsx,records/page.tsx}` sang **Đánh giá Năng lực Nhà máy & Chuyển đổi số BACLINK** + bộ lọc Bắc Ninh (`REQ-09-BL-01`, `AC-09-BL-01`).
+  - *Kiểm chứng*: `npx tsc --noEmit` 0 lỗi; đối soát 5 UX States `<Async>` và 26 tiêu chí T-E-O-R-I hoạt động bình thường.
+
+- [x] `T-09.BL.06` `[TEST]` Bổ sung & chạy kiểm thử 4 tầng cho `TASK-09` (`AC-09-BL-01`..`AC-09-BL-03`):
+  - xUnit (`Tt17AssessmentQCHuntTests.cs` + test mới) kiểm tra mapping 8 mã `IND_*`, fallback BACLINK và chặn `/gov/assessments/tt17*` (`401/403/410`).
+  - Vitest (`src/app/admin/assessments/records/page.test.tsx`, `src/app/admin/assessments/tt17/page.test.tsx`, `src/test/assessment-tt17.test.tsx`) kiểm tra export `.docx` BACLINK ($\ge 15\text{ KB}$, valid OpenXML) và tính điểm `IND_*`.
+  - *Kiểm chứng*: `dotnet test` & `npx vitest run` & Playwright E2E pass 100%, Zero-Mock.
 

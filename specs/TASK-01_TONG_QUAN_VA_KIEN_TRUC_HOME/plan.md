@@ -1,8 +1,10 @@
-# Kế Hoạch Thiết Kế Kỹ Thuật (plan.md) — TASK-01: Cổng Điều Hướng Home & Sự Kiện Techmart
+# Kế Hoạch Thiết Kế Kỹ Thuật (plan.md) — TASK-01: Cổng Điều Hướng Home & Sự Kiện BACLINK
 
 > **Mã phân hệ**: `TASK-01`  
-> **Ánh xạ Đặc tả**: [`spec.md`](spec.md)  
-> **Kiến trúc áp dụng**: Clean Architecture (.NET Core API v1), Contract-First, Next.js 15 App Router, PostgreSQL Schema `portal`
+> **Version**: 1.4.0  
+> **Status**: In Implementation  
+> **Ánh xạ Đặc tả**: [`spec.md`](spec.md) | [`CR-BACLINK-004`](deltas/CR-BACLINK-004_home_about_events_services_content.md)  
+> **Kiến trúc áp dụng**: Clean Architecture (.NET Core API v1), Contract-First, Next.js 15 App Router, PostgreSQL Schema `portal` / `content`
 
 ---
 
@@ -311,3 +313,44 @@ Mở rộng `SECTOR_IMAGE_MAP` phủ trọn 17 mã ngành chuẩn Bộ Khoa họ
     3. **Kết Nối Thành Công & MOU**: `statsData.totalSuccessfulConnections` -> `/portal/matching/radar` (hoặc `/trien-lam`)
     4. **Quy Mô Giao Dịch & Ngân Sách**: `statsData.totalEstimatedValueMillionVnd` (format tỷ/triệu VNĐ) -> `/portal/opportunities/pipeline`
   + Bao bọc toàn bộ qua component chuẩn `<Async>` đủ 5 UX States (Loading Skeleton, Error Retry, Empty 0, Success formatted, Updating).
+
+
+---
+
+## 7. KẾ HOẠCH KIẾN TRÚC DELTA BACLINK (`CR-BACLINK-004` · Version 1.4.0)
+
+> **Căn cứ**: [`CR-BACLINK-004`](deltas/CR-BACLINK-004_home_about_events_services_content.md), [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).
+
+### 7.1. Backend Portal Stats, Sự Kiện Giao Thương & AI Prompt (`content` & `api`)
+1. **Portal Overview ReadModel (`SourceCode/backend/apps/api/V1Compat/PortalOverviewService.cs`, `PortalControllers.cs`)**:
+   - Bảo toàn Clean Architecture facade (`AsNoTracking` + cache 5 phút), đảm bảo 4 KPI trang chủ phản ánh dữ liệu PostgreSQL thật của hệ sinh thái BACLINK:
+     * `TotalEnterprises`: đếm `enterprise.enterprises` hội viên (`Status = "ACTIVE"` / đã xác thực).
+     * `TotalOffers`: đếm `technology.seller_technology_offers` (`Status = "APPROVED"`).
+     * `TotalDemands`: đếm `demand.demand_items` (`Status = "VERIFIED"` và `IsPublicListed = true`).
+     * `TotalSuccessfulConnections` & `TotalEstimatedValueMillionVnd`: tổng hợp từ `brokerage.connection_requests` (`ACCEPTED`, `COMPLETED`), `brokerage.mou_agreements` (`SIGNED`) và `brokerage.opportunities`.
+2. **Sự kiện Xúc tiến Giao thương Bắc Ninh (`SourceCode/backend/modules/content/Application/TechmartEventService.cs`, `PortalControllers.cs`)**:
+   - Đọc danh sách sự kiện trực tiếp từ `content.techmart_events` (nạp qua `seed_baclink_demo_data.sql` gồm 3 sự kiện BACLINK: *Diễn đàn Quản trị bền vững*, *Ngày hội Kết nối Chuỗi cung ứng FDI–Nội địa Bắc Ninh 2026*, *Hội thảo Chuyển đổi xanh & ESG*).
+   - Giữ hợp đồng đăng ký tham quan & đặt lịch B2B (`POST /api/v1/events/register` / `POST /api/v1/trien-lam/dang-ky`) lưu vào `content.event_registrations` (ràng buộc khóa ngoại `event_id` $\rightarrow$ `content.techmart_events.id`).
+3. **Trợ lý AI BACLINK (`SourceCode/backend/modules/content/Application/AiAssistantService.cs`)**:
+   - Chuyển system prompt & ngữ cảnh gợi ý sang **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)**, 8 ngành công nghiệp `IND_*`, các KCN Bắc Ninh và 3 cấp tài khoản (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`); loại bỏ hoàn toàn dẫn chiếu `NacenTech`, `NacenTwin`, `Bộ KH&CN`, `34 Sở KH&CN`.
+
+### 7.2. Frontend Cổng Công Khai BACLINK (`Next.js 15 App Router`)
+1. **Trang Chủ (`SourceCode/frontend/src/app/page.tsx`) — `REQ-01-BL-01`, `BR-01-BL-01`**:
+   - Hero banner: *"Kết Nối Chuỗi Cung Ứng & Nâng Tầm Công Nghiệp Bắc Ninh"*.
+   - 4 thẻ KPI đọc động từ `GET /api/v1/portal/stats` qua `<Async>` (5 UX States: Loading skeleton, Error + Retry, Empty `0`, Success, Updating) — cấm tuyệt đối số tĩnh/fallback giả.
+   - Quy trình 4 bước BACLINK: (1) Đăng ký Hội viên $\rightarrow$ (2) Chuẩn hóa Hồ sơ & Năng lực $\rightarrow$ (3) Ghép nối AI Nội địa–FDI $\rightarrow$ (4) Ký kết MOU & Chứng thực số.
+   - Khối Đối tác & KCN trọng điểm Bắc Ninh (Yên Phong I/II, Quế Võ I/II/III, VSIP Bắc Ninh, Tiên Sơn, Đại Đồng – Hoàn Sơn, Hanaka, Thuận Thành, Gia Bình) + Hội viên tiêu biểu + 8 sector chips nạp động từ danh mục `IND_*` (`TASK-06`).
+2. **Giới Thiệu Pháp Nhân QĐ 1652 & Ma Trận (`gioi-thieu/page.tsx`, `matrix/page.tsx`) — `REQ-01-BL-02`**:
+   - `/gioi-thieu`: Hiển thị đầy đủ **Quyết định số 1652/QĐ-UBND ngày 16/06/2025**, trụ sở **Số 7, đường Lý Thái Tổ, P. Suối Hoa, TP. Bắc Ninh**, Đại hội lần thứ I (2025–2028), BCH 28 thành viên, phương châm *"Liên kết - Hợp tác - Đổi mới - Hội nhập"*, định vị *"Công nghiệp xanh - Tử tế - Bắc Ninh"*, Điều lệ & Quyền lợi Hội viên.
+   - `/matrix`: Tái cấu trúc thành Ma trận **8 Ngành công nghiệp `IND_*` × Địa bàn/KCN Bắc Ninh** (thay ma trận 18 ngành TT17 & 59 cặp LV-CN cũ).
+3. **Sự Kiện Giao Thương (`trien-lam/page.tsx`, `trien-lam/dang-ky-tham-quan/page.tsx`) — `REQ-01-BL-03`**:
+   - Tái định vị thành **Sự kiện Xúc tiến Giao thương FDI–Nội địa & Hội chợ Công nghiệp BACLINK**, đọc 100% từ PostgreSQL qua `<Async>`, giữ luồng đăng ký tham quan & lịch hẹn B2B.
+4. **Dịch Vụ Hỗ Trợ Hội Viên & Hướng Dẫn 3 Cấp (`dich-vu-khac/page.tsx`, `huong-dan/page.tsx`, `huong-dan/guide-data.ts`) — `REQ-01-BL-04`**:
+   - `/dich-vu-khac`: Tái định vị dịch vụ BACLINK (Tư vấn kết nối FDI, Chuẩn hóa ISO/IATF/Lean/ESG, Radar AI ghép nối, Đánh giá Năng lực Nhà máy & CĐS); giữ tinh gọn Card 03 (`REQ-01-SRV-01`, 1 CTA chính trỏ `/khao-sat-dmst`).
+   - `/huong-dan` & `guide-data.ts`: Chỉ trình bày hướng dẫn cho **3 cấp** (`ADMIN` duyệt 1 cấp `/admin/*`, `ENTERPRISE` Dual-Mode `RoleSwitcher` `/portal/*`, `PUBLIC_USER` tra cứu & nâng cấp `/profile/upgrade`); xóa 100% hướng dẫn `/gov/*` và 34 Sở KH&CN.
+5. **Nhãn Bảo Chứng Công Khai (`SourceCode/frontend/src/components/common/IndexVerificationBadge.tsx`) — `BR-01-BL-02`**:
+   - Cập nhật chuỗi mặc định khi `authorityName` rỗng từ `'cơ quan quản lý nhà nước / Sở KH&CN'` sang `'Hiệp hội BACLINK'` (`✓ TRL {X}/9 · Đã chứng thực` / `✓ Đã chứng thực bởi Hiệp hội BACLINK`), vẫn giữ tương thích ngược khi `authorityName` có giá trị cụ thể từ DB.
+
+### 7.3. Chiến Lược Kiểm Thử (`AC-01-009` .. `AC-01-012`)
+- **Backend**: `dotnet test` trên `PortalHomeInvariantsTests.cs` kiểm chứng stats thật + event seed + AI assistant context BACLINK.
+- **Frontend**: `vitest` cho `page.test.tsx`, `gioi-thieu/page.test.tsx`, `dich-vu-khac/page.test.tsx`, `huong-dan/page.test.tsx`, `IndexVerificationBadge.test.tsx` (và test mới cho `/matrix`, `/trien-lam`); kiểm chứng Zero Brand Leakage (không còn `NacenTech`/`NacenTwin`/`34 Sở KH&CN`/`/gov/`).

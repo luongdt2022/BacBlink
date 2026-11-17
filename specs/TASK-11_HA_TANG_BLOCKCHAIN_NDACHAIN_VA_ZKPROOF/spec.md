@@ -1,10 +1,10 @@
 # Feature Specification: TASK-11 Hạ Tầng Liên Thông NDAChain (Bộ Công An) & Bảo Chứng Mật Mã ZKProof
 
 **Epic**: `TASK-11_HA_TANG_BLOCKCHAIN_NDACHAIN_VA_ZKPROOF`  
-**Version**: 1.0.0 (Living Spec)  
-**Status**: Ready for Implementation (Gate 1 - DoR Approved)  
+**Version**: 1.1.0 (Living Spec — CR-BACLINK-006)  
+**Status**: In Implementation (CR-BACLINK-006 Approved)  
 **Created**: 02/11/2026  
-**Last Updated**: 02/11/2026  
+**Last Updated**: 17/11/2026  
 **Ánh Xạ Basic Design**: 
 - Master Basic Design: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 2.1 C4 L1, Mục 2.2 C4 L2, Mục 3.2 Walking Skeleton WS-06, Mục 24 Phụ lục Quyết định PO-DEC-20261102-06)  
 - Tracker Basic Design: [`Specification/02_BASIC_DESIGN/DANH_SACH_TIEN_DO_BASIC_DESIGN.md`](../../Specification/02_BASIC_DESIGN/DANH_SACH_TIEN_DO_BASIC_DESIGN.md) (TASK-11 Mục 11.1–11.5)  
@@ -432,3 +432,28 @@ CREATE INDEX IF NOT EXISTS idx_bridge_audit_block ON blockchain.bridge_sync_audi
 | **`REQ-BC-006`** (Cấp Phát & Xuất Bản Chứng Chỉ ZKP) | `BR-BC-001`, `BR-BC-008` | `blockchain.anchor_records` (`DB-BC-002`) | `GET /api/v1/blockchain/records/{id}/certificate`<br>`POST /api/v1/blockchain/verify-proof` | `/blockchain/verify`, `<BlockchainZkpBadge />` | `TEST-BC-006` (Contract Test Proof Certificate JSON & Client-Side Verifier) |
 | **`REQ-BC-007`** (Đầu Chờ Gateway Tích Hợp NDAChain) | `BR-BC-004`, `BR-BC-007` | `blockchain.ndachain_gateway_configs` (`DB-BC-004`) | `GET /api/v1/blockchain/ndachain/status`<br>`POST /api/v1/blockchain/ndachain/test-connection`<br>`PUT /api/v1/blockchain/ndachain/config` | `/admin/blockchain` (Tab 3: NDAChain Gateway) | `TEST-BC-007` (Integration Test Ports & Adapters Gateway & RPC Mocking Sentinel) |
 | **`REQ-BC-008`** (Cầu Nối Đồng Bộ & Replay NDAChain Bridge) | `BR-BC-007` | `blockchain.ledger_blocks` (`DB-BC-003`), `blockchain.bridge_sync_audit_logs` (`DB-BC-005`) | `POST /api/v1/blockchain/ndachain/bridge-sync`<br>`GET /api/v1/blockchain/ndachain/sync-logs` | `/admin/blockchain` (Tab 3: Bridge Logs) | `TEST-BC-008` (Chaos & Resilience Test Network Drops, Exponential Backoff & Bridge Replay) |
+
+
+---
+
+## 8. SPEC DELTA V1.1 (CR-BACLINK-006): CHỨNG THỰC HỒ SƠ NĂNG LỰC & MOU SỐ BACLINK TRUST/ZKP
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-006`](../TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) (`Status: APPROVED`); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 4.1, 6, 9.1, 9.2 — `PO-DEC-BACLINK-04`); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md).  
+> **Version**: `1.1.0`  
+> **Status**: `In Implementation (CR-BACLINK-006 Approved)`
+
+### 8.1. Yêu Cầu Chức Năng Bổ Sung (`REQ-11-BL-01`)
+- **`REQ-11-BL-01` [Tái Định Vị Hạ Tầng Chứng Thực BACLINK Trust/ZKP]**:
+  - Các màn hình `/admin/blockchain`, `/blockchain/verify` và component dùng chung `<BlockchainZkpBadge />` tái định vị thương hiệu sang **BACLINK Trust/ZKP — Chứng thực Hồ sơ Năng lực & MOU số Hiệp hội BACLINK**.
+  - Gắn kết trực quan `<BlockchainZkpBadge />` cho 4 sự kiện cốt lõi BACLINK: Sản phẩm & Năng lực (`TASK-04`), Thỏa thuận MOU Deal Room (`TASK-08`), Đánh giá Năng lực Nhà máy (`TASK-09`), Hồ sơ DN Hội viên (`TASK-02`).
+
+### 8.2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-11-BL-01`)
+- **`BR-11-BL-01` [Bảo Toàn Lõi Mật Mã & Đổi Nhãn Node Xác Thực BACLINK]**:
+  - Giữ nguyên 100% lõi mật mã học: RFC 8785 (JCS), SHA-256, ZKP Commitment + Salt AES-256-GCM, Merkle Tree, ECDSA P-256, Outbox Pattern ($\le 15\text{ms}$), NDAChain Gateway (`did:nda`), và tuân thủ Nghị định 13/2023/NĐ-CP (`NFR-BC-003`).
+  - Thay toàn bộ nhãn hiển thị `NacenTech Node` / `Sở KH&CN` trên UI `/admin/blockchain`, `/blockchain/verify`, `<BlockchainZkpBadge />` và PDF Giấy chứng nhận mật mã bằng **BACLINK Trust Node — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh**.
+  - Kiểm soát quyền `/admin/blockchain` thống nhất cho `ADMIN` BACLINK (tương thích ngược token chuyển tiếp qua `NormalizeTier`).
+
+### 8.3. Tiêu Chuẩn Chấp Thuận (`AC-11-BL-01` .. `AC-11-BL-03`)
+- **`AC-11-BL-01`**: Truy cập `/admin/blockchain`, `/blockchain/verify` và modal `<BlockchainZkpBadge />` hiển thị nhận diện **BACLINK Trust/ZKP**, không còn chuỗi `NacenTech` / `Sở KH&CN`.
+- **`AC-11-BL-02`**: Quy trình băm RFC 8785, ZKP commitment, kiểm chứng 5 bước (`VERIFIED` / `TAMPERED`) và xuất chứng chỉ JSON/PDF hoạt động nguyên vẹn 100% không hồi quy (`Zero Regression`).
+- **`AC-11-BL-03`**: Toàn bộ unit/integration test (`blockchain/page.test.tsx`, `BlockchainZkpBadge.test.tsx`, Backend blockchain tests) đạt PASS 100%.

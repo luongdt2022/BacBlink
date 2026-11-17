@@ -2,7 +2,8 @@
 ## PHÂN HỆ: HẠ TẦNG LIÊN THÔNG NDACHAIN (BỘ CÔNG AN) & BẢO CHỨNG MẬT MÃ ZKPROOF (TASK-11)
 
 > **Mã Epic**: `TASK-11_HA_TANG_BLOCKCHAIN_NDACHAIN_VA_ZKPROOF`  
-> **Tổng số tasks**: 22 tasks chia thành 4 Phases tuần tự (Thi công theo kỷ luật Clean Architecture, Zero-Mock & Ngăn ngừa tràn token).  
+> **Version**: 1.1.0 | **Status**: In Implementation (CR-BACLINK-006)  
+> **Tổng số tasks**: 27 tasks chia thành 5 Phases tuần tự (22/22 tasks giai đoạn 1-4 hoàn tất [x]; Phase 5 CR-BACLINK-006 đang triển khai).  
 > **Căn cứ kế hoạch**: [`ADR-0017`](../../backend/docs/decisions/ADR-0017-ENTITY-AGNOSTIC-BLOCKCHAIN-AND-ZKP-ANCHORING-ENGINE.md), [`plan.md`](plan.md), [`Specification/BASIC_DESIGN_NACENTECH.md`](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/Specification/BASIC_DESIGN_NACENTECH.md) Mục 24.  
 
 ---
@@ -185,3 +186,24 @@
     * Test case 1: Dữ liệu nguyên vẹn -> Kết quả **`VERIFIED`** (IsSuccess = true, 4/4 bước kiểm chứng PASS).
     * Test case 2 (Phá hoại dữ liệu): Cố tình sửa đổi 1 trường dữ liệu (sửa giá tiền trong JSON) -> Kết quả lập tức bắt được và chuyển sang cảnh báo đỏ rực **`TAMPERED`** (IsSuccess = false), chỉ rõ bước ZKP Commitment phát hiện vi phạm.
   - *Kiểm chứng*: Bộ test phá hoại dữ liệu kiểm chứng tính toàn vẹn toán học tuyệt đối của hệ thống.
+
+---
+
+## Phase 5: BACLINK Refactor Delta (CR-BACLINK-006)
+
+- [x] `T-11.BL.01` `[DB]` Cập nhật/bổ sung cấu hình `blockchain.anchor_policies` và liên kết bản ghi neo kiểm chứng mẫu cho 4 thực thể BACLINK (`TASK-02` `ENTERPRISE_PROFILE`, `TASK-04` `SELLER_OFFER`, `TASK-08` `DEAL_ROOM_MOU`, `TASK-09` `TT17_ASSESSMENT`) trong `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (`REQ-11-BL-01`, `BR-11-BL-01`).
+  - *Kiểm chứng*: Chạy `psql` idempotent vào PostgreSQL thật; xác minh 0 thay đổi phá hủy schema `blockchain.*` và bảo toàn `BlockchainBusinessRules` (`BR-BC-01`..`08`).
+
+- [x] `T-11.BL.02` `[BE]` Kiểm tra & chuẩn hóa `SourceCode/backend/modules/blockchain/Api/BlockchainAdminController.cs` (dòng 15–16) sử dụng `PlatformRoles.NormalizeTier` cho `ADMIN` (tương thích `ADR-0018`) và trả định danh node **BACLINK Trust Node — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh** (bảo toàn 100% `CanonicalJsonSerializer` RFC 8785, ZKP AES-256-GCM, Merkle Tree, Outbox, NDAChain `did:nda`) (`BR-11-BL-01`).
+  - *Kiểm chứng*: `dotnet build SourceCode/backend/NacenTech.slnx` 0 lỗi; `dotnet test` pass các suite `BlockchainCanonicalJsonTests`, `BlockchainMerkleTreeTests`, `BlockchainZkProofEngineTests`, `BlockchainVerificationServiceTests`.
+
+- [x] `T-11.BL.03` `[FE]` Tái định vị giao diện quản trị `SourceCode/frontend/src/app/admin/blockchain/page.tsx` (bao gồm dòng 579 `Sổ cái nội bộ NacenTech`) sang **BACLINK Trust/ZKP — Chứng thực Hồ sơ Năng lực & MOU số** và **BACLINK Trust Node — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh** (`REQ-11-BL-01`, `BR-11-BL-01`, `AC-11-BL-01`).
+  - *Kiểm chứng*: `npx tsc --noEmit` 0 lỗi; không còn chuỗi `NacenTech Node` / `Sở KH&CN` trên `/admin/blockchain`.
+
+- [x] `T-11.BL.04` `[FE]` Cập nhật `SourceCode/frontend/src/components/blockchain/BlockchainZkpBadge.tsx` (và modal kiểm chứng `/blockchain/verify` / chứng nhận mật mã) sang thương hiệu **BACLINK Trust/ZKP** & **BACLINK Trust Node — Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh**, hiển thị trên 4 thực thể BACLINK (`TASK-02`, `TASK-04`, `TASK-08`, `TASK-09`) (`REQ-11-BL-01`, `AC-11-BL-02`).
+  - *Kiểm chứng*: `npx tsc --noEmit` 0 lỗi; click `<BlockchainZkpBadge />` mở modal gọi `/api/v1/public/blockchain/verify/live` trả `VERIFIED`/`TAMPERED` chính xác.
+
+- [x] `T-11.BL.05` `[TEST]` Kiểm thử 4 tầng cho `TASK-11` (`AC-11-BL-01`..`AC-11-BL-03`):
+  - xUnit (`BlockchainCanonicalJsonTests`, `BlockchainLocalSovereignLedgerTests`, `BlockchainControllersTests`, `BlockchainVerificationServiceTests`) chứng minh RFC 8785, Tamper-Evidence (`TAMPERED`) và RBAC 3 cấp (`ENTERPRISE`/`PUBLIC_USER` bị chặn `403` trên `/api/v1/admin/blockchain/*`, `ADMIN` đạt `200`, `GUEST` kiểm chứng public `200`).
+  - Vitest (`SourceCode/frontend/src/app/admin/blockchain/page.test.tsx`, `SourceCode/frontend/src/components/blockchain/BlockchainZkpBadge.test.tsx`) kiểm tra nhãn **BACLINK Trust/ZKP** và live verify interaction.
+  - *Kiểm chứng*: `dotnet test` & `npx vitest run src/app/admin/blockchain/ src/components/blockchain/` pass 100%, Zero-Mock.

@@ -2,7 +2,8 @@
 ## PHÂN HỆ: HỌC LIỆU SỐ & ĐÀO TẠO E-LEARNING (TASK-10)
 
 > **Mã Epic**: `TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING`  
-> **Tổng số tasks**: 30 tasks chia 5 Phases tuần tự (30/30 tasks hoàn tất [x] - 100%).  
+> **Version**: 1.2.0 | **Status**: In Implementation (CR-BACLINK-006)  
+> **Tổng số tasks**: 36 tasks chia 6 Phases tuần tự (30/30 tasks giai đoạn 1-5 hoàn tất [x]; Phase 6 CR-BACLINK-006 đang triển khai).  
 > **Căn cứ kế hoạch**: [`spec.md`](spec.md), [`plan.md`](plan.md).  
 
 ---
@@ -211,4 +212,28 @@
   - **Tầng 4 (Playwright E2E Visual QA Test)**: Chạy kịch bản E2E toàn trình trên Chromium sống: Lọc bài học theo Lộ trình `LT2` / Mô-đun `M1` $\rightarrow$ Mở bài $\rightarrow$ Xem video và giải câu hỏi Pop-up Quiz tại `triggerSeconds` $\rightarrow$ Làm bài thực hành BM / Tự đánh giá Radar $\rightarrow$ Tự chấm rubric $\ge 11/14$ điểm mở khóa CTA $\rightarrow$ Làm trắc nghiệm cuối bài đạt $\ge 60\%$ $\rightarrow$ Nhận Chứng nhận số NACENTECH $\rightarrow$ Đối soát CSDL thật ghi nhận `is_completed = true`.
   - Chạy các công cụ kiểm toán tĩnh: `guard-rails.sh`, `clean-arch-guard`, `spec-linter.py`, `traceability-auditor`.
   - *Kiểm chứng*: 100% Tests Green (0 failure), không mock ngầm, sẵn sàng ký duyệt Gate 4 & Gate 5.
+
+---
+
+## Phase 6: BACLINK Refactor Delta (CR-BACLINK-006)
+
+- [x] `T-10.BL.01` `[DB]` Bổ sung seed idempotent 6 khóa học mẫu công nghiệp BACLINK (Lean Manufacturing & 5S, ISO 9001 & IATF 16949, MES/ERP, Chuyển đổi xanh & ESG) vào `lms.learning_materials` trong `SourceCode/backend/scripts/seed_baclink_demo_data.sql` (`REQ-10-BL-01`, `BR-10-BL-02`).
+  - *Kiểm chứng*: Chạy `psql` nạp vào PostgreSQL thật 2 lần không lỗi, truy vấn `GET /api/v1/lms/catalog` trả về đủ khóa học BACLINK từ DB thật.
+
+- [x] `T-10.BL.02` `[BE]` Cập nhật `SourceCode/backend/config/policies/authorization-rules.v1.json` (`LMS_CREATE`, `OWNER_LMS_MANAGE`) và `SourceCode/backend/modules/lms/Api/LmsController.cs` (dòng 156–250) thực thi Q1 (`BR-10-BL-01`):
+  - Kiểm tra `IsAdmin || HasApprovedExpertProfileAsync(personId, ct)` (`brokerage.expert_profiles.status = 'APPROVED'`) trước khi cho phép `LmsCreate`/`LmsReadManagement`/`LmsUpdate`/`LmsUnpublish`/`LmsDelete`, giữ kiểm tra chính chủ `CreatedBy == personId`; đổi nhãn `"Chuyên gia NacenTech"` (dòng 180, 198) sang `"Cố vấn Kỹ thuật BACLINK"`.
+  - *Kiểm chứng*: `dotnet build SourceCode/backend/NacenTech.slnx` 0 lỗi; `PUBLIC_USER`/`ENTERPRISE` chưa duyệt cố vấn gọi `POST /api/v1/lms/materials` bị chặn `403 Forbidden`; cố vấn `APPROVED` tạo và sửa bài của mình `201/200 OK` (sửa bài người khác `403`).
+
+- [x] `T-10.BL.03` `[FE]` Tái định vị cổng `/elearning` (`SourceCode/frontend/src/app/elearning/page.tsx`) và workspace quản lý (`/portal/expert/elearning/page.tsx`, `/admin/elearning/page.tsx`) sang **Đào tạo Hội viên BACLINK (LMS)** (`REQ-10-BL-01`, `BR-10-BL-01`, `BR-10-BL-02`):
+  - Thay nhãn `QĐ 1993/QĐ-BKHCN` bằng khung đào tạo 4 chuyên đề công nghiệp BACLINK; bỏ kiểm tra cứng `ROLES.VERIFIED_EXPERT` (dòng 194) thay bằng `ADMIN` hoặc `ExpertProfile (APPROVED)`; bảo toàn `<Async>` 5 UX States Zero-Mock.
+  - *Kiểm chứng*: `npx tsc --noEmit` 0 lỗi; `/elearning` hiển thị danh sách khóa học từ PostgreSQL thật.
+
+- [x] `T-10.BL.04` `[FE]` Cập nhật trang học chi tiết & chứng nhận số (`SourceCode/frontend/src/app/elearning/[id]/page.tsx`) sang **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)** (`REQ-10-BL-02`, `BR-10-BL-01`, `AC-10-BL-02`):
+  - Đổi mẫu mã chứng nhận số (dòng 1062) sang `CERT-2026-{materialCode}-BACLINK` và tên đơn vị cấp chứng nhận sang Hiệp hội BACLINK; đồng bộ kiểm tra quyền sửa bài (dòng 261) không phụ thuộc `VERIFIED_EXPERT`; bảo toàn nguyên vẹn 8 thành phần học tập tương tác, HTTP 206 streaming, In-Video Quiz và Rubric 11/14.
+  - *Kiểm chứng*: `npx tsc --noEmit` 0 lỗi; hoàn thành bài học hiển thị chứng nhận số BACLINK.
+
+- [x] `T-10.BL.05` `[TEST]` Kiểm thử 4 tầng cho `TASK-10` (`AC-10-BL-01`..`AC-10-BL-03`):
+  - xUnit (`LmsBackendIntegrationTests.cs`, `LmsDomainInvariantsTests.cs`) xác minh phân quyền giảng viên theo `ExpertProfile (APPROVED)` vs non-expert (`403`) và IDOR `CreatedBy != personId` (`403`).
+  - Vitest & Playwright E2E xác minh `/elearning` tải 6 khóa học công nghiệp thật từ DB, học/quiz $\ge 60\%$ nhận chứng nhận BACLINK.
+  - *Kiểm chứng*: `dotnet test` & `npx vitest run` & Playwright E2E pass 100%, Zero-Mock.
 

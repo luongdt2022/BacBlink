@@ -2,9 +2,9 @@
 ## PHÂN HỆ: HỌC LIỆU SỐ & ĐÀO TẠO E-LEARNING (TASK-10)
 
 > **Mã Epic**: `TASK-10_HOC_LIEU_SO_VA_DAO_TAO_ELEARNING`  
-> **Phiên bản**: v1.1 (Completed — Gate 4 & Gate 5 Verified)  
-> **Trạng thái**: Shipped 2026-11-10 (CR-2026-028 Completed)  
-> **Kiến trúc áp dụng**: Clean Architecture .NET 10 LTS Modular Monolith + Next.js 15 App Router + PostgreSQL 16 + pgvector RAG  
+> **Version**: 1.2.0  
+> **Status**: In Implementation (CR-BACLINK-006)  
+> **Kiến trúc áp dụng**: Clean Architecture .NET 10 LTS Modular Monolith + Next.js 15 App Router + PostgreSQL 16 + pgvector RAG (`ADR-0018`)  
 > **Tài liệu đặc tả**: [`spec.md`](spec.md)  
 
 ---
@@ -435,4 +435,31 @@ Xây dựng kịch bản ETL nạp toàn bộ **50 bài học (`EL-001`..`EL-050
 ##### 3. Nạp CSDL PostgreSQL 16 & Huấn Luyện AI RAG (1024d):
 - Nạp trực tiếp vào PostgreSQL 16 (port 55440): 50 bài học chính, 90 micro-videos (metadata & CALL SHEET), 180 in-video quizzes, 500 câu trắc nghiệm cuối bài, 210 tiêu chí rubric, 400 FAQ và 100 tệp tài liệu.
 - Tự động băm văn bản tóm tắt, FAQ và nội dung thực hành thành các chunks có nghĩa, nhúng vector 1024 chiều (`BAAI/bge-m3`) vào bảng `matching.search_chunks` (`subject_kind = 'LEARNING_MATERIAL'`) để Trợ lý ảo AI NacenTwin (`R51`) trả lời ngay lập tức.
+
+---
+
+### 6. PLAN DELTA V1.2.0 (CR-BACLINK-006): ĐÀO TẠO HỘI VIÊN BACLINK LMS & PHÂN QUYỀN GIẢNG VIÊN 3 CẤP (Q1)
+
+> **Change Request**: `CR-BACLINK-006` | **Quyết định**: `ADR-0018`, `open-questions.md` (**Q1**), `PO-DEC-BACLINK-04`  
+> **Coverage**: `REQ-10-BL-01`, `REQ-10-BL-02`, `BR-10-BL-01`, `BR-10-BL-02`, `AC-10-BL-01`..`AC-10-BL-03`
+
+#### 6.1. Bảo Toàn Core Schema, 8 Thành Phần Tương Tác & Phân Quyền Giảng Viên Không Tách Role Thứ 4 (`BR-10-BL-01`, Q1)
+
+- **Bảo toàn kiến trúc lõi**: Giữ nguyên toàn bộ 13 bảng schema `lms.*`, không gian học tập tương tác 8 thành phần (3 micro-videos HTTP Range 206, In-Video Quiz `BR-EL-07`, Practice Rubric ngưỡng $11/14$ điểm `BR-EL-08`, trắc nghiệm $\ge 60\%$ `BR-EL-09`), và AI RAG `matching.search_chunks`.
+- **Phân quyền giảng viên theo `ExpertProfile (Status = APPROVED)` + `ADMIN` (`BR-10-BL-01`)**:
+  - **Policy Config (`SourceCode/backend/config/policies/authorization-rules.v1.json`)**: Bổ sung `ENTERPRISE|PUBLIC_USER|ADMIN` (giữ alias legacy theo `ADR-0018`) vào 2 rule `LMS_CREATE` và `OWNER_LMS_MANAGE`.
+  - **Controller Guard (`SourceCode/backend/modules/lms/Api/LmsController.cs`)**: Để không mở quyền tạo/sửa bài giảng cho mọi `PUBLIC_USER`/`ENTERPRISE` thường, bổ sung guard `EnsureApprovedExpertOrAdminAsync(personId, ct)` kiểm tra `IsAdmin` (theo `PlatformRoles.NormalizeTier(actor.PlatformRole) == PlatformRoles.Admin`) HOẶC tồn tại bản ghi `brokerage.expert_profiles` với `person_id == personId AND status = 'APPROVED'` (truy vấn read-only qua `DbContext` / port `Kernel` giữ ranh giới Clean Architecture, không coupling trực tiếp domain `brokerage`) trước khi thực thi `LmsCreate`, `LmsReadManagement`, `LmsUpdate`, `LmsUnpublish`, `LmsDelete`; giữ chặt kiểm tra chính chủ `existing.CreatedBy == personId` (`OWNER`).
+  - Thay fallback `"Chuyên gia NacenTech"` tại `LmsController.cs` (dòng 180, 198) bằng `"Cố vấn Kỹ thuật BACLINK"`.
+
+#### 6.2. Chuyển Đổi Khung Khóa Học Công Nghiệp BACLINK, Chứng Nhận Số & Zero-Mock Seed (`REQ-10-BL-01`, `REQ-10-BL-02`, `BR-10-BL-02`)
+
+- **Chứng nhận số Hiệp hội BACLINK (`REQ-10-BL-02`)**:
+  - Cập nhật mã chứng nhận số từ `NACENTECH-CERT-*` / `CERT-2026-{materialCode}-NACENTECH` sang **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)** (`CERT-2026-{materialCode}-BACLINK` / `BACLINK-CERT-*`) trong `SourceCode/frontend/src/app/elearning/[id]/page.tsx` (dòng 1062) và các service liên quan.
+- **Tái định vị UI Đào tạo Hội viên BACLINK (`REQ-10-BL-01`, `BR-10-BL-02`)**:
+  - Cập nhật `/elearning/page.tsx`, `/elearning/[id]/page.tsx`, `/portal/expert/elearning/page.tsx`, `/admin/elearning/page.tsx`:
+    - Thay nhãn `QĐ 1993/QĐ-BKHCN` trên UI đại chúng bằng khung chương trình **Đào tạo Hội viên BACLINK** với 4 chuyên đề công nghiệp trọng tâm: **Lean Manufacturing & 5S**, **ISO 9001 & IATF 16949**, **Hệ thống quản trị sản xuất MES/ERP**, **Chuyển đổi xanh & ESG**.
+    - Cập nhật check quyền giảng viên tại `src/app/elearning/page.tsx` (dòng 194) và `src/app/elearning/[id]/page.tsx` (dòng 261) theo `ADMIN` hoặc tài khoản có `ExpertProfile (Status = APPROVED)` (kèm `createdBy === currentUserId`).
+    - Truy vấn 100% dữ liệu thật từ PostgreSQL (`lms.*`, `brokerage.expert_profiles`) qua `<Async>` 5 UX States, tuyệt đối không fallback mock.
+- **Database Seed (`SourceCode/backend/scripts/seed_baclink_demo_data.sql`)**:
+  - Nạp idempotent **6 khóa học mẫu công nghiệp BACLINK** vào `lms.learning_materials` (và bảng con liên quan) gắn với các giảng viên Ban Cố vấn Kỹ thuật (`TASK-05`).
 

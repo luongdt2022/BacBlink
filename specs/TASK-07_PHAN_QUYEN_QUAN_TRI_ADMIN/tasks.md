@@ -2,7 +2,8 @@
 
 **Feature**: `TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`  
 **Spec Reference**: [`spec.md`](./spec.md) | **Plan Reference**: [`plan.md`](./plan.md)  
-**Status**: Converged (100% Hoàn Thành)  
+**Version**: 1.17.0 (Delta v18 - CR-BACLINK-002)  
+**Status**: In Implementation  
 
 ---
 
@@ -501,4 +502,35 @@
 
 - [x] `T123` **[CR-2026-031] [FE-GovLoading] Tạo `src/app/gov/loading.tsx` và tích hợp `pendingHref` + `<WorkspaceRouteSkeleton testId="gov-route-skeleton" />` + `<React.Suspense>` vào `src/app/gov/layout.tsx` (`REQ-UI-043`)**.
 - [x] `T124` **[CR-2026-031] [Test] Bổ sung test pending route skeleton trong `src/app/gov/layout.test.tsx` và chạy Vitest PASS**.
+
+---
+
+## Phase 25: BACLINK Refactor Delta (CR-BACLINK-002) — Admin 1 Cấp, Gỡ `/gov/*` & `/admin/org-tree`, Khóa Endpoint Legacy
+
+- [x] `T-07.BL.01` **[BE]** Sửa `RequireGlobalAdmin()` trong `GovernanceControllers.cs` chấp nhận `PlatformRoles.Admin` (`"ADMIN"`) qua `PlatformRoles.IsAdministrative()` (giữ alias `SUPER_ADMIN`/`OPERATOR_ADMIN`) và khóa route `/api/v1/governance/org-units/*` (`410 Gone` / `[Authorize(Roles = "ADMIN")]`) (`BR-BACLINK-ADM-001`, `REQ-BACLINK-ADM-003`):
+  - Tệp: `SourceCode/backend/apps/api/V1Compat/GovernanceControllers.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~GovernanceApprovalInvariantsTests"`.
+- [x] `T-07.BL.02` **[BE]** Gỡ `[AllowAnonymous]` và khóa các endpoint `/api/v1/gov/demands*` trong `DemandController.cs` (tách `gov/demands/surveys` khỏi `demands/surveys`, trả `410 Gone` cho toàn bộ `gov/demands*`) (`REQ-BACLINK-ADM-003`):
+  - Tệp: `SourceCode/backend/apps/api/V1Compat/DemandController.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/authorization/NacenTech.Tests.Authorization.csproj`.
+- [x] `T-07.BL.03` **[BE]** Gỡ `[AllowAnonymous]` và khóa endpoint `gov/opportunities` trong `BrokerageControllers.cs` và các endpoint `api/v1|v2/gov/assessments/tt17*` trong `AssessmentsController.cs` (tách `gov/.../dashboard` khỏi `admin/.../dashboard`, gắn `[Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]` cho `admin/*` và trả `410 Gone` cho `gov/*`) (`REQ-BACLINK-ADM-003`):
+  - Tệp: `SourceCode/backend/apps/api/V1Compat/BrokerageControllers.cs`, `SourceCode/backend/apps/api/V2/AssessmentsController.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/integration/NacenTech.Tests.Integration.csproj --filter "FullyQualifiedName~Task07DeltaV4ApprovalQcTests"`.
+- [x] `T-07.BL.04` **[BE]** Tinh gọn `ApprovalService`, `OrganizationTreeService` và `TechnologyOffersController` về quy trình `ADMIN` 1 cấp duyệt trực tiếp (gỡ chặn `ClusterAdmin` & gỡ `MatchProvinceScope`/`Actor.ScopeId`, bảo toàn `ApprovalAuditLog` & Optimistic Locking `Version`) (`REQ-BACLINK-ADM-001`, `BR-BACLINK-ADM-002`):
+  - Tệp: `SourceCode/backend/modules/identity/Application/ApprovalService.cs`, `SourceCode/backend/modules/identity/Application/OrganizationTreeService.cs`, `SourceCode/backend/apps/api/V2/TechnologyOffersController.cs`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~GovernanceApprovalInvariantsTests"`.
+- [x] `T-07.BL.05` **[FE]** Gỡ bỏ `/admin/org-tree`, `/gov`, nhãn `34 Tỉnh/Thành`, `SLA 34 Sở`, `Phê duyệt vượt cấp tầng 0` khỏi `AdminLayout`, `AdminNav`, `quick-portal-switcher.tsx`, `guide-data.ts` (`REQ-BACLINK-ADM-002`):
+  - Tệp: `SourceCode/frontend/src/app/admin/layout.tsx`, `SourceCode/frontend/src/components/admin/admin-nav.tsx`, `SourceCode/frontend/src/components/common/quick-portal-switcher.tsx`, `SourceCode/frontend/src/app/huong-dan/guide-data.ts`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/admin/layout.test.tsx`.
+- [x] `T-07.BL.06` **[FE]** Chuyển các route `/gov/*` (`layout.tsx`, `page.tsx`, sub-routes) và `/admin/org-tree/page.tsx` thành redirect an toàn theo role hoặc trang `410 Gone`, ngừng sử dụng `src/components/gov/*` (`REQ-BACLINK-ADM-002`):
+  - Tệp: `SourceCode/frontend/src/app/gov/layout.tsx`, `SourceCode/frontend/src/app/gov/page.tsx`, `SourceCode/frontend/src/app/admin/org-tree/page.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/gov/layout.test.tsx src/app/gov/page.test.tsx`.
+- [x] `T-07.BL.07` **[FE]** Tinh gọn `/admin/roles` thành ma trận 3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`) và dọn tab vượt cấp 2 tầng / SLA 34 Sở tại `/admin/approvals` (`REQ-BACLINK-ADM-001`, `REQ-BACLINK-ADM-002`):
+  - Tệp: `SourceCode/frontend/src/app/admin/roles/page.tsx`, `SourceCode/frontend/src/app/admin/approvals/page.tsx`.
+  - Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/admin/roles/page.test.tsx src/app/admin/roles/runtime-roles.test.tsx && npx tsc --noEmit`.
+- [x] `T-07.BL.08` **[TEST]** Viết & chạy Security/RBAC Fuzzing test khẳng định 0 endpoint `/api/v*/gov/*` trả `200 OK` cho ẩn danh/`PUBLIC_USER`/`ENTERPRISE`, `ADMIN` duyệt 1 cấp kèm AuditLog/409, và Vitest UI Admin 1 cấp (`TEST-BACLINK-002`):
+  - Tệp: `SourceCode/backend/tests/authorization/ScopedMultiTierRbacTests.cs`, `SourceCode/backend/tests/invariants/GovernanceApprovalInvariantsTests.cs`, `SourceCode/frontend/src/app/admin/roles/page.test.tsx`, `SourceCode/frontend/src/app/admin/layout.test.tsx`.
+  - Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~GovernanceApprovalInvariantsTests|Task07DeltaV4ApprovalQcTests|ScopedMultiTierRbacTests"` và `cd SourceCode/frontend && npx vitest run src/app/admin/layout.test.tsx src/app/admin/roles/page.test.tsx src/app/gov/layout.test.tsx src/app/gov/page.test.tsx`.
+  - Ghi chú Gate 3 Phase 1 (2026-11-17): Backend (76/76 PASS: Authorization 35, Invariants 24, Integration 17; toàn solution 550/550 PASS) và Frontend Vitest (`admin/` + `gov/` + `portal/` + `profile/upgrade/` 47 files / 277 tests PASS) đạt 100%; E2E Playwright đối soát tiếp tại Phase 4.
+
 

@@ -4,10 +4,10 @@
 > **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
 > **Căn cứ pháp lý**: [Thông tư 17/2019/TT-BKHCN](https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm) của Bộ Khoa học và Công nghệ  
 > **Phạm vi áp dụng**: Doanh nghiệp ngành công nghiệp chế biến, chế tạo (mã ngành C.10 – C.32 theo VSIC)  
-> **Trạng thái**: 🟢 Active / Implementing Delta  
-> **Version**: 1.6.0 (Bumped from 1.5.0 via CR-2026-027)  
-> **Last Updated**: 2026-11-04  
-> **Change Requests Reference**: [CR-2026-026](./deltas/CR-2026-026.md), [CR-2026-027](./deltas/CR-2026-027.md) (PO-DEC-20261104-01)  
+> **Trạng thái**: 🟡 In Implementation (CR-BACLINK-006 Approved)  
+> **Version**: 1.7.0 (Bumped from 1.6.0 via CR-BACLINK-006)  
+> **Last Updated**: 2026-11-17  
+> **Change Requests Reference**: [CR-2026-026](./deltas/CR-2026-026.md), [CR-2026-027](./deltas/CR-2026-027.md) (PO-DEC-20261104-01), [CR-BACLINK-006](./deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) (PO-DEC-BACLINK-04, Q2)  
 > **Độ ưu tiên**: P1 (Trọng tâm Đánh giá Năng lực Doanh nghiệp Sản xuất)
 
 ---
@@ -280,3 +280,30 @@ Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ 
 - **`BR-09-SURVEY-RECORD-02` [Kỷ Luật Zero-Mock]**:
   * Dữ liệu trong modal và trong file Word phải lấy từ PostgreSQL thật, không mock cứng.
 
+
+
+---
+
+## Spec Delta v7 (CR-BACLINK-006): Đánh Giá Năng Lực Nhà Máy & Chuyển Đổi Số BACLINK (Mapping Trọng Số `IND_*` & Template `.docx`)
+
+> **Mã CR**: `CR-BACLINK-006`  
+> **Căn cứ**: [`deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md`](./deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) (`Status: APPROVED`); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 4.1, 6, 9.1, 9.2 — `PO-DEC-BACLINK-04`); [`open-questions.md`](../../docs/open-questions.md) (**Q2**).  
+> **Target Version**: `1.7.0`  
+> **Trạng thái**: `In Implementation (CR-BACLINK-006 Approved)`
+
+### 11.1. Yêu Cầu Chức Năng Bổ Sung (`REQ-09-BL-01`, `REQ-09-BL-02`)
+- **`REQ-09-BL-01` [Tái Định Vị Giao Diện Đánh Giá Năng Lực Nhà Máy & CĐS BACLINK]**:
+  * Các route `/assessments/tt17`, `/assessments/tt17/wizard`, `/assessments/tt17/[id]`, `/admin/assessments/tt17`, `/admin/assessments/records` sử dụng danh xưng **Đánh giá Năng lực Nhà máy & Chuyển đổi số BACLINK**, bảo toàn nguyên vẹn bộ 26 tiêu chí T-E-O-R-I, Radar Chart, hệ số đồng bộ $T_{ĐB}$ và Yearly Snapshot.
+- **`REQ-09-BL-02` [Cập Nhật Template Xuất Word `.docx` Sang Thương Hiệu BACLINK]**:
+  * Cập nhật tiêu đề, cơ quan chủ quản, chân trang và biểu mẫu xuất Word `.docx` trong `survey-docx-exporter.ts`, `tt17-docx-template-filler.ts` và các mẫu tải về tại `/admin/assessments/records` sang **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)** chuẩn A4 OpenXML Unicode ($\ge 15\text{ KB}$, không lỗi XML).
+
+### 11.2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-09-BL-01`, `BR-09-BL-02`)
+- **`BR-09-BL-01` [Bảng Ánh Xạ Trọng Số Từ 8 Ngành `IND_*` Trong `Tt17ScoringEngine` (Q2)]**:
+  * Giữ nguyên engine `Tt17ScoringEngine` (`Benchmarks` `C.10`–`C.32`), bổ sung bảng ánh xạ mặc định từ 8 mã ngành `IND_*` sang bộ trọng số công nghiệp tương ứng: `IND_ELEC` $\rightarrow$ `C.26`, `IND_MECH` $\rightarrow$ `C.25`, `IND_AUTO` $\rightarrow$ `C.28`, `IND_PLAS` $\rightarrow$ `C.22`, `IND_MAT` $\rightarrow$ `C.24`, `IND_IT` $\rightarrow$ `C.26`, `IND_GREEN` $\rightarrow$ `C.32`, `IND_LOG` $\rightarrow$ `C.29`, kèm fallback bộ trọng số cân bằng chuẩn BACLINK (`KChuan1=250, KChuan2=0.07, KChuan3=0.55, KChuan4=150`) để tính điểm tự động 100% không lỗi.
+- **`BR-09-BL-02` [Khóa `/gov/assessments/tt17*` Anonymous & Duyệt 1 Cấp `ADMIN`]**:
+  * Xóa `[AllowAnonymous]` khỏi `GET /api/v1|v2/gov/assessments/tt17` và `/dashboard` trong `AssessmentsController.cs` (trả `401/403/410`); chuyển nghiệm thu về 1 cấp `ADMIN` BACLINK; `NormalizeScopeId` bỏ mặc định `"HN"` sang `"GLOBAL"` / địa bàn Bắc Ninh.
+
+### 11.3. Tiêu Chuẩn Chấp Thuận (`AC-09-BL-01` .. `AC-09-BL-03`)
+- **`AC-09-BL-01`**: Gọi `Tt17ScoringEngine.Calculate` với bất kỳ mã ngành nào trong 8 mã `IND_ELEC`..`IND_LOG` đều ánh xạ chính xác sang bộ trọng số tương ứng (hoặc fallback cân bằng BACLINK) và trả đủ 26 tiêu chí, $\tau$, $T_{ĐB}$ không lỗi.
+- **`AC-09-BL-02`**: Xuất file `.docx` từ `survey-docx-exporter.ts` và `tt17-docx-template-filler.ts` hiển thị pháp nhân **Hiệp hội BACLINK**, mở hợp lệ chuẩn OpenXML ($\ge 15\text{ KB}$), 0 chuỗi `NacenTech`/`Bộ KH&CN`.
+- **`AC-09-BL-03`**: Request ẩn danh hoặc non-ADMIN gọi `/api/v1|v2/gov/assessments/tt17*` bị từ chối (`401`/`403`/`410`); UI đánh giá hoạt động mượt cho `ENTERPRISE` và `ADMIN`.

@@ -2,10 +2,10 @@
 
 **Feature Branch**: `expert-profile-llkh-upgrade`  
 **Feature Directory**: `specs/TASK-05_HO_SO_CHUYEN_GIA_KHCN`  
-**Version**: 1.21.0  
+**Version**: 1.22.0  
 **Created**: 25/09/2026  
-**Last Updated**: 13/11/2026 (CR-2026-033: Quản lý 2 chiều yêu cầu kết nối & tư vấn chuyên gia R&D)  
-**Status**: In Progress (Delta v1.7 CR-2026-033 - APPROVED_FOR_PLAN)  
+**Last Updated**: 17/11/2026 (CR-BACLINK-006: Tái định vị Ban Cố vấn Kỹ thuật Hiệp hội BACLINK & RBAC 3 cấp Q1)  
+**Status**: In Implementation (CR-BACLINK-006 Approved)  
 **Ánh Xạ Basic Design**: [`Specification/BASIC_DESIGN_NACENTECH.md`](../../Specification/BASIC_DESIGN_NACENTECH.md) (Mục 10, Mục 20, Mục 36 & Mục 37)  
 **Bản Dựng Wireframe Tương Tác**: [`wireframe_expert_upgrade.html`](../../Specification/02_BASIC_DESIGN/TASK-05_HO_SO_CHUYEN_GIA_KHCN/wireframe_expert_upgrade.html)  
 **Nguồn Dữ Liệu Gốc**: Sheet `C.gia` (94 dòng dữ liệu, 6 cột) trong Master Excel `Nacentwin_20260924_bo_loc_da_sua.xlsx`  
@@ -1890,3 +1890,35 @@ Hệ thống nâng cấp toàn diện pipeline trích xuất AI CV Scan tại B�
 | `API-CON-001`..`API-CON-005` | API Contract | Bộ 5 API cho Public submit, Expert inbox/process, Buyer tracking/review | `[APPROVED_FOR_PLAN]` |
 | `UI-CON-001`..`UI-CON-003` | UI/UX Spec | Form Public `ticket_code`, Hộp thư Expert Zero-Mock, Màn hình Buyer tracking | `[APPROVED_FOR_PLAN]` |
 | `TEST-CON-001`..`TEST-CON-004` | Verification | Kiểm thử 4 tầng: Unit (`BR-CON-*`), API Contract, DB Integration, Playwright E2E & IDOR | `[APPROVED_FOR_PLAN]` |
+
+
+---
+
+## 28. PHỤ LỤC DELTA V1.8 (CR-BACLINK-006): TÁI ĐỊNH VỊ BAN CỐ VẤN KỸ THUẬT HIỆP HỘI BACLINK (RBAC 3 CẤP — Q1)
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-006`](../TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) (`Status: APPROVED`); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 4.1, 6, 9.1, 9.2 — `PO-DEC-BACLINK-02`, `PO-DEC-BACLINK-04`, `PO-DEC-BACLINK-05`); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md); [`open-questions.md`](../../docs/open-questions.md) (**Q1**).  
+> **Phiên bản áp dụng**: `1.22.0`  
+> **Trạng thái**: `In Implementation (CR-BACLINK-006 Approved)`
+
+### 28.1. Yêu Cầu Chức Năng Bổ Sung (`REQ-05-BL-01`, `REQ-05-BL-02`)
+
+- **`REQ-05-BL-01` [Tái Định Vị Ban Cố Vấn Kỹ Thuật BACLINK & Bộ Lọc Bắc Ninh]**:
+  - Các route `/experts`, `/experts/[expertCode]`, `/portal/expert/*`, `/profile/upgrade/expert` chuyển đổi toàn diện sang **Ban Cố vấn Kỹ thuật Hiệp hội BACLINK** (chuyên gia sản xuất, tự động hóa, Lean/5S, ISO/IATF 16949, ESG).
+  - Bộ lọc danh bạ `/experts` chuyển sang lọc theo **8 ngành công nghiệp `IND_*`** và **Địa bàn / KCN Bắc Ninh** (nạp từ Master Data API, Zero-Mock).
+- **`REQ-05-BL-02` [Thẩm Định Cố Vấn 1 Cấp Bởi `ADMIN` & Seed Demo]**:
+  - Hồ sơ Ban Cố vấn Kỹ thuật được `ADMIN` Hiệp hội phê duyệt tập trung 1 cấp tại `/admin/approvals`; gỡ bỏ bước kiểm duyệt 2 cấp Sở KH&CN (`PROVINCIAL_ADMIN`, `ScopeTypes.Province`) khỏi `ExpertController.cs` và `ExpertApprovalSynchronizer.cs`.
+  - Nạp 5 cố vấn kỹ thuật công nghiệp mẫu vào PostgreSQL thật qua `SourceCode/backend/scripts/seed_baclink_demo_data.sql`.
+
+### 28.2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-05-BL-01`, `BR-05-BL-02`)
+
+- **`BR-05-BL-01` [Bảo Toàn RBAC 3 Cấp — Không Tạo Role JWT Thứ 4 (Q1)]**:
+  - Tuân thủ quyết định Q1 (`open-questions.md`): hệ thống giữ nghiêm ngặt **3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`)**, KHÔNG tạo role thứ 4 (`EXPERT`/`VERIFIED_EXPERT`) trong JWT.
+  - Cố vấn kỹ thuật dùng tài khoản `PUBLIC_USER` hoặc `ENTERPRISE` gắn bản ghi `brokerage.expert_profiles (Status = APPROVED)`. Quyền truy cập `/api/v1/portal/expert/*` và `/portal/expert/*` kiểm tra: `Actor.PlatformRole == ADMIN` HOẶC tồn tại `ExpertProfile` đã duyệt (`person_id == Actor.PersonId && status == APPROVED`).
+- **`BR-05-BL-02` [Bảo Vệ PII & Chống IDOR Hai Chiều Tư Vấn]**:
+  - Bảo toàn chống IDOR (`requester_person_id == Actor.PersonId`, `expertProfile.person_id == Actor.PersonId`) và che chắn PII theo Nghị định 13/2023/NĐ-CP trên danh bạ Ban Cố vấn công khai.
+
+### 28.3. Tiêu Chuẩn Chấp Thuận (`AC-05-BL-01` .. `AC-05-BL-03`)
+
+- **`AC-05-BL-01`**: Truy cập `/experts` hiển thị nhãn **Ban Cố vấn Kỹ thuật Hiệp hội BACLINK**, lọc theo 8 ngành `IND_*` và Địa bàn/KCN Bắc Ninh từ PostgreSQL (`seed_baclink_demo_data.sql`), không còn chuỗi `Bộ KH&CN` / `34 tỉnh`.
+- **`AC-05-BL-02`**: Tài khoản `PUBLIC_USER` hoặc `ENTERPRISE` có `ExpertProfile (Status = APPROVED)` truy cập được `/portal/expert/consultations` và các API `/api/v1/portal/expert/*` thành công (`200 OK`) mà JWT vẫn giữ nguyên 3 cấp role; tài khoản không có `ExpertProfile` đã duyệt bị chặn (`403 Forbidden`).
+- **`AC-05-BL-03`**: `ADMIN` duyệt hồ sơ cố vấn mới tại `/admin/approvals` trong 1 bước không cần `PROVINCIAL_ADMIN` hay `ScopeTypes.Province`.

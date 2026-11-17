@@ -2,8 +2,8 @@
 
 **Feature**: `TASK-07_PHAN_QUYEN_QUAN_TRI_ADMIN`  
 **Spec Reference**: [`spec.md`](./spec.md)  
-**Version**: 1.12.0  
-**Status**: Completed (Shipped Gate 5)  
+**Version**: 1.17.0 (Delta v18 - CR-BACLINK-002)  
+**Status**: In Implementation  
 
 ---
 
@@ -894,6 +894,40 @@ export interface GovPageHeaderProps {
 2. **Đợt 4 — Vitest KPI & Playwright E2E (`localhost:3000` + `localhost:5080` + PostgreSQL thật)**:
    - Vitest: `src/app/admin/users/page.test.tsx`, `src/app/admin/page.test.tsx`, `src/app/admin/assessments/tt17/page.test.tsx` dùng pending Promise để bắt trạng thái `loading === true`, assert tồn tại `animate-shimmer` + `aria-busy="true"` và **không** render `"0"`, `"0 / 34"`, `"0.0%"`, `"Không có hồ sơ chờ"`; sau đó resolve API thật (kể cả kịch bản API trả về `0` thật) để assert hiển thị đúng dữ liệu.
    - Playwright E2E (`SourceCode/frontend/e2e/admin-cr2026-029-loading-kpi.spec.ts`): Zero-Mock (không `page.route()` giả lập API), đăng nhập Admin thật, kiểm chứng điều hướng `AdminSidebarNav`, active tab `/admin/approvals?tab=sla` & `?tab=override`, kiểm chứng KPI skeleton và Visual QA trên Desktop (1280px) & Mobile (390px) đạt $\ge 8.0/10$, `next build` sạch `0` lỗi.
+
+---
+
+## 13. Delta v18 (`CR-BACLINK-002`): Tinh Gọn Admin 1 Cấp BACLINK, Gỡ `/gov/*` & `/admin/org-tree`, Khóa Endpoint Legacy
+
+*Căn cứ: [`CR-BACLINK-002`](./deltas/CR-BACLINK-002_admin_1tier_remove_gov.md), [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md), [`open-questions.md`](../../docs/open-questions.md).*
+
+### 13.1. Security Fixes — Khóa `[AllowAnonymous]` Trên `/api/v1|v2/gov/*` & Sửa `RequireGlobalAdmin`
+1. **Khóa Endpoint `/gov/*` Từng Mở `[AllowAnonymous]` (`REQ-BACLINK-ADM-003`)**:
+   - `SourceCode/backend/apps/api/V1Compat/DemandController.cs`: Tách `[HttpGet("gov/demands/surveys")]` khỏi `[HttpGet("demands/surveys")]` (dòng 234-235); gỡ `[AllowAnonymous]` khỏi `gov/demands/surveys` và `gov/demands` (dòng 1045-1046); vô hiệu hóa các route `gov/demands`, `gov/demands/surveys`, `gov/demands/{id}/verify`, `gov/demands/{id}/assign-expert` trả `410 Gone` (hoặc chặn `[Authorize(Roles = "ADMIN")]` + `410 Gone`), tuyệt đối không trả `200 OK` cho ẩn danh hoặc `PUBLIC_USER`/`ENTERPRISE`.
+   - `SourceCode/backend/apps/api/V1Compat/BrokerageControllers.cs`: Gỡ `[AllowAnonymous]` khỏi `GetGovOpportunities` (`[HttpGet("gov/opportunities")]`, dòng 1629-1630), trả `410 Gone` / yêu cầu `[Authorize(Roles = "ADMIN")]`.
+   - `SourceCode/backend/apps/api/V2/AssessmentsController.cs`: Tách `[HttpGet("api/v1|v2/gov/assessments/tt17/dashboard")]` khỏi `[HttpGet("api/v1|v2/admin/assessments/tt17/dashboard")]` (dòng 462-466); gỡ `[AllowAnonymous]` khỏi `gov/assessments/tt17` (dòng 430-432) và `dashboard`; áp dụng `[Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]` cho route `admin/*` và khóa các route `gov/assessments/tt17*` trả `410 Gone` (bao gồm `review` tại dòng 692-693).
+2. **Sửa `RequireGlobalAdmin` & Khóa `/api/v1/governance/org-units/*` (`BR-BACLINK-ADM-001`, `REQ-BACLINK-ADM-003`)**:
+   - `SourceCode/backend/apps/api/V1Compat/GovernanceControllers.cs` (dòng 170-176): Cập nhật `RequireGlobalAdmin()` sử dụng `PlatformRoles.IsAdministrative(Actor.PlatformRole)` để chấp nhận `PlatformRoles.Admin` (`"ADMIN"`) cùng các alias chuyển tiếp `SUPER_ADMIN` / `OPERATOR_ADMIN`.
+   - Vô hiệu hóa các endpoint quản trị cây 34 Sở `/api/v1/governance/org-units/*` (sau khi `public-provinces` đã tách sang `/api/v1/master-data/locations` ở `CR-BACLINK-003`), trả `410 Gone` hoặc `[Authorize(Roles = "ADMIN")]`.
+
+### 13.2. Tinh Gọn Quy Trình Phê Duyệt 1 Cấp `ADMIN` (`REQ-BACLINK-ADM-001`, `BR-BACLINK-ADM-002`)
+- `SourceCode/backend/modules/identity/Application/ApprovalService.cs`, `OrganizationTreeService.cs`, `apps/api/V2/TechnologyOffersController.cs`:
+  - Gỡ bỏ cơ chế chặn `ClusterAdmin` cấm `APPROVE` trực tiếp và gỡ bỏ kiểm tra `MatchProvinceScope` / `ApplyScopeFilter` theo `Actor.ScopeId` (Sở KH&CN 34 tỉnh).
+  - Chuẩn hóa 1 cấp `ADMIN` BACLINK phê duyệt/từ chối trực tiếp hồ sơ Đăng ký Hội viên (`ENTERPRISE`), Sản phẩm/Năng lực, Nhu cầu đặt hàng, Cố vấn kỹ thuật (`ExpertProfile`), Đánh giá Năng lực Nhà máy, LMS và Chứng thực ZKP.
+  - Bảo toàn nguyên vẹn ghi `ApprovalAuditLog` bất biến và kiểm tra `Version` / `RowVersion` (`409 Conflict` khi xung đột đồng thời) (`BR-BACLINK-ADM-002`).
+
+### 13.3. Kiến Trúc Frontend — Gỡ `/gov/*` & `/admin/org-tree`, Chuẩn Hóa `/admin/roles` 3 Cấp (`REQ-BACLINK-ADM-002`)
+1. **Xử Lý An Toàn Route `/gov/*` & `/admin/org-tree`**:
+   - `SourceCode/frontend/src/app/gov/**` (`layout.tsx`, `page.tsx`, các sub-routes `approvals/**`, `assessments/**`, `demands/**`, `opportunities/**`, `settings/**`): Chuyển thành điều hướng an toàn theo `role` (`ADMIN -> /admin`, `ENTERPRISE -> /portal`, `PUBLIC_USER`/khách -> `/`) hoặc màn hình thông báo `410 Gone` kèm nút quay về Workspace hợp lệ; ngừng sử dụng `src/components/gov/*`.
+   - `SourceCode/frontend/src/app/admin/org-tree/page.tsx`: Chuyển hướng an toàn về `/admin` (hoặc `410 Gone`), gỡ hoàn toàn UI cây 34 Sở KH&CN.
+2. **Tinh Gọn Admin Console & Navigation**:
+   - `SourceCode/frontend/src/app/admin/layout.tsx`, `src/components/admin/admin-nav.tsx`, `src/components/common/quick-portal-switcher.tsx`, `src/app/huong-dan/guide-data.ts`: Gỡ liên kết `/admin/org-tree`, `/gov`, các mục/nhãn `Cơ cấu 34 tỉnh/thành`, `SLA 34 Sở`, `Phê duyệt vượt cấp tầng 0`; `RoleGuard` tại `AdminLayout` giữ `allowedRoles={['ADMIN', 'SUPER_ADMIN', 'OPERATOR_ADMIN']}` và bảo toàn `<AdminWorkspaceSkeleton />` + `<AdminKpiCardSkeleton />` (`CR-2026-029`).
+   - `SourceCode/frontend/src/app/admin/roles/page.tsx`: Tinh gọn `ROLES_MATRIX` từ 10 vai trò còn **ma trận 3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`)**; tinh gọn `/admin/approvals/*` bỏ tab vượt cấp 2 tầng & SLA 34 Sở.
+
+### 13.4. Chiến Lược Kiểm Thử (`TEST-BACLINK-002`)
+- **Backend Security & Invariants (`dotnet test`)**: `tests/invariants/GovernanceApprovalInvariantsTests.cs`, `tests/integration/Task07DeltaV4ApprovalQcTests.cs`, `tests/authorization/ScopedMultiTierRbacTests.cs` kiểm chứng: (a) 0 endpoint `/api/v*/gov/*` trả `200 OK` cho ẩn danh/`PUBLIC_USER`/`ENTERPRISE`; (b) `ADMIN` gọi `RequireGlobalAdmin()` và duyệt 1 cấp thành công kèm AuditLog + Optimistic Lock `409`.
+- **Frontend (`vitest` + Playwright)**: `src/app/admin/layout.test.tsx`, `src/app/admin/roles/page.test.tsx`, `src/app/gov/layout.test.tsx`, `src/app/gov/page.test.tsx` kiểm chứng không còn `/admin/org-tree` hay `/gov/*` trong nav, `/admin/roles` có 3 cấp, truy cập `/gov` hoặc `/admin/org-tree` redirect an toàn.
+
 
 
 

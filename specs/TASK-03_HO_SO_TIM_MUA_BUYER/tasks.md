@@ -412,3 +412,21 @@
   - Tiêu chí nghiệm thu: `TEST-SIG-01` $\rightarrow$ `TEST-SIG-05`.
 
 
+
+
+---
+
+## Phase 19: BACLINK Refactor Delta (CR-BACLINK-005)
+
+- [x] `T-03.BL.01` **[BE]** Refactor `DemandController` & `DemandService`: gỡ `[AllowAnonymous]` và logic `PROVINCIAL_ADMIN` khỏi `/api/v1/gov/demands*` (trả `401/403/410`), chuyển duyệt nhu cầu 1 cấp cho `ADMIN` BACLINK (`/api/v1/admin/demands/{id}/verify`), và cho phép mọi tài khoản `ENTERPRISE` (`CreatedBy == Actor.PersonId` hoặc `OrganizationId == Actor.OrganizationId`) tạo/sửa/đóng nhu cầu không từ chối vì thiếu role `BUYER` riêng; giữ nguyên cấm fallback `tniScore || 75` (`BR-03-BL-01`, `BR-03-BL-02`):
+  - [x] Tệp: `SourceCode/backend/apps/api/V1Compat/DemandController.cs`, `SourceCode/backend/modules/demand/Application/DemandService.cs`.
+  - [x] Kiểm chứng: `dotnet test SourceCode/backend/tests/NacenTech.Modules.Demand.Tests/NacenTech.Modules.Demand.Tests.csproj` và `dotnet test SourceCode/backend/tests/integration/NacenTech.Tests.Integration.csproj --filter "FullyQualifiedName~ShopAndDemandRoleMutationTests"`.
+- [x] `T-03.BL.02` **[FE]** Chuyển đổi Sàn Nhu Cầu công khai (`/nhu-cau-cong-nghe`, `/nhu-cau-cong-nghe/[id]`) và Khảo sát nhu cầu (`/khao-sat-nhu-cau`, `/khao-sat-doanh-nghiep`) sang **Bảng Nhu cầu Mua, Đặt hàng Gia công & Tìm nhà cung ứng Bắc Ninh**: lọc theo 8 ngành `IND_*` & Địa bàn/KCN Bắc Ninh (từ `master-data-client.ts`), nhãn cơ quan bảo chứng mặc định `Hiệp hội BACLINK`, Zero-Mock `<Async>` (`REQ-03-BL-01`, `BR-03-BL-01`):
+  - [x] Tệp: `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.tsx`, `SourceCode/frontend/src/app/nhu-cau-cong-nghe/[id]/page.tsx`, `SourceCode/frontend/src/app/khao-sat-nhu-cau/page.tsx`, `SourceCode/frontend/src/app/khao-sat-doanh-nghiep/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/nhu-cau-cong-nghe/page.test.tsx src/app/nhu-cau-cong-nghe/[id]/page.test.tsx src/app/khao-sat-nhu-cau/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-03.BL.03` **[FE]** Cập nhật Workspace `/portal/buyer/demands` (`QuickDemandModal`, `EditDemandModal`) vận hành mượt mà dưới `user.role = 'ENTERPRISE'` khi `activeRole = 'BUYER'` trên `RoleSwitcher`, dùng danh mục `IND_*` & Địa bàn/KCN Bắc Ninh (`REQ-03-BL-02`, `BR-03-BL-02`):
+  - [x] Tệp: `SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/portal/buyer/demands/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-03.BL.04` **[TEST]** Cập nhật & bổ sung kiểm thử xUnit + Vitest xác thực: khóa `/api/v1/gov/demands*`, `ADMIN` duyệt 1 cấp, `ENTERPRISE` Dual-Mode (`activeRole = BUYER`) CRUD nhu cầu đầy đủ & IDOR cross-org bị chặn 403, bộ lọc `IND_*` & KCN Bắc Ninh (`AC-03-BL-01`..`AC-03-BL-03`):
+  - [x] Tệp: `SourceCode/backend/tests/NacenTech.Modules.Demand.Tests/DemandApprovalLifecycleAndPrivacyTests.cs`, `SourceCode/backend/tests/NacenTech.Modules.Demand.Tests/DemandItemLifecycleTests.cs`, `SourceCode/backend/tests/integration/ShopAndDemandRoleMutationTests.cs`, `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.test.tsx`, `SourceCode/frontend/src/app/portal/buyer/demands/page.test.tsx`.
+  - [x] Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~DemandApprovalLifecycleAndPrivacyTests|DemandItemLifecycleTests|ShopAndDemandRoleMutationTests"` và `cd SourceCode/frontend && npx vitest run src/app/nhu-cau-cong-nghe/page.test.tsx src/app/nhu-cau-cong-nghe/[id]/page.test.tsx src/app/portal/buyer/demands/page.test.tsx && npx tsc --noEmit`.

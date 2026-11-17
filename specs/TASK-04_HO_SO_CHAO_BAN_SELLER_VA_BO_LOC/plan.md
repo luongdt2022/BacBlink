@@ -1,9 +1,11 @@
 # Kế Hoạch Kỹ Thuật (Architecture & Implementation Plan)
-# TASK-04: HỒ SƠ CHÀO BÁN SELLER & BỘ LỌC ĐA TẦNG 18 NGÀNH SHTT
+# TASK-04: SÀN SẢN PHẨM, NĂNG LỰC SẢN XUẤT & BỘ LỌC 8 NGÀNH BACLINK
 
 > **Mã Epic**: `TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC`  
+> **Version**: 1.12.0  
+> **Status**: In Implementation  
 > **Kiến trúc**: Clean Architecture (.NET 10 / Next.js 15 App Router)  
-> **Trạng thái**: 🟢 Planned & Ready for Implementation
+> **Ánh xạ Delta**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md)
 
 ---
 
@@ -1920,3 +1922,34 @@ const desiredSolution = isCommercialProduct
   + Khối 2: Hiển thị số ngành có công nghệ niêm yết tính toán động từ dữ liệu thật, hoặc tổng số ngành hoạt động từ taxonomy (`sectors.length`), không hardcode chuỗi `"10 Ngành"`.
   + Khối 3: Hiển thị chính xác `patentCount` (số lượng công nghệ có văn bằng bảo hộ SHTT). Khi = 0, hiển thị `0`, tuyệt đối không dùng `"680+"`.
   + Bao bọc toàn bộ khối Hero Stats qua `<Async>` đủ 5 UX States.
+
+
+---
+
+## 15. KẾ HOẠCH KIẾN TRÚC DELTA BACLINK (`CR-BACLINK-005` · Version 1.12.0)
+
+> **Căn cứ**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md) (Mục 2.3), [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).
+
+### 15.1. Backend `technology` & `TechnologyOffersController` (`BR-04-BL-01`, `BR-04-BL-02`)
+1. **Bỏ Ràng Buộc `ManagingAuthorityId` 34 Sở & `Actor.ScopeId` (`TechnologyOffersController.cs`, `SellerOfferContracts.cs`, `TechnologyService.cs`)**:
+   - Trong `SellerOfferContracts.cs` và validator/service tương ứng: gỡ bắt buộc `ManagingAuthorityId` thuộc 34 Sở KH&CN; gán giá trị mặc định/tùy chọn về `Hiệp hội BACLINK` khi tạo hồ sơ sản phẩm/năng lực sản xuất.
+   - Trong `TechnologyOffersController.cs` (`ReviewOffer` & CRUD portal):
+     * Thu gọn `[Authorize]` duyệt hồ sơ về `[Authorize(Roles = "ADMIN")]` (duyệt 1 cấp bởi Ban Quản trị BACLINK), gỡ bỏ điều kiện so sánh `Offer.ScopeId == Actor.ScopeId` và gỡ `PROVINCIAL_ADMIN` / `CLUSTER_ADMIN`.
+     * Cho phép mọi tài khoản `ENTERPRISE` (`BR-04-BL-02`) đăng bán và quản lý sản phẩm/năng lực của chính đơn vị mình (bảo toàn 100% IDOR isolation theo `OrganizationId` / `OwnerPersonId` / `CreatedBy`), không yêu cầu tách role `SELLER` khỏi `ENTERPRISE`.
+
+### 15.2. Frontend Sàn Sản Phẩm & Năng Lực Sản Xuất (`REQ-04-BL-01`, `REQ-04-BL-02`)
+- **Các tệp mục tiêu**:
+  * `SourceCode/frontend/src/app/chao-ban-cong-nghe/page.tsx`
+  * `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx`
+  * `SourceCode/frontend/src/app/portal/seller/technologies/page.tsx`
+  * `SourceCode/frontend/src/app/portal/seller/technologies/create/page.tsx`
+  * `SourceCode/frontend/src/components/common/IndexVerificationBadge.tsx`
+- **Thiết kế kỹ thuật**:
+  * Đổi ngữ cảnh toàn diện sang **Sàn Sản phẩm & Năng lực Sản xuất / Gia công Công nghiệp Bắc Ninh** (linh kiện điện tử, gia công CNC/khuôn mẫu, nhựa kỹ thuật, tự động hóa, Smart Factory).
+  * Bộ lọc đồng bộ từ `master-data-client.ts` (`TASK-06`): **8 ngành `IND_*`**, **Địa bàn/KCN Bắc Ninh**, mức TRL 1–9 / Năng lực sẵn sàng và chứng chỉ (`ISO 9001`, `IATF 16949`, `ESG`).
+  * Workspace `/portal/seller/technologies/*`: loại bỏ trường chọn Sở KH&CN quản lý (`ManagingAuthorityId`); hoạt động thông suốt với `user.role = 'ENTERPRISE'` + `activeRole = 'SELLER'`.
+  * Bảo toàn Zero-Mock `<Async>` 5 UX States và nhãn bảo chứng mặc định `Hiệp hội BACLINK` trên `<IndexVerificationBadge />`.
+
+### 15.3. Chiến Lược Kiểm Thử (`AC-04-059` .. `AC-04-061`)
+- **Backend**: `dotnet test` trên `SellerOfferRulesValidatorTests.cs`, `ShopAndDemandRoleMutationTests.cs` (bỏ `ManagingAuthorityId`, `ADMIN` duyệt 1 cấp, `ENTERPRISE` tạo/sửa sản phẩm thành công, IDOR cross-org bị chặn 403).
+- **Frontend**: `vitest` cho `chao-ban-cong-nghe/page.test.tsx`, `chao-ban-cong-nghe/[id]/page.test.tsx`, `portal/seller/technologies/page.test.tsx` + `npx tsc --noEmit`.
