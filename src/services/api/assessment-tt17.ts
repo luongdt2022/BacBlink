@@ -43,6 +43,17 @@ export const INDUSTRY_BENCHMARKS: Record<string, IndustryBenchmark> = {
   "C.30": { industryCode: "C.30", industryName: "Sản xuất phương tiện vận tải khác", kChuan1: 300, kChuan2: 0.07, kChuan3: 0.65, kChuan4: 150 },
   "C.31": { industryCode: "C.31", industryName: "Sản xuất giường, tủ, bàn, ghế", kChuan1: 150, kChuan2: 0.05, kChuan3: 0.55, kChuan4: 100 },
   "C.32": { industryCode: "C.32", industryName: "Công nghiệp chế biến, chế tạo khác", kChuan1: 200, kChuan2: 0.07, kChuan3: 0.55, kChuan4: 150 },
+
+  // 8 ngành công nghiệp trọng điểm BACLINK (IND_*)
+  IND_ELEC: { industryCode: "IND_ELEC", industryName: "Điện tử, Bán dẫn & Thiết bị điện", kChuan1: 300, kChuan2: 0.05, kChuan3: 0.45, kChuan4: 100 },
+  IND_MECH: { industryCode: "IND_MECH", industryName: "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy", kChuan1: 300, kChuan2: 0.07, kChuan3: 0.55, kChuan4: 150 },
+  IND_AUTO: { industryCode: "IND_AUTO", industryName: "Tự động hóa, Robot & Smart Factory", kChuan1: 300, kChuan2: 0.07, kChuan3: 0.65, kChuan4: 150 },
+  IND_PLAS: { industryCode: "IND_PLAS", industryName: "Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp", kChuan1: 250, kChuan2: 0.10, kChuan3: 0.55, kChuan4: 150 },
+  IND_MAT: { industryCode: "IND_MAT", industryName: "Vật liệu mới & Công nghiệp hỗ trợ", kChuan1: 250, kChuan2: 0.08, kChuan3: 0.55, kChuan4: 150 },
+  IND_IT: { industryCode: "IND_IT", industryName: "Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP", kChuan1: 300, kChuan2: 0.05, kChuan3: 0.45, kChuan4: 150 },
+  IND_GREEN: { industryCode: "IND_GREEN", industryName: "Công nghiệp xanh, Năng lượng sạch & ESG", kChuan1: 250, kChuan2: 0.06, kChuan3: 0.50, kChuan4: 150 },
+  IND_LOG: { industryCode: "IND_LOG", industryName: "Logistics công nghiệp, Kho vận & Chuỗi cung ứng", kChuan1: 250, kChuan2: 0.08, kChuan3: 0.45, kChuan4: 150 },
+  BACLINK_DEFAULT: { industryCode: "BACLINK_DEFAULT", industryName: "Công nghiệp đa ngành Bắc Ninh (Mặc định)", kChuan1: 250, kChuan2: 0.07, kChuan3: 0.55, kChuan4: 150 },
 };
 
 export interface MachineryItem {
@@ -848,8 +859,8 @@ export function calculateLaborProductivityGrowth(series?: FinancialSeriesItem[])
 // ============================================================================
 export function calculateLocalScore(survey: Tt17SurveyData, industryCodeInput?: string): Tt17ScoreResult {
   const criteria: CriterionScore[] = [];
-  const indCode = industryCodeInput || survey.industryCode || "C.28";
-  const benchmark = INDUSTRY_BENCHMARKS[indCode] || INDUSTRY_BENCHMARKS["C.28"];
+  const indCode = industryCodeInput || survey.industryCode || "IND_ELEC";
+  const benchmark = INDUSTRY_BENCHMARKS[indCode] || INDUSTRY_BENCHMARKS["BACLINK_DEFAULT"] || INDUSTRY_BENCHMARKS["C.28"];
 
   // Dữ liệu tài chính năm gần nhất
   const series = survey.financialSeries || [];

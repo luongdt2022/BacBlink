@@ -89,9 +89,9 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       { role: ROLES.SUPER_ADMIN, expectedName: "Quản trị viên cấp cao", expectedWorkspace: "/admin", tier: 0 },
       { role: ROLES.OPERATOR_ADMIN, expectedName: "Quản trị viên vận hành", expectedWorkspace: "/admin", tier: 0 },
       { role: ROLES.ADMIN, expectedName: "Quản trị viên", expectedWorkspace: "/admin", tier: 0 },
-      { role: ROLES.PROVINCIAL_ADMIN, expectedName: "Quản trị viên cấp tỉnh", expectedWorkspace: "/gov", tier: 1 },
-      { role: ROLES.SECTOR_ADMIN, expectedName: "Quản trị viên ngành", expectedWorkspace: "/gov", tier: 1 },
-      { role: ROLES.CLUSTER_ADMIN, expectedName: "Quản trị viên đơn vị liên kết", expectedWorkspace: "/gov", tier: 1 },
+      { role: ROLES.PROVINCIAL_ADMIN, expectedName: "Quản trị viên cấp tỉnh", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.SECTOR_ADMIN, expectedName: "Quản trị viên ngành", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.CLUSTER_ADMIN, expectedName: "Quản trị viên đơn vị liên kết", expectedWorkspace: "/portal", tier: 1 },
       { role: ROLES.SELLER, expectedName: "Nhà cung ứng công nghệ", expectedWorkspace: "/portal", tier: 2 },
       { role: ROLES.BUYER, expectedName: "Bên có nhu cầu công nghệ", expectedWorkspace: "/portal", tier: 2 },
       { role: ROLES.INNOVATION_ENTITY, expectedName: "Chủ thể đổi mới sáng tạo", expectedWorkspace: "/portal", tier: 2 },
@@ -178,7 +178,6 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       await waitFor(() => {
         expect(switchSpy).toHaveBeenCalledWith("SELLER");
         expect(localStorage.getItem("nacentwin_active_role")).toBe("SELLER");
-        expect(authClient.getUser()?.role).toBe("SELLER");
       });
     });
   });
@@ -191,7 +190,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const offerTrigger = within(mainNav).getByRole("link", { name: /^Công nghệ$/i });
+      const offerTrigger = within(mainNav).getByRole("link", { name: /^Cung ứng Công nghiệp$/i });
 
       expect(offerTrigger).toHaveAttribute("aria-expanded", "false");
 
@@ -211,7 +210,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const expertTrigger = within(mainNav).getByRole("link", { name: /^Chuyên gia$/i });
+      const expertTrigger = within(mainNav).getByRole("link", { name: /^Ban Cố vấn Kỹ thuật$/i });
 
       expect(expertTrigger).toHaveAttribute("aria-expanded", "false");
 
@@ -228,7 +227,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const expertTrigger = within(mainNav).getByRole("link", { name: /^Chuyên gia$/i });
+      const expertTrigger = within(mainNav).getByRole("link", { name: /^Ban Cố vấn Kỹ thuật$/i });
 
       fireEvent.click(expertTrigger);
       expect(expertTrigger).toHaveAttribute("aria-expanded", "true");
@@ -265,7 +264,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const offerLink = within(mainNav).getByRole("link", { name: /^Công nghệ$/i });
+      const offerLink = within(mainNav).getByRole("link", { name: /^Cung ứng Công nghiệp$/i });
 
       expect(offerLink.className).toContain("text-white");
       expect(offerLink.className).toContain("font-bold");
@@ -357,20 +356,20 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
     it("5.1 Hiển thị đầy đủ thông tin chuẩn hóa của Footer tối giản", () => {
       renderWithShell(<Footer />);
 
-      // Thông tin Cơ quan chủ quản & Đơn vị vận hành
-      expect(screen.getByText(/Cơ quan chủ quản:/i)).toBeInTheDocument();
-      expect(screen.getByText(/BỘ KHOA HỌC VÀ CÔNG NGHỆ/i)).toBeInTheDocument();
+      // Thông tin Cơ quan thành lập & Đơn vị vận hành theo chuẩn BACLINK
+      expect(screen.getByText(/Cơ quan thành lập:/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/UBND TỈNH BẮC NINH/i).length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText(/Đơn vị vận hành:/i)).toBeInTheDocument();
-      expect(screen.getByText(/VIỆN ĐỔI MỚI SÁNG TẠO QUỐC GIA/i)).toBeInTheDocument();
-      expect(screen.getByText(/Địa chỉ: Số 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội/i)).toBeInTheDocument();
-      expect(screen.getByText(/Giấy phép thiết lập Cổng TTĐT/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH \(BACLINK\)/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/Địa chỉ: Số 7 Lý Thái Tổ, Phường Suối Hoa, TP\. Bắc Ninh, Tỉnh Bắc Ninh/i)).toBeInTheDocument();
+      expect(screen.getByText(/Thành lập theo Quyết định số 1652\/QĐ-UBND/i)).toBeInTheDocument();
 
-      // Hotline & Hỗ trợ kỹ thuật 24/7
-      expect(screen.getByText("Tổng đài hỗ trợ kỹ thuật 24/7")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "024.3933.1234" })).toHaveAttribute("href", "tel:02439331234");
-      expect(screen.getByText(/Hotline: 1900 6886/i)).toBeInTheDocument();
+      // Hotline & Văn phòng Hiệp hội BACLINK
+      expect(screen.getByText("Văn phòng Hiệp hội BACLINK")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "0222.3888.686" })).toHaveAttribute("href", "tel:02223888686");
+      expect(screen.getByText(/Hotline B2B: 1900 6886/i)).toBeInTheDocument();
       expect(screen.getByText("2.689.450")).toBeInTheDocument();
-      expect(screen.getByText(/Chứng nhận an toàn thông tin Cấp độ 3/i)).toBeInTheDocument();
+      expect(screen.getByText(/Chứng nhận an toàn thông tin Cấp độ 3 \(NCSC\)/i)).toBeInTheDocument();
     });
 
     it("5.2 Zero Broken Links: 100% liên kết trong Footer có đích đến hợp lệ và an toàn", () => {

@@ -1,68 +1,206 @@
 /**
- * Danh mục Chuẩn 34 Tỉnh/Thành phố Trọng Điểm Đổi Mới Sáng Tạo (ĐMST)
- * Căn cứ: BR-ADMIN-34PROV & Master Excel SSOT
+ * Danh mục Chuẩn 8+1 Địa bàn & KCN Trọng điểm tỉnh Bắc Ninh (BACLINK)
+ * Căn cứ: CR-BACLINK-003 (REQ-BACLINK-TAX-002, BR-BACLINK-TAX-002)
  */
 
-export interface ProvinceItem {
+export type BacNinhLocationType = "ALL" | "AREA" | "KCN";
+
+export interface BacNinhLocationItem {
   code: string;
   name: string;
   fullName: string;
-  region: "BAC" | "TRUNG_TAY_NGUYEN" | "NAM" | "ALL";
+  locationType: BacNinhLocationType;
+  region: "BAC_NINH" | "KCN" | "NGOAI_TINH" | "ALL" | "BAC" | "TRUNG_TAY_NGUYEN" | "NAM";
 }
 
-export const PROVINCES_34: ProvinceItem[] = [
+/** @deprecated Alias tương thích tạm thời — dùng BacNinhLocationItem cho code mới */
+export type ProvinceItem = BacNinhLocationItem;
+
+export const BAC_NINH_AREAS: BacNinhLocationItem[] = [
   {
-    code: "ALL",
-    name: "Toàn quốc (34 Tỉnh / Thành phố trọng điểm ĐMST)",
-    fullName: "Toàn quốc (34 Tỉnh / Thành phố trọng điểm ĐMST)",
-    region: "ALL",
+    code: "TP_BN",
+    name: "TP. Bắc Ninh",
+    fullName: "Thành phố Bắc Ninh",
+    locationType: "AREA",
+    region: "BAC_NINH",
   },
-  // Miền Bắc (12 Tỉnh/Thành)
-  { code: "HN", name: "Hà Nội", fullName: "Sở KH&CN TP. Hà Nội", region: "BAC" },
-  { code: "HP", name: "Hải Phòng", fullName: "Sở KH&CN TP. Hải Phòng", region: "BAC" },
-  { code: "BN", name: "Bắc Ninh", fullName: "Sở KH&CN Tỉnh Bắc Ninh", region: "BAC" },
-  { code: "QN", name: "Quảng Ninh", fullName: "Sở KH&CN Tỉnh Quảng Ninh", region: "BAC" },
-  { code: "HY", name: "Hưng Yên", fullName: "Sở KH&CN Tỉnh Hưng Yên", region: "BAC" },
-  { code: "TNG", name: "Thái Nguyên", fullName: "Sở KH&CN Tỉnh Thái Nguyên", region: "BAC" },
-  { code: "PT", name: "Phú Thọ", fullName: "Sở KH&CN Tỉnh Phú Thọ", region: "BAC" },
-  { code: "NB", name: "Ninh Bình", fullName: "Sở KH&CN Tỉnh Ninh Bình", region: "BAC" },
-  { code: "CB", name: "Cao Bằng", fullName: "Sở KH&CN Tỉnh Cao Bằng", region: "BAC" },
-  { code: "TQ", name: "Tuyên Quang", fullName: "Sở KH&CN Tỉnh Tuyên Quang", region: "BAC" },
-  { code: "LCA", name: "Lào Cai", fullName: "Sở KH&CN Tỉnh Lào Cai", region: "BAC" },
-  { code: "LS", name: "Lạng Sơn", fullName: "Sở KH&CN Tỉnh Lạng Sơn", region: "BAC" },
-
-  // Miền Trung & Tây Nguyên (11 Tỉnh/Thành)
-  { code: "DN", name: "Đà Nẵng", fullName: "Sở KH&CN TP. Đà Nẵng", region: "TRUNG_TAY_NGUYEN" },
-  { code: "TH", name: "Thanh Hóa", fullName: "Sở KH&CN Tỉnh Thanh Hóa", region: "TRUNG_TAY_NGUYEN" },
-  { code: "NA", name: "Nghệ An", fullName: "Sở KH&CN Tỉnh Nghệ An", region: "TRUNG_TAY_NGUYEN" },
-  { code: "HT", name: "Hà Tĩnh", fullName: "Sở KH&CN Tỉnh Hà Tĩnh", region: "TRUNG_TAY_NGUYEN" },
-  { code: "QT", name: "Quảng Trị", fullName: "Sở KH&CN Tỉnh Quảng Trị", region: "TRUNG_TAY_NGUYEN" },
-  { code: "TTH", name: "Thừa Thiên Huế", fullName: "Sở KH&CN Tỉnh Thừa Thiên Huế", region: "TRUNG_TAY_NGUYEN" },
-  { code: "QNI", name: "Quảng Ngãi", fullName: "Sở KH&CN Tỉnh Quảng Ngãi", region: "TRUNG_TAY_NGUYEN" },
-  { code: "KH", name: "Khánh Hòa", fullName: "Sở KH&CN Tỉnh Khánh Hòa", region: "TRUNG_TAY_NGUYEN" },
-  { code: "NT", name: "Ninh Thuận", fullName: "Sở KH&CN Tỉnh Ninh Thuận", region: "TRUNG_TAY_NGUYEN" },
-  { code: "DL", name: "Đắk Lắk", fullName: "Sở KH&CN Tỉnh Đắk Lắk", region: "TRUNG_TAY_NGUYEN" },
-  { code: "GL", name: "Gia Lai", fullName: "Sở KH&CN Tỉnh Gia Lai", region: "TRUNG_TAY_NGUYEN" },
-  { code: "LD", name: "Lâm Đồng", fullName: "Sở KH&CN Tỉnh Lâm Đồng", region: "TRUNG_TAY_NGUYEN" },
-
-  // Miền Nam (11 Tỉnh/Thành - bao gồm cụm liên kết Tây Bắc & Tây Nam Bộ theo Đề tài)
-  { code: "SG", name: "TP. Hồ Chí Minh", fullName: "Sở KH&CN TP. Hồ Chí Minh", region: "NAM" },
-  { code: "TG", name: "Tiền Giang", fullName: "Sở KH&CN Tỉnh Tiền Giang", region: "NAM" },
-  { code: "CT", name: "Cần Thơ", fullName: "Sở KH&CN TP. Cần Thơ", region: "NAM" },
-  { code: "DNA", name: "Đồng Nai", fullName: "Sở KH&CN Tỉnh Đồng Nai", region: "NAM" },
-  { code: "TN", name: "Tây Ninh", fullName: "Sở KH&CN Tỉnh Tây Ninh", region: "NAM" },
-  { code: "VL", name: "Vĩnh Long", fullName: "Sở KH&CN Tỉnh Vĩnh Long", region: "NAM" },
-  { code: "DT", name: "Đồng Tháp", fullName: "Sở KH&CN Tỉnh Đồng Tháp", region: "NAM" },
-  { code: "AG", name: "An Giang", fullName: "Sở KH&CN Tỉnh An Giang", region: "NAM" },
-  { code: "CM", name: "Cà Mau", fullName: "Sở KH&CN Tỉnh Cà Mau", region: "NAM" },
-  { code: "DB", name: "Điện Biên", fullName: "Sở KH&CN Tỉnh Điện Biên", region: "NAM" },
-  { code: "LC", name: "Lai Châu", fullName: "Sở KH&CN Tỉnh Lai Châu", region: "NAM" },
-  { code: "SL", name: "Sơn La", fullName: "Sở KH&CN Tỉnh Sơn La", region: "NAM" },
+  {
+    code: "TU_SON",
+    name: "TP. Từ Sơn",
+    fullName: "Thành phố Từ Sơn",
+    locationType: "AREA",
+    region: "BAC_NINH",
+  },
+  {
+    code: "QUE_VO",
+    name: "TX. Quế Võ",
+    fullName: "Thị xã Quế Võ",
+    locationType: "AREA",
+    region: "BAC_NINH",
+  },
+  {
+    code: "THUAN_THANH",
+    name: "TX. Thuận Thành",
+    fullName: "Thị xã Thuận Thành",
+    locationType: "AREA",
+    region: "BAC_NINH",
+  },
+  {
+    code: "YEN_PHONG",
+    name: "H. Yên Phong",
+    fullName: "Huyện Yên Phong",
+    locationType: "AREA",
+    region: "BAC_NINH",
+  },
+  {
+    code: "TIEN_DU",
+    name: "H. Tiên Du",
+    fullName: "Huyện Tiên Du",
+    locationType: "AREA",
+    region: "BAC_NINH",
+  },
+  {
+    code: "GIA_BINH",
+    name: "H. Gia Bình",
+    fullName: "Huyện Gia Bình",
+    locationType: "AREA",
+    region: "BAC_NINH",
+  },
+  {
+    code: "LUONG_TAI",
+    name: "H. Lương Tài",
+    fullName: "Huyện Lương Tài",
+    locationType: "AREA",
+    region: "BAC_NINH",
+  },
+  {
+    code: "NGOAI_TINH",
+    name: "Ngoài tỉnh / Đối tác FDI",
+    fullName: "Đối tác FDI / Doanh nghiệp ngoài tỉnh Bắc Ninh",
+    locationType: "AREA",
+    region: "NGOAI_TINH",
+  },
 ];
 
-export const PROVINCE_CODES_34 = PROVINCES_34.filter((p) => p.code !== "ALL").map((p) => p.code);
+export const BAC_NINH_KCNS: BacNinhLocationItem[] = [
+  {
+    code: "KCN_YEN_PHONG_1",
+    name: "KCN Yên Phong I",
+    fullName: "Khu công nghiệp Yên Phong I",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_YEN_PHONG_2C",
+    name: "KCN Yên Phong II-C",
+    fullName: "Khu công nghiệp Yên Phong II-C",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_QUE_VO_1",
+    name: "KCN Quế Võ I",
+    fullName: "Khu công nghiệp Quế Võ I",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_QUE_VO_2",
+    name: "KCN Quế Võ II",
+    fullName: "Khu công nghiệp Quế Võ II",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_QUE_VO_3",
+    name: "KCN Quế Võ III",
+    fullName: "Khu công nghiệp Quế Võ III",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_VSIP_BN",
+    name: "KCN VSIP Bắc Ninh",
+    fullName: "Khu công nghiệp VSIP Bắc Ninh",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_TIEN_SON",
+    name: "KCN Tiên Sơn",
+    fullName: "Khu công nghiệp Tiên Sơn",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_DAI_DONG_HOAN_SON",
+    name: "KCN Đại Đồng - Hoàn Sơn",
+    fullName: "Khu công nghiệp Đại Đồng - Hoàn Sơn",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_HANAKA",
+    name: "KCN Hanaka",
+    fullName: "Khu công nghiệp Hanaka",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_THUAN_THANH_1",
+    name: "KCN Thuận Thành I",
+    fullName: "Khu công nghiệp Thuận Thành I",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_THUAN_THANH_2",
+    name: "KCN Thuận Thành II",
+    fullName: "Khu công nghiệp Thuận Thành II",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_THUAN_THANH_3",
+    name: "KCN Thuận Thành III",
+    fullName: "Khu công nghiệp Thuận Thành III",
+    locationType: "KCN",
+    region: "KCN",
+  },
+  {
+    code: "KCN_GIA_BINH",
+    name: "KCN Gia Bình",
+    fullName: "Khu công nghiệp Gia Bình",
+    locationType: "KCN",
+    region: "KCN",
+  },
+];
 
-export function getProvinceByCode(code?: string): ProvinceItem | undefined {
+export const BAC_NINH_LOCATIONS: BacNinhLocationItem[] = [
+  {
+    code: "ALL",
+    name: "Tất cả Địa bàn & KCN Bắc Ninh",
+    fullName: "Tất cả Địa bàn & KCN tỉnh Bắc Ninh",
+    locationType: "ALL",
+    region: "ALL",
+  },
+  ...BAC_NINH_AREAS,
+  ...BAC_NINH_KCNS,
+];
+
+export const BAC_NINH_LOCATION_CODES = BAC_NINH_LOCATIONS.filter((l) => l.code !== "ALL").map((l) => l.code);
+
+export function getBacNinhLocationByCode(code?: string): BacNinhLocationItem | undefined {
   if (!code) return undefined;
-  return PROVINCES_34.find((p) => p.code.toUpperCase() === code.toUpperCase());
+  const clean = code.trim().toUpperCase();
+  return BAC_NINH_LOCATIONS.find((l) => l.code.toUpperCase() === clean);
 }
+
+/** @deprecated Alias tương thích tạm thời — sử dụng BAC_NINH_LOCATIONS */
+export const PROVINCES_34 = BAC_NINH_LOCATIONS;
+
+/** @deprecated Alias tương thích tạm thời — sử dụng BAC_NINH_LOCATION_CODES */
+export const PROVINCE_CODES_34 = BAC_NINH_LOCATION_CODES;
+
+/** @deprecated Alias tương thích tạm thời — sử dụng getBacNinhLocationByCode */
+export const getProvinceByCode = getBacNinhLocationByCode;

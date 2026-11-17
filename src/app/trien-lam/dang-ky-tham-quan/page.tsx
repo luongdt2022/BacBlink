@@ -135,7 +135,7 @@ export default function ExpoRegistrationPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
-      {/* HERO BANNER SECTION (NacenTwin Theme) */}
+      {/* HERO BANNER SECTION (BACLINK Theme) */}
       <section className="relative overflow-hidden bg-brand-700 text-white py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="relative max-w-3xl mx-auto space-y-2 text-center">

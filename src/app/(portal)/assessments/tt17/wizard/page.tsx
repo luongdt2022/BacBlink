@@ -300,7 +300,7 @@ export default function AssessmentWizardPage() {
               Nộp Phiếu Đánh Giá Công Nghệ Thành Công!
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-2 max-w-lg mx-auto leading-relaxed">
-              Hệ thống NacenTwin đã tiếp nhận đầy đủ dữ liệu kê khai đánh giá trình độ và năng lực công nghệ sản xuất cho <strong>{submitResult.companyName}</strong> theo Thông tư 17/2019/TT-BKHCN.
+              Hệ thống BACLINK đã tiếp nhận đầy đủ dữ liệu kê khai đánh giá trình độ và năng lực công nghệ sản xuất cho <strong>{submitResult.companyName}</strong> theo Thông tư 17/2019/TT-BKHCN.
             </p>
           </div>
 
@@ -319,7 +319,7 @@ export default function AssessmentWizardPage() {
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>Dữ liệu đã được lưu trữ an toàn trong CSDL PostgreSQL và sẵn sàng đồng bộ sang Hội đồng Thẩm định Sở KH&CN.</span>
+              <span>Dữ liệu đã được lưu trữ an toàn trong CSDL PostgreSQL và sẵn sàng đồng bộ sang Ban Cố vấn Kỹ thuật BACLINK.</span>
             </div>
           </div>
 
@@ -900,7 +900,7 @@ export default function AssessmentWizardPage() {
                         </select>
                       </div>
                       <p className="text-xs text-slate-500 md:col-span-2">
-                        * Theo Mục A.9 Phụ lục I TT17: Liệt kê tối đa 03 ngành chế biến chế tạo theo thứ tự giảm dần. Hệ thống chỉ sử dụng <strong>Ngành 1</strong> để đối soát 4 hệ số chuẩn ngành (K_chuẩn 1..4); Ngành 2 &amp; 3 phục vụ thống kê và xuất hồ sơ in nộp Sở KH&CN.
+                        * Theo Mục A.9 Phụ lục I TT17: Liệt kê tối đa 03 ngành chế biến chế tạo theo thứ tự giảm dần. Hệ thống chỉ sử dụng <strong>Ngành 1</strong> để đối soát 4 hệ số chuẩn ngành (K_chuẩn 1..4); Ngành 2 &amp; 3 phục vụ thống kê và xuất hồ sơ in nộp Hiệp hội BACLINK.
                       </p>
                     </div>
                   )}

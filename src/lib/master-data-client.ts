@@ -10,6 +10,10 @@ export interface MasterDataOption {
 }
 
 export type SectorOption = MasterDataOption;
+export type LocationOption = MasterDataOption & {
+  locationType?: "AREA" | "KCN" | string;
+  type?: "AREA" | "KCN" | string;
+};
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -18,8 +22,14 @@ interface ApiEnvelope<T> {
 }
 
 const SECTORS_CACHE_TTL_MS = 60_000;
+const LOCATIONS_CACHE_TTL_MS = 60_000;
 
 export interface GetActiveSectorsOptions {
+  forceRefresh?: boolean;
+}
+
+export interface GetBacNinhLocationsOptions {
+  type?: "AREA" | "KCN";
   forceRefresh?: boolean;
 }
 
@@ -27,10 +37,20 @@ let sectorsCache: { data: SectorOption[]; expiresAt: number } | null = null;
 let sectorsInFlight: Promise<SectorOption[]> | null = null;
 let sectorsCacheGeneration = 0;
 
+const locationsCache = new Map<string, { data: LocationOption[]; expiresAt: number }>();
+const locationsInFlight = new Map<string, Promise<LocationOption[]>>();
+let locationsCacheGeneration = 0;
+
 export function invalidateSectorsCache(): void {
   sectorsCacheGeneration += 1;
   sectorsCache = null;
   sectorsInFlight = null;
+}
+
+export function invalidateLocationsCache(): void {
+  locationsCacheGeneration += 1;
+  locationsCache.clear();
+  locationsInFlight.clear();
 }
 
 async function getOptions(path: string): Promise<MasterDataOption[]> {
@@ -45,13 +65,58 @@ async function getOptions(path: string): Promise<MasterDataOption[]> {
   return payload.data.filter((item) => typeof item.code === "string" && item.code.length > 0 && typeof item.name === "string");
 }
 
-/** Shared master-data client for active sectors and the public province projection. */
+/** Shared master-data client for active sectors and Bac Ninh location/KCN options. */
 export async function getPublicExpertFilterOptions() {
   const [sectors, provinces] = await Promise.all([
     getActiveSectors(),
-    getOptions("/api/v1/governance/org-units/public-provinces"),
+    getBacNinhLocations(),
   ]);
   return { sectors, provinces };
+}
+
+export async function getBacNinhLocations(options?: GetBacNinhLocationsOptions): Promise<LocationOption[]> {
+  const path = options?.type
+    ? `/api/v1/master-data/locations?type=${encodeURIComponent(options.type)}`
+    : "/api/v1/master-data/locations";
+
+  if (typeof window === "undefined") {
+    return getOptions(path);
+  }
+
+  if (options?.forceRefresh === true) {
+    invalidateLocationsCache();
+  }
+
+  const cacheKey = options?.type ?? "ALL";
+  const cached = locationsCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return [...cached.data];
+  }
+
+  const inFlight = locationsInFlight.get(cacheKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const requestGeneration = locationsCacheGeneration;
+  const currentPromise = getOptions(path)
+    .then((rows) => {
+      if (requestGeneration === locationsCacheGeneration) {
+        locationsCache.set(cacheKey, {
+          data: rows,
+          expiresAt: Date.now() + LOCATIONS_CACHE_TTL_MS,
+        });
+      }
+      return [...rows];
+    })
+    .finally(() => {
+      if (locationsInFlight.get(cacheKey) === currentPromise) {
+        locationsInFlight.delete(cacheKey);
+      }
+    });
+
+  locationsInFlight.set(cacheKey, currentPromise);
+  return currentPromise;
 }
 
 export async function getActiveSectors(options?: GetActiveSectorsOptions): Promise<SectorOption[]> {

@@ -38,7 +38,6 @@ import {
   type EnterpriseDirectoryResponse
 } from "@/lib/enterprise-client";
 import { getActiveSectors, type SectorOption } from "@/lib/master-data-client";
-import { PROVINCES_34 } from "@/app/khao-sat-nhu-cau/types";
 import { EnterpriseAvatar } from "@/components/common/enterprise-avatar";
 import { SearchableProvinceCombobox } from "@/components/common/searchable-province-combobox";
 import { brokerageApi } from "@/services/api/brokerage";
@@ -421,13 +420,13 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
           <div className="flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 border border-white/20 text-xs font-semibold uppercase tracking-wider mb-2.5">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-              {badgeLabel || "CSDL Quốc Gia Doanh Nghiệp ĐMST & Đổi Mới Công Nghệ"}
+              {badgeLabel || "Hội Viên & Mạng Lưới Sản Xuất Công Nghiệp Bắc Ninh"}
             </div>
             <h1 className="type-page-title text-white">
-              {pageTitle || "Danh Bạ Doanh Nghiệp & Chủ Thể Đổi Mới Sáng Tạo"}
+              {pageTitle || "Danh Bạ Doanh Nghiệp Hội Viên BACLINK"}
             </h1>
             <p className="mt-2 type-body text-white/85 max-w-2xl">
-              {pageSubtitle || "Tra cứu năng lực khoa học công nghệ, bản quyền sở hữu trí tuệ, phòng R&D và chỉ số nhu cầu đổi mới sáng tạo (TNI) của các doanh nghiệp trên 34 tỉnh/thành trọng điểm ĐMST toàn quốc."}
+              {pageSubtitle || "Tra cứu hồ sơ năng lực sản xuất, chứng chỉ chất lượng (ISO, IATF 16949, ESD, Lean), dây chuyền nhà máy và nhu cầu kết nối chuỗi cung ứng công nghiệp tỉnh Bắc Ninh."}
             </p>
 
             {/* Search Box */}
@@ -438,7 +437,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                   type="text"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Tìm theo tên doanh nghiệp, mã số thuế (MST), tỉnh thành, ngành nghề..."
+                  placeholder="Tìm theo tên doanh nghiệp, mã số thuế (MST), KCN, ngành sản xuất..."
                   className="w-full h-10 pl-10 pr-4 rounded-control bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm"
                 />
               </div>

@@ -208,7 +208,7 @@ describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
       expect(card3).toHaveTextContent('Tự động gợi ý từ Radar');
 
       // Card 4: needConsulting count = 1
-      const card4 = screen.getByText('Chuyên gia Sở KH&CN').closest('.surface-card');
+      const card4 = screen.getByText('Ban Cố Vấn BACLINK').closest('.surface-card');
       expect(card4).toBeInTheDocument();
       expect(card4).toHaveTextContent('1');
       expect(card4).toHaveTextContent('Nhu cầu đăng ký tư vấn 1-1');
@@ -246,7 +246,7 @@ describe('BuyerDemandsPage Component (/portal/buyer/demands)', () => {
       expect(card3).toHaveTextContent('Chưa kích hoạt ghép nối');
 
       // Card 4: 0, "Chưa đăng ký tư vấn"
-      const card4 = screen.getByText('Chuyên gia Sở KH&CN').closest('.surface-card');
+      const card4 = screen.getByText('Ban Cố Vấn BACLINK').closest('.surface-card');
       expect(card4).toBeInTheDocument();
       expect(card4).toHaveTextContent('0');
       expect(card4).toHaveTextContent('Chưa đăng ký tư vấn');

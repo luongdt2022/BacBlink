@@ -136,11 +136,10 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
 
     render(<HomePage />);
 
-    // 1. Kiểm tra thanh tìm kiếm phẳng và từ khóa gợi ý hiện diện
-    expect(screen.getByPlaceholderText(/Tìm công nghệ, lĩnh vực, đơn vị chuyển giao/i)).toBeInTheDocument();
+    // 1. Kiểm tra thanh tìm kiếm phẳng và danh mục tìm kiếm
+    expect(screen.getByPlaceholderText(/Nhập từ khóa tìm kiếm/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Tìm kiếm/i })).toBeInTheDocument();
-    expect(screen.getByText(/Gợi ý tìm kiếm:/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Sàn Sự Kiện Techmart/i })).toHaveAttribute("href", "/trien-lam");
+    expect(screen.getByRole("combobox", { name: /Chọn danh mục tìm kiếm/i })).toBeInTheDocument();
 
     // 2. Kiểm tra các thẻ Metric Card có link chuyển trang (Không còn là thẻ chết)
     await waitFor(() => {
@@ -156,19 +155,13 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
         "href",
         "/trien-lam"
       );
-      expect(screen.getByRole("link", { name: /Quy mô giao dịch & Ngân sách/i })).toHaveAttribute(
+      expect(screen.getByRole("link", { name: /Quy mô giao dịch/i })).toHaveAttribute(
         "href",
         "/portal/opportunities/pipeline"
       );
     });
 
-    // 3. Kiểm tra Nút Đăng Ký Tư Vấn Thẩm Định có link điều hướng (Không còn nút chết)
-    expect(screen.getByRole("link", { name: /Đăng Ký Tư Vấn Thẩm Định/i })).toHaveAttribute(
-      "href",
-      "/khao-sat-nhu-cau"
-    );
-
-    // 3b. Kiểm tra 4 Card Khảo Sát & Đánh Giá Năng Lực Quốc Gia (TNI, TT17, DN ĐMST, TRL 1-9)
+    // 3. Kiểm tra 4 Card Khảo Sát & Đánh Giá Năng Lực Quốc Gia (TNI, TT17, DN ĐMST, TRL 1-9)
     expect(screen.getByRole("link", { name: /Làm Khảo Sát TNI Ngay/i })).toHaveAttribute(
       "href",
       "/khao-sat-nhu-cau"
@@ -181,30 +174,22 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       "href",
       "/khao-sat-dmst"
     );
-    expect(screen.getByRole("link", { name: /Xem bảng xếp hạng & danh bạ DN/i })).toHaveAttribute(
-      "href",
-      "/doanh-nghiep-dmst"
-    );
-    expect(screen.getByRole("link", { name: /Khám Phá Công Nghệ TRL/i })).toHaveAttribute(
-      "href",
-      "/chao-ban-cong-nghe"
-    );
-
     // 4. KIỂM THỬ TƯƠNG TÁC THỰC: Submit form tìm kiếm phải gọi router.push
-    const searchInput = screen.getByPlaceholderText(/Tìm công nghệ/i);
+    const searchInput = screen.getByPlaceholderText(/Nhập từ khóa tìm kiếm/i);
     fireEvent.change(searchInput, { target: { value: "Robot Laser" } });
     const searchButton = screen.getByRole("button", { name: /Tìm kiếm/i });
     fireEvent.click(searchButton);
 
     expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining("/chao-ban-cong-nghe?q=Robot%20Laser")
+      expect.stringMatching(/\/chao-ban-cong-nghe\?q=Robot(\+|%20)Laser/)
     );
 
-    // 5. KIỂM THỬ TƯƠNG TÁC THỰC: Click từ khóa gợi ý phải gọi router.push
-    const kwButton = screen.getByRole("button", { name: "AI thị giác máy" });
-    fireEvent.click(kwButton);
+    // 5. KIỂM THỬ TƯƠNG TÁC THỰC: Đổi danh mục tìm kiếm sang Nhu cầu và submit form
+    const categorySelect = screen.getByRole("combobox", { name: /Chọn danh mục tìm kiếm/i });
+    fireEvent.change(categorySelect, { target: { value: "nhu-cau" } });
+    fireEvent.click(searchButton);
     expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining("/chao-ban-cong-nghe?q=AI%20th%E1%BB%8B%20gi%C3%A1c%20m%C3%A1y")
+      expect.stringMatching(/\/nhu-cau-cong-nghe\?q=Robot(\+|%20)Laser/)
     );
   });
 

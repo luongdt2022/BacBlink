@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { PROVINCES_34 } from "@/app/khao-sat-nhu-cau/types";
+import { BAC_NINH_LOCATIONS } from "@/lib/constants/provinces";
+
+const DEFAULT_BAC_NINH_LOCATIONS = BAC_NINH_LOCATIONS.filter((l) => l.code !== "ALL").map(
+  (l) => l.name
+);
 
 /**
  * Hàm chuẩn hóa chuỗi tiếng Việt: loại bỏ dấu và ký tự đặc biệt để so khớp không dấu
@@ -22,6 +26,7 @@ export interface SearchableProvinceComboboxProps {
   onChange: (value: string) => void;
   placeholder?: string;
   provinces?: string[];
+  locations?: string[];
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -32,14 +37,16 @@ export interface SearchableProvinceComboboxProps {
 export const SearchableProvinceCombobox: React.FC<SearchableProvinceComboboxProps> = ({
   value = "",
   onChange,
-  placeholder = "Tất cả Tỉnh / Thành phố",
-  provinces = PROVINCES_34,
+  placeholder = "Tất cả Địa bàn / KCN Bắc Ninh",
+  provinces,
+  locations,
   disabled = false,
   className = "",
   id,
   name,
   allowClear = true,
 }) => {
+  const optionsList = locations ?? provinces ?? DEFAULT_BAC_NINH_LOCATIONS;
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -48,20 +55,20 @@ export const SearchableProvinceCombobox: React.FC<SearchableProvinceComboboxProp
   const searchInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  // Lọc danh sách tỉnh thành theo từ khóa tìm kiếm (hỗ trợ cả có dấu và không dấu)
+  // Lọc danh sách địa bàn & KCN theo từ khóa tìm kiếm (hỗ trợ cả có dấu và không dấu)
   const filteredProvinces = useMemo(() => {
     if (!searchTerm.trim()) {
-      return provinces;
+      return optionsList;
     }
     const normalizedTerm = removeVietnameseDiacritics(searchTerm);
-    return provinces.filter((p) => {
+    return optionsList.filter((p) => {
       const normalizedProvince = removeVietnameseDiacritics(p);
       return (
         normalizedProvince.includes(normalizedTerm) ||
         p.toLowerCase().includes(searchTerm.toLowerCase().trim())
       );
     });
-  }, [searchTerm, provinces]);
+  }, [searchTerm, optionsList]);
 
   // Click outside listener để đóng dropdown
   useEffect(() => {
@@ -208,13 +215,13 @@ export const SearchableProvinceCombobox: React.FC<SearchableProvinceComboboxProp
                   setSearchTerm(e.target.value);
                   setHighlightedIndex(0);
                 }}
-                placeholder="Gõ tên tỉnh thành (VD: ha noi, da nang)..."
+                placeholder="Gõ tên địa bàn, KCN (VD: Yen Phong, VSIP, Tu Son)..."
                 className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-slate-800 dark:text-slate-100 placeholder-slate-400"
               />
             </div>
           </div>
 
-          {/* Danh sách các Tỉnh/Thành */}
+          {/* Danh sách Địa bàn & KCN Bắc Ninh */}
           <ul
             ref={listRef}
             role="listbox"
@@ -272,7 +279,7 @@ export const SearchableProvinceCombobox: React.FC<SearchableProvinceComboboxProp
               })
             ) : (
               <li className="px-3 py-4 text-center text-slate-400 dark:text-slate-500 italic text-caption">
-                Không tìm thấy tỉnh thành nào khớp với &quot;{searchTerm}&quot;
+                Không tìm thấy địa bàn hoặc KCN nào khớp với &quot;{searchTerm}&quot;
               </li>
             )}
           </ul>

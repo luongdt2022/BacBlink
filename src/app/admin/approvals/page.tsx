@@ -7,10 +7,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
-  Eye,
-  FileText,
   Search,
-  Filter,
   Clock,
   Building2,
   GraduationCap,
@@ -19,12 +16,8 @@ import {
   ShieldCheck,
   Check,
   X,
-  Zap,
-  AlarmClock,
   RotateCcw,
-  RefreshCw,
   Inbox,
-  AlertTriangle,
   Copy,
 } from "lucide-react";
 import { AppButton } from "@/components/ui/design-system";
@@ -33,14 +26,25 @@ import { API_BASE, readApiError } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
 import { getActiveSectors } from "@/lib/master-data-client";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
-import { PROVINCES_34 } from "@/lib/constants/provinces";
 import {
   resolveProvinceName,
-  resolveRoleName,
   resolveRequestTypeLabel,
   resolveSectorName,
   formatApprovalRecordCode,
 } from "@/lib/label-resolver";
+
+const BACNINH_LOCATIONS = [
+  { code: "ALL", name: "Tất cả địa bàn Bắc Ninh" },
+  { code: "TP_BN", name: "TP. Bắc Ninh" },
+  { code: "TU_SON", name: "TP. Từ Sơn" },
+  { code: "QUE_VO", name: "TX. Quế Võ" },
+  { code: "THUAN_THANH", name: "TX. Thuận Thành" },
+  { code: "YEN_PHONG", name: "Huyện Yên Phong" },
+  { code: "TIEN_DU", name: "Huyện Tiên Du" },
+  { code: "GIA_BINH", name: "Huyện Gia Bình" },
+  { code: "LUONG_TAI", name: "Huyện Lương Tài" },
+  { code: "NGOAI_TINH", name: "Ngoài tỉnh Bắc Ninh" },
+] as const;
 
 interface ApprovalItem {
   id: string;
@@ -203,35 +207,6 @@ function AdminApprovalsContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // 3 high-level navigation tabs: "all" | "sla" | "override" reactively synchronized with URL
-  const tabParam = searchParams.get("tab")?.toLowerCase();
-  const derivedTab = useMemo<"all" | "sla" | "override">(() => {
-    if (tabParam === "sla" || tabParam === "override") return tabParam;
-    return "all";
-  }, [tabParam]);
-
-  const [navTab, setNavTab] = useState<"all" | "sla" | "override">(derivedTab);
-
-  useEffect(() => {
-    setNavTab(derivedTab);
-  }, [derivedTab]);
-
-  const handleSwitchNavTab = useCallback(
-    (tab: "all" | "sla" | "override") => {
-      setNavTab(tab);
-      const params = new URLSearchParams(searchParams.toString());
-      if (tab === "all") {
-        params.delete("tab");
-      } else {
-        params.set("tab", tab);
-      }
-      params.set("page", "1");
-      const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-    },
-    [router, searchParams, pathname]
-  );
-
   // Type filter & Category tabs
   const [activeTypeTab, setActiveTypeTab] = useState<"ALL" | "SHOP" | "DEMAND" | "EXPERT" | "ACCOUNT" | "FACILITY">("ALL");
 
@@ -261,7 +236,6 @@ function AdminApprovalsContent() {
     },
     [router, searchParams, pathname]
   );
-  const [slaFilter, setSlaFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -349,106 +323,6 @@ function AdminApprovalsContent() {
       .map((code) => resolveSectorName(code, sectorNames))
       .join(", ") || "Chưa khai báo lĩnh vực";
 
-  // Modal: Admin Override
-  const [overrideModal, setOverrideModal] = useState<{
-    isOpen: boolean;
-    item: ApprovalItem | null;
-    reason: string;
-    committed: boolean;
-    error: string;
-  }>({
-    isOpen: false,
-    item: null,
-    reason: "",
-    committed: false,
-    error: "",
-  });
-
-  const openOverrideModal = (item: ApprovalItem) => {
-    setOverrideModal({
-      isOpen: true,
-      item,
-      reason: "",
-      committed: false,
-      error: "",
-    });
-  };
-
-  const closeOverrideModal = () => {
-    setOverrideModal({
-      isOpen: false,
-      item: null,
-      reason: "",
-      committed: false,
-      error: "",
-    });
-  };
-
-  const submitOverride = async () => {
-    if (!overrideModal.item) return;
-    const reasonTrimmed = overrideModal.reason.trim();
-    if (reasonTrimmed.length < 20) {
-      setOverrideModal((m) => ({ ...m, error: "Vui lòng nhập lý do giải trình tối thiểu 20 ký tự." }));
-      return;
-    }
-    if (!overrideModal.committed) {
-      setOverrideModal((m) => ({ ...m, error: "Bạn bắt buộc phải đánh dấu cam kết trách nhiệm công vụ." }));
-      return;
-    }
-
-    const item = overrideModal.item;
-    setSaving(true);
-    setUpdatingRowId(item.id);
-    setOverrideModal((m) => ({ ...m, error: "" }));
-
-    try {
-      const response = await fetch(`${API_BASE}/api/v1/admin/approvals/${item.id}/override`, {
-        method: "POST",
-        headers: authClient.getAuthHeaders(),
-        body: JSON.stringify({
-          overrideReason: reasonTrimmed,
-          confirmCommitment: true,
-          expectedVersion: item.version,
-        }),
-      });
-
-      if (response.status === 409) {
-        showToast("Hồ sơ đã được xử lý bởi phiên làm việc khác.");
-        closeOverrideModal();
-        void loadApprovals();
-        return;
-      }
-
-      if (!response.ok) {
-        const errorText = await readApiError(response, "Không thể thực hiện phê duyệt can thiệp.");
-        setOverrideModal((m) => ({ ...m, error: errorText }));
-        return;
-      }
-
-      // Success
-      setApprovals((prev) =>
-        prev.map((i) =>
-          i.id === item.id
-            ? { ...i, status: "APPROVED", isOverride: true, overrideReason: reasonTrimmed, version: i.version + 1 }
-            : i
-        )
-      );
-
-      closeOverrideModal();
-      showToast(
-        `Đã thực thi Duyệt Can Thiệp Vượt Cấp thành công cho hồ sơ ${item.id}! Thông báo đã được gửi về Sở KH&CN và lưu vết Audit Log bất biến.`
-      );
-    } catch (err) {
-      setOverrideModal((m) => ({
-        ...m,
-        error: err instanceof Error ? err.message : "Lỗi kết nối khi gửi yêu cầu can thiệp.",
-      }));
-    } finally {
-      setSaving(false);
-      setUpdatingRowId(null);
-    }
-  };
-
   // Modal: Regular review (Reject / Request Changes / Revoke)
   const [actionModal, setActionModal] = useState<{
     isOpen: boolean;
@@ -513,17 +387,13 @@ function AdminApprovalsContent() {
     }
   };
 
-  // Filter items in memory based on high-level navTab and filters
+  // Filter items in memory based on category tabs and filters
   const filteredItems = useMemo(() => {
     return approvals.filter((item) => {
-      // 1. High-level tab
-      if (navTab === "sla" && !item.isSlaBreached) return false;
-      if (navTab === "override" && !item.isOverride && !item.isSlaBreached) return false;
-
-      // 2. Type category tab
+      // 1. Type category tab
       if (activeTypeTab !== "ALL" && item.type !== activeTypeTab) return false;
 
-      // 3. Province filter
+      // 2. Location filter
       if (provinceFilter !== "ALL") {
         const matchesProv =
           item.province?.toLowerCase() === provinceFilter.toLowerCase() ||
@@ -531,14 +401,10 @@ function AdminApprovalsContent() {
         if (!matchesProv) return false;
       }
 
-      // 4. SLA status filter
-      if (slaFilter === "SLA_BREACHED" && !item.isSlaBreached) return false;
-      if (slaFilter === "SLA_NORMAL" && item.isSlaBreached) return false;
-
-      // 5. Status filter
+      // 3. Status filter
       if (statusFilter !== "ALL" && item.status !== statusFilter) return false;
 
-      // 6. Search query
+      // 4. Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchName = item.submitterName?.toLowerCase().includes(q);
@@ -551,12 +417,11 @@ function AdminApprovalsContent() {
 
       return true;
     });
-  }, [approvals, navTab, activeTypeTab, provinceFilter, slaFilter, statusFilter, searchQuery]);
+  }, [approvals, activeTypeTab, provinceFilter, statusFilter, searchQuery]);
 
   const resetFilters = useCallback(() => {
     setActiveTypeTab("ALL");
     setProvinceFilter("ALL");
-    setSlaFilter("ALL");
     setStatusFilter("ALL");
     setSearchQuery("");
     setPage(1);
@@ -569,9 +434,7 @@ function AdminApprovalsContent() {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }, [router, searchParams, pathname]);
 
-  const slaBreachedCount = approvals.filter((a) => a.isSlaBreached).length;
   const pendingCount = approvals.filter((a) => a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW").length;
-  const overrideCount = approvals.filter((a) => a.isOverride).length;
 
   return (
     <div className="w-full space-y-5">
@@ -580,7 +443,7 @@ function AdminApprovalsContent() {
         items={[
           { label: "Trang chủ", href: "/" },
           { label: "Quản Trị Hệ Thống", href: "/admin" },
-          { label: "Hàng Đợi Phê Duyệt Toàn Quốc" },
+          { label: "Hàng Đợi Phê Duyệt BACLINK" },
         ]}
       />
 
@@ -598,14 +461,11 @@ function AdminApprovalsContent() {
       {/* Banner & Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-xs font-bold border border-rose-300 dark:border-rose-800 mb-2">
-            <span>CR-2026-021 DELTA V5: TRUNG TÂM PHÊ DUYỆT TOÀN QUỐC & GIÁM SÁT 34 TỈNH/THÀNH PHỐ TRỌNG ĐIỂM ĐMST</span>
-          </div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Trung Tâm Phê Duyệt Tập Trung & Giám Sát SLA
+            Trung Tâm Phê Duyệt Hồ Sơ BACLINK (1 Cấp)
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            <span>Hàng Đợi Phê Duyệt & Thẩm Định Hồ Sơ Phân Cấp</span> · Quản trị và hỗ trợ phê duyệt hồ sơ 34 tỉnh/thành trọng điểm toàn quốc.
+            Ban Quản trị Hiệp hội (ADMIN) thẩm định và phê duyệt trực tiếp 1 cấp cho Doanh nghiệp Hội viên, Sản phẩm và Nhu cầu đặt hàng.
           </p>
         </div>
 
@@ -617,50 +477,8 @@ function AdminApprovalsContent() {
         </div>
       </div>
 
-      {/* 3 Tabs Điều Hướng Nhanh Chuẩn Wireframe */}
+      {/* Category Sub-Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => handleSwitchNavTab("all")}
-            className={`px-3.5 py-2 rounded-lg transition font-bold ${
-              navTab === "all"
-                ? "bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-xs"
-                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            Tất cả hàng đợi ({approvals.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSwitchNavTab("sla")}
-            className={`px-3.5 py-2 rounded-lg transition font-bold flex items-center gap-1.5 ${
-              navTab === "sla"
-                ? "bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-xs"
-                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <AlarmClock className="w-3.5 h-3.5 text-rose-500" />
-            <span>Cảnh báo SLA</span>
-            <span className="px-1.5 py-0.2 rounded-full text-xs font-bold bg-rose-500 text-white">
-              {slaBreachedCount}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSwitchNavTab("override")}
-            className={`px-3.5 py-2 rounded-lg transition font-bold flex items-center gap-1.5 ${
-              navTab === "override"
-                ? "bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-xs"
-                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-            }`}
-          >
-            <Zap className="w-3.5 h-3.5 text-amber-500" />
-            <span>Duyệt can thiệp ({overrideCount})</span>
-          </button>
-        </div>
-
-        {/* 5 Category Sub-Tabs with data-testids for regression compatibility */}
         <div className="flex flex-wrap gap-1">
           {[
             { key: "ALL", label: "Tất cả", count: approvals.filter((a) => a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW").length },
@@ -698,7 +516,7 @@ function AdminApprovalsContent() {
         </div>
       </div>
 
-      {/* BỘ LỌC ĐA CHIỀU (Tìm Kiếm Đa Năng & 34 Tỉnh/Thành ĐMST - T095) */}
+      {/* Bộ lọc tìm kiếm & Địa bàn Bắc Ninh */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
           <div className="md:col-span-2">
@@ -710,7 +528,7 @@ function AdminApprovalsContent() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm kiếm nhanh theo Tên chuyên gia, Đơn vị viện trường, Email, Mã hồ sơ..."
+                placeholder="Tìm kiếm nhanh theo Tên doanh nghiệp, Email, Mã hồ sơ..."
                 className="form-control-sm w-full pl-8 pr-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -719,23 +537,23 @@ function AdminApprovalsContent() {
 
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-              Địa phương (34 Tỉnh/Thành phố trọng điểm ĐMST)
+              Địa bàn Bắc Ninh
             </label>
             <select
               value={provinceFilter}
               onChange={(e) => handleProvinceChange(e.target.value)}
               className="form-control-sm w-full rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"
             >
-              {PROVINCES_34.map((prov) => (
-                <option key={prov.code} value={prov.code}>
-                  {prov.name}
+              {BACNINH_LOCATIONS.map((loc) => (
+                <option key={loc.code} value={loc.code}>
+                  {loc.name}
                 </option>
               ))}
             </select>
           </div>
         </div>
 
-        {(provinceFilter !== "ALL" || activeTypeTab !== "ALL" || slaFilter !== "ALL" || searchQuery.trim() !== "") && (
+        {(provinceFilter !== "ALL" || activeTypeTab !== "ALL" || searchQuery.trim() !== "") && (
           <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <span className="text-xs text-slate-500 dark:text-slate-400">
               Đang áp dụng bộ lọc tùy chỉnh
@@ -782,7 +600,7 @@ function AdminApprovalsContent() {
               Không tìm thấy hồ sơ nào phù hợp bộ lọc
             </h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Không có hồ sơ nào trong hàng đợi của 34 Tỉnh/Thành phố trọng điểm ĐMST theo tiêu chí đã chọn.
+              Không có hồ sơ nào trong hàng đợi phê duyệt BACLINK theo tiêu chí đã chọn.
             </p>
             <button
               type="button"
@@ -809,9 +627,9 @@ function AdminApprovalsContent() {
                     <th className="p-3 whitespace-nowrap">Mã HS</th>
                     <th className="p-3 whitespace-nowrap">Loại Hồ Sơ</th>
                     <th className="p-3">Chủ Thể Nộp / Đơn Vị</th>
-                    <th className="p-3 whitespace-nowrap">Địa Phương Sở KH&CN</th>
-                    <th className="p-3 whitespace-nowrap">Ngày Gửi & Thời Gian</th>
-                    <th className="p-3 whitespace-nowrap">Trạng Thái SLA</th>
+                    <th className="p-3 whitespace-nowrap">Địa Bàn / KCN</th>
+                    <th className="p-3 whitespace-nowrap">Ngày Gửi</th>
+                    <th className="p-3 whitespace-nowrap">Trạng Thái</th>
                     <th className="p-3 text-right whitespace-nowrap">Thao Tác</th>
                   </tr>
                 </thead>
@@ -880,30 +698,15 @@ function AdminApprovalsContent() {
                         </td>
 
                         <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                          {item.provinceName || (item.province ? resolveProvinceName(item.province) : "Sở KH&CN TP. Hà Nội")}
+                          {item.provinceName || (item.province ? resolveProvinceName(item.province) : "Bắc Ninh")}
                         </td>
 
                         <td className="p-3 text-slate-500 whitespace-nowrap">
                           <div>{item.submittedAt}</div>
-                          {item.isSlaBreached && (
-                            <div className="text-xs text-rose-500 font-bold">
-                              Trễ {item.slaOverdueHours || 4}h (&gt; 72h SLA)
-                            </div>
-                          )}
                         </td>
 
                         <td className="p-3 whitespace-nowrap">
-                          {item.isOverride ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              ĐÃ DUYỆT CAN THIỆP
-                            </span>
-                          ) : item.isSlaBreached ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                              SLA_BREACHED (+{item.slaOverdueHours || 4}h)
-                            </span>
-                          ) : item.status === "APPROVED" ? (
+                          {item.status === "APPROVED" ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                               ĐÃ DUYỆT
@@ -917,9 +720,8 @@ function AdminApprovalsContent() {
                               TỪ CHỐI
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                              SLA_NORMAL
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                              CHỜ DUYỆT 1 CẤP
                             </span>
                           )}
                         </td>
@@ -935,19 +737,6 @@ function AdminApprovalsContent() {
                           >
                             Thẩm Định
                           </button>
-                          {item.status !== "APPROVED" && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openOverrideModal(item);
-                              }}
-                              className="px-2.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition shadow-xs inline-flex items-center gap-1 text-xs"
-                            >
-                              <Zap className="w-3 h-3" />
-                              <span>Duyệt Thay / Can Thiệp</span>
-                            </button>
-                          )}
                         </td>
                       </tr>
                     );
@@ -1056,7 +845,7 @@ function AdminApprovalsContent() {
                         <div>
                           <span className="text-slate-500 block">Mã số thuế:</span>
                           <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
-                            {selectedItem.taxCode || "0108992134"}
+                            {selectedItem.taxCode || "Chưa khai báo"}
                           </span>
                         </div>
                         <div>
@@ -1068,7 +857,7 @@ function AdminApprovalsContent() {
                         <div>
                           <span className="text-slate-500 block">Vốn điều lệ:</span>
                           <span className="font-semibold text-slate-900 dark:text-slate-100">
-                            {selectedItem.charterCapital || "50 Tỷ VNĐ"}
+                            {selectedItem.charterCapital || "Chưa khai báo"}
                           </span>
                         </div>
                         <div>
@@ -1079,8 +868,8 @@ function AdminApprovalsContent() {
                         </div>
                       </div>
                       <div className="pt-1.5 border-t border-brand-200/60 dark:border-brand-800 flex items-center justify-between text-xs">
-                        <span className="text-slate-600 dark:text-slate-400">Chứng nhận ĐMST Sở KH&CN:</span>
-                        <span className="font-bold text-brand-700 dark:text-cyan-300">Hợp lệ (Còn hạn)</span>
+                        <span className="text-slate-600 dark:text-slate-400">Hồ sơ Hội viên BACLINK:</span>
+                        <span className="font-bold text-brand-700 dark:text-cyan-300">Chờ duyệt 1 cấp</span>
                       </div>
                     </div>
                   )}
@@ -1106,16 +895,6 @@ function AdminApprovalsContent() {
                         <span>Phê duyệt hồ sơ</span>
                       </AppButton>
 
-                      <button
-                        type="button"
-                        disabled={saving}
-                        onClick={() => openOverrideModal(selectedItem)}
-                        className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs text-xs"
-                      >
-                        <Zap className="w-4 h-4" />
-                        <span>Duyệt Thay / Can Thiệp Tối Cao</span>
-                      </button>
-
                       <div className="grid grid-cols-2 gap-2 pt-1">
                         <button
                           type="button"
@@ -1140,18 +919,13 @@ function AdminApprovalsContent() {
                         <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200 block">
                           Hồ sơ đã được phê duyệt chính thức
                         </span>
-                        {selectedItem.isOverride && (
-                          <p className="text-xs text-rose-600 font-bold mt-1">
-                            (Đã can thiệp vượt cấp bởi Quản trị viên Trung ương)
-                          </p>
-                        )}
                       </div>
 
-                      {authClient.hasRole(["SUPER_ADMIN", "OPERATOR_ADMIN"]) && (
+                      {authClient.hasRole(["ADMIN", "SUPER_ADMIN", "OPERATOR_ADMIN"]) && (
                         <div className="p-3 bg-rose-50/60 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-900/60 space-y-2">
                           <div className="flex items-center gap-1.5 text-xs font-bold text-rose-800 dark:text-rose-300">
                             <ShieldCheck className="w-4 h-4 text-rose-600" />
-                            <span>Hậu kiểm trung ương</span>
+                            <span>Hậu kiểm Ban Quản trị</span>
                           </div>
                           <AppButton
                             variant="danger"
@@ -1177,145 +951,6 @@ function AdminApprovalsContent() {
           </div>
         </div>
       </Async>
-
-      {/* MODAL: DUYỆT CAN THIỆP / VƯỢT CẤP (ADMIN OVERRIDE) - T051 */}
-      {overrideModal.isOpen && overrideModal.item && (
-        <div
-          id="modal-override"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 border border-rose-300 dark:border-rose-800">
-                  <Zap className="w-6 h-6 text-rose-600" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white">
-                    Duyệt Can Thiệp / Vượt Cấp (Admin Override)
-                  </h3>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 uppercase tracking-wider">
-                    Thẩm quyền Tối cao Tầng 0 · Nghị định 85/2016
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={closeOverrideModal}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 text-lg font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Summary */}
-            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-bold">Mã hồ sơ:</span>
-                <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
-                  {overrideModal.item.id}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-bold">Loại hồ sơ & Chủ thể:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {overrideModal.item.type} · {overrideModal.item.submitterName}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-bold">Địa phương sở tại:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {overrideModal.item.provinceName || overrideModal.item.province || "Sở KH&CN TP. Hà Nội"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500 font-bold">Tình trạng SLA:</span>
-                <span className="text-rose-600 font-bold">
-                  {overrideModal.item.isSlaBreached
-                    ? `Quá hạn ${overrideModal.item.slaOverdueHours || 4}h (SLA chuẩn 72h)`
-                    : "Đang trong hạn xử lý (Duyệt khẩn cấp)"}
-                </span>
-              </div>
-            </div>
-
-            {/* Form */}
-            <div className="space-y-4 text-xs">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label htmlFor="override-reason" className="font-bold text-slate-900 dark:text-white">
-                    Lý do giải trình can thiệp duyệt vượt cấp *{" "}
-                    <span className="text-rose-500 font-normal">(Tối thiểu 20 ký tự để lưu vết Audit Log)</span>
-                  </label>
-                  <span
-                    id="char-counter"
-                    className={`text-xs font-mono font-bold ${
-                      overrideModal.reason.trim().length >= 20 ? "text-emerald-500" : "text-rose-500"
-                    }`}
-                  >
-                    {overrideModal.reason.trim().length} / 20 ký tự
-                  </span>
-                </div>
-                <textarea
-                  id="override-reason"
-                  rows={4}
-                  value={overrideModal.reason}
-                  onChange={(e) => setOverrideModal({ ...overrideModal, reason: e.target.value })}
-                  placeholder="Nhập lý do cụ thể (Ví dụ: Hồ sơ đã quá hạn SLA cấp Sở 76h; Sở KH&CN chưa phân công xử lý; Super Admin can thiệp duyệt thay phục vụ tiến độ Hội chợ TechConnect Quốc gia...)"
-                  className="w-full p-3 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition"
-                />
-                {overrideModal.error && (
-                  <p id="reason-error" className="text-xs text-rose-500 font-bold mt-1">
-                    {overrideModal.error}
-                  </p>
-                )}
-              </div>
-
-              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 space-y-2">
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    id="override-commit"
-                    checked={overrideModal.committed}
-                    onChange={(e) => setOverrideModal({ ...overrideModal, committed: e.target.checked })}
-                    className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
-                  />
-                  <span className="text-xs leading-relaxed text-amber-900 dark:text-amber-200 font-medium">
-                    <strong>Cam kết trách nhiệm:</strong> Tôi xác nhận thực hiện phê duyệt can thiệp vượt cấp thay cho Sở KH&CN và chịu trách nhiệm công vụ trước Bộ KH&CN.
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={closeOverrideModal}
-                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs"
-              >
-                Đóng / Hủy Bỏ
-              </button>
-              <button
-                type="button"
-                id="btn-submit-override"
-                disabled={overrideModal.reason.trim().length < 20 || !overrideModal.committed || saving}
-                onClick={submitOverride}
-                className={`px-5 py-2 rounded-xl font-bold transition text-xs shadow-md inline-flex items-center gap-1.5 ${
-                  overrideModal.reason.trim().length >= 20 && overrideModal.committed && !saving
-                    ? "bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
-                    : "bg-rose-600 text-white opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Xác Nhận Duyệt Can Thiệp</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Action Modal (Reject / Request Changes / Revoke) */}
       {actionModal.isOpen && actionModal.item && (

@@ -341,14 +341,13 @@ export default function PublicDemandsPage() {
           <div className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-              Sàn Giao Dịch Bài Toán & Nhu Cầu Đổi Mới Công Nghệ (NacenTwin)
+              Bảng Nhu Cầu Mua, Đặt Hàng Gia Công & Tìm Nhà Cung Ứng (BACLINK)
             </div>
             <h1 className="type-page-title text-white">
-              Nhu Cầu Đổi Mới Công Nghệ Từ Doanh Nghiệp
+              Nhu Cầu Đặt Hàng Gia Công & Linh Kiện Bắc Ninh
             </h1>
             <p className="text-white/85 type-body max-w-xl">
-              Các bài toán kỹ thuật thực tế từ các DNNVV đã được chuẩn hóa chỉ số cấp thiết TNI (Technology Need Index).
-              Hỗ trợ kết nối nhà khoa học, viện trường và doanh nghiệp công nghệ giải quyết điểm nghẽn sản xuất.
+              Các bài toán đặt hàng gia công, linh kiện phụ trợ và nâng cấp công nghệ từ các nhà máy, tập đoàn FDI trên địa bàn tỉnh Bắc Ninh được Hiệp hội BACLINK bảo chứng.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -357,7 +356,7 @@ export default function PublicDemandsPage() {
                 className="bg-white/10 hover:bg-white/20 border border-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 backdrop-blur-sm shadow-xs"
               >
                 <ClipboardCheck className="w-4 h-4 text-white/80" />
-                Phiếu Khảo Sát DNNVV
+                Phiếu Đặt Hàng Gia Công
               </Link>
               <button
                 onClick={handleOpenQuickDemand}
@@ -682,7 +681,7 @@ export default function PublicDemandsPage() {
                             <span>
                               Doanh nghiệp:{" "}
                               <strong className="text-slate-700 dark:text-slate-200 font-semibold">
-                                [DN {sectorShortName} - {item.province || "Hà Nội"}]
+                                [DN {sectorShortName} - {item.province || "Bắc Ninh"}]
                               </strong>{" "}
                               <span className="text-slate-400 text-xs font-medium">(PDPD Masked)</span>
                             </span>

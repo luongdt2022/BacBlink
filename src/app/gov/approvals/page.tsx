@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import GovApprovalQueue from "@/components/gov/gov-approval-queue";
+import { DeprecatedRouteNotice } from "@/components/common/deprecated-route-notice";
 
-export default function GovApprovalsPage() {
-  return <GovApprovalQueue />;
+export default function GovApprovalsRetiredPage() {
+  return <DeprecatedRouteNotice />;
 }

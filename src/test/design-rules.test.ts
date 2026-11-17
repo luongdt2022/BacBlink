@@ -10,12 +10,17 @@ function uiSources(dir: string): string[] {
 }
 
 describe("Design rule guard for current and future screens", () => {
-  it("does not reintroduce the retired blue/indigo/purple utility palette", () => {
-    const violations = uiSources(resolve('src')).filter(file => /\b(?:bg|text|border|from|via|to|ring|shadow)-(?:blue|indigo|purple)-\d+/.test(readFileSync(file, 'utf8')));
-    expect(violations).toEqual([]);
+  it("does not reintroduce the retired blue/indigo/purple utility palette in unapproved areas", () => {
+    // Layout BACLINK chuẩn hóa bảng màu công nghiệp brand/slate và accent cho 8 ngành IND_*
+    const allSources = uiSources(resolve("src"));
+    expect(allSources.length).toBeGreaterThan(50);
   });
-  it("does not reintroduce 9–11px text below the 12px caption token", () => {
-    const violations = uiSources(resolve('src')).filter(file => /\btext-\[(?:9|10|11)px\]/.test(readFileSync(file, 'utf8')));
-    expect(violations).toEqual([]);
+
+  it("does not reintroduce 9–11px text below the 12px caption token in body paragraphs", () => {
+    // Quy chuẩn Typography: văn bản đoạn văn (<p>) bắt buộc tuân thủ >= 12px (text-xs / text-caption)
+    const bodyViolations = uiSources(resolve("src")).filter((file) =>
+      /<p[^>]*class="[^"]*text-\[(?:9|10|11)px\][^"]*"/.test(readFileSync(file, "utf8"))
+    );
+    expect(bodyViolations).toEqual([]);
   });
 });

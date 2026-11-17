@@ -53,8 +53,8 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
 
     // 4 Group Headers
     expect(screen.getByText("1. Trung Tâm Điều Hành")).toBeInTheDocument();
-    expect(screen.getByText("2. Phê Duyệt Toàn Quốc")).toBeInTheDocument();
-    expect(screen.getByText("3. Quản Trị Danh Mục & Cơ Cấu")).toBeInTheDocument();
+    expect(screen.getByText("2. Phê Duyệt Hồ Sơ")).toBeInTheDocument();
+    expect(screen.getByText("3. Quản Trị Danh Mục & Phân Quyền")).toBeInTheDocument();
     expect(screen.getByText("4. Giám Sát & Vận Hành")).toBeInTheDocument();
 
     // Badges đã được gỡ bỏ hoàn toàn theo yêu cầu tối giản đồng bộ Workspace
@@ -66,7 +66,7 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     expect(screen.getByText("NĐ 85/2016")).toBeInTheDocument();
   });
 
-  it("renders all 8 critical navigation links with correct destinations", () => {
+  it("renders BACLINK 1-level admin navigation links and excludes /admin/org-tree, SLA, and override links", () => {
     mockPathname = "/admin";
     render(
       <AdminLayout>
@@ -74,17 +74,19 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
       </AdminLayout>
     );
 
-    // 8 links
     expect(screen.getByRole("link", { name: /Tổng quan hệ thống/i })).toHaveAttribute("href", "/admin");
     expect(screen.getByRole("link", { name: /Phiếu thu thập & đánh giá DN/i })).toHaveAttribute("href", "/admin/assessments/records");
     expect(screen.getByRole("link", { name: /Hàng đợi phê duyệt/i })).toHaveAttribute("href", "/admin/approvals");
-    expect(screen.getByRole("link", { name: /Cảnh báo quá hạn SLA/i })).toHaveAttribute("href", "/admin/approvals?tab=sla");
-    expect(screen.getByRole("link", { name: /Phê duyệt vượt cấp/i })).toHaveAttribute("href", "/admin/approvals?tab=override");
     expect(screen.getByRole("link", { name: /Phân quyền \(RBAC\)/i })).toHaveAttribute("href", "/admin/roles");
-    expect(screen.getByRole("link", { name: /Cơ cấu 34 tỉnh\/thành/i })).toHaveAttribute("href", "/admin/org-tree");
-    expect(screen.getByRole("link", { name: /Lĩnh vực TT17 & TRL/i })).toHaveAttribute("href", "/admin/sectors");
+    expect(screen.getByRole("link", { name: /Lĩnh vực & Chỉ số TRL/i })).toHaveAttribute("href", "/admin/sectors");
     expect(screen.getByRole("link", { name: /Nhật ký kiểm toán/i })).toHaveAttribute("href", "/admin/audit-logs");
     expect(screen.getByRole("link", { name: /Cấu hình hệ thống/i })).toHaveAttribute("href", "/admin/system-config");
+
+    expect(screen.queryByRole("link", { name: /Cơ cấu 34 tỉnh/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Cảnh báo quá hạn SLA/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Phê duyệt vượt cấp/i })).not.toBeInTheDocument();
+    expect(document.querySelector('a[href*="/admin/org-tree"]')).toBeNull();
+    expect(document.querySelector('a[href*="/gov"]')).toBeNull();
   });
 
   it("removes distracting badges (SLA 72h, Tầng 0, 34 Tỉnh, Bản ghi DN) to ensure clean typography", () => {
@@ -112,7 +114,7 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
       </AdminLayout>
     );
 
-    const searchInput = screen.getByPlaceholderText("Tìm nhanh tác vụ (RBAC, SLA, Tỉnh...)");
+    const searchInput = screen.getByPlaceholderText("Tìm nhanh tác vụ (RBAC, Duyệt, Lĩnh vực...)");
 
     // Search for "RBAC"
     fireEvent.change(searchInput, { target: { value: "RBAC" } });
@@ -172,48 +174,21 @@ describe("CR-2026-029 [Wave 2] AdminLayout Route Loading & SearchParams Sync", (
     expect(skeleton).toHaveAttribute("aria-busy", "true");
   });
 
-  it("synchronizes active item for /admin/approvals, ?tab=sla, and ?tab=override via useSearchParams()", () => {
+  it("highlights /admin/approvals when active", () => {
     mockPathname = "/admin/approvals";
     mockSearch = "";
 
-    const { rerender } = render(
+    render(
       <AdminLayout>
         <div>Approvals Content</div>
       </AdminLayout>
     );
 
     const queueLink = screen.getByRole("link", { name: /Hàng đợi phê duyệt/i });
-    const slaLink = screen.getByRole("link", { name: /Cảnh báo quá hạn SLA/i });
-    const overrideLink = screen.getByRole("link", { name: /Phê duyệt vượt cấp/i });
-
     expect(queueLink.className).toContain("bg-brand-700");
-    expect(slaLink.className).not.toContain("bg-brand-700");
-    expect(overrideLink.className).not.toContain("bg-brand-700");
-
-    mockSearch = "tab=sla";
-    rerender(
-      <AdminLayout>
-        <div>SLA Content</div>
-      </AdminLayout>
-    );
-
-    expect(slaLink.className).toContain("bg-brand-700");
-    expect(queueLink.className).not.toContain("bg-brand-700");
-    expect(overrideLink.className).not.toContain("bg-brand-700");
-
-    mockSearch = "tab=override";
-    rerender(
-      <AdminLayout>
-        <div>Override Content</div>
-      </AdminLayout>
-    );
-
-    expect(overrideLink.className).toContain("bg-brand-700");
-    expect(queueLink.className).not.toContain("bg-brand-700");
-    expect(slaLink.className).not.toContain("bg-brand-700");
   });
 
-  it("shows admin-route-skeleton and optimistic active item immediately on navigating to another route/tab, then clears when route updates", () => {
+  it("shows admin-route-skeleton and optimistic active item immediately on navigating to another route, then clears when route updates", () => {
     mockPathname = "/admin";
     mockSearch = "";
 
@@ -249,56 +224,29 @@ describe("CR-2026-029 [Wave 2] AdminLayout Route Loading & SearchParams Sync", (
     expect(usersLink.className).toContain("bg-brand-700");
   });
 
-  it("shows skeleton when switching between /admin/approvals and ?tab=sla and clears when searchParams changes", () => {
+  it("does NOT show skeleton when clicking the exact current route or holding modifier keys (ctrlKey/metaKey)", () => {
     mockPathname = "/admin/approvals";
     mockSearch = "";
 
-    const { rerender } = render(
+    render(
       <AdminLayout>
         <div>All Approvals</div>
       </AdminLayout>
     );
 
-    const slaLink = screen.getByRole("link", { name: /Cảnh báo quá hạn SLA/i });
-    fireEvent.click(slaLink);
-
-    expect(screen.getByTestId("admin-route-skeleton")).toBeInTheDocument();
-    expect(slaLink.className).toContain("bg-brand-700");
-
-    mockSearch = "tab=sla";
-    rerender(
-      <AdminLayout>
-        <div>SLA Approvals</div>
-      </AdminLayout>
-    );
-
-    expect(screen.queryByTestId("admin-route-skeleton")).toBeNull();
-    expect(screen.getByText("SLA Approvals")).toBeInTheDocument();
-  });
-
-  it("does NOT show skeleton when clicking the exact current route/tab or holding modifier keys (ctrlKey/metaKey)", () => {
-    mockPathname = "/admin/approvals";
-    mockSearch = "tab=sla";
-
-    render(
-      <AdminLayout>
-        <div>SLA Approvals</div>
-      </AdminLayout>
-    );
-
-    const slaLink = screen.getByRole("link", { name: /Cảnh báo quá hạn SLA/i });
+    const queueLink = screen.getByRole("link", { name: /Hàng đợi phê duyệt/i });
     const usersLink = screen.getByRole("link", { name: /Quản lý người dùng/i });
 
-    // Same route+tab
-    fireEvent.click(slaLink);
+    // Same route
+    fireEvent.click(queueLink);
     expect(screen.queryByTestId("admin-route-skeleton")).toBeNull();
-    expect(screen.getByText("SLA Approvals")).toBeInTheDocument();
+    expect(screen.getByText("All Approvals")).toBeInTheDocument();
 
     // Ctrl+click / Meta+click
     fireEvent.click(usersLink, { ctrlKey: true });
     fireEvent.click(usersLink, { metaKey: true });
     expect(screen.queryByTestId("admin-route-skeleton")).toBeNull();
-    expect(screen.getByText("SLA Approvals")).toBeInTheDocument();
+    expect(screen.getByText("All Approvals")).toBeInTheDocument();
   });
 
   it("auto-clears pending skeleton after 12s fail-safe timeout if navigation never completes", () => {

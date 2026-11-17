@@ -210,8 +210,8 @@ export function Navbar() {
       children: [
         {
           href: "/gioi-thieu",
-          label: "Về Viện NacenTech & NacenTwin",
-          description: "Tầm nhìn, sứ mệnh & mạng lưới chuyển giao công nghệ Quốc gia",
+          label: "Về Hiệp hội BACLINK",
+          description: "Quyết định 1652/QĐ-UBND, tôn chỉ & mạng lưới công nghiệp Bắc Ninh",
           icon: BookOpen,
         },
         {
@@ -419,18 +419,16 @@ export function Navbar() {
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#3C5999]/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-[72px] items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ NacenTwin">
-              <img
-                src="/NACENTECH_Main-Logo-G.png"
-                alt="NacenTech Emblem"
-                className="h-10 w-auto object-contain bg-white/10 rounded-lg p-1 backdrop-blur-xs"
-              />
+            <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ BACLINK">
+              <div className="size-10 rounded-lg bg-white/20 text-white font-black text-xl flex items-center justify-center shadow-inner border border-white/30 shrink-0">
+                B
+              </div>
               <div className="flex flex-col text-left">
                 <span className="text-base font-extrabold tracking-tight text-white leading-none">
-                  NacenTwin
+                  BACLINK
                 </span>
                 <span className="mt-1 text-xs font-medium leading-tight text-white/80">
-                  Viện Đổi Mới Sáng Tạo Quốc Gia · Bộ Khoa Học & Công Nghệ
+                  Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
                 </span>
               </div>
             </Link>
@@ -443,21 +441,19 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#3C5999]/95 backdrop-blur-md transition-all duration-200 shadow-md dark:border-slate-800 dark:bg-slate-950/95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-[72px] items-center justify-between gap-2 xl:gap-4 lg:-translate-x-8 xl:-translate-x-12">
-            {/* Brand Logo with Official NacenTech Logo */}
-            <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ NacenTwin">
-              <img
-                src="/NACENTECH_Main-Logo-G.png"
-                alt="NacenTech Emblem"
-                className="h-10 w-auto object-contain bg-white/10 rounded-lg p-1 backdrop-blur-xs"
-              />
+        <div className="max-w-full 2xl:max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+          <div className="flex h-[72px] items-center justify-between gap-1 xl:gap-3">
+            {/* Brand Logo BACLINK */}
+            <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ BACLINK">
+              <div className="size-10 rounded-lg bg-white/20 text-white font-black text-xl flex items-center justify-center shadow-inner border border-white/30 shrink-0">
+                B
+              </div>
               <div className="flex flex-col text-left">
                 <span className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
-                  NacenTwin
+                  BACLINK
                 </span>
                 <span className="mt-1 hidden text-[11px] font-medium leading-none text-white/80 2xl:inline">
-                  Viện Đổi Mới Sáng Tạo Quốc Gia
+                  Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
                 </span>
               </div>
             </Link>
@@ -473,7 +469,7 @@ export function Navbar() {
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`focus-ring relative inline-flex items-center rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition ${
+                      className={`focus-ring relative inline-flex items-center rounded-lg px-1.5 py-1.5 text-xs xl:px-2 xl:text-xs 2xl:px-2.5 2xl:text-sm font-semibold whitespace-nowrap transition ${
                         isActive
                           ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[2px] after:bg-white/40 after:rounded-full"
                           : "text-white/85 hover:text-white hover:bg-white/10"
@@ -496,7 +492,7 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       onClick={() => handleDropdownToggle(link.href)}
-                      className={`focus-ring relative inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition cursor-pointer ${
+                      className={`focus-ring relative inline-flex items-center gap-1 rounded-lg px-1.5 py-1.5 text-xs xl:px-2 xl:text-xs 2xl:px-2.5 2xl:text-sm font-semibold whitespace-nowrap transition cursor-pointer ${
                         isActive || isOpen
                           ? "text-white font-bold after:absolute after:bottom-0 after:left-2 after:right-2 after:h-[2px] after:bg-white/40 after:rounded-full"
                           : "text-white/85 hover:text-white hover:bg-white/10"
@@ -804,7 +800,7 @@ export function Navbar() {
                 ) : (
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5">
                     <p className="text-xs font-semibold text-white/80">
-                      Chào mừng bạn đến với Cổng Quốc Gia NacenTwin
+                      Chào mừng bạn đến với Cổng Thông Tin BACLINK
                     </p>
                     <div className="mt-2.5 flex items-center gap-2">
                       <Link
@@ -1013,7 +1009,7 @@ export function Navbar() {
                     <FontsizeControl />
                   </div>
                   <div className="pt-2 text-center text-[11px] text-white/60">
-                    Cổng dữ liệu số Quốc gia · NacenTech (Bộ KH&CN)
+                    Cổng Thông Tin Chuỗi Cung Ứng · Hiệp hội BACLINK
                   </div>
                 </div>
               </div>

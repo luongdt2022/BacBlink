@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  BACLINK_SECTORS_MAP,
   MASTER_SECTORS_MAP,
   VSIC_MANUFACTURING_MAP,
   resolveProvinceName,
@@ -12,10 +13,18 @@ import {
   resolveRoleDisplayName,
   formatGovRecordCode,
 } from "./gov-label-resolver";
-import { PROVINCES_34 } from "./constants/provinces";
+import { BAC_NINH_LOCATIONS } from "./constants/provinces";
 
 describe("T080 [FE-LabelResolver] GovLabelResolver Unit Tests", () => {
   describe("resolveSectorName", () => {
+    it("resolves all 8 BACLINK IND_* sectors", () => {
+      expect(Object.keys(BACLINK_SECTORS_MAP)).toHaveLength(8);
+      for (const [code, expectedName] of Object.entries(BACLINK_SECTORS_MAP)) {
+        expect(resolveSectorName(code)).toBe(expectedName);
+      }
+      expect(resolveSectorName("ind_elec")).toBe("Điện tử, Bán dẫn & Thiết bị điện");
+    });
+
     it("resolves all 18 TT17 sectors (CN01 to CN18)", () => {
       expect(Object.keys(MASTER_SECTORS_MAP)).toHaveLength(18);
       for (const [code, expectedName] of Object.entries(MASTER_SECTORS_MAP)) {
@@ -64,24 +73,21 @@ describe("T080 [FE-LabelResolver] GovLabelResolver Unit Tests", () => {
   });
 
   describe("resolveProvinceName", () => {
-    it("resolves key provinces (HN, SG, HCM, HP, DN, ALL)", () => {
+    it("resolves Bac Ninh locations, ALL, and legacy province codes", () => {
+      expect(resolveProvinceName("TP_BN")).toBe("TP. Bắc Ninh");
+      expect(resolveProvinceName("KCN_VSIP_BN")).toBe("KCN VSIP Bắc Ninh");
       expect(resolveProvinceName("HN")).toBe("Hà Nội");
       expect(resolveProvinceName("SG")).toBe("TP. Hồ Chí Minh");
       expect(resolveProvinceName("HCM")).toBe("TP. Hồ Chí Minh");
       expect(resolveProvinceName("HP")).toBe("Hải Phòng");
       expect(resolveProvinceName("DN")).toBe("Đà Nẵng");
-      expect(resolveProvinceName("ALL")).toBe("Toàn quốc");
+      expect(resolveProvinceName("ALL")).toBe("Tất cả Địa bàn & KCN Bắc Ninh");
     });
 
-    it("resolves provinces accurately from PROVINCES_34 list", () => {
-      for (const prov of PROVINCES_34) {
-        if (prov.code === "ALL") continue;
-        const resolved = resolveProvinceName(prov.code);
-        if (prov.code === "SG") {
-          expect(resolved).toBe("TP. Hồ Chí Minh");
-        } else {
-          expect(resolved).toBe(prov.name);
-        }
+    it("resolves locations accurately from BAC_NINH_LOCATIONS list", () => {
+      for (const loc of BAC_NINH_LOCATIONS) {
+        if (loc.code === "ALL") continue;
+        expect(resolveProvinceName(loc.code)).toBe(loc.name);
       }
     });
 

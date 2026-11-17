@@ -75,35 +75,35 @@ const CONNECT_WORKFLOW_STEPS = [
   {
     step: "01",
     title: "Khám Phá & Định Danh",
-    subtitle: "Tạo tài khoản SSO dùng chung cho Doanh nghiệp & Nhà khoa học",
-    description: "Khởi tạo hồ sơ ĐMST trực tuyến, định danh pháp nhân số và thiết lập quyền truy cập cổng kết nối công nghệ liên thông toàn quốc.",
+    subtitle: "Tạo tài khoản Doanh nghiệp Hội viên BACLINK",
+    description: "Khởi tạo hồ sơ năng lực nhà máy trực tuyến, định danh pháp nhân số và thiết lập quyền truy cập cổng kết nối chuỗi cung ứng công nghiệp tỉnh Bắc Ninh.",
     icon: FileSearch,
     color: "from-cyan-500 to-blue-600",
     badge: "Bước 1",
   },
   {
     step: "02",
-    title: "Thẩm Định TRL & Pháp Lý",
-    subtitle: "Kiểm duyệt TRL 1-9 & tình trạng sở hữu trí tuệ",
-    description: "Hội đồng khoa học Viện NacenTech phối hợp cùng 34 Sở KH&CN thẩm định cấp độ sẵn sàng công nghệ, rà soát quyền bằng sáng chế và giải pháp hữu ích.",
+    title: "Thẩm Định Năng Lực & Dây Chuyền",
+    subtitle: "Kiểm duyệt chứng chỉ ISO, IATF 16949 & dây chuyền thiết bị",
+    description: "Ban Cố vấn Kỹ thuật BACLINK thẩm định cấp độ TRL, chứng chỉ chất lượng (ISO, IATF 16949, ESD, Lean/5S) và năng lực gia công thực tế của nhà máy.",
     icon: ClipboardCheck,
     color: "from-blue-600 to-indigo-600",
     badge: "Bước 2",
   },
   {
     step: "03",
-    title: "Khớp Nối AI & Đàm Phán",
-    subtitle: "Gợi ý thông minh & phòng đàm phán trực tuyến bảo mật",
-    description: "Thuật toán AI Matching phân tích ma trận 18 ngành TT17, tự động khớp nối bài toán của doanh nghiệp với công nghệ chào bán và mở phòng làm việc.",
+    title: "Radar Khớp Nối AI & Đàm Phán",
+    subtitle: "Gợi ý thông minh theo 8 ngành công nghiệp & KCN",
+    description: "Thuật toán Radar AI Matching phân tích ma trận 8 ngành IND_* và địa bàn KCN Bắc Ninh, tự động ghép nối bài toán mua sắm FDI với nhà máy cung ứng phù hợp.",
     icon: Handshake,
     color: "from-indigo-600 to-emerald-600",
     badge: "Bước 3",
   },
   {
     step: "04",
-    title: "Ký Kết Chuyển Giao & Hậu Kiểm",
-    subtitle: "Ký MOU số hóa & đồng hành hỗ trợ kỹ thuật thực tế",
-    description: "Hai bên xác lập thỏa thuận chuyển giao công nghệ chính thức, ký số hợp đồng và được đội ngũ chuyên gia Viện bảo trợ kỹ thuật trong suốt quá trình vận hành.",
+    title: "Ký Kết Hợp Tác & Ký MOU Số",
+    subtitle: "Ký MOU số hóa có chứng thực & đồng hành audit FDI",
+    description: "Hai bên xác lập thỏa thuận nguyên tắc, ký kết biên bản ghi nhớ MOU số có chứng thực và được Ban Cố vấn Kỹ thuật BACLINK bảo trợ trong quá trình audit chuỗi cung ứng.",
     icon: Rocket,
     color: "from-emerald-600 to-teal-500",
     badge: "Bước 4",
@@ -112,48 +112,48 @@ const CONNECT_WORKFLOW_STEPS = [
 
 const PARTNER_PILLARS = [
   {
-    category: "Viện Nghiên Cứu & Trường Đại Học",
-    description: "Nguồn cung công nghệ nguồn, sáng chế độc quyền và đội ngũ chuyên gia đầu ngành",
+    category: "Tập Đoàn FDI & Đối Tác Mua Sắm",
+    description: "Các tập đoàn đa quốc gia và chuỗi cung ứng công nghiệp điện tử - cơ khí hàng đầu",
     partners: [
-      "Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)",
-      "Đại học Bách Khoa Hà Nội",
-      "Đại học Quốc gia Hà Nội",
-      "Đại học Quốc gia TP.HCM",
-      "Viện Hàn lâm KH&CN Việt Nam",
-      "Trường Đại học Dược Hà Nội",
+      "Samsung Electronics Việt Nam (SEV)",
+      "Amkor Technology Việt Nam",
+      "Canon Việt Nam",
+      "Foxconn Interconnect Technology",
+      "Goertek Vina",
+      "AAC Technologies Bắc Ninh",
     ],
   },
   {
-    category: "Mạng Lưới 34 Sở KH&CN Trọng Điểm",
-    description: "Đầu mối tiếp nhận, thẩm định và bảo trợ chuyển giao công nghệ tại từng địa phương",
+    category: "Hạ Tầng 13 Khu Công Nghiệp Trọng Điểm",
+    description: "Mạng lưới KCN kiểu mẫu và trung tâm sản xuất công nghiệp tập trung tỉnh Bắc Ninh",
     partners: [
-      "Sở KH&CN TP. Hà Nội",
-      "Sở KH&CN TP. Hồ Chí Minh",
-      "Sở KH&CN TP. Đà Nẵng",
-      "Sở KH&CN TP. Hải Phòng",
-      "Sở KH&CN TP. Cần Thơ",
-      "Sở KH&CN Tỉnh Đắk Lắk",
+      "KCN Yên Phong I & Yên Phong Mở Rộng",
+      "KCN Quế Võ I, II, III",
+      "KCN VSIP Bắc Ninh (Từ Sơn)",
+      "KCN Tiên Sơn (Tiên Du)",
+      "KCN Thuận Thành I, II, III",
+      "KCN Gia Bình & Đại Đồng Hoàn Sơn",
     ],
   },
   {
-    category: "Doanh Nghiệp ĐMST & Tập Đoàn Tiên Phong",
-    description: "Bên đặt hàng bài toán thực tế, tiếp nhận chuyển giao và ứng dụng công nghệ vào sản xuất",
+    category: "Doanh Nghiệp Hội Viên Tiên Phong BACLINK",
+    description: "Nhà máy sản xuất, gia công cơ khí chính xác, điện tử và công nghiệp hỗ trợ Bắc Ninh",
     partners: [
-      "Tập đoàn Công nghệ & Chế tạo",
-      "Doanh nghiệp KH&CN Tiêu biểu",
-      "Công ty Nông nghiệp CNC",
-      "Hiệp hội Doanh nghiệp Đổi mới sáng tạo",
-      "Nhà máy Dược phẩm Chuẩn GMP",
-      "Các Quỹ Đầu tư ĐMST Quốc gia",
+      "Công ty CP Hanel PT (Chủ tịch Hiệp hội)",
+      "Tập đoàn INTECH Group (Tự động hóa)",
+      "Công ty CP Viqualita (Cơ khí & JIG)",
+      "Cơ khí Chính xác Kinh Bắc",
+      "Nhựa Kỹ thuật Yên Phong",
+      "Smart Factory & Logistics Bắc Ninh",
     ],
   },
 ] as const;
 
 const features = [
-  [ShieldCheck, "Công nghệ được kiểm định", "Mỗi công nghệ đăng tải đều được Viện thẩm định mức độ sẵn sàng (TRL) và pháp lý sở hữu trí tuệ trước khi công bố."],
-  [Handshake, "Kết nối trực tiếp, không trung gian", "Doanh nghiệp và nhà khoa học trao đổi, đàm phán chuyển giao trực tiếp trên nền tảng, tiết kiệm thời gian và chi phí."],
-  [LineChart, "Dữ liệu minh bạch, cập nhật", "Theo dõi tiến độ giao dịch, lịch sử chuyển giao và đánh giá từ các bên theo thời gian thực."],
-  [Clock, "Hỗ trợ 24/7 từ chuyên gia", "Đội ngũ chuyên gia của Viện đồng hành tư vấn kỹ thuật, pháp lý và tài chính cho từng giao dịch."],
+  [ShieldCheck, "Năng lực nhà máy được thẩm định", "Mỗi doanh nghiệp hội viên và sản phẩm niêm yết đều được Ban Cố vấn Kỹ thuật thẩm định chứng chỉ (ISO, IATF 16949, ESD) trước khi công bố."],
+  [Handshake, "Kết nối trực tiếp FDI & Doanh nghiệp nội địa", "Bên Mua (FDI/Doanh nghiệp lớn) và Bên Bán (Nhà máy cung ứng) trao đổi, gửi báo giá RFQ trực tiếp trên nền tảng."],
+  [LineChart, "Dữ liệu minh bạch, kết nối số hóa", "Theo dõi tiến độ đơn hàng gia công, quy trình đàm phán hợp đồng và lịch sử ký kết MOU theo thời gian thực."],
+  [Clock, "Cố vấn kỹ thuật 24/7 từ chuyên gia", "Ban Cố vấn Kỹ thuật BACLINK đồng hành hỗ trợ cải tiến năng suất Lean/5S, chuyển đổi số MES và chuẩn bị hồ sơ audit chuỗi cung ứng."],
 ] as const;
 
 function ListingCard({ item }: { item: Listing }) {
@@ -422,11 +422,11 @@ export default function HomePage() {
         <div className="relative mx-auto max-w-7xl">
           <div className="mx-auto max-w-4xl text-center">
             <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3.5 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-brand-100">
-              Sàn giao dịch công nghệ Quốc gia
+              Cổng Kết Nối Chuỗi Cung Ứng Công Nghiệp Bắc Ninh
             </span>
             <h1 className="mt-3.5 sm:mt-5 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold font-sans uppercase tracking-normal sm:tracking-wide leading-snug sm:leading-tight text-white">
-              <span className="block">KẾT NỐI CUNG – CẦU CÔNG NGHỆ,</span>
-              <span className="block mt-1.5 sm:mt-2">THÚC ĐẨY ĐỔI MỚI SÁNG TẠO</span>
+              <span className="block">KẾT NỐI CHUỖI CUNG ỨNG,</span>
+              <span className="block mt-1.5 sm:mt-2">NÂNG TẦM CÔNG NGHIỆP BẮC NINH</span>
             </h1>
 
             <form

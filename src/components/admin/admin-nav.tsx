@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   ClipboardCheck,
   ShieldCheck,
-  Network,
   Layers,
   ArrowLeft,
   Workflow,
@@ -19,33 +18,27 @@ export function AdminNav() {
   const links = [
     {
       href: "/admin/approvals",
-      label: "Hàng Đợi Thẩm Định",
+      label: "Hàng Đợi Phê Duyệt",
       icon: ClipboardCheck,
-      badge: "5 Luồng",
+      badge: "1 Cấp",
     },
     {
       href: "/admin/users",
       label: "Quản Lý Người Dùng",
       icon: Users,
-      badge: "Toàn quốc",
+      badge: "BACLINK",
     },
     {
       href: "/admin/roles",
       label: "Quản Lý Vai Trò",
       icon: ShieldCheck,
-      badge: "10 Roles",
-    },
-    {
-      href: "/admin/org-tree",
-      label: "Cây Thư Mục 34 Tỉnh/Thành",
-      icon: Network,
-      badge: "34 Tỉnh/Thành",
+      badge: "3 Cấp RBAC",
     },
     {
       href: "/admin/sectors",
-      label: "Danh Mục Lĩnh Vực & TT17",
+      label: "Danh Mục Ngành & TT17",
       icon: Layers,
-      badge: "Danh mục ngành",
+      badge: "8 Ngành",
     },
     {
       href: "/dashboard",

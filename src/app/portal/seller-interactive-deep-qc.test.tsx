@@ -21,12 +21,17 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock('@/lib/auth-client', () => ({
-  authClient: {
-    getUser: vi.fn(),
-    getToken: vi.fn().mockReturnValue('mock-jwt-token'),
-  },
-}));
+vi.mock('@/lib/auth-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/auth-client')>();
+  return {
+    ...actual,
+    authClient: {
+      ...actual.authClient,
+      getUser: vi.fn(),
+      getToken: vi.fn().mockReturnValue('mock-jwt-token'),
+    },
+  };
+});
 
 vi.mock('@/services/api/brokerage', () => ({
   brokerageApi: {
@@ -334,7 +339,7 @@ describe('DEEP INTERACTIVE QC TEST SUITE: 7 SELLER WORKSPACE ITEMS', () => {
 
       // CTA to wizard
       const wizardLink = screen.getByText(/Kê Khai Kỳ Mới|Bắt Đầu Kê Khai/i);
-      expect(wizardLink.closest('a')).toHaveAttribute('href', '/assessments/tt17/wizard');
+      expect(wizardLink.closest('a')).toHaveAttribute('href', '/dieu-tra-trinh-do-nang-luc');
     });
   });
 

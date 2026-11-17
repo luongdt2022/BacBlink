@@ -19,13 +19,18 @@ vi.mock("@/components/auth/role-guard", () => ({
   RoleGuard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getUser: vi.fn(),
-    getToken: vi.fn().mockReturnValue("mock-token"),
-    setSession: vi.fn(),
-  },
-}));
+vi.mock("@/lib/auth-client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/auth-client")>();
+  return {
+    ...actual,
+    authClient: {
+      ...actual.authClient,
+      getUser: vi.fn(),
+      getToken: vi.fn().mockReturnValue("mock-token"),
+      setSession: vi.fn(),
+    },
+  };
+});
 
 vi.mock("@/lib/enterprise-client", () => ({
   fetchMyEnterpriseProfile: vi.fn(),

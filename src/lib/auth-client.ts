@@ -1,7 +1,9 @@
 /**
- * NacenTwin Auth Client
- * Quản lý Token JWT Bearer, phiên đăng nhập, 10 Roles và Role Gateway Routing
+ * BACLINK Auth Client
+ * Quản lý Token JWT Bearer, phiên đăng nhập, RBAC 3 cấp (ADMIN, ENTERPRISE, PUBLIC_USER) và Gateway Routing
  */
+
+export type PlatformRole = "ADMIN" | "ENTERPRISE" | "PUBLIC_USER";
 
 export interface UserContext {
   id: string;
@@ -16,30 +18,46 @@ export interface UserContext {
 }
 
 export const ROLES = {
-  // Tầng 0: Quản trị Trung ương
-  SUPER_ADMIN: "SUPER_ADMIN",
-  OPERATOR_ADMIN: "OPERATOR_ADMIN",
+  // 3 Cấp chuẩn hóa BACLINK (ADR-0018)
   ADMIN: "ADMIN",
+  ENTERPRISE: "ENTERPRISE",
+  PUBLIC_USER: "PUBLIC_USER",
 
-  // Tầng 1: Quản trị Nhà nước phân cấp theo taxonomy và địa bàn hiện hành
+  /** @deprecated Legacy alias -> ADMIN */
+  SUPER_ADMIN: "SUPER_ADMIN",
+  /** @deprecated Legacy alias -> ADMIN */
+  OPERATOR_ADMIN: "OPERATOR_ADMIN",
+
+  /** @deprecated Legacy alias -> PUBLIC_USER (gỡ phân cấp Sở/Ngành) */
   PROVINCIAL_ADMIN: "PROVINCIAL_ADMIN",
+  /** @deprecated Legacy alias -> PUBLIC_USER */
   SECTOR_ADMIN: "SECTOR_ADMIN",
+  /** @deprecated Legacy alias -> PUBLIC_USER */
   CLUSTER_ADMIN: "CLUSTER_ADMIN",
 
-  // Tầng 2: Chủ thể Thị trường & Chuyên gia KH&CN
+  /** @deprecated Legacy alias -> ENTERPRISE */
   SELLER: "SELLER",
+  /** @deprecated Legacy alias -> ENTERPRISE */
   BUYER: "BUYER",
+  /** @deprecated Legacy alias -> ENTERPRISE */
   INNOVATION_ENTITY: "INNOVATION_ENTITY",
+  /** @deprecated Legacy alias -> ENTERPRISE */
   VERIFIED_EXPERT: "VERIFIED_EXPERT",
+  /** @deprecated Legacy alias -> ENTERPRISE */
   EXPERT: "EXPERT",
 
-  // Tầng 3: Đại chúng & Khách vãng lai
-  PUBLIC_USER: "PUBLIC_USER",
+  /** @deprecated Legacy alias -> PUBLIC_USER */
   GUEST: "GUEST",
+  /** @deprecated Legacy alias -> PUBLIC_USER */
   USER: "USER",
 } as const;
 
 const ROLE_DISPLAY_NAMES: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  ENTERPRISE: "Doanh nghiệp Hội viên",
+  PUBLIC_USER: "Thành viên công chúng",
+
+  // Legacy display names (giữ tương thích hiển thị cho token cũ)
   SUPER_ADMIN: "Quản trị viên cấp cao",
   OPERATOR_ADMIN: "Quản trị viên vận hành",
   PROVINCIAL_ADMIN: "Quản trị viên cấp tỉnh",
@@ -49,12 +67,33 @@ const ROLE_DISPLAY_NAMES: Record<string, string> = {
   BUYER: "Bên có nhu cầu công nghệ",
   INNOVATION_ENTITY: "Chủ thể đổi mới sáng tạo",
   VERIFIED_EXPERT: "Chuyên gia KH&CN đã xác thực",
-  PUBLIC_USER: "Thành viên công chúng",
-  ADMIN: "Quản trị viên",
   EXPERT: "Chuyên gia KH&CN",
   USER: "Thành viên",
   GUEST: "Khách",
 };
+
+/** Chuẩn hóa mọi mã vai trò (bao gồm token legacy) về đúng 3 cấp BACLINK: ADMIN | ENTERPRISE | PUBLIC_USER */
+export function normalizePlatformRole(role?: string | null): PlatformRole {
+  if (!role) return "PUBLIC_USER";
+  const upper = role.trim().toUpperCase();
+
+  if (upper === "ADMIN" || upper === "SUPER_ADMIN" || upper === "OPERATOR_ADMIN") {
+    return "ADMIN";
+  }
+
+  if (
+    upper === "ENTERPRISE" ||
+    upper === "SELLER" ||
+    upper === "BUYER" ||
+    upper === "INNOVATION_ENTITY" ||
+    upper === "VERIFIED_EXPERT" ||
+    upper === "EXPERT"
+  ) {
+    return "ENTERPRISE";
+  }
+
+  return "PUBLIC_USER";
+}
 
 /** Nhãn hiển thị cho người dùng; không đưa mã role kỹ thuật lên giao diện. */
 export function getRoleDisplayName(role?: string | null): string {
@@ -65,62 +104,18 @@ export function getRoleDisplayName(role?: string | null): string {
 export function getRedirectPathByRole(role?: string | null): string {
   if (!role) return "/";
 
-  const upper = role.toUpperCase();
-
-  // Tầng 0: Cổng Quản trị Tối cao
-  if (upper === "SUPER_ADMIN" || upper === "OPERATOR_ADMIN" || upper === "ADMIN") {
-    return "/admin";
-  }
-
-  // Tầng 1: Cổng Thẩm định Nhà nước & 34 Sở Tỉnh trọng điểm
-  if (
-    upper === "PROVINCIAL_ADMIN" ||
-    upper === "SECTOR_ADMIN" ||
-    upper === "CLUSTER_ADMIN" ||
-    upper === "PROVINCE_OFFICER" ||
-    upper === "PROVINCE_LEADER"
-  ) {
-    return "/gov";
-  }
-
-  // Tầng 2: Cổng Không gian Thị trường & Chuyên gia
-  if (
-    upper === "SELLER" ||
-    upper === "BUYER" ||
-    upper === "INNOVATION_ENTITY" ||
-    upper === "VERIFIED_EXPERT" ||
-    upper === "EXPERT"
-  ) {
-    return "/portal";
-  }
-
-  // Tầng 3: Cổng Đại chúng
+  const normalized = normalizePlatformRole(role);
+  if (normalized === "ADMIN") return "/admin";
+  if (normalized === "ENTERPRISE") return "/portal";
   return "/";
 }
 
-/** Trả về đường dẫn Không gian làm việc (Workspace) chính xác theo Role */
+/** Trả về đường dẫn Không gian làm việc (Workspace) chính xác theo Role (không còn nhánh /gov) */
 export function getWorkspacePath(role?: string | null): string {
   if (!role) return "/portal";
 
-  const upper = role.toUpperCase();
-
-  // Tầng 0: Cổng Quản trị Tối cao
-  if (upper === "SUPER_ADMIN" || upper === "OPERATOR_ADMIN" || upper === "ADMIN") {
-    return "/admin";
-  }
-
-  // Tầng 1: Cổng Thẩm định Nhà nước & 34 Sở Tỉnh trọng điểm
-  if (
-    upper === "PROVINCIAL_ADMIN" ||
-    upper === "SECTOR_ADMIN" ||
-    upper === "CLUSTER_ADMIN" ||
-    upper === "PROVINCE_OFFICER" ||
-    upper === "PROVINCE_LEADER"
-  ) {
-    return "/gov";
-  }
-
-  // Tầng 2 & 3: Không gian Thị trường, Chuyên gia và Đại chúng
+  const normalized = normalizePlatformRole(role);
+  if (normalized === "ADMIN") return "/admin";
   return "/portal";
 }
 
@@ -160,7 +155,9 @@ export const authClient = {
     const user = this.getUser();
     if (!user || !user.role) return false;
     const userRole = user.role.toUpperCase();
-    return allowedRoles.map((r) => r.toUpperCase()).includes(userRole);
+    const normalizedRole = normalizePlatformRole(userRole);
+    const allowedUpper = allowedRoles.map((r) => r.toUpperCase());
+    return allowedUpper.includes(userRole) || allowedUpper.includes(normalizedRole);
   },
 
   getAuthHeaders(): Record<string, string> {

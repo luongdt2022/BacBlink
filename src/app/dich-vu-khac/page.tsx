@@ -51,7 +51,7 @@ export default function DichVuKhacPage() {
       const res = await brokerageApi.createConnectionRequest({
         senderOrgName: formData.organization.trim() || formData.fullName.trim(),
         senderRole: "BUYER",
-        receiverOrgName: "Viện Đổi Mới Công Nghệ NacenTech - Trung Tâm Tư Vấn SHTT",
+        receiverOrgName: "Ban Cố Vấn Kỹ Thuật & Pháp Lý BACLINK",
         message: fullMessage,
         proposedBudgetRange: "Thỏa thuận",
       });
@@ -72,15 +72,15 @@ export default function DichVuKhacPage() {
         <div className="relative z-10 max-w-7xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
             <Scale className="w-3.5 h-3.5 text-brand-200" />
-            <span>Hỗ Trợ Pháp Lý & Sở Hữu Trí Tuệ (NacenTwin)</span>
+            <span>Dịch Vụ Hỗ Trợ Hội Viên (BACLINK)</span>
           </div>
 
           <h1 className="type-page-title text-white">
-            Dịch Vụ Tư Vấn SHTT & Định Giá Công Nghệ Chuyên Nghiệp
+            Dịch Vụ Hỗ Trợ Hội Viên & Tư Vấn Kỹ Thuật Công Nghiệp
           </h1>
 
           <p className="text-white/85 type-body max-w-2xl">
-            Đồng hành cùng các nhà khoa học, trường viện và doanh nghiệp bảo vệ tài sản trí tuệ, định giá thương mại hóa công nghệ và hoàn thiện thủ tục chứng nhận Doanh nghiệp KH&CN trực thuộc Viện NacenTech.
+            Đồng hành cùng các doanh nghiệp hội viên bảo vệ tài sản trí tuệ, định giá công nghệ, chuẩn bị hồ sơ audit chuỗi cung ứng FDI và tiếp cận chính sách hỗ trợ phát triển công nghiệp tỉnh Bắc Ninh.
           </p>
         </div>
       </section>
@@ -383,7 +383,7 @@ export default function DichVuKhacPage() {
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6">
           <div className="text-center space-y-1">
             <h3 className="type-section-title text-slate-900 dark:text-white">Quy Trình Tiếp Nhận & Triển Khai 5 Bước</h3>
-            <p className="text-xs text-slate-500">Minh bạch, bảo mật và được giám sát bởi Hội đồng chuyên gia Viện NacenTech.</p>
+            <p className="text-xs text-slate-500">Minh bạch, bảo mật và được giám sát bởi Ban Cố vấn Kỹ thuật BACLINK.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-4">
@@ -423,7 +423,7 @@ export default function DichVuKhacPage() {
               Đăng Ký Tiếp Nhận Yêu Cầu Tư Vấn Trực Tuyến
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Để lại thông tin để chuyên viên pháp lý của Viện NacenTech hỗ trợ trực tiếp.
+              Để lại thông tin để Ban Cố vấn Kỹ thuật BACLINK hỗ trợ trực tiếp.
             </p>
           </div>
 
@@ -437,7 +437,7 @@ export default function DichVuKhacPage() {
                 Mã phiếu tiếp nhận: <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400">{submittedCode}</span>
               </p>
               <p className="text-xs text-slate-500">
-                Chuyên viên tư vấn của Viện NacenTech sẽ liên hệ lại qua email hoặc số điện thoại trong vòng 24 giờ làm việc.
+                Ban Cố vấn Kỹ thuật BACLINK sẽ liên hệ lại qua email hoặc số điện thoại trong vòng 24 giờ làm việc.
               </p>
               <button
                 type="button"

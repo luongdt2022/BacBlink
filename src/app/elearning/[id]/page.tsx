@@ -258,7 +258,8 @@ export default function ElearningDetailPage() {
   const isAuthorOrAdmin =
     currentUserRole === ROLES.SUPER_ADMIN ||
     currentUserRole === ROLES.ADMIN ||
-    (currentUserRole === ROLES.VERIFIED_EXPERT && currentUserId === material?.createdBy);
+    currentUserRole === ROLES.OPERATOR_ADMIN ||
+    ((currentUserRole === ROLES.ENTERPRISE || currentUserRole === ROLES.VERIFIED_EXPERT || currentUserRole === ROLES.EXPERT) && currentUserId === material?.createdBy);
 
   const leadInstructor = material?.instructors.find((i) => i.isLead) || material?.instructors[0];
 
@@ -316,7 +317,7 @@ export default function ElearningDetailPage() {
         <Async state={asyncState} errorMessage={errorMessage} onRetry={loadMaterial}>
           {material && (
             <>
-              {/* 2. HEADER METADATA CHUẨN QĐ 1993/QĐ-BKHCN */}
+              {/* 2. HEADER METADATA CHUẨN ĐÀO TẠO KỸ THUẬT BACLINK */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-3 py-1 rounded-lg font-mono text-xs font-black bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
@@ -1044,7 +1045,7 @@ export default function ElearningDetailPage() {
                         Giấy Chứng Nhận Hoàn Thành Khóa Học Trực Tuyến
                       </h3>
                       <p className="text-xs text-slate-500">
-                        Cấp bởi Viện Đổi mới sáng tạo Quốc gia (NacenTech - Bộ KH&CN) theo Quyết định 1993/QĐ-BKHCN.
+                        Cấp bởi Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) theo tiêu chuẩn đào tạo kỹ thuật công nghiệp.
                       </p>
                     </div>
 
@@ -1059,7 +1060,7 @@ export default function ElearningDetailPage() {
                       <div className="pt-2 text-xs text-slate-400">
                         {quizResult?.passed && isRubricPassed ? (
                           <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                            ✓ Mã xác thực trực tuyến: CERT-2026-{material.materialCode}-NACENTECH (QR Verified)
+                            ✓ Mã xác thực trực tuyến: CERT-2026-{material.materialCode}-BACLINK (QR Verified)
                           </span>
                         ) : (
                           <span>Mã xác thực trực tuyến sẽ được cấp tự động sau khi vượt qua cả 2 tiêu chí.</span>

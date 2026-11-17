@@ -23,24 +23,22 @@ export function Footer() {
           {/* CỘT TRÁI: Nhận diện Cổng & Cơ quan chủ quản (7 cột) */}
           <div className="md:col-span-7 space-y-2">
             <div className="flex items-center gap-2.5">
-              <img
-                src="/NACENTECH_Main-Logo-G.png"
-                alt="NacenTech Logo"
-                className="h-8 w-auto object-contain bg-white/10 rounded-lg p-1 backdrop-blur-xs"
-              />
+              <div className="size-9 rounded-lg bg-white/20 text-white font-black text-lg flex items-center justify-center shadow-inner border border-white/30 shrink-0">
+                B
+              </div>
               <div>
                 <span className="text-base font-extrabold tracking-tight text-white block leading-none">
-                  NacenTwin
+                  BACLINK
                 </span>
                 <span className="text-[11px] font-medium text-white/80 block mt-0.5">
-                  Cổng Đổi Mới Sáng Tạo Quốc Gia
+                  Cổng Thông Tin &amp; Kết Nối Chuỗi Cung Ứng Công Nghiệp Bắc Ninh
                 </span>
               </div>
             </div>
 
             <div className="space-y-1 text-xs text-white/90 leading-normal">
               <p className="font-medium text-white/90">
-                Cơ quan chủ quản: <span className="font-bold text-white">{t("ministry_title")}</span>
+                Cơ quan thành lập: <span className="font-bold text-white">{t("ministry_title")}</span>
                 <span className="mx-2 text-white/30 hidden sm:inline">•</span>
                 <span className="block sm:inline mt-0.5 sm:mt-0">
                   Đơn vị vận hành: <span className="font-bold text-white">{t("institute_title")}</span>
@@ -53,17 +51,17 @@ export function Footer() {
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-white/80">
                 <div className="flex items-center gap-1.5">
                   <Phone className="size-3.5 shrink-0 text-white/70" aria-hidden="true" />
-                  <span>024.3933.1234</span>
+                  <span>Điện thoại: 0222.3888.686</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Mail className="size-3.5 shrink-0 text-white/70" aria-hidden="true" />
-                  <span>contact@nacentech.gov.vn</span>
+                  <span>E-mail: contact@baclink.org.vn</span>
                 </div>
               </div>
             </div>
 
             <div className="text-[11px] text-white/60">
-              Giấy phép thiết lập Cổng TTĐT số 128/GP-BTTTT do Bộ Thông tin &amp; Truyền thông cấp.
+              Thành lập theo Quyết định số 1652/QĐ-UBND ngày 16/06/2025 của Chủ tịch UBND tỉnh Bắc Ninh.
             </div>
           </div>
 
@@ -72,7 +70,7 @@ export function Footer() {
             {/* Hotline 24/7 Card gọn */}
             <div className="w-full sm:max-w-xs rounded-xl border border-white/15 bg-white/10 p-2.5 backdrop-blur-md shadow-xs">
               <div className="text-[10px] font-bold uppercase tracking-wider text-white/85">
-                Tổng đài hỗ trợ kỹ thuật 24/7
+                Văn phòng Hiệp hội BACLINK
               </div>
               <div className="mt-1 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -81,18 +79,19 @@ export function Footer() {
                   </div>
                   <div>
                     <a
-                      href="tel:02439331234"
+                      href="tel:02223888686"
                       className="text-sm font-extrabold text-white hover:text-white/80 transition-colors"
                     >
-                      024.3933.1234
+                      0222.3888.686
                     </a>
-                    <div className="text-[10px] text-white/70">Hotline: 1900 6886</div>
+                    <div className="text-[10px] text-white/70">Hotline B2B: 1900 6886</div>
                   </div>
                 </div>
 
                 <div className="text-right border-l border-white/15 pl-3">
                   <div className="flex items-center gap-1 text-[11px] text-white/80 justify-end">
                     <Eye className="size-3 text-white/70" aria-hidden="true" />
+                    <span>Lượt truy cập:</span>
                     <span className="font-bold text-white">2.689.450</span>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] text-emerald-300 justify-end">

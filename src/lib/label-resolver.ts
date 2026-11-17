@@ -4,7 +4,19 @@
  * giải quyết triệt để tình trạng hiển thị mã thô trên các màn hình quản trị.
  */
 
-import { PROVINCES_34 } from "@/lib/constants/provinces";
+import { BAC_NINH_LOCATIONS } from "@/lib/constants/provinces";
+
+// Từ điển 8 ngành công nghiệp chuẩn BACLINK (IND_*)
+export const BACLINK_SECTOR_LABELS: Record<string, string> = {
+  IND_ELEC: "Điện tử, Bán dẫn & Thiết bị điện",
+  IND_MECH: "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy",
+  IND_AUTO: "Tự động hóa, Robot & Smart Factory",
+  IND_PLAS: "Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp",
+  IND_MAT: "Vật liệu mới & Công nghiệp hỗ trợ",
+  IND_IT: "Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP",
+  IND_GREEN: "Công nghiệp xanh, Năng lượng sạch & ESG",
+  IND_LOG: "Logistics công nghiệp, Kho vận & Chuỗi cung ứng",
+};
 
 // Từ điển 10 vai trò chuẩn 3D Scoped RBAC
 export const ROLE_LABELS: Record<string, string> = {
@@ -58,25 +70,24 @@ export const DEFAULT_SECTOR_LABELS: Record<string, string> = {
 };
 
 /**
- * Phân giải mã Tỉnh/Thành phố sang Tên tiếng Việt chính thức
- * @example resolveProvinceName("HN") -> "TP. Hà Nội"
- * @example resolveProvinceName("SG") -> "TP. Hồ Chí Minh"
+ * Phân giải mã Địa bàn / KCN Bắc Ninh sang Tên tiếng Việt chính thức
+ * @example resolveProvinceName("TP_BN") -> "TP. Bắc Ninh"
+ * @example resolveProvinceName("KCN_VSIP_BN") -> "KCN VSIP Bắc Ninh"
  */
 export function resolveProvinceName(code?: string | null): string {
-  if (!code || code === "ALL") return "Toàn quốc (34 Tỉnh/Thành ĐMST)";
+  if (!code || code.trim().toUpperCase() === "ALL") {
+    return "Tất cả Địa bàn & KCN Bắc Ninh";
+  }
   const clean = code.trim().toUpperCase();
 
-  const found = PROVINCES_34.find((p) => p.code.toUpperCase() === clean);
+  const found = BAC_NINH_LOCATIONS.find((loc) => loc.code.toUpperCase() === clean);
   if (found) {
-    return found.name.startsWith("TP.") || found.name.startsWith("Tỉnh")
-      ? found.name
-      : (clean === "HN" || clean === "SG" || clean === "HP" || clean === "CT" || clean === "DN"
-        ? `TP. ${found.name}`
-        : `Tỉnh ${found.name}`);
+    return found.name;
   }
 
-  // Fallback map các mã phổ biến
-  const fallbackMap: Record<string, string> = {
+  // Fallback map cho dữ liệu lịch sử trước khi chuẩn hóa Bắc Ninh
+  const legacyFallbackMap: Record<string, string> = {
+    BN: "Tỉnh Bắc Ninh",
     HN: "TP. Hà Nội",
     SG: "TP. Hồ Chí Minh",
     HCM: "TP. Hồ Chí Minh",
@@ -85,8 +96,10 @@ export function resolveProvinceName(code?: string | null): string {
     CT: "TP. Cần Thơ",
   };
 
-  return fallbackMap[clean] || `Địa phương (${code})`;
+  return legacyFallbackMap[clean] || `Địa bàn (${code})`;
 }
+
+export const resolveLocationName = resolveProvinceName;
 
 /**
  * Phân giải mã vai trò sang tên vai trò tiếng Việt
@@ -115,11 +128,18 @@ export function resolveSectorName(
 ): string {
   if (!code) return "Chưa phân ngành";
   const clean = code.trim();
+  const upper = clean.toUpperCase();
 
   // Ưu tiên đọc từ dictionary động từ API
-  if (customDict && customDict[clean]) return customDict[clean];
+  if (customDict) {
+    if (customDict[clean]) return customDict[clean];
+    if (customDict[upper]) return customDict[upper];
+  }
 
-  // Map chuẩn mã 2 chữ số (ví dụ: "01", "1", "SECTOR_01")
+  // Chuẩn 8 ngành công nghiệp BACLINK (IND_*)
+  if (BACLINK_SECTOR_LABELS[upper]) return BACLINK_SECTOR_LABELS[upper];
+
+  // Map chuẩn mã 2 chữ số lịch sử (ví dụ: "01", "1", "SECTOR_01")
   const normalized = clean.replace(/^SECTOR[-_]/i, "").padStart(2, "0");
   if (DEFAULT_SECTOR_LABELS[normalized]) return DEFAULT_SECTOR_LABELS[normalized];
 

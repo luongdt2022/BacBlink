@@ -68,10 +68,10 @@ export default function PublicDemandDetailPage() {
     switch (status) {
       case "PENDING":
         return {
-          badgeText: "CHỜ SỞ KH&CN THẨM ĐỊNH",
+          badgeText: "CHỜ HIỆP HỘI THẨM ĐỊNH",
           badgeClass: "text-amber-600 dark:text-amber-400",
           pillClass: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300",
-          description: "Hồ sơ đang được Cán bộ Sở KH&CN thẩm định trước khi niêm yết",
+          description: "Hồ sơ đang được Ban Cố vấn Kỹ thuật BACLINK thẩm định trước khi niêm yết",
         };
       case "CONNECTED":
         return {
@@ -183,7 +183,7 @@ export default function PublicDemandDetailPage() {
     if (!item?.id) return;
     if (item?.status === "PENDING" || item?.canSubmitOffer === false) {
       toast.warning(
-        "Bài toán đang trong quy trình thẩm định sơ bộ của Sở KH&CN. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết.",
+        "Bài toán đang trong quy trình thẩm định sơ bộ của Ban Cố vấn Hiệp hội BACLINK. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết.",
         "Chưa mở tiếp nhận"
       );
       return;
@@ -211,7 +211,7 @@ export default function PublicDemandDetailPage() {
         setCreatedOppCode(resData.opportunityCode || null);
         setOfferSent(true);
         toast.success(
-          "Đề xuất giải pháp của Quý đơn vị đã được gửi tới Ban thẩm định NacenTwin.",
+          "Đề xuất giải pháp của Quý đơn vị đã được gửi tới Ban Thư ký & Cố vấn BACLINK.",
           "Gửi Chào Bán Thành Công"
         );
       } else {
@@ -319,7 +319,7 @@ export default function PublicDemandDetailPage() {
                           </span>
                         </div>
                         <p className="text-xs text-amber-800/90 dark:text-amber-300/90 leading-relaxed">
-                          Hồ sơ bài toán đang chờ Cán bộ Sở KH&CN thẩm định. Sau khi được phê duyệt tại phân hệ Quản lý Nhà nước (/gov/demands), bài toán sẽ chính thức xuất hiện trên Sàn để các Nhà cung ứng và Viện/Trường gửi hồ sơ giải pháp.
+                          Hồ sơ bài toán đang chờ Ban Quản trị Hiệp hội BACLINK thẩm định. Sau khi được phê duyệt, bài toán sẽ chính thức xuất hiện trên Bảng Nhu cầu để các Nhà cung ứng và Viện/Trường gửi hồ sơ giải pháp.
                         </p>
                       </div>
                     </div>
@@ -399,7 +399,7 @@ export default function PublicDemandDetailPage() {
                     <strong className="text-text-primary dark:text-slate-200 block mb-1">
                       Chính Sách Bảo Vệ Dữ Liệu Cá Nhân & Bí Mật Kinh Doanh
                     </strong>
-                    Nền tảng NacenTwin tuân thủ nghiêm ngặt Nghị định 13/2023/NĐ-CP (PDPD). Danh tính, địa chỉ nhà xưởng và số điện thoại người đại diện của Bên Mua chỉ được mở khóa cho Bên Chào Bán khi giải pháp kỹ thuật vượt qua thẩm định sơ bộ của Hội đồng Chuyên gia Sở KH&CN.
+                    Nền tảng BACLINK tuân thủ nghiêm ngặt Nghị định 13/2023/NĐ-CP (PDPD). Danh tính, địa chỉ nhà xưởng và số điện thoại người đại diện của Bên Mua chỉ được mở khóa cho Bên Chào Bán khi giải pháp kỹ thuật vượt qua thẩm định sơ bộ của Ban Cố vấn Kỹ thuật BACLINK.
                   </div>
                 </div>
               </div>
@@ -458,7 +458,7 @@ export default function PublicDemandDetailPage() {
                         <span>Hồ sơ đang trong quy trình thẩm định</span>
                       </div>
                       <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                        Bài toán đang trong quy trình thẩm định sơ bộ của Sở KH&CN. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết.
+                        Bài toán đang trong quy trình thẩm định sơ bộ của Ban Cố vấn Hiệp hội BACLINK. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết.
                       </p>
                     </div>
 
@@ -507,7 +507,7 @@ export default function PublicDemandDetailPage() {
                           1. <strong>Tiến trình Hợp tác (Pipeline)</strong>: Đề xuất đã được ghi nhận tự động vào quy trình kết nối. Quý đơn vị có thể theo dõi trạng thái thẩm định sơ bộ, kết nối 3 bên và tiến độ ký kết MOU tại mục <strong>Tiến trình Chuyển giao & MOU</strong> trong Bàn làm việc (Portal).
                         </p>
                         <p>
-                          2. <strong>Cán bộ Sở KH&CN phụ trách</strong>: Sau khi đối soát năng lực kỹ thuật phù hợp với bài toán của doanh nghiệp, chuyên viên quản lý sẽ liên hệ trực tiếp qua Email hoặc SĐT mà Quý đơn vị đã đăng ký.
+                          2. <strong>Ban Cố vấn Kỹ thuật BACLINK</strong>: Sau khi đối soát năng lực kỹ thuật phù hợp với bài toán của doanh nghiệp, chuyên viên kết nối sẽ liên hệ trực tiếp qua Email hoặc SĐT mà Quý đơn vị đã đăng ký.
                         </p>
                       </div>
 
@@ -631,7 +631,7 @@ export default function PublicDemandDetailPage() {
                       </button>
 
                       <p className="text-xs text-slate-400 text-center leading-tight">
-                        Miễn phí nộp hồ sơ. Đề xuất sẽ được chuyển tới Cán bộ Sở KH&CN thẩm định điều kiện khớp nối.
+                        Miễn phí nộp hồ sơ. Đề xuất sẽ được chuyển tới Ban Cố vấn Kỹ thuật BACLINK thẩm định điều kiện khớp nối.
                       </p>
                     </form>
                   )}

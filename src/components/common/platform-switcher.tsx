@@ -7,9 +7,8 @@ import { Menu, X } from "lucide-react";
 
 const platforms = [
   { href: "/", label: "Web công khai" },
-  { href: "/portal", label: "Portal thành viên" },
+  { href: "/portal", label: "Portal doanh nghiệp" },
   { href: "/admin", label: "Admin quản trị" },
-  { href: "/gov", label: "Sở, ban, ngành" },
 ] as const;
 
 /** Common switcher for the web modules that are currently implemented. */

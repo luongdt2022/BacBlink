@@ -79,10 +79,10 @@ export default function EnterpriseAdminDashboardPage() {
               📖 Xem Danh bạ
             </Link>
             <Link
-              href="/gov/approvals/enterprises"
+              href="/admin/approvals"
               className="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 hover:bg-brand-700 text-white shadow-sm"
             >
-              🏛️ Cổng Thẩm định Sở
+              Hàng đợi Phê duyệt
             </Link>
           </div>
         </div>

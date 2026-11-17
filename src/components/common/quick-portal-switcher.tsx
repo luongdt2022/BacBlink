@@ -17,16 +17,9 @@ type QuickPortal = {
 };
 
 const webPortals: QuickPortal[] = [
-  { label: "Công khai", role: "GUEST", path: "/" },
-  { label: "Người dùng (chưa là chuyên gia)", role: "USER", path: "/" },
-  { label: "Admin hệ thống", role: "SUPER_ADMIN", path: "/admin" },
-  {
-    label: "Quản lý Sở", role: "PROVINCIAL_ADMIN", path: "/gov", scopeType: "PROVINCE", scopeId: "HÀ NỘI",
-  },
-  { label: "Người chào bán", role: "SELLER", path: "/portal" },
-  { label: "Người tìm mua", role: "BUYER", path: "/portal" },
-  { label: "Đơn vị đổi mới", role: "INNOVATION_ENTITY", path: "/portal" },
-  { label: "Chuyên gia", role: "VERIFIED_EXPERT", path: "/portal/expert/profile" },
+  { label: "Ban Quản trị (ADMIN)", role: "ADMIN", path: "/admin" },
+  { label: "Doanh nghiệp Hội viên (ENTERPRISE)", role: "ENTERPRISE", path: "/portal" },
+  { label: "Thành viên (PUBLIC_USER)", role: "PUBLIC_USER", path: "/" },
 ];
 
 function getStoredSession() {
@@ -41,7 +34,7 @@ export function QuickPortalSwitcher() {
   const [hasBackup, setHasBackup] = useState(false);
 
   useEffect(() => {
-    setActiveRole(authClient.getUser()?.role ?? "GUEST");
+    setActiveRole(authClient.getUser()?.role ?? "PUBLIC_USER");
     setHasBackup(Boolean(window.sessionStorage.getItem(BACKUP_KEY)));
   }, []);
 
@@ -55,7 +48,7 @@ export function QuickPortalSwitcher() {
 
     const previewUser: UserContext = {
       id: `qa-${portal.role.toLowerCase()}`,
-      email: `qa.${portal.role.toLowerCase()}@nacentwin.local`,
+      email: `qa.${portal.role.toLowerCase()}@baclink.org.vn`,
       fullName: `Kiểm thử — ${portal.label}`,
       role: portal.role,
       scopeType: portal.scopeType,

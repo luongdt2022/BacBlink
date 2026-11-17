@@ -365,7 +365,7 @@ export default function TechmartEventsPage() {
                         </div>
                         <div className="flex items-center gap-1.5 font-medium">
                           <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-                          <span>Bộ KH&amp;CN bảo trợ</span>
+                          <span>Hiệp hội BACLINK bảo trợ</span>
                         </div>
                       </div>
                     </div>
@@ -443,7 +443,7 @@ export default function TechmartEventsPage() {
                           <button
                             type="button"
                             onClick={() =>
-                              toast.info("Kỷ yếu sự kiện đang được lưu trữ tại Thư viện số NacenTech.")
+                              toast.info("Kỷ yếu sự kiện đang được lưu trữ tại Thư viện số BACLINK.")
                             }
                             className="text-brand-600 hover:underline font-bold"
                           >
@@ -601,7 +601,7 @@ export default function TechmartEventsPage() {
               <div className="p-3 bg-brand-50 dark:bg-brand-950/40 rounded-xl border border-brand-200 dark:border-brand-900 text-xs text-brand-900 dark:text-brand-200 flex items-start gap-2">
                 <Info className="size-4 text-brand-600 shrink-0 mt-0.5" />
                 <span>
-                  Hồ sơ đăng ký sẽ được Hội đồng Thẩm định của Sở KH&amp;CN và NacenTech rà soát TRL trong 24h trước khi cấp thư mời và vị trí gian hàng chính thức.
+                  Hồ sơ đăng ký sẽ được Ban Cố vấn Kỹ thuật BACLINK rà soát năng lực trong 24h trước khi cấp thư mời và vị trí gian hàng chính thức.
                 </span>
               </div>
 

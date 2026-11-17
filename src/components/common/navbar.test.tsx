@@ -73,7 +73,7 @@ describe("Navbar account menu", () => {
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
     const expertTrigger = within(mainNav).getByRole("link", { name: /^Chuyên gia$/i });
-    expect(expertTrigger).toHaveAttribute("href", "/chuyen-gia");
+    expect(expertTrigger).toHaveAttribute("href", "/experts");
 
     // Sub-items inside Chuyên gia dropdown
     const elearningLink = within(mainNav).getByRole("link", { name: /E-Learning & Đào tạo/i });
@@ -81,7 +81,7 @@ describe("Navbar account menu", () => {
     expect(within(elearningLink).getByText("LMS")).toBeInTheDocument();
 
     const expertCatalogLink = within(mainNav).getByRole("link", { name: /^Mạng lưới Chuyên gia/i });
-    expect(expertCatalogLink).toHaveAttribute("href", "/chuyen-gia");
+    expect(expertCatalogLink).toHaveAttribute("href", "/experts");
 
     const expertUpgradeLink = within(mainNav).getByRole("link", { name: /^Đăng ký Chuyên gia/i });
     expect(expertUpgradeLink).toHaveAttribute("href", "/profile/upgrade");
@@ -196,7 +196,7 @@ describe("Navbar account menu", () => {
     const wireframesLink = within(mainNav).getByRole("link", { name: /Sơ đồ Kiến trúc Chức năng/i });
     expect(wireframesLink).toHaveAttribute("href", "/wireframes");
 
-    const aboutSubLink = within(mainNav).getByRole("link", { name: /Về Viện NacenTech & NacenTwin/i });
+    const aboutSubLink = within(mainNav).getByRole("link", { name: /Về Hiệp hội BACLINK/i });
     expect(aboutSubLink).toHaveAttribute("href", "/gioi-thieu");
 
     const matrixLink = within(mainNav).getByRole("link", { name: /Khung Pháp lý & Chuẩn mực/i });

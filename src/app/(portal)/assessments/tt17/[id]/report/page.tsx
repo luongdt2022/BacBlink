@@ -88,7 +88,7 @@ export default function AssessmentReportPage() {
   const getStatusBadge = (status: Tt17Assessment["status"]) => {
     switch (status) {
       case "APPROVED":
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">Đã phê duyệt (Sở KH&CN)</span>;
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">Đã phê duyệt (BACLINK)</span>;
       case "SUBMITTED":
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">Đã gửi thẩm định</span>;
       case "IN_REVIEW":
@@ -124,7 +124,7 @@ export default function AssessmentReportPage() {
         return {
           bg: "bg-amber-50 border-amber-300 text-amber-900",
           pill: "bg-amber-600 text-white",
-          desc: "Lệch pha đồng bộ công nghệ (Điểm tổng cao nhưng Hệ số đồng bộ T_ĐB thấp). Cần Hội đồng chuyên gia Sở KH&CN thẩm định trực tiếp dây chuyền thực tế.",
+          desc: "Lệch pha đồng bộ công nghệ (Điểm tổng cao nhưng Hệ số đồng bộ T_ĐB thấp). Cần Ban Cố vấn Kỹ thuật Hiệp hội BACLINK thẩm định trực tiếp dây chuyền thực tế.",
         };
       default:
         return {
@@ -660,7 +660,7 @@ export default function AssessmentReportPage() {
               </p>
               {assessment.reviewNotes && (
                 <p className="text-slate-700 pt-1">
-                  <strong>Ý kiến cơ quan quản lý (Sở KH&CN): </strong>{assessment.reviewNotes}
+                  <strong>Ý kiến Ban Cố vấn Kỹ thuật BACLINK: </strong>{assessment.reviewNotes}
                 </p>
               )}
             </div>

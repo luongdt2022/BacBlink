@@ -19,10 +19,18 @@ describe("LoginPage", () => {
   });
 
   it.each([
-    ["SUPER_ADMIN", "/admin"], ["OPERATOR_ADMIN", "/admin"],
-    ["PROVINCIAL_ADMIN", "/gov"], ["SECTOR_ADMIN", "/gov"], ["CLUSTER_ADMIN", "/gov"],
-    ["SELLER", "/portal"], ["BUYER", "/portal"], ["INNOVATION_ENTITY", "/portal"], ["VERIFIED_EXPERT", "/portal"],
+    ["ADMIN", "/admin"],
+    ["SUPER_ADMIN", "/admin"],
+    ["OPERATOR_ADMIN", "/admin"],
+    ["ENTERPRISE", "/portal"],
+    ["SELLER", "/portal"],
+    ["BUYER", "/portal"],
+    ["INNOVATION_ENTITY", "/portal"],
+    ["VERIFIED_EXPERT", "/portal"],
     ["PUBLIC_USER", "/"],
+    ["PROVINCIAL_ADMIN", "/"],
+    ["SECTOR_ADMIN", "/"],
+    ["CLUSTER_ADMIN", "/"],
   ])("creates a session and routes canonical role %s to %s", async (role, expectedPath) => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

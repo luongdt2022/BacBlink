@@ -852,7 +852,7 @@ function ExpertUpgradeForm() {
 
         {/* 5 UX States Container */}
         <Async
-          state={uxState}
+          state={uxState === "empty" ? "idle" : uxState}
           loadingText="Đang xác thực thông tin hồ sơ chuyên gia..."
           successContent={
             existingProfile?.status === "REJECTED" ? (

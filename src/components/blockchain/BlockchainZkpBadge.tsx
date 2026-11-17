@@ -115,7 +115,7 @@ export function BlockchainZkpBadge({
         <span className="flex items-center gap-1.5">
           <ShieldCheck className={`w-4 h-4 ${isVerified ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600"}`} />
           <span className="font-bold">
-            {isVerified ? "Bảo Chứng Mật Mã ZKP & Chuỗi Khối" : "Cảnh Báo Giả Mạo Chuỗi Khối"}
+            {isVerified ? "Bảo Chứng Mật Mã ZKP & BACLINK Trust" : "Cảnh Báo Giả Mạo Chuỗi Khối"}
           </span>
         </span>
 
@@ -140,10 +140,10 @@ export function BlockchainZkpBadge({
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
-                    Biên Bản Bảo Chứng Mật Mã Học ZKP & Chuỗi Khối
+                    Biên Bản Bảo Chứng Mật Mã Học ZKP & BACLINK Trust
                   </h3>
                   <div className="text-xs text-slate-400">
-                    Bảo chứng tính bất biến theo Nghị định 13/2023/NĐ-CP & Chuỗi Khối Quốc Gia NDAChain
+                    Bảo chứng tính bất biến của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) liên thông NDAChain
                   </div>
                 </div>
               </div>

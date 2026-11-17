@@ -4,6 +4,7 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import DeepSurveyPage from './page';
 import { calculateTniScore, getTniBadge } from './types';
 import { authClient } from '@/lib/auth-client';
+import { invalidateMyEnterpriseProfileCache } from '@/lib/enterprise-client';
 
 const mockSurveyResponse = {
   success: true,
@@ -70,6 +71,7 @@ describe('DeepSurveyPage Component (/khao-sat-nhu-cau)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
+    invalidateMyEnterpriseProfileCache();
   });
 
   afterEach(() => {

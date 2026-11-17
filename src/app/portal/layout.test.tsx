@@ -29,11 +29,15 @@ vi.mock("@/components/auth/role-guard", () => ({
   RoleGuard: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getUser: vi.fn(),
-  },
-}));
+vi.mock("@/lib/auth-client", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/auth-client")>("@/lib/auth-client");
+  return {
+    ...actual,
+    authClient: {
+      getUser: vi.fn(),
+    },
+  };
+});
 
 describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
   beforeEach(() => {
@@ -484,5 +488,34 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
   it("renders PortalLoading route boundary with portal-route-skeleton", () => {
     render(<PortalLoading />);
     expect(screen.getByTestId("portal-route-skeleton")).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("supports ENTERPRISE Dual-Mode via activeRole (BUYER default and switches to SELLER on nacentwin_role_switched without changing user.role)", () => {
+    localStorage.clear();
+    vi.mocked(authClient.getUser).mockReturnValue({
+      id: "u-ent",
+      email: "member@baclink.vn",
+      fullName: "DN Hội Viên BACLINK",
+      role: "ENTERPRISE",
+    });
+
+    render(
+      <PortalLayout>
+        <div>Enterprise Content</div>
+      </PortalLayout>
+    );
+
+    // Default activeRole = BUYER
+    expect(screen.getByText("Workspace Bên Mua")).toBeInTheDocument();
+    expect(screen.getByText("Nhu cầu & Đơn mua")).toBeInTheDocument();
+
+    // Switch activeRole via custom event from RoleSwitcher
+    fireEvent(
+      window,
+      new CustomEvent("nacentwin_role_switched", { detail: { role: "SELLER" } })
+    );
+
+    expect(screen.getByText("Workspace Nhà Cung Ứng")).toBeInTheDocument();
+    expect(screen.getByText("Sản phẩm & Công nghệ")).toBeInTheDocument();
   });
 });

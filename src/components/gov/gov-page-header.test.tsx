@@ -82,7 +82,7 @@ describe("T081 [FE-GovPageHeader] GovPageHeader Component Tests", () => {
       />
     );
     const badgeALL = screen.getByTestId("gov-scope-badge");
-    expect(badgeALL).toHaveTextContent("Toàn quốc (ALL)");
+    expect(badgeALL).toHaveTextContent("Tất cả Địa bàn & KCN Bắc Ninh (ALL)");
   });
 
   it("omits scope badge when scopeCode is not provided or whitespace only", () => {

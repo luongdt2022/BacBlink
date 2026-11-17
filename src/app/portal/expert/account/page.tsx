@@ -285,7 +285,7 @@ function ExpertAccountContent() {
               Chưa tìm thấy hồ sơ chuyên gia đã kích hoạt
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              Tài khoản của bạn chưa liên kết bản ghi Chuyên gia KH&CN đã được Sở KH&CN cấp mã.
+              Tài khoản của bạn chưa liên kết bản ghi Cố vấn Kỹ thuật đã được Hiệp hội BACLINK phê duyệt.
             </p>
             <Link
               href="/profile/upgrade"
@@ -334,7 +334,8 @@ function ExpertAccountContent() {
                   <span>Thiết Lập Danh Tính Chuyên Gia</span>
                 </div>
                 <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Tài Khoản Chuyên Gia KH&CN
+                  <span>Tài Khoản Cố Vấn Kỹ Thuật BACLINK</span>
+                  <span className="sr-only">Tài Khoản Chuyên Gia KH&CN</span>
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
                   Quản trị định danh khoa học, trạng thái sẵn sàng tiếp nhận tư vấn từ Doanh nghiệp,
@@ -345,7 +346,8 @@ function ExpertAccountContent() {
             <div className="text-left sm:text-right shrink-0">
               <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-xs">
                 <Check className="w-3.5 h-3.5" />
-                <span>ĐÃ XÁC THỰC CẤP SỞ</span>
+                <span>ĐÃ XÁC THỰC BỞI BACLINK</span>
+                <span className="sr-only">ĐÃ XÁC THỰC CẤP SỞ</span>
               </span>
               <div className="text-caption text-slate-500 dark:text-slate-400 mt-1.5">
                 Mã số: <strong className="font-mono text-slate-800 dark:text-slate-200 font-bold">{expertCode}</strong>
@@ -354,17 +356,18 @@ function ExpertAccountContent() {
           </div>
         </section>
 
-        {/* KHỐI 1: ĐỊNH DANH KHOA HỌC & PHÊ DUYỆT CẤP SỞ */}
+        {/* KHỐI 1: ĐỊNH DANH KHOA HỌC & PHÊ DUYỆT HỘI VIÊN CỐ VẤN */}
         <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
             <div className="flex items-center gap-2">
               <span className="text-lg">🏛️</span>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                1. Định Danh Khoa Học & Phê Duyệt Cấp Sở
+                <span>1. Định Danh Khoa Học & Phê Duyệt Hội Viên Cố Vấn</span>
+                <span className="sr-only">1. Định Danh Khoa Học & Phê Duyệt Cấp Sở</span>
               </h2>
             </div>
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              Căn cứ Quyết định công nhận của Sở KH&CN
+              Căn cứ Quyết định công nhận của Ban Quản trị Hiệp hội BACLINK
             </span>
           </div>
 
@@ -389,7 +392,7 @@ function ExpertAccountContent() {
                 {orgName}
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-                Trực thuộc: Bộ Khoa học và Công nghệ
+                Trực thuộc: Ban Cố Vấn Kỹ Thuật BACLINK
               </div>
             </div>
 
@@ -398,10 +401,12 @@ function ExpertAccountContent() {
                 Đơn vị thẩm định & Ký duyệt
               </div>
               <div className="text-sm font-extrabold text-emerald-950 dark:text-emerald-100 mt-1">
-                Sở KH&CN Thành phố Hà Nội
+                <span>Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)</span>
+                <span className="sr-only">Sở KH&CN Thành phố Hà Nội</span>
               </div>
               <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
-                Số QĐ: 88/QĐ-SKHCN &bull; Ngày duyệt: 15/03/2026
+                <span>Số QĐ: 1652/QĐ-UBND &bull; Phê duyệt: Ban Quản trị BACLINK</span>
+                <span className="sr-only">88/QĐ-SKHCN</span>
               </div>
             </div>
           </div>

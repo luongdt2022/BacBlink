@@ -15,9 +15,11 @@ import {
   ArrowRight,
   Shield,
   Zap,
-  Filter
+  Filter,
+  MapPin
 } from "lucide-react";
 import { API_BASE } from "@/lib/api-client";
+import { getBacNinhLocations, type LocationOption } from "@/lib/master-data-client";
 import { AppButton } from "@/components/ui/design-system";
 
 interface SectorItem {
@@ -41,16 +43,21 @@ interface MatrixPair {
 export default function PublicMatrixExplorerPage() {
   const [sectors, setSectors] = useState<SectorItem[]>([]);
   const [matrixPairs, setMatrixPairs] = useState<MatrixPair[]>([]);
+  const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [locationsError, setLocationsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedFieldCode, setSelectedFieldCode] = useState<string>("LV01");
+  const [selectedFieldCode, setSelectedFieldCode] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     const fetchData = async () => {
       setLoading(true);
+      setLocationsLoading(true);
       setError("");
+      setLocationsError("");
       try {
         const [resSectors, resMatrix] = await Promise.all([
           fetch(`${API_BASE}/api/v1/master-data/sectors?activeOnly=true`, { cache: "no-store" }),
@@ -66,9 +73,10 @@ export default function PublicMatrixExplorerPage() {
 
         if (!cancelled) {
           if (Array.isArray(dataSectors.data)) {
-            setSectors(dataSectors.data.filter((s: SectorItem) => s.isActive !== false));
-            if (dataSectors.data.length > 0) {
-              setSelectedFieldCode(dataSectors.data[0].code);
+            const activeSectors = dataSectors.data.filter((s: SectorItem) => s.isActive !== false);
+            setSectors(activeSectors);
+            if (activeSectors.length > 0) {
+              setSelectedFieldCode(activeSectors[0].code);
             }
           }
           if (Array.isArray(dataMatrix.data)) {
@@ -84,7 +92,19 @@ export default function PublicMatrixExplorerPage() {
       }
     };
 
+    const fetchLocations = async () => {
+      try {
+        const rows = await getBacNinhLocations();
+        if (!cancelled) setLocations(rows);
+      } catch (err: any) {
+        if (!cancelled) setLocationsError(err?.message || "Không tải được danh mục Địa bàn & KCN Bắc Ninh.");
+      } finally {
+        if (!cancelled) setLocationsLoading(false);
+      }
+    };
+
     fetchData();
+    fetchLocations();
     return () => {
       cancelled = true;
     };
@@ -113,13 +133,13 @@ export default function PublicMatrixExplorerPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-slate-900 text-base">NACENTWIN</span>
+                <span className="font-extrabold tracking-tight text-slate-900 text-base">BACLINK</span>
                 <span className="rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 border border-emerald-200">
-                  PUBLIC TECH MATRIX EXPLORER
+                  INDUSTRIAL MATRIX EXPLORER
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
-                Bản Đồ Khám Phá Danh Mục Ngành & Ma Trận Công Nghệ Việt Nam
+                Bản Đồ 8 Ngành Công Nghiệp BACLINK &amp; KCN Bắc Ninh
               </p>
             </div>
           </div>
@@ -146,10 +166,10 @@ export default function PublicMatrixExplorerPage() {
               Cổng Tri Thức & Định Hướng Đổi Mới Sáng Tạo
             </span>
             <h1 className="type-page-title">
-              Tra Cứu Bản Đồ Ma Trận Lĩnh Vực & Cặp Công Nghệ Trọng Điểm
+              Tra Cứu Ma Trận 8 Ngành Công Nghiệp &amp; Địa Bàn KCN Bắc Ninh
             </h1>
             <p className="text-xs sm:text-sm text-white/85">
-              Hệ thống danh mục chuẩn quốc gia tích hợp chuẩn Thông tư 17/2019/TT-BKHCN, giúp Doanh nghiệp dễ dàng nhận diện công nghệ cần đổi mới và kết nối nhà cung cấp sáng chế phù hợp.
+              Hệ thống 8 ngành công nghiệp chuẩn BACLINK (IND_*) liên thông cùng mạng lưới Khu công nghiệp trọng điểm tỉnh Bắc Ninh (Yên Phong, Quế Võ, VSIP, Tiên Sơn...), giúp Doanh nghiệp nội địa và FDI kết nối chuỗi cung ứng hiệu quả.
             </p>
           </div>
 
@@ -200,7 +220,7 @@ export default function PublicMatrixExplorerPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {loading ? (
               <div className="col-span-full p-6 text-center text-xs text-slate-400">
                 Đang tải danh mục lĩnh vực…
@@ -325,12 +345,64 @@ export default function PublicMatrixExplorerPage() {
           </div>
         </div>
 
-        {/* SECTION 3: CALL TO ACTION */}
+        {/* SECTION 3: BAC NINH LOCATIONS & KCNS */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div>
+              <h3 className="type-card-title text-slate-900 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-emerald-600" />
+                <span>Mạng Lưới Địa Bàn &amp; Khu Công Nghiệp Trọng Điểm Bắc Ninh</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Danh mục 8+1 địa bàn và các KCN trọng điểm BACLINK phục vụ kết nối chuỗi cung ứng FDI – Nội địa
+              </p>
+            </div>
+            <span className="text-xs text-slate-500 font-semibold bg-slate-100 px-3 py-1.5 rounded-xl">
+              {locationsLoading ? "Đang tải…" : `${locations.length} Địa bàn / KCN`}
+            </span>
+          </div>
+
+          {locationsError ? (
+            <div role="alert" className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-medium">
+              {locationsError}
+            </div>
+          ) : locationsLoading ? (
+            <div className="p-4 text-center text-xs text-slate-400">
+              Đang tải danh mục Địa bàn &amp; KCN Bắc Ninh…
+            </div>
+          ) : locations.length === 0 ? (
+            <div className="p-4 text-center text-xs text-slate-400">
+              Chưa có dữ liệu Địa bàn &amp; KCN Bắc Ninh.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {locations.map((loc) => {
+                const locType = String(loc.locationType || loc.type || loc.metadata?.type || (loc.code.startsWith("KCN_") ? "KCN" : "AREA")).toUpperCase();
+                return (
+                  <div
+                    key={loc.code}
+                    className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-900 truncate">{loc.name}</div>
+                      <div className="text-[11px] font-mono text-slate-500 mt-0.5">{loc.code}</div>
+                    </div>
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold ${locType === "KCN" ? "bg-cyan-100 text-cyan-800" : "bg-amber-100 text-amber-800"}`}>
+                      {locType === "KCN" ? "KCN" : "Địa bàn"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* SECTION 4: CALL TO ACTION */}
         <div className="bg-gradient-to-r from-emerald-700 to-teal-800 text-white rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="space-y-1">
-            <h3 className="type-card-title">Doanh Nghiệp Cần Đổi Mới Công Nghệ?</h3>
+            <h3 className="type-card-title">Doanh Nghiệp Bắc Ninh Cần Kết Nối Chuỗi Cung Ứng?</h3>
             <p className="text-xs text-emerald-100">
-              Gửi phiếu yêu cầu tìm kiếm giải pháp hoặc đăng ký sáng chế vào Cổng Đổi Mới Sáng Tạo Quốc Gia.
+              Gửi yêu cầu tìm kiếm nhà cung ứng hoặc công bố năng lực sản xuất trên Cổng Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK).
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">

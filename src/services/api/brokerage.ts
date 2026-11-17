@@ -18,7 +18,8 @@ const API_BASE =
 
 function getAuthScopeKey(): string {
   const s = getStoredSession();
-  return `${s?.user?.id ?? "anon"}:${s?.user?.role ?? "anon"}`;
+  const activeRole = typeof window !== "undefined" ? localStorage.getItem("nacentwin_active_role") : null;
+  return `${s?.user?.id ?? "anon"}:${s?.user?.role ?? "anon"}:${activeRole ?? "default"}`;
 }
 
 function normalizeRadarCandidate(item: any): MatchCandidate {
@@ -50,22 +51,28 @@ export const brokerageApi = {
     sector?: string;
     minScore?: number;
     search?: string;
+    mode?: string;
   }): Promise<RadarSummary> {
     const q = new URLSearchParams();
     if (params?.sector && params.sector !== "ALL") q.append("sector", params.sector);
     if (params?.minScore) q.append("minScore", params.minScore.toString());
     if (params?.search) q.append("search", params.search);
+    const activeRole = params?.mode || (typeof window !== "undefined" ? localStorage.getItem("nacentwin_active_role") : null);
+    if (activeRole) q.append("mode", activeRole);
     const qs = q.toString();
 
     return getCachedOrFetch(
       `brokerage:radar-summary:${getAuthScopeKey()}:${qs}`,
       20_000,
       async () => {
+        const headers: Record<string, string> = {
+          ...authClient.getAuthHeaders(),
+          "Content-Type": "application/json",
+        };
+        if (activeRole) headers["X-Active-Role"] = activeRole;
+
         const res = await fetch(`${API_BASE}/api/v1/brokerage/radar/summary${qs ? `?${qs}` : ""}`, {
-          headers: {
-            ...authClient.getAuthHeaders(),
-            "Content-Type": "application/json",
-          },
+          headers,
           cache: "no-store",
         });
         if (!res.ok) throw new Error("Không thể tải thống kê Radar ghép nối.");
@@ -79,6 +86,7 @@ export const brokerageApi = {
     sector?: string;
     minScore?: number;
     search?: string;
+    mode?: string;
     page?: number;
     pageSize?: number;
   }): Promise<PagedRadarResult> {
@@ -86,6 +94,8 @@ export const brokerageApi = {
     if (params?.sector && params.sector !== "ALL") q.append("sector", params.sector);
     if (params?.minScore) q.append("minScore", params.minScore.toString());
     if (params?.search) q.append("search", params.search);
+    const activeRole = params?.mode || (typeof window !== "undefined" ? localStorage.getItem("nacentwin_active_role") : null);
+    if (activeRole) q.append("mode", activeRole);
     const page = params?.page ?? 1;
     const pageSize = params?.pageSize ?? 24;
     q.append("page", String(page));
@@ -96,11 +106,14 @@ export const brokerageApi = {
       `brokerage:radar-paged:${getAuthScopeKey()}:${qs}`,
       20_000,
       async () => {
+        const headers: Record<string, string> = {
+          ...authClient.getAuthHeaders(),
+          "Content-Type": "application/json",
+        };
+        if (activeRole) headers["X-Active-Role"] = activeRole;
+
         const res = await fetch(`${API_BASE}/api/v1/brokerage/radar?${qs}`, {
-          headers: {
-            ...authClient.getAuthHeaders(),
-            "Content-Type": "application/json",
-          },
+          headers,
           cache: "no-store",
         });
         if (!res.ok) throw new Error("Không thể tải danh sách gợi ý ghép nối.");
@@ -122,6 +135,7 @@ export const brokerageApi = {
     sector?: string;
     minScore?: number;
     search?: string;
+    mode?: string;
     page?: number;
     pageSize?: number;
   }): Promise<MatchCandidate[]> {
@@ -153,20 +167,28 @@ export const brokerageApi = {
     search?: string;
     scope?: string;
     organizationName?: string;
+    mode?: string;
   }): Promise<ConnectionRequest[]> {
     const q = new URLSearchParams();
     if (params?.status && params.status !== "ALL") q.append("status", params.status);
     if (params?.search) q.append("search", params.search);
     if (params?.scope) q.append("scope", params.scope);
     if (params?.organizationName) q.append("organizationName", params.organizationName);
+    const activeRole = params?.mode || (typeof window !== "undefined" ? localStorage.getItem("nacentwin_active_role") : null);
+    if (activeRole) q.append("mode", activeRole);
 
     const queryStr = q.toString() ? `?${q.toString()}` : "";
     return getCachedOrFetch(
       `brokerage:requests:${getAuthScopeKey()}:${queryStr}`,
       15_000,
       async () => {
+        const headers: Record<string, string> = {
+          ...authClient.getAuthHeaders(),
+        };
+        if (activeRole) headers["X-Active-Role"] = activeRole;
+
         const res = await fetch(`${API_BASE}/api/v1/brokerage/requests${queryStr}`, {
-          headers: authClient.getAuthHeaders(),
+          headers,
           cache: "no-store",
         });
         if (!res.ok) throw new Error("Không thể tải danh sách yêu cầu kết nối.");
@@ -239,21 +261,29 @@ export const brokerageApi = {
     stage?: string,
     search?: string,
     scope?: string,
-    organizationName?: string
+    organizationName?: string,
+    mode?: string
   ): Promise<Opportunity[]> {
     const q = new URLSearchParams();
     if (stage && stage !== "ALL") q.append("stage", stage);
     if (search) q.append("search", search);
     if (scope) q.append("scope", scope);
     if (organizationName) q.append("organizationName", organizationName);
+    const activeRole = mode || (typeof window !== "undefined" ? localStorage.getItem("nacentwin_active_role") : null);
+    if (activeRole) q.append("mode", activeRole);
 
     const queryStr = q.toString() ? `?${q.toString()}` : "";
     return getCachedOrFetch(
       `brokerage:opps:${getAuthScopeKey()}:${queryStr}`,
       15_000,
       async () => {
+        const headers: Record<string, string> = {
+          ...authClient.getAuthHeaders(),
+        };
+        if (activeRole) headers["X-Active-Role"] = activeRole;
+
         const res = await fetch(`${API_BASE}/api/v1/brokerage/opportunities${queryStr}`, {
-          headers: authClient.getAuthHeaders(),
+          headers,
           cache: "no-store",
         });
         if (!res.ok) throw new Error("Không thể tải danh sách cơ hội hợp tác.");

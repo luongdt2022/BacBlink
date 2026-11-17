@@ -37,14 +37,14 @@ describe("UserGuidePage", () => {
     render(<UserGuidePage />);
 
     expect(
-      screen.getByText("Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin")
+      screen.getByText("Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Cổng Thông Tin BACLINK")
     ).toBeInTheDocument();
-    expect(screen.getByText(/11 Phân Hệ · 69 Màn Hình/i)).toBeInTheDocument();
-    expect(screen.getByText(/7 Vai Trò Tác Nhân/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/11 Phân Hệ/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/3 Cấp Phân Quyền/i)).toBeInTheDocument();
 
     // Role buttons
     expect(
-      screen.getByRole("button", { name: "Tất cả (69)" })
+      screen.getByRole("button", { name: `Tất cả (${61})` })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Bên mua công nghệ/i })
@@ -62,7 +62,7 @@ describe("UserGuidePage", () => {
 
     const pdfLink = screen.getByRole("link", { name: /Tải PDF/i });
     expect(pdfLink).toHaveAttribute("href", "/huong-dan-su-dung.pdf");
-    expect(pdfLink).toHaveAttribute("download", "Huong_Dan_Su_Dung_NacenTwin.pdf");
+    expect(pdfLink).toHaveAttribute("download", "Huong_Dan_Su_Dung_BACLINK.pdf");
 
     const zenButton = screen.getByRole("button", { name: /Tràn viền/i });
     expect(zenButton).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe("UserGuidePage", () => {
   it("renders the interactive guide iframe", () => {
     render(<UserGuidePage />);
 
-    const iframe = screen.getByTitle("Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin");
+    const iframe = screen.getByTitle("Hướng Dẫn Sử Dụng Chi Tiết Cổng Thông Tin BACLINK");
     expect(iframe).toBeInTheDocument();
     expect(iframe).toHaveAttribute("src", "/huong-dan-su-dung.html");
   });

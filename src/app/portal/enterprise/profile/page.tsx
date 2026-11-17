@@ -744,7 +744,7 @@ export default function EnterpriseOwnerProfilePage() {
         onClose={() => setShowSubmitModal(false)}
         onConfirm={handleConfirmSubmitVerification}
         title="Xác nhận nộp hồ sơ thẩm định"
-        message="Hồ sơ sau khi nộp sẽ được chuyển trực tiếp đến Sở KH&CN để cán bộ thụ lý đối soát. Trong thời gian thẩm định, quý đơn vị vẫn có thể cập nhật thông tin bổ sung khi được yêu cầu."
+        message="Hồ sơ sau khi nộp sẽ được chuyển trực tiếp đến Ban Quản trị Hiệp hội BACLINK để đối soát và phê duyệt hội viên. Trong thời gian thẩm định, quý đơn vị vẫn có thể cập nhật thông tin bổ sung khi được yêu cầu."
         confirmText="Xác nhận nộp hồ sơ"
         cancelText="Để tôi kiểm tra lại"
         variant="info"

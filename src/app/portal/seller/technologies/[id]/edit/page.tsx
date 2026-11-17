@@ -863,7 +863,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
                       Bước 4: Pháp Lý Sở Hữu Trí Tuệ & DataRoom
                     </h2>
                     <p className="text-xs text-slate-500">
-                      Khai báo bộ tứ SHTT, phòng dữ liệu bảo mật 3 cấp và gửi cơ quan Sở KH&CN thẩm định.
+                      Khai báo bộ tứ SHTT, phòng dữ liệu bảo mật 3 cấp và gửi Ban Quản trị Hiệp hội BACLINK thẩm định niêm yết.
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">

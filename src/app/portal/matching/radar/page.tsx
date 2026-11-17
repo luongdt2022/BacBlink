@@ -29,6 +29,7 @@ import ConnectionRequestModal from './ConnectionRequestModal';
 import { SectorBannerBackground } from "@/components/enterprise/SectorBannerBackground";
 import { useToast } from "@/components/common/toast";
 import { authClient } from '@/lib/auth-client';
+import { BACLINK_SECTOR_LABELS } from '@/lib/label-resolver';
 
 export default function MatchingRadarPage() {
   const toast = useToast();
@@ -462,7 +463,7 @@ export default function MatchingRadarPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Ngành TT17:</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">Ngành công nghiệp:</span>
                 <select
                   value={sector}
                   onChange={(e) => {
@@ -471,11 +472,12 @@ export default function MatchingRadarPage() {
                   }}
                   className="h-11 px-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
                 >
-                  <option value="ALL">Tất cả ngành</option>
-                  <option value="LV01">Nông nghiệp công nghệ cao</option>
-                  <option value="LV11">Chế tạo máy & Tự động hóa</option>
-                  <option value="LV07">Công nghệ môi trường & Xử lý rác</option>
-                  <option value="LV14">Y Dược & Thiết bị y tế</option>
+                  <option value="ALL">Tất cả ngành BACLINK</option>
+                  {Object.entries(BACLINK_SECTOR_LABELS).map(([code, name]) => (
+                    <option key={code} value={code}>
+                      {name}
+                    </option>
+                  ))}
                 </select>
               </div>
 

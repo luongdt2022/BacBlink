@@ -195,8 +195,8 @@ function createAdministrativeHeader(agencyTitle: string): Table {
                 alignment: AlignmentType.CENTER,
                 spacing: { after: 40 },
                 children: [
-                  createTextRun("BỘ KHOA HỌC VÀ CÔNG NGHỆ\n", { bold: true, size: 20 }),
-                  createTextRun(agencyTitle, { bold: true, size: 20 }),
+                  createTextRun("HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH\n", { bold: true, size: 20 }),
+                  createTextRun(agencyTitle || "BAN CỐ VẤN KỸ THUẬT (BACLINK)", { bold: true, size: 20 }),
                 ],
               }),
               new Paragraph({
@@ -1765,7 +1765,7 @@ export async function exportTt17SurveyDocxLegacy(
       children: [
         makeTableCell("Ý kiến / Nhận xét thẩm định:", { widthPercent: 40 }),
         makeTableCell(
-          safeText(assessment.reviewNotes, "Hồ sơ đánh giá trực tuyến hợp lệ trên Hệ thống CSDL Quốc gia NacenTwin."),
+          safeText(assessment.reviewNotes, "Hồ sơ đánh giá trực tuyến hợp lệ trên Cổng kết nối chuỗi cung ứng BACLINK."),
           { widthPercent: 60, italic: true }
         ),
       ],

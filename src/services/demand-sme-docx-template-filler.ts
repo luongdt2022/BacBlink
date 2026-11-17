@@ -994,7 +994,7 @@ export async function generateDemandSmeDocxFromTemplate(
       setCellText(
         doc,
         tcs[0],
-        `☑ ĐÃ XÁC NHẬN CAM KẾT BẢO VỆ DỮ LIỆU CÁ NHÂN (PDPD - Nghị định 13/2023/NĐ-CP): Doanh nghiệp cam kết toàn bộ thông tin kê khai trên là hoàn toàn chính xác và ủy quyền cho Sở KH&CN / NacenTwin kết nối với các đối tác công nghệ.`
+        `☑ ĐÃ XÁC NHẬN CAM KẾT BẢO VỆ DỮ LIỆU CÁ NHÂN (PDPD - Nghị định 13/2023/NĐ-CP): Doanh nghiệp cam kết toàn bộ thông tin kê khai trên là hoàn toàn chính xác và ủy quyền cho Hiệp hội BACLINK kết nối với các đối tác công nghệ.`
       );
     }
   }

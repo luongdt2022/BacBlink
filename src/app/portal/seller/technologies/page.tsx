@@ -94,7 +94,7 @@ export default function SellerTechnologiesPage() {
             Quản Lý Kho Giải Pháp & Công Nghệ Chào Bán
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Danh mục công nghệ, cấp độ sẵn sàng TRL 1–9 và tình trạng thẩm định của Sở KH&CN.
+            Danh mục sản phẩm, năng lực sản xuất, TRL 1–9 và tình trạng thẩm định của Hiệp hội BACLINK.
           </p>
         </div>
 
@@ -130,12 +130,12 @@ export default function SellerTechnologiesPage() {
               <CheckCircle className="w-4 h-4 text-emerald-500" />
             </div>
             <p className="text-2xl font-extrabold text-emerald-600">{kpi.publishedOffers}</p>
-            <p className="text-xs text-emerald-700 font-semibold">Đã được Sở KH&CN xác thực</p>
+            <p className="text-xs text-emerald-700 font-semibold">Đã được Hiệp hội BACLINK xác thực</p>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
             <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-bold">Chờ Sở duyệt hồ sơ</span>
+              <span className="text-xs font-bold">Chờ Hiệp hội duyệt</span>
               <Clock className="w-4 h-4 text-amber-500" />
             </div>
             <p className="text-2xl font-extrabold text-amber-600">{kpi.pendingOffers}</p>
@@ -299,7 +299,7 @@ export default function SellerTechnologiesPage() {
                         )}
                         {item.status === "PENDING" && (
                           <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200 inline-block">
-                            Chờ Sở KH&CN duyệt
+                            Chờ Hiệp hội duyệt
                           </span>
                         )}
                         {item.status === "REJECTED" && (
@@ -318,7 +318,7 @@ export default function SellerTechnologiesPage() {
                           </span>
                         )}
                         <span className="text-xs text-slate-500 font-medium block truncate max-w-[160px]">
-                          {item.managingAuthorityName || "Sở KH&CN TP. Hà Nội"}
+                          {item.managingAuthorityName || "Hiệp hội BACLINK"}
                         </span>
                       </div>
                     </td>

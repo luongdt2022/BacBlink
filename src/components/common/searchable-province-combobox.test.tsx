@@ -10,58 +10,59 @@ afterEach(() => {
   cleanup();
 });
 
-describe("SearchableProvinceCombobox Unit Tests", () => {
+describe("SearchableProvinceCombobox Unit Tests (Bac Ninh Areas & KCNs)", () => {
   it("hàm removeVietnameseDiacritics loại bỏ dấu tiếng Việt chính xác", () => {
-    expect(removeVietnameseDiacritics("Hà Nội")).toBe("ha noi");
-    expect(removeVietnameseDiacritics("Đà Nẵng")).toBe("da nang");
-    expect(removeVietnameseDiacritics("TP. Hồ Chí Minh")).toBe("tp. ho chi minh");
-    expect(removeVietnameseDiacritics("Bắc Ninh")).toBe("bac ninh");
-    expect(removeVietnameseDiacritics("Đắk Lắk")).toBe("dak lak");
+    expect(removeVietnameseDiacritics("TP. Bắc Ninh")).toBe("tp. bac ninh");
+    expect(removeVietnameseDiacritics("H. Yên Phong")).toBe("h. yen phong");
+    expect(removeVietnameseDiacritics("TX. Thuận Thành")).toBe("tx. thuan thanh");
+    expect(removeVietnameseDiacritics("TP. Từ Sơn")).toBe("tp. tu son");
+    expect(removeVietnameseDiacritics("KCN Đại Đồng - Hoàn Sơn")).toBe("kcn dai dong - hoan son");
   });
 
-  it("render nút bấm với placeholder mặc định khi chưa chọn", () => {
+  it("render nút bấm với placeholder mặc định Địa bàn / KCN Bắc Ninh khi chưa chọn", () => {
     render(<SearchableProvinceCombobox onChange={vi.fn()} />);
-    expect(screen.getByText("Tất cả Tỉnh / Thành phố")).toBeDefined();
+    expect(screen.getByText("Tất cả Địa bàn / KCN Bắc Ninh")).toBeDefined();
   });
 
-  it("mở popover danh sách khi bấm vào nút", () => {
+  it("mở popover danh sách 8+1 Địa bàn & KCN Bắc Ninh khi bấm vào nút (không còn 34 tỉnh)", () => {
     render(<SearchableProvinceCombobox onChange={vi.fn()} />);
     const triggerBtn = screen.getByRole("button");
     fireEvent.click(triggerBtn);
 
-    // Kiểm tra ô tìm kiếm xuất hiện
-    const searchInput = screen.getByPlaceholderText(/Gõ tên tỉnh thành/i);
+    const searchInput = screen.getByPlaceholderText(/Gõ tên địa bàn, KCN/i);
     expect(searchInput).toBeDefined();
 
-    // Kiểm tra hiển thị các tỉnh tiêu biểu
-    expect(screen.getByText("Hà Nội")).toBeDefined();
-    expect(screen.getByText("Đà Nẵng")).toBeDefined();
+    expect(screen.getByText("TP. Bắc Ninh")).toBeDefined();
+    expect(screen.getByText("H. Yên Phong")).toBeDefined();
+    expect(screen.getByText("KCN VSIP Bắc Ninh")).toBeDefined();
+    expect(screen.getByText("KCN Yên Phong I")).toBeDefined();
+    expect(screen.queryByText("Hà Nội")).toBeNull();
+    expect(screen.queryByText("Đà Nẵng")).toBeNull();
   });
 
-  it("lọc chính xác tỉnh thành khi gõ tiếng Việt KHÔNG DẤU", () => {
+  it("lọc chính xác địa bàn và KCN khi gõ tiếng Việt KHÔNG DẤU", () => {
     render(<SearchableProvinceCombobox onChange={vi.fn()} />);
     const triggerBtn = screen.getByRole("button");
     fireEvent.click(triggerBtn);
 
-    const searchInput = screen.getByPlaceholderText(/Gõ tên tỉnh thành/i);
-    // Gõ không dấu "bac ninh"
-    fireEvent.change(searchInput, { target: { value: "bac ninh" } });
+    const searchInput = screen.getByPlaceholderText(/Gõ tên địa bàn, KCN/i);
+    fireEvent.change(searchInput, { target: { value: "yen phong" } });
 
-    // "Bắc Ninh" phải xuất hiện, các tỉnh khác không khớp phải bị ẩn
-    expect(screen.getByText("Bắc Ninh")).toBeDefined();
-    expect(screen.queryByText("Cần Thơ")).toBeNull();
+    expect(screen.getByText("H. Yên Phong")).toBeDefined();
+    expect(screen.getByText("KCN Yên Phong I")).toBeDefined();
+    expect(screen.queryByText("TP. Từ Sơn")).toBeNull();
   });
 
-  it("gọi onChange khi người dùng bấm chọn một tỉnh thành", () => {
+  it("gọi onChange khi người dùng bấm chọn một Địa bàn hoặc KCN Bắc Ninh", () => {
     const handleChange = vi.fn();
     render(<SearchableProvinceCombobox onChange={handleChange} />);
 
     const triggerBtn = screen.getByRole("button");
     fireEvent.click(triggerBtn);
 
-    const haNoiOption = screen.getByText("Hà Nội");
-    fireEvent.click(haNoiOption);
+    const vsipOption = screen.getByText("KCN VSIP Bắc Ninh");
+    fireEvent.click(vsipOption);
 
-    expect(handleChange).toHaveBeenCalledWith("Hà Nội");
+    expect(handleChange).toHaveBeenCalledWith("KCN VSIP Bắc Ninh");
   });
 });

@@ -11,13 +11,13 @@ describe("QC Gate 4 Typography Verification (Be Vietnam Pro + JetBrains Mono Sta
 
   describe("Item 1: Header & Navigation Breakpoints", () => {
     it("configures desktop navigation to flex at lg (1024px) and hide below lg to prevent mid-screen menu wrapping", () => {
-      expect(navbarContent).toContain("hidden flex-1 items-center justify-center gap-0.5 2xl:gap-1 lg:flex");
+      expect(navbarContent).toContain("hidden flex-1 items-center justify-center gap-0.5 xl:gap-1.5 lg:flex");
       expect(navbarContent).toContain("lg:hidden");
     });
 
     it("uses whitespace-nowrap and compact spacing on desktop links to prevent line breaks", () => {
       expect(navbarContent).toContain("whitespace-nowrap");
-      expect(navbarContent).toContain("px-2 py-1.5 2xl:px-2.5 2xl:py-2 text-xs 2xl:text-sm");
+      expect(navbarContent).toContain("px-2.5 py-2 text-xs xl:text-sm");
     });
   });
 

@@ -4,6 +4,14 @@ import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/re
 import PublicDemandsPage from "./page";
 import { authClient, ROLES } from "@/lib/auth-client";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}));
+
 vi.mock("@/lib/portal-client", () => ({
   portalClient: {
     getStats: vi.fn(async () => ({
@@ -136,7 +144,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
 
     // Kiểm tra tiêu đề chính và mô tả trên Hero Banner
     expect(
-      screen.getByText("Nhu Cầu Đổi Mới Công Nghệ Từ Doanh Nghiệp")
+      screen.getByText("Nhu Cầu Đặt Hàng Gia Công & Linh Kiện Bắc Ninh")
     ).toBeInTheDocument();
 
     // Kiểm tra 3 khối Quick Metrics nạp động từ portalClient.getStats()

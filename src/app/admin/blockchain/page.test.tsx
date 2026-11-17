@@ -55,7 +55,7 @@ describe("AdminBlockchainPage Component", () => {
 
     render(<AdminBlockchainPage />);
 
-    expect(screen.getByText("Trung Tâm Quản Trị Chuỗi Khối & Mật Mã Học ZKP")).toBeInTheDocument();
+    expect(screen.getByText(/Trung Tâm Quản Trị Chuỗi Khối & Mật Mã Học/i)).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Hồ Sơ Chào Bán Công Nghệ")).toBeInTheDocument();

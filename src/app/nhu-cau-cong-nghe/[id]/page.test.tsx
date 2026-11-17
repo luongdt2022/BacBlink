@@ -180,11 +180,11 @@ describe("PublicDemandDetailPage Component (/nhu-cau-cong-nghe/[id])", () => {
     });
 
     expect(
-      screen.getByText(/Hồ sơ bài toán đang chờ Cán bộ Sở KH&CN thẩm định/i)
+      screen.getByText(/Hồ sơ bài toán đang chờ Ban Quản trị Hiệp hội BACLINK thẩm định/i)
     ).toBeInTheDocument();
-    expect(screen.getAllByText("CHỜ SỞ KH&CN THẨM ĐỊNH").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("CHỜ HIỆP HỘI THẨM ĐỊNH").length).toBeGreaterThan(0);
     expect(
-      screen.getByText(/Bài toán đang trong quy trình thẩm định sơ bộ của Sở KH&CN. Tính năng gửi hồ sơ chào bán giải pháp sẽ tự động kích hoạt sau khi bài toán được phê duyệt niêm yết./i)
+      screen.getByText(/Bài toán đang trong quy trình thẩm định sơ bộ của Ban Cố vấn Hiệp hội BACLINK/i)
     ).toBeInTheDocument();
     expect(screen.queryByText("Nộp Đề Xuất Giải Pháp")).not.toBeInTheDocument();
   });

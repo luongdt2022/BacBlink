@@ -31,7 +31,7 @@ describe("DichVuKhacPage (Dịch Vụ Khác)", () => {
   it("renders page header and core services", () => {
     render(<DichVuKhacPage />);
 
-    expect(screen.getByText(/Dịch Vụ Tư Vấn SHTT & Định Giá Công Nghệ Chuyên Nghiệp/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dịch Vụ Hỗ Trợ Hội Viên & Tư Vấn Kỹ Thuật Công Nghiệp/i)).toBeInTheDocument();
     expect(screen.getByText(/1. Đăng Ký Bảo Hộ SHTT & Sáng Chế/i)).toBeInTheDocument();
     expect(screen.getByText(/2. Thẩm Định & Định Giá Công Nghệ/i)).toBeInTheDocument();
     expect(screen.getByText(/3. Hồ Sơ Doanh Nghiệp KH&CN/i)).toBeInTheDocument();

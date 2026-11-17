@@ -1,10 +1,21 @@
 /**
  * GovLabelResolver — Bộ giải nghĩa dữ liệu công vụ chuẩn hóa
- * Căn cứ: PO-DEC-20261026-GOV, TT 17/2019/TT-BKHCN, Master Excel SSOT & PROVINCES_34
- * Nguyên tắc: 100% Human-Readable Labels (Tuyệt đối không hiển thị mã kỹ thuật thô cho cán bộ Sở)
+ * Căn cứ: CR-BACLINK-003, TT 17/2019/TT-BKHCN, BAC_NINH_LOCATIONS & 8 ngành IND_*
+ * Nguyên tắc: 100% Human-Readable Labels (Tuyệt đối không hiển thị mã kỹ thuật thô)
  */
 
-import { PROVINCES_34 } from "./constants/provinces";
+import { BAC_NINH_LOCATIONS } from "./constants/provinces";
+
+export const BACLINK_SECTORS_MAP: Record<string, string> = {
+  IND_ELEC: "Điện tử, Bán dẫn & Thiết bị điện",
+  IND_MECH: "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy",
+  IND_AUTO: "Tự động hóa, Robot & Smart Factory",
+  IND_PLAS: "Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp",
+  IND_MAT: "Vật liệu mới & Công nghiệp hỗ trợ",
+  IND_IT: "Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP",
+  IND_GREEN: "Công nghiệp xanh, Năng lượng sạch & ESG",
+  IND_LOG: "Logistics công nghiệp, Kho vận & Chuỗi cung ứng",
+};
 
 export const MASTER_SECTORS_MAP: Record<string, string> = {
   CN01: "Công nghệ thông tin và truyền thông",
@@ -57,10 +68,21 @@ export function resolveProvinceName(code?: string | null): string {
   if (!code) return "Địa bàn";
   const clean = code.trim().toUpperCase();
   if (!clean) return "Địa bàn";
-  if (clean === "ALL") return "Toàn quốc";
-  if (clean === "HCM" || clean === "SG") return "TP. Hồ Chí Minh";
-  const found = PROVINCES_34.find((p) => p.code.toUpperCase() === clean);
-  return found?.name || clean;
+  if (clean === "ALL") return "Tất cả Địa bàn & KCN Bắc Ninh";
+
+  const found = BAC_NINH_LOCATIONS.find((l) => l.code.toUpperCase() === clean);
+  if (found) return found.name;
+
+  const legacyMap: Record<string, string> = {
+    BN: "Bắc Ninh",
+    HN: "Hà Nội",
+    HCM: "TP. Hồ Chí Minh",
+    SG: "TP. Hồ Chí Minh",
+    HP: "Hải Phòng",
+    DN: "Đà Nẵng",
+    CT: "Cần Thơ",
+  };
+  return legacyMap[clean] || clean;
 }
 
 export function resolveSectorName(
@@ -76,6 +98,7 @@ export function resolveSectorName(
     if (customDict[clean]) return customDict[clean];
     if (customDict[upper]) return customDict[upper];
   }
+  if (BACLINK_SECTORS_MAP[upper]) return BACLINK_SECTORS_MAP[upper];
   if (MASTER_SECTORS_MAP[upper]) return MASTER_SECTORS_MAP[upper];
   if (VSIC_MANUFACTURING_MAP[upper]) return VSIC_MANUFACTURING_MAP[upper];
 

@@ -303,7 +303,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
         setCompanyName(res.name);
         if (res.province) setProvince(res.province);
         if (res.address) setAddress(res.address);
-        const sourceName = res.source === 'INTERNAL' ? 'CSDL Doanh nghiệp NacenTwin' : 'Cổng Thông tin VietQR';
+        const sourceName = res.source === 'INTERNAL' ? 'CSDL Doanh nghiệp Hội viên BACLINK' : 'Cổng Thông tin VietQR';
         toast.success(
           `Đã tìm thấy thông tin: ${res.name} (Nguồn: ${sourceName}). Đã tự động điền vào phiếu.`,
           'Tra cứu MST thành công'
@@ -446,18 +446,18 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
   };
 
   const handleFillSampleData = () => {
-    setCompanyName('Công ty Cổ phần Chế tạo Cơ khí Chính xác Minh Anh');
-    setTaxCode('0108992134');
-    setProvince('Hà Nội');
-    setAddress('Lô CN-08, Khu Công nghiệp vừa và nhỏ Từ Liêm, Bắc Từ Liêm, Hà Nội');
-    setSurveySite('Nhà xưởng gia công chính xác số 1');
-    setContactName('Nguyễn Văn Tuấn');
-    setContactPosition('Phó Giám đốc Kỹ thuật');
-    setContactPhone('0912345678');
-    setContactEmail('tuan.nv@minhanh-mech.vn');
+    setCompanyName('Công ty Cổ phần Hanel PT');
+    setTaxCode('2300219503');
+    setProvince('Bắc Ninh');
+    setAddress('Số 7 Lý Thái Tổ, Phường Suối Hoa, Thành phố Bắc Ninh');
+    setSurveySite('Nhà máy linh kiện điện tử KCN Quế Võ');
+    setContactName('Trần Thị Thu Trang');
+    setContactPosition('Tổng Giám đốc');
+    setContactPhone('02223888686');
+    setContactEmail('contact@hanelpt.vn');
     setCompanyType('CO_PHAN');
-    setMainIndustry('LV07');
-    setMainProducts('Linh kiện dập cơ khí chính xác, vỏ tủ điện điều khiển, khung máy CNC');
+    setMainIndustry('IND_ELEC');
+    setMainProducts('Linh kiện điện tử, vi mạch, cảm biến công nghiệp, thiết bị IoT');
     setEmployeeScale('50-199');
     setRevenueRange3y('10-50 tỷ VNĐ');
     setEquipments([
@@ -931,7 +931,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
               Nộp Phiếu Khảo Sát Nhu Cầu Thành Công!
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-2 max-w-lg mx-auto leading-relaxed">
-              Hệ thống NacenTwin đã lưu trữ đầy đủ dữ liệu khảo sát và tự động bóc tách thành công <strong>{submitResult.createdTickets.length} bài toán kỹ thuật (Demand Tickets)</strong> cho <strong>{submitResult.companyName}</strong>.
+              Hệ thống BACLINK đã lưu trữ đầy đủ dữ liệu khảo sát và tự động bóc tách thành công <strong>{submitResult.createdTickets.length} bài toán kỹ thuật (Demand Tickets)</strong> cho <strong>{submitResult.companyName}</strong>.
             </p>
           </div>
 
@@ -976,7 +976,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
             )}
             <div className="text-caption text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>Dữ liệu đã được mã hóa PII theo Nghị định 13/2023/NĐ-CP và chuyển Cổng Thẩm định Sở KH&CN.</span>
+              <span>Dữ liệu đã được mã hóa PII theo Nghị định 13/2023/NĐ-CP và chuyển Ban Cố vấn Kỹ thuật BACLINK.</span>
             </div>
           </div>
 
@@ -2486,7 +2486,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                 <div className="pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
                   <div>
                     <span className="font-bold text-slate-800 dark:text-slate-200 block mb-2">
-                      Mức độ mong muốn hỗ trợ từ Sở KH&CN / Viện trường (1–5):
+                      Mức độ mong muốn hỗ trợ từ Hiệp hội BACLINK / Viện trường (1–5):
                     </span>
                     <div className="space-y-2.5">
                       {SUPPORT_NEEDS_LIST.map(sup => (
@@ -2674,7 +2674,7 @@ export default function DeepSurveyPage({ showDemoButton = true }: any) {
                       className="w-4 h-4 mt-0.5 text-brand-700 rounded focus:ring-brand-500 shrink-0 cursor-pointer"
                     />
                     <span className="leading-relaxed">
-                      <strong>Cam kết bảo vệ dữ liệu cá nhân &amp; xác thực thông tin:</strong> Tôi đã rà soát toàn bộ thông tin do doanh nghiệp cung cấp. Việc sử dụng dữ liệu sẽ tuân thủ thông báo mục đích, phạm vi và quyền truy cập theo Nghị định 13/2023/NĐ-CP (PDPD). Các thông tin liên hệ và ngân sách chi tiết sẽ được bảo mật, chỉ mở theo cơ chế kết nối có kiểm soát của Sở KH&CN.
+                      <strong>Cam kết bảo vệ dữ liệu cá nhân &amp; xác thực thông tin:</strong> Tôi đã rà soát toàn bộ thông tin do doanh nghiệp cung cấp. Việc sử dụng dữ liệu sẽ tuân thủ thông báo mục đích, phạm vi và quyền truy cập theo Nghị định 13/2023/NĐ-CP (PDPD). Các thông tin liên hệ và ngân sách chi tiết sẽ được bảo mật, chỉ mở theo cơ chế kết nối có kiểm soát của Hiệp hội BACLINK.
                     </span>
                   </label>
                 </div>

@@ -13,13 +13,19 @@ import {
   Calendar,
   ExternalLink,
   Edit2,
-  AlertTriangle
+  AlertTriangle,
+  MapPin
 } from "lucide-react";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AppButton } from "@/components/ui/design-system";
 import { API_BASE } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
-import { invalidateSectorsCache } from "@/lib/master-data-client";
+import {
+  getBacNinhLocations,
+  invalidateLocationsCache,
+  invalidateSectorsCache,
+  type LocationOption
+} from "@/lib/master-data-client";
 import { portalClient, TechmartEvent } from "@/lib/portal-client";
 
 interface SectorItem {
@@ -45,11 +51,15 @@ interface TaxonomyTreeNode {
 }
 
 export default function AdminSectorsPage() {
-  const [activeTab, setActiveTab] = useState<"sectors" | "tt17" | "matrix" | "tree" | "exhibitions">("sectors");
+  const [activeTab, setActiveTab] = useState<"sectors" | "locations" | "tt17" | "matrix" | "tree" | "exhibitions">("sectors");
   const [matrixView, setMatrixView] = useState<"table" | "grid">("table");
   const [sectors, setSectors] = useState<SectorItem[]>([]);
   const [sectorsLoading, setSectorsLoading] = useState(true);
   const [sectorsError, setSectorsError] = useState("");
+  const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const [locationsError, setLocationsError] = useState("");
+  const [locationTypeFilter, setLocationTypeFilter] = useState<"ALL" | "AREA" | "KCN">("ALL");
   const [tt17Error, setTt17Error] = useState("");
   const [matrixError, setMatrixError] = useState("");
   const [treeError, setTreeError] = useState("");
@@ -105,15 +115,19 @@ export default function AdminSectorsPage() {
       if (payload.success !== true || !Array.isArray(payload.data)) throw new Error("Dữ liệu danh mục không hợp lệ.");
       return payload.data;
     };
-    setSectorsLoading(true); setTt17Loading(true); setMatrixLoading(true); setTreeLoading(true);
-    setSectorsError(""); setTt17Error(""); setMatrixError(""); setTreeError("");
+    setSectorsLoading(true); setLocationsLoading(true); setTt17Loading(true); setMatrixLoading(true); setTreeLoading(true);
+    setSectorsError(""); setLocationsError(""); setTt17Error(""); setMatrixError(""); setTreeError("");
     readRows("/api/v1/master-data/sectors?activeOnly=false", true)
       .then((rows) => {
         if (cancelled) return;
         setSectors(rows.map((item: SectorItem) => ({ ...item, tt17Code: item.tt17Code || "", description: item.description || "", filterRuleCount: item.filterRuleCount ?? 0, isActive: item.isActive !== false })));
       })
-      .catch(() => { if (!cancelled) setSectorsError("Không tải được danh mục lĩnh vực."); })
+      .catch(() => { if (!cancelled) setSectorsError("Không tải được danh mục ngành công nghiệp."); })
       .finally(() => { if (!cancelled) setSectorsLoading(false); });
+    getBacNinhLocations({ forceRefresh: loadVersion > 0 })
+      .then((rows) => { if (!cancelled) setLocations(rows); })
+      .catch(() => { if (!cancelled) setLocationsError("Không tải được danh mục Địa bàn & KCN Bắc Ninh."); })
+      .finally(() => { if (!cancelled) setLocationsLoading(false); });
     readRows("/api/v1/master-data/tt17")
       .then((rows) => { if (!cancelled) setTt17Subsectors(rows); })
       .catch(() => { if (!cancelled) setTt17Error("Không tải được danh mục phân ngành."); })
@@ -164,13 +178,13 @@ export default function AdminSectorsPage() {
   const handleAddSectorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const normalizedCode = formCode.trim().toUpperCase();
-    if (!normalizedCode.startsWith("LV")) {
-      setSaveError("Mã lĩnh vực phải bắt đầu bằng tiền tố 'LV' (VD: LV19, LV20...)!");
+    if (!/^IND_[A-Z0-9_]+$/.test(normalizedCode)) {
+      setSaveError("Mã ngành phải theo định dạng chuẩn 'IND_*' (VD: IND_ELEC, IND_SEMI)!");
       return;
     }
 
     if (!editingSector && sectors.some((s) => s.code?.toUpperCase() === normalizedCode)) {
-      setSaveError(`Mã lĩnh vực '${normalizedCode}' đã tồn tại trong danh mục! Không thể tạo trùng lặp.`);
+      setSaveError(`Mã ngành '${normalizedCode}' đã tồn tại trong danh mục! Không thể tạo trùng lặp.`);
       return;
     }
 
@@ -282,7 +296,7 @@ export default function AdminSectorsPage() {
           items={[
             { label: "Trang chủ", href: "/" },
             { label: "Quản Trị Hệ Thống", href: "/admin" },
-            { label: "Danh Mục Lĩnh Vực & TT17" },
+            { label: "Ngành Công Nghiệp & Địa Bàn Bắc Ninh" },
           ]}
         />
 
@@ -291,21 +305,30 @@ export default function AdminSectorsPage() {
           <div>
             <div className="flex items-center gap-2">
               <Layers className="w-6 h-6 text-emerald-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Quản Trị Danh Mục Ngành & Ma Trận TT17</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Quản Trị Ngành Công Nghiệp BACLINK &amp; KCN Bắc Ninh</h1>
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              Quản lý danh mục lĩnh vực hiện hành.
+              Quản lý 8 ngành công nghiệp chuẩn IND_*, Địa bàn/KCN Bắc Ninh và ma trận công nghệ.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <AppButton variant="outline" onClick={() => { invalidateSectorsCache(); setLoadVersion((value) => value + 1); }}>Tải lại</AppButton>
+            <AppButton
+              variant="outline"
+              onClick={() => {
+                invalidateSectorsCache();
+                invalidateLocationsCache();
+                setLoadVersion((value) => value + 1);
+              }}
+            >
+              Tải lại
+            </AppButton>
             <AppButton
               variant="primary"
               onClick={() => { setEditingSector(null); setFormCode(""); setFormName(""); setFormTt17(""); setFormDesc(""); setSaveError(""); setIsModalOpen(true); }}
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              <span>Thêm Lĩnh Vực Mới</span>
+              <span>Thêm Ngành Công Nghiệp</span>
             </AppButton>
           </div>
         </div>
@@ -321,24 +344,24 @@ export default function AdminSectorsPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-            <div className="text-xs font-semibold text-gray-500 uppercase">Lĩnh Vực Trọng Điểm</div>
-            <div className="text-2xl font-bold text-emerald-700 mt-1">{sectorsLoading ? "Đang tải…" : `${activeSectorCount} Lĩnh Vực`}</div>
-            <div className="text-xs text-gray-400 mt-0.5">Đang hoạt động</div>
+            <div className="text-xs font-semibold text-gray-500 uppercase">Ngành Công Nghiệp</div>
+            <div className="text-2xl font-bold text-emerald-700 mt-1">{sectorsLoading ? "Đang tải…" : `${activeSectorCount} Ngành`}</div>
+            <div className="text-xs text-gray-400 mt-0.5">Chuẩn BACLINK (IND_*)</div>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
+            <div className="text-xs font-semibold text-gray-500 uppercase">Địa Bàn &amp; KCN Bắc Ninh</div>
+            <div className="text-2xl font-bold text-brand-700 mt-1">{locationsLoading ? "Đang tải…" : `${locations.length} Địa Bàn/KCN`}</div>
+            <div className="text-xs text-gray-400 mt-0.5">8+1 Địa bàn &amp; KCN</div>
           </div>
           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
             <div className="text-xs font-semibold text-gray-500 uppercase">Phân Ngành TT17</div>
-            <div className="text-2xl font-bold text-brand-700 mt-1">{tt17Subsectors.length} Phân Ngành</div>
-            <div className="text-xs text-gray-400 mt-0.5">Danh mục phân ngành</div>
+            <div className="text-2xl font-bold text-cyan-700 mt-1">{tt17Subsectors.length} Phân Ngành</div>
+            <div className="text-xs text-gray-400 mt-0.5">Tham chiếu kỹ thuật</div>
           </div>
           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-            <div className="text-xs font-semibold text-gray-500 uppercase">Cặp Quan Hệ LV-CN</div>
-            <div className="text-2xl font-bold text-cyan-700 mt-1">{matrixPairs.length} Cặp</div>
+            <div className="text-xs font-semibold text-gray-500 uppercase">Cặp Quan Hệ Ngành-CN</div>
+            <div className="text-2xl font-bold text-amber-700 mt-1">{matrixPairs.length} Cặp</div>
             <div className="text-xs text-gray-400 mt-0.5">Trọng số 1-5 sao</div>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
-            <div className="text-xs font-semibold text-gray-500 uppercase">Triển Lãm Quốc Tế</div>
-            <div className="text-2xl font-bold text-amber-700 mt-1">15 Triển Lãm</div>
-            <div className="text-xs text-gray-400 mt-0.5">Sự kiện tham chiếu</div>
           </div>
         </div>
 
@@ -352,7 +375,17 @@ export default function AdminSectorsPage() {
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            <span>🏭 {activeSectorCount} Lĩnh Vực hoạt động</span>
+            <span>🏭 {activeSectorCount} Ngành hoạt động</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("locations")}
+            className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 whitespace-nowrap transition-all ${
+              activeTab === "locations"
+                ? "border-emerald-600 text-emerald-700"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <span>📍 Địa Bàn &amp; KCN Bắc Ninh</span>
           </button>
           <button
             onClick={() => setActiveTab("tt17")}
@@ -372,7 +405,7 @@ export default function AdminSectorsPage() {
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            <span>🔗 Ma Trận LV-CN</span>
+            <span>🔗 Ma Trận Ngành-CN</span>
           </button>
           <button
             onClick={() => setActiveTab("tree")}
@@ -392,7 +425,7 @@ export default function AdminSectorsPage() {
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            <span>🎪 Triển Lãm Quốc Tế</span>
+            <span>🎪 Sự Kiện Kết Nối</span>
           </button>
         </div>
 
@@ -404,7 +437,7 @@ export default function AdminSectorsPage() {
                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Tìm theo tên lĩnh vực, mã LV..."
+                  placeholder="Tìm theo tên ngành, mã IND_..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -416,8 +449,8 @@ export default function AdminSectorsPage() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
-                    <th className="py-3 px-4">Mã LV</th>
-                    <th className="py-3 px-4">Tên Lĩnh Vực</th>
+                    <th className="py-3 px-4">Mã Ngành</th>
+                    <th className="py-3 px-4">Tên Ngành Công Nghiệp</th>
                     <th className="py-3 px-4">Phân Nhóm TT17</th>
                     <th className="py-3 px-4">Số Quy Tắc Lọc</th>
                     <th className="py-3 px-4">Trạng Thái</th>
@@ -475,7 +508,92 @@ export default function AdminSectorsPage() {
                       </td>
                     </tr>
                   ))}
-                  {!sectorsError && !sectorsLoading && filteredSectors.length === 0 && <tr><td colSpan={6} className="p-4 text-gray-500">Không có lĩnh vực phù hợp.</td></tr>}
+                  {!sectorsError && !sectorsLoading && filteredSectors.length === 0 && <tr><td colSpan={6} className="p-4 text-gray-500">Không có ngành công nghiệp phù hợp.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: BAC NINH LOCATIONS & KCNS */}
+        {activeTab === "locations" && (
+          <div className="bg-white border border-gray-200 rounded-xl shadow-xs p-6">
+            <div className="flex flex-col sm:flex-row gap-3 mb-6 justify-between items-start sm:items-center">
+              <div>
+                <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-emerald-600" />
+                  <span>Danh Mục 8+1 Địa Bàn &amp; Khu Công Nghiệp Trọng Điểm Bắc Ninh</span>
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Dữ liệu runtime từ /api/v1/master-data/locations phục vụ bộ lọc doanh nghiệp, chuyên gia và radar kết nối.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                {(["ALL", "AREA", "KCN"] as const).map((filterKey) => (
+                  <button
+                    key={filterKey}
+                    type="button"
+                    onClick={() => setLocationTypeFilter(filterKey)}
+                    className={`px-3 py-1.5 rounded-lg font-semibold border transition ${
+                      locationTypeFilter === filterKey
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    {filterKey === "ALL" ? "Tất cả" : filterKey === "AREA" ? "8+1 Địa bàn" : "KCN trọng điểm"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
+                    <th className="py-3 px-4">Mã Địa Bàn / KCN</th>
+                    <th className="py-3 px-4">Tên Địa Bàn / KCN</th>
+                    <th className="py-3 px-4">Phân Loại</th>
+                    <th className="py-3 px-4">Trạng Thái</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {locationsError ? (
+                    <tr><td colSpan={4} className="p-4 text-status-danger" role="alert">{locationsError}</td></tr>
+                  ) : locationsLoading ? (
+                    <tr><td colSpan={4} className="p-4">Đang tải danh mục Địa bàn &amp; KCN Bắc Ninh…</td></tr>
+                  ) : (() => {
+                    const visibleLocations = locations.filter((loc) => {
+                      if (locationTypeFilter === "ALL") return true;
+                      const resolvedType = String(loc.locationType || loc.type || loc.metadata?.type || (loc.code.startsWith("KCN_") ? "KCN" : "AREA")).toUpperCase();
+                      return resolvedType === locationTypeFilter;
+                    });
+                    if (visibleLocations.length === 0) {
+                      return <tr><td colSpan={4} className="p-4 text-gray-500">Chưa có dữ liệu Địa bàn &amp; KCN Bắc Ninh.</td></tr>;
+                    }
+                    return visibleLocations.map((loc) => {
+                      const resolvedType = String(loc.locationType || loc.type || loc.metadata?.type || (loc.code.startsWith("KCN_") ? "KCN" : "AREA")).toUpperCase();
+                      return (
+                        <tr key={loc.code} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-3 px-4">
+                            <code className="text-xs bg-gray-100 px-2 py-0.5 rounded font-mono font-bold text-gray-800">
+                              {loc.code}
+                            </code>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-gray-900">{loc.name}</td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${resolvedType === "KCN" ? "bg-cyan-100 text-cyan-800" : "bg-amber-100 text-amber-800"}`}>
+                              {resolvedType === "KCN" ? "KCN trọng điểm" : "Địa bàn hành chính"}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                              Đang hoạt động
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })()}
                 </tbody>
               </table>
             </div>
@@ -574,8 +692,8 @@ export default function AdminSectorsPage() {
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr className="bg-gray-100 text-gray-700 font-semibold border-b border-gray-200">
-                      <th className="py-3 px-4">Mã LV</th>
-                      <th className="py-3 px-4">Lĩnh Vực Ứng Dụng</th>
+                      <th className="py-3 px-4">Mã Ngành</th>
+                      <th className="py-3 px-4">Ngành Công Nghiệp</th>
                       <th className="py-3 px-4">Mã CN</th>
                       <th className="py-3 px-4">Nhóm Công Nghệ</th>
                       <th className="py-3 px-4 text-center">Mức Phù Hợp</th>
@@ -726,7 +844,7 @@ export default function AdminSectorsPage() {
               <div>
                 <h3 className="font-bold text-gray-900 text-base">Cây Phân Cấp Taxonomy Công Nghệ 3 Tầng</h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  Mô hình phân cấp 3 tầng liên thông: Tầng 1 (Lĩnh vực LV) &rarr; Tầng 2 (Nhóm công nghệ CN) &rarr; Tầng 3 (Công nghệ cụ thể NC).
+                  Mô hình phân cấp 3 tầng liên thông: Tầng 1 (Ngành công nghiệp IND_*) &rarr; Tầng 2 (Nhóm công nghệ CN) &rarr; Tầng 3 (Công nghệ cụ thể NC).
                 </p>
               </div>
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -844,7 +962,9 @@ export default function AdminSectorsPage() {
               <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
                 <div className="flex items-center gap-2">
                   <Plus className="w-5 h-5 text-emerald-600" />
-                  <h3 className="font-bold text-gray-900 text-lg">Thêm Lĩnh Vực Mới</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">
+                    {editingSector ? "Cập Nhật Ngành Công Nghiệp" : "Thêm Ngành Công Nghiệp Mới"}
+                  </h3>
                 </div>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -857,12 +977,12 @@ export default function AdminSectorsPage() {
               <form onSubmit={handleAddSectorSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                    Mã Lĩnh Vực (Bắt buộc bắt đầu bằng &apos;LV&apos;):
+                    Mã Ngành Công Nghiệp (Chuẩn &apos;IND_*&apos;):
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="VD: LV19, LV20..."
+                    placeholder="VD: IND_SEMI, IND_ROBOT..."
                     disabled={!!editingSector}
                     value={formCode}
                     onChange={(e) => setFormCode(e.target.value)}
@@ -872,12 +992,12 @@ export default function AdminSectorsPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                    Tên Lĩnh Vực:
+                    Tên Ngành Công Nghiệp:
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="VD: Năng Lượng Tái Tạo & Pin Lưu Trữ"
+                    placeholder="VD: Công nghiệp Bán dẫn & Vi mạch"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     className="form-control w-full text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -923,7 +1043,7 @@ export default function AdminSectorsPage() {
                     Hủy Bỏ
                   </AppButton>
                   <AppButton variant="primary" type="submit" disabled={isSaving}>
-                    {isSaving ? "Đang lưu…" : "Lưu Lĩnh Vực"}
+                    {isSaving ? "Đang lưu…" : "Lưu Ngành"}
                   </AppButton>
                 </div>
               </form>

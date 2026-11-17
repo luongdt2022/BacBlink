@@ -18,7 +18,7 @@ export const GUIDE_ROLES: GuideRole[] = [
     badgeColor: "text-slate-700 dark:text-slate-200",
     badgeBg: "bg-slate-100 dark:bg-slate-800",
     badgeBorder: "border-slate-300 dark:border-slate-700",
-    description: "Toàn bộ 69 màn hình chức năng & phiếu yêu cầu nghiệp vụ thuộc 11 phân hệ hệ sinh thái Nacentwin.",
+    description: "Toàn bộ 69 màn hình chức năng & phiếu yêu cầu nghiệp vụ thuộc 11 phân hệ Cổng thông tin BACLINK.",
   },
   {
     id: "PUBLIC_USER",
@@ -71,24 +71,14 @@ export const GUIDE_ROLES: GuideRole[] = [
     description: "Chủ thể ĐMST được định danh. Quản lý hồ sơ 10 nhóm trường, bổ sung bằng sáng chế SHTT, phiếu khảo sát năng lực và kê khai 26 tiêu chí đánh giá TT17.",
   },
   {
-    id: "GOV",
-    code: "PROVINCIAL_ADMIN",
-    label: "Sở KH&CN tỉnh",
-    icon: "🏛️",
-    badgeColor: "text-rose-700 dark:text-rose-300",
-    badgeBg: "bg-rose-50 dark:bg-rose-950/60",
-    badgeBorder: "border-rose-200 dark:border-rose-800",
-    description: "Cơ quan quản lý địa phương (Scope Tỉnh/Thành). Thẩm định hồ sơ công nghệ, duyệt chuyên gia địa bàn, giám sát kết nối cung cầu (SLA 48h), thẩm định đánh giá TT17.",
-  },
-  {
     id: "ADMIN",
-    code: "SUPER_ADMIN",
-    label: "Quản trị viên",
+    code: "ADMIN",
+    label: "Quản trị viên BACLINK",
     icon: "👑",
     badgeColor: "text-indigo-700 dark:text-indigo-300",
     badgeBg: "bg-indigo-50 dark:bg-indigo-950/60",
     badgeBorder: "border-indigo-200 dark:border-indigo-800",
-    description: "Quản trị viên hệ thống quốc gia. Vận hành phân quyền 10 Roles 3D Scoped RBAC, quản lý người dùng, cây hành chính 3 cấp, hậu kiểm & thu hồi.",
+    description: "Ban Quản trị Hiệp hội BACLINK. Vận hành phân quyền 3 cấp (ADMIN, ENTERPRISE, PUBLIC_USER), phê duyệt hồ sơ 1 cấp, quản trị danh mục ngành & KCN Bắc Ninh.",
   },
   {
     id: "AUDITOR",
@@ -127,8 +117,7 @@ export const GUIDE_MODULES = [
   { num: 7, name: "Danh Mục Ngành & Ma Trận Lĩnh Vực - Công Nghệ" },
   { num: 8, name: "Ghép Nối AI Cung–Cầu, Deal Room & Phiếu Hợp Tác MOU" },
   { num: 9, name: "Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17 & TNI)" },
-  { num: 10, name: "Quản Trị Hệ Thống Tối Cao - Super Admin Console" },
-  { num: 11, name: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console" },
+  { num: 10, name: "Quản Trị Hệ Thống BACLINK - Admin Console" },
 ];
 
 export const GUIDE_SCREENS: GuideScreen[] = [
@@ -140,7 +129,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Đăng Nhập Hệ Thống",
     moduleNumber: 1,
     moduleName: "Xác Thực Danh Tính, Tài Khoản & Phiếu Nâng Cấp",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN", "AUDITOR"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "ADMIN", "AUDITOR"],
     route: "/login",
     description: "Cổng đăng nhập đa vai trò, hỗ trợ đăng nhập bằng Email/SĐT, mật khẩu, xác thực đa yếu tố và ghi nhớ phiên an toàn.",
     steps: [
@@ -157,7 +146,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     moduleName: "Xác Thực Danh Tính, Tài Khoản & Phiếu Nâng Cấp",
     roles: ["PUBLIC_USER"],
     route: "/register",
-    description: "Đăng ký thành viên mới của hệ sinh thái ĐMST Nacentwin với 3 loại tài khoản: Cá nhân, Doanh nghiệp, Tổ chức/Viện trường.",
+    description: "Đăng ký thành viên mới của Cổng thông tin BACLINK với 3 cấp tài khoản: Khách công khai, Doanh nghiệp Hội viên, Quản trị viên.",
     steps: [
       "Chọn nhóm đối tượng đăng ký phù hợp (Cá nhân, Doanh nghiệp, Tổ chức).",
       "Nhập đầy đủ thông tin: họ tên, email, số điện thoại và mật khẩu bảo mật.",
@@ -170,7 +159,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Hồ Sơ Cá Nhân & Quản Trị Danh Tính",
     moduleNumber: 1,
     moduleName: "Xác Thực Danh Tính, Tài Khoản & Phiếu Nâng Cấp",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN", "AUDITOR"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "ADMIN", "AUDITOR"],
     route: "/profile",
     description: "Quản lý thông tin tài khoản cá nhân, đổi mật khẩu, kiểm tra trạng thái xác thực và bảo mật thông tin chuẩn Nghị định 13 PDPD.",
     steps: [
@@ -185,7 +174,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Cài Đặt Tài Khoản & Tùy Chọn Giao Diện",
     moduleNumber: 1,
     moduleName: "Xác Thực Danh Tính, Tài Khoản & Phiếu Nâng Cấp",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN", "AUDITOR"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "ADMIN", "AUDITOR"],
     route: "/settings",
     description: "Tùy biến giao diện Sáng (Mặc định) / Tối (Dark mode), cài đặt quyền riêng tư, thông báo hệ thống và tùy chọn hiển thị dữ liệu.",
     steps: [
@@ -236,10 +225,10 @@ export const GUIDE_SCREENS: GuideScreen[] = [
   // ==========================================
   {
     id: "2.1",
-    title: "Trang Chủ Portal Nacentwin",
+    title: "Trang Chủ Cổng Thông Tin BACLINK",
     moduleNumber: 2,
     moduleName: "Cổng Thông Tin Công Cộng, Techmart & Phiếu Dịch Vụ",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN", "AUDITOR"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "ADMIN", "AUDITOR"],
     route: "/",
     description: "Cổng giao tiếp quốc gia về ĐMST và kết nối cung cầu: Tìm kiếm thông minh kiểu DauThau.net, bộ lọc 10 Lĩnh Vực TT17, TRL 1-9 và thống kê chỉ số thời gian thực.",
     steps: [
@@ -282,14 +271,14 @@ export const GUIDE_SCREENS: GuideScreen[] = [
   },
   {
     id: "2.4",
-    title: "Giới Thiệu Nền Tảng ĐMST & Sứ Mệnh Viện NacenTech",
+    title: "Giới Thiệu Nền Tảng ĐMST & Sứ Mệnh Hiệp hội BACLINK",
     moduleNumber: 2,
     moduleName: "Cổng Thông Tin Công Cộng, Techmart & Phiếu Dịch Vụ",
     roles: ["PUBLIC_USER"],
     route: "/gioi-thieu",
-    description: "Giới thiệu chức năng nhiệm vụ của Viện Ứng Dụng Công Nghệ (Bộ KH&CN), kiến trúc giải pháp Nacentwin và khung pháp lý thực thi TT17/2019/TT-BKHCN.",
+    description: "Giới thiệu chức năng nhiệm vụ của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (QĐ 1652/QĐ-UBND), kiến trúc Cổng thông tin BACLINK và khung pháp lý thực thi TT17/2019/TT-BKHCN.",
     steps: [
-      "Xem tổng quan lịch sử hình thành, năng lực nghiên cứu và cơ cấu tổ chức của Viện NacenTech.",
+      "Xem tổng quan lịch sử hình thành, năng lực nghiên cứu và cơ cấu tổ chức của Hiệp hội BACLINK.",
       "Khám phá các đề án chuyển giao công nghệ cấp quốc gia đã được thương mại hóa thành công.",
       "Tìm hiểu quy trình bảo mật dữ liệu và chuẩn mực kiểm định công nghệ theo tiêu chuẩn quốc tế.",
     ],
@@ -306,7 +295,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     steps: [
       "Lựa chọn gói dịch vụ KH&CN cần hỗ trợ (Định giá sáng chế, Thử nghiệm TRL, Đăng ký bảo hộ SHTT...).",
       "Mô tả tóm tắt giải pháp công nghệ hoặc tài sản trí tuệ cần kiểm định.",
-      "Gửi phiếu yêu cầu đến Ban Chuyên gia Viện NacenTech để nhận báo giá và lộ trình triển khai.",
+      "Gửi phiếu yêu cầu đến Ban Chuyên gia Hiệp hội BACLINK để nhận báo giá và lộ trình triển khai.",
     ],
     image: "/images/user_guide/41_danh_gia_buyer_tni.png",
     isRequestForm: true,
@@ -360,10 +349,10 @@ export const GUIDE_SCREENS: GuideScreen[] = [
   },
   {
     id: "2.9",
-    title: "Cổng Tra Cứu Hướng Dẫn Sử Dụng & Bàn Giao Hệ Thống NacenTwin",
+    title: "Cổng Tra Cứu Hướng Dẫn Sử Dụng & Bàn Giao Hệ Thống BACLINK",
     moduleNumber: 2,
     moduleName: "Cổng Thông Tin Công Cộng, Techmart & Phiếu Dịch Vụ",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN", "AUDITOR"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "ADMIN", "AUDITOR"],
     route: "/huong-dan",
     description: "Cẩm nang hướng dẫn sử dụng toàn diện trên web bao phủ trọn bộ 69 màn hình, hỗ trợ lọc theo 7 vai trò, xem thẻ UI/UX hoặc văn bản chi tiết, tải PDF bàn giao.",
     steps: [
@@ -398,7 +387,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Danh Bạ 304 Doanh Nghiệp ĐMST Toàn Quốc",
     moduleNumber: 3,
     moduleName: "Doanh Nghiệp ĐMST & Phiếu Khảo Sát Năng Lực",
-    roles: ["PUBLIC_USER", "ENTERPRISE", "GOV", "ADMIN"],
+    roles: ["PUBLIC_USER", "ENTERPRISE", "ADMIN"],
     route: "/enterprises",
     description: "Cơ sở dữ liệu số hóa 304 doanh nghiệp ĐMST toàn quốc: Tìm kiếm theo mã số thuế, tên doanh nghiệp, lọc theo tỉnh thành, trạng thái xác thực và sắp xếp giảm dần theo điểm TT17.",
     steps: [
@@ -499,7 +488,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Sàn Niêm Yết Nhu Cầu Công Nghệ Toàn Quốc",
     moduleNumber: 4,
     moduleName: "Bên Mua, Sàn Nhu Cầu & Phiếu Bài Toán Công Nghệ",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "GOV"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT"],
     route: "/nhu-cau-cong-nghe",
     description: "Thị trường bài toán công nghệ từ doanh nghiệp: Tìm kiếm bài toán cần giải quyết, lọc theo ngành kỹ thuật, mức ngân sách, địa bàn và tiến độ cần hoàn thành.",
     steps: [
@@ -566,7 +555,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Sàn Chào Bán Công Nghệ Toàn Quốc 10 Lĩnh Vực TT17",
     moduleNumber: 5,
     moduleName: "Bên Bán, Kho Công Nghệ & Phiếu Chào Bán 4 Tầng",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "GOV"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT"],
     route: "/chao-ban-cong-nghe",
     description: "Chợ công nghệ số: Catalog giải pháp KH&CN với bộ lọc đa tiêu chí TRL 1-9, ngành kỹ thuật TT17, đơn vị sở hữu, mức giá thương mại hóa và thẻ chứng nhận SHTT.",
     steps: [
@@ -664,7 +653,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Danh Bạ Chuyên Gia KH&CN Công Khai",
     moduleNumber: 6,
     moduleName: "Mạng Lưới Chuyên Gia KH&CN & Phiếu Tư Vấn 1-1",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "GOV", "ADMIN"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ADMIN"],
     route: "/experts",
     description: "Mạng lưới chuyên gia khoa học công nghệ quốc gia: Tra cứu theo học hàm (GS, PGS), học vị (TS, ThS), 10 Lĩnh Vực trọng điểm TT17, số lượng sáng chế và điểm tín nhiệm chuyên môn.",
     steps: [
@@ -791,7 +780,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Bản Đồ Khám Phá Ma Trận Lĩnh Vực - Công Nghệ",
     moduleNumber: 7,
     moduleName: "Danh Mục Ngành & Ma Trận Lĩnh Vực - Công Nghệ",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "GOV", "ADMIN"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ADMIN"],
     route: "/matrix",
     description: "Bản đồ tương tác đa chiều ma trận 10 Lĩnh Vực kỹ thuật theo TT17/2019/TT-BKHCN, hiển thị mật độ phân bổ các cặp công nghệ trọng điểm và tiềm năng chuyển giao trên toàn quốc.",
     steps: [
@@ -825,7 +814,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Không Gian Portal Hub Điều Hướng Đa Vai Trò",
     moduleNumber: 8,
     moduleName: "Ghép Nối AI Cung–Cầu, Deal Room & Phiếu Hợp Tác MOU",
-    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN", "AUDITOR"],
+    roles: ["PUBLIC_USER", "BUYER", "SELLER", "EXPERT", "ENTERPRISE", "ADMIN", "AUDITOR"],
     route: "/portal",
     description: "Trung tâm điều hướng Gateway tự động: Phân tích vai trò đăng nhập hiện tại và chuyển tiếp tức thì về đúng không gian làm việc chuyên biệt (Buyer, Seller, Expert, Enterprise, Gov, Admin).",
     steps: [
@@ -840,7 +829,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Radar Ghép Nối Cung Cầu AI 2 Chiều & Điểm Tương Thích",
     moduleNumber: 8,
     moduleName: "Ghép Nối AI Cung–Cầu, Deal Room & Phiếu Hợp Tác MOU",
-    roles: ["BUYER", "SELLER", "EXPERT", "ENTERPRISE", "GOV", "ADMIN"],
+    roles: ["BUYER", "SELLER", "EXPERT", "ENTERPRISE", "ADMIN"],
     route: "/portal/matching/radar",
     description: "Công cụ ghép nối thông minh vận hành bởi mô hình AI: Quét 2 chiều giữa Kho công nghệ chào bán và Sàn bài toán nhu cầu, chấm điểm tương thích (Matching Score 0-100%) dựa trên ngành, TRL và ngân sách.",
     steps: [
@@ -855,7 +844,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Bảng Kanban 5 Bước Quản Lý Pipeline Cơ Hội Hợp Tác",
     moduleNumber: 8,
     moduleName: "Ghép Nối AI Cung–Cầu, Deal Room & Phiếu Hợp Tác MOU",
-    roles: ["BUYER", "SELLER", "EXPERT", "GOV", "ADMIN"],
+    roles: ["BUYER", "SELLER", "EXPERT", "ADMIN"],
     route: "/portal/opportunities/pipeline",
     description: "Bảng quản lý quy trình hợp tác chuyển giao công nghệ theo mô hình Kanban 5 cột: Tiếp cận ban đầu -> Ký thỏa thuận bảo mật NDA -> Đàm phán kỹ thuật & giá -> Soạn thảo MOU -> Ký kết chuyển giao thành công.",
     steps: [
@@ -899,10 +888,10 @@ export const GUIDE_SCREENS: GuideScreen[] = [
   },
   {
     id: "8.6",
-    title: "Bảng Điều Khiển Tổng Hợp Nacentwin & Quản Lý Tiến Độ",
+    title: "Bảng Điều Khiển Tổng Hợp BACLINK & Quản Lý Tiến Độ",
     moduleNumber: 8,
     moduleName: "Ghép Nối AI Cung–Cầu, Deal Room & Phiếu Hợp Tác MOU",
-    roles: ["ADMIN", "GOV", "BUYER", "SELLER"],
+    roles: ["ADMIN", "BUYER", "SELLER"],
     route: "/dashboard",
     description: "Trung tâm bảng điều khiển tiến độ hợp tác tổng thể: Báo cáo trực quan số lượng giao dịch công nghệ, tiến độ thẩm định hồ sơ và biểu đồ phân bổ cung cầu theo thời gian.",
     steps: [
@@ -922,7 +911,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Trung Tâm Đánh Giá Trình Độ & Năng Lực Công Nghệ Theo TT17/2019/TT-BKHCN",
     moduleNumber: 9,
     moduleName: "Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17 & TNI)",
-    roles: ["PUBLIC_USER", "ENTERPRISE", "GOV", "ADMIN"],
+    roles: ["PUBLIC_USER", "ENTERPRISE", "ADMIN"],
     route: "/assessments/tt17",
     description: "Cổng thông tin và trung tâm điều phối đánh giá trình độ và năng lực công nghệ doanh nghiệp theo Thông tư 17/2019/TT-BKHCN: Tra cứu hồ sơ đánh giá, hướng dẫn phương pháp tính điểm và khởi tạo đợt kê khai mới.",
     steps: [
@@ -938,7 +927,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Wizard Kê Khai 26 Tiêu Chí Đánh Giá Trình Độ Công Nghệ 5 Nhóm T-E-O-R-I",
     moduleNumber: 9,
     moduleName: "Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17 & TNI)",
-    roles: ["ENTERPRISE", "GOV"],
+    roles: ["ENTERPRISE"],
     route: "/assessments/tt17/wizard",
     description: "Trình hướng dẫn kê khai trực quan 5 bước bám sát cấu trúc Phụ lục I Thông tư 17/2019/TT-BKHCN: Nhóm T (Hiện trạng công nghệ), Nhóm E (Hiệu quả thiết bị), Nhóm O (Năng lực tổ chức), Nhóm R (Hiệu quả R&D), Nhóm I (Năng lực đổi mới sáng tạo). Tự động lưu nháp và tính điểm tạm tính theo thời gian thực.",
     steps: [
@@ -957,7 +946,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Báo Cáo Đánh Giá Trình Độ Công Nghệ TT17 & Radar Chart 5 Trục",
     moduleNumber: 9,
     moduleName: "Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17 & TNI)",
-    roles: ["ENTERPRISE", "GOV", "ADMIN"],
+    roles: ["ENTERPRISE", "ADMIN"],
     route: "/assessments/tt17/ASSESS-001/report",
     description: "Báo cáo phân tích chuyên sâu kết quả đánh giá theo TT17: Biểu đồ Radar 5 trục T-E-O-R-I, xếp loại trình độ công nghệ (Lạc hậu, Trung bình, Tiên tiến, Hiện đại), so sánh với trung bình ngành và khuyến nghị giải pháp đổi mới công nghệ kèm bản in xuất bản chuẩn Phụ lục II & IV.",
     steps: [
@@ -1059,7 +1048,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     title: "Dashboard Thống Kê & Phân Tích CSDL 304 Doanh Nghiệp ĐMST",
     moduleNumber: 10,
     moduleName: "Quản Trị Hệ Thống Tối Cao - Super Admin Console",
-    roles: ["ADMIN", "GOV"],
+    roles: ["ADMIN"],
     route: "/admin/enterprises/dashboard",
     description: "Phân tích số liệu toàn diện 304 doanh nghiệp ĐMST trọng điểm: Phân bổ theo 10 Lĩnh Vực TT17, tỷ lệ sở hữu bằng độc quyền sáng chế, phân bố theo tỉnh thành và tiến độ số hóa dữ liệu.",
     steps: [
@@ -1086,32 +1075,17 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     isNew: true,
   },
   {
-    id: "10.7",
-    title: "Quản Lý Cây Sơ Đồ Tổ Chức Hành Chính 3 Cấp Quốc Gia (34 Tỉnh/Thành)",
-    moduleNumber: 10,
-    moduleName: "Quản Trị Hệ Thống Tối Cao - Super Admin Console",
-    roles: ["ADMIN"],
-    route: "/admin/org-tree",
-    description: "Mô hình cây phân cấp tổ chức quản lý: Cấp 0 Bộ KH&CN / Viện NacenTech -> Cấp 1 Cụm liên kết vùng (Bắc - Trung - Nam) -> Cấp 2 Sở KH&CN các tỉnh/thành phố trọng điểm và các Trung tâm ĐMST.",
-    steps: [
-      "Duyệt cây sơ đồ tổ chức hành chính và phân bổ quyền quản lý theo địa bàn.",
-      "Thiết lập các cụm liên kết vùng để điều phối cung cầu công nghệ liên tỉnh.",
-      "Cấu hình các đầu mối tiếp nhận hồ sơ thẩm định cho từng đơn vị Sở KH&CN.",
-    ],
-    image: "/images/user_guide/27_quan_ly_cay_34_tinh.png",
-  },
-  {
     id: "10.8",
-    title: "Quản Lý Ma Trận Phân Quyền 10 Roles (3D Scoped RBAC)",
+    title: "Quản Lý Ma Trận Phân Quyền 3 Cấp (RBAC BACLINK)",
     moduleNumber: 10,
-    moduleName: "Quản Trị Hệ Thống Tối Cao - Super Admin Console",
+    moduleName: "Quản Trị Hệ Thống BACLINK - Admin Console",
     roles: ["ADMIN"],
     route: "/admin/roles",
-    description: "Thiết lập và kiểm soát ma trận phân quyền 10 vai trò tác nhân theo kiến trúc 3D Scoped RBAC: Kiểm soát chặt chẽ quyền đọc, ghi, duyệt, xóa và phạm vi địa bàn tác nghiệp (Scope Quốc gia / Vùng / Tỉnh).",
+    description: "Thiết lập và kiểm soát ma trận phân quyền 3 cấp BACLINK (ADMIN, ENTERPRISE, PUBLIC_USER) với phạm vi GLOBAL và cơ chế bảo vệ dữ liệu theo tổ chức.",
     steps: [
-      "Xem ma trận phân quyền chi tiết cho 10 vai trò trên từng tài nguyên hệ thống.",
-      "Tùy chỉnh các quyền năng đặc thù cho cán bộ Sở hoặc cán bộ kiểm toán.",
-      "Kiểm tra bảo mật và đảm bảo nguyên tắc phân công trách nhiệm (Maker - Checker).",
+      "Xem ma trận phân quyền chi tiết cho 3 vai trò chuẩn trên từng tài nguyên hệ thống.",
+      "Gán vai trò quản trị viên hoặc điều chỉnh phân quyền tài khoản hội viên.",
+      "Kiểm tra bảo mật và nhật ký kiểm toán truy cập.",
     ],
     image: "/images/user_guide/26_quan_ly_vai_tro_roles.png",
   },
@@ -1146,115 +1120,5 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     ],
     image: "/images/user_guide/25_quan_tri_nguoi_dung_10_roles.png",
     isNew: true,
-  },
-
-  // ==========================================
-  // PHÂN HỆ 11: CỔNG CÔNG VỤ CẤP SỞ KH&CN - PROVINCIAL GOV CONSOLE (7 Màn hình)
-  // ==========================================
-  {
-    id: "11.1",
-    title: "Cổng Tác Nghiệp Cấp Sở KH&CN Địa Bàn",
-    moduleNumber: 11,
-    moduleName: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console",
-    roles: ["GOV"],
-    route: "/gov",
-    description: "Không gian làm việc số dành cho Cán bộ Lãnh đạo & Chuyên viên Sở KH&CN: Giám sát toàn diện chỉ số ĐMST địa phương, đôn đốc tiến độ thẩm định hồ sơ theo cam kết SLA 48h.",
-    steps: [
-      "Xem bảng theo dõi các chỉ số phát triển KH&CN trên địa bàn tỉnh.",
-      "Kiểm tra danh sách các đầu việc cần xử lý trong ngày (hồ sơ chờ duyệt, bài toán cần giải quyết).",
-      "Truy cập nhanh vào các trung tâm kiểm duyệt chuyên đề của Sở.",
-    ],
-    image: "/images/user_guide/28_cong_tac_nghiep_cap_so.png",
-  },
-  {
-    id: "11.2",
-    title: "Trung Tâm Kiểm Duyệt Hồ Sơ Chào Bán Cấp Sở",
-    moduleNumber: 11,
-    moduleName: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console",
-    roles: ["GOV"],
-    route: "/gov/approvals",
-    description: "Quy trình thẩm định hồ sơ công nghệ chào bán cấp tỉnh: Kiểm tra tính hợp lệ của bằng sáng chế, đối chiếu mức TRL khai báo với thực tế, cam kết xử lý trong SLA 48 giờ.",
-    steps: [
-      "Xem danh sách hồ sơ công nghệ do các viện, trường, doanh nghiệp trên địa bàn nộp về Sở.",
-      "Đọc biên bản thẩm định, văn bằng bảo hộ SHTT và video thực nghiệm đính kèm.",
-      "Phê duyệt để niêm yết công nghệ lên sàn Quốc gia, hoặc gửi văn bản yêu cầu giải trình bổ sung.",
-    ],
-    image: "/images/user_guide/44_gov_kiem_duyet_so.png",
-  },
-  {
-    id: "11.3",
-    title: "Thẩm Định & Xác Thực Hồ Sơ Doanh Nghiệp ĐMST Thuộc Tỉnh",
-    moduleNumber: 11,
-    moduleName: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console",
-    roles: ["GOV"],
-    route: "/gov/approvals/enterprises",
-    description: "Thẩm định hồ sơ năng lực doanh nghiệp ĐMST trên địa bàn: Đối chiếu giấy phép kinh doanh, xác minh chứng nhận Doanh nghiệp KH&CN và gắn nhãn 'Đã xác thực bởi Sở KH&CN'.",
-    steps: [
-      "Tiếp nhận hồ sơ đăng ký nâng hạng hoặc cập nhật 10 nhóm trường của doanh nghiệp địa phương.",
-      "Đối chiếu thông tin pháp lý và chứng nhận Doanh nghiệp KH&CN với cơ sở dữ liệu quốc gia.",
-      "Ký duyệt cấp nhãn 'Đã xác thực bởi Sở KH&CN' hiển thị công khai trên danh bạ toàn quốc.",
-    ],
-    image: "/images/user_guide/45_gov_tham_dinh_dn.png",
-  },
-  {
-    id: "11.4",
-    title: "Thẩm Định Đánh Giá Trình Độ Công Nghệ TT17 Cấp Sở",
-    moduleNumber: 11,
-    moduleName: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console",
-    roles: ["GOV"],
-    route: "/gov/assessments/tt17",
-    description: "Quy trình xem xét và ký duyệt báo cáo đánh giá trình độ và năng lực công nghệ doanh nghiệp theo TT17: Đối soát điểm tự chấm của doanh nghiệp, thành lập hội đồng thẩm định cấp tỉnh và ban hành văn bản chính thức.",
-    steps: [
-      "Xem danh sách các hồ sơ tự đánh giá TT17 do các doanh nghiệp trên địa bàn gửi về.",
-      "Rà soát tính xác thực của số liệu kê khai 5 nhóm T-E-O-R-I và hồ sơ tài chính minh chứng.",
-      "Ký duyệt báo cáo đánh giá chính thức để doanh nghiệp sử dụng cho các chính sách ưu đãi KH&CN.",
-    ],
-    image: "/images/user_guide/48_gov_tham_dinh_tt17.png",
-    isAssessment: true,
-  },
-  {
-    id: "11.5",
-    title: "Giám Sát & Hỗ Trợ Giải Quyết Bài Toán Nhu Cầu Địa Bàn Tỉnh",
-    moduleNumber: 11,
-    moduleName: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console",
-    roles: ["GOV"],
-    route: "/gov/demands",
-    description: "Giám sát các thách thức kỹ thuật và bài toán nhu cầu của doanh nghiệp trên địa bàn tỉnh: Kết nối mời gọi các chuyên gia đầu ngành hỗ trợ giải quyết, đề xuất đưa vào đề tài KH&CN cấp tỉnh.",
-    steps: [
-      "Theo dõi các bài toán nhu cầu công nghệ do các doanh nghiệp tỉnh nhà đăng tải.",
-      "Sử dụng công cụ tìm kiếm để giới thiệu các nhà khoa học, chuyên gia phù hợp cho doanh nghiệp.",
-      "Đề xuất hỗ trợ kinh phí nghiên cứu ứng dụng từ Quỹ phát triển KH&CN địa phương.",
-    ],
-    image: "/images/user_guide/46_gov_giam_sat_nhu_cau.png",
-  },
-  {
-    id: "11.6",
-    title: "Giám Sát Cơ Hội Hợp Tác Địa Bàn (Cam Kết SLA 48h)",
-    moduleNumber: 11,
-    moduleName: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console",
-    roles: ["GOV"],
-    route: "/gov/opportunities",
-    description: "Theo dõi các thương vụ đàm phán chuyển giao công nghệ và các phòng Deal Room liên quan đến đơn vị trên địa bàn: Đảm bảo tiến độ xử lý cam kết trong 48 giờ và kịp thời gỡ vướng pháp lý.",
-    steps: [
-      "Theo dõi tiến độ các cơ hội hợp tác chuyển giao công nghệ trên địa bàn quản lý.",
-      "Kiểm tra các thương vụ bị tắc nghẽn hoặc có nguy cơ chậm tiến độ cam kết.",
-      "Hỗ trợ tư vấn pháp lý về hợp đồng chuyển giao công nghệ và đăng ký lưu hành sản phẩm.",
-    ],
-    image: "/images/user_guide/47_gov_giam_sat_co_hoi.png",
-  },
-  {
-    id: "11.7",
-    title: "Phân Công Cán Bộ Chuyên Viên Sở Tác Nghiệp Quản Lý Địa Bàn",
-    moduleNumber: 11,
-    moduleName: "Cổng Công Vụ Cấp Sở KH&CN - Provincial Gov Console",
-    roles: ["GOV"],
-    route: "/gov/settings/staff",
-    description: "Bàn quản trị nhân sự nội bộ Sở KH&CN: Lãnh đạo Sở phân công phụ trách địa bàn (Quận/Huyện), chỉ định chuyên viên thụ lý từng hồ sơ thẩm định và theo dõi tiến độ xử lý công việc của từng cán bộ.",
-    steps: [
-      "Xem danh sách cán bộ, chuyên viên công tác tại Sở và số lượng hồ sơ đang phụ trách.",
-      "Phân bổ hồ sơ thẩm định công nghệ hoặc đánh giá TT17 cho chuyên viên chuyên ngành tương ứng.",
-      "Theo dõi bảng chấm công và đánh giá mức độ hoàn thành nhiệm vụ theo chỉ số SLA.",
-    ],
-    image: "/images/user_guide/49_gov_phan_cong_can_bo.png",
   },
 ];

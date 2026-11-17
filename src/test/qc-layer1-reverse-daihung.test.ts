@@ -92,9 +92,9 @@ describe("ĐỐI SOÁT KIỂM CHUẨN THỰC TẾ: CÔNG TY TNHH ĐẠI HƯNG (C
       rdExpenses3Years: 0,
 
       // === NHÓM I: NĂNG LỰC ĐỔI MỚI SÁNG TẠO (Mục tiêu: 4đ) ===
-      // TC23 (1đ): Sản phẩm mới cải tiến kiểu dáng
+      // TC23 (1đ): Sản phẩm mới cải tiến kiểu dáng (< 5% doanh thu)
       newProductType: "kieu_dang",
-      newProductRevenueRatio: 5,
+      newProductRevenueRatio: 0,
       // TC24 (1đ): Thử nghiệm công nghệ phòng Lab
       rdTechnologyResult: "dang_nghien_cuu",
       // TC25 (1đ): Thuê chuyên gia tư vấn

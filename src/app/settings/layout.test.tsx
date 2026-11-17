@@ -30,6 +30,12 @@ vi.mock("@/lib/auth-client", () => ({
   authClient: {
     getUser: vi.fn(),
   },
+  normalizePlatformRole: (role: string) => {
+    const upper = (role || "").toUpperCase();
+    if (["ADMIN", "SUPER_ADMIN", "OPERATOR_ADMIN", "PROVINCIAL_ADMIN", "SECTOR_ADMIN", "CLUSTER_ADMIN"].includes(upper)) return "ADMIN";
+    if (["ENTERPRISE", "SELLER", "BUYER", "INNOVATION_ENTITY"].includes(upper)) return "ENTERPRISE";
+    return "PUBLIC_USER";
+  },
 }));
 
 vi.mock("@/lib/enterprise-client", () => ({

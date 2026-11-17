@@ -22,15 +22,17 @@ vi.mock('./toast', () => ({
   }),
 }));
 
-describe('RoleSwitcher Component', () => {
+describe('RoleSwitcher Component (BACLINK ENTERPRISE Dual-Mode)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockPush.mockReset();
+    mockRefresh.mockReset();
     localStorage.clear();
     authClient.setSession('test-token', {
-      id: 'buyer-user-id',
-      email: 'buyer.user@demo.nacentech.vn',
-      fullName: 'Demo Buyer',
-      role: 'BUYER',
+      id: 'ent-user-id',
+      email: 'member@baclink.vn',
+      fullName: 'Công ty TNHH Điện tử Bắc Ninh',
+      role: 'ENTERPRISE',
     });
   });
 
@@ -39,10 +41,10 @@ describe('RoleSwitcher Component', () => {
     localStorage.clear();
   });
 
-  it('renders dual mode switcher buttons for dual capability enterprise', async () => {
+  it('renders dual mode switcher buttons for ENTERPRISE role', async () => {
     vi.spyOn(enterpriseClient, 'fetchMyEnterpriseProfile').mockResolvedValue({
       id: 'ent-1',
-      name: 'Doanh Nghiệp Kép Alpha',
+      name: 'Công ty TNHH Điện tử Bắc Ninh',
       capabilityTier: 'DUAL',
       isBuyer: true,
       isSeller: true,
@@ -58,10 +60,10 @@ describe('RoleSwitcher Component', () => {
     });
   });
 
-  it('switches role smoothly and saves active role to localStorage', async () => {
+  it('switches activeRole between BUYER and SELLER without overwriting user.role = ENTERPRISE', async () => {
     vi.spyOn(enterpriseClient, 'fetchMyEnterpriseProfile').mockResolvedValue({
       id: 'ent-1',
-      name: 'Doanh Nghiệp Kép Alpha',
+      name: 'Công ty TNHH Điện tử Bắc Ninh',
       capabilityTier: 'DUAL',
       isBuyer: true,
       isSeller: true,
@@ -71,6 +73,9 @@ describe('RoleSwitcher Component', () => {
       id: 'ent-1',
       activeRole: 'SELLER',
     });
+
+    const eventListener = vi.fn();
+    window.addEventListener('nacentwin_role_switched', eventListener);
 
     render(<RoleSwitcher />);
 
@@ -84,14 +89,18 @@ describe('RoleSwitcher Component', () => {
     await waitFor(() => {
       expect(switchSpy).toHaveBeenCalledWith('SELLER');
       expect(localStorage.getItem('nacentwin_active_role')).toBe('SELLER');
+      expect(authClient.getUser()?.role).toBe('ENTERPRISE');
+      expect(eventListener).toHaveBeenCalled();
       expect(mockRefresh).toHaveBeenCalled();
     });
+
+    window.removeEventListener('nacentwin_role_switched', eventListener);
   });
 
-  it('renders compact mode with quick pill toggle in navbar', async () => {
+  it('renders compact mode with quick pill toggle in navbar for ENTERPRISE', async () => {
     vi.spyOn(enterpriseClient, 'fetchMyEnterpriseProfile').mockResolvedValue({
       id: 'ent-1',
-      name: 'Doanh Nghiệp Kép Alpha',
+      name: 'Công ty TNHH Điện tử Bắc Ninh',
       capabilityTier: 'DUAL',
       isBuyer: true,
       isSeller: true,

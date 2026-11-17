@@ -311,7 +311,7 @@ export default function UserGuidePage() {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="type-page-title text-text-primary dark:text-white">
-                  Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin
+                  Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Cổng Thông Tin BACLINK
                 </h1>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
                   <Sparkles className="size-3.5" />
@@ -319,11 +319,11 @@ export default function UserGuidePage() {
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-800 border border-brand-300 dark:bg-brand-950/60 dark:text-brand-300 dark:border-brand-800">
                   <ShieldCheck className="size-3.5" />
-                  7 Vai Trò Tác Nhân
+                  3 Cấp Phân Quyền
                 </span>
               </div>
               <p className="text-sm text-text-secondary dark:text-slate-400 max-w-4xl">
-                Cẩm nang số hóa bàn giao toàn trình hệ thống Nacentwin: bao phủ trọn bộ {GUIDE_SCREENS.length} màn hình, bao gồm toàn bộ các màn hình đánh giá trình độ công nghệ TT17, khảo sát năng lực hấp thụ Buyer, và đầy đủ các loại phiếu yêu cầu kết nối, đề xuất chuyển giao công nghệ.
+                Cẩm nang số hóa bàn giao toàn trình Cổng thông tin BACLINK: bao phủ trọn bộ các màn hình chức năng, bao gồm các màn hình đánh giá trình độ công nghệ TT17, kết nối chuỗi cung ứng FDI, và đầy đủ các loại phiếu yêu cầu kết nối, đề xuất chào bán và đặt hàng gia công.
               </p>
             </div>
           </div>
@@ -363,7 +363,7 @@ export default function UserGuidePage() {
             {/* Nút Tải PDF */}
             <a
               href="/huong-dan-su-dung.pdf"
-              download="Huong_Dan_Su_Dung_NacenTwin.pdf"
+              download="Huong_Dan_Su_Dung_BACLINK.pdf"
               className="inline-flex items-center gap-1.5 rounded-control bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 text-xs font-bold transition shadow-xs"
               title="Tải toàn bộ cẩm nang hướng dẫn sử dụng định dạng PDF (2.4 MB)"
             >
@@ -887,7 +887,7 @@ export default function UserGuidePage() {
         <iframe
           ref={iframeRef}
           src={`/huong-dan-su-dung.html${currentHash}`}
-          title="Hướng Dẫn Sử Dụng Chi Tiết Hệ Thống NacenTwin"
+          title="Hướng Dẫn Sử Dụng Chi Tiết Cổng Thông Tin BACLINK"
           className="size-full border-0"
         />
       </div>

@@ -909,7 +909,7 @@ function getClassificationMeta(cls?: string, label?: string) {
         pillBg: "D97706",
         pillText: "FFFFFF",
         scoreColor: "B45309",
-        desc: "Lệch pha đồng bộ công nghệ (Điểm tổng cao nhưng Hệ số đồng bộ T_ĐB thấp). Cần Hội đồng chuyên gia Sở KH&CN thẩm định trực tiếp dây chuyền thực tế.",
+        desc: "Lệch pha đồng bộ công nghệ (Điểm tổng cao nhưng Hệ số đồng bộ T_ĐB thấp). Cần Ban Cố vấn Kỹ thuật Hiệp hội BACLINK thẩm định trực tiếp dây chuyền thực tế.",
       };
     default:
       return {
@@ -2828,7 +2828,7 @@ export async function generateTt17OutDocxFromTemplate(
           tcs[1],
           safeText(
             assessment.reviewNotes,
-            "Hồ sơ đánh giá trực tuyến hợp lệ trên Hệ thống CSDL Quốc gia NacenTwin."
+            "Hồ sơ đánh giá trực tuyến hợp lệ trên Cổng kết nối chuỗi cung ứng BACLINK."
           ),
           { italic: true }
         );

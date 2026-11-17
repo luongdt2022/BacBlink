@@ -21,18 +21,18 @@ describe("PublicModulePage and dynamic routing guard", () => {
     vi.clearAllMocks();
   });
 
-  it("generateStaticParams only generates supported submodules and excludes dedicated pages (dich-vu-khac, gioi-thieu)", () => {
+  it("generateStaticParams only generates supported submodules and excludes dedicated pages (dich-vu-khac, gioi-thieu, elearning)", () => {
     const params = generateStaticParams();
     const modules = params.map((p) => p.module);
 
     expect(modules).toContain("doanh-nghiep-dmst");
-    expect(modules).toContain("elearning");
     expect(modules).toContain("chuyen-gia");
 
     // Must NOT contain dedicated routes to prevent circular redirect
     expect(modules).not.toContain("dich-vu-khac");
     expect(modules).not.toContain("gioi-thieu");
-    expect(modules).toHaveLength(3);
+    expect(modules).not.toContain("elearning");
+    expect(modules).toHaveLength(2);
   });
 
   it("redirects module 'chuyen-gia' to '/experts'", async () => {
@@ -49,14 +49,11 @@ describe("PublicModulePage and dynamic routing guard", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/enterprises");
   });
 
-  it("renders 'elearning' module content without redirecting", async () => {
-    const Component = await PublicModulePage({ params: Promise.resolve({ module: "elearning" }) });
-    render(Component);
-
-    expect(mockRedirect).not.toHaveBeenCalled();
-    expect(mockNotFound).not.toHaveBeenCalled();
-    expect(screen.getByText("eLearning")).toBeInTheDocument();
-    expect(screen.getByText(/Học liệu số và đào tạo trực tuyến/i)).toBeInTheDocument();
+  it("redirects module 'elearning' to dedicated route '/elearning'", async () => {
+    await expect(
+      PublicModulePage({ params: Promise.resolve({ module: "elearning" }) })
+    ).rejects.toThrow("NEXT_REDIRECT:/elearning");
+    expect(mockRedirect).toHaveBeenCalledWith("/elearning");
   });
 
   it("calls notFound() for 'dich-vu-khac' inside [module] to prevent circular redirect over dedicated /dich-vu-khac route", async () => {

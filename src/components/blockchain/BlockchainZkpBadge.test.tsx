@@ -35,7 +35,7 @@ describe("BlockchainZkpBadge Component", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Bảo Chứng Mật Mã ZKP & Chuỗi Khối")).toBeInTheDocument();
+      expect(screen.getByText(/Bảo Chứng Mật Mã ZKP/i)).toBeInTheDocument();
       expect(screen.getByText("Block #1")).toBeInTheDocument();
     });
   });
@@ -64,7 +64,7 @@ describe("BlockchainZkpBadge Component", () => {
     fireEvent.click(badgeBtn);
 
     expect(
-      screen.getByText("Biên Bản Bảo Chứng Mật Mã Học ZKP & Chuỗi Khối")
+      screen.getByText(/Biên Bản Bảo Chứng Mật Mã Học ZKP/i)
     ).toBeInTheDocument();
     expect(screen.getAllByText(/Block #1/i).length).toBeGreaterThan(0);
   });

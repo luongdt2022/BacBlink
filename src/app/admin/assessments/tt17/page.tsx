@@ -218,11 +218,11 @@ export default function SuperAdminTt17DashboardPage() {
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Link
-              href="/gov/assessments/tt17"
+              href="/admin/assessments/records"
               className="h-9 px-3.5 bg-brand-700 hover:bg-brand-800 text-white rounded-control text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>Mở Hội Đồng Chấm Điểm</span>
+              <span>Danh sách Phiếu Đánh Giá</span>
             </Link>
             <button
               type="button"
@@ -239,7 +239,7 @@ export default function SuperAdminTt17DashboardPage() {
         <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
           <div>
             <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
-              Địa bàn Tỉnh / Thành phố (Sở KH&CN):
+              Địa bàn / Khu công nghiệp Bắc Ninh (BACLINK):
             </label>
             <select
               value={selectedScope}
@@ -439,7 +439,7 @@ export default function SuperAdminTt17DashboardPage() {
           <div>
             <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
               <MapPin className="w-4 h-4 text-brand-600" />
-              <span>Bảng Tổng Hợp Kết Quả Đánh Giá TT17 Theo Tỉnh / Thành Phố (Sở KH&CN)</span>
+              <span>Bảng Tổng Hợp Kết Quả Đánh Giá TT17 Theo Địa Bàn & KCN Bắc Ninh (BACLINK)</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Bấm vào từng địa bàn để lọc danh sách doanh nghiệp và phân tích chi tiết 26 tiêu chí của tỉnh đó.
@@ -451,7 +451,7 @@ export default function SuperAdminTt17DashboardPage() {
               onClick={() => setSelectedScope("ALL")}
               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold cursor-pointer"
             >
-              Xem lại Toàn quốc
+              Xem lại Toàn bộ
             </button>
           )}
         </div>
@@ -460,7 +460,7 @@ export default function SuperAdminTt17DashboardPage() {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 uppercase font-bold">
-                <th className="py-3 px-4">Địa bàn (Sở KH&CN)</th>
+                <th className="py-3 px-4">Địa bàn / KCN (BACLINK)</th>
                 <th className="py-3 px-3 text-center">Tổng số DN</th>
                 <th className="py-3 px-3 text-center">Điểm TB (τ)</th>
                 <th className="py-3 px-3 text-center">Min – Max</th>

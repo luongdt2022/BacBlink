@@ -68,7 +68,7 @@ export default function AdminBlockchainPage() {
         <AdminBreadcrumbs
           items={[
             { label: "Giám sát & Vận hành", href: "/admin" },
-            { label: "Trung tâm Blockchain & ZKP (NDAChain)" },
+            { label: "Trung tâm BACLINK Trust / Blockchain & ZKP" },
           ]}
         />
 
@@ -78,13 +78,13 @@ export default function AdminBlockchainPage() {
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>NDAChain Ready Gateway • Zero-Knowledge Proof Invariants</span>
+                <span>BACLINK Trust Node • Zero-Knowledge Proof Invariants</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Trung Tâm Quản Trị Chuỗi Khối & Mật Mã Học ZKP
+                Trung Tâm Quản Trị Chuỗi Khối & Mật Mã Học BACLINK Trust
               </h1>
               <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-                Hệ thống Sổ cái Bản quyền Quốc gia & Bảo chứng Mật mã học bất biến (RFC 8785 Canonical JSON, Merkle Tree, Salted Commitment AES-256-GCM) liên thông Trung tâm Dữ liệu Quốc gia (Bộ Công An).
+                Hệ thống Sổ cái Chứng thực Hồ sơ Năng lực, MOU Deal Room & Báo cáo TT17 bất biến (RFC 8785 Canonical JSON, Merkle Tree, Salted Commitment AES-256-GCM) của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) liên thông NDAChain.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
@@ -576,7 +576,7 @@ function TabLedger() {
           <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-2">
             #{totalBlocks}
           </div>
-          <div className="text-xs text-slate-400 mt-1">Sổ cái nội bộ NacenTech</div>
+          <div className="text-xs text-slate-400 mt-1">Sổ cái nội bộ BACLINK Trust</div>
         </div>
 
         <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs">

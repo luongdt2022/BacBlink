@@ -25,11 +25,16 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
     const user = authClient.getUser();
     if (!user) return;
 
+    const userUpper = user.role?.toUpperCase() ?? '';
+    if (userUpper === 'ENTERPRISE') {
+      setIsDual(true);
+    }
+
     // Load active role from cache first for fast render (<300ms)
     const cachedRole = localStorage.getItem('nacentwin_active_role') as 'BUYER' | 'SELLER' | null;
     if (cachedRole) {
       setActiveRole(cachedRole);
-    } else if (user.role?.toUpperCase() === 'SELLER') {
+    } else if (userUpper === 'SELLER') {
       setActiveRole('SELLER');
     } else {
       setActiveRole('BUYER');
@@ -40,7 +45,7 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
       .then((p) => {
         if (p) {
           setProfile(p);
-          const dual = p.capabilityTier === 'DUAL' || (p.isBuyer && p.isSeller);
+          const dual = p.capabilityTier === 'DUAL' || (p.isBuyer && p.isSeller) || userUpper === 'ENTERPRISE';
           setIsDual(dual);
           const currentRole = (p.activeRole?.toUpperCase() === 'SELLER' ? 'SELLER' : 'BUYER') as 'BUYER' | 'SELLER';
           setActiveRole(currentRole);
@@ -80,13 +85,7 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
 
       await switchEnterpriseActiveRole(targetRole);
 
-      // Cập nhật session user role nếu cần
-      const user = authClient.getUser();
-      if (user) {
-        user.role = targetRole;
-        authClient.setSession(authClient.getToken() || '', user);
-      }
-
+      // Giữ nguyên user.role (ENTERPRISE) trong session, chỉ đồng bộ activeRole (BUYER | SELLER) theo ADR-0018
       // Phát sự kiện toàn cục để layout và menu sidebar đồng bộ ngay lập tức
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('nacentwin_role_switched', { detail: { role: targetRole } }));
@@ -109,6 +108,7 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
           return;
         }
       }
+      router.refresh();
     } catch (err: any) {
       toast.error(err.message || 'Không thể chuyển đổi vai trò. Vui lòng thử lại.', 'Lỗi');
       // Revert optimistic update
@@ -138,11 +138,11 @@ export function RoleSwitcher({ compact = false, className = '' }: RoleSwitcherPr
     }
   };
 
-  // Only render for enterprise personas (BUYER, SELLER, INNOVATION_ENTITY)
+  // Only render for enterprise personas (ENTERPRISE + legacy BUYER, SELLER, INNOVATION_ENTITY)
   const user = authClient.getUser();
   if (!user) return null;
   const userRole = (user.role ?? '').toUpperCase();
-  const isEnterpriseRole = ['BUYER', 'SELLER', 'INNOVATION_ENTITY'].includes(userRole);
+  const isEnterpriseRole = ['ENTERPRISE', 'BUYER', 'SELLER', 'INNOVATION_ENTITY'].includes(userRole);
   if (!isEnterpriseRole) return null;
 
   if (compact) {

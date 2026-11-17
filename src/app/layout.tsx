@@ -25,15 +25,15 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NacenTwin — Nền Tảng Đổi Mới Sáng Tạo & Kết Nối Cung Cầu Công Nghệ",
-  description: "Cổng dữ liệu số Quốc gia thuộc Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech - Bộ KH&CN)",
+  title: "BACLINK — Cổng Thông Tin & Kết Nối Chuỗi Cung Ứng Công Nghiệp Bắc Ninh",
+  description: "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) - Thành lập theo Quyết định số 1652/QĐ-UBND của UBND tỉnh Bắc Ninh",
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png" },
-      { url: "/NACENTECH_Main-Logo-G.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon.png", sizes: "192x192", type: "image/png" },
     ],
     shortcut: "/favicon.png",
-    apple: "/NACENTECH_Main-Logo-G.png",
+    apple: "/favicon.png",
   },
 };
 
@@ -44,7 +44,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${beVietnamPro.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
+      <body className="min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
         <ThemeProvider>
           <I18nProvider>
             <ToastProvider>

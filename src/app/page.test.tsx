@@ -81,7 +81,7 @@ describe("HomePage Component (TASK-01 Home Architecture & 4 Realtime Metrics)", 
     expect(screen.getByRole("link", { name: /Nhu cầu đặt hàng/i })).toBeInTheDocument();
 
     expect(screen.getByText("24")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Kết nối/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Kết nối thành công & MOU/i })).toBeInTheDocument();
 
     expect(screen.getByText("5,5 Tỷ VNĐ")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Quy mô giao dịch/i })).toBeInTheDocument();

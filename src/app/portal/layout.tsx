@@ -22,7 +22,8 @@ import {
   ShieldCheck,
   FileText,
 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import * as authClientModule from "@/lib/auth-client";
+const { authClient } = authClientModule;
 import { fetchMyEnterpriseProfile } from "@/lib/enterprise-client";
 import { resolveExpertActiveMenu } from "@/lib/expert-nav";
 import { RoleSwitcher } from "@/components/common/role-switcher";
@@ -211,6 +212,9 @@ const adminPortalNavItems: NavItem[] = [
 ];
 
 const PORTAL_ALLOWED_ROLES = [
+  "ADMIN",
+  "ENTERPRISE",
+  "PUBLIC_USER",
   "SELLER",
   "BUYER",
   "INNOVATION_ENTITY",
@@ -218,14 +222,7 @@ const PORTAL_ALLOWED_ROLES = [
   "EXPERT",
   "SUPER_ADMIN",
   "OPERATOR_ADMIN",
-  "ADMIN",
-  "PROVINCIAL_ADMIN",
-  "SECTOR_ADMIN",
-  "CLUSTER_ADMIN",
-  "PROVINCE_OFFICER",
-  "PROVINCE_LEADER",
   "USER",
-  "PUBLIC_USER",
 ];
 
 const PENDING_ROUTE_FAILSAFE_MS = 12000;
@@ -284,7 +281,7 @@ function PortalLayoutInner({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     const initialUser = authClient.getUser();
     const initialRole = (initialUser?.role ?? "").toUpperCase();
-    const isEnterpriseUser = ["BUYER", "SELLER", "INNOVATION_ENTITY"].includes(initialRole);
+    const isEnterpriseUser = ["ENTERPRISE", "BUYER", "SELLER", "INNOVATION_ENTITY"].includes(initialRole);
 
     const loadProfile = () => {
       if (!isEnterpriseUser) return;
@@ -344,19 +341,21 @@ function PortalLayoutInner({ children }: { children: React.ReactNode }) {
   }, [pendingHref]);
 
   const upperRole = (userRole ?? "").toUpperCase();
+  const normalizedRole =
+    typeof authClientModule.normalizePlatformRole === "function"
+      ? authClientModule.normalizePlatformRole(upperRole)
+      : upperRole === "ADMIN" || upperRole === "SUPER_ADMIN" || upperRole === "OPERATOR_ADMIN"
+        ? "ADMIN"
+        : ["ENTERPRISE", "SELLER", "BUYER", "INNOVATION_ENTITY", "VERIFIED_EXPERT", "EXPERT"].includes(upperRole)
+          ? "ENTERPRISE"
+          : "PUBLIC_USER";
   const isExpert = upperRole === "VERIFIED_EXPERT" || upperRole === "EXPERT";
-  const isAdmin = upperRole === "SUPER_ADMIN" || upperRole === "OPERATOR_ADMIN" || upperRole === "ADMIN";
-  const isGov =
-    upperRole === "PROVINCIAL_ADMIN" ||
-    upperRole === "SECTOR_ADMIN" ||
-    upperRole === "CLUSTER_ADMIN" ||
-    upperRole === "PROVINCE_OFFICER" ||
-    upperRole === "PROVINCE_LEADER";
+  const isAdmin = normalizedRole === "ADMIN";
 
-  // Nhóm doanh nghiệp (BUYER, SELLER, INNOVATION_ENTITY) có thể chuyển đổi linh hoạt qua RoleSwitcher
-  const isEnterpriseRole = ["BUYER", "SELLER", "INNOVATION_ENTITY"].includes(upperRole);
+  // Nhóm doanh nghiệp (ENTERPRISE + legacy BUYER, SELLER, INNOVATION_ENTITY) chuyển đổi Dual-Mode qua RoleSwitcher (activeRole)
+  const isEnterpriseRole = ["ENTERPRISE", "BUYER", "SELLER", "INNOVATION_ENTITY"].includes(upperRole);
   const effectiveRole = isEnterpriseRole
-    ? (activeRole?.toUpperCase() || upperRole)
+    ? (activeRole?.toUpperCase() || (upperRole === "ENTERPRISE" ? "BUYER" : upperRole))
     : upperRole;
 
   const isBuyer = effectiveRole === "BUYER";
@@ -387,10 +386,6 @@ function PortalLayoutInner({ children }: { children: React.ReactNode }) {
     navItems = adminPortalNavItems;
     workspaceTitle = "Góc Nhìn Giám Sát Thực Địa";
     workspaceBadge = "Quản Trị Viên Hệ Thống";
-  } else if (isGov) {
-    navItems = adminPortalNavItems;
-    workspaceTitle = "Giám Sát Thị Trường Địa Bàn";
-    workspaceBadge = "Cán Bộ Quản Trị Nhà Nước";
   }
 
   const dynamicProfileLabel = resolveProfileLabel(
@@ -422,7 +417,7 @@ function PortalLayoutInner({ children }: { children: React.ReactNode }) {
 
           <RoleSwitcher className="mb-4" />
 
-          {/* Quick link card to Admin / Gov Consoles if user has elevated privileges */}
+          {/* Quick link card to Admin Console if user has ADMIN privileges */}
           {isAdmin && (
             <div className="mb-4 p-2.5 rounded-lg bg-brand-50 border border-brand-200 dark:bg-brand-950/40 dark:border-brand-900">
               <p className="text-caption text-brand-800 dark:text-brand-300 font-medium mb-1.5">
@@ -433,21 +428,6 @@ function PortalLayoutInner({ children }: { children: React.ReactNode }) {
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 hover:text-brand-900 dark:text-brand-200 hover:underline"
               >
                 <span>Về Trung Tâm Quản Trị Hệ Thống</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          )}
-
-          {isGov && (
-            <div className="mb-4 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900">
-              <p className="text-caption text-emerald-800 dark:text-emerald-300 font-medium mb-1.5">
-                Bạn đang xem góc nhìn thị trường B2B
-              </p>
-              <Link
-                href="/gov"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 dark:text-emerald-200 hover:underline"
-              >
-                <span>Về Cổng Quản Trị Nhà Nước</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>

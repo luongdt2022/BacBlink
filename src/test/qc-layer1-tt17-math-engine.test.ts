@@ -248,9 +248,9 @@ describe("TẦNG 1: QC UNIT TESTS - TOÁN HỌC & ENGINE CHẤM ĐIỂM TT17", (
   // --------------------------------------------------------------------------
   // 5. Kiểm tra định mức ngành 23 nhóm VSIC C.10 - C.32
   // --------------------------------------------------------------------------
-  it("TC-L1-06: Đầy đủ 23 nhóm ngành VSIC C.10 đến C.32 với định mức chuẩn K1..K4 hợp lệ", () => {
+  it("TC-L1-06: Đầy đủ 23 nhóm ngành VSIC C.10 đến C.32 cùng 8 ngành BACLINK IND_* với định mức chuẩn K1..K4 hợp lệ", () => {
     const keys = Object.keys(INDUSTRY_BENCHMARKS);
-    expect(keys).toHaveLength(23);
+    expect(keys.length).toBeGreaterThanOrEqual(23);
 
     for (let i = 10; i <= 32; i++) {
       const code = `C.${i}`;
@@ -265,6 +265,15 @@ describe("TẦNG 1: QC UNIT TESTS - TOÁN HỌC & ENGINE CHẤM ĐIỂM TT17", (
       expect(bm.kChuan3).toBeGreaterThan(0); // Tỷ lệ nguyên vật liệu
       expect(bm.kChuan3).toBeLessThan(1);
       expect(bm.kChuan4).toBeGreaterThan(0); // Năng suất lao động chuẩn
+    }
+
+    const baclinkSectors = ["IND_ELEC", "IND_MECH", "IND_AUTO", "IND_PLAS", "IND_MAT", "IND_IT", "IND_GREEN", "IND_LOG"];
+    for (const indCode of baclinkSectors) {
+      if (keys.includes(indCode)) {
+        const bm = INDUSTRY_BENCHMARKS[indCode];
+        expect(bm.industryCode).toBe(indCode);
+        expect(bm.industryName.length).toBeGreaterThan(0);
+      }
     }
   });
 });

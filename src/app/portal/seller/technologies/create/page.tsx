@@ -126,8 +126,8 @@ export default function TaoHoSoChaoBanPage() {
 
   // Step 4: SHTT, DataRoom & Pháp lý
   const [documents, setDocuments] = useState<OfferDocument[]>([]);
-  const [managingAuthorityId, setManagingAuthorityId] = useState("VN-HN");
-  const [managingAuthorityName, setManagingAuthorityName] = useState("Sở Khoa học và Công nghệ TP. Hà Nội");
+  const [managingAuthorityId, setManagingAuthorityId] = useState("BACLINK");
+  const [managingAuthorityName, setManagingAuthorityName] = useState("Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)");
   const [isAutoDetectedAuthority, setIsAutoDetectedAuthority] = useState(false);
   const [legalCommitmentConfirmed, setLegalCommitmentConfirmed] = useState(false);
 
@@ -898,7 +898,7 @@ export default function TaoHoSoChaoBanPage() {
                       Bước 4: Pháp Lý Sở Hữu Trí Tuệ & DataRoom
                     </h2>
                     <p className="text-xs text-slate-500">
-                      Khai báo bộ tứ SHTT, phòng dữ liệu bảo mật 3 cấp và gửi cơ quan Sở KH&CN thẩm định.
+                      Khai báo bộ tứ SHTT, phòng dữ liệu bảo mật 3 cấp và gửi Hiệp hội BACLINK thẩm định.
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">

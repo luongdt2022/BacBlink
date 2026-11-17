@@ -146,7 +146,7 @@ function ExpertProjectsContent() {
               Tài Khoản Đang Chờ Phê Duyệt Cấp Sở (EXPERT)
             </h4>
             <p className="text-caption">
-              Bạn đang ở chế độ xem trước dự án. Các tính năng tham gia phòng đàm phán độc quyền Deal Room và ký kết Thỏa thuận Ghi nhớ MOU có giá trị pháp lý sẽ được kích hoạt ngay sau khi hồ sơ Chuyên gia được Sở KH&CN phê duyệt.
+              Bạn đang ở chế độ xem trước dự án. Các tính năng tham gia phòng đàm phán độc quyền Deal Room và ký kết Thỏa thuận Ghi nhớ MOU có giá trị pháp lý sẽ được kích hoạt ngay sau khi hồ sơ Cố vấn Kỹ thuật được Hiệp hội BACLINK phê duyệt.
             </p>
           </div>
         </div>

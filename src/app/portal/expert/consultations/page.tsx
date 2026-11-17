@@ -93,7 +93,7 @@ function ExpertConsultationsContent() {
   const handleOpenAcceptModal = (ticket: ConsultationTicket) => {
     if (isPendingApprovalRole && ticket.source === "DEPT_ASSIGNED") {
       toast.warning(
-        "Hồ sơ Chuyên gia đang chờ Sở KH&CN phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác có thù lao Quỹ ĐMST.",
+        "Hồ sơ Cố vấn Kỹ thuật đang chờ Hiệp hội BACLINK phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác kết nối.",
         "Chờ Duyệt Hồ Sơ"
       );
       return;
@@ -215,10 +215,10 @@ function ExpertConsultationsContent() {
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-body text-amber-900 dark:text-amber-200 space-y-1">
             <h4 className="font-bold text-label">
-              Tài Khoản Đang Chờ Phê Duyệt Cấp Sở (EXPERT)
+              Tài Khoản Đang Chờ Phê Duyệt Cố Vấn BACLINK
             </h4>
             <p className="text-caption">
-              Hồ sơ Chuyên gia KH&CN của bạn đang trong tiến trình thẩm định tại Sở KH&CN. Bạn có thể xem danh sách lời mời tư vấn nhưng các chức năng ký biên bản nghiệm thu (MoA) và nhận ủy thác tư vấn có thù lao Quỹ ĐMST tạm thời bị khóa cho đến khi được cấp chứng nhận chính thức.
+              Hồ sơ Cố vấn Kỹ thuật của bạn đang trong tiến trình thẩm định tại Hiệp hội BACLINK. Bạn có thể xem danh sách lời mời tư vấn nhưng các chức năng ký biên bản nghiệm thu (MoA) và nhận ủy thác tư vấn tạm thời bị khóa cho đến khi được cấp chứng nhận chính thức.
             </p>
           </div>
         </div>
@@ -323,7 +323,7 @@ function ExpertConsultationsContent() {
               <h2 className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-brand-700 animate-pulse"></span>
                 <span>
-                  Yêu Cầu Tư Vấn Mới Từ Doanh Nghiệp & Sở KH&CN ({pendingList.length} Lời Mời)
+                  Yêu Cầu Tư Vấn Mới Từ Doanh Nghiệp & Hiệp hội BACLINK ({pendingList.length} Lời Mời)
                 </span>
               </h2>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -338,7 +338,7 @@ function ExpertConsultationsContent() {
                   Hộp thư chờ xử lý hiện đang trống
                 </h4>
                 <p className="text-body text-slate-500 text-xs max-w-md mx-auto">
-                  Khi có doanh nghiệp đặt lịch hoặc Sở KH&CN chỉ định tư vấn, các yêu cầu mới kèm thời gian đếm ngược SLA 48h sẽ xuất hiện tại đây.
+                  Khi có doanh nghiệp đặt lịch hoặc Hiệp hội BACLINK chỉ định tư vấn, các yêu cầu mới kèm thời gian đếm ngược SLA 48h sẽ xuất hiện tại đây.
                 </p>
                 <div className="pt-2">
                   <Link
@@ -372,7 +372,7 @@ function ExpertConsultationsContent() {
                           <div className="flex flex-wrap items-center gap-2">
                             {isDept ? (
                               <span className="px-2.5 py-0.5 rounded bg-brand-50 text-brand-800 text-caption font-black uppercase flex items-center gap-1 dark:bg-brand-950/60 dark:text-brand-300">
-                                <Shield className="w-3 h-3" /> {ticket.assignedByDepartment || "Sở KH&CN"} Chỉ Định Kết Nối 1-1
+                                <Shield className="w-3 h-3" /> {ticket.assignedByDepartment || "Hiệp hội BACLINK"} Chỉ Định Kết Nối 1-1
                               </span>
                             ) : (
                               <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-caption font-black uppercase flex items-center gap-1 dark:bg-emerald-950/60 dark:text-emerald-300">

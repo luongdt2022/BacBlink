@@ -446,7 +446,7 @@ export default function ChiTietChaoBanPage() {
 
                     <p className="mt-4 text-xs text-slate-500 text-center flex items-center justify-center gap-1">
                       <Lock className="w-3 h-3 text-slate-400 inline" />
-                      Hình ảnh & mô hình thiết bị được kiểm định bởi Hội đồng KH&CN NacenTwin
+                      Hình ảnh & mô hình sản phẩm được kiểm chứng bởi Hiệp hội BACLINK
                     </p>
                   </div>
 
@@ -664,7 +664,7 @@ export default function ChiTietChaoBanPage() {
                   Bộ Tứ Sở Hữu Trí Tuệ & Mức Độ Sẵn Sàng Công Nghệ (IP Quad)
                 </h3>
                 <span className="text-xs font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">
-                  Chuẩn hóa NacenTwin
+                  Chuẩn hóa BACLINK
                 </span>
               </div>
 
@@ -855,7 +855,7 @@ export default function ChiTietChaoBanPage() {
                         Bảng Thông Số Kỹ Thuật & Chỉ Tiêu Hiệu Quả
                       </h4>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        Đặc tính kỹ thuật và năng lực giải quyết bài toán theo chuẩn hóa Hội đồng KH&CN NacenTwin
+                        Đặc tính kỹ thuật và năng lực sản xuất theo chuẩn hóa Hiệp hội BACLINK
                       </p>
                     </div>
                     <table className="w-full text-xs text-left">
@@ -1292,15 +1292,15 @@ export default function ChiTietChaoBanPage() {
                 <Building2 className="w-3.5 h-3.5 text-emerald-600" /> Cơ Quan Quản Lý Thẩm Định
               </p>
               <p className="text-xs font-extrabold text-slate-900">
-                {offer.managingAuthorityName || "Sở Khoa học và Công nghệ TP. Hà Nội"}
+                {offer.managingAuthorityName || "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)"}
               </p>
               <p className="text-xs text-slate-500">Đã kiểm định văn bằng SHTT & mức TRL</p>
             </div>
 
             <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-1 text-center">
               <p className="text-xs font-bold text-slate-700">Đầu Mối Hỗ Trợ Giao Dịch</p>
-              <p className="text-xs font-extrabold text-emerald-800">Hotline Sàn: 1900 6868</p>
-              <p className="text-xs text-slate-500">Viện ĐMST Quốc Gia bảo chứng quy trình</p>
+              <p className="text-xs font-extrabold text-emerald-800">Hotline Sàn: 0222 3888 686</p>
+              <p className="text-xs text-slate-500">Hiệp hội BACLINK bảo chứng quy trình</p>
             </div>
           </div>
         </div>
@@ -1356,7 +1356,7 @@ export default function ChiTietChaoBanPage() {
                 <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto leading-relaxed">
                   {isCommercialProduct
                     ? `Đơn đặt mua sản phẩm của bạn đã được gửi trực tiếp đến gian hàng tiếp nhận của ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Bên bán sẽ tiếp nhận xử lý và phản hồi trong 24 - 48 giờ làm việc.`
-                    : `Hồ sơ nhu cầu của bạn đã được gửi trực tiếp đến đơn vị ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Đơn vị chủ quản (${offer.managingAuthorityName || "Sở KH&CN"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.`
+                    : `Hồ sơ nhu cầu của bạn đã được gửi trực tiếp đến đơn vị ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Đơn vị chủ quản (${offer.managingAuthorityName || "Hiệp hội BACLINK"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.`
                   }
                 </p>
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">

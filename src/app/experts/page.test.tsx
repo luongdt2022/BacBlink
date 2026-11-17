@@ -111,7 +111,7 @@ const setupFetch = (directory: unknown = mockExpertsData) => {
     if (url.includes("/api/v1/sectors")) {
       return { ok: true, json: async () => ({ success: true, data: [{ code: "LV01", name: "Nông nghiệp công nghệ cao" }] }) } as Response;
     }
-    if (url.includes("/public-provinces")) {
+    if (url.includes("/api/v1/master-data/locations") || url.includes("/public-provinces")) {
       return { ok: true, json: async () => ({ success: true, data: mockProvincesData }) } as Response;
     }
     if (url.includes("/consultation-requests")) {

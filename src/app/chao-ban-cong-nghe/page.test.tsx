@@ -153,7 +153,7 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
   it("renders Hero Banner with 3 Quick Metrics from Basic Design", async () => {
     render(<ChaoBanCongNghePage />);
     expect(
-      await screen.findByText("Thị Trường Công Nghệ & Sáng Chế Thương Mại Hóa")
+      await screen.findByText("Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp Bắc Ninh")
     ).toBeInTheDocument();
     expect(screen.getByText("Hồ Sơ Niêm Yết")).toBeInTheDocument();
     expect(screen.getByText("Phân Loại TT17")).toBeInTheDocument();
@@ -207,7 +207,7 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
 
   it("renders dynamic sector counts avoiding hardcoded 0 badges", async () => {
     render(<ChaoBanCongNghePage />);
-    await screen.findByText("Thị Trường Công Nghệ & Sáng Chế Thương Mại Hóa");
+    await screen.findByText("Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp Bắc Ninh");
 
     // All sectors button with non-zero badge
     expect(screen.getByText("Tất cả lĩnh vực")).toBeInTheDocument();
@@ -229,7 +229,7 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
 
   it("allows switching tabs between All, Transfer, and Commercial equipment", async () => {
     render(<ChaoBanCongNghePage />);
-    await screen.findByText("Thị Trường Công Nghệ & Sáng Chế Thương Mại Hóa");
+    await screen.findByText("Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp Bắc Ninh");
 
     const transferTab = screen.getByText(/Chuyển Giao SHTT & TRL/);
     fireEvent.click(transferTab);
@@ -241,7 +241,7 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
 
   it("renders sorting dropdown with proper options", async () => {
     render(<ChaoBanCongNghePage />);
-    await screen.findByText("Thị Trường Công Nghệ & Sáng Chế Thương Mại Hóa");
+    await screen.findByText("Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp Bắc Ninh");
 
     const sortSelect = screen.getByDisplayValue("Mới niêm yết gần nhất");
     expect(sortSelect).toBeInTheDocument();

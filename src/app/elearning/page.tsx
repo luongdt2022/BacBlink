@@ -39,7 +39,7 @@ import {
 } from "@/lib/api/lms";
 import { authClient, ROLES } from "@/lib/auth-client";
 
-// Danh mục 6 Cụm năng lực chuẩn QĐ 1993/QĐ-BKHCN
+// Danh mục 6 Cụm chuyên đề đào tạo kỹ thuật công nghiệp BACLINK
 const CLUSTERS = [
   { code: "A", name: "Cụm A: Nhận diện nhu cầu & Bài toán", total: 10, range: "Bài 1–10", step: 1, color: "blue" },
   { code: "B", name: "Cụm B: Tìm kiếm nguồn cung & TRL", total: 10, range: "Bài 11–20", step: 3, color: "emerald" },
@@ -49,11 +49,11 @@ const CLUSTERS = [
   { code: "F", name: "Cụm F: Giao dịch & Bên cung công nghệ", total: 4, range: "Bài 47–50", step: 7, color: "rose" },
 ];
 
-// Danh mục 5 Lộ trình học tập (Bảng 4.5 Draft 1.docx)
+// Danh mục 5 Lộ trình học tập
 const PATHWAYS = [
   { code: "LT1", name: "LT1: Nền tảng nhận thức", desc: "Mọi đối tượng quan tâm ĐMST & tiếp cận công nghệ" },
   { code: "LT2", name: "LT2: Doanh nghiệp bên cầu", desc: "DN chẩn đoán nhu cầu, tìm kiếm & tiếp nhận công nghệ" },
-  { code: "LT3", name: "LT3: Trung gian & Sở KH&CN", desc: "Tổ chức môi giới, thẩm định và kết nối cung - cầu" },
+  { code: "LT3", name: "LT3: Kỹ thuật & Quản lý Nhà máy", desc: "Tối ưu hóa dây chuyền, kiểm soát chất lượng và an toàn công nghiệp" },
   { code: "LT4", name: "LT4: Viện trường bên cung", desc: "Nhà khoa học, viện nghiên cứu chào bán & thương mại hóa" },
   { code: "LT5", name: "LT5: Chuyên đề chuyên sâu", desc: "Cập nhật công nghệ tiêu biểu (AI, IoT, Năng lượng, Y sinh)" },
 ];
@@ -191,6 +191,7 @@ export default function ElearningCatalogPage() {
     userRole === ROLES.SUPER_ADMIN ||
     userRole === ROLES.ADMIN ||
     userRole === ROLES.OPERATOR_ADMIN ||
+    userRole === ROLES.ENTERPRISE ||
     userRole === ROLES.VERIFIED_EXPERT ||
     userRole === ROLES.EXPERT;
 
@@ -201,7 +202,7 @@ export default function ElearningCatalogPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* 1. HERO BANNER CHUẨN QĐ 1993/QĐ-BKHCN */}
+      {/* 1. HERO BANNER HỌC VIỆN ĐÀO TẠO KỸ THUẬT BACLINK */}
       <section className="relative overflow-hidden bg-brand-700 text-white py-10 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-600/40">
         <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
         <div className="max-w-7xl mx-auto relative z-10">
@@ -209,13 +210,13 @@ export default function ElearningCatalogPage() {
             <div className="space-y-3 max-w-3xl">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-brand-100 text-xs font-semibold tracking-wide backdrop-blur-sm">
                 <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-                Khung Đào Tạo Số Quốc Gia Theo Quyết Định 1993/QĐ-BKHCN
+                Học Viện Đào Tạo Kỹ Thuật Công Nghiệp & Quản Trị Nhà Máy BACLINK
               </div>
               <h1 className="type-page-title text-white">
                 Cổng Học Liệu Số & Không Gian Đào Tạo Nguồn Cung Công Nghệ
               </h1>
               <p className="text-sm sm:text-base text-white/85 leading-relaxed">
-                Trang bị năng lực chẩn đoán nhu cầu, tìm kiếm nguồn cung, đánh giá TRL, đàm phán chuyển giao công nghệ và xây dựng lộ trình đổi mới cho Doanh nghiệp, Viện trường và Cán bộ Sở KH&CN.
+                Trang bị kiến thức quản trị sản xuất tinh gọn Lean/5S, tiêu chuẩn IATF 16949/ISO 9001, tự động hóa SMT/ESD, chuyển đổi số nhà máy và lộ trình ESG cho kỹ sư, quản đốc và cán bộ doanh nghiệp hội viên BACLINK.
               </p>
             </div>
 
@@ -375,7 +376,7 @@ export default function ElearningCatalogPage() {
               8 Mô-đun năng lực (M1–M8):
             </span>
             <span className="text-brand-600 dark:text-brand-400 font-semibold">
-              Tổng 31 giờ học chuẩn QĐ 1993/QĐ-BKHCN
+              Tổng 31 giờ học chuyên đề công nghiệp BACLINK
             </span>
           </div>
           <div className="flex flex-wrap gap-2">

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { authClient, UserContext, getRedirectPathByRole } from "@/lib/auth-client";
+import { authClient, UserContext, getRedirectPathByRole, normalizePlatformRole } from "@/lib/auth-client";
 import { ShieldAlert, ArrowLeft, LogIn } from "lucide-react";
 import Link from "next/link";
 
@@ -41,7 +41,9 @@ export function RoleGuard({
     }
 
     const currentRole = currentUser.role?.toUpperCase() ?? "";
-    const hasRole = allowedRolesKey.split(",").includes(currentRole);
+    const normalizedRole = normalizePlatformRole(currentRole);
+    const allowedSet = new Set(allowedRolesKey.split(","));
+    const hasRole = allowedSet.has(currentRole) || allowedSet.has(normalizedRole);
 
     setAuthorized(hasRole);
     setChecking(false);

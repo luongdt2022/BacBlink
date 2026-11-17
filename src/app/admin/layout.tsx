@@ -10,10 +10,7 @@ import {
   Award,
   FileSpreadsheet,
   Inbox,
-  AlarmClock,
-  Zap,
   Users,
-  Network,
   Database,
   History,
   Sliders,
@@ -50,13 +47,13 @@ const MENU_GROUPS: MenuGroup[] = [
         href: "/admin",
         label: "Tổng quan hệ thống",
         icon: LayoutDashboard,
-        keywords: "dashboard bi 360 tong quan he thong dieu hanh toan quoc live",
+        keywords: "dashboard bi 360 tong quan he thong dieu hanh baclink live",
       },
       {
         href: "/admin/assessments/tt17",
         label: "Đánh giá công nghệ TT17",
         icon: Award,
-        keywords: "dashboard danh gia cong nghe tt17 tien giang ninh thuan 26 tieu chi doanh nghiep",
+        keywords: "dashboard danh gia cong nghe tt17 bac ninh 26 tieu chi doanh nghiep",
       },
       {
         href: "/admin/assessments/records",
@@ -68,57 +65,37 @@ const MENU_GROUPS: MenuGroup[] = [
   },
   {
     key: "group2",
-    title: "2. Phê Duyệt Toàn Quốc",
+    title: "2. Phê Duyệt Hồ Sơ",
     items: [
       {
         href: "/admin/approvals",
         label: "Hàng đợi phê duyệt",
         icon: Inbox,
-        keywords: "tat ca hang doi phe duyet ho so 34 tinh",
-      },
-      {
-        href: "/admin/approvals",
-        tabValue: "sla",
-        label: "Cảnh báo quá hạn SLA",
-        icon: AlarmClock,
-        keywords: "canh bao qua han sla 72h so tinh tre hen",
-      },
-      {
-        href: "/admin/approvals",
-        tabValue: "override",
-        label: "Phê duyệt vượt cấp",
-        icon: Zap,
-        keywords: "vuot cap can thiep tang 0 dac quyen override",
+        keywords: "hang doi phe duyet ho so doanh nghiep hoi vien baclink 1 cap",
       },
     ],
   },
   {
     key: "group3",
-    title: "3. Quản Trị Danh Mục & Cơ Cấu",
+    title: "3. Quản Trị Danh Mục & Phân Quyền",
     items: [
       {
         href: "/admin/users",
         label: "Quản lý người dùng",
         icon: Users,
-        keywords: "quan ly nguoi dung user tai khoan all users super admin danh sach thanh vien",
+        keywords: "quan ly nguoi dung user tai khoan all users admin danh sach thanh vien",
       },
       {
         href: "/admin/roles",
         label: "Phân quyền (RBAC)",
         icon: ShieldCheck,
-        keywords: "rbac 10 vai tro quyen han user phan quyen nguoi dung",
-      },
-      {
-        href: "/admin/org-tree",
-        label: "Cơ cấu 34 tỉnh/thành",
-        icon: Network,
-        keywords: "cay thu muc 34 tinh thanh co cau to chuc don vi",
+        keywords: "rbac 3 cap admin enterprise public_user vai tro quyen han phan quyen",
       },
       {
         href: "/admin/sectors",
-        label: "Lĩnh vực TT17 & TRL",
+        label: "Lĩnh vực & Chỉ số TRL",
         icon: Database,
-        keywords: "10 linh vuc tt17 trl tieu chi danh muc linh vuc",
+        keywords: "8 nganh baclink tt17 trl tieu chi danh muc linh vuc",
       },
       {
         href: "/admin/elearning",
@@ -142,13 +119,13 @@ const MENU_GROUPS: MenuGroup[] = [
         href: "/admin/system-config",
         label: "Cấu hình hệ thống",
         icon: Sliders,
-        keywords: "cau hinh tham so sla he thong thiet lap nd 85",
+        keywords: "cau hinh tham so he thong thiet lap nd 85",
       },
       {
         href: "/admin/blockchain",
         label: "Blockchain & ZKP",
         icon: ShieldCheck,
-        keywords: "blockchain zkp ndachain so cai mat ma merkle zero knowledge proof an toan chuoi khoi bo cong an",
+        keywords: "blockchain zkp ndachain so cai mat ma merkle zero knowledge proof",
       },
     ],
   },
@@ -156,10 +133,7 @@ const MENU_GROUPS: MenuGroup[] = [
 
 const PENDING_ROUTE_FAILSAFE_MS = 12000;
 
-function normalizeAdminTarget(pathname: string, tab: string | null): string {
-  if (pathname === "/admin/approvals" && (tab === "sla" || tab === "override")) {
-    return `/admin/approvals?tab=${tab}`;
-  }
+function normalizeAdminTarget(pathname: string): string {
   return pathname;
 }
 
@@ -278,7 +252,7 @@ function AdminSidebarNav({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm nhanh tác vụ (RBAC, SLA, Tỉnh...)"
+              placeholder="Tìm nhanh tác vụ (RBAC, Duyệt, Lĩnh vực...)"
               className="form-control w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 dark:bg-slate-800/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition"
             />
             {searchQuery && (
@@ -432,7 +406,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const searchParamsKey = searchParams?.toString() ?? "";
   const rawTab = searchParams?.get("tab") ?? null;
   const currentTab = rawTab || "all";
-  const currentTargetHref = normalizeAdminTarget(pathname, rawTab);
+  const currentTargetHref = normalizeAdminTarget(pathname);
 
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const pendingHrefRef = useRef<string | null>(null);
@@ -479,13 +453,13 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   );
 }
 
-const ADMIN_ALLOWED_ROLES = ["SUPER_ADMIN", "OPERATOR_ADMIN", "ADMIN"];
+const ADMIN_ALLOWED_ROLES = ["ADMIN", "SUPER_ADMIN", "OPERATOR_ADMIN"];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <RoleGuard
       allowedRoles={ADMIN_ALLOWED_ROLES}
-      portalName="Cổng Quản Trị Hệ Thống Tối Cao (Bộ KH&CN / NacenTech)"
+      portalName="Cổng Quản Trị Hệ Thống BACLINK"
     >
       <React.Suspense fallback={<AdminShellSuspenseFallback />}>
         <AdminLayoutInner>{children}</AdminLayoutInner>

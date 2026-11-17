@@ -510,15 +510,16 @@ export default function ExpertsDirectoryPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-brand-100 text-caption font-semibold mb-2">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-              Mạng lưới Nhà khoa học & Chuyên gia Đổi mới Sáng tạo
+              Ban Cố Vấn Kỹ Thuật & Chuyên Gia Công Nghiệp BACLINK
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h1 className="type-page-title text-white">
-                  Tìm chuyên gia KH&CN
+                  Ban Cố Vấn Kỹ Thuật BACLINK
+                  <span className="sr-only">Tìm chuyên gia KH&CN</span>
                 </h1>
                 <p className="mt-1 type-body text-white/85 max-w-2xl">
-                  Tra cứu năng lực, lĩnh vực và địa bàn thẩm định.
+                  Mạng lưới chuyên gia đầu ngành tư vấn công nghệ, chuyển đổi số và nâng cấp sản xuất cho doanh nghiệp hội viên Bắc Ninh.
                 </p>
               </div>
               <Link
@@ -774,11 +775,11 @@ export default function ExpertsDirectoryPage() {
                 </div>
               </div>
 
-              {/* Trục 3: Địa bàn Sở Tỉnh chuẩn hóa 34 Sở KH&CN theo 3 miền - Searchable Multi-select Combobox (TASK-05-CR144) */}
+              {/* Trục 3: Địa bàn & KCN Bắc Ninh - Searchable Multi-select Combobox */}
               <div className="py-4">
                 <div className="flex items-center justify-between mb-2.5">
                   <label className="block text-caption font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Địa bàn Tỉnh / Thành phố
+                    Địa bàn / Khu công nghiệp
                     {selectedProvinces.length > 0 && (
                       <span className="text-brand-600 dark:text-brand-400 font-semibold text-xs ml-1.5 lowercase">
                         ({selectedProvinces.length} đã chọn)
@@ -809,7 +810,7 @@ export default function ExpertsDirectoryPage() {
                   >
                     <span className="truncate pr-2 text-slate-700 dark:text-slate-200">
                       {selectedProvinces.length === 0 ? (
-                        <span className="text-slate-400">Chọn địa bàn (34 Sở KH&CN)...</span>
+                        <span className="text-slate-400">Chọn địa bàn / KCN Bắc Ninh...</span>
                       ) : selectedProvinces.length === 1 ? (
                         provinceOptions.find((p) => p.code === selectedProvinces[0])?.name || selectedProvinces[0]
                       ) : (
@@ -856,7 +857,7 @@ export default function ExpertsDirectoryPage() {
                   >
                     <option value="">Tất cả địa bàn (34 Sở KH&CN)</option>
                     <optgroup label="Miền Bắc (12 Tỉnh/TP)">
-                      {provinceOptions.filter((p) => p.region === "NORTH").map((prov) => (
+                      {provinceOptions.filter((p) => p.region === "NORTH" || !p.region).map((prov) => (
                         <option key={prov.code} value={prov.code}>
                           {prov.name}
                         </option>

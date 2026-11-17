@@ -35,7 +35,12 @@ const queue = [
   scopeType: i === 0 ? "PROVINCE" : "SECTOR",
   scopeId: i === 0 ? "HN" : "LV91",
   provinceName: i === 0 ? "Sở KH&CN TP. Hà Nội" : "Sở KH&CN TP. Hải Phòng",
-  payloadJson: JSON.stringify({ fullName: name, expertiseSectors: ["LV91"] }),
+  payloadJson: JSON.stringify({
+    fullName: name,
+    expertiseSectors: ["LV91"],
+    tax_code: i === 1 ? "0108992134" : undefined,
+    charter_capital: i === 1 ? "50 Tỷ VNĐ" : undefined,
+  }),
   status: "PENDING_APPROVAL",
   version: 1,
   createdAt: "2026-10-07T08:00:00Z",
@@ -94,10 +99,12 @@ describe("AdminApprovalsPage (TASK-07)", () => {
   it("renders approvals queue with initial items and counters", async () => {
     render(<AdminApprovalsPage />);
     await screen.findByText("Đặng Tiến Lượng");
-    expect(screen.getByText("Hàng Đợi Phê Duyệt & Thẩm Định Hồ Sơ Phân Cấp")).toBeInTheDocument();
+    expect(screen.getByText(/Trung Tâm Phê Duyệt Hồ Sơ BACLINK \(1 Cấp\)/i)).toBeInTheDocument();
     expect(screen.getByText("Đặng Tiến Lượng")).toBeInTheDocument();
     expect(screen.getByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).toBeInTheDocument();
     expect(screen.getByText(/Chờ thẩm định trong trang:/)).toBeInTheDocument();
+    expect(screen.queryByText(/Cảnh báo SLA/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Duyệt can thiệp/i)).not.toBeInTheDocument();
   });
 
   it("filters items by tab (EXPERT, SHOP, DEMAND)", async () => {
@@ -115,7 +122,7 @@ describe("AdminApprovalsPage (TASK-07)", () => {
   it("filters items by search query", async () => {
     render(<AdminApprovalsPage />);
     await screen.findByText("Đặng Tiến Lượng");
-    const searchInput = screen.getByPlaceholderText(/Tìm kiếm nhanh theo Tên chuyên gia/i);
+    const searchInput = screen.getByPlaceholderText(/Tìm kiếm nhanh theo Tên doanh nghiệp/i);
 
     fireEvent.change(searchInput, { target: { value: "Vinabiom" } });
     expect(screen.getByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).toBeInTheDocument();
@@ -238,122 +245,29 @@ describe("AdminApprovalsPage (TASK-07)", () => {
     expect(screen.getByText("Tập đoàn Công nghệ Cơ điện Thái Bình Dương")).toBeInTheDocument();
   });
 
-  // --- DELTA V4 TESTS (CR-2026-020: T049 - T052) ---
-
-  it("renders 3 high-level navigation tabs and filters SLA breached items (T050)", async () => {
+  it("filters items by Bac Ninh district dropdown without 34 provinces or override tabs", async () => {
     render(<AdminApprovalsPage />);
     await screen.findByText("Đặng Tiến Lượng");
 
-    // Check presence of 3 high-level tabs
-    expect(screen.getByText(/Tất cả hàng đợi/i)).toBeInTheDocument();
-    const slaTab = screen.getByText(/Cảnh báo SLA/i);
-    expect(slaTab).toBeInTheDocument();
-    expect(screen.getByText(/Duyệt can thiệp/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Cảnh báo SLA/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Duyệt can thiệp/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Duyệt Thay \/ Can Thiệp/i })).not.toBeInTheDocument();
 
-    // SLA breached badge should be displayed
-    expect(screen.getByText(/SLA_BREACHED/i)).toBeInTheDocument();
+    const districtSelect = screen.getByDisplayValue(/Tất cả địa bàn Bắc Ninh/i) as HTMLSelectElement;
+    expect(districtSelect).toBeInTheDocument();
+    fireEvent.change(districtSelect, { target: { value: "YEN_PHONG" } });
 
-    // Switch to SLA tab
-    fireEvent.click(slaTab);
-
-    // Only item 1 (isSlaBreached = true) is shown
-    expect(screen.getByText("Đặng Tiến Lượng")).toBeInTheDocument();
-    expect(screen.queryByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).not.toBeInTheDocument();
-  });
-
-  it("filters items by 34 provinces dropdown (T050)", async () => {
-    render(<AdminApprovalsPage />);
-    await screen.findByText("Đặng Tiến Lượng");
-
-    const provinceSelect = screen.getByDisplayValue(/Toàn quốc/i);
-    fireEvent.change(provinceSelect, { target: { value: "HN" } });
-
-    expect(screen.getByText("Đặng Tiến Lượng")).toBeInTheDocument();
-  });
-
-  it("validates Admin Override modal inputs: >= 20 chars & commitment checkbox (T051)", async () => {
-    render(<AdminApprovalsPage />);
-    await screen.findByText("Đặng Tiến Lượng");
-
-    // Click "Duyệt Thay / Can Thiệp" on first row
-    const overrideButtons = screen.getAllByRole("button", { name: /Duyệt Thay \/ Can Thiệp/i });
-    fireEvent.click(overrideButtons[0]);
-
-    // Modal opens
-    expect(screen.getByText(/Duyệt Can Thiệp \/ Vượt Cấp \(Admin Override\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/0 \/ 20 ký tự/i)).toBeInTheDocument();
-
-    const submitBtn = screen.getByRole("button", { name: /Xác Nhận Duyệt Can Thiệp/i });
-    expect(submitBtn).toBeDisabled();
-
-    // 19 chars: still disabled
-    const textarea = screen.getByPlaceholderText(/Nhập lý do cụ thể/i);
-    fireEvent.change(textarea, { target: { value: "1234567890123456789" } });
-    expect(screen.getByText(/19 \/ 20 ký tự/i)).toBeInTheDocument();
-    expect(submitBtn).toBeDisabled();
-
-    // >= 20 chars but no checkbox: still disabled
-    fireEvent.change(textarea, {
-      target: { value: "Hồ sơ đã quá hạn 76h tại Sở KH&CN Hà Nội, Super Admin can thiệp duyệt." },
-    });
-    expect(submitBtn).toBeDisabled();
-
-    // Check commitment checkbox
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
-
-    // Now button should be enabled!
-    expect(submitBtn).not.toBeDisabled();
-
-    // Submit
-    fireEvent.click(submitBtn);
-
-    // Success toast appears
-    expect(await screen.findByText(/Đã thực thi Duyệt Can Thiệp Vượt Cấp thành công/i)).toBeInTheDocument();
-    expect(fetchMock.mock.calls.some(([url, opts]) => url.includes("/override") && (opts as RequestInit)?.method === "POST")).toBe(true);
-  });
-
-  it("handles 409 Conflict gracefully in Admin Override modal (T051)", async () => {
-    fetchMock = vi.fn(async (url: string, options?: RequestInit) => {
-      if (options?.method === "POST" && url.includes("/override")) {
-        return {
-          ok: false,
-          status: 409,
-          json: async () => ({
-            success: false,
-            error: { code: "ERR_RECORD_ALREADY_MODIFIED", message: "Hồ sơ này vừa được Cán bộ Sở/Admin khác xử lý." },
-          }),
-        };
-      }
-      return { ok: true, json: async () => ({ success: true, data: queue, totalPages: 1 }) };
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    render(<AdminApprovalsPage />);
-    await screen.findByText("Đặng Tiến Lượng");
-
-    const overrideButtons = screen.getAllByRole("button", { name: /Duyệt Thay \/ Can Thiệp/i });
-    fireEvent.click(overrideButtons[0]);
-
-    const textarea = screen.getByPlaceholderText(/Nhập lý do cụ thể/i);
-    fireEvent.change(textarea, {
-      target: { value: "Hồ sơ đã quá hạn 76h tại Sở KH&CN Hà Nội, Super Admin can thiệp duyệt." },
-    });
-    const checkbox = screen.getByRole("checkbox");
-    fireEvent.click(checkbox);
-
-    const submitBtn = screen.getByRole("button", { name: /Xác Nhận Duyệt Can Thiệp/i });
-    fireEvent.click(submitBtn);
-
-    // Toast 409 appears
-    expect(await screen.findByText("Hồ sơ đã được xử lý bởi phiên làm việc khác.")).toBeInTheDocument();
+    expect(replaceMock).toHaveBeenCalledWith(
+      expect.stringContaining("provinceCode=YEN_PHONG"),
+      expect.objectContaining({ scroll: false })
+    );
   });
 
   it("renders empty state and allows resetting filters (T052)", async () => {
     render(<AdminApprovalsPage />);
     await screen.findByText("Đặng Tiến Lượng");
 
-    const searchInput = screen.getByPlaceholderText(/Tìm kiếm nhanh theo Tên chuyên gia/i);
+    const searchInput = screen.getByPlaceholderText(/Tìm kiếm nhanh theo Tên doanh nghiệp/i);
     fireEvent.change(searchInput, { target: { value: "KHONG_TON_TAI_9999" } });
 
     expect(screen.getByText("Không tìm thấy hồ sơ nào phù hợp bộ lọc")).toBeInTheDocument();
@@ -364,96 +278,26 @@ describe("AdminApprovalsPage (TASK-07)", () => {
     expect(await screen.findByText("Đặng Tiến Lượng")).toBeInTheDocument();
   });
 
-  // --- CR-2026-021 DELTA V5: T061 ROUTING & REACTIVE URL TESTS ---
-
   describe("T061 [QC-Routing] Reactive URL State & Filter Verification", () => {
-    it("Scenario 1: Deep linking from URL with ?tab=sla initializes SLA tab", async () => {
-      currentSearchParams = new URLSearchParams("tab=sla");
-      render(<AdminApprovalsPage />);
-
-      await screen.findByText("Đặng Tiến Lượng");
-
-      // Verify that tab "Cảnh báo SLA" has active styling
-      const slaTab = screen.getByRole("button", { name: /Cảnh báo SLA/i });
-      expect(slaTab.className).toContain("text-rose-600");
-
-      // SLA filter applied: only SLA breached items are rendered
-      expect(screen.getByText("Đặng Tiến Lượng")).toBeInTheDocument();
-      expect(screen.queryByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).not.toBeInTheDocument();
-    });
-
-    it("Scenario 2: Deep linking from URL with ?tab=override initializes Override tab", async () => {
-      currentSearchParams = new URLSearchParams("tab=override");
-      render(<AdminApprovalsPage />);
-
-      await screen.findByText("Đặng Tiến Lượng");
-
-      // Verify tab "Duyệt can thiệp" has active styling
-      const overrideTab = screen.getByRole("button", { name: /Duyệt can thiệp/i });
-      expect(overrideTab.className).toContain("text-rose-600");
-    });
-
-    it("Scenario 3: Switching tab from UI updates URL via router.replace without page reload", async () => {
+    it("Scenario 4: Bac Ninh district dropdown filter and 'Xóa tất cả bộ lọc' clears URL params", async () => {
       currentSearchParams = new URLSearchParams();
       render(<AdminApprovalsPage />);
 
       await screen.findByText("Đặng Tiến Lượng");
 
-      // Click "Cảnh báo SLA" tab
-      const slaTab = screen.getByRole("button", { name: /Cảnh báo SLA/i });
-      fireEvent.click(slaTab);
+      const districtSelect = screen.getByDisplayValue(/Tất cả địa bàn Bắc Ninh/i) as HTMLSelectElement;
+      fireEvent.change(districtSelect, { target: { value: "TP_BN" } });
 
       expect(replaceMock).toHaveBeenCalledWith(
-        expect.stringContaining("tab=sla"),
+        expect.stringContaining("provinceCode=TP_BN"),
         expect.objectContaining({ scroll: false })
       );
 
-      // Click "Duyệt can thiệp" tab
-      const overrideTab = screen.getByRole("button", { name: /Duyệt can thiệp/i });
-      fireEvent.click(overrideTab);
-
-      expect(replaceMock).toHaveBeenCalledWith(
-        expect.stringContaining("tab=override"),
-        expect.objectContaining({ scroll: false })
-      );
-
-      // Click "Tất cả hàng đợi" tab -> tab param should be cleared
-      const allTab = screen.getByRole("button", { name: /Tất cả hàng đợi/i });
-      fireEvent.click(allTab);
-
-      expect(replaceMock).toHaveBeenCalledWith(
-        expect.not.stringContaining("tab="),
-        expect.objectContaining({ scroll: false })
-      );
-    });
-
-    it("Scenario 4: 34 provinces dropdown, filter by province, and 'Xóa tất cả bộ lọc' clears URL params", async () => {
-      currentSearchParams = new URLSearchParams();
-      render(<AdminApprovalsPage />);
-
-      await screen.findByText("Đặng Tiến Lượng");
-
-      // Verify dropdown contains provinces
-      const provinceSelect = screen.getByDisplayValue(/Toàn quốc/i) as HTMLSelectElement;
-      expect(provinceSelect.options.length).toBeGreaterThanOrEqual(35);
-
-      // Select "Hà Nội" (code: "HN")
-      fireEvent.change(provinceSelect, { target: { value: "HN" } });
-
-      // Verify router.replace was called with provinceCode=HN
-      expect(replaceMock).toHaveBeenCalledWith(
-        expect.stringContaining("provinceCode=HN"),
-        expect.objectContaining({ scroll: false })
-      );
-
-      // Verify active filter bar shows "Xóa tất cả bộ lọc" button
       const clearBtn = screen.getByRole("button", { name: /Xóa tất cả bộ lọc/i });
       expect(clearBtn).toBeInTheDocument();
 
-      // Click "Xóa tất cả bộ lọc"
       fireEvent.click(clearBtn);
 
-      // Verify router.replace was called to clear all params back to /admin/approvals
       expect(replaceMock).toHaveBeenCalledWith(
         "/admin/approvals",
         expect.objectContaining({ scroll: false })
@@ -565,7 +409,7 @@ describe("AdminApprovalsPage (TASK-07)", () => {
       expect(screen.getByText(/Hồ Sơ Doanh Nghiệp ĐMST & Tính Pháp Lý/i)).toBeInTheDocument();
       expect(screen.getByText("0108992134")).toBeInTheDocument();
       expect(screen.getByText("Vốn điều lệ:")).toBeInTheDocument();
-      expect(screen.getByText("Chứng nhận ĐMST Sở KH&CN:")).toBeInTheDocument();
+      expect(screen.getByText("Hồ sơ Hội viên BACLINK:")).toBeInTheDocument();
     });
   });
 });

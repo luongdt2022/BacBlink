@@ -752,7 +752,7 @@ export default function BuyerDemandsPage() {
 
               <div className="surface-card p-5 space-y-1">
                 <div className="flex items-center justify-between text-text-secondary dark:text-slate-400">
-                  <span className="text-xs font-bold">Chuyên gia Sở KH&CN</span>
+                  <span className="text-xs font-bold">Ban Cố Vấn BACLINK</span>
                   <Award className="w-4 h-4 text-brand-500" />
                 </div>
                 <p className="text-2xl font-extrabold text-brand-700 dark:text-brand-400">

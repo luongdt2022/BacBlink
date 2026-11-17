@@ -247,9 +247,9 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
 
     render(<ExpertConsultationsPage />);
 
-    expect(screen.getByText(/Tài Khoản Đang Chờ Phê Duyệt Cấp Sở \(EXPERT\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Tài Khoản Đang Chờ Phê Duyệt Cố Vấn BACLINK/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Hồ sơ Chuyên gia KH&CN của bạn đang trong tiến trình thẩm định tại Sở KH&CN/i)
+      screen.getByText(/Hồ sơ Cố vấn Kỹ thuật của bạn đang trong tiến trình thẩm định tại Hiệp hội BACLINK/i)
     ).toBeInTheDocument();
   });
 
@@ -272,7 +272,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
 
     // Verify toast warning called instead of alert()
     expect(mockToastWarning).toHaveBeenCalledWith(
-      "Hồ sơ Chuyên gia đang chờ Sở KH&CN phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác có thù lao Quỹ ĐMST.",
+      "Hồ sơ Cố vấn Kỹ thuật đang chờ Hiệp hội BACLINK phê duyệt. Chưa thể tiếp nhận yêu cầu ủy thác kết nối.",
       "Chờ Duyệt Hồ Sơ"
     );
     expect(alertSpy).not.toHaveBeenCalled();

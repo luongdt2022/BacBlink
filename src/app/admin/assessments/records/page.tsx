@@ -1527,7 +1527,7 @@ export default function AdminAssessmentRecordsPage() {
                 <div className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2">
                   <div className="font-bold text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider text-teal-600 flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4" />
-                    <span>Nhu cầu hỗ trợ từ Sở KH&CN / Viện / Chuyên gia</span>
+                    <span>Nhu cầu hỗ trợ từ Hiệp hội BACLINK / Viện / Chuyên gia</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {inspectingDemandItem.supportNeeds.map((s, idx) => (

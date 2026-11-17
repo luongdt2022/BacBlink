@@ -380,14 +380,13 @@ function ChaoBanCongNgheContent() {
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-              Sàn Giao Dịch Chào Bán Công Nghệ, Thiết Bị & Sáng Chế (NacenTwin)
+              Sàn Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp (BACLINK)
             </div>
             <h1 className="type-page-title text-white">
-              Thị Trường Công Nghệ & Sáng Chế Thương Mại Hóa
+              Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp Bắc Ninh
             </h1>
             <p className="text-white/85 type-body max-w-xl">
-              Sàn niêm yết các giải pháp kỹ thuật, sáng chế và thiết bị thương mại đã được thẩm định
-              pháp lý từ các Viện nghiên cứu, Trường đại học và Doanh nghiệp ĐMST trên toàn quốc.
+              Sàn niêm yết các sản phẩm cơ khí chính xác, linh kiện điện tử, tự động hóa và năng lực nhà máy từ các doanh nghiệp hội viên Hiệp hội BACLINK tại các KCN Bắc Ninh.
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link
@@ -395,14 +394,14 @@ function ChaoBanCongNgheContent() {
                 className="bg-white/10 hover:bg-white/20 border border-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 backdrop-blur-sm shadow-xs"
               >
                 <Layers className="w-4 h-4 text-white/80" />
-                Kho Seller Workspace
+                Bàn Làm Việc Doanh Nghiệp
               </Link>
               <Link
                 href="/portal/seller/technologies/create"
                 className="bg-white hover:bg-slate-100 text-brand-700 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs"
               >
                 <PlusCircle className="w-4 h-4 text-brand-700" />
-                Đăng Chào Bán Mới
+                Đăng Sản Phẩm / Năng Lực Mới
               </Link>
             </div>
           </div>

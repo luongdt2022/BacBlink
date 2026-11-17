@@ -253,7 +253,9 @@ describe("CR-2026-006 / Delta v10: Comprehensive Gate 4 Verification Suite", () 
       // Resolve API
       resolvePromise!({ ok: true, json: async () => ({ code: "REGISTER_SUCCESS" }) });
       await waitFor(() => {
-        expect(screen.getByText(/Đăng ký thành công/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Tài khoản của bạn đã được khởi tạo thành công|Đăng ký thành công/i)
+        ).toBeInTheDocument();
       });
     });
   });

@@ -1,180 +1,65 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import GovOpportunitiesPage from './page';
-import { brokerageApi } from '@/services/api/brokerage';
-import { authClient } from '@/lib/auth-client';
+import React from "react";
+import { render, screen, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import GovOpportunitiesRetiredPage from "./page";
+import { authClient } from "@/lib/auth-client";
 
-vi.mock('@/services/api/brokerage', () => ({
-  brokerageApi: {
-    getGovOpportunities: vi.fn(),
-    updateOpportunityStage: vi.fn(),
-  },
+const mockReplace = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
+  usePathname: () => "/gov/opportunities",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock('@/lib/auth-client', () => ({
-  authClient: {
-    getUser: vi.fn(),
-    getToken: vi.fn().mockReturnValue('mock-token'),
-  },
-}));
-
-const mockGovOpportunitiesData = {
-  statistics: {
-    total: 2,
-    suggested: 0,
-    initiated: 1,
-    negotiating: 1,
-    mouSigned: 0,
-    completed: 0,
-    closedLost: 0,
-    totalEstimatedValueMillionVnd: 5000,
-  },
-  opportunities: [
-    {
-      id: 'deal-1',
-      opportunityCode: 'OPP-2026-001',
-      title: 'Hợp tác chuyển giao giải pháp AI nhận diện sản phẩm lỗi',
-      buyerOrgName: 'Công ty Cổ phần Chế tạo Máy Hải Phòng',
-      buyerContactName: 'Nguyễn Văn An',
-      buyerContactPhone: '0912345678',
-      buyerContactEmail: 'an.nv@haiphongmach.vn',
-      sellerOrgName: 'Viện Công nghệ Thông tin & Tự động hóa',
-      sellerContactName: 'Trần Thị Bình',
-      sellerContactPhone: '0987654321',
-      sellerContactEmail: 'binh.tt@ioit.ac.vn',
-      assignedExpertName: 'TS. Lê Hoàng Long',
-      managingAuthorityId: 'HP',
-      stage: 'NEGOTIATING',
-      estimatedValueMillionVnd: 3500,
-      isSlaWarning: true,
-      createdAt: '2026-10-20T08:00:00Z',
-      updatedAt: '2026-10-25T10:00:00Z',
-    },
-    {
-      id: 'deal-2',
-      opportunityCode: 'OPP-2026-002',
-      title: 'Cung cấp hệ thống sấy nông sản thông minh tiết kiệm năng lượng',
-      buyerOrgName: 'Hợp tác xã Nông nghiệp Hải Dương',
-      buyerContactName: 'Vũ Quốc Cường',
-      buyerContactPhone: '0901234567',
-      buyerContactEmail: 'cuong.vq@htx.vn',
-      sellerOrgName: 'Trung tâm Phát triển Công nghệ Cao',
-      sellerContactName: 'Phạm Minh Đức',
-      sellerContactPhone: '0933221100',
-      sellerContactEmail: 'duc.pm@hightech.gov.vn',
-      assignedExpertName: null,
-      managingAuthorityId: 'HN',
-      stage: 'INITIATED',
-      estimatedValueMillionVnd: 1500,
-      isSlaWarning: false,
-      createdAt: '2026-10-24T08:00:00Z',
-      updatedAt: '2026-10-26T08:00:00Z',
-    },
-  ],
-};
-
-describe('T085 [FE-Gov-Screen4] GovOpportunitiesPage Screen 4 Verification', () => {
+describe("GovOpportunitiesRetiredPage (/gov/opportunities 410 Gone & 3-Tier RBAC)", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    (authClient.getUser as any).mockReturnValue({
-      id: 'user-hp-01',
-      name: 'Lãnh đạo Sở KH&CN Hải Phòng',
-      role: 'PROVINCIAL_ADMIN',
-      scopeId: 'HP',
-    });
-    (brokerageApi.getGovOpportunities as any).mockResolvedValue(mockGovOpportunitiesData);
+    cleanup();
+    localStorage.clear();
+    mockReplace.mockReset();
   });
 
   afterEach(() => {
     cleanup();
   });
 
-  it('renders GovPageHeader with breadcrumbs, title, scope badge, and SLA chips', async () => {
-    render(<GovOpportunitiesPage />);
-
-    expect(screen.getByText('Cổng Giám Sát Cung–Cầu Công Nghệ Địa Phương')).toBeInTheDocument();
-    expect(screen.getByTestId('gov-sla-chip')).toBeInTheDocument();
-    expect(screen.getByTestId('gov-maker-checker-chip')).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText('OPP-2026-001')).toBeInTheDocument();
-      expect(screen.getByText('OPP-2026-002')).toBeInTheDocument();
+  it("renders 410 Gone notice without legacy /gov/opportunities queue and redirects ADMIN to /admin", () => {
+    authClient.setSession("t", {
+      id: "admin-1",
+      email: "admin@baclink.org.vn",
+      fullName: "Quản trị viên BACLINK",
+      role: "ADMIN",
     });
 
-    // Resolves province name correctly
-    expect(screen.getByText('Hải Phòng')).toBeInTheDocument();
+    render(<GovOpportunitiesRetiredPage />);
+
+    expect(screen.getByTestId("deprecated-route-410")).toBeInTheDocument();
+    expect(screen.getByText("410 Gone")).toBeInTheDocument();
+    expect(screen.queryByTestId("gov-sla-chip")).not.toBeInTheDocument();
+    expect(mockReplace).toHaveBeenCalledWith("/admin");
   });
 
-  it('keeps public officials in gov space without navigating away to /portal/ paths', async () => {
-    const { container } = render(<GovOpportunitiesPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('OPP-2026-001')).toBeInTheDocument();
+  it("redirects ENTERPRISE to /portal and legacy PROVINCIAL_ADMIN / anonymous to /", () => {
+    authClient.setSession("t", {
+      id: "ent-1",
+      email: "dn@baclink.org.vn",
+      fullName: "Doanh nghiệp Hội viên",
+      role: "ENTERPRISE",
     });
 
-    const portalLinks = container.querySelectorAll('a[href^="/portal"]');
-    expect(portalLinks.length).toBe(0);
-  });
+    const { unmount } = render(<GovOpportunitiesRetiredPage />);
+    expect(mockReplace).toHaveBeenCalledWith("/portal");
 
-  it('filters opportunities by SLA 48h breach correctly', async () => {
-    render(<GovOpportunitiesPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('OPP-2026-001')).toBeInTheDocument();
-      expect(screen.getByText('OPP-2026-002')).toBeInTheDocument();
+    unmount();
+    mockReplace.mockReset();
+    authClient.setSession("t", {
+      id: "user-hp-01",
+      email: "lanhdao@hp.gov.vn",
+      fullName: "Lãnh đạo Sở KH&CN",
+      role: "PROVINCIAL_ADMIN",
     });
 
-    const slaFilterBtn = screen.getByTestId('filter-sla-breached');
-    fireEvent.click(slaFilterBtn);
-
-    // Only OPP-2026-001 has isSlaWarning: true
-    expect(screen.getByText('OPP-2026-001')).toBeInTheDocument();
-    expect(screen.queryByText('OPP-2026-002')).not.toBeInTheDocument();
-  });
-
-  it('opens deal monitoring modal when clicking Giám sát Deal', async () => {
-    render(<GovOpportunitiesPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('OPP-2026-001')).toBeInTheDocument();
-    });
-
-    const monitorButtons = screen.getAllByText('Giám sát Deal');
-    fireEvent.click(monitorButtons[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Giám Sát Tiến Trình Deal/i)).toBeInTheDocument();
-      expect(screen.getByText(/Nguyễn Văn An/i)).toBeInTheDocument();
-      expect(screen.getByText(/Trần Thị Bình/i)).toBeInTheDocument();
-    });
-  });
-
-  it('allows gov officer to activate negotiation and open deal room (ADR-BROKERAGE-01)', async () => {
-    (brokerageApi.updateOpportunityStage as any) = vi.fn().mockResolvedValue({
-      id: 'deal-2',
-      stage: 'NEGOTIATING',
-    });
-
-    render(<GovOpportunitiesPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('OPP-2026-002')).toBeInTheDocument();
-    });
-
-    const monitorButtons = screen.getAllByText('Giám sát Deal');
-    // Click deal-2 (which has stage === 'INITIATED')
-    fireEvent.click(monitorButtons[1]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Kích Hoạt Đàm Phán \(Mở Deal Room\)/i)).toBeInTheDocument();
-    });
-
-    const activateBtn = screen.getByText(/Kích Hoạt Đàm Phán \(Mở Deal Room\)/i);
-    fireEvent.click(activateBtn);
-
-    await waitFor(() => {
-      expect(brokerageApi.updateOpportunityStage).toHaveBeenCalledWith('deal-2', 'NEGOTIATING');
-    });
+    render(<GovOpportunitiesRetiredPage />);
+    expect(mockReplace).toHaveBeenCalledWith("/");
   });
 });

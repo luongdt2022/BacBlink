@@ -180,7 +180,7 @@ export default function OpportunitiesPipelinePage() {
             <div className="flex items-center gap-2 text-xs font-semibold text-brand-100">
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-brand-100">
                 <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-                Sàn Giao Dịch & Môi Giới Công Nghệ NacenTwin
+                Cổng Kết Nối Chuỗi Cung Ứng BACLINK
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-white/50" />
               <span className="text-white/80">Quản Lý Vòng Đời Cơ Hội & Chuyển Giao</span>

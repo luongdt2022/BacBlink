@@ -26,13 +26,24 @@ vi.mock("@/components/admin/admin-nav", () => ({
   AdminNav: () => <nav data-testid="admin-nav">AdminNav</nav>,
 }));
 
-vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    getAuthHeaders: () => ({ "Content-Type": "application/json" }),
-    hasRole: () => true,
-    getUser: () => ({ fullName: "QC Inspector", email: "qc@nacentech.vn" }),
-  },
+const mockGetUser = vi.fn(() => ({
+  fullName: "QC Inspector",
+  email: "qc@baclink.org.vn",
+  role: "ADMIN",
 }));
+
+vi.mock("@/lib/auth-client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/auth-client")>();
+  return {
+    ...actual,
+    authClient: {
+      ...actual.authClient,
+      getAuthHeaders: () => ({ "Content-Type": "application/json" }),
+      hasRole: () => true,
+      getUser: () => mockGetUser(),
+    },
+  };
+});
 
 // Mock for org-tree API
 const mockDeactivateUnit = vi.fn().mockResolvedValue({});
@@ -268,52 +279,51 @@ describe("QC Hardening & Edge-Case Verification Suite [nacen-qc]", () => {
   });
 
   /* -------------------------------------------------------------
-   * 4. /admin/org-tree: Search Empty State & Deactivation Confirmation
+   * 4. /admin/org-tree: Retired 410 Gone & 3-Tier RBAC Redirect
    * ------------------------------------------------------------- */
   describe("/admin/org-tree edge cases", () => {
-    it("displays empty state message when search returns no matching units", async () => {
-      render(<OrgTreePage />);
-
-      expect(await screen.findByText(/Cơ quan Đầu mối Trung ương NacenTech/i)).toBeInTheDocument();
-
-      const searchInput = screen.getByPlaceholderText(/Tìm kiếm Sở Tỉnh hoặc Viện\/Trường/i);
-      fireEvent.change(searchInput, { target: { value: "NONEXISTENT_UNIT_XYZ" } });
-
-      expect(
-        await screen.findByText(/Không tìm thấy đơn vị nào khớp với từ khóa tìm kiếm "NONEXISTENT_UNIT_XYZ"/i)
-      ).toBeInTheDocument();
+    beforeEach(() => {
+      pushMock.mockReset();
+      replaceMock.mockReset();
+      mockGetUser.mockReturnValue({
+        fullName: "QC Inspector",
+        email: "qc@baclink.org.vn",
+        role: "ADMIN",
+      });
     });
 
-    it("requires explicit confirmation in modal popup before deactivating a unit (BR-TREE-003)", async () => {
+    it("renders 410 Gone notice for retired 34-province org tree under 3-tier RBAC", async () => {
       render(<OrgTreePage />);
 
-      // Wait for provincial unit
-      expect(await screen.findByText("Sở Khoa học và Công nghệ TP. Hà Nội")).toBeInTheDocument();
+      expect(await screen.findByTestId("deprecated-route-410")).toBeInTheDocument();
+      expect(screen.getByText("410 Gone")).toBeInTheDocument();
+      expect(screen.getByText(/Cây tổ chức 34 Sở KH&CN đã ngừng áp dụng \(410 Gone\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/ADMIN, ENTERPRISE, PUBLIC_USER/i)).toBeInTheDocument();
+      expect(screen.queryByPlaceholderText(/Tìm kiếm Sở Tỉnh/i)).not.toBeInTheDocument();
+    });
 
-      // Find delete/deactivate button for unit-hn
-      const deleteButtons = screen.getAllByTitle("Vô hiệu hóa đơn vị (BR-TREE-003)");
-      expect(deleteButtons.length).toBeGreaterThanOrEqual(1);
-
-      // Click delete button -> opens confirmation modal
-      fireEvent.click(deleteButtons[0]);
-
-      expect(screen.getByText("Xác Nhận Vô Hiệu Hóa Đơn Vị")).toBeInTheDocument();
-      expect(screen.getByText(/Bạn có chắc chắn muốn vô hiệu hóa đơn vị/i)).toBeInTheDocument();
-
-      // Click Cancel first
-      const cancelBtn = screen.getByRole("button", { name: "Hủy" });
-      fireEvent.click(cancelBtn);
-      expect(screen.queryByText("Xác Nhận Vô Hiệu Hóa Đơn Vị")).not.toBeInTheDocument();
-      expect(mockDeactivateUnit).not.toHaveBeenCalled();
-
-      // Re-open and confirm
-      fireEvent.click(deleteButtons[0]);
-      const confirmBtn = screen.getByRole("button", { name: /Xác Nhận Vô Hiệu Hóa/i });
-      fireEvent.click(confirmBtn);
+    it("redirects ADMIN to /admin and PUBLIC_USER to / when visiting /admin/org-tree", async () => {
+      const { unmount } = render(<OrgTreePage />);
 
       await waitFor(() => {
-        expect(mockDeactivateUnit).toHaveBeenCalledWith("unit-hn");
+        expect(replaceMock).toHaveBeenCalledWith("/admin");
       });
+      expect(screen.getByRole("link", { name: /Về Trung tâm Quản trị \(\/admin\)/i })).toHaveAttribute("href", "/admin");
+
+      unmount();
+      replaceMock.mockReset();
+      mockGetUser.mockReturnValue({
+        fullName: "Public Member",
+        email: "member@baclink.org.vn",
+        role: "PUBLIC_USER",
+      });
+
+      render(<OrgTreePage />);
+
+      await waitFor(() => {
+        expect(replaceMock).toHaveBeenCalledWith("/");
+      });
+      expect(screen.getByRole("link", { name: /Về Trang chủ BACLINK/i })).toHaveAttribute("href", "/");
     });
   });
 
@@ -341,10 +351,10 @@ describe("QC Hardening & Edge-Case Verification Suite [nacen-qc]", () => {
       render(<AdminSectorsPage />);
       expect(await screen.findByText("Công nghệ thông tin")).toBeInTheDocument();
 
-      const searchInput = screen.getByPlaceholderText(/Tìm theo tên lĩnh vực/i);
+      const searchInput = screen.getByPlaceholderText(/Tìm theo tên (lĩnh vực|ngành)/i);
       fireEvent.change(searchInput, { target: { value: "KhongTonTai123" } });
 
-      expect(await screen.findByText("Không có lĩnh vực phù hợp.")).toBeInTheDocument();
+      expect(await screen.findByText(/Không có (lĩnh vực|ngành)/i)).toBeInTheDocument();
     });
 
     it("requires safe confirmation modal popup before deactivating a sector (T079)", async () => {
@@ -404,10 +414,10 @@ describe("QC Hardening & Edge-Case Verification Suite [nacen-qc]", () => {
         {
           id: "off-01",
           name: "Trần Văn An",
-          email: "an.tv@nacentech.local",
-          role: "PROVINCIAL_ADMIN",
-          scopeType: "PROVINCE",
-          scopeId: "HN",
+          email: "an.tv@baclink.org.vn",
+          role: "ADMIN",
+          scopeType: "GLOBAL",
+          scopeId: "BACNINH",
         },
       ];
 
@@ -422,13 +432,13 @@ describe("QC Hardening & Edge-Case Verification Suite [nacen-qc]", () => {
       render(<AdminRolesPage />);
 
       // Switch to Officers tab
-      fireEvent.click(screen.getByRole("button", { name: /Danh Sách Cán Bộ & Phân Quyền/i }));
+      fireEvent.click(screen.getByRole("button", { name: /Danh Sách Nhân Sự & Phân Quyền/i }));
       expect(await screen.findByText("Trần Văn An")).toBeInTheDocument();
 
       const searchInput = screen.getByPlaceholderText(/Tìm theo email/i);
       fireEvent.change(searchInput, { target: { value: "notfound@example.com" } });
 
-      expect(await screen.findByText("Không tìm thấy cán bộ nào phù hợp với bộ lọc.")).toBeInTheDocument();
+      expect(await screen.findByText("Không tìm thấy tài khoản nào phù hợp với bộ lọc.")).toBeInTheDocument();
     });
 
     it("verifies missing 'Thu Hồi Quyền' (Revoke) action button in officer table", async () => {
@@ -436,10 +446,10 @@ describe("QC Hardening & Edge-Case Verification Suite [nacen-qc]", () => {
         {
           id: "off-01",
           name: "Trần Văn An",
-          email: "an.tv@nacentech.local",
-          role: "PROVINCIAL_ADMIN",
-          scopeType: "PROVINCE",
-          scopeId: "HN",
+          email: "an.tv@baclink.org.vn",
+          role: "ENTERPRISE",
+          scopeType: "GLOBAL",
+          scopeId: "BACNINH",
         },
       ];
 
@@ -452,7 +462,7 @@ describe("QC Hardening & Edge-Case Verification Suite [nacen-qc]", () => {
       );
 
       render(<AdminRolesPage />);
-      fireEvent.click(screen.getByRole("button", { name: /Danh Sách Cán Bộ & Phân Quyền/i }));
+      fireEvent.click(screen.getByRole("button", { name: /Danh Sách Nhân Sự & Phân Quyền/i }));
       await screen.findByText("Trần Văn An");
 
       // Verify only "Sửa Quyền" exists, no "Thu Hồi Quyền" button
