@@ -330,7 +330,18 @@ export default function TechmartEventsPage() {
                   )}
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                    <div className="lg:col-span-8 space-y-3">
+                    {/* Event Banner Image */}
+                    {ev.bannerUrl && (
+                      <div className="lg:col-span-4 relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 shadow-xs shrink-0">
+                        <img
+                          src={ev.bannerUrl}
+                          alt={ev.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+
+                    <div className={`${ev.bannerUrl ? "lg:col-span-5" : "lg:col-span-8"} space-y-3`}>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="px-2.5 py-1 rounded-md bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300 text-xs font-extrabold font-mono">
                           {ev.id.substring(0, 8).toUpperCase()}
@@ -347,11 +358,11 @@ export default function TechmartEventsPage() {
                         {ev.title}
                       </h3>
 
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
                         {ev.description}
                       </p>
 
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs text-slate-600 dark:text-slate-400">
                         <div className="flex items-center gap-1.5 font-medium">
                           <Calendar className="size-4 text-brand-600 shrink-0" />
                           <span>
@@ -363,14 +374,10 @@ export default function TechmartEventsPage() {
                           <MapPin className="size-4 text-red-600 shrink-0" />
                           <span className="truncate">{ev.location}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 font-medium">
-                          <ShieldCheck className="size-4 text-emerald-600 shrink-0" />
-                          <span>Hiệp hội BACLINK bảo trợ</span>
-                        </div>
                       </div>
                     </div>
 
-                    <div className="lg:col-span-4 flex flex-col justify-center items-center lg:items-end gap-3 border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800 pt-4 lg:pt-0 lg:pl-6">
+                    <div className={`${ev.bannerUrl ? "lg:col-span-3" : "lg:col-span-4"} flex flex-col justify-center items-center lg:items-end gap-3 border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800 pt-4 lg:pt-0 lg:pl-6`}>
                       <div className="text-right w-full">
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold block">
                           Trạng thái tiếp nhận:

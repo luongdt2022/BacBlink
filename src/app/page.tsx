@@ -694,6 +694,182 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================================= */}
+        {/* 1.5. TIN TỨC & SỰ KIỆN NỔI BẬT HIỆP HỘI BACLINK                           */}
+        {/* ========================================================================= */}
+        <section className="bg-white py-12 sm:py-16 lg:py-20 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
+          <div className="page-container">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+                  <Flame className="size-3.5 text-amber-600 dark:text-amber-400" />
+                  Hoạt Động &amp; Hợp Tác Chiến Lược
+                </span>
+                <h2 className="mt-3 type-section-title text-text-primary dark:text-white">
+                  Tin Tức &amp; Sự Kiện Hiệp Hội BACLINK
+                </h2>
+                <p className="mt-2 text-sm sm:text-base text-text-secondary dark:text-slate-300">
+                  Cập nhật các chương trình ký kết quốc tế, xúc tiến công nghiệp bán dẫn và hoạt động hội viên Bắc Ninh.
+                </p>
+              </div>
+
+              <Link
+                href="/trien-lam"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand-700 hover:text-brand-800 dark:text-cyan-400 group shrink-0"
+              >
+                <span>Xem tất cả sự kiện</span>
+                <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            {/* Grid 1 bài nổi bật lớn + 3 bài nhỏ */}
+            <div className="mt-8 grid gap-6 lg:grid-cols-12 items-stretch">
+              {/* Bài lớn tiêu điểm: Ký kết KAISA Hàn Quốc */}
+              <div className="lg:col-span-7 flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-900 group">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <img
+                    src="/events/baclink-event-1.jpg"
+                    alt="BACLINK ký kết KAISA Hàn Quốc"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-red-600/90 text-white px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider shadow">
+                      Tiêu điểm
+                    </span>
+                    <span className="rounded-full bg-slate-900/80 backdrop-blur-md text-white px-2.5 py-0.5 text-[11px] font-bold">
+                      Hợp tác Quốc tế
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="size-3.5 text-brand-600" />
+                        20/11/2026
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="size-3.5 text-red-500" />
+                        Khách sạn Grand Phoenix, TP. Bắc Ninh
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-cyan-400 transition-colors leading-snug">
+                      BACLINK Hợp Tác Kết Nối Ngành Bán Dẫn Với Hiệp Hội AI – Bán Dẫn Fabless Hàn Quốc (KAISA)
+                    </h3>
+
+                    <p className="mt-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+                      Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) tổ chức hội đàm cấp cao và ký kết thỏa thuận hợp tác chiến lược với Hiệp hội AI – Bán dẫn Fabless Hàn Quốc (KAISA). Thúc đẩy đào tạo kỹ sư thiết kế vi mạch, thu hút dòng vốn đầu tư bán dẫn từ Hàn Quốc vào các KCN Bắc Ninh và hỗ trợ doanh nghiệp phụ trợ tham gia chuỗi cung ứng vi điện tử toàn cầu.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="size-3.5" /> Mở đăng ký giao thương B2B
+                    </span>
+                    <Link
+                      href="/trien-lam"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-brand-700 dark:text-cyan-400 group-hover:underline"
+                    >
+                      <span>Chi tiết sự kiện</span>
+                      <ArrowRight className="size-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3 bài bên phải */}
+              <div className="lg:col-span-5 flex flex-col gap-4">
+                {/* Tin 2: Bán dẫn & Đóng gói */}
+                <Link
+                  href="/trien-lam"
+                  className="group flex gap-3.5 p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-white hover:border-brand-500/50 hover:shadow-md transition-all dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <div className="relative size-24 sm:size-28 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                    <img
+                      src="/events/baclink-event-3.jpg"
+                      alt="BACLINK kết nối chuỗi bán dẫn"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                        Chuỗi Giá Trị Bán Dẫn
+                      </span>
+                      <h4 className="mt-0.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                        BACLINK &amp; KAISA Thúc Đẩy Kết Nối Chuỗi Giá Trị Bán Dẫn &amp; Đóng Gói Vi Mạch
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                      <Calendar className="size-3 text-slate-400" />
+                      <span>24/11/2026 • TT Triển Lãm Kinh Bắc</span>
+                    </div>
+                  </div>
+                </Link>
+
+                {/* Tin 3: Go Global & Net Zero */}
+                <Link
+                  href="/trien-lam"
+                  className="group flex gap-3.5 p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-white hover:border-brand-500/50 hover:shadow-md transition-all dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <div className="relative size-24 sm:size-28 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                    <img
+                      src="/events/baclink-event-8.jpg"
+                      alt="Diễn đàn Go Global Net Zero"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                        Chuyển Đổi Xanh • Net Zero
+                      </span>
+                      <h4 className="mt-0.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                        Diễn Đàn Kết Nối Chuỗi Cung Ứng Toàn Cầu "Go Global" &amp; Chuyển Đổi Xanh Net Zero
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                      <Calendar className="size-3 text-slate-400" />
+                      <span>08/12/2026 • KCN Quế Võ</span>
+                    </div>
+                  </div>
+                </Link>
+
+                {/* Tin 4: Kỷ yếu Đại hội 1 BACLINK */}
+                <Link
+                  href="/trien-lam"
+                  className="group flex gap-3.5 p-3.5 sm:p-4 rounded-2xl border border-slate-200 bg-white hover:border-brand-500/50 hover:shadow-md transition-all dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <div className="relative size-24 sm:size-28 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                    <img
+                      src="/events/baclink-event-5.jpg"
+                      alt="Đại hội 1 Hiệp hội BACLINK"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-cyan-400">
+                        Kỷ Yếu Sự Kiện
+                      </span>
+                      <h4 className="mt-0.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-brand-700 dark:group-hover:text-cyan-400 transition-colors line-clamp-2 leading-snug">
+                        Đại Hội Thành Lập Hiệp Hội Sản Xuất Công Nghiệp Tỉnh Bắc Ninh Khóa I (2025–2028)
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                      <Calendar className="size-3 text-slate-400" />
+                      <span>QĐ 1652/QĐ-UBND • TT Văn hóa Kinh Bắc</span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
         {/* 2. QUY TRÌNH KẾT NỐI 4 BƯỚC TRỰC QUAN ĐMST (T-01.34)                      */}
         {/* ========================================================================= */}
         <section className="bg-white py-12 sm:py-16 lg:py-20 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
