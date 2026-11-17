@@ -429,11 +429,8 @@ export default function HomePage() {
             </div>
 
             <h1 className="mt-4 sm:mt-5 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold font-sans uppercase tracking-normal sm:tracking-wide leading-snug sm:leading-tight text-white">
-              <span className="block text-amber-300/90 text-xs sm:text-sm font-bold tracking-widest uppercase mb-1">
-                HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH (BACLINK)
-              </span>
               <span className="block">KẾT NỐI CHUỖI CUNG ỨNG,</span>
-              <span className="block mt-1 sm:mt-1.5">NÂNG TẦM CÔNG NGHIỆP BẮC NINH</span>
+              <span className="block mt-1.5 sm:mt-2">NÂNG TẦM CÔNG NGHIỆP BẮC NINH</span>
             </h1>
 
             {/* 3 Value Pillars from Official BACLINK */}
