@@ -244,4 +244,43 @@ public sealed class EnterpriseCapabilityInvariantsTests
         res4.ShouldNotBeNull();
         res4.Name.ShouldBe("DN Theo ContactEmail");
     }
+
+    [Fact]
+    public async Task ApproveEnterprise_ignores_legacy_scopeId_and_grants_DUAL_capability()
+    {
+        var ent = new Enterprise(Guid.NewGuid())
+        {
+            Name = "Công ty TNHH Hanel PT Bắc Ninh",
+            LegalName = "Công ty TNHH Hanel PT Bắc Ninh",
+            TaxCode = "2300123456",
+            ProvinceCity = "Bắc Ninh",
+            MainSectorName = "Điện tử & Bán dẫn",
+            IsVerified = false,
+            CapabilityTier = "BASIC",
+            IsBuyer = false,
+            IsSeller = false
+        };
+        var repo = new InMemoryEnterpriseRepository([ent]);
+        var service = new EnterpriseService(repo);
+
+        // Dù truyền adminScopeId khác (legacy HN) vẫn duyệt 1 cấp toàn cục và cấp DUAL
+        await service.ApproveEnterpriseAsync(ent.Id, "admin@baclink.vn", "HN");
+
+        ent.IsVerified.ShouldBeTrue();
+        ent.VerificationStatus.ShouldBe("VERIFIED");
+        ent.CapabilityTier.ShouldBe("DUAL");
+        ent.IsBuyer.ShouldBeTrue();
+        ent.IsSeller.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CanViewRevenueAndFunding_allows_owner_and_admin_only()
+    {
+        var service = new EnterpriseService(new InMemoryEnterpriseRepository());
+        service.CanViewRevenueAndFunding("PUBLIC_USER", isOwner: true).ShouldBeTrue();
+        service.CanViewRevenueAndFunding("ADMIN", isOwner: false).ShouldBeTrue();
+        service.CanViewRevenueAndFunding("ENTERPRISE", isOwner: false).ShouldBeFalse();
+        service.CanViewRevenueAndFunding("PROVINCIAL_ADMIN", isOwner: false).ShouldBeFalse();
+        service.CanViewRevenueAndFunding("PUBLIC_USER", isOwner: false).ShouldBeFalse();
+    }
 }

@@ -348,27 +348,45 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
     }
 
     [HttpPost("/api/v1/gov/enterprises/{id:guid}/approve")]
-    [Authorize]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public IActionResult ApproveEnterpriseGovDeprecated(Guid id)
+        => StatusCode(410, new
+        {
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Endpoint /api/v1/gov/enterprises/{id}/approve đã ngừng hoạt động. Vui lòng sử dụng /api/v1/admin/enterprises/{id}/approve."
+        });
+
+    [HttpPost("/api/v1/gov/enterprises/{id:guid}/reject")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public IActionResult RejectEnterpriseGovDeprecated(Guid id)
+        => StatusCode(410, new
+        {
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Endpoint /api/v1/gov/enterprises/{id}/reject đã ngừng hoạt động. Vui lòng sử dụng /api/v1/admin/enterprises/{id}/reject."
+        });
+
+    [HttpPost("/api/v1/admin/enterprises/{id:guid}/approve")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
     public async Task<IActionResult> ApproveEnterprise(Guid id, [FromBody] ApproveEnterpriseRequest? req, CancellationToken ct = default)
     {
-        var scopeId = Actor.ScopeType == ScopeTypes.Province ? Actor.ScopeId : null;
-        await enterpriseService.ApproveEnterpriseAsync(id, Actor.Email ?? "Cán bộ thẩm định", scopeId, ct);
+        await enterpriseService.ApproveEnterpriseAsync(id, Actor.Email ?? "Quản trị viên BACLINK", null, ct);
         await uow.CommitAsync(ct);
 
         audit.Append(new AuditEntry(
             PersonId, Actor.PlatformRole, "ENTERPRISE_APPROVE", "Enterprise", id,
-            null, req?.Notes ?? "Duyệt cấp Verified Badge", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, null
+            null, req?.Notes ?? "Duyệt cấp Verified Badge & DUAL capability", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, null
         ));
 
-        return Ok(Ok200(new { message = "Hồ sơ doanh nghiệp đã được phê duyệt và cấp Verified Badge thành công." }));
+        return Ok(Ok200(new { message = "Hồ sơ doanh nghiệp đã được phê duyệt, cấp Verified Badge và năng lực DUAL thành công." }));
     }
 
-    [HttpPost("/api/v1/gov/enterprises/{id:guid}/reject")]
-    [Authorize]
+    [HttpPost("/api/v1/admin/enterprises/{id:guid}/reject")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
     public async Task<IActionResult> RejectEnterprise(Guid id, [FromBody] ApproveEnterpriseRequest req, CancellationToken ct = default)
     {
-        var scopeId = Actor.ScopeType == ScopeTypes.Province ? Actor.ScopeId : null;
-        await enterpriseService.RejectEnterpriseAsync(id, req.Notes ?? "Yêu cầu bổ sung thông tin hồ sơ", scopeId, ct);
+        await enterpriseService.RejectEnterpriseAsync(id, req.Notes ?? "Yêu cầu bổ sung thông tin hồ sơ", null, ct);
         await uow.CommitAsync(ct);
 
         audit.Append(new AuditEntry(

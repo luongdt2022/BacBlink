@@ -68,9 +68,9 @@ public sealed class Task02DeltaV24ApprovalSideEffectTests(PostgresFixture fixtur
     }
 
     [Fact]
-    public async Task InstitutionApproval_ApprovesSuccessfully_UpgradesRoleToInnovationEntity_AndCreatesVerifiedEnterprise()
+    public async Task InstitutionApproval_ApprovesSuccessfully_UpgradesRoleToEnterpriseGlobal_AndCreatesDualVerifiedEnterprise()
     {
-        // GIVEN: PostgreSQL provider thật với Cán bộ Sở Hà Nội
+        // GIVEN: PostgreSQL provider thật với Quản trị viên ADMIN (1 cấp)
         await using var provider = fixture.BuildProvider();
         using var scope = provider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
@@ -79,58 +79,61 @@ public sealed class Task02DeltaV24ApprovalSideEffectTests(PostgresFixture fixtur
         var (userId, userEmail) = NewUser();
         await SeedPersonAsync(db, userId, userEmail, PlatformRoles.PublicUser);
 
-        var (provAdminId, provAdminEmail) = NewUser();
-        await SeedPersonAsync(db, provAdminId, provAdminEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
-        var provAdminActor = new TestActor(provAdminId, provAdminEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
+        var (adminId, adminEmail) = NewUser();
+        await SeedPersonAsync(db, adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
+        var adminActor = new TestActor(adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
 
         var payload = new
         {
             taxCode = "0109999888",
-            companyName = "CÔNG TY TNHH ĐỔI MỚI SÁNG TẠO HÀ NỘI",
-            province = "HN"
+            companyName = "CÔNG TY TNHH ĐỔI MỚI SÁNG TẠO BẮC NINH",
+            province = "BN"
         };
 
         var req = new ApprovalRequest(
             userId,
             ApprovalRequestTypes.Institution,
-            ScopeTypes.Province,
-            "HN",
+            ScopeTypes.Global,
+            null,
             JsonSerializer.Serialize(payload),
             DateTimeOffset.UtcNow.AddHours(24));
 
         db.Set<ApprovalRequest>().Add(req);
         await db.SaveChangesAsync();
 
-        // WHEN: Cán bộ Sở Hà Nội duyệt hồ sơ
-        var reviewCmd = new ReviewApprovalRequestCommand("APPROVE", ReviewNote: "Hồ sơ doanh nghiệp ĐMST hợp lệ theo Quyết định Sở", ExpectedVersion: 1);
-        var result = await service.ReviewRequestAsync(req.Id, reviewCmd, provAdminActor, "127.0.0.1", CancellationToken.None);
+        // WHEN: ADMIN duyệt hồ sơ 1 cấp
+        var reviewCmd = new ReviewApprovalRequestCommand("APPROVE", ReviewNote: "Hồ sơ doanh nghiệp hội viên BACLINK hợp lệ", ExpectedVersion: 1);
+        var result = await service.ReviewRequestAsync(req.Id, reviewCmd, adminActor, "127.0.0.1", CancellationToken.None);
 
         // THEN: Hồ sơ chuyển trạng thái APPROVED
         result.ShouldNotBeNull();
         result.Status.ShouldBe(ApprovalStatuses.Approved);
 
-        // THEN: Người nộp được thăng hạng lên vai trò INNOVATION_ENTITY phạm vi Tỉnh HN
+        // THEN: Người nộp được thăng hạng lên ENTERPRISE phạm vi GLOBAL
         var updatedPerson = await db.Set<Person>().AsNoTracking().FirstOrDefaultAsync(p => p.Id == userId);
         updatedPerson.ShouldNotBeNull();
-        updatedPerson.PlatformRole.ShouldBe(PlatformRoles.InnovationEntity);
-        updatedPerson.ScopeType.ShouldBe(ScopeTypes.Province);
-        updatedPerson.ScopeId.ShouldBe("HN");
+        updatedPerson.PlatformRole.ShouldBe(PlatformRoles.Enterprise);
+        updatedPerson.ScopeType.ShouldBe(ScopeTypes.Global);
+        updatedPerson.ScopeId.ShouldBeNull();
 
-        // THEN: Bản ghi Enterprise được tự động tạo và kích hoạt VERIFIED
+        // THEN: Bản ghi Enterprise được tự động tạo/kích hoạt VERIFIED + DUAL (IsBuyer & IsSeller)
         var enterprise = await db.Set<Enterprise>().AsNoTracking().FirstOrDefaultAsync(e => e.TaxCode == "0109999888");
         enterprise.ShouldNotBeNull();
         enterprise.OwnerPersonId.ShouldBe(userId);
-        enterprise.LegalName.ShouldBe("CÔNG TY TNHH ĐỔI MỚI SÁNG TẠO HÀ NỘI");
-        enterprise.ProvinceCity.ShouldBe("HN");
+        enterprise.LegalName.ShouldBe("CÔNG TY TNHH ĐỔI MỚI SÁNG TẠO BẮC NINH");
+        enterprise.ProvinceCity.ShouldBe("BN");
         enterprise.IsVerified.ShouldBeTrue();
         enterprise.VerificationStatus.ShouldBe("VERIFIED");
         enterprise.Status.ShouldBe("ACTIVE");
+        enterprise.CapabilityTier.ShouldBe("DUAL");
+        enterprise.IsBuyer.ShouldBeTrue();
+        enterprise.IsSeller.ShouldBeTrue();
     }
 
     [Fact]
-    public async Task InstitutionApproval_RevokedBySuperAdmin_DemotesRoleToPublicUser_AndMarksEnterpriseRejected()
+    public async Task InstitutionApproval_RevokedByAdmin_DemotesRoleToPublicUser_AndMarksEnterpriseRejected()
     {
-        // GIVEN: Hồ sơ đã được duyệt trước đó, SuperAdmin thực hiện thu hồi
+        // GIVEN: Hồ sơ đã được duyệt trước đó, ADMIN thực hiện thu hồi
         await using var provider = fixture.BuildProvider();
         using var scope = provider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
@@ -139,39 +142,35 @@ public sealed class Task02DeltaV24ApprovalSideEffectTests(PostgresFixture fixtur
         var (userId, userEmail) = NewUser();
         await SeedPersonAsync(db, userId, userEmail, PlatformRoles.PublicUser);
 
-        var (provAdminId, provAdminEmail) = NewUser();
-        await SeedPersonAsync(db, provAdminId, provAdminEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
-        var provAdminActor = new TestActor(provAdminId, provAdminEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
-
-        var (superAdminId, superAdminEmail) = NewUser();
-        await SeedPersonAsync(db, superAdminId, superAdminEmail, PlatformRoles.SuperAdmin, ScopeTypes.Global, null);
-        var superAdminActor = new TestActor(superAdminId, superAdminEmail, PlatformRoles.SuperAdmin, ScopeTypes.Global, null);
+        var (adminId, adminEmail) = NewUser();
+        await SeedPersonAsync(db, adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
+        var adminActor = new TestActor(adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
 
         var payload = new
         {
             taxCode = "0107777666",
-            companyName = "CÔNG TY CP CÔNG NGHỆ THỦ ĐÔ",
-            province = "HN"
+            companyName = "CÔNG TY CP CÔNG NGHỆ BẮC NINH",
+            province = "BN"
         };
 
         var req = new ApprovalRequest(
             userId,
             ApprovalRequestTypes.Institution,
-            ScopeTypes.Province,
-            "HN",
+            ScopeTypes.Global,
+            null,
             JsonSerializer.Serialize(payload),
             DateTimeOffset.UtcNow.AddHours(24));
 
         db.Set<ApprovalRequest>().Add(req);
         await db.SaveChangesAsync();
 
-        // 1. Cán bộ Sở duyệt trước
-        var reviewCmd = new ReviewApprovalRequestCommand("APPROVE", ReviewNote: "Hồ sơ hợp lệ cấp cơ sở", ExpectedVersion: 1);
-        await service.ReviewRequestAsync(req.Id, reviewCmd, provAdminActor, "127.0.0.1", CancellationToken.None);
+        // 1. ADMIN duyệt trước
+        var reviewCmd = new ReviewApprovalRequestCommand("APPROVE", ReviewNote: "Hồ sơ hợp lệ hội viên", ExpectedVersion: 1);
+        await service.ReviewRequestAsync(req.Id, reviewCmd, adminActor, "127.0.0.1", CancellationToken.None);
 
-        // 2. SuperAdmin phát hiện sai phạm và Thu hồi phê duyệt (REVOKE)
+        // 2. ADMIN phát hiện sai phạm và Thu hồi phê duyệt (REVOKE)
         var revokeCmd = new ReviewApprovalRequestCommand("REVOKE", ReviewNote: "Phát hiện gian lận báo cáo tài chính cần thu hồi khẩn cấp", ExpectedVersion: 2);
-        var revokedResult = await service.ReviewRequestAsync(req.Id, revokeCmd, superAdminActor, "127.0.0.1", CancellationToken.None);
+        var revokedResult = await service.ReviewRequestAsync(req.Id, revokeCmd, adminActor, "127.0.0.1", CancellationToken.None);
 
         revokedResult.Status.ShouldBe(ApprovalStatuses.Rejected);
 
@@ -203,7 +202,7 @@ public sealed class Task02DeltaV24ApprovalSideEffectTests(PostgresFixture fixtur
             TaxCode = existingTaxCode,
             Name = "CÔNG TY TIỀN THÂN",
             LegalName = "CÔNG TY TIỀN THÂN",
-            ProvinceCity = "HN",
+            ProvinceCity = "BN",
             MainSectorName = "Công nghệ thông tin",
             IsVerified = false,
             VerificationStatus = "DRAFT",
@@ -214,22 +213,22 @@ public sealed class Task02DeltaV24ApprovalSideEffectTests(PostgresFixture fixtur
         var (userId, userEmail) = NewUser();
         await SeedPersonAsync(db, userId, userEmail, PlatformRoles.PublicUser);
 
-        var (provAdminId, provAdminEmail) = NewUser();
-        await SeedPersonAsync(db, provAdminId, provAdminEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
-        var provAdminActor = new TestActor(provAdminId, provAdminEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
+        var (adminId, adminEmail) = NewUser();
+        await SeedPersonAsync(db, adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
+        var adminActor = new TestActor(adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
 
         var payload = new
         {
             taxCode = existingTaxCode,
             companyName = "CÔNG TY TIỀN THÂN",
-            province = "HN"
+            province = "BN"
         };
 
         var req = new ApprovalRequest(
             userId,
             ApprovalRequestTypes.Institution,
-            ScopeTypes.Province,
-            "HN",
+            ScopeTypes.Global,
+            null,
             JsonSerializer.Serialize(payload),
             DateTimeOffset.UtcNow.AddHours(24));
 
@@ -238,13 +237,16 @@ public sealed class Task02DeltaV24ApprovalSideEffectTests(PostgresFixture fixtur
 
         // WHEN: Duyệt hồ sơ
         var reviewCmd = new ReviewApprovalRequestCommand("APPROVE", ReviewNote: "Phê duyệt định danh doanh nghiệp", ExpectedVersion: 1);
-        await service.ReviewRequestAsync(req.Id, reviewCmd, provAdminActor, "127.0.0.1", CancellationToken.None);
+        await service.ReviewRequestAsync(req.Id, reviewCmd, adminActor, "127.0.0.1", CancellationToken.None);
 
-        // THEN: Enterprise cũ được liên kết với OwnerPersonId và chuyển sang VERIFIED
+        // THEN: Enterprise cũ được liên kết với OwnerPersonId, chuyển sang VERIFIED & DUAL
         var linkedEnterprise = await db.Set<Enterprise>().AsNoTracking().FirstOrDefaultAsync(e => e.Id == existingEnt.Id);
         linkedEnterprise.ShouldNotBeNull();
         linkedEnterprise.OwnerPersonId.ShouldBe(userId);
         linkedEnterprise.IsVerified.ShouldBeTrue();
         linkedEnterprise.VerificationStatus.ShouldBe("VERIFIED");
+        linkedEnterprise.CapabilityTier.ShouldBe("DUAL");
+        linkedEnterprise.IsBuyer.ShouldBeTrue();
+        linkedEnterprise.IsSeller.ShouldBeTrue();
     }
 }

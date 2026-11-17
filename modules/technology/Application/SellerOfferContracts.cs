@@ -116,7 +116,7 @@ public sealed record CreateSellerOfferDto(
     string? TransferMethod,
     string? CommercialStatus,
     string? ContactPointRole,
-    string? ManagingAuthorityId = "VN-HN",
+    string? ManagingAuthorityId = "BACLINK",
     string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
     string? ScopeType = "PROVINCE",
     string? ScopeId = "VN-HN",
@@ -178,7 +178,7 @@ public sealed record UpdateSellerOfferDto(
     string? TransferMethod,
     string? CommercialStatus,
     string? ContactPointRole,
-    string? ManagingAuthorityId = "VN-HN",
+    string? ManagingAuthorityId = "BACLINK",
     string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
     string? ScopeType = "PROVINCE",
     string? ScopeId = "VN-HN",
@@ -248,7 +248,7 @@ public sealed record SellerOfferDto(
     int ReviewCount,
     DateTimeOffset CreatedAt,
     DateTimeOffset? PublishedAt,
-    string? ManagingAuthorityId = "VN-HN",
+    string? ManagingAuthorityId = "BACLINK",
     string? ManagingAuthorityName = "Sở Khoa học và Công nghệ TP. Hà Nội",
     string? ScopeType = "PROVINCE",
     string? ScopeId = "VN-HN",
@@ -520,9 +520,10 @@ public static class SellerOfferRulesValidator
             result.AddError(nameof(dto.LegalConsent), "Doanh nghiệp bắt buộc cam kết trách nhiệm pháp lý trước khi nộp hồ sơ thẩm định.");
         }
 
+        // CR-BACLINK-005: Gỡ bỏ bắt buộc ManagingAuthorityId 34 Sở KH&CN, trực thuộc quản trị 1 cấp Hiệp hội BACLINK
         if (string.IsNullOrWhiteSpace(dto.ManagingAuthorityId))
         {
-            result.AddError(nameof(dto.ManagingAuthorityId), "Bắt buộc chọn Sở KH&CN tiếp nhận thẩm định hồ sơ.");
+            // Tự động gán mặc định BACLINK nếu client không gửi
         }
 
         // 4. BR-SELLER-10: Kiểm tra an toàn tài liệu (OfferDocuments)

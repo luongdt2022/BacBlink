@@ -327,7 +327,8 @@ public sealed record RadarUserContext(
     Guid? PersonId,
     Guid? OrganizationId,
     string PlatformRole,
-    string? ProvinceCode = null
+    string? ProvinceCode = null,
+    string? ActiveMode = null
 );
 
 public interface IBrokerageMatchingEngineService

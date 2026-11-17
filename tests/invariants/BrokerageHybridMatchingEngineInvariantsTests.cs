@@ -155,4 +155,40 @@ public sealed class BrokerageHybridMatchingEngineInvariantsTests
         ComputeHybridScore(-50.0, -10.0, -20.0, -30.0).ShouldBe(0);
         ComputeHybridScore(150.0, 200.0, 120.0, 110.0).ShouldBe(100);
     }
+
+    [Fact]
+    public void Baclink_matching_boost_for_same_IND_sector_should_add_5_points()
+    {
+        var baseScore = ComputeHybridScore(80.0, 85.0, 75.0, 50.0); // 76
+        var enhanced = BrokerageMatchingEngineService.CalculateBaclinkEnhancedScore(
+            80.0, 85.0, 75.0, 50.0, demandSector: "IND_ELEC", offerSector: "IND_ELEC");
+
+        enhanced.ShouldBe(baseScore + 5);
+        enhanced.ShouldBe(81);
+    }
+
+    [Fact]
+    public void Baclink_matching_boost_for_same_industrial_zone_should_add_5_points()
+    {
+        var baseScore = ComputeHybridScore(80.0, 85.0, 75.0, 50.0); // 76
+        var enhanced = BrokerageMatchingEngineService.CalculateBaclinkEnhancedScore(
+            80.0, 85.0, 75.0, 50.0,
+            demandSector: "IND_MECH", offerSector: "IND_MECH",
+            buyerZone: "KCN_YEN_PHONG", sellerZone: "KCN_YEN_PHONG");
+
+        // +5 ngành IND + 5 KCN = +10
+        enhanced.ShouldBe(baseScore + 10);
+        enhanced.ShouldBe(86);
+    }
+
+    [Fact]
+    public void Baclink_matching_boost_must_clamp_at_100_percent()
+    {
+        var enhanced = BrokerageMatchingEngineService.CalculateBaclinkEnhancedScore(
+            100.0, 100.0, 100.0, 100.0,
+            demandSector: "IND_AUTO", offerSector: "IND_AUTO",
+            buyerZone: "KCN_QUE_VO", sellerZone: "KCN_QUE_VO");
+
+        enhanced.ShouldBe(100);
+    }
 }

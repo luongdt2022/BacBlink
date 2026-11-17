@@ -2,7 +2,7 @@ namespace NacenTech.Kernel.Application;
 
 /// <summary>
 /// Actor đang thực hiện request. PersonId là surrogate id dùng làm actorRef trong audit (§23.5).
-/// PlatformRole: "USER" | "ADMIN" | "SYSTEM". Case role/purpose đến từ AccessGrant, không từ token.
+/// PlatformRole 3 cấp chuẩn hóa (CR-BACLINK-001): "ADMIN" | "ENTERPRISE" | "PUBLIC_USER" (cùng "ANONYMOUS" / "SYSTEM").
 /// </summary>
 public interface ICurrentActor
 {
@@ -23,34 +23,73 @@ public static class PlatformRoles
 {
     public const string Anonymous = "ANONYMOUS";
     public const string User = "USER";
-    public const string Admin = "ADMIN";
     public const string System = "SYSTEM";
 
-    // --- 10 Vai Trò Hạt Nhân Phân Tầng (Multi-Tier Scoped RBAC) ---
-    public const string SuperAdmin = "SUPER_ADMIN";
-    public const string OperatorAdmin = "OPERATOR_ADMIN";
-    public const string ProvincialAdmin = "PROVINCIAL_ADMIN";
-    public const string SectorAdmin = "SECTOR_ADMIN";
-    public const string ClusterAdmin = "CLUSTER_ADMIN";
-    public const string Seller = "SELLER";
-    public const string Buyer = "BUYER";
-    public const string InnovationEntity = "INNOVATION_ENTITY";
-    public const string VerifiedExpert = "VERIFIED_EXPERT";
+    // --- 3 Cấp Vai Trò Chuẩn Hóa BACLINK (CR-BACLINK-001) ---
+    public const string Admin = "ADMIN";
+    public const string Enterprise = "ENTERPRISE";
     public const string PublicUser = "PUBLIC_USER";
 
-    /// <summary>Danh mục role có thể được tạo/gán bởi các use case mới. Role legacy không được cấp mới.</summary>
+    // --- Hằng số Legacy giữ lại phục vụ tương thích ngược token/DB chuyển tiếp ---
+    [Obsolete("CR-BACLINK-001: Thu gọn về PlatformRoles.Admin. Dùng PlatformRoles.NormalizeTier().")]
+    public const string SuperAdmin = "SUPER_ADMIN";
+
+    [Obsolete("CR-BACLINK-001: Thu gọn về PlatformRoles.Admin. Dùng PlatformRoles.NormalizeTier().")]
+    public const string OperatorAdmin = "OPERATOR_ADMIN";
+
+    [Obsolete("CR-BACLINK-001: Bãi bỏ quản trị theo Sở Tỉnh; chuẩn hóa về PublicUser qua NormalizeTier().")]
+    public const string ProvincialAdmin = "PROVINCIAL_ADMIN";
+
+    [Obsolete("CR-BACLINK-001: Bãi bỏ quản trị theo Ngành; chuẩn hóa về PublicUser qua NormalizeTier().")]
+    public const string SectorAdmin = "SECTOR_ADMIN";
+
+    [Obsolete("CR-BACLINK-001: Bãi bỏ chuyên viên Sở Tỉnh; chuẩn hóa về PublicUser qua NormalizeTier().")]
+    public const string ClusterAdmin = "CLUSTER_ADMIN";
+
+    [Obsolete("CR-BACLINK-001: Hợp nhất vào PlatformRoles.Enterprise (Dual-Mode). Dùng PlatformRoles.NormalizeTier().")]
+    public const string Seller = "SELLER";
+
+    [Obsolete("CR-BACLINK-001: Hợp nhất vào PlatformRoles.Enterprise (Dual-Mode). Dùng PlatformRoles.NormalizeTier().")]
+    public const string Buyer = "BUYER";
+
+    [Obsolete("CR-BACLINK-001: Hợp nhất vào PlatformRoles.Enterprise (Dual-Mode). Dùng PlatformRoles.NormalizeTier().")]
+    public const string InnovationEntity = "INNOVATION_ENTITY";
+
+    [Obsolete("CR-BACLINK-001: Hợp nhất vào PlatformRoles.Enterprise (Dual-Mode). Dùng PlatformRoles.NormalizeTier().")]
+    public const string VerifiedExpert = "VERIFIED_EXPERT";
+
+    /// <summary>Danh mục 3 vai trò chuẩn hóa của BACLINK (không tạo role thứ 4).</summary>
     public static readonly IReadOnlySet<string> Core = new HashSet<string>(StringComparer.Ordinal)
     {
-        SuperAdmin, OperatorAdmin,
-        ProvincialAdmin, SectorAdmin, ClusterAdmin,
-        Seller, Buyer, InnovationEntity, VerifiedExpert,
+        Admin,
+        Enterprise,
         PublicUser,
     };
 
     public static bool IsCore(string? role) => role is not null && Core.Contains(role);
 
+    /// <summary>Chuẩn hóa bất kỳ mã role nào (kể cả legacy JWT/DB) về 1 trong 3 cấp: ADMIN | ENTERPRISE | PUBLIC_USER.</summary>
+    public static string NormalizeTier(string? role)
+    {
+        if (string.IsNullOrWhiteSpace(role)) return PublicUser;
+        return role.Trim().ToUpperInvariant() switch
+        {
+            Admin or "SUPER_ADMIN" or "OPERATOR_ADMIN" => Admin,
+            Enterprise or "SELLER" or "BUYER" or "INNOVATION_ENTITY" or "VERIFIED_EXPERT" => Enterprise,
+            PublicUser or User or "PROVINCIAL_ADMIN" or "SECTOR_ADMIN" or "CLUSTER_ADMIN" => PublicUser,
+            _ => PublicUser,
+        };
+    }
+
     public static bool IsAdministrative(string? role)
-        => role is Admin or SuperAdmin or OperatorAdmin;
+    {
+#pragma warning disable CS0618
+        return role is Admin or SuperAdmin or OperatorAdmin;
+#pragma warning restore CS0618
+    }
+
+    public static bool IsEnterprise(string? role)
+        => NormalizeTier(role) == Enterprise;
 }
 
 public static class ScopeTypes
@@ -66,8 +105,8 @@ public static class ScopeTypes
     };
 
     /// <summary>
-    /// Kiểm tra cặp role/scope trước khi ghi. Tầng 0 và PUBLIC_USER luôn toàn cục; ba role quản trị phân cấp
-    /// phải mang đúng loại scope. Role tầng 2 dùng scope theo hồ sơ đã được duyệt nên nhận mọi scope hợp lệ.
+    /// Kiểm tra cặp role/scope trước khi ghi. Trong BACLINK 3 cấp (ADMIN, ENTERPRISE, PUBLIC_USER),
+    /// mọi vai trò chuẩn hóa đều dùng ScopeTypes.Global với scopeId = null.
     /// </summary>
     public static bool IsValidForRole(string role, string scopeType, string? scopeId)
     {
@@ -77,12 +116,9 @@ public static class ScopeTypes
 
         return role switch
         {
-            PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.PublicUser
+            PlatformRoles.Admin or PlatformRoles.Enterprise or PlatformRoles.PublicUser
                 => scopeType == Global,
-            PlatformRoles.ProvincialAdmin => scopeType == Province,
-            PlatformRoles.SectorAdmin => scopeType == Sector,
-            PlatformRoles.ClusterAdmin => scopeType == OrgUnit,
-            _ => true,
+            _ => false,
         };
     }
 }

@@ -13,7 +13,7 @@ public sealed class BlockchainAdminController(
     ICurrentActor actor) : ControllerBase
 {
     private bool IsAuthorizedAdmin =>
-        actor.PlatformRole is PlatformRoles.Admin or PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin;
+        PlatformRoles.NormalizeTier(actor.PlatformRole) == PlatformRoles.Admin;
 
     [HttpGet("api/v1/admin/blockchain/policies")]
     public async Task<IActionResult> GetPolicies(CancellationToken ct)

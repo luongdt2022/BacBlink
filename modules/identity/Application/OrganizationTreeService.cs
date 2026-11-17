@@ -59,9 +59,9 @@ public sealed class OrganizationTreeService(
         string ipAddress,
         CancellationToken ct)
     {
-        if (actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin))
+        if (!PlatformRoles.IsAdministrative(actor.PlatformRole))
         {
-            throw new ForbiddenException("Chỉ Quản trị viên cấp cao mới có quyền tạo đơn vị liên kết mới.");
+            throw new ForbiddenException("Chỉ Quản trị viên (ADMIN) mới có quyền tạo đơn vị liên kết mới.");
         }
 
         var normalizedCode = cmd.Code.Trim().ToUpperInvariant();
@@ -102,9 +102,9 @@ public sealed class OrganizationTreeService(
         string ipAddress,
         CancellationToken ct)
     {
-        if (actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin))
+        if (!PlatformRoles.IsAdministrative(actor.PlatformRole))
         {
-            throw new ForbiddenException("Chỉ Quản trị viên cấp cao mới có quyền cập nhật thông tin đơn vị.");
+            throw new ForbiddenException("Chỉ Quản trị viên (ADMIN) mới có quyền cập nhật thông tin đơn vị.");
         }
 
         var unit = await db.Set<OrganizationUnit>().FirstOrDefaultAsync(x => x.Id == id, ct);
@@ -136,9 +136,9 @@ public sealed class OrganizationTreeService(
         string ipAddress,
         CancellationToken ct)
     {
-        if (actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin))
+        if (!PlatformRoles.IsAdministrative(actor.PlatformRole))
         {
-            throw new ForbiddenException("Chỉ Quản trị viên cấp cao mới có quyền vô hiệu hóa đơn vị.");
+            throw new ForbiddenException("Chỉ Quản trị viên (ADMIN) mới có quyền vô hiệu hóa đơn vị.");
         }
 
         var unit = await db.Set<OrganizationUnit>().FirstOrDefaultAsync(x => x.Id == id, ct);
@@ -173,53 +173,13 @@ public sealed class OrganizationTreeService(
         await uow.CommitAsync(ct);
     }
 
-    public async Task<PersonDto> ProvisionProvinceLeaderAsync(
+    public Task<PersonDto> ProvisionProvinceLeaderAsync(
         ProvisionProvinceAdminCommand cmd,
         ICurrentActor actor,
         string ipAddress,
         CancellationToken ct)
     {
-        if (actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin))
-        {
-            throw new ForbiddenException("Chỉ Quản trị viên cấp cao mới có quyền khởi tạo tài khoản Lãnh đạo Sở.");
-        }
-
-        var normalizedEmail = Person.Normalize(cmd.Email);
-        var emailExists = await db.Set<Person>().AsNoTracking().AnyAsync(x => x.Email == normalizedEmail, ct);
-        if (emailExists)
-        {
-            throw new ConflictException($"Email '{normalizedEmail}' đã được đăng ký trên hệ thống.");
-        }
-
-        var passwordHash = hasher.Hash(cmd.Password);
-        var person = Person.Register(
-            normalizedEmail,
-            passwordHash,
-            hasher.CurrentAlgorithm,
-            cmd.FirstName,
-            cmd.LastName,
-            cmd.Phone,
-            $"Sở KH&CN {cmd.ProvinceId}",
-            isActive: true,
-            platformRole: PlatformRoles.ProvincialAdmin,
-            scopeType: ScopeTypes.Province,
-            scopeId: cmd.ProvinceId.Trim().ToUpperInvariant());
-
-        db.Set<Person>().Add(person);
-
-        var audit = new ApprovalAuditLog(
-            actor.PersonId ?? Guid.Empty,
-            actor.PlatformRole,
-            "PROVISION_PROVINCE_ADMIN",
-            "persons",
-            person.Id.ToString(),
-            ipAddress,
-            $"{{\"email\":\"{normalizedEmail}\",\"provinceId\":\"{cmd.ProvinceId}\"}}");
-
-        db.Set<ApprovalAuditLog>().Add(audit);
-
-        await uow.CommitAsync(ct);
-        return PersonMapper.ToDto(person);
+        throw new ForbiddenException("Hệ thống BACLINK đã hợp nhất quản trị 1 cấp ADMIN, bãi bỏ khởi tạo tài khoản Lãnh đạo Sở KH&CN.", "ERR_PROVINCIAL_ADMIN_DEPRECATED");
     }
 
     private static OrganizationUnitDto ToDto(OrganizationUnit u) => new(

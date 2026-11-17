@@ -300,4 +300,62 @@ public sealed class Tt17ScoringEngineTests
         Assert.NotNull(assessment.ApprovedAtUtc);
         Assert.Equal(reviewerId, assessment.ReviewerId);
     }
+
+    [Theory]
+    [InlineData("IND_ELEC")]
+    [InlineData("IND_MECH")]
+    [InlineData("IND_AUTO")]
+    [InlineData("IND_PLAS")]
+    [InlineData("IND_MAT")]
+    [InlineData("IND_IT")]
+    [InlineData("IND_GREEN")]
+    [InlineData("IND_LOG")]
+    public void Baclink_8_Industry_Codes_Are_Mapped_And_Score_Without_Errors(string indCode)
+    {
+        var survey = new Tt17SurveyDataDto
+        {
+            IndustryCode = indCode,
+            TotalCapital = 80_000_000_000,
+            TotalWorkforce = 120,
+            DirectWorkers = 90,
+            IndirectStaff = 30,
+            OriginalCostEquipment = 20_000_000_000,
+            CurrentBookValueEquipment = 14_000_000_000,
+            NewInvestEquipment3Years = 6_000_000_000,
+            ReplacementEquipment3Years = 3_000_000_000,
+            DigitalEquipmentValue = 18_000_000_000,
+            EnergyCostYear = 1_000_000_000,
+            MaterialCostYear = 12_000_000_000,
+            FinancialSeries = new List<FinancialSeriesDto>
+            {
+                new() { Year = 2025, IndustrialOutputValue = 45_000_000_000, NetRevenue = 45_000_000_000, DirectWorkersCount = 90 }
+            }
+        };
+
+        var benchmark = Tt17ScoringEngine.ResolveBenchmark(indCode);
+        Assert.Equal(indCode, benchmark.IndustryCode);
+
+        var result = _engine.Calculate(survey, indCode);
+        Assert.NotNull(result);
+        Assert.Equal(26, result.Criteria.Count);
+        Assert.True(result.TotalScore > 0);
+        Assert.False(double.IsNaN(result.TotalScore));
+        Assert.False(double.IsNaN(result.SyncCoefficient));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("IND_UNKNOWN")]
+    [InlineData("LV01")]
+    public void Unknown_Or_Empty_Industry_Code_Falls_Back_To_Baclink_Default(string? unknownCode)
+    {
+        var benchmark = Tt17ScoringEngine.ResolveBenchmark(unknownCode);
+        Assert.Equal("BACLINK_DEFAULT", benchmark.IndustryCode);
+
+        var result = _engine.Calculate(new Tt17SurveyDataDto { IndustryCode = unknownCode ?? "" }, unknownCode);
+        Assert.NotNull(result);
+        Assert.Equal(26, result.Criteria.Count);
+        Assert.False(double.IsNaN(result.TotalScore));
+    }
 }

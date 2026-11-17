@@ -48,7 +48,7 @@ public sealed class AuthenticationService(
         if (requiredRole is not null &&
             !(requiredRole == PlatformRoles.Admin
                 ? PlatformRoles.IsAdministrative(person.PlatformRole)
-                : person.PlatformRole == requiredRole)) throw Invalid();
+                : PlatformRoles.NormalizeTier(person.PlatformRole) == PlatformRoles.NormalizeTier(requiredRole))) throw Invalid();
 
         if (needsRehash)
         {
@@ -56,7 +56,12 @@ public sealed class AuthenticationService(
             await uow.CommitAsync(ct);
         }
 
-        var dto = PersonMapper.ToDto(person);
+        var dto = PersonMapper.ToDto(person) with
+        {
+            PlatformRole = PlatformRoles.NormalizeTier(person.PlatformRole),
+            ScopeType = ScopeTypes.Global,
+            ScopeId = null
+        };
         return new AuthResult(tokens.Issue(dto), dto);
     }
 

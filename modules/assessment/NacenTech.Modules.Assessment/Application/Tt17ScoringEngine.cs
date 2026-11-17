@@ -30,8 +30,52 @@ public sealed class Tt17ScoringEngine
         ["C.29"] = new() { IndustryCode = "C.29", IndustryName = "Sản xuất xe có động cơ", KChuan1 = 300, KChuan2 = 0.07, KChuan3 = 0.65, KChuan4 = 150 },
         ["C.30"] = new() { IndustryCode = "C.30", IndustryName = "Sản xuất phương tiện vận tải khác", KChuan1 = 300, KChuan2 = 0.07, KChuan3 = 0.65, KChuan4 = 150 },
         ["C.31"] = new() { IndustryCode = "C.31", IndustryName = "Sản xuất giường, tủ, bàn, ghế", KChuan1 = 150, KChuan2 = 0.05, KChuan3 = 0.55, KChuan4 = 100 },
-        ["C.32"] = new() { IndustryCode = "C.32", IndustryName = "Công nghiệp chế biến, chế tạo khác", KChuan1 = 200, KChuan2 = 0.07, KChuan3 = 0.55, KChuan4 = 150 }
+        ["C.32"] = new() { IndustryCode = "C.32", IndustryName = "Công nghiệp chế biến, chế tạo khác", KChuan1 = 200, KChuan2 = 0.07, KChuan3 = 0.55, KChuan4 = 150 },
+
+        // Bộ trọng số chuẩn hóa 8 ngành công nghiệp BACLINK (IND_*) + fallback BACLINK_DEFAULT (CR-BACLINK-003 / BR-BACLINK-TAX-003)
+        ["IND_ELEC"] = new() { IndustryCode = "IND_ELEC", IndustryName = "Điện tử, Bán dẫn & Thiết bị điện", KChuan1 = 300, KChuan2 = 0.05, KChuan3 = 0.45, KChuan4 = 100 },
+        ["IND_MECH"] = new() { IndustryCode = "IND_MECH", IndustryName = "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy", KChuan1 = 300, KChuan2 = 0.07, KChuan3 = 0.55, KChuan4 = 150 },
+        ["IND_AUTO"] = new() { IndustryCode = "IND_AUTO", IndustryName = "Tự động hóa, Robot & Smart Factory", KChuan1 = 300, KChuan2 = 0.07, KChuan3 = 0.65, KChuan4 = 150 },
+        ["IND_PLAS"] = new() { IndustryCode = "IND_PLAS", IndustryName = "Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp", KChuan1 = 250, KChuan2 = 0.10, KChuan3 = 0.55, KChuan4 = 150 },
+        ["IND_MAT"] = new() { IndustryCode = "IND_MAT", IndustryName = "Vật liệu mới & Công nghiệp hỗ trợ", KChuan1 = 250, KChuan2 = 0.08, KChuan3 = 0.55, KChuan4 = 150 },
+        ["IND_IT"] = new() { IndustryCode = "IND_IT", IndustryName = "Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP", KChuan1 = 300, KChuan2 = 0.05, KChuan3 = 0.45, KChuan4 = 150 },
+        ["IND_GREEN"] = new() { IndustryCode = "IND_GREEN", IndustryName = "Công nghiệp xanh, Năng lượng sạch & ESG", KChuan1 = 250, KChuan2 = 0.05, KChuan3 = 0.50, KChuan4 = 150 },
+        ["IND_LOG"] = new() { IndustryCode = "IND_LOG", IndustryName = "Logistics công nghiệp, Kho vận & Chuỗi cung ứng", KChuan1 = 250, KChuan2 = 0.06, KChuan3 = 0.50, KChuan4 = 150 },
+        ["BACLINK_DEFAULT"] = new() { IndustryCode = "BACLINK_DEFAULT", IndustryName = "Bộ trọng số cân bằng chuẩn BACLINK", KChuan1 = 250, KChuan2 = 0.07, KChuan3 = 0.55, KChuan4 = 150 }
     };
+
+    /// <summary>Ánh xạ 8 mã ngành BACLINK (IND_*) sang mã phân ngành TT17/BACLINK tương ứng.</summary>
+    public static readonly Dictionary<string, string> BaclinkIndustryMapping = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["IND_ELEC"] = "C.26",
+        ["IND_MECH"] = "C.28",
+        ["IND_AUTO"] = "C.29",
+        ["IND_PLAS"] = "C.22",
+        ["IND_MAT"] = "C.24",
+        ["IND_IT"] = "IND_IT",
+        ["IND_GREEN"] = "IND_GREEN",
+        ["IND_LOG"] = "IND_LOG"
+    };
+
+    public static IndustryBenchmarkDto ResolveBenchmark(string? industryCode)
+    {
+        var normalized = industryCode?.Trim();
+        if (!string.IsNullOrWhiteSpace(normalized))
+        {
+            if (Benchmarks.TryGetValue(normalized, out var direct))
+            {
+                return direct;
+            }
+
+            if (BaclinkIndustryMapping.TryGetValue(normalized, out var mapped) &&
+                Benchmarks.TryGetValue(mapped, out var mappedBenchmark))
+            {
+                return mappedBenchmark;
+            }
+        }
+
+        return Benchmarks["BACLINK_DEFAULT"];
+    }
 
     public Tt17ScoreResultDto Calculate(Tt17SurveyDataDto survey, string? industryCode = null)
     {
@@ -39,10 +83,10 @@ public sealed class Tt17ScoringEngine
         var bottlenecks = new List<string>();
 
         string indCode = !string.IsNullOrWhiteSpace(industryCode)
-            ? industryCode
-            : (!string.IsNullOrWhiteSpace(survey.IndustryCode) ? survey.IndustryCode : "C.28");
+            ? industryCode.Trim()
+            : (!string.IsNullOrWhiteSpace(survey.IndustryCode) ? survey.IndustryCode.Trim() : "BACLINK_DEFAULT");
 
-        var benchmark = Benchmarks.TryGetValue(indCode, out var bm) ? bm : Benchmarks["C.28"];
+        var benchmark = ResolveBenchmark(indCode);
 
         // Dữ liệu tài chính năm gần nhất
         var series = survey.FinancialSeries ?? new List<FinancialSeriesDto>();

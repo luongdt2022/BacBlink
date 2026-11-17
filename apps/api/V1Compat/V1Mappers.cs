@@ -12,7 +12,8 @@ namespace NacenTech.Api.V1Compat;
 /// <summary>Chuyển DTO V2 → shape JSON legacy. Tên field, enum chữ thường và thứ tự thuộc tính theo NestJS.</summary>
 public sealed class V1Mappers(IPersonService persons, ITaxonomyService taxonomy)
 {
-    public static string RoleV1(string platformRole) => platformRole == PlatformRoles.Admin ? "admin" : "user";
+    public static string RoleV1(string platformRole)
+        => PlatformRoles.NormalizeTier(platformRole) == PlatformRoles.Admin ? "admin" : "user";
 
     public static string LowerStatus(string s) => s.ToLowerInvariant();
 
@@ -74,15 +75,15 @@ public sealed class V1Mappers(IPersonService persons, ITaxonomyService taxonomy)
         createdAt = p.CreatedAt,
     };
 
-    /// <summary>Contract dùng bởi Web Portal mới: giữ nguyên role/scope thực từ JWT, không dùng legacy RoleV1.</summary>
+    /// <summary>Contract dùng bởi Web Portal mới: chuẩn hóa 3 cấp (ADMIN/ENTERPRISE/PUBLIC_USER) & scopeType GLOBAL.</summary>
     public static object AuthSessionUser(PersonDto p) => new
     {
         id = p.Id,
         email = p.Email,
         fullName = string.Join(" ", new[] { p.LastName, p.FirstName }.Where(x => !string.IsNullOrWhiteSpace(x))),
-        role = p.PlatformRole,
-        scopeType = p.ScopeType,
-        scopeId = p.ScopeId,
+        role = PlatformRoles.NormalizeTier(p.PlatformRole),
+        scopeType = ScopeTypes.Global,
+        scopeId = (string?)null,
     };
 
     public static object Settings(PersonPreferencesDto s) => new

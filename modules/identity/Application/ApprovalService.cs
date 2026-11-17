@@ -129,10 +129,8 @@ public sealed class ApprovalService(
         ValidateActorScopeAccess(request, actor);
 
         var actorId = actor.PersonId ?? Guid.Empty;
-        var actorRole = actor.PlatformRole;
+        var actorRole = PlatformRoles.NormalizeTier(actor.PlatformRole);
         var normalizedAction = cmd.Action.Trim().ToUpperInvariant();
-        if (actor.PlatformRole == PlatformRoles.ClusterAdmin && normalizedAction == "APPROVE")
-            throw new ForbiddenException("Chuyên viên sơ kiểm phải trình lãnh đạo ký duyệt.", "ERR_FORBIDDEN_APPROVE");
 
         switch (normalizedAction)
         {
@@ -159,15 +157,15 @@ public sealed class ApprovalService(
 
             case "REVOKE":
             case "REVOKE_EXPERT":
-                if (actor.PlatformRole is not PlatformRoles.SuperAdmin and not PlatformRoles.OperatorAdmin)
+                if (!PlatformRoles.IsAdministrative(actor.PlatformRole))
                 {
-                    throw new ForbiddenException("Chỉ Quản trị viên Tối cao (SUPER_ADMIN) mới có thẩm quyền can thiệp thu hồi hồ sơ đã duyệt.", "ERR_FORBIDDEN_REVOKE");
+                    throw new ForbiddenException("Chỉ Quản trị viên (ADMIN) mới có thẩm quyền thu hồi hồ sơ đã duyệt.", "ERR_FORBIDDEN_REVOKE");
                 }
                 if (string.IsNullOrWhiteSpace(cmd.ReviewNote) || cmd.ReviewNote.Trim().Length < 10)
                 {
                     throw new ValidationException("Lý do thu hồi (ReviewNote) là bắt buộc và phải có ít nhất 10 ký tự theo BR-ADM-007.");
                 }
-                request.Reject(actorId, cmd.ExpectedVersion, $"[THU HỒI TRUNG ƯƠNG]: {cmd.ReviewNote.Trim()}");
+                request.Reject(actorId, cmd.ExpectedVersion, $"[THU HỒI QUẢN TRỊ]: {cmd.ReviewNote.Trim()}");
                 await RevokeApprovalSideEffectsAsync(request, ct);
                 break;
 
@@ -178,7 +176,7 @@ public sealed class ApprovalService(
         if (request.RequestType == ApprovalRequestTypes.Expert && normalizedAction != "FORWARD")
             await expertApproval.ApplyAsync(request.UserId, request.PayloadJson, normalizedAction, cmd.ReviewNote, ct);
 
-        if (request.RequestType == ApprovalRequestTypes.Institution && normalizedAction != "FORWARD")
+        if (request.RequestType is ApprovalRequestTypes.Institution or ApprovalRequestTypes.Shop && normalizedAction != "FORWARD")
             await enterpriseApproval.ApplyAsync(request.UserId, request.ScopeId, request.PayloadJson, normalizedAction, cmd.ReviewNote, ct);
 
         // BR-ADM-003: Immutable Audit Trail
@@ -290,9 +288,9 @@ public sealed class ApprovalService(
 
     public async Task<PagedResult<CentralApprovalItemDto>> GetCentralApprovalQueueAsync(ApprovalQueueQueryFilter filter, ICurrentActor actor, CancellationToken ct)
     {
-        if (actor.PersonId is null || actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin))
+        if (actor.PersonId is null || !PlatformRoles.IsAdministrative(actor.PlatformRole))
         {
-            throw new ForbiddenException("Chỉ Quản trị viên Tối cao (SuperAdmin hoặc OperatorAdmin) mới có quyền truy cập Hàng đợi Toàn quốc.", "ERR_FORBIDDEN_GLOBAL_ACCESS");
+            throw new ForbiddenException("Chỉ Quản trị viên (ADMIN) mới có quyền truy cập Hàng đợi Phê duyệt.", "ERR_FORBIDDEN_GLOBAL_ACCESS");
         }
 
         var query = db.Set<ApprovalRequest>().AsNoTracking();
@@ -371,9 +369,9 @@ public sealed class ApprovalService(
         string ipAddress,
         CancellationToken ct)
     {
-        if (actor.PersonId is null || actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin))
+        if (actor.PersonId is null || !PlatformRoles.IsAdministrative(actor.PlatformRole))
         {
-            throw new ForbiddenException("Chỉ Quản trị viên Tối cao (SuperAdmin hoặc OperatorAdmin) mới có thẩm quyền can thiệp phê duyệt vượt cấp.", "ERR_FORBIDDEN_OVERRIDE");
+            throw new ForbiddenException("Chỉ Quản trị viên (ADMIN) mới có thẩm quyền can thiệp phê duyệt vượt cấp.", "ERR_FORBIDDEN_OVERRIDE");
         }
 
         if (string.IsNullOrWhiteSpace(cmd.OverrideReason) || cmd.OverrideReason.Trim().Length < 20)
@@ -459,55 +457,19 @@ public sealed class ApprovalService(
 
     private static void RequireReviewer(ICurrentActor actor)
     {
-        if (actor.PersonId is null || actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin or PlatformRoles.ProvincialAdmin or PlatformRoles.ClusterAdmin or PlatformRoles.SectorAdmin))
+        if (actor.PersonId is null || !PlatformRoles.IsAdministrative(actor.PlatformRole))
             throw new ForbiddenException("Bạn không có quyền thẩm định hồ sơ.", "ERR_FORBIDDEN_REVIEW");
-        if (actor.ScopeType == ScopeTypes.Global)
-        {
-            if (actor.PlatformRole is not (PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin))
-                throw new ForbiddenException("Bạn không có quyền thẩm định toàn quốc.", "ERR_DATA_SCOPE_VIOLATION");
-        }
-        else if (actor.ScopeType is not (ScopeTypes.Province or ScopeTypes.Sector or ScopeTypes.OrgUnit) || string.IsNullOrWhiteSpace(actor.ScopeId))
-            throw new ForbiddenException("Phạm vi thẩm định không hợp lệ.", "ERR_DATA_SCOPE_VIOLATION");
     }
 
     private static IQueryable<ApprovalRequest> ApplyScopeFilter(IQueryable<ApprovalRequest> query, ICurrentActor actor)
     {
-        if (actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin)
-        {
-            if (actor.ScopeType == ScopeTypes.Global) return query;
-        }
-
-        return actor.ScopeType switch
-        {
-            ScopeTypes.Province => query.Where(x => x.ScopeType == ScopeTypes.Province && x.ScopeId == actor.ScopeId),
-            ScopeTypes.Sector => query.Where(x => x.ScopeType == ScopeTypes.Sector && x.ScopeId == actor.ScopeId),
-            ScopeTypes.OrgUnit => query.Where(x => x.ScopeType == ScopeTypes.OrgUnit && x.ScopeId == actor.ScopeId),
-            _ => throw new ForbiddenException("Phạm vi thẩm định không hợp lệ.", "ERR_DATA_SCOPE_VIOLATION")
-        };
+        RequireReviewer(actor);
+        return query;
     }
 
     private static void ValidateActorScopeAccess(ApprovalRequest request, ICurrentActor actor)
     {
         RequireReviewer(actor);
-        if (actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin)
-        {
-            if (actor.ScopeType == ScopeTypes.Global) return;
-        }
-
-        if (actor.ScopeType == ScopeTypes.Province && (request.ScopeType != ScopeTypes.Province || request.ScopeId != actor.ScopeId))
-        {
-            throw new ForbiddenException("Bạn không có quyền thẩm định hồ sơ thuộc địa bàn tỉnh/thành khác.", "ERR_DATA_SCOPE_VIOLATION");
-        }
-
-        if (actor.ScopeType == ScopeTypes.Sector && (request.ScopeType != ScopeTypes.Sector || request.ScopeId != actor.ScopeId))
-        {
-            throw new ForbiddenException("Bạn không có quyền thẩm định hồ sơ thuộc ngành/lĩnh vực khác.", "ERR_DATA_SCOPE_VIOLATION");
-        }
-
-        if (actor.ScopeType == ScopeTypes.OrgUnit && (request.ScopeType != ScopeTypes.OrgUnit || request.ScopeId != actor.ScopeId))
-        {
-            throw new ForbiddenException("Bạn không có quyền thẩm định hồ sơ thuộc đơn vị khác.", "ERR_DATA_SCOPE_VIOLATION");
-        }
     }
 
     private async Task ApplyApprovalSideEffectsAsync(ApprovalRequest request, CancellationToken ct)
@@ -518,24 +480,28 @@ public sealed class ApprovalService(
         switch (request.RequestType)
         {
             case ApprovalRequestTypes.Expert:
-                person.AssignRoleAndScope(PlatformRoles.VerifiedExpert, request.ScopeType, request.ScopeId);
+                // Q1 (CR-BACLINK-006 / BR-05-BL-01): Giữ nguyên vai trò 3 cấp (PUBLIC_USER hoặc ENTERPRISE) với ScopeTypes.Global,
+                // không tạo role thứ 4 (VERIFIED_EXPERT) hay tự nâng PUBLIC_USER thành ENTERPRISE; ExpertProfile.Status = APPROVED
+                // được đồng bộ qua IExpertApprovalSynchronizer.
+                if (!PlatformRoles.IsCore(person.PlatformRole) || person.ScopeType != ScopeTypes.Global || person.ScopeId is not null)
+                {
+                    person.AssignRoleAndScope(PlatformRoles.NormalizeTier(person.PlatformRole), ScopeTypes.Global, null);
+                }
                 break;
 
             case ApprovalRequestTypes.Shop:
-                person.AssignRoleAndScope(PlatformRoles.Seller, request.ScopeType, request.ScopeId);
-                break;
-
-            case ApprovalRequestTypes.Account:
-                person.Activate();
-                break;
-
             case ApprovalRequestTypes.Institution:
-                person.AssignRoleAndScope(PlatformRoles.InnovationEntity, ScopeTypes.Province, request.ScopeId);
-                if (Guid.TryParse(request.ScopeId, out var orgId))
+                // CR-BACLINK-001: ADMIN duyệt nâng hạng tự động cấp ENTERPRISE với ScopeTypes.Global
+                person.AssignRoleAndScope(PlatformRoles.Enterprise, ScopeTypes.Global, null);
+                if (request.RequestType == ApprovalRequestTypes.Institution && Guid.TryParse(request.ScopeId, out var orgId))
                 {
                     var org = await db.Set<OrganizationUnit>().FirstOrDefaultAsync(o => o.Id == orgId, ct);
                     org?.Activate();
                 }
+                break;
+
+            case ApprovalRequestTypes.Account:
+                person.Activate();
                 break;
         }
     }
@@ -545,10 +511,17 @@ public sealed class ApprovalService(
         var person = await db.Set<Person>().FirstOrDefaultAsync(p => p.Id == request.UserId, ct);
         if (person is null) return;
 
-        // BR-ADM-007: Khi Super Admin thu hồi quyền, tài khoản bị hạ cấp về PUBLIC_USER
+        if (request.RequestType == ApprovalRequestTypes.Expert)
+        {
+            // Q1: Thu hồi tư cách cố vấn qua IExpertApprovalSynchronizer (ExpertProfile -> REJECTED/PRIVATE),
+            // bảo toàn vai trò 3 cấp hiện tại của tài khoản (PUBLIC_USER hoặc ENTERPRISE).
+            return;
+        }
+
+        // BR-ADM-007: Khi Admin thu hồi quyền, tài khoản bị hạ cấp về PUBLIC_USER
         person.AssignRoleAndScope(PlatformRoles.PublicUser, ScopeTypes.Global, null);
 
-        if (request.RequestType == ApprovalRequestTypes.Institution)
+        if (request.RequestType is ApprovalRequestTypes.Institution or ApprovalRequestTypes.Shop)
         {
             await enterpriseApproval.ApplyAsync(request.UserId, request.ScopeId, request.PayloadJson, "REVOKE", null, ct);
         }

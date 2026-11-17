@@ -23,6 +23,28 @@ public sealed class LmsController(
     private bool IsAdmin =>
         actor.PlatformRole is PlatformRoles.Admin or PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin;
 
+    private async Task<bool> HasApprovedExpertProfileAsync(Guid personId, CancellationToken ct)
+    {
+        var sql = """
+            SELECT COUNT(1)
+            FROM brokerage.expert_profiles
+            WHERE person_id = {0}
+              AND status = 'APPROVED'
+              AND is_deleted = false
+            """;
+        var count = await db.Database.SqlQueryRaw<int>(sql, personId).FirstOrDefaultAsync(ct);
+        return count > 0;
+    }
+
+    private async Task EnsureApprovedExpertOrAdminAsync(Guid personId, CancellationToken ct)
+    {
+        if (IsAdmin) return;
+        if (!await HasApprovedExpertProfileAsync(personId, ct))
+        {
+            throw new ForbiddenException("Yêu cầu tài khoản ADMIN hoặc hồ sơ Cố vấn Kỹ thuật BACLINK đã được phê duyệt (APPROVED) để quản trị học liệu.");
+        }
+    }
+
     // ─── CỔNG HỌC LIỆU CÔNG KHAI (PUBLIC CATALOG) ────────────────────────────────
 
     [HttpGet("api/v1/lms/catalog")]
@@ -131,6 +153,7 @@ public sealed class LmsController(
     public async Task<IActionResult> GetManagementList([FromQuery] LmsMaterialFilterRequest filter, CancellationToken ct)
     {
         var personId = actor.RequirePersonId();
+        await EnsureApprovedExpertOrAdminAsync(personId, ct);
 
         // RBAC: Đọc bảng quản trị
         authGate.Require(new AuthorizationRequest(
@@ -157,6 +180,7 @@ public sealed class LmsController(
     public async Task<IActionResult> GetManagementDetail(Guid id, CancellationToken ct)
     {
         var personId = actor.RequirePersonId();
+        await EnsureApprovedExpertOrAdminAsync(personId, ct);
 
         var detail = await managementService.GetManagementDetailAsync(id, personId, IsAdmin, ct);
 
@@ -177,7 +201,8 @@ public sealed class LmsController(
     public async Task<IActionResult> CreateMaterial([FromBody] CreateLearningMaterialRequest request, CancellationToken ct)
     {
         var personId = actor.RequirePersonId();
-        var personName = actor.Email ?? "Chuyên gia NacenTech";
+        await EnsureApprovedExpertOrAdminAsync(personId, ct);
+        var personName = actor.Email ?? "Cố vấn Kỹ thuật BACLINK";
 
         // RBAC: Tạo mới học liệu
         authGate.Require(new AuthorizationRequest(
@@ -195,7 +220,8 @@ public sealed class LmsController(
     public async Task<IActionResult> UpdateMaterial(Guid id, [FromBody] UpdateLearningMaterialRequest request, CancellationToken ct)
     {
         var personId = actor.RequirePersonId();
-        var personName = actor.Email ?? "Chuyên gia NacenTech";
+        await EnsureApprovedExpertOrAdminAsync(personId, ct);
+        var personName = actor.Email ?? "Cố vấn Kỹ thuật BACLINK";
 
         // Đọc trước để kiểm tra quyền chính chủ (chống IDOR)
         var existing = await db.Set<LearningMaterial>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
@@ -225,7 +251,8 @@ public sealed class LmsController(
     public async Task<IActionResult> UnpublishMaterial(Guid id, [FromBody] UnpublishMaterialRequest request, CancellationToken ct)
     {
         var personId = actor.RequirePersonId();
-        var personName = actor.Email ?? "Chuyên gia NacenTech";
+        await EnsureApprovedExpertOrAdminAsync(personId, ct);
+        var personName = actor.Email ?? "Cố vấn Kỹ thuật BACLINK";
 
         var existing = await db.Set<LearningMaterial>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
         if (existing is null) return NotFound(new { success = false, message = "Không tìm thấy học liệu" });
@@ -247,7 +274,8 @@ public sealed class LmsController(
     public async Task<IActionResult> DeleteMaterial(Guid id, CancellationToken ct)
     {
         var personId = actor.RequirePersonId();
-        var personName = actor.Email ?? "Chuyên gia NacenTech";
+        await EnsureApprovedExpertOrAdminAsync(personId, ct);
+        var personName = actor.Email ?? "Cố vấn Kỹ thuật BACLINK";
 
         var existing = await db.Set<LearningMaterial>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
         if (existing is null) return NotFound(new { success = false, message = "Không tìm thấy học liệu" });

@@ -5,6 +5,7 @@ public static class TaxonomyKinds
 {
     public const string Sector = "SECTOR";
     public const string Category = "CATEGORY";
+    public const string Location = "LOCATION";
 }
 
 public sealed record TaxonomyTermDto(Guid Id, string Kind, string Name, bool IsActive, string? Code = null, string? MetadataJson = null);

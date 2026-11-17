@@ -48,6 +48,43 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
         return Math.Clamp((int)Math.Round(raw, MidpointRounding.AwayFromZero), 0, 100);
     }
 
+    /// <summary>
+    /// REQ-08-BL-01 / BR-08-BL-02: Bổ sung trọng số tương thích 8 ngành IND_* và KCN Bắc Ninh, kẹp biên [0, 100].
+    /// </summary>
+    public static int CalculateBaclinkEnhancedScore(
+        double semanticScore,
+        double trlScore,
+        double tniScore,
+        double ipScore,
+        string? demandSector = null,
+        string? offerSector = null,
+        string? buyerZone = null,
+        string? sellerZone = null)
+    {
+        var baseScore = CalculateHybridScore(semanticScore, trlScore, tniScore, ipScore);
+        var boost = 0;
+
+        // Trọng số ngành IND_* Bắc Ninh (cùng ngành hoặc cùng chuỗi công nghiệp trọng điểm)
+        if (!string.IsNullOrWhiteSpace(demandSector) && !string.IsNullOrWhiteSpace(offerSector))
+        {
+            if (string.Equals(demandSector, offerSector, StringComparison.OrdinalIgnoreCase))
+            {
+                boost += demandSector.StartsWith("IND_", StringComparison.OrdinalIgnoreCase) ? 5 : 2;
+            }
+        }
+
+        // Trọng số KCN / Địa bàn Bắc Ninh
+        if (!string.IsNullOrWhiteSpace(buyerZone) && !string.IsNullOrWhiteSpace(sellerZone))
+        {
+            if (string.Equals(buyerZone, sellerZone, StringComparison.OrdinalIgnoreCase))
+            {
+                boost += 5;
+            }
+        }
+
+        return Math.Clamp(baseScore + boost, 0, 100);
+    }
+
     public static double EvaluateTrlScore(int sellerTrl, int buyerExpectedTrl = 7)
     {
         if (sellerTrl >= 7) return 100.0;
@@ -89,52 +126,54 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
     {
         var sql = " WHERE is_active = true";
 
-        // Scoped RBAC Security Isolation (T059)
+        // Scoped RBAC Security Isolation (T059 & CR-BACLINK-005 Dual-Mode)
         if (userContext is not null)
         {
-            var role = userContext.PlatformRole?.ToUpperInvariant();
-            if (role == PlatformRoles.Buyer)
+            var role = PlatformRoles.NormalizeTier(userContext.PlatformRole);
+            if (role == PlatformRoles.Enterprise || string.Equals(userContext.PlatformRole, "BUYER", StringComparison.OrdinalIgnoreCase) || string.Equals(userContext.PlatformRole, "SELLER", StringComparison.OrdinalIgnoreCase))
             {
                 if (userContext.PersonId.HasValue || userContext.OrganizationId.HasValue)
                 {
-                    sql += @" AND (
-                        demand_id IN (
-                            SELECT d.id FROM demand.demand_items d
-                            LEFT JOIN demand.demand_surveys s ON s.id = d.survey_id
-                            WHERE (d.created_by = @actorPersonId OR (s.organization_id = @actorOrgId AND @actorOrgId IS NOT NULL))
-                        )
-                        OR (buyer_organization_id = @actorOrgId AND @actorOrgId IS NOT NULL)
-                    )";
-                    var pPerson = cmd.CreateParameter();
-                    pPerson.ParameterName = "@actorPersonId";
-                    pPerson.DbType = DbType.Guid;
-                    pPerson.Value = (object?)userContext.PersonId ?? DBNull.Value;
-                    cmd.Parameters.Add(pPerson);
-
-                    var pOrg = cmd.CreateParameter();
-                    pOrg.ParameterName = "@actorOrgId";
-                    pOrg.DbType = DbType.Guid;
-                    pOrg.Value = (object?)userContext.OrganizationId ?? DBNull.Value;
-                    cmd.Parameters.Add(pOrg);
-                }
-                else
-                {
-                    whereSql = string.Empty;
-                    return false;
-                }
-            }
-            else if (role == PlatformRoles.Seller)
-            {
-                if (userContext.PersonId.HasValue || userContext.OrganizationId.HasValue)
-                {
-                    sql += @" AND (
-                        offer_id IN (
-                            SELECT o.id FROM technology.seller_technology_offers o
-                            WHERE o.created_by = @actorPersonId 
-                               OR (@actorOrgIdStr IS NOT NULL AND (o.managing_authority_id = @actorOrgIdStr OR o.scope_id = @actorOrgIdStr))
-                        )
-                        OR (seller_organization_id = @actorOrgId AND @actorOrgId IS NOT NULL)
-                    )";
+                    var mode = userContext.ActiveMode?.ToUpperInvariant();
+                    if (mode == "BUYER")
+                    {
+                        sql += @" AND (
+                            demand_id IN (
+                                SELECT d.id FROM demand.demand_items d
+                                LEFT JOIN demand.demand_surveys s ON s.id = d.survey_id
+                                WHERE (d.created_by = @actorPersonId OR (s.organization_id = @actorOrgId AND @actorOrgId IS NOT NULL))
+                            )
+                            OR (buyer_organization_id = @actorOrgId AND @actorOrgId IS NOT NULL)
+                        )";
+                    }
+                    else if (mode == "SELLER")
+                    {
+                        sql += @" AND (
+                            offer_id IN (
+                                SELECT o.id FROM technology.seller_technology_offers o
+                                WHERE o.created_by = @actorPersonId
+                                   OR (@actorOrgIdStr IS NOT NULL AND (o.managing_authority_id = @actorOrgIdStr OR o.scope_id = @actorOrgIdStr))
+                            )
+                            OR (seller_organization_id = @actorOrgId AND @actorOrgId IS NOT NULL)
+                        )";
+                    }
+                    else
+                    {
+                        sql += @" AND (
+                            demand_id IN (
+                                SELECT d.id FROM demand.demand_items d
+                                LEFT JOIN demand.demand_surveys s ON s.id = d.survey_id
+                                WHERE (d.created_by = @actorPersonId OR (s.organization_id = @actorOrgId AND @actorOrgId IS NOT NULL))
+                            )
+                            OR (buyer_organization_id = @actorOrgId AND @actorOrgId IS NOT NULL)
+                            OR offer_id IN (
+                                SELECT o.id FROM technology.seller_technology_offers o
+                                WHERE o.created_by = @actorPersonId
+                                   OR (@actorOrgIdStr IS NOT NULL AND (o.managing_authority_id = @actorOrgIdStr OR o.scope_id = @actorOrgIdStr))
+                            )
+                            OR (seller_organization_id = @actorOrgId AND @actorOrgId IS NOT NULL)
+                        )";
+                    }
                     var pPerson = cmd.CreateParameter();
                     pPerson.ParameterName = "@actorPersonId";
                     pPerson.DbType = DbType.Guid;
@@ -159,18 +198,10 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                     return false;
                 }
             }
-            else if (role == PlatformRoles.ProvincialAdmin && !string.IsNullOrWhiteSpace(userContext.ProvinceCode))
+            else if (role != PlatformRoles.Admin)
             {
-                sql += @" AND demand_id IN (
-                    SELECT d.id FROM demand.demand_items d
-                    JOIN demand.demand_surveys s ON s.id = d.survey_id
-                    WHERE s.province ILIKE @provincePattern
-                )";
-                var pProv = cmd.CreateParameter();
-                pProv.ParameterName = "@provincePattern";
-                pProv.DbType = DbType.String;
-                pProv.Value = $"%{userContext.ProvinceCode.Trim()}%";
-                cmd.Parameters.Add(pProv);
+                whereSql = string.Empty;
+                return false;
             }
         }
 
@@ -426,8 +457,8 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                 LEFT JOIN enterprise.enterprises e ON e.id = s.organization_id
                 WHERE d.status IN ('PENDING', 'VERIFIED', 'PUBLISHED', 'PROCESSING', 'NEGOTIATING')";
 
-            // Scoped RBAC Isolation cho Recompute: Buyer chỉ được recompute bài toán của chính mình
-            if (userContext is not null && userContext.PlatformRole?.ToUpperInvariant() == PlatformRoles.Buyer)
+            // IDOR Isolation cho Recompute: Non-ADMIN (ENTERPRISE/PUBLIC_USER) chỉ được recompute bài toán của chính mình
+            if (userContext is not null && !PlatformRoles.IsAdministrative(userContext.PlatformRole))
             {
                 if (userContext.PersonId.HasValue || userContext.OrganizationId.HasValue)
                 {
@@ -527,7 +558,8 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                 var tniScore = (double)d.TniScore;
                 var ipScore = CalculateIpScore(o.IpStatus);
 
-                var overallScore = ComputeHybridScore(semanticScore, trlScore, tniScore, ipScore);
+                var overallScore = CalculateBaclinkEnhancedScore(
+                    semanticScore, trlScore, tniScore, ipScore, d.SectorCode, o.SectorCode);
 
                 // Chỉ lưu các cặp có điểm tương thích >= 40%
                 if (overallScore >= 40)
@@ -583,9 +615,11 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                 "Sidecar AI offline hoặc timeout ({Message}). Tự động Graceful Degradation fallback PostgreSQL FTS.",
                 ex.Message);
 
-            // PostgreSQL FTS Fallback logic
+            // PostgreSQL FTS Fallback logic (Hỗ trợ 8 ngành trọng điểm IND_* Bắc Ninh)
             var sameSector = string.Equals(demandSector, offerSector, StringComparison.OrdinalIgnoreCase);
-            var ftsScore = sameSector ? 80.0 : 55.0;
+            var isBaclinkSector = (!string.IsNullOrEmpty(demandSector) && demandSector.StartsWith("IND_", StringComparison.OrdinalIgnoreCase)) ||
+                                  (!string.IsNullOrEmpty(offerSector) && offerSector.StartsWith("IND_", StringComparison.OrdinalIgnoreCase));
+            var ftsScore = sameSector ? (isBaclinkSector ? 85.0 : 80.0) : 55.0;
 
             // Nếu từ khóa tương đồng trong title
             if (demandTitle.Contains(offerTitle, StringComparison.OrdinalIgnoreCase) ||
@@ -594,7 +628,7 @@ public sealed class BrokerageMatchingEngineService : IBrokerageMatchingEngineSer
                 ftsScore = Math.Min(100.0, ftsScore + 20.0);
             }
 
-            return (ftsScore, "POSTGRES_FTS_FALLBACK", true);
+            return (ftsScore, isBaclinkSector && sameSector ? "BACLINK_FTS_HYBRID" : "POSTGRES_FTS_FALLBACK", true);
         }
     }
 

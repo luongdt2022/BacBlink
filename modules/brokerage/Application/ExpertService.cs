@@ -223,22 +223,19 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         if (!string.IsNullOrWhiteSpace(provinceCode))
         {
             var provinces = provinceCode.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                       .Select(p => p.ToUpperInvariant()).ToList();
-            if (provinces.Count == 1)
+                                       .Select(p => p.Trim()).ToList();
+            var allScopedIds = new HashSet<Guid>();
+            foreach (var prov in provinces)
             {
-                var scopedPersonIds = await provinceScopes.GetPersonIdsInProvinceAsync(provinces[0], ct);
-                query = query.Where(p => p.PersonId != null && scopedPersonIds.Contains(p.PersonId.Value));
+                var ids = await provinceScopes.GetPersonIdsInProvinceAsync(prov.ToUpperInvariant(), ct);
+                foreach (var id in ids) allScopedIds.Add(id);
             }
-            else if (provinces.Count > 1)
-            {
-                var allScopedIds = new HashSet<Guid>();
-                foreach (var prov in provinces)
-                {
-                    var ids = await provinceScopes.GetPersonIdsInProvinceAsync(prov, ct);
-                    foreach (var id in ids) allScopedIds.Add(id);
-                }
-                query = query.Where(p => p.PersonId != null && allScopedIds.Contains(p.PersonId.Value));
-            }
+
+            var lowerProvs = provinces.Select(p => p.ToLowerInvariant()).ToList();
+            query = query.Where(p =>
+                (p.PersonId != null && allScopedIds.Contains(p.PersonId.Value)) ||
+                (p.OrganizationAddress != null && lowerProvs.Any(lp => p.OrganizationAddress.ToLower().Contains(lp))) ||
+                (p.OrganizationName != null && lowerProvs.Any(lp => p.OrganizationName.ToLower().Contains(lp))));
         }
 
         if (acceptingConsultation == true)

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NacenTech.Kernel.Application;
@@ -72,79 +73,65 @@ public sealed class ExhibitionDto
     public string Frequency { get; set; } = string.Empty;
 }
 
+public sealed class LocationItemDto
+{
+    public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Type { get; set; } = "AREA";
+    public string? AreaCode { get; set; }
+    public string? Province { get; set; }
+    public string? Region { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsActive { get; set; }
+}
+
 [Route("api/v1/master-data")]
 public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1ControllerBase
 {
+    private static readonly Regex IndSectorCodeRegex = new("^IND_[A-Z0-9_]+$", RegexOptions.Compiled);
+
     private static readonly List<MatrixPairDto> StaticMatrix = new()
     {
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN05", TechName = "IoT và cảm biến độ ẩm đất", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN06", TechName = "Trí tuệ nhân tạo – Dự báo sâu bệnh", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN13", TechName = "GIS – Bản đồ số đất đai", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN14", TechName = "UAV – Drone phun thuốc", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN17", TechName = "Công nghệ sau thu hoạch", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN18", TechName = "Công nghệ bảo quản lạnh CAS", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN25", TechName = "Năng lượng tái tạo sinh khối", RatingStars = 4, Weight = 0.8 },
-        new MatrixPairDto { FieldCode = "LV01", TechCode = "CN28", TechName = "Công nghệ phân bón hữu cơ nano", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_ELEC", TechCode = "CN04", TechName = "Vi mạch, bán dẫn và linh kiện điện tử chính xác", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_ELEC", TechCode = "CN05", TechName = "IoT và cảm biến giám sát dây chuyền SMT", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_ELEC", TechCode = "CN06", TechName = "AI thị giác máy tính kiểm tra lỗi bản mạch (AOI)", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_ELEC", TechCode = "CN38", TechName = "Đo lường – kiểm định phòng sạch & EMC", RatingStars = 4, Weight = 0.8 },
 
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN02", TechName = "Tự động hóa dây chuyền đóng gói", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN05", TechName = "IoT giám sát nhiệt độ kho lạnh", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN12", TechName = "Truy xuất nguồn gốc Blockchain", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN16", TechName = "Công nghệ thực phẩm sinh học", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN17", TechName = "Công nghệ chế biến sau thu hoạch", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN18", TechName = "Công nghệ sấy thăng hoa chân không", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN27", TechName = "Tiết kiệm năng lượng chế biến", RatingStars = 4, Weight = 0.8 },
-        new MatrixPairDto { FieldCode = "LV05", TechCode = "CN30", TechName = "Sản xuất sạch hơn trong chế biến", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_MECH", TechCode = "CN01", TechName = "Gia công CNC 5 trục & Robot cấp phôi", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_MECH", TechCode = "CN02", TechName = "Tự động hóa chế tạo khuôn mẫu chính xác", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_MECH", TechCode = "CN36", TechName = "Công nghệ in 3D kim loại & tạo mẫu nhanh", RatingStars = 4, Weight = 0.8 },
+        new MatrixPairDto { FieldCode = "IND_MECH", TechCode = "CN38", TechName = "Đo lường CMM & kiểm định dung sai chính xác", RatingStars = 5, Weight = 1.0 },
 
-        new MatrixPairDto { FieldCode = "LV07", TechCode = "CN01", TechName = "Robot công nghiệp & Cánh tay robot", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV07", TechCode = "CN02", TechName = "Tự động hóa gia công cơ khí", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV07", TechCode = "CN03", TechName = "Robot hàn và cắt thông minh", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV07", TechCode = "CN04", TechName = "Điện – điện tử trong chế tạo máy", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV07", TechCode = "CN36", TechName = "Công nghệ in 3D kim loại", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV07", TechCode = "CN38", TechName = "Đo lường – kiểm định chính xác", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_AUTO", TechCode = "CN01", TechName = "Robot công nghiệp & Cánh tay gắp đa trục", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_AUTO", TechCode = "CN02", TechName = "Hệ thống điều khiển SCADA / PLC / DCS", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_AUTO", TechCode = "CN03", TechName = "Robot hàn, lắp ráp và AGV/AMR nội xưởng", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_AUTO", TechCode = "CN06", TechName = "AI điều phối dây chuyền Smart Factory", RatingStars = 4, Weight = 0.8 },
 
-        new MatrixPairDto { FieldCode = "LV08", TechCode = "CN02", TechName = "Hệ thống điều khiển SCADA / PLC", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV08", TechCode = "CN03", TechName = "Robot điều khiển tự động", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV08", TechCode = "CN04", TechName = "Vi mạch và linh kiện điện tử", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV08", TechCode = "CN05", TechName = "IoT và cảm biến công nghiệp", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV08", TechCode = "CN06", TechName = "AI thị giác máy tính công nghiệp", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV08", TechCode = "CN33", TechName = "An toàn an ninh mạng công nghiệp", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_PLAS", TechCode = "CN02", TechName = "Tự động hóa dây chuyền ép phun & thổi màng", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_PLAS", TechCode = "CN19", TechName = "Vật liệu polymer kỹ thuật & phụ gia chịu nhiệt", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_PLAS", TechCode = "CN27", TechName = "Tiết kiệm năng lượng gia nhiệt & làm mát khuôn", RatingStars = 4, Weight = 0.8 },
+        new MatrixPairDto { FieldCode = "IND_PLAS", TechCode = "CN30", TechName = "Công nghệ tái chế nhựa & sản xuất sạch hơn", RatingStars = 5, Weight = 1.0 },
 
-        new MatrixPairDto { FieldCode = "LV11", TechCode = "CN05", TechName = "Cảm biến quan trắc môi trường", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV11", TechCode = "CN22", TechName = "Công nghệ môi trường tiên tiến", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV11", TechCode = "CN23", TechName = "Xử lý nước thải sinh học & màng MBR", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV11", TechCode = "CN24", TechName = "Xử lý chất thải rắn & điện rác", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV11", TechCode = "CN27", TechName = "Thu hồi nhiệt và tiết kiệm năng lượng", RatingStars = 4, Weight = 0.8 },
-        new MatrixPairDto { FieldCode = "LV11", TechCode = "CN39", TechName = "Quan trắc tự động liên tục", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_MAT", TechCode = "CN19", TechName = "Vật liệu mới siêu nhẹ, hợp kim & nanocomposite", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_MAT", TechCode = "CN20", TechName = "Công nghệ nano & xử lý bề mặt kim loại", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_MAT", TechCode = "CN36", TechName = "Chế tạo vật liệu phụ trợ & linh kiện nội địa hóa", RatingStars = 4, Weight = 0.8 },
+        new MatrixPairDto { FieldCode = "IND_MAT", TechCode = "CN38", TechName = "Thử nghiệm cơ lý & kiểm định chất lượng vật liệu", RatingStars = 5, Weight = 1.0 },
 
-        new MatrixPairDto { FieldCode = "LV12", TechCode = "CN13", TechName = "GIS – Bản đồ số hạ tầng đô thị", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV12", TechCode = "CN14", TechName = "UAV khảo sát địa hình xây dựng", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV12", TechCode = "CN35", TechName = "Mô hình thông tin công trình BIM", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_IT", TechCode = "CN06", TechName = "Trí tuệ nhân tạo – AI Platform công nghiệp", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_IT", TechCode = "CN07", TechName = "Dữ liệu lớn – Big Data & phân tích vận hành", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_IT", TechCode = "CN09", TechName = "Phần mềm quản trị sản xuất MES / ERP / QMS", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_IT", TechCode = "CN33", TechName = "An toàn thông tin & an ninh mạng OT/IT", RatingStars = 5, Weight = 1.0 },
 
-        new MatrixPairDto { FieldCode = "LV14", TechCode = "CN05", TechName = "IoT định vị và giám sát phương tiện", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV14", TechCode = "CN06", TechName = "AI tối ưu hóa lộ trình vận chuyển", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV14", TechCode = "CN10", TechName = "Hạ tầng thương mại điện tử chuỗi cung ứng", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV14", TechCode = "CN34", TechName = "Hệ thống quản lý kho thông minh WMS", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_GREEN", TechCode = "CN22", TechName = "Công nghệ xử lý khí thải & môi trường công nghiệp", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_GREEN", TechCode = "CN23", TechName = "Xử lý nước thải tuần hoàn & màng lọc MBR", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_GREEN", TechCode = "CN25", TechName = "Điện mặt trời áp mái & lưu trữ năng lượng sạch", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_GREEN", TechCode = "CN39", TechName = "Quan trắc phát thải tự động & kiểm kê carbon ESG", RatingStars = 5, Weight = 1.0 },
 
-        new MatrixPairDto { FieldCode = "LV15", TechCode = "CN06", TechName = "AI chatbot hỗ trợ trải nghiệm khách", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV15", TechCode = "CN10", TechName = "Thương mại điện tử & Đặt dịch vụ trực tuyến", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV15", TechCode = "CN13", TechName = "Bản đồ số du lịch thông minh", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV15", TechCode = "CN14", TechName = "UAV quay phim và quảng bá điểm đến", RatingStars = 4, Weight = 0.8 },
-
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN05", TechName = "IoT và thiết bị kết nối mạng", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN06", TechName = "Trí tuệ nhân tạo – AI Platform", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN07", TechName = "Dữ liệu lớn – Big Data Analytics", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN08", TechName = "Điện toán đám mây Cloud Computing", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN09", TechName = "Phần mềm quản trị doanh nghiệp ERP/MES", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN10", TechName = "Thương mại điện tử & Thanh toán số", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN11", TechName = "Công nghệ chuỗi khối Blockchain", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV16", TechCode = "CN33", TechName = "An toàn thông tin và an ninh mạng", RatingStars = 5, Weight = 1.0 },
-
-        new MatrixPairDto { FieldCode = "LV17", TechCode = "CN06", TechName = "AI phục vụ nghiên cứu khoa học", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV17", TechCode = "CN08", TechName = "Nền tảng tính toán hiệu năng cao", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV17", TechCode = "CN15", TechName = "Công nghệ sinh học vi sinh & gen", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV17", TechCode = "CN19", TechName = "Vật liệu mới siêu nhẹ & nanocomposite", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV17", TechCode = "CN20", TechName = "Công nghệ nano chế tạo", RatingStars = 5, Weight = 1.0 },
-        new MatrixPairDto { FieldCode = "LV17", TechCode = "CN36", TechName = "In 3D chế tạo nguyên mẫu R&D", RatingStars = 5, Weight = 1.0 }
+        new MatrixPairDto { FieldCode = "IND_LOG", TechCode = "CN05", TechName = "IoT định vị, giám sát đội xe & container lạnh", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_LOG", TechCode = "CN06", TechName = "AI tối ưu hóa tuyến đường & điều phối chuỗi cung ứng", RatingStars = 5, Weight = 1.0 },
+        new MatrixPairDto { FieldCode = "IND_LOG", TechCode = "CN12", TechName = "Truy xuất nguồn gốc & chứng từ số chuỗi cung ứng", RatingStars = 4, Weight = 0.8 },
+        new MatrixPairDto { FieldCode = "IND_LOG", TechCode = "CN34", TechName = "Hệ thống quản lý kho thông minh WMS / AS-RS", RatingStars = 5, Weight = 1.0 }
     };
 
     private static readonly List<ExhibitionDto> StaticExhibitions = new()
@@ -165,6 +152,57 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
         new ExhibitionDto { Id = 14, Name = "Triển lãm Thang máy & Giải pháp Tòa nhà Thông minh (Vietnam Elevator Expo)", FocusArea = "Thang máy, Tự động hóa tòa nhà", Location = "TP.HCM", Frequency = "2026" },
         new ExhibitionDto { Id = 15, Name = "Triển lãm Quốc tế Năng lượng Tái tạo & Tiết kiệm Điện (Entech Vietnam)", FocusArea = "Năng lượng mặt trời, Pin lưu trữ", Location = "Hà Nội", Frequency = "2026" }
     };
+
+    [HttpGet("locations")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetLocations([FromQuery] string? type = null, CancellationToken ct = default)
+    {
+        var terms = await taxonomy.ListAsync(TaxonomyKinds.Location, true, ct);
+        var normalizedType = string.IsNullOrWhiteSpace(type) ? null : type.Trim().ToUpperInvariant();
+
+        var locations = terms
+            .Where(t => !string.IsNullOrWhiteSpace(t.Code))
+            .Select(t =>
+            {
+                string locType = "AREA";
+                string? areaCode = null;
+                string? province = "Bắc Ninh";
+                string? region = "Bắc Ninh";
+                int sortOrder = 999;
+                try
+                {
+                    if (!string.IsNullOrEmpty(t.MetadataJson))
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(t.MetadataJson);
+                        if (doc.RootElement.TryGetProperty("type", out var pType)) locType = (pType.GetString() ?? "AREA").ToUpperInvariant();
+                        if (doc.RootElement.TryGetProperty("areaCode", out var pArea)) areaCode = pArea.GetString();
+                        if (doc.RootElement.TryGetProperty("province", out var pProv)) province = pProv.GetString();
+                        if (doc.RootElement.TryGetProperty("region", out var pReg)) region = pReg.GetString();
+                        if (doc.RootElement.TryGetProperty("sortOrder", out var pSort) && pSort.TryGetInt32(out var sVal)) sortOrder = sVal;
+                    }
+                }
+                catch { }
+
+                return new LocationItemDto
+                {
+                    Id = t.Id,
+                    Code = t.Code!,
+                    Name = t.Name,
+                    Type = locType,
+                    AreaCode = areaCode,
+                    Province = province,
+                    Region = region ?? province,
+                    SortOrder = sortOrder,
+                    IsActive = t.IsActive
+                };
+            })
+            .Where(l => normalizedType is null || string.Equals(l.Type, normalizedType, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(l => l.SortOrder)
+            .ThenBy(l => l.Code, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return Ok(new { success = true, data = locations, total = locations.Count });
+    }
 
     [HttpGet("sectors")]
     public async Task<IActionResult> GetSectors([FromQuery] bool activeOnly = false, CancellationToken ct = default)
@@ -209,9 +247,9 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
         RequireAdmin();
 
         var normalizedCode = dto.Code.Trim().ToUpperInvariant();
-        if (!normalizedCode.StartsWith("LV"))
+        if (!IndSectorCodeRegex.IsMatch(normalizedCode))
         {
-            return BadRequest(new { success = false, error = "Mã ngành chuẩn phải bắt đầu bằng tiền tố 'LV' (Ví dụ: LV01, LV05...)." });
+            return BadRequest(new { success = false, error = "Mã ngành công nghiệp chuẩn BACLINK phải theo định dạng 'IND_*' (Ví dụ: IND_ELEC, IND_MECH...)." });
         }
 
         var existingSectors = await taxonomy.ListAsync(TaxonomyKinds.Sector, false, ct);
@@ -233,7 +271,7 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
             FilterRuleCount = 0,
             IsActive = created.IsActive
         };
-        return StatusCode(201, new { success = true, data = newSector, message = "Đã tạo nhóm ngành chuẩn LV thành công." });
+        return StatusCode(201, new { success = true, data = newSector, message = "Đã tạo nhóm ngành công nghiệp BACLINK thành công." });
     }
 
     [HttpGet("tt17")]
@@ -297,6 +335,7 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
     }
 
     [HttpPut("matrix")]
+    [HttpPost("matrix")]
     [Authorize]
     public IActionResult UpdateMatrixPair([FromBody] UpdateMatrixPairDto dto)
     {
@@ -315,9 +354,9 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
         var normalizedFieldCode = dto.FieldCode?.Trim().ToUpperInvariant() ?? string.Empty;
         var normalizedTechCode = dto.TechCode?.Trim().ToUpperInvariant() ?? string.Empty;
 
-        if (string.IsNullOrWhiteSpace(normalizedFieldCode) || !normalizedFieldCode.StartsWith("LV"))
+        if (string.IsNullOrWhiteSpace(normalizedFieldCode) || !IndSectorCodeRegex.IsMatch(normalizedFieldCode))
         {
-            return BadRequest(new { success = false, error = "Mã lĩnh vực (FieldCode) không hợp lệ (phải bắt đầu bằng tiền tố 'LV')." });
+            return BadRequest(new { success = false, error = "Mã ngành (FieldCode) không hợp lệ (phải theo định dạng 'IND_*', ví dụ: IND_ELEC)." });
         }
 
         if (string.IsNullOrWhiteSpace(normalizedTechCode) || !normalizedTechCode.StartsWith("CN"))

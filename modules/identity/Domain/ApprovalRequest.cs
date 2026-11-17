@@ -137,31 +137,26 @@ public sealed class ApprovalRequest : AggregateRoot
 
     public void ExecuteAdminOverride(Guid adminId, string reason, bool confirmCommitment, IReadOnlyCollection<string> adminRoles)
     {
-        var hasValidRole = adminRoles != null && adminRoles.Any(r =>
-            string.Equals(r, PlatformRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(r, PlatformRoles.OperatorAdmin, StringComparison.OrdinalIgnoreCase));
+        var hasValidRole = adminRoles != null && adminRoles.Any(r => PlatformRoles.IsAdministrative(r?.Trim().ToUpperInvariant()));
 
         if (!hasValidRole)
         {
-            throw new UnauthorizedAccessException("Chỉ SuperAdmin hoặc OperatorAdmin mới có quyền phê duyệt vượt cấp.");
+            throw new UnauthorizedAccessException("Chỉ Quản trị viên (ADMIN) mới có quyền phê duyệt vượt cấp.");
         }
 
-        var primaryRole = adminRoles!.First(r =>
-            string.Equals(r, PlatformRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(r, PlatformRoles.OperatorAdmin, StringComparison.OrdinalIgnoreCase));
+        var primaryRole = adminRoles!.First(r => PlatformRoles.IsAdministrative(r?.Trim().ToUpperInvariant()));
 
         ExecuteAdminOverrideInternal(adminId, primaryRole, reason, confirmCommitment);
     }
 
     public void ExecuteAdminOverride(Guid adminId, string adminRole, string reason, bool confirmCommitment)
     {
-        if (!string.Equals(adminRole, PlatformRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(adminRole, PlatformRoles.OperatorAdmin, StringComparison.OrdinalIgnoreCase))
+        if (!PlatformRoles.IsAdministrative(adminRole?.Trim().ToUpperInvariant()))
         {
-            throw new UnauthorizedAccessException("Chỉ SuperAdmin hoặc OperatorAdmin mới có quyền phê duyệt vượt cấp.");
+            throw new UnauthorizedAccessException("Chỉ Quản trị viên (ADMIN) mới có quyền phê duyệt vượt cấp.");
         }
 
-        ExecuteAdminOverrideInternal(adminId, adminRole, reason, confirmCommitment);
+        ExecuteAdminOverrideInternal(adminId, adminRole!, reason, confirmCommitment);
     }
 
     private void ExecuteAdminOverrideInternal(Guid adminId, string adminRole, string reason, bool confirmCommitment)

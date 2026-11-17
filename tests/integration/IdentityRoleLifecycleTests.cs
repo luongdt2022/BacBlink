@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NacenTech.Kernel.Application;
 using NacenTech.Modules.Audit.Domain;
 using NacenTech.Modules.Identity.Application;
+using NacenTech.Modules.Identity.Domain;
 using NacenTech.Persistence;
 using NacenTech.TestKit;
 using Shouldly;
@@ -12,7 +13,7 @@ using Xunit;
 
 namespace NacenTech.Tests.Integration;
 
-/// <summary>AC-DELTA-01..03: dữ liệu riêng; public register và provision/login của đủ 10 role.</summary>
+/// <summary>CR-BACLINK-001: public register và provision/login của đủ 3 cấp (ADMIN, ENTERPRISE, PUBLIC_USER) + NormalizeTier cho legacy DB.</summary>
 [Collection(PostgresCollection.Name)]
 public sealed class IdentityRoleLifecycleTests(PostgresFixture fixture)
 {
@@ -38,12 +39,12 @@ public sealed class IdentityRoleLifecycleTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task Privileged_provisioning_and_login_cover_all_ten_canonical_roles_with_scope_and_audit()
+    public async Task Privileged_provisioning_and_login_cover_all_three_canonical_tiers_with_global_scope_and_audit()
     {
         var actorId = Guid.CreateVersion7();
         await using var provider = fixture.BuildProvider(new TestActor
         {
-            PersonId = actorId, PlatformRole = PlatformRoles.SuperAdmin, ScopeType = ScopeTypes.Global,
+            PersonId = actorId, PlatformRole = PlatformRoles.Admin, ScopeType = ScopeTypes.Global,
         });
         using var scope = provider.CreateScope();
         var persons = scope.ServiceProvider.GetRequiredService<IPersonService>();
@@ -51,38 +52,62 @@ public sealed class IdentityRoleLifecycleTests(PostgresFixture fixture)
         var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
         var nonce = Guid.NewGuid().ToString("N");
 
-        foreach (var (role, scopeType, scopeId) in Roles())
+        foreach (var role in new[] { PlatformRoles.Admin, PlatformRoles.Enterprise, PlatformRoles.PublicUser })
         {
             var person = await persons.ProvisionAsync(new ProvisionPersonCommand(
                 $"{role.ToLowerInvariant()}-{nonce}@test.local", Password, "Role", null, null, null,
-                role, scopeType, scopeId), CancellationToken.None);
+                role, ScopeTypes.Global, null), CancellationToken.None);
             var login = await auth.LoginAsync(person.Email, Password, null, CancellationToken.None);
 
             login.Person.PlatformRole.ShouldBe(role);
-            login.Person.ScopeType.ShouldBe(scopeType);
-            login.Person.ScopeId.ShouldBe(scopeId);
+            login.Person.ScopeType.ShouldBe(ScopeTypes.Global);
+            login.Person.ScopeId.ShouldBeNull();
             var claims = LoginClaims(login.AccessToken);
             claims.ShouldContain(new KeyValuePair<string, string>("role", role));
-            claims.ShouldContain(new KeyValuePair<string, string>("scope_type", scopeType));
-            claims.ShouldContain(new KeyValuePair<string, string>("scope_id", scopeId ?? string.Empty));
+            claims.ShouldContain(new KeyValuePair<string, string>("scope_type", ScopeTypes.Global));
+            claims.ShouldContain(new KeyValuePair<string, string>("scope_id", string.Empty));
         }
 
         (await db.Set<AuditEvent>().CountAsync(x => x.ActorRef == actorId && x.Action == "person.provision_role" && x.Outcome == AuditOutcomes.Success))
-            .ShouldBeGreaterThanOrEqualTo(10);
+            .ShouldBeGreaterThanOrEqualTo(3);
     }
 
-    private static IEnumerable<(string Role, string ScopeType, string? ScopeId)> Roles()
+    [Theory]
+    [InlineData("SUPER_ADMIN", ScopeTypes.Global, null, PlatformRoles.Admin)]
+    [InlineData("OPERATOR_ADMIN", ScopeTypes.Global, null, PlatformRoles.Admin)]
+    [InlineData("SELLER", ScopeTypes.Global, null, PlatformRoles.Enterprise)]
+    [InlineData("BUYER", ScopeTypes.Global, null, PlatformRoles.Enterprise)]
+    [InlineData("VERIFIED_EXPERT", ScopeTypes.Sector, "LV01", PlatformRoles.Enterprise)]
+    [InlineData("INNOVATION_ENTITY", ScopeTypes.Province, "HN", PlatformRoles.Enterprise)]
+    [InlineData("PROVINCIAL_ADMIN", ScopeTypes.Province, "BN", PlatformRoles.PublicUser)]
+    public async Task Legacy_person_in_db_logs_in_with_normalized_tier_and_global_scope(
+        string legacyRole, string legacyScopeType, string? legacyScopeId, string expectedTier)
     {
-        yield return (PlatformRoles.SuperAdmin, ScopeTypes.Global, null);
-        yield return (PlatformRoles.OperatorAdmin, ScopeTypes.Global, null);
-        yield return (PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
-        yield return (PlatformRoles.SectorAdmin, ScopeTypes.Sector, "CN_THONG_TIN");
-        yield return (PlatformRoles.ClusterAdmin, ScopeTypes.OrgUnit, "DH_QGHN");
-        yield return (PlatformRoles.Seller, ScopeTypes.Global, null);
-        yield return (PlatformRoles.Buyer, ScopeTypes.Global, null);
-        yield return (PlatformRoles.InnovationEntity, ScopeTypes.OrgUnit, "NACEN");
-        yield return (PlatformRoles.VerifiedExpert, ScopeTypes.Sector, "CN_THONG_TIN");
-        yield return (PlatformRoles.PublicUser, ScopeTypes.Global, null);
+        var nonce = Guid.NewGuid().ToString("N");
+        var email = $"legacy-{legacyRole.ToLowerInvariant()}-{nonce}@test.local";
+
+        await using var provider = fixture.BuildProvider();
+        using (var seedScope = provider.CreateScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
+            var hasher = seedScope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            var person = Person.Register(email, hasher.Hash(Password), hasher.CurrentAlgorithm,
+                "Legacy", "User", null, null, true, legacyRole, legacyScopeType, legacyScopeId);
+            db.Set<Person>().Add(person);
+            await db.SaveChangesAsync();
+        }
+
+        using var loginScope = provider.CreateScope();
+        var auth = loginScope.ServiceProvider.GetRequiredService<IAuthenticationService>();
+        var login = await auth.LoginAsync(email, Password, null, CancellationToken.None);
+
+        login.Person.PlatformRole.ShouldBe(expectedTier);
+        login.Person.ScopeType.ShouldBe(ScopeTypes.Global);
+        login.Person.ScopeId.ShouldBeNull();
+        var claims = LoginClaims(login.AccessToken);
+        claims.ShouldContain(new KeyValuePair<string, string>("role", expectedTier));
+        claims.ShouldContain(new KeyValuePair<string, string>("scope_type", ScopeTypes.Global));
+        claims.ShouldContain(new KeyValuePair<string, string>("scope_id", string.Empty));
     }
 
     private static IReadOnlyCollection<KeyValuePair<string, string>> LoginClaims(string token)

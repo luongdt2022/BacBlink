@@ -55,16 +55,18 @@ public sealed class ShopAndDemandRoleMutationTests(PostgresFixture fixture)
             await db.SaveChangesAsync();
         }
 
-        // 3. Đăng nhập lại: Token JWT phải phản ánh role SELLER
+        // 3. Đăng nhập lại: Token JWT chuẩn hóa trả role ENTERPRISE (hợp nhất SELLER/BUYER) & scope GLOBAL
         await using (var verifyProvider = fixture.BuildProvider())
         using (var scope = verifyProvider.CreateScope())
         {
             var auth = scope.ServiceProvider.GetRequiredService<IAuthenticationService>();
             var login = await auth.LoginAsync(email, Password, null, CancellationToken.None);
 
-            login.Person.PlatformRole.ShouldBe(PlatformRoles.Seller);
+            login.Person.PlatformRole.ShouldBe(PlatformRoles.Enterprise);
+            login.Person.ScopeType.ShouldBe(ScopeTypes.Global);
             var claims = ParseJwtClaims(login.AccessToken);
-            claims.ShouldContain(new KeyValuePair<string, string>("role", PlatformRoles.Seller));
+            claims.ShouldContain(new KeyValuePair<string, string>("role", PlatformRoles.Enterprise));
+            claims.ShouldContain(new KeyValuePair<string, string>("scope_type", ScopeTypes.Global));
         }
     }
 
@@ -99,16 +101,18 @@ public sealed class ShopAndDemandRoleMutationTests(PostgresFixture fixture)
             await db.SaveChangesAsync();
         }
 
-        // 3. Đăng nhập lại: Token JWT phải phản ánh role BUYER
+        // 3. Đăng nhập lại: Token JWT chuẩn hóa trả role ENTERPRISE & scope GLOBAL
         await using (var verifyProvider = fixture.BuildProvider())
         using (var scope = verifyProvider.CreateScope())
         {
             var auth = scope.ServiceProvider.GetRequiredService<IAuthenticationService>();
             var login = await auth.LoginAsync(email, Password, null, CancellationToken.None);
 
-            login.Person.PlatformRole.ShouldBe(PlatformRoles.Buyer);
+            login.Person.PlatformRole.ShouldBe(PlatformRoles.Enterprise);
+            login.Person.ScopeType.ShouldBe(ScopeTypes.Global);
             var claims = ParseJwtClaims(login.AccessToken);
-            claims.ShouldContain(new KeyValuePair<string, string>("role", PlatformRoles.Buyer));
+            claims.ShouldContain(new KeyValuePair<string, string>("role", PlatformRoles.Enterprise));
+            claims.ShouldContain(new KeyValuePair<string, string>("scope_type", ScopeTypes.Global));
         }
     }
 

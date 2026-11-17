@@ -86,18 +86,25 @@ public sealed class EnterpriseApprovalSynchronizer(DbContext db) : IEnterpriseAp
         switch (normalizedAction)
         {
             case "APPROVE":
-                var note = reviewNote ?? "Phê duyệt Sở";
+                var note = reviewNote ?? "Phê duyệt BACLINK";
                 if (ent != null)
                 {
                     ent.OwnerPersonId = personId;
                     ent.IsVerified = true;
                     ent.VerificationStatus = "VERIFIED";
+                    ent.IsBuyer = true;
+                    ent.IsSeller = true;
+                    ent.CapabilityTier = "DUAL";
+                    if (string.IsNullOrWhiteSpace(ent.ActiveRole))
+                    {
+                        ent.ActiveRole = "BUYER";
+                    }
                     ent.Approve(note);
                 }
                 else
                 {
-                    var resolvedName = !string.IsNullOrWhiteSpace(companyName) ? companyName : "Doanh nghiệp ĐMST";
-                    var resolvedProvince = province ?? scopeId ?? "HN";
+                    var resolvedName = !string.IsNullOrWhiteSpace(companyName) ? companyName : "Doanh nghiệp Hội viên BACLINK";
+                    var resolvedProvince = province ?? scopeId ?? "BN";
                     ent = new Domain.Enterprise(Guid.NewGuid())
                     {
                         OwnerPersonId = personId,
@@ -105,10 +112,14 @@ public sealed class EnterpriseApprovalSynchronizer(DbContext db) : IEnterpriseAp
                         Name = resolvedName,
                         LegalName = resolvedName,
                         ProvinceCity = resolvedProvince,
-                        MainSectorName = "Đổi mới sáng tạo & Chuyển đổi số",
+                        MainSectorName = "Công nghiệp hỗ trợ & Chuyển đổi số",
                         IsVerified = true,
                         VerificationStatus = "VERIFIED",
-                        Status = "ACTIVE"
+                        Status = "ACTIVE",
+                        IsBuyer = true,
+                        IsSeller = true,
+                        CapabilityTier = "DUAL",
+                        ActiveRole = "BUYER"
                     };
                     ent.Approve(note);
                     db.Set<Domain.Enterprise>().Add(ent);

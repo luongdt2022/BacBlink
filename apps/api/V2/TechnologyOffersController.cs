@@ -1052,8 +1052,8 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         var scopeName = dto.ManagingAuthorityName;
         if (string.IsNullOrWhiteSpace(scopeId))
         {
-            scopeId = "VN-HN";
-            scopeName = "Sở Khoa học và Công nghệ TP. Hà Nội";
+            scopeId = "BACLINK";
+            scopeName = "Hiệp hội Doanh nghiệp Bắc Ninh (BACLINK)";
         }
 
         var newOffer = new SellerOfferDto(
@@ -1208,10 +1208,10 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         return CreatedAtAction(nameof(GetOfferById), new { id }, new { success = true, message, data = newOffer });
     }
 
-    // DEFECT-06: Phê duyệt công nghệ chỉ dành cho Cán bộ Sở KH&CN, cấm AllowAnonymous
+    // CR-BACLINK-001: Thẩm định công nghệ 1 cấp ADMIN, gỡ bỏ phân quyền Sở KH&CN & kiểm tra Actor.ScopeId
     [HttpPost("/api/v1/portal/seller/technologies/{id:guid}/review")]
     [HttpPost("/api/v2/portal/seller/technologies/{id:guid}/review")]
-    [Authorize(Roles = "PROVINCIAL_ADMIN,CLUSTER_ADMIN,SUPER_ADMIN,OPERATOR_ADMIN,ADMIN,DEPT_ADMIN,DEPT_OFFICER")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
     public async Task<IActionResult> ReviewOffer(Guid id, [FromBody] ReviewOfferDto dto, CancellationToken ct = default)
     {
         // DEFECT-07: Đọc trực tiếp từ CSDL PostgreSQL để đảm bảo kiến trúc Stateless
@@ -1226,28 +1226,16 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
             return NotFound(new { success = false, message = "Không tìm thấy hồ sơ công nghệ." });
         }
 
-        // T-04.118: Kiểm tra quy tắc phân quyền địa bàn (Scoped RBAC)
-        var offerScopeId = entity?.ScopeId ?? existing?.ScopeId;
-        var isGlobalAdmin = Actor.PlatformRole is "SUPER_ADMIN" or "OPERATOR_ADMIN" or "ADMIN"
-            || User.IsInRole("SUPER_ADMIN") || User.IsInRole("OPERATOR_ADMIN") || User.IsInRole("ADMIN");
-        var isProvincialAdmin = string.Equals(Actor.PlatformRole, "PROVINCIAL_ADMIN", StringComparison.OrdinalIgnoreCase)
-            || User.IsInRole("PROVINCIAL_ADMIN");
+        var isGlobalAdmin = PlatformRoles.IsAdministrative(Actor.PlatformRole)
+            || User.IsInRole("ADMIN") || User.IsInRole("SUPER_ADMIN") || User.IsInRole("OPERATOR_ADMIN");
 
-        if (!isGlobalAdmin && isProvincialAdmin)
+        if (!isGlobalAdmin)
         {
-            var normOfferScope = offerScopeId?.Trim().Replace("VN-", "", StringComparison.OrdinalIgnoreCase).ToUpperInvariant();
-            var normActorScope = Actor.ScopeId?.Trim().Replace("VN-", "", StringComparison.OrdinalIgnoreCase).ToUpperInvariant();
-
-            if (!string.IsNullOrWhiteSpace(normOfferScope) &&
-                !string.Equals(normOfferScope, "GLOBAL", StringComparison.OrdinalIgnoreCase) &&
-                normOfferScope != normActorScope)
+            return StatusCode(StatusCodes.Status403Forbidden, new
             {
-                return StatusCode(StatusCodes.Status403Forbidden, new
-                {
-                    success = false,
-                    message = "Cán bộ Quản trị địa bàn không có quyền phê duyệt hồ sơ ngoài phạm vi địa bàn quản lý."
-                });
-            }
+                success = false,
+                message = "Chỉ Quản trị viên (ADMIN) mới có quyền phê duyệt hồ sơ công nghệ."
+            });
         }
 
         var action = dto.Action?.Trim().ToUpperInvariant();
@@ -1307,7 +1295,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         string authorityName = dto.VerifiedAuthorityName 
             ?? entity?.ManagingAuthorityName 
             ?? existing?.ManagingAuthorityName 
-            ?? "Sở Khoa học và Công nghệ TP. Hà Nội";
+            ?? "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)";
         Guid verifiedBy = Actor.PersonId ?? Guid.Empty;
 
         if (entity != null)

@@ -1,32 +1,53 @@
+using System.Text.RegularExpressions;
 using Shouldly;
 using Xunit;
 
 namespace NacenTech.Tests.Invariants;
 
 /// <summary>
-/// TASK-06 / CR-2026-010: Invariant test kiểm tra tính bất biến SSOT của 10 Lĩnh vực chuẩn TT17 và cấm mảng static (BR-SEC-005)
+/// TASK-06 / CR-BACLINK-003: Invariant test kiểm tra tính bất biến SSOT của 8 Ngành công nghiệp BACLINK (IND_*)
+/// và danh mục Địa bàn/KCN Bắc Ninh (BR-BACLINK-TAX-001, BR-BACLINK-TAX-002, BR-SEC-005).
 /// </summary>
 public sealed class SectorMasterDataInvariantsTests
 {
-    private static readonly string[] Expected10ActiveSectors =
+    private static readonly Regex IndCodePattern = new("^IND_[A-Z0-9_]+$", RegexOptions.Compiled);
+
+    private static readonly string[] Expected8BaclinkActiveSectors =
     [
-        "LV01", // Nông nghiệp
-        "LV05", // Chế biến thực phẩm – đồ uống
-        "LV07", // Cơ khí – chế tạo – công nghiệp hỗ trợ
-        "LV08", // Điện – điện tử – tự động hóa
-        "LV11", // Nước – môi trường – chất thải
-        "LV12", // Xây dựng – vật liệu – hạ tầng
-        "LV14", // Logistics – vận tải – kho bãi
-        "LV15", // Du lịch – khách sạn – nhà hàng
-        "LV16", // CNTT – viễn thông – chuyển đổi số
-        "LV17"  // Khoa học – công nghệ – đổi mới sáng tạo
+        "IND_ELEC",  // Điện tử, Bán dẫn & Thiết bị điện
+        "IND_MECH",  // Cơ khí chính xác, Khuôn mẫu & Chế tạo máy
+        "IND_AUTO",  // Tự động hóa, Robot & Smart Factory
+        "IND_PLAS",  // Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp
+        "IND_MAT",   // Vật liệu mới & Công nghiệp hỗ trợ
+        "IND_IT",    // Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP
+        "IND_GREEN", // Công nghiệp xanh, Năng lượng sạch & ESG
+        "IND_LOG"    // Logistics công nghiệp, Kho vận & Chuỗi cung ứng
+    ];
+
+    private static readonly string[] Expected9BacNinhAreas =
+    [
+        "TP_BN", "TU_SON", "QUE_VO", "THUAN_THANH", "YEN_PHONG", "TIEN_DU", "GIA_BINH", "LUONG_TAI", "NGOAI_TINH"
     ];
 
     [Fact]
-    public void Exactly_10_active_sectors_are_defined_in_SSOT_taxonomy()
+    public void Exactly_8_baclink_active_sectors_are_defined_in_SSOT_taxonomy()
     {
-        Expected10ActiveSectors.Length.ShouldBe(10);
-        Expected10ActiveSectors.ShouldAllBe(code => code.StartsWith("LV"));
+        Expected8BaclinkActiveSectors.Length.ShouldBe(8);
+        Expected8BaclinkActiveSectors.ShouldAllBe(code => IndCodePattern.IsMatch(code));
+    }
+
+    [Theory]
+    [InlineData("IND_ELEC")]
+    [InlineData("IND_MECH")]
+    [InlineData("IND_AUTO")]
+    [InlineData("IND_PLAS")]
+    [InlineData("IND_MAT")]
+    [InlineData("IND_IT")]
+    [InlineData("IND_GREEN")]
+    [InlineData("IND_LOG")]
+    public void Sector_code_belongs_to_approved_8_baclink_active_sectors(string sectorCode)
+    {
+        Expected8BaclinkActiveSectors.ShouldContain(sectorCode);
     }
 
     [Theory]
@@ -40,25 +61,21 @@ public sealed class SectorMasterDataInvariantsTests
     [InlineData("LV15")]
     [InlineData("LV16")]
     [InlineData("LV17")]
-    public void Sector_code_belongs_to_approved_10_TT17_active_sectors(string sectorCode)
-    {
-        Expected10ActiveSectors.ShouldContain(sectorCode);
-    }
-
-    [Theory]
-    [InlineData("LV02")]
-    [InlineData("LV03")]
-    [InlineData("LV04")]
-    [InlineData("LV06")]
-    [InlineData("LV09")]
-    [InlineData("LV10")]
-    [InlineData("LV13")]
-    [InlineData("LV18")]
+    [InlineData("SEC-01")]
     [InlineData("AG")]
     [InlineData("FOOD")]
     [InlineData("MECH")]
-    public void Deprecated_or_non_active_sector_codes_must_not_be_in_active_SSOT(string nonActiveCode)
+    public void Deprecated_or_legacy_sector_codes_must_not_be_in_active_SSOT(string nonActiveCode)
     {
-        Expected10ActiveSectors.ShouldNotContain(nonActiveCode);
+        Expected8BaclinkActiveSectors.ShouldNotContain(nonActiveCode);
+    }
+
+    [Fact]
+    public void BacNinh_locations_must_define_8_plus_1_areas()
+    {
+        Expected9BacNinhAreas.Length.ShouldBe(9);
+        Expected9BacNinhAreas.ShouldContain("TP_BN");
+        Expected9BacNinhAreas.ShouldContain("YEN_PHONG");
+        Expected9BacNinhAreas.ShouldContain("NGOAI_TINH");
     }
 }

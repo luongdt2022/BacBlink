@@ -144,7 +144,7 @@ public sealed class GovernanceApprovalInvariantsTests
         var actorId = Guid.NewGuid();
         var log = new ApprovalAuditLog(
             actorId,
-            PlatformRoles.ProvincialAdmin,
+            PlatformRoles.Admin,
             "REVIEW_APPROVE",
             "approval_requests",
             "req-12345",
@@ -152,7 +152,7 @@ public sealed class GovernanceApprovalInvariantsTests
             "{\"action\":\"APPROVE\"}");
 
         log.ActorId.ShouldBe(actorId);
-        log.ActorRole.ShouldBe(PlatformRoles.ProvincialAdmin);
+        log.ActorRole.ShouldBe(PlatformRoles.Admin);
         log.Action.ShouldBe("REVIEW_APPROVE");
         log.IpAddress.ShouldBe("192.168.1.100");
     }
@@ -246,7 +246,7 @@ public sealed class GovernanceApprovalInvariantsTests
 
         var operatorAdminId = Guid.NewGuid();
         const string reason = "Đề tài trọng điểm Quốc gia lĩnh vực bán dẫn cần phê duyệt khẩn cấp theo Quyết định của Bộ.";
-        req.ExecuteAdminOverride(operatorAdminId, PlatformRoles.OperatorAdmin, reason, confirmCommitment: true);
+        req.ExecuteAdminOverride(operatorAdminId, PlatformRoles.Admin, reason, confirmCommitment: true);
 
         req.Status.ShouldBe(ApprovalStatuses.Approved);
         req.IsOverride.ShouldBeTrue();
@@ -310,7 +310,12 @@ public sealed class GovernanceApprovalInvariantsTests
 
         Should.Throw<UnauthorizedAccessException>(() =>
         {
-            req.ExecuteAdminOverride(officerId, PlatformRoles.ProvincialAdmin, "Lý do can thiệp giải trình hợp lệ dài hơn 20 ký tự.", confirmCommitment: true);
+            req.ExecuteAdminOverride(officerId, PlatformRoles.Enterprise, "Lý do can thiệp giải trình hợp lệ dài hơn 20 ký tự.", confirmCommitment: true);
+        });
+
+        Should.Throw<UnauthorizedAccessException>(() =>
+        {
+            req.ExecuteAdminOverride(officerId, "PROVINCIAL_ADMIN", "Lý do can thiệp giải trình hợp lệ dài hơn 20 ký tự.", confirmCommitment: true);
         });
     }
 

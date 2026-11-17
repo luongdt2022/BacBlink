@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NacenTech.Kernel.Application;
 using NacenTech.Modules.Enterprise.Domain;
 
 namespace NacenTech.Modules.Enterprise.Application;
@@ -157,8 +158,9 @@ public class EnterpriseService : IEnterpriseService
         var ent = await ResolveEnterpriseByPersonAsync(personId, email, ct);
         if (ent is null) return null;
 
-        // Tự động đảm bảo chế độ DUAL cho tài khoản ĐMST (INNOVATION_ENTITY)
-        if ((ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true) && (!ent.IsBuyer || !ent.IsSeller))
+        // Tự động đảm bảo chế độ DUAL cho doanh nghiệp hội viên đã xác thực (hoặc INNOVATION_ENTITY legacy)
+        if ((ent.IsVerified || ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true)
+            && (!ent.IsBuyer || !ent.IsSeller || ent.CapabilityTier != "DUAL"))
         {
             ent.IsBuyer = true;
             ent.IsSeller = true;
@@ -187,17 +189,17 @@ public class EnterpriseService : IEnterpriseService
             throw new InvalidOperationException("Không tìm thấy hồ sơ doanh nghiệp tương ứng để chuyển vai trò.");
 
         var normalizedTarget = (targetRole ?? string.Empty).Trim().ToUpperInvariant();
-        // Self-healing: Nếu doanh nghiệp có tier DUAL hoặc là INNOVATION_ENTITY mà cờ năng lực chưa được bật đồng bộ
+        // Self-healing: Doanh nghiệp đã duyệt / DUAL hoặc INNOVATION_ENTITY tự động có đủ năng lực BUYER & SELLER
         if (normalizedTarget == "BUYER" && !ent.IsBuyer)
         {
-            if (ent.CapabilityTier == "DUAL" || ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true)
+            if (ent.IsVerified || ent.CapabilityTier == "DUAL" || ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true)
             {
                 ent.ActivateCapability("BUYER");
             }
         }
         else if (normalizedTarget == "SELLER" && !ent.IsSeller)
         {
-            if (ent.CapabilityTier == "DUAL" || ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true)
+            if (ent.IsVerified || ent.CapabilityTier == "DUAL" || ent.SubjectType == "INNOVATION_ENTITY" || ent.ContactEmail?.Contains("innovation.entity") == true)
             {
                 ent.ActivateCapability("SELLER");
             }
@@ -404,19 +406,15 @@ public class EnterpriseService : IEnterpriseService
         if (ent is null)
             throw new KeyNotFoundException($"ENT-404: Không tìm thấy doanh nghiệp có ID {enterpriseId}");
 
-        // BR-02-005: Kiểm tra thẩm quyền địa bàn nếu cán bộ là PROVINCIAL_ADMIN
-        if (!string.IsNullOrWhiteSpace(adminScopeId) && 
-            !adminScopeId.Equals("GLOBAL", StringComparison.OrdinalIgnoreCase) && 
-            !adminScopeId.Equals("TW", StringComparison.OrdinalIgnoreCase))
-        {
-            var isMatchingProvince = MatchProvinceScope(ent.ProvinceCity, adminScopeId);
-            if (!isMatchingProvince)
-            {
-                throw new InvalidOperationException($"BR-02-005: Cán bộ chỉ có quyền thẩm định doanh nghiệp thuộc địa bàn quản lý ({adminScopeId}).");
-            }
-        }
-
+        // CR-BACLINK-001: Bãi bỏ rào cản MatchProvinceScope theo Actor.ScopeId; ADMIN duyệt 1 cấp & tự động cấp DUAL
         ent.Approve(approvedBy);
+        ent.IsBuyer = true;
+        ent.IsSeller = true;
+        ent.CapabilityTier = "DUAL";
+        if (string.IsNullOrWhiteSpace(ent.ActiveRole))
+        {
+            ent.ActiveRole = "BUYER";
+        }
         await _repository.UpdateAsync(ent, ct);
     }
 
@@ -425,16 +423,6 @@ public class EnterpriseService : IEnterpriseService
         var ent = await _repository.GetByIdAsync(enterpriseId, ct);
         if (ent is null)
             throw new KeyNotFoundException($"ENT-404: Không tìm thấy doanh nghiệp có ID {enterpriseId}");
-
-        if (!string.IsNullOrWhiteSpace(adminScopeId) && 
-            !adminScopeId.Equals("GLOBAL", StringComparison.OrdinalIgnoreCase) && 
-            !adminScopeId.Equals("TW", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!MatchProvinceScope(ent.ProvinceCity, adminScopeId))
-            {
-                throw new InvalidOperationException($"BR-02-005: Cán bộ chỉ có quyền xử lý doanh nghiệp thuộc địa bàn quản lý ({adminScopeId}).");
-            }
-        }
 
         ent.Reject(reason);
         await _repository.UpdateAsync(ent, ct);
@@ -448,25 +436,7 @@ public class EnterpriseService : IEnterpriseService
     public bool CanViewRevenueAndFunding(string actorRole, bool isOwner)
     {
         if (isOwner) return true;
-        if (actorRole == "ADMIN" || actorRole == "SUPER_ADMIN" || actorRole == "OPERATOR_ADMIN" || actorRole == "PROVINCIAL_ADMIN")
-            return true;
-        return false;
-    }
-
-    private static bool MatchProvinceScope(string provinceName, string scopeId)
-    {
-        if (string.IsNullOrWhiteSpace(provinceName)) return false;
-        var p = provinceName.Trim().ToLowerInvariant();
-        var s = scopeId.Trim().ToLowerInvariant();
-
-        if (s == "hn" && (p.Contains("hà nội") || p.Contains("ha noi"))) return true;
-        if (s == "hcm" && (p.Contains("hồ chí minh") || p.Contains("tp.hcm") || p.Contains("ho chi minh"))) return true;
-        if (s == "hp" && (p.Contains("hải phòng") || p.Contains("hai phong"))) return true;
-        if (s == "dn" && (p.Contains("đà nẵng") || p.Contains("da nang"))) return true;
-        if (s == "ct" && (p.Contains("cần thơ") || p.Contains("can tho"))) return true;
-        if (s == "ls" && (p.Contains("lạng sơn") || p.Contains("lang son"))) return true;
-
-        return p.Contains(s);
+        return PlatformRoles.IsAdministrative(actorRole);
     }
 
     private static IReadOnlyList<string> SafeParseStringList(string? json)

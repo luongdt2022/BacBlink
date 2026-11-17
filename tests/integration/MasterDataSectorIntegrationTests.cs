@@ -16,23 +16,41 @@ namespace NacenTech.Tests.Integration;
 public sealed class MasterDataSectorIntegrationTests(PostgresFixture fixture)
 {
     [Fact]
-    public async Task Database_Contains_10_Core_Sectors_From_Excel_Seed()
+    public async Task Database_Contains_8_Baclink_Sectors_And_Deactivated_Legacy_LV_Sectors()
     {
         await using var provider = fixture.BuildProvider();
         using var scope = provider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
 
-        var sectors = await db.Set<TaxonomyTerm>()
+        var activeBaclinkSectors = await db.Set<TaxonomyTerm>()
+            .Where(t => t.Kind == TaxonomyKinds.Sector && t.IsActive && t.Code != null && t.Code.StartsWith("IND_"))
+            .ToListAsync();
+
+        var expectedBaclinkCodes = new[]
+        {
+            "IND_ELEC", "IND_MECH", "IND_AUTO", "IND_PLAS", "IND_MAT", "IND_IT", "IND_GREEN", "IND_LOG"
+        };
+        foreach (var code in expectedBaclinkCodes)
+        {
+            activeBaclinkSectors.ShouldContain(s => s.Code == code, $"Database must contain active BACLINK sector {code}");
+        }
+
+        // BR-BACLINK-TAX-001: LV* phai con trong DB voi is_active = false (khong bi DELETE)
+        var legacyLvSectors = await db.Set<TaxonomyTerm>()
             .Where(t => t.Kind == TaxonomyKinds.Sector && t.Code != null && t.Code.StartsWith("LV"))
             .ToListAsync();
 
-        sectors.Count.ShouldBeGreaterThanOrEqualTo(10);
+        legacyLvSectors.Count.ShouldBeGreaterThanOrEqualTo(10);
+        legacyLvSectors.ShouldAllBe(s => !s.IsActive);
 
-        var expectedCodes = new[] { "LV01", "LV05", "LV07", "LV08", "LV11", "LV12", "LV14", "LV15", "LV16", "LV17" };
-        foreach (var code in expectedCodes)
-        {
-            sectors.ShouldContain(s => s.Code == code, $"Database must contain core sector {code}");
-        }
+        // REQ-BACLINK-TAX-002: LOCATION (AREA & KCN) phai ton tai va active
+        var activeLocations = await db.Set<TaxonomyTerm>()
+            .Where(t => t.Kind == TaxonomyKinds.Location && t.IsActive)
+            .ToListAsync();
+
+        activeLocations.Count.ShouldBeGreaterThanOrEqualTo(22);
+        activeLocations.ShouldContain(l => l.Code == "TP_BN");
+        activeLocations.ShouldContain(l => l.Code == "KCN_YEN_PHONG_1");
     }
 
     [Fact]
@@ -42,7 +60,7 @@ public sealed class MasterDataSectorIntegrationTests(PostgresFixture fixture)
         using var scope = provider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
 
-        var duplicateTerm = new TaxonomyTerm(TaxonomyKinds.Sector, "Nông nghiệp trùng", "LV01", "{}");
+        var duplicateTerm = new TaxonomyTerm(TaxonomyKinds.Sector, "Điện tử trùng", "IND_ELEC", "{}");
         db.Set<TaxonomyTerm>().Add(duplicateTerm);
 
         await Should.ThrowAsync<DbUpdateException>(async () =>
@@ -52,7 +70,7 @@ public sealed class MasterDataSectorIntegrationTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task GetSectors_Endpoint_Returns_Sectors_From_Database()
+    public async Task GetSectors_Endpoint_Returns_Active_Baclink_Sectors_From_Database()
     {
         await using var provider = fixture.BuildProvider();
         using var scope = provider.CreateScope();
@@ -61,16 +79,43 @@ public sealed class MasterDataSectorIntegrationTests(PostgresFixture fixture)
         var controller = new MasterDataControllers(taxonomyService);
         var actionResult = await controller.GetSectors(activeOnly: true);
 
-        actionResult.ShouldBeOfType<OkObjectResult>();
-        var okResult = (OkObjectResult)actionResult;
+        var okResult = actionResult.ShouldBeOfType<OkObjectResult>();
         okResult.Value.ShouldNotBeNull();
+
+        var sectorsController = new SectorsController(taxonomyService);
+        var v1Result = await sectorsController.List(CancellationToken.None);
+        v1Result.ShouldBeOfType<OkObjectResult>();
+    }
+
+    [Fact]
+    public async Task GetLocations_Endpoint_Returns_BacNinh_Areas_And_Kcns()
+    {
+        await using var provider = fixture.BuildProvider();
+        using var scope = provider.CreateScope();
+        var taxonomyService = scope.ServiceProvider.GetRequiredService<ITaxonomyService>();
+
+        var controller = new MasterDataControllers(taxonomyService);
+
+        var allResult = await controller.GetLocations(null, CancellationToken.None);
+        allResult.ShouldBeOfType<OkObjectResult>();
+
+        var areaResult = await controller.GetLocations("AREA", CancellationToken.None);
+        var areaOk = areaResult.ShouldBeOfType<OkObjectResult>();
+        var totalProp = areaOk.Value!.GetType().GetProperty("total");
+        totalProp.ShouldNotBeNull();
+        ((int)totalProp.GetValue(areaOk.Value)!).ShouldBe(9);
+
+        var kcnResult = await controller.GetLocations("KCN", CancellationToken.None);
+        var kcnOk = kcnResult.ShouldBeOfType<OkObjectResult>();
+        ((int)totalProp.GetValue(kcnOk.Value)!).ShouldBe(13);
     }
 
     [Theory]
     [InlineData("SEC-01", "Ngành cũ")]
-    [InlineData("SEC-AGRI", "Nông nghiệp mã cũ")]
+    [InlineData("LV01", "Ngành LV cũ")]
+    [InlineData("IND_", "Thiếu hậu tố")]
     [InlineData("INVALID-CODE", "Mã không hợp lệ")]
-    public async Task CreateSector_Endpoint_Rejects_Non_LV_Prefix_With_400(string invalidCode, string name)
+    public async Task CreateSector_Endpoint_Rejects_Non_IND_Prefix_With_400(string invalidCode, string name)
     {
         var adminId = Guid.CreateVersion7();
         await using var provider = fixture.BuildProvider(new TestActor
@@ -95,14 +140,47 @@ public sealed class MasterDataSectorIntegrationTests(PostgresFixture fixture)
         {
             Code = invalidCode,
             Name = name,
-            Tt17Code = "C.10",
+            Tt17Code = "C.26",
             Description = "Test invalid prefix"
         };
 
         var result = await controller.CreateSector(dto);
-        result.ShouldBeOfType<BadRequestObjectResult>();
-        var badRequest = (BadRequestObjectResult)result;
+        var badRequest = result.ShouldBeOfType<BadRequestObjectResult>();
         badRequest.StatusCode.ShouldBe(400);
+    }
+
+    [Fact]
+    public async Task UpdateMatrixPair_Endpoint_Accepts_IND_Sector_Code_For_Admin()
+    {
+        var adminId = Guid.CreateVersion7();
+        await using var provider = fixture.BuildProvider(new TestActor
+        {
+            PersonId = adminId,
+            PlatformRole = PlatformRoles.Admin,
+            ScopeType = ScopeTypes.Global
+        });
+        using var scope = provider.CreateScope();
+        var taxonomyService = scope.ServiceProvider.GetRequiredService<ITaxonomyService>();
+
+        var controller = new MasterDataControllers(taxonomyService);
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext
+            {
+                RequestServices = scope.ServiceProvider
+            }
+        };
+
+        var result = controller.UpdateMatrixPair(new UpdateMatrixPairDto
+        {
+            FieldCode = "IND_ELEC",
+            TechCode = "CN04",
+            RatingStars = 5,
+            Weight = 1.0
+        });
+
+        var ok = result.ShouldBeOfType<OkObjectResult>();
+        ok.StatusCode.ShouldBe(200);
     }
 
     [Fact]
@@ -129,12 +207,11 @@ public sealed class MasterDataSectorIntegrationTests(PostgresFixture fixture)
 
         var dto = new CreateSectorDto
         {
-            Code = "LV99",
+            Code = "IND_NEW_TEST",
             Name = "Ngành mới",
-            Tt17Code = "C.99"
+            Tt17Code = "C.28"
         };
 
-        // RequireAdmin throws NacenTech.Kernel.Domain.ForbiddenException
         await Should.ThrowAsync<NacenTech.Kernel.Domain.ForbiddenException>(async () =>
         {
             await controller.CreateSector(dto);

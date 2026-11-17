@@ -772,8 +772,9 @@ public class SellerOfferRulesValidatorTests
     }
 
     [Fact]
-    public void ValidateFull4Steps_MissingManagingAuthority_ShouldFail()
+    public void ValidateFull4Steps_MissingManagingAuthority_ShouldSucceedUnderBaclink()
     {
+        // CR-BACLINK-005: Gỡ bỏ bắt buộc ManagingAuthorityId 34 Sở KH&CN, trực thuộc quản lý Hiệp hội BACLINK
         var dto = CreateValidBaseDto() with
         {
             ManagingAuthorityId = null,
@@ -782,8 +783,8 @@ public class SellerOfferRulesValidatorTests
 
         var result = SellerOfferRulesValidator.ValidateFull4Steps(dto);
 
-        Assert.False(result.IsValid);
-        Assert.True(result.Errors.ContainsKey(nameof(dto.ManagingAuthorityId)));
+        Assert.True(result.IsValid);
+        Assert.False(result.Errors.ContainsKey(nameof(dto.ManagingAuthorityId)));
     }
 
     [Fact]

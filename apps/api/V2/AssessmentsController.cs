@@ -28,14 +28,35 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
 
     private static string NormalizeScopeId(string? raw)
     {
-        if (string.IsNullOrWhiteSpace(raw)) return "HN";
+        if (string.IsNullOrWhiteSpace(raw)) return "TP_BN";
         var s = raw.Trim();
+        if (s.Equals("TP. Bắc Ninh", StringComparison.OrdinalIgnoreCase) || s.Equals("Bắc Ninh", StringComparison.OrdinalIgnoreCase)) return "TP_BN";
+        if (s.Equals("TP. Từ Sơn", StringComparison.OrdinalIgnoreCase)) return "TU_SON";
+        if (s.Equals("TX. Quế Võ", StringComparison.OrdinalIgnoreCase)) return "QUE_VO";
+        if (s.Equals("TX. Thuận Thành", StringComparison.OrdinalIgnoreCase)) return "THUAN_THANH";
+        if (s.Equals("H. Yên Phong", StringComparison.OrdinalIgnoreCase)) return "YEN_PHONG";
+        if (s.Equals("H. Tiên Du", StringComparison.OrdinalIgnoreCase)) return "TIEN_DU";
+        if (s.Equals("H. Gia Bình", StringComparison.OrdinalIgnoreCase)) return "GIA_BINH";
+        if (s.Equals("H. Lương Tài", StringComparison.OrdinalIgnoreCase)) return "LUONG_TAI";
         if (s.Equals("Hà Nội", StringComparison.OrdinalIgnoreCase)) return "HN";
         if (s.Equals("Tiền Giang", StringComparison.OrdinalIgnoreCase)) return "TG";
         if (s.Equals("Ninh Thuận", StringComparison.OrdinalIgnoreCase)) return "NT";
         if (s.Equals("Hải Phòng", StringComparison.OrdinalIgnoreCase)) return "HP";
         if (s.Equals("Đà Nẵng", StringComparison.OrdinalIgnoreCase)) return "DN";
         return s.ToUpperInvariant();
+    }
+
+    private static string NormalizeIndustryCode(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return "BACLINK_DEFAULT";
+        var normalized = raw.Trim().ToUpperInvariant();
+        if (Tt17ScoringEngine.Benchmarks.ContainsKey(normalized) || Tt17ScoringEngine.BaclinkIndustryMapping.ContainsKey(normalized))
+        {
+            return normalized;
+        }
+        return normalized.StartsWith("IND_", StringComparison.Ordinal) || normalized.StartsWith("C.", StringComparison.Ordinal)
+            ? normalized
+            : "BACLINK_DEFAULT";
     }
 
     private static Tt17AssessmentDto MapEntityToDto(Tt17Assessment entity)
@@ -88,7 +109,7 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
             Status = entity.Status,
             ScopeType = entity.ScopeType,
             ScopeId = NormalizeScopeId(entity.ScopeId),
-            IndustryCode = string.IsNullOrWhiteSpace(entity.IndustryCode) ? "C.10" : entity.IndustryCode,
+            IndustryCode = NormalizeIndustryCode(entity.IndustryCode),
             SurveyData = survey,
             ScoreResult = scores,
             ReviewNotes = entity.ReviewNotes,
@@ -154,11 +175,11 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
                 TaxCode = "0100000000",
                 AssessmentYear = targetYear,
                 Status = "DRAFT",
-                ScopeType = "PROVINCE",
-                ScopeId = "HN",
-                IndustryCode = "C.10",
-                SurveyData = new Tt17SurveyDataDto(),
-                ScoreResult = ScoringEngine.Calculate(new Tt17SurveyDataDto())
+                ScopeType = "GLOBAL",
+                ScopeId = "TP_BN",
+                IndustryCode = "BACLINK_DEFAULT",
+                SurveyData = new Tt17SurveyDataDto { IndustryCode = "BACLINK_DEFAULT" },
+                ScoreResult = ScoringEngine.Calculate(new Tt17SurveyDataDto { IndustryCode = "BACLINK_DEFAULT" }, "BACLINK_DEFAULT")
             };
             return Ok(new { success = true, data = newDto });
         }
@@ -201,9 +222,10 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
     [AllowAnonymous]
     [HttpPost("api/v1/assessments/tt17/calculate")]
     [HttpPost("api/v2/assessments/tt17/calculate")]
-    public IActionResult CalculateScoreImmediately([FromBody] Tt17SurveyDataDto survey)
+    public IActionResult CalculateScoreImmediately([FromBody] Tt17SurveyDataDto? survey)
     {
-        var result = ScoringEngine.Calculate(survey ?? new Tt17SurveyDataDto());
+        var effectiveSurvey = survey ?? new Tt17SurveyDataDto { IndustryCode = "BACLINK_DEFAULT" };
+        var result = ScoringEngine.Calculate(effectiveSurvey, NormalizeIndustryCode(effectiveSurvey.IndustryCode));
         return Ok(new { success = true, data = result });
     }
 
@@ -241,8 +263,8 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         existing.EnterpriseName = entName;
         existing.TaxCode = taxCode;
         existing.AssessmentYear = payload.AssessmentYear;
-        existing.IndustryCode = string.IsNullOrWhiteSpace(payload.IndustryCode) ? "C.10" : payload.IndustryCode;
-        existing.ScopeId = string.IsNullOrWhiteSpace(payload.ScopeId) ? "HN" : payload.ScopeId;
+        existing.IndustryCode = NormalizeIndustryCode(!string.IsNullOrWhiteSpace(payload.IndustryCode) ? payload.IndustryCode : payload.SurveyData?.IndustryCode);
+        existing.ScopeId = NormalizeScopeId(payload.ScopeId);
         existing.SurveyData = payload.SurveyData ?? new();
         existing.ScoreResult = ScoringEngine.Calculate(existing.SurveyData, existing.IndustryCode);
         existing.Status = "DRAFT";
@@ -320,8 +342,8 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         existing.EnterpriseName = entName;
         existing.TaxCode = taxCode;
         existing.AssessmentYear = payload.AssessmentYear;
-        existing.IndustryCode = string.IsNullOrWhiteSpace(payload.IndustryCode) ? "C.10" : payload.IndustryCode;
-        existing.ScopeId = string.IsNullOrWhiteSpace(payload.ScopeId) ? "HN" : payload.ScopeId;
+        existing.IndustryCode = NormalizeIndustryCode(!string.IsNullOrWhiteSpace(payload.IndustryCode) ? payload.IndustryCode : payload.SurveyData?.IndustryCode);
+        existing.ScopeId = NormalizeScopeId(payload.ScopeId);
         existing.SurveyData = payload.SurveyData ?? new();
         existing.ScoreResult = ScoringEngine.Calculate(existing.SurveyData, existing.IndustryCode);
         existing.Status = "SUBMITTED";
@@ -427,41 +449,32 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         ApprovedAt = x.ApprovedAt
     };
 
-    [AllowAnonymous]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
     [HttpGet("api/v1/gov/assessments/tt17")]
     [HttpGet("api/v2/gov/assessments/tt17")]
-    public async Task<IActionResult> GetGovAssessmentQueue(
+    public IActionResult GetGovAssessmentQueue(
         [FromQuery] string? scopeId,
         [FromQuery] string? status,
-        [FromQuery] bool summary = false,
-        CancellationToken ct = default)
-    {
-        var all = await LoadAllAssessmentsAsync(ct);
-        var query = all.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(scopeId) && !scopeId.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
+        [FromQuery] bool summary = false)
+        => StatusCode(410, new
         {
-            var normalizedScope = NormalizeScopeId(scopeId);
-            query = query.Where(x => NormalizeScopeId(x.ScopeId).Equals(normalizedScope, StringComparison.OrdinalIgnoreCase));
-        }
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Cổng Sở KH&CN (/api/v*/gov/assessments/tt17) đã ngừng hoạt động trên hệ thống BACLINK."
+        });
 
-        if (!string.IsNullOrWhiteSpace(status) && !status.Trim().Equals("ALL", StringComparison.OrdinalIgnoreCase))
-        {
-            query = query.Where(x => x.Status.Equals(status.Trim(), StringComparison.OrdinalIgnoreCase));
-        }
-
-        var list = query
-            .OrderByDescending(x => x.ScoreResult?.TotalScore ?? 0)
-            .ThenBy(x => x.TaxCode)
-            .Select(x => summary ? ToSummaryDto(x) : x)
-            .ToList();
-
-        return Ok(new { success = true, data = list, totalCount = list.Count });
-    }
-
-    [AllowAnonymous]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
     [HttpGet("api/v1/gov/assessments/tt17/dashboard")]
     [HttpGet("api/v2/gov/assessments/tt17/dashboard")]
+    public IActionResult GetGovTt17DashboardDeprecated()
+        => StatusCode(410, new
+        {
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Endpoint /api/v*/gov/assessments/tt17/dashboard đã ngừng hoạt động. Vui lòng sử dụng /api/v1/admin/assessments/tt17/dashboard."
+        });
+
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
     [HttpGet("api/v1/admin/assessments/tt17/dashboard")]
     [HttpGet("api/v2/admin/assessments/tt17/dashboard")]
     public async Task<IActionResult> GetTt17Dashboard(
@@ -494,6 +507,15 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
 
         var provinceNameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
+            ["TP_BN"] = "TP. Bắc Ninh",
+            ["TU_SON"] = "TP. Từ Sơn",
+            ["QUE_VO"] = "TX. Quế Võ",
+            ["THUAN_THANH"] = "TX. Thuận Thành",
+            ["YEN_PHONG"] = "H. Yên Phong",
+            ["TIEN_DU"] = "H. Tiên Du",
+            ["GIA_BINH"] = "H. Gia Bình",
+            ["LUONG_TAI"] = "H. Lương Tài",
+            ["NGOAI_TINH"] = "Đối tác FDI / Ngoài tỉnh",
             ["TG"] = "Tỉnh Tiền Giang",
             ["NT"] = "Tỉnh Ninh Thuận",
             ["HN"] = "TP. Hà Nội",
@@ -559,14 +581,16 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         }).ToList();
 
         var byIndustry = items
-            .GroupBy(x => string.IsNullOrWhiteSpace(x.IndustryCode) ? "C.10" : x.IndustryCode.ToUpperInvariant())
+            .GroupBy(x => NormalizeIndustryCode(x.IndustryCode))
             .Select(g =>
             {
                 var iItems = g.ToList();
                 var iCount = iItems.Count;
+                var benchmark = Tt17ScoringEngine.ResolveBenchmark(g.Key);
                 return new
                 {
                     industryCode = g.Key,
+                    industryName = benchmark.IndustryName,
                     count = iCount,
                     percentage = total > 0 ? Math.Round(iCount * 100.0 / total, 1) : 0,
                     avgTotalScore = iCount > 0 ? Math.Round(iItems.Average(x => x.ScoreResult?.TotalScore ?? 0), 2) : 0,
@@ -687,83 +711,14 @@ public sealed class AssessmentsController(NacenTechDbContext db, IUnitOfWork uow
         });
     }
 
-    // DEFECT-06: Yêu cầu xác thực thẩm định viên Sở KH&CN, cấm AllowAnonymous
-    [Authorize(Roles = "DEPT_ADMIN,DEPT_OFFICER,ADMIN")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
     [HttpPost("api/v1/gov/assessments/tt17/{id}/review")]
     [HttpPost("api/v2/gov/assessments/tt17/{id}/review")]
-    public async Task<IActionResult> ReviewAssessment(Guid id, [FromBody] ReviewAssessmentDto payload, CancellationToken ct = default)
-    {
-        var entity = await db.Set<Tt17Assessment>().FirstOrDefaultAsync(x => x.Id == id, ct);
-        if (!AssessmentsStore.TryGetValue(id, out var existing) && entity == null)
+    public IActionResult ReviewAssessment(Guid id, [FromBody] ReviewAssessmentDto? payload)
+        => StatusCode(410, new
         {
-            return NotFound(new { success = false, message = "Không tìm thấy hồ sơ thẩm định." });
-        }
-
-        // DEFECT-08: Lấy ID thẩm định viên thật từ Claims Principal / ICurrentActor thay vì hardcoded GUID
-        var reviewerClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst("sub")?.Value;
-        Guid reviewerId;
-        if (Guid.TryParse(reviewerClaim, out var parsedReviewerId))
-        {
-            reviewerId = parsedReviewerId;
-        }
-        else
-        {
-            try
-            {
-                reviewerId = Actor.RequirePersonId();
-            }
-            catch
-            {
-                reviewerId = Guid.Parse("00000000-0000-0000-0000-000000000002");
-            }
-        }
-
-        var action = payload.Action.Trim().ToUpperInvariant();
-        if (entity != null)
-        {
-            entity.Review(action, reviewerId, payload.ReviewNotes, null);
-
-            // DEFECT-10: Bắt DbUpdateConcurrencyException khi nhiều cán bộ review đồng thời
-            try
-            {
-                await uow.CommitAsync(ct);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return Conflict(new
-                {
-                    success = false,
-                    message = "Hồ sơ thẩm định đã được cập nhật bởi một cán bộ khác. Vui lòng tải lại trang để xem trạng thái mới nhất."
-                });
-            }
-
-            existing = MapEntityToDto(entity);
-            AssessmentsStore[id] = existing;
-        }
-        else if (existing != null)
-        {
-            existing.ReviewNotes = payload.ReviewNotes;
-            existing.UpdatedAt = DateTimeOffset.UtcNow;
-
-            switch (action)
-            {
-                case "APPROVE":
-                    existing.Status = "APPROVED";
-                    existing.ApprovedAt = DateTimeOffset.UtcNow;
-                    break;
-                case "REJECT":
-                    existing.Status = "REJECTED";
-                    break;
-                case "REQUEST_CHANGES":
-                    existing.Status = "CHANGES_REQUESTED";
-                    break;
-                default:
-                    return BadRequest(new { success = false, message = "Hành động thẩm định không hợp lệ." });
-            }
-            AssessmentsStore[id] = existing;
-        }
-
-        return Ok(new { success = true, data = existing, message = $"Thẩm định hồ sơ thành công: {action}" });
-    }
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Cổng Sở KH&CN (/api/v*/gov/assessments/tt17/{id}/review) đã ngừng hoạt động trên hệ thống BACLINK."
+        });
 }

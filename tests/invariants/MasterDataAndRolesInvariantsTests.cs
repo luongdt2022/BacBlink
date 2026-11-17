@@ -1,5 +1,7 @@
+using System.Text.RegularExpressions;
 using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
+using NacenTech.Modules.Policy.Application;
 using Shouldly;
 using Xunit;
 
@@ -7,20 +9,20 @@ namespace NacenTech.Tests.Invariants;
 
 public sealed class MasterDataAndRolesInvariantsTests
 {
+    private static readonly Regex IndCodePattern = new("^IND_[A-Z0-9_]+$", RegexOptions.Compiled);
+
     [Fact]
-    public void PlatformRoles_ShouldContainAll10CoreRoles()
+    public void PlatformRoles_ShouldContain3CanonicalTiers()
     {
-        PlatformRoles.Core.Count.ShouldBe(10);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.SuperAdmin);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.OperatorAdmin);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.ProvincialAdmin);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.SectorAdmin);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.ClusterAdmin);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.Seller);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.Buyer);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.InnovationEntity);
-        PlatformRoles.Core.ShouldContain(PlatformRoles.VerifiedExpert);
+        PlatformRoles.Core.Count.ShouldBe(3);
+        PlatformRoles.Core.ShouldContain(PlatformRoles.Admin);
+        PlatformRoles.Core.ShouldContain(PlatformRoles.Enterprise);
         PlatformRoles.Core.ShouldContain(PlatformRoles.PublicUser);
+
+        PlatformRoles.NormalizeTier("SUPER_ADMIN").ShouldBe(PlatformRoles.Admin);
+        PlatformRoles.NormalizeTier("SELLER").ShouldBe(PlatformRoles.Enterprise);
+        PlatformRoles.NormalizeTier("BUYER").ShouldBe(PlatformRoles.Enterprise);
+        PlatformRoles.NormalizeTier("PROVINCIAL_ADMIN").ShouldBe(PlatformRoles.PublicUser);
     }
 
     [Fact]
@@ -33,31 +35,36 @@ public sealed class MasterDataAndRolesInvariantsTests
     }
 
     [Fact]
-    public void KeyProvinces34_ShouldSumToExactly34Across3Regions()
+    public void BacNinhLocations_ShouldDefine9AreasAndKeyIndustrialParks()
     {
-        var northProvinces = new[] { "HN", "HP", "QN", "BN", "VP", "TN", "HD", "HY", "ND", "PT", "NB", "BG" };
-        var centralProvinces = new[] { "DN", "TH", "NA", "TTH", "QNA", "QNG", "BD", "KH", "DL", "LD" };
-        var southProvinces = new[] { "SG", "BDG", "DNA", "BRVT", "CT", "LA", "TG", "AG", "DT", "KG", "TNH", "CM" };
+        var bacNinhAreas = new[]
+        {
+            "TP_BN", "TU_SON", "QUE_VO", "THUAN_THANH", "YEN_PHONG", "TIEN_DU", "GIA_BINH", "LUONG_TAI", "NGOAI_TINH"
+        };
+        var keyIndustrialParks = new[]
+        {
+            "KCN_YEN_PHONG_1", "KCN_YEN_PHONG_2C", "KCN_QUE_VO_1", "KCN_QUE_VO_2", "KCN_QUE_VO_3",
+            "KCN_VSIP_BN", "KCN_TIEN_SON", "KCN_DAI_DONG_HOAN_SON", "KCN_HANAKA",
+            "KCN_THUAN_THANH_1", "KCN_THUAN_THANH_2", "KCN_THUAN_THANH_3", "KCN_GIA_BINH"
+        };
 
-        northProvinces.Length.ShouldBe(12);
-        centralProvinces.Length.ShouldBe(10);
-        southProvinces.Length.ShouldBe(12);
-
-        (northProvinces.Length + centralProvinces.Length + southProvinces.Length).ShouldBe(34);
+        bacNinhAreas.Length.ShouldBe(9);
+        keyIndustrialParks.Length.ShouldBe(13);
+        TaxonomyKinds.Location.ShouldBe("LOCATION");
     }
 
     [Fact]
-    public void Sectors_MasterData_ShouldDefine10CoreSectors()
+    public void Sectors_MasterData_ShouldDefine8BaclinkCoreSectors()
     {
-        var coreSectors = new[]
+        var baclinkSectors = new[]
         {
-            "LV01", "LV05", "LV07", "LV08", "LV11", "LV12", "LV14", "LV15", "LV16", "LV17"
+            "IND_ELEC", "IND_MECH", "IND_AUTO", "IND_PLAS", "IND_MAT", "IND_IT", "IND_GREEN", "IND_LOG"
         };
 
-        coreSectors.Length.ShouldBe(10);
-        foreach (var sec in coreSectors)
+        baclinkSectors.Length.ShouldBe(8);
+        foreach (var sec in baclinkSectors)
         {
-            sec.StartsWith("LV").ShouldBeTrue();
+            IndCodePattern.IsMatch(sec).ShouldBeTrue();
         }
     }
 
@@ -71,23 +78,23 @@ public sealed class MasterDataAndRolesInvariantsTests
     [Fact]
     public void TaxonomyTerm_Creation_And_Lifecycle_Invariants()
     {
-        var term = new NacenTech.Modules.Policy.Domain.TaxonomyTerm("SECTOR", "Nông nghiệp", "LV01", "{\"tt17Code\":\"Liên ngành\"}");
+        var term = new NacenTech.Modules.Policy.Domain.TaxonomyTerm("SECTOR", "Điện tử, Bán dẫn & Thiết bị điện", "IND_ELEC", "{\"tt17Code\":\"C.26, C.27\"}");
         term.Kind.ShouldBe("SECTOR");
-        term.Name.ShouldBe("Nông nghiệp");
-        term.Code.ShouldBe("LV01");
+        term.Name.ShouldBe("Điện tử, Bán dẫn & Thiết bị điện");
+        term.Code.ShouldBe("IND_ELEC");
         term.IsActive.ShouldBeTrue();
-        term.MetadataJson.ShouldContain("Liên ngành");
+        term.MetadataJson.ShouldContain("C.26");
 
         // Rename
-        term.Rename("Nông nghiệp & PTNT");
-        term.Name.ShouldBe("Nông nghiệp & PTNT");
+        term.Rename("Điện tử & Bán dẫn Bắc Ninh");
+        term.Name.ShouldBe("Điện tử & Bán dẫn Bắc Ninh");
 
         // Set Code & Metadata
-        term.SetCode("LV01_NEW");
-        term.Code.ShouldBe("LV01_NEW");
+        term.SetCode("IND_ELEC_NEW");
+        term.Code.ShouldBe("IND_ELEC_NEW");
 
-        term.SetMetadata("{\"tt17Code\":\"C.01\"}");
-        term.MetadataJson.ShouldContain("C.01");
+        term.SetMetadata("{\"tt17Code\":\"C.26\"}");
+        term.MetadataJson.ShouldContain("C.26");
 
         // Empty metadata fallback
         term.SetMetadata("");
@@ -96,23 +103,31 @@ public sealed class MasterDataAndRolesInvariantsTests
         // Deactivate (soft delete preservation)
         term.Deactivate();
         term.IsActive.ShouldBeFalse();
+
+        // Location term
+        var locationTerm = new NacenTech.Modules.Policy.Domain.TaxonomyTerm(TaxonomyKinds.Location, "TP. Bắc Ninh", "TP_BN", "{\"type\":\"AREA\"}");
+        locationTerm.Kind.ShouldBe("LOCATION");
+        locationTerm.Code.ShouldBe("TP_BN");
+        locationTerm.IsActive.ShouldBeTrue();
     }
 
     [Theory]
     [InlineData("SEC-01", false)]
     [InlineData("SEC-AGRI", false)]
+    [InlineData("LV01", false)]
+    [InlineData("LV17", false)]
+    [InlineData("IND_", false)]
     [InlineData("random_sector", false)]
     [InlineData("", false)]
     [InlineData("   ", false)]
-    [InlineData("LV01", true)]
-    [InlineData("LV05", true)]
-    [InlineData("LV17", true)]
-    [InlineData("lv01", true)]
-    public void Sector_Code_Validation_Must_Reject_SEC_Prefix_And_Require_LV_Prefix(string code, bool isValid)
+    [InlineData("IND_ELEC", true)]
+    [InlineData("IND_MECH", true)]
+    [InlineData("ind_green", true)]
+    [InlineData("IND_LOG_01", true)]
+    public void Sector_Code_Validation_Must_Require_IND_Prefix_And_Reject_Legacy_Prefixes(string code, bool isValid)
     {
         var normalized = code.Trim().ToUpperInvariant();
-        var passesValidation = !string.IsNullOrWhiteSpace(normalized) && normalized.StartsWith("LV");
+        var passesValidation = !string.IsNullOrWhiteSpace(normalized) && IndCodePattern.IsMatch(normalized);
         passesValidation.ShouldBe(isValid);
     }
 }
-

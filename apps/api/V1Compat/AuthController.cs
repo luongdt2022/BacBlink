@@ -120,7 +120,15 @@ public sealed class AuthController(IAuthenticationService auth, IPersonService p
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> Me(CancellationToken ct)
-        => Ok(V1Mappers.User(await persons.GetAsync(PersonId, ct)));
+    {
+        var p = await persons.GetAsync(PersonId, ct);
+        return Ok(V1Mappers.User(p with
+        {
+            PlatformRole = Kernel.Application.PlatformRoles.NormalizeTier(p.PlatformRole),
+            ScopeType = Kernel.Application.ScopeTypes.Global,
+            ScopeId = null
+        }));
+    }
 
     [HttpPost("change-password")]
     [Authorize]
@@ -161,6 +169,12 @@ public sealed class AdminAuthController(IAuthenticationService auth, IPersonServ
     public async Task<IActionResult> Me(CancellationToken ct)
     {
         RequireAdmin();
-        return Ok(V1Mappers.User(await persons.GetAsync(PersonId, ct)));
+        var p = await persons.GetAsync(PersonId, ct);
+        return Ok(V1Mappers.User(p with
+        {
+            PlatformRole = Kernel.Application.PlatformRoles.NormalizeTier(p.PlatformRole),
+            ScopeType = Kernel.Application.ScopeTypes.Global,
+            ScopeId = null
+        }));
     }
 }

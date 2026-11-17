@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NacenTech.Kernel.Application;
 using NacenTech.Modules.Enterprise.Application;
 using NacenTech.Modules.Enterprise.Domain;
 using Shouldly;
@@ -213,29 +214,33 @@ public sealed class EnterpriseInvariantsTests
     }
 
     [Fact]
-    public async Task BR_02_005_Provincial_admin_can_only_approve_enterprises_within_managed_scope()
+    public async Task BR_02_005_Admin_approves_enterprise_1tier_globally_and_grants_dual_capability()
     {
-        var hanoiEnt = new Enterprise(Guid.NewGuid())
+        var bacninhEnt = new Enterprise(Guid.NewGuid())
         {
-            Name = "Doanh nghiệp Hà Nội",
-            TaxCode = "0101112222",
-            ProvinceCity = "Hà Nội",
-            MainSectorName = "Nông nghiệp công nghệ cao",
+            Name = "Doanh nghiệp Bắc Ninh",
+            TaxCode = "2301112222",
+            ProvinceCity = "Bắc Ninh",
+            MainSectorName = "Điện tử, Linh kiện & Bán dẫn",
             VerificationStatus = "SUBMITTED"
         };
-        var repo = new InMemoryEnterpriseRepository(new[] { hanoiEnt });
+        var repo = new InMemoryEnterpriseRepository(new[] { bacninhEnt });
         var service = new EnterpriseService(repo);
 
-        // Cán bộ Hải Phòng (HP) duyệt DN Hà Nội -> Bị chặn
-        await Should.ThrowAsync<InvalidOperationException>(async () =>
-        {
-            await service.ApproveEnterpriseAsync(hanoiEnt.Id, "Cán bộ Hải Phòng", adminScopeId: "HP");
-        });
+        // ADR-0018 (CR-BACLINK-001): Bãi bỏ phân quyền Sở Tỉnh, ADMIN duyệt 1 cấp toàn cục (bỏ qua adminScopeId legacy) và cấp DUAL
+        await service.ApproveEnterpriseAsync(bacninhEnt.Id, "admin@baclink.org.vn", adminScopeId: "HP");
+        bacninhEnt.IsVerified.ShouldBeTrue();
+        bacninhEnt.VerificationStatus.ShouldBe("VERIFIED");
+        bacninhEnt.CapabilityTier.ShouldBe("DUAL");
+        bacninhEnt.IsBuyer.ShouldBeTrue();
+        bacninhEnt.IsSeller.ShouldBeTrue();
 
-        // Cán bộ Hà Nội (HN) duyệt DN Hà Nội -> Cho phép thành công
-        await service.ApproveEnterpriseAsync(hanoiEnt.Id, "Cán bộ Hà Nội", adminScopeId: "HN");
-        hanoiEnt.IsVerified.ShouldBeTrue();
-        hanoiEnt.VerificationStatus.ShouldBe("VERIFIED");
+        // Bảo toàn rào cản bảo mật doanh thu/vốn: chỉ Owner hoặc ADMIN được xem, chặn non-owner kể cả legacy PROVINCIAL_ADMIN
+        service.CanViewRevenueAndFunding(PlatformRoles.Admin, isOwner: false).ShouldBeTrue();
+        service.CanViewRevenueAndFunding(PlatformRoles.Enterprise, isOwner: false).ShouldBeFalse();
+        service.CanViewRevenueAndFunding(PlatformRoles.PublicUser, isOwner: false).ShouldBeFalse();
+        service.CanViewRevenueAndFunding("PROVINCIAL_ADMIN", isOwner: false).ShouldBeFalse();
+        service.CanViewRevenueAndFunding(PlatformRoles.PublicUser, isOwner: true).ShouldBeTrue();
     }
 
     [Fact]

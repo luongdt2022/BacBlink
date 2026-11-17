@@ -1,6 +1,13 @@
+using System.Reflection;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using NacenTech.Api.V1Compat;
+using NacenTech.Api.V2;
 using NacenTech.Kernel.Application;
 using NacenTech.Kernel.Domain;
 using NacenTech.Modules.Brokerage.Domain;
@@ -59,9 +66,9 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task T053_Scenario1_Provincial_Officer_Approves_Request_Normal_Path_Updates_Database()
+    public async Task T053_Scenario1_Admin_Approves_Request_1Tier_Updates_Database_And_Blocks_Legacy_Provincial_Role()
     {
-        // Kịch bản 1: Hồ sơ gửi lên Sở -> Cán bộ Sở duyệt bình thường -> State APPROVED
+        // Kịch bản 1 (CR-BACLINK-001): Hồ sơ gửi lên -> ADMIN duyệt 1 cấp -> State APPROVED, AuditLog ghi nhận; PROVINCIAL_ADMIN bị từ chối 403
         await using var provider = fixture.BuildProvider();
         using var scope = provider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
@@ -70,26 +77,28 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
         var (userId, userEmail) = NewUser();
         await SeedPersonAsync(db, userId, userEmail, PlatformRoles.PublicUser);
 
-        var (officerId, officerEmail) = NewUser();
-        await SeedPersonAsync(db, officerId, officerEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HP");
+        var (adminId, adminEmail) = NewUser();
+        await SeedPersonAsync(db, adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
+        var adminActor = new TestActor(adminId, adminEmail, PlatformRoles.Admin, ScopeTypes.Global, null);
 
-        var officerActor = new TestActor(officerId, officerEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HP");
+        var (legacyProvId, legacyProvEmail) = NewUser();
+        var legacyProvActor = new TestActor(legacyProvId, legacyProvEmail, "PROVINCIAL_ADMIN", ScopeTypes.Province, "BN");
 
-        // Tạo hồ sơ thẩm định Shop tại Hải Phòng
+        // Tạo hồ sơ thẩm định Shop tại Bắc Ninh
         var submitCmd = new SubmitApprovalRequestCommand(
             userId,
             ApprovalRequestTypes.Shop,
-            ScopeTypes.Province,
-            "HP",
+            ScopeTypes.Global,
+            null,
             JsonSerializer.Serialize(new SubmitShopApprovalPayload
             {
                 EntityType = "ENTERPRISE",
-                TaxCode = "0201234567",
-                OrgName = "Cửa hàng KH&CN Hải Phòng",
-                LegalDocUrl = "https://storage.nacentech.vn/legal-docs/dkkd_hp.pdf",
-                MainSector = "LV01",
-                Province = "HP",
-                Description = "Cung cấp thiết bị và công nghệ đo lường KH&CN.",
+                TaxCode = "2301234567",
+                OrgName = "Công ty Công nghệ Hỗ trợ Bắc Ninh",
+                LegalDocUrl = "https://storage.baclink.vn/legal-docs/dkkd_bn.pdf",
+                MainSector = "IND_ELEC",
+                Province = "BN",
+                Description = "Cung cấp linh kiện điện tử công nghiệp.",
                 PledgeAgreed = true
             }),
             DateTimeOffset.UtcNow.AddHours(48));
@@ -98,13 +107,17 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
         created.Status.ShouldBe(ApprovalStatuses.PendingReview);
         created.Version.ShouldBe(1);
 
-        // Cán bộ Sở Hải Phòng duyệt hồ sơ
+        // Legacy PROVINCIAL_ADMIN bị chặn 403
+        await Should.ThrowAsync<ForbiddenException>(() =>
+            service.ReviewRequestAsync(created.Id, new ReviewApprovalRequestCommand("APPROVE", 1, "Thử duyệt trái phép"), legacyProvActor, "10.0.0.2", CancellationToken.None));
+
+        // ADMIN duyệt hồ sơ 1 cấp
         var reviewCmd = new ReviewApprovalRequestCommand(
             "APPROVE",
             1,
-            "Hồ sơ đầy đủ tính pháp lý và ĐKKD hợp lệ tại Hải Phòng");
+            "Hồ sơ đầy đủ tính pháp lý và ĐKKD hợp lệ tại Bắc Ninh");
 
-        var approved = await service.ReviewRequestAsync(created.Id, reviewCmd, officerActor, "10.0.0.1", CancellationToken.None);
+        var approved = await service.ReviewRequestAsync(created.Id, reviewCmd, adminActor, "10.0.0.1", CancellationToken.None);
 
         // Đối soát trực tiếp trạng thái trên CSDL PostgreSQL thật
         approved.Status.ShouldBe(ApprovalStatuses.Approved);
@@ -113,7 +126,7 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
         var dbRecord = await db.Set<ApprovalRequest>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == created.Id);
         dbRecord.ShouldNotBeNull();
         dbRecord.Status.ShouldBe(ApprovalStatuses.Approved);
-        dbRecord.ReviewedById.ShouldBe(officerId);
+        dbRecord.ReviewedById.ShouldBe(adminId);
         dbRecord.Version.ShouldBe(2);
         dbRecord.IsOverride.ShouldBeFalse();
 
@@ -123,7 +136,7 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
             .ToListAsync();
 
         auditLogs.Count.ShouldBeGreaterThanOrEqualTo(2); // 1 submit, 1 review
-        auditLogs.ShouldContain(x => x.Action == "REVIEW_APPROVE" && x.ActorId == officerId);
+        auditLogs.ShouldContain(x => x.Action == "REVIEW_APPROVE" && x.ActorId == adminId);
     }
 
     [Fact]
@@ -217,9 +230,9 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
     }
 
     [Fact]
-    public async Task T054_Scenario1_Race_Condition_Between_Officer_And_Admin_Throws_409_Conflict()
+    public async Task T054_Scenario1_Race_Condition_Between_Two_Admins_Throws_409_Conflict()
     {
-        // Kịch bản phá hoại 1: Cán bộ Sở và Super Admin cùng ấn duyệt 1 hồ sơ tại cùng 1 mili-giây
+        // Kịch bản phá hoại 1: Hai ADMIN cùng ấn duyệt/override 1 hồ sơ tại cùng 1 mili-giây
         // Người thứ 1 thành công -> Version đổi thành 2
         // Người thứ 2 gửi expectedVersion = 1 -> Nhận lỗi Concurrency Conflict (409)
         await using var provider = fixture.BuildProvider();
@@ -230,41 +243,41 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
         var (userId, userEmail) = NewUser();
         await SeedPersonAsync(db, userId, userEmail, PlatformRoles.PublicUser);
 
-        var (officerId, officerEmail) = NewUser();
-        await SeedPersonAsync(db, officerId, officerEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
-        var officerActor = new TestActor(officerId, officerEmail, PlatformRoles.ProvincialAdmin, ScopeTypes.Province, "HN");
+        var (admin1Id, admin1Email) = NewUser();
+        await SeedPersonAsync(db, admin1Id, admin1Email, PlatformRoles.Admin);
+        var admin1Actor = new TestActor(admin1Id, admin1Email, PlatformRoles.Admin, ScopeTypes.Global, null);
 
-        var (adminId, adminEmail) = NewUser();
-        await SeedPersonAsync(db, adminId, adminEmail, PlatformRoles.SuperAdmin);
-        var adminActor = new TestActor(adminId, adminEmail, PlatformRoles.SuperAdmin, ScopeTypes.Global, null);
+        var (admin2Id, admin2Email) = NewUser();
+        await SeedPersonAsync(db, admin2Id, admin2Email, PlatformRoles.Admin);
+        var admin2Actor = new TestActor(admin2Id, admin2Email, PlatformRoles.Admin, ScopeTypes.Global, null);
 
         var req = new ApprovalRequest(
             userId,
             ApprovalRequestTypes.TechSupply,
-            ScopeTypes.Province,
-            "HN",
+            ScopeTypes.Global,
+            null,
             "{\"techName\":\"Race Condition Test Solution\"}",
             DateTimeOffset.UtcNow.AddHours(-50));
         req.MarkSlaBreached(50.0);
         db.Set<ApprovalRequest>().Add(req);
         await db.SaveChangesAsync();
 
-        // Giao dịch 1: Cán bộ Sở bấm Duyệt trước (expectedVersion = 1) -> Thành công
-        var officerCmd = new ReviewApprovalRequestCommand("APPROVE", 1, "Cán bộ Sở Hà Nội phê duyệt hồ sơ đúng quy định");
-        var res1 = await service.ReviewRequestAsync(req.Id, officerCmd, officerActor, "192.168.1.1", CancellationToken.None);
+        // Giao dịch 1: Admin 1 bấm Duyệt trước (expectedVersion = 1) -> Thành công
+        var cmd1 = new ReviewApprovalRequestCommand("APPROVE", 1, "ADMIN phê duyệt hồ sơ đúng quy định");
+        var res1 = await service.ReviewRequestAsync(req.Id, cmd1, admin1Actor, "192.168.1.1", CancellationToken.None);
         res1.Status.ShouldBe(ApprovalStatuses.Approved);
         res1.Version.ShouldBe(2);
 
-        // Giao dịch 2: Admin Trung ương cùng gửi lệnh Override với expectedVersion = 1 (do mở đồng thời trước đó)
+        // Giao dịch 2: Admin 2 cùng gửi lệnh Override với expectedVersion = 1 (do mở đồng thời trước đó)
         var overrideCmd = new OverrideApprovalCommand(
-            "Admin Trung ương can thiệp giải trình do hồ sơ trễ hạn SLA Sở Hà Nội.",
+            "Admin 2 can thiệp giải trình do hồ sơ trễ hạn SLA xử lý.",
             ConfirmCommitment: true,
             ExpectedVersion: 1);
 
         // Kiểm chứng bắt buộc: Hệ thống ném ConflictException để Web API trả về 409 Conflict
         var conflictEx = await Should.ThrowAsync<ConflictException>(async () =>
         {
-            await service.OverrideApproveAsync(req.Id, overrideCmd, adminActor, "10.0.0.1", CancellationToken.None);
+            await service.OverrideApproveAsync(req.Id, overrideCmd, admin2Actor, "10.0.0.1", CancellationToken.None);
         });
 
         conflictEx.Code.ShouldBe("ERR_RECORD_ALREADY_MODIFIED");
@@ -429,5 +442,110 @@ public sealed class Task07DeltaV4ApprovalQcTests(PostgresFixture fixture)
         var updated = await db.Set<ApprovalRequest>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == req.Id);
         updated.ShouldNotBeNull();
         updated.OverrideReason.ShouldBe(maliciousPayload); // Dữ liệu được lưu an toàn dạng text thuần qua Npgsql parameterization, không bị thực thi SQL injection.
+    }
+
+    [Fact]
+    public async Task T07_BL_08_Zero_Gov_Endpoints_AllowAnonymous_And_All_Return_410_While_Preserving_Surveys_And_AdminDashboard()
+    {
+        var apiAssembly = typeof(OrganizationUnitController).Assembly;
+        var controllerTypes = apiAssembly.GetTypes()
+            .Where(t => typeof(ControllerBase).IsAssignableFrom(t) && !t.IsAbstract)
+            .ToList();
+
+        var govActions = new List<(Type Controller, MethodInfo Method, string Template)>();
+
+        foreach (var ctrl in controllerTypes)
+        {
+            var ctrlRoutes = ctrl.GetCustomAttributes<RouteAttribute>().Select(r => r.Template).ToList();
+            foreach (var method in ctrl.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            {
+                var methodRoutes = method.GetCustomAttributes<HttpMethodAttribute>()
+                    .SelectMany(a => a.Template is null ? ctrlRoutes : [a.Template])
+                    .ToList();
+
+                foreach (var tpl in methodRoutes)
+                {
+                    if (tpl.Contains("gov/", StringComparison.OrdinalIgnoreCase) ||
+                        ctrlRoutes.Any(r => r.Contains("governance/org-units", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        govActions.Add((ctrl, method, tpl));
+                    }
+                }
+            }
+        }
+
+        govActions.Count.ShouldBeGreaterThan(0);
+
+        foreach (var (ctrl, method, tpl) in govActions)
+        {
+            // 1. Tuyệt đối KHÔNG có [AllowAnonymous] trên bất kỳ endpoint /gov/* hoặc /governance/org-units/*
+            method.GetCustomAttribute<AllowAnonymousAttribute>().ShouldBeNull(
+                $"Endpoint {ctrl.Name}.{method.Name} ({tpl}) không được phép gắn [AllowAnonymous].");
+
+            // 2. Bắt buộc có [Authorize(Roles = ...)] chỉ cho phép nhóm ADMIN (không cho PUBLIC_USER / ENTERPRISE)
+            var authAttr = method.GetCustomAttribute<AuthorizeAttribute>() ?? ctrl.GetCustomAttribute<AuthorizeAttribute>();
+            authAttr.ShouldNotBeNull($"Endpoint {ctrl.Name}.{method.Name} ({tpl}) bắt buộc phải gắn [Authorize].");
+            (authAttr.Roles ?? string.Empty).ShouldContain("ADMIN");
+            (authAttr.Roles ?? string.Empty).ShouldNotContain("PUBLIC_USER");
+            (authAttr.Roles ?? string.Empty).ShouldNotContain("ENTERPRISE");
+            (authAttr.Roles ?? string.Empty).ShouldNotContain("PROVINCIAL_ADMIN");
+        }
+
+        // 3. Kiểm chứng trực tiếp runtime trả về 410 Gone cho toàn bộ các endpoint /gov/* và /governance/org-units/*
+        await using var provider = fixture.BuildProvider();
+        using var scope = provider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<NacenTechDbContext>();
+        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var persons = scope.ServiceProvider.GetRequiredService<IPersonService>();
+        var enterprises = scope.ServiceProvider.GetRequiredService<NacenTech.Modules.Enterprise.Application.IEnterpriseService>();
+        var audit = scope.ServiceProvider.GetRequiredService<IAuditWriter>();
+
+        var orgCtrl = new OrganizationUnitController();
+        ((ObjectResult)orgCtrl.GetTree()).StatusCode.ShouldBe(410);
+        ((ObjectResult)orgCtrl.Get34ProvincesTree()).StatusCode.ShouldBe(410);
+        ((ObjectResult)orgCtrl.GetPublicProvinces()).StatusCode.ShouldBe(410);
+
+        var demandCtrl = new DemandController(db, uow, persons);
+        ((ObjectResult)demandCtrl.GetGovDemandSurveysDeprecated()).StatusCode.ShouldBe(410);
+        ((ObjectResult)demandCtrl.GetGovPendingDemands(null, null)).StatusCode.ShouldBe(410);
+        ((ObjectResult)demandCtrl.VerifyDemand(Guid.NewGuid())).StatusCode.ShouldBe(410);
+        ((ObjectResult)demandCtrl.AssignExpert(Guid.NewGuid())).StatusCode.ShouldBe(410);
+
+        var brokCtrl = new BrokerageControllers(db);
+        ((ObjectResult)brokCtrl.GetGovOpportunities(null)).StatusCode.ShouldBe(410);
+
+        var assessCtrl = new AssessmentsController(db, uow);
+        ((ObjectResult)assessCtrl.GetGovAssessmentQueue(null, null)).StatusCode.ShouldBe(410);
+        ((ObjectResult)assessCtrl.GetGovTt17DashboardDeprecated()).StatusCode.ShouldBe(410);
+        ((ObjectResult)assessCtrl.ReviewAssessment(Guid.NewGuid(), null)).StatusCode.ShouldBe(410);
+
+        var entCtrl = new EnterpriseController(enterprises, uow, audit);
+        ((ObjectResult)entCtrl.ApproveEnterpriseGovDeprecated(Guid.NewGuid())).StatusCode.ShouldBe(410);
+        ((ObjectResult)entCtrl.RejectEnterpriseGovDeprecated(Guid.NewGuid())).StatusCode.ShouldBe(410);
+
+        // 4. Bảo toàn endpoint /api/v1/demands/surveys ([AllowAnonymous], tách khỏi gov/demands/surveys)
+        var surveysMethod = typeof(DemandController).GetMethod(nameof(DemandController.GetDemandSurveys))!;
+        surveysMethod.GetCustomAttribute<AllowAnonymousAttribute>().ShouldNotBeNull();
+        var surveyRoutes = surveysMethod.GetCustomAttributes<HttpGetAttribute>().Select(a => a.Template).ToList();
+        surveyRoutes.ShouldContain("demands/surveys");
+        surveyRoutes.ShouldNotContain("gov/demands/surveys");
+        var publicDemandsResult = await demandCtrl.GetPublicDemands(null, null, null, null, 5, CancellationToken.None);
+        publicDemandsResult.ShouldBeOfType<OkObjectResult>();
+
+        // 5. Bảo toàn endpoint /api/v1|v2/admin/assessments/tt17/dashboard ([Authorize(Roles = "ADMIN,...")], tách khỏi gov/...)
+        var adminDashMethod = typeof(AssessmentsController).GetMethod(nameof(AssessmentsController.GetTt17Dashboard))!;
+        adminDashMethod.GetCustomAttribute<AllowAnonymousAttribute>().ShouldBeNull();
+        var adminDashAuth = adminDashMethod.GetCustomAttribute<AuthorizeAttribute>()!;
+        adminDashAuth.Roles.ShouldBe("ADMIN,SUPER_ADMIN,OPERATOR_ADMIN");
+        var adminDashRoutes = adminDashMethod.GetCustomAttributes<HttpGetAttribute>().Select(a => a.Template).ToList();
+        adminDashRoutes.ShouldContain("api/v1/admin/assessments/tt17/dashboard");
+        adminDashRoutes.ShouldContain("api/v2/admin/assessments/tt17/dashboard");
+        adminDashRoutes.ShouldNotContain("api/v1/gov/assessments/tt17/dashboard");
+        adminDashRoutes.ShouldNotContain("api/v2/gov/assessments/tt17/dashboard");
+
+        // 6. TechnologyOffersController.ReviewOffer chỉ cho ADMIN (không cho PROVINCIAL_ADMIN / CLUSTER_ADMIN)
+        var reviewOfferMethod = typeof(TechnologyOffersController).GetMethod(nameof(TechnologyOffersController.ReviewOffer))!;
+        var reviewOfferAuth = reviewOfferMethod.GetCustomAttribute<AuthorizeAttribute>()!;
+        reviewOfferAuth.Roles.ShouldBe("ADMIN,SUPER_ADMIN,OPERATOR_ADMIN");
     }
 }

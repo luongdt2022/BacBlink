@@ -75,7 +75,7 @@ public sealed class TaxonomyService(DbContext db, IUnitOfWork uow, ICurrentActor
 
     private static void Guard(string kind, string name)
     {
-        if (kind != TaxonomyKinds.Sector && kind != TaxonomyKinds.Category) throw new ValidationException($"kind không hợp lệ: {kind}");
+        if (kind != TaxonomyKinds.Sector && kind != TaxonomyKinds.Category && kind != TaxonomyKinds.Location) throw new ValidationException($"kind không hợp lệ: {kind}");
         if (string.IsNullOrWhiteSpace(name)) throw new ValidationException("name should not be empty");
         if (name.Trim().Length > 255) throw new ValidationException("name must be shorter than or equal to 255 characters");
     }

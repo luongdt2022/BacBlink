@@ -181,9 +181,9 @@ public sealed class ExpertController(
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             var res = await experts.SubmitUpgradeAsync(PersonId, request, ct);
 
-            // Phân cấp Cấp 2: Tự động đưa hồ sơ vào hàng đợi thẩm định phân cấp của Sở/TW (Basic Design v2.6 & FR-ADM-007)
-            var scopeType = string.IsNullOrWhiteSpace(request.ScopeType) ? ScopeTypes.Province : request.ScopeType.Trim().ToUpperInvariant();
-            var scopeId = string.IsNullOrWhiteSpace(request.ScopeId) ? "HP" : request.ScopeId.Trim();
+            // CR-BACLINK-006 (Q1): Đưa hồ sơ Ban Cố vấn Kỹ thuật vào hàng đợi thẩm định 1 cấp của ADMIN (ScopeTypes.Global)
+            var scopeType = ScopeTypes.Global;
+            var scopeId = string.IsNullOrWhiteSpace(request.ScopeId) ? null : request.ScopeId.Trim();
             await approvals.SubmitRequestAsync(
                 new SubmitApprovalRequestCommand(
                     PersonId,
@@ -221,12 +221,24 @@ public sealed class ExpertController(
         return result is null ? NotFound() : Ok(Ok200(result));
     }
 
+    private async Task EnsureApprovedExpertOrAdminAsync(CancellationToken ct)
+    {
+        if (PlatformRoles.NormalizeTier(Actor.PlatformRole) == PlatformRoles.Admin)
+            return;
+
+        var hasApprovedProfile = await db.Set<ExpertProfile>()
+            .AsNoTracking()
+            .AnyAsync(p => p.PersonId == PersonId && p.Status == ExpertStatuses.Approved, ct);
+
+        if (!hasApprovedProfile)
+            throw new ForbiddenException("Yêu cầu tài khoản ADMIN hoặc hồ sơ Ban Cố vấn Kỹ thuật đã được phê duyệt (APPROVED).");
+    }
+
     [HttpPut("my-profile")]
     [Authorize]
     public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateExpertProfileRequest request, CancellationToken ct)
     {
-        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert)
-            throw new ForbiddenException("Verified expert access required");
+        await EnsureApprovedExpertOrAdminAsync(ct);
 
         if (request.ExpertiseSectors is { Count: > 0 } sectors)
             await ValidateSectorsAsync(sectors, ct);
@@ -240,8 +252,7 @@ public sealed class ExpertController(
     [Authorize]
     public async Task<IActionResult> GetMyCompleteness(CancellationToken ct)
     {
-        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert)
-            throw new ForbiddenException("Verified expert access required");
+        await EnsureApprovedExpertOrAdminAsync(ct);
 
         var result = await experts.GetMyCompletenessAsync(PersonId, ct);
         return Ok(Ok200(result));
@@ -251,8 +262,7 @@ public sealed class ExpertController(
     [Authorize]
     public async Task<IActionResult> GetMyDetail(CancellationToken ct)
     {
-        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert)
-            throw new ForbiddenException("Verified expert access required");
+        await EnsureApprovedExpertOrAdminAsync(ct);
         var result = await experts.GetMyDetailAsync(PersonId, ct);
         if (result is null) return NotFound();
         Audit("EXPERT_PRIVATE_PROFILE_READ", result.PublicProfile.ExpertCode, "OWNER");
@@ -282,8 +292,7 @@ public sealed class ExpertController(
     [Authorize]
     public async Task<IActionResult> GetMyConsultations([FromQuery] string? status = null, CancellationToken ct = default)
     {
-        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert && !string.Equals(Actor.PlatformRole, "EXPERT", StringComparison.OrdinalIgnoreCase))
-            throw new ForbiddenException("Verified expert or expert access required");
+        await EnsureApprovedExpertOrAdminAsync(ct);
 
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
@@ -418,8 +427,7 @@ public sealed class ExpertController(
     [Authorize]
     public async Task<IActionResult> RespondConsultation(string id, [FromBody] RespondConsultationRequestDto req, CancellationToken ct)
     {
-        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert && !string.Equals(Actor.PlatformRole, "EXPERT", StringComparison.OrdinalIgnoreCase))
-            throw new ForbiddenException("Verified expert or expert access required");
+        await EnsureApprovedExpertOrAdminAsync(ct);
 
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
@@ -586,8 +594,7 @@ public sealed class ExpertController(
     [Authorize]
     public async Task<IActionResult> GetMyProjects([FromQuery] string? sector, [FromQuery] string? search, CancellationToken ct)
     {
-        if (Actor.PlatformRole != PlatformRoles.VerifiedExpert && !string.Equals(Actor.PlatformRole, "EXPERT", StringComparison.OrdinalIgnoreCase))
-            throw new ForbiddenException("Verified expert or expert access required");
+        await EnsureApprovedExpertOrAdminAsync(ct);
 
         var conn = db.Database.GetDbConnection();
         if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
@@ -754,44 +761,10 @@ public sealed class ExpertController(
         return NoContent();
     }
 
-    private async Task EnsureCanAccessExpertAsync(string expertCode, CancellationToken ct)
+    private Task EnsureCanAccessExpertAsync(string expertCode, CancellationToken ct)
     {
-        var isGlobalAdmin = Actor.PlatformRole is PlatformRoles.SuperAdmin or PlatformRoles.OperatorAdmin or PlatformRoles.Admin
-            && Actor.ScopeType == ScopeTypes.Global && string.IsNullOrWhiteSpace(Actor.ScopeId);
-
-        if (isGlobalAdmin) return;
-
-        if (Actor.PlatformRole == PlatformRoles.ProvincialAdmin && Actor.ScopeType == ScopeTypes.Province && !string.IsNullOrWhiteSpace(Actor.ScopeId))
-        {
-            var expert = await db.Set<ExpertProfile>().AsNoTracking()
-                .FirstOrDefaultAsync(x => x.ExpertCode == expertCode, ct);
-            if (expert is null) throw new NotFoundException("Không tìm thấy hồ sơ chuyên gia.");
-
-            string? expertProvince = null;
-            if (expert.PersonId.HasValue)
-            {
-                expertProvince = await db.Set<Person>().AsNoTracking()
-                    .Where(p => p.Id == expert.PersonId.Value)
-                    .Select(p => p.ScopeId)
-                    .FirstOrDefaultAsync(ct);
-            }
-            if (string.IsNullOrWhiteSpace(expertProvince))
-            {
-                expertProvince = await db.Set<ApprovalRequest>().AsNoTracking()
-                    .Where(r => r.UserId == expert.PersonId && r.ScopeType == ScopeTypes.Province)
-                    .OrderByDescending(r => r.CreatedAt)
-                    .Select(r => r.ScopeId)
-                    .FirstOrDefaultAsync(ct);
-            }
-
-            if (!string.Equals(Actor.ScopeId, expertProvince, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ForbiddenException("Cán bộ Sở không có quyền truy cập hồ sơ chuyên gia ngoài phạm vi quản lý địa bàn.");
-            }
-            return;
-        }
-
-        throw new ForbiddenException("Admin access required");
+        RequireAdmin();
+        return Task.CompletedTask;
     }
 
     [HttpGet("/api/v1/admin/experts/{expertCode}/documents")]

@@ -188,7 +188,7 @@ public sealed class BrokerageControllers(
         return $"{name[0]}***{name[^1]}@{domain}";
     }
 
-    private RadarUserContext ResolveRadarUserContext()
+    private RadarUserContext ResolveRadarUserContext(string? queryMode = null)
     {
         Guid? personId = null;
         try
@@ -220,7 +220,21 @@ public sealed class BrokerageControllers(
 
         var role = Actor.PlatformRole ?? PlatformRoles.PublicUser;
 
-        return new RadarUserContext(personId, orgId, role, provinceCode);
+        // Trích xuất activeMode từ query, header hoặc claim
+        var activeMode = queryMode;
+        if (string.IsNullOrWhiteSpace(activeMode))
+        {
+            activeMode = Request.Headers["X-Active-Role"].FirstOrDefault()
+                         ?? Request.Headers["Active-Role"].FirstOrDefault()
+                         ?? Request.Query["mode"].FirstOrDefault();
+        }
+
+        if (!string.IsNullOrWhiteSpace(activeMode))
+        {
+            activeMode = activeMode.Trim().ToUpperInvariant();
+        }
+
+        return new RadarUserContext(personId, orgId, role, provinceCode, activeMode);
     }
 
     private IBrokerageMatchingEngineService ResolveMatchingEngine()
@@ -235,12 +249,13 @@ public sealed class BrokerageControllers(
         [FromQuery] string? sector,
         [FromQuery] int? minScore,
         [FromQuery] string? search,
+        [FromQuery] string? mode,
         [FromQuery] int? page,
         [FromQuery] int? pageSize,
         [FromQuery] int? limit,
         CancellationToken ct)
     {
-        var userContext = ResolveRadarUserContext();
+        var userContext = ResolveRadarUserContext(mode);
         var engine = ResolveMatchingEngine();
 
         var effectiveSize = pageSize ?? limit;
@@ -278,9 +293,9 @@ public sealed class BrokerageControllers(
 
     [HttpGet("brokerage/radar/summary")]
     [Authorize]
-    public async Task<IActionResult> GetRadarSummary(CancellationToken ct)
+    public async Task<IActionResult> GetRadarSummary([FromQuery] string? mode, CancellationToken ct)
     {
-        var userContext = ResolveRadarUserContext();
+        var userContext = ResolveRadarUserContext(mode);
         var engine = ResolveMatchingEngine();
         var totalCount = await engine.GetRadarSummaryAsync(userContext, ct);
         return Ok(Ok200(new { totalCount }));
@@ -1624,87 +1639,15 @@ public sealed class BrokerageControllers(
     }
 
     // -------------------------------------------------------------------------
-    // 5. CỔNG GIÁM SÁT SỞ KH&CN (GOV OVERSIGHT)
+    // 5. CỔNG GIÁM SÁT SỞ KH&CN (ĐÃ NGỪNG HOẠT ĐỘNG - CR-BACLINK-001)
     // -------------------------------------------------------------------------
     [HttpGet("gov/opportunities")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetGovOpportunities(
-        [FromQuery] string? authorityId,
-        CancellationToken ct)
-    {
-        var conn = db.Database.GetDbConnection();
-        if (conn.State != ConnectionState.Open) await conn.OpenAsync(ct);
-
-        // 1. Thống kê tổng hợp số lượng theo stage
-        using var cmdStats = conn.CreateCommand();
-        cmdStats.CommandText = @"
-            SELECT 
-                COUNT(*) as total,
-                COUNT(*) FILTER (WHERE stage = 'SUGGESTED') as suggested_count,
-                COUNT(*) FILTER (WHERE stage = 'INITIATED') as initiated_count,
-                COUNT(*) FILTER (WHERE stage = 'NEGOTIATING') as negotiating_count,
-                COUNT(*) FILTER (WHERE stage = 'MOU_SIGNED') as mou_signed_count,
-                COUNT(*) FILTER (WHERE stage = 'COMPLETED') as completed_count,
-                COUNT(*) FILTER (WHERE stage = 'CLOSED_LOST') as closed_lost_count,
-                COALESCE(SUM(estimated_value_million_vnd), 0) as total_estimated_value
-            FROM brokerage.opportunities;";
-
-        object? stats = null;
-        using (var reader = await cmdStats.ExecuteReaderAsync(ct))
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public IActionResult GetGovOpportunities([FromQuery] string? authorityId)
+        => StatusCode(410, new
         {
-            if (await reader.ReadAsync(ct))
-            {
-                stats = new
-                {
-                    total = reader.GetInt64(0),
-                    suggested = reader.GetInt64(1),
-                    initiated = reader.GetInt64(2),
-                    negotiating = reader.GetInt64(3),
-                    mouSigned = reader.GetInt64(4),
-                    completed = reader.GetInt64(5),
-                    closedLost = reader.GetInt64(6),
-                    totalEstimatedValueMillionVnd = reader.GetInt64(7)
-                };
-            }
-        }
-
-        // 2. Danh sách cơ hội kèm cờ cảnh báo SLA (> 48 giờ ở trạng thái INITIATED mà chưa chuyển đàm phán)
-        using var cmdList = conn.CreateCommand();
-        cmdList.CommandText = @"
-            SELECT id, opportunity_code, title, buyer_org_name, seller_org_name,
-                   assigned_expert_name, managing_authority_id, stage,
-                   estimated_value_million_vnd, created_at, updated_at,
-                   (stage = 'INITIATED' AND updated_at < now() - interval '48 hours') as is_sla_warning
-            FROM brokerage.opportunities
-            ORDER BY is_sla_warning DESC, updated_at DESC;";
-
-        var items = new List<object>();
-        using (var reader = await cmdList.ExecuteReaderAsync(ct))
-        {
-            while (await reader.ReadAsync(ct))
-            {
-                items.Add(new
-                {
-                    id = reader.GetGuid(0),
-                    opportunityCode = reader.GetString(1),
-                    title = reader.GetString(2),
-                    buyerOrgName = reader.GetString(3),
-                    sellerOrgName = reader.GetString(4),
-                    assignedExpertName = reader.IsDBNull(5) ? null : reader.GetString(5),
-                    managingAuthorityId = reader.IsDBNull(6) ? null : reader.GetString(6),
-                    stage = reader.GetString(7),
-                    estimatedValueMillionVnd = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8),
-                    createdAt = reader.GetDateTime(9),
-                    updatedAt = reader.GetDateTime(10),
-                    isSlaWarning = reader.GetBoolean(11)
-                });
-            }
-        }
-
-        return Ok(Ok200(new
-        {
-            statistics = stats,
-            opportunities = items
-        }));
-    }
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Cổng Sở KH&CN (/api/v1/gov/opportunities) đã ngừng hoạt động trên hệ thống BACLINK."
+        });
 }

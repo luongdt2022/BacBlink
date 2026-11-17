@@ -76,7 +76,7 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
                         LastName: string.IsNullOrEmpty(lastName) ? null : lastName,
                         Phone: req.ContactPhone?.Trim(),
                         Organization: req.CompanyName?.Trim(),
-                        PlatformRole: PlatformRoles.Buyer,
+                        PlatformRole: PlatformRoles.Enterprise,
                         ScopeType: ScopeTypes.Global,
                         ScopeId: null,
                         IsActive: true
@@ -230,8 +230,17 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         return Ok(survey);
     }
 
-    [HttpGet("demands/surveys")]
     [HttpGet("gov/demands/surveys")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public IActionResult GetGovDemandSurveysDeprecated()
+        => StatusCode(410, new
+        {
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Endpoint /api/v1/gov/demands/surveys đã ngừng hoạt động trên hệ thống BACLINK."
+        });
+
+    [HttpGet("demands/surveys")]
     [AllowAnonymous]
     public async Task<IActionResult> GetDemandSurveys(
         [FromQuery] string? scopeId,
@@ -630,13 +639,28 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
 
         var query = db.Set<DemandItem>().AsNoTracking();
 
-        // Chống lỗ hổng IDOR: Nếu là tài khoản BUYER hoặc thành viên thông thường, chỉ lấy bài của chính mình
-        if (Actor.PlatformRole != PlatformRoles.Admin &&
-            Actor.PlatformRole != PlatformRoles.SuperAdmin &&
-            Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
-            Actor.PlatformRole != PlatformRoles.ProvincialAdmin)
+        // Chống lỗ hổng IDOR: Nếu không phải ADMIN, chỉ lấy bài của chính mình hoặc cùng tổ chức doanh nghiệp
+        if (!PlatformRoles.IsAdministrative(Actor.PlatformRole))
         {
-            query = query.Where(i => i.CreatedBy == Actor.PersonId);
+            var actorPersonId = Actor.PersonId;
+            Guid? actorOrgId = null;
+            if (!string.IsNullOrWhiteSpace(Actor.ScopeId) && Guid.TryParse(Actor.ScopeId, out var parsedOrg))
+            {
+                actorOrgId = parsedOrg;
+            }
+
+            if (actorOrgId.HasValue)
+            {
+                var surveyIdsOfOrg = db.Set<DemandSurvey>()
+                    .Where(s => s.OrganizationId == actorOrgId.Value)
+                    .Select(s => s.Id);
+
+                query = query.Where(i => i.CreatedBy == actorPersonId || (i.SurveyId.HasValue && surveyIdsOfOrg.Contains(i.SurveyId.Value)));
+            }
+            else
+            {
+                query = query.Where(i => i.CreatedBy == actorPersonId);
+            }
         }
 
         var items = await query
@@ -658,11 +682,23 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
 
-        if (Actor.PlatformRole != PlatformRoles.Admin &&
-            Actor.PlatformRole != PlatformRoles.SuperAdmin &&
-            Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
-            Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
-            item.CreatedBy != Actor.PersonId)
+        bool hasAccess = PlatformRoles.IsAdministrative(Actor.PlatformRole) || item.CreatedBy == Actor.PersonId;
+        Guid? actorOrgId = null;
+        if (!string.IsNullOrWhiteSpace(Actor.ScopeId) && Guid.TryParse(Actor.ScopeId, out var parsedOrg))
+        {
+            actorOrgId = parsedOrg;
+        }
+
+        if (!hasAccess && actorOrgId.HasValue && item.SurveyId.HasValue)
+        {
+            var survey = await db.Set<DemandSurvey>().AsNoTracking().FirstOrDefaultAsync(s => s.Id == item.SurveyId.Value, ct);
+            if (survey != null && survey.OrganizationId == actorOrgId.Value)
+            {
+                hasAccess = true;
+            }
+        }
+
+        if (!hasAccess)
         {
             return StatusCode(403, new { message = "Không có quyền thao tác trên bài toán của người khác." });
         }
@@ -739,11 +775,23 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
 
-        if (Actor.PlatformRole != PlatformRoles.Admin &&
-            Actor.PlatformRole != PlatformRoles.SuperAdmin &&
-            Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
-            Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
-            item.CreatedBy != Actor.PersonId)
+        bool hasAccess = PlatformRoles.IsAdministrative(Actor.PlatformRole) || item.CreatedBy == Actor.PersonId;
+        Guid? actorOrgId = null;
+        if (!string.IsNullOrWhiteSpace(Actor.ScopeId) && Guid.TryParse(Actor.ScopeId, out var parsedOrg))
+        {
+            actorOrgId = parsedOrg;
+        }
+
+        if (!hasAccess && actorOrgId.HasValue && item.SurveyId.HasValue)
+        {
+            var survey = await db.Set<DemandSurvey>().AsNoTracking().FirstOrDefaultAsync(s => s.Id == item.SurveyId.Value, ct);
+            if (survey != null && survey.OrganizationId == actorOrgId.Value)
+            {
+                hasAccess = true;
+            }
+        }
+
+        if (!hasAccess)
         {
             return StatusCode(403, new { message = "Không có quyền thao tác trên bài toán của người khác." });
         }
@@ -852,7 +900,7 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
 
         var isOwner = Actor.IsAuthenticated && Actor.PersonId.HasValue && item.CreatedBy.HasValue && Actor.PersonId.Value == item.CreatedBy.Value;
-        var isGovOrAdmin = Actor.PlatformRole == PlatformRoles.ProvincialAdmin || Actor.PlatformRole == PlatformRoles.SuperAdmin || Actor.PlatformRole == PlatformRoles.OperatorAdmin || Actor.PlatformRole == PlatformRoles.Admin;
+        var isGovOrAdmin = PlatformRoles.IsAdministrative(Actor.PlatformRole);
         var canViewDraft = isOwner || isGovOrAdmin;
         var canSubmitOffer = item.Status == DemandItemStatuses.Verified;
 
@@ -884,7 +932,7 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             isPendingReview = item.Status == DemandItemStatuses.Pending,
             canViewDraft = canViewDraft,
             canSubmitOffer = canSubmitOffer,
-            reviewUnit = "Sở Khoa học và Công nghệ tỉnh / Ban Quản trị NacenTech"
+            reviewUnit = "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)"
         });
     }
 
@@ -1038,101 +1086,84 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
         });
     }
 
-    // =========================================================================
-    // LUỒNG 3: CỔNG THẨM ĐỊNH SỞ KH&CN & PHÂN LUỒNG TRIAGE (SC-03-05 / WF-03)
-    // =========================================================================
-
-    [HttpGet("gov/demands")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetGovPendingDemands([FromQuery] string? sort, [FromQuery] string? q, CancellationToken ct)
+    [HttpPost("admin/demands/{id}/verify")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public async Task<IActionResult> AdminVerifyDemand(Guid id, [FromBody] VerifyDemandRequest? req, CancellationToken ct)
     {
-        var query = db.Set<DemandItem>().AsNoTracking();
-
-        if (!string.IsNullOrWhiteSpace(q))
-        {
-            var search = q.Trim().ToLower();
-            query = query.Where(i =>
-                i.ItemCode.ToLower().Contains(search) ||
-                i.TechnicalProblem.ToLower().Contains(search) ||
-                i.StageName.ToLower().Contains(search) ||
-                (i.DesiredSolution != null && i.DesiredSolution.ToLower().Contains(search)));
-        }
-
-        query = string.Equals(sort, "tni", StringComparison.OrdinalIgnoreCase)
-            ? query.OrderByDescending(i => i.TniScore).ThenByDescending(i => i.CreatedAt)
-            : query.OrderByDescending(i => i.CreatedAt).ThenByDescending(i => i.TniScore);
-
-        var items = await query
-            .Take(100)
-            .ToListAsync(ct);
-
-        return Ok(items);
-    }
-
-    [HttpPost("gov/demands/{id}/verify")]
-    public async Task<IActionResult> VerifyDemand(Guid id, [FromBody] VerifyDemandRequest? req = null, CancellationToken ct = default)
-    {
-        if (!Actor.IsAuthenticated || Actor.PersonId == null)
-        {
-            return Unauthorized(new { message = "Yêu cầu đăng nhập tài khoản Cán bộ Sở để phê duyệt bài toán." });
-        }
-
-        // Chặn quyền BUYER hoặc các vai trò không thuộc khối Quản trị Nhà nước
-        if (Actor.PlatformRole == PlatformRoles.Buyer ||
-            (Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
-             Actor.PlatformRole != PlatformRoles.SuperAdmin &&
-             Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
-             Actor.PlatformRole != PlatformRoles.Admin))
-        {
-            return StatusCode(403, new { message = "Chỉ Cán bộ Sở KH&CN hoặc Quản trị viên mới có quyền phê duyệt bài toán." });
-        }
-
         var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
-        if (item is null) return NotFound(new { message = "Không tìm thấy bài toán." });
+        if (item is null) return NotFound(new { message = "Không tìm thấy bài toán nhu cầu." });
 
-        var authority = !string.IsNullOrWhiteSpace(req?.AuthorityName) ? req.AuthorityName : "Sở Khoa học và Công nghệ TP. Hà Nội";
+        var authority = string.IsNullOrWhiteSpace(req?.AuthorityName) ? "Hiệp hội BACLINK" : req.AuthorityName.Trim();
         item.VerifyAndPublish(authority);
-        if (!string.IsNullOrWhiteSpace(req?.Decision) || !string.IsNullOrWhiteSpace(req?.Note))
+        if (!string.IsNullOrWhiteSpace(req?.Decision))
         {
-            item.VerifyTni(req?.Decision ?? "VERIFIED", authority, req?.Note);
+            item.VerifyTni(req.Decision, authority, req.Note);
         }
-
         await uow.CommitAsync(ct);
 
-        return Ok(new 
-        { 
-            success = true, 
-            message = "Phê duyệt bài toán niêm yết lên sàn thành công.",
+        return Ok(new
+        {
+            success = true,
+            id = item.Id,
+            itemCode = item.ItemCode,
+            status = item.Status,
+            isPublicListed = item.IsPublicListed,
             tniVerificationStatus = item.TniVerificationStatus,
-            verifiedAuthorityName = item.VerifiedAuthorityName
+            verifiedAuthorityName = item.VerifiedAuthorityName,
+            message = "Hiệp hội BACLINK đã thẩm định và phê duyệt niêm yết bài toán nhu cầu công nghệ."
         });
     }
 
-    [HttpPost("gov/demands/{id}/assign-expert")]
-    public async Task<IActionResult> AssignExpert(Guid id, [FromBody] AssignExpertRequest req, CancellationToken ct)
+    [HttpGet("admin/demands")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public async Task<IActionResult> GetAdminPendingDemands([FromQuery] string? status, [FromQuery] string? q, CancellationToken ct)
     {
-        if (!Actor.IsAuthenticated || Actor.PersonId == null)
+        var query = db.Set<DemandItem>().AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(status))
         {
-            return Unauthorized(new { message = "Yêu cầu đăng nhập tài khoản Cán bộ Sở để gán chuyên gia." });
+            query = query.Where(i => i.Status == status);
         }
-
-        if (Actor.PlatformRole == PlatformRoles.Buyer ||
-            (Actor.PlatformRole != PlatformRoles.ProvincialAdmin &&
-             Actor.PlatformRole != PlatformRoles.SuperAdmin &&
-             Actor.PlatformRole != PlatformRoles.OperatorAdmin &&
-             Actor.PlatformRole != PlatformRoles.Admin))
+        if (!string.IsNullOrWhiteSpace(q))
         {
-            return StatusCode(403, new { message = "Chỉ Cán bộ Sở KH&CN hoặc Quản trị viên mới có quyền gán chuyên gia." });
+            query = query.Where(i => i.TechnicalProblem.Contains(q) || i.ItemCode.Contains(q));
         }
-
-        var item = await db.Set<DemandItem>().FirstOrDefaultAsync(i => i.Id == id, ct);
-        if (item is null) return NotFound(new { message = "Không tìm thấy bài toán." });
-
-        item.AssignExpert(req.ExpertId);
-        await uow.CommitAsync(ct);
-
-        return Ok(new { success = true, message = "Đã chỉ định chuyên gia tư vấn 1-1 cho bài toán." });
+        var items = await query.OrderByDescending(i => i.CreatedAt).Take(100).ToListAsync(ct);
+        return Ok(new { success = true, total = items.Count, data = items });
     }
+
+    // =========================================================================
+    // LUỒNG 3: CỔNG THẨM ĐỊNH SỞ KH&CN (ĐÃ NGỪNG HOẠT ĐỘNG - CR-BACLINK-001)
+    // =========================================================================
+
+    [HttpGet("gov/demands")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public IActionResult GetGovPendingDemands([FromQuery] string? sort, [FromQuery] string? q)
+        => StatusCode(410, new
+        {
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Cổng Sở KH&CN (/api/v1/gov/demands) đã ngừng hoạt động trên hệ thống BACLINK."
+        });
+
+    [HttpPost("gov/demands/{id}/verify")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public IActionResult VerifyDemand(Guid id, [FromBody] VerifyDemandRequest? req = null)
+        => StatusCode(410, new
+        {
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Cổng Sở KH&CN (/api/v1/gov/demands/{id}/verify) đã ngừng hoạt động trên hệ thống BACLINK."
+        });
+
+    [HttpPost("gov/demands/{id}/assign-expert")]
+    [Authorize(Roles = "ADMIN,SUPER_ADMIN,OPERATOR_ADMIN")]
+    public IActionResult AssignExpert(Guid id, [FromBody] AssignExpertRequest? req = null)
+        => StatusCode(410, new
+        {
+            success = false,
+            code = "ERR_GOV_ROUTE_GONE",
+            message = "Cổng Sở KH&CN (/api/v1/gov/demands/{id}/assign-expert) đã ngừng hoạt động trên hệ thống BACLINK."
+        });
 
     // =========================================================================
     // LUỒNG 5: ĐĂNG KÝ THAM QUAN HỘI CHỢ TRIỂN LÃM (SC-03-06 / WF-05)

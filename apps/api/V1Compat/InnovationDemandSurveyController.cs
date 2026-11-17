@@ -457,7 +457,7 @@ public sealed class InnovationDemandSurveyController(
                         LastName: string.IsNullOrEmpty(lastName) ? null : lastName,
                         Phone: contactPhone?.Trim(),
                         Organization: enterprise.Name,
-                        PlatformRole: PlatformRoles.Buyer,
+                        PlatformRole: PlatformRoles.Enterprise,
                         ScopeType: ScopeTypes.Global,
                         ScopeId: null,
                         IsActive: true
