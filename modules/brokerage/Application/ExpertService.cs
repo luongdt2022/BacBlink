@@ -9,6 +9,65 @@ namespace NacenTech.Modules.Brokerage.Application;
 
 public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, IObjectStorage storage, IExpertProvinceScopeLookup provinceScopes, IOptions<ExpertDraftOptions> draftOptions, IExpertLmsCourseLookup? lmsCourseLookup = null) : IExpertService
 {
+    private static readonly IReadOnlyDictionary<string, string> DefaultSectorNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["IND_ELEC"] = "Điện tử, Bán dẫn & Thiết bị điện",
+        ["IND_MECH"] = "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy",
+        ["IND_AUTO"] = "Tự động hóa, Robot & Smart Factory",
+        ["IND_PLAS"] = "Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp",
+        ["IND_MAT"]  = "Vật liệu mới & Công nghiệp hỗ trợ",
+        ["IND_IT"]   = "Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP",
+        ["IND_GREEN"] = "Công nghiệp xanh, Năng lượng sạch & ESG",
+        ["IND_LOG"]  = "Logistics công nghiệp, Kho vận & Chuỗi cung ứng"
+    };
+
+    private async Task<Dictionary<string, string>> LoadSectorNamesAsync(CancellationToken ct)
+    {
+        var map = new Dictionary<string, string>(DefaultSectorNames, StringComparer.OrdinalIgnoreCase);
+        if (!db.Database.IsRelational()) return map;
+
+        try
+        {
+            var conn = db.Database.GetDbConnection();
+            var shouldClose = conn.State != System.Data.ConnectionState.Open;
+            if (shouldClose) await conn.OpenAsync(ct);
+            try
+            {
+                await using var cmd = conn.CreateCommand();
+                cmd.CommandText = "SELECT code, name FROM policy.taxonomy_terms WHERE kind = 'SECTOR' AND code IS NOT NULL;";
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+                while (await reader.ReadAsync(ct))
+                {
+                    if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
+                    {
+                        var code = reader.GetString(0).Trim();
+                        var name = reader.GetString(1).Trim();
+                        if (!string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(name))
+                        {
+                            map[code] = name;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (shouldClose) await conn.CloseAsync();
+            }
+        }
+        catch
+        {
+            // Fallback to canonical BACLINK sector dictionary when table not initialized in unit test DB
+        }
+
+        return map;
+    }
+
+    private static string? ResolveSectorName(string? sectorCode, IReadOnlyDictionary<string, string> sectorNames)
+    {
+        if (string.IsNullOrWhiteSpace(sectorCode)) return null;
+        return sectorNames.TryGetValue(sectorCode.Trim(), out var name) ? name : sectorCode;
+    }
+
     public async Task<ExpertProfileDto> SubmitUpgradeAsync(Guid personId, SubmitExpertUpgradeRequest request, CancellationToken ct)
     {
         if (!request.PdpdConsent)
@@ -276,31 +335,40 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
         var courseCounts = lmsCourseLookup is null
             ? new Dictionary<Guid, int>()
             : await lmsCourseLookup.GetPublishedCourseCountsAsync(profileIds, ct);
+        var sectorNames = await LoadSectorNamesAsync(ct);
 
-        var items = profiles.Select(p => new ExpertPublicCardDto(
-            ExpertCode: p.ExpertCode,
-            FullName: p.FullName,
-            AcademicRank: p.AcademicRank,
-            Degree: p.Degree,
-            OrganizationName: p.OrganizationName,
-            PositionTitle: p.PositionTitle,
-            PrimarySectorCode: p.ExpertiseSectors.FirstOrDefault(),
-            PrimarySectorName: p.ExpertiseSectors.FirstOrDefault(),
-            ExpertiseSectors: p.ExpertiseSectors,
-            MasteredTechCodes: p.MasteredTechCodes,
-            ProvinceCode: p.PersonId is Guid personId && provinceByPerson.TryGetValue(personId, out var code) ? code : null,
-            ProvinceName: null,
-            PublicationCount: pubCounts.GetValueOrDefault(p.Id, 0),
-            PatentCount: patCounts.GetValueOrDefault(p.Id, 0),
-            ProjectCount: projCounts.GetValueOrDefault(p.Id, 0),
-            IsVerified: p.Status == ExpertStatuses.Approved,
-            IsAcceptingConsultation: p.IsAcceptingConsultation,
-            SpecializedKeywords: p.SpecializedKeywords,
-            ConnectionCount: p.ConnectionCount,
-            ConsultingSummary: p.ConsultingSummary,
-            OrganizationAddress: p.OrganizationAddress,
-            CourseCount: courseCounts.GetValueOrDefault(p.Id, 0)
-        )).ToList();
+        var items = profiles.Select(p =>
+        {
+            var primaryCode = p.ExpertiseSectors.FirstOrDefault();
+            var resolvedSectorNames = p.ExpertiseSectors
+                .Select(c => ResolveSectorName(c, sectorNames) ?? c)
+                .ToList();
+            return new ExpertPublicCardDto(
+                ExpertCode: p.ExpertCode,
+                FullName: p.FullName,
+                AcademicRank: p.AcademicRank,
+                Degree: p.Degree,
+                OrganizationName: p.OrganizationName,
+                PositionTitle: p.PositionTitle,
+                PrimarySectorCode: primaryCode,
+                PrimarySectorName: ResolveSectorName(primaryCode, sectorNames),
+                ExpertiseSectors: p.ExpertiseSectors,
+                MasteredTechCodes: p.MasteredTechCodes,
+                ProvinceCode: p.PersonId is Guid personId && provinceByPerson.TryGetValue(personId, out var code) ? code : null,
+                ProvinceName: null,
+                PublicationCount: pubCounts.GetValueOrDefault(p.Id, 0),
+                PatentCount: patCounts.GetValueOrDefault(p.Id, 0),
+                ProjectCount: projCounts.GetValueOrDefault(p.Id, 0),
+                IsVerified: p.Status == ExpertStatuses.Approved,
+                IsAcceptingConsultation: p.IsAcceptingConsultation,
+                SpecializedKeywords: p.SpecializedKeywords,
+                ConnectionCount: p.ConnectionCount,
+                ConsultingSummary: p.ConsultingSummary,
+                OrganizationAddress: p.OrganizationAddress,
+                CourseCount: courseCounts.GetValueOrDefault(p.Id, 0),
+                ExpertiseSectorNames: resolvedSectorNames
+            );
+        }).ToList();
 
         return new ExpertPublicDirectoryDto(items, totalCount, page, pageSize, totalPages);
     }
@@ -454,10 +522,17 @@ public sealed class ExpertService(DbContext db, IUnitOfWork uow, IClock clock, I
                     c.SectorCode))
                 .ToList();
 
+        var sectorNames = await LoadSectorNamesAsync(ct);
+        var primaryCode = p.ExpertiseSectors.FirstOrDefault();
+        var resolvedSectorNames = p.ExpertiseSectors
+            .Select(c => ResolveSectorName(c, sectorNames) ?? c)
+            .ToList();
+
         return new ExpertPublicDetailDto(p.ExpertCode, p.FullName, p.AcademicRank, p.Degree, p.BirthYear, p.Gender,
             p.OrganizationName, p.PositionTitle, p.PublicBio, p.ExpertiseSectors, p.MasteredTechCodes,
             p.Status == ExpertStatuses.Approved, p.IsAcceptingConsultation, training, employment, patents, projects, publications, practical, awards, p.SpecializedKeywords,
-            p.ConsultingSummary, p.OrganizationAddress, courses);
+            p.ConsultingSummary, p.OrganizationAddress, courses,
+            primaryCode, ResolveSectorName(primaryCode, sectorNames), resolvedSectorNames);
     }
 
     private async Task<ExpertPrivateDetailDto> ToPrivateDetailAsync(ExpertProfile p, CancellationToken ct)

@@ -67,7 +67,7 @@ public sealed record InnovationEvaluationDto(
     decimal TotalScore,
     string Classification,          // "LEADING", "DEVELOPING", "POTENTIAL", "UNRATED"
     string ClassificationLabel,     // "Dẫn đầu", "Đang phát triển", "Tiềm năng", "Chưa đánh giá"
-    string BadgeName,               // "Huy hiệu Vàng ĐMST", "Huy hiệu Bạc ĐMST", "Huy hiệu Đồng ĐMST", "Chưa xếp hạng"
+    string BadgeName,               // "Hội viên Tiêu biểu BACLINK", "Hội viên Nòng cốt BACLINK", "Hội viên Chính thức BACLINK", "Chưa xếp hạng"
     string Status,                  // "DRAFT_CALCULATED", "SUBMITTED", "APPROVED", "REJECTED"
     string? ReviewedBy,
     DateTimeOffset? ReviewedAt,

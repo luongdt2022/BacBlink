@@ -224,7 +224,7 @@ public class EnterpriseTests
         result.TotalScore.ShouldBeGreaterThanOrEqualTo(75.0m);
         result.Classification.ShouldBe("LEADING");
         result.ClassificationLabel.ShouldBe("Dẫn đầu");
-        result.BadgeName.ShouldBe("Huy hiệu Vàng ĐMST");
+        result.BadgeName.ShouldBe("Hội viên Tiêu biểu BACLINK");
         result.GroupScores.Count.ShouldBe(8);
         result.CriteriaDetails.Count.ShouldBe(37);
     }

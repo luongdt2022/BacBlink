@@ -207,7 +207,10 @@ public sealed record ExpertPublicDetailDto(
     IReadOnlyList<string>? SpecializedKeywords = null,
     string? ConsultingSummary = null,
     string? OrganizationAddress = null,
-    IReadOnlyList<ExpertLmsCourseDto>? Courses = null);
+    IReadOnlyList<ExpertLmsCourseDto>? Courses = null,
+    string? PrimarySectorCode = null,
+    string? PrimarySectorName = null,
+    IReadOnlyList<string>? ExpertiseSectorNames = null);
 
 public sealed record ExpertPrivateDetailDto(
     ExpertPublicDetailDto PublicProfile,
@@ -251,7 +254,8 @@ public sealed record ExpertPublicCardDto(
     int ConnectionCount = 0,
     string? ConsultingSummary = null,
     string? OrganizationAddress = null,
-    int CourseCount = 0);
+    int CourseCount = 0,
+    IReadOnlyList<string>? ExpertiseSectorNames = null);
 
 public sealed record ExpertPublicDirectoryDto(
     IReadOnlyList<ExpertPublicCardDto> Items,

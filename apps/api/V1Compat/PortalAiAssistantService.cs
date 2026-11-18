@@ -29,21 +29,21 @@ public sealed class PortalAiAssistantService(
             (norm.Contains("truy xuat") && norm.Contains("data")) || (norm.Contains("khong co y nghia") || norm.Contains("k co y nghia")))
         {
             return new AiQuickAssistResponseDto(
-                "Chào bạn! Rất xin lỗi vì trải nghiệm trước đó. Hiện tại tôi đã được kết nối trực tiếp với CSDL Sàn NacenTwin để truy xuất dữ liệu thật theo thời gian thực (Zero-Mock).\n\n" +
-                "Khi bạn yêu cầu (ví dụ: 'tìm cho tôi 1 chuyên gia IT', 'lịch sự kiện Techmart 2026', 'thống kê sàn'), tôi sẽ tra cứu ngay trong hệ thống và đưa ra danh sách chuyên gia, sự kiện kèm đường dẫn truy cập trực tiếp.\n\n" +
-                "Bạn hãy thử nhập: 'tìm cho tôi 1 chuyên gia IT' hoặc 'lịch sự kiện Techmart' để trải nghiệm nhé!",
+                "Chào bạn! Hiện tại tôi đã được kết nối trực tiếp với CSDL Cổng Kết nối Công nghiệp BACLINK Bắc Ninh để truy xuất dữ liệu thật theo thời gian thực.\n\n" +
+                "Khi bạn yêu cầu (ví dụ: 'tìm cố vấn tự động hóa', 'lịch sự kiện BACLINK 2026', 'thống kê sàn'), tôi sẽ tra cứu ngay trong hệ thống và đưa ra danh sách cố vấn, sự kiện kèm đường dẫn truy cập trực tiếp.\n\n" +
+                "Bạn hãy thử nhập: 'tìm cố vấn tự động hóa' hoặc 'lịch sự kiện BACLINK' để trải nghiệm nhé!",
                 "SUPPORT_ASSISTANCE",
                 "/experts",
                 [
-                    new("Tìm chuyên gia IT / AI", "Tra cứu danh bạ chuyên gia CNTT & Trí tuệ nhân tạo", "/experts?q=IT", "CHUYÊN GIA"),
-                    new("Sàn Triển lãm Techmart 2026", "Lịch các phiên chào giá & đăng ký vé tham quan", "/trien-lam", "SỰ KIỆN"),
-                    new("Thang đo TRL theo TT17", "Đánh giá 9 cấp độ sẵn sàng công nghệ", "/dich-vu-khac", "TIÊU CHUẨN")
+                    new("Tìm Cố vấn Kỹ thuật", "Tra cứu danh bạ cố vấn tự động hóa, cơ khí & MES", "/experts", "CỐ VẤN"),
+                    new("Sự kiện & Kết nối FDI", "Lịch hội thảo & phiên kết nối chuỗi cung ứng Bắc Ninh", "/trien-lam", "SỰ KIỆN"),
+                    new("Sản phẩm & Năng lực Hội viên", "Khám phá năng lực gia công và giải pháp công nghiệp", "/chao-ban-cong-nghe", "CHÀO BÁN")
                 ]
             );
         }
 
         // 2. TRUY XUẤT CSDL CHUYÊN GIA (EXPERT RETRIEVAL)
-        if (norm.Contains("chuyen gia") || norm.Contains("nha khoa hoc") || norm.Contains("giao su") ||
+        if (norm.Contains("chuyen gia") || norm.Contains("co van") || norm.Contains("nha khoa hoc") || norm.Contains("giao su") ||
             norm.Contains("tien si") || norm.Contains("expert") || norm.Contains("tu van 1-1") ||
             norm.Contains("bac si") || norm.Contains("thay ") || norm.Contains("co ") ||
             norm.Contains("ten ") ||
@@ -53,7 +53,7 @@ public sealed class PortalAiAssistantService(
             return await HandleExpertQueryAsync(prompt, norm, ct);
         }
 
-        // 3. TRUY XUẤT CSDL SỰ KIỆN TECHMART (TECHMART EVENTS RETRIEVAL)
+        // 3. TRUY XUẤT CSDL SỰ KIỆN (EVENTS RETRIEVAL)
         if (norm.Contains("techmart") || norm.Contains("trien lam") || norm.Contains("hoi cho") ||
             norm.Contains("phien chao gia") || norm.Contains("su kien") || norm.Contains("gian hang") ||
             norm.Contains("ve tham quan") || norm.Contains("lich "))
@@ -67,19 +67,18 @@ public sealed class PortalAiAssistantService(
         {
             var stats = await overviewService.GetStatsAsync(ct);
             return new AiQuickAssistResponseDto(
-                $"Số liệu thực tế trên Sàn Giao dịch Công nghệ NacenTwin tính đến thời điểm hiện tại:\n\n" +
-                $"• 🏢 **Doanh nghiệp ĐMST**: {stats.TotalEnterprises:N0} đơn vị\n" +
-                $"• 👨‍🔬 **Chuyên gia KH&CN**: {stats.TotalExperts:N0} chuyên gia đã thẩm định\n" +
-                $"• 🔍 **Nhu cầu công nghệ**: {stats.TotalDemands:N0} bài toán kỹ thuật từ doanh nghiệp\n" +
-                $"• 📦 **Công nghệ chào bán**: {stats.TotalOffers:N0} giải pháp sẵn sàng chuyển giao\n" +
-                $"• 🌐 **Mạng lưới liên kết**: {stats.TotalProvinces} tỉnh/thành phố trên toàn quốc.\n\n" +
-                "Bạn đang cần tìm công nghệ chào bán hay muốn kết nối chuyên gia tư vấn?",
+                $"Số liệu thực tế trên Cổng Kết nối Chuỗi cung ứng BACLINK Bắc Ninh tính đến thời điểm hiện tại:\n\n" +
+                $"• 🏢 **Doanh nghiệp Hội viên**: {stats.TotalEnterprises:N0} đơn vị sản xuất công nghiệp\n" +
+                $"• 👨‍🔬 **Ban Cố vấn Kỹ thuật**: {stats.TotalExperts:N0} cố vấn chuyên môn\n" +
+                $"• 🔍 **Nhu cầu đặt hàng**: {stats.TotalDemands:N0} bài toán kỹ thuật & tìm nhà cung ứng\n" +
+                $"• 📦 **Sản phẩm & Năng lực**: {stats.TotalOffers:N0} giải pháp sẵn sàng cung ứng\n\n" +
+                "Bạn đang cần tìm đối tác cung ứng hay muốn kết nối cố vấn kỹ thuật?",
                 "PORTAL_STATS",
                 "/chao-ban-cong-nghe",
                 [
-                    new("Khám phá Chào bán công nghệ", $"{stats.TotalOffers} giải pháp sẵn sàng chuyển giao", "/chao-ban-cong-nghe", "CHÀO BÁN"),
-                    new("Khám phá Nhu cầu doanh nghiệp", $"{stats.TotalDemands} bài toán cần tìm đối tác giải quyết", "/nhu-cau-cong-nghe", "NHU CẦU"),
-                    new("Danh bạ Chuyên gia KH&CN", $"{stats.TotalExperts} chuyên gia đầu ngành", "/experts", "CHUYÊN GIA")
+                    new("Khám phá Sản phẩm & Năng lực", $"{stats.TotalOffers} giải pháp từ hội viên Bắc Ninh", "/chao-ban-cong-nghe", "CUNG ỨNG"),
+                    new("Khám phá Nhu cầu Đặt hàng", $"{stats.TotalDemands} bài toán cần tìm đối tác giải quyết", "/nhu-cau-cong-nghe", "NHU CẦU"),
+                    new("Danh bạ Ban Cố vấn Kỹ thuật", $"{stats.TotalExperts} cố vấn chuyên ngành công nghiệp", "/experts", "CỐ VẤN")
                 ]
             );
         }
@@ -90,19 +89,19 @@ public sealed class PortalAiAssistantService(
             norm.Contains("chao ban") || norm.Contains("chao bot") || norm.Contains("chao em"))
         {
             return new AiQuickAssistResponseDto(
-                "Xin chào! Tôi là Trợ lý Ảo AI NacentTwin — Cố vấn chuyên trách Chuyển giao Công nghệ & Ghép cặp Cung–Cầu KH&CN.\n\n" +
+                "Xin chào! Tôi là Trợ lý Ảo AI của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) — Hỗ trợ kết nối Chuỗi cung ứng Công nghiệp & Tư vấn Kỹ thuật.\n\n" +
                 "Tôi có thể hỗ trợ trực tiếp bạn:\n" +
-                "• 🔍 **Tìm chuyên gia đầu ngành** (ví dụ: 'tìm cho tôi 1 chuyên gia IT')\n" +
-                "• 🎪 **Tra cứu sự kiện & phiên chào giá Techmart 2026**\n" +
-                "• 🎯 **Đánh giá mức TRL 1-9 theo Thông tư 17/2019/TT-BKHCN**\n" +
-                "• 💰 **Tư vấn định giá sáng chế & hợp đồng chuyển giao/li-xăng**\n\n" +
+                "• 🔍 **Tìm cố vấn kỹ thuật** theo 8 ngành công nghiệp chủ lực Bắc Ninh\n" +
+                "• 🎪 **Tra cứu sự kiện & diễn đàn kết nối FDI – Nội địa**\n" +
+                "• 🎯 **Tra cứu mức độ hoàn thiện công nghệ TRL (1–9)**\n" +
+                "• 💰 **Tư vấn báo giá gia công OEM/ODM & hợp tác chuyển giao**\n\n" +
                 "Bạn cần tôi hỗ trợ nội dung nào?",
                 "GREETING",
                 "/chao-ban-cong-nghe",
                 [
-                    new("Tìm chuyên gia IT / AI", "Kết nối trực tiếp chuyên gia đầu ngành 1-1", "/experts?q=IT", "CHUYÊN GIA"),
-                    new("Sự kiện Techmart 2026", "Lịch các phiên chào giá & vé tham quan", "/trien-lam", "TECHMART"),
-                    new("Đánh giá TRL theo TT17", "Tự đánh giá cấp độ sẵn sàng công nghệ", "/dich-vu-khac", "TRL 1-9")
+                    new("Tìm Cố vấn Kỹ thuật", "Kết nối trực tiếp cố vấn chuyên môn 1-1", "/experts", "CỐ VẤN"),
+                    new("Sự kiện Hiệp hội BACLINK", "Lịch hội thảo & kết nối chuỗi cung ứng FDI", "/trien-lam", "SỰ KIỆN"),
+                    new("Sản phẩm & Năng lực", "Tra cứu năng lực sản xuất của hội viên", "/chao-ban-cong-nghe", "CUNG ỨNG")
                 ]
             );
         }
@@ -114,79 +113,78 @@ public sealed class PortalAiAssistantService(
             norm.Contains("biet lam gi") || norm == "help" || norm == "tro ly la ai")
         {
             return new AiQuickAssistResponseDto(
-                "Tôi là Trợ lý Ảo AI NacentTwin — được tích hợp trực tiếp với cơ sở dữ liệu Sàn giao dịch để hỗ trợ Nhà khoa học, Doanh nghiệp và Tổ chức ĐMST:\n\n" +
-                "1. 👨‍🔬 **Truy xuất Chuyên gia KH&CN**: Tra cứu danh bạ thực tế, tìm kiếm chuyên gia theo ngành (IT, AI, Sinh học, Vật liệu...) và hỗ trợ đặt lịch tư vấn 1-1.\n" +
-                "2. 🎪 **Tra cứu Sự kiện Techmart**: Cập nhật các phiên chào giá sắp diễn ra, quy mô công nghệ và hỗ trợ đăng ký vé tham quan.\n" +
-                "3. 🎯 **Định hướng TRL (1–9)**: Phân loại mức độ hoàn thiện công nghệ theo chuẩn Thông tư 17/2019/TT-BKHCN.\n" +
-                "4. 💰 **Tư vấn Định giá & Pháp lý Chuyển giao**: Hướng dẫn 3 phương pháp định giá sáng chế (Chi phí, Dòng tiền DCF, Thị trường) và mô hình li-xăng / chuyển nhượng.\n" +
-                "5. 🔍 **Ghép cặp Cung – Cầu Công nghệ**: Tìm kiếm giải pháp chào bán sẵn có hoặc tiếp nhận bài toán nhu cầu từ doanh nghiệp.\n\n" +
+                "Tôi là Trợ lý Ảo AI BACLINK — tích hợp trực tiếp với CSDL Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh:\n\n" +
+                "1. 👨‍🔬 **Truy xuất Ban Cố vấn Kỹ thuật**: Tra cứu cố vấn theo 8 ngành công nghiệp (Điện tử, Cơ khí CNC, Tự động hóa, Nhựa ESD, Vật liệu, MES/ERP, ESG, Logistics) và đặt lịch tư vấn 1-1.\n" +
+                "2. 🎪 **Tra cứu Sự kiện Kết nối**: Cập nhật diễn đàn FDI – Nội địa, hội thảo bán dẫn và chuyển đổi xanh tại Bắc Ninh.\n" +
+                "3. 🎯 **Định hướng Mức độ Sẵn sàng Công nghệ (TRL 1–9)**: Hỗ trợ đánh giá mức độ sẵn sàng thương mại và sản xuất hàng loạt.\n" +
+                "4. 💰 **Tư vấn Hợp tác OEM/ODM & Chuyển giao**: Hướng dẫn phương pháp định giá và hợp đồng hợp tác kỹ thuật.\n" +
+                "5. 🔍 **Ghép cặp Cung – Cầu Chuỗi cung ứng**: Kết nối năng lực gia công của hội viên với nhu cầu đặt hàng thực tế.\n\n" +
                 "Bạn muốn tôi giải đáp chi tiết về phần nào?",
                 "CAPABILITIES",
                 "/chao-ban-cong-nghe",
                 [
-                    new("Tìm chuyên gia IT / AI", "Tra cứu danh bạ chuyên gia thực tế", "/experts?q=IT", "CHUYÊN GIA"),
-                    new("Lịch sự kiện Techmart", "Xem các phiên chào giá sắp mở", "/trien-lam", "TECHMART"),
-                    new("Đánh giá cấp độ TRL", "9 cấp độ theo Thông tư 17/2019/TT-BKHCN", "/dich-vu-khac", "TRL 1-9")
+                    new("Tìm Cố vấn Kỹ thuật", "Tra cứu danh bạ cố vấn thực tế", "/experts", "CỐ VẤN"),
+                    new("Lịch sự kiện BACLINK", "Xem các sự kiện sắp diễn ra tại Bắc Ninh", "/trien-lam", "SỰ KIỆN"),
+                    new("Khóa học E-Learning Công nghiệp", "Lean/5S, IATF 16949, MES/ERP & ESG", "/elearning", "ĐÀO TẠO")
                 ]
             );
         }
 
-        // 7. Đánh giá cấp độ TRL theo Thông tư 17
-        if (norm.Contains("trl") || norm.Contains("thong tu 17") || norm.Contains("tt17") ||
-            norm.Contains("muc do san sang") || norm.Contains("thang do") || norm.Contains("cap do cong nghe") ||
-            norm.Contains("prototype") || norm.Contains("nguyen mau"))
+        // 7. Đánh giá cấp độ TRL
+        if (norm.Contains("trl") || norm.Contains("muc do san sang") || norm.Contains("thang do") ||
+            norm.Contains("cap do cong nghe") || norm.Contains("prototype") || norm.Contains("nguyen mau"))
         {
             return new AiQuickAssistResponseDto(
-                "Thang đo TRL (Technology Readiness Level) theo Thông tư 17/2019/TT-BKHCN chuẩn hóa 9 cấp độ sẵn sàng công nghệ:\n\n" +
-                "• **TRL 1–3**: Nghiên cứu cơ bản, phát hiện nguyên lý và kiểm chứng trong phòng thí nghiệm.\n" +
-                "• **TRL 4–6**: Hoàn thiện mô hình thực nghiệm (PoC), chế tạo nguyên mẫu (Prototype) trong môi trường mô phỏng / bán công nghiệp.\n" +
-                "• **TRL 7–8**: Thử nghiệm hệ thống hoàn chỉnh tại hiện trường thực tế, kiểm định độ bền và chứng nhận chất lượng.\n" +
-                "• **TRL 9**: Đã thương mại hóa hoàn chỉnh, sẵn sàng sản xuất hàng loạt và chuyển giao đại trà.\n\n" +
-                "Mọi công nghệ niêm yết trên Sàn NacenTwin đều được Hội đồng Chuyên gia thẩm định cấp chứng nhận TRL trước khi công bố.",
+                "Thang đo TRL (Technology Readiness Level) chuẩn hóa 9 cấp độ sẵn sàng công nghệ ứng dụng trong sản xuất công nghiệp:\n\n" +
+                "• **TRL 1–3**: Nghiên cứu nguyên lý và kiểm chứng trong phòng thí nghiệm.\n" +
+                "• **TRL 4–6**: Hoàn thiện mô hình thực nghiệm (PoC), chế tạo nguyên mẫu (Prototype) tại xưởng thử nghiệm.\n" +
+                "• **TRL 7–8**: Thử nghiệm dây chuyền thực tế tại nhà máy, kiểm định độ bền và chứng nhận tiêu chuẩn công nghiệp.\n" +
+                "• **TRL 9**: Đã vận hành thương mại ổn định, sẵn sàng cung ứng OEM/ODM hàng loạt cho chuỗi FDI.\n\n" +
+                "Các hồ sơ năng lực trên Cổng BACLINK được Ban Tiêu chuẩn & Thẩm định Chất lượng rà soát minh bạch.",
                 "TRL_GUIDE",
-                "/dich-vu-khac",
+                "/chao-ban-cong-nghe",
                 [
-                    new("Công cụ tự đánh giá TRL", "Thực hiện bảng kiểm định 9 mức độ theo TT17", "/dich-vu-khac", "TRL ĐÁNH GIÁ"),
-                    new("Danh mục công nghệ TRL 7-9", "Các công nghệ sẵn sàng chuyển giao", "/chao-ban-cong-nghe", "CHÀO BÁN")
+                    new("Danh mục giải pháp TRL 8-9", "Các sản phẩm & năng lực sẵn sàng cung ứng", "/chao-ban-cong-nghe", "CUNG ỨNG"),
+                    new("Đào tạo Tiêu chuẩn Công nghiệp", "Các khóa học IATF 16949, ISO 9001 & Lean/5S", "/elearning", "ĐÀO TẠO")
                 ]
             );
         }
 
-        // 8. Định giá & Chuyển giao công nghệ / Sáng chế
+        // 8. Định giá & Chuyển giao công nghệ / Hợp tác OEM
         if (norm.Contains("dinh gia") || norm.Contains("gia ban") || norm.Contains("gia mua") ||
             norm.Contains("chuyen nhuong") || norm.Contains("bao nhieu tien") || norm.Contains("chi phi") ||
             norm.Contains("li-xang") || norm.Contains("lixang") || norm.Contains("licence") ||
             norm.Contains("nano") || norm.Contains("sang che"))
         {
             return new AiQuickAssistResponseDto(
-                "Để định giá công nghệ hoặc sáng chế trên Sàn NacenTwin, chúng tôi áp dụng 3 phương pháp tiêu chuẩn quốc tế và quy định Bộ KH&CN:\n\n" +
-                "• **Phương pháp Chi phí (Cost Approach)**: Tính toán tổng chi phí R&D, vật tư, nhân công và hao mòn thiết bị thực tế đã đầu tư.\n" +
-                "• **Phương pháp Dòng tiền chiết khấu (Income/DCF Approach)**: Dự báo doanh thu và biên lợi nhuận mang lại trong tương lai khi ứng dụng công nghệ.\n" +
-                "• **Phương pháp So sánh thị trường (Market Approach)**: Đối chiếu với các giao dịch chuyển nhượng / li-xăng tương đương trên thị trường.\n\n" +
-                "Bạn có thể đăng tải hồ sơ chào bán để được Hội đồng Chuyên gia Viện NacenTech tư vấn định giá độc lập.",
+                "Để xây dựng báo giá hợp tác gia công OEM/ODM hoặc chuyển giao giải pháp kỹ thuật trên BACLINK, doanh nghiệp có thể áp dụng 3 phương pháp chuẩn:\n\n" +
+                "• **Phương pháp Chi phí (Cost-Plus)**: Bóc tách định mức vật tư, giờ máy CNC/SMT, chi phí khuôn gá và quản lý chất lượng.\n" +
+                "• **Phương pháp Hiệu quả Đầu tư (ROI/DCF)**: Tính toán mức tiết giảm nhân công, giảm tỷ lệ phế phẩm và nâng hiệu suất OEE tại nhà máy.\n" +
+                "• **Phương pháp Tham chiếu Thị trường**: Đối chiếu đơn giá cung ứng tương đương trong các KCN Bắc Ninh.\n\n" +
+                "Bạn có thể kết nối trực tiếp Ban Cố vấn Kỹ thuật BACLINK để được hỗ trợ thẩm định kỹ thuật và phương án hợp tác.",
                 "PRICING",
                 "/chao-ban-cong-nghe",
                 [
-                    new("Đăng ký tư vấn định giá", "Hội đồng Chuyên gia Viện NacenTech tư vấn độc lập", "/chao-ban-cong-nghe", "ĐỊNH GIÁ"),
-                    new("Mẫu hợp đồng Li-xăng / Chuyển giao", "Mẫu hợp đồng chuẩn Bộ KH&CN", "/dich-vu-khac", "PHÁP LÝ")
+                    new("Kết nối Cố vấn Kỹ thuật", "Ban Cố vấn Kỹ thuật Hiệp hội BACLINK tư vấn 1-1", "/experts", "TƯ VẤN"),
+                    new("Dịch vụ Hỗ trợ Hội viên", "Tư vấn tiêu chuẩn FDI, MES & chuyển đổi xanh", "/dich-vu-khac", "DỊCH VỤ")
                 ]
             );
         }
 
-        // 9. Chào bán công nghệ
+        // 9. Chào bán công nghệ / Năng lực sản xuất
         if (norm.Contains("chao ban") || norm.Contains("ban cong nghe") || norm.Contains("dang cong nghe") ||
             norm.Contains("ban sang che") || norm.Contains("chuyen giao") || norm.Contains("muon ban"))
         {
             return new AiQuickAssistResponseDto(
-                "Sàn NacenTwin hỗ trợ các nhà khoa học, viện nghiên cứu và doanh nghiệp niêm yết chào bán công nghệ với quy trình 4 bước:\n\n" +
-                "1. Đăng ký tài khoản tổ chức/cá nhân và hoàn tất xác thực hồ sơ.\n" +
-                "2. Đăng tải thông tin giải pháp kỹ thuật, bằng độc quyền SHTT và mức TRL tự đánh giá.\n" +
-                "3. Hội đồng Chuyên gia thẩm định cấp chứng nhận TRL trong 3–5 ngày làm việc.\n" +
-                "4. Công nghệ được niêm yết công khai trên Sàn và tự động ghép cặp tới các doanh nghiệp đang tìm mua.",
+                "Cổng BACLINK hỗ trợ các doanh nghiệp hội viên Bắc Ninh niêm yết sản phẩm, thiết bị và năng lực gia công qua 4 bước:\n\n" +
+                "1. Đăng nhập tài khoản Doanh nghiệp Hội viên và hoàn tất xác thực hồ sơ năng lực.\n" +
+                "2. Đăng tải thông số kỹ thuật, công suất nhà máy và chứng chỉ chất lượng (ISO 9001, IATF 16949, ESD...).\n" +
+                "3. Ban Thẩm định Hiệp hội BACLINK rà soát và duyệt niêm yết.\n" +
+                "4. Hồ sơ được công bố trên Sàn Cung ứng và tự động ghép cặp với nhu cầu đặt hàng từ đối tác.",
                 "SELLER_OFFER",
                 "/chao-ban-cong-nghe",
                 [
-                    new("Đăng tải hồ sơ chào bán", "Niêm yết sáng chế / công nghệ lên sàn", "/chao-ban-cong-nghe", "ĐĂNG BÁN")
+                    new("Khám phá Sàn Cung ứng", "Xem sản phẩm & năng lực sản xuất hội viên", "/chao-ban-cong-nghe", "CUNG ỨNG")
                 ]
             );
         }
@@ -198,32 +196,32 @@ public sealed class PortalAiAssistantService(
             norm.Contains("giai phap"))
         {
             return new AiQuickAssistResponseDto(
-                "Doanh nghiệp có bài toán công nghệ hoặc cần tối ưu dây chuyền sản xuất có thể gửi Phiếu khảo sát nhu cầu trực tiếp trên Sàn:\n\n" +
-                "• Nền tảng sẽ kích hoạt thuật toán AI Matching để tìm giải pháp sẵn có trong kho Chào bán.\n" +
-                "• Nếu chưa có công nghệ sẵn sàng, bài toán sẽ được chuyển tới mạng lưới 50+ viện nghiên cứu, trường đại học để thực hiện đặt hàng R&D theo yêu cầu.",
+                "Doanh nghiệp có nhu cầu tìm nhà cung ứng nội địa hoặc giải quyết bài toán kỹ thuật nhà máy có thể đăng bài toán đặt hàng trực tiếp trên Cổng BACLINK:\n\n" +
+                "• Hệ thống tự động đối khớp với năng lực sản xuất của các doanh nghiệp hội viên trong các KCN Bắc Ninh.\n" +
+                "• Ban Cố vấn Kỹ thuật BACLINK hỗ trợ kết nối và đồng hành khảo sát thực tế tại phân xưởng.",
                 "BUYER_DEMAND",
                 "/nhu-cau-cong-nghe",
                 [
-                    new("Gửi phiếu khảo sát nhu cầu", "Nhận đề xuất giải pháp kỹ thuật trong 24h", "/nhu-cau-cong-nghe", "ĐẶT HÀNG"),
-                    new("Tra cứu kho công nghệ chào bán", "Hơn 120+ công nghệ đã được chứng nhận TRL", "/chao-ban-cong-nghe", "CHÀO BÁN")
+                    new("Xem Nhu cầu Đặt hàng", "Các bài toán kỹ thuật & tìm nhà cung ứng tại Bắc Ninh", "/nhu-cau-cong-nghe", "ĐẶT HÀNG"),
+                    new("Tra cứu Năng lực Hội viên", "Các giải pháp & dịch vụ gia công sẵn sàng", "/chao-ban-cong-nghe", "CUNG ỨNG")
                 ]
             );
         }
 
         // 11. Phản hồi thông minh mở (Smart Fallback kèm gợi ý tương tác)
         return new AiQuickAssistResponseDto(
-            $"Tôi là Trợ lý Ảo AI NacentTwin. Đối với câu hỏi của bạn: \"{prompt}\", tôi sẵn sàng giải đáp và tư vấn trực tiếp theo các phân hệ nghiệp vụ của Sàn:\n\n" +
-            "• 🎯 Bạn muốn đánh giá cấp độ hoàn thiện công nghệ TRL 1-9 theo TT17?\n" +
-            "• 💰 Bạn cần tư vấn định giá sáng chế và mô hình chuyển nhượng / li-xăng?\n" +
-            "• 🔍 Bạn muốn tra cứu công nghệ chào bán hoặc đăng tải bài toán nhu cầu tìm mua?\n" +
-            "• 👨‍🔬 Bạn muốn kết nối trực tiếp với Chuyên gia KH&CN đầu ngành theo lĩnh vực?\n\n" +
-            "Hãy cho tôi biết thêm chi tiết để tôi tư vấn cụ thể cho bạn!",
+            $"Tôi là Trợ lý Ảo AI BACLINK. Đối với câu hỏi của bạn: \"{prompt}\", tôi sẵn sàng hỗ trợ kết nối theo các phân hệ của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh:\n\n" +
+            "• 🔍 Tra cứu năng lực gia công, thiết bị công nghiệp hoặc nhu cầu đặt hàng B2B\n" +
+            "• 👨‍🔬 Kết nối trực tiếp với Ban Cố vấn Kỹ thuật theo 8 ngành công nghiệp chủ lực\n" +
+            "• 🎪 Xem lịch hội thảo, diễn đàn kết nối chuỗi cung ứng FDI – Nội địa tại Bắc Ninh\n" +
+            "• 📚 Tham gia các khóa đào tạo thực chiến Lean/5S, IATF 16949, MES/ERP và ESG\n\n" +
+            "Hãy cho tôi biết thêm chi tiết để tôi hỗ trợ cụ thể cho bạn!",
             "GENERAL_DISCOVERY",
             "/chao-ban-cong-nghe",
             [
-                new("Tìm chuyên gia theo lĩnh vực", "Tra cứu danh bạ chuyên gia KH&CN", "/experts", "CHUYÊN GIA"),
-                new("Sự kiện & Phiên chào giá Techmart", "Đăng ký vé tham quan & phiên giao dịch", "/trien-lam", "TECHMART"),
-                new("Công cụ tự đánh giá TRL", "Kiểm định cấp độ sẵn sàng công nghệ", "/dich-vu-khac", "TRL 1-9")
+                new("Tìm Cố vấn theo ngành", "Tra cứu Ban Cố vấn Kỹ thuật BACLINK", "/experts", "CỐ VẤN"),
+                new("Sự kiện Kết nối BACLINK", "Xem lịch sự kiện công nghiệp tại Bắc Ninh", "/trien-lam", "SỰ KIỆN"),
+                new("Danh bạ Doanh nghiệp Hội viên", "Tra cứu hội viên sản xuất Bắc Ninh", "/enterprises", "HỘI VIÊN")
             ]
         );
     }
@@ -361,12 +359,12 @@ public sealed class PortalAiAssistantService(
         if (matchedExperts.Count == 0 && !string.IsNullOrWhiteSpace(searchKeyword))
         {
             return new AiQuickAssistResponseDto(
-                $"Rất tiếc, tôi đã tra cứu CSDL Sàn NacenTwin nhưng không tìm thấy Chuyên gia KH&CN nào khớp với từ khóa/tên: \"{searchKeyword}\".\n\n" +
-                "Bạn có thể kiểm tra lại chính tả hoặc xem danh bạ hơn 90+ Chuyên gia KH&CN đã được Bộ KH&CN thẩm định tại liên kết bên dưới:",
+                $"Rất tiếc, tôi đã tra cứu CSDL BACLINK nhưng không tìm thấy Cố vấn Kỹ thuật nào khớp với từ khóa/tên: \"{searchKeyword}\".\n\n" +
+                "Bạn có thể kiểm tra lại chính tả hoặc xem toàn bộ danh bạ Ban Cố vấn Kỹ thuật Hiệp hội BACLINK tại liên kết bên dưới:",
                 "EXPERT_MATCH",
                 "/experts",
                 [
-                    new("Xem toàn bộ danh bạ Chuyên gia", "Tra cứu chuyên gia theo lĩnh vực & học hàm", "/experts", "CHUYÊN GIA")
+                    new("Xem toàn bộ danh bạ Cố vấn", "Tra cứu cố vấn kỹ thuật theo 8 ngành công nghiệp", "/experts", "CỐ VẤN")
                 ]
             );
         }
@@ -377,11 +375,11 @@ public sealed class PortalAiAssistantService(
             var sb = new StringBuilder();
             if (!string.IsNullOrWhiteSpace(searchKeyword))
             {
-                sb.AppendLine($"Tôi đã truy xuất CSDL Sàn NacenTwin và tìm thấy {matchedExperts.Count} Chuyên gia KH&CN phù hợp với từ khóa \"{searchKeyword}\":\n");
+                sb.AppendLine($"Tôi đã truy xuất CSDL BACLINK và tìm thấy {matchedExperts.Count} Cố vấn Kỹ thuật phù hợp với từ khóa \"{searchKeyword}\":\n");
             }
             else
             {
-                sb.AppendLine($"Dưới đây là {matchedExperts.Count} Chuyên gia KH&CN tiêu biểu sẵn sàng nhận tư vấn 1-1 trên Sàn NacenTwin:\n");
+                sb.AppendLine($"Dưới đây là {matchedExperts.Count} Cố vấn Kỹ thuật tiêu biểu sẵn sàng nhận tư vấn 1-1 trên Cổng BACLINK:\n");
             }
 
             var suggestions = new List<AiSuggestionItemDto>();
@@ -409,21 +407,23 @@ public sealed class PortalAiAssistantService(
                 {
                     sb.AppendLine($"• **Chức vụ**: {exp.PositionTitle}");
                 }
-                var sectors = exp.ExpertiseSectors.Count > 0 ? string.Join(", ", exp.ExpertiseSectors) : "CNTT & Đổi mới sáng tạo";
+                var sectors = exp.ExpertiseSectorNames is { Count: > 0 }
+                    ? string.Join(", ", exp.ExpertiseSectorNames)
+                    : (exp.PrimarySectorName ?? (exp.ExpertiseSectors.Count > 0 ? string.Join(", ", exp.ExpertiseSectors) : "Công nghiệp chế tạo"));
                 sb.AppendLine($"• **Lĩnh vực**: {sectors}");
-                sb.AppendLine($"• **Trạng thái**: {(exp.IsAcceptingConsultation ? "🟢 Sẵn sàng nhận tham vấn 1-1" : "Đã thẩm định chuẩn Bộ KH&CN")}");
+                sb.AppendLine($"• **Trạng thái**: {(exp.IsAcceptingConsultation ? "🟢 Sẵn sàng nhận tham vấn 1-1" : "Thành viên Ban Cố vấn Kỹ thuật BACLINK")}");
                 sb.AppendLine($"👉 [Xem chi tiết hồ sơ & Đặt lịch tư vấn](/experts/{exp.ExpertCode})\n");
 
                 suggestions.Add(new AiSuggestionItemDto(
                     displayName,
-                    $"{exp.PositionTitle ?? "Chuyên gia"} — {exp.OrganizationName}",
+                    $"{exp.PositionTitle ?? "Cố vấn Kỹ thuật"} — {exp.OrganizationName}",
                     $"/experts/{exp.ExpertCode}",
-                    exp.PrimarySectorCode ?? "CHUYÊN GIA"
+                    exp.PrimarySectorName ?? exp.PrimarySectorCode ?? "CỐ VẤN"
                 ));
                 idx++;
             }
 
-            sb.AppendLine("Bạn có thể bấm trực tiếp vào liên kết bên dưới để xem lý lịch khoa học hoặc gửi phiếu yêu cầu tư vấn 1-1 ngay nhé!");
+            sb.AppendLine("Bạn có thể bấm trực tiếp vào liên kết bên dưới để xem hồ sơ chuyên môn hoặc gửi yêu cầu tư vấn kỹ thuật 1-1 ngay nhé!");
 
             return new AiQuickAssistResponseDto(
                 sb.ToString().Trim(),
@@ -434,11 +434,11 @@ public sealed class PortalAiAssistantService(
         }
 
         return new AiQuickAssistResponseDto(
-            "Hiện tại hệ thống đang cập nhật hồ sơ chuyên gia theo tiêu chí bạn yêu cầu. Bạn có thể tra cứu toàn bộ danh bạ hơn 90+ Chuyên gia KH&CN đã được Bộ KH&CN thẩm định tại Danh bạ Chuyên gia:",
+            "Hiện tại hệ thống đang cập nhật hồ sơ cố vấn theo tiêu chí bạn yêu cầu. Bạn có thể tra cứu toàn bộ danh bạ Ban Cố vấn Kỹ thuật Hiệp hội BACLINK tại:",
             "EXPERT_MATCH",
             "/experts",
             [
-                new("Xem danh bạ Chuyên gia KH&CN", "Tra cứu hơn 90+ hồ sơ chuyên gia theo ngành", "/experts", "CHUYÊN GIA")
+                new("Xem danh bạ Ban Cố vấn Kỹ thuật", "Tra cứu hồ sơ cố vấn theo 8 ngành công nghiệp Bắc Ninh", "/experts", "CỐ VẤN")
             ]
         );
     }

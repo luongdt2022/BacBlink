@@ -294,14 +294,30 @@ public class EfEnterpriseRepository : IEnterpriseRepository
             .OrderByDescending(x => x.Count)
             .ToList();
 
-        var topBottlenecks = new List<BottleneckCountDto>
+        var bottleneckCounter = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var ent in all)
         {
-            new("Thiếu vốn đầu tư cho R&D và đổi mới công nghệ", 192),
-            new("Thiếu thông tin công nghệ và đối tác uy tín", 145),
-            new("Khó tiếp cận chính sách và quỹ hỗ trợ KH&CN của Nhà nước", 128),
-            new("Thiếu nhân lực kỹ thuật chất lượng cao", 110),
-            new("Chi phí chuyển giao và bản quyền công nghệ quá cao", 95)
-        };
+            if (string.IsNullOrWhiteSpace(ent.TopBottlenecksJson) || ent.TopBottlenecksJson == "[]") continue;
+            try
+            {
+                var list = System.Text.Json.JsonSerializer.Deserialize<List<string>>(ent.TopBottlenecksJson);
+                if (list is null) continue;
+                foreach (var item in list)
+                {
+                    if (string.IsNullOrWhiteSpace(item)) continue;
+                    var key = item.Trim();
+                    bottleneckCounter[key] = bottleneckCounter.GetValueOrDefault(key, 0) + 1;
+                }
+            }
+            catch { }
+        }
+
+        var topBottlenecks = bottleneckCounter
+            .OrderByDescending(kv => kv.Value)
+            .ThenBy(kv => kv.Key)
+            .Take(5)
+            .Select(kv => new BottleneckCountDto(kv.Key, kv.Value))
+            .ToList();
 
         return new EnterpriseDashboardStatsDto(total, verified, byProvince, bySector, byTni, topBottlenecks);
     }

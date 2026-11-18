@@ -336,7 +336,7 @@ public sealed class EnterpriseController(IEnterpriseService enterpriseService, I
             null, "Submit verification to Provincial Gov", AuditOutcomes.Success, null, Actor.CorrelationId, Actor.IpAddress, Actor.UserAgent, null
         ));
 
-        return Ok(Ok200(new { message = "Hồ sơ đã được gửi thẩm định thành công tới Sở KH&CN địa phương." }));
+        return Ok(Ok200(new { message = "Hồ sơ đã được gửi thẩm định thành công tới Ban Thẩm định BACLINK." }));
     }
 
     [HttpGet("/api/v1/admin/enterprises/dashboard")]

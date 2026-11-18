@@ -24,37 +24,28 @@ public sealed class PortalOverviewService(DbContext db, IMemoryCache cache) : IP
             return cached;
         }
 
-        // 1. Tổng Cung Công Nghệ (Status = 'APPROVED' hoặc toàn bộ nếu chưa phân luồng kiểm duyệt)
+        // 1. Tổng Cung Công Nghệ (Status = 'APPROVED' và chưa xóa mềm)
         var totalOffers = await db.Set<SellerTechnologyOffer>().AsNoTracking()
-            .CountAsync(o => o.Status == "APPROVED", ct);
+            .CountAsync(o => o.Status == "APPROVED" && !o.IsDeleted, ct);
         if (totalOffers == 0)
         {
-            totalOffers = await db.Set<SellerTechnologyOffer>().AsNoTracking().CountAsync(ct);
-        }
-        if (totalOffers == 0)
-        {
-            totalOffers = await db.Set<TechnologyAsset>().AsNoTracking().CountAsync(ct);
+            totalOffers = await db.Set<SellerTechnologyOffer>().AsNoTracking()
+                .CountAsync(o => !o.IsDeleted, ct);
         }
 
         // 2. Tổng Cầu Doanh Nghiệp (Chỉ đếm các bài toán đã được duyệt và công khai: is_public_listed = true AND status = 'VERIFIED')
         var totalDemands = await db.Set<DemandItem>().AsNoTracking()
             .CountAsync(d => d.IsPublicListed && d.Status == DemandItemStatuses.Verified, ct);
-        if (totalDemands == 0)
-        {
-            totalDemands = await db.Set<DemandSurvey>().AsNoTracking().CountAsync(ct);
-        }
-        if (totalDemands == 0)
-        {
-            totalDemands = await db.Set<DemandBrief>().AsNoTracking().CountAsync(ct);
-        }
 
-        // 3. Doanh nghiệp và Chuyên gia
-        var totalEnterprises = await db.Set<Enterprise>().AsNoTracking().CountAsync(ct);
-        var totalExperts = await db.Set<ExpertProfile>().AsNoTracking().CountAsync(ct);
+        // 3. Doanh nghiệp Hội viên và Cố vấn Kỹ thuật công khai
+        var totalEnterprises = await db.Set<Enterprise>().AsNoTracking()
+            .CountAsync(e => e.Status == "ACTIVE" && e.TaxCode != null && e.TaxCode != "", ct);
+        var totalExperts = await db.Set<ExpertProfile>().AsNoTracking()
+            .CountAsync(p => p.Status == "APPROVED" && p.VisibilityStatus == "PUBLIC", ct);
 
-        // 4. Số tỉnh thành thực tế (COUNT DISTINCT province_city từ Enterprise, không hardcode số 34)
+        // 4. Số địa bàn thực tế (COUNT DISTINCT province_city từ Enterprise active)
         var totalProvinces = await db.Set<Enterprise>().AsNoTracking()
-            .Where(e => !string.IsNullOrWhiteSpace(e.ProvinceCity))
+            .Where(e => e.Status == "ACTIVE" && e.TaxCode != null && e.TaxCode != "" && !string.IsNullOrWhiteSpace(e.ProvinceCity))
             .Select(e => e.ProvinceCity.Trim())
             .Distinct()
             .CountAsync(ct);

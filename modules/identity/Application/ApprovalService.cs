@@ -441,17 +441,23 @@ public sealed class ApprovalService(
 
     private static string? ResolveProvinceName(string? provinceId)
     {
-        if (string.IsNullOrWhiteSpace(provinceId)) return null;
+        if (string.IsNullOrWhiteSpace(provinceId)) return "Bắc Ninh";
         return provinceId.ToUpperInvariant() switch
         {
-            "HN" => "Sở KH&CN Hà Nội",
-            "HCM" => "Sở KH&CN TP. Hồ Chí Minh",
-            "HP" => "Sở KH&CN Hải Phòng",
-            "DN" => "Sở KH&CN Đà Nẵng",
-            "CT" => "Sở KH&CN Cần Thơ",
-            "BD" => "Sở KH&CN Bình Dương",
-            "DNA" => "Sở KH&CN Đồng Nai",
-            _ => $"Sở KH&CN {provinceId}"
+            "BN" => "Tỉnh Bắc Ninh",
+            "KCN_VSIP_BN" => "KCN VSIP Bắc Ninh",
+            "KCN_YENPHONG_BN" => "KCN Yên Phong",
+            "KCN_TIENSON_BN" => "KCN Tiên Sơn",
+            "KCN_QUEVO_BN" => "KCN Quế Võ",
+            "KCN_DAIDONG_BN" => "KCN Đại Đồng - Hoàn Sơn",
+            "KCN_THUANTHANH_BN" => "KCN Thuận Thành",
+            "TU_SON" => "TP. Từ Sơn",
+            "YEN_PHONG" => "H. Yên Phong",
+            "QUE_VO" => "TX. Quế Võ",
+            "TIEN_DU" => "H. Tiên Du",
+            "HN" => "TP. Hà Nội",
+            "HCM" => "TP. Hồ Chí Minh",
+            _ => "Tỉnh Bắc Ninh"
         };
     }
 
@@ -587,7 +593,7 @@ public sealed class ApprovalService(
 
         if (string.IsNullOrWhiteSpace(payload.Province))
         {
-            throw new ValidationException("Sở KH&CN tiếp nhận thẩm định không được để trống.");
+            throw new ValidationException("Đơn vị tiếp nhận thẩm định không được để trống.");
         }
 
         if (string.IsNullOrWhiteSpace(payload.Description) || payload.Description.Trim().Length < 10)

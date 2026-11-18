@@ -77,8 +77,21 @@ public sealed class MasterDataSectorIntegrationTests(PostgresFixture fixture)
         var taxonomyService = scope.ServiceProvider.GetRequiredService<ITaxonomyService>();
 
         var controller = new MasterDataControllers(taxonomyService);
-        var actionResult = await controller.GetSectors(activeOnly: true);
+        var defaultResult = await controller.GetSectors();
+        var defaultOk = defaultResult.ShouldBeOfType<OkObjectResult>();
+        defaultOk.Value.ShouldNotBeNull();
+        var dataProp = defaultOk.Value!.GetType().GetProperty("data")!;
+        var defaultList = ((IEnumerable<SectorItemDto>)dataProp.GetValue(defaultOk.Value)!).ToList();
+        defaultList.Count.ShouldBeGreaterThanOrEqualTo(8);
+        defaultList.ShouldAllBe(s => s.IsActive && !s.Code.StartsWith("LV"));
 
+        var includeInactiveResult = await controller.GetSectors(includeInactive: true);
+        var includeInactiveOk = includeInactiveResult.ShouldBeOfType<OkObjectResult>();
+        var allList = ((IEnumerable<SectorItemDto>)dataProp.GetValue(includeInactiveOk.Value)!).ToList();
+        allList.Count.ShouldBeGreaterThanOrEqualTo(18);
+        allList.ShouldContain(s => !s.IsActive && s.Code.StartsWith("LV"));
+
+        var actionResult = await controller.GetSectors(activeOnly: true);
         var okResult = actionResult.ShouldBeOfType<OkObjectResult>();
         okResult.Value.ShouldNotBeNull();
 

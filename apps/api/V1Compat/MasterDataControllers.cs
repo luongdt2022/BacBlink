@@ -205,9 +205,14 @@ public sealed class MasterDataControllers(ITaxonomyService taxonomy) : V1Control
     }
 
     [HttpGet("sectors")]
-    public async Task<IActionResult> GetSectors([FromQuery] bool activeOnly = false, CancellationToken ct = default)
+    [AllowAnonymous]
+    public async Task<IActionResult> GetSectors(
+        [FromQuery] bool includeInactive = false,
+        [FromQuery] bool? activeOnly = null,
+        CancellationToken ct = default)
     {
-        var terms = await taxonomy.ListAsync(TaxonomyKinds.Sector, activeOnly, ct);
+        var onlyActive = !includeInactive && (activeOnly ?? true);
+        var terms = await taxonomy.ListAsync(TaxonomyKinds.Sector, onlyActive, ct);
         var dbSectors = terms.Where(t => !string.IsNullOrEmpty(t.Code)).Select(t =>
         {
             string tt17 = string.Empty;

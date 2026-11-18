@@ -190,19 +190,19 @@ public static class InnovationRatingEngine
         {
             classification = "LEADING";
             label = "Dẫn đầu";
-            badge = "Huy hiệu Vàng ĐMST";
+            badge = "Hội viên Tiêu biểu BACLINK";
         }
         else if (totalScore >= 50.0m)
         {
             classification = "DEVELOPING";
             label = "Đang phát triển";
-            badge = "Huy hiệu Bạc ĐMST";
+            badge = "Hội viên Nòng cốt BACLINK";
         }
         else
         {
             classification = "POTENTIAL";
             label = "Tiềm năng";
-            badge = "Huy hiệu Đồng ĐMST";
+            badge = "Hội viên Chính thức BACLINK";
         }
 
         return new InnovationEvaluationCalculationResult

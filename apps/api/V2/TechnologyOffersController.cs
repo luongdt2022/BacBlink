@@ -1203,7 +1203,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
 
         var message = isDraft
             ? "Đã lưu nháp hồ sơ thành công vào kho Seller."
-            : "Đăng hồ sơ chào bán thành công! Hồ sơ đang ở trạng thái CHỜ THẨM ĐỊNH (PENDING) bởi Sở KH&CN.";
+            : "Đăng hồ sơ chào bán thành công! Hồ sơ đang ở trạng thái CHỜ THẨM ĐỊNH (PENDING) bởi Ban Thẩm định BACLINK.";
 
         return CreatedAtAction(nameof(GetOfferById), new { id }, new { success = true, message, data = newOffer });
     }
@@ -1626,7 +1626,7 @@ public sealed class TechnologyOffersController(NacenTechDbContext db, IUnitOfWor
         var message = isDraft
             ? "Đã lưu nháp hồ sơ thành công."
             : coreIpChanged && currentStatus == "APPROVED"
-                ? "Cập nhật hồ sơ thành công! Sản phẩm tiếp tục được niêm yết trên sàn, trạng thái xác thực TRL & SHTT được chuyển về CHỜ XÁC THỰC (PENDING_VERIFICATION) để Sở KH&CN hậu kiểm theo quy tắc BR-SELLER-07."
+                ? "Cập nhật hồ sơ thành công! Sản phẩm tiếp tục được niêm yết trên sàn, trạng thái xác thực TRL & SHTT được chuyển về CHỜ XÁC THỰC (PENDING_VERIFICATION) để Ban Thẩm định BACLINK hậu kiểm theo quy tắc BR-SELLER-07."
                 : "Cập nhật thông tin công nghệ chào bán thành công.";
 
         return Ok(new

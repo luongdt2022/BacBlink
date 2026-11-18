@@ -158,7 +158,7 @@ public sealed class InnovationSurveyInvariantsTests
         // Assert: Doanh nghiệp đạt thứ hạng LEADING (>= 75đ)
         result.TotalScore.ShouldBeGreaterThanOrEqualTo(75.0m);
         result.Classification.ShouldBe("LEADING");
-        result.BadgeName.ShouldBe("Huy hiệu Vàng ĐMST");
+        result.BadgeName.ShouldBe("Hội viên Tiêu biểu BACLINK");
 
         // Kiểm tra đủ 8 nhóm năng lực
         result.GroupScores.Count.ShouldBe(8);
@@ -239,7 +239,7 @@ public sealed class InnovationSurveyInvariantsTests
         result.TotalScore.ShouldBeGreaterThanOrEqualTo(50.0m);
         result.TotalScore.ShouldBeLessThan(75.0m);
         result.Classification.ShouldBe("DEVELOPING");
-        result.BadgeName.ShouldBe("Huy hiệu Bạc ĐMST");
+        result.BadgeName.ShouldBe("Hội viên Nòng cốt BACLINK");
     }
 
     [Fact]
@@ -286,7 +286,7 @@ public sealed class InnovationSurveyInvariantsTests
         result.TotalScore.ShouldBeLessThan(50.0m);
         result.TotalScore.ShouldBeGreaterThan(0.0m);
         result.Classification.ShouldBe("POTENTIAL");
-        result.BadgeName.ShouldBe("Huy hiệu Đồng ĐMST");
+        result.BadgeName.ShouldBe("Hội viên Chính thức BACLINK");
     }
 
     // =========================================================================

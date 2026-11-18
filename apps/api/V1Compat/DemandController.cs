@@ -1218,7 +1218,7 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
             {
                 success = false,
                 code = "ERR_DEMAND_NOT_VERIFIED",
-                message = "Bài toán công nghệ chưa được Sở KH&CN phê duyệt niêm yết, không thể gửi hồ sơ chào bán giải pháp."
+                message = "Bài toán nhu cầu chưa được Ban Thẩm định BACLINK xác thực niêm yết, không thể gửi hồ sơ chào giải pháp."
             });
         }
 
@@ -1238,9 +1238,9 @@ public sealed class DemandController(NacenTechDbContext db, IUnitOfWork uow, IPe
                     created_at, updated_at
                 ) VALUES (
                     gen_random_uuid(), @oppCode, @title,
-                    @buyerOrg, 'Đại diện Bên Mua (PDPD Masked)', '0901234567', 'buyer@company.vn',
+                    @buyerOrg, 'Đại diện Bên Mua (PDPD Masked)', '0901234567', 'buyer@baclink.org.vn',
                     @sellerOrg, @sellerContact, @sellerPhone, @sellerEmail,
-                    'Ban Thẩm Định NacenTwin', 'SO_KHCN_HN', 'INITIATED', 500,
+                    'Ban Cố vấn Kỹ thuật BACLINK', 'BACLINK', 'INITIATED', 500,
                     now(), now()
                 );";
 

@@ -665,6 +665,7 @@ public sealed class ExpertController(
 
     private static async Task EnsureProjectsTableAndSeedAsync(DbConnection conn, Guid personId, CancellationToken ct)
     {
+        _ = personId;
         using var cmdCreate = conn.CreateCommand();
         cmdCreate.CommandText = @"
             CREATE SCHEMA IF NOT EXISTS brokerage;
@@ -689,55 +690,6 @@ public sealed class ExpertController(
                 updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
             );";
         await cmdCreate.ExecuteNonQueryAsync(ct);
-
-        using var cmdCount = conn.CreateCommand();
-        cmdCount.CommandText = "SELECT COUNT(*) FROM brokerage.expert_projects WHERE person_id = @personId;";
-        var p = cmdCount.CreateParameter();
-        p.ParameterName = "@personId";
-        p.Value = personId;
-        cmdCount.Parameters.Add(p);
-        var count = Convert.ToInt64(await cmdCount.ExecuteScalarAsync(ct));
-
-        if (count == 0)
-        {
-            using var cmdSeed = conn.CreateCommand();
-            cmdSeed.CommandText = @"
-                INSERT INTO brokerage.expert_projects (
-                    id, person_id, project_code, title, stage, security_status, partner_org_name,
-                    sector_code, sector_name, current_trl, current_trl_label, target_trl, target_trl_label,
-                    estimated_value_vnd, deadline_sla_text, deal_room_url, created_at, updated_at
-                ) VALUES 
-                (
-                    'c0000000-0000-0000-0000-000000000001', @personId, 'PRJ-EXP-2026-042', 'Chuyển Giao Thuật Toán AI Giám Sát Mòn Dao Phay CNC Thời Gian Thực', 'DEAL_ROOM', 'NDA ĐÃ KÝ', 'Công ty TNHH Cơ Khí Chính Xác Hà Nội Precision',
-                    '03', 'Cơ khí - Tự động hóa', 4, 'Lab Prototype', 6, 'Thử Nghiệm Xưởng',
-                    450000000, 'Còn 03 ngày (17/10/2026)', '/portal/opportunities/proj-001/deal-room', now() - interval '5 days', now()
-                ),
-                (
-                    'c0000000-0000-0000-0000-000000000002', @personId, 'PRJ-EXP-2026-049', 'Nâng Cấp Hệ Thống Robot Delta Phân Loại Nông Sản Tốc Độ Cao', 'INTAKE_NDA', 'CHỜ KÝ NDA', 'HTX Nông Nghiệp Công Nghệ Cao An Phú',
-                    '01', 'Nông nghiệp công nghệ cao', 3, 'Proof-of-Concept', 5, 'Thực Nghiệm Thực Địa',
-                    280000000, 'Còn 07 ngày (21/10/2026)', '/portal/opportunities/proj-002/deal-room', now() - interval '2 days', now()
-                ),
-                (
-                    'c0000000-0000-0000-0000-000000000003', @personId, 'PRJ-EXP-2026-035', 'Quy Trình Tinh Chế Nano Curcumin Độ Tinh Khiết Cao 98%', 'TRL_ASSESSMENT', 'NDA ĐÃ KÝ', 'Công ty CP Dược Liệu Xanh Việt Nam',
-                    '07', 'Y - Dược học', 5, 'Mô Hình Thử Nghiệm', 7, 'Thử Nghiệm Lâm Sàng',
-                    850000000, 'Còn 14 ngày (28/10/2026)', '/portal/opportunities/proj-003/deal-room', now() - interval '10 days', now()
-                ),
-                (
-                    'c0000000-0000-0000-0000-000000000004', @personId, 'PRJ-EXP-2026-028', 'Hệ Thống Quan Trắc Tự Động Độ Mặn Nguồn Nước Nuôi Tôm IoT', 'MOU_SIGNED', 'DỰ THẢO MOU', 'Hợp Tác Xã Thủy Sản Bạc Liêu EcoShrimp',
-                    '05', 'Công nghệ thông tin', 6, 'Thử Nghiệm Xưởng', 8, 'Triển Khai Đại Trà',
-                    620000000, 'MOU đã ký (Đang lập kế hoạch)', '/portal/opportunities/proj-004/deal-room', now() - interval '15 days', now()
-                ),
-                (
-                    'c0000000-0000-0000-0000-000000000005', @personId, 'PRJ-EXP-2026-015', 'Dây Chuyền Đúc Áp Lực Hợp Kim Nhôm Cường Độ Cao Cho Xe Điện', 'TRANSFER_COMPLETED', 'ĐANG NGHIỆM THU', 'Tập Đoàn Công Nghiệp Phụ Trợ VinFast E-Mobility',
-                    '03', 'Cơ khí - Tự động hóa', 8, 'Triển Khai Đại Trà', 9, 'Vận Hành Thương Mại',
-                    1200000000, 'Hoàn tất nghiệm thu mốc TRL 9', '/portal/opportunities/proj-005/deal-room', now() - interval '30 days', now()
-                );";
-            var pSeed = cmdSeed.CreateParameter();
-            pSeed.ParameterName = "@personId";
-            pSeed.Value = personId;
-            cmdSeed.Parameters.Add(pSeed);
-            await cmdSeed.ExecuteNonQueryAsync(ct);
-        }
     }
 
     [HttpGet("/api/v1/admin/experts/{expertCode}/detail")]

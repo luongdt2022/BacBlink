@@ -26,6 +26,7 @@ UPDATE identity.persons
 SET is_active = false,
     updated_at = NOW()
 WHERE email NOT LIKE '%@baclink.org.vn'
+  AND email NOT LIKE '%@demo.nacentech.vn'
   AND is_active = true;
 
 UPDATE enterprise.enterprises
@@ -98,7 +99,7 @@ VALUES
     '$2a$12$BSQfDKWR4muVTDXffeYcZ.vGctXwriTKBAhPPoa9aNiImmwzJtxb2',
     'bcrypt',
     'Quản trị', 'BACLINK', '02223800100',
-    'Hiệp hội Doanh nghiệp Công nghiệp Hỗ trợ Bắc Ninh (BACLINK)',
+    'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)',
     'ADMIN', 'GLOBAL', NULL,
     true, false, NOW(), 1, NOW(), NOW()
 ),
@@ -154,6 +155,19 @@ ON CONFLICT (email) DO UPDATE SET
     scope_id = NULL,
     is_active = true,
     updated_at = NOW();
+
+-- Đảm bảo các tài khoản demo chuẩn (@demo.nacentech.vn) luôn active cho môi trường thử nghiệm
+UPDATE identity.persons
+SET is_active = true,
+    updated_at = NOW()
+WHERE email IN (
+    'super.admin@demo.nacentech.vn',
+    'buyer.user@demo.nacentech.vn',
+    'seller.user@demo.nacentech.vn',
+    'innovation.entity@demo.nacentech.vn',
+    'expert.user@demo.nacentech.vn',
+    'public.user@demo.nacentech.vn'
+);
 
 -- -----------------------------------------------------------------------------
 -- BƯỚC B2: 10 Doanh nghiệp Hội viên Bắc Ninh (3 DN thực tế tiêu biểu + 7 DN mẫu)
@@ -274,7 +288,7 @@ VALUES
     'KCN Quế Võ I',
     '{"locationCode":"QUE_VO","industrialZoneCode":"KCN_QUE_VO_1","province":"Bắc Ninh"}'::jsonb,
     'https://kinhbac-precision.example.vn',
-    '[Dữ liệu demo mẫu] Doanh nghiệp gia công tiện-phay CNC, chế tạo khuôn đột dập liên hoàn và linh kiện kim loại tấm cho thiết bị điện tử công nghiệp.',
+    'Doanh nghiệp gia công tiện-phay CNC, chế tạo khuôn đột dập liên hoàn và linh kiện kim loại tấm cho thiết bị điện tử công nghiệp.',
     'Lê Văn Hùng', '02223810004', 'contact@kinhbac-precision.example.vn', true,
     true, 'VERIFIED', 'ACTIVE',
     'IND_MECH', 'Cơ khí chính xác, Khuôn mẫu & Chế tạo máy',
@@ -303,7 +317,7 @@ VALUES
     'KCN Yên Phong II-C',
     '{"locationCode":"YEN_PHONG","industrialZoneCode":"KCN_YEN_PHONG_2C","province":"Bắc Ninh"}'::jsonb,
     'https://yenphong-plastic.example.vn',
-    '[Dữ liệu demo mẫu] Chuyên ép phun nhựa kỹ thuật ABS, PC, PA66 chống tĩnh điện, khay tray linh kiện bán dẫn và vỏ thiết bị điện tử phòng sạch.',
+    'Chuyên ép phun nhựa kỹ thuật ABS, PC, PA66 chống tĩnh điện, khay tray linh kiện bán dẫn và vỏ thiết bị điện tử phòng sạch.',
     'Phạm Thị Lan', '02223810005', 'info@yenphong-plastic.example.vn', true,
     true, 'VERIFIED', 'ACTIVE',
     'IND_PLAS', 'Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp',
@@ -332,7 +346,7 @@ VALUES
     'KCN Đại Đồng - Hoàn Sơn',
     '{"locationCode":"TIEN_DU","industrialZoneCode":"KCN_DAI_DONG_HOAN_SON","province":"Bắc Ninh"}'::jsonb,
     'https://vsip-robotics.example.vn',
-    '[Dữ liệu demo mẫu] Tích hợp hệ thống trạm robot gắp đặt (Pick & Place), tủ điều khiển PLC/SCADA và camera kiểm tra ngoại quan dây chuyền lắp ráp điện tử.',
+    'Tích hợp hệ thống trạm robot gắp đặt (Pick & Place), tủ điều khiển PLC/SCADA và camera kiểm tra ngoại quan dây chuyền lắp ráp điện tử.',
     'Ngô Đức Thắng', '02223810006', 'sales@vsip-robotics.example.vn', true,
     true, 'VERIFIED', 'ACTIVE',
     'IND_AUTO', 'Tự động hóa, Robot & Smart Factory',
@@ -361,7 +375,7 @@ VALUES
     'KCN Quế Võ II',
     '{"locationCode":"QUE_VO","industrialZoneCode":"KCN_QUE_VO_2","province":"Bắc Ninh"}'::jsonb,
     'https://quevo-pack.example.vn',
-    '[Dữ liệu demo mẫu] Sản xuất vật liệu đóng gói bảo vệ chống tĩnh điện, màng barrier đa lớp và khay giấy định hình sinh học thay thế xốp EPS cho xuất khẩu FDI.',
+    'Sản xuất vật liệu đóng gói bảo vệ chống tĩnh điện, màng barrier đa lớp và khay giấy định hình sinh học thay thế xốp EPS cho xuất khẩu FDI.',
     'Đỗ Thanh Bình', '02223810007', 'hello@quevo-pack.example.vn', true,
     true, 'VERIFIED', 'ACTIVE',
     'IND_MAT', 'Vật liệu mới & Công nghiệp hỗ trợ',
@@ -372,96 +386,9 @@ VALUES
     '["Kiểm định độ bền nén và chống ẩm vật liệu sinh học","Giảm tiêu hao hơi nhiệt trong công đoạn sấy khay"]'::jsonb,
     '["Chứng nhận vật liệu tái chế đạt chuẩn xuất khẩu EU","Tư vấn tối ưu dây chuyền ép định hình"]'::jsonb,
     '{"isSample":true,"locationCode":"QUE_VO","industrialZoneCode":"KCN_QUE_VO_2","certificates":["ISO 9001","ISO 14001","ESG"]}'::jsonb,
-    70.0, 'DEVELOPING',
+    NULL, NULL,
     'DUAL', true, true, 'BUYER',
-    NULL,
-    1, NOW(), NOW()
-),
--- 8. Giải pháp Nhà máy Thông minh Từ Sơn (DN mẫu)
-(
-    'bac10000-0000-4000-8002-000000000008',
-    'ENTERPRISE',
-    'Công ty Cổ phần Giải pháp Nhà máy Thông minh Từ Sơn',
-    'CÔNG TY CỔ PHẦN GIẢI PHÁP NHÀ MÁY THÔNG MINH TỪ SƠN',
-    '2300900008',
-    '2021-02-18',
-    'TP. Từ Sơn, Bắc Ninh',
-    'Lô H3, KCN Hanaka, Phường Trang Hạ, TP. Từ Sơn, Bắc Ninh',
-    'KCN Hanaka',
-    '{"locationCode":"TU_SON","industrialZoneCode":"KCN_HANAKA","province":"Bắc Ninh"}'::jsonb,
-    'https://tuson-smartfactory.example.vn',
-    '[Dữ liệu demo mẫu] Phát triển phần mềm quản trị sản xuất MES/QMS, cổng IoT thu thập dữ liệu máy CNC/SMT (OEE) và hệ thống truy xuất nguồn gốc QR/RFID cho nhà máy Bắc Ninh.',
-    'Vũ Minh Quân', '02223810008', 'contact@tuson-smartfactory.example.vn', true,
-    true, 'VERIFIED', 'ACTIVE',
-    'IND_IT', 'Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP',
-    'Cổ phần tư nhân', '50 - 100 lao động', '30 - 50 tỷ VND',
-    '65%', 85.0, 'HIGH',
-    true, true, 4200000000, 26,
-    false, true,
-    '["Tích hợp giao thức OPC-UA/MTConnect cho máy CNC đời cũ","Đảm bảo an toàn mạng OT/IT theo IEC 62443"]'::jsonb,
-    '["Triển khai pilot MES cho hội viên BACLINK","Kết nối chuyên gia an ninh mạng công nghiệp"]'::jsonb,
-    '{"isSample":true,"locationCode":"TU_SON","industrialZoneCode":"KCN_HANAKA","certificates":["ISO 9001","Lean/5S"]}'::jsonb,
-    82.0, 'LEADING',
-    'DUAL', true, true, 'BUYER',
-    NULL,
-    1, NOW(), NOW()
-),
--- 9. Logistics Công nghiệp Bắc Ninh (DN mẫu)
-(
-    'bac10000-0000-4000-8002-000000000009',
-    'ENTERPRISE',
-    'Công ty TNHH Logistics Công nghiệp Bắc Ninh',
-    'CÔNG TY TNHH LOGISTICS CÔNG NGHIỆP BẮC NINH',
-    '2300900009',
-    '2016-11-05',
-    'TX. Thuận Thành, Bắc Ninh',
-    'Lô L1, KCN Thuận Thành I, Xã Nghĩa Đạo, TX. Thuận Thành, Bắc Ninh',
-    'KCN Thuận Thành I',
-    '{"locationCode":"THUAN_THANH","industrialZoneCode":"KCN_THUAN_THANH_1","province":"Bắc Ninh"}'::jsonb,
-    'https://bn-indlogistics.example.vn',
-    '[Dữ liệu demo mẫu] Cung ứng dịch vụ kho vận thông minh WMS, vận tải chuỗi cung ứng Just-In-Time (JIT) giữa các KCN Bắc Ninh – Nội Bài – Hải Phòng.',
-    'Nguyễn Hải Nam', '02223810009', 'ops@bn-indlogistics.example.vn', true,
-    true, 'VERIFIED', 'ACTIVE',
-    'IND_LOG', 'Logistics công nghiệp, Kho vận & Chuỗi cung ứng',
-    'TNHH tư nhân', '100 - 200 lao động', '100 - 200 tỷ VND',
-    '22%', 74.0, 'MEDIUM',
-    false, true, 1500000000, 5,
-    true, true,
-    '["Tối ưu tỷ lệ lấp đầy chuyến xe chiều về","Số hóa chứng từ hải quan và EDI với nhà máy FDI"]'::jsonb,
-    '["Triển khai hệ thống định vị & giám sát nhiệt độ container","Chuyển đổi đội xe nâng điện giảm phát thải"]'::jsonb,
-    '{"isSample":true,"locationCode":"THUAN_THANH","industrialZoneCode":"KCN_THUAN_THANH_1","certificates":["ISO 9001","ESG"]}'::jsonb,
-    68.5, 'DEVELOPING',
-    'DUAL', true, true, 'BUYER',
-    NULL,
-    1, NOW(), NOW()
-),
--- 10. Vật liệu Xanh Tiên Sơn (DN mẫu)
-(
-    'bac10000-0000-4000-8002-000000000010',
-    'ENTERPRISE',
-    'Công ty Cổ phần Vật liệu Xanh Tiên Sơn',
-    'CÔNG TY CỔ PHẦN VẬT LIỆU XANH TIÊN SƠN',
-    '2300900010',
-    '2020-07-14',
-    'H. Gia Bình, Bắc Ninh',
-    'Lô G2, KCN Gia Bình, Xã Đại Bái, H. Gia Bình, Bắc Ninh',
-    'KCN Gia Bình',
-    '{"locationCode":"GIA_BINH","industrialZoneCode":"KCN_GIA_BINH","province":"Bắc Ninh"}'::jsonb,
-    'https://tienson-greenmat.example.vn',
-    '[Dữ liệu demo mẫu] Sản xuất hệ thống xử lý nước thải tuần hoàn, thu hồi nhiệt thải lò hơi và vật liệu cách nhiệt xanh phục vụ chuyển đổi ESG trong các KCN Bắc Ninh.',
-    'Hoàng Thị Mai', '02223810010', 'esg@tienson-greenmat.example.vn', true,
-    true, 'VERIFIED', 'ACTIVE',
-    'IND_GREEN', 'Công nghiệp xanh, Năng lượng sạch & ESG',
-    'Cổ phần tư nhân', '50 - 100 lao động', '50 - 100 tỷ VND',
-    '30%', 80.0, 'HIGH',
-    true, true, 2900000000, 10,
-    false, true,
-    '["Nâng hiệu suất thu hồi nước tuần hoàn đạt trên 85%","Tự động hóa quan trắc phát thải khí nhà kính Scope 1-2"]'::jsonb,
-    '["Tư vấn tín chỉ carbon & báo cáo ESG cho DN vừa và nhỏ","Kết nối KCN triển khai giải pháp tiết kiệm năng lượng"]'::jsonb,
-    '{"isSample":true,"locationCode":"GIA_BINH","industrialZoneCode":"KCN_GIA_BINH","certificates":["ISO 9001","ISO 14001","ESG"]}'::jsonb,
-    77.5, 'LEADING',
-    'DUAL', true, true, 'BUYER',
-    NULL,
+    'bac10000-0000-4000-8001-000000000009',
     1, NOW(), NOW()
 )
 ON CONFLICT (id) DO UPDATE SET
@@ -498,8 +425,11 @@ ON CONFLICT (id) DO UPDATE SET
     top_bottlenecks_json = EXCLUDED.top_bottlenecks_json,
     support_needs_json = EXCLUDED.support_needs_json,
     profile_details_json = EXCLUDED.profile_details_json,
-    latest_innovation_score = EXCLUDED.latest_innovation_score,
-    latest_innovation_tier = EXCLUDED.latest_innovation_tier,
+    latest_innovation_score = NULL,
+    latest_innovation_tier = NULL,
+    latest_tt17_score = NULL,
+    latest_tt17_classification = NULL,
+    latest_tt17_sync_coeff = NULL,
     capability_tier = 'DUAL',
     is_buyer = true,
     is_seller = true,
@@ -582,7 +512,7 @@ VALUES
 ),
 (
     'bac10000-0000-4000-8003-000000000004', 'OFF-BL-2026-004', 'PRODUCT', false,
-    '[Dữ liệu demo mẫu] Khuôn Đột dập Liên hoàn & Gia công Kim loại Tấm Chính xác',
+    'Khuôn Đột dập Liên hoàn & Gia công Kim loại Tấm Chính xác',
     'Thiết kế và chế tạo khuôn đột dập liên hoàn tốc độ cao cho khung vỏ thiết bị điện, giá đỡ linh kiện và phụ tùng ô tô.',
     'Tăng tuổi thọ khuôn lên 1.5 triệu lần dập, đảm bảo độ đồng đều hàng loạt và giảm hao hụt phôi liệu 18%.',
     'IND_MECH', 'Cơ khí chính xác, Khuôn mẫu & Chế tạo máy',
@@ -600,7 +530,7 @@ VALUES
 ),
 (
     'bac10000-0000-4000-8003-000000000005', 'OFF-BL-2026-005', 'PRODUCT', false,
-    '[Dữ liệu demo mẫu] Khay Tray Nhựa Kỹ thuật Chống tĩnh điện ESD cho Linh kiện Bán dẫn',
+    'Khay Tray Nhựa Kỹ thuật Chống tĩnh điện ESD cho Linh kiện Bán dẫn',
     'Sản xuất ép phun & định hình nhiệt khay chứa IC, module camera và bo mạch chống tĩnh điện điện trở bề mặt 10^6–10^9 Ohm.',
     'Thay thế hoàn toàn khay nhập khẩu cho các nhà máy bán dẫn, điện tử tại KCN Yên Phong và Quế Võ.',
     'IND_PLAS', 'Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp',
@@ -618,7 +548,7 @@ VALUES
 ),
 (
     'bac10000-0000-4000-8003-000000000006', 'OFF-BL-2026-006', 'DEVICE', true,
-    '[Dữ liệu demo mẫu] Trạm Robot Gắp Đặt & Kiểm tra Ngoại quan Camera AI Dây chuyền SMT',
+    'Trạm Robot Gắp Đặt & Kiểm tra Ngoại quan Camera AI Dây chuyền SMT',
     'Cụm máy tự động hóa tích hợp cánh tay robot 6 trục và camera AI phát hiện sai lỗi lắp ráp với tốc độ 45 sản phẩm/phút.',
     'Thay thế 4 nhân công kiểm tra thủ công/ca, nâng độ chính xác phát hiện lỗi bề mặt lên 99.6%.',
     'IND_AUTO', 'Tự động hóa, Robot & Smart Factory',
@@ -636,7 +566,7 @@ VALUES
 ),
 (
     'bac10000-0000-4000-8003-000000000007', 'OFF-BL-2026-007', 'PRODUCT', false,
-    '[Dữ liệu demo mẫu] Vật liệu Khay Giấy Định hình Sinh học & Màng Chống ẩm Chuỗi FDI',
+    'Vật liệu Khay Giấy Định hình Sinh học & Màng Chống ẩm Chuỗi FDI',
     'Giải pháp bao bì vật liệu mới từ bột giấy tái chế định hình chịu lực cao thay thế xốp EPS, đạt tiêu chuẩn xuất khẩu EU/Mỹ.',
     'Giảm 100% rác thải nhựa xốp khó phân hủy và đáp ứng yêu cầu Green Packaging của các tập đoàn FDI.',
     'IND_MAT', 'Vật liệu mới & Công nghiệp hỗ trợ',
@@ -654,17 +584,17 @@ VALUES
 ),
 (
     'bac10000-0000-4000-8003-000000000008', 'OFF-BL-2026-008', 'SOFTWARE', true,
-    '[Dữ liệu demo mẫu] Nền tảng Quản trị Sản xuất MES & Giám sát OEE Thời gian thực',
+    'Nền tảng Quản trị Sản xuất MES & Giám sát OEE Thời gian thực',
     'Phần mềm MES/QMS may đo cho nhà máy gia công cơ khí, nhựa và điện tử hỗ trợ truy xuất nguồn gốc từng công đoạn (Lot/Serial).',
     'Nâng chỉ số hiệu suất thiết bị OEE thêm 15-22%, xóa bỏ ghi chép giấy và đáp ứng audit truy xuất dữ liệu của khách hàng FDI.',
     'IND_IT', 'Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP',
     'RANGE', NULL, 250000000, 750000000, 'VND', 'gói triển khai',
-    'Công ty CP Giải pháp Nhà máy Thông minh Từ Sơn', 9, 'SOFTWARE_COPYRIGHT', 'VN-SW-2026-205', 'SAAS_OR_ONPREM', 'COMMERCIALLY_READY',
+    'Công ty TNHH Tự động hóa & Robot VSIP', 9, 'SOFTWARE_COPYRIGHT', 'VN-SW-2026-205', 'SAAS_OR_ONPREM', 'COMMERCIALLY_READY',
     'Giám đốc Triển khai MES', 'APPROVED', 10, 4.9, 14,
-    'BACLINK', 'Hiệp hội BACLINK', 'GLOBAL', NULL,
+    'BACLINK', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'GLOBAL', NULL,
     true, 'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '6 days', 1, NOW(), NOW(),
-    '2300900008', 'Công ty Cổ phần Giải pháp Nhà máy Thông minh Từ Sơn', '30 - 45 ngày go-live', '12 tháng SLA & nâng cấp phiên bản', 'Bắc Ninh & Toàn quốc',
-    'Theo mốc UAT & Go-live', true, 'TS-MES-PRO', 'Từ Sơn SmartFactory', 'Việt Nam',
+    '2300900006', 'Công ty TNHH Tự động hóa & Robot VSIP', '30 - 45 ngày go-live', '12 tháng SLA & nâng cấp phiên bản', 'Bắc Ninh & Toàn quốc',
+    'Theo mốc UAT & Go-live', true, 'TS-MES-PRO', 'VSIP Robotics', 'Việt Nam',
     'NEW', 2026, 'Hỗ trợ 10 - 200 máy/nhà máy', 'Cloud hoặc Server tại xưởng', 'Tự động thu thập PLC/OPC-UA',
     'Edge Gateway kết nối PLC/CNC thu thập sản lượng, cảnh báo dừng máy Andon thời gian thực và đồng bộ tồn kho ERP.',
     'Mạng LAN nội bộ xưởng sản xuất.', 'SAAS_OR_ONPREM',
@@ -672,17 +602,17 @@ VALUES
 ),
 (
     'bac10000-0000-4000-8003-000000000009', 'OFF-BL-2026-009', 'SOLUTION', false,
-    '[Dữ liệu demo mẫu] Dịch vụ Kho vận Thông minh WMS & Vận tải JIT Chuỗi KCN Bắc Ninh',
+    'Dịch vụ Kho vận Thông minh WMS & Vận tải JIT Chuỗi KCN Bắc Ninh',
     'Cung ứng kho ngoại quan/kho tiêu chuẩn tích hợp WMS và đội xe tải định vị IoT giao hàng đúng giờ (JIT) giữa các KCN Bắc Ninh.',
     'Giảm 20% chi phí lưu kho và đảm bảo 99.8% đúng tiến độ giao hàng theo khung giờ gate-in của nhà máy FDI.',
     'IND_LOG', 'Logistics công nghiệp, Kho vận & Chuỗi cung ứng',
     'CONTACT', NULL, NULL, NULL, 'VND', 'chuyến / m2/tháng',
-    'Công ty TNHH Logistics Công nghiệp Bắc Ninh', 9, 'NONE', NULL, 'SERVICE_CONTRACT', 'COMMERCIALLY_READY',
+    'Công ty Cổ phần Tập đoàn Công nghiệp INTECH', 9, 'NONE', NULL, 'SERVICE_CONTRACT', 'COMMERCIALLY_READY',
     'Giám đốc Vận hành Chuỗi cung ứng', 'APPROVED', 12, 4.8, 10,
-    'BACLINK', 'Hiệp hội BACLINK', 'GLOBAL', NULL,
+    'BACLINK', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'GLOBAL', NULL,
     true, 'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '5 days', 1, NOW(), NOW(),
-    '2300900009', 'Công ty TNHH Logistics Công nghiệp Bắc Ninh', 'Triển khai ngay trong 48h', 'Bảo hiểm 100% giá trị hàng hóa vận chuyển', 'Bắc Ninh – Hà Nội – Hải Phòng',
-    'Đối soát công nợ định kỳ cuối tháng', true, 'BNL-JIT-WMS', 'Logistics CN Bắc Ninh', 'Việt Nam',
+    '2300881920', 'Công ty Cổ phần Tập đoàn Công nghiệp INTECH', 'Triển khai ngay trong 48h', 'Bảo hiểm 100% giá trị hàng hóa vận chuyển', 'Bắc Ninh – Hà Nội – Hải Phòng',
+    'Đối soát công nợ định kỳ cuối tháng', true, 'BNL-JIT-WMS', 'INTECH Smart Logistics', 'Việt Nam',
     'NEW', 2026, '18.000 m2 kho + 45 xe tải chuyên dụng', 'Xe tải Euro 5 & xe nâng điện', 'Quản lý mã vạch RFID/WMS',
     'Đồng bộ đơn đặt hàng EDI/API -> Soạn hàng theo FIFO/FEFO -> Giám sát hành trình GPS & nhiệt độ thời gian thực.',
     'Ký hợp đồng dịch vụ Logistics nguyên tắc.', 'SERVICE_CONTRACT',
@@ -690,16 +620,16 @@ VALUES
 ),
 (
     'bac10000-0000-4000-8003-000000000010', 'OFF-BL-2026-010', 'EQUIPMENT', true,
-    '[Dữ liệu demo mẫu] Hệ thống Xử lý Nước thải Tuần hoàn Công nghiệp & Giám sát Carbon ESG',
+    'Hệ thống Xử lý Nước thải Tuần hoàn Công nghiệp & Giám sát Carbon ESG',
     'Module lọc màng MBR kết hợp RO tái sử dụng tới 85% nước thải công nghiệp xi mạ/điện tử và phần mềm đo lường phát thải ESG.',
     'Giảm 60% chi phí cấp nước sạch đầu vào, đạt chuẩn xả thải loại A và tự động xuất báo cáo kiểm kê ISO 14064.',
     'IND_GREEN', 'Công nghiệp xanh, Năng lượng sạch & ESG',
     'RANGE', NULL, 1200000000, 3500000000, 'VND', 'hệ thống',
-    'Công ty Cổ phần Vật liệu Xanh Tiên Sơn', 8, 'PATENT_PENDING', 'VN-1-2025-04112', 'TURNKEY', 'COMMERCIALLY_READY',
+    'Công ty Cổ phần Bao bì Công nghiệp Quế Võ', 8, 'PATENT_PENDING', 'VN-1-2025-04112', 'TURNKEY', 'COMMERCIALLY_READY',
     'Giám đốc Kỹ thuật Môi trường', 'APPROVED', 4, 4.9, 6,
-    'BACLINK', 'Hiệp hội BACLINK', 'GLOBAL', NULL,
+    'BACLINK', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'GLOBAL', NULL,
     true, 'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '4 days', 1, NOW(), NOW(),
-    '2300900010', 'Công ty Cổ phần Vật liệu Xanh Tiên Sơn', '60 ngày lắp đặt trọn gói', '24 tháng bảo hành màng lọc & cảm biến', 'Toàn bộ KCN Bắc Ninh & Miền Bắc',
+    '2300900007', 'Công ty Cổ phần Bao bì Công nghiệp Quế Võ', '60 ngày lắp đặt trọn gói', '24 tháng bảo hành màng lọc & cảm biến', 'Toàn bộ KCN Bắc Ninh & Miền Bắc',
     '30% - 40% - 30%', true, 'TSG-MBR-ESG', 'Vật liệu Xanh Tiên Sơn', 'Việt Nam',
     'NEW', 2026, '50 - 300 m3/ngày đêm', 'Tiết kiệm 25% điện so với MBR thường', 'SCADA tự động quan trắc COD/TSS/pH',
     'Bể phản ứng sinh học màng MBR tách bùn hiệu suất cao kết hợp màng RO thu hồi nước sạch tái sử dụng cho tháp giải nhiệt.',
@@ -778,149 +708,8 @@ ON CONFLICT (id) DO UPDATE SET
     spec_category = EXCLUDED.spec_category;
 
 -- -----------------------------------------------------------------------------
--- BƯỚC B4: 8 Phiếu Khảo sát & 8 Nhu cầu Đặt hàng / Tìm Nhà cung ứng
--- (demand.demand_surveys -> demand.demand_items)
+-- BƯỚC B4: 8 Nhu cầu Đặt hàng / Tìm Nhà cung ứng (demand.demand_items, survey_id = NULL)
 -- -----------------------------------------------------------------------------
-
-INSERT INTO demand.demand_surveys (
-    id, enterprise_id, survey_code, survey_year, survey_type,
-    has_rd_unit, has_tech_training, has_machinery_upgrade, has_rd_budget,
-    is_exporting, in_value_chain, top_bottlenecks, support_needs, recommendations,
-    tni_score, tni_classification, status,
-    created_by, company_name, tax_code, contact_name, contact_phone, contact_email,
-    business_type, enterprise_size, employee_scale, revenue_range_3y,
-    province, headquarters_address, main_industry, main_products,
-    submitted_at, version, created_at, updated_at
-)
-VALUES
-(
-    'bac10000-0000-4000-8005-000000000001', 'bac10000-0000-4000-8002-000000000001',
-    'SUR-BL-2026-001', 2026, 'SUPPLY_CHAIN_DEMAND',
-    true, true, true, true, true, true,
-    ARRAY['Tự động hóa kiểm tra quang học AOI tốc độ cao']::text[],
-    ARRAY['Tìm nhà cung cấp giải pháp Vision AI & nâng cấp dây chuyền SMT']::text[],
-    'Ưu tiên giải pháp tích hợp trực tiếp với dây chuyền SMT hiện hữu tại KCN Tiên Sơn.',
-    87.0, 'HIGH', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000002',
-    'Công ty Cổ phần Hanel PT', '0101420901', 'Nguyễn Minh Tuấn', '02223714568', 'member.hanelpt@baclink.org.vn',
-    'Cổ phần', 'MEDIUM_LARGE', '500-1000', '300-500 tỷ',
-    'Bắc Ninh', 'Lô CN-02, KCN Tiên Sơn, TP. Từ Sơn, Bắc Ninh',
-    'IND_ELEC', 'Bản mạch PCBA, Cảm biến công nghiệp',
-    NOW() - INTERVAL '10 days', 1, NOW(), NOW()
-),
-(
-    'bac10000-0000-4000-8005-000000000002', 'bac10000-0000-4000-8002-000000000002',
-    'SUR-BL-2026-002', 2026, 'SUPPLY_CHAIN_DEMAND',
-    true, true, true, true, true, true,
-    ARRAY['Tìm nhà cung ứng gia công khung vỏ kim loại tấm & chi tiết CNC cho AGV']::text[],
-    ARRAY['Đặt hàng gia công cơ khí chính xác tại Bắc Ninh']::text[],
-    'Cần đối tác gia công đạt ISO 9001, đáp ứng tiến độ JIT tại KCN VSIP Bắc Ninh.',
-    89.0, 'VERY_HIGH', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000003',
-    'Công ty Cổ phần Tập đoàn Công nghiệp INTECH', '2300881920', 'Cao Hoàng Hiệp', '02223901234', 'member.intech@baclink.org.vn',
-    'Cổ phần', 'MEDIUM', '300-500', '200-300 tỷ',
-    'Bắc Ninh', 'Lô 12, KCN VSIP Bắc Ninh, TP. Từ Sơn, Bắc Ninh',
-    'IND_AUTO', 'Con lăn, Băng tải, Robot AGV/AMR',
-    NOW() - INTERVAL '9 days', 1, NOW(), NOW()
-),
-(
-    'bac10000-0000-4000-8005-000000000003', 'bac10000-0000-4000-8002-000000000003',
-    'SUR-BL-2026-003', 2026, 'SUPPLY_CHAIN_DEMAND',
-    true, true, true, true, true, true,
-    ARRAY['Tìm đối tác xử lý nhiệt chân không & mạ anode cứng hợp kim nhôm']::text[],
-    ARRAY['Kết nối đơn vị xử lý bề mặt chuẩn FDI tại Bắc Ninh']::text[],
-    'Ưu tiên đơn vị tại KCN Yên Phong hoặc Quế Võ có chứng nhận xử lý nước thải đạt chuẩn.',
-    82.0, 'HIGH', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000004',
-    'Công ty TNHH Công nghiệp Viqualita', '2300992831', 'Trần Quốc Cường', '02223886543', 'member.viqualita@baclink.org.vn',
-    'TNHH', 'MEDIUM', '150-300', '100-200 tỷ',
-    'Bắc Ninh', 'Lô CN-15, KCN Yên Phong I, H. Yên Phong, Bắc Ninh',
-    'IND_MECH', 'Đồ gá JIG, Chi tiết CNC 5 trục',
-    NOW() - INTERVAL '8 days', 1, NOW(), NOW()
-),
-(
-    'bac10000-0000-4000-8005-000000000004', 'bac10000-0000-4000-8002-000000000005',
-    'SUR-BL-2026-004', 2026, 'SUPPLY_CHAIN_DEMAND',
-    true, true, true, true, true, true,
-    ARRAY['Tìm nhà chế tạo khuôn ép phun đa lòng độ chính xác cao']::text[],
-    ARRAY['Đặt hàng thiết kế & chế tạo khuôn mẫu cho linh kiện nhựa ESD']::text[],
-    '[Dữ liệu demo mẫu] Yêu cầu khuôn thép NAK80/S136 kèm báo cáo thử mẫu T0-T1.',
-    78.0, 'HIGH', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000001',
-    'Công ty Cổ phần Nhựa Kỹ thuật Yên Phong', '2300900005', 'Phạm Thị Lan', '02223810005', 'info@yenphong-plastic.example.vn',
-    'Cổ phần', 'MEDIUM', '150-250', '80-150 tỷ',
-    'Bắc Ninh', 'Lô E2, KCN Yên Phong II-C, H. Yên Phong, Bắc Ninh',
-    'IND_PLAS', 'Nhựa kỹ thuật & Khay ESD',
-    NOW() - INTERVAL '7 days', 1, NOW(), NOW()
-),
-(
-    'bac10000-0000-4000-8005-000000000005', 'bac10000-0000-4000-8002-000000000006',
-    'SUR-BL-2026-005', 2026, 'SUPPLY_CHAIN_DEMAND',
-    true, true, true, true, false, true,
-    ARRAY['Tìm nhà cung cấp vật liệu hợp kim nhẹ & linh kiện khí nén chuẩn công nghiệp']::text[],
-    ARRAY['Nội địa hóa cụm truyền động tuyến tính và khung hợp kim nhôm định hình']::text[],
-    '[Dữ liệu demo mẫu] Tìm kiếm đối tác cung ứng dài hạn cho các dự án lắp ráp robot.',
-    81.0, 'HIGH', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000001',
-    'Công ty TNHH Tự động hóa & Robot VSIP', '2300900006', 'Ngô Đức Thắng', '02223810006', 'sales@vsip-robotics.example.vn',
-    'TNHH', 'SMALL', '50-100', '50-100 tỷ',
-    'Bắc Ninh', 'Lô D8, KCN Đại Đồng - Hoàn Sơn, H. Tiên Du, Bắc Ninh',
-    'IND_MAT', 'Trạm robot tự động hóa',
-    NOW() - INTERVAL '6 days', 1, NOW(), NOW()
-),
-(
-    'bac10000-0000-4000-8005-000000000006', 'bac10000-0000-4000-8002-000000000004',
-    'SUR-BL-2026-006', 2026, 'SUPPLY_CHAIN_DEMAND',
-    false, true, true, true, false, true,
-    ARRAY['Triển khai phần mềm MES giám sát OEE & truy xuất nguồn gốc máy CNC']::text[],
-    ARRAY['Tìm nhà cung cấp phần mềm MES/ERP phù hợp quy mô 40 máy CNC']::text[],
-    '[Dữ liệu demo mẫu] Cần giải pháp triển khai nhanh trong 45 ngày, hỗ trợ tiếng Việt.',
-    76.0, 'HIGH', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000001',
-    'Công ty TNHH Cơ khí Chính xác Kinh Bắc', '2300900004', 'Lê Văn Hùng', '02223810004', 'contact@kinhbac-precision.example.vn',
-    'TNHH', 'MEDIUM', '100-200', '50-100 tỷ',
-    'Bắc Ninh', 'Lô B4, KCN Quế Võ I, TX. Quế Võ, Bắc Ninh',
-    'IND_IT', 'Khuôn mẫu & Gia công CNC',
-    NOW() - INTERVAL '5 days', 1, NOW(), NOW()
-),
-(
-    'bac10000-0000-4000-8005-000000000007', 'bac10000-0000-4000-8002-000000000007',
-    'SUR-BL-2026-007', 2026, 'SUPPLY_CHAIN_DEMAND',
-    true, true, true, false, true, true,
-    ARRAY['Lắp đặt hệ thống thu hồi nhiệt thải lò sấy & điện mặt trời áp mái']::text[],
-    ARRAY['Tìm giải pháp tiết kiệm năng lượng & kiểm kê khí nhà kính ESG']::text[],
-    '[Dữ liệu demo mẫu] Đáp ứng yêu cầu giảm phát thải 25% theo cam kết với khách hàng FDI.',
-    75.0, 'HIGH', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000001',
-    'Công ty Cổ phần Bao bì Công nghiệp Quế Võ', '2300900007', 'Đỗ Thanh Bình', '02223810007', 'hello@quevo-pack.example.vn',
-    'Cổ phần', 'MEDIUM', '100-200', '80-150 tỷ',
-    'Bắc Ninh', 'Lô C6, KCN Quế Võ II, TX. Quế Võ, Bắc Ninh',
-    'IND_GREEN', 'Bao bì sinh học & Khay định hình',
-    NOW() - INTERVAL '4 days', 1, NOW(), NOW()
-),
-(
-    'bac10000-0000-4000-8005-000000000008', 'bac10000-0000-4000-8002-000000000010',
-    'SUR-BL-2026-008', 2026, 'SUPPLY_CHAIN_DEMAND',
-    true, true, true, true, false, true,
-    ARRAY['Tìm đơn vị vận tải chuyên dụng thiết bị lọc màng và kho bãi trung chuyển KCN']::text[],
-    ARRAY['Thuê dịch vụ vận chuyển cơ giới & kho bãi ngắn hạn tại KCN Gia Bình – Yên Phong']::text[],
-    '[Dữ liệu demo mẫu] Yêu cầu xe cẩu tự hành và quản lý giao nhận đúng tiến độ công trường.',
-    74.0, 'MEDIUM', 'VERIFIED',
-    'bac10000-0000-4000-8001-000000000001',
-    'Công ty Cổ phần Vật liệu Xanh Tiên Sơn', '2300900010', 'Hoàng Thị Mai', '02223810010', 'esg@tienson-greenmat.example.vn',
-    'Cổ phần', 'SMALL', '50-100', '50-100 tỷ',
-    'Bắc Ninh', 'Lô G2, KCN Gia Bình, H. Gia Bình, Bắc Ninh',
-    'IND_LOG', 'Hệ thống xử lý nước tuần hoàn',
-    NOW() - INTERVAL '3 days', 1, NOW(), NOW()
-)
-ON CONFLICT (id) DO UPDATE SET
-    enterprise_id = EXCLUDED.enterprise_id,
-    survey_code = EXCLUDED.survey_code,
-    status = 'VERIFIED',
-    company_name = EXCLUDED.company_name,
-    tax_code = EXCLUDED.tax_code,
-    main_industry = EXCLUDED.main_industry,
-    updated_at = NOW();
 
 INSERT INTO demand.demand_items (
     id, survey_id, item_code, stage_name,
@@ -933,7 +722,7 @@ INSERT INTO demand.demand_items (
 )
 VALUES
 (
-    'bac10000-0000-4000-8006-000000000001', 'bac10000-0000-4000-8005-000000000001',
+    'bac10000-0000-4000-8006-000000000001', NULL,
     'DMD-BL-2026-001', 'Kiểm tra chất lượng mối hàn SMT & bản mạch PCBA',
     'Cần tìm giải pháp kiểm tra quang học AOI 3D tích hợp AI nhận diện lỗi cầu chì, thiếu thiếc và lệch chân linh kiện 0201 trên 2 dây chuyền SMT tại KCN Tiên Sơn.',
     'Hệ thống AOI 3D tốc độ cao kết hợp phần mềm phân tích lỗi theo thời gian thực và kết nối truy xuất dữ liệu MES.',
@@ -941,10 +730,10 @@ VALUES
     'IND_ELEC', 'CN06', 'NC01', '1.5 - 3 tỷ VND',
     9, 9, 8, 9, 88, 'VERY_HIGH', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000002', NOW() - INTERVAL '10 days', NOW(),
-    'VERIFIED_BY_AUTH', 'Hiệp hội BACLINK', 'Nhu cầu thực tế của Hội viên Hanel PT, đã xác thực mức độ sẵn sàng đầu tư.'
+    'VERIFIED_BY_AUTH', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Nhu cầu thực tế của Hội viên Hanel PT, đã xác thực mức độ sẵn sàng đầu tư.'
 ),
 (
-    'bac10000-0000-4000-8006-000000000002', 'bac10000-0000-4000-8005-000000000002',
+    'bac10000-0000-4000-8006-000000000002', NULL,
     'DMD-BL-2026-002', 'Gia công khung vỏ & chi tiết cơ khí chính xác cho Robot AGV',
     'Tìm nhà cung cấp nội địa tại Bắc Ninh gia công định kỳ 300 bộ khung thép hàn cắt laser, chấn gấp CNC, sơn tĩnh điện và trục truyền động tiện CNC cho dòng xe tự hành AGV 500kg.',
     'Đối tác cơ khí có máy cắt laser fiber >= 6kW, máy chấn CNC và hệ thống sơn tĩnh điện đạt chuẩn ISO 9001.',
@@ -952,10 +741,10 @@ VALUES
     'IND_MECH', 'CN01', 'NC03', '2 - 4 tỷ VND/năm',
     9, 8, 9, 9, 87, 'VERY_HIGH', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000003', NOW() - INTERVAL '9 days', NOW(),
-    'VERIFIED_BY_AUTH', 'Hiệp hội BACLINK', 'Đơn hàng chuỗi cung ứng mở từ INTECH Group.'
+    'VERIFIED_BY_AUTH', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Đơn hàng chuỗi cung ứng mở từ INTECH Group.'
 ),
 (
-    'bac10000-0000-4000-8006-000000000003', 'bac10000-0000-4000-8005-000000000003',
+    'bac10000-0000-4000-8006-000000000003', NULL,
     'DMD-BL-2026-003', 'Xử lý nhiệt chân không & mạ Anode cứng chi tiết nhôm CNC',
     'Tìm đối tác cung ứng dịch vụ xử lý nhiệt chân không thép khuôn và mạ Anode cứng (Hard Anodizing) độ dày lớp mạ 35-50 µm màu đen mờ cho đồ gá JIG điện tử.',
     'Xưởng xử lý bề mặt tại Bắc Ninh hoặc lân cận đạt chuẩn xử lý nước thải và chứng nhận RoHS.',
@@ -963,65 +752,65 @@ VALUES
     'IND_MAT', 'CN20', 'NC03', '800 triệu - 1.5 tỷ VND/năm',
     8, 8, 8, 8, 80, 'HIGH', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000004', NOW() - INTERVAL '8 days', NOW(),
-    'VERIFIED_BY_AUTH', 'Hiệp hội BACLINK', 'Nhu cầu gia công phụ trợ của Hội viên Viqualita.'
+    'VERIFIED_BY_AUTH', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Nhu cầu gia công phụ trợ của Hội viên Viqualita.'
 ),
 (
-    'bac10000-0000-4000-8006-000000000004', 'bac10000-0000-4000-8005-000000000004',
+    'bac10000-0000-4000-8006-000000000004', NULL,
     'DMD-BL-2026-004', 'Chế tạo khuôn ép phun đa lòng linh kiện nhựa kỹ thuật ESD',
-    '[Dữ liệu demo mẫu] Đặt hàng thiết kế và chế tạo 06 bộ khuôn ép phun 8-16 lòng (hot-runner) dùng thép NAK80/S136 sản xuất khay chứa module camera chống tĩnh điện.',
+    'Đặt hàng thiết kế và chế tạo 06 bộ khuôn ép phun 8-16 lòng (hot-runner) dùng thép NAK80/S136 sản xuất khay chứa module camera chống tĩnh điện.',
     'Đơn vị thiết kế khuôn chuyên nghiệp sử dụng phần mềm phân tích dòng chảy Moldflow và máy phay tốc độ cao.',
     false, 'Chu kỳ ép <= 18 giây/lần, độ đồng đều kích thước giữa các lòng khuôn đạt ±0.02mm.', '06 bộ khuôn chính xác',
     'IND_PLAS', 'CN02', 'NC01', '1 - 2.2 tỷ VND',
     8, 8, 7, 8, 78, 'HIGH', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '7 days', NOW(),
-    'SELF_DECLARED', 'Hiệp hội BACLINK', 'Bài toán mẫu minh họa ngành Nhựa kỹ thuật.'
+    'SELF_DECLARED', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Bài toán kết nối chuỗi cung ứng ngành Nhựa kỹ thuật.'
 ),
 (
-    'bac10000-0000-4000-8006-000000000005', 'bac10000-0000-4000-8005-000000000005',
+    'bac10000-0000-4000-8006-000000000005', NULL,
     'DMD-BL-2026-005', 'Tự động hóa cụm cấp phôi rung & lắp ráp bán thành phẩm bằng Robot',
-    '[Dữ liệu demo mẫu] Cần giải pháp cấp phôi linh kiện nhựa nhỏ (bowl feeder kết hợp camera định hướng) và robot Scara lắp ráp tự động công suất 35 cụm/phút.',
+    'Cần giải pháp cấp phôi linh kiện nhựa nhỏ (bowl feeder kết hợp camera định hướng) và robot Scara lắp ráp tự động công suất 35 cụm/phút.',
     'Trọn gói thiết kế cơ khí cụm cấp phôi, tích hợp robot Scara 4 trục và tủ PLC điều khiển.',
     true, 'Giảm 6 nhân công đứng máy mỗi ca, tỷ lệ chạy ổn định >= 98%.', '02 cụm máy lắp ráp',
     'IND_AUTO', 'CN01', 'NC01', '700 triệu - 1.2 tỷ VND',
     8, 9, 7, 8, 81, 'HIGH', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '6 days', NOW(),
-    'SELF_DECLARED', 'Hiệp hội BACLINK', 'Bài toán mẫu minh họa ngành Tự động hóa.'
+    'SELF_DECLARED', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Bài toán kết nối chuỗi cung ứng ngành Tự động hóa.'
 ),
 (
-    'bac10000-0000-4000-8006-000000000006', 'bac10000-0000-4000-8005-000000000006',
+    'bac10000-0000-4000-8006-000000000006', NULL,
     'DMD-BL-2026-006', 'Triển khai phần mềm MES giám sát OEE & truy xuất nguồn gốc 40 máy CNC',
-    '[Dữ liệu demo mẫu] Tìm đơn vị cung cấp phần mềm MES kết nối trực tiếp bộ điều khiển Fanuc/Mitsubishi trên 40 máy CNC tại KCN Quế Võ để theo dõi OEE và quản lý dao cắt.',
+    'Tìm đơn vị cung cấp phần mềm MES kết nối trực tiếp bộ điều khiển Fanuc/Mitsubishi trên 40 máy CNC tại KCN Quế Võ để theo dõi OEE và quản lý dao cắt.',
     'Hệ thống MES hỗ trợ OPC-UA/FOCAS, bảng hiển thị Andon tại xưởng và xuất báo cáo QC tự động cho khách hàng FDI.',
     true, 'Tăng OEE từ 62% lên 78% trong 6 tháng đầu vận hành.', '40 máy CNC + 3 trạm QC',
     'IND_IT', 'CN09', 'NC02', '400 - 800 triệu VND',
     8, 8, 7, 8, 77, 'HIGH', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '5 days', NOW(),
-    'SELF_DECLARED', 'Hiệp hội BACLINK', 'Bài toán mẫu minh họa ngành CNTT & MES.'
+    'SELF_DECLARED', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Bài toán kết nối chuỗi cung ứng ngành CNTT & MES.'
 ),
 (
-    'bac10000-0000-4000-8006-000000000007', 'bac10000-0000-4000-8005-000000000007',
+    'bac10000-0000-4000-8006-000000000007', NULL,
     'DMD-BL-2026-007', 'Hệ thống thu hồi nhiệt thải sấy & kiểm kê khí nhà kính ESG ISO 14064',
-    '[Dữ liệu demo mẫu] Cần giải pháp thu hồi nhiệt từ khí thải buồng sấy khay định hình sinh học kết hợp tư vấn kiểm kê khí nhà kính Scope 1-2 phục vụ đánh giá ESG.',
+    'Cần giải pháp thu hồi nhiệt từ khí thải buồng sấy khay định hình sinh học kết hợp tư vấn kiểm kê khí nhà kính Scope 1-2 phục vụ đánh giá ESG.',
     'Thiết bị trao đổi nhiệt không khí-nước hiệu suất cao kèm phần mềm/dịch vụ lập báo cáo kiểm kê carbon.',
     true, 'Tiết kiệm 22% nhiên liệu đốt sấy và hoàn tất báo cáo kiểm kê carbon năm 2026.', 'Nhà máy 8.000 m2 tại KCN Quế Võ II',
     'IND_GREEN', 'CN39', 'NC02', '600 triệu - 1.1 tỷ VND',
     7, 8, 7, 8, 75, 'HIGH', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '4 days', NOW(),
-    'SELF_DECLARED', 'Hiệp hội BACLINK', 'Bài toán mẫu minh họa ngành Công nghiệp Xanh & ESG.'
+    'SELF_DECLARED', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Bài toán kết nối chuỗi cung ứng ngành Công nghiệp Xanh & ESG.'
 ),
 (
-    'bac10000-0000-4000-8006-000000000008', 'bac10000-0000-4000-8005-000000000008',
+    'bac10000-0000-4000-8006-000000000008', NULL,
     'DMD-BL-2026-008', 'Dịch vụ Logistics vận chuyển thiết bị công nghiệp & kho trung chuyển KCN',
-    '[Dữ liệu demo mẫu] Tìm đối tác logistics cung ứng xe cẩu tự hành 5-15 tấn, xe tải thùng kín và kho lưu trữ 1.500 m2 trung chuyển module xử lý nước tại KCN Gia Bình – Yên Phong.',
+    'Tìm đối tác logistics cung ứng xe cẩu tự hành 5-15 tấn, xe tải thùng kín và kho lưu trữ 1.500 m2 trung chuyển module xử lý nước tại KCN Gia Bình – Yên Phong.',
     'Dịch vụ vận tải có bảo hiểm hàng hóa công nghiệp, giám sát GPS và giao nhận theo lịch hẹn lắp đặt tại KCN.',
     false, 'Đảm bảo 100% tiến độ giao thiết bị đến các KCN trong tỉnh Bắc Ninh và Hải Phòng.', '1.500 m2 kho + 15-20 chuyến/tháng',
     'IND_LOG', 'CN05', 'NC03', '500 - 900 triệu VND/năm',
     7, 7, 8, 8, 74, 'MEDIUM', 'VERIFIED', true,
     'bac10000-0000-4000-8001-000000000001', NOW() - INTERVAL '3 days', NOW(),
-    'SELF_DECLARED', 'Hiệp hội BACLINK', 'Bài toán mẫu minh họa ngành Logistics công nghiệp.'
+    'SELF_DECLARED', 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)', 'Bài toán kết nối chuỗi cung ứng ngành Logistics công nghiệp.'
 )
 ON CONFLICT (id) DO UPDATE SET
-    survey_id = EXCLUDED.survey_id,
+    survey_id = NULL,
     item_code = EXCLUDED.item_code,
     stage_name = EXCLUDED.stage_name,
     technical_problem = EXCLUDED.technical_problem,
@@ -1033,7 +822,7 @@ ON CONFLICT (id) DO UPDATE SET
     tni_classification = EXCLUDED.tni_classification,
     status = 'VERIFIED',
     is_public_listed = true,
-    verified_authority_name = 'Hiệp hội BACLINK',
+    verified_authority_name = 'Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)',
     updated_at = NOW();
 
 -- -----------------------------------------------------------------------------
@@ -1320,7 +1109,7 @@ VALUES
     'bac10000-0000-4000-8009-000000000005', NULL, 'CG-BL-005',
     'TS. Vũ Hải Đăng', '0912100005', 'dang.vh@baclink.org.vn',
     1981, 'MALE', 'NONE', NULL, 'DOCTOR', 2014,
-    'Viện Môi trường Công nghiệp & Năng lượng Xanh',
+    'Ban Chuyển đổi Xanh & Năng lượng Sạch BACLINK',
     'KCN Quế Võ I, TX. Quế Võ, Bắc Ninh',
     'Cố vấn Chuyển đổi Xanh, ESG & Kiểm kê Carbon',
     'Tối ưu năng lượng công nghiệp, xử lý nước tuần hoàn và kiểm kê khí nhà kính ISO 14064',

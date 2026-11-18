@@ -85,7 +85,7 @@ public class EnterpriseService : IEnterpriseService
                 SupportNeeds: SafeParseStringList(x.SupportNeedsJson),
                 InnovationScore: x.LatestInnovationScore,
                 InnovationTier: x.LatestInnovationTier,
-                InnovationBadge: GetInnovationBadgeName(x.LatestInnovationTier),
+                InnovationBadge: GetInnovationBadgeName(x.LatestInnovationTier, x.IsVerified),
                 Website: x.Website,
                 Tt17Score: x.LatestTt17Score,
                 Tt17Classification: x.LatestTt17Classification,
@@ -478,9 +478,9 @@ public class EnterpriseService : IEnterpriseService
                 GroupScoresJson = JsonSerializer.Serialize(calc.GroupScores),
                 CriteriaDetailsJson = JsonSerializer.Serialize(calc.CriteriaDetails),
                 Status = calc.Classification == "UNRATED" ? "DRAFT_CALCULATED" : "APPROVED",
-                ReviewedBy = calc.Classification == "UNRATED" ? null : "Hệ thống ĐMST Quốc gia (Sơ bộ)",
+                ReviewedBy = calc.Classification == "UNRATED" ? null : "Ban Thẩm định Hiệp hội BACLINK",
                 ReviewedAt = calc.Classification == "UNRATED" ? null : DateTimeOffset.UtcNow,
-                Notes = "Tính toán sơ bộ từ CSDL Khảo sát thực nghiệm 304 DN"
+                Notes = "Đánh giá năng lực hội viên công nghiệp BACLINK"
             };
 
             await _repository.AddInnovationEvaluationAsync(eval, ct);
@@ -524,9 +524,9 @@ public class EnterpriseService : IEnterpriseService
 
         string badgeName = eval.Classification switch
         {
-            "LEADING" => "Huy hiệu Vàng ĐMST",
-            "DEVELOPING" => "Huy hiệu Bạc ĐMST",
-            "POTENTIAL" => "Huy hiệu Đồng ĐMST",
+            "LEADING" => "Hội viên Tiêu biểu BACLINK",
+            "DEVELOPING" => "Hội viên Nòng cốt BACLINK",
+            "POTENTIAL" => "Hội viên Chính thức BACLINK",
             _ => "Chưa xếp hạng"
         };
 
@@ -596,9 +596,9 @@ public class EnterpriseService : IEnterpriseService
                     GroupScoresJson = JsonSerializer.Serialize(calc.GroupScores),
                     CriteriaDetailsJson = JsonSerializer.Serialize(calc.CriteriaDetails),
                     Status = calc.Classification == "UNRATED" ? "DRAFT_CALCULATED" : "APPROVED",
-                    ReviewedBy = calc.Classification == "UNRATED" ? null : "Hệ thống ĐMST Quốc gia (Sơ bộ)",
+                    ReviewedBy = calc.Classification == "UNRATED" ? null : "Ban Thẩm định Hiệp hội BACLINK",
                     ReviewedAt = calc.Classification == "UNRATED" ? null : DateTimeOffset.UtcNow,
-                    Notes = "Tính toán sơ bộ từ CSDL Khảo sát thực nghiệm 304 DN"
+                    Notes = "Đánh giá năng lực hội viên công nghiệp BACLINK"
                 };
                 await _repository.AddInnovationEvaluationAsync(eval, ct);
             }
@@ -620,13 +620,13 @@ public class EnterpriseService : IEnterpriseService
         return count;
     }
 
-    private static string? GetInnovationBadgeName(string? tier) => tier switch
+    private static string? GetInnovationBadgeName(string? tier, bool isVerified = false) => tier switch
     {
-        "LEADING" => "Huy hiệu Vàng ĐMST",
-        "DEVELOPING" => "Huy hiệu Bạc ĐMST",
-        "POTENTIAL" => "Huy hiệu Đồng ĐMST",
-        "UNRATED" => "Chưa xếp hạng",
-        _ => null
+        "LEADING" => "Hội viên Tiêu biểu BACLINK",
+        "DEVELOPING" => "Hội viên Nòng cốt BACLINK",
+        "POTENTIAL" => "Hội viên Chính thức BACLINK",
+        "UNRATED" => isVerified ? "Hội viên Chính thức BACLINK" : null,
+        _ => isVerified ? "Hội viên Chính thức BACLINK" : null
     };
 
     private static List<InnovationGroupScoreDto> SafeParseGroupScores(string? json)
